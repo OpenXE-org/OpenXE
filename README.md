@@ -11,17 +11,6 @@
 | 06.12.2018			      | Benutzervorlagen Muster			 |  | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/benutzervorlagen.zip)
 | 06.12.2018			      | Übertragen Modul: Beispiel CSVs				 |  | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/uebertragungen_csv.zip)
 
-# Shopschnittstellen
-
-* Shopware 5
-* Shopware 6
-* Woocommerce
-* Gambio
-* Magento 1.x
-* Magento 2
-* OpenCart
-* modified
-* xt-commerce
 
 
 
