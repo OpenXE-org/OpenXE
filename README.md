@@ -10,8 +10,8 @@
 | 16.04.2018			      | Xentral nach GoBD verwenden		 |  | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/wawision_nach_gobd_v1.1.pdf)
 | 06.12.2018			      | Benutzervorlagen Muster			 |  | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/benutzervorlagen.zip)
 | 06.12.2018			      | Übertragen Modul: Beispiel CSVs				 |  | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/uebertragungen_csv.zip)
-
-
+| 06.12.2018			      | Woocommerce Plugin				 | [Anleitung](https://xentral.com/helpdesk/woocommerce
+) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/woocommerceimporter.zip)
 
 
 
