@@ -3,8 +3,8 @@
 
 | Datum        | Beschreibung           | Anleitung  | Download  |
 | ------------- |:-------------|:-----:|:-----:|
-| 27.03.2020      | Vorlagen für Importzentrale | [Anleitung](https://xentral.com/helpdesk/kurzanleitung-datenmigration) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/blob/master/importzentrale_vorlagen.zip)
-| 27.03.2020      | Vorlagen zum Belegimport | [Anleitung](https://xentral.com/helpdesk/kurzanleitung-datenmigration) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/blob/master/belegeimport_vorlagen.zip)
+| 27.03.2020      | Vorlagen für Importzentrale | [Anleitung](https://xentral.com/helpdesk/dataimport) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/blob/master/importzentrale_vorlagen.zip)
+| 27.03.2020      | Vorlagen zum Belegimport | [Anleitung](https://xentral.com/helpdesk/dataimport) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/blob/master/belegeimport_vorlagen.zip)
 | 18.02.2020      | Xentral Installer (Open-Source Version / PHP Quelltext) | [Anleitung](https://xentral.com/helpdesk/grundinstallation) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/installer.zip)
 | 10.07.2019	      | Xentral Druckerspooler für MacOS | [Anleitung](https://xentral.com/helpdesk/kurzanleitung-drucker-einrichten) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/xentral-spooler2.app.dmg)
 | 19.04.2017	      | Linux Druckerspooler | [Anleitung](https://xentral.com/helpdesk/kurzanleitung-drucker-einrichten#nav-installation-f-r-linux) | [Link](https://github.com/xentral-erp-software-gmbh/downloads/raw/master/wawision_drucker_spooler.tar.gz)
