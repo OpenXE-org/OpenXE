@@ -1,0 +1,289 @@
+{
+    "key": "storage",
+    "category": "warehouse",
+    "minimized": false,
+    "title": "Lager und Versandabwicklung automatisieren",
+    "sub_title": "Mit xentral wird Ware automatisiert versandt, Pick-und-Pack Prozesse helfen beim Kommissionieren – bei kleinen und großen Versandmengen. Schnittstellen zu allen gängigen Versanddienstleistern machen auch die Nachverfolgung einfach. Klick mal rein!",
+    "description": "Mit xentral wird Ware automatisiert versandt, Pick-und-Pack Prozesse helfen beim Kommissionieren – bei kleinen und großen Versandmengen. Schnittstellen zu allen gängigen Versanddienstleistern machen auch die Nachverfolgung einfach. Klick mal rein!",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "lager": [
+            "list",
+            "bestand",
+            "wert"
+        ],
+        "lagermobil": [
+            "list"
+        ],
+        "chargen": [
+            "list"
+        ],
+        "mhdwarning": [
+            "list"
+        ],
+        "seriennummern": [
+            "list"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=lager&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/z2hUKvGxacA"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "storage": {
+                    "steps": {
+                        "overview_storage": {
+                            "position": 1,
+                            "link": "./index.php?module=lager&action=list",
+                            "title": "Lager",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Lager",
+                                            "text": "Die Lagerverwaltung von xentral erlaubt dir eine übersichtliche Struktur mit unbegrenzt vielen Lagerplätzen (Regalen) pro Lager. Ein- und Auslagerprozesse sind unkompliziert, schnell und werden stets genau protokolliert.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "mobile_storage": {
+                    "steps": {
+                        "overview_mobile_storage": {
+                            "position": 1,
+                            "link": "./index.php?module=lagermobil&action=list",
+                            "title": "Mobile Lagerverwaltung",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Mobile Lagerverwaltung",
+                                            "text": "Die mobile Lagerverwaltung ist für mobile Endgeräte (Smartphones, Scangeräte, Handhelds) optimiert und ermöglicht alle Ein-, Aus- und Umlagerprozesse, die auch am Desktop möglich sind.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "stock": {
+                    "steps": {
+                        "overview_stock": {
+                            "position": 1,
+                            "link": "./index.php?module=lager&action=bestand",
+                            "title": "Lagerbestand",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Lagerbestand",
+                                            "text": "Im Bereich Lagerbestand sind die aktuell am Lager vorhandenen Mengen aller Artikel an einer Stelle einsehbar und sortierbar pro Lager und Lagerplatz. Die Lagermenge wird in die verkaufbare und reservierte Menge jedes Artikels unterteilt. Chargen- und MHD-Artikel werden pro Charge übersichtlich aufgelistet.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "stock_calculation": {
+                    "steps": {
+                        "overview_stock_calculation": {
+                            "position": 1,
+                            "link": "./index.php?module=lager&action=wert",
+                            "title": "Lagerbestandsberechnung",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Lagerbestandsberechnung",
+                                            "text": "Die Lagerbestandsberechnung gewichtet die Lagermenge jedes Artikels mit seinem Einkaufspreis beim Lieferanten oder alternativ mit einem kalkulierten Einkaufspreis oder Inventurwert. Somit lässt sich der bewertete Lagerbestand schnell und übersichtlich feststellen.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "batches": {
+                    "steps": {
+                        "overview_batches": {
+                            "position": 1,
+                            "link": "./index.php?module=chargen&action=list",
+                            "title": "Chargen",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Chargen",
+                                            "text": "Die Warenbewegungen von Artikeln mit Chargenverwaltung werden gesondert protokolliert, um eine zügige Rückverfolgbarkeit der Chargen zu gewährleisten.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "bestbefore": {
+                    "steps": {
+                        "overview_bestbefore": {
+                            "position": 1,
+                            "link": "./index.php?module=mhdwarning&action=list",
+                            "title": "Mindesthaltbarkeitsdatum",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Mindesthaltbarkeitsdatum",
+                                            "text": "Artikel mit Mindesthaltbarkeitsdatum müssen stets rechtzeitig vor dem Verfallsdatum versandt werden. In der Übersicht Mindesthaltbarkeit in xentral findet ihr alle Artikel und ihre MHDs, um die Ablaufdaten im Blick zu behalten.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "serials": {
+                    "steps": {
+                        "overview_serials": {
+                            "position": 1,
+                            "link": "./index.php?module=seriennummern&action=list",
+                            "title": "Seriennummern",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Seriennummern",
+                                            "text": "Die Warenbewegungen von Artikeln mit Seriennummern werden ebenfalls gesondert protokolliert, damit ihr genau wisst, wann sie versendet wurden und welche Seriennummer auf welchem Lagerplatz liegt.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

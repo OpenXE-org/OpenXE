@@ -1,0 +1,85 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#steuerregeln">Steuerregeln</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#definition_steuergruppen">Definition Steuergruppen</a></div></li>
+<li class="level3"><div class="li"><a href="#zuordnung_der_steuergruppen_im_artikel">Zuordnung der Steuergruppen im Artikel</a></div></li>
+<li class="level3"><div class="li"><a href="#steurregeln_fuer_steuergruppe">Steurregeln für Steuergruppe</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="steuerregeln">Steuerregeln</h2>
+<div class="level2">
+
+<p>
+Mit diesem Modul lassen sich verschiedene Steuerregeln für bestimmte Produktgruppen und Bestimmungsorte aufstellen.
+</p>
+
+<p>
+Sie finden das Modul unter Administration –&gt; Appstore.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="definition_steuergruppen">Definition Steuergruppen</h3>
+<div class="level3">
+
+<p>
+Im ersten Schritt können Sie über den Button „Neu“ eine neue Steuergruppe anlegen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_steuerregeln&amp;media=wawision:steurregeln_steuergruppen.png"  title="wawision:steurregeln_steuergruppen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=steuerregeln&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="zuordnung_der_steuergruppen_im_artikel">Zuordnung der Steuergruppen im Artikel</h3>
+<div class="level3">
+
+<p>
+Im nächsten Schritt können Sie die Steuergruppen den relevanten Artikeln zuordnen. Hierzu wählen Sie über Stammdaten –&gt; Artikel einen relevanten Artikel aus und wechseln dann in den Reiter Finanzbuchhaltung des Artikels.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_steuerregeln&amp;media=wawision:steuerregeln_zuordnung.png"  title="wawision:steuerregeln_zuordnung.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=steuerregeln&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="steurregeln_fuer_steuergruppe">Steurregeln für Steuergruppe</h3>
+<div class="level3">
+
+<p>
+Nachdem Sie die Verknüpfung zu den Artikel hergestellt haben, können Sie für die Steuergruppen neue Regeln definieren. 
+</p>
+
+<p>
+Über den gekrümmten Pfeil  <a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_steuerregeln&amp;media=wawision:icon_gekruemmter_pfeil.png"  title="wawision:icon_gekruemmter_pfeil.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=steuerregeln&fileid=3"  alt="" /></a> gelangen Sie in den Konfigurations-Modus und können über den Button „Neu“ eine neue Steuerregel aufbauen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_steuerregeln&amp;media=wawision:steuerregeln_anlage.png"  title="wawision:steuerregeln_anlage.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=steuerregeln&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

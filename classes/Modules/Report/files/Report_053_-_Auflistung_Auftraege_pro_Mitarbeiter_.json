@@ -1,0 +1,115 @@
+{
+    "name": "053 - Auflistung Auftr\u00e4ge pro Mitarbeiter",
+    "description": "Gibt die Anzahl der freigegebenen Auftr\u00e4ge je Bearbeiter innerhalb eines bestimmten Zeitraums aus.",
+    "project": 0,
+    "sql_query": "SELECT \r\nIF('{GRUPPIERUNG}'='tag', DATE_FORMAT(auf.datum,'%d.%m.%Y'),\r\n  IF('{GRUPPIERUNG}'='woche', DATE_FORMAT(date_add(auf.datum, interval-WEEKDAY(auf.datum) day),'%d.%m.%Y'),\r\n   IF('{GRUPPIERUNG}'='monat', DATE_FORMAT(ADDDATE(LAST_DAY(SUBDATE(auf.datum, INTERVAL 1 MONTH)), 1),'%d.%m.%Y'),\r\n    IF('{GRUPPIERUNG}'='quartal', DATE_FORMAT(MAKEDATE(YEAR(auf.datum), 1) + INTERVAL QUARTER(auf.datum) QUARTER  - INTERVAL 1 QUARTER ,'%d.%m.%Y'),\r\n     DATE_FORMAT(auf.datum,'01.01.%Y'))))) AS von,\r\n IF('{GRUPPIERUNG}'='tag', DATE_FORMAT(auf.datum,'%d.%m.%Y'),\r\n  IF('{GRUPPIERUNG}'='woche', DATE_FORMAT(date_add(date_add(auf.datum, interval  -WEEKDAY(auf.datum) day), interval 6 day),'%d.%m.%Y'),\r\n   IF('{GRUPPIERUNG}'='monat', DATE_FORMAT(LAST_DAY(auf.datum),'%d.%m.%Y'),\r\n    IF('{GRUPPIERUNG}'='quartal', DATE_FORMAT(MAKEDATE(YEAR(auf.datum), 1) + INTERVAL QUARTER(auf.datum) QUARTER - INTERVAL 1 DAY,'%d.%m.%Y'),\r\n     DATE_FORMAT(auf.datum,'31.12.%Y')))))AS bis, \r\n a.mitarbeiternummer, \r\n a.name as bearbeiter,\r\n COUNT(auf.id) AS anzahl, \r\n SUM(auf.umsatz_netto) AS umsatznetto\r\nFROM adresse a \r\nLEFT JOIN auftrag auf ON a.id = auf.bearbeiterid\r\nWHERE  auf.status='freigegeben' AND a.mitarbeiternummer<>'' AND IF('{VON}'=0,1,auf.datum>='{VON}') AND IF('{BIS}'=0,1,auf.datum<='{BIS}')\r\nGROUP BY \r\n IF('{GRUPPIERUNG}'='tag',auf.datum, \r\n  IF('{GRUPPIERUNG}'='woche',WEEK(auf.datum),\r\n   IF('{GRUPPIERUNG}'='monat',MONTH(auf.datum),\r\n    IF('{GRUPPIERUNG}'='quartal',QUARTER(auf.datum),\r\n   YEAR(auf.datum))))),\r\na.id",
+    "columns": [
+        {
+            "key_name": "mitarbeiternummer",
+            "title": "Mitarbeiternummer",
+            "width": "",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "bearbeiter",
+            "title": "Bearbeiter",
+            "width": "",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "anzahl",
+            "title": "Anzahl Auftr\u00e4ge",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "umsatznetto",
+            "title": "Umsatz (netto)",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Auswahl des Zeitraums \u00fcber den gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "Angebots \u0026 Auftragsmanagement",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true
+    }
+}

@@ -1,0 +1,1 @@
+Um den absoluten Pfad einsehen zu k&ouml;nnen, gehen Sie bitte auf Administration &rarr; AppStore &rarr; Systemlog &rarr; und dann auf den Reiter &ldquo;PHP-Info&ldquo;. Unter der Variable &ldquo;SCRIPT_FILENAME&ldquo; finden Sie den absoluten Pfad f&uuml;r Ihre Xentral Installation.

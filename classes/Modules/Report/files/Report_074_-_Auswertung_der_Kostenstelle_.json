@@ -1,0 +1,192 @@
+{
+    "name": "074 - Auswertung der Kostenstelle",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT\r\nif('{TYP}'='ja',CONCAT(UPPER(LEFT(k.typ, 1)), \r\n                             LOWER(SUBSTRING(k.typ, 2))) ,'') AS typ,\r\nCASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN k.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(k.datum - INTERVAL (WEEKDAY(k.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN (k.datum - INTERVAL (DAYOFMONTH(k.datum) - 1) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(k.datum), 1) + INTERVAL QUARTER(k.datum) QUARTER - INTERVAL 1 QUARTER\r\n           ELSE MAKEDATE(YEAR(k.datum), 1)\r\n           END AS von,\r\n CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN k.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(k.datum + INTERVAL (6 - WEEKDAY(k.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN LAST_DAY(k.datum)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(k.datum), 1) + INTERVAL QUARTER(k.datum) QUARTER - INTERVAL 1 DAY\r\n           ELSE LAST_DAY(DATE_ADD(k.datum, INTERVAL 12-MONTH(k.datum) MONTH))\r\n           END AS bis,\r\nk.kostenstelle AS kostenstelle,\r\nSUM(k.eingang) AS eingang,\r\nSUM(k.ausgang) AS ausgang,\r\nSUM(k.eingang-k.ausgang) AS ergebnis\r\n FROM\r\n(SELECT '{EINGANGSBASIS}' AS typ, b.datum,b.kostenstelle, SUM(b.summe) AS eingang, 0 AS ausgang FROM (\r\n  SELECT\r\n    b.datum,\r\n    IF(bp.kostenstelle<>'',bp.kostenstelle,b.kostenstelle) As kostenstelle,\r\n    bp.umsatz_netto_gesamt AS summe\r\n  FROM {EINGANGSBASIS} b\r\n    JOIN {EINGANGSBASIS}_position bp ON b.id = bp.{EINGANGSBASIS}\r\n  WHERE (b.kostenstelle<>'' OR bp.kostenstelle<>'') AND b.status<>'angelegt' AND b.status<>'storniert' AND IF('{VON}'=0,1,b.datum>='{VON}') AND IF('{BIS}'=0,1,b.datum<='{BIS}')\r\n  ) AS b\r\nGROUP BY b.datum, b.kostenstelle\r\nUNION ALL\r\nSELECT '{AUSGANGSBASIS}' AS typ, b.datum, b.kostenstelle, 0 AS eingang, SUM(b.summe) AS ausgang FROM (\r\nSELECT\r\n    b.datum,\r\n    IF(bp.kostenstelle<>'',bp.kostenstelle,b.kostenstelle) As kostenstelle,\r\n    bp.preis AS summe\r\n  FROM bestellung b\r\n    JOIN bestellung_position bp ON b.id = bp.bestellung\r\n  WHERE (b.kostenstelle<>'' OR bp.kostenstelle<>'') AND b.status<>'angelegt' AND b.status<>'storniert' AND IF('{VON}'=0,1,b.datum>='{VON}') AND IF('{BIS}'=0,1,b.datum<='{BIS}') AND '{AUSGANGSBASIS}'='bestellung'\r\n) AS b\r\nGROUP BY b.datum, b.kostenstelle\r\nUNION ALL\r\nSELECT\r\n'kontoauszug' AS typ, k.originalbuchung AS datum, k.kostenstelle AS kostenstelle, SUM(haben) AS eingang, SUM(soll) AS ausgang\r\nFROM kontoauszuege AS k\r\nWHERE k.datev_abgeschlossen=1 AND k.kostenstelle<>'' AND IF('{VON}'=0,1,k.originalbuchung>='{VON}') AND IF('{BIS}'=0,1,k.originalbuchung<='{BIS}')\r\nGROUP BY k.kostenstelle, k.originalbuchung\r\nUNION ALL\r\nSELECT 'Verbindlichkeit' AS typ, v.datum,v.kostenstelle, 0 AS eingang, SUM(IF(v.betrag<>'',v.betrag,v.summe)) AS ausgang FROM (\r\nSELECT\r\n    b.rechnungsdatum AS datum,\r\n    b.kostenstelle AS kostenstelle,\r\n    b.betrag AS betrag,\r\n    bp.preis AS summe\r\n  FROM verbindlichkeit b\r\n    LEFT JOIN verbindlichkeit_position bp ON b.id = bp.bestellung\r\n  WHERE b.kostenstelle<>'' AND b.status<>'angelegt' AND b.status<>'storniert' AND IF('{VON}'=0,1,b.rechnungsdatum>='{VON}') AND IF('{BIS}'=0,1,b.rechnungsdatum<='{BIS}') AND '{AUSGANGSBASIS}'='verbindlichkeit'\r\n) AS v\r\nGROUP BY v.datum, v.kostenstelle) AS k\r\nGROUP BY k.kostenstelle,\r\n CASE\r\n             WHEN '{GRUPPIERUNG}' = 'tag' THEN k.datum\r\n             WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(k.datum)\r\n             WHEN '{GRUPPIERUNG}' = 'monat' THEN MONTH(k.datum)\r\n             WHEN '{GRUPPIERUNG}' = 'quartal' THEN QUARTER(k.datum)\r\n             ELSE YEAR(k.datum)\r\n             END,\r\nIF('{TYP}'='ja',k.typ,1)",
+    "columns": [
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "38",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "38",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "kostenstelle",
+            "title": "Kostenstelle",
+            "width": "38",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "eingang",
+            "title": "Eingang",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "ausgang",
+            "title": "Ausgang",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "typ",
+            "title": "Typ",
+            "width": "38",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "ergebnis",
+            "title": "Ergebnis",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": "sum_money_de"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Eingangsbasis",
+            "default_value": "rechnung",
+            "displayname": "Basis f\u00fcr Eingangsberechnung",
+            "options": [
+                {
+                    "Rechnung": "rechnung"
+                },
+                {
+                    "Auftrag": "auftrag"
+                }
+            ],
+            "description": "Basis f\u00fcr die Berechnung der eingehenden Werte",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Ausgangsbasis",
+            "default_value": "verbindlichkeit",
+            "displayname": "Basis f\u00fcr Ausgangsberechnung",
+            "options": [
+                {
+                    "Bestellung": "bestellung"
+                },
+                {
+                    "Verbindlichkeit": "verbindlichkeit"
+                }
+            ],
+            "description": "Basis f\u00fcr die Berechnung der ausgehenden Werte",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Auswahl des Zeitraums \u00fcber den gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Typ",
+            "default_value": "nein",
+            "displayname": "Nach Typ gruppieren",
+            "options": [
+                {
+                    "Ja": "ja"
+                },
+                {
+                    "Nein": "nein"
+                }
+            ],
+            "description": "Soll nach dem Typ der Buchung gruppiert werden",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "Buchhaltung & Finanzen",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

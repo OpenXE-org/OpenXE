@@ -1,0 +1,93 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#artikelfunktionsprotokoll_vorlagen">Artikelfunktionsprotokoll Vorlagen</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#uebersicht_der_vorlagen">Übersicht der Vorlagen</a></div></li>
+<li class="level3"><div class="li"><a href="#vorlage_bearbeiten">Vorlage bearbeiten</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#neuen_schritt_hinzufuegen">Neuen Schritt hinzufügen</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#vorlage_im_artikel_laden">Vorlage im Artikel laden</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="artikelfunktionsprotokoll_vorlagen">Artikelfunktionsprotokoll Vorlagen</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul „Artikelfunktionsprotokoll Vorlagen“ und dem „Produktionszentrum“ Modul kann man sich Vorlagen für Artikelfuntkionsprotokolle erstellen und diese im Anschluss im Artikel wieder laden.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="uebersicht_der_vorlagen">Übersicht der Vorlagen</h3>
+<div class="level3">
+
+<p>
+Unter Administration → Appstore → Artikel Funktionsprotokoll Vorlagen gibt es eine Übersicht über alle Vorlagen, die bisher erstellt wurden.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_artikelfunktionsprotokoll_vorlagen&amp;media=wawision:artikel_funktions_protokoll_uebersicht.png"  title="wawision:artikel_funktions_protokoll_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=artikelfunktionsprotokoll_vorlagen&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+Wenn man oben eine Bezeichnung eingibt, den Haken auf aktiv setzt und auf „Speichern“ klickt, wird eine neue Vorlage erstellt.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="vorlage_bearbeiten">Vorlage bearbeiten</h3>
+<div class="level3">
+
+<p>
+Mit dem Pfeil im Aktionsmenü der Übersicht gelangen sie in eine einzelne Vorlage: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_artikelfunktionsprotokoll_vorlagen&amp;media=wawision:artikel_funktions_protokoll_bearbeiten.png"  title="wawision:artikel_funktions_protokoll_bearbeiten.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=artikelfunktionsprotokoll_vorlagen&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="neuen_schritt_hinzufuegen">Neuen Schritt hinzufügen</h4>
+<div class="level4">
+
+<p>
+Mit dem Button „Neuen Schritt hinzufügen“ kann man einen neuen Funktionsprotokollschritt erstellen: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_artikelfunktionsprotokoll_vorlagen&amp;media=wawision:artikel_funktions_protokoll_neuer_schritt.png"  title="wawision:artikel_funktions_protokoll_neuer_schritt.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=artikelfunktionsprotokoll_vorlagen&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Mit dem Editier-Icon kommt man in die selbe Maske.
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="vorlage_im_artikel_laden">Vorlage im Artikel laden</h3>
+<div class="level3">
+
+<p>
+Im Artikel kann man danach im Tab „Funktionsprotokoll“ oben die Vorlage laden: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_artikelfunktionsprotokoll_vorlagen&amp;media=wawision:artikel_funktions_protokoll_vorlage_laden.png"  title="wawision:artikel_funktions_protokoll_vorlage_laden.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=artikelfunktionsprotokoll_vorlagen&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

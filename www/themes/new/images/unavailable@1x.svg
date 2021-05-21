@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>status/unavailable@1x</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Export-Icons" transform="translate(-67.000000, -6.000000)">
+            <g id="status/unavailable" transform="translate(67.000000, 6.000000)">
+                <rect id="bg-color-round" fill="#F0A631" x="0" y="0" width="20" height="20" rx="2"></rect>
+                <g id="icon/_status/asset-cross" transform="translate(1.000000, 1.248969)" fill="#FFFFFF">
+                    <rect id="bg-color" fill-opacity="0" x="0" y="0" width="18" height="18"></rect>
+                    <polygon id="icon" points="10.4055686 9.48046875 14.5235542 13.6138021 13.2470897 14.8804688 9.12910405 10.7582465 5.01111844 14.8804688 3.73465389 13.6138021 7.85263951 9.48046875 3.73465389 5.35824653 5.01111844 4.08046875 9.12910405 8.20269097 13.2581894 4.08046875 14.5346539 5.34713542"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

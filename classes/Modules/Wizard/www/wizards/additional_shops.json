@@ -1,0 +1,107 @@
+{
+    "key": "additional_shops",
+    "category": "shop-interface",
+    "title": "Weitere Shops verbinden",
+    "sub_title": "Du willst weitere Onlineshops anbinden? Kein Problem, mit dem API-Key ist das in wenigen Minuten gemacht. Los geht's!",
+    "description": "Du willst weitere Onlineshops anbinden? Kein Problem, mit dem API-Key ist das in wenigen Minuten gemacht. Los geht's!",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "onlineshops": [
+            "list",
+            "create",
+            "edit"
+        ]
+
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/qOg7aUSBpOE"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "create_additional_shop": {
+                    "steps": {
+                        "click_new_button": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Neuer Shop",
+                            "caption": "Klicke auf NEU um deinen Shop anzubinden.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "select_additional_shop": {
+                    "steps": {
+                        "click_additional_shop": {
+                            "position": 1,
+                            "title": "Weiteren Shop auswählen",
+                            "caption": "Wähle einen beliebigen Shop zum Anbinden aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "div",
+                                        "class": "modulediv"
+                                    },
+                                    "parent": {
+                                        "node_name": "fieldset",
+                                        "id": "shopexportcreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

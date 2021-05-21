@@ -1,0 +1,103 @@
+{
+    "key": "shopify",
+    "category": "shop-interface",
+    "title": "Shopify anbinden",
+    "sub_title": "Teste xentral ERP direkt mit deinen Shopify-Daten, wie Artikel oder Adressen – alles DSGVO-konform versteht sich! Verbinde deinen Shop mit wenigen Klicks. Wir zeigen dir Schritt-für-Schritt wie das geht.",
+    "description": "Teste xentral ERP direkt mit deinen Shopify-Daten, wie Artikel oder Adressen – alles DSGVO-konform versteht sich! Verbinde deinen Shop mit wenigen Klicks. Wir zeigen dir Schritt-für-Schritt wie das geht.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "onlineshops": [
+            "list",
+            "create",
+            "edit"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/2PLpW_kDjqY"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "create_shopify_shop": {
+                    "steps": {
+                        "click_new_button": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Neuer Shop",
+                            "caption": "Klicke auf NEU um deinen Shop anzubinden.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "select_shopify_shop": {
+                    "steps": {
+                        "click_shopify_shop": {
+                            "position": 1,
+                            "title": "Shopify Shop",
+                            "caption": "Klicke auf Shopify API Advanced.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "class": "createbutton",
+                                        "data-module": "shopimporter_shopify"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

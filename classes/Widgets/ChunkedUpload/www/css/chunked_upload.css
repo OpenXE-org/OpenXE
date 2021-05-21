@@ -1,0 +1,12 @@
+.chunked-file-upload-container table {
+    table-layout: fixed;
+}
+
+.chunked-file-upload-container table th,
+.chunked-file-upload-container table td {
+    padding: 3px 6px;
+}
+
+.chunked-file-upload-container table .button {
+    display: inline-block;
+}

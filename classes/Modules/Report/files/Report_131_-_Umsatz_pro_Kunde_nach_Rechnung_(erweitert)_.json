@@ -1,0 +1,152 @@
+{
+    "name": "131 - Umsatz pro Kunde nach Rechnung (erweitert)",
+    "description": "Umsatz pro Kunde nach Rechnung.\r\n\r\nGruppierungsoptionen:\r\n- Datum: Tag\/Woche\/Monat\/Quartal\/Jahr\r\nFilteroptionen:\r\n- Jahr (optional): Jahr f\u00fcr das Belege angezeigt werden sollen",
+    "project": 0,
+    "sql_query": "SELECT\r\nCASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(r.datum - INTERVAL (WEEKDAY(r.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN (r.datum - INTERVAL (DAYOFMONTH(r.datum) - 1) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(r.datum), 1) + INTERVAL QUARTER(r.datum) QUARTER - INTERVAL 1 QUARTER\r\n           ELSE MAKEDATE(YEAR(r.datum), 1)\r\nEND AS von,\r\nCASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(r.datum + INTERVAL (6 - WEEKDAY(r.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN LAST_DAY(r.datum)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(r.datum), 1) + INTERVAL QUARTER(r.datum) QUARTER - INTERVAL 1 DAY\r\n           ELSE LAST_DAY(DATE_ADD(r.datum, INTERVAL 12-MONTH(r.datum) MONTH))\r\n END AS bis,\r\n CASE\r\n        WHEN '{GRUPPIERUNG}' = 'tag' THEN WEEK(r.datum) + 1\r\n        WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(r.datum) + 1\r\n        ELSE ''\r\n END AS kw, \r\n a.name AS name,\r\n a.kundennummer AS kundennummer,\r\nROUND(SUM(rp.menge)-IFNULL(SUM(gp.menge),0),0) AS menge,\r\nROUND(AVG(rp.umsatz_netto_einzeln)*(SUM(rp.menge)-IFNULL(SUM(gp.menge),0)),2) AS umsatz,\r\n r.waehrung AS waehrung\r\nFROM adresse a\r\nJOIN rechnung r ON a.id = r.adresse\r\nJOIN rechnung_position rp on r.id = rp.rechnung\r\nLEFT JOIN (SELECT gp.auftrag_position_id, SUM(gp.menge) AS menge FROM gutschrift_position AS gp JOIN gutschrift g ON gp.gutschrift = g.id WHERE gp.auftrag_position_id<>0 AND g.status <>'angelegt' AND g.status <> 'storniert' GROUP BY auftrag_position_id) AS gp on rp.auftrag_position_id = gp.auftrag_position_id\r\nWHERE r.status<>'angelegt' AND r.status<>'storniert' AND IF({JAHR}=0,1,YEAR(r.datum)={JAHR})\r\nGROUP BY a.id, r.waehrung,\r\n    CASE\r\n         WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n         WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(r.datum)\r\n         WHEN '{GRUPPIERUNG}' = 'monat' THEN MONTH(r.datum)\r\n         WHEN '{GRUPPIERUNG}' = 'quartal' THEN QUARTER(r.datum)\r\n         ELSE YEAR(r.datum)\r\n    END",
+    "columns": [
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "format_statement": null
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "format_statement": null
+        },
+        {
+            "key_name": "kw",
+            "title": "KW",
+            "width": "10",
+            "alignment": "center",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de",
+            "format_statement": null
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "24",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Jahr",
+            "default_value": "0",
+            "displayname": "(optional) Eingrenzen auf Jahr",
+            "options": [],
+            "description": "Grenzt die zu suchenden Ums\u00e4tze auf ein bestimmtes Jahr ein",
+            "editable": true,
+            "control_type": ""
+        },
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Auswahl des Zeitraums \u00fcber den gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

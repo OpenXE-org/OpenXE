@@ -1,0 +1,42 @@
+
+phpwfgen:
+
+config:
+  
+  - absoluter anwendungspfad
+  - widgetvorlagen ordner
+
+  liste mit seiten die primaer aus einem widget bestehen
+
+#widget generieren
+
+hole alle .htm oder .html dateien aus den widgetvorlagen ordner und mache
+
+showband.html
+  - widget/template/_gen/showband.tpl
+  - wiget/_gen/widget.gen.showband.tpl
+
+  wenn es das nicht gibt:
+    wiget/_gen/widget.showband.tpl
+    dann anlegen
+
+
+
+#seiten generieren
+
+liste mit seiten die hauptsaechlich aus einem widget bestehen.
+diese dateien werden nur generier wenn sie nicht existieren:
+
+showband
+veranstalter ....
+
+in pages/ datei anlegen wenn sie nicht existiert
+
+
+im pages/content templates anlegen wenn sie nicht existieren:
+
+showband_create.tpl
+showband_summary.tpl
+showband_edit.tpl
+
+

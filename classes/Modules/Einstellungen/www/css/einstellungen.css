@@ -1,0 +1,82 @@
+.settings-h3{
+    font-size: 18px;
+    line-height: 28px;
+    color: rgba(55, 64, 81, 0.8);
+    padding-left: 0;
+    display: block;
+    border-bottom: 1px solid rgba(55, 64, 81, 0.1);
+}
+
+.settings-module{
+    margin: 20px;
+}
+
+.settings-module .module {
+    display: block;
+    position: relative;
+    float: left;
+    width: 184px;
+    height: 70px;
+    margin-right: 60px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+}
+
+.settings-module .module .icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 66px;
+    height: 66px;
+    margin-right: 10px;
+    border-radius: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.settings-module .module .icon a {
+    display: block;
+    width: 40px;
+    height: 40px;
+}
+.settings-module .module .icon img {
+    position: absolute;
+    left: 13px;
+    top: 13px;
+    padding: 0;
+    border-radius: 0;
+}
+.settings-module .module .content {
+    position: absolute;
+    left: 81px;
+    top: 0;
+    box-sizing: border-box;
+    width: 150px;
+    line-height: 15px;
+}
+
+.settings-module .module .content span,
+.settings-module .information-right .description span{
+    background: white;
+    color: #2729D2;
+    border: 1px solid #2729D2;
+    font-weight: normal;
+    font-size: 8px;
+    line-height: 15px;
+    margin-top: 5px;
+    height: 16px;
+    padding: 0 5px;
+    display: inline-block;
+    margin-right: 3px;
+}
+
+.settings-module .module .title {
+    display: block;
+    font-weight: bold;
+    width: 150px;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    font-size: 12px;
+    line-height: 12px;
+}

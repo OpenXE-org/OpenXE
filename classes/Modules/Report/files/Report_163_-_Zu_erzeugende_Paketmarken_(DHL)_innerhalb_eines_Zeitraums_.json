@@ -1,0 +1,99 @@
+{
+    "name": "163 - Zu erzeugende Paketmarken (DHL) innerhalb eines Zeitraums",
+    "description": "Zu erzeugende Paketmarken von DHL innerhalb eines bestimmten Zeitraums.",
+    "project": 0,
+    "sql_query": "SELECT l.belegnr, l.kundennummer, l.name, l.ansprechpartner, l.abteilung, l.strasse, l.plz, l.ort, l.land, v.gewicht\r\nFROM versand v \r\nLEFT JOIN lieferschein l ON v.lieferschein = l.id\r\nWHERE v.abgeschlossen = 0 AND IF('{VON}'=0,1,v.versendet_am>='{VON}') AND IF('{BIS}'=0,1,v.versendet_am<='{BIS}') AND v.versandart LIKE 'dhlversenden'",
+    "columns": [
+        {
+            "key_name": "belegnr",
+            "title": "Belegnr.",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennr.",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "ansprechpartner",
+            "title": "Ansprechpartner",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "strasse",
+            "title": "Strasse",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "plz",
+            "title": "PLZ",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "ort",
+            "title": "Ort",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "land",
+            "title": "Land",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "gewicht",
+            "title": "Gewicht",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "Lager \u0026 Logistik",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

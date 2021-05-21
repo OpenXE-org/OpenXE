@@ -1,0 +1,204 @@
+{
+    "name": "159 - Meldebestand Lager auf Basis eines Freifeldes",
+    "description": "Zeigt alle Artikel an, deren Lagerbestand den in einem Freifeld gef\u00fchrten Meldebestand unterschreitet.",
+    "project": 0,
+    "sql_query": "SELECT \r\na.name_de AS artikel, \r\na.nummer AS artikelnummer, \r\na.freifeld{FREIFELD} AS meldebestand, \r\nSUM(lpi.menge) AS lagerbestand\r\nFROM lager_platz_inhalt AS lpi\r\nJOIN artikel a ON lpi.artikel = a.id\r\nWHERE a.freifeld{FREIFELD}<>'' AND a.geloescht=0 AND a.nummer<>'DEL'\r\nGROUP BY lpi.artikel\r\nHAVING a.freifeld{FREIFELD} > SUM(lpi.menge)",
+    "columns": [
+        {
+            "key_name": "artikel",
+            "title": "Artikel",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "meldebestand",
+            "title": "Meldebestand",
+            "width": "47",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "lagerbestand",
+            "title": "Lagerbestand",
+            "width": "47",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Freifeld",
+            "default_value": "40",
+            "displayname": "Freifeld",
+            "options": [
+                {
+                    "1": "1"
+                },
+                {
+                    "2": "2"
+                },
+                {
+                    "3": "3"
+                },
+                {
+                    "4": "4"
+                },
+                {
+                    "5": "5"
+                },
+                {
+                    "6": "6"
+                },
+                {
+                    "7": "7"
+                },
+                {
+                    "8": "8"
+                },
+                {
+                    "9": "9"
+                },
+                {
+                    "10": "10"
+                },
+                {
+                    "11": "11"
+                },
+                {
+                    "12": "12"
+                },
+                {
+                    "13": "13"
+                },
+                {
+                    "14": "14"
+                },
+                {
+                    "15": "15"
+                },
+                {
+                    "16": "16"
+                },
+                {
+                    "17": "17"
+                },
+                {
+                    "18": "18"
+                },
+                {
+                    "19": "19"
+                },
+                {
+                    "20": "20"
+                },
+                {
+                    "21": "21"
+                },
+                {
+                    "22": "22"
+                },
+                {
+                    "23": "23"
+                },
+                {
+                    "24": "24"
+                },
+                {
+                    "25": "25"
+                },
+                {
+                    "26": "26"
+                },
+                {
+                    "27": "27"
+                },
+                {
+                    "28": "28"
+                },
+                {
+                    "29": "29"
+                },
+                {
+                    "30": "30"
+                },
+                {
+                    "31": "31"
+                },
+                {
+                    "32": "32"
+                },
+                {
+                    "33": "33"
+                },
+                {
+                    "34": "34"
+                },
+                {
+                    "35": "35"
+                },
+                {
+                    "36": "36"
+                },
+                {
+                    "37": "37"
+                },
+                {
+                    "38": "38"
+                },
+                {
+                    "39": "39"
+                },
+                {
+                    "40": "40"
+                }
+            ],
+            "description": "Nummer des Freifeldes in der der Meldebestand steht",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "Lager & Logistik",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

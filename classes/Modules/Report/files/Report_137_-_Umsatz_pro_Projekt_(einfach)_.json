@@ -1,0 +1,90 @@
+{
+    "name": "137 - Umsatz pro Projekt (einfach)",
+    "description": "Umsatzreport auf Projektbasis.\n\nGruppiert nach Projekt, Monat und W\u00e4hrung. Bei Bedarf kann nach Datumsbereich und Projekt gefiltert werden.",
+    "project": 0,
+    "sql_query": "SELECT\r\n DATE_FORMAT(r.datum,'%m.%Y') AS datum,\r\n p.name AS projekt,\r\n ROUND(SUM(rp.menge-IFNULL(gp.menge,0)),0) AS menge,\r\n ROUND(SUM(rp.umsatz_netto_einzeln*(rp.menge-IFNULL(gp.menge,0))),2) AS umsatz,\r\n r.waehrung AS waehrung\r\nFROM projekt p\r\nJOIN rechnung r ON r.projekt = p.id\r\nJOIN rechnung_position rp on r.id = rp.rechnung\r\nLEFT JOIN (SELECT gp.auftrag_position_id, SUM(gp.menge) AS menge FROM gutschrift_position AS gp JOIN gutschrift g ON gp.gutschrift = g.id WHERE gp.auftrag_position_id<>0 AND g.status <>'angelegt' AND g.status <> 'storniert' GROUP BY auftrag_position_id) AS gp on rp.auftrag_position_id = gp.auftrag_position_id\r\nWHERE r.status<>'angelegt' AND r.status<>'storniert' AND IF('{VON}'=0,1,r.datum>='{VON}') AND IF('{BIS}'=0,1,r.datum<='{BIS}') AND IF('{PROJEKT}'='-',1,'{PROJEKT}'=p.abkuerzung)\r\nGROUP BY p.id, DATE_FORMAT(r.datum,'%m.%Y'),r.waehrung",
+    "columns": [
+        {
+            "key_name": "projekt",
+            "title": "Projekt",
+            "width": "38",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "38",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "menge",
+            "title": "Anzahl Artikel",
+            "width": "38",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "38",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "38",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Projekt",
+            "default_value": "-",
+            "displayname": "Projekt zur Eingrenzung",
+            "options": [],
+            "description": "Kennung des Projekts auf das die Auswahl eingegrenzt werden soll",
+            "editable": true,
+            "control_type": "autocomplete_project"
+        }
+    ],
+    "remark": "",
+    "category": "Controlling",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

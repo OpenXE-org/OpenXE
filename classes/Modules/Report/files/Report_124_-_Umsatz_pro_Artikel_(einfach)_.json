@@ -1,0 +1,116 @@
+{
+    "name": "124 - Umsatz pro Artikel (einfach)",
+    "description": "Umsatz pro Artikel.\r\n\r\nGruppiert nach Artikel, Monat und W\u00e4hrung. Der Datumszeitraum kann bei Bedarf eingeschr\u00e4nkt werden.",
+    "project": 0,
+    "sql_query": "SELECT\r\n    DATE_ADD(MAKEDATE(YEAR(r.datum), 1), INTERVAL MONTH(r.datum)-1 MONTH) AS datum,\r\n    ar.name_de AS name_de,\r\n    ar.nummer AS nummer,\r\n    ROUND(SUM(rp.menge-IFNULL(gp.menge,0)),0) AS menge,\r\n    ROUND(SUM(rp.umsatz_netto_einzeln*(rp.menge-IFNULL(gp.menge,0))),2) AS umsatz,\r\n    r.waehrung AS waehrung\r\nFROM rechnung r\r\n         JOIN rechnung_position rp on r.id = rp.rechnung\r\n         JOIN artikel ar ON ar.id = rp.artikel\r\n         LEFT JOIN (SELECT gp.auftrag_position_id, SUM(gp.menge) AS menge FROM gutschrift_position AS gp JOIN gutschrift g ON gp.gutschrift = g.id WHERE gp.auftrag_position_id<>0 AND g.status <>'angelegt' AND g.status <> 'storniert' GROUP BY auftrag_position_id) AS gp on rp.auftrag_position_id = gp.auftrag_position_id\r\nWHERE r.status<>'angelegt' AND r.status<>'storniert' AND IF('{VON}'=0,1,r.datum>='{VON}') AND IF('{BIS}'=0,1,r.datum<='{BIS}')\r\nGROUP BY ar.id, DATE_ADD(MAKEDATE(YEAR(r.datum), 1), INTERVAL MONTH(r.datum)-1 MONTH),r.waehrung",
+    "columns": [
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "custom",
+            "format_statement": "DATE_FORMAT({VALUE}, '%m.%Y')"
+        },
+        {
+            "key_name": "name_de",
+            "title": "Name_de",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "nummer",
+            "title": "Nummer",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "31",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "format_statement": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "31",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

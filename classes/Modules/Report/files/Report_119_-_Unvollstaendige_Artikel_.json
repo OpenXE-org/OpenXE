@@ -1,0 +1,105 @@
+{
+    "name": "119 - Unvollst\u00e4ndige Artikel",
+    "description": "Artikel mit fehlenden Werten in bestimmten Feldern.",
+    "project": 0,
+    "sql_query": "SELECT \r\na.id AS id,\r\na.nummer AS nummer,\r\na.name_de AS name_de,\r\n'{FELD}' as feld\r\nFROM artikel AS a\r\nWHERE a.nummer <> 'DEL' AND a.geloescht=0 AND ({FELD} IS NULL OR {FELD}='')\r\nAND IF('{GESPERRT}'='Ja',a.intern_gesperrt=0,1)",
+    "columns": [
+        {
+            "key_name": "id",
+            "title": "Artikel ID",
+            "width": "25",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "nummer",
+            "title": "Artikelnummer",
+            "width": "25",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "name_de",
+            "title": "Artikelname",
+            "width": "25",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "feld",
+            "title": "Leeres Feld",
+            "width": "25",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Feld",
+            "default_value": "ean",
+            "displayname": "Gesuchtes Feld",
+            "options": [
+                {
+                    "name_de": "name_de"
+                },
+                {
+                    "kurztext_de": "kurztext_de"
+                },
+                {
+                    "beschreibung_de": "beschreibung_de"
+                },
+                {
+                    "uebersicht_de": "uebersicht_de"
+                },
+                {
+                    "hersteller": "hersteller"
+                },
+                {
+                    "herstellernummer": "herstellernummer"
+                },
+                {
+                    "gewicht": "gewicht"
+                },
+                {
+                    "ean": "ean"
+                },
+                {
+                    "zolltarifnummer": "zolltarifnummer"
+                },
+                {
+                    "metatitle_de": "metatitle_de"
+                },
+                {
+                    "metadescription_d": "metadescription_d"
+                }
+            ],
+            "description": "Feld nach dem gesucht werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Gesperrt",
+            "default_value": "1",
+            "displayname": "Gesperrte Artikel ausblenden",
+            "options": [
+                {
+                    "Ja": "Ja"
+                },
+                {
+                    "Nein": "Nein"
+                }
+            ],
+            "description": "Gesperrte Artikel ausblenden",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "Einkauf \u0026 Artikelverwaltung \u0028PIM\u0029",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

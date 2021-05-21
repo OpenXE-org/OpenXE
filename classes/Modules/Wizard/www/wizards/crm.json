@@ -1,0 +1,328 @@
+{
+    "key": "crm",
+    "category": "master-data",
+    "title": "CRM pflegen",
+    "sub_title": "Jeder Kundenkontakt wird hier zentral dokumentiert: Termine, Wiedervorlagen, Telefongespräche und vieles mehr. In deinem neuen Ticketsystem kannst du jegliche Kundenkommunikation bündeln.",
+    "description": "Jeder Kundenkontakt wird hier zentral dokumentiert: Termine, Wiedervorlagen, Telefongespräche und vieles mehr. In deinem neuen Ticketsystem kannst du jegliche Kundenkommunikation bündeln.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "adresse": [
+            "list",
+            "edit",
+            "brief"
+        ],
+        "ticket": [
+            "offene"
+        ],
+        "wiedervorlage": [
+            "list"
+        ],
+        "webmail": [
+            "list"
+        ],
+        "kalender": [
+            "list"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=adresse&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/wKZOdrllmJs"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "walkthrough_address": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_address": {
+                            "position": 1,
+                            "link": "./index.php?module=adresse&action=list",
+                            "title": "CRM Übersicht",
+                            "caption": "Klicke in der Menüspalte auf das Stift Icon.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "adressetabelle",
+                                        "css_selector": "> tbody > tr:first-child a",
+                                        "href*": "module=adresse&action=edit"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "go_to_crm_menu": {
+                    "completed": false,
+                    "steps": {
+                        "click_crm": {
+                            "position": 1,
+                            "title": "CRM Übersicht",
+                            "caption": "Klicke auf CRM um zur CRM Übersicht zu gelangen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "menuEntryadressebrief"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "fill_note":{
+                    "completed": false,
+                    "steps": {
+                        "click_plus": {
+                            "position": 1,
+                            "title": "Notiz anlegen",
+                            "caption": "Klicke auf das + um eine neue Notiz anzulegen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "css_selector": "[onclick^=briefAnlegen]"
+                                    },
+                                    "parent": {
+                                        "node_name": "li",
+                                        "class": "anlegen_notiz"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "insert_subject": {
+                            "position": 2,
+                            "title": "Betreff eintragen",
+                            "caption": "Trage den Betreff der Notiz ein.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "betreff",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "table",
+                                        "class": "adresse_brief_tab"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_text": {
+                            "position": 3,
+                            "title": "Text eintragen",
+                            "caption": "Gib einen Text für die Notiz ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "div",
+                                        "id": "cke_content"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "adresse_brief_anlegen"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "save_note": {
+                            "position": 4,
+                            "title": "Notiz speichern",
+                            "caption": "Klicke auf Speichern / Schließen um deine Notiz zu speichern.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "class": "brief_save_close"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "adresse_brief_anlegen"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "walkthrough_tickets": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_tickets": {
+                            "position": 1,
+                            "link": "./index.php?module=ticket&action=offene",
+                            "title": "Tickets",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Tickets",
+                                            "text": "Ob über Email oder deine Marktplätze: Wenn deine Kunden dich kontaktieren erscheint ein Ticket im Ticketsystem, welches du nun selbst bearbeiten oder an jemanden zuweisen kannst.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "walkthrough_resubmission": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_resubmission": {
+                            "position": 1,
+                            "link": "./index.php?module=wiedervorlage&action=list",
+                            "title": "Wiedervorlagen",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Wiedervorlagen",
+                                            "text": "Die Wiedervorlage-Funktion von xentral ermöglicht euch, sich an Aufgaben erinnern zu lassen. Sie können verschiedenen Mitarbeitern zugewiesen werden. Später kannst du sie kategorisieren und für alle möglichen Prozesse verwenden, z.B im Vertrieb für den Angebotsprozess bis hin zum Verkauf.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "walkthrough_emails": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_emails": {
+                            "position": 1,
+                            "link": "./index.php?module=webmail&action=list",
+                            "title": "E-Mails",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "E-Mails",
+                                            "text": "Hier findest du eine Archiv-Übersicht über alle E-Mails, die du erhalten hast.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "walkthrough_calendar": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_calendar": {
+                            "position": 1,
+                            "link": "./index.php?module=kalender&action=list",
+                            "title": "Kalender",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Kalender",
+                                            "text": "Der Kalender zeigt dir deine eigenen Termine sowie die deiner Mitarbeiter. Des Weiteren siehst du die dir zugewiesenen Aufgaben und erhältst einen schnellen Überblick darüber, welche Kollegen im Urlaub oder abwesend sind.<br /><br />Übrigens: Dein xentral Kalender lässt sich auch mit einem Google Calendar synchronisieren.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

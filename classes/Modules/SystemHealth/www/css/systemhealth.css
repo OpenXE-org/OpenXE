@@ -1,0 +1,56 @@
+img.statusicon {
+    width:20px;
+}
+
+fieldset  table tr td:nth-child(1) {
+    width: 170px;
+}
+
+fieldset  table tr td:nth-child(2) {
+    width: 35px;
+}
+fieldset  table tr td:nth-child(4) {
+    width: 35px;
+    white-space: nowrap;
+}
+fieldset  table tr td:nth-child(5) {
+    width: 45px;
+}
+fieldset  table
+{
+    width:100%;
+}
+
+input#reset {
+    float: right !important;
+}
+
+span.systemhealthnotification {
+    height: 16px;
+    width:16px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 16px;
+    top: -7px;
+    border-radius: 8px;
+    position: relative;
+    font-weight: bold;
+    border: 1px solid;
+    margin-right:3px;
+    cursor: pointer;
+}
+
+img.reset {
+    cursor: pointer;
+}
+
+span.systemhealthnotification.inactive {
+    color:#bbb;
+    border-color: #bbb;
+}
+
+span.systemhealthnotification.active {
+    color:var(--warning);
+    border-color: var(--warning);
+}

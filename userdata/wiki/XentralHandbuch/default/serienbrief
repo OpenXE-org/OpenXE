@@ -1,0 +1,123 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level1"><div class="li"><a href="#serienbriefe_drucken">Serienbriefe drucken</a></div>
+<ul class="toc">
+<li class="clear">
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#serienbriefe_ueber_den_adressfilter_drucken">Serienbriefe über den Adressfilter drucken</a></div></li>
+<li class="level3"><div class="li"><a href="#serienbriefe_ueber_den_appstore_drucken">Serienbriefe über den Appstore drucken</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#uebersicht">Übersicht</a></div></li>
+<li class="level4"><div class="li"><a href="#filter">Filter</a></div></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h1  id="serienbriefe_drucken">Serienbriefe drucken</h1>
+<div class="level1">
+
+<p>
+Mit dem Modul Serienbriefe können Sie in Verbindung mit dem extra Modul <a href="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  title="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  rel="nofollow">Layoutvorlagen</a> einen vorgefertigten Brief erstellen, den Sie danach mit dynamischen Adress-Variablen für ausgewählte Adressen befüllen und drucken können.
+</p>
+
+<p>
+Stammdaten → Adressen → Adressfilter
+</p>
+
+<p>
+<strong>Hinweis:</strong> Das Modul Serienbrief gibt es in unserem <a href="http://shop.wawision.de/sonstige/wawision-serienbrief.html?number=701434"  title="http://shop.wawision.de/sonstige/wawision-serienbrief.html?number=701434"  rel="nofollow">Shop</a>. <br/>
+
+<strong>Stand:</strong> September 2017
+</p>
+
+<p>
+Stammdaten → Adressen → Adressfilter oder <br/>
+
+Administration → AppStore → Serienbriefe
+</p>
+
+<p>
+Zuerst benötigen Sie für den Serienbrief eine Vorlage. <br/>
+
+Eine Anleitung wie man Layoutvorlagen erstellt finden Sie hier: <a href="http://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  title="wawision:kurzanleitung_layout_generator">Layout Generator</a>
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="serienbriefe_ueber_den_adressfilter_drucken">Serienbriefe über den Adressfilter drucken</h3>
+<div class="level3">
+
+<p>
+Stammdaten → Adressen → Adressenfilter
+</p>
+
+<p>
+Sie können Serienbriefe verschicken, indem sie im Adressfilter das Aktionsmenü „Serienbrief drucken“ wählen. <br/>
+
+<a href="http://helpdesk.wawision.de/lib/exe/fetch.php?media=wawision:serienbrief_drucken_1.png"  title="wawision:serienbrief_drucken_1.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=700&amp;tok=6bd494&amp;media=wawision:serienbrief_drucken_1.png"  alt="" width="700" /></a>
+</p>
+
+<p>
+Im Pop-Up wählen Sie die davor erstellte Layoutvorlage und Ihren Drucker aus. <br/>
+
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_serienbrief&amp;media=wawision:serienbrief_drucken_2.png"  title="wawision:serienbrief_drucken_2.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=serienbrief&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Ab Version 18.1 gibt es hier zusätzlich eine Option für „Sammel-PDF“. Dadurch werden alle PDFs der Serienbriefe in einem PDF nacheinander gespeichert.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="serienbriefe_ueber_den_appstore_drucken">Serienbriefe über den Appstore drucken</h3>
+<div class="level3">
+
+<p>
+Administration → AppStore → Serienbriefe
+</p>
+
+</div>
+
+<h4 id="uebersicht">Übersicht</h4>
+<div class="level4">
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_serienbrief&amp;media=wawision:serienbriefe_uebersicht.png"  title="wawision:serienbriefe_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=serienbrief&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Die Option für das Sammel-PDF kam ab Version 18.1 hinzu.
+</p>
+
+</div>
+
+<h4 id="filter">Filter</h4>
+<div class="level4">
+
+<p>
+Um die Auswahl einzuschränken kann man auf das Filter-Icon klicken: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_serienbrief&amp;media=wawision:serienbrief_filter.png"  title="wawision:serienbrief_filter.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=serienbrief&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

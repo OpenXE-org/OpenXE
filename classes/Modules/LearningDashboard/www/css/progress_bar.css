@@ -1,0 +1,44 @@
+/* Progress bar
+================================== */
+.progress-bar {
+    margin: 10px;
+    padding: 0;
+    height: 4px;
+    border-radius: 5px;
+    overflow: visible;
+    position: relative;
+    background-color: var(--inactive-grey);
+}
+.progress-bar .progress {
+    width: 100%;
+    margin: 0;
+    height: 4px;
+    background: var(--brand-violet);
+    position: relative;
+    transition: all .3s;
+    border-radius: 5px;
+}
+
+.progress-bar.complete .progress {
+    background: var(--xentral-signature-green);
+}
+
+.progress-bar.complete .progress-bar-percentage.top{
+    color: var(--xentral-signature-green);
+}
+
+.progress-bar .progress-bar-percentage {
+    position: absolute;
+    top: -4px;
+    color: var(--xentral-signature-violet);
+}
+
+.progress-bar .progress-bar-percentage {
+    left: 110%;
+    top: -5px;
+}
+
+.progress-bar .progress-bar-percentage.top {
+    left: calc(50% - 13px);
+    top: -15px;
+}

@@ -1,0 +1,129 @@
+img.submenusettingsicon {
+    top:5px;
+    position: relative;
+}
+
+fieldset.white{
+    background-color: white;
+}
+@media (min-width: 768px) {
+    fieldset.leftcontent {
+
+    }
+
+    td.rightcontent {
+        width: 25%;
+        vertical-align: top;
+    }
+    td.rightcontent.list {
+        width: 15%;
+    }
+    td.leftcontent {
+        width: 75%;
+        vertical-align: top;
+    }
+    td.leftcontent.list {
+        width: 85%;
+    }
+}
+
+
+table.wikiright {
+    width: 100%;
+}
+
+tr.hidden,img.hidden {
+    display: none;
+}
+
+td.leftcontent div#wikicontent {
+    max-width: 75vw;
+}
+
+td.leftcontent.list div#wikicontent {
+    max-width: 85vw;
+}
+
+table#tabwikiedit
+{
+    width: 100%;
+}
+
+tr.labeltr td:nth-child(2){
+    width:90%;
+}
+
+img.workspacesites {
+    width:20px;
+}
+
+table.wikiright td.hidden{
+    display: none;
+}
+
+div#cke_popupanswer {
+    min-width: 870px;
+}
+
+input#popupquestion {
+    min-width: 715px;
+}
+div#wikisubmenu > ul {
+    min-height: 35px;
+}
+
+#wikicontent {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+#wikicontent.wikilistcontent {
+    max-height: none;
+}
+
+div#wikisubmenu div.rTabSelect label {
+    font-weight: bold;
+}
+
+table.wikilabel
+{
+    display:inline-block;
+    position: relative;
+    height:22px;
+}
+table.wikilabel,
+table.wikilabel td
+{
+    margin-top:0;
+    padding-top:0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+div#wikicontent.wikilistcontent {
+    padding-left:15px;
+}
+div#wikicontent.wikilistcontent div,
+div#wikicontent.wikilistcontent article
+{
+    max-width: 90vw;
+}
+
+div#wikicontent.wikilistcontent img {
+    display: block;
+    max-width: 90vw;
+}
+#tabwikilist
+{
+   width: 200px;
+}
+#tabwikilist td {
+    white-space: nowrap;
+}
+
+div#wikicontent.wikilistcontent h1,
+div#wikicontent.wikilistcontent h2,
+div#wikicontent.wikilistcontent h3
+{
+    padding-left: 0;
+}

@@ -1,0 +1,1 @@
+Da der Artikel in der POS vorhanden sein muss, wenn der Kunde damit an der Kasse erscheint - sonst k&ouml;nnte man diesen nicht abkassieren. Die POS bucht in diesem Fall den Artikel aus und mit der selben Menge danach wieder ins Lager - damit passt der errechnete Bestand wieder.

@@ -1,0 +1,121 @@
+{
+    "name": "118 - Unvollst\u00e4ndige Adressen",
+    "description": "Adressen mit fehlenden Werten in bestimmten Feldern.",
+    "project": 0,
+    "sql_query": "SELECT\r\na.id AS id,\r\n a.name AS name,\r\n'{TYP}' AS typ,\r\n IF('{TYP}'='Kunde',a.kundennummer,\r\n  IF('{TYP}'='Lieferant', a.lieferantennummer,\r\n   a.mitarbeiternummer)) AS nummer,\r\n'{FELD}' AS fehlt\r\nFROM adresse AS a\r\nWHERE a.geloescht=0 AND (a.{FELD}='' OR a.{FELD}='0000-00-00' OR a.{FELD} IS NULL) AND \r\n IF('{TYP}'='Kunde',a.kundennummer<>'',\r\n  IF('{TYP}'='Lieferant',a.lieferantennummer<>'',\r\n   a.mitarbeiternummer<>''))",
+    "columns": [
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "typ",
+            "title": "Typ",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "nummer",
+            "title": "Nummer",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "fehlt",
+            "title": "Fehlendes Feld",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "id",
+            "title": "ID",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Typ",
+            "default_value": "kunde",
+            "displayname": "Eingrenzen auf Typ",
+            "options": [
+                {
+                    "Kunde": "Kunde"
+                },
+                {
+                    "Lieferant": "Lieferant"
+                },
+                {
+                    "Mitarbeiter": "Mitarbeiter"
+                }
+            ],
+            "description": "Adresstyp auf den die Suche eingegrenzt werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Feld",
+            "default_value": "email",
+            "displayname": "Gesuchtes Feld",
+            "options": [
+                {
+                    "abteilung": "abteilung"
+                },
+                {
+                    "unterabteilung": "unterabteilung"
+                },
+                {
+                    "ansprechpartner": "ansprechpartner"
+                },
+                {
+                    "strasse": "strasse"
+                },
+                {
+                    "ort": "ort"
+                },
+                {
+                    "plz": "plz"
+                },
+                {
+                    "telefon": "telefon"
+                },
+                {
+                    "telefax": "telefax"
+                },
+                {
+                    "email": "email"
+                },
+                {
+                    "ustid": "ustid"
+                },
+                {
+                    "adresszusatz": "adresszusatz"
+                },
+                {
+                    "iban": "iban"
+                },
+                {
+                    "geburtstag": "geburtstag"
+                }
+            ],
+            "description": "Feld nach dem gesucht werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "CRM \u0026 Vertrieb",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "name": "097 - Verkaufszahlen Artikel pro Kunde",
+    "description": "Aufsummierte Menge aller gekauften Artikel je Kunde, basierend auf Rechnungen mit dem Status versendet innerhalb eines bestimmten Zeitraums.",
+    "project": 0,
+    "sql_query": "SELECT \r\nr.kundennummer, \r\nr.name, \r\nSUM(rp.menge) AS menge \r\nFROM rechnung r \r\nLEFT JOIN rechnung_position rp ON r.id = rp.rechnung \r\nWHERE r.status = 'versendet' AND IF('{VON}'=0,1,r.datum>='{VON}') AND IF('{BIS}'=0,1,r.datum<='{BIS}')\r\nGROUP BY r.adresse",
+    "columns": [
+        {
+            "key_name": "r.kundennummer",
+            "title": "Kundennummer",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "r.name",
+            "title": "Name",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "",
+            "alignment": "right",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "Einkauf \u0026 Artikelverwaltung \u0028PIM\u0029",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

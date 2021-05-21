@@ -1,0 +1,218 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#arbeitsnachweis">Arbeitsnachweis</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#arbeitsnachweise_uebersicht">Arbeitsnachweise Übersicht</a></div></li>
+<li class="level3"><div class="li"><a href="#arbeitsnachweis_neu_anlegen">Arbeitsnachweis neu anlegen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#positionen_einfuegen">Positionen einfügen</a></div></li>
+<li class="level4"><div class="li"><a href="#arbeitsnachweis_dokument">Arbeitsnachweis Dokument</a></div></li>
+<li class="level4"><div class="li"><a href="#aktion_ausfuehren">Aktion ausführen</a></div>
+<ul class="toc">
+<li class="level5"><div class="li"><a href="#leerformular">Leerformular</a></div></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#abschluss_von_arbeitsnachweisen">Abschluss von Arbeitsnachweisen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#ueberfuehren_in_auftrag_rechnung">Überführen in Auftrag/ Rechnung</a></div></li>
+<li class="level4"><div class="li"><a href="#status_setzen">Status setzen</a></div>
+<ul class="toc">
+<li class="level5"><div class="li"><a href="#status_setzenabgerechnet">Status setzen: abgerechnet</a></div></li>
+<li class="level5"><div class="li"><a href="#status_setzenversendet">Status setzen: versendet</a></div></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="arbeitsnachweis">Arbeitsnachweis</h2>
+<div class="level2">
+
+<p>
+Buchhaltung → Arbeitsnachweis → <a href="http://helpdesk.wawision.de/lib/exe/fetch.php?media=wawision:icon_neu.png"  title="wawision:icon_neu.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=35&amp;tok=2e07df&amp;media=wawision:icon_neu.png"  alt="" width="35" /></a>
+</p>
+
+<p>
+Über das Modul Arbeitsnachweis können Dokumente für reine Arbeitsstunden erstellt werden. 
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="arbeitsnachweise_uebersicht">Arbeitsnachweise Übersicht</h3>
+<div class="level3">
+
+<p>
+Alle Arbeitsnachweise sind in der Übersicht zu sehen und können über die Suche gefiltert werden. 
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=1"  title="wawision:arbeitsnachweis_001.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=1"  alt="" /></a>
+</p>
+
+
+</div>
+
+<h3 class="sectionedit3" id="arbeitsnachweis_neu_anlegen">Arbeitsnachweis neu anlegen</h3>
+<div class="level3">
+
+<p>
+Ein Arbeitsnachweis kann über „NEU“ angelegt werden.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=2"  title="wawision:arbeitsnachweis_1001.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=2"  alt="" /></a>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=3"  title="wawision:arbeitsnachweis_1002.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="positionen_einfuegen">Positionen einfügen</h4>
+<div class="level4">
+
+<p>
+Zum Einfügen von Positionen klicken Sie in das erste Feld. Hier kann nach Mitarbeitern gesucht werden. Klicken Sie die Person an und wechseln Sie mit Tab oder per Mausklick in das nächste Feld. Geben Sie hier den Ort ein, anschließend das Datum und die Zeit. Mit Enter kann die Buchung eingefügt werden. Optional mit dem Button „Einfügen“. 
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=4"  title="wawision:arbeitsnachweis_002.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="arbeitsnachweis_dokument">Arbeitsnachweis Dokument</h4>
+<div class="level4">
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=5"  title="wawision:arbeitsnachweis_003.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=5"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="aktion_ausfuehren">Aktion ausführen</h4>
+<div class="level4">
+
+<p>
+Folgende Aktionen können im Arbeitsnachweis ausgeführt werden:
+</p>
+<ul>
+<li class="level1"><div class="li"> Arbeitsnachweis kopieren</div>
+</li>
+<li class="level1"><div class="li"> Arbeitsnachweis stornieren</div>
+</li>
+<li class="level1"><div class="li"> Arbeitsnachweis abschicken</div>
+</li>
+<li class="level1"><div class="li"> Arbeitsnachweis Leerformular</div>
+</li>
+</ul>
+
+</div>
+
+<h5 id="leerformular">Leerformular</h5>
+<div class="level5">
+
+<p>
+Der Ausdruck eines Leerformulars auf eine Adresse oder auch auf einen leeren Arbeitsnachweis ist über die Aktion „Arbeitsnachweis Leerformular
+“ möglich.
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=6"  title="wawision:arbeitsnachweis_005.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=6"  alt="" /></a>
+</p>
+
+
+</div>
+
+<h3 class="sectionedit4" id="abschluss_von_arbeitsnachweisen">Abschluss von Arbeitsnachweisen</h3>
+<div class="level3">
+
+<p>
+Ein Arbeitsnachweis/ Stundenübersicht kann abgerechnet, versendet oder in einen Auftrag/ eine Rechnung überführt werden. 
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=7"  title="wawision:arbeitsnachweis_006.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=7"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="ueberfuehren_in_auftrag_rechnung">Überführen in Auftrag/ Rechnung</h4>
+<div class="level4">
+
+<p>
+Hierbei wird ein Artikel z.B. ein Stundensatz angegeben. Folgende Optionen sind möglich:
+</p>
+<ul>
+<li class="level1"><div class="li"> jeden Mitarbeiter aufsummiert als einzelne Position</div>
+</li>
+<li class="level1"><div class="li"> alle Positionen 1:1</div>
+</li>
+<li class="level1"><div class="li"> Arbeitsnachweis(e) abrechnen als → neuen Auftrag oder neue Rechnung</div>
+</li>
+<li class="level1"><div class="li"> als Artikel → Artikel auswählen, der für die Positionen verwendet werden soll z.B. Stundensatz</div>
+</li>
+</ul>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=8"  title="wawision:arbeitsnachweis_004.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=8"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="status_setzen">Status setzen</h4>
+<div class="level4">
+
+<p>
+Wird der Arbeitsnachweis nicht über das System abgesendet oder abgerechnet, kann dieser auch durch eine Statusänderung umgestellt werden:
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=7"  title="wawision:arbeitsnachweis_006.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=arbeitsnachweis&fileid=7"  alt="" /></a>
+</p>
+
+</div>
+
+<h5 id="status_setzenabgerechnet">Status setzen: abgerechnet</h5>
+<div class="level5">
+
+<p>
+Der Status kann auch manuell gesetzt werden. 
+Hierzu die Arbeitsnachweise anhaken und den Button „als abgerechnet markieren“ klicken.
+</p>
+<ul>
+<li class="level1"><div class="li"> der Status wird auf „abgerechnet“ gesetzt</div>
+</li>
+</ul>
+
+</div>
+
+<h5 id="status_setzenversendet">Status setzen: versendet</h5>
+<div class="level5">
+
+<p>
+Der Status kann auch manuell gesetzt werden. 
+Hierzu die Arbeitsnachweise anhaken und den Button „als versendet markieren“ klicken.
+</p>
+<ul>
+<li class="level1"><div class="li"> der Status wird auf „versendet“ gesetzt</div>
+</li>
+</ul>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

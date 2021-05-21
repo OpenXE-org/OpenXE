@@ -1,0 +1,386 @@
+/*
+dark    #3FB9CE
+bright  #B3E4EB
+*/
+  .no-close .ui-dialog-titlebar-close {
+    display: none;
+  }
+
+  #tabs-1, #tabs-2 { padding: 0; }
+
+  #ob1, #ob2, #ob4 { height: 119px; }
+  #ob1 {width: 180px; margin-right: 10px;min-height: 144px;  position: relative; } /* height:125px; width:264px */
+  #ob2 {width: 200px; min-height: 144px; } /*height:125px;width:380px*/
+  #ob3 {max-width: 320px; padding: 0; }
+  #un2bottom {max-width: 308px; padding: 0; }
+
+  @media screen and (min-width: 1182px){
+    #ob3 {white-space:nowrap;}
+    
+  }
+  @media screen and (max-width: 1181px){
+    #sidebar {
+      display: none;
+    }
+
+    #main.fixed .menu-wrapper {
+      width: 100%;
+    }
+
+    #main {
+      padding-left: 0;
+    }
+
+    #header {
+      display: none;
+    }
+
+    #page_container {
+      position: relative;
+      top: 0;
+    }
+
+    @media screen and (max-width: 650px){
+      #page_container {
+        position: relative;
+        top: 5px;
+      }
+    }
+
+    #payment,#retyp {
+      display: block;
+    }
+
+    #payment label, #retyp label {
+      min-width:77px;
+    }
+
+    .fcont {
+      display: block;
+      width: 100%;
+      max-width: 95vw;
+      padding: 0;
+      margin: 0 0 0 2vw;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+  }
+
+
+  @media screen and (min-width: 1142px){
+    #ob3 {width: 370px; } 
+    #un2bottom {width: 308px; }
+  }
+  
+  @media screen and (min-width: 1182px){
+     #ob3 {width: 420px; } 
+     #un2bottom {width: 308px; }
+  }
+  
+  #ob3 {width: 450px; }
+  #ob4 {width: 210px; min-height: 144px; margin-right: 10px;}
+  
+  /* -14 padding */
+  #un1 { width: 630px; float: left; margin-right: 10px; margin-bottom: 10px; }
+  #un2 { max-width: 460px;min-width:308px; overflow: hidden; float: left;}
+
+  .ob3_1 {
+    background: #ececec;
+    margin: -5px -5px 0 -5px;
+    padding: 10px 0;
+  }
+
+  .fcont {
+    clear: both;
+    margin: 0 0 0 10px;
+  }
+
+  #tabs-1 .fcont:last-child {
+    padding-bottom: 10px;
+  }
+
+  .fcont fieldset {
+    float: left;
+    margin: 10px 0 0 0;
+  }
+  #un1 fieldset, #un2 fieldset {  float: none; }
+  
+  /** GLOBALS **/
+  .fcont #ob3 {
+    border-top: 0px;
+    background: #FFF;
+  }
+  
+  .fcont #ob3 legend {
+    float: left;
+  }
+  .fcont #ob3 input {
+    padding: 1px;
+    font-size: 11px;
+  }
+  
+  #loadkass td {
+    white-space: nowrap;
+  }
+
+  /** OB1 **/
+  #kanr {
+    font-size: 14px;
+  }
+  
+  .storesale {
+    width: 94%;
+    margin: 0 3%;
+    background: #93C119;
+    border-radius: 5px;
+  }
+  #teilstornouebernehmen{
+    /*width: 100%;*/
+    background: #93C119;
+    border-radius: 5px;
+    height: 24px;
+    padding-bottom: 6px;
+    padding-left:2px;
+    padding-right:2px;
+  }
+  
+  #stornoabbrechen,#abbrechnenbutton,#teilstornobutton,#komplettstornobutton
+   {
+    display:none;
+  }
+  
+  #belegladen {
+    width: 96%;
+    background: #93C119;
+    border-radius: 5px;
+    margin-top:8px;
+  }
+  
+  #vorgangladen{
+    width: 94%;
+    margin: 8px 3%;
+    background: #93C119;
+    border-radius: 5px;
+  }
+  #vorgangneu ,#ueberkasseabrechnen,#teilstorno,#komplettstorno{
+    background: #93C119;
+    border-radius: 5px;
+    margin-top: 3px;
+    padding-top: 3px;
+    padding-left:8px;
+    padding-right:8px;
+  }
+  #vorgangneu {
+    float:right;
+  }
+  /*.nl { background: #E2E2E2; }
+  
+  #trad, #laufk {
+    padding: 5px;
+    height: 80px;
+  }
+  
+  #laufk {
+    width: 220px;
+    display: none;
+    resize: none;
+    font-size: 11px;
+    background: fuchsia;
+  }
+  */
+  
+  
+  /** UN1, WARENKORB **/
+  #wk {
+    background: #FFF;
+    width: 99%;
+    font-size: 11px;
+  }
+  #wk input {
+    padding: 1px;
+    font-size: 11px;
+  }
+  
+  #wk tbody tr:nth-child(odd) {
+    background: #EEE;
+  }
+  
+  #wk .preis, #wk .gesamt, #wk .rabatt {
+    text-align: right;
+  }
+  #wk .preis {
+    padding-right: 4px;
+  }
+  /** **/
+
+  #un1bottom {
+    padding: 0;
+  }
+  
+  #un1 #un1bottom fieldset { float: left; }
+  
+  #un1bottom textarea {
+    resize: none;
+    height: 78px;
+  }
+
+  #inbem { width: 340px;}
+  #freit { width: 215px;} 
+  /** **/
+  
+  .rbutton {
+    font-size: 14px;
+    text-align: center;
+    display: inline-block;
+  }
+  
+  #retyp input, #payment input, #un2bottom input {
+    display: none;
+  }
+  #retyp label, #payment label, #un2bottom label {
+    background: #B3E4EB;
+    float: left;
+    display: block;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 31%;
+    text-align: center;
+    font-size: 14px;
+    margin: 0 5px 5px 0;
+  }
+  #un2bottom label {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  #ob3 label {
+    min-width:81px;
+  }
+  
+  #retyp input:checked + label , #payment input:checked + label, #un2bottom input:checked + label {
+    background: #3FB9CE;
+    color: #F2F2F2;
+    font-weight: bold;
+  }
+  
+  @media screen and (max-width: 1180px){
+    #ob3 label {
+      font-size:12px;
+    }
+
+    #un2 div.rbutton {width:44%;}
+    #un2 div#belegladen {width:96%;}
+  }
+
+@media screen and (max-width: 1011px){
+    #ob3 {
+      width: 100%;
+      max-width: 486px;
+      margin-top: 15px;
+    }
+    #ob3 label {
+      max-width:90px;
+      font-size:12px;
+    }
+  #ob3 div#un2bottom label {max-width:100%;}
+  #retyp { display:block;}
+  #un2bottom {
+    max-width: 470px;
+  }
+}
+  
+  
+  /** UN2 **/
+  #totals div.of {
+    overflow: hidden;
+    background: #FFF;
+  }
+  
+  
+  #totals > div {
+    border-bottom: 1px solid #333;
+  }
+
+  #totals > div:last-child {
+    border-bottom: 0;
+  }
+
+  #totals div {
+    padding: 4px 4px;
+  }
+  
+  #totals div.rbutton, div.rbutton {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: #FFF;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  #trabatt, #trabatteur {
+    color: #C22;
+  }
+  
+  
+  #totals #totalrow {
+    background: #D4E5A1;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  #abbrechenbutton {
+    background: #93C119;
+    width: 46%;
+    border-radius: 5px;
+  }
+  
+  #abortsale{
+    background: #999;
+    width: 37%;
+    margin-top: 5px;
+    border-radius: 5px;
+  }
+  
+  #stornoabbrechen,#stornobutton{
+    background: #E73028;
+    width: 46%;
+    border-radius: 5px;
+  }
+  #abortsale
+   {
+    float:right; 
+  }
+  
+  #finsale,#abbrechnenbutton {
+    width: 46%;
+    background: #93C119;
+    border-radius: 5px;
+  }
+  #teilstornobutton,#komplettstornobutton
+    {
+    width: 46%;
+    background: #E73028;
+    border-radius: 5px;    
+  }
+  
+.rechnungsadresse_container {
+  height: 80px;
+  max-height: 80px;
+  overflow-y: hidden;
+}
+  
+#adjcust {
+  position: absolute;
+  left: 0;
+  bottom: 5px;
+}
+  
+input.posNormInput,
+select.posNormInput
+textarea.posNormInput {
+  width: 220px;
+}
+
+#trinkgeld.grey + label {
+  background-color: #ececec;
+}

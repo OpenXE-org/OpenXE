@@ -1,0 +1,115 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#kasse_scannen">Kasse Scannen</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#verkauf">Verkauf</a></div></li>
+<li class="level3"><div class="li"><a href="#nachschub">Nachschub</a></div></li>
+<li class="level3"><div class="li"><a href="#einstellungen">Einstellungen</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="kasse_scannen">Kasse Scannen</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul Kassescannen können Sie auf einer mobilen Oberfläche (für Tablet / Handscanner) mit einem Barcodescanner Artikel-Codes (Art.Nr. oder EAN) scannen und automatisch ausbuchen lassen. Alle ausgebuchten Artikel landen in einer separaten Liste für den Nachschub und können dort bequem aus dem Standard-/Nachschublager wieder in den Verkaufsraum umgelagert werden.
+</p>
+
+<p>
+Administration → AppStore → Kassescannen
+</p>
+
+<p>
+<strong>Hinweis:</strong> Das Modul Kassescannen ist ein extra Modul <br/>
+
+<strong>Stand:</strong> März 2017
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="verkauf">Verkauf</h3>
+<div class="level3">
+
+<p>
+In der Verkaufsoberfläche haben Sie die Möglichkeit aus einem in den Einstellungen des Moduls ausgewählten Lagers auszubuchen.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=1"  title="wawision:kassescannen_verkauf_1.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+Der Cursor ist automatisch im Artikelfeld gesetzt. Wenn Sie mehr als ein Stück vom selben Artikel auslagern wollen, können Sie mit den „+“ und „-“ Button die Menge abändern, danach wieder auf das Artikelfeld gehen und den Barcode des Artikels scannen. Die entsprechende Menge wird dann ausgebucht.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=2"  title="wawision:kassescannen_verkauf_2.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+Nach dem Scannen wird der hinterlegte Verkaufspreis (in brutto) angezeigt und der Artikel ausgelagert.
+</p>
+
+<p>
+<strong>Hinweis:</strong> Mit dem „Rückgängig“ Button können Sie den Vorgang wieder annulieren und der Artikel wird wieder zurück gebucht.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="nachschub">Nachschub</h3>
+<div class="level3">
+
+<p>
+Das „Nachschub“ Feature ist dazu gedacht, dass alle gescannten Artikel des Verkaufslagers in einer Liste gespeichert werden, damit man diese Artikel am Ende des Tages / zwischendurch aus den Standardlagern  in das Verkaufsraum-Lager wieder auffüllen kann. 
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=3"  title="wawision:kassescannen_nachschub.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+Auch hier können Sie die Artikel einfach wieder von der Liste „wegscannen“ oder davor eine Menge angeben. Alternativ ist es auch Möglich den „OK“ Button unterhalb der Liste zu drücken, um die gesamte Liste zu leeren und alle Artikel in das Verkaufslager umzulagern. 
+</p>
+
+<p>
+Für den Umlagerungsvorgang sucht WaWision zuerst das Standardlager des Artikels. Falls dort keine Artikel vorhanden sind, wählt WaWision das Lager mit der niedrigsten Menge des Artikels zuerst. Umgelagert wird immer in das in den Kassescannen-Einstellungen bestimmten Verkaufslager. 
+</p>
+
+<p>
+<strong>Hinweis:</strong> Beim Umlagern werden keine Chargen/MHDs berücksichtigt.  
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="einstellungen">Einstellungen</h3>
+<div class="level3">
+
+<p>
+Hier kann, wie oben beschrieben, das auszulagernde Lager für den Verkaufsraum angegeben werden.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=4"  title="wawision:kassescannen_einstellungen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=kassescannen&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

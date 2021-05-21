@@ -1,0 +1,117 @@
+{
+    "name": "083 - Liste Kunden, die seit X Tagen nichts mehr bestellt haben",
+    "description": "Gibt alle Kunden aus f\u00fcr die seit einem bestimmten Zeitpunkt kein Auftrag mehr erstellt wurde. Kunden die noch keine Auftr\u00e4ge haben werden nicht beachtet, stornierte und noch nicht freigegebene Auftr\u00e4ge werden ignoriert.",
+    "project": 0,
+    "sql_query": "SELECT \r\na.kundennummer, \r\na.name, \r\na.ansprechpartner, \r\na.email,\r\na.telefon, \r\nmax(auf.datum) AS datum, \r\nIF(a.marketingsperre = '1', 'ja', 'nein') AS marketingsperre \r\nFROM adresse a \r\nLEFT JOIN auftrag auf ON a.id = auf.adresse \r\nWHERE auf.status != 'angelegt' AND auf.status != 'storniert' AND DATE_SUB(CURDATE(), INTERVAL {TAGE} DAY) >= auf.datum AND a.geloescht = 0 \r\nGROUP BY a.id",
+    "columns": [
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "ansprechpartner",
+            "title": "Ansprechpartner",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "telefon",
+            "title": "Telefon",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "email",
+            "title": "Email",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "datum",
+            "title": "Zeitpunkt letzten Auftrags",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "format_statement": null
+        },
+        {
+            "key_name": "marketingsperre",
+            "title": "Marketingsperre",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Tage",
+            "default_value": "30",
+            "displayname": "Tage seit denen nichts mehr bestellt wurde",
+            "options": [],
+            "description": "Erlaubt genauere Steuerung der zu beachtenden Kunden",
+            "editable": true,
+            "control_type": ""
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

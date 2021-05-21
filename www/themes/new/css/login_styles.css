@@ -1,0 +1,354 @@
+
+@font-face {
+    font-family: 'Inter';
+    font-style:  normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/Inter-Regular.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-Regular.woff?v=3.13') format("woff");
+}
+@font-face {
+    font-family: 'Inter';
+    font-style:  italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/Inter-Italic.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-Italic.woff?v=3.13') format("woff");
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style:  normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/Inter-Bold.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-Bold.woff?v=3.13') format("woff");
+}
+@font-face {
+    font-family: 'Inter';
+    font-style:  italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../themes/new/fonts/Inter-BoldItalic.woff2?v=3.13') format("woff2"),
+    url('../themes/new/fonts/Inter-BoldItalic.woff?v=3.13') format("woff");
+}
+
+
+html {
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+
+img {
+    width: auto;
+    height: auto;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+body {
+    margin: 0 0;
+    padding: 0 0;
+    background: #fff;
+    font: 12px 'Inter', Verdana, Arial, sans-serif;
+}
+#login-container {
+    display: flex;
+    overflow: hidden;
+    flex-flow: row wrap;
+}
+
+
+/* Slider Links */
+
+#login-slider-wrapper {
+    width: 61.13%;
+    background: pink;
+    position: relative;
+}
+#login-slider {
+    position: fixed;
+    width: 61.13%;
+    height: 100vh;
+}
+#login-slider .slide {
+    height: 100vh;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    position: relative;
+}
+
+#login-slider .slide a.btn {
+    position: absolute;
+    bottom: 13vh;
+    right: 10%;
+    width: auto;
+    padding: 10px 20px;
+}
+#login-slider .slick-dots {
+    position: absolute;
+    bottom: 5%;
+    left: 5%;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
+}
+#login-slider .slick-dots > li {
+    display: inline-block;
+    margin-right: 11px;
+}
+
+#login-slider .slick-dots > li > span {
+    width: 36px;
+    display: inline-block;
+    height: 3px;
+    background: #fff;
+    opacity: 0.15;
+    transition: opacity .4s;
+    cursor: pointer;
+}
+#login-slider .slick-dots > li.slick-active > span {
+    opacity: 1;
+}
+
+/* Button. */
+
+.btn {
+    border-radius: 5px;
+    background-color: #2DCA73;
+    color: #fff;
+    font-weight: normal;
+    font-size: 14px;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+    text-decoration: none;
+}
+
+
+/* Login Rechts */
+
+#login-wrapper {
+    background: #fff;
+    padding: 2.5%;
+    color: #707070;
+    display: flex;
+    flex: 1;
+    flex-flow: column;
+}
+#login-wrapper a {
+    color: #48494b;
+    text-decoration: underline;
+}
+
+#login-wrapper #logo {
+    margin-bottom: 50px;
+    width: 100%;
+    max-width: 220px;
+}
+
+
+#login-wrapper .intro {
+    font-size: 16px;
+    line-height: 1.6em;
+    margin-bottom: 30px;
+    color: #707070;
+}
+
+#frmlogin {
+    font-family: 'Inter', Verdana, Helvetica, sans-serif;
+    font-size: 16px;
+}
+#frmlogin .field {
+    margin-bottom: 2em;
+}
+#frmlogin .field.link {
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+}
+#frmlogin .field-row {
+    margin: 0 -2.5em;
+}
+#frmlogin .field-row .field {
+    width: 50%;
+    padding: 0 2.5em;
+    float: left;
+}
+
+#frmlogin label {
+    display: block;
+    font-size: 16px;
+    padding-bottom: 10px;
+}
+
+#frmlogin input[type="text"],
+#frmlogin input[type="password"],
+#frmlogin select {
+    border: none;
+    color: #707070;
+    background: none;
+    font-size: 16px;
+    font-weight: 600;
+    /* padding: 6px 0 10px; */
+    height: 36px;
+    border-radius: 0;
+    width: 100%;
+    border-bottom: 1px solid #eaeaea;
+    transition: border-color .4s;
+}
+#frmlogin select {
+    font-weight: 400;
+    color: #a2a2a2;
+    background-position: right 0.8rem center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 45px;
+    font-size: 16px;
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-image: url('../images/arrow_down.svg');
+}
+#frmlogin input[type="text"]:focus,
+#frmlogin input[type="text"]:active,
+#frmlogin select:focus,
+#frmlogin select:active {
+    border-color: #707070;
+    outline: none;
+    box-shadow: none;
+    color: #707070;
+}
+#frmlogin select:focus,
+#frmlogin select:active {
+    font-weight: 600;
+}
+
+#login-wrapper .warning {
+    background-color: #FDCB56;
+    color: #354052;
+    background-image: url(../images/warning.png);
+    background-size: 30px 30px;
+}
+#login-wrapper .warning{
+    padding: 15px 10px 15px 50px;
+    margin: 0 0 10px 0;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    border-radius: 3px;
+    font-size: 13px;
+}
+#login-wrapper .warning p {
+    margin: 8px 3px 8px 0;
+    padding: 0;
+}
+/* Login Footer */
+#login-wrapper #login-footer {
+    margin-top: auto;
+}
+#login-wrapper #login-footer .footer-menu {
+    margin: 0 0 2em;
+    padding: 0;
+}
+
+#login-footer {
+    color: #929292;
+}
+#login-footer a,
+#login-footer a:link,
+#login-footer a:visited,
+#login-footer a:hover,
+#login-footer a:active {
+    color: #929292;
+    font-weight: normal;
+    text-decoration: none;
+}
+#login-footer a:hover {
+    text-decoration: underline;
+}
+
+#login-footer .footer-menu > li {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+#login-footer .footer-menu > li > a {
+
+}
+
+#login-footer .copyright {
+    font-size: 12px;
+    line-height: 1.6em;
+}
+
+@media screen and (max-width: 1240px) {
+    #frmlogin .field-row {
+        margin: 0;
+    }
+
+    #frmlogin .field-row .field {
+        width: 100%;
+        padding: 0;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    #login-slider-wrapper {
+        display: none;
+    }
+
+    #login-wrapper #logo {
+        margin-bottom: 20px;
+    }
+
+    #login-wrapper .intro {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    #login-wrapper {
+        width: 100%;
+        padding: 7%;
+    }
+
+    #frmlogin .btn-wrapper {
+        text-align: center;
+    }
+
+    #frmlogin .field {
+        margin-bottom: 1em;
+    }
+
+    #frmlogin .field.link {
+        justify-content: center;
+        font-size: 14px;
+        min-height: inherit;
+    }
+
+    #login-footer .copyright {
+        font-size: 12px;
+    }
+
+    #login-footer {
+        text-align: center;
+        font-size: 14px;
+    }
+
+    #frmlogin .btn {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    #frmlogin input[type="text"] {
+        height: 32px;
+    }
+
+    #frmlogin select {
+        height: 36px
+    }
+}
+

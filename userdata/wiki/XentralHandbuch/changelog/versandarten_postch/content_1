@@ -1,0 +1,10 @@
+<h1>Anbindung von Post.ch an Xentral</h1>&nbsp; Mit der extra Versandart &quot;post.ch&quot; k&ouml;nnen Sie Xentral mit Post.ch verbinden und innerhalb von Xentral Paketmarken f&uuml;r Post.ch erstellen lassen.<br />&nbsp;<h1>Einstellungen</h1>Die Zugangsdaten bekommen Sie auf Anfrage bei Ihren Post.ch Kundenberater zugesendet.<br /><br /><strong>Beispiel-Einstellungen:</strong><br />(bitte alle Felder f&uuml;r Ihre Daten anpassen)<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=versandarten_postch&amp;fileid=1" /><h3>Besondere Felder</h3><table border="1" cellpadding="1" cellspacing="1" style="width: 500px;"><tbody>
+<tr><td><strong>Feld&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></td><td><strong>Beschreibung</strong></td>
+</tr>
+<tr><td>Modul</td><td><span class="wiki-text"><span class="wikitable-wrapper">Im Dropdown &quot;<span class="highlight" rel="post">post</span>.ch&quot; ausw&auml;hlen</span></span></td>
+</tr>
+<tr><td>Produkt</td><td><span class="wiki-text"><span class="wikitable-wrapper">M&ouml;glichkeit ein bestimmtes Produkt hier festzulegen f&uuml;r alle Sendungen, oder einen Auswahl-Dialog in der Paketmarke zu haben.</span></span></td>
+</tr>
+<tr><td>Format</td><td><span class="wiki-text"><span class="wikitable-wrapper">Papier-Format der Paketmarke (Standard A5)</span></span></td>
+</tr>
+</tbody></table>&nbsp;<h2><br />Paketmarke drucken</h2><br />Sobald Sie im Lieferschein die Versandart f&uuml;r Post.ch ausgew&auml;hlt haben, k&ouml;nnen Sie im Paketmarken-Tab des Lieferscheins oder &uuml;ber das Versandzentrum (siehe Logistikeinstellungen im Projekt) eine Paketmarke drucken.<br /><br /><strong>Beispiel-Paketmarke:</strong><br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=versandarten_postch&amp;fileid=2" /><br /><br /><br />&nbsp;

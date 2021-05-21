@@ -1,0 +1,307 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#fahrtenbuch">Fahrtenbuch</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#fahrten">Fahrten</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#filter">Filter</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#fahrzeuge">Fahrzeuge</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#neues_fahrzeug_anlegen">Neues Fahrzeug anlegen</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#auswertung">Auswertung</a></div></li>
+<li class="level3"><div class="li"><a href="#vorlagen">Vorlagen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#neue_vorlage_anlegen">Neue Vorlage anlegen</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#einstellungen">Einstellungen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#api_account_erstellen">API Account erstellen</a></div></li>
+<li class="level4"><div class="li"><a href="#optional_geodaten_startort">Optional Geodaten Startort</a></div></li>
+<li class="level4"><div class="li"><a href="#prozessstarter_fuer_geodaten_erstellen">Prozessstarter für Geodaten erstellen</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#fahrten_buchen_ueber_die_zeiterfassung">Fahrten buchen über die Zeiterfassung</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#vorlagen_in_der_zeiterfassung_verwenden">Vorlagen in der Zeiterfassung verwenden</a></div></li>
+<li class="level4"><div class="li"><a href="#strecke_automatisch_durch_geodaten_laden">Strecke automatisch durch Geodaten laden</a></div></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="fahrtenbuch">Fahrtenbuch</h2>
+<div class="level2">
+
+<p>
+Mit dem extra Modul „Fahrtenbuch“ können Sie in der Zeiterfassung Ihre Fahrtzeiten erfassen und diese dann im Modul Fahrtenbuch pro Fahrzeug auswerten lassen. Damit haben Sie eine Übersicht über alle gebuchten Fahrten.
+</p>
+
+<p>
+Administration → AppStore → Fahrtenbuch
+</p>
+
+<p>
+Das Modul Fahrtenbuch gibt es bald in unserem Shop.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="fahrten">Fahrten</h3>
+<div class="level3">
+
+<p>
+Im „Fahrten“ Tab sehen Sie alle Ihre gebuchten Fahrten in der Übersicht.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_fahrten.png"  title="wawision:fahrtenbuch_fahrten.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="filter">Filter</h4>
+<div class="level4">
+
+<p>
+Mit dem Filter können Sie die Liste der Fahrten einschränken.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_fahrten_filter.png"  title="wawision:fahrtenbuch_fahrten_filter.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+<strong>Von</strong> → Datum von <br/>
+
+<strong>Bis</strong> → Datum bis <br/>
+
+<strong>Kunde</strong> → Kunde, auf den die Zeit / Fahrt gebucht wurde <br/>
+
+<strong>Fahrer</strong> → Bearbeiter, der die Zeite / Fahrt gebucht hat <br/>
+
+<strong>Kennzeichen</strong> → Kennzeichen des Fahrzeugs, das für die Zeit / Fahrt verwendet wurde
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="fahrzeuge">Fahrzeuge</h3>
+<div class="level3">
+
+<p>
+Im Tab Fahrzeuge kann man alle Fahrzeuge anlegen, für die das Fahrtenbuch gelten soll.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_fahrzeug.png"  title="wawision:fahrtenbuch_fahrzeug.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="neues_fahrzeug_anlegen">Neues Fahrzeug anlegen</h4>
+<div class="level4">
+
+<p>
+Um ein neues Fahrzeug anzulegen füllen Sie die Felder oben rechts aus und klicken auf den Button „Anlegen“.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_fahrzeug_anlegen.png"  title="wawision:fahrtenbuch_fahrzeug_anlegen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=4"  alt="" /></a>
+</p>
+
+<p>
+<strong>Bezeichnung/Name</strong> → Bezeichnung des Fahrzeugs zuzuordnen - wird auf dem Auswertungs-PDF dargestellt. <br/>
+
+<strong>Kilometersatz</strong> → Wird für die Berechnung des Fahrtgelds / Reisekosten in der Auswertung hergenommen wenn es ein Privatfahrzeug ist. <br/>
+
+<strong>Kennzeichen</strong> → Das Kennzeichen des Fahrzeugs wird für die Auswertung und für den Filter benötigt. <br/>
+
+<strong>Privatfahrzeug</strong> → Markierung als Privatfahrzeug. In der Auswertung wird für Privatfahrzeuge das Kilometergeld anhand des Kilometersatzes berechnet und auf dem PDF ausgegeben. <br/>
+
+<strong>Startwert KM</strong> → Angabe wie viel Kilometern das Fahrzeug vor den ersten Fahrten hatte. <br/>
+
+<strong>aktiv</strong> → Nur aktive Fahrzeuge können erfasst werden.
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="auswertung">Auswertung</h3>
+<div class="level3">
+
+<p>
+Unter dem Tab „Auswertung“ können Sie für ein bestimmtes Fahrzeug eine Auswertung in einem angegebenen Zeitraum durchführen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_auswertung.png"  title="wawision:fahrtenbuch_auswertung.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=5"  alt="" /></a>
+</p>
+
+<p>
+Wenn Sie auf „PDF erstellen“ klicken erhalten Sie ein PDF mit den gebuchten Fahrten. <br/>
+
+Da das Fahrzeug als Privatfahrzeug gekennzeichnet wurde, wird die Spalte mit dem Kilometergeld gefüllt:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_auswertung_pdf.png"  title="wawision:fahrtenbuch_auswertung_pdf.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=6"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit5" id="vorlagen">Vorlagen</h3>
+<div class="level3">
+
+<p>
+Unter dem Tab Vorlagen können Sie öfters wiederkehrende Strecken definieren, die Sie dann beim Buchen der Fahrt in der Zeiterfassung schnell auswählen können.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_vorlagen.png"  title="wawision:fahrtenbuch_vorlagen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=7"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="neue_vorlage_anlegen">Neue Vorlage anlegen</h4>
+<div class="level4">
+
+<p>
+Mit einem Klick auf den „Neue Vorlage eintragen“ Button können Sie eine neue Vorlage definieren:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_vorlagen_anlegen.png"  title="wawision:fahrtenbuch_vorlagen_anlegen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=8"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit6" id="einstellungen">Einstellungen</h3>
+<div class="level3">
+
+<p>
+In den Einstellungen kann man für die Standort- und Distanzbestimmungen der Strecken einen API Account von openroutes hinterlegen und Geo-Daten des Startorts.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_einstellungen.png"  title="wawision:fahrtenbuch_einstellungen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=9"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="api_account_erstellen">API Account erstellen</h4>
+<div class="level4">
+<ol>
+<li class="level1"><div class="li"> Profil erstellen unter <a href="https://openrouteservice.org/sign-up/"  title="https://openrouteservice.org/sign-up/"  rel="nofollow">https://openrouteservice.org/sign-up/</a></div>
+</li>
+<li class="level1"><div class="li"> Plan (Free) und Name auswählen. Danach auf „Create Token“ Button klicken: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_api_account.png"  title="wawision:fahrtenbuch_api_account.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=10"  alt="" /></a></div>
+</li>
+<li class="level1"><div class="li"> Den erstellten API Key in Xentral eintragen</div>
+</li>
+</ol>
+
+</div>
+
+<h4 id="optional_geodaten_startort">Optional Geodaten Startort</h4>
+<div class="level4">
+
+<p>
+Die Geodaten des Startorts können hier eingegeben werden um von dort die Distanz zu berechnen.  <br/>
+
+Längen- und Breitengrad lassen sich durch Recherche im Internet leicht rausfinden.
+</p>
+
+<p>
+Wenn nichts hinterlegt wurde, wird als Ausgangspunkt die Firmenanschrift in den Grundeinstellungen genommen.
+</p>
+
+</div>
+
+<h4 id="prozessstarter_fuer_geodaten_erstellen">Prozessstarter für Geodaten erstellen</h4>
+<div class="level4">
+
+<p>
+Wollen Sie die Geodaten Ihrer Kunden für die automatische Berechnung der Kilometer einer Fahrt benutzen, dann brauchen Sie einen Hintergrundprozess, der die Stammdaten mit den Geodaten befüllt.
+</p>
+
+<p>
+Unter Administration → Einstellungen → Prozessstarter erstellen Sie einen neuen Prozessstarter mit folgenden Werten: <br/>
+
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:umkreissuche_prozessstarter.png"  title="wawision:umkreissuche_prozessstarter.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=11"  alt="" /></a>
+</p>
+
+<p>
+Der Prozessstarter füllt nach und nach die beiden Felder Geodaten unter Adressen → Sonstige Daten <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:umkreissuche_geodaten_adressen.png"  title="wawision:umkreissuche_geodaten_adressen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=12"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Es werden pro Tag maximal 2500 Adressen mit dem Prozessstarter verarbeitet - mehr lässt die API von Openstreetmap nicht zu. Somit sollte der Prozessstarter auf 25 Stunden (Periode = 1500 Minuten) gestellt sein.
+</p>
+
+</div>
+
+<h3 class="sectionedit7" id="fahrten_buchen_ueber_die_zeiterfassung">Fahrten buchen über die Zeiterfassung</h3>
+<div class="level3">
+
+<p>
+Unter Mein Bereich → Zeiterfassung können Sie eine Zeit für die Fahrt buchen indem Sie alle relevanten Felder ausfüllen und dann ganz unten die zusätzlichen Felder für die Fahrt befüllen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_zeiten_buchen.png"  title="wawision:fahrtenbuch_zeiten_buchen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=13"  alt="" /></a>
+</p>
+
+<p>
+Wichtig ist, dass der Haken „Buchen“ gesetzt ist, damit die Fahrt auch ins Fahrtenbuch kommt.
+</p>
+
+</div>
+
+<h4 id="vorlagen_in_der_zeiterfassung_verwenden">Vorlagen in der Zeiterfassung verwenden</h4>
+<div class="level4">
+
+<p>
+Wenn Sie im Fahrtenbuch unter dem Tab Vorlagen Einträge hinterlegt haben, dann können Sie nach diesen Einträgen im Feld „Strecke“ suchen und diese auswählen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_fahrtenbuch&amp;media=wawision:fahrtenbuch_vorlagen_verwenden.png"  title="wawision:fahrtenbuch_vorlagen_verwenden.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=fahrtenbuch&fileid=14"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="strecke_automatisch_durch_geodaten_laden">Strecke automatisch durch Geodaten laden</h4>
+<div class="level4">
+
+<p>
+Sobald Sie einen Kunden hinterlegt haben, können Sie mit einem Klick auf den „Strecke und Kilometer laden“ Button die Strecke und Kilometeranzahl automatisch ausfüllen lassen.
+</p>
+
+<p>
+Vorraussetzung dafür ist, dass in den Adressdaten die enstprechenden Längen- und Breitengrade gefüllt sind.
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

@@ -1,0 +1,29 @@
+eps klasse
+
+// PAGE 1: AI
+$pdf->AddPage();
+$pdf->ImageEps('pelican.ai', 15, 70, 180);
+$pdf->MultiCell(0,8, str_repeat('Hello World! ', 230));
+
+
+// PAGE 2: EPS, WITH LINK
+$pdf->AddPage();
+$pdf->ImageEps('bug.eps', 30,20, 150, 0, $lnk1);
+
+
+// PAGE 3: AI
+$pdf->AddPage();
+$pdf->SetLink($lnk1);
+$pdf->ImageEps('tiger.ai', 10, 50, 190);
+
+
+Rotation
+	//Text rotated around its origin
+	$this->Rotate($angle,$x,$y);
+	$this->Text($x,$y,$txt);
+	$this->Rotate(0);
+
+	//Image rotated around its upper-left corner
+	$this->Rotate($angle,$x,$y);
+	$this->Image($file,$x,$y,$w,$h);
+	$this->Rotate(0);

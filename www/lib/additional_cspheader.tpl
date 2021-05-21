@@ -1,0 +1,1 @@
+ static.zdassets.com ekr.zdassets.com xentral.zendesk.com widget-mediator.zopim.com ws: xentral-wiki-assets.s3.eu-central-1.amazonaws.com

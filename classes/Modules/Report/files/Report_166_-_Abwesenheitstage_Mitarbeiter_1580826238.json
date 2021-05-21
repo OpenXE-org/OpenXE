@@ -1,0 +1,71 @@
+{
+    "name": "166 - Abwesenheitstage Mitarbeiter",
+    "description": "Ein Report um im gew\u00fcnschten Zeitraum Abwesenheitstage in der ganzen Firma zu ziehen, unterteilt in Urlaub und Krank, sowie weitere Abwesenheitsgr\u00fcnde.",
+    "project": 0,
+    "sql_query": "SELECT a.name,\r\nSUM(IF(ms.kuerzel = 'U',IF(ms.urlaubminuten = 0, 1, ms.urlaubminuten\/ms.minuten),0)) AS urlaub,\r\nSUM(IF(ms.kuerzel = 'K', IF(ms.krankminuten = 0, 1, ms.krankminuten\/ms.minuten),0)) AS krank,\r\nSUM(IF(ms.kuerzel = 'N', IF(ms.unbezahltminuten = 0, 1, ms.unbezahltminuten\/ms.minuten),0)) AS unbezahlt,\r\nSUM(IF(ms.kuerzel = 'X',1,0)) as fehl\r\nFROM mitarbeiterzeiterfassung_sollstunden ms\r\nLEFT JOIN adresse a ON ms.adresse = a.id\r\nWHERE IF('{VON}'=0,1,ms.datum>='{VON}') AND IF('{BIS}'=0,1,ms.datum<='{BIS}')\r\nGROUP BY ms.adresse",
+    "columns": [
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "38",
+            "alignment": "left",
+            "sum": 1
+        },
+        {
+            "key_name": "urlaub",
+            "title": "Urlaub",
+            "width": "38",
+            "alignment": "right",
+            "sum": 1
+        },
+        {
+            "key_name": "krank",
+            "title": "Krank",
+            "width": "38",
+            "alignment": "right",
+            "sum": 1
+        },
+        {
+            "key_name": "unbezahlt",
+            "title": "Unbezahlt",
+            "width": "38",
+            "alignment": "right",
+            "sum": 1
+        },
+        {
+            "key_name": "fehl",
+            "title": "Fehltage",
+            "width": "38",
+            "alignment": "right",
+            "sum": 1
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "Team & Projektmanagement",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

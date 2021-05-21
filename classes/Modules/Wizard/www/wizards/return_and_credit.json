@@ -1,0 +1,152 @@
+{
+    "key": "return_and_credit",
+    "category": "general",
+    "title": "Retouren und Gutschriften",
+    "sub_title": "Mit xentral wird das Handling ungeliebter Retouren einfacher! Es sind auch Teil-Retouren möglich, und automatisch werden Gutschriften oder Rückbuchungen ausgelöst.",
+    "description": "Mit xentral wird das Handling ungeliebter Retouren einfacher! Es sind auch Teil-Retouren möglich, und automatisch werden Gutschriften oder Rückbuchungen ausgelöst.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "retoure": [
+            "list"
+        ],
+        "wareneingang": [
+            "paketannahme"
+        ],
+        "zahlungsverkehr": [
+            "payment"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=retoure&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/E0NqkdRlGAc"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "return": {
+                    "steps": {
+                        "overview_return": {
+                            "position": 1,
+                            "link": "./index.php?module=retoure&action=list",
+                            "title": "Retoure",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Retoure",
+                                            "text": "Retouren gehören zum Alltagsgeschäft – auch wenn wir sie lieber vermeiden möchten. xentral erleichtert euer Retourenmanagement! Das Retourenmodul erlaubt dir die Annahme von angekündigten sowie unangekündigten (Teil-)Rücksendungen im Wareneingang, die Erstellung eines Retourenebelegs und die Weiterverarbeitung bis zur Gutschrift oder einer Ersatzlieferung.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "goods_receipt": {
+                    "steps": {
+                        "overview_goods_receipt": {
+                            "position": 1,
+                            "link": "./index.php?module=wareneingang&action=paketannahme",
+                            "title": "Wareneingang",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Wareneingang",
+                                            "text": "Im Wareneingang kannst du den Kunden auswählen, von dem die Retoure kam und dem System mitteilen, welche Artikel in welcher Menge zurückgeschickt wurde.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "payments": {
+                    "steps": {
+                        "overview_payments": {
+                            "position": 1,
+                            "link": "./index.php?module=zahlungsverkehr&action=payment",
+                            "title": "Zahlungsverkehr",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Zahlungsverkehr",
+                                            "text": "Nachdem ein Retourenbeleg zu einer Gutschrift weitergeführt wurde, kann diese über den Zahlungsverkehr ausbezahlt werden. Eine Rücküberweisung wird in xentral durch wenige Klicks veranlasst.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

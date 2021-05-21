@@ -1,0 +1,12 @@
+
+div .actionpane  {
+    max-width: 300px;
+}
+
+.btnGreenNew[disabled] {
+    background-color: lightgrey !important;
+}
+
+a.btnGreenNew.button {
+    text-align: center;
+}

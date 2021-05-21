@@ -1,0 +1,15 @@
+#frmcreateshipment span.hiddenfilter
+{
+    width:0;
+    padding:0;
+    margin:0;
+    overflow:hidden;
+    display:inline-block;
+}
+#frmcreateshipment input#weiter{
+    background-color:#A2D624;
+}
+
+#frmcreateshipment table#amazon_anlieferungcreate > tbody > tr > td:nth-child(8) {
+    white-space: nowrap;
+}

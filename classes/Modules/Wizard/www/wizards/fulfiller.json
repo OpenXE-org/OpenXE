@@ -1,0 +1,679 @@
+{
+    "key": "fulfiller",
+    "category": "warehouse",
+    "title": "Externen Fulfiller anbinden",
+    "sub_title": "Behaltet in xentral den Überblick über alle Lagerbestände und Versandprozesse – mit dem extra Fullfillment-Modul. Wir zeigen euch hier, wie ihr euren Fulfiller anbinden könnt.",
+    "description": "Behaltet in xentral den Überblick über alle Lagerbestände und Versandprozesse – mit dem extra Fullfillment-Modul. Wir zeigen euch hier, wie ihr euren Fulfiller anbinden könnt.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "uebertragungen": [
+            "list",
+            "create",
+            "edit"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "title": "Einführung",
+                            "link": "./index.php?module=uebertragungen&action=list",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "pagination": false,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/QLypbizz7ys"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "setup_send_delivery_note": {
+            "title": "Lieferscheine senden",
+            "sub_groups": {
+                "send_delivery_note": {
+                    "steps": {
+                        "send_delivery_note_create_transfer_account": {
+                            "position": 1,
+                            "link": "./index.php?module=uebertragungen&action=list",
+                            "title": "Account anlegen",
+                            "caption": "Lege einen neuen Account für Übertragungen an",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "send_delivery_note_input_name": {
+                            "position": 2,
+                            "title": "Bezeichnung Account",
+                            "caption": "Vergib eine Bezeichnung für deinen Account",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "bezeichnung",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_api_account": {
+                            "position": 3,
+                            "title": "API Account",
+                            "caption": "Wähle einen API Account aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "api",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_format": {
+                            "position": 4,
+                            "title": "Übertragungsformat",
+                            "caption": "Wähle XML oder CSV als Übertragungsformat aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "xml_pdf"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_type": {
+                            "position": 5,
+                            "title": "Typ",
+                            "caption": "Wähle FTP, FTPS oder SFTP als Typ aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "typ"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_coding": {
+                            "position": 6,
+                            "title": "Codierung",
+                            "caption": "Wähle die benötigte Codierung aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "coding"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_input_server": {
+                            "position": 7,
+                            "title": "Server",
+                            "caption": "Gib den Empfangsserver ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "server"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_input_port": {
+                            "position": 8,
+                            "title": "Port",
+                            "caption": "Gib den passenden Port deines Servers ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "port"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_activate_ssl": {
+                            "position": 9,
+                            "title": "SSL",
+                            "caption": "Aktiviere bei Bedarf SSL.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "ssl_aktiv"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "send_delivery_note_input_save_location": {
+                            "position": 10,
+                            "title": "Speicherort (Ausgang)",
+                            "caption": "Gib den Zielpfad des Verzeichnisses auf deinem Server ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "parameter1"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_document_type": {
+                            "position": 11,
+                            "title": "Belegart",
+                            "caption": "Wähle Lieferschein aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "belegtyp"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_doctype_state": {
+                            "position": 12,
+                            "title": "Belegstatus",
+                            "caption": "Wähle den Status der Lieferscheine die übertragen werden sollen aus.",
+                            "description": "Zum Beispiel angelegt oder freigegeben.",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "belegstatus"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_input_project": {
+                            "position": 13,
+                            "title": "Projekt",
+                            "caption": "Wähle das Projekt der Lieferscheine die übertragen werden sollen aus.",
+                            "description": "Bleibt das Feld leer, gibt es keine Projekteingrenzung.",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "projekt"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_manual_approval": {
+                            "position": 14,
+                            "title": "Manuelle Freigabe erforderlich",
+                            "caption": "Wähle ob die Lieferscheine erst nach manueller Freigabe übertragen werden sollen.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "importwarteschlange"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "send_delivery_note_input_doctype_id": {
+                            "position": 15,
+                            "title": "Start ab ID",
+                            "caption": "Trag die Lieferschein-ID ein, ab der die Lieferscheine übertragen werden sollen.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "belegab_id"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "send_delivery_note_select_single_xml_file": {
+                            "position": 16,
+                            "title": "Jeder Beleg in einer eigenen XML",
+                            "caption": "Soll jeder Lieferschein in einer eigenen XML Datei sein, aktiviere diese Option.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "einzelnexml"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "send_delivery_note_save_account": {
+                            "position": 17,
+                            "title": "Account speichern",
+                            "caption": "Speichere deinen Account.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "speichern",
+                                        "type": "submit"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "setup_receive_stock": {
+            "title": "Lagerzahlen empfangen",
+            "sub_groups": {
+                "send_delivery_note": {
+                    "steps": {
+                        "receive_stock_create_account": {
+                            "position": 1,
+                            "title": "Account anlegen",
+                            "caption": "Lege einen neuen Account für Übertragungen an.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "receive_stock_input_name": {
+                            "position": 2,
+                            "title": "Bezeichnung Account",
+                            "caption": "Vergib eine Bezeichnung für deinen Account",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "bezeichnung",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_select_api_account": {
+                            "position": 3,
+                            "title": "API Account",
+                            "caption": "Wähle einen API Account aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "api",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_select_format": {
+                            "position": 4,
+                            "title": "Übertragungsformat",
+                            "caption": "Wähle XML oder CSV als Übertragungsformat aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "xml_pdf"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_select_type": {
+                            "position": 5,
+                            "title": "Typ",
+                            "caption": "Wähle FTP, FTPS oder SFTP als Typ aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "typ"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_select_coding": {
+                            "position": 6,
+                            "title": "Codierung",
+                            "caption": "Wähle die benötigte Codierung aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "coding"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_input_server": {
+                            "position": 7,
+                            "title": "Server",
+                            "caption": "Gib den Namen des Empfangsserver ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "server"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_input_port": {
+                            "position": 8,
+                            "title": "Port",
+                            "caption": "Gib den passenden Port deines Servers ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "port"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_activate_ssl": {
+                            "position": 9,
+                            "title": "SSL",
+                            "caption": "Aktiviere bei Bedarf SSL.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "ssl_aktiv"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "receive_stock_input_location": {
+                            "position": 10,
+                            "title": "Antwort-Speicherort (Eingang)",
+                            "caption": "Gib den Zielpfad des Verzeichnisses für die Antwort auf deinem Server ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "parameter3"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "receive_stock_select_receive_stock": {
+                            "position": 11,
+                            "title": "Option Lagerzahlen empfangen",
+                            "caption": "",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "lagerzahleneingang"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "receive_stock_article_not_found": {
+                            "position": 12,
+                            "title": "Empfangenen Artikel nicht gefunden",
+                            "caption": "Wenn Lagerbestände von xentral unbekannten Artikeln empfangen werden, werden sie im Monitor als Fehler angezeigt.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "logarticlenotfound"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "receive_stock_save_account": {
+                            "position": 13,
+                            "title": "Account speichern",
+                            "caption": "Speichere deinen Account.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "speichern",
+                                        "type": "submit"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "uebertragungencreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

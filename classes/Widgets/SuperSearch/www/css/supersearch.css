@@ -1,0 +1,269 @@
+/**
+	SuperSearch
+ */
+#supersearch-overlay {
+	display: none;
+	position: absolute;
+	z-index: 994;
+	top: 55px;
+	left: 18px;
+    width: 250px;
+    height: 440px;
+	background-color: var(--body-background);
+	box-shadow: 3px 3px 10px rgba(0, 0, 0, .33);
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#supersearch-overlay.has-detail {
+    width: 890px;
+}
+
+#supersearch-overlay #supersearch-icon-close {
+    z-index: 981;
+	cursor: pointer;
+	display: block;
+	position: absolute;
+	top: 24px;
+	right: 24px;
+	width: 24px;
+	height: 24px;
+	background-image: url('../themes/new/images/icon-close.svg');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 80%;
+}
+
+#supersearch-overlay .result-wrapper {
+    overflow: auto;
+    width: 250px;
+    height: 416px;
+    background-color: var(--body-background);
+}
+#supersearch-overlay .detail-wrapper {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 250px;
+    width: 640px;
+    height: 440px;
+    overflow-y: auto;
+    background-color: var(--fieldset);
+}
+#supersearch-overlay.has-detail .detail-wrapper {
+    display: block;
+}
+
+#supersearch-overlay .search {
+	display: none;
+    height: 45px;
+	padding: 10px;
+	background-color: var(--body-background);
+}
+
+#supersearch-overlay .empty-message,
+#supersearch-overlay .error-message {
+    display: none;
+    padding: 10px;
+}
+#supersearch-overlay .error-message {
+    font-weight: bold;
+    color: darkred;
+}
+
+#supersearch-overlay .result {
+    display: block;
+    padding: 0;
+    background-color: var(--body-background);
+}
+
+#supersearch-overlay .last-update {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 250px;
+    padding: 6px 12px;
+    font-size: 10px;
+    color: var(--text-color);
+    background-color: var(--fieldset-dark);
+}
+
+#supersearch-overlay .detail {
+    padding: 0;
+    margin: 10px 28px;
+    line-height: 1.428;
+}
+
+#supersearch-overlay .detail img {
+    max-width: 80%;
+    height: 12px;
+}
+
+#supersearch-overlay .detail .minidetail {
+    overflow: auto;
+}
+
+#supersearch-overlay .result-empty {
+	padding: 4px 6px 3px 12px;
+	margin-bottom: 6px;
+}
+
+#supersearch-overlay .result-list {
+	list-style-type: none;
+	padding: 0;
+	margin: 0 0 6px 0;
+}
+
+#supersearch-overlay .result-head,
+#supersearch-overlay .result-foot,
+#supersearch-overlay .result-item {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+#supersearch-overlay .result-head {
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+#supersearch-overlay .result-foot {
+	font-style: italic;
+}
+
+#supersearch-overlay .result-item {
+	font-weight: normal;
+}
+
+#supersearch-overlay .result-head,
+#supersearch-overlay .result-foot {
+	padding: 4px 6px 3px 12px;
+	margin-bottom: 6px;
+}
+
+#supersearch-overlay .result-head {
+	background-color: var(--fieldset-dark);
+}
+
+#supersearch-overlay .result-item a,
+#supersearch-overlay .result-item a:link,
+#supersearch-overlay .result-item a:visited,
+#supersearch-overlay .result-item a:hover,
+#supersearch-overlay .result-item a:active {
+	display: block;
+	padding: 3px 6px 3px 12px;
+}
+#supersearch-overlay .result-item a:hover {
+	color: var(--grey);
+	background-color: rgba(0, 0, 0, .15);
+}
+#supersearch-overlay .result-item.active {
+    color: var(--grey);
+   	background-color: rgba(0, 0, 0, .15);
+}
+#supersearch-overlay .result-item .title,
+#supersearch-overlay .result-item .caption {
+    display: flex;
+    flex-flow: row nowrap;
+    width: 100%;
+}
+#supersearch-overlay .result-item .caption {
+    font-size: .9em;
+    color: var(--text-color);
+    margin-top: 2px;
+}
+#supersearch-overlay .result-item .title span,
+#supersearch-overlay .result-item .caption span {
+    flex: 1 33%;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 2px;
+}
+#supersearch-overlay .result-item .caption span:last-of-type {
+    text-align: right;
+}
+#supersearch-overlay .result-item .caption span:first-of-type {
+    text-align: left;
+}
+#supersearch-overlay .result-item .title .title-main {
+    flex: 1 33%;
+}
+#supersearch-overlay .result-item .title .title-sub {
+    flex: 2 66%;
+}
+
+#supersearch-overlay .detail h1,
+#supersearch-overlay .detail h2,
+#supersearch-overlay .detail h3,
+#supersearch-overlay .detail h4,
+#supersearch-overlay .detail h5,
+#supersearch-overlay .detail h6,
+#supersearch-overlay .detail p {
+    padding: 0;
+    margin: 8px 0;
+}
+#supersearch-overlay .detail h1 {
+    margin-top: 24px;
+}
+#supersearch-overlay .detail h2 {
+    margin-top: 20px;
+}
+#supersearch-overlay .detail h3 {
+    margin-top: 16px;
+}
+#supersearch-overlay .detail h4 {
+    margin-top: 12px;
+}
+
+#supersearch-overlay .detail ul {
+    padding: 0 0 0 20px;
+    margin: 12px 0;
+}
+#supersearch-overlay .detail ul ul {
+    margin: 0;
+}
+#supersearch-overlay .detail ul li a {
+    display: inline-block;
+    padding: 3px 0;
+    text-decoration: underline;
+}
+
+#supersearch-overlay .detail .button .icon {
+    display: inline-block;
+    width: 16px;
+    height: 12px;
+    margin: 0 4px 0 0;
+}
+#supersearch-overlay .detail .button .icon img {
+    display: inline-block;
+    max-width: 100%;
+    width: 16px;
+    height: 12px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+}
+
+/** Overlay ausblenden wenn Sidebar und Suchfeld nicht sichtbar */
+@media screen and (max-width: 1000px) {
+    #supersearch-overlay {
+        display: none;
+        visibility: hidden;
+    }
+}
+
+/** Overlay um 200 Pixel verbreitern, wenn genug Platz vorhanden  */
+@media screen and (min-width: 1200px) {
+    #supersearch-overlay.has-detail {
+        width: 1090px;
+    }
+    #supersearch-overlay .detail-wrapper {
+        width: 840px;
+    }
+}

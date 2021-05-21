@@ -1,0 +1,101 @@
+{
+    "name": "052 - Auflistung offene Angebote \u00fcber Betrag X",
+    "description": "Alle freigegebenen Angebote mit einem h\u00f6heren Nettoumsatz als X Euro.",
+    "project": 0,
+    "sql_query": "SELECT \r\na.datum AS datum, \r\na.belegnr, \r\na.kundennummer, \r\na.name,\r\na.umsatz_netto AS summe,\r\na.waehrung AS waehrung\r\nFROM angebot a \r\nWHERE a.status = 'freigegeben' AND a.umsatz_netto > {UMSATZ}",
+    "columns": [
+        {
+            "key_name": "summe",
+            "title": "Summe",
+            "width": "47",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "waehrung",
+            "title": "W\u00e4hrung",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "belegnr",
+            "title": "Belegnr",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "47",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Umsatz",
+            "default_value": "0",
+            "displayname": "Angebote mit h\u00f6herer Summe als",
+            "options": [],
+            "description": "Gibt die Nettosumme an ab der Angebote angezeigt werden sollen",
+            "editable": true,
+            "control_type": ""
+        }
+    ],
+    "remark": "",
+    "category": "Angebots \u0026 Auftragsmanagement",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

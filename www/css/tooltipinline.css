@@ -1,0 +1,372 @@
+#help-trigger{
+    position: fixed;
+    height: 28px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 28px;
+    right: 18px;
+    bottom: 18px;
+    background-color: #5754EE;
+    z-index: 8900;
+    cursor: pointer;
+    color: white;
+    padding: 0 10px;
+}
+
+#help-trigger svg{
+   display: inline-block;
+}
+
+#wawitooltip {
+    display: none;
+    z-index: 9999;
+    position: absolute;
+    background-color: #fff;
+    border: 2px solid rgb(166, 201, 226);
+    margin: 10px;
+    padding: 10px;
+}
+
+#inlinehelpimg {
+    z-index: 9900;
+    position: relative;
+}
+
+#inlinehelpimg img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#inlinehelp {
+    width: 0;
+    position: fixed;
+    height: 100vh;
+    top: 0;
+    right: 0;
+    overflow: hidden;
+    color: #6d6d6d;
+    line-height: 1.6;
+    z-index: 9000;
+    background: white;
+}
+
+#inlinehelp h1,
+#inlinehelp h2,
+#inlinehelp h3,
+#inlinehelp h4,
+#inlinehelp h5,
+#inlinehelp h6 {
+    padding-left: 0;
+}
+
+#inlinehelp .youtubehaupt iframe {
+    width: 540px;
+}
+
+#inlinehelp input[type="submit"],
+#inlinehelp input[type="button"],
+#inlinehelp input[type="reset"] {
+    background-color: var(--button-primary-background);
+    border-color: var(--button-primary-border-color);
+    color: var(--button-primary-color);
+}
+
+#inlinehelpheading {
+    font-size: 20px;
+    color: var(--grey);
+    background-color: white;
+}
+
+#inlinehelpheading .header-actions{
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #EBEFF2;
+    padding: 3px 12px 0 12px;
+}
+
+#inlinehelpheading .inlinehelp-sharing{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 80px;
+}
+
+#inlinehelpheading .inlinehelp-sharing > div{
+    cursor: pointer;
+}
+
+#inlinehelpheading .header-headlines{
+    padding: 0 12px;
+    font-size: 10px;
+    font-weight: normal;
+    color: #646464;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+#inlinehelpheading .header-headlines p{
+    margin-bottom: 0;
+}
+
+#inlinehelpheading .header-headlines a{
+    position: absolute;
+    right: 12px;
+}
+
+#inlinehelpheading .header-headlines strong{
+    color: #000000;
+    font-size: 20px;
+}
+
+#inlinehelpcontent div.inlinetab {
+    padding-left: 15px;
+    max-width: 700px;
+    overflow-x: hidden;
+    display: block;
+}
+
+#inlinehelpcontent div.inlinetab div,
+#inlinehelpcontent div.inlinetab article {
+    max-width: 700px;
+}
+
+div.inlinetab h2.inlinetabh2 {
+    display: inline-block;
+}
+
+#inlinehelpcontent div.inlinetab img {
+    max-width: 670px;
+    display: block;
+}
+
+div#inlinehelpmenu ul li:first-child {
+    padding-left: 12px;
+}
+
+#inlinehelpclose {
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+#inlinehelpclose > svg > path {
+    fill: var(--grey) !important;
+}
+
+#inlinehelpcontent {
+    padding: 20px 0;
+    box-sizing: border-box;
+    overflow: scroll;
+    height: 74vh;
+    width: 100%;
+    background-color: #FAFAFA;
+    border: 1px solid #D9D9D9;
+    border-radius: 3px;
+}
+
+@media only screen and (max-height: 850px) {
+    #inlinehelpcontent {
+        height: 71vh;
+    }
+}
+
+@media only screen and (max-height: 750px) {
+    #inlinehelpcontent {
+        height: 68vh;
+    }
+}
+
+@media only screen and (max-height: 680px) {
+    #inlinehelpcontent {
+        height: 63vh;
+    }
+}
+
+
+#inlinehelpcontent .inlinehelp-recommendations{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(196, 196, 196, 0.4);
+}
+
+#inlinehelpcontent .link-container{
+    position: relative;
+    margin-bottom: 10px;
+}
+
+#inlinehelpcontent .inlinehelp-recommendations a{
+    display: inline-block;
+    width: 33%;
+    text-decoration: underline;
+}
+
+#inlinehelpcontent strong,
+#inlinehelpcontent strong span,
+#inlinehelpcontent h1{
+    font-size: 14px !important; /** important to override inline styles **/
+}
+
+.inline-help-content-container{
+    padding: 0 12px;;
+}
+
+#inlinehelp iframe {
+    display: block;
+}
+
+#inlinehelplink {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.youtubehaupt {
+    margin-bottom: 15px;
+}
+
+
+.outeryoutubeweitere {
+    float: right;
+    width: 190px;
+    margin-left: 20px;
+}
+
+.youtubepfeil {
+    float: left;
+    position: relative;
+    display: block;
+}
+
+.outeryoutubeweitere .youtubesubtitel {
+
+    background-color: var(--primary);
+    color: #fff;
+    padding: 9px;
+}
+
+.youtubeweiterecontainer2 {
+    margin-bottom: 13px;
+}
+
+.youtubeweitere .youtubesubtitel {
+    font-size: 9pt;
+}
+
+.youtubeweiterecontainerinner {
+    position: relative;
+}
+
+.youtubehaupttitel {
+    display: none;
+}
+
+span.youtubeoverlay {
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    display: inline-block;
+    z-index: 2;
+    width: 190px;
+    height: 105px;
+    background: transparent
+}
+
+.pfeillinks {
+    width: 0;
+    height: 0;
+    top: 5px;
+    -webkit-transform: rotate(360deg);
+    border-style: solid;
+    border-width: 55px 15px 50px 0;
+    border-color: transparent #53BED0 transparent transparent;
+    cursor: pointer;
+}
+
+.pfeilrechts {
+    width: 0;
+    height: 0;
+    top: 5px;
+    -webkit-transform: rotate(360deg);
+    border-style: solid;
+    border-width: 55px 0 50px 15px;
+    border-color: transparent transparent transparent #53BED0;
+    margin-left: 4px;
+    cursor: pointer;
+}
+
+#inlinehelp .search-container{
+    padding: 0 12px;
+}
+
+#inlinehelpmenu .rTabs{
+    margin-bottom: 0;
+}
+
+#inlinehelpmenu .rTabs ul{
+    border-bottom: none;
+}
+
+#inlinehelpmenu .rTabs ul li a{
+    border: none;
+}
+
+#inlinehelpmenu > div.rTabs > ul > li > a {
+    text-decoration: none;
+    color: rgba(125, 127, 129, 0.5);
+}
+
+#inlinehelpmenu .rTabs ul li.aktiv a{
+    border-bottom: 2px solid var(--link-color);
+    background: none;
+    color: var(--link-color);
+}
+
+#faqaccordion {
+    width: 100%;
+    background-color: var(--body-background);
+}
+
+
+#faqaccordion .ui-accordion-header {
+    margin-top: 2px;
+  position: relative;
+}
+
+#faqaccordion .ui-accordion-header:after{
+  position: absolute;
+  top: 11px;
+  right: 2px;
+  content: '';
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 6px 0 6px;
+  border-color: #d7d7d7 transparent transparent transparent;
+}
+
+#faqaccordion .ui-accordion-header .ui-accordion-header-icon{
+  display: none;
+}
+
+ul.firstlvl ul {
+    padding-left: 10px;
+}
+
+ul.firstlvl + hr {
+    border: 1px solid #6d6d6d;
+}
+
+input#wikilink {
+    background-color: transparent;
+    color: #6d6d6d;
+}
+
+.inline-help-content-container .footer-actions{
+    display: flex;
+    justify-content: flex-end;
+    margin: 14px 0;
+}
+
+.inline-help-content-container .footer-actions a{
+    margin-left: 10px;
+}

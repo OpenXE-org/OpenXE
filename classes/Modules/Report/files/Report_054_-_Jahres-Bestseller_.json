@@ -1,0 +1,108 @@
+{
+    "name": "054 - Jahres-Bestseller",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT\r\n       x.abkuerzung AS projekt,\r\n       x.name_de AS artikel,\r\n       x.nummer AS artikelnummer,\r\n       x.menge AS menge,\r\n       x.einzeln AS einzelpreis,\r\n       x.gesamt AS gesamt,\r\n       x.dbp AS dbprozent,\r\n       x.dbv  AS dbeuro\r\nFROM \r\n   (SELECT\r\n      SUM(ap.menge) as menge,\r\n      art.nummer,\r\n      art.name_de,\r\n      p.abkuerzung,\r\n      SUM(ap.preis*ap.menge)\/SUM(ap.menge)as einzeln,\r\n      SUM(ap.preis*ap.menge) as gesamt,\r\n      AVG(ap.deckungsbeitrag)*100 as dbp,\r\n      AVG(ap.preis-ap.einkaufspreis) as dbv\r\n    FROM auftrag_position AS ap\r\n      INNER JOIN auftrag AS a ON ap.auftrag = a.id\r\n      INNER JOIN artikel AS art ON ap.artikel = art.id\r\n      LEFT JOIN projekt p ON p.id=art.projekt\r\n    WHERE art.porto != 1 AND art.rabatt != 1 AND a.status <> 'storniert' AND IF('{VON}'=0,1,a.datum>='{VON}') AND IF('{BIS}'=0,1,a.datum<='{BIS}') GROUP BY art.id) AS x",
+    "columns": [
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "23",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "23",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "artikel",
+            "title": "Artikel",
+            "width": "23",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "projekt",
+            "title": "Projekt",
+            "width": "23",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "einzelpreis",
+            "title": "Einzelpreis",
+            "width": "23",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "gesamt",
+            "title": "Gesamt",
+            "width": "23",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "dbprozent",
+            "title": "DB in %",
+            "width": "23",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "dbeuro",
+            "title": "DB in Euro",
+            "width": "23",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "CRM \u0026 Vertrieb",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true
+    }
+}

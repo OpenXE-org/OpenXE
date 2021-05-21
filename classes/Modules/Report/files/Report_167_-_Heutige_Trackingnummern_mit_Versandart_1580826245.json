@@ -1,0 +1,38 @@
+{
+    "name": "167 - Heutige Trackingnummern mit Versandart",
+    "description": "Gibt alle heute erstellten Trackingnummern mit zugeh\u00f6riger Versandart aus.",
+    "project": 0,
+    "sql_query": "SELECT auf.internet, v.tracking, v.versandart\r\nFROM auftrag auf\r\nLEFT JOIN lieferschein l ON l.auftragid = auf.id\r\nLEFT JOIN versand v ON l.id = v.lieferschein\r\nWHERE v.versendet_am = CURDATE() AND l.status != 'storniert'",
+    "columns": [
+        {
+            "key_name": "internet",
+            "title": "Onlinebestellnummer",
+            "width": "63",
+            "alignment": "center",
+            "sum": 0
+        },
+        {
+            "key_name": "tracking",
+            "title": "Tracking",
+            "width": "63",
+            "alignment": "center",
+            "sum": 0
+        },
+        {
+            "key_name": "versandart",
+            "title": "Versandart",
+            "width": "63",
+            "alignment": "center",
+            "sum": 0
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Lager & Logistik",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

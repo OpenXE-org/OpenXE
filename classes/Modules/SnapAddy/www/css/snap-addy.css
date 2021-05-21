@@ -1,0 +1,30 @@
+
+/**
+ * Hide the search field and the table footer with export functions.
+ */
+#snapaddy_address_filter,
+#snapaddy_address_paginate,
+#snapaddy_address_paginate + .dt-buttons{display: none;}
+
+#snapLog td {
+    padding: 0.2em 0.4em;
+}
+#snapLog tr:first-child{
+    font-weight: bold;
+}
+#snapLog tr td:first-child{
+    display: none;
+}
+#snap_form #api-test{
+    text-decoration: underline;
+}
+#snap_form #api-test:hover{
+    text-decoration: none;
+    cursor: pointer;
+}
+#api-test-result.api_fail{
+    color: firebrick;
+}
+#api-test-result.api_success{
+    color: darkgreen;
+}

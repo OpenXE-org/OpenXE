@@ -1,0 +1,8 @@
+1. aktuelle .tar.gz entpacken
+2. per Browser auf auf Verzeichnis gehen
+3. setup durchfuehren (trotz Hinweis der Rechte (diese muessen passen) weiter klicken)
+4. Der Webserver-Pfad sollte dringend auf www gesetzte werden, so
+dass die Firmen kritischen Dateien auf gar keinen Fall durch eine fehlerhafte
+.htaccess Datei jemals online stehen (es geht primaer um den Ordner userdata und conf).
+
+

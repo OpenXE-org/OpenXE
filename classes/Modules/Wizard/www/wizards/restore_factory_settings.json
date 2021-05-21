@@ -1,0 +1,50 @@
+{
+    "key": "restore_factory_settings",
+    "category": "general",
+    "title": "Werkszustand herstellen",
+    "sub_title": "",
+    "description": "",
+    "skip_link_text": "",
+    "required_permissions": {
+        "systemtemplates": [
+            "list"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "go_to_restore_factory_settings": {
+                    "steps": {
+                        "overview_restore_factory_settings": {
+                            "position": 1,
+                            "link": "./index.php?module=systemtemplates&action=list",
+                            "title": "Werkszustand herstellen",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Werkszustand herstellen",
+                                            "text": "Wenn du dein System zurücksetzen möchtest, um so all deine Testdaten und Einstellungen zu entfernen, klicke auf Vorlage laden.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

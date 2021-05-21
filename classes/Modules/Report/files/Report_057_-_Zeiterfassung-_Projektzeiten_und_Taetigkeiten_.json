@@ -1,0 +1,173 @@
+{
+    "name": "057 - Zeiterfassung: Projektzeiten und T\u00e4tigkeiten",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT\r\nz.von AS datum,\r\nz.von AS von,\r\nz.bis AS bis,\r\nROUND(TIMESTAMPDIFF(MINUTE,z.von, z.bis)\/60,2) AS dauer,\r\na.mitarbeiternummer AS mitarbeiternummer,\r\na.name AS mitarbeiter,\r\nz.aufgabe AS aufgabe,\r\nz.beschreibung AS beschreibung,\r\nIFNULL(p.abkuerzung,'') AS projekt,\r\nIF(z.abrechnen=1,'Ja','Nein') AS abrechnen,\r\nIF(z.abgerechnet=1,'Ja','Nein') AS abgerechnet\r\nFROM zeiterfassung AS z\r\nJOIN adresse AS a ON z.adresse = a.id\r\nLEFT JOIN projekt p ON z.projekt = p.id\r\nWHERE \r\nIF('{VON}'=0,1,z.von>='{VON}') AND \r\nIF('{BIS}'=0,1,z.bis<='{BIS}') AND \r\nIF('{PROJEKT}'='0',1,'{PROJEKT}'=p.abkuerzung) AND\r\nIF('{MITARBEITERNUMMER}'='0',1,'{MITARBEITERNUMMER}'=a.mitarbeiternummer)",
+    "columns": [
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "dauer",
+            "title": "Dauer",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": null
+        },
+        {
+            "key_name": "mitarbeiter",
+            "title": "Mitarbeiter",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "mitarbeiternummer",
+            "title": "Mitarbeiternummer",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "aufgabe",
+            "title": "Aufgabe",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "beschreibung",
+            "title": "Beschreibung",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "projekt",
+            "title": "Projekt",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "abrechnen",
+            "title": "Abrechnen",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "abgerechnet",
+            "title": "Abgerechnet",
+            "width": "17",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Projekt",
+            "default_value": "0",
+            "displayname": "(optional)Projekt zur Eingrenzung",
+            "options": [],
+            "description": "Grenzt die Aufgabe auf ein spezifisches Projekt ein",
+            "editable": true,
+            "control_type": "autocomplete_project"
+        },
+        {
+            "varname": "Mitarbeiternummer",
+            "default_value": "0",
+            "displayname": "Mitarbeiternummer",
+            "options": [],
+            "description": "(Optional) Ausgabe eingrenzen auf spezifische Mitarbeiternummer",
+            "editable": true,
+            "control_type": ""
+        }
+    ],
+    "remark": "",
+    "category": "Team & Projektmanagement",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

@@ -1,0 +1,319 @@
+/* general
+================================== */
+
+#learning-dashboard-container a{
+    cursor: pointer;
+}
+
+#learning-dashboard-container ul {
+    padding-left: 15px;
+}
+
+#learning-dashboard-container,
+#learning-dashboard-container h4 {
+    color: rgba(55, 64, 81, 0.6);
+}
+
+#learning-dashboard-container h2,
+#learning-dashboard-container h3,
+#learning-dashboard-container h4 {
+    color: #374051;
+    font-weight: normal;
+    padding: 0;
+    margin: 0;
+}
+
+#learning-dashboard-container h2 {
+    font-size: 20px;
+}
+
+#learning-dashboard-container h3 {
+    font-size: 16px;
+}
+
+#learning-dashboard-container h4 {
+    font-size: 14px;
+}
+
+#learning-dashboard-container p {
+    font-size: 12px;
+    line-height: 18px;
+}
+
+#learning-dashboard-container .progress-counter {
+    font-size: 14px;
+    align-self: center;
+}
+@media (max-width: 1500px) {
+    #learning-dashboard-container .progress-counter {
+        font-size: 12px;
+    }
+}
+
+/* header
+================================== */
+
+#learning-dashboard-container .dashboard-header-content {
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#learning-dashboard-container .dashboard-header-progress {
+    font-size: 14px;
+    line-height: 26px;
+    justify-content: flex-end;
+}
+
+#learning-dashboard-container .progress-completed-tasks {
+    color: var(--xentral-signature-violet);
+}
+
+#learning-dashboard-container .progress-completed-tasks-label {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#learning-dashboard-container .progress-ring-container {
+    position: relative;
+    overflow: visible;
+}
+
+#learning-dashboard-container .progress-ring-border,
+#learning-dashboard-container .progress-ring {
+    position: absolute;
+    top: -20px;
+}
+
+#learning-dashboard-container .progress-ring-circle {
+    transition: 0.35s stroke-dashoffset;
+    transform: rotate(150deg);
+    transform-origin: 50% 50%;
+    stroke: var(--xentral-signature-violet);
+}
+
+#learning-dashboard-container .progress-ring {
+    top: -18px;
+    left: 2px;
+    stroke-linecap: round;
+}
+
+#learning-dashboard-container .progress-ring-border-circle {
+    transform: rotate(130deg);
+    transform-origin: 50% 50%;
+    stroke: rgba(204, 204, 204, 0.5);
+    stroke-dasharray: 270, 270;
+}
+
+#learning-dashboard-container .progress-ring-percentage {
+    margin-top: 25px;
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 115px;
+    text-align: center;
+    line-height: 19px;
+    font-size: 12px;
+}
+
+#learning-dashboard-container .progress-ring-percentage span {
+    color: var(--xentral-signature-violet);
+    font-size: 22px;
+    text-align: center;
+}
+
+/* tab content
+================================== */
+
+#learning-dashboard-container .tab-row {
+    margin-top: 35px;
+}
+
+#learning-dashboard-container .tab-row.border-bottom {
+    border-bottom: 1px solid var(--separator-border);
+}
+
+#learning-dashboard-container .dashboard-tabs {
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+#learning-dashboard-container .dashboard-tabs .dashboard-tab {
+    min-width: 60px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    font-size: 14px;
+    padding: 0 20px;
+    cursor: pointer;
+}
+
+#learning-dashboard-container .dashboard-tabs .dashboard-tab.active,
+#learning-dashboard-container .dashboard-tabs .dashboard-tab:hover {
+    font-weight: bold;
+    border-bottom: 2px solid var(--active-border);
+}
+
+#learning-dashboard-container .tab-row #show-completed-input + label {
+    cursor: pointer;
+}
+
+/** Lessons **/
+
+#learning-dashboard-container .dashboard-lessons {
+    margin-bottom: .7%;
+}
+
+#learning-dashboard-container .dashboard-lesson {
+    cursor: pointer;
+    border-right: 3px solid transparent;
+}
+
+#learning-dashboard-container .dashboard-lesson.active,
+#learning-dashboard-container .dashboard-lesson:hover {
+    background: rgba(91, 100, 238, 0.1);
+    border-right: 3px solid rgba(91, 100, 238, 0.8);
+}
+
+#learning-dashboard-container .dashboard-lesson.active h4 {
+    color: #374051
+}
+
+#learning-dashboard-container .dashboard-lesson.active path {
+    stroke: rgba(91, 100, 238, 1);
+    stroke-opacity: 1;
+}
+
+#learning-dashboard-container .dashboard-lesson .dashboard-icon {
+    align-items: center;
+    justify-content: center;
+}
+
+#learning-dashboard-container .dashboard-lesson .progress-bar{
+    margin-left: 0;
+}
+
+#learning-dashboard-container .cta-button {
+    color: white;
+    height: 35px;
+    width: 100%;
+    border-radius: 3px;
+    background: var(--button-primary-background);
+    font-size: 14px;
+    box-sizing: border-box;
+    border: none;
+}
+
+#learning-dashboard-container .cta-button .prefix {
+    display: inline-block;
+    height: 35px;
+    line-height: 27px;
+    font-size: 25px;
+    padding-right: 5px;
+}
+
+/** Tasks **/
+
+#learning-dashboard-container .dashboard-tasks {
+    justify-content: flex-start;
+}
+
+#learning-dashboard-container .task {
+    position: relative;
+    transition: box-shadow 150ms linear;
+    display: flex;
+    flex-direction: column;
+}
+
+#learning-dashboard-container .task div:last-child{
+    margin-top: auto;
+}
+
+#learning-dashboard-container .task:hover {
+    box-shadow: 0 2px 4px rgba(28, 41, 90, 0.2);
+}
+
+#learning-dashboard-container .task .button {
+    height: 25px;
+    line-height: 23px;
+    padding: 0;
+    align-self: center;
+    text-align: center;
+    margin: 0;
+    max-width: 80px;
+}
+
+#learning-dashboard-container .task .progress-bar{
+    margin-bottom: 7px;
+    margin-left: 0px;
+    align-self: flex-end;
+}
+
+#learning-dashboard-container .task .task-completion-status {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    right: 20px;
+    top: 20px;
+    background: #D7DFE9;
+    border-radius: 22px;
+    line-height: 23px;
+    text-align: center;
+    transition: background-color .3s;
+}
+
+#learning-dashboard-container .task .task-completion-status.complete {
+    background: #2DCA73;
+}
+
+#learning-dashboard-container .task .task-completion-status.in-progress {
+    background: #FFA958;
+    line-height: 25px;
+}
+
+#learning-dashboard-container .task .task-completion-status svg {
+    display: inline-block;
+}
+
+#learning-dashboard-container .task .task-icon {
+    width: 51px;
+    height: 51px;
+    background-position: center;
+    border-radius: 51px;
+    background-repeat: no-repeat;
+}
+
+#learning-dashboard-container .task .task-details{
+    position: absolute;
+    width: 100%;
+    background-color: white;
+    top:0;
+    left: 0;
+    right:0;
+    bottom: 0;
+    overflow-y: auto;
+}
+
+#learning-dashboard-container .task .task-details svg{
+    cursor: pointer;
+}
+
+#learning-dashboard-container .task-details .task-details-header{
+    border-bottom: 1px solid #EBEFF2;
+}
+
+#learning-dashboard-container .task-details .task-details-content{
+    padding-top: 0;
+}
+
+/* transitions
+================================== */
+
+#learning-dashboard-container .fade-enter-active, .fade-leave-active {
+    transition: opacity .3s;
+}
+#learning-dashboard-container .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
+{
+    opacity: 0;
+}

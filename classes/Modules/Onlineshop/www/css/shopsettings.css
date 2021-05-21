@@ -1,0 +1,45 @@
+#smartyinput #textareasmartyincomming {
+    width: 100%;
+}
+
+#smartyinput #textareasmartyincomminginput,
+#smartyinput #dataincommingpreview
+{
+    width: 100%;
+    min-height: 30vh;
+}
+
+.mlmTreeContainerLeft {
+    width: 40%;
+    float: left;
+}
+
+.aciTree {
+    padding-left: 50px;
+}
+
+.mlmTreeContainerRight {
+    width: 59%;
+    float: right;
+    position: relative;
+    padding: 5px;
+    margin-top: 5px;
+    background-color: #f0f1f0;
+    min-height: 600px;
+}
+.mlmClear {
+    clear: both;
+}
+
+.mlmTreeSuche {
+    padding: 10px 10px 5px 10px;
+}
+
+.mlmintranet_minidetail_layer {
+    width: 100%;
+}
+
+.searched > div {
+    background-color: #E5F5D2;
+}
+

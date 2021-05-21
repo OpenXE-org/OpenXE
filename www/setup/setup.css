@@ -1,0 +1,273 @@
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../themes/new/fonts/Inter-Regular.woff2?v=3.13') format("woff2"),
+	url('../themes/new/fonts/Inter-Regular.woff?v=3.13') format("woff");
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../themes/new/fonts/Inter-Italic.woff2?v=3.13') format("woff2"),
+	url('../themes/new/fonts/Inter-Italic.woff?v=3.13') format("woff");
+}
+
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('../themes/new/fonts/Inter-Bold.woff2?v=3.13') format("woff2"),
+	url('../themes/new/fonts/Inter-Bold.woff?v=3.13') format("woff");
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: italic;
+	font-weight: 700;
+	font-display: swap;
+	src: url('../themes/new/fonts/Inter-BoldItalic.woff2?v=3.13') format("woff2"),
+	url('../themes/new/fonts/Inter-BoldItalic.woff?v=3.13') format("woff");
+}
+
+body {
+	font-size: 16px;
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+	background: #fff;
+	color: #6d6d6d;
+	margin: 0;
+}
+
+h1 {
+	margin: 0;
+	font-size: 35px;
+	margin-bottom: 10px;
+	font-weight: bold;
+}
+
+h2 {
+	margin: 0;
+	font-size: 22px;
+}
+
+p {
+	color: #070809;
+}
+
+pre {
+	font-size: 10pt;
+}
+
+input[type='text'],
+input[type='password'] {
+	display: block;
+	box-sizing: border-box;
+	width: 50%;
+	height: 55px;
+	margin: 0 0 1rem;
+	padding: .5rem;
+	border: none;
+	border-bottom: solid 1px #070809;
+	border-radius: 0;
+	background-color: #fff;
+	box-shadow: none;
+	font-family: inherit;
+	font-size: 1em;
+	font-weight: 700;
+	line-height: 1.5;
+	transition: border-color 0.25s ease-out;
+	-webkit-appearance: none;
+	-webkit-border-radius: 0;
+	color: #42b8c5;
+	outline: none;
+}
+
+.btn {
+	display: inline-block;
+	font-size: 1em;
+	line-height: 1;
+	color: #fff;
+	background: #a2d624;
+	border: 2px solid #a2d624;
+	border-radius: 6px;
+	padding: 0.5em 1.2em .4em;
+	margin: 0.5rem 0;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background-color 0.3s
+}
+
+.btn:hover {
+	background-color: #fff;
+	color: #a2d624;
+}
+
+/**
+ LAYOUT
+ */
+
+#main {
+	max-width: 1000px;
+	margin: 0 auto;
+	border: solid 6px #f0f0f0;
+}
+
+.header {
+	/*background-color: #42b8c5;
+	color: #fff;
+	padding: 40px 5%;*/
+	background-color: #fff;
+	color:#000;
+	font-size: 20px;
+	padding: 10px 5%;
+}
+
+.header h1 {
+	margin: 0;
+}
+
+.content {
+	padding: 53px 5%;
+}
+
+.button-bar {
+	padding: 1em 0;
+}
+
+.footer {
+	background: #f0f0f0;
+	padding: 10px 5%;
+}
+
+.footer a {
+	color: #42b8c5;
+}
+
+/**
+ * SEITE 1
+ */
+
+.slide-1 .box {
+	display: block;
+	color: #a2d624;
+	font-size: 18px;
+	border-bottom: solid 2px #a2d624;
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+	font-weight: bold;
+	padding-left: 10px;
+}
+
+.slide-1 .box.warning {
+	color: #f0a631;
+	border-bottom: solid 2px #f0a631;
+}
+
+.slide-1 .box.error {
+	color: #f04532;
+	border-bottom: solid 2px #f04532;
+}
+
+/**
+ * SEITE 2
+ */
+.slide-2 input {
+	min-width: 450px;
+}
+
+/**
+ * SEITE 3
+ */
+.slide-3 input {
+	width: 100%;
+}
+
+/**
+ * SEITE 4
+ */
+
+.slide-4 label {
+	display: block;
+	position: relative;
+	cursor: pointer;
+	color: #070809;
+	font-size: 18px;
+	font-weight: 400;
+	margin-bottom: 50px;
+}
+
+/**
+ * SEITE 5
+ */
+.slide-5 .header {
+	background: #42b8c5 url(finish-icon.png) no-repeat center center;
+	background-size: 90px;
+}
+
+.slide-5 p {
+	display: block;
+	font-size: 18px;
+	color: #070809;
+	margin-bottom: 5px;
+}
+
+.slide-5 pre {
+	margin: 24px 0;
+}
+
+.slide-5 .btn {
+	margin-top: 30px;
+}
+
+.slide-5 ul,
+.slide-5 ol {
+    margin: 20px 0;
+    padding: 0 0 0 20px;
+}
+
+.slide-5 ul li,
+.slide-5 ol li {
+    margin: 0;
+    padding: 0 0 10px 0;
+}
+
+#crontab {
+    padding: 10px 20px;
+    border: 3px solid #CCC;
+    background-color: #F0F0F0;
+}
+
+#crontab p {
+    color: #6d6d6d;
+    font-size: 16px;
+    margin: 6px 0;
+}
+
+#crontab pre {
+    font-size: 9pt;
+    color: #EEE;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #333;
+    overflow: auto;
+}
+
+/****** ALT *********/
+
+.inputerror {
+	background-color: #F4E6E6;
+	border: 1px solid #F2C5C5;
+	color: #B70A0F;
+	margin-bottom: 15px;
+	padding: 5px 0px 5px 10px;
+}
+
+hr {
+	margin-bottom: 15px;
+	background-color: #006699;
+	border: 1px none #006699;
+	color: #006699;
+	height: 3px;
+}

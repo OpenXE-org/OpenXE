@@ -1,0 +1,341 @@
+{
+    "key": "parts_list",
+    "category": "master-data",
+    "minimized": false,
+    "title": "Stückliste anlegen",
+    "sub_title": "Du willst verschiedene Produkte als Set, z.B. als Probierpaket verkaufen? Stücklisten helfen der Logistik enorm bei der Kommissionierung. Wir zeigen dir, wie du sie in xentral anlegst.",
+    "description": "Du willst verschiedene Produkte als Set, z.B. als Probierpaket verkaufen? Stücklisten helfen der Logistik enorm bei der Kommissionierung. Wir zeigen dir, wie du sie in xentral anlegst.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "artikel": [
+            "list",
+            "create",
+            "edit",
+            "stueckliste"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "create_component_article": {
+                    "completed": false,
+                    "steps": {
+                        "component_article_click_new_article": {
+                            "position": 1,
+                            "link": "./index.php?module=artikel&action=list",
+                            "title": "Artikel anlegen",
+                            "caption": "Klicke auf NEU.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "fill_component_article": {
+                    "completed": false,
+                    "steps": {
+                        "component_article_insert_component_name": {
+                            "position": 1,
+                            "link": "./index.php?module=artikel&action=create",
+                            "title": "Artikelname eintragen",
+                            "caption": "Trage den Namen des Artikels ein, der später Bestandteil deines Sets sein soll.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "id": "name_de"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "artikelcreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        }
+                    }
+                },
+                "save_component_article": {
+                    "completed": false,
+                    "steps": {
+                        "component_article_click_save_button": {
+                            "position": 1,
+                            "title": "Speichern",
+                            "caption": "Speichere deinen Artikel.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "speichern",
+                                        "type": "submit",
+                                        "class": "wizard-article-save"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "create_main_article": {
+                    "completed": false,
+                    "steps": {
+                        "main_article_click_new_article": {
+                            "position": 1,
+                            "title": "Setartikel anlegen",
+                            "caption": "Klicke auf NEU.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "fill_main_article_name": {
+                    "completed": false,
+                    "steps": {
+                        "main_article_insert_article_name": {
+                            "position": 1,
+                            "link": "./index.php?module=artikel&action=create",
+                            "title": "Setname eintragen",
+                            "caption": "Trage den Namen für dein Set ein.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "id": "name_de"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "artikelcreate"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "main_article_mark_as_parts_list": {
+                            "position": 2,
+                            "title": "Stückliste markieren",
+                            "caption": "Markiere deinen Setartikel als Stückliste.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "stueckliste"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "artikelcreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "save_main_article": {
+                    "completed": false,
+                    "steps": {
+                        "main_article_click_save_button": {
+                            "position": 1,
+                            "title": "Setartikel speichern",
+                            "caption": "Speichere deinen Setartikel.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "speichern",
+                                        "type": "submit",
+                                        "class": "wizard-article-save"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "go_to_parts_list_overview": {
+                    "completed": false,
+                    "steps": {
+                        "main_article_go_to_overview": {
+                            "position": 1,
+                            "title": "Bestandteil hinzufügen",
+                            "caption": "Klicke auf Stückliste um alle Bestandteile deines Sets zu sehen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "menuEntryartikelstueckliste",
+                                        "node_name": "a",
+                                        "contains": "Stückliste"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "add_component_article": {
+                    "completed": false,
+                    "steps": {
+                        "main_article_add_component_article": {
+                            "position": 1,
+                            "title": "Bestandteil hinzufügen",
+                            "caption": "Füge ein neues Bestandteil hinzu.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "neuestueckliste",
+                                        "type": "button"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "artikelstueckliste"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "main_article_insert_component_article": {
+                            "position": 2,
+                            "title": "Bestandteil auswählen",
+                            "caption": "Wähle dein Bestandteil aus.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "artikel",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "id": "editStuecklisteNeuePosition"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "main_article_insert_component_article_amount": {
+                            "position": 3,
+                            "title": "Menge auswählen",
+                            "caption": "Trage die Menge deines Bestandteils ein, die im Set vorhanden ist.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "menge",
+                                        "type": "text"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "id": "editStuecklisteNeuePosition"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "main_article_save_inserted_component_article": {
+                            "position": 4,
+                            "title": "Stückliste speichern",
+                            "caption": "Speichere dein hinzugefügtes Bestandteil.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "span",
+                                        "contains": "SPEICHERN"
+                                    },
+                                    "parent": {
+                                        "id": "partslist_button_save"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "main_article_additional_component_articles": {
+                    "completed": false,
+                    "steps": {
+                        "main_article_add_new_additional_component_articles": {
+                            "position": 1,
+                            "title": "Weitere Bestandteile",
+                            "caption": "Beinhaltet dein Set mehrere Artikel, kannst du hier weitere hinzufügen.",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "neuestueckliste",
+                                        "type": "button"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "artikelstueckliste"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

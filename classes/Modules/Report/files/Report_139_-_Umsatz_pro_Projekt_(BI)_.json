@@ -1,0 +1,144 @@
+{
+    "name": "139 - Umsatz pro Projekt (BI)",
+    "description": "Umsatzreport auf Projektbasis.\n\nBei Bedarf kann nach Datumsbereich und Projekt gefiltert werden.",
+    "project": 0,
+    "sql_query": "SELECT\r\n r.datum AS datum,\r\n p.name AS projekt,\r\n ar.name_de,\r\n ar.nummer,\r\n ROUND(rp.menge-IFNULL(gp.menge,0),0) AS menge,\r\n ROUND(rp.umsatz_netto_einzeln*(rp.menge-IFNULL(gp.menge,0)),2) AS umsatz,\r\n ROUND(rp.umsatz_netto_einzeln*(rp.menge-IFNULL(gp.menge,0))*((100+rp.rabatt)\/100),2) AS umsatzohnerabatt,\r\n ROUND(rp.umsatz_netto_einzeln*(rp.menge-IFNULL(gp.menge,0))*((rp.rabatt)\/100),2) AS gesamtrabatt,\r\n ROUND(rp.deckungsbeitrag,2) AS deckungsbeitrag,\r\n ROUND(rp.einkaufspreis*(rp.menge-IFNULL(gp.menge,0)),2) AS ek,\r\n r.waehrung AS waehrung\r\nFROM projekt p\r\nJOIN rechnung r ON r.projekt = p.id\r\nJOIN rechnung_position rp on r.id = rp.rechnung\r\nJOIN artikel ar ON rp.artikel = ar.id\r\nLEFT JOIN (SELECT gp.auftrag_position_id, SUM(gp.menge) AS menge FROM gutschrift_position AS gp JOIN gutschrift g ON gp.gutschrift = g.id WHERE gp.auftrag_position_id<>0 AND g.status <>'angelegt' AND g.status <> 'storniert' GROUP BY auftrag_position_id) AS gp on rp.auftrag_position_id = gp.auftrag_position_id\r\nWHERE r.status<>'angelegt' AND r.status<>'storniert' AND IF('{VON}'=0,1,r.datum>='{VON}') AND IF('{BIS}'=0,1,r.datum<='{BIS}') AND IF('{PROJEKT}'='-',1,'{PROJEKT}'=p.abkuerzung)",
+    "columns": [
+        {
+            "key_name": "projekt",
+            "title": "Projekt",
+            "width": "17",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "name_de",
+            "title": "Artikelname",
+            "width": "17",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "nummer",
+            "title": "Artikelnummer",
+            "width": "17",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "17",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "umsatzohnerabatt",
+            "title": "Umsatz ohne Rabatt",
+            "width": "17",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "gesamtrabatt",
+            "title": "Gesamtrabatt",
+            "width": "17",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "deckungsbeitrag",
+            "title": "Deckungsbeitrag",
+            "width": "17",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "ek",
+            "title": "EK",
+            "width": "17",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "17",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "17",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "17",
+            "alignment": "right",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Projekt",
+            "default_value": "-",
+            "displayname": "Projekt zur Eingrenzung",
+            "options": [],
+            "description": "Kennung des Projekts auf das die Auswahl eingegrenzt werden soll",
+            "editable": true,
+            "control_type": "autocomplete_project"
+        }
+    ],
+    "remark": "",
+    "category": "Controlling",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

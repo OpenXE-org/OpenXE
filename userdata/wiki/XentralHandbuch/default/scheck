@@ -1,0 +1,147 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#scheck_app">Scheck App</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#zahlweise_scheck_erstellen">Zahlweise Scheck erstellen</a></div></li>
+<li class="level3"><div class="li"><a href="#layoutvorlage_fuer_einen_scheck_erstellen">Layoutvorlage für einen Scheck erstellen</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersicht_der_scheck_app">Übersicht der Scheck App</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#offene_schecks">Offene Schecks</a></div></li>
+<li class="level4"><div class="li"><a href="#archiv">Archiv</a></div></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="scheck_app">Scheck App</h2>
+<div class="level2">
+
+<p>
+Mit dem extra Modul „Scheck“ hat man die Möglichkeit Gutschriften über einen Scheck abzurechnen und diesen über eine Vorlage mit den Werten aus den Gutschriften zu drucken. Zum Drucken der Schecks wird das Modul <a href="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  title="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  rel="nofollow">Layoutvorlagen</a> benötigt.
+</p>
+
+<p>
+<strong>Hinweis:</strong> Das Modul Scheck gibt es ab Version 17.3 in unserem <a href="http://shop.wawision.de/"  title="http://shop.wawision.de/"  rel="nofollow">Shop</a>. <br/>
+
+<strong>Stand:</strong> September 2017
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="zahlweise_scheck_erstellen">Zahlweise Scheck erstellen</h3>
+<div class="level3">
+
+<p>
+Administration → Einstellungen → Zahlungsweisen
+</p>
+
+<p>
+Über NEU eine neue Zahlweise „Scheck“ anlegen mit Typ <strong>scheck</strong>. <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_scheck&amp;media=wawision:scheck_zahlungsweisen_erstellen.png"  title="wawision:scheck_zahlungsweisen_erstellen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=scheck&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+Diese muss dann auch in der Gutschrift ausgewählt sein, damit die GS in der Scheck App erscheint: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_scheck&amp;media=wawision:scheck_zahlungsweise_in_gutschrift.png"  title="wawision:scheck_zahlungsweise_in_gutschrift.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=scheck&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="layoutvorlage_fuer_einen_scheck_erstellen">Layoutvorlage für einen Scheck erstellen</h3>
+<div class="level3">
+
+<p>
+Administration → AppStore → Layoutvorlagen
+</p>
+
+<p>
+Unter Layoutvorlagen legen Sie eine Layoutvorlage mit Kategorie <strong>scheck</strong> an. <br/>
+
+Eine Anleitung dazu samt Vorlage gibt es hier: <a href="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator#scheck"  title="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator#scheck"  rel="nofollow">Layoutvorlage für Schecks erstellen</a>
+</p>
+
+<p>
+<strong>Beispiel Vorlage:</strong>
+</p>
+
+<p>
+Die Variablen in den geschweiften Klammern werden dann dynamisch mit den Kundendaten gefüllt. <br/>
+
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_scheck&amp;media=wawision:scheck_layout_variablen.png"  title="wawision:scheck_layout_variablen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=scheck&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Wenn die Variablen für die ausgeschriebenen Beträge nicht erscheinen, liegt das an der PHP Version, die upgedatet werden muss, damit diese korrekt dargestellt werden.
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="uebersicht_der_scheck_app">Übersicht der Scheck App</h3>
+<div class="level3">
+
+</div>
+
+<h4 id="offene_schecks">Offene Schecks</h4>
+<div class="level4">
+
+<p>
+Im Tab „offene Schecks“ sehen Sie alle offene Gutschriften mit der Zahlungsweise „Schecke“ (siehe oben).
+</p>
+
+<p>
+Vorne können Sie die Gutschriften anhaken, die gedruckt werden sollen und mit dem Button „Sammeldruck starten bzw. als gedruckt markieren“ drucken.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_scheck&amp;media=wawision:scheck_uebersicht.png"  title="wawision:scheck_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=scheck&fileid=4"  alt="" /></a>
+</p>
+
+<p>
+<strong>Übersicht über die unteren Auswahlfelder:</strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> Konto → Geschäftskonto von dem der Betrag gebucht werden soll.</div>
+</li>
+<li class="level1"><div class="li"> Auswahl Layoutvorlage → Hier die Layoutvorlage auswählen, die für den Scheck erstellt wurde (siehe oben).</div>
+</li>
+<li class="level1"><div class="li"> Drucker → Der Drucker auf den die Schecks gedruckt werden sollen.</div>
+</li>
+</ul>
+
+</div>
+
+<h4 id="archiv">Archiv</h4>
+<div class="level4">
+
+<p>
+Hier sehen Sie die bereits gedruckten Schecks und können auch danach suchen. <br/>
+
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_scheck&amp;media=wawision:scheck_archiv.png"  title="wawision:scheck_archiv.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=scheck&fileid=5"  alt="" /></a>
+</p>
+
+<p>
+Mit dem PDF Icon können Sie die Schecks in einem Sammel-PDF nochmal betrachten.<br/>
+
+Mit dem X Icon können Sie die Schecks auflösen - die Gutschriften gelangen dann wieder in die „offene Schecks“ Oberfläche.
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

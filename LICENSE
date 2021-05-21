@@ -1,0 +1,209 @@
+Diese Software ist urheberrechtlich geschützt!
+
+Copyright by Xentral ERP Software GmbH (ehemals WaWision GmbH bzw. embedded projects GmbH)
+
+
+Diese Software ist urheberrechtlich geschützt. Alle aus dem Urheberrecht resultierenden
+Rechte stehen dem Lizenzgeber zu. Das Urheberrecht umfaßt insbesondere den
+Programmcode, die Dokumentation, das Erscheinungsbild, die Struktur und Organisation
+der Programmdateien, den Programmnamen, Logos und andere Darstellungsformen
+innerhalb der Software.
+
+Der Lizenznehmer erhält nur das individuelle Nutzungsrecht an der Software. Ein
+Erwerb von Rechten an der Software selbst ist damit nicht verbunden. Der Lizenzgeber
+behält sich alle Veröffentlichungs-, Vervielfältigungs-, Bearbeitungs- und Verwertungsrechte
+an der Software vor.
+
+Diese Software enthält folgenden Drittkomponenten unter den folgenden Lizenzen:
+<table class="mkTable">
+<tr><th>Komponente</th><th>Lizenz</th><th>Quellcode Download<br>(soweit anwendbar)</th></tr>
+<tr valign="top">
+  <td>phpmailer Version 2.1 (Wed, June 04 2008)</td>
+  <td>[PHPMAILER]</td>
+  <td><a href="">http://phpmailer.codeworxtech.com</a></td>
+</tr>
+</table>
+
+Some icons used in this software are property of Webalys LLC (https://www.webalys.com) and can be used only in the context of this open source project.
+
+
+
+    phpmailer
+        GNU LESSER GENERAL PUBLIC LICENSE Version 2.1, February 1999
+        http://phpmailer.codeworxtech.com/
+    simple_dom_html
+        Licensed under The MIT License
+        http://sourceforge.net/projects/simplehtmldom/
+    full calendar 1.5.3
+        MIT-LICENSE.txt and GPL-LICENSE.txt respectively
+        WaWision choose MIT license
+        http://arshaw.com/fullcalendar/
+    jqtouch-1.0-beta-2-r109.zip
+        http://code.google.com/p/jqtouch/
+        The MIT License
+    jQuery UI CSS Framework 1.8.6
+        Dual licensed under the MIT or GPL Version 2 licenses
+        WaWision choose MIT license
+        http://jquery.org/license
+    FPDF
+        FPDF is released under a permissive license: there is no usage restriction. You may embed it freely in your application (commercial or not), with or without modifications.
+        http://www.fpdf.org/
+    Math
+        http://www.gnu.org/licenses/lgpl.txt
+        http://pear.php.net/package/Math_BigInteger
+    phpseclib
+        http://www.gnu.org/licenses/lgpl.txt
+        http://phpseclib.sourceforge.net
+    PHP_Compat /
+        http://www.gnu.org/licenses/lgpl.html
+        http://php.net/
+    Spreadsheet_Excel_Reader
+        http://www.php.net/license/3_0.txt PHP License 3.0
+        http://www.roxburgh.me.uk
+    Crypt
+        http://www.gnu.org/licenses/lgpl.txt
+        http://phpseclib.sourceforge.net
+    pretty autocomplete
+        COPYING for license information (LGPL)
+        http://www.horde.org/
+    jquery.mobile.min.js
+        The MIT License
+        http://jquerymobile.com/
+    colorpicker
+        COPYING for license information (LGPL).
+        Original Sphere Plugin v0.1/v0.3, Design/Programming by Ulyses, (c) 2007 ColorJack.com, IE fixes by Hamish.
+    grider.js
+        http://www.opensource.org/licenses/mit-license.php
+        Boris Barroso Camberos
+    tinymce
+        GNU LESSER GENERAL PUBLIC LICENSE
+        moxiecode.com
+    Flot
+        http://code.google.com/p/flot/
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+
+    Klarna
+        https://github.com/klarna/php-xmlrpc
+        The Klarna XMLRPC PHP SDK is released under Apache License, Version 2.0
+        Klarna AB (publ). Headquarters: Stockholm
+
+    jQuery tagEditor Plugin
+      MIT License © Pixabay.com
+      https://github.com/Pixabay/jQuery-tagEditor
+
+    ColorExtractor
+      MIT License © Mathieu Lechat
+      https://github.com/thephpleague/color-extractor
+
+    HTML Purifier
+      GNU LESSER GENERAL PUBLIC LICENSE
+      https://travis-ci.org/ezyang/htmlpurifier
+
+    league/fractal    0.17.0
+      MIT License
+      https://github.com/thephpleague/fractal
+
+    nikic/fast-route  v1.3.0
+      BSD-3-Clause
+      https://github.com/nikic/FastRoute
+
+    rakit/validation
+      MIT License
+      https://github.com/rakit/validation
+
+    aura/sqlquery
+      BSD-2-Clause
+      https://github.com/auraphp/Aura.SqlQuery
+
+    raml2html
+      MIT License
+      https://github.com/raml2html/raml2html
+
+    raml2html werk theme
+      MIT License
+      https://github.com/silicann/raml2html-werk-theme
+
+    FPDF Makefont + TTFParser
+      Permission is hereby granted, free of charge, to any person obtaining a copy of this software to use, copy, modify, distribute, sublicense, and/or sell copies of the software, and to permit persons to whom the software is furnished to do so.
+      https://github.com/Setasign/FPDF
+
+    Nickersoft/push.js
+      MIT License © Tyler Nickerson
+      https://github.com/Nickersoft/push.js
+
+		sabre/dav
+			BSD-3-Clause
+			https://github.com/sabre-io/dav
+
+    needim/noty - A jQuery Notification Plugin
+      MIT License
+      https://github.com/needim/noty
+
+    swiss-payment-slip/swiss-payment-slip-fpdf
+      MIT License
+      https://github.com/ravage84/SwissPaymentSlipFpdf
+
+    League\Flysystem
+      MIT License
+      https://github.com/thephpleague/flysystem
+
+    hammerjs/hammer.js
+      MIT License © Jorik Tangelder (Eight Media)
+      https://github.com/hammerjs/hammer.js/
+
+    haltu/muuri
+      MIT License © Haltu Oy
+      https://github.com/haltu/muuri
+
+    FitText.js
+      WTFPL License © Dave Rupert
+      https://github.com/davatron5000/FitText.js
+
+    Smarty template engine
+      LGPL-3.0 License
+      https://github.com/smarty-php/smarty
+
+    TCPDF
+      GNU-LGPL v3 © Nicola Asuni - Tecnick.com
+	    https://tcpdf.org
+
+    Guzzle, PHP HTTP client
+      MIT License
+      https://github.com/guzzle/guzzle
+
+    League/OAuth1-Client
+      MIT License
+      https://github.com/thephpleague/oauth1-client
+
+    Etsy Provider for League/OAuth1-Client
+      MIT License © Y0lk <gabriel@inkrebit.com>
+      https://github.com/Y0lk/oauth1-etsy
+
+    Lexend Deca Font
+      SIL Open Font License 1.1 © The Lexend Project Authors
+      https://github.com/ThomasJockin/lexend
+
+    Roboto Font
+      Apache License, Version 2.0 © Google Inc.
+      https://github.com/google/roboto
+
+    HOTP/TOTP Token Generator
+    	MIT License
+    	https://github.com/lfkeitel/php-totp
+
+    phpseclib/phpseclib
+    	MIT License
+    	https://github.com/phpseclib/phpseclib
+
+    Laminas/Laminas-mail
+      BSD-3-Clause
+      https://github.com/laminas/laminas-mail
+
+Verwenden Sie die Software nur, wenn Sie eine gültige Lizenz erworben haben!
+
+Kontakt:  Xentral ERP Software GmbH
+          Fuggerstraße 11
+          D-86150 Augsburg
+          Telefon 0821 268 41 0 41
+          Telefax 0821 268 41 0 42
+          E-Mail kontakt@xentral.biz

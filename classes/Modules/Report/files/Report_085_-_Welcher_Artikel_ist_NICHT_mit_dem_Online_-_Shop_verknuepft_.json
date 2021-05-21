@@ -1,0 +1,31 @@
+{
+    "name": "085 - Welcher Artikel ist NICHT mit dem Online - Shop verkn\u00fcpft",
+    "description": "Gibt alle Artikel aus die nicht, oder nicht aktiv in einem Online Shop sind.",
+    "project": 0,
+    "sql_query": "SELECT a.nummer, a.name_de \r\nFROM artikel a \r\nWHERE a.geloescht = 0 AND a.id NOT IN (SELECT ao.artikel FROM artikel_onlineshops ao WHERE aktiv = 1)",
+    "columns": [
+        {
+            "key_name": "nummer",
+            "title": "Artikel-Nr.",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "name_de",
+            "title": "Artikelname",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Einkauf \u0026 Artikelverwaltung \u0028PIM\u0029",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

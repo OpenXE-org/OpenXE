@@ -1,0 +1,23 @@
+
+/**
+ * Hide the search field and the table footer with export functions.
+ * todo: check functionality and usage!
+ */
+#snapaddy_address_filter,
+#snapaddy_address_paginate,
+#snapaddy_address_paginate + .dt-buttons{display: none;}
+
+#sipgate_user_form #api-test{
+    text-decoration: underline;
+}
+#sipgate_user_form #api-test:hover{
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#api-test-result.api_fail{
+    color: firebrick;
+}
+#api-test-result.api_success{
+    color: darkgreen;
+}

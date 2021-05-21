@@ -1,0 +1,205 @@
+:root{
+    --calendar-vacation-standard: var(--xentral-signature-green); /* green */
+    --calendar-vacation-away: rgba(44, 229, 162, 0.63);
+    --calendar-vacation-request: rgba(44, 229, 162, 0.25);
+
+    --calendar-vacation-reject: var(--xentral-signature-petrol); /* petrol */
+    --calendar-vacation-remove: rgba(59, 184, 195, 0.5);
+
+    --calendar-sick-standard:var(--xentral-signature-pink); /* pink */
+    --calendar-sick-request: rgba(229, 110, 202, 0.25);
+
+    --calendar-sick-reject: var(--xentral-signature-orange); /* orange */
+    --calendar-sick-remove: rgba(238, 134, 103, 0.5);
+
+    --calendar-unpaid-standard: var(--xentral-signature-violet); /* violett */
+    --calendar-absent-standard: var(--xentral-signature-blue); /* blue */
+}
+
+#easycalendar {
+    display: grid;
+    grid-template-columns: 7% repeat(31, 3%);
+    box-sizing: border-box;
+    color: #6d6d6f;
+}
+
+#easycalendar-legend {
+    border-top:1px solid  var(--current-grey);
+    padding: 15px 0 15px 0;
+}
+
+#easycalendar-legend span{
+    line-height:1.5em;
+}
+
+#easycalendar-legend .txt{
+    padding: 0 5px 0 3px;
+}
+
+#easycalendar-legend .box{
+    margin: 0 0 0 5px;
+    color: transparent;
+}
+
+#easycalendar .standard,
+#easycalendar .saturday,
+#easycalendar .sunday,
+#easycalendar .holiday,
+#easycalendar .vacation,
+#easycalendar .unpaid,
+#easycalendar .sick,
+#easycalendar .requestsick,
+#easycalendar .absent,
+#easycalendar .away,
+#easycalendar .requested,
+#easycalendar .noday,
+#easycalendar .rejected,
+#easycalendar .remove{
+    box-sizing: border-box;
+    border-top:1px solid  var(--current-grey);
+    border-left:1px solid  var(--current-grey);
+    color:#fff;
+    text-align:center;
+}
+
+#easycalendar .month,
+#easycalendar .top {
+    box-sizing: border-box;
+    font-weight:bold;
+    padding: 3px 0 4px 4px;
+}
+
+#easycalendar .month {
+    border-top:1px solid  var(--current-grey);
+}
+
+#easycalendar .employee-name {
+    box-sizing: border-box;
+    font-style:italic;
+    padding: 3px 0 4px 10px;
+}
+
+#easycalendar .top {
+    text-align: center;
+}
+
+#easycalendar.monclick .monday,
+#easycalendar.tueclick .tuesday,
+#easycalendar.wedclick .wednesday,
+#easycalendar.thuclick .thursday,
+#easycalendar.friclick .friday,
+#easycalendar.satclick .saturday,
+#easycalendar.sunclick .sunday{
+    cursor: pointer;
+}
+
+#easycalendar.monclick .monday:hover,
+#easycalendar.tueclick .tuesday:hover,
+#easycalendar.wedclick .wednesday:hover,
+#easycalendar.thuclick .thursday:hover,
+#easycalendar.friclick .friday:hover,
+#easycalendar.satclick .saturday:hover,
+#easycalendar.sunclick .sunday:hover{
+    background-color:var(--xentral-signature-violet-transparent);
+}
+
+#easycalendar .saturday,
+#easycalendar .sunday,
+#easycalendar .holiday {
+    background-color:var(--current-grey);
+}
+
+#easycalendar .noday {
+    background-color:#fff;
+}
+#easycalendar-legend .unpaid,
+#easycalendar .unpaid {
+    background-color: var(--calendar-unpaid-standard);
+}
+
+#easycalendar-legend .absent,
+#easycalendar .absent {
+    background-color: var(--calendar-absent-standard);
+}
+
+#easycalendar-legend .away,
+#easycalendar .away {
+    background-color: var(--calendar-vacation-away);
+}
+
+#easycalendar-legend .vacation,
+#easycalendar .vacation {
+    background-color: var(--calendar-vacation-standard);
+}
+
+#easycalendar-legend .request-vacation,
+#easycalendar .request-vacation {
+    background-color: var(--calendar-vacation-request);
+}
+
+#easycalendar-legend .reject-vacation,
+#easycalendar .reject-vacation {
+    background-color: var(--calendar-vacation-reject);
+}
+
+#easycalendar-legend .remove-vacation,
+#easycalendar .remove-vacation {
+    background-color: var(--calendar-vacation-remove);
+}
+
+#easycalendar-legend .sick,
+#easycalendar .sick {
+    background-color: var(--calendar-sick-standard);
+}
+
+#easycalendar-legend .request-sick,
+#easycalendar .request-sick {
+    background-color: var(--calendar-sick-request);
+}
+
+#easycalendar-legend .reject-sick,
+#easycalendar .reject-sick {
+    background-color: var(--calendar-sick-reject);
+}
+
+#easycalendar-legend .remove-sick,
+#easycalendar .remove-sick {
+    background-color: var(--calendar-sick-remove);
+}
+
+#easycalendar .unpaid.half,
+#easycalendar .absent.half,
+#easycalendar .away.half,
+#easycalendar .vacation.half,
+#easycalendar .request-vacation.half,
+#easycalendar .reject-vacation.half,
+#easycalendar .remove-vacation.half,
+#easycalendar .sick.half,
+#easycalendar .request-sick.half,
+#easycalendar .reject-sick.half,
+#easycalendar .remove-sick.half {
+    color: transparent;
+    shape-outside: polygon(
+            0 0,
+            0 100%,
+            100% 0
+    );
+
+    clip-path: polygon(
+            0 0,
+            0 100%,
+            100% 0
+    );
+}
+
+#easycalendar .inline {
+    display: inline-block;
+    height:100%;
+    border: 0 none;
+    text-align: center;
+    padding: 3px 0 0 0;
+}
+
+#easycalendar .today {
+    color:var(--calendar-vacation-standard);
+}

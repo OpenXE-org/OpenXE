@@ -1,0 +1,36 @@
+{
+    "key": "first_run",
+    "category": "general",
+    "title": "Einrichtungsassistent",
+    "sub_title": "Stücklisten anlegen",
+    "skip_link_text": "Einrichtung überspringen",
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "add_component_to_main_article": {
+                    "completed": false,
+                    "steps": {
+                        "save_inserted_component_article": {
+                            "position": 1,
+                            "title": "Stückliste speichern",
+                            "caption": "",
+                            "link": "./index.php?module=welcome&action=start",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "input",
+                                        "value": "Speichern"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

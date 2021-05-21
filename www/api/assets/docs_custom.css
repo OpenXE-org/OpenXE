@@ -1,0 +1,13 @@
+.hero {
+    background-color: #42B8C4 !important;
+}
+a:link,
+a:active,
+a:visited,
+.tabs li.is-active a {
+    color: #42b8c5 !important;
+}
+a:hover,
+a:focus {
+    color: #2F9099 !important;
+}

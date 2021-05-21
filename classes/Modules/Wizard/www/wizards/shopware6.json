@@ -1,0 +1,103 @@
+{
+    "key": "shopware6",
+    "category": "shop-interface",
+    "title": "Shopware6 anbinden",
+    "sub_title": "Lade hier deine Shopware6-Daten und bekomme direkt ein Gefühl dafür, wie xentral dein Business unterstützen kann – alles DSGVO-konform versteht sich! Der Assistent zeigt dir wie das geht.",
+    "description": "Lade hier deine Shopware6-Daten und bekomme direkt ein Gefühl dafür, wie xentral dein Business unterstützen kann – alles DSGVO-konform versteht sich! Der Assistent zeigt dir wie das geht.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "onlineshops": [
+            "list",
+            "create",
+            "edit"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/8IyHNedcYAU"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "create_shopware6_shop": {
+                    "steps": {
+                        "click_new_button": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Neuer Shop",
+                            "caption": "Klicke auf NEU um deinen Shop anzubinden.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "select_shopware6_shop": {
+                    "steps": {
+                        "click_shopware6_shop": {
+                            "position": 1,
+                            "title": "Shopware 6 Shop",
+                            "caption": "Klicke auf Shopware 6 API Advanced.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "createbutton",
+                                        "data-module": "shopimporter_shopware6"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

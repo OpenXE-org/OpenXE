@@ -1,0 +1,1 @@
+Sie haben die M&ouml;glichkeit, Freifelder zu verwenden und diese mit den Spaltenoperationen zu verbinden.<br /><code>{{spaltensumme(POS:freifeld1 * POS:menge)}}</code><br /><span class="wiki-text">Die Formel &quot;spaltensumme&quot; verh&auml;lt sich wie in der Beschreibung er&ouml;rtert. Es wird die Summe aller Freifelder 1 gebildet und dies &uuml;ber alle Positionen.</span>

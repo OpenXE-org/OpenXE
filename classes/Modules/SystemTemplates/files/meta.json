@@ -1,0 +1,11 @@
+{
+    "module" : "System Templates",
+    "templates": [
+        {
+            "filename" : "werkzustand.zip",
+            "title" : "Werkzustand",
+            "category": "Allgemein",
+            "description" : "Die Datenbank wird auf Grundzustand gestellt."
+        }
+    ]
+}

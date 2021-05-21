@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         convertDeprecationsToExceptions="false"
+>
+    <testsuites>
+        <!-- All Unit tests (can be run without database connection etc.) -->
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Unit/</directory>
+        </testsuite>
+        <!-- All integration tests -->
+        <testsuite name="Integration">
+            <directory suffix="Test.php">./tests/Integration/</directory>
+        </testsuite>
+
+        <!--Test suite for all legacy code-->
+        <testsuite name="Legacy">
+            <directory suffix="Test.php">./tests/*/Legacy</directory>
+        </testsuite>
+
+        <!--Test suites for components-->
+        <testsuite name="Components/Backup">
+            <directory suffix="Test.php">./tests/*/Components/Backup</directory>
+        </testsuite>
+
+        <testsuite name="Components/Barcode">
+            <directory suffix="Test.php">./tests/*/Components/Barcode</directory>
+        </testsuite>
+        <testsuite name="Components/Database">
+            <directory suffix="Test.php">./tests/*/Components/Database</directory>
+        </testsuite>
+        <testsuite name="Components/EnvironmentConfig">
+            <directory suffix="Test.php">./tests/*/Components/EnvironmentConfig</directory>
+        </testsuite>
+        <testsuite name="Components/Exporter">
+            <directory suffix="Test.php">./tests/*/Components/Exporter</directory>
+        </testsuite>
+        <testsuite name="Components/Http">
+            <directory suffix="Test.php">./tests/*/Components/Http</directory>
+        </testsuite>
+        <testsuite name="Components/HttpClient">
+            <directory suffix="Test.php">./tests/*/Components/HttpClient</directory>
+        </testsuite>
+        <testsuite name="Components/Logger">
+            <directory suffix="Test.php">./tests/*/Components/Logger</directory>
+        </testsuite>
+        <testsuite name="Components/MailClient">
+            <directory suffix="Test.php">./tests/*/Components/MailClient</directory>
+        </testsuite>
+        <testsuite name="Components/Pdf">
+            <directory suffix="Test.php">./tests/*/Components/Pdf</directory>
+        </testsuite>
+        <testsuite name="Components/Mailer">
+            <directory suffix="Test.php">./tests/*/Components/Mailer</directory>
+        </testsuite>
+        <testsuite name="Components/Sanitizer">
+            <directory suffix="Test.php">./tests/*/Components/Sanitizer</directory>
+        </testsuite>
+        <testsuite name="Components/SchemaCreator">
+            <directory suffix="Test.php">./tests/*/Components/SchemaCreator</directory>
+        </testsuite>
+        <testsuite name="Components/Token">
+            <directory suffix="Test.php">./tests/*/Components/Token</directory>
+        </testsuite>
+        <testsuite name="Components/Util">
+            <directory suffix="Test.php">./tests/*/Components/Util</directory>
+        </testsuite>
+
+        <!--Test suites for modules-->
+        <testsuite name="Modules/Api">
+            <directory suffix="Test.php">./tests/*/Modules/Api</directory>
+        </testsuite>
+        <testsuite name="Modules/ApiAccount">
+            <directory suffix="Test.php">./tests/*/Modules/ApiAccount</directory>
+        </testsuite>
+        <testsuite name="Modules/Article">
+            <directory suffix="Test.php">./tests/*/Modules/Article</directory>
+        </testsuite>
+        <testsuite name="Modules/Backup">
+            <directory suffix="Test.php">./tests/*/Modules/Backup</directory>
+        </testsuite>
+        <testsuite name="Modules/CalDav">
+            <directory suffix="Test.php">./tests/*/Modules/CalDav</directory>
+        </testsuite>
+        <testsuite name="Modules/Calendar">
+            <directory suffix="Test.php">./tests/*/Modules/Calendar</directory>
+        </testsuite>
+        <testsuite name="Modules/Country">
+            <directory suffix="Test.php">./tests/*/Modules/Country</directory>
+        </testsuite>
+        <testsuite name="Modules/Datanorm">
+            <directory suffix="Test.php">./tests/*/Modules/Datanorm</directory>
+        </testsuite>
+        <testsuite name="Modules/DatevApi">
+            <directory suffix="Test.php">./tests/*/Modules/DatevApi</directory>
+        </testsuite>
+        <testsuite name="Modules/DemoExporter">
+            <directory suffix="Test.php">./tests/*/Modules/DemoExporter</directory>
+        </testsuite>
+        <testsuite name="Modules/Ebay">
+            <directory suffix="Test.php">./tests/*/Modules/Ebay</directory>
+        </testsuite>
+        <testsuite name="Modules/EtsyApi">
+            <directory suffix="Test.php">./tests/*/Modules/EtsyApi</directory>
+        </testsuite>
+        <testsuite name="Modules/FiskalyApi">
+            <directory suffix="Test.php">./tests/*/Modules/FiskalyApi</directory>
+        </testsuite>
+        <testsuite name="Modules/GoogleApi">
+            <directory suffix="Test.php">./tests/*/Modules/GoogleApi</directory>
+        </testsuite>
+        <testsuite name="Modules/GoogleCalendar">
+            <directory suffix="Test.php">./tests/*/Modules/GoogleCalendar</directory>
+        </testsuite>
+        <testsuite name="Modules/HocrParser">
+            <directory suffix="Test.php">./tests/*/Modules/HocrParser</directory>
+        </testsuite>
+        <testsuite name="Modules/Hubspot">
+            <directory suffix="Test.php">./tests/*/Modules/Hubspot</directory>
+        </testsuite>
+        <testsuite name="Modules/Log">
+            <directory suffix="Test.php">./tests/*/Modules/Log</directory>
+        </testsuite>
+        <testsuite name="Modules/MandatoryFields">
+            <directory suffix="Test.php">./tests/*/Modules/MandatoryFields</directory>
+        </testsuite>
+        <testsuite name="Modules/Onlineshop">
+            <directory suffix="Test.php">./tests/*/Modules/Onlineshop</directory>
+        </testsuite>
+        <testsuite name="Modules/PaymentMethod">
+            <directory suffix="Test.php">./tests/*/Modules/PaymentMethod</directory>
+        </testsuite>
+        <testsuite name="Modules/Pipedrive">
+            <directory suffix="Test.php">./tests/*/Modules/Pipedrive</directory>
+        </testsuite>
+        <testsuite name="Modules/Report">
+            <directory suffix="Test.php">./tests/*/Modules/Report</directory>
+        </testsuite>
+        <testsuite name="Modules/Resubmission">
+            <directory suffix="Test.php">./tests/*/Modules/Resubmission</directory>
+        </testsuite>
+        <testsuite name="Modules/ShopimporterAmazon">
+            <directory suffix="Test.php">./tests/*/Modules/ShopimporterAmazon</directory>
+        </testsuite>
+        <testsuite name="Modules/SubscriptionCycle">
+            <directory suffix="Test.php">./tests/*/Modules/SubscriptionCycle</directory>
+        </testsuite>
+        <testsuite name="Modules/SystemConfig">
+            <directory suffix="Test.php">./tests/*/Modules/SystemConfig</directory>
+        </testsuite>
+        <testsuite name="Modules/SuperSearch">
+            <directory suffix="Test.php">./tests/*/Modules/SuperSearch</directory>
+        </testsuite>
+        <testsuite name="Modules/RetailPriceTemplate">
+            <directory suffix="Test.php">./tests/*/Modules/RetailPriceTemplate</directory>
+        </testsuite>
+        <testsuite name="Modules/SystemMailClient">
+            <directory suffix="Test.php">./tests/*/Modules/SystemMailClient</directory>
+        </testsuite>
+        <testsuite name="Modules/SystemMailer">
+            <directory suffix="Test.php">./tests/*/Modules/SystemMailer</directory>
+        </testsuite>
+        <testsuite name="Modules/SystemTemplates">
+            <directory suffix="Test.php">./tests/*/Modules/SystemTemplates</directory>
+        </testsuite>
+        <testsuite name="Modules/Ticket">
+            <directory suffix="Test.php">./tests/*/Modules/Ticket</directory>
+        </testsuite>
+        <testsuite name="Modules/TimeManagement">
+            <directory suffix="Test.php">./tests/*/Modules/TimeManagement</directory>
+        </testsuite>
+        <testsuite name="Modules/TOTPLogin">
+            <directory suffix="Test.php">./tests/*/Modules/TOTPLogin</directory>
+        </testsuite>
+        <testsuite name="Modules/TransferSmartyTemplate">
+            <directory suffix="Test.php">./tests/*/Modules/TransferSmartyTemplate</directory>
+        </testsuite>
+        <testsuite name="Modules/User">
+            <directory suffix="Test.php">./tests/*/Modules/User</directory>
+        </testsuite>
+        <testsuite name="Modules/AmazonVendorDF">
+            <directory suffix="Test.php">./tests/*/Modules/AmazonVendorDF</directory>
+        </testsuite>
+        <testsuite name="Modules/PartialDelivery">
+            <directory suffix="Test.php">./tests/*/Modules/PartialDelivery</directory>
+        </testsuite>
+        <testsuite name="Modules/CopperSurcharge">
+            <directory suffix="Test.php">./tests/*/Modules/CopperSurcharge</directory>
+        </testsuite>
+
+        <!--Test suites for widgets-->
+        <testsuite name="Widgets/ClickByClickAssistant">
+            <directory suffix="Test.php">./tests/*/Widgets/ClickByClickAssistant</directory>
+        </testsuite>
+
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./classes/Components/Util</directory>
+            <directory suffix=".php">./classes/Modules/PartialDelivery</directory>
+            <directory suffix=".php">./classes/Modules/AmazonVendorDF</directory>
+            <directory suffix=".php">./classes/Components/Logger</directory>
+            <directory suffix=".php">./classes/Modules/Ebay</directory>
+            <file>./www/lib/dokumente/class.briefpapier.php</file>
+            <exclude>
+                <directory suffix="Bootstrap.php">./classes</directory>
+                <directory suffix=".php">./classes/Components/Barcode/TcPdf</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+    <php>
+        <server name="APP_ENV" value="testing"/>
+<!--        <server name="DB_HOST" value="127.0.0.1"/>-->
+<!--        <server name="DB_PORT" value="3306"/>-->
+<!--        <server name="DB_USER" value="root"/>-->
+<!--        <server name="DB_PASSWORD" value="password"/>-->
+<!--        <server name="DB_NAME" value="test_db"/>-->
+    </php>
+    <logging>
+        <log type="testdox-text" target="php://stdout" />
+    </logging>
+</phpunit>

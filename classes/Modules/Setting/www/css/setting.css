@@ -1,0 +1,211 @@
+.settings-h3{
+    font-size: 18px;
+    line-height: 28px;
+    color: rgba(55, 64, 81, 0.8);
+    padding-left: 0;
+    display: block;
+    border-bottom: 1px solid rgba(55, 64, 81, 0.1);
+}
+
+.settings-module {
+    padding-top: 10px;
+}
+
+.settings-module .modules {
+    flex-direction: row;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.settings-module .modules h3{
+    margin: 0;
+    width: 100%;
+    padding-left: 2%;
+    font-weight: normal;
+}
+
+.settings-module .module {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    position: relative;
+    width: 23%;
+    margin: 0 1%;
+    padding: 18px 15px;
+    box-sizing: border-box;
+}
+
+@media only screen and (min-width: 1200px) {
+    .settings-module .module {
+        width: 18%;
+    }
+}
+
+.settings-module .module:hover{
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
+    border-radius: 3px;
+    background-color: white;
+}
+
+.settings-module .module button {
+    font-size: 10px;
+    padding: 5px 25px;
+    margin-top: auto;
+    background-color: #2DCA73;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    word-break: normal;
+}
+
+.settings-module .module button.install{
+    background-color: #2DCA73;
+    color: white;
+}
+
+.settings-module .module button.install:hover{
+    background-color: #219653;
+}
+
+
+.settings-module .module .icon {
+    width: 66px;
+    min-width: 66px;
+    height: 66px;
+    min-height: 66px;
+    margin-right: 15px;
+    border-radius: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.settings-module .module .icon a {
+    display: block;
+    width: 40px;
+    height: 40px;
+}
+.settings-module .module .icon img {
+    position: absolute;
+    left: 13px;
+    top: 13px;
+    padding: 0;
+    border-radius: 0;
+}
+.settings-module .module .content {
+    box-sizing: border-box;
+    line-height: 15px;
+    word-break: break-word;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.settings-module .module .content span,
+.settings-module .information-right .description span{
+    background: white;
+    color: #2729D2;
+    border: 1px solid #2729D2;
+    font-weight: normal;
+    font-size: 8px;
+    line-height: 14px;
+    margin: 5px 3px 5px 0;
+    height: 16px;
+    max-width: 50px;
+    padding: 0 5px;
+    display: inline-block;
+
+}
+
+.settings-module .module .title {
+    display: block;
+    font-weight: bold;
+    box-sizing: border-box;
+    font-size: 12px;
+    line-height: 12px;
+}
+
+.settings-module .module .dropdown {
+    position: absolute;
+    left: 50px;
+    top: 48px;
+}
+
+/**
+BETA PROGRAM
+ */
+
+.beta-program{
+    padding: 30px;
+}
+
+.beta-program p{
+    line-height: 22px;
+}
+
+.beta-program h2,
+.beta-program h3 {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.beta-program h2 {
+    font-size: 20px;
+}
+
+.beta-program h3 {
+    font-size: 14px;
+    color: black;
+    font-weight: normal;
+}
+
+.beta-program form {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    line-height: 22px;
+}
+
+.beta-program form button{
+    margin-left: 20px;
+}
+
+.beta-program .beta-program-highlight {
+    background-color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.beta-program.thanks{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.beta-program.thanks .beta-program-highlight{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.beta-program.thanks p{
+    max-width: 350px;
+    text-align: center;
+}
+
+div[aria-describedby="beta-program-thanks-popup"].ui-dialog{
+    border-radius: 8px;
+    min-width: 400px;
+}
+
+div[aria-describedby="beta-program-thanks-popup"].ui-dialog div.ui-dialog-titlebar {
+    border-bottom: 1px solid #E6EAEE;
+    font-size: 18px;
+}
+
+div[aria-describedby="beta-program-thanks-popup"].ui-dialog,
+div[aria-describedby="beta-program-thanks-popup"].ui-dialog div.ui-dialog-titlebar {
+    background-color: white;
+}

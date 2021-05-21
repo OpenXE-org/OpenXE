@@ -1,0 +1,205 @@
+
+#reportListFilterTerm {
+    width: 95%;
+}
+
+#reportListFilterApply {
+    min-width: 150px;
+}
+
+#reportEditResult {
+    background-color: #d3d3d345;
+}
+
+#reportEditResult[error="true"] {
+    color: orangered;
+    background-color: #d3d3d345;
+}
+
+#dirtyWarning {
+    color: var(--warning-color);
+    background-color: var(--warning);
+    visibility: hidden;
+}
+#dirtyWarning[dirty="true"] {
+    display: inline;
+    visibility: visible;
+}
+
+textarea {
+    width: 95%;
+    height: 100%;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+textarea[readonly] {
+    background-color: #d3d3d345;
+}
+
+.textarea-label {
+    vertical-align: top;
+}
+
+.playbutton {
+    display: inline;
+}
+
+td.input-label {
+    width: 180px;
+}
+
+input[type="text"] {
+    width: 95%;
+    box-sizing: border-box;
+}
+
+p.inputwarning {
+    color: red;
+    display: inline-block;
+}
+
+input[type='button'].button-add,
+#report-view-input-param-submit {
+    background-color: var(--button-primary-background);
+    color: var(--button-primary-color);
+}
+
+.form-group label {
+    display: block;
+}
+.form-group input[type="text"] {
+    width: 100%;
+    display: block;
+}
+.form-group small {
+    display: block;
+}
+
+.parameter-view {
+    cursor: pointer;
+    border-style: solid;
+    border-width: .8em;
+    border-color: var(--mainmenu-active-color);
+    background-color: var(--mainmenu-active-color);
+    color: var(--mainmenu-color);
+    border-radius: .5em;
+    margin: 1px 3px 1px 3px;
+    padding: 0 .5em 0 .5em;
+    display: inline-block;
+}
+
+.column-view {
+    cursor: pointer;
+}
+
+.dialog-message {
+    color: red;
+}
+
+.form-table {
+    width: 95%;
+    border-collapse:separate;
+    border-spacing: 0 10px;
+}
+input.double-col {
+    width: 95%;
+    box-sizing: content-box;
+}
+input.half-col {
+    width: 35%;
+    display: inline;
+}
+#transferUrlAdress {
+    width: 80%;
+}
+
+.dialog-table {
+    border-collapse:separate;
+    border-spacing: 0 20px;
+}
+
+a.table-button-col-edit,
+a.table-button-col-delete,
+a.table-button-edit,
+a.table-button-delete {
+    cursor: pointer;
+}
+
+#chartIntervalValue {
+    display: inline;
+    width: 10%;
+}
+
+#chartIntervalMode {
+    display: inline;
+    width: 80%;
+}
+
+#report_shareduser_wrapper {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.rightside {
+    float: right;
+}
+
+.vertical-top {
+    vertical-align: top;
+}
+
+#sharedUserFind {
+    width: 100%;
+}
+
+.incolumn {
+    box-sizing: content-box;
+    width: 80%;
+}
+
+.svg-favorite svg {
+    width: 16px;
+    height: 16px;
+}
+
+.svg-favorite.favorite-on .svg-fill {
+    fill: #ffb628;
+}
+
+.report .tooltip-content {
+    word-break: break-word;
+}
+
+.report .custom-report {
+    border-bottom: 3px solid var(--green);
+}
+
+.report .original-report {
+}
+
+.report #view-input-parameters .form-group {
+    margin: 10px 0 10px 0;
+}
+
+.report #view-input-parameters .form-group label{
+    margin-bottom: 5px;
+}
+
+.report #report-view-input-param-submit,
+.report #view-input-parameters .form-group input {
+    display: inline-block;
+    width: 95%;
+}
+
+.report a.reportbutton {
+    background-color: var(--grey);
+}
+
+.report-edit-inactive {
+    visibility: hidden;
+}
+
+.report-edit-active {
+    visibility: visible;
+}

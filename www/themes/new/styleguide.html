@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Styleguide</title>
+
+  <script type="text/javascript" src="../../js/jquery/jquery-3.5.0.min.js"></script>
+ 	<script type="text/javascript" src="../../js/jquery/jquery-migrate-3.2.0.js"></script>
+
+  <link rel="stylesheet" href="./css/normalize.min.css">
+  <link rel="stylesheet" href="./css/color3.css">
+  <link rel="stylesheet" href="./css/styles.css?v=32">
+  <link rel="stylesheet" href="./css/resp-menu.css?v=5">
+  <link rel="stylesheet" href="../../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../css/bootstrap-mobile.css">
+  <link rel="stylesheet" href="./css/start/jquery-ui-1.10.3.custom.css">
+
+  <script src="../../js/ckeditor/ckeditor.js"></script>
+	<script src="../../js/ckeditor/adapters/jquery.js"></script>
+
+  <style type="text/css">
+    #container {
+      max-width: 1080px;
+      margin: 40px auto 80px auto;
+      padding-right: 15px;
+      padding-left: 15px;
+    }
+    #container > section {
+      margin: 20px 0;
+    }
+    #container > h1,
+    #container > section > h1,
+    #container > section > h2,
+    #container > section > h3,
+    #container > section > h4 {
+      padding-left: 0;
+    }
+    pre.code {
+      color: #545454;
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #EEE;
+      border: 1px solid #CCC;
+      white-space: pre-wrap;
+    }
+    pre.code.line {
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body class="layoutfix">
+<div id="container">
+
+  <h1>Frontend Style Guide</h1>
+
+  <section>
+    <h2 id="grid">Grid</h2>
+
+    <h3>Grid (gleiche Höhe)</h3>
+
+    <div class="row">
+	    <div class="row-height">
+	      <div class="col-xs-12 col-md-3 col-md-height">
+          <div class="inside inside-full-height">
+  		      <fieldset>
+              <legend>Legend</legend>
+              <div>fieldset</div>
+            </fieldset>
+          </div>
+        </div>
+	      <div class="col-xs-12 col-md-3 col-md-height">
+          <div class="inside inside-full-height">
+  		      <fieldset>
+              <legend>Legend</legend>
+              <div>fieldset<br>fieldset</div>
+            </fieldset>
+          </div>
+        </div>
+	      <div class="col-xs-12 col-md-3 col-md-height">
+          <div class="inside inside-full-height">
+  		      <fieldset>
+              <legend>Legend</legend>
+              <div>fieldset<br>fieldset<br>fieldset</div>
+            </fieldset>
+          </div>
+        </div>
+	      <div class="col-xs-12 col-md-3 col-md-height">
+          <div class="inside inside-full-height">
+  		      <fieldset>
+              <legend>Legend</legend>
+              <div>fieldset<br>fieldset<br>fieldset<br>fieldset</div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+	    <div class="row-height">
+	      <div class="col-xs-12 col-md-3 col-md-height">
+          <div class="inside inside-full-height">
+  		      <fieldset>
+              <legend>Legend</legend>
+              <div>fieldset<br>fieldset<br>fieldset</div>
+            </fieldset>
+          </div>
+        </div>
+	      <div class="col-xs-12 col-md-3 col-md-height">
+          <div class="inside inside-full-height">
+  		      <fieldset>
+              <legend>Legend</legend>
+              <div>fieldset<br>fieldset</div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Grid (variable Höhe)</h3>
+
+    <div class="row">
+      <div class="col-xs-12 col-md-3">
+        <div class="inside">
+          <fieldset>
+            <legend>Legend</legend>
+            <div>fieldset<br>fieldset</div>
+          </fieldset>
+        </div>
+        <div class="inside">
+          <fieldset>
+            <legend>Legend</legend>
+            <div>fieldset<br>fieldset</div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="col-xs-12 col-md-3">
+        <div class="inside">
+          <fieldset>
+            <legend>Legend</legend>
+            <div>fieldset<br>fieldset<br>fieldset<br>fieldset</div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="col-xs-12 col-md-3">
+        <div class="inside">
+          <fieldset>
+            <legend>Legend</legend>
+            <div>fieldset<br>fieldset<br>fieldset</div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12 col-md-6">
+        <div class="inside inside-full-height">
+          <fieldset>
+            <legend>Legend</legend>
+            <div>fieldset<br>fieldset<br>fieldset<br>fieldset</div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="col-xs-12 col-md-6">
+        <div class="row">
+          <div class="col-xs-12 col-md-6">
+            <div class="inside inside-full-height">
+              <fieldset>
+                <legend>Legend</legend>
+                <div>fieldset<br>fieldset</div>
+              </fieldset>
+            </div>
+          </div>
+          <div class="col-xs-12 col-md-6">
+            <div class="inside">
+              <fieldset>
+                <legend>Legend</legend>
+                <div>fieldset<br>fieldset<br>fieldset</div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="fieldsets">Fieldsets</h2>
+
+    <div class="row">
+      <div class="row-height">
+        <div class="col-md-12 col-md-height">
+          <div class="inside inside-full-height">
+            <fieldset>
+              <legend>Überschrift</legend>
+              <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean
+                massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam
+                felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede
+                justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-height">
+        <div class="col-xs-12 col-md-6 col-md-height">
+          <div class="inside inside-full-height">
+            <fieldset>
+              <legend>Überschrift</legend>
+              <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean
+                massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam
+                felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede
+                justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+            </fieldset>
+          </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-md-height">
+          <div class="inside inside-full-height">
+            <fieldset>
+              <legend>Überschrift</legend>
+              <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean
+                massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam
+                felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede
+                justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section>
+    <h2 id="forms">Formulare</h2>
+    <div class="row">
+	    <div class="row-height">
+	      <div class="col-xs-12 col-md-6 col-md-height">
+          <div class="inside inside-full-height">
+            <form>
+              <fieldset>
+                <legend>Fieldset Eins</legend>
+                <table class="mkTableFormular">
+                  <tr>
+                    <td><label for="fieldset1-element1">Formularfeld 1</label></td>
+                    <td><input type="text" id="fieldset1-element1" size="30" value=""></td>
+                  </tr>
+                  <tr>
+                    <td><label for="fieldset1-element2">Formularfeld 2</label></td>
+                    <td><input type="text" id="fieldset1-element2" size="30" value=""></td>
+                  </tr>
+                  <tr>
+                    <td><label for="fieldset1-element3">Formularfeld 3</label></td>
+                    <td>
+                      <select type="text" id="fieldset1-element3">
+                        <option>bitte w&auml;hlen &hellip;</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr class="mkCheckbox">
+                    <td><label for="fieldset1-element4">Formularfeld 4</label></td>
+                    <td><input type="checkbox" id="fieldset1-element4"></td>
+                  </tr>
+                  <tr class="mkCheckbox">
+                    <td></td>
+                    <td>
+                      <label><input type="checkbox"> Inline-Label 1</label>
+                      <label><input type="checkbox"> Inline-Label 2</label>
+                      <label><input type="checkbox"> Inline-Label 3</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label>Formularfeld 5</label></td>
+                    <td><label><input type="radio" name="fieldset1-element5" value="1"> Radio 1</label></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label><input type="radio" name="fieldset1-element5" value="2"> Radio 2</label></td>
+                  </tr>
+                  <tr>
+                    <td><label for="fieldset1-element6">Formularfeld 6</label></td>
+                    <td><textarea id="fieldset1-element6"></textarea></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>
+                      <button type="submit" class="button button-primary">Änderungen speichern</button>
+                      <a href="styleguide.html" class="button button-secondary">Abbrechen</a>
+                    </td>
+                  </tr>
+                </table>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+	      <div class="col-xs-12 col-md-6 col-md-height">
+          <div class="inside inside-full-height">
+            <fieldset>
+              <legend>Fieldset Zwei</legend>
+              <table class="mkTableFormular">
+                <tr>
+                  <td><label for="fieldset2-element1">Eingabefeld1</label></td>
+                  <td><input type="text" id="fieldset2-element1"></td>
+                </tr>
+                <tr>
+                  <td><label for="fieldset2-element2">Eingabefeld2</label></td>
+                  <td><input type="text" id="fieldset2-element2"></td>
+                </tr>
+              </table>
+            </fieldset>
+            <fieldset>
+              <legend>Fieldset Drei</legend>
+              <table class="mkTableFormular">
+                <tr>
+                  <td><label for="fieldset3-element1">Eingabefeld1</label></td>
+                  <td><input type="text" id="fieldset3-element1"></td>
+                </tr>
+                <tr>
+                  <td><label for="fieldset3-element2">Eingabefeld2</label></td>
+                  <td><input type="text" id="fieldset3-element2"></td>
+                </tr>
+              </table>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="alerts">Alerts (BENÖTIGT ÜBERARBEITUNG)</h2>
+    <div class="error" role="alert">
+      Eine Fehlermeldung mit <a href="#" class="alert-link">Beispiel-Link</a>. Lorem ipsum dolor.
+      <a href="#" class="button">Hey a button</a>
+      <a href="#" class="button">Another button</a>
+    </div>
+    <div class="warning" role="alert">
+      Eine Warnmeldung mit <a href="#" class="alert-link">Beispiel-Link</a>. Lorem ipsum dolor.
+      <a href="#" class="button">Hey a button</a>
+      <a href="#" class="button">Another button</a>
+    </div>
+    <div class="success" role="alert">
+      Eine Erfolgsmeldung mit <a href="#" class="alert-link">Beispiel-Link</a>. Lorem ipsum dolor.
+      <a href="#" class="button">Hey a button</a>
+      <a href="#" class="button">Another button</a>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="filter">Filter</h2>
+    <div class="filter-box">
+      <div class="filter-block filter-reveal">
+        <div class="filter-title">Reveal-Filter<span class="filter-icon"></span></div>
+        <ul class="filter-list">
+          <li class="filter-item">
+            <input type="checkbox" id="filter-artikellager" value="A">
+            <label for="filter-artikellager">Artikel fehlt</label>
+          </li>
+          <li class="filter-item">
+            <input type="checkbox" id="filter-zahlungsfehlt">
+            <label for="filter-zahlungsfehlt">Zahlung fehlt</label>
+          </li>
+          <li class="filter-item">
+            <input type="checkbox" id="filter-portofehlt">
+            <label for="filter-portofehlt">Porto fehlt</label>
+          </li>
+          <li class="filter-item">
+            <input type="checkbox" id="filter-late">
+            <label for="filter-late">Lieferdatum &uuml;berf&auml;llig</label>
+          </li>
+          <li class="filter-item">
+            <input type="checkbox" id="filter-fastlane">
+            <label for="filter-fastlane">Fast-Lane</label>
+          </li>
+        </ul>
+      </div>
+      <div class="filter-block filter-inline">
+        <div class="filter-title">Inline-Filter</div>
+        <ul class="filter-list">
+          <li class="filter-item">
+            <label class="switch">
+             <input id="filter-status-offen" type="checkbox">
+             <span class="slider round"></span>
+           </label>
+           <label for="filter-status-offen">Offen</label>
+          </li>
+          <li class="filter-item">
+            <label class="switch">
+              <input id="filter-status-storniert" type="checkbox">
+              <span class="slider round"></span>
+            </label>
+            <label for="filter-status-storniert">Storniert</label>
+          </li>
+          <li class="filter-item">
+            <label class="switch">
+              <input id="filter-status-abgeschlossen" type="checkbox">
+              <span class="slider round"></span>
+            </label>
+            <label for="filter-status-abgeschlossen">Abgeschlossen</label>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <section>
+    <h2 id="buttons">Buttons</h2>
+
+    <h3><code>a</code>-Element</h3>
+    <p>
+      <a class="button" role="button" href="#">button</a>
+      <a class="button button-primary" role="button" href="#">button-primary</a>
+      <a class="button button-secondary" role="button" href="#">button-secondary</a>
+      <a class="button button-tertiary" role="button" href="#">button-tertiary</a>
+      <a class="button button-neutral" role="button" href="#">button-neutral</a>
+    </p>
+    <pre class="code line">
+      &lt;a class=&quot;button&quot; role=&quot;button&quot; href=&quot;#&quot;&gt;button&lt;/a&gt;
+      &lt;a class=&quot;button button-primary&quot; role=&quot;button&quot; href=&quot;#&quot;&gt;button-primary&lt;/a&gt;
+      &lt;a class=&quot;button button-secondary&quot; role=&quot;button&quot; href=&quot;#&quot;&gt;button-secondary&lt;/a&gt;
+      &lt;a class=&quot;button button-tertiary&quot; role=&quot;button&quot; href=&quot;#&quot;&gt;button-tertiary&lt;/a&gt;
+      &lt;a class=&quot;button button-neutral&quot; role=&quot;button&quot; href=&quot;#&quot;&gt;button-neutral&lt;/a&gt;
+    </pre>
+
+    <h3><code>button</code>-Element</h3>
+    <p>
+      <button class="button">button</button>
+      <button class="button button-primary">button-primary</button>
+      <button class="button button-secondary">button-secondary</button>
+      <button class="button button-tertiary">button-tertiary</button>
+      <button class="button button-neutral">button-neutral</button>
+    </p>
+    <pre class="code line">
+      &lt;button class=&quot;button&quot;&gt;button&lt;/button&gt;
+      &lt;button class=&quot;button button-primary&quot;&gt;button-primary&lt;/button&gt;
+      &lt;button class=&quot;button button-secondary&quot;&gt;button-secondary&lt;/button&gt;
+      &lt;button class=&quot;button button-tertiary&quot;&gt;button-tertiary&lt;/button&gt;
+      &lt;button class=&quot;button button-neutral&quot;&gt;button-neutral&lt;/button&gt;
+    </pre>
+
+    <h3><code>input</code>-Element</h3>
+    <p>
+      <input type="button" class="button" value="button">
+      <input type="button" class="button button-primary" value="button-primary">
+      <input type="button" class="button button-secondary" value="button-secondary">
+      <input type="button" class="button button-tertiary" value="button-tertiary">
+      <input type="button" class="button button-neutral" value="button-neutral">
+    </p>
+    <pre class="code line">
+      &lt;input type=&quot;button&quot; class=&quot;button&quot; value=&quot;button&quot;&gt;
+      &lt;input type=&quot;button&quot; class=&quot;button button-primary&quot; value=&quot;button-primary&quot;&gt;
+      &lt;input type=&quot;button&quot; class=&quot;button button-secondary&quot; value=&quot;button-secondary&quot;&gt;
+      &lt;input type=&quot;button&quot; class=&quot;button button-tertiary&quot; value=&quot;button-tertiary&quot;&gt;
+      &lt;input type=&quot;button&quot; class=&quot;button button-neutral&quot; value=&quot;button-neutral&quot;&gt;
+    </pre>
+
+    <h3>Block-Button</h3>
+    <p>
+      <a class="button button-block" role="button" href="#">button-block</a>
+      <button class="button button-block">button-block</button>
+      <input class="button button-block" type="button" value="button-block">
+    </p>
+    <pre class="code line">
+      &lt;a class=&quot;button button-block&quot; role=&quot;button&quot; href=&quot;#&quot;&gt;button-block&lt;/a&gt;
+      &lt;button class=&quot;button button-block&quot;&gt;button-block&lt;/button&gt;
+      &lt;input class=&quot;button button-block&quot; type=&quot;button&quot; value=&quot;button-block&quot;&gt;
+    </pre>
+
+    <h3 id="buttons-disabled">Disabled</h3>
+    <h4><code>button</code>-Element</h4>
+    <p>
+      <button class="button" disabled="disabled">Disabled</button>
+      <button class="button button-primary" disabled="disabled">Disabled</button>
+      <button class="button button-secondary" disabled="disabled">Disabled</button>
+    </p>
+    <h4><code>input</code>-Element</h4>
+    <p>
+      <input class="button" disabled="disabled" type="button" value="Disabled">
+      <input class="button button-primary" disabled="disabled" type="button" value="Disabled">
+      <input class="button button-secondary" disabled="disabled" type="button" value="Disabled">
+    </p>
+  </section>
+
+  <section>
+    <h2 id="form-elements">Formular-Elemente</h2>
+
+    <h3 id="switches">Switches/Checkboxes</h3>
+
+    <h4>Default (Input-Element von Label-Element umschlossen)</h4>
+    <p>
+      <label class="switch">
+        <input type="checkbox">
+        <span class="slider round"></span>
+        Label-Text
+      </label>
+    </p>
+    <pre class="code">
+&lt;label class=&quot;switch&quot;&gt;
+  &lt;input type=&quot;checkbox&quot;&gt;
+  &lt;span class=&quot;slider round&quot;&gt;&lt;/span&gt;
+  Label-Text
+&lt;/label&gt;</pre>
+
+    <h4>Alternative (Input- und Label-Element getrennt)</h4>
+    <p>
+      <label class="switch">
+        <input id="my-checkbox" type="checkbox">
+        <span class="slider round"></span>
+      </label>
+      <label for="my-checkbox">Label-Text</label>
+    </p>
+    <pre class="code">
+&lt;label class=&quot;switch&quot;&gt;
+  &lt;input id=&quot;my-checkbox&quot; type=&quot;checkbox&quot;&gt;
+  &lt;span class=&quot;slider round&quot;&gt;&lt;/span&gt;
+&lt;/label&gt;
+&lt;label for=&quot;my-checkbox&quot;&gt;Label-Text&lt;/label&gt;</pre>
+  </section>
+
+
+  <section>
+    <h2 id="tooltips">Tooltips <small>(Vorläufig nur in Reports; muss ausgebaut werden)</small></h2>
+    <p>
+      Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+      <a href="#" class="tooltip-inline">
+        <span class="icon icon-tooltip"></span>
+        <span class="tooltip" role="tooltip">
+          <span class="tooltip-title">Tooltip Rechts</span>
+          <span class="tooltip-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</span>
+        </span>
+      </a>
+      Aenean commodo ligula eget dolor.
+      <a href="#" class="tooltip-inline">
+        <span class="icon icon-tooltip"></span>
+        <span class="tooltip tooltip-left" role="tooltip">
+          <span class="tooltip-title">Tooltip Links</span>
+          <span class="tooltip-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</span>
+        </span>
+      </a>
+      Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+      Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+    </p>
+    <pre class="code">
+&lt;a href=&quot;#&quot; class=&quot;tooltip-inline&quot;&gt;
+  &lt;span class=&quot;icon icon-tooltip&quot;&gt;&lt;/span&gt;
+  &lt;span class=&quot;tooltip&quot; role=&quot;tooltip&quot;&gt;
+    &lt;span class=&quot;tooltip-title&quot;&gt;Tooltip Rechts&lt;/span&gt;
+    &lt;span class=&quot;tooltip-content&quot;&gt;Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.&lt;/span&gt;
+  &lt;/span&gt;
+&lt;/a&gt;</pre>
+
+  </section>
+
+</div>
+<script type="text/javascript" src="../../js/filter.js"></script>
+</body>
+</html>

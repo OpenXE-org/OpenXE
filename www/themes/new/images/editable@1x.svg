@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>status/editable@1x</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Export-Icons" transform="translate(-37.000000, -6.000000)">
+            <g id="status/editable" transform="translate(37.000000, 6.000000)">
+                <rect id="bg-color-round" fill="#0092AA" x="0" y="0" width="20" height="20" rx="2"></rect>
+                <g id="icon/_status/asset-settings" transform="translate(1.000000, 1.248969)" fill="#FFFFFF">
+                    <rect id="bg-color" fill-opacity="0" x="0" y="0" width="18" height="18"></rect>
+                    <path d="M12.0375,3.6 C14.8334415,3.6 17.1,6.01766235 17.1,9 C17.1,11.9823376 14.8334415,14.4 12.0375,14.4 L5.9625,14.4 C3.16655845,14.4 0.9,11.9823376 0.9,9 C0.9,6.01766235 3.16655845,3.6 5.9625,3.6 L12.0375,3.6 Z M11.7,5.4 L6.3,5.4 C4.3117749,5.4 2.7,7.0117749 2.7,9 C2.7,10.9882251 4.3117749,12.6 6.3,12.6 L11.7,12.6 C13.6882251,12.6 15.3,10.9882251 15.3,9 C15.3,7.0117749 13.6882251,5.4 11.7,5.4 Z M11.7,6.3 C13.1911688,6.3 14.4,7.50883118 14.4,9 C14.4,10.4911688 13.1911688,11.7 11.7,11.7 C10.2088312,11.7 9,10.4911688 9,9 C9,7.50883118 10.2088312,6.3 11.7,6.3 Z" id="Combined-Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

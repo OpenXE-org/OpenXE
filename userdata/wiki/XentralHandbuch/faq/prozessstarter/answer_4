@@ -1,0 +1,14 @@
+Bitte kontaktieren Sie Ihren Hoster oder passen Sie selbst die folgenden Werte in der php.ini an. Die Anpassungen sollten f&uuml;r den Webserver und f&uuml;r CLI vorgenommen werden.<br /><br /><span class="wiki-text"><strong><span style="font-size:14px;">Unsere Empfehlungen f&uuml;r die php.ini:</span></strong></span><pre><code class="hljs ini"><span class="hljs-attr">post_max_size</span> = <span class="hljs-number">100</span>M
+<span class="hljs-attr">upload_max_filesize</span> = <span class="hljs-number">100</span>M
+<span class="hljs-attr">max_execution_time</span> = <span class="hljs-number">3600</span>
+<span class="hljs-attr">max_input_time</span> = <span class="hljs-number">3600</span>
+<span class="hljs-attr">magic_quotes_gpc</span> = <span class="hljs-literal">Off</span>
+<span class="hljs-attr">file_uploads</span> = <span class="hljs-literal">Yes</span>
+<span class="hljs-attr">max_file_uploads</span> = <span class="hljs-number">20</span>
+<span class="hljs-attr">short_open_tag</span> = <span class="hljs-literal">On</span>
+<span class="hljs-attr">max_input_vars</span> = <span class="hljs-number">3000</span>
+<span class="hljs-attr">memory_limit</span> = <span class="hljs-number">512</span>M
+</code></pre><p><br /><span style="font-size:14px;"><strong><span class="wiki-text">​Einstellung f&uuml;r nginx: </span></strong></span></p><pre><code class="hljs css"><span class="hljs-selector-tag">client_max_body_size</span> 150<span class="hljs-selector-tag">M</span>;\\
+<span class="hljs-selector-tag">location</span> @<span class="hljs-keyword">php</span> { #<span class="hljs-selector-id">#merge</span>##\\
+<span class="hljs-selector-tag">fastcgi_read_timeout</span> 3600;\\
+}</code></pre>

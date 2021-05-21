@@ -1,0 +1,3 @@
+<h3 class="heading row collapse click-count" data-entity="akademia:faq" data-key="312988" itemprop="name" onclick="jQuery(this).parent().toggleClass('collapsed');"><span style="font-size:12px;">Passen Sie folgende Werte in der php.ini an, bzw. setzen Sie diese neu:</span></h3><pre><code class="hljs ini"><span class="hljs-attr">error_reporting</span> = <span class="hljs-number">0</span>
+<span class="hljs-attr">display_errors</span> = <span class="hljs-literal">Off</span>
+<span class="hljs-attr">log_errors</span> = <span class="hljs-literal">Off</span></code></pre>

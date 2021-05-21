@@ -1,0 +1,260 @@
+a {
+  font-weight:normal;
+
+}
+
+.mitarbeiterzeiterfassung {
+	position: relative;
+  width:100%;
+}
+
+.mitarbeiterzeiterfassung h1 {
+	padding: 0;
+	margin: 0;
+}
+
+.mitarbeiterzeiterfassungMitarbeiter {
+	width: 200px;
+	float: left;
+	background: #ececec;
+	min-height: 600px;
+  max-height: 750px;
+  
+	padding: 0 10px 10px 10px;
+	/*position: relative;*/
+	left: 0;
+	top: 0;
+	z-index: 999;
+}
+
+.mitarbeiterzeiterfassungMitarbeiterHead {
+	margin: 10px 0 10px 0;
+}
+
+.mitarbeiterzeiterfassungMitarbeiterHead input {
+	margin: 0;
+	width: 190px;
+}
+
+.mitarbeiterzeiterfassungRight {
+        top:-5px;
+        position:relative;
+        width:100%;
+}
+
+.mitarbeiterzeiterfassungRight h2.rKalenderH2 {
+	margin: 20px 0 0 0;
+	background: #d7d7d7;
+	padding: 3px 0 3px 10px;
+        font-size:10pt;
+}
+
+
+ul.legendeListe,
+ul.legendeListe li {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+        color:grey;
+}
+
+
+ul.mitarbeiterListe {
+  max-height:400px;
+  overflow-y: auto;
+  overflow-x:hidden;
+  
+}
+
+ul.mitarbeiterListe,
+ul.mitarbeiterListe li {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+ul.mitarbeiterListe li {
+	margin: 0 -10px 0 -10px;
+}
+
+ul.mitarbeiterListe li a {
+	padding: 5px 10px;
+	display: block;
+	border-top: 1px solid #FFFFFF;
+}
+
+ul.mitarbeiterListe li.aktiv {
+	background: #FFF;
+}
+
+ul.mitarbeiterListe li.aktiv a {
+	color: #000;
+}
+
+ul.mitarbeiterListe li.krank a {
+	color: #ff0000;
+}
+
+ul.mitarbeiterListe li.urlaub a {
+	color: #0b8092;
+}
+ul.mitarbeiterListe li.da a {
+	color: #a9ca45;
+}
+
+
+
+
+.rKalender {
+	border-top: 1px solid #d7d7d7;
+	border-left: 1px solid #d7d7d7;
+}
+
+.rKalender tr td,
+.rKalender tr th {
+	border-right: 1px solid #d7d7d7;
+	border-bottom: 1px solid #d7d7d7;
+}
+
+.rKalender tr th:first-child,
+.rKalender tr td:first-child {
+	padding-left: 5px;
+}
+
+.rKalender tr td a {
+	min-width: 20px;
+  max-width: 25px;
+	height: 20px;
+	line-height: 20px;
+	display: block;
+}
+
+.rKalender tr td.weekend {
+	background: #e9e9e9;
+}
+
+.rKalender tr td.feiertag
+{
+	background: #be3978;
+	color: #FFF;
+}
+
+
+.rKalender tr td.brueckentag
+ {
+	background: #f69e06;
+	color: #FFF;
+}
+
+.rKalender tr td.betriebsferien {
+	background: #808cc8;
+	color: #FFF;
+}
+
+
+.rKalender tr td.krank {
+	background: red;
+}
+.rKalender tr td.krank a {
+	color: #fff;
+}
+
+.rKalender tr td.urlaub {
+	background: #0b8092;
+}
+.rKalender tr td.urlaub a {
+	color: #fff;
+}
+.rKalender tr td.fehltag a {
+  color: #fff;
+}
+.rKalender tr td.unbezahlt {
+  background: #f69e06;
+}
+
+.rKalender tr td.fehltag {
+  background: #e6ce06;
+}
+
+input.unbezahltstundenChangeJs {
+  border: solid 1px #f69e06;
+  float:right;
+}
+
+input.urlaubstundenChangeJs {
+  border: solid 1px #0b8092;
+}
+
+input.krankstundenChangeJs {
+  border: solid 1px #f00;
+}
+
+.rKalender tr td.unbezahlt a {
+  color: #fff;
+}
+
+.rKalender tr td:hover {
+	background: #d1d1d1;
+}
+
+.rSollstunden tr td {
+	padding: 3px;
+	vertical-align: middle;
+}
+
+
+.rEinstellungen tr td {
+	border-bottom: 1px solid #d7d7d7;
+	padding: 3px;
+}
+
+.mitarbeiterzeiterfassung hr {
+	padding: 0;
+	margin: 10px 0;
+	height: 0;
+	border: 0;
+	border-top: 1px solid #d7d7d7;
+}
+
+table#mitarbeiterzeiterfassung_anwesenheitsstatistik th
+{
+  text-align:left !important;
+}
+
+ul.legende,
+ul.legende li {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+
+ul.legende li {
+	float: left;
+	margin: 5px 10px 0 0;
+}
+
+ul.legende li span {
+	width: 12px;
+	height: 12px;
+	display: inline-block;
+	margin: 0 5px 0 0;
+}
+
+ul.legende li span.weekend {
+	background: #e9e9e9;
+}
+
+ul.legende li span.feiertag{
+  background: #be3978;
+}
+
+ul.legende li span.betriebsferien {
+	background: #808cc8;
+}
+ul.legende li span.brueckentag{
+  background: #f69e06;
+}
+ul.legende li span.fehltag{
+  background: #e6ce06;
+}

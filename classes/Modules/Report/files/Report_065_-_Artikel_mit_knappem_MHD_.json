@@ -1,0 +1,71 @@
+{
+    "name": "065 - Artikel mit knappem MHD",
+    "description": "Artikel mit knappem MHD. Wenn kein Wert angegen wird, werden alle Artikel angezeigt die in den n\u00e4chsten 30 Tagen ablaufen.",
+    "project": 0,
+    "sql_query": "SELECT a.name_de AS artikelname,\r\n a.nummer AS artikelnummer,\r\n ml.bestand AS bestand,\r\n DATEDIFF(ml.mhddatum, NOW()) tagebisablauf,\r\n ml.mhddatum AS ablaufdatum\r\nFROM artikel AS a\r\nJOIN mhd_log ml on a.id = ml.artikel\r\nJOIN (SELECT MAX(id) AS id FROM mhd_log GROUP BY artikel, mhddatum) AS mlid ON mlid.id = ml.id\r\nWHERE a.mindesthaltbarkeitsdatum=1 AND a.geloescht=0 AND a.intern_gesperrt=0 AND a.nummer <>'DEL' AND ml.bestand > 0\r\nAND ml.mhddatum < DATE_ADD(NOW(), INTERVAL {BIS} DAY)",
+    "columns": [
+        {
+            "key_name": "artikelname",
+            "title": "Artikelname",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "ablaufdatum",
+            "title": "Ablaufdatum",
+            "width": "20",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "bestand",
+            "title": "Bestand",
+            "width": "20",
+            "alignment": "right",
+            "sum": 1,
+            "format_type": "sum_money_de",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "tagebisablauf",
+            "title": "Tage bis Ablauf",
+            "width": "20",
+            "alignment": "right",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "numeric"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Bis",
+            "default_value": "30",
+            "displayname": "Tage bis Ablauf",
+            "options": [],
+            "description": "Filtert nach den Best\u00e4nden bei denen das Ablaufdatum vor dem eingegeben Wert liegt",
+            "editable": true
+        }
+    ],
+    "remark": "",
+    "category": "Einkauf \u0026 Artikelverwaltung \u0028PIM\u0029",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

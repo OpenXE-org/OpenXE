@@ -1,0 +1,145 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#xentral_oberflaeche_uebersetzen">Xentral Oberfläche übersetzen</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#neue_sprache_im_uebersetzungsmodul_anlegen">Neue Sprache im Übersetzungsmodul anlegen</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersetzung_durchfuehren">Übersetzung  durchführen</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersetzung_pausieren_beenden">Übersetzung pausieren / beenden</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="xentral_oberflaeche_uebersetzen">Xentral Oberfläche übersetzen</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul „Oberflächen Übersetzung“ lässt sich die Oberfläche von Xentral übersetzen. Ab Version 19.2 kann die Sprache (Englisch und Deutsch) auch global unter Administration und/oder pro Benutzer ausgewählt werden. Das heißt alle Menüpunkte, alle Bezeichnungen und Seitenelemente werden übersetzt. Alternativ können auch eigene Sprachen hinterlegt werden und manuell übersetzt werden. Dies ist beispielsweise von Vorteil wenn ein User einen bestimmten Menüpunkt in einer anderen Sprache benötigt.
+</p>
+
+<p>
+Die Sprache kann in Xentral global für <strong>alle User</strong> umgestellt werden:  
+</p>
+
+<p>
+Administration → Einstellungen → Grundeinstellungen → System
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzungsmodul1.png"  title="wawision:uebersetzungsmodul1.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis</strong>: Nach dem Speichern muss die Seite neu geladen werden.
+</p>
+
+<p>
+Wenn Sie die Sprache in Xentral nur für <strong>einen bestimmten Benutzer</strong> umstellen möchten: 
+</p>
+
+<p>
+Administration → Einstellungen → Benutzer
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzungsmodul2.png"  title="wawision:uebersetzungsmodul2.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+Sollte die automatische Übersetzung nicht das gewünschte Ergebnis gebracht haben, lässt sich dies in einem eigenen <strong>Übersetzungs-Moduls</strong> nachjustieren. Hier können die jeweiligen Elemente gezielt angeklickt werden und manuell eine geeignetere Übersetzung angegeben werden. Das Modul finden Sie unter 
+</p>
+
+<p>
+Administration → AppStore → Oberflächen Übersetzung
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzung_8.png"  title="wawision:uebersetzung_8.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="neue_sprache_im_uebersetzungsmodul_anlegen">Neue Sprache im Übersetzungsmodul anlegen</h3>
+<div class="level3">
+
+<p>
+Unter Anlegen → Neue Sprache anlegen, können Sie eine neue Sprache anlegen. Geben Sie hierfür die Wunschsprache ein und klicken auf anlegen:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzung_1.png"  title="wawision:uebersetzung_1.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="uebersetzung_durchfuehren">Übersetzung  durchführen</h3>
+<div class="level3">
+
+<p>
+Um einzelne Tabs in Xentral nun in der Wunschsprache zu übersetzen wählen sie in der Oberflächen Übersetzung die Sprache aus und klicken auf “Übersetzung starten”:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzung_2.png"  title="wawision:uebersetzung_2.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=5"  alt="" /></a>
+</p>
+
+<p>
+Anschließend können Sie durch die einzelnen Tabs in Xentral gehen und diese übersetzen. Hierfür klicken sie den jeweiligen Tab an und geben in das Feld die Übersetzung hierfür ein und speichern die Eingabe.  Eine Übersetzung ist für alle Felder möglich, die einen dünnen roten Rahmen erhalten. Die Eingaben werden im Übersetzermodul gespeichert.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzung_3.png"  title="wawision:uebersetzung_3.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=6"  alt="" /></a>
+</p>
+
+<p>
+Um beispielsweise alle Texte unter Verkauf → Auftrag zu übersetzen, klicken Sie doppelt auf den Reiter Auftrag. Nun gelangen Sie in die Auftragsübersicht wo das vorherige Vorgehen wiederholt werden kann:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzung_5.png"  title="wawision:uebersetzung_5.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=7"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis</strong>: Durch Doppelklick auf das jeweilige Feld gelangen Sie immer in die neue Maske, wo Sie Übersetzungen tätigen können (z.B. “Neu”, etc.).
+</p>
+
+<p>
+Alternativ können Sie die Übersetzungen auch in der Tabelle durchführen. 
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_wawision_uebersetzung&amp;media=wawision:uebersetzung_7.png"  title="wawision:uebersetzung_7.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=wawision_uebersetzung&fileid=8"  alt="" /></a>
+</p>
+
+<p>
+Das Feld “Oberflächen- Übersetzung” können sie durch anklicken verschieben.
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="uebersetzung_pausieren_beenden">Übersetzung pausieren / beenden</h3>
+<div class="level3">
+
+<p>
+Um die Übersetzung zu pausieren bzw. zu beenden klicken sie auf “Übersetzung pausieren” bzw. auf “Übersetzung beenden”. Die bisher getätigten und gespeicherten Eingaben werden automatisch gespeichert und verwendet. 
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

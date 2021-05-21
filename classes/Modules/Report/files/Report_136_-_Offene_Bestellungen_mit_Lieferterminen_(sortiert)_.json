@@ -1,0 +1,107 @@
+{
+    "name": "136 - Offene Bestellungen mit Lieferterminen (sortiert)",
+    "description": "Alle freigegebenen Bestellungen deren best\u00e4tigtes Lieferdatum nicht leer ist, absteigend sortiert nach dem best\u00e4tigten Lieferdatum.",
+    "project": 0,
+    "sql_query": "SELECT \r\nbes.datum AS datum, \r\nIF(bes.bestaetigteslieferdatum = '0000-00-00' OR bes.bestaetigteslieferdatum IS NULL, NULL, bes.bestaetigteslieferdatum) AS lieferdatum,\r\nbes.belegnr, \r\nbes.lieferantennummer, \r\nbes.name, \r\nROUND(bes.gesamtsumme,2) AS gesamtsumme, \r\nbes.waehrung AS waehrung\r\nFROM bestellung bes \r\nWHERE bes.status = 'freigegeben' AND bes.bestaetigteslieferdatum != '0000-00-00' AND bes.bestaetigteslieferdatum IS NOT NULL\r\nORDER BY IF(bes.bestaetigteslieferdatum = '0000-00-00' OR bes.bestaetigteslieferdatum IS NULL,'', bes.bestaetigteslieferdatum) DESC",
+    "columns": [
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "format_statement": null
+        },
+        {
+            "key_name": "belegnr",
+            "title": "Belegnr",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "lieferantennummer",
+            "title": "Lieferantennummer",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "gesamtsumme",
+            "title": "Gesamtsumme",
+            "width": "31",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de",
+            "format_statement": null
+        },
+        {
+            "key_name": "lieferdatum",
+            "title": "Best\u00e4tigtes Lieferdatum",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "format_statement": null
+        },
+        {
+            "key_name": "waehrung",
+            "title": "W\u00e4hrung",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Einkauf & Artikelverwaltung (PIM)",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

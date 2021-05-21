@@ -1,0 +1,446 @@
+{
+    "key": "batches_bestbefore_serials",
+    "category": "master-data",
+    "title": "Chargen anlegen / MHD anlegen / Seriennummern anlegen",
+    "sub_title": "xentral sorgt dafür, dass z.B. Chargennummern auf den Belegen da auftauchen, wo sie hingehören. Ihr wisst immer, welcher Kunde welche Charge erhalten hat.",
+    "description": "xentral sorgt dafür, dass z.B. Chargennummern auf den Belegen da auftauchen, wo sie hingehören. Ihr wisst immer, welcher Kunde welche Charge erhalten hat.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "artikel": [
+            "create",
+            "edit",
+            "lager",
+            "mindesthaltbarkeitsdatum",
+            "seriennummern"
+        ],
+        "lager": [
+            "bucheneinlagern"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=artikel&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/Mw3G6Jd-E0c"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "save_batches_bestbefore_serial_article": {
+                    "completed": false,
+                    "steps": {
+                        "insert_article_name": {
+                            "position": 1,
+                            "link": "./index.php?module=artikel&action=create",
+                            "title": "Artikel anlegen",
+                            "caption": "Artikel anlegen",
+                            "description": "Bitte trage den Namen deines Artikels ein.",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "name_de"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "mark_as_batch_article": {
+                            "position": 2,
+                            "title": "Artikel als Chargenartikel aktivieren",
+                            "caption": "Aktiviere deinen Artikel als Chargenartikel.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "chargenverwaltung"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "mark_as_bestbefore_article": {
+                            "position": 3,
+                            "title": "Artikel als MHD Artikel markieren",
+                            "caption": "Markiere deinen Artikel als MHD Artikel.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "mindesthaltbarkeitsdatum"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "mark_as_serial_article": {
+                            "position": 4,
+                            "title": "Artikel als Seriennummernartikel markieren",
+                            "caption": "Wähle die Option originale nutzen + einlagern aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "seriennummern"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "mark_as_storage_article": {
+                            "position": 5,
+                            "title": "Artikel als Lagerartikel markieren",
+                            "caption": "Markiere deinen Artikel als Lagerartikel.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "lagerartikel"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "save_article": {
+                            "position": 6,
+                            "title": "Artikel speichern",
+                            "caption": "Speichere deinen Artikel.",
+                            "description": "Dadurch wird dein Artikel angelegt.",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "speichern",
+                                        "type": "submit",
+                                        "class": "wizard-article-save"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "artikelcreate"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "stock_article_into_storage": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_storage": {
+                            "position": 1,
+                            "title": "Artikel einlagern",
+                            "caption": "Wechsel ins Lager.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "menuEntryartikellager"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "click_button_for_storage": {
+                    "completed": false,
+                    "steps": {
+                        "stock_article": {
+                            "position": 1,
+                            "title": "Artikel einlagern",
+                            "caption": "Klicke auf den Button einlagern.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "value": "Einlagern"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "choose_rack_for_article": {
+                    "completed": false,
+                    "steps": {
+                        "choose_rack": {
+                            "position": 2,
+                            "title": "Regal auswählen",
+                            "caption": "Wähle das Regal zum Einlagern aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "regal"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "continue_filling_form": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_batches_bestbefore_serials": {
+                            "position": 1,
+                            "title": "Zu den Chargen, MHDs und Seriennummern",
+                            "caption": "Klicke auf Weiter.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "submit",
+                                        "name": "submit",
+                                        "value": "Weiter"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "fill_bestbefore_batches_serials": {
+                    "completed": false,
+                    "steps": {
+                        "choose_bestbefore": {
+                            "position": 1,
+                            "title": "MHD auswählen",
+                            "caption": "Wähle ein MHD aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "mhd"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "choose_batch": {
+                            "position": 2,
+                            "title": "Charge auswählen",
+                            "caption": "Wähle eine Charge aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "charge"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "choose_serial": {
+                            "position": 3,
+                            "title": "Seriennummer auswählen",
+                            "caption": "Wähle eine Seriennummer aus.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "seriennummern_1"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        }
+                    }
+                },
+                "finish_stock_process": {
+                    "completed": false,
+                    "steps": {
+                        "click_continue_button": {
+                            "position": 1,
+                            "title": "Einlagern abschließen",
+                            "caption": "Klicke auf Weiter um das Einlagern abzuschließen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "submit",
+                                        "name": "submit",
+                                        "value": "Weiter"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_batches_bestbefore": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_batches_bestbefore": {
+                            "position": 1,
+                            "title": "Übersicht Chargen und MHDs",
+                            "caption": "Klicke auf Mindesthalt. + Charge.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "menuEntryartikelmindesthaltbarkeitsdatum"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "explanation_batches_bestbefore_overview": {
+                    "completed": false,
+                    "steps": {
+                        "explanation_batches_bestbefore": {
+                            "position": 2,
+                            "title": "Chargen und MHDs",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Übersicht von Chargen und MHDs",
+                                            "text": "Die Warenbewegungen von Artikeln mit Chargenverwaltung werden gesondert protokolliert, um eine zügige Rückverfolgbarkeit der Chargen zu gewährleisten.<br /><br />Artikel mit Mindesthaltbarkeitsdatum müssen stets rechtzeitig vor dem Verfallsdatum versandt werden. In der Übersicht Mindesthaltbarkeit in xentral findet ihr alle Artikel und ihre MHDs, um die Ablaufdaten im Blick zu behalten.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_serials": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_serials": {
+                            "position": 1,
+                            "title": "Übersicht Seriennummern",
+                            "caption": "Klicke auf Seriennummern.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "menuEntryartikelseriennummern"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "explanation_serials_overview": {
+                    "completed": false,
+                    "steps": {
+                        "explanation_serials": {
+                            "position": 2,
+                            "title": "Seriennummern",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Übersicht von Seriennummern",
+                                            "text": "Die Warenbewegungen von Artikeln mit Seriennummern werden ebenfalls gesondert protokolliert, damit ihr genau wisst, wann sie versendet wurden und welche Seriennummer auf welchem Lagerplatz liegt.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

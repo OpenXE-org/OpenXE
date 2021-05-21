@@ -1,0 +1,101 @@
+{
+    "name": "130 - Umsatz pro Kunde nach Rechnung (einfach)",
+    "description": "Umsatz pro Kunde nach Rechnung.\r\n\r\nGruppiert nach Kunde, Monat und W\u00e4hrung. Das auszugebende Jahr kann bei Bedarf eingeschr\u00e4nkt werden.",
+    "project": 0,
+    "sql_query": "SELECT\r\na.name AS name,\r\na.kundennummer AS kundennummer,\r\nROUND(SUM(rp.menge-IFNULL(gp.menge,0)),0) AS menge,\r\nROUND(SUM(rp.umsatz_netto_einzeln*(rp.menge-IFNULL(gp.menge,0))),2) AS umsatz,\r\nr.waehrung,\r\nCONCAT(MONTH(r.datum),'.',YEAR(r.datum)) AS datum\r\nFROM adresse a\r\nJOIN rechnung r ON a.id = r.adresse\r\nJOIN rechnung_position rp on r.id = rp.rechnung\r\nLEFT JOIN (SELECT gp.auftrag_position_id, SUM(gp.menge) AS menge FROM gutschrift_position AS gp JOIN gutschrift g ON gp.gutschrift = g.id WHERE gp.auftrag_position_id<>0 AND g.status <>'angelegt' AND g.status <> 'storniert' GROUP BY auftrag_position_id) AS gp on rp.auftrag_position_id = gp.auftrag_position_id\r\nWHERE r.status<>'angelegt' AND r.status<>'storniert' AND IF({JAHR}=0,1,YEAR(r.datum)={JAHR})\r\nGROUP BY a.id, CONCAT(MONTH(r.datum),'.',YEAR(r.datum)),r.waehrung",
+    "columns": [
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "20",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Summe Artikel",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": null
+        },
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "20",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "20",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "waehrung",
+            "title": "W\u00e4hrung",
+            "width": "20",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Jahr",
+            "default_value": "0",
+            "displayname": "(optional) Eingrenzen auf Jahr",
+            "options": [],
+            "description": "Grenzt die zu suchenden Ums\u00e4tze auf ein bestimmtes Jahr ein",
+            "editable": true,
+            "control_type": ""
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

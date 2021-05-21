@@ -1,0 +1,42 @@
+
+.module-disabled {
+    width: 98%;
+    padding: 10px 0 5px 0;
+}
+
+#dropzone-wrapper {
+    z-index: 999999;
+    position: relative;
+}
+
+#dropzone {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(-100px + 100vh);
+    background: rgba(255, 0, 0, .25);
+    border: 4px solid #CCC;
+}
+
+#dropzone.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #DCDCDC;
+    border: 4px dashed #CCC;
+}
+
+#dropzone h3 {
+    display: inline-block;
+    color: var(--grey);
+}
+
+#preview-iframe {
+    width: 100%;
+    height: calc(-100px + 100vh);
+    border: 4px solid #CCC;
+    margin: 0;
+    padding: 0;
+}

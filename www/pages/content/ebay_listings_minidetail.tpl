@@ -1,0 +1,22 @@
+<fieldset>
+    <legend>Listingsdetails</legend>
+    [LISTINGDETAILS]
+</fieldset>
+<fieldset>
+    <legend>Varianten</legend>
+    [VARIANTENDETAILS]
+</fieldset>
+<fieldset>
+    <legend>Gebühren</legend>
+    [GEBUEHRENDETAILS]
+</fieldset>
+<fieldset>
+    <legend>Verkaufsübersicht</legend>
+    [VERKAUFSUEBERSICHT]
+</fieldset>
+<fieldset>
+    <legend>Aufrufübersicht</legend>
+    [AUFRUFDETAILS]
+</fieldset>
+
+[TAB1]

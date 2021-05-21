@@ -1,0 +1,92 @@
+{
+    "name": "168 - Artikelliste mit Bestand, Chargen und MHD",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT \r\n       art.nummer AS artikelnummer,\r\n       art.name_de AS artikelname,\r\n       IF(\r\n                ISNULL(lm.artikel),\r\n                IFNULL(lc.charge,'') ,\r\n                CONCAT(DATE_FORMAT(lm.mhddatum,'%d.%m.%Y'),' ',IFNULL(lm.charge,''))\r\n            ) AS chargemhd,\r\n        lp.kurzbezeichnung AS lagerplatz,\r\n        trim(IFNULL(lm.menge,IFNULL(lc.menge,IFNULL(lpi.menge,0))))+0 AS menge\r\nFROM artikel AS art\r\n         LEFT JOIN (\r\n    SELECT artikel, mhddatum, charge ,SUM(menge) as menge\r\n    FROM `lager_mindesthaltbarkeitsdatum`\r\n    GROUP BY artikel,charge,mhddatum\r\n) AS lm ON art.id = lm.artikel\r\n         LEFT JOIN (\r\n    SELECT artikel, charge, SUM(menge) AS menge\r\n    FROM lager_charge\r\n    GROUP BY artikel,charge\r\n) AS lc ON lc.artikel = art.id\r\n         LEFT JOIN (\r\n    SELECT artikel, SUM(menge) AS menge, lager_platz\r\n    FROM lager_platz_inhalt\r\n    GROUP BY artikel, lager_platz\r\n) AS lpi ON lpi.artikel = art.id\r\nJOIN lager_platz lp ON lp.id = lpi.lager_platz\r\nWHERE nummer LIKE '{ARTIKELNUMMER}%'\r\nORDER BY art.nummer",
+    "columns": [
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "artikelname",
+            "title": "Artikelbezeichnung",
+            "width": "38",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "chargemhd",
+            "title": "MHD \/ Charge",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "lagerplatz",
+            "title": "Lagerplatz",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "38",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "ARTIKELNUMMER",
+            "default_value": "0",
+            "displayname": "Artikel",
+            "options": [],
+            "description": "",
+            "editable": true,
+            "control_type": "autocomplete_article"
+        }
+    ],
+    "remark": "",
+    "category": "Lager & Logistik",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

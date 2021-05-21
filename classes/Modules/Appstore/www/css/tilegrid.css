@@ -1,0 +1,17 @@
+.tilegrid-container .tilegrid-tile {
+    padding-bottom: 20px;
+}
+
+.tilegrid-container .tilegrid-tile div {
+    text-align: center;
+}
+
+.tilegrid-container .tilegrid-tile-title {
+    font-size: 12px;
+    line-height: 15px;
+    display: inline-block;
+    text-align: center;
+}
+.tilegrid-container .buy-interface-button {
+    margin-top: auto;
+}

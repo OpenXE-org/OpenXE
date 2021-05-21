@@ -1,0 +1,127 @@
+{
+    "name": "169 - Rechnungsausgangsbuch (Vortag)",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT\r\n    r.belegnr AS belegnummer,\r\n    r.datum AS datum,\r\n    a.kundennummer AS kundennummer,\r\n    a.kundennummer_buchhaltung AS fibukonto,\r\n    a.name AS name,\r\n    'Rechnung' AS typ,\r\n    r.soll AS soll,\r\n    r.waehrung AS waehrung,\r\n    r.land AS land\r\nFROM rechnung AS r\r\n         LEFT JOIN adresse AS a ON r.adresse = a.id\r\nWHERE r.datum = SUBDATE(CURDATE(),1)\r\nUNION\r\nSELECT\r\n    g.belegnr AS belegnummer,\r\n    g.datum AS datum,\r\n    a.kundennummer AS kundennummer,\r\n    a.kundennummer_buchhaltung AS fibukonto,\r\n    a.name AS name,\r\n    'Gutschrift' AS typ,\r\n    (g.soll *-1) as soll,\r\n    g.waehrung AS waehrung,\r\n    g.land AS land\r\nFROM gutschrift AS g\r\n         LEFT JOIN adresse AS a ON g.adresse = a.id\r\nWHERE g.datum = SUBDATE(CURDATE(),1)",
+    "columns": [
+        {
+            "key_name": "belegnummer",
+            "title": "Belegnummer",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "format_statement": null
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "25",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "fibukonto",
+            "title": "FibuKonto",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "60",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "typ",
+            "title": "Art",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "soll",
+            "title": "Soll",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de",
+            "format_statement": null
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        },
+        {
+            "key_name": "land",
+            "title": "Land",
+            "width": "20",
+            "alignment": "right",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null,
+            "format_statement": null
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Buchhaltung & Finanzen",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

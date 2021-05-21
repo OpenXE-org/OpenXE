@@ -1,0 +1,448 @@
+{
+    "key": "basic_settings",
+    "category": "general",
+    "title": "Firmendaten einrichten",
+    "sub_title": "Das geht fix: Hier trägst du Namen, Adresse, Kontakt und Steuernummern etc. ein.",
+    "description": "Das geht fix: Hier trägst du Namen, Adresse, Kontakt und Steuernummern etc. ein.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "firmendaten": [
+            "edit"
+        ]
+    },
+    "step_groups": {
+        "company_address": {
+            "title": "Firmenanschrift",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/aYm7WFqc6jQ"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "fill_company_address": {
+                    "completed": false,
+                    "steps": {
+                        "insert_company_name": {
+                            "position": 1,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Firmenanschrift eintragen",
+                            "caption": "Bitte trage den Namen deiner Firma ein.",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "name"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_company_street": {
+                            "position": 2,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Strasse eintragen",
+                            "caption": "Bitte trage die Straße deiner Firma ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "strasse"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_company_postcode": {
+                            "position": 3,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "PLZ eintragen",
+                            "caption": "Bitte trage die PLZ deiner Firma ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "plz"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_company_city": {
+                            "position": 4,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Ort eintragen",
+                            "caption": "Bitte trage den Standort deiner Firma ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "ort"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_company_country": {
+                            "position": 5,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Land eintragen",
+                            "caption": "Bitte trage das Land deiner Firma als 2-stelligen ISO Code ein.",
+                            "description": "Zum Beispiel DE für Deutschland, oder AT für Österreich.",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "land"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_company_vat_no": {
+                            "position": 6,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "USt.-ID eintragen",
+                            "caption": "Bitte trage die USt.-ID, oder alternativ die Steuernummer deiner Firma ein.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "steuernummer"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_company_sepa_creditor_identifier": {
+                            "position": 7,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "SEPA Gläubiger-ID eintragen",
+                            "caption": "Bitte trage die SEPA Gläubiger-ID deiner Firma ein.",
+                            "description": "Das Format entspricht zum Beispiel DE98ZZZ9999999999",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "sepaglaeubigerid"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "click_save_button": {
+                            "position": 8,
+                            "title": "Firmenanschrift speichern",
+                            "caption": "Speichere deine Firmenanschrift.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "submit",
+                                        "name": "submitFirmendaten"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "id": "tabs-1"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "letter_head": {
+            "title": "Briefkopf",
+            "sub_groups": {
+                "fill_letter_head": {
+                    "completed": false,
+                    "steps": {
+                        "go_to_letter_head": {
+                            "position": 1,
+                            "title": "Briefkopf",
+                            "caption": "Klicke auf Briefkopf.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "href": "#tabs-2",
+                                        "contains": "Briefkopf"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "insert_sender": {
+                            "position": 2,
+                            "title": "Briefpapier",
+                            "caption": "Trage den Absender für den Briefkopf ein.",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "text",
+                                        "name": "absender"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "change"
+                            }
+                        },
+                        "insert_footer": {
+                            "position": 3,
+                            "title": "Fußzeile eintragen",
+                            "caption": "Hier kann der Footer für das Briefpapier angepasst werden.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "div",
+                                        "id": "wizard-footer"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "insert_letter_paper": {
+                            "position": 4,
+                            "title": "Hintergrund hinterlegen",
+                            "caption": "Bei Bedarf kann ein Briefpapier als Hintergrund hinterlegt werden.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "div",
+                                        "id": "wizard-letter-paper"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "click_save_button": {
+                            "position": 5,
+                            "title": "Briefkopf speichern",
+                            "caption": "Speichere deine Einstellungen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "submit",
+                                        "name": "submitFirmendaten"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "id": "tabs-2"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "taxes_and_currency": {
+            "title": "Steuer / Währung",
+            "sub_groups": {
+                "go_to_taxes_and_currency": {
+                    "completed": false,
+                    "steps": {
+                        "click_taxes_and_currency": {
+                            "position": 1,
+                            "title": "Steuer / Währung",
+                            "caption": "Klicke auf Steuer / Währung.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "href": "#tabs-8",
+                                        "contains": "Steuer / Währung"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "check_tax_rate": {
+                            "position": 2,
+                            "title": "Steuersatz normal prüfen",
+                            "caption": "Hier kann der normale Umsatzsteuersatz / MwSt.-Satz geändert werden.",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "steuersatz_normal"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "check_reduced_tax_rate": {
+                            "position": 3,
+                            "title": "Steuersatz ermäßigt prüfen",
+                            "caption": "Hier kann der ermäßigte Umsatzsteuersatz / MwSt.-Satz geändert werden.",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "steuersatz_ermaessigt"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "check_currency": {
+                            "position": 4,
+                            "title": "Währung prüfen",
+                            "caption": "Hier kann die Standard Währung geändert werden.",
+                            "description": "",
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "name": "waehrung"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "save_taxes_and_currency": {
+                            "position": 5,
+                            "title": "Speichern",
+                            "caption": "Speichere deine Einstellungen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "submit",
+                                        "name": "submitFirmendaten"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "id": "tabs-8"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

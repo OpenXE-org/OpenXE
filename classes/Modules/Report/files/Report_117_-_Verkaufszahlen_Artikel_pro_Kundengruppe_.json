@@ -1,0 +1,153 @@
+{
+    "name": "117 - Verkaufszahlen Artikel pro Kundengruppe",
+    "description": "Verkaufszahlen Artikel pro Kundengruppe",
+    "project": 0,
+    "sql_query": "SELECT \r\nLPAD(t.rank,3,'0') AS rank, \r\nt.gruppe AS gruppe, \r\nt.von AS von,\r\nt.bis AS bis,\r\nt.artikel AS artikel,\r\nt.artikelnummer AS artikelnummer,\r\nt.menge AS menge \r\nFROM\r\n(SELECT IF(@last=r.gruppe,@rank:=@rank+1,@rank:=1) AS rank, r.von, r.bis, @last:=r.gruppe AS gruppe, r.artikel, r.artikelnummer, r.menge FROM\r\n(SELECT\r\nCASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN a.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(a.datum - INTERVAL (WEEKDAY(a.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN (a.datum - INTERVAL (DAYOFMONTH(a.datum) - 1) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(a.datum), 1) + INTERVAL QUARTER(a.datum) QUARTER - INTERVAL 1 QUARTER\r\n           ELSE MAKEDATE(YEAR(a.datum), 1)\r\n           END AS von,\r\nCASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN a.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(a.datum + INTERVAL (6 - WEEKDAY(a.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN LAST_DAY(a.datum)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(a.datum), 1) + INTERVAL QUARTER(a.datum) QUARTER - INTERVAL 1 DAY\r\n           ELSE LAST_DAY(DATE_ADD(a.datum, INTERVAL 12-MONTH(a.datum) MONTH))\r\n           END AS bis, \r\ng.name AS gruppe,\r\nar.name_de AS artikel,\r\nar.nummer AS artikelnummer,\r\nROUND(SUM(ap.menge),0) AS menge\r\nFROM auftrag a\r\nJOIN auftrag_position ap ON a.id = ap.auftrag\r\nJOIN artikel ar ON ap.artikel = ar.id\r\nJOIN (SELECT g.name, ar.adresse\r\n    FROM gruppen g\r\n    JOIN adresse_rolle AS ar ON ar.parameter=g.id\r\n     WHERE subjekt='Mitglied' AND objekt='Gruppe') AS g ON g.adresse = a.adresse\r\nWHERE a.status<>'angelegt' AND a.status<>'storniert' AND IF('{VON}'=0,1,a.datum>='{VON}') AND IF('{BIS}'=0,1,a.datum<='{BIS}')\r\nGROUP BY \r\n CASE\r\n             WHEN '{GRUPPIERUNG}' = 'tag' THEN a.datum\r\n             WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(a.datum)\r\n             WHEN '{GRUPPIERUNG}' = 'monat' THEN MONTH(a.datum)\r\n             WHEN '{GRUPPIERUNG}' = 'quartal' THEN QUARTER(a.datum)\r\n             ELSE YEAR(a.datum)\r\n             END,\r\ng.name, ap.artikel\r\nORDER BY g.name,SUM(ap.menge) DESC) AS r\r\nJOIN (SELECT @rank:=0,@last:=0) AS rank) AS t\r\nWHERE t.rank < {LIMIT}",
+    "columns": [
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "gruppe",
+            "title": "Gruppe",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "artikel",
+            "title": "Artikel",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "31",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "rank",
+            "title": "Rang",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Auswahl des Zeitraums \u00fcber den gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Limit",
+            "default_value": "100",
+            "displayname": "Zeige Top x an",
+            "options": [],
+            "description": "Auswahl der x besten Pl\u00e4tze die pro Gruppe angezeigt werden sollen",
+            "editable": true,
+            "control_type": ""
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

@@ -1,0 +1,232 @@
+@font-face {
+    font-family: 'Inter';
+    font-style:  normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../themes/new/fonts/Inter-Regular.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-Regular.woff?v=3.13') format("woff");
+}
+@font-face {
+    font-family: 'Inter';
+    font-style:  italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../themes/new/fonts/Inter-Italic.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-Italic.woff?v=3.13') format("woff");
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style:  normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/Inter-Bold.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-Bold.woff?v=3.13') format("woff");
+}
+@font-face {
+    font-family: 'Inter';
+    font-style:  italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/Inter-BoldItalic.woff2?v=3.13') format("woff2"),
+    url('../fonts/Inter-BoldItalic.woff?v=3.13') format("woff");
+}
+
+
+html {
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+*:focus {
+    outline: none
+}
+
+*:focus {
+    outline: none
+}
+
+body {
+    color: #929292;
+    font: 12px 'Inter', Verdana, Arial, sans-serif;
+    line-height: 1.4em;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+}
+
+.login-wrapper {
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    max-width: 1024px;
+    margin: 0 auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+}
+.login-wrapper:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+@media only screen and (max-width: 650px) {
+    .login-wrapper {
+        position: relative;
+    }
+
+    .loginbox {
+        margin: 0;
+        height: 100vh;
+        width: 100%;
+        padding-left: 3%;
+        padding-right: 3%;
+        max-width: inherit;
+    }
+}
+
+#logo {
+    padding: 0;
+    margin: 10px 0;
+}
+
+::-webkit-input-placeholder {
+    opacity: 0.5;
+}
+::-moz-placeholder {
+    opacity: 0.5;
+}
+:-ms-input-placeholder {
+    opacity: 0.5;
+}
+:-moz-placeholder {
+    opacity: 0.5;
+}
+
+
+.loginbox {
+    display: inline-block;
+    vertical-align: middle;
+    width: 99%;
+    color: #a2a2a2;
+    text-align: left;
+    max-width: 400px;
+    padding: 2.5%;
+}
+
+.loginbox #loginmsg {
+    display: block;
+    margin: 0.5em 0 1em;
+}
+.loginbox #loginerrormsg {
+    display: block;
+    margin: 0.5em 0 1em;
+    color: darkred;
+}
+.loginbox .copyright {
+    text-align: center;
+    line-height: 1.5em;
+    margin: 10px 0;
+}
+
+.loginbox .btn,
+.permission-box .btn {
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #5CB59A;
+    background-color: #5CB59A;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+    text-decoration: none;
+}
+.loginbox .btn.btn-primary,
+.permission-box .btn.btn-primary {
+    color: #fff;
+    background-color: #5CB59A;
+    border-color: #5CB59A;
+}
+.loginbox .btn.btn-secondary,
+.permission-box .btn.btn-secondary {
+    color: #5CB59A;
+    background-color: #FFF;
+    border-color: #5CB59A;
+}
+
+#frmlogin {
+    margin: 20px 0;
+}
+#frmlogin table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 5px;
+}
+#frmlogin label {
+    display: block;
+    font-size: 12px;
+    color: #48494b;
+}
+#frmlogin select,
+#frmlogin textarea,
+#frmlogin input[type="text"],
+#frmlogin input[type="password"] {
+    display: block;
+    width: 100%;
+    padding: 10px 2px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #707070;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid #eaeaea;
+    background: #FFF;
+}
+
+/**
+    BERECHTIGUNG-FEHLT-SEITE
+ */
+.permission-box {
+    display: block;
+    max-width: 360px;
+    padding: 15px 30px;
+    margin: 100px auto;
+    background-color: #F5F6FA;
+    border-radius: 7px;
+    border: none;
+}
+.permission-box h1,
+.permission-box h2 {
+    color: #7b7b7b;
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 0;
+}
+.permission-box p {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: normal;
+    margin: 5px 0;
+    padding: 0;
+}
+.permission-box p.error {
+    font-weight: bold;
+    margin: 10px 0;
+}
+.permission-box a.btn {
+    text-align: center;
+}
