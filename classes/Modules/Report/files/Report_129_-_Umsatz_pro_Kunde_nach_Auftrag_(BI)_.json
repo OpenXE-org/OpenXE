@@ -1,0 +1,145 @@
+{
+    "name": "129 - Umsatz pro Kunde nach Auftrag (BI)",
+    "description": "Umsatz pro Kunde nach Auftrag.",
+    "project": 0,
+    "sql_query": "SELECT\r\nr.datum AS datum, \r\n a.name AS name,\r\n r.belegnr AS belegnummer,\r\n a.kundennummer AS kundennummer,\r\n ROUND((rp.menge),0) AS menge,\r\n ROUND((rp.umsatz_netto_einzeln)*((rp.menge)),2) AS umsatz,\r\n ROUND((rp.umsatz_netto_einzeln*rp.menge*((100+rp.rabatt)\/100)),2) AS umsatzohnerabatt,\r\n ROUND((rp.umsatz_netto_einzeln*rp.menge*((rp.rabatt)\/100)),2) AS gesamtrabatt,\r\n ROUND((rp.deckungsbeitrag),2) AS deckungsbeitrag,\r\n ROUND((rp.einkaufspreis*rp.menge),2) AS ek,\r\n r.waehrung AS waehrung\r\nFROM adresse a\r\nJOIN auftrag r ON a.id = r.adresse\r\nJOIN auftrag_position rp on r.id = rp.auftrag\r\nWHERE r.status<>'angelegt' AND r.status<>'storniert' AND IF({JAHR}=0,1,YEAR(r.datum)={JAHR})",
+    "columns": [
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "umsatzohnerabatt",
+            "title": "Umsatzohnerabatt",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "gesamtrabatt",
+            "title": "Gesamtrabatt",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "deckungsbeitrag",
+            "title": "Deckungsbeitrag",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "ek",
+            "title": "Ek",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": null
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        },
+        {
+            "key_name": "belegnummer",
+            "title": "Belegnummer",
+            "width": "19",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Jahr",
+            "default_value": "0",
+            "displayname": "(optional) Eingrenzen auf Jahr",
+            "options": [],
+            "description": "Grenzt die zu suchenden Ums\u00e4tze auf ein bestimmtes Jahr ein",
+            "editable": true
+        }
+    ],
+    "remark": "",
+    "category": "CRM \u0026 Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

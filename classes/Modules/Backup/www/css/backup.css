@@ -1,0 +1,120 @@
+.visible{
+    display:block;
+    visibility: visible;
+}
+.invisible{
+    visibility: hidden;
+    display: none;
+}
+div#backupModalTimer.ui-dialog-titlebar-close {
+    visibility: hidden;
+}
+/**.ui-dialog-titlebar {
+    display: none;
+    visibility: hidden;
+}*/
+.ui-resizable-handle { display: none !important; }
+div#backupModalTimer.ui-widget-content {
+    border: none !important;
+    outline-width: 0px !important;
+    background: transparent !important;
+}
+.ui-dialog.ui-resizable-disabled .ui-resizable-handle { display: none; }
+a:focus{
+    outline:none;
+}
+.bck-status-message{
+position: absolute;
+width: auto;
+height: auto;
+text-align: center;
+left: 50%;
+transform: translate(-50%, -70%);
+opacity: 1;
+}
+
+.bck-custom-file {
+    position: relative;
+    -ms-flex: 1 1 0%;
+    flex: 1 1 0%;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.bck-custom-file {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    margin-bottom: 0;
+}
+
+#backup-importer {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    margin: 0;
+    opacity: 0;
+}
+
+.custom-file-label {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.custom-control-label::before, .custom-file-label, .custom-select {
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#input-for-backup-importer{
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    padding: 0.375rem 0.75rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--grey);
+    background-color: var(--info-color);
+    border: 1px solid var(--current-grey);
+    border-radius: 0.25rem;
+    margin-top: 10px;
+    width: 33%;
+}
+@media only screen
+and (max-width: 640px) {
+    #input-for-backup-importer{
+        width: 50% !important;
+    }
+}
+.chunked-file-upload-container{
+    margin-top: 32px !important;
+}
+
+.backup-success {
+    background-color: var(--green);
+    background-image: url(/themes/new/images/info.png);
+    background-size: 30px 30px;
+    padding: 15px 10px 15px 50px;
+    margin: 0 0 10px 0;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    border-radius: 3px;
+    color: var(--error-color);
+    font-size: 13px;
+}
+
+.backup-create {
+    background-color: var(--header-counter-background);
+    background-image: url(/themes/new/images/info.png);
+    background-size: 30px 30px;
+    padding: 15px 10px 15px 50px;
+    margin: 0 0 10px 0;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    border-radius: 3px;
+    color: var(--error-color);
+    font-size: 13px;
+}

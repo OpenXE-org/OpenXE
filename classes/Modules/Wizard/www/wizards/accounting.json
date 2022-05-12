@@ -1,0 +1,373 @@
+{
+    "key": "accounting",
+    "category": "accounting-calculator",
+    "title": "Buchhaltung steuern",
+    "sub_title": "In xentral pflegen wir die Buchhaltung bis zum Buchhaltungsexport. Alle Buchungsstapel werden vorkontiert und dank DATEV-Schnittstelle an das Steuerbüro übergeben. ",
+    "description": "In xentral pflegen wir die Buchhaltung bis zum Buchhaltungsexport. Alle Buchungsstapel werden vorkontiert und dank DATEV-Schnittstelle an das Steuerbüro übergeben.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "firmendaten": [
+            "edit"
+        ],
+        "zahlungseingang": [
+            "list"
+        ],
+        "lieferschwelle": [
+            "list"
+        ],
+        "kasse": [
+            "list"
+        ],
+        "mahnwesen": [
+            "list",
+            "opos"
+        ],
+        "buchhaltungexport": [
+            "list"
+        ],
+        "konten": [
+            "list"
+        ],
+        "zmmeldung": [
+            "list"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=adresse&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/l-PqxK9YF2w"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "introduction_account_system": {
+                    "steps": {
+                        "click_account_system": {
+                            "position": 1,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Kontenrahmen",
+                            "caption": "Klicke auf Steuer / Währung",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "href": "#tabs-8",
+                                        "contains": "Steuer / Währung"
+                                    },
+                                    "parent": {
+                                        "node_name": "div",
+                                        "class": "firmendatenedit"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        },
+                        "go_to_account_system": {
+                            "position": 2,
+                            "link": "./index.php?module=firmendaten&action=edit",
+                            "title": "Kontenrahmen",
+                            "caption": "Kontenrahmen können hier eingetragen werden.",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "id": "wizard-account-system"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "payment_receipt": {
+                    "steps": {
+                        "explanation_payment_receipt": {
+                            "position": 1,
+                            "link": "./index.php?module=zahlungseingang&action=list",
+                            "title": "Zahlungseingang",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Zahlungseingang",
+                                            "text": "Im Zahlungseingang können die Buchungen jedes angebundenen Geschäftskontos (Bankkonto, PayPal, Shopify Payments uvm.) importiert werden.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "lieferschwelle": {
+                    "steps": {
+                        "explanation_lieferschwelle": {
+                            "position": 1,
+                            "link": "./index.php?module=lieferschwelle&action=list",
+                            "title": "Lieferschwelle",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Lieferschwelle",
+                                            "text": "Werden beim internationalen Warenversand sogenannte Lieferschwellen einzelner Länder überschritten, muss die Umsatzsteuer im Zielland abgeführt werden. Die Lieferschwellen deiner Zielländer kannst du hier einstellen, damit deine Rechnungen auch nach Überschreiten einer Lieferschwelle mit der korrekten Besteuerung erstellt werden.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "kassenbuch": {
+                    "steps": {
+                        "explanation_kassenbuch": {
+                            "position": 1,
+                            "link": "./index.php?module=kasse&action=list",
+                            "title": "Kassenbuch",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Kassenbuch",
+                                            "text": "Im Kassenbuch kannst du die Barkasse deiner Firma hinterlegen und hast alle Ein- und Ausgänge stets im Blick. Bei Bedarf lässt sich das Kassenbuch exportieren.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "mahnwesen": {
+                    "steps": {
+                        "explanation_mahnwesen": {
+                            "position": 1,
+                            "link": "./index.php?module=mahnwesen&action=list",
+                            "title": "Mahnwesen",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Mahnwesen",
+                                            "text": "Das Mahnwesen in xentral berechnet regelmäßig den Zahlungsstatus aller Rechnungen und gibt sie euch als übersichtliche Liste aus. xentral sammelt alle überfälligen Rechnungen und per Knopfdruck kannst du Mahnungen an deine Kunden versenden.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "opos_list": {
+                    "steps": {
+                        "explanation_opos_list": {
+                            "position": 1,
+                            "link": "./index.php?module=mahnwesen&action=opos",
+                            "title": "OPOS-Liste",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "OPOS Liste",
+                                            "text": "Deine Buchhaltung braucht auch eine OPOS-Liste. Diese zeigt dir all deine offenen Kundenrechnungen gebündelt an einem Ort.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "datev_export": {
+                    "steps": {
+                        "explanation_datev_export": {
+                            "position": 1,
+                            "link": "./index.php?module=buchhaltungexport&action=list",
+                            "title": "DATEV Export",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "DATEV Export",
+                                            "text": "Im DATEV Export kannst du deine Rechnungen, Gutschriften und Verbindlichkeiten exportieren, um sie im Anschluss in DATEV einzuspielen.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "geschaeftskonten": {
+                    "steps": {
+                        "check_geschaeftskonten": {
+                            "position": 1,
+                            "link": "./index.php?module=konten&action=list",
+                            "title": "Geschäftskonten",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Geschäftskonten",
+                                            "text": "Hier kannst du all deine Bankkonten, sowie Paypal oder Stripe anbinden. Alle Buchungen werden automatisch importiert und lassen sich gemeinsam in xentral verwalten. Buchungen die einem Beleg eindeutig zugeordnet werden können, erkennt xentral direkt und ermöglicht eine Verknüpfung per Knopfdruck.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "zmmeldung": {
+                    "steps": {
+                        "check_zmmeldung": {
+                            "position": 1,
+                            "link": "./index.php?module=zmmeldung&action=list",
+                            "title": "ZM Meldung",
+                            "caption": "",
+                            "description": "",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "ZM Meldung",
+                                            "text": "Wer innerhalb der EU Ware an Firmen liefert, muss unter Umständen eine \"Zusammenfassende Meldung\" tätigen. Mit unserem Modul ZM Meldung lassen sich alle Lieferungen dieser Art exportieren.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

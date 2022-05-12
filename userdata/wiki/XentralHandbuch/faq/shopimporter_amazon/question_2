@@ -1,0 +1,1 @@
+Es können keine Updates über die Feeds API (SubmitFeed) von Amazon hochgeladen werden. Es erscheint die Fehlermeldung Response Status Code: 400, ErrorCode: InvalidMarketplace, Message: Feed rejected. Wo liegt der Fehler?

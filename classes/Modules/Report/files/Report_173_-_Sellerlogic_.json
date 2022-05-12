@@ -1,0 +1,99 @@
+{
+    "name": "173 - Sellerlogic",
+    "description": "Gibt alle Daten aller Artikel für Sellerlogic aus.\n1. Je eine Gruppe für Mindestverkaufspreis und Maximalverkaufspreis anlegen. \n\tKennziffer nach folgendem Muster: MIN_SellerID_Marktplatz und MAX_SellerID_Marktplatz\n2. Den Verkaufspreisen der Artikel die angelegten Gruppen entsprechend zuordnen.\n3. Ausgabe kann durch die Variablen MINGRUPPE und MAXGRUPPE mit Eingabe der Gruppen-ID eingeschränkt werden",
+    "project": 0,
+    "sql_query": "SELECT sal.marketplace_request,af.nummer,\r\n       substr(\r\n               substr(se.einstellungen_json, instr(einstellungen_json,'\"SellerId\":\"') + 12,100),\r\n               1,\r\n               instr(\r\n                       substr(se.einstellungen_json,\r\n                              instr(einstellungen_json,'\"SellerId\":\"') + 12,100),'\"')-1\r\n           ) AS SellerId,\r\n       art.freifeld1,\r\n       art.freifeld2,\r\n       IFNULL((\r\n           SELECT vp.preis\r\n           FROM verkaufspreise AS vp\r\n           INNER JOIN gruppen g on vp.gruppe = g.id AND vp.art LIKE 'preisgruppe' AND\r\n                    (IFNULL(vp.gueltig_bis,'0000-00-00') = '0000-00-00' OR vp.gueltig_bis >= CURDATE())\r\n           WHERE vp.artikel = art.id AND g.kennziffer = CONCAT('MIN',sal.marketplace_request)\r\n           LIMIT 1\r\n       ),v1.preis) AS minprice,\r\n       IFNULL((\r\n                  SELECT vp.waehrung\r\n                  FROM verkaufspreise AS vp\r\n                           INNER JOIN gruppen g on vp.gruppe = g.id AND vp.art LIKE 'preisgruppe' AND\r\n                                                   (IFNULL(vp.gueltig_bis,'0000-00-00') = '0000-00-00' OR vp.gueltig_bis >= CURDATE())\r\n                  WHERE vp.artikel = art.id AND g.kennziffer = CONCAT('MIN',sal.marketplace_request)\r\n                  LIMIT 1\r\n              ),v1.waehrung) AS minwaehrung,\r\n       IFNULL((\r\n                  SELECT vp.preis\r\n                  FROM verkaufspreise AS vp\r\n                           INNER JOIN gruppen g on vp.gruppe = g.id AND vp.art LIKE 'preisgruppe' AND\r\n                                                   (IFNULL(vp.gueltig_bis,'0000-00-00') = '0000-00-00' OR vp.gueltig_bis >= CURDATE())\r\n                  WHERE vp.artikel = art.id AND g.kennziffer = CONCAT('MIN',sal.marketplace_request)\r\n                  LIMIT 1\r\n              ),v2.preis) AS maxprice,\r\n       IFNULL((\r\n                  SELECT vp.waehrung\r\n                  FROM verkaufspreise AS vp\r\n                           INNER JOIN gruppen g on vp.gruppe = g.id AND vp.art LIKE 'preisgruppe' AND\r\n                                                   (IFNULL(vp.gueltig_bis,'0000-00-00') = '0000-00-00' OR vp.gueltig_bis >= CURDATE())\r\n                  WHERE vp.artikel = art.id AND g.kennziffer = CONCAT('MIN',sal.marketplace_request)\r\n                  LIMIT 1\r\n              ),v2.waehrung) AS maxwaehrung\r\n\r\nFROM shopexport AS se\r\nINNER JOIN artikelnummer_fremdnummern AS af ON se.id = af.shopid AND af.aktiv\r\nINNER JOIN artikel AS art ON af.artikel = art.id AND art.geloescht <> 1\r\nINNER JOIN `shopimporter_amazon_listing` AS sal ON se.id = sal.shop_id AND af.nummer = sal.seller_sku\r\nLEFT JOIN\r\n(\r\n    SELECT preis, waehrung, artikel\r\n    FROM verkaufspreise AS vp1\r\n    INNER JOIN gruppen AS g1 ON vp1.gruppe = g1.id AND g1.kennziffer = '{MINGRUPPE}'\r\n    WHERE (IFNULL(vp1.gueltig_bis,'0000-00-00') = '0000-00-00' OR vp1.gueltig_bis >= CURDATE())\r\n\r\n) AS v1 ON art.id = v1.artikel\r\nLEFT JOIN\r\n (\r\n     SELECT preis, waehrung, artikel\r\n     FROM verkaufspreise AS vp2\r\n              INNER JOIN gruppen AS g2 ON vp2.gruppe = g2.id AND g2.kennziffer = '{MAXGRUPPE}'\r\n     WHERE (IFNULL(vp2.gueltig_bis,'0000-00-00') = '0000-00-00' OR vp2.gueltig_bis >= CURDATE())\r\n\r\n ) AS v2 ON art.id = v2.artikel\r\nWHERE instr(se.einstellungen_json,'\"SellerId\":\"') > 0",
+    "columns": [
+        {
+            "key_name": "marketplace_request",
+            "title": "Marktplatz",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "nummer",
+            "title": "Nummer",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "SellerId",
+            "title": "Sellerid",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "freifeld1",
+            "title": "optimization_state",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "freifeld2",
+            "title": "optimization_template",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "minprice",
+            "title": "Minprice",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "minwaehrung",
+            "title": "Minwaehrung",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "maxprice",
+            "title": "Maxprice",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "maxwaehrung",
+            "title": "Maxwaehrung",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "MINGRUPPE",
+            "default_value": "MINGRUPPE",
+            "displayname": "Min Verkaufspreisgruppe",
+            "options": [],
+            "description": "Minimale Preisgruppe für Verkaufspreis",
+            "editable": true,
+            "control_type": "text"
+        },
+        {
+            "varname": "MAXGRUPPE",
+            "default_value": "MAXGRUPPE",
+            "displayname": "Max Verkaufspreisgruppe",
+            "options": [],
+            "description": "Maximale Preisgruppe für Verkaufspreis",
+            "editable": true,
+            "control_type": "text"
+        }
+    ],
+    "remark": "",
+    "category": "Einkauf & Artikelverwaltung (PIM)",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

@@ -1,0 +1,135 @@
+{
+    "name": "146 - Versandanalyse Warenwert",
+    "description": "\u00dcbersicht \u00fcber den Wert versendeter Artikel. Berechnung basiert auf zugeordneter Rechnung.\r\n\r\nGruppierungsoptionen:\r\n- Datum: Tag\/Woche\/Monat\/Quartal\/Jahr\r\nFilteroptionen:\r\n- Jahr (optional): Jahr f\u00fcr das Belege angezeigt werden sollen",
+    "project": 0,
+    "sql_query": "SELECT CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(r.datum - INTERVAL (WEEKDAY(r.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN (r.datum - INTERVAL (DAYOFMONTH(r.datum) - 1) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(r.datum), 1) + INTERVAL QUARTER(r.datum) QUARTER - INTERVAL 1 QUARTER\r\n           ELSE MAKEDATE(YEAR(r.datum), 1)\r\n           END AS von,\r\n       CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(r.datum + INTERVAL (6 - WEEKDAY(r.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN LAST_DAY(r.datum)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(r.datum), 1) + INTERVAL QUARTER(r.datum) QUARTER - INTERVAL 1 DAY\r\n           ELSE LAST_DAY(DATE_ADD(r.datum, INTERVAL 12-MONTH(r.datum) MONTH))\r\n           END AS bis,\r\n       CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN WEEK(r.datum) + 1\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(r.datum) + 1\r\n           ELSE ''\r\n           END                                                                       AS kw,\r\n    REPLACE(ROUND(SUM(r.soll),2),'.',',') AS wert,\r\n    REPLACE(ROUND(MIN(r.soll),2),'.',',') AS minwert,\r\n    REPLACE(ROUND(MAX(r.soll),2),'.',',') AS maxwert,\r\n    REPLACE(ROUND(AVG(r.soll),2),'.',',') AS avgwert\r\nFROM versand AS v\r\n         JOIN rechnung r ON v.lieferschein = r.lieferschein\r\nWHERE IF({JAHR}=0,1,YEAR(v.versendet_am)={JAHR})\r\nGROUP BY\r\n    CASE\r\n        WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n        WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(r.datum)\r\n        WHEN '{GRUPPIERUNG}' = 'monat' THEN MONTH(r.datum)\r\n        WHEN '{GRUPPIERUNG}' = 'quartal' THEN QUARTER(r.datum)\r\n        ELSE YEAR(r.datum)\r\n        END",
+    "columns": [
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "kw",
+            "title": "KW",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "wert",
+            "title": "Gesamtwert",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "minwert",
+            "title": "Mindestwert",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "maxwert",
+            "title": "Maximalwert",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "avgwert",
+            "title": "Durchschnittswert",
+            "width": "27",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Zeitraum \u00fcber den der Warenwert gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Jahr",
+            "default_value": "0",
+            "displayname": "(Optional) Eingrenzen auf Jahr",
+            "options": [],
+            "description": "Jahr f\u00fcr das die Ausgabe eingegrenz werden soll",
+            "editable": true,
+            "control_type": ""
+        }
+    ],
+    "remark": "",
+    "category": "Lager & Logistik",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

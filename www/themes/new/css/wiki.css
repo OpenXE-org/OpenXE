@@ -1,0 +1,52 @@
+div.wiki h1, h2, h3, h4, h5 {
+	font-weight: 400;
+	color: black;
+	padding: 0px;
+}
+
+div.wiki h1 {
+	font-size: 160%;
+	margin-bottom: 0.6em;
+	border-bottom: 1px solid #AAAAAA;
+}
+
+div.wiki h2 {
+	font-size: 132%;
+	font-weight: 700;
+}
+
+div.wiki a {
+	font-style: normal;
+	font-weight: 400;
+	color: #0645AD;
+	text-decoration: none;
+}
+
+div.wiki a:hover, a:focus { 
+}
+
+div#index {
+	display: inline-block;
+  border: 1px solid #AAAAAA;
+  padding: 5px 8px;
+  margin: 10px 0px;
+  min-width: 30%;
+  font-size: 13px;
+}
+
+div#index center {
+	font-weight: 700;
+  font-size: 14px;
+	margin: 5px 0px;
+}
+
+ul#index {
+	padding: 0px;
+	margin: 0px;
+}
+
+ul#index li { list-style-type: none; padding: 1px 0px; }
+
+ul#index .level2 { margin-left: 15px; }
+ul#index .level3 { margin-left: 30px; }
+	

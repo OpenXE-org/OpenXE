@@ -1,0 +1,1 @@
+Die selbst&auml;ndige Iteration funktioniert nur bei den Feldern Preis und Menge. Es werden also nicht selbst&auml;ndig alle Freifelder durchlaufen und diese mit der Menge multipliziert. In diesem Falle m&uuml;ssten Sie die Freifelder konkret adressieren.<br />Das sieht dann so aus: spaltensumme (POS:freifeld1 * POS:menge).

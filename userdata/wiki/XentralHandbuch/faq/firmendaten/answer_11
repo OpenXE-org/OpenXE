@@ -1,0 +1,1 @@
+Dies kann an dem Standardsystem von MySQL liegen. Hier wurde bislang MyISAM als Standard verwendet. Dieses ist jedoch veraltet und es muss der InnoDB Storage Engine verwendet werden, damit die in Xentral eingetragenen Werte in der DB abgespeichert werden k&ouml;nnen.

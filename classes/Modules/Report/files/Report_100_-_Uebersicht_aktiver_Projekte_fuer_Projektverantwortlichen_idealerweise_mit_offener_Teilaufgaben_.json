@@ -1,0 +1,62 @@
+{
+    "name": "100 - \u00dcbersicht aktiver Projekte f\u00fcr Projektverantwortlichen idealerweise mit offenen Teilaufgaben",
+    "description": "Gibt alle Projekte mit dem Status gestartet aus, bei gesetzter Variable werden auch Teilprojekte mit Status offen ausgegeben.",
+    "project": 0,
+    "sql_query": "SELECT \r\np.name AS bezeichnung, \r\np.abkuerzung AS kennung, \r\nIFNULL(a.name,'') AS verantwortlicher, \r\nIF('{TEILPROJEKT}'='ja', IFNULL(ap.aufgabe,''), '') AS aufgabe\r\nFROM projekt p \r\nLEFT JOIN (SELECT ap.id, ap.aufgabe, ap.projekt FROM arbeitspaket ap WHERE ap.status = 'offen') ap ON p.id = ap.projekt \r\nLEFT JOIN adresse a ON p.verantwortlicher = a.id \r\nWHERE p.status = 'gestartet' \r\nGROUP BY p.id, IF('{TEILPROJEKT}'='ja', ap.id, 1)",
+    "columns": [
+        {
+            "key_name": "bezeichnung",
+            "title": "Bezeichnung",
+            "width": "47",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "kennung",
+            "title": "Kennung",
+            "width": "47",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "verantwortlicher",
+            "title": "Verantwortlicher",
+            "width": "47",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "aufgabe",
+            "title": "Teilprojekt (falls gew\u00e4hlt)",
+            "width": "47",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Teilprojekt",
+            "default_value": "nein",
+            "displayname": "Aufgaben anzeigen",
+            "options": [
+                {
+                    "Ja": "ja"
+                },
+                {
+                    "Nein": "nein"
+                }
+            ],
+            "description": "Zeigt Teilprojekte zu zugeh\u00f6rigen Projekten an",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "Team \u0026 Projektmanagement",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

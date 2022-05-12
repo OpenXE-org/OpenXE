@@ -1,0 +1,117 @@
+{
+    "name": "051 - Funnel: Neue Cards pro Mitarbeiter (letzte KW)",
+    "description": "Alle (offenen und abgeschlossenen) Wiedervorlagen die in Zeitraum X angelegt wurden, je Verantwortlicher aufsummiert.",
+    "project": 0,
+    "sql_query": "SELECT CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN w.datum_angelegt\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(w.datum_angelegt - INTERVAL (WEEKDAY(w.datum_angelegt)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN (w.datum_angelegt - INTERVAL (DAYOFMONTH(w.datum_angelegt) - 1) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(w.datum_angelegt), 1) + INTERVAL QUARTER(w.datum_angelegt) QUARTER - INTERVAL 1 QUARTER\r\n           ELSE MAKEDATE(YEAR(w.datum_angelegt), 1)\r\n           END AS von,\r\n      CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN w.datum_angelegt\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(w.datum_angelegt + INTERVAL (6 - WEEKDAY(w.datum_angelegt)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN LAST_DAY(w.datum_angelegt)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(w.datum_angelegt), 1) + INTERVAL QUARTER(w.datum_angelegt) QUARTER - INTERVAL 1 DAY\r\n           ELSE LAST_DAY(DATE_ADD(w.datum_angelegt, INTERVAL 12-MONTH(w.datum_angelegt) MONTH))\r\n           END AS bis,\r\n       a.name,\r\n       COUNT(w.id) AS anzahl\r\nFROM wiedervorlage w\r\n         LEFT JOIN adresse a ON w.bearbeiter = a.id\r\nWHERE IF('{VON}' = 0, 1, w.datum_angelegt >= '{VON}')\r\n  AND IF('{BIS}' = 0, 1, w.datum_angelegt <= '{BIS}')\r\nGROUP BY CASE\r\n             WHEN '{GRUPPIERUNG}' = 'tag' THEN w.datum_angelegt\r\n             WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(w.datum_angelegt)\r\n             WHEN '{GRUPPIERUNG}' = 'monat' THEN MONTH(w.datum_angelegt)\r\n             WHEN '{GRUPPIERUNG}' = 'quartal' THEN QUARTER(w.datum_angelegt)\r\n             ELSE YEAR(w.datum_angelegt)\r\n             END, w.bearbeiter",
+    "columns": [
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "anzahl",
+            "title": "Anzahl",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Auswahl des Zeitraums \u00fcber den gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "Team & Projektmanagement",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

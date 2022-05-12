@@ -1,0 +1,24 @@
+#add-more-table {
+    float: right;
+    background: var(--green);
+    color: #fff;
+    font-weight: bold;
+    padding: 7px 7px 5px;
+    border: none;
+    border-radius: 4px;
+    margin-top: 4px;
+    cursor: pointer;
+    margin-bottom: 0;
+    margin-right: 15px;
+}
+.remove-me{cursor: pointer;}
+
+.demo-exporter-status-message{
+    position: absolute;
+    width: auto;
+    height: auto;
+    text-align: center;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    opacity: 1;
+}

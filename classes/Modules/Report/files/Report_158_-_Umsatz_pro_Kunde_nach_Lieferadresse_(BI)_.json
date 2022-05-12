@@ -1,0 +1,120 @@
+{
+    "name": "158 - Umsatz pro Kunde nach Lieferadresse (BI)",
+    "description": "Umsatz pro Kunde nach Lieferadresse",
+    "project": 0,
+    "sql_query": "SELECT \r\n x.datum AS datum,\r\n a.name AS kundename, \r\n a.kundennummer AS kundennummer, \r\n x.name AS liefername,\r\n x.strasse AS lieferstrasse,\r\n x.ort AS lieferort,\r\n x.plz AS lieferplz, \r\n x.land AS lieferland,  \r\n x.menge AS menge,\r\n x.umsatz_netto AS summe,\r\n x.waehrung AS waehrung,\r\n x.typ AS typ\r\nFROM adresse a\r\nJOIN\r\n (SELECT l.adresse,r.umsatz_netto,l.name,l.strasse,l.ort,l.plz,l.land,r.waehrung,r.datum, SUM(rp.menge) AS menge, 'Rechnung' AS typ  FROM rechnung AS r JOIN lieferschein l ON r.id = l.rechnungid\r\n      JOIN rechnung_position AS rp ON r.id = rp.rechnung\r\n      WHERE r.status<>'angelegt' AND r.status<>'storniert' AND l.status <> 'angelegt' AND l.status <> 'storniert' AND IF('{VON}'=0,1,r.datum>='{VON}') AND IF('{BIS}'=0,1,r.datum<='{BIS}')\r\n      GROUP BY r.id\r\n      UNION ALL\r\n      SELECT l.adresse,-g.umsatz_netto,l.name,l.strasse,l.ort,l.plz,l.land,g.waehrung,g.datum, -SUM(gp.menge) AS menge, 'Gutschrift' AS typ FROM gutschrift AS g JOIN rechnung r ON g.rechnungid = r.id JOIN lieferschein l ON r.id = l.rechnungid\r\n      JOIN gutschrift_position AS gp ON g.id = gp.gutschrift\r\n      WHERE g.status<>'angelegt' AND g.status<>'storniert' AND IF('{VON}'=0,1,g.datum>='{VON}') AND IF('{BIS}'=0,1,g.datum<='{BIS}')\r\n      GROUP BY g.id) AS x on x.adresse = a.id",
+    "columns": [
+        {
+            "key_name": "datum",
+            "title": "Datum",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "kundename",
+            "title": "Kundename",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "liefername",
+            "title": "Liefername",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "lieferstrasse",
+            "title": "Lieferstrasse",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "lieferort",
+            "title": "Lieferort",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "lieferplz",
+            "title": "Lieferplz",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "lieferland",
+            "title": "Lieferland",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "15",
+            "alignment": "right",
+            "sum": 1
+        },
+        {
+            "key_name": "summe",
+            "title": "Summe",
+            "width": "15",
+            "alignment": "right",
+            "sum": 1
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "typ",
+            "title": "Typ",
+            "width": "15",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "CRM \u0026 Vertrieb",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

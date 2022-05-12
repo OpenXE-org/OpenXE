@@ -1,0 +1,77 @@
+{
+    "name": "177 - Aktive Kundenabos",
+    "description": "Zeigt die Kundendaten, den Gesamtumsatz und den gesamten Aboumsatz beschränkt auf ein bestimmtes Projekt an.",
+    "project": 0,
+    "sql_query": "SELECT ad.kundennummer, ad.name AS kundenname, ad.plz, aktive_gruppen.name AS gruppennamen, FORMAT((IFNULL(umsatz_rechnung.betrag,0) - IFNULL(umsatz_gutschrift.betrag, 0)), 2, 'de_DE') AS umsatz, FORMAT(abobetrag.monatlich, 2, 'de_DE') AS monatlich, YEAR(umsatz_rechnung.datum) AS datum\nFROM adresse ad \nJOIN projekt p ON ad.projekt = p.id\nJOIN (\n    SELECT SUM(\n          abo.menge * abo.preis * (1 - rabatt / 100)\n          * \n          IF(\n              abo.preisart = 'jahr' OR abo.preisart = '360tage', \n              IF(abo.zahlzyklus <= 1, 1/12,1 / (abo.zahlzyklus * 12)),\n              IF(\n                  abo.preisart = 'wochen', \n                  IF(abo.zahlzyklus <= 1,  7 / 30, 1 / (abo.zahlzyklus * 30 / 7)) ,\n                  IF(abo.preisart = 'einmalig', \n                     0,\n                        IF(abo.preisart = 'monat' OR abo.preisart = '30tage',\n                          1,\n                          IF(abo.zahlzyklus <= 1, 1, 1/ (abo.zahlzyklus))\n                    )\n                  )\n              )\n          )\n      ) AS monatlich, abo.adresse\n      FROM abrechnungsartikel AS abo\n      WHERE (abo.startdatum <= CURDATE() OR IFNULL(abo.startdatum,'0000-00-00') = '0000-00-00')\n        AND (abo.enddatum >= CURDATE() OR IFNULL(abo.enddatum,'0000-00-00') = '0000-00-00')\n    \tGROUP BY abo.adresse\n    ) AS abobetrag ON ad.id = abobetrag.adresse\nLEFT JOIN (\n    SELECT SUM(umsatz_netto) AS betrag, adresse, MIN(datum) AS datum FROM rechnung WHERE status != 'angelegt' GROUP BY adresse\n    ) AS umsatz_rechnung ON ad.id = umsatz_rechnung.adresse\nLEFT JOIN (\n    SELECT SUM(umsatz_netto) AS betrag, adresse FROM gutschrift WHERE status != 'angelegt' GROUP BY adresse\n    ) AS umsatz_gutschrift ON ad.id = umsatz_gutschrift.adresse\nLEFT JOIN (\n\tSELECT ar.adresse, GROUP_CONCAT(g.name SEPARATOR ', ') AS name \n\tFROM gruppen g\n\tINNER JOIN adresse_rolle ar ON g.id = ar.parameter\n\tWHERE ar.subjekt = 'Mitglied' AND ar.objekt = 'Gruppe' AND ar.von <= CURDATE() AND (ar.bis >= CURDATE() OR ar.bis = '0000-00-00')\n\tGROUP BY ar.adresse\n) AS aktive_gruppen ON aktive_gruppen.adresse = ad.id    \n\n    \nWHERE p.abkuerzung = '{PROJEKT}'",
+    "csv_delimiter": ",",
+    "columns": [
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "kundenname",
+            "title": "Name",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "plz",
+            "title": "PLZ",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "gruppennamen",
+            "title": "Aktive Gruppen",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz gesamt",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "monatlich",
+            "title": "Abobetrag (MRR)",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "datum",
+            "title": "Jahreszahl erste Rechnung",
+            "width": "21",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "PROJEKT",
+            "default_value": "STANDARD",
+            "displayname": "Projekt",
+            "options": [],
+            "description": "",
+            "editable": true,
+            "control_type": "autocomplete_project"
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

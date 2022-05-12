@@ -1,0 +1,180 @@
+{
+    "name": "128 - Umsatz pro Kunde nach Auftrag (erweitert)",
+    "description": "Umsatz pro Kunde nach Rechnung.\r\n\r\nGruppierungsoptionen:\r\n- Datum: Tag\/Woche\/Monat\/Quartal\/Jahr\r\nFilteroptionen:\r\n- Jahr (optional): Jahr f\u00fcr das Belege angezeigt werden sollen",
+    "project": 0,
+    "sql_query": "SELECT CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(r.datum - INTERVAL (WEEKDAY(r.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN (r.datum - INTERVAL (DAYOFMONTH(r.datum) - 1) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(r.datum), 1) + INTERVAL QUARTER(r.datum) QUARTER - INTERVAL 1 QUARTER\r\n           ELSE MAKEDATE(YEAR(r.datum), 1)\r\n           END AS von,\r\n       CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN DATE(r.datum + INTERVAL (6 - WEEKDAY(r.datum)) DAY)\r\n           WHEN '{GRUPPIERUNG}' = 'monat' THEN LAST_DAY(r.datum)\r\n           WHEN '{GRUPPIERUNG}' = 'quartal' THEN MAKEDATE(YEAR(r.datum), 1) + INTERVAL QUARTER(r.datum) QUARTER - INTERVAL 1 DAY\r\n           ELSE LAST_DAY(DATE_ADD(r.datum, INTERVAL 12-MONTH(r.datum) MONTH))\r\n           END AS bis,\r\n       CASE\r\n           WHEN '{GRUPPIERUNG}' = 'tag' THEN WEEK(r.datum) + 1\r\n           WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(r.datum) + 1\r\n           ELSE ''\r\n           END                                                                       AS kw,\r\n       r.name                                                                        AS name,\r\n       r.kundennummer                                                                AS kundennummer,\r\n       ROUND(SUM(rp.menge), 0)                                                       AS menge,\r\n       ROUND(AVG(rp.umsatz_netto_einzeln) * (SUM(rp.menge)), 2)                      AS umsatz,\r\n       ROUND(SUM(rp.umsatz_netto_einzeln * rp.menge * ((100 + rp.rabatt) \/ 100)), 2) AS umsatzohnerabatt,\r\n       ROUND(SUM(rp.umsatz_netto_einzeln * rp.menge * ((rp.rabatt) \/ 100)), 2)       AS gesamtrabatt,\r\n       ROUND(SUM(rp.deckungsbeitrag), 2)                                             AS deckungsbeitrag,\r\n       ROUND(SUM(rp.einkaufspreis * rp.menge), 2)                                    AS ek,\r\n       r.waehrung                                                                    AS waehrung\r\nFROM adresse a\r\n         JOIN auftrag r ON a.id = r.adresse\r\n         JOIN auftrag_position rp on r.id = rp.auftrag\r\nWHERE r.status <> 'angelegt'\r\n  AND r.status <> 'storniert'\r\n  AND IF({JAHR} = 0, 1, YEAR(r.datum) = {JAHR})\r\nGROUP BY a.id, r.waehrung,\r\n         CASE\r\n             WHEN '{GRUPPIERUNG}' = 'tag' THEN r.datum\r\n             WHEN '{GRUPPIERUNG}' = 'woche' THEN WEEK(r.datum)\r\n             WHEN '{GRUPPIERUNG}' = 'monat' THEN MONTH(r.datum)\r\n             WHEN '{GRUPPIERUNG}' = 'quartal' THEN QUARTER(r.datum)\r\n             ELSE YEAR(r.datum)\r\n             END",
+    "columns": [
+        {
+            "key_name": "von",
+            "title": "Von",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "bis",
+            "title": "Bis",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "kw",
+            "title": "KW",
+            "width": "10",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "name",
+            "title": "Kunde",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "umsatz",
+            "title": "Umsatz",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "umsatzohnerabatt",
+            "title": "Umsatz ohne Rabatt",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "gesamtrabatt",
+            "title": "Gesamtrabatt",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "deckungsbeitrag",
+            "title": "Deckungsbeitrag",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "ek",
+            "title": "EK",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "waehrung",
+            "title": "Waehrung",
+            "width": "15",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Jahr",
+            "default_value": "0",
+            "displayname": "(optional) Eingrenzen auf Jahr",
+            "options": [],
+            "description": "Grenzt die zu suchenden Ums\u00e4tze auf ein bestimmtes Jahr ein",
+            "editable": true,
+            "control_type": ""
+        },
+        {
+            "varname": "Gruppierung",
+            "default_value": "tag",
+            "displayname": "Gruppierungszeitraum",
+            "options": [
+                {
+                    "Tag": "tag"
+                },
+                {
+                    "Woche": "woche"
+                },
+                {
+                    "Monat": "monat"
+                },
+                {
+                    "Quartal": "quartal"
+                },
+                {
+                    "Jahr": "jahr"
+                }
+            ],
+            "description": "Auswahl des Zeitraums \u00fcber den gruppiert werden soll",
+            "editable": true,
+            "control_type": "combobox"
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

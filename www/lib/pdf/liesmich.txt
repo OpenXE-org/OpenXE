@@ -1,0 +1,9 @@
+die fpdf klasse wurde merhfach durch pliug ins erweitert
+
+die letzte sollte immer 
+
+fpdf_final.php
+
+genannt werden
+
+Momentan ist die letzte Erweiterung die fpdf_eps.php

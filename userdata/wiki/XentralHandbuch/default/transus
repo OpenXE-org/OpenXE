@@ -1,0 +1,139 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#transus">Transus</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#genereller_ablauf">Genereller Ablauf</a></div></li>
+<li class="level3"><div class="li"><a href="#transus-app">Transus-App</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#transus-client">Transus-Client</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#gln_aus_adresse">GLN aus Adresse</a></div></li>
+<li class="level3"><div class="li"><a href="#einstellungen">Einstellungen</a></div></li>
+<li class="level3"><div class="li"><a href="#transus_einstellungen">Transus Einstellungen</a></div></li>
+<li class="level3"><div class="li"><a href="#faqs">FAQs</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="transus">Transus</h2>
+<div class="level2">
+
+<p>
+Mit der Transus-App ist es Ihnen möglich EDI-Nachrichten mit Ihren Handelspartnern über WaWision auszutauschen.
+</p>
+
+<p>
+Administration → AppStore →  EDI Transus.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="genereller_ablauf">Genereller Ablauf</h3>
+<div class="level3">
+<ul>
+<li class="level1"><div class="li"> Sie erhalten in einem Clearing Center die Aufträge Ihrer Handelspartner.</div>
+</li>
+<li class="level1"><div class="li"> Diese Auftragsdatei kann dann über das Modul hochgeladen werden.</div>
+</li>
+<li class="level1"><div class="li"> In WaWision verarbeiten Sie Ihre Aufträge wie gewohnt.</div>
+</li>
+<li class="level1"><div class="li"> Sobald Lieferschein und Rechnung erstellt sind, können Sie die INVOICE- oder DESADV-Datei exportieren und über das Clearing Center an Ihre Handelspartner übertragen.</div>
+</li>
+</ul>
+
+</div>
+
+<h3 class="sectionedit3" id="transus-app">Transus-App</h3>
+<div class="level3">
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_transus&amp;media=wawision:transus_app.png"  title="wawision:transus_app.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=700&amp;tok=0a584e&amp;media=wawision:transus_app.png"  alt="" width="700" /></a>
+</p>
+
+<p>
+Über den Button „Durchsuchen“ können Sie die von Transus übermittelte Order-Datei hochladen. Im Anschluss werden Sie in die Auftragsübersicht weitergeleitet, in der Sie den/(die) hoch geladenen Aufträg(e) sichten können. 
+</p>
+
+<p>
+Im Reiter <strong>INVOICE</strong> und <strong>DESADV</strong> können Sie die Rechnungen und Lieferscheine Dowloaden und im Anschluss an Transus zurückmelden.
+</p>
+
+</div>
+
+<h4 id="transus-client">Transus-Client</h4>
+<div class="level4">
+
+<p>
+Im Anschluss können Sie die Rechnungen und Lieferscheine über einen speziellen Client von Transus übertragen. 
+</p>
+
+<p>
+Dieser läuft derzeit nur auf Windows wodurch ggf. der Einsatz von virtuellen Maschinen notwendig wird. 
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="gln_aus_adresse">GLN aus Adresse</h3>
+<div class="level3">
+
+<p>
+Unter Stammdaten → Adresse können Sie die folgenden GLN für den EDI hinterlegen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_transus&amp;media=wawision:transus_glninadressen.png"  title="wawision:transus_glninadressen.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=700&amp;tok=ff507a&amp;media=wawision:transus_glninadressen.png"  alt="" width="700" /></a>
+</p>
+
+<p>
+Sollte es hier keine abweichende Rechnungs- oder Lieferadresse geben, dann entsprechen InvoiceeGLN und DeliveryPartyGLN der GLN der Hauptadresse.
+</p>
+
+</div>
+
+<h3 class="sectionedit5" id="einstellungen">Einstellungen</h3>
+<div class="level3">
+<ul>
+<li class="level1"><div class="li"> <strong>Stücklistenelemente statt Kopf verwenden</strong> → Ist im Lieferschein einen (Just in time-)Stückliste enthalten, so werden die Elemente der Stückliste in die XML-Datei übergeben statt des Kopfartikels.</div>
+</li>
+</ul>
+
+</div>
+
+<h3 class="sectionedit6" id="transus_einstellungen">Transus Einstellungen</h3>
+<div class="level3">
+
+<p>
+<span style='color:#ff7f27; '><strong>Info</strong>: Bitte lassen Sie bei Transus das wawision Format freischalten, so dass Sie nicht den Transus Standard erhalten sondern das passende Format.</span>
+</p>
+
+</div>
+
+<h3 class="sectionedit7" id="faqs">FAQs</h3>
+<div class="level3">
+
+<p>
+Wenn ein Auftrag importiert wird - welche Preise werden dafür verwendet?
+Ist ein Preis im Auftrag im XML von Transus angegeben, so wird dieser verwendet. Ist der Preis leer wird der aus den Stammdaten von Xentral gezogen.
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

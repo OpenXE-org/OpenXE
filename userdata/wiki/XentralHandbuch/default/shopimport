@@ -1,0 +1,257 @@
+
+				
+				
+					
+	
+
+
+
+
+				
+
+                
+                    <h1 >Arbeitsablauf bei angebundenem Online Shop</h1>
+
+					
+						
+	
+
+
+					
+
+					
+                    
+
+                    
+					
+					
+
+	    
+		<ul class="content-shortlist tag-shortlist list-nostyle">
+			<li class="content-shortlist-item tag-shortlist-item">
+			Online-Shop
+
+		</li>
+
+	</ul>
+
+
+        
+			
+<h2>Import der Aufträge aus Shopware</h2>
+
+<ul>
+<li>"Verwaltung → Import/Export Zentrale → Import (Online-Shop)"</li>
+
+<li>Hier werden alle Shops aufgeführt, die Sie an Xentral angebunden haben</li>
+
+<li>Klick auf den Reiter "alle importieren" oder alternativ auf "Import" bei einem Ihrer angebundenen Shops </li>
+
+</ul>
+
+<img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=57" width="700"/>
+
+<ul>
+<li>Dadurch gelangen Sie auf die folgende Oberfläche, wo alle Aufträge aufgelistet werden, die in Ihren Online Shops den Bestellstatus "offen" haben </li>
+
+</ul>
+
+ <img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=58" width="700"/> 
+<ul>
+<li>Anhand der Farbcodierung können Sie hier einiges auf einen Blick erkennen:</li>
+
+<li>Ist die Internetbestellnummer rot: Dieser Auftrag ist bereits einmal importiert worden</li>
+
+<li>Sind Name, Straße, E-Mail Adresse, PLZ und Ort violett/ rot: Der Kunde wurde anhand seiner E-Mail Adresse (oder falls diese nicht vom Shop übertragen wird) anhand seines Namens, der Straße sowie PLZ und Ort als Bestandskunde erkannt. Allerdings stimmt die übertragene Kundennummer nicht mit der Kundennummer aus seinen Stammdaten überein, sodass Sie hier der Sache auf den Grund gehen sollten</li>
+
+<li>Sind obige Angaben grün: Der Kunde konnte aufgrund der übertragenen Angaben eindeutig einer Adresse aus den Stammdaten zugeordnet werden. Die Kundennummer wird daher aus den Stammdaten übernommen</li>
+
+</ul>
+
+<ul>
+<li>Sie können nun für jeden einzelnen Auftrag auswählen, wie mit diesem verfahren werden soll, wobei Ihnen 3 Möglichkeit zur Verfügung stehen</li>
+
+<li>Import: Der Auftrag wird importiert</li>
+
+<li>Später: Der Auftrag verbleibt im System, Sie verschieben die Entscheidung, was mit diesem geschehen soll auf einen späteren Zeitpunkt, d.h. bis Sie zum nächsten Auftragsimport</li>
+
+<li>Müll: Der Auftrag wird verworfen, was keinerlei Auswirkungen auf den Auftragsstatus in Ihrem Online Shop hat; dementsprechend wird der Auftrag beim nächsten Import wieder hier aufgeführt, es sei denn Sie haben ihn direkt im Shop bearbeitet oder bspw. gelöscht</li>
+
+</ul>
+
+Ab der Version 18.4 ist die letzte Zeile eine Gesamtzeile. In dieser wird die Gesamtbetrag angezeigt und es können für alle Aufträge die Verfahrensweise umgestellt werden. 
+<img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=59"/>
+<h2>Auftragsbearbeitung mithilfe des Autoversands</h2>
+
+Um Ihre Aufträge mit der Stapelverarbeitung, d.h. dem Autoversand in Xentral zu bearbeiten, navigieren zunächst in die Oberfläche "Verkauf → Auftrag", wo Sie eine Übersicht aller Aufträge im System finden:
+<img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=60" width="700"/>
+Hinter jedem Auftrag sehen Sie dabei ein Live Monitoring, bei dem die Aufträge mithilfe des Ampelsystems hinsichtlich unterschiedlicher Kriterien geprüft werden:
+ * Artikelverfügbarkeit
+
+<ul>
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=61" width="20"/> Alle Artikel sind in ausreichender Anzahl im Lager vorhanden</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=62" width="20"/> Der Lagerbestand mindestens eines Artikels ist nicht ausreichend </li>
+
+<li>Portoprüfung</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=63" width="20"/> Entweder haben Sie Ihren Logistikprozess so eingestellt, dass keine Portoprüfung erforderlich ist oder ein Portoartikel befindet sich im Auftrag, sodass die Versandkosten (wie vorgesehen) berechnet werden können </li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=64" width="20"/> Die Berechnung des Portos wurde vergessen, d.h. es wurde kein Versandkostenartikel eingefügt</li>
+
+<li>Prüfung der USt-ID</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=65" width="20"/> Entweder ist keine Prüfung notwendig, bspw. weil es um die Bestellung eines Privatkunden im EU Raum geht oder die Prüfung wurde bereits von Ihnen durchgeführt</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=67" width="20"/> Die Prüfung ist entweder fehlgeschlagen oder muss noch von Ihnen durchgeführt und im Auftrag bestätigt werden <img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=66" width="300"/></li>
+
+<li>Zahlungseingang</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=68" width="20"/> Die Zahlung für einen Auftrag mit der Zahlungsweise Vorkasse ist bereits eingetroffen </li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=69" width="20"/>Der Auftrag sollte mit Vorkasse bezahlt werden, die Zahlung ist aber noch nicht eingetroffen</li>
+
+<li>Nachnahmegebühr</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=70" width="20"/> Die Nachnahmegebühr wurde wie vorgesehen berechnet oder ist nicht notwendig</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=71" width="20"/> Die Berechnung der Nachnahmegebühr wurde vergessen</li>
+
+<li>Freigabe für den Logistikprozess</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=72" width="20"/> Für Logistikprozesse freigegeben</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=73" width="20"/>Für Logistikprozesse gesperrt (nur manuelles Weiterführen möglich)</li>
+
+<li>Kundenprüfung</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=74" width="20"/> Sie haben eingestellt, dass eine manuelle Prüfung notwendig ist, bspw. weil ein Altersnachweis o.ä. überprüft werden soll und diese Prüfung bereits durchgeführt oder es ist keine derartige Prüfung notwendig</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=75" width="20"/> Kundenprüfung wurde noch nicht durchgeführt</li>
+
+<li>Datumsprüfung</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=76" width="20"/> Entweder handelt es sich um eine terminierte Lieferung, die jetzt verschickt werden sollte oder es ist keine Prüfung notwendig</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=77" width="20"/> Liefertermin liegt noch in Zukunft</li>
+
+<li>Kreditlimit</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=78" width="20"/> Entweder wurde in den Stammdaten des Kunden gar kein Kreditlimit gesetzt oder dieses ist noch nicht überschritten</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=79" width="20"/> Kreditlimit überschritten (auf Basis der aktuell unbezahlten Rechnungen)</li>
+
+<li>Liefersperre</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=80" width="20"/> Hier liegt keine Liefersperre vor, d.h. die Lieferung ist erlaubt</li>
+
+<li><img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=81" width="20"/> Sie haben eine Liefersperre gesetzt</li>
+
+</ul>
+
+Sobald Sie nun auf den Reiter "Auto-Versand berechnen" klicken, starten Sie den ersten Schritt der Stapelverarbeitung:
+<img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=82" width="700"/>
+
+<ul>
+<li>Sie springen in den Reiter "Versandzentrum"</li>
+
+<li>Hier werden alle Aufträge aufgeführt, die von der Auftragsampel zum Versand freigegeben wurden</li>
+
+<li>An dieser Stelle sehen Sie dann auch, wieviele Teile je versandbereitem Auftrag benötigt werden</li>
+
+<li>Hier haben Sie auch die Gelegenheit, Aufträge auszuschließen, wenn Sie diese doch erst zu einem späteren Zeitpunkt versenden möchten</li>
+
+<li>Anschließend klicken Sie auf "Auto-Versand" starten, wodurch die Aufträge an den Versand übergeben werden </li>
+
+</ul>
+
+Je nachdem, welche Logistiprozesse in Ihren Projekten hinterlegt sind, unterscheidet sich der nachgelagerte Arbeitsablauf, wobei einer der Vorteil des Autoversands darin besteht, dass Sie auch unterschiedliche Logistikprozesse mit der Stapelverarbeitung abarbeiten können.
+
+
+<h2>Logistikprozess "Lieferschein mit Lagerplatz + automatische Lagerausbuchung + sofort drucken"</h2>
+
+Im Folgenden ist davon auszugehen, dass Sie Ihren Logistikprozess so eingestellt haben, dass neben dem Lieferschein auch eine Rechnung ausgedruckt werden soll und eine Trackingmail an den Kunden versendet werden soll 
+<ul>
+<li>Bei Betätigung des "Auto-Versand starten" Buttons werden sowohl die Lieferscheine als auch Rechnungen erzeugt:</li>
+
+<li>Die Lieferscheine mit den aufgedruckten Lagerplätzen werden automatisch ausgedruckt </li>
+
+<li>Die Lagerbestände werden aktualisiert</li>
+
+<li>Sie können nun damit beginnen, die Artikel für Ihre Lieferungen einzupacken</li>
+
+</ul>
+
+<ul>
+<li>Nachdem Sie damit fertig sind, Ihre Sendungen soweit zu verpacken, dass nur noch die Rechnungen fehlen, wechseln Sie in die Ansicht "Lager → Versandzentrum"</li>
+
+</ul>
+
+<img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=83" width="700"/>
+<ul>
+<li>Hier können Sie entweder Ihren Lieferschein scannen, die Lieferscheinnummer eintippen oder den grauen Pfeil anklicken, um in einen bestimmten Auftrag zu springen</li>
+
+<li>Daraufhin wird </li>
+
+<li>die zugehörige Rechnung ausgedruckt, sodass Sie diese Ihrem Paket beilegen können</li>
+
+<li>und die Paketmarke an dem entsprechenden Drucker ausgedruckt </li>
+
+</ul>
+
+<img   src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=shopimport&fileid=84" width="700"/>
+<ul>
+<li>Jetzt können Sie Ihre Paketmarke scannen oder die Paketnummer eintippen, damit bei entsprechender Einstellung eine Trackingmail an Ihren Kunden versendet wird </li>
+
+<li>An dieser Stelle haben Sie außerdem die Gelegenheit, eine weitere Paketmarke und einen weiteren Lieferschein auszudrucken, bspw. weil Ihr Auftrag auf mehrere Pakete verteilt werden muss </li>
+
+</ul>
+
+Damit ist Ihr Auftrag abgeschlossen, der Auftragsstatus in Ihrem Onlinshop umgestellt, Ihr Lager aktualisiert und Sie haben die richtige Rechnung, den richtigen Lieferschein und die entsprechende Trackingmail an Ihren Kunden übermittelt.
+
+
+
+
+            
+
+        
+
+
+		
+		
+		
+				
+		
+		
+
+	
+		War der Artikel hilfreich?
+		
+			Ja
+			Nein
+		
+	
+
+	
+		Vielen Dank für Ihr Feedback!
+	
+
+
+
+    
+
+    
+
+
+
+
+
+					
+
+                    
+					
+                    
+
+				
+
+			

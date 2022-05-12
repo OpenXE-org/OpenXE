@@ -1,0 +1,141 @@
+
+/* Variables
+================================== */
+:root {
+    --default-border: #E6EAEE;
+    --separator-border: #c4c4c4;
+    --active-border: #374051;
+}
+
+/* Card
+================================== */
+.grid-card {
+    background: #FFFFFF;
+    border: 1px solid var(--default-border);
+    box-sizing: border-box;
+    border-radius: 6px;
+    width: 100%;
+}
+
+/* Grid
+================================== */
+.grid-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+}
+
+.grid-cell {
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
+    list-style: none;
+}
+
+/* Table column sizing
+================================== */
+
+.grid-column{
+    flex-direction: column;
+}
+
+.grid-2-column > .grid-cell {
+    width: 50%;
+}
+
+.grid-3-column > .grid-cell {
+    width: 33.33%;
+}
+
+.grid-3-column > .grid-cell.grid-margin-m {
+    width: 31%;
+}
+
+.grid-3-column > .grid-cell.grid-margin-m:nth-child(3n) {
+    margin-right: 0;
+}
+
+.grid-4-column > .grid-cell {
+    width: 25%;
+}
+
+.grid-5-column > .grid-cell {
+    width: 20%;
+}
+
+.grid-6-column > .grid-cell {
+    width: 16.6%;
+}
+
+.grid-cell.cell-1-8 {
+    width: 12.5%;
+}
+
+.grid-cell.cell-2-8 {
+    width: 25%;
+}
+
+.grid-cell.cell-3-8 {
+    width: 37.5%;
+}
+
+.grid-cell.cell-4-8 {
+    width: 50%;
+}
+
+.grid-cell.cell-5-8 {
+    width: 62.5%;
+}
+
+.grid-cell.cell-6-8 {
+    width: 75%
+}
+
+.grid-cell.cell-7-8 {
+    width: 87.5%
+}
+
+/* Spaces
+================================== */
+.grid-padded {
+    padding: 25px;
+}
+
+.grid-padded-s {
+    padding: 10px;
+}
+
+.grid-padded-vertical {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.grid-padded-horizontal {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.grid-padded-left {
+    padding-left: 10px;
+}
+
+.grid-padded-right {
+    padding-right: 10px;
+}
+
+.grid-margin-s {
+    margin: 10px;
+}
+
+.grid-margin-m{
+    margin: 0 1% 1% 1%;
+}
+
+
+/* Separator
+================================== */
+.grid-separator-right{
+    border-right: 1px solid var(--separator-border);
+}

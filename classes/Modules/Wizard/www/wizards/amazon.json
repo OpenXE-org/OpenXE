@@ -1,0 +1,103 @@
+{
+    "key": "amazon",
+    "category": "shop-interface",
+    "title": "Amazon anbinden",
+    "sub_title": "Egal ob FBA, FBM, Amazon Prime oder das Listen von Artikeln bei Amazon – folgt einfach dem Assistenten und füllt eure Daten aus, um euch an Amazon anzubinden.",
+    "description": "Egal ob FBA, FBM, Amazon Prime oder das Listen von Artikeln bei Amazon – folgt einfach dem Assistenten und füllt eure Daten aus, um euch an Amazon anzubinden.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "onlineshops": [
+            "list",
+            "create",
+            "edit"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/CbAEvQ1PO_A"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "create_amazon_shop": {
+                    "steps": {
+                        "click_new_button": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Neuer Shop",
+                            "caption": "Klicke auf NEU um deinen Shop anzubinden.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "select_amazon_shop": {
+                    "steps": {
+                        "click_amazon_shop": {
+                            "position": 1,
+                            "title": "Amazon Shop",
+                            "caption": "Klicke auf Amazon.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "class": "createbutton",
+                                        "data-module": "shopimporter_amazon"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

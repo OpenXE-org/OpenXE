@@ -1,0 +1,77 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#artikel_verfuegbarkeit">Artikel Verfügbarkeit</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#uebersicht">Übersicht</a></div></li>
+<li class="level3"><div class="li"><a href="#filter">Filter</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="artikel_verfuegbarkeit">Artikel Verfügbarkeit</h2>
+<div class="level2">
+
+<p>
+Mit dem extra Modul „Artikel Verfügbarkeit“ kann man sich die voraussichtliche Lagermengen in der Zukunft anhand von bestätigten Lieferterminen von Bestellungen anzeigen lassen. Dadurch sieht man schnell wann der Artikel wieder verfügbar ist und kann somit besser das Auslieferungsdatum zukünftiger Aufträge planen.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="uebersicht">Übersicht</h3>
+<div class="level3">
+
+<p>
+Administration → Appstore → Artikel Verfügbarkeit
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_artikel_verfuegbarkeit&amp;media=wawision:artikel_verfuegbarkeit.png"  title="wawision:artikel_verfuegbarkeit.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=artikel_verfuegbarkeit&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong>  <br/>
+
+Mit einem Klick auf einen einzelnen Kalendereintrag springt man direkt in den entsprechenden Beleg.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="filter">Filter</h3>
+<div class="level3">
+
+<p>
+Auf der rechten Seite lässt sich nach folgenden Belegen filtern:
+</p>
+<ul>
+<li class="level1"><div class="li"> Offene Angebote</div>
+</li>
+<li class="level1"><div class="li"> Offene Aufträge</div>
+</li>
+<li class="level1"><div class="li"> Bestellung</div>
+</li>
+</ul>
+
+<p>
+Die Einträge im Kalender nehmen dann je nach Beleg-Art auch die entsprechende Farbe an.
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

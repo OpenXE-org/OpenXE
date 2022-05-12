@@ -1,0 +1,134 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#bundesstaaten">Bundesstaaten</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#uebersicht">Übersicht</a></div></li>
+<li class="level3"><div class="li"><a href="#neuen_bundesstaat_anlegen">Neuen Bundesstaat anlegen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#bundesstaaten_nachladen">Bundesstaaten nachladen</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#bundesstaat_auswaehlen">Bundesstaat auswählen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#adressen">Adressen</a></div></li>
+<li class="level4"><div class="li"><a href="#belege">Belege</a></div></li>
+<li class="level4"><div class="li"><a href="#paketmarke">Paketmarke</a></div></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="bundesstaaten">Bundesstaaten</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul Bundesstaaten können Sie Bundesstaaten für verschiedene Länder anlegen. Diese Bundesstaaten / Bundesländer kann man dann in einer Adresse auswählen und wird unter anderem für die Erstellung von Paketmarken in die USA / Kanada benötigt.
+</p>
+
+<p>
+Administration → AppStore → Bundesstaaten
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="uebersicht">Übersicht</h3>
+<div class="level3">
+
+<p>
+Standardmäßig sind die Bundesstaaten von Deutschland, Kanada und den USA vorhanden.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bundesstaaten&amp;media=wawision:bundesstaaten_uebersicht.png"  title="wawision:bundesstaaten_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bundesstaaten&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="neuen_bundesstaat_anlegen">Neuen Bundesstaat anlegen</h3>
+<div class="level3">
+
+<p>
+Neue Bundesstaaten können Sie mit dem NEU Button erstellen:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bundesstaaten&amp;media=wawision:bundesstaaten_erstellen.png"  title="wawision:bundesstaaten_erstellen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bundesstaaten&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="bundesstaaten_nachladen">Bundesstaaten nachladen</h4>
+<div class="level4">
+
+<p>
+Es ist auch möglich die Bundesstaaten von Österreich und Schweiz nachzuladen:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bundesstaaten&amp;media=wawision:bundesstaaten_nachladen.png"  title="wawision:bundesstaaten_nachladen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bundesstaaten&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="bundesstaat_auswaehlen">Bundesstaat auswählen</h3>
+<div class="level3">
+
+</div>
+
+<h4 id="adressen">Adressen</h4>
+<div class="level4">
+
+<p>
+Unter Stammdaten → Adressen können Sie in einer Adresse den Bundesstaat auswählen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bundesstaaten&amp;media=wawision:bundesstaaten_adresse.png"  title="wawision:bundesstaaten_adresse.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bundesstaaten&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="belege">Belege</h4>
+<div class="level4">
+
+<p>
+In den Belegen wird der Bundesstaat aus der Adresse übernommen, oder Sie können diesen manuell dort eintragen.
+</p>
+
+</div>
+
+<h4 id="paketmarke">Paketmarke</h4>
+<div class="level4">
+
+<p>
+In der Versandart UPS kann man den Bundesstaat auch schon übernehmen:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bundesstaaten&amp;media=wawision:bundesstaaten_ups.png"  title="wawision:bundesstaaten_ups.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bundesstaaten&fileid=5"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Wird der Bundesstaat bei Sendungen nach Kanada und USA nicht korrekt angegeben, kann das zu Fehlermeldungen führen.
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

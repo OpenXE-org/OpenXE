@@ -1,0 +1,135 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#liefertermine">Liefertermine</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#liefertermine_im_auftrag">Liefertermine im Auftrag</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#erklaerung_der_liste">Erklärung der Liste</a></div>
+<ul class="toc">
+<li class="level5"><div class="li"><a href="#verfuegbar">Verfügbar</a></div></li>
+<li class="level5"><div class="li"><a href="#keine_bestellung_verschickt">Keine Bestellung verschickt</a></div></li>
+<li class="level5"><div class="li"><a href="#konkreter_liefertermin">Konkreter Liefertermin</a></div></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="liefertermine">Liefertermine</h2>
+<div class="level2">
+
+<p>
+Mit dem extra Modul „Liefertermine“ sehen Sie in der Schnellvorschau (Mini-Detai) vom Auftrag berechnete potentielle Liefertermine basierend auf den aktuellen Aufträgen, dem Lagerbestand und platzierten Bestellungen. Dadurch lässt sich auf einen Blick abschätzen wann ein Auftrag anhand von den Lieferterminen der versendeten Bestellungen bedient werden kann.
+</p>
+
+<p>
+Auftrag ⇒ Protokoll / Mini-Detail
+</p>
+
+<p>
+Das Modul „Liefertermine“ gibt es bald in unserem Shop.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="liefertermine_im_auftrag">Liefertermine im Auftrag</h3>
+<div class="level3">
+
+<p>
+Im Mini-Detail in der Auftrags-Übersicht oder auch im Protokoll innerhalb eines Auftrags werden mit dem Modul die potentiellen Liefertermine angezeigt.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_liefertermine&amp;media=wawision:liefertermine_protokoll.png"  title="wawision:liefertermine_protokoll.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=liefertermine&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="erklaerung_der_liste">Erklärung der Liste</h4>
+<div class="level4">
+
+<p>
+In der Spalte für potentielles Lieferdatum können 3 Optionen auftauchen: <br/>
+
+„Verfügbar“, „keine Bestellung verschickt“ oder ein konkreter Liefertermin
+</p>
+
+</div>
+
+<h5 id="verfuegbar">Verfügbar</h5>
+<div class="level5">
+
+<p>
+Wenn die Ware auf Lager ist und auch der verkaufbare Bestand für den Auftrag ausreichend ist (heißt es gibt keine weiteren offenen Aufträge, die den Lagerbestand aufbrauchen würden) dann steht „verfügbar“ in der Auflistung.
+</p>
+
+</div>
+
+<h5 id="keine_bestellung_verschickt">Keine Bestellung verschickt</h5>
+<div class="level5">
+
+<p>
+Die Ware ist nicht auf Lager und es gibt entweder keine Bestellungen dafür, oder es gibt eine offene Bestellung, die aber noch nicht versendet ist (Aktionsmenü ⇒ Abschicken in der Bestellung).
+</p>
+
+</div>
+
+<h5 id="konkreter_liefertermin">Konkreter Liefertermin</h5>
+<div class="level5">
+
+<p>
+Ein Liefertermin erscheint in der Auflistung im Auftrag, sobald folgendes gewährleistet ist:
+</p>
+<ul>
+<li class="level1"><div class="li"> Es ist nicht genügend Ware auf Lager um den Auftrag zu bedienen und</div>
+</li>
+<li class="level1"><div class="li"> Es gibt eine <strong>versendete</strong> Bestellung, die den Bedarf des Auftrags bedienen kann</div>
+</li>
+<li class="level1"><div class="li"> Es gibt keine weiteren Aufträge, die von der Bestellung davor bedient werden müssen (FIFO Prinzip), oder falls doch kann die Bestellung alle offenen Aufträge auf einmal bedienen</div>
+</li>
+</ul>
+
+<p>
+<strong>Die Reihenfolge nach der Xentral die Liefertermine bestimmt</strong>
+</p>
+
+<p>
+1. Lieferschein-Positionen:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_liefertermine&amp;media=wawision:liefertermine_erklaerung_positionen.png"  title="wawision:liefertermine_erklaerung_positionen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=liefertermine&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+2. Bestätigtes Lieferdatum der Bestellung
+</p>
+
+<p>
+3. Wunschlieferdatum der Bestellung
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_liefertermine&amp;media=wawision:liefertermine_erklaerung_wunsch_best.png"  title="wawision:liefertermine_erklaerung_wunsch_best.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=liefertermine&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

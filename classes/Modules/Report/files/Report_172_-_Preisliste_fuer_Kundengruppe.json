@@ -1,0 +1,92 @@
+{
+    "name": "172 - Preisliste f\u00fcr Kundengruppe",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT\r\n    g.name AS gruppenname,\r\n    a.nummer AS artikelnummer,\r\n    vp.kundenartikelnummer AS kundenartikelnummer,\r\n    a.name_de AS artikel,\r\n  ROUND(vp.preis, 2) AS netto\r\nFROM verkaufspreise AS vp\r\nLEFT JOIN gruppen AS g ON vp.gruppe = g.id\r\nLEFT JOIN artikel AS a ON vp.artikel = a.id\r\nWHERE g.kennziffer = '{GRUPPE}'",
+    "columns": [
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "25",
+            "alignment": "right",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        },
+        {
+            "key_name": "kundenartikelnummer",
+            "title": "Kundenartikelnummer",
+            "width": "20",
+            "alignment": "right",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        },
+        {
+            "key_name": "artikel",
+            "title": "Artikelbezeichnung",
+            "width": "90",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        },
+        {
+            "key_name": "netto",
+            "title": "Preis",
+            "width": "20",
+            "alignment": "right",
+            "sum": 0,
+            "sorting": "numeric",
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "gruppenname",
+            "title": "Gruppenname",
+            "width": "30",
+            "alignment": "right",
+            "sum": 0,
+            "sorting": "alphabetic",
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "GRUPPE",
+            "default_value": "0",
+            "displayname": "Gruppe",
+            "options": [],
+            "description": "",
+            "editable": true,
+            "control_type": "autocomplete_group"
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

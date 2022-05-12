@@ -1,0 +1,221 @@
+/*
+	Variable Grid System.
+	Learn more ~ http://www.spry-soft.com/grids/
+	Based on 960 Grid System - http://960.gs/
+
+	Licensed under GPL and MIT.
+*/
+
+
+/* Containers
+----------------------------------------------------------------------------------------------------*/
+.container_6 {
+/*  margin-left: auto;
+  margin-right: auto;
+	width: [CSSSMALL1]px;
+width:99%;*/
+}
+
+/* Grid >> Global
+----------------------------------------------------------------------------------------------------*/
+
+.grid_1,
+.grid_2,
+.grid_3,
+.grid_4,
+.grid_5,
+.grid_6 {
+	display:inline;
+	float: left;
+	position: relative;
+	margin-left: 3px;
+	margin-right: 3px;
+	margin-bottom: 6px;
+}
+
+/* Grid >> Children (Alpha ~ First, Omega ~ Last)
+----------------------------------------------------------------------------------------------------*/
+
+.alpha {
+	margin-left: 0;
+}
+
+.omega {
+	margin-right: 0;
+}
+
+/* Grid >> 6 Columns
+----------------------------------------------------------------------------------------------------*/
+
+.container_6 .grid_1 {
+	width:190px;
+margin-left:0;
+}
+
+.container_6 .grid_2 {
+	width:386px;
+margin-left:0;
+}
+
+.container_6 .grid_3 {
+	width:582px;
+margin-left:0;
+}
+
+.container_6 .grid_4 {
+	width:778px;
+margin-left:0;
+}
+
+.container_6 .grid_5 {
+	width:974px;
+margin-left:0;
+}
+
+.container_6 .grid_6 {
+	/*width:[CSSSMALL2]px;*/
+width:99%;
+margin-left:0;
+}
+
+
+
+/* Prefix Extra Space >> 6 Columns
+----------------------------------------------------------------------------------------------------*/
+
+.container_6 .prefix_1 {
+	padding-left:196px;
+}
+
+.container_6 .prefix_2 {
+	padding-left:392px;
+}
+
+.container_6 .prefix_3 {
+	padding-left:588px;
+}
+
+.container_6 .prefix_4 {
+	padding-left:784px;
+}
+
+.container_6 .prefix_5 {
+	padding-left:980px;
+}
+
+
+
+/* Suffix Extra Space >> 6 Columns
+----------------------------------------------------------------------------------------------------*/
+
+.container_6 .suffix_1 {
+	padding-right:196px;
+}
+
+.container_6 .suffix_2 {
+	padding-right:392px;
+}
+
+.container_6 .suffix_3 {
+	padding-right:588px;
+}
+
+.container_6 .suffix_4 {
+	padding-right:784px;
+}
+
+.container_6 .suffix_5 {
+	padding-right:980px;
+}
+
+
+
+/* Push Space >> 6 Columns
+----------------------------------------------------------------------------------------------------*/
+
+.container_6 .push_1 {
+	left:196px;
+}
+
+.container_6 .push_2 {
+	left:392px;
+}
+
+.container_6 .push_3 {
+	left:588px;
+}
+
+.container_6 .push_4 {
+	left:784px;
+}
+
+.container_6 .push_5 {
+	left:980px;
+}
+
+
+
+/* Pull Space >> 6 Columns
+----------------------------------------------------------------------------------------------------*/
+
+.container_6 .pull_1 {
+	left:-196px;
+}
+
+.container_6 .pull_2 {
+	left:-392px;
+}
+
+.container_6 .pull_3 {
+	left:-588px;
+}
+
+.container_6 .pull_4 {
+	left:-784px;
+}
+
+.container_6 .pull_5 {
+	left:-980px;
+}
+
+
+
+
+/* Clear Floated Elements
+----------------------------------------------------------------------------------------------------*/
+
+/* http://sonspring.com/journal/clearing-floats */
+
+.clear {
+	clear: both;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+/* http://perishablepress.com/press/2008/02/05/lessons-learned-concerning-the-clearfix-css-hack */
+
+.clearfix:after {
+	clear: both;
+	content: ' ';
+	display: block;
+	font-size: 0;
+	line-height: 0;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+* html .clearfix {
+	height: 1%;
+}
+
+.clearfix {
+	display: block;
+}

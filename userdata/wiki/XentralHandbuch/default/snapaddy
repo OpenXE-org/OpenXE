@@ -1,0 +1,245 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#snapaddy">snapADDY</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#adressen_importieren_und_anlegen">Adressen Importieren und Anlegen</a></div></li>
+<li class="level3"><div class="li"><a href="#den_direktimport_einrichten">Den Direktimport einrichten</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#der_direktimport">Der Direktimport</a></div></li>
+<li class="level4"><div class="li"><a href="#direktimport_als_kunde_lieferant_oder_lead">Direktimport als Kunde, Lieferant oder Lead</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#im_dashboard">Im Dashboard</a></div></li>
+<li class="level3"><div class="li"><a href="#im_browser-plugin">Im Browser-PlugIn</a></div></li>
+<li class="level3"><div class="li"><a href="#anwendungstipp">Anwendungstipp</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="snapaddy">snapADDY</h2>
+<div class="level2">
+
+<p>
+Mit dem Adress-Grabber <a href="https://www.snapaddy.com/de/snapaddy-grabber/adress-grabber.html"  title="https://www.snapaddy.com/de/snapaddy-grabber/adress-grabber.html"  rel="nofollow">von snapADDY</a> können Kontaktdaten einfach und schnell aus digitalen Texten extrahiert werden. Zum Beispiel können Adressen aus E-Mailsignaturen, PDF-Dokument oder Webseiten erfasst werden. 
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:snapaddy-browser-plugin-beispieldaten.png"  title="wawision:snapaddy-browser-plugin-beispieldaten.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+Mit dem neuen <strong>snapADDY Modul von Xentral</strong> lassen sich diese Adressen ganz einfach importieren.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="adressen_importieren_und_anlegen">Adressen Importieren und Anlegen</h3>
+<div class="level3">
+
+<p>
+Sie finden das Modul snapADDY in unserem AppStore.
+</p>
+
+<p>
+Für die Verbindung mit snapADDY wird ein gültiger API Token benötigt. Dieser kann in den Profilinformationen unter <a href="https://app.snapaddy.com/profile-update"  title="https://app.snapaddy.com/profile-update"  rel="nofollow">https://app.snapaddy.com/profile-update</a> in der Sektion <strong>API Token</strong> gefunden werden.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:snapaddy-edit.png"  title="wawision:snapaddy-edit.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+Dieser Token muss in den Einstellungen im Feld <strong>API Key</strong> hinterlegt werden. Vor dem Speichern kann der Schlüssel mit einem Klick auf <strong>API Key testen</strong> überprüft werden. Mit einem gültigen Token kann Xentral alle bei snapADDY hinterlegten Adressen importieren.
+</p>
+
+
+<p>
+Mit dem <strong>Importieren-Button</strong> werden alle bei snapADDY gespeicherten Adressen importiert. Dieser Vorgang kann einige Zeit in Anspruch nehmen. Ist dieser Vorgang abgeschlossen, wird die Seite neu geladen. Die Adressen sind nun für die weitere Verarbeitung gelistet:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:screenshot_snapaddy_xentral_adresslist.png"  title="wawision:screenshot_snapaddy_xentral_adresslist.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+Mittels einer <strong>Stapelverarbeitung</strong> lassen sich <strong>mehrere Adressen direkt als Kunde oder Lieferant</strong> anlegen.
+</p>
+
+<p>
+Die Datensätze können auch <strong>einzeln als Adresse angelegt werden</strong>. Anschließend öffnet sich die Seite der neuen Adresse. Dort lassen sich die entsprechenden Rollen (Kunde, Lieferant, Mitarbeiter oder Lead) zuweisen. Alternativ lassen sich die Adressen auch einzeln aus der Liste löschen.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="den_direktimport_einrichten">Den Direktimport einrichten</h3>
+<div class="level3">
+
+<p>
+Neben dem oben vorgestellten Ablauf lassen sich einzelne Adressen auch direkt aus dem Browser PlugIn nach Xentral importieren. Der direkte Import wird nur bei verschlüsselten Verbindungen (https) empfohlen. Hierfür stellt das snapADDY Modul einen <strong>Authorization-Header</strong> sowie eine <strong>URL</strong> als Endpoint bereit. 
+</p>
+
+<p>
+Diese Werte müssen komplett und unverändert im Dashboard von snapADDY in den <strong>Zentralen snapADDY Einstellungen</strong> unter <a href="https://app.snapaddy.com/admin-change-settings"  title="https://app.snapaddy.com/admin-change-settings"  rel="nofollow">app.snapaddy.com/admin-change-settings</a> eingetragen werden.
+</p>
+
+<p>
+In der Sektion <strong>Integrationseinstellungen</strong> unter <strong>Sonstige Integrationen</strong> gibt es den Link zu den API Einstellungen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:snapaddy_dashboard_api_edit.png"  title="wawision:snapaddy_dashboard_api_edit.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=4"  alt="" /></a>
+</p>
+
+<p>
+Mit einem Klick darauf öffnet sich ein Fenster mit den <strong>snapADDY API Einstellungen</strong> in welchem der <strong>Authorization-Header</strong> sowie die gegebene URL hinterlegt werden müssen. Die HTTP-Methode muss auf <strong>POST</strong> gestellt werden.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:snapaddy_dashboard_api_settings.png"  title="wawision:snapaddy_dashboard_api_settings.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=5"  alt="" /></a>
+</p>
+
+<p>
+Mit einem Klick auf <strong>Speichern</strong> werden die getätigten Einstellungen bei snapADDY gespeichert. Sie müssen noch <strong>im Browser-PlugIn aktualisiert</strong> werden. 
+</p>
+
+<p>
+Dazu gibt es in den Einstellungen des Browser-PlugIns unter <strong>Support &amp; Hilfe</strong> den Button <strong>Einstellungen aktualisieren</strong>. Mit einem Klick darauf werden die im Dashboard von snapADDY getätigten Einstellungen ins Browser-PlugIN geladen. Nun steht der Direktimport bereit.
+</p>
+
+</div>
+
+<h4 id="der_direktimport">Der Direktimport</h4>
+<div class="level4">
+
+<p>
+Im Browser-PlugIn kann nun durch einen Klick auf das <strong>snapADDY Logo</strong> in der jeweiligen Adress-Zeile der Direktimport angestoßen werden.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:snapaddy-direktimport.png"  title="wawision:snapaddy-direktimport.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=6"  alt="" /></a>
+</p>
+
+<p>
+Direkt nach dem erfolgreichen Import öffnet Xentral in einem neuen Fenster die Seite der neu angelegten Adresse. Dort lassen sich die entsprechenden Rollen zuweisen.
+</p>
+
+</div>
+
+<h4 id="direktimport_als_kunde_lieferant_oder_lead">Direktimport als Kunde, Lieferant oder Lead</h4>
+<div class="level4">
+
+<p>
+Alternativ dazu lassen sich auch im Browser-PlugIn die gewünschten Rollen zuweisen. Dazu müssen im Dashborad von snapADDY weitere Einstellungen getätigt und im PlugIn erneut aktualisiert werden.
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="im_dashboard">Im Dashboard</h3>
+<div class="level3">
+
+<p>
+Im Dashboard von snapADDY unter <strong>Firmen-Einstellungen</strong> und <strong>CRM-Mapping konfigurieren</strong> lassen sich zusätzliche Felder in das Browser-PlugIn integrieren. Dies geschieht durch eine Konfigurationsdatei im JSON-Format. 
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:screenshot_snapaddy_dashboard_crm_mapping.png"  title="wawision:screenshot_snapaddy_dashboard_crm_mapping.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=7"  alt="" /></a>
+</p>
+
+<p>
+Mit den nachfolgenden Zeilen wird ein neues Drop-Down Menu mit der Bezeichnung <strong>Typ</strong> eingefügt. Die neue Konfiguration muss mit einem Klick auf <strong>Revision aktivieren</strong> aktiviert werden. Der folgende Code ermöglicht die Vorauswahl einer Adresse als Kunde, Lead oder Lieferant. Diese Einstellung wird durch das Modul in Xentral ausgewertet und der Adresse beim Import die entsprechende Rolle zugewiesen.  Für komplexere Mappings oder falls dieses Feld in eine bestehende Konfiguration integriert werden soll, kontaktieren Sie bitte den Support von snapADDY - für die entsprechende Integration auf Seiten Xentrals wenden Sie sich dann bitte an den Xentral-Support.
+</p>
+{
+  &quot;customFields&quot;: [
+    {
+      &quot;type&quot;: &quot;SELECT&quot;,
+      &quot;id&quot;: &quot;c_address_type&quot;,
+      &quot;label&quot;: {
+        &quot;DE&quot;: &quot;Typ&quot;,
+        &quot;EN&quot;: &quot;Type&quot;
+      },
+      &quot;properties&quot;: {
+        &quot;defaultValue&quot;: &quot;&quot;,
+        &quot;options&quot;: [
+          {
+            &quot;label&quot;: {
+              &quot;DE&quot;: &quot;Bitte wählen&quot;,
+              &quot;GB&quot;: &quot;Please choose&quot;
+            },
+            &quot;value&quot;: &quot;&quot;
+          },
+          {
+            &quot;label&quot;: {
+              &quot;DE&quot;: &quot;Kunde&quot;,
+              &quot;GB&quot;: &quot;customer&quot;
+            },
+            &quot;value&quot;: &quot;customer&quot;
+          },
+          {
+            &quot;label&quot;: {
+              &quot;DE&quot;: &quot;Lieferant&quot;,
+              &quot;GB&quot;: &quot;vendor&quot;
+            },
+            &quot;value&quot;: &quot;vendor&quot;
+          },
+          {
+            &quot;label&quot;: {
+              &quot;DE&quot;: &quot;Lead&quot;,
+              &quot;GB&quot;: &quot;Lead&quot;
+            },
+            &quot;value&quot;: &quot;lead&quot;
+          }
+        ]
+      }
+    }
+  ],
+  &quot;integrations&quot;: {},
+  &quot;layout&quot;: {}
+}
+
+
+</div>
+
+<h3 class="sectionedit5" id="im_browser-plugin">Im Browser-PlugIn</h3>
+<div class="level3">
+
+<p>
+Nachdem die Einstellungen im Browser-PlugIn aktualisiert wurden, steht das zusätzliche Feld zur Verfügung:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_snapaddy&amp;media=wawision:snapaddy-browser-plugin-typ-small.png"  title="wawision:snapaddy-browser-plugin-typ-small.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=snapaddy&fileid=8"  alt="" /></a>
+</p>
+
+<p>
+Über das neu angelegte Auswahlfeld kann nun <strong>direkt im PlugIn</strong> gewählt werden, ob die Adresse <strong>als Kunde, Lieferant oder Lead</strong> importiert werden soll. Die hier getroffene Auswahl wird nur beim Direktimport oder Einzelimport beachtet.
+</p>
+
+</div>
+
+<h3 class="sectionedit6" id="anwendungstipp">Anwendungstipp</h3>
+<div class="level3">
+
+<p>
+In beiden oben beschriebenen Fällen unterstützt Xentral einen SnapADDY-Account, der Daten in Xentral einspielen kann. Sollen mehrere  Accounts vonn SnapADDY in einer Xentral-Instanz verwendet werden kann dies durch Anlegen mehrerer benutzerspezifischer Authorization-Header umgesetzt werden. Dazu muss SnapADDY die entsprechende Zahl von Profilen / Organisationseinheiten bereitstellen, die dann jeweils gegen einen Benutzeraccount gematched werden können.
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

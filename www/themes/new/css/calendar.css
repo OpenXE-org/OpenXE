@@ -1,0 +1,257 @@
+/* Calendar
+- - - - - - - - - - - - - - - - - - - - - - */
+
+/* * Calendar * */
+
+.calendar-wrapper {
+    margin: 0 auto;
+}
+
+.calendar-wrapper .row-height {
+    padding: 0;
+}
+
+.calendar-wrapper div.calendar-content {
+    padding: 13px 7px 0 13px;
+}
+
+.calendar-content .white {
+    padding: 0;
+    margin-top: 0;
+}
+
+.calendar-content .white .fc-event-draggable {
+    border: none;
+}
+
+#calendar {
+    box-sizing: content-box;
+}
+
+#calendar span.ui-icon {
+    background-position: 50% 100%;
+    background-repeat: no-repeat;
+}
+
+#calendar span.ui-icon-circle-triangle-w {
+    background-image: url(../images/left.png);
+}
+
+#calendar span.ui-icon-circle-triangle-e {
+    background-image: url(../images/right-calendar.png);
+}
+
+#calendar .fc-header-center > span {
+    background: none;
+    border: none;
+}
+
+#calendar .fc-header-center span h2 {
+    padding: 4px 8px 6px;
+}
+
+#calendar .fc-header .fc-header-right > span {
+    border-radius: 5px;
+    color: var(--button-secondary-color);
+    margin-left: 6px;
+    padding: 2px 10px;
+    background: var(--button-secondary-background);
+    border: solid 1px var(--button-secondary-border-color);
+}
+
+#calendar td.fc-header-right span:hover,
+#calendar td.fc-header-right .ui-state-active {
+    color: var(--button-primary-color);
+    background: var(--button-primary-background);
+}
+
+#calendar .fc-event-container .fc-event-hori {
+    border: none;
+}
+
+#calendar .fc-event-inner {
+    width: 100%;
+    height: auto !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 5px;
+    background: var(--fieldset-dark);
+    color: #3b3b3b;
+    padding: 0 4px;
+}
+
+#calendar .fc-event-inner .fc-event-title {
+    font-size: 11px;
+    line-height: 16px;
+    color: #3b3b3b;
+    font-family: Verdana, Arial, sans-serif;
+    margin-left: 3px;
+}
+
+#calendar td.fc-past,
+#calendar td.fc-future {
+    padding: 10px 13px 2px 13px;
+}
+
+#calendar .ui-widget-content {
+    background-color: transparent;
+}
+
+#calendar td.fc-today {
+    background: var(--fieldset-dark);
+    padding: 10px 13px 2px 13px;
+}
+
+#calendar .fc-border-separate .fc-first th {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.fc-event-vert.fc-event-start {
+    border-top-width: 0px !important;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 3px;
+}
+
+.fc-event-vert.fc-event-end {
+    border-bottom-width: 0px !important;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+
+/* * Auswahl * */
+.calendar-wrapper div.auswahl-content {
+    padding-right: 7px;
+    padding-top: 54px;
+}
+
+fieldset#auswahl, fieldset#gruppenkalender {
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+fieldset#gruppenkalender {
+    padding-bottom: 10px;
+}
+
+legend.auswahl, legend.gruppenkalender {
+    margin: 0;
+    padding: 19px 10px 17px 15px;
+    font-size: 12px;
+    text-transform: capitalize;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    color: #3b3b3b;
+}
+
+fieldset#auswahl label {
+    margin-left: 38px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+fieldset#gruppenkalender label {
+    margin-left: 29px;
+    display: block;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+input.auswahl,
+#gruppenkalender > input {
+    position: absolute;
+    left: 14px;
+}
+
+#gruppenkalender > input {
+    margin-top: 4px;
+}
+
+#gruppenkalender > label > .grup-name {
+    position: absolute;
+    left: 60px;
+    margin-top: -14px;
+    display: block;
+}
+
+#gruppenkalender > div {
+    line-height: 18px;
+}
+
+
+/** Termin Form **/
+
+#TerminForm > * {
+    color: #6d6d6f;
+}
+
+#TerminForm input,
+#TerminForm textarea#beschreibung,
+#TerminForm input#titel {
+    max-width: 275px;
+    border: 1px solid #6d6d6f;
+}
+
+#TerminForm #adresse,
+#TerminForm #adresseintern,
+#TerminForm #projekt {
+    background-image: url('../images/suche-icon.png');
+    background-repeat: no-repeat;
+    background-position: 95% 50%;
+
+}
+
+#TerminForm input#allday,
+#TerminForm input#erinnerung,
+#TerminForm input#public {
+    height: 14px;
+    width: 14px;
+}
+
+div.colorPicker-picker {
+    height: 25px;
+    width: 25px;
+}
+
+td.ganztags {
+    width: 100px;
+}
+
+td.erinnerung {
+    width: 80px;
+}
+
+input#allday, td.erinnerung {
+    line-height: 30px;
+}
+
+select#personen {
+    height: 190px;
+    border: 1px solid #6d6d6f;
+}
+
+select#gruppenkalender {
+    height: 190px;
+    border: 1px solid #6d6d6f;
+}
+
+
+span.fc-button.ui-state-hover {
+    color: #000;
+    background: #fff;
+}
+
+/** Bottom pannel of form **/
+.ui-widget-content[aria-describedby="TerminDialog"] .ui-dialog-buttonset {
+    margin-top: 20px;
+}
+
+.ui-widget-content[aria-describedby="TerminDialog"] .ui-dialog-buttonset button {
+    padding: 6px 12px;
+}
+.ui-widget-content[aria-describedby="TerminDialog"] .ui-dialog-buttonset .ui-button-text {
+    padding: 0;
+    font-size: 12px;
+}
+

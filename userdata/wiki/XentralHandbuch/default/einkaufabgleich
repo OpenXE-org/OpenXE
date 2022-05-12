@@ -1,0 +1,100 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#einkaufabgleich">Einkaufabgleich</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#uebersicht">Übersicht</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#conrad">Conrad</a></div></li>
+<li class="level4"><div class="li"><a href="#farnell">Farnell</a></div></li>
+<li class="level4"><div class="li"><a href="#weitere">Weitere</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#einkaufspreis_im_artikel_abgleichen">Einkaufspreis im Artikel abgleichen</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="einkaufabgleich">Einkaufabgleich</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul „Einkaufabgleich (EK-API)“ kann man Einkaufspreise eines Großkonzerns über eine API-Schnittstelle abgleichen lassen. Dies ist vor allem sinnvoll, wenn man große Stücklisten hat und schnell die aktuellen Preise erhalten will.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="uebersicht">Übersicht</h3>
+<div class="level3">
+
+<p>
+Unter Administration → AppStore → EK-API können Sie die Konfiguration durchführen. <br/>
+
+Im Moment werden APIs für Conrad und Farnell angeboten.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_einkaufabgleich&amp;media=wawision:einkaufabgleich_uebersicht.png"  title="wawision:einkaufabgleich_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=einkaufabgleich&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="conrad">Conrad</h4>
+<div class="level4">
+
+<p>
+Die benötigten Daten erhält man auf Anfrage direkt bei Conrad: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_einkaufabgleich&amp;media=wawision:einkaufabgleich_conrad_einstellungen.png"  title="wawision:einkaufabgleich_conrad_einstellungen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=einkaufabgleich&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="farnell">Farnell</h4>
+<div class="level4">
+
+<p>
+Die benötigten Daten erhält man auf Anfrage direkt bei Farnell: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_einkaufabgleich&amp;media=wawision:einkaufabgleich_farnell_einstellungen.png"  title="wawision:einkaufabgleich_farnell_einstellungen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=einkaufabgleich&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="weitere">Weitere</h4>
+<div class="level4">
+
+<p>
+Dieses Modul kann beliebig erweitert werden, wenn eine geeignete API vorhanden ist. Sprechen Sie unseren Vertrieb an um sich nach den Möglichkeiten zu erkundigen.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="einkaufspreis_im_artikel_abgleichen">Einkaufspreis im Artikel abgleichen</h3>
+<div class="level3">
+
+<p>
+Im Artikel unter dem Reiter „EK-API“ finden Sie dann einen Button um die Einkaufspreise für diesen Artikel / Stückliste abzugleichen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_einkaufabgleich&amp;media=wawision:einkaufabgleich_artikel_tab.png"  title="wawision:einkaufabgleich_artikel_tab.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=einkaufabgleich&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

@@ -1,0 +1,68 @@
+:root {
+    --sidebar-background: #354052;
+    --sidebar-icon-background: transparent;
+    --sidebar-icon-color: #D2D8E2;
+    --sidebar-icon-background-active: transparent;
+    --sidebar-icon-color-active: #26E3E4;
+    --sidebar-logo-background: transparent;
+    --sidebar-logo-color: transparent;
+
+    --header-background: #F5F6FA;
+    --header-color: #333333;
+    --header-icon-color: #76899F;
+    --header-icon-color-active: #76899F;
+    --header-icon-background: transparent;
+    --header-icon-background-active: transparent;
+    --header-counter-color: #FFF;
+    --header-counter-background: #57C1EF;
+    --header-counter-error-color: #FFF;
+    --header-counter-error-background: #FF8665;
+    --header-counter-warning-color: #FFF;
+    --header-counter-warning-background: #F0A631;
+
+    --mainmenu-background: #FFFFFF;
+    --mainmenu-color: #7E7D82;
+    --mainmenu-active-background: #FFFFFF;
+    --mainmenu-active-color: #354052;
+    --mainmenu-active-top: #FFFFFF;
+    --mainmenu-active-bottom: #354052;
+
+    --mainmenu-merged-background: #6D6D6F;
+    --mainmenu-merged-color: #fff;
+    --mainmenu-merged-background-active: #fff;
+    --mainmenu-merged-color-active: #3B3B3B;
+
+    --submenu-background: #F5F6FA;
+    --submenu-color: #7E7D82;
+
+    --tabs-background: #FFFFFF;
+    --tabs-color: #7E7D82;
+
+    --turquoise: #78B95D;
+    --green: #78B95D;
+    --green-light: #D7EACE;
+    --red: red;
+    --grey: #48494B;
+    --current-grey: #f0f0f0;
+
+    --text-color: #929292; /* NEU */
+    --body-background: #F5F6FA;
+
+    --filter: #F5F6FA;
+    --fieldset: #FFFFFF;
+    --fieldset-dark: #EBECF1;
+    --fieldset-legend-color: #4D4D4D;
+
+    --textfield-color: #929292; /* NEU */
+    --textfield-border: #d9d9d9;
+    --textfield-background: #FFFFFF; /* NEU */
+
+    --info: #BBBBBB;
+    --info-color: #fff;
+    --warning: #FDCB56;
+    --warning-color: #354052;
+    --error: #F05A5C;
+    --error-color: #fff;
+    --important: #68D4D0;
+    --success: #92EFB4;
+}

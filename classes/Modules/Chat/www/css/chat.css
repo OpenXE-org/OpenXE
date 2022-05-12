@@ -1,0 +1,286 @@
+body > #tabs {
+    overflow: hidden;
+}
+
+#page_container #tabs-1 {
+    margin-bottom: 0;
+}
+
+#tabs-1.chat-standalone {
+    padding: 0;
+    margin: 8px;
+}
+
+/**
+    PUSH NOTIFICATIONS
+ */
+
+#notification-info {
+    box-sizing: border-box;
+    cursor: pointer;
+    width: 100%;
+}
+#tabs-1 #notification-info {
+    margin: 0 0 5px 0;
+}
+#notification-button {
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+/**
+    LAYOUT
+ */
+
+#chat-wrapper {
+    display: flex;
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.1em;
+}
+
+#sidebar-wrapper {
+    flex-direction: column;
+    flex-basis: 220px;
+    max-width: 240px;
+    background-color: #ECECEC;
+    padding: 10px;
+}
+#sidebar-wrapper h3 {
+    color: var(--grey);
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    padding: 5px 10px;
+}
+#sidebar-scroller {
+    overflow-y: auto;
+    min-height: 100px;
+    /*overflow: auto;*/
+}
+#sidebar-scroller > div {
+    width: 100%;
+}
+
+#message-wrapper {
+    flex-direction: column;
+    flex-grow: 1;
+}
+#message-wrapper fieldset {
+    margin: 0;
+    padding-right: 0;
+}
+#message-scroller {
+    min-width: 270px;
+    min-height: 180px;
+    overflow-y: scroll;
+    border-top: 3px solid var(--body-background);
+    border-bottom: 3px solid var(--body-background);
+}
+
+/**
+    SIDEBAR
+ */
+
+#roomlist,
+#userlist {
+}
+#roomlist ul,
+#userlist ul {
+    width: 100%;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+#roomlist li,
+#userlist li {
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    color: #999;
+    list-style-type: none;
+    padding: 6px;
+    margin: 0;
+    vertical-align: baseline;
+}
+#roomlist li.active,
+#userlist li.active {
+    padding: 6px;
+    background-color: #FFF;
+}
+#roomlist li:before,
+#userlist li:before {
+    content: '\25CB';
+    display: inline-block;
+    width: 20px;
+    font-size: 170%;
+    line-height: 15px;
+    vertical-align: top;
+    text-align: center;
+}
+#userlist li.online {
+    color: var(--grey);
+}
+#userlist li.online:before {
+    content: '\2022';
+    font-size: 2.8em;
+    color: #a9ca45;
+}
+#roomlist span,
+#userlist span {
+    display: inline-block;
+}
+#roomlist .unread,
+#userlist .unread {
+    font-weight: bold;
+    color: orangered;
+}
+
+/**
+    MESSAGE AREA
+ */
+#message-area .date {
+    box-sizing: border-box;
+    position: relative;
+    height: 0;
+    border-bottom: 1px solid #ECECEC;
+    margin: 20px 0;
+    text-align: center;
+}
+#message-area .date span {
+    position: absolute;
+    top: -8px;
+    display: inline-block;
+    background-color: #FFF;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/**
+    MESSAGE AREA HEADER
+ */
+
+#message-header {
+    width: 100%;
+    padding: 5px 10px;
+    margin-top: 0;
+    background-color: #ECECEC;
+}
+#message-header.public {
+    color: orangered;
+}
+#message-header img {
+    float: left;
+    width: auto;
+    height: 36px;
+    padding: 0;
+}
+#message-header span {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 10px 0;
+}
+
+/**
+ SINGLE MESSAGE
+ */
+
+.message {
+    box-sizing: content-box;
+    min-height: 36px;
+    padding: 0;
+    margin: 9px;
+    background-color: #FFF;
+    -webkit-transition: background-color 5000ms linear;
+    -ms-transition: background-color 5000ms linear;
+    transition: background-color 5000ms linear;
+}
+.message:hover {
+}
+.message .image {
+    float: left;
+    min-height: 36px;
+    margin-right: 8px;
+    margin-top: 2px;
+}
+.message .image img {
+    width: auto;
+    height: 36px;
+    padding: 0;
+}
+.message.unread .text:after {
+    content: ' (ungelesen)';
+    display: inline;
+    font-size: 80%;
+    color: #999;
+}
+.message.read .text:after {
+}
+.message.new {
+    background-color: #dfffff;
+}
+.message.new .time:after {
+    content: ' NEU';
+    display: inline;
+    color: var(--tabs-background);
+    font-weight: bold;
+}
+.message.prio {
+    background-image: url('../themes/new/images/chat_prio.png');
+    background-position: 99% center;
+    background-repeat: no-repeat;
+}
+.message .head {
+    padding-left: 44px;
+}
+.message .time {
+    color: #999;
+    font-size: 80%;
+    margin: 0 5px;
+}
+.message .sender {
+    font-weight: bold;
+}
+.message .text {
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    padding: 0 44px;
+    line-height: 1.4em;
+}
+
+/**
+    MESSAGE INPUT
+ */
+
+.input-wrapper {
+    display: table;
+    width: 100%;
+    padding: 0 0 0 8px;
+}
+.input-wrapper .input-message,
+.input-wrapper .input-prio,
+.input-wrapper .input-button {
+    display: table-cell;
+    text-align: left;
+    vertical-align: baseline;
+}
+.input-wrapper .input-message {
+    width: 85%;
+}
+.input-wrapper .input-prio {
+    width: 10%;
+    white-space: nowrap;
+    padding: 0 6px;
+}
+.input-wrapper .input-button {
+    width: 5%;
+}
+#nachricht {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+}

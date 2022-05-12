@@ -1,0 +1,9 @@
+.template-status-message{
+    position: absolute;
+    width: auto;
+    height: auto;
+    text-align: center;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    opacity: 1;
+}

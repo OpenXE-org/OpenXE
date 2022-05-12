@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>ampel-status/bank_stop</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#FF931E" offset="0%"></stop>
+            <stop stop-color="#FF931E" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="ampel-status/bank_stop" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Status/bank">
+            <rect fill="#FFFFFF" opacity="0" x="0" y="0" width="20" height="20"></rect>
+            <g id="Group-5" stroke-width="1" fill-rule="evenodd">
+                <g id="button/small">
+                    <rect id="bg" fill="url(#linearGradient-1)" fill-rule="evenodd" x="0" y="0" width="20" height="20" rx="3"></rect>
+                    <text id="↳-𝚃-Value" font-family="Verdana" font-size="12" font-weight="normal" line-spacing="15"></text>
+                </g>
+            </g>
+            <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(1.000000, 1.000000)" fill="#FFFFFF">
+                <rect id="Rectangle" x="6" y="7" width="2" height="7"></rect>
+                <rect id="Rectangle" x="10" y="7" width="2" height="7"></rect>
+                <rect id="Rectangle" x="14" y="7" width="2" height="7"></rect>
+                <polygon id="Triangle" points="9 0 18 6 0 6"></polygon>
+                <rect id="Rectangle" x="2" y="7" width="2" height="7"></rect>
+                <rect id="Rectangle" transform="translate(9.000000, 15.500000) scale(1, -1) translate(-9.000000, -15.500000) " x="2" y="15" width="14" height="1"></rect>
+                <rect id="Rectangle" transform="translate(9.000000, 16.500000) scale(1, -1) translate(-9.000000, -16.500000) " x="1" y="16" width="16" height="1"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

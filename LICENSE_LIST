@@ -1,0 +1,238 @@
+Diese Software ist urheberrechtlich geschützt!
+
+Copyright by WaWision GmbH.
+
+Diese Software ist urheberrechtlich geschützt. Alle aus dem Urheberrecht resultierenden
+Rechte stehen dem Lizenzgeber zu. Das Urheberrecht umfaßt insbesondere den
+Programmcode, die Dokumentation, das Erscheinungsbild, die Struktur und Organisation
+der Programmdateien, den Programmnamen, Logos und andere Darstellungsformen
+innerhalb der Software.
+
+Der Lizenznehmer erhält nur das individuelle Nutzungsrecht an der Software. Ein
+Erwerb von Rechten an der Software selbst ist damit nicht verbunden. Der Lizenzgeber
+behält sich alle Veröffentlichungs-, Vervielfältigungs-, Bearbeitungs- und Verwertungsrechte
+an der Software vor.
+
+Die folgenden Software-Produkte unterliegen aufgrund von selbständigen Bestandteile oder
+entsprechenden Open-Source Lizenzen:
+
+Some icons used in this software are property of Webalys LLC (https://www.webalys.com) and can be used only in the context of this open source project.
+
+
+     phpmailer
+        GNU LESSER GENERAL PUBLIC LICENSE Version 2.1, February 1999
+        http://phpmailer.codeworxtech.com/
+    simple_dom_html
+        Licensed under The MIT License
+        http://sourceforge.net/projects/simplehtmldom/
+    full calendar 1.5.3
+        MIT-LICENSE.txt and GPL-LICENSE.txt respectively
+        http://arshaw.com/fullcalendar/
+    jqtouch-1.0-beta-2-r109.zip
+        http://code.google.com/p/jqtouch/
+        The MIT License
+    jQuery UI CSS Framework 1.8.6
+        Dual licensed under the MIT or GPL Version 2 licenses
+        http://jquery.org/license
+    FPDF
+        FPDF is released under a permissive license: there is no usage restriction. You may embed it freely in your application (commercial or not), with or without modifications.
+        http://www.fpdf.org/
+    Math
+        http://www.gnu.org/licenses/lgpl.txt
+        http://pear.php.net/package/Math_BigInteger
+    phpseclib
+        http://www.gnu.org/licenses/lgpl.txt
+        http://phpseclib.sourceforge.net
+    PHP_Compat /
+        http://www.gnu.org/licenses/lgpl.html
+        http://php.net/
+    Spreadsheet_Excel_Reader
+        http://www.php.net/license/3_0.txt PHP License 3.0
+        http://www.roxburgh.me.uk
+    BarcodePHP
+        http://www.barcodephp.com
+        On this page, you can download free software for non-commercial use!!!
+    Crypt
+        http://www.gnu.org/licenses/lgpl.txt
+        http://phpseclib.sourceforge.net
+    pretty autocomplete
+        COPYING for license information (LGPL)
+        http://www.horde.org/
+    jquery.mobile.min.js
+        The MIT License
+        http://jquerymobile.com/
+    colorpicker
+        COPYING for license information (LGPL).
+        Original Sphere Plugin v0.1/v0.3, Design/Programming by Ulyses, (c) 2007 ColorJack.com, IE fixes by Hamish.
+    grider.js
+        http://www.opensource.org/licenses/mit-license.php
+        Boris Barroso Camberos
+    tinymce
+        GNU LESSER GENERAL PUBLIC LICENSE
+        moxiecode.com
+    Flot
+        http://code.google.com/p/flot/
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    jQuery ZeroClipboard v1.1.1 (am 06.06.2016 aus Version entfernt BS)
+        http://steamdev.com/zclip
+        The MIT License
+    Noty jQuery
+        https://github.com/needim/noty
+        The MIT License
+    HTTPFUL
+        http://phphttpclient.com
+        The MIT License
+    PHPExcel
+        Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
+        http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt    LGPL
+    Chart.js
+        MIT license
+        https://raw.githubusercontent.com/nnnick/Chart.js/v2.0-dev/dist/Chart.js
+    ckeditor
+      GNU Lesser General Public License Version 2.1 or later (the "LGPL")
+      http://www.gnu.org/licenses/lgpl.html
+      http://ckeditor.com/
+      Copyright (c) 2003-2018, CKSource Frederico Knabben. All rights reserved.
+    jQuery.Gantt
+      Distributed under an MIT license.
+      http://taitems.github.io/jQuery.Gantt/
+
+    jquery-multidownload
+      MIT License
+      Copyright (c) 2011 Grzegorz Biesiadecki <gbiesiadecki@gmail.com>
+      https://github.com/biesiad/jquery-multidownload
+
+    barcode
+      MIT License
+      Copyright (c) 2016 Kreative Software
+      https://github.com/kreativekorp/barcode
+
+    fints-hbci-php eingebaut am 2.4.2017
+      MIT License
+      Copyright (c) 2016 Markus Schindler <mail@markus-schindler.de>
+      https://github.com/mschindler83/fints-hbci-php
+
+    pdfmake
+      https://github.com/bpampuch/pdfmake
+      MIT Licence
+      @bpampuch (founder)
+      @liborm85
+      pdfmake is based on a truly amazing library pdfkit (credits to @devongovett).
+
+    normalize
+      http://necolas.github.com/normalize.css/
+      The MIT License (MIT)
+      Copyright © Nicolas Gallagher and Jonathan Neal
+
+    jquery.timeline
+      MIT License © Yehia A.Salam
+      https://github.com/yehiasalam/jquery.timeline
+
+    php-fedex-api-wrapper
+      MIT License © Jeremy Dunn
+      https://github.com/JeremyDunn/php-fedex-api-wrapper
+
+    jQuery tagEditor Plugin
+      MIT License © Pixabay.com
+      https://github.com/Pixabay/jQuery-tagEditor
+
+    ColorExtractor
+      MIT License © Mathieu Lechat
+      https://github.com/thephpleague/color-extractor
+
+    HTML Purifier
+        GNU LESSER GENERAL PUBLIC LICENSE
+        https://travis-ci.org/ezyang/htmlpurifier
+
+    rakit/validation
+      MIT License
+      https://github.com/rakit/validation
+
+    aura/sqlquery
+      BSD-2-Clause
+      https://github.com/auraphp/Aura.SqlQuery
+
+    raml2html
+      MIT License
+      https://github.com/raml2html/raml2html
+
+    raml2html werk theme
+      MIT License
+      https://github.com/silicann/raml2html-werk-theme
+
+    Nickersoft/push.js
+      MIT License © Tyler Nickerson
+      https://github.com/Nickersoft/push.js
+
+		sabre/dav
+			BSD-3-Clause
+			https://github.com/sabre-io/dav
+
+    needim/noty - A jQuery Notification Plugin
+      MIT License
+      https://github.com/needim/noty
+
+    swiss-payment-slip/swiss-payment-slip-fpdf
+      MIT License
+      https://github.com/ravage84/SwissPaymentSlipFpdf
+
+    League\Flysystem
+      MIT License
+      https://github.com/thephpleague/flysystem
+
+    hammerjs/hammer.js
+      MIT License © Jorik Tangelder (Eight Media)
+      https://github.com/hammerjs/hammer.js/
+
+    haltu/muuri
+      MIT License © Haltu Oy
+      https://github.com/haltu/muuri
+
+    FitText.js
+      WTFPL License © Dave Rupert
+      https://github.com/davatron5000/FitText.js
+
+    Smarty template engine
+      LGPL-3.0 License
+      https://github.com/smarty-php/smarty
+
+    TCPDF
+      GNU-LGPL v3 © Nicola Asuni - Tecnick.com
+	    https://tcpdf.org
+
+    Guzzle, PHP HTTP client
+      MIT License
+      https://github.com/guzzle/guzzle
+
+    League/OAuth1-Client
+      MIT License
+      https://github.com/thephpleague/oauth1-client
+
+    Etsy Provider for League/OAuth1-Client
+      MIT License © Y0lk <gabriel@inkrebit.com>
+      https://github.com/Y0lk/oauth1-etsy
+
+    Lexend Deca Font
+      SIL Open Font License 1.1 © The Lexend Project Authors
+      https://github.com/ThomasJockin/lexend
+
+    Roboto Font
+      Apache License, Version 2.0 © Google Inc.
+      https://github.com/google/roboto
+
+    HOTP/TOTP Token Generator
+    	MIT License
+    	https://github.com/lfkeitel/php-totp
+
+    Laminas/Laminas-mail
+      BSD-3-Clause
+      https://github.com/laminas/laminas-mail
+
+Verwenden Sie die Software nur, wenn Sie mit eine gültige Lizenz erworben haben!
+
+Kontakt:  WaWision GmbH
+          Holzbachstraße 4
+          D-86152 Augsburg
+          Telefon 0821 268 41 0 41
+          Telefax 0821 268 41 0 42
+          E-Mail kontakt@wawision.de

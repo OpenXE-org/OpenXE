@@ -1,0 +1,1 @@
+Entweder w&auml;hlen Sie einen kleineren Zeitbereich aus (z.B. Export pro Tag), oder sie geben eine Kundennummer (ID) an, ab der exportiert werden soll.<br /><br />Alternativ kann auch kurzfristig auf dem Server <strong>memory_limit</strong> in der <strong>php.ini </strong>auf 512 hoch gesetzt werden.

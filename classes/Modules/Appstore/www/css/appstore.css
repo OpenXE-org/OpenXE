@@ -1,0 +1,877 @@
+
+body.module-appstore #page_container > div > div.ui-tabs-panel {
+    background-color: #F7F7F7;
+    margin-bottom: 0;
+    padding: 0 0 40px 0 !important;
+}
+
+/* Appstore
+- - - - - - - - - - - - - - - - - - - - - - */
+
+#appstore h2 {
+    font-weight: normal;
+    font-size: 18px;
+    color: #6d6d6f;
+    margin: 5px 1% 10px 1%;
+    padding: 12px 1% 14px 1%;
+    border-bottom: 1px solid rgba(55, 64, 81, 0.1);
+}
+#appstore h3 {
+    clear: both;
+    color: #6d6d6f;
+    margin: 20px 0;
+    padding: 12px 0 6px 0;
+}
+
+#appstore .hero {
+    margin-bottom: 20px;
+}
+#appstore .hero img {
+    width: 100%;
+    height: auto;
+}
+
+
+/**
+    Header
+ */
+
+.appstore-header{
+    position: relative;
+    background-color: rgba(136, 63, 254, 0.9);
+    background: -webkit-linear-gradient(115.15deg, rgba(136, 63, 254, 0.9) 9.64%, rgba(181, 143, 243, 0.79) 49.12%, rgba(47, 243, 255, 0.39) 106.88%);
+    background: -moz-linear-gradient(115.15deg, rgba(136, 63, 254, 0.9) 9.64%, rgba(181, 143, 243, 0.79) 49.12%, rgba(47, 243, 255, 0.39) 106.88%);
+    background: -o-linear-gradient(115.15deg, rgba(136, 63, 254, 0.9) 9.64%, rgba(181, 143, 243, 0.79) 49.12%, rgba(47, 243, 255, 0.39) 106.88%);
+    background: linear-gradient(115.15deg, rgba(136, 63, 254, 0.9) 9.64%, rgba(181, 143, 243, 0.79) 49.12%, rgba(47, 243, 255, 0.39) 106.88%);
+    padding-bottom: 25px;
+}
+
+.appstore-header .appstore-headline{
+    display: inline-block;
+    width: 100%;
+    margin-top: 25px;
+    margin-bottom: 18px;
+    color: white;
+    text-align: center;
+    font-size: 24px;
+    line-height: 30px;
+    padding: 0;
+}
+
+@media only screen and (max-width: 1200px) {
+    .appstore-header .appstore-headline{
+        margin-top: 60px;
+    }
+}
+
+.appstore-header .appstore-tabs {
+    position: absolute;
+    top: 18px;
+}
+
+.appstore-header .appstore-tabs .appstore-tab{
+    position: relative;
+    text-align: center;
+    margin: 0 9px;
+    display: inline-block;
+    color: white;
+    font-size: 14px;
+    min-width: 75px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+
+.appstore-header .appstore-tabs .appstore-tab .tab-counter{
+    position: absolute;
+    display: block;
+    content: attr(data-updates);
+    left: 66px;
+    top: -8px;
+    font-size: 11px;
+    line-height: 16px;
+    min-width: 12px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.appstore-header .appstore-tab.appstore-tab-active,
+.appstore-header .appstore-tabs .appstore-tab:hover {
+   border-bottom: 2px solid white;
+}
+
+.appstore-header .appstore-search input{
+    display: block;
+    margin: 0 auto;
+    width: 60%;
+    box-sizing: border-box;
+}
+
+.appstore-categories{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.appstore-categories .category-link{
+    display: flex;
+    cursor: pointer;
+    flex: 0 16%;
+    margin: 1.5% 2%;
+    width: 20%;
+    height: 25px;
+    line-height: 17px;
+    font-size: 14px;
+    background-repeat: no-repeat;
+    padding-left: 40px;
+    background-size: 22px;
+    background-position: left center;
+    background-color: transparent;
+    box-sizing: border-box;
+}
+
+.appstore-categories .category-link span{
+    align-self: center;
+}
+
+@media only screen and (max-width: 1150px) {
+    .appstore-categories .category-link{
+        font-size: 12px;
+        line-height: 16px;
+    }
+}
+
+.appstore-categories .category-link.active,
+.appstore-categories .category-link:hover {
+    font-weight: bold;
+}
+
+/**
+ * filter
+ */
+
+#appstore .search .filter {
+    margin: 0;
+}
+#appstore .search .filter a {
+    display: inline-block;
+    padding: 3px;
+    margin-right: 20px;
+    color: #a1d624;
+    font-weight: bold;
+}
+
+#appstore .search .filter a.active {
+    font-size: 150%;
+}
+
+/**
+ * MODULE (Kategorien + Käufe)
+ */
+#appstore .modules {
+    flex-direction: row;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#appstore .modules h3{
+    margin: 0;
+    width: 100%;
+    padding-left: 2%;
+    font-weight: normal;
+}
+
+#appstore .module {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    position: relative;
+    width: 23%;
+    margin: 0 1%;
+    padding: 18px 15px;
+    box-sizing: border-box;
+}
+
+@media only screen and (min-width: 1200px) {
+    #appstore .module {
+        width: 18%;
+    }
+}
+
+#appstore .module:hover{
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
+    border-radius: 3px;
+    background-color: white;
+}
+
+#appstore .module button {
+    font-size: 10px;
+    padding: 5px 25px;
+    margin-top: auto;
+    background-color: var(--button-primary-background);
+    border: none;
+    border-radius: 2px;
+    color: var(--button-primary-color);
+    word-break: normal;
+}
+
+#appstore .module button.install{
+    padding: 5px 15px;
+}
+
+#appstore .module .icon {
+    width: 66px;
+    min-width: 66px;
+    height: 66px;
+    min-height: 66px;
+    margin-right: 15px;
+    border-radius: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+#appstore .module .icon a {
+    display: block;
+    width: 40px;
+    height: 40px;
+}
+#appstore .module .icon img {
+    position: absolute;
+    left: 13px;
+    top: 13px;
+    padding: 0;
+    border-radius: 0;
+}
+#appstore .module .content {
+    box-sizing: border-box;
+    line-height: 15px;
+    word-break: break-word;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#appstore .module .content span,
+#appstore .information-right .description span{
+    background: white;
+    color: #2729D2;
+    border: 1px solid #2729D2;
+    font-weight: normal;
+    font-size: 8px;
+    line-height: 14px;
+    margin: 5px 3px 5px 0;
+    height: 16px;
+    max-width: 50px;
+    padding: 0 5px;
+    display: inline-block;
+
+}
+
+#appstore .module .title {
+    display: block;
+    font-weight: bold;
+    box-sizing: border-box;
+    font-size: 12px;
+    line-height: 12px;
+}
+
+#appstore .module .dropdown {
+    position: absolute;
+    left: 50px;
+    top: 48px;
+}
+
+/**
+ Category Page
+ */
+
+#appstore .category-page-nav,
+#appstore.category-page h2,
+#appstore.category-page h3,
+#appstore.category-page .appstore-categories{
+    display: none;
+}
+
+#appstore.category-page .category-page-nav{
+    display: block;
+    font-size: 14px;
+    padding: 10px 0;
+    margin: 30px 1% 10px 1%;
+    line-height: 30px;
+    border-bottom: 1px solid rgba(55, 64, 81, 0.1);
+}
+
+#appstore.category-page .category-page-nav .category-page-back{
+    display: inline-block;
+    margin-right: 10px;
+    width: 30px;
+    height: 30px;
+    background: rgba(55, 64, 81, 0.1);
+    border-radius: 3px;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+}
+
+#appstore.category-page .modules{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#appstore.category-page .module {
+    display: flex;
+    width: 14%;
+    margin: 0 1% 2% 1%;
+    height: 202px;
+    background: #FFFFFF;
+    border: 1px solid #EAEDF7;
+    box-shadow: 0 2px 4px rgba(28, 41, 90, 0.0367952);
+    border-radius: 5px;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+}
+
+#appstore.category-page .module .content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    text-align: center;
+    margin-top: 20px;
+    height: 100%;
+}
+
+#appstore.category-page .module .icon {
+    margin-right: 0;
+}
+
+#appstore.category-page .module button{
+}
+
+
+/**
+ * HIGHLIGHTS
+ */
+#appstore .highlights {
+    clear: both;
+}
+#appstore .highlight {
+    float: left;
+    width: 230px;
+    height: 140px;
+    margin: 0 20px 20px 0;
+    border-radius: 10px;
+    background-color: #42b8c4;
+}
+#appstore .highlight .label,
+#appstore .highlight .image {
+    display: block;
+    text-align: center;
+}
+#appstore .highlight .image {
+    padding-top: 32px;
+    padding-bottom: 12px;
+    height: 48px;
+    text-align: center;
+}
+#appstore .highlight a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+#appstore .highlight a span {
+    color: #FFF;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/**
+ * DETAIL-SEITE
+ */
+#appstore .detail {
+}
+#appstore .detail .information,
+#appstore .detail .screenshots {
+    clear: both;
+    margin: 50px;
+}
+
+#appstore .detail .information-left {
+    box-sizing: border-box;
+    float: left;
+    width: 15%;
+    min-width: 85px;
+    padding: 0 20px 20px 0;
+}
+#appstore .detail .information-left svg,
+#appstore .detail .information-left img {
+    width: 100%;
+    height: auto;
+}
+
+#appstore .detail .app-icon {
+    width: 100px;
+    height: 100px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 40px;
+    border-radius: 10px;
+}
+
+#appstore .detail .information-right {
+    box-sizing: border-box;
+    float: left;
+    width: 85%;
+}
+
+#appstore .detail .information-right h1 {
+    font-size: 14px;
+    padding: 0 0 5px 0;
+}
+
+#appstore .detail .information-right .description {
+    margin-bottom: 25px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+#appstore .detail .screenshots .screenshot {
+    box-sizing: border-box;
+    float: left;
+    width: 50%;
+    min-width: 180px;
+    padding: 0 20px 20px 0;
+}
+
+#appstore .detail .screenshots img {
+    width: 100%;
+    height: auto;
+}
+
+@media only screen and (max-width: 792px) {
+    #appstore .detail .screenshots .screenshot {
+        clear: both;
+        float: none;
+        width: 100%;
+        padding: 0;
+        margin: 20px 0;
+    }
+}
+
+#appstore .detail .dropdown {
+    width: 180px;
+}
+
+/**
+    DROPDOWN
+ */
+.dropdown {
+    clear: both;
+    position: relative;
+    display: inline-block;
+    width: 130px;
+}
+.dropdown.open .dropdown-link {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.dropdown.open .dropdown-menu {
+    display: block;
+}
+.dropdown-link {
+    display: block;
+    min-height: 21px;
+    white-space: nowrap;
+    border: none;
+    border-radius: 3px;
+    color: #6D6D6D;
+    background-color: #E0E0E0;
+    outline: 0;
+}
+.dropdown-link .label,
+.dropdown-link .caret {
+    padding: 4px;
+}
+.dropdown-link .label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 85%;
+    box-sizing: border-box;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px;
+}
+.dropdown-link .caret {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 26px;
+    box-sizing: border-box;
+    border-left: 1px solid #FFF;
+    background-image: url('../themes/new/images/caret_dark.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    width: 100%;
+    padding: 4px 0;
+    margin: 0;
+    list-style: none;
+    font-size: 14px;
+    text-align: left;
+    background-color: #E0E0E0;
+    border-radius: 0 0 4px 4px;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border-top: 1px solid #FFF;
+}
+.dropdown-menu > li {
+    font-size: 11px;
+    background-color: #E0E0E0;
+}
+.dropdown-menu > li > a {
+    display: block;
+    padding: 5px 10px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.42857143;
+    color: #333333;
+    white-space: nowrap;
+}
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+    color: #FFF;
+    text-decoration: none;
+    background-color: #42b8c4;
+}
+
+#anfragepopup{
+    display: none;
+}
+
+a.dropdown-link.activated span.caret {
+    background-image: url('../themes/new/images/caret_light.png');
+}
+
+a.dropdown-link.deactivated span.caret {
+    background-image: url('../themes/new/images/caret_dark.png');
+}
+
+a.testversion, a.testversion > span {
+    background-color: rgb(224, 224, 224) !important;
+    color: rgb(109, 109, 111);
+}
+
+a.dropdown-link > span.label.testversion, a.dropdown-link > span.label.testversion + span {
+    background-color: var(--button-primary-background) !important;
+    color: var(--button-primary-color);
+}
+
+/**
+    BUY MODAL
+**/
+
+#buyversion {
+    background-color: white;
+    font-size: 14px;
+}
+
+#buyversion a{
+    color: var(--link-color);
+}
+
+#buyversion legend{
+    margin: 0 auto 26px auto;
+    font-size: 24px;
+}
+
+#buyversion p{
+    font-size: 16px;
+    float: left;
+    width: 50%;
+    padding-left: 10px;
+    box-sizing: border-box;
+    margin: 10px 0;
+}
+
+#buyversion p.right{
+    float: right;
+    padding-left: 40px;
+}
+
+#buyversion table{
+    color: rgba(51, 51, 51, 0.7);
+    border-collapse: separate;
+    border-spacing: 15px;
+    float: left;
+    width: 50%;
+    padding-right: 30px;
+}
+
+#buyversion table.right{
+    padding-left: 30px;
+}
+
+#buyversion table.right tr:last-child{
+    margin-top: auto;
+}
+
+#buyversion table:first-of-type{
+    border-right: 1px solid rgba(151, 151, 151, 0.2);
+}
+
+#buyversion select,
+#buyversion input:not(.counter-component-input){
+    border: 1px solid rgba(37, 35, 58, 0.2);
+    width: 100%;
+    height: 30px;
+    box-sizing: border-box;
+}
+
+#buyversion select.input-error,
+#buyversion input.input-error{
+    border: 1px solid red;
+}
+
+#customeragreement.input-error + label{
+    color: red;
+}
+
+#buyversion + div .error-hint,
+#customerinfocontent + div .error-hint {
+    color: red;
+    padding-left: 26px;
+    margin-right: auto;
+}
+
+.ui-dialog-buttonpane .buy-version-legal{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 280px;
+}
+
+.ui-dialog-buttonpane .buy-version-legal input{
+    width: 16px;
+    height: 16px;
+}
+
+.ui-dialog-buttonpane .buy-version-legal label{
+    padding-left: 7px;
+}
+
+#buyversion + .ui-dialog-buttonpane{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row-reverse;
+}
+
+#changecustomerinfo{
+    background-color: white;
+    width: 100%;
+    height: 50px;
+}
+
+#customerinfocontent .error-hint{
+    background-color: white;
+    margin: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+#changecustomerinfo .button{
+    margin-right: 25px;
+}
+
+/**
+BUY LICENCE LANDING PAGE
+ */
+
+.buy-licence-landingpage {
+    display: flex;
+    padding: 30px 40px;
+    color: #7D7F81;
+    font-size: 14px;
+    line-height: 24px;
+}
+
+.buy-licence-landingpage h2,
+.buy-licence-landingpage h3,
+.buy-licence-landingpage h3 {
+    color: #646464;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.buy-licence-landingpage h2{
+    font-size: 24px;
+}
+
+.buy-licence-landingpage h3{
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.buy-licence-landingpage h4{
+     font-size: 14px;
+}
+
+.buy-licence-landingpage strong{
+    font-size: 36px;
+    color: #646464;
+}
+
+.buy-licence-landingpage .user-amount {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.buy-licence-landingpage .user-amount div:first-child {
+    margin-right: 15px;
+}
+
+.buy-licence-landingpage > div{
+    width: 50%;
+    box-sizing: border-box;
+    padding: 30px 40px;
+}
+
+.buy-licence-landingpage .highlight-box{
+    background: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    box-sizing: border-box;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    max-width: 550px;
+}
+
+.buy-licence-landingpage .highlight-box h2{
+    margin-bottom: 20px;
+}
+
+.buy-licence-landingpage .landing-price {
+    display: flex;
+}
+
+.buy-licence-landingpage .landing-price div:first-child {
+    width: 380px;
+    margin-right: 15px;
+}
+
+.buy-licence-landingpage .landing-usps {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.buy-licence-landingpage .landing-usps > div {
+    width: 50%;
+}
+
+.buy-licence-landingpage .landing-icon {
+    max-width: 40px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+
+.buy-licence-landingpage .price-note {
+    font-size: 10px;
+}
+
+.buy-licence-landingpage svg{
+    display: inline-block;
+}
+
+.buy-licence-landingpage .landing-icon.icon-monthly-terminable {
+    background-color: var(--xentral-signature-violet-transparent);
+}
+
+.buy-licence-landingpage .landing-icon.icon-appstore {
+    background-color: var(--xentral-signature-pink-transparent);
+}
+
+.buy-licence-landingpage .landing-icon.icon-support {
+    background-color: var(--xentral-signature-green-transparent);
+}
+
+.buy-licence-landingpage .landing-icon.icon-possibilities {
+    background-color: var(--xentral-signature-petrol-transparent);
+}
+
+
+/** jquery ui resets **/
+.ui-dialog.ui-widget-content, .ui-dialog .ui-widget-content, .ui-dialog .ui-dialog-content,
+.ui-draggable .ui-dialog-titlebar{
+    background-color: white;
+}
+
+.ui-dialog .ui-dialog-buttonpane{
+    border: none;
+}
+
+.ui-dialog-titlebar-close .ui-icon-closethick{
+    background-image: url("../themes/new/images/icon-close.svg") !important; /** important necessary to override jquer ui **/
+}
+
+.ui-dialog a {
+    color: var(--link-color);
+}
+
+/**
+COUNTER COMPONENT
+ */
+.counter-component{
+    width: 131px;
+    height: 40px;
+
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    box-sizing: border-box;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-content:center;
+}
+
+.counter-component .sub-button,
+.counter-component .plus-button {
+    width: 24px;
+    height: 24px;
+    line-height: 22px;
+    font-size: 24px;
+    background: var(--button-primary-background);
+    color: var(--button-primary-color);
+    text-align: center;
+    border-radius: 24px;
+    cursor: pointer;
+    margin: 7px 10px;
+}
+
+.counter-component input{
+    font-size: 17px;
+    width: 25px;
+    height: 40px;
+    padding: 0;
+    text-align: center;
+    margin: 0;
+    border:none;
+    background: none;
+    box-shadow: none;
+    color: rgba(51, 51, 51, 0.45);
+}

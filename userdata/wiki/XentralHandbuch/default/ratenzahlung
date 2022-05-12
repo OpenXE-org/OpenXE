@@ -1,0 +1,280 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#ratenzahlung">Ratenzahlung</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#ratenzahlung_als_zahlungsweise_hinterlegen">Ratenzahlung als Zahlungsweise hinterlegen</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersicht_der_ratenzahlungen">Übersicht der Ratenzahlungen</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersicht_der_ratenzahlungen1">Übersicht der Ratenzahlungen</a></div></li>
+<li class="level3"><div class="li"><a href="#raten_definieren">Raten definieren</a></div></li>
+</ul>
+</li>
+<li class="level2"><div class="li"><a href="#faqs">FAQs</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#raten_definieren1">Raten definieren</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersicht_der_ratenzahlungen2">Übersicht der Ratenzahlungen</a></div></li>
+<li class="level3"><div class="li"><a href="#raten_definieren2">Raten definieren</a></div></li>
+</ul>
+</li>
+<li class="level2"><div class="li"><a href="#faqs1">FAQs</a></div></li>
+<li class="level2"><div class="li"><a href="#faqs2">FAQs</a></div></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="ratenzahlung">Ratenzahlung</h2>
+<div class="level2">
+
+</div>
+
+<h3 class="sectionedit2" id="ratenzahlung_als_zahlungsweise_hinterlegen">Ratenzahlung als Zahlungsweise hinterlegen</h3>
+<div class="level3">
+
+<p>
+Durch dieses Modul ist es Ihren Kunden möglich Rechnungsbeträge in Raten abzuzahlen. Dazu müssen Sie im ersten Schritt unter Administration–&gt; Einstellungen–&gt; Grundeinstellungen–&gt; unter Zahlunsgsweisen die Ratenzahlung, wie folgt, als mögliche Zahlungsweise im System hinterlegen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"  title="wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+Im Anschluss können Sie für die Ratenzahlung einen Text hinterlegen, der standardmäßig im Angebots-, Auftrags- und Rechnungsbeleg auftaucht und dem Kunden die Rahmenbedingungen der Zahlungsweise aufzeigt.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="uebersicht_der_ratenzahlungen">Übersicht der Ratenzahlungen</h3>
+<div class="level3">
+
+<p>
+Unter Administration–&gt; Appstore finden Sie das Modul „Ratenzahlung“. Hier können zu Aufträgen Raten definiert werden, <strong>sobald die Rechnung dazu erstellt wurde</strong>.
+</p>
+
+<p>
+<strong>Bitte beachten Sie, dass Ihren Benutzern die Rechte für diese Modul erteilt werden müssen</strong>.
+</p>
+
+<p>
+Zunächst sehen Sie in einer Übersicht alle Rechnungsbelege deren Summen in Raten beglichen werden. Für jeden Eintrag wird die nächste Rate, der Gesamtbetrag, die Zahlungseingänge und der ausstehende Rechnungsbetrag angezeigt. Beim Aufklappen des Minidetails werden zusätzlich die festgelegten Raten mit dem dazugehörigem Fälligkeitsdatum sowie die bisherig eingegangenen Zahlungen angezeigt.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_zahlungseingang.png_ratenzahlung_ratenzahlung_als_zahlungsweise_hinterlegen_durch_dieses_modul_ist_es_ihren_kunden_moeglich_rechnungsbetraege_in_raten_abzuzahlen._dazu_muessen_sie_im_ersten_schritt_unter_administration--_einstellungen--_grundeinstellungen--_unter_zahlunsgsweisen_die_ratenzahlung_wie_folgt_als_moegliche_zahlungsweise_im_system_hinterlegen:wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"  title="wawision:ratenzahlung_zahlungseingang.png_ratenzahlung_ratenzahlung_als_zahlungsweise_hinterlegen_durch_dieses_modul_ist_es_ihren_kunden_moeglich_rechnungsbetraege_in_raten_abzuzahlen._dazu_muessen_sie_im_ersten_schritt_unter_administration--_einstellungen--_grundeinstellungen--_unter_zahlunsgsweisen_die_ratenzahlung_wie_folgt_als_moegliche_zahlungsweise_im_system_hinterlegen:wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"><img src="http://helpdesk.wawision.deindex.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=2_ratenzahlung_ratenzahlung_als_zahlungsweise_hinterlegen_durch_dieses_modul_ist_es_ihren_kunden_moeglich_rechnungsbetraege_in_raten_abzuzahlen._dazu_muessen_sie_im_ersten_schritt_unter_administration--_einstellungen--_grundeinstellungen--_unter_zahlunsgsweisen_die_ratenzahlung_wie_folgt_als_moegliche_zahlungsweise_im_system_hinterlegen:wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"  alt="" /></a>
+</p>
+
+<p>
+Im Anschluss können Sie für die Ratenzahlung einen Text hinterlegen, der standardmäßig im Angebots-, Auftrags- und Rechnungsbeleg auftaucht und dem Kunden die Rahmenbedingungen der Zahlungsweise aufzeigt.
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="uebersicht_der_ratenzahlungen1">Übersicht der Ratenzahlungen</h3>
+<div class="level3">
+
+<p>
+Unter Administration–&gt; Appstore finden Sie das Modul „Ratenzahlung“. Hier können zu Aufträgen Raten definiert werden, <strong>sobald die Rechnung dazu erstellt wurde</strong>.
+</p>
+
+<p>
+<strong>Bitte beachten Sie, dass Ihren Benutzern die Rechte für diese Modul erteilt werden müssen</strong>.
+</p>
+
+<p>
+Zunächst sehen Sie in einer Übersicht alle Rechnungsbelege deren Summen in Raten beglichen werden. Für jeden Eintrag wird die nächste Rate, der Gesamtbetrag, die Zahlungseingänge und der ausstehende Rechnungsbetrag angezeigt. Beim Aufklappen des Minidetails werden zusätzlich die festgelegten Raten mit dem dazugehörigem Fälligkeitsdatum sowie die bisherig eingegangenen Zahlungen angezeigt.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_zahlungseingang.png"  title="wawision:ratenzahlung_zahlungseingang.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit5" id="raten_definieren">Raten definieren</h3>
+<div class="level3">
+
+<p>
+Über das Edit-Icon <a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:icon_edit.png"  title="wawision:icon_edit.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=25&amp;tok=0db154&amp;media=wawision:icon_edit.png"  alt="" width="25" /></a> gelangen Sie in die Details der jeweiligen Ratenzahlung, in denen Sie über den Button „neu Rate anlegen“ neue Raten wie folgt definieren können.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_neue_rate_anlegen.png"  title="wawision:ratenzahlung_neue_rate_anlegen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+Sobald der Rechnungsbetrag in vollem Umfang beglichen wurde, verschwindet die Ratenzahlung aus der Übersicht und die dazugehörige Rechnung erhält den Zahlstatus „bezahlt“.
+</p>
+
+</div>
+
+<h2  id="faqs">FAQs</h2>
+<div class="level2">
+
+
+<p>
+<strong>Frage: Kann ich statt dem Termin für die einzelnen Raten auch einen Text, wie zum Beispiel „bei Lieferung“ eintragen?</strong><br/>
+
+</p>
+
+<p>
+<strong>Antwort: </strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> Ja, dies ist möglich. Hierzu geben Sie einfach ein fiktives Datum aus der Zukunft ein und geben dazu den Text an, der im Freitext der Rechnung erscheinen soll.</div>
+</li>
+</ul>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_alt.png"  title="wawision:ratenzahlung_alt.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=300&amp;tok=fa2170&amp;media=wawision:ratenzahlung_alt.png"  alt="" width="300" /></a>
+</p>
+
+<p>
+<span style='color:#c3c3c3; '>
+<strong>Suchbegriffe:</strong>
+Raten anlegen, Ratenzahlung, Zahlungsraten</span>
+</p>
+
+<p>
+—-}}
+</p>
+
+</div>
+
+<h3 class="sectionedit7" id="raten_definieren1">Raten definieren</h3>
+<div class="level3">
+
+<p>
+Über das Edit-Icon <a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:icon_edit.png"  title="wawision:icon_edit.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=25&amp;tok=0db154&amp;media=wawision:icon_edit.png"  alt="" width="25" /></a> gelangen Sie in die Details der jeweiligen Ratenzahlung, in denen Sie über den Button „neu Rate anlegen“ neue Raten wie folgt definieren können.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_neue_rate_anlegen.png_ratenzahlung_ratenzahlung_als_zahlungsweise_hinterlegen_durch_dieses_modul_ist_es_ihren_kunden_moeglich_rechnungsbetraege_in_raten_abzuzahlen._dazu_muessen_sie_im_ersten_schritt_unter_administration--_einstellungen--_grundeinstellungen--_unter_zahlunsgsweisen_die_ratenzahlung_wie_folgt_als_moegliche_zahlungsweise_im_system_hinterlegen:wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"  title="wawision:ratenzahlung_neue_rate_anlegen.png_ratenzahlung_ratenzahlung_als_zahlungsweise_hinterlegen_durch_dieses_modul_ist_es_ihren_kunden_moeglich_rechnungsbetraege_in_raten_abzuzahlen._dazu_muessen_sie_im_ersten_schritt_unter_administration--_einstellungen--_grundeinstellungen--_unter_zahlunsgsweisen_die_ratenzahlung_wie_folgt_als_moegliche_zahlungsweise_im_system_hinterlegen:wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=3_ratenzahlung_ratenzahlung_als_zahlungsweise_hinterlegen_durch_dieses_modul_ist_es_ihren_kunden_moeglich_rechnungsbetraege_in_raten_abzuzahlen._dazu_muessen_sie_im_ersten_schritt_unter_administration--_einstellungen--_grundeinstellungen--_unter_zahlunsgsweisen_die_ratenzahlung_wie_folgt_als_moegliche_zahlungsweise_im_system_hinterlegen:wawision:grundeinstellungen_zahlunsgweise_ratenzahlung.png"  alt="" /></a>
+</p>
+
+<p>
+Im Anschluss können Sie für die Ratenzahlung einen Text hinterlegen, der standardmäßig im Angebots-, Auftrags- und Rechnungsbeleg auftaucht und dem Kunden die Rahmenbedingungen der Zahlungsweise aufzeigt.
+</p>
+
+</div>
+
+<h3 class="sectionedit8" id="uebersicht_der_ratenzahlungen2">Übersicht der Ratenzahlungen</h3>
+<div class="level3">
+
+<p>
+Unter Administration–&gt; Appstore finden Sie das Modul „Ratenzahlung“. Hier können zu Aufträgen Raten definiert werden, <strong>sobald die Rechnung dazu erstellt wurde</strong>.
+</p>
+
+<p>
+<strong>Bitte beachten Sie, dass Ihren Benutzern die Rechte für diese Modul erteilt werden müssen</strong>.
+</p>
+
+<p>
+Zunächst sehen Sie in einer Übersicht alle Rechnungsbelege deren Summen in Raten beglichen werden. Für jeden Eintrag wird die nächste Rate, der Gesamtbetrag, die Zahlungseingänge und der ausstehende Rechnungsbetrag angezeigt. Beim Aufklappen des Minidetails werden zusätzlich die festgelegten Raten mit dem dazugehörigem Fälligkeitsdatum sowie die bisherig eingegangenen Zahlungen angezeigt.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_zahlungseingang.png"  title="wawision:ratenzahlung_zahlungseingang.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit9" id="raten_definieren2">Raten definieren</h3>
+<div class="level3">
+
+<p>
+Über das Edit-Icon <a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:icon_edit.png"  title="wawision:icon_edit.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=25&amp;tok=0db154&amp;media=wawision:icon_edit.png"  alt="" width="25" /></a> gelangen Sie in die Details der jeweiligen Ratenzahlung, in denen Sie über den Button „neu Rate anlegen“ neue Raten wie folgt definieren können.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_neue_rate_anlegen.png"  title="wawision:ratenzahlung_neue_rate_anlegen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=ratenzahlung&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+Sobald der Rechnungsbetrag in vollem Umfang beglichen wurde, verschwindet die Ratenzahlung aus der Übersicht und die dazugehörige Rechnung erhält den Zahlstatus „bezahlt“.
+</p>
+
+</div>
+
+<h2  id="faqs1">FAQs</h2>
+<div class="level2">
+
+
+<p>
+<strong>Frage: Kann ich statt dem Termin für die einzelnen Raten auch einen Text, wie zum Beispiel „bei Lieferung“ eintragen?</strong><br/>
+
+</p>
+
+<p>
+<strong>Antwort: </strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> Ja, dies ist möglich. Hierzu geben Sie einfach ein fiktives Datum aus der Zukunft ein und geben dazu den Text an, der im Freitext der Rechnung erscheinen soll.</div>
+</li>
+</ul>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_alt.png"  title="wawision:ratenzahlung_alt.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=300&amp;tok=fa2170&amp;media=wawision:ratenzahlung_alt.png"  alt="" width="300" /></a>
+</p>
+
+<p>
+<span style='color:#c3c3c3; '>
+<strong>Suchbegriffe:</strong>
+Raten anlegen, Ratenzahlung, Zahlungsraten</span>
+</p>
+
+<p>
+—-}}
+</p>
+
+<p>
+Sobald der Rechnungsbetrag in vollem Umfang beglichen wurde, verschwindet die Ratenzahlung aus der Übersicht und die dazugehörige Rechnung erhält den Zahlstatus „bezahlt“.
+</p>
+
+</div>
+
+<h2  id="faqs2">FAQs</h2>
+<div class="level2">
+
+
+<p>
+<strong>Frage: Kann ich statt dem Termin für die einzelnen Raten auch einen Text, wie zum Beispiel „bei Lieferung“ eintragen?</strong><br/>
+
+</p>
+
+<p>
+<strong>Antwort: </strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> Ja, dies ist möglich. Hierzu geben Sie einfach ein fiktives Datum aus der Zukunft ein und geben dazu den Text an, der im Freitext der Rechnung erscheinen soll.</div>
+</li>
+</ul>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_ratenzahlung&amp;media=wawision:ratenzahlung_alt.png"  title="wawision:ratenzahlung_alt.png"><img src="http://helpdesk.wawision.de/lib/exe/fetch.php?w=300&amp;tok=fa2170&amp;media=wawision:ratenzahlung_alt.png"  alt="" width="300" /></a>
+</p>
+
+<p>
+<span style='color:#c3c3c3; '>
+<strong>Suchbegriffe:</strong>
+Raten anlegen, Ratenzahlung, Zahlungsraten</span>
+</p>
+
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

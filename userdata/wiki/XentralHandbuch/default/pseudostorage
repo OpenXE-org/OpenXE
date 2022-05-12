@@ -1,0 +1,150 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#regelwerk_fuer_pseudo-lagerzahlen">Regelwerk für Pseudo-Lagerzahlen</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#formeln_erstellen">Formeln erstellen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#beispiel">Beispiel</a></div></li>
+<li class="level4"><div class="li"><a href="#variablen_operatoren">Variablen / Operatoren</a></div></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="regelwerk_fuer_pseudo-lagerzahlen">Regelwerk für Pseudo-Lagerzahlen</h2>
+<div class="level2">
+
+<p>
+Beginnend mit der Version 19.3 können übermittelte Lagerzahlen durch ein Regelwerk bestimmt werden. Das eröffnet die Möglichkeit, Online-Shops oder Marktplätze mit einer flexibel berechneten Pseudo-Lagerzahl pro Artikel zu befüllen.
+</p>
+
+<p>
+Bitte beachten Sie, dass die Pseudo-Lagerzahlen aktuell nicht in allen Schnittstellen funktionieren. Für welche Shops die Funktion gegeben ist, können Sie im Bereich <a href="https://xentral.com/helpdesk/kurzanleitung-einrichtung-online-shop-schnittstelle?"  title="https://xentral.com/helpdesk/kurzanleitung-einrichtung-online-shop-schnittstelle?"  rel="nofollow">Shopfunktionen</a> überprüfen.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="formeln_erstellen">Formeln erstellen</h3>
+<div class="level3">
+
+<p>
+Es können mehrere Bedingungen angegeben werden. Zunächst wird geprüft, ob es eine Formel im Artikel gibt und die Bedingung erfüllt wird. Falls nicht wird geprüft ob es eine Formel in den Shopeinstellungen gibt und die Bedingung erfüllt ist. Ist auch das nicht der Fall, wird das Standardverfahren verwendet.
+</p>
+
+<p>
+Die Abarbeitungsreihenfolge lautet also:
+</p>
+<ol>
+<li class="level1"><div class="li"> Formel in Artikel existiert und wird angewendet, weitere Formeln werden nicht beachtet</div>
+</li>
+<li class="level1"><div class="li"> Formel in Shop-Einstellungen existiert und wird angewendet, weitere Formeln werden nicht beachtet</div>
+</li>
+<li class="level1"><div class="li"> Anwendung des Standardverfahrens</div>
+</li>
+</ol>
+
+</div>
+
+<h4 id="beispiel">Beispiel</h4>
+<div class="level4">
+
+<p>
+Am folgenden Beispiel wird verdeutlicht, wie die Regelwerke aufzubauen sind:
+</p>
+LP_HL001A - OFFEN &gt; 10 AND L_Hauptlager &gt; 20 | Lauptlager;
+LP_HL001B - RES &gt; 10 | LP_HL001B;
+5
+
+<p>
+In diesem Beispiel gibt es drei verschiedene Formeln, die durch ein <strong>;</strong> (Semikolon) getrennt werden.
+Existiert ein <strong>|</strong> (Pipe-Zeichen), wird der Wert vor <strong>|</strong> als Bedingung und der Wert danach als Formel verwendet.
+Existiert kein Pipe-Zeichen wird dies verwendet, als wenn die ersten 2 Bedingungen oben nicht erfüllt sind. Folglich wird <strong>5</strong> als Pseudolagerbestand an den Shop gemeldet.
+</p>
+
+</div>
+
+<h4 id="variablen_operatoren">Variablen / Operatoren</h4>
+<div class="level4">
+
+<p>
+Es existieren folgende Variablen:
+</p>
+<ul>
+<li class="level1"><div class="li"> RES / RESERVIERT</div>
+</li>
+<li class="level1"><div class="li"> OFFEN</div>
+</li>
+<li class="level1"><div class="li"> LP_Kurzbezeichnung bzw. LP:Kurzbezeichnung</div>
+</li>
+<li class="level1"><div class="li"> L_Bezeichnung bzw. L:Bezeichnung</div>
+</li>
+</ul>
+
+<p>
+… und folgende Operatoren:
+</p>
+<ul>
+<li class="level1"><div class="li"> AND</div>
+</li>
+<li class="level1"><div class="li"> OR</div>
+</li>
+<li class="level1"><div class="li"> &lt;</div>
+</li>
+<li class="level1"><div class="li"> &gt;</div>
+</li>
+<li class="level1"><div class="li"> ⇐</div>
+</li>
+<li class="level1"><div class="li"> &gt;=</div>
+</li>
+<li class="level1"><div class="li"> =</div>
+</li>
+<li class="level1"><div class="li"> &lt;&gt; bzw. !=</div>
+</li>
+<li class="level1"><div class="li"> +</div>
+</li>
+<li class="level1"><div class="li"> -</div>
+</li>
+</ul>
+
+<p>
+Die Verwendung von Klammern ist nicht möglich. Zur Priorisierung wird wird „von oben nach unten“ gearbeitet.
+</p>
+
+<p>
+<strong><span style='color:#ed1c24; '>Wichtig:</span></strong> Vor und nach dem Minus bzw. Operator muss immer ein Leerzeichen stehen, damit die Zeichenkette nicht als Lagerplatz interpretiert wird.
+</p>
+
+<p>
+<br/>
+
+<span style='color:#c3c3c3; '>
+<strong>Suchbegriffe:</strong>
+multi-channel, amazon-seller, amazon, marktplatz, lagerzahlen
+</span> <br/>
+
+<span style='color:#c5c5c5; '>
+<strong>Modul:</strong>
+pseudostorage
+</span>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

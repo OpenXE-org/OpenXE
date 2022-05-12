@@ -1,0 +1,33 @@
+{
+    "name": "175 - Avocadostore Trackingnummern",
+    "description": "Trackingnummern der letzten 14 Tage mit Spalten f\u00fcr Bestellnummer Shop, Trackingnummer und Versandart.",
+    "project": 0,
+    "sql_query": "SELECT auf.internet, v.tracking, IF(v.versandart = 'dhlversenden', 'dhl', v.versandart) AS versandart FROM auftrag auf\r\nLEFT JOIN lieferschein l ON l.auftragid = auf.id\r\nLEFT JOIN versand v ON l.id = v.lieferschein\r\nWHERE v.versendet_am >= (CURDATE() - INTERVAL 14 DAY) AND l.status != 'storniert'",
+    "columns": [
+        {
+            "key_name": "tracking",
+            "title": "tracking_id",
+            "width": "30",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "versandart",
+            "title": "package_company",
+            "width": "30",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "internet",
+            "title": "order",
+            "width": "",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Lager & Logistik",
+    "share": null
+}

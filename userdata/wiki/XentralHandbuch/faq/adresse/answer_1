@@ -1,0 +1,1 @@
+Hat ein Kunde in der Adresse keine speziellen Zahlungskonditionen hinterlegt, werden automatisch die Standardeinstellungen aus den Grundeinstellungen gezogen. Kunden, die ohne Zahlungskonditionen &uuml;ber einen Import eingespielt wurden, stehen immer automatisch in der Oberfl&auml;che auf der ersten vorhandenen Zahlungsweise, jedoch ist hier keine fest gespeichert worden.

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>status/not-in-shop@1x</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Export-Icons" transform="translate(-97.000000, -6.000000)">
+            <g id="status/not-in-shop" transform="translate(97.000000, 6.000000)">
+                <rect id="bg-color-round" fill="#CD1417" x="0" y="0" width="20" height="20" rx="2"></rect>
+                <g id="icon/_status/not-in-shop" transform="translate(1.000000, 1.248969)" fill="#FFFFFF">
+                    <rect id="bg-color" fill-opacity="0" x="0" y="0" width="18" height="18"></rect>
+                    <path d="M9,1.8 C12.9764502,1.8 16.2,5.0235498 16.2,9 C16.2,12.9764502 12.9764502,16.2 9,16.2 C5.0235498,16.2 1.8,12.9764502 1.8,9 C1.8,5.0235498 5.0235498,1.8 9,1.8 Z M9,3.6 C6.01766235,3.6 3.6,6.01766235 3.6,9 C3.6,11.9823376 6.01766235,14.4 9,14.4 C11.9823376,14.4 14.4,11.9823376 14.4,9 C14.4,6.01766235 11.9823376,3.6 9,3.6 Z M12.6020874,8.1 L12.6020874,9.9 L5.39978027,9.9 L5.39978027,8.1 L12.6020874,8.1 Z" id="Combined-Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

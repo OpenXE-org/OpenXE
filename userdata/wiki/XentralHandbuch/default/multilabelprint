@@ -1,0 +1,129 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#multilabelprint">Multilabelprint</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#erstellen_einer_layoutvorlage_fuer_die_multilabels">Erstellen einer Layoutvorlage für die Multilabels</a></div></li>
+<li class="level3"><div class="li"><a href="#uebersicht_der_oberflaeche">Übersicht der Oberfläche</a></div></li>
+<li class="level3"><div class="li"><a href="#ablauf">Ablauf</a></div></li>
+<li class="level3"><div class="li"><a href="#beispiel_pdf_bogen">Beispiel PDF Bogen</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="multilabelprint">Multilabelprint</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul Multilabelprint können Sie verschiedene Artikel auswählen und mit einer davor erstellten Layoutvorlage Labels für diese Artikel auf einem PDF Bogen erzeugen. Dazu benötigen Sie auch das Modul <a href="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  title="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator"  rel="nofollow">Layoutgenerator</a>. 
+</p>
+
+<p>
+Administration ⇒ AppStore ⇒ Multilabelprint
+</p>
+
+<p>
+<strong>Hinweis:</strong> Das Modul Multilabelprint gibt es ab Version 17.1 als extra Modul <br/>
+
+<strong>Stand:</strong> März 2017 
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="erstellen_einer_layoutvorlage_fuer_die_multilabels">Erstellen einer Layoutvorlage für die Multilabels</h3>
+<div class="level3">
+
+<p>
+Wie Sie eine sinnvolle Layoutvorlage für den Multilabelprint erstellen, lesen Sie bitte hier: <br/>
+
+<a href="http://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator#multilabelprint"  title="wawision:kurzanleitung_layout_generator">Layouts erstellen für Multilabelprint</a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="uebersicht_der_oberflaeche">Übersicht der Oberfläche</h3>
+<div class="level3">
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=multilabelprint&fileid=1"  title="wawision:multilabel_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=multilabelprint&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+<strong>Artikeltabelle:</strong> <br/>
+
+Hier werden alle Artikel aus den Stammdaten reingeladen. <br/>
+
+Sie haben die Möglichkeit Artikel, die Sie auf dem PDF-Bogen haben wollen, zu markieren. Diese Markierung wird auch gespeichert, wenn Sie die Artikelsuche oben rechts betätigen.
+</p>
+
+<p>
+<strong>Filter:</strong> <br/>
+
+Hier können Sie nur die von Ihnen ausgewählten Artikel anzeigen lassen. Dies ist besonders praktisch wenn Sie Artikel über mehrere Artikelseiten hinweg markieren.
+</p>
+
+<p>
+<strong>Zurücksetzen Button:</strong> <br/>
+
+Mit diesem Button entfernen Sie alle Haken von markierten Artikel.
+</p>
+
+<p>
+<strong>Layout:</strong> <br/>
+
+Hier wählen Sie das Layout aus, dass Sie im Modul Layoutgenerator dafür erstellt haben (siehe oben).
+</p>
+
+<p>
+<strong>Drucker:</strong> <br/>
+
+Dort wird der Drucker eingestellt, an dem der PDF-Bogen gedruckt werden soll. 
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="ablauf">Ablauf</h3>
+<div class="level3">
+<ol>
+<li class="level1"><div class="li"> Layoutvorlage auswählen - falls noch keine vorhanden: über den Layoutgenerator erstellen</div>
+</li>
+<li class="level1"><div class="li"> Artikel suchen und auswählen über die Checkboxen</div>
+</li>
+<li class="level1"><div class="li"> Mit dem „Vorschau“ Button den PDF-Bogen kurz überprüfen</div>
+</li>
+<li class="level1"><div class="li"> Über den „Drucken“ Button ausdrucken</div>
+</li>
+</ol>
+
+</div>
+
+<h3 class="sectionedit5" id="beispiel_pdf_bogen">Beispiel PDF Bogen</h3>
+<div class="level3">
+
+<p>
+Das Layout für dieses Beispiel finden Sie hier: <a href="http://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_layout_generator#beispiel_fuer_einen_pdf_bogen"  title="wawision:kurzanleitung_layout_generator">Beispiel Layout</a>
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=multilabelprint&fileid=2"  title="wawision:layoutgenerator_beispiel_pdf.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=multilabelprint&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

@@ -1,0 +1,106 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#lieferkette">Lieferkette</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#lieferkette_erzeugen">Lieferkette erzeugen</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#aktuellen_lagerbestand_mit_beruecksichtigen">Aktuellen Lagerbestand mit berücksichtigen</a></div></li>
+</ul>
+</li>
+<li class="level3"><div class="li"><a href="#lieferkette_im_auftrags-protokoll">Lieferkette im Auftrags-Protokoll</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="lieferkette">Lieferkette</h2>
+<div class="level2">
+
+<p>
+Mit dem extra Modul „Lieferkette“ kann man schnell aus einem Auftrag eine oder mehrere Bestellungen anlegen. Dies benötigt man vor allem wenn Kundenaufträge durch einen oder mehrere Lieferanten geliefert und produziert werden müssen. Der Vorteil zum manuellen Bestellungen anlegen liegt auch daran, dass Stücklisten für die Bestellungen in die Unterstücklistenartikel aufgeteilt werden und man somit Stücklisten und deren Unterartikel als ganzes bestellen kann.
+</p>
+
+<p>
+Administration ⇒ AppStore ⇒ Lieferkette <br/>
+
+Auftrag ⇒ Aktionsmenü ⇒ Lieferkette erstellen
+</p>
+
+<p>
+Das Modul gibt es bald in unserem Shop.
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="lieferkette_erzeugen">Lieferkette erzeugen</h3>
+<div class="level3">
+
+<p>
+In einem Auftrag haben Sie mit Installation des Moduls einen weiteren Aktionsmenü-Punkt dazu bekommen:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_lieferkette&amp;media=wawision:lieferkette_aktionsmenue.png"  title="wawision:lieferkette_aktionsmenue.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=lieferkette&fileid=1"  alt="" /></a>
+</p>
+
+<p>
+Mit einem Klick auf „Lieferketter erzeugen“ landen Sie in einer neuen Oberfläche um festzulegen welche Artikel in eine Bestellung überführt werden.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_lieferkette&amp;media=wawision:lieferkette_bestellung_ueberfuehren.png"  title="wawision:lieferkette_bestellung_ueberfuehren.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=lieferkette&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+Mit einem Klick auf den unteren „Speichern“ Button werden die ausgefüllten Mengen und Artikel in Bestellungen übernommen (jeweils eine pro Lieferant).
+</p>
+
+</div>
+
+<h4 id="aktuellen_lagerbestand_mit_beruecksichtigen">Aktuellen Lagerbestand mit berücksichtigen</h4>
+<div class="level4">
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_lieferkette&amp;media=wawision:lieferkette_erzeugen_aktuellen_lagerbestand.png"  title="wawision:lieferkette_erzeugen_aktuellen_lagerbestand.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=lieferkette&fileid=3"  alt="" /></a>
+</p>
+
+<p>
+Mit der Option „Aktuellen Lagerbestand mit berücksichtigen“ wird die Bedarfsmenge abgeglichen mit dem Verkaufbaren Bestand. Sollte noch genügend (nicht-reservierter) Lagerbestand vorhanden sein, wird keine Bestellung durchgeführt.
+</p>
+
+<p>
+Ohne die Option aktiv wird immer genau der Betand aus den Beleg- oder Stücklistenpositionen bestellt.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="lieferkette_im_auftrags-protokoll">Lieferkette im Auftrags-Protokoll</h3>
+<div class="level3">
+
+<p>
+Die Lieferkette wird danach im Mini-Detail und im Protokoll des Auftrags angezeigt, damit man immer weiss, dass zu diesem Auftrag schon Bestellungen rausgegangen sind.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_lieferkette&amp;media=wawision:lieferkette_auftrag_protokoll.png"  title="wawision:lieferkette_auftrag_protokoll.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=lieferkette&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

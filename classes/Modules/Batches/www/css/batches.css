@@ -1,0 +1,23 @@
+.dataTables_filter
+{
+    display:none;
+}
+img.addfilter {
+    float:right;
+    width: 20px;
+}
+td input,
+.filter-edit img {
+    vertical-align: middle;
+}
+div.inside fieldset {
+    margin-right: 20px;
+}
+div.inside fieldset table tr td:first-child {
+    min-width: 150px;
+}
+
+
+textarea#description, input#name {
+    width: calc(30vw -  200px);
+}

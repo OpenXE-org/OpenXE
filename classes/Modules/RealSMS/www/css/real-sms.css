@@ -1,0 +1,14 @@
+
+#real_sms_form #api-test{
+    text-decoration: underline;
+}
+#real_sms_form #api-test:hover{
+    text-decoration: none;
+    cursor: pointer;
+}
+#real_sms_form #api-test-result.api_fail{
+    color: firebrick;
+}
+#real_sms_form #api-test-result.api_success{
+    color: darkgreen;
+}

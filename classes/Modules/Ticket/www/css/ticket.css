@@ -1,0 +1,22 @@
+
+/**
+    ANHÄNGE
+ */
+ul.file-attachments {
+    list-style-type: none;
+    padding: 0;
+    margin: 5px 0;
+}
+ul.file-attachments li {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 2px 0;
+}
+ul.file-attachments li * {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+ul.file-attachments li a {
+    padding-left: 5px;
+}

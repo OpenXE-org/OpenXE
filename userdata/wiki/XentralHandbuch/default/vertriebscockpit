@@ -1,0 +1,316 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#vertriebscockpit">Vertriebscockpit</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#uebersicht">Übersicht</a></div></li>
+<li class="level3"><div class="li"><a href="#umsaetze">Umsätze</a></div></li>
+<li class="level3"><div class="li"><a href="#angebote">Angebote</a></div></li>
+<li class="level3"><div class="li"><a href="#notizen">Notizen</a></div></li>
+<li class="level3"><div class="li"><a href="#csv_export">CSV Export</a></div></li>
+<li class="level3"><div class="li"><a href="#einstellungen">Einstellungen</a></div></li>
+<li class="level3"><div class="li"><a href="#spezielle_rechteverteilung_durch_das_vertriebscockpit">Spezielle Rechteverteilung durch das Vertriebscockpit</a></div></li>
+<li class="level3"><div class="li"><a href="#erweiterungen_bei_den_adressen_durch_das_vertriebscockpit">Erweiterungen bei den Adressen durch das Vertriebscockpit</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="vertriebscockpit">Vertriebscockpit</h2>
+<div class="level2">
+
+<p>
+Das Modul Vertriebscockpit bietet Ihnen einen bequemen Überblick über alle Kunden, die speziell Ihnen als Vertrieb zugewiesen sind. Durch spezielle Übersichten und Filter haben Sie die Möglichkeit alle wichtigen Verkaufszahlen und Aktivitäten Ihrer Kunden zu überwachen und bei Bedarf Schritte einzuleiten, damit Ihre Kunden zufrieden sind.
+</p>
+
+<p>
+Administration → AppStore → Vertriebscockpit
+</p>
+
+<p>
+<strong>Hinweis:</strong> Das Modul Vertriebscockpit gibt es in unserem <a href="http://shop.wawision.de/sonstige/wawision-vertriebscockpit.html"  title="http://shop.wawision.de/sonstige/wawision-vertriebscockpit.html"  rel="nofollow">Shop</a>. <br/>
+
+<strong>Stand:</strong> Januar 2017
+</p>
+
+<p>
+Wie schon erwähnt, ist es notwendig, dass der Mitarbeiter als „Vertrieb“ bei den Kunden (Stammdaten → Adressen) hinterlegt ist: <br/>
+
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=1"  title="wawision:vertriebscockpit_vertriebsfeld.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="uebersicht">Übersicht</h3>
+<div class="level3">
+
+<p>
+Auf der Startseite des Vertriebscockpits sieht man seine <br/>
+
+</p>
+<ul>
+<li class="level1"><div class="li"> Letzten 5 Rechnungen</div>
+</li>
+<li class="level1"><div class="li"> Letzten 5 Angebote</div>
+</li>
+<li class="level1"><div class="li"> Umsatz für die laufende Woche, Monat, Jahr </div>
+</li>
+<li class="level1"><div class="li"> Wiedervorlagen</div>
+</li>
+</ul>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=2"  title="wawision:vertriebscockpit_uebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=2"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Die Rechnungs- und Angebotsnummern sind direkte Links zu den jeweiligen Dokumenten. 
+</p>
+
+<p>
+Die Wiedervorlagen werden farblich voneinander getrennt und mit der folgenden Reihenfolge gelistet:
+</p>
+<ul>
+<li class="level1"><div class="li"> <span style='color:#22b14c; '>Grün</span> → Heute fällig</div>
+</li>
+<li class="level1"><div class="li"> <span style='color:#ed1c24; '>Rot</span> → In der Vergangenheit fällig</div>
+</li>
+<li class="level1"><div class="li"> Normal → In der Zukunft fällig</div>
+</li>
+</ul>
+
+<p>
+Mit dem <a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=3"  title="wawision:forward.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=3"  alt="" /></a> Pfeil rechts kommen Sie direkt in die Korrespondenzen der Adresse und können dort die Wiedervorlagen bearbeiten.
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="umsaetze">Umsätze</h3>
+<div class="level3">
+
+<p>
+Im Tab Umsätze stehen für Sie Filter bereit, mit denen Sie zielsicher Ihre Wunsch-Kundengruppe finden und deren Rechnungsbeträge in Summe anzeigen können.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=4"  title="wawision:vertriebscockpit_umaetze.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=4"  alt="" /></a>
+</p>
+
+<p>
+<strong>Hinweis:</strong> Einige Filterfelder stellen Sie unter dem Tab „Einstellungen“ ein.
+</p>
+
+<p>
+Die Felder „Umsatzpotential“ und „Kontaktursprung“ werden der Adresse als Gruppenkategorie übergeben. <br/>
+
+Wie Sie eine Gruppe und die Gruppenkategorien erstellen und zuweisen erfahren Sie hier: <a href="http://helpdesk.wawision.de/doku.php?id=wawision:kurzanleitung_groups"  title="wawision:kurzanleitung_groups">Gruppen verwenden</a>
+</p>
+
+<p>
+<strong>Beispiele für nützliche Filtereinstellungen:</strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> Alle Kunden einer bestimmten PLZ &amp; einer Umsatzhöhe bis 10000 Euro</div>
+</li>
+<li class="level1"><div class="li"> Alle Kunden eines bestimmten Landes mit Kontaktursprung der letzten Messe</div>
+</li>
+<li class="level1"><div class="li"> Alle Kunden eines Vertriebmitarbeiters mit dem Umsatzpotential von über 10000 Euro</div>
+</li>
+</ul>
+
+<p>
+<strong>Hinweis:</strong> Ab Version 17.2 gibt es nun eine neue Spalte „Letzter Kontakt“. Diese Spalte stellt das letzte Datum da, des letzten Eintrags unter Adressen → CRM. Also Belegdatum oder ein eingetragener Termin, Notiz, etc.
+</p>
+
+<p>
+Dazu benötigt man noch folgenden <a href="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=entwickler:prozessstarter"  title="http://helpdesk.wawision.dehttp://helpdesk.wawision.de/doku.php?id=entwickler:prozessstarter"  rel="nofollow">Prozessstarter</a>: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_vertriebscockpit&amp;media=wawision:vertriebscockpit_letzter_kontakt_prozessstarter.png"  title="wawision:vertriebscockpit_letzter_kontakt_prozessstarter.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=5"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="angebote">Angebote</h3>
+<div class="level3">
+
+<p>
+Das „Angebote“ Tab funktioniert entsprechend des „Umsätze“ Tabs. <br/>
+
+Nur werden hier statt Rechnungen, die erstellten Angebote berücksichtigt.
+</p>
+
+</div>
+
+<h3 class="sectionedit5" id="notizen">Notizen</h3>
+<div class="level3">
+
+<p>
+Im „Notizen“ Tab haben Sie die Möglichkeit ihr CRM durch entsprechende Filter zu kontrollieren. <br/>
+
+Es werden hier Notizen und E-Mails in der Übersicht aufgeführt.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=6"  title="wawision:vertriebscockpit_notizen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=6"  alt="" /></a>
+</p>
+
+<p>
+Neben den Filtern aus dem „Einstellungen“ Tab (Kontaktursprung, Umsatzpotential, Freifelder) bekommen Sie hier auch folgende Felder an die Hand:
+</p>
+<ul>
+<li class="level1"><div class="li"> <strong>Kunden mit Notizen:</strong> Zeigt alle Kunden an, die in diesem Zeitraum eine Notiz in den Adressdaten erhalten haben</div>
+</li>
+<li class="level1"><div class="li"> <strong>Kunden ohne Notizen:</strong> Zeigt alle Kunden an, die seit einem best. Datum <strong>keine</strong> Notizen mehr bekommen haben</div>
+</li>
+<li class="level1"><div class="li"> <strong>Kunden ohne offene Wiedervorlagen:</strong> Zeigt alle Kunden an, zu denen seit einem best. Datum <strong>keine</strong> Wiedervorlagen erstellt worden sind.</div>
+</li>
+</ul>
+
+<p>
+Dies ermöglicht Ihnen die Kunden zu filtern, bei denen Sie nicht „aktiv“ waren und vielleicht wieder etwas mehr Aufmerksamkeit bräuchten in Form von Angeboten / Wiedervorlagen. Vor allem in Kombination mit dem Umsatzpotential kann dies ein hilfreicher Filter sein.
+</p>
+
+<p>
+<strong>Beispiele für nützliche Filtereinstellungen:</strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> Zeige alle Kunden, die seit einem best. Datum keine Notizen und Wiedervorlagen bekamen</div>
+</li>
+<li class="level1"><div class="li"> Zeige alle Kunden, die seit einem best. Datum keine Wiedervorlagen bekamen und einem best. Vertriebsmitarbeiter zugeordnet sind</div>
+</li>
+<li class="level1"><div class="li"> Zeige alle Kunden, die seit einem best. Datum keine Wiedervorlagen bekamen und das Umsatzpotential über 15000 Euro haben</div>
+</li>
+</ul>
+
+</div>
+
+<h3 class="sectionedit6" id="csv_export">CSV Export</h3>
+<div class="level3">
+
+<p>
+Ein Klick auf dieses Tab erstellt eine umfangreiche CSV Datei aller Adressdaten mit hilfreichen Spalten, wie z.B.:
+</p>
+<ul>
+<li class="level1"><div class="li"> Kontaktursprung</div>
+</li>
+<li class="level1"><div class="li"> Umsatzpotential</div>
+</li>
+<li class="level1"><div class="li"> Vertriebsmitarbeiter</div>
+</li>
+<li class="level1"><div class="li"> Datum der offenen Wiedervorlage</div>
+</li>
+<li class="level1"><div class="li"> Anzahl und Beitragssumme der Angebote</div>
+</li>
+<li class="level1"><div class="li"> Gesamtumsatz  </div>
+</li>
+</ul>
+
+<p>
+<strong>Hinweis:</strong> Dynamisch werden die 3 Spalten in den Vertriebscockpit - Einstellungen mit in die CSV gespeist (siehe nächster Punkt).
+</p>
+
+</div>
+
+<h3 class="sectionedit7" id="einstellungen">Einstellungen</h3>
+<div class="level3">
+
+<p>
+Hier können Sie die Filterfelder wählen, die bei den einzelnen Tabs angezeigt werden.
+</p>
+
+<p>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=7"  title="wawision:vertriebscockpit_einstellungen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=7"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit8" id="spezielle_rechteverteilung_durch_das_vertriebscockpit">Spezielle Rechteverteilung durch das Vertriebscockpit</h3>
+<div class="level3">
+
+<p>
+Durch das Vertriebscockpit bekommen Sie auch eine spezielle Rechteeinstellung, die es ermöglicht Ihren Vertretern bestimmte Kunden zuzuordnen. Die Vertreter sehen dadurch auch nur die Kunden, denen Sie zugewiesen sind.
+</p>
+
+<p>
+<strong>Voraussetzung:</strong>
+</p>
+<ul>
+<li class="level1"><div class="li"> In der Adresse muss der Vertriebler unter dem Feld „Vertrieb“ hinterlegt sein. <br/>
+<a href="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=1"  title="wawision:vertriebscockpit_vertriebsfeld.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=1"  alt="" /></a> <br/>
+</div>
+</li>
+<li class="level1"><div class="li"> Die Vertreter-Adresse darf keine Projekte als Rollen haben: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_vertriebscockpit&amp;media=wawision:vertriebscockpit_rollen.png"  title="wawision:vertriebscockpit_rollen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=8"  alt="" /></a> <br/>
+</div>
+</li>
+<li class="level1"><div class="li"> Das Projekt der Adressen darf nicht öffentlich für alle Mitarbeiter sein: <br/>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_vertriebscockpit&amp;media=wawision:2017-06-07_um_12.40.48.png"  title="wawision:2017-06-07_um_12.40.48.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=9"  alt="" /></a> <br/>
+</div>
+</li>
+</ul>
+
+<p>
+<strong>Auswirkungen:</strong>
+Wenn diese Voraussetzungen erfüllt sind, trifft folgendes für den eingeloggten Benutzer mit der Vertreteradresse zu:
+</p>
+<ul>
+<li class="level1"><div class="li"> In den Adressen sieht er nur die Kunden, die im Feld Vertrieb seine Adresse haben</div>
+</li>
+<li class="level1"><div class="li"> In Belegen kann er nur seine Kunden auswählen und sieht auch in der Überschrift nur Belege mit seinen Kunden </div>
+</li>
+</ul>
+
+<p>
+<strong>Hinweis:</strong> Soll ein solcher Mitarbeiter auch die Gruppen in den Adressen sehen, bedarf es eines Workarounds:
+</p>
+<ul>
+<li class="level1"><div class="li"> Neues Projekt GRUPPEN erstellen</div>
+</li>
+<li class="level1"><div class="li"> Dem Vertreter die Rolle „Mitglied von Projekt GRUPPEN“ geben</div>
+</li>
+<li class="level1"><div class="li"> Den einzelnen Gruppen das Projekt GRUPPEN zuweisen.</div>
+</li>
+</ul>
+
+</div>
+
+<h3 class="sectionedit9" id="erweiterungen_bei_den_adressen_durch_das_vertriebscockpit">Erweiterungen bei den Adressen durch das Vertriebscockpit</h3>
+<div class="level3">
+
+<p>
+Ab der Version 19.1 sind bei den Adressen zusätzliche Angaben bei der Nutzung des Vertriebscockpits verfügbar.
+</p>
+
+<p>
+In der Adressübersicht sind nun die verwendeten Rollen in den Mini-Details einsehbar.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_vertriebscockpit&amp;media=wawision:vertriebscockpit_adressuebersicht.png"  title="wawision:vertriebscockpit_adressuebersicht.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=10"  alt="" /></a>
+</p>
+
+<p>
+Außerdem befinden sich unter den Adressdetails die Angaben zu den verwendeten Gruppen.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_vertriebscockpit&amp;media=wawision:vertriebscockpit_adressendetails.png"  title="wawision:vertriebscockpit_adressendetails.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=vertriebscockpit&fileid=11"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

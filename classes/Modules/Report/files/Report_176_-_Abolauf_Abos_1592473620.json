@@ -1,0 +1,114 @@
+{
+    "name": "176 - Abolauf Abos",
+    "description": "Erzeugt eine \u00dcbersicht \u00fcber alle Abos im Abolauf",
+    "project": 0,
+    "sql_query": "SELECT\r\naa.startdatum AS `Startdatum`, \r\nadr.name AS `Kundenname`, \r\nadr.kundennummer AS `Kundennummer`, \r\nart.nummer AS `Artikelnummer`, \r\nart.name_de AS `Artikelbezeichnung`, \r\naa.menge AS `Menge`, \r\naa.rabatt AS `Rabatt`, \r\naa.preis AS `Preis`, \r\n(CASE aa.preisart\r\nWHEN 'monat' THEN 'Monatspreis'\r\nWHEN 'monatx' THEN 'Preis f\u00fcr X Monate'\r\nWHEN 'jahr' THEN 'Jahrespreis'\r\nWHEN 'wochen' THEN 'Wochenpreis'\r\nWHEN '30tage' THEN '30 Tage'\r\nWHEN 'einmalig' THEN 'Einmalig'\r\nEND) AS `Typ`\r\nFROM `abrechnungsartikel` AS `aa`\r\nLEFT JOIN `adresse` AS `adr` ON aa.adresse = adr.id\r\nINNER JOIN `artikel` AS `art` ON aa.artikel = art.id\r\nAND IF('{VON}'=0,1,aa.startdatum>='{VON}') AND IF('{BIS}'=0,1,aa.startdatum<='{BIS}')",
+    "columns": [
+        {
+            "key_name": "Startdatum",
+            "title": "Startdatum",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "Kundenname",
+            "title": "Kundenname",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "Kundennummer",
+            "title": "Kundennummer",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "Artikelnummer",
+            "title": "Artikelnummer",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "Artikelbezeichnung",
+            "title": "Artikelbezeichnung",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "Menge",
+            "title": "Menge",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "Rabatt",
+            "title": "Rabatt",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "Preis",
+            "title": "Preis",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": "sum_money_de"
+        },
+        {
+            "key_name": "Typ",
+            "title": "Typ",
+            "width": "21",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "VON",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "BIS",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": null
+}

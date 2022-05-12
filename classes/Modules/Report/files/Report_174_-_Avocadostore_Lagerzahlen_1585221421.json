@@ -1,0 +1,41 @@
+{
+    "name": "174 - Avocadostore Lagerzahlen",
+    "description": "Lageranzahl aller Artikel mit Spalten f\u00fcr EAN, Artikelname und Lagermenge.",
+    "project": 0,
+    "sql_query": "SELECT\r\na.ean AS ean,\r\na.name_de AS artikelname,\r\nROUND(lpi.menge,0) AS menge\r\nFROM lager_platz_inhalt AS lpi\r\nJOIN lager_platz lp on lpi.lager_platz = lp.id\r\nLEFT JOIN projekt plp ON lp.projekt = plp.id\r\nJOIN artikel a ON lpi.artikel = a.id\r\nWHERE a.geloescht=0",
+    "columns": [
+        {
+            "key_name": "ean",
+            "title": "sku",
+            "width": "50",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "menge",
+            "title": "stock",
+            "width": "31",
+            "alignment": "right",
+            "sorting": "numeric",
+            "sum": 1,
+            "format_type": null
+        },
+        {
+            "key_name": "artikelname",
+            "title": "Angebot",
+            "width": "31",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Lager & Logistik",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": null
+}

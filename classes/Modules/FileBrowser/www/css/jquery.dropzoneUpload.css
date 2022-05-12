@@ -1,0 +1,74 @@
+
+.dropzone-upload .dropzone {
+    padding: 40px;
+    margin: 10px 0;
+    background: lightgrey;
+    border: 5px dashed grey;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.dropzone-upload .dropzone span {
+    display: block;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.dropzone-upload .hidden-upload {
+    overflow: hidden;
+    width: 0;
+    height: 0;
+}
+
+.dropzone-upload .dropzone.dragging {
+    border-color: darkred;
+}
+
+.dropzone-upload .files {
+    margin: 10px 0;
+}
+
+.dropzone-upload .files table th {
+    font-weight: bold;
+}
+
+.dropzone-upload .files table th,
+.dropzone-upload .files table td {
+    text-align: left;
+    padding: 6px 12px;
+}
+
+.dropzone-upload .files .filepreview img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100px;
+    max-height: 100px;
+}
+
+.dropzone-upload .files .filesize {
+    text-align: right;
+}
+
+.dropzone-upload .files .message-success {
+    color: darkgreen;
+}
+
+.dropzone-upload .files .message-failure {
+    color: darkred;
+}
+
+.dropzone-upload .buttons {
+    margin: 10px 0;
+}
+
+.dropzone-upload .status-info {
+    font-size: 120%;
+    font-weight: bold;
+    margin: 0 20px;
+}

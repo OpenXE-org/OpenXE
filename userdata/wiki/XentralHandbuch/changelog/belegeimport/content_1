@@ -1,0 +1,33 @@
+<span style="font-size:28px;"><strong>Belege Importer</strong></span><br />&nbsp;<p>Die App Belege Importer erlaubt es Ihnen, alte Belege (Auftr&auml;ge, Lieferscheine, Rechnungen usw.) per CSV zu Xentral zu importieren. Die App Belege Importer arbeitet mit einem Prozessstarter. Damit der Import klappt, muss der Prozessstarter ausgef&uuml;hrt werden.<br />&nbsp;</p><h1>Allgemeines</h1><br />Unter Administration &rarr; AppStore &rarr; Belege Importer finden Sie eine Anwendung, mithilfe der Sie unterschiedliche Dokumente in Xentral hochladen k&ouml;nnen: Angebote, Auftr&auml;ge, Lieferscheine, Rechnungen, Gutschriften etc.<br /><br />Wenn Sie die App aufrufen, gelangen Sie in die folgende Startansicht:<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=belegeimport&amp;fileid=1" width="700" /><br /><br /><br />Im ausgegrauten Bereich &quot;Datei importieren&quot; k&ouml;nnen Sie ausw&auml;hlen, welche Datei Sie hochladen m&ouml;chtenausw&auml;hlen, welche Belegart Sie hochladen m&ouml;chtenfestlegen, welchen Status Ihr Beleg erhalten soll&uuml;ber den Button den Upload Ihrer Dokumente veranlassenden Zwischenspeicher leeren, falls Sie Ihre Belege doch nicht mehr hochladen m&ouml;chten bzw. &Auml;nderungen daran vornehmen m&ouml;chten<br /><br />Im Reiter Formate finden Sie eine Aufstellung &uuml;ber alle importierbaren Felder mit einer Kurzbeschreibung. Die exakten Feldnamen m&uuml;ssen in der ersten Zeile Ihrer Datei auch als Spalten&uuml;berschriften enthalten sein, wobei f&uuml;r jede Position des Belegs eine neue Zeile ben&ouml;tigt wird.<br />&nbsp;<h1>Formate</h1><br />Im Folgenden werden die Pflichtangaben nochmal kurz erkl&auml;rt:<br /><br />beleg_belegnr: Die Belegnummer, f&uuml;r Spezialverhalten siehe NEW<pre>beleg_kundennummer: Kundennumer, mit der Ihr Beleg verkn&uuml;pft wird
+ artikel_nummer: Artikelnummer der Position
+  artikel_bezeichnung: Bezeichnung der Position
+  artikel_menge: Mengenangabe der Position
+  artikel_preis: Preis dieser Position
+</pre><br /><br />Beachten Sie bitte, dass beim Import keinesfalls &Auml;nderungen an Stammdaten vorgenommen werden, d.h. weder an den Stammdaten der Artikel noch der Adressen. Entsprechend werden Ihnen Abweichungen von den Stammdaten in rot angezeigt, sodass Sie diese wahlweise korrigieren k&ouml;nnen oder beibehalten, wobei dann eine &Uuml;bernahme ausschlie&szlig;lich f&uuml;r die importierten Belege gilt.Haben Sie einmal Ihre Datei hochgeladen, k&ouml;nnen Sie sich in der &Uuml;bersicht ansehen, ob alles so erkannt und zugeordnet wird, wie Sie sich das vorgestellt hatten, bevor Sie anschlie&szlig;end auf den Button &quot;Belege jetzt importieren&quot; klicken.<br />&nbsp;<h1>Schl&uuml;sselworte</h1> Der Belegimporter unterst&uuml;tzt zus&auml;tzlich zwei Schl&uuml;sselworte f&uuml;r dynamische Belegnummern.NEWDas Schl&uuml;sselwort NEW erzeugt bei jedem vorkommen eine neue fortlaufende Belegnummer basierend auf der Art des Imports. WICHTIG: Nachdem eine Zeile mit NEW vorkommt sollte f&uuml;r die restliche Datei keine Zeilen mit statischer Belegnummer mehr folgen. In sehr ung&uuml;nstigen F&auml;llen k&ouml;nnte es sonst dazu f&uuml;hren dass Artikel auf den falschen Beleg gebucht werden. Wenn der Status &#39;angelegt&#39; gesetzt ist, wird jede Belegnummer die nicht PARENT ist als NEW betrachtet. Die hierbei vergebenen (ENTWURF_X_) Belegnummern sind jedoch nur tempor&auml;r und dienen der Zuordnung der einzelnen Artikel. Beim tats&auml;chlichen Import werden die Belegnummern anschlie&szlig;end verworfen.PARENTDas Schl&uuml;sselwort PARENT &uuml;bernimmt die Belegnummer aus der vorherigen Zeile. Dadurch ist es m&ouml;glich Artikel zu Belegen zu gruppieren, selbst wenn diese noch keine Belegnummer haben. Sollte die erste Zeile der CSV Datei die Belegnummer PARENT haben, wird sie als NEW betrachtet und eine neue Belegnummer wird erstellt.Beispiel:<pre> beleg_belegnr;beleg_kundennummer;artikel_bezeichnung;artikel_nummer;artikel_preis;artikel_menge
+ 123;999;Artikel 1; 101; 1; 1
+ 124;999;Artikel 2; 102; 1; 1
+ PARENT;999;Artikel 3; 103; 1; 1
+ 125;999;Artikel 4; 104; 1; 1
+ NEW;999;Artikel 5; 105; 1; 1
+ NEW;999;Artikel 6; 106; 1; 1
+ PARENT;999;Artikel 7; 107; 1; 1
+ PARENT;999;Artikel 8; 108; 1; 1
+ NEW;999;Artikel 9; 109; 1; 1
+ PARENT;999;Artikel 10; 110; 1; 1
+</pre><br /><br />Erzeugt folgende Struktur:<br />&nbsp;<pre> 123
+   -Artikel 1
+ 124
+   -Artikel 2
+   -Artikel 3
+ 125
+   -Artikel 4
+ 30001
+   -Artikel 5
+ 30002
+   -Artikel 6
+   -Artikel 7
+   -Artikel 8
+ 30003
+   -Artikel 9
+   -Artikel 10
+</pre>

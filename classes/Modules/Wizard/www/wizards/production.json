@@ -1,0 +1,324 @@
+{
+    "key": "production",
+    "category": "general",
+    "title": "Produktion abbilden",
+    "sub_title": "Mit dem extra Modul Produktion kann man Stücklisten produzieren, Chargen und Seriennummern erzeugen, Material dokumentieren oder Zeiten auf Arbeitsschritte buchen. Schau mal rein!",
+    "description": "Mit dem extra Modul Produktion kann man Stücklisten produzieren, Chargen und Seriennummern erzeugen, Material dokumentieren oder Zeiten auf Arbeitsschritte buchen. Schau mal rein!",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "produktion": [
+            "list",
+            "create",
+            "edit",
+            "arbeitsanweisung",
+            "seriennummern",
+            "chargen",
+            "abschluss"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/xG5e3pl2SNU"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "new_production": {
+                    "steps": {
+                        "click_new_production": {
+                            "position": 1,
+                            "link": "./index.php?module=produktion&action=list",
+                            "title": "Produktion",
+                            "caption": "Klicke auf NEU.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_production": {
+                    "steps": {
+                        "production_info": {
+                            "position": 1,
+                            "title": "Produktion",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Produktion",
+                                            "text": "Ihr seid ein produzierendes Unternehmen? Unser Produktionsmodul bildet alle Prozesse ab, die zur Herstellung eurer Artikel notwendig sind. Das sind z.B. die Arbeitsanweisungen an eure Mitarbeiter, die Funktionsprotokolle zur Qualitätssicherung, der Druck von Etiketten und die Vergabe von neuen Seriennummern oder Chargen. Produktionen können sowohl für Kundenaufträge oder die eigene Nachproduktion von Artikeln verwendet werden. Alle Funktionen im Produktionsmodul arbeiten auf Basis von Stücklisten-Artikeln. Die Bestandteile der Stückliste sind die in die Produktion eingehenden Artikel, der Hauptartikel stellt den zu produzierenden Artikel dar.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "job_instruction": {
+                    "steps": {
+                        "click_job_instruction": {
+                            "position": 1,
+                            "title": "Arbeitsanweisungen",
+                            "caption": "Klicke auf Arbeitsanweisung.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "id": "menuEntryproduktionarbeitsanweisung"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_job_instruction": {
+                    "steps": {
+                        "job_instruction_info": {
+                            "position": 1,
+                            "title": "Übersicht Arbeitsanweisungen",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Arbeitsanweisungen",
+                                            "text": "Damit die Produktion immer sauber abläuft und keine Arbeitsabläufe vergessen werden, gibt es in xentral die Funktion \"Arbeitsanweisungen\". Hierbei können sich Eure Mitarbeiter nach und nach durch alle nötigen Arbeitsschritte klicken.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "serials": {
+                    "steps": {
+                        "click_serials": {
+                            "position": 1,
+                            "title": "Seriennummern",
+                            "caption": "Klicke auf Seriennummern.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "id": "menuEntryproduktionseriennummern"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_serials": {
+                    "steps": {
+                        "serials_info": {
+                            "position": 1,
+                            "title": "Übersicht Seriennummern",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Seriennummern",
+                                            "text": "Hast du Artikel mit Seriennummern? Dann kannst du hier pro Artikel die entsprechende Seriennummer eingeben oder direkt eine neue anlegen.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "batches": {
+                    "steps": {
+                        "click_batches": {
+                            "position": 1,
+                            "title": "Chargen",
+                            "caption": "Klicke auf Chargen.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "id": "menuEntryproduktionchargen"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_batches": {
+                    "steps": {
+                        "batches_info": {
+                            "position": 1,
+                            "title": "Übersicht Chargen",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Chargen",
+                                            "text": "Hast du Artikel die eine Chargenverwaltung benötigen? Dann kannst du hier pro Artikel die entsprechende Chargennummer eingeben oder direkt eine neue anlegen. ",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "completion": {
+                    "steps": {
+                        "click_completion": {
+                            "position": 1,
+                            "title": "Abschluss",
+                            "caption": "Klicke auf Abschluss.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "id": "menuEntryproduktionabschluss"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "overview_completion": {
+                    "steps": {
+                        "completion_info": {
+                            "position": 1,
+                            "title": "Übersicht Abschluss",
+                            "description": "",
+                            "visible": false,
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headline": "Abschluss",
+                                            "text": "Nach einer Produktion kannst du hier die Menge deines Ausschuss hinterlegen und die erfolgreich produzierten Artikel mit wenigen Klicks an den entsprechenden Lagerorten einlagern.",
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Fertig",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

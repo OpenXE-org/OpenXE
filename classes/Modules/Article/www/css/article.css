@@ -1,0 +1,8 @@
+.hidden{
+  display:none !important;
+}
+.placeholderexport, .placeholderimport, .placeholderaftershop
+{
+  width:20px;
+  display:inline-block;
+}

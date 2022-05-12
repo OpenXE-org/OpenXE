@@ -1,0 +1,47 @@
+<strong><span style="font-size:28px;">snapADDY</span></strong><br />&nbsp;<pre>
+&nbsp;</pre>Mit dem Adress-Grabber von <a href="https://www.snapaddy.com/de/snapaddy-grabber/adress-grabber.html">snapADDY</a> k&ouml;nnen Kontaktdaten einfach und schnell aus digitalen Texten extrahiert werden. Zum Beispiel k&ouml;nnen Adressen aus E-Mailsignaturen, PDF-Dokument oder Webseiten erfasst werden.<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=9" /><br /><br />Mit dem neuen snapADDY Modul von Xentral lassen sich diese Adressen ganz einfach importieren.<h1><br />Adressen Importieren und Anlegen</h1>Sie finden das Modul snapADDY in unserem AppStore.<br /><br />F&uuml;r die Verbindung mit snapADDY wird ein g&uuml;ltiger API Token ben&ouml;tigt. Dieser kann in den Profilinformationen unter <a href="https://app.snapaddy.com/profile-update">https://app.snapaddy.com/profile-update</a> in der Sektion API Token gefunden werden.<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=10" /><br /><br />Dieser Token muss in den Einstellungen im Feld API Key hinterlegt werden. Vor dem Speichern kann der Schl&uuml;ssel mit einem Klick auf API Key testen &uuml;berpr&uuml;ft werden. Mit einem g&uuml;ltigen Token kann Xentral alle bei snapADDY hinterlegten Adressen importieren.<br /><br /><br />Mit dem Importieren-Button werden alle bei snapADDY gespeicherten Adressen importiert. Dieser Vorgang kann einige Zeit in Anspruch nehmen. Ist dieser Vorgang abgeschlossen, wird die Seite neu geladen. Die Adressen sind nun f&uuml;r die weitere Verarbeitung gelistet:<br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=11" /><br /><br />Mittels einer <strong>Stapelverarbeitung</strong> lassen sich <strong>mehrere Adressen direkt als Kunde oder Lieferant anlegen.</strong><br /><br />Die Datens&auml;tze k&ouml;nnen auch <strong>einzeln als Adresse angelegt </strong>werden. Anschlie&szlig;end &ouml;ffnet sich die Seite der neuen Adresse. Dort lassen sich die entsprechenden Rollen (Kunde, Lieferant, Mitarbeiter oder Lead) zuweisen. Alternativ lassen sich die Adressen auch einzeln aus der Liste l&ouml;schen.<h1>Den Direktimport einrichten</h1>Neben dem oben vorgestellten Ablauf lassen sich einzelne Adressen auch direkt aus dem Browser PlugIn nach Xentral importieren. Der direkte Import wird nur bei verschl&uuml;sselten Verbindungen (https) empfohlen. Hierf&uuml;r stellt das snapADDY Modul einen <strong>Authorization-Header </strong>sowie eine URL als Endpoint bereit.<br /><br />Diese Werte m&uuml;ssen komplett und unver&auml;ndert im Dashboard von snapADDY in den Zentralen snapADDY Einstellungen unter <a href="https://app.snapaddy.com/login?redirect_url=%252Fadmin-change-settings">app.snapaddy.com/admin-change-settings</a> eingetragen werden.<br /><br />In der Sektion <strong>Integrationseinstellungen</strong> unter <strong>Sonstige Integrationen</strong> gibt es den Link zu den API Einstellungen.<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=12" /><br /><br />Mit einem Klick darauf &ouml;ffnet sich ein Fenster mit den <strong>snapADDY API Einstellungen</strong> in welchem der <strong>Authorization-Header</strong> sowie die gegebene URL hinterlegt werden m&uuml;ssen. Die HTTP-Methode muss auf <strong>POST</strong> gestellt werden.<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=13" /><br /><br />Mit einem Klick auf <strong>Speichern</strong> werden die get&auml;tigten Einstellungen bei snapADDY gespeichert. Sie m&uuml;ssen noch <strong>im Browser-PlugIn</strong> aktualisiert werden.<br /><br />Dazu gibt es in den Einstellungen des Browser-PlugIns unter <strong>Support &amp; Hilfe </strong>den Button<strong> Einstellungen aktualisieren</strong>. Mit einem Klick darauf werden die im Dashboard von snapADDY get&auml;tigten Einstellungen ins Browser-PlugIN geladen. Nun steht der Direktimport bereit.<h2>Der Direktimport</h2>Im Browser-PlugIn kann nun durch einen Klick auf das snapADDY Logo in der jeweiligen Adress-Zeile der Direktimport angesto&szlig;en werden.<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=14" /><br /><br />Direkt nach dem erfolgreichen Import &ouml;ffnet Xentral in einem neuen Fenster die Seite der neu angelegten Adresse. Dort lassen sich die entsprechenden Rollen zuweisen.<h2>Direktimport als Kunde, Lieferant oder Lead</h2>Alternativ dazu lassen sich auch im Browser-PlugIn die gew&uuml;nschten Rollen zuweisen. Dazu m&uuml;ssen im Dashborad von snapADDY weitere Einstellungen get&auml;tigt und im PlugIn erneut aktualisiert werden.<br />&nbsp;<h1>Im Dashboard</h1> Im Dashboard von snapADDY unter <strong>Firmen-Einstellungen</strong> und <strong>CRM-Mapping konfigurieren</strong> lassen sich zus&auml;tzliche Felder in das Browser-PlugIn integrieren. Dies geschieht durch eine Konfigurationsdatei im JSON-Format.<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=15" /><br /><br />Mit den nachfolgenden Zeilen wird ein neues Drop-Down Menu mit der Bezeichnung <strong>Typ</strong> eingef&uuml;gt. Die neue Konfiguration muss mit einem Klick auf <strong>Revision aktivieren</strong> aktiviert werden. Der folgende Code erm&ouml;glicht die Vorauswahl einer Adresse als Kunde, Lead oder Lieferant. Diese Einstellung wird durch das Modul in Xentral ausgewertet und der Adresse beim Import die entsprechende Rolle zugewiesen. F&uuml;r komplexere Mappings oder falls dieses Feld in eine bestehende Konfiguration integriert werden soll, kontaktieren Sie bitte den Support von snapADDY - f&uuml;r die entsprechende Integration auf Seiten Xentrals wenden Sie sich dann bitte an den Xentral-Support.<br /><br /><code><code>{</code></code><pre><code><code> &quot;customFields&quot;: [
+   {
+     &quot;type&quot;: &quot;SELECT&quot;,
+     &quot;id&quot;: &quot;c_address_type&quot;,
+     &quot;label&quot;: {
+       &quot;DE&quot;: &quot;Typ&quot;,
+       &quot;EN&quot;: &quot;Type&quot;
+     },
+     &quot;properties&quot;: {
+       &quot;defaultValue&quot;: &quot;&quot;,
+       &quot;options&quot;: [
+         {
+           &quot;label&quot;: {
+             &quot;DE&quot;: &quot;Bitte w&auml;hlen&quot;,
+             &quot;GB&quot;: &quot;Please choose&quot;
+           },
+           &quot;value&quot;: &quot;&quot;
+         },
+         {
+           &quot;label&quot;: {
+             &quot;DE&quot;: &quot;Kunde&quot;,
+             &quot;GB&quot;: &quot;customer&quot;
+           },
+           &quot;value&quot;: &quot;customer&quot;
+         },
+         {
+           &quot;label&quot;: {
+             &quot;DE&quot;: &quot;Lieferant&quot;,
+             &quot;GB&quot;: &quot;vendor&quot;
+           },
+           &quot;value&quot;: &quot;vendor&quot;
+         },
+         {
+           &quot;label&quot;: {
+             &quot;DE&quot;: &quot;Lead&quot;,
+             &quot;GB&quot;: &quot;Lead&quot;
+           },
+           &quot;value&quot;: &quot;lead&quot;
+         }
+       ]
+     }
+   }
+ ],
+ &quot;integrations&quot;: {},
+ &quot;layout&quot;: {}
+</code></code></pre><code><code> } </code><br />&nbsp;</code><h1><code>Im Browser-PlugIn</code></h1><p>Nachdem die Einstellungen im Browser-PlugIn aktualisiert wurden, steht das zus&auml;tzliche Feld zur Verf&uuml;gung:</p><br /><code><code><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=snapaddy&amp;fileid=16" /></code></code><p>&Uuml;ber das neu angelegte Auswahlfeld kann nun <strong>direkt im PlugIn</strong> gew&auml;hlt werden, ob die Adresse <strong>als Kunde, Lieferant oder Lead</strong> importiert werden soll. Die hier getroffene Auswahl wird nur beim Direktimport oder Einzelimport beachtet.<br />&nbsp;</p><h1>Anwendungstipp</h1><p>In beiden oben beschriebenen F&auml;llen unterst&uuml;tzt Xentral einen SnapADDY-Account, der Daten in Xentral einspielen kann. Sollen mehrere Accounts von SnapADDY in einer Xentral-Instanz verwendet werden kann dies durch Anlegen mehrerer benutzerspezifischer Authorization-Header umgesetzt werden. Dazu muss SnapADDY die entsprechende Zahl von Profilen / Organisationseinheiten bereitstellen, die dann jeweils gegen einen Benutzeraccount gematched werden k&ouml;nnen.&gt;</p>

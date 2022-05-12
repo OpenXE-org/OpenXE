@@ -1,0 +1,73 @@
+{
+    "name": "086 - Alle VKs + EKs \u00fcber alle Artikel exportieren",
+    "description": "Gibt alle Einkaufs- und Verkaufspreise von allen Artikeln aus.",
+    "project": 0,
+    "sql_query": "SELECT \r\np.name_de, \r\np.nummer,\r\np.gueltig_ab, \r\np.gueltig_bis,\r\np.ab_menge, \r\np.preis, \r\np.waehrung,\r\np.art\r\nFROM (\r\n(SELECT 'EK' as art, a.nummer, a.name_de, ek.preis, ek.waehrung, ek.ab_menge, '' as gueltig_ab, IF(ek.gueltig_bis = '0000-00-00', 'unbegrenzt', DATE_FORMAT(ek.gueltig_bis, '%d.%m.%Y')) AS gueltig_bis\r\nFROM einkaufspreise ek \r\nLEFT JOIN artikel a ON ek.artikel = a.id\r\nWHERE a.geloescht = 0)\r\nUNION ALL\r\n(SELECT 'VK' as art, a.nummer, a.name_de, vk.preis, vk.waehrung, vk.ab_menge, IF(vk.gueltig_ab = '0000-00-00', 'aktuell', DATE_FORMAT(vk.gueltig_ab, '%d.%m.%Y')) AS gueltig_ab, IF(vk.gueltig_bis = '0000-00-00', 'unbegrenzt', DATE_FORMAT(vk.gueltig_bis, '%d.%m.%Y')) AS gueltig_bis FROM verkaufspreise vk LEFT JOIN artikel a ON vk.artikel = a.id WHERE a.geloescht = 0) \r\n) p\r\nORDER BY p.nummer",
+    "columns": [
+        {
+            "key_name": "art",
+            "title": "Art",
+            "width": "23",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "name_de",
+            "title": "Name",
+            "width": "23",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "nummer",
+            "title": "Nummer",
+            "width": "23",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "preis",
+            "title": "Preis",
+            "width": "23",
+            "alignment": "right",
+            "sum": 0
+        },
+        {
+            "key_name": "ab_menge",
+            "title": "Ab Menge",
+            "width": "23",
+            "alignment": "right",
+            "sum": 0
+        },
+        {
+            "key_name": "gueltig_ab",
+            "title": "G\u00fcltig ab",
+            "width": "23",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "gueltig_bis",
+            "title": "G\u00fcltig bis",
+            "width": "23",
+            "alignment": "left",
+            "sum": 0
+        },
+        {
+            "key_name": "waehrung",
+            "title": "W\u00e4hrung",
+            "width": "23",
+            "alignment": "left",
+            "sum": 0
+        }
+    ],
+    "parameters": [],
+    "remark": "",
+    "category": "Einkauf \u0026 Artikelverwaltung \u0028PIM\u0029",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

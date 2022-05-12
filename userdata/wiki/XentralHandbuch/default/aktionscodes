@@ -1,0 +1,114 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#aktionscodes">Aktionscodes</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#erstellen_von_aktionscodes">Erstellen von Aktionscodes</a></div></li>
+<li class="level3"><div class="li"><a href="#aktionscode_im_beleg">Aktionscode im Beleg</a></div></li>
+<li class="level3"><div class="li"><a href="#auswertung_der_aktionscodes">Auswertung der Aktionscodes</a></div>
+<ul class="toc">
+<li class="level4"><div class="li"><a href="#auswertung_ueber_alle_belege">Auswertung über alle Belege</a></div></li>
+<li class="level4"><div class="li"><a href="#auflistung_der_anzahl_pro_beleg">Auflistung der Anzahl pro Beleg</a></div></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="aktionscodes">Aktionscodes</h2>
+<div class="level2">
+
+<p>
+Mit dem Modul Aktionscodes bekommen Sie ein zusätzliches Feld in Belegen, das Sie danach auswerten können. Wenn man z.B. erfassen möchte was kostenlose Ersatzaufträge waren, oder bestimmte Aktionen die gezielt am Telefon oder im Marketing beworben worden sind. Schnell können Codes angelegt werden und dann können Belege wie Angebote, Aufträge etc. einfach auf diese Aktionen gebucht werden. Über eine Statistik kann man so die Umsätze der Aktionen in selbst definierten Zeiten auswerten.
+</p>
+
+<p>
+Administration → AppStore → Aktionscodes
+</p>
+
+<p>
+<strong>Hinweis:</strong> Das Modul Aktionscodes gibt es in unserem <a href="http://shop.wawision.de/sonstige/wawision-vertriebscockpit.html"  title="http://shop.wawision.de/sonstige/wawision-vertriebscockpit.html"  rel="nofollow">Shop</a>. <br/>
+
+<strong>Stand:</strong> September 2017
+</p>
+<iframe src="//www.youtube.com/embed/usXFJtO9vis" height="350" width="425" class="vshare__none" allowfullscreen="" frameborder="0" scrolling="no"></iframe>
+<p>
+<br/>
+
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="erstellen_von_aktionscodes">Erstellen von Aktionscodes</h3>
+<div class="level3">
+
+<p>
+Unter Administration → AppStore → Aktionscodes → NEU geben Sie Aktionscodes ein.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_aktionscodes&amp;media=wawision:aktionscodes_erstellen.png"  title="wawision:aktionscodes_erstellen.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=aktionscodes&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="aktionscode_im_beleg">Aktionscode im Beleg</h3>
+<div class="level3">
+
+<p>
+Im Beleg gibt es unterhalb des Adressfelds das Aktionscode-Feld.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_aktionscodes&amp;media=wawision:aktionscodes_beleg.png"  title="wawision:aktionscodes_beleg.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=aktionscodes&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="auswertung_der_aktionscodes">Auswertung der Aktionscodes</h3>
+<div class="level3">
+
+<p>
+Unter Controlling → Aktionscodes können Sie diese Codes in den Belegen auflisten.  
+</p>
+
+</div>
+
+<h4 id="auswertung_ueber_alle_belege">Auswertung über alle Belege</h4>
+<div class="level4">
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_aktionscodes&amp;media=wawision:aktionscodes_auswertung.png"  title="wawision:aktionscodes_auswertung.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=aktionscodes&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+<h4 id="auflistung_der_anzahl_pro_beleg">Auflistung der Anzahl pro Beleg</h4>
+<div class="level4">
+
+<p>
+In den anderen Tabs können Sie die Anzahl der einzelnen Aktionscodes pro Beleg darstellen
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_aktionscodes&amp;media=wawision:aktionscodes_nummern.png"  title="wawision:aktionscodes_nummern.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=aktionscodes&fileid=4"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

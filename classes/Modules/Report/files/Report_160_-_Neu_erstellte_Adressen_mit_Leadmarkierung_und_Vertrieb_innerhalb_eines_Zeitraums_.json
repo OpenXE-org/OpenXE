@@ -1,0 +1,63 @@
+{
+    "name": "160 - Neu erstellte Adressen mit Leadmarkierung und Vertrieb innerhalb eines Zeitraums",
+    "description": "Gibt alle neu erstellten Adressen mit Leadmarkierung innerhalb eines bestimmten Zeitraums mit zugeh\u00f6rigem Vertriebsmitarbeiter aus.",
+    "project": 0,
+    "sql_query": "SELECT  \r\n op.zeitstempel AS angelegt_am,  \r\n a.name AS adresse, \r\n v.name AS vertrieb \r\nFROM objekt_protokoll op \r\nLEFT JOIN adresse a ON op.objektid = a.id \r\nLEFT JOIN adresse v ON a.vertrieb = v.id \r\nWHERE a.`lead` = 1 AND op.objekt = 'adresse' AND op.action_long = 'adresse_create' AND IF('{VON}'=0,1,op.zeitstempel>='{VON}') AND IF('{BIS}'=0,1,op.zeitstempel<='{BIS}')",
+    "columns": [
+        {
+            "key_name": "angelegt_am",
+            "title": "Angelegt am",
+            "width": "",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": "date_dmy",
+            "sorting": "numeric"
+        },
+        {
+            "key_name": "adresse",
+            "title": "Adressname",
+            "width": "",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "vertrieb",
+            "title": "Vertriebsmitarbeiter",
+            "width": "",
+            "alignment": "left",
+            "sum": 0,
+            "format_type": null,
+            "sorting": "alphabetic"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Von",
+            "default_value": "0",
+            "displayname": "Beachten ab Datum",
+            "options": [],
+            "description": "Fr\u00fchester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        },
+        {
+            "varname": "Bis",
+            "default_value": "0",
+            "displayname": "Beachten bis Datum",
+            "options": [],
+            "description": "Sp\u00e4tester Zeitpunkt f\u00fcr den Auftr\u00e4ge beachtet werden sollen",
+            "editable": true,
+            "control_type": "date"
+        }
+    ],
+    "remark": "",
+    "category": "CRM \u0026 Vertrieb",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

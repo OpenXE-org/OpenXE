@@ -1,0 +1,103 @@
+{
+    "key": "shopware5",
+    "category": "shop-interface",
+    "title": "Shopware5 anbinden",
+    "sub_title": "Verbinde Shopware5 mit xentral ERP und teste direkt mit deinen Shop-Daten alle Funktionalitäten – alles DSGVO-konform natürlich! Wir zeigen dir hier wie einfach das ist.",
+    "description": "Verbinde Shopware5 mit xentral ERP und teste direkt mit deinen Shop-Daten alle Funktionalitäten – alles DSGVO-konform natürlich! Wir zeigen dir hier wie einfach das ist.",
+    "skip_link_text": "Einrichtung überspringen",
+    "required_permissions": {
+        "onlineshops": [
+            "list",
+            "create",
+            "edit"
+        ]
+    },
+    "step_groups": {
+        "setup": {
+            "title": "Setup",
+            "sub_groups": {
+                "watch_video": {
+                    "steps": {
+                        "video": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Video",
+                            "action": {
+                                "type": "click_by_click_assistant",
+                                "data": {
+                                    "showAssistant": true,
+                                    "allowClose": true,
+                                    "pagination": false,
+                                    "pages": [
+                                        {
+                                            "type": "defaultPage",
+                                            "headerMedia": {
+                                                "type": "video",
+                                                "link": "https://www.youtube.com/embed/bdvyRKtDYHQ"
+                                            },
+                                            "ctaButtons": [
+                                                {
+                                                    "title": "Weiter",
+                                                    "action": "completeStep"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "create_shopware5_shop": {
+                    "steps": {
+                        "click_new_button": {
+                            "position": 1,
+                            "link": "./index.php?module=onlineshops&action=list",
+                            "title": "Neuer Shop",
+                            "caption": "Klicke auf NEU um deinen Shop anzubinden.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "type": "button",
+                                        "class": "neubutton"
+                                    },
+                                    "parent": {
+                                        "node_name": "a",
+                                        "class": "neubuttonlink"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                },
+                "select_shopware5_shop": {
+                    "steps": {
+                        "click_shopware5_shop": {
+                            "position": 1,
+                            "title": "Shopware 5 Shop",
+                            "caption": "Klicke auf Shopware 5.",
+                            "description": "",
+                            "hint_cta": false,
+                            "action": {
+                                "type": "highlight",
+                                "node": {
+                                    "self": {
+                                        "node_name": "a",
+                                        "class": "createbutton",
+                                        "data-module": "shopimporter_shopware"
+                                    }
+                                },
+                                "complete_event": "click"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

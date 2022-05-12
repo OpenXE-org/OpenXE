@@ -1,0 +1,69 @@
+.project-gantt {
+    width: 98%;
+    margin: 10px 0;
+    border: 6px solid var(--fieldset-dark);
+    position: relative;
+}
+
+.project-gantt h3 {
+    padding: 0;
+    margin: 0;
+}
+
+.project-gantt h3 a,
+.project-gantt h3 a:link,
+.project-gantt h3 a:visited,
+.project-gantt h3 a:hover,
+.project-gantt h3 a:active {
+    color: var(--turquoise);
+}
+
+.project-gantt .fn-gantt .bar .fn-label {
+    color: #FFF;
+    text-shadow: none;
+}
+
+.project-gantt .fn-gantt .leftPanel {
+    width: 325px;
+}
+
+.project-gantt .fn-gantt .leftPanel .fn-wide,
+.project-gantt .fn-gantt .leftPanel .fn-wide .fn-label {
+    width: 325px;
+}
+
+.project-gantt .fn-gantt .leftPanel .fn-label {
+    width: 305px;
+}
+
+.project-gantt .fn-gantt .leftPanel .desc {
+    width: 305px;
+}
+
+.project-gantt .fn-gantt .navigate {
+    padding-left: 325px;
+}
+
+@media print {
+    #main {
+        padding: 0;
+        margin: 0;
+        min-height: unset;
+        overflow: unset;
+    }
+
+    .menu-wrapper,
+    #inlinehelp,
+    #wawitooltip {
+        display: none;
+    }
+
+    .ui-tabs .ui-tabs-panel {
+        margin: 0;
+        padding: 0;
+    }
+
+    .project-gantt .fn-gantt .bottom {
+        display: none;
+    }
+}

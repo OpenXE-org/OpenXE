@@ -1,0 +1,30 @@
+#pdfvorschaudiv {
+    position:absolute;
+    z-index:1000;
+    width:900px;
+    height:700px;
+    background-color:#fff;
+}
+#pdfiframe
+{
+    height:650px;
+}
+#pdfclosebutton {
+    position: absolute;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    margin: 0;
+    border: none;
+    right: 10px;
+    top: 10px;
+    color:#333;
+}
+
+fieldset.maintab div.table-responsive {
+    max-width: calc(75vw - 90px);
+}
+
+fieldset.subtab div.table-responsive {
+    max-width: calc(30vw - 20px);
+}

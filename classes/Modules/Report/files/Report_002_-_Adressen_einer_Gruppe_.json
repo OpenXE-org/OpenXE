@@ -1,0 +1,153 @@
+{
+    "name": "002 - Adressen einer Gruppe",
+    "description": "Gibt alle Adressen die keine Marketingsperre haben und sich aktuell in einer bestimmten Gruppe befinden, zur\u00fcck.",
+    "project": 0,
+    "sql_query": "SELECT\r\n    a.`kundennummer`,\r\n    CONCAT(UCASE(LEFT(a.`typ`, 1)), SUBSTRING(a.`typ`, 2)) AS `typ`,\r\n    a.`name`,\r\n    a.`ansprechpartner`,\r\n    a.`strasse`,\r\n    a.`plz`,\r\n    a.`ort`,\r\n    a.`email`,\r\n    IF(a.`geburtstag` = '0000-00-00' OR ISNULL(a.`geburtstag`), NULL, a.`geburtstag`) AS geburtstag,\r\n    IF(a.`lead` = 1, 'ja', 'nein') AS `lead`\r\nFROM adresse a\r\n LEFT JOIN adresse_rolle ar ON a.`id` = ar.`adresse`\r\n LEFT JOIN gruppen g ON ar.`parameter` = g.`id`\r\nWHERE ar.`subjekt` = 'Mitglied' AND ar.`objekt` = 'Gruppe' AND ar.`von` <= CURDATE() AND (ar.`bis` >= CURDATE() OR ar.`bis` = '0000-00-00') AND a.`geloescht` = 0\r\n  AND IF('{MARKETINGSPERRE}'='Ja',a.`marketingsperre` != '1',1)\r\n  AND IF('{GRUPPE}'<>'0',g.`kennziffer` = '{GRUPPE}',1)",
+    "columns": [
+        {
+            "key_name": "kundennummer",
+            "title": "Kundennummer",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "typ",
+            "title": "Typ",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "numeric",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "name",
+            "title": "Name",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "ansprechpartner",
+            "title": "Ansprechpartner",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "strasse",
+            "title": "Strasse",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "plz",
+            "title": "Plz",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "ort",
+            "title": "Ort",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "email",
+            "title": "Email",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        },
+        {
+            "key_name": "geburtstag",
+            "title": "Geburtstag",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": "date_dmy"
+        },
+        {
+            "key_name": "lead",
+            "title": "Lead",
+            "width": "19",
+            "alignment": "left",
+            "sorting": "alphabetic",
+            "sum": 0,
+            "format_type": null
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Marketingsperre",
+            "default_value": "nein",
+            "displayname": "Mit Marketingsperre ausschlie\u00dfen",
+            "options": [
+                {
+                    "Ja": "ja"
+                },
+                {
+                    "Nein": "nein"
+                }
+            ],
+            "description": "Schlie\u00dft Adressen mit Marketingsperre von der Ausgabe aus",
+            "editable": true,
+            "control_type": "combobox"
+        },
+        {
+            "varname": "Gruppe",
+            "default_value": "0",
+            "displayname": "Ausgabe auf Gruppe einschr\u00e4nken",
+            "options": [],
+            "description": "Kennziffer der Gruppe auf die die Ausgabe eingeschr\u00e4nkt werden soll",
+            "editable": true,
+            "control_type": "autocomplete_group"
+        }
+    ],
+    "remark": "",
+    "category": "CRM & Vertrieb",
+    "csv_delimiter": ",",
+    "csv_enclosure": "",
+    "share": {
+        "chart_public": false,
+        "chart_axislabel": "",
+        "chart_dateformat": "Y-m-d H:i:s",
+        "chart_interval_value": 0,
+        "chart_interval_mode": "day",
+        "file_public": true,
+        "file_pdf_enabled": true,
+        "file_csv_enabled": true,
+        "file_xls_enabled": true,
+        "menu_public": false,
+        "menu_doctype": "",
+        "menu_label": "",
+        "menu_format": "csv",
+        "tab_public": false,
+        "tab_module": "",
+        "tab_action": "",
+        "tab_label": "",
+        "tab_position": "nach_freifeld",
+        "chart_type": "line",
+        "chart_x_column": "",
+        "data_columns": "",
+        "chart_group_column": ""
+    }
+}

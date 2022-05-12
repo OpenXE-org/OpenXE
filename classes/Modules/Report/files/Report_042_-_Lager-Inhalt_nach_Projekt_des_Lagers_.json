@@ -1,0 +1,75 @@
+{
+    "name": "042 - Lager-Inhalt nach Projekt des Lagers",
+    "description": "",
+    "project": 0,
+    "sql_query": "SELECT\r\nlp.kurzbezeichnung AS kurzbezeichnung,\r\nIFNULL(plp.abkuerzung,'') AS projektlager,\r\nIFNULL(pa.abkuerzung,'') AS projektartikel,\r\na.name_de AS artikelname,\r\na.nummer AS artikelnummer,\r\nROUND(lpi.menge,1) AS menge\r\nFROM lager_platz_inhalt AS lpi\r\nJOIN lager_platz lp on lpi.lager_platz = lp.id\r\nLEFT JOIN projekt plp ON lp.projekt = plp.id\r\nJOIN artikel a ON lpi.artikel = a.id\r\nLEFT JOIN projekt pa ON a.projekt = pa.id\r\nWHERE IF('{PROJEKT}'='0',1,'{PROJEKT}'=plp.abkuerzung)",
+    "columns": [
+        {
+            "key_name": "kurzbezeichnung",
+            "title": "Lagerplatz",
+            "width": "31",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "projektlager",
+            "title": "Projektlager",
+            "width": "31",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "artikelname",
+            "title": "Artikelname",
+            "width": "31",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "artikelnummer",
+            "title": "Artikelnummer",
+            "width": "31",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "projektartikel",
+            "title": "Projektartikel",
+            "width": "31",
+            "alignment": "left",
+            "sum": 0,
+            "sorting": "alphabetic"
+        },
+        {
+            "key_name": "menge",
+            "title": "Menge",
+            "width": "31",
+            "alignment": "right",
+            "sum": 1,
+            "sorting": "numeric"
+        }
+    ],
+    "parameters": [
+        {
+            "varname": "Projekt",
+            "default_value": "0",
+            "displayname": "(optional) Projekt zur Eingrenzung",
+            "options": [],
+            "description": "Grenzt das Ergebnis auf Lagerpl\u00e4tze ein die zum Projekt geh\u00f6ren",
+            "editable": true,
+            "control_type": "autocomplete_project"
+        }
+    ],
+    "remark": "",
+    "category": "Lager \u0026 Logistik",
+    "share": {
+        "file_public": true,
+        "file_pdf_enabled" :true,
+        "file_csv_enabled" :true,
+        "file_xls_enabled" :true
+    }
+}

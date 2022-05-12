@@ -1,0 +1,185 @@
+/** WAWIFILEONLYON VERSION=ENT **/
+#xentral-licence-alert{
+    background-color: white;
+}
+
+
+#xentral-licence-alert.container-fluid {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    transition: all .3s;
+}
+@media screen and (min-width: 1000px) {
+    #xentral-licence-alert.container-fluid {
+        padding-left: 55px;
+    }
+
+    #sidebar:not(.collapsed) ~ #main #xentral-licence-alert.container-fluid{
+        padding-left: 21px;
+    }
+}
+
+#xentral-licence-alert .col-md-1,
+#xentral-licence-alert .col-md-2,
+#xentral-licence-alert .col-md-3,
+#xentral-licence-alert .col-md-4,
+#xentral-licence-alert .col-md-5,
+#xentral-licence-alert .col-md-6,
+#xentral-licence-alert .col-md-7,
+#xentral-licence-alert .col-md-8,
+#xentral-licence-alert .col-md-9,
+#xentral-licence-alert .col-md-10,
+#xentral-licence-alert .col-md-11,
+#xentral-licence-alert .col-md-12 {
+    padding: 0;
+}
+
+#xentral-licence-alert .alert.alert-xentral {
+    margin: 10px 0 0 0;
+    padding: 8px 16px;
+    border-radius: 7px;
+    background-color: var(--xentral-signature-violet);
+}
+#xentral-licence-alert .alert-message {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.25em;
+    color: #FFF;
+    padding: 6px 0;
+    margin: 0;
+}
+#xentral-licence-alert .alert-buttons {
+    text-align: left;
+}
+@media screen and (min-width: 1000px) {
+    #xentral-licence-alert .alert-buttons {
+        text-align: right;
+    }
+}
+#xentral-licence-alert .btn,
+#xentral-licence-notification .btn {
+    display: inline-block;
+    font-weight: 400;
+    color: #454545;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: rgba(255, 255, 255, .5);
+    border: 1px solid transparent;
+    padding: 5px 24px;
+    margin: 0 8px 0 0;
+    font-size: 13px;
+    line-height: 1.25em;
+    border-radius: 5px;
+}
+@media screen and (min-width: 1000px) {
+    #xentral-licence-alert .btn {
+        margin: 0 0 0 8px;
+    }
+}
+#xentral-licence-alert .btn.btn-phone,
+#xentral-licence-notification .btn.btn-phone {
+    color: var(--button-primary-color);
+    border: 1px solid transparent;
+    background-color: var(--button-primary-background);
+}
+#xentral-licence-alert .btn.btn-contact,
+#xentral-licence-notification .btn.btn-contact {
+    color: var(--button-secondary-color);
+    background-color: white;
+}
+
+
+#xentral-licence-notification {
+    z-index: 9999999999;
+    position: fixed;
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(100, 100, 100, 0.5);
+}
+#xentral-licence-notification .modal-dialog {
+    position: relative;
+    max-width: 500px;
+    min-height: 200px;
+    margin: 30px auto;
+}
+#xentral-licence-notification .modal-content {
+    position: relative;
+    top: calc(50vh - 200px);
+    background-color: #FFF;
+    background-clip: padding-box;
+    border: none;
+    border-radius: 6px;
+    outline: 0;
+    -webkit-box-shadow: 0 0 15px rgba(0, 0, 0, .25);
+    box-shadow: 0 0 15px rgba(0, 0, 0, .25);
+}
+#xentral-licence-notification .modal-body {
+    padding: 20px 50px;
+}
+#xentral-licence-notification .btn {
+    display: inline-block;
+    font-weight: 400;
+    color: #454545;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: rgba(255, 255, 255, .5);
+    border: 1px solid transparent;
+    padding: 6px 24px;
+    margin: 0 4px;
+    font-size: 13px;
+    line-height: 1.25em;
+    border-radius: 5px;
+}
+#xentral-licence-notification .modal-buttons {
+    margin: 20px auto;
+    text-align: center;
+}
+#xentral-licence-notification .btn.btn-phone {
+    color: #FFF;
+    font-weight: bold;
+    border: 1px solid #27E7A2;
+    background-color: #27E7A2;
+}
+#xentral-licence-notification .btn.btn-contact {
+    color: #555;
+    font-weight: bold;
+    border: 1px solid #555;
+    background-color: #FFF;
+}
+#xentral-licence-notification h1 {
+    color: #454545;
+    margin: 20px auto;
+    padding: 0;
+    font-weight: bold;
+    font-size: 1.8em;
+    text-align: center;
+    line-height: 1.25em;
+}
+#xentral-licence-notification p {
+    color: #929292;
+    max-width: 60%;
+    margin: 20px auto;
+    padding: 0;
+    font-weight: normal;
+    font-size: 1.0em;
+    text-align: center;
+    line-height: 1.5em;
+}

@@ -1,0 +1,12 @@
+.hs-visible{
+    /*display:block;*/
+    visibility: visible;
+}
+.hs-invisible{
+    visibility: hidden;
+    display: none;
+}
+#hs-add-more-field {
+    color: #367FA9;
+    cursor: pointer;
+}

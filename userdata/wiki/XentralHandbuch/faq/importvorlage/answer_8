@@ -1,0 +1,1 @@
+Bitte pr&uuml;fen Sie die Schreibweise der Inhalte aus der Spalte &quot;zahlungsweiselieferant&quot; in Ihrer CSV-Datei. Wenn Sie die Zahlungsweise &quot;rechnung&quot; bei Ihren Lieferanten hinterlegen m&ouml;chten, muss der Wert in der CSV-Datei <strong>kleingeschrieben</strong> werden, in dem Fall <strong>&quot;rechnung&quot;</strong>.

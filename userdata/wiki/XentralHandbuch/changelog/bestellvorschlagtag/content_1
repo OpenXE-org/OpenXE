@@ -1,0 +1,23 @@
+<strong><span style="font-size:28px;">Bestellvorschlag Tag</span></strong><br />&nbsp;<pre>
+&nbsp;</pre>Mit dem extra Modul &quot;Bestellvorschlag Tag&quot; k&ouml;nnen Sie sich aufgrund der Auftragsmenge einen Bestellvorschlag f&uuml;r einen Tag erzeugen. Dabei werden alle noch nicht von diesem Bestellvorschlag erfassten Auftr&auml;ge zusammenaddiert und damit der Bedarf f&uuml;r die Produktion / Bestellung ausgerechnet.<h1>&Uuml;bersicht</h1>In der &Uuml;bersicht kann man den Bestellvorschlag anhand von Auswahlfeldern durchf&uuml;hren und auch wieder zur&uuml;cksetzen.<h2><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=bestellvorschlagtag&amp;fileid=1" />Filter</h2><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=bestellvorschlagtag&amp;fileid=2" /><br />&nbsp;<table border="1" cellpadding="1" cellspacing="1" style="width: 500px;"><tbody>
+<tr><td><strong>Feldname</strong></td><td><strong>Beschreibung</strong></td>
+</tr>
+<tr><td><span class="wikitable-wrapper"><strong>nur markierte Artikel anzeigen</strong></span></td><td><span class="wikitable-wrapper">Zeigt nur die Artikel an, die aus dem <span class="highlight" rel="Bestellvorschlag">Bestellvorschlag</span> generiert wurden. Die Artikel sind automatisch angehakt.</span></td>
+</tr>
+<tr><td><span class="wikitable-wrapper"><strong>alle Artikel anzeigen</strong></span></td><td><span class="wikitable-wrapper">Zeigt alle Artikel an, auch die, die nicht in den <span class="highlight" rel="Bestellvorschlag">Bestellvorschlag</span> geh&ouml;ren.</span></td>
+</tr>
+</tbody></table><h1><br />Tagesbestellung Vorschlag</h1><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=bestellvorschlagtag&amp;fileid=3" /><br />&nbsp;<table border="1" cellpadding="1" cellspacing="1" style="width: 500px;"><tbody>
+<tr><td><strong>Feldname</strong></td><td><strong>Beschreibung</strong></td>
+</tr>
+<tr><td><strong>Lieferant</strong></td><td>M&ouml;glichkeit die Auswahl auf einen Lieferanten zu beschr&auml;nken</td>
+</tr>
+<tr><td><strong>Tag</strong></td><td>Ber&uuml;cksichtigt alle Auftr&auml;ge (Auftragsdatum) bis zu dem ausgew&auml;hlten Tag</td>
+</tr>
+<tr><td><strong>Starten Button</strong></td><td>F&uuml;hrt den Bestellvorschlag mit der Auswahl durch</td>
+</tr>
+</tbody></table><br /><h2><br />Zur&uuml;cksetzen</h2><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=bestellvorschlagtag&amp;fileid=4" /><br />&nbsp;<table border="1" cellpadding="1" cellspacing="1" style="width: 500px;"><tbody>
+<tr><td><strong>Feldname</strong></td><td><strong>Beschreibung</strong></td>
+</tr>
+<tr><td><strong>Zur&uuml;cksetzen Button</strong></td><td>Setzt den letzten Bestellvorschlag zur&uuml;ck (die Auftr&auml;ge, f&uuml;r die bereits Bestellungen erzeugt wurden, bleiben aber trotzdem gespeichert und werden nicht mehr f&uuml;r diesen Bestellvorschlag hergenommen</td>
+</tr>
+</tbody></table><br /><br />&nbsp;<h2>Berechnung des Bedarfs</h2>Der Bedarf wird aus den Auftr&auml;gen errechnet, die bisher noch nicht in Bestellungen umgewandelt wurden aus diesem Bestellvorschlag. Der Bedarf ist unabh&auml;ngig vom Status des Auftrags.<h2><br />Bestellung(en) erzeugen</h2>Mit dem Button &quot;Bestellung(en) erzeugen werden alle Artikel mit gef&uuml;llten Bedarfsfelder in eine oder mehrere Bestellungen &uuml;bernommen (pro Lieferant eine Bestellung).<br /><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=bestellvorschlagtag&amp;fileid=5" /><h1><br />Einstellungen</h1><br /><img src="index.php?module=wiki&amp;action=getfile&amp;workspacefolder=XentralHandbuch&amp;article=bestellvorschlagtag&amp;fileid=6" /><br /><br />&nbsp;

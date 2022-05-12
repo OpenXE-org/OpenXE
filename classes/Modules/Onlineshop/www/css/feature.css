@@ -1,0 +1,37 @@
+table.onlineshopsfeatures {
+    width: 99%;
+}
+
+table.onlineshopsfeatures tr:nth-child(odd)
+{
+    background-color: lightgrey;
+}
+
+table.onlineshopsfeatures th:not(:first-child)  {
+    min-width: 80px;
+}
+
+table.onlineshopsfeatures th:first-child {
+    max-width: 200px;
+    min-width: 200px;
+    width: 200px;
+}
+
+table.onlineshopsfeatures {
+    margin-bottom: 2em;
+}
+
+table.onlineshopsfeatures tr td:first-child {
+    padding-left: .5em;
+    text-transform: capitalize;
+}
+
+table.onlineshopsfeatures tr td:not(:first-child) {
+    text-align: center;
+}
+
+table.onlineshopsfeatures img,
+table.onlineshopsfeatureslegend img {
+    width: 16px;
+    margin-right:5px;
+}

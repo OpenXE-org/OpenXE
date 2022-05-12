@@ -1,0 +1,1 @@
+Das kann folgende Ursachen haben:<ul><li>Datenbankdatum &rarr; pr&uuml;fen Sie die Datumseinstellung der Datenbank</li><li>Serverdatum &rarr; pr&uuml;fen Sie das Datum auf dem Server</li><li>(Datumseinstellung des Feldes selbst in der Software &rarr; k&ouml;nnte bei eigenen (selbst programmierten) Modulen vorkommen, wenn das Feld nicht korrekt verwendet wird)</li></ul>

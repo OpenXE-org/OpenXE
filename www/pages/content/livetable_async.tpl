@@ -1,0 +1,6 @@
+
+<div>
+	[MESSAGE]
+
+	[LIVETABLE]
+</div>

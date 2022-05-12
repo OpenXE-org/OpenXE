@@ -1,0 +1,8 @@
+# m h  dom mon dow   command
+01 * * * *         /home/eproo/eproo-master/backup/mysql/mysql_hourly.sh
+01 * * * *          /usr/bin/php -q /home/eproo/eproo-master/app/main/cronjobs/hourly.php
+50 23 * * *         /home/eproo/eproo-master/backup/mysql/mysql.sh
+*/1 * * * *     /usr/bin/php -q /home/eproo/eproo-master/app/unstable/cronjobs/starter.php
+
+@hourly nice -n 19 /usr/bin/backintime --backup-job >/dev/null 2>&1
+

@@ -1,0 +1,514 @@
+:root {
+    --main-icon-size: 65px;
+}
+
+/**
+xentral corp colors:
+blueish #5a63ee
+pink #e66dcb
+green #29e7a1
+cyan #27e3e5
+**/
+
+.click-by-click-assistant {
+    position: fixed;
+    z-index: 9998;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: table;
+}
+
+.click-by-click-assistant .header-icon {
+    width: var(--main-icon-size);
+    height: var(--main-icon-size);
+    margin: 0 auto 12px auto;
+}
+
+.click-by-click-assistant .survey-icon {
+    background: url('../themes/new/images/question-circle.svg');
+    background-size: var(--main-icon-size);
+}
+.click-by-click-assistant .thanks-icon {
+    background: url('../themes/new/images/thanks-smiley.svg');
+    background-size: var(--main-icon-size);
+}
+
+.click-by-click-assistant .password-icon {
+    background: url('../themes/new/images/password-icon.svg');
+    background-size: var(--main-icon-size);
+}
+
+.click-by-click-assistant .add-person-icon {
+    background: url('../themes/new/images/add-person-icon.svg');
+    background-size: var(--main-icon-size);
+}
+
+.click-by-click-assistant .consultant {
+    width: 107px;
+    height: 107px;
+    margin-top: -85px;
+    border-radius: 100px;
+    background: url('../themes/new/images/consultant.jpg') center;
+    background-size: 120px;
+}
+
+.click-by-click-assistant h2,
+.click-by-click-assistant h3 {
+    line-height: 22px;
+    color: #25233A;
+    opacity: 0.7;
+    text-align: center;
+    font-style: normal;
+}
+
+.click-by-click-assistant .h2{
+    font-size: 18px;
+}
+
+.click-by-click-assistant .h3{
+    font-size: 14px;
+}
+
+
+
+.click-by-click-assistant p {
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 17px;
+    opacity: 0.7;
+    display: block;
+    margin: 0 auto;
+    padding-top: 4px;
+    padding-bottom: 10px;
+    text-align: center;
+    font-style: normal;
+}
+
+.click-by-click-assistant p.page-text{
+    line-height: 22px;
+    text-align: left;
+}
+
+.click-by-click-assistant .wrapper {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.click-by-click-assistant .errorMsg {
+    text-align: center;
+    padding-top: 15px;
+    color: #f44336;
+}
+
+.click-by-click-assistant .container {
+    width: 600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.click-by-click-assistant .app-close-button {
+    cursor: pointer;
+    position: absolute;
+    right: 5px;
+    top: 0;
+    width: 50px;
+    height: 50px;
+    background: url('../themes/new/images/icon-close.svg') no-repeat center;
+    background-size: 10px;
+}
+
+.click-by-click-assistant .page {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+    background-color: #fff;
+}
+
+.click-by-click-assistant .media-youtube {
+    width: 100%;
+    min-height: 337px;
+}
+
+.click-by-click-assistant .media-image {
+    width: 100%;
+}
+
+.click-by-click-assistant .page-content {
+    padding: 35px 30px;
+}
+
+.click-by-click-assistant .container .cta {
+    position: relative;
+    height: 40px;
+    padding: 10px 50px;
+    margin-top: 20px;
+    background-color: var(--button-primary-background);
+}
+
+.click-by-click-assistant .container .button.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.click-by-click-assistant .flex-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+.click-by-click-assistant .survey-button-container {
+    box-sizing: border-box;
+    margin: 10px 5px 0 5px;
+    width: calc(1 / 3 * 100% - 10px);
+}
+
+.click-by-click-assistant label.button-secondary {
+    font-size: 14px;
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+    height: 41px;
+    line-height: 41px;
+    padding: 0;
+    color: var(--button-secondary-color);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    box-shadow: 5px 5px 15px rgba(128, 128, 128, 0.05);
+    font-style: normal;
+    font-weight: normal;
+    margin: 0;
+}
+
+.click-by-click-assistant label.button-secondary:hover {
+    border: 1px solid var(--button-secondary-border-color);
+    background-color: var(--button-secondary-background);
+    color: var(--button-secondary-color);
+}
+
+input[type="checkbox"]:checked + label.button.button-secondary {
+    background-color: var(--button-secondary-background);
+    color: var(--button-secondary-color);
+}
+
+.click-by-click-assistant input[type="checkbox"] {
+    display: none;
+}
+
+.click-by-click-assistant input::-webkit-textfield-decoration-container {
+    visibility: hidden;
+}
+
+.click-by-click-assistant .next-enter {
+    opacity: 0;
+    transform: translate3d(100px, 0, 0);
+}
+.click-by-click-assistant .next-enter-active,
+.click-by-click-assistant .next-leave-active {
+    transition: 0.2s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.click-by-click-assistant .next-leave-to {
+    opacity: 0;
+    transform: translate3d(-100px, 0, 0);
+}
+
+.click-by-click-assistant .prev-enter {
+    opacity: 0;
+    transform: translate3d(-100px, 0, 0);
+}
+.click-by-click-assistant .prev-enter-active,
+.click-by-click-assistant .prev-leave-active {
+    transition: 0.2s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.click-by-click-assistant .prev-leave-to {
+    opacity: 0;
+    transform: translate3d(100px, 0, 0);
+}
+
+.click-by-click-assistant .fade-enter-active, .fade-leave-active {
+    transition: opacity .3s;
+}
+.click-by-click-assistant .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
+{
+    opacity: 0;
+}
+
+
+/**
+Input Styles
+ */
+
+.click-by-click-assistant .app-row-container {
+    width: 100%;
+}
+
+.click-by-click-assistant .app-row-container .add-row,
+.click-by-click-assistant .link {
+    color: #87B668;
+    text-decoration: underline;
+    font-size: 12px;
+    line-height: 15px;
+    margin: 30px auto;
+    min-width: 100px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.click-by-click-assistant .app-row-container .add-row a,
+.click-by-click-assistant .link a {
+    color: #87B668;
+}
+
+.click-by-click-assistant .app-row-container .add-row.inactive {
+    cursor: auto;
+    pointer-events: none;
+    color: #b7b7be;
+}
+
+.click-by-click-assistant .app-input-row {
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    padding-left: 15px;
+}
+
+.click-by-click-assistant .app-input-row.reduced-width {
+    width: 60%;
+    min-width: 200px;
+    margin: 0 auto;
+    padding-left: 0;
+}
+
+.click-by-click-assistant .app-input-row .remove-row {
+    cursor: pointer;
+    align-self: flex-end;
+    flex: 0 0 30px;
+    height: 83px;
+    background: url('../themes/new/images/remove-icon.svg') no-repeat;
+    background-size: 15px 12px;
+    background-position-x: 10px;
+    background-position-y: 47px;
+}
+
+.click-by-click-assistant .app-input-row .app-row-valid {
+    position: absolute;
+    height: 15px;
+    width: 15px;
+    bottom: 23px;
+    left: -17px;
+}
+
+.click-by-click-assistant .app-input-row .app-row-valid.icon-ok {
+    background: url('../themes/new/images/icon-ok.svg') no-repeat center;
+    background-size: 11px 8px;
+}
+
+.click-by-click-assistant .app-input-row .app-row-valid.checkbox {
+    bottom: 10px;
+}
+
+.click-by-click-assistant .container a {
+    color: #929292;
+}
+
+.click-by-click-assistant .app-input {
+    flex-grow: 1;
+    position: relative;
+    white-space: nowrap;
+    padding-right: 12px;
+    box-sizing: border-box;
+    margin: 35px auto 10px auto;
+    transition: 0.2s ease width;
+    -moz-transition: 0.2s ease width;
+    -webkit-transition: 0.2s ease width;
+}
+
+.click-by-click-assistant .app-input input[type="checkbox"] {
+    width: 10%;
+}
+
+.click-by-click-assistant .app-input-row .app-input:last-of-type {
+    padding-right: 0;
+}
+
+
+.click-by-click-assistant .app-input.input-error *:not(input) {
+    color: #f44336;
+}
+
+.click-by-click-assistant .app-input.input-error input,
+.click-by-click-assistant .app-input.input-error select {
+    border-bottom-color: #f44336;
+}
+
+.click-by-click-assistant .app-input .input-error {
+    position: absolute;
+    bottom: -15px;
+    left: 5px;
+    opacity: .8;
+}
+
+.click-by-click-assistant .app-input .reveal {
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: block;
+    width: 30px;
+    height: 38px;
+    background: url('../themes/new/images/icon-invisible.svg');
+    background-size: 15px 12px;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: .3;
+    border: none;
+}
+
+.click-by-click-assistant .app-input input,
+.click-by-click-assistant .app-input select {
+    width: 100%;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 17px;
+    color: #25233A;
+    padding: 10px 10px 10px 5px;
+    display: block;
+    border: none;
+    border-bottom: 1px solid #d9d9d9;
+    border-radius: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.click-by-click-assistant .app-input select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+}
+
+.click-by-click-assistant .app-input select::-ms-expand {
+    display: none;
+}
+
+.click-by-click-assistant .app-input input:focus,
+.click-by-click-assistant .app-input select:focus {
+    outline: none;
+}
+
+.click-by-click-assistant .app-input label {
+    color: #b7b7be;
+    font-size: 14px;
+    line-height: 17px;
+    font-weight: normal;
+    position: absolute;
+    pointer-events: none;
+    left: 5px;
+    top: 10px;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+}
+
+.click-by-click-assistant .app-input input[type="checkbox"] ~ label {
+    left: 10%;
+    top: 0;
+    pointer-events: all;
+    cursor: pointer;
+    line-height: 14px;
+}
+
+.click-by-click-assistant .app-input.select:after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    margin-top: -2.5px;
+    pointer-events: none;
+    color: #e6e6e6;
+}
+
+.click-by-click-assistant .app-input input:focus ~ label,
+.click-by-click-assistant .app-input input:valid ~ label,
+.click-by-click-assistant .app-input select.hasSelected ~ label,
+.click-by-click-assistant .app-input input.hasValue ~ label,
+.click-by-click-assistant .app-input select:valid ~ label {
+    top: -15px;
+    font-size: 10px;
+}
+
+.click-by-click-assistant .app-input input[type="checkbox"]:focus ~ label,
+.click-by-click-assistant .app-input input[type="checkbox"]:valid ~ label,
+.click-by-click-assistant .app-input input[type="checkbox"].hasValue ~ label {
+    top: 0;
+    font-size: 14px;
+}
+
+.click-by-click-assistant .app-pagination {
+    text-align: center;
+    margin: 20px 0 0 0;
+}
+
+.click-by-click-assistant .app-pagination div {
+    display: inline-block;
+    background-color: #d9d9d9;
+    width: 5px;
+    height: 5px;
+    border-radius: 5px;
+    margin: 0 2px;
+    vertical-align: middle;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+}
+
+.click-by-click-assistant .app-pagination div.active {
+    background-color: #a0a0a0;
+}
+
+.click-by-click-assistant .spinner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    clear: both;
+    right: 15px;
+    top: 9px;
+}
+
+/* Spinner Circle Rotation */
+.click-by-click-assistant .spinner-circle {
+    border: 3px rgba(255, 255, 255, 0.25) solid;
+    border-top: 3px rgba(255, 255, 255, 1) solid;
+    border-radius: 50%;
+    -webkit-animation: spCircRot .6s infinite linear;
+    animation: spCircRot .6s infinite linear;
+}
+@-webkit-keyframes spCircRot {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+    }
+}
+@keyframes spCircRot {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
+}

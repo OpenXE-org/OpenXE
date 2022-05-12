@@ -1,0 +1,180 @@
+.dashboard {
+
+}
+
+.dashboard {
+    clear: both;
+    position: relative;
+    max-width: 1260px;
+    margin-top: 45px;
+}
+
+.dashboard .item {
+    z-index: 1;
+    overflow: hidden;
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    margin: 5px;
+    background-color: #F0F0F0;
+    border-radius: 5px;
+}
+
+.dashboard .item.muuri-item-dragging {
+    z-index: 3;
+    background-color: yellow;
+}
+
+.dashboard .item.muuri-item-releasing {
+    z-index: 2;
+    background-color: darkorange;
+}
+
+.dashboard .muuri-item-positioning {
+    background-color: mediumseagreen;
+}
+
+.dashboard .item.muuri-item-shown {
+}
+
+.dashboard .item.muuri-item-hidden {
+    z-index: 0;
+}
+
+.dashboard .item.item-width-2 {
+    width: 410px;
+}
+
+.dashboard .item.item-width-3 {
+    width: 615px;
+}
+
+.dashboard .item.item-height-2 {
+    height: 410px;
+}
+
+.dashboard .item.item-height-3 {
+    height: 615px;
+}
+
+.dashboard .item-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/**
+    CONTROLS
+ */
+
+.dashboard .item-controls {
+    clear: both;
+    position: absolute;
+    opacity: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: rgba(0, 0, 0, .15);
+    transition: opacity 500ms;
+}
+
+.dashboard .item-controls-left {
+    display: inline-block;
+    width: 60%;
+    padding: 0;
+    margin: 0;
+    float: left;
+}
+
+.dashboard .item-controls-right {
+    float: right;
+    width: 40%;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+}
+
+.dashboard .item-controls a {
+    display: inline-block;
+    font-size: 80%;
+    margin: 9px 2px;
+}
+
+.dashboard .item-controls span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin: 3px 3px 0 0;
+}
+
+.dashboard .item:hover .item-controls {
+    opacity: 1;
+    transition: opacity 500ms;
+}
+
+.dashboard .item-controls .icon-move {
+    cursor: move;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url('../themes/new/images/move.svg');
+}
+
+.dashboard .item-controls .icon-settings {
+    cursor: pointer;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url('../themes/new/images/edit.svg');
+}
+
+/**
+    TITLE
+ */
+
+.dashboard .title {
+    position: absolute;
+    width: 100%;
+    height: 15px;
+    padding: 10px;
+    margin: -40px 5px 5px 5px;
+    color: #FFF;
+    font-weight: bold;
+    background-color: #5c2699;
+    border-radius: 5px;
+}
+
+.dashboard .title h2,
+.dashboard .title h3 {
+    margin: 0;
+    padding: 0;
+    color: #FFF;
+}
+
+.dashboard .title-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.dashboard .title-controls .icon-add {
+    cursor: pointer;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url('../themes/new/images/add.png');
+}
+
+/**
+ CHARTS
+ */
+
+.dashboard .chart-wrapper {
+    margin: 0;
+}
+

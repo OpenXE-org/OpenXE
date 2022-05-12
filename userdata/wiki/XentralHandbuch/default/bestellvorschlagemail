@@ -1,0 +1,93 @@
+<div id="dokuwiki__content"><div class="pad group">
+
+                
+
+                <div class="page group">
+                                                            
+                    
+<div id="dw__toc">
+<h3 class="toggle">Inhaltsverzeichnis</h3>
+<div>
+
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#bestellvorschlag_e-mail">Bestellvorschlag E-Mail</a></div>
+<ul class="toc">
+<li class="level3"><div class="li"><a href="#uebersicht">Übersicht</a></div></li>
+<li class="level3"><div class="li"><a href="#prozessstarter">Prozessstarter</a></div></li>
+<li class="level3"><div class="li"><a href="#e-mail">E-Mail</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+<h2  id="bestellvorschlag_e-mail">Bestellvorschlag E-Mail</h2>
+<div class="level2">
+
+<p>
+Ab der Version 18.3 können Sie mit der App Bestellvorschlag E-Mail einstellen, dass Sie in regelmäßigen Abständen E-Mails erhalten, in denen ein Bestellvorschlag unterbreitet wird. <br/>
+
+Wie beim Modul Bestellvorschlag prüft das System, welche Menge eines Artikels zum eingestellten Mindestbestand fehlt, falls die Lagermenge darunter liegt. 
+Ebenfalls wird geprüft, ob Artikel in offenen Aufträgen verplant, aber nicht ausreichend auf Lager vorhanden sind, um die Aufträge zu abzufertigen. <br/>
+
+</p>
+
+</div>
+
+<h3 class="sectionedit2" id="uebersicht">Übersicht</h3>
+<div class="level3">
+
+<p>
+Unter Administration → AppStore → Bestellvorschlag E-Mail können Sie die E-Mail-Adresse hinterlegen, an welche die Bestellvorschläge geschickt werden sollen. 
+</p>
+<ul>
+<li class="level1"><div class="li"> <strong>Modul aktivieren</strong> → Einstellen, ob App überhaupt benutzt wird</div>
+</li>
+<li class="level1"><div class="li"> <strong>Empfänger für Mail aus Cronjob</strong> → E-Mail-Adresse, an die Bestellvorschlag versendet wird. Durch Semikolon getrennt möglicch, mehrere Adressen einzutragen.</div>
+</li>
+<li class="level1"><div class="li"> <strong>Benachrichtigungen nur an Werktagen</strong> → Festlegen, dass E-Mails nie am Wochenende versendet werden</div>
+</li>
+</ul>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bestellvorschlagemail&amp;media=wawision:e-mail-adresse_fuer_app.png"  title="wawision:e-mail-adresse_fuer_app.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bestellvorschlagemail&fileid=1"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit3" id="prozessstarter">Prozessstarter</h3>
+<div class="level3">
+
+<p>
+Das automatische Verschicken der E-Mails funktioniert anhand des Prozessstarter Bestellvorschlag Mail. Der Prozessstarter muss aktiv sein und den richtigen Parameter besitzen.
+</p>
+
+<p>
+In diesem Beispiel läuft der Prozessstarter immer einmal montags um 17 Uhr und würde die E-Mail verschicken, falls es Positionen im Bestellvorschlag gibt:
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bestellvorschlagemail&amp;media=wawision:prozessstarter_e-mail.png"  title="wawision:prozessstarter_e-mail.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bestellvorschlagemail&fileid=2"  alt="" /></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit4" id="e-mail">E-Mail</h3>
+<div class="level3">
+
+<p>
+Die E-Mail zeigt das gleiche Ergebnis wie die Oberfläche Bestellvorschlag. Ganz rechts sehen Sie, wieviele Einheiten der jeweiligen Artikel im Lager fehlen, um die offenen Aufträge zu bedienen bzw. den Mindestbestand einzuhalten.
+</p>
+
+<p>
+<a href="http://helpdesk.wawision.de/lib/exe/detail.php?id=wawision%3Akurzanleitung_bestellvorschlagemail&amp;media=wawision:e-mail_mit_bestellvorschlag.png"  title="wawision:e-mail_mit_bestellvorschlag.png"><img src="index.php?module=wiki&action=getfile&workspacefolder=XentralHandbuch&article=bestellvorschlagemail&fileid=3"  alt="" /></a>
+</p>
+
+</div>
+
+                    
+                                    </div>
+
+                <div class="docInfo"></div>
+
+                            </div></div>

@@ -1,0 +1,485 @@
+/*
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
+.ui-timepicker-rtl dl dt{ float: right; clear: right; }
+.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }
+
+
+input[type=text],input[type=password], select, textarea { font-size:11px; font-family:Verdana,sans-serif; border:1px solid [TPLFIRMENFARBEDUNKEL]; background-color:#F8F8FF;}
+
+input[type=text].pflicht, textarea.pflicht {
+        background-color: #FFDFDF;
+}
+
+input[type=text],input[type=password], select, textarea { font-size:11px; font-family:Verdana,sans-serif; border:1px solid [TPLFIRMENFARBEDUNKEL]; background-color:#F8F8FF; padding:5px;
+
+
+}
+input[type=submit],input[type=reset],input[type=button] { font-size:11px; font-family:Verdana,sans-serif;  background-color:[TPLFIRMENFARBEDUNKEL]; color:white; border:1px solid [TPLFIRMENFARBEDUNKEL]; padding:4px; margin:3px;
+color:white;
+background-color:[TPLFIRMENFARBEDUNKEL];
+-moz-border-radius: 7px;
+-webkit-border-radius: 7px;
+border-radius: 7px;
+border: 0px;
+}
+
+input[name="speichern"],input[value="Speichern"] {
+ background-color:#A2D624;
+ font-size:110% !important;
+ font-weight:bold;
+}
+
+/***********************************************/
+/* WaWision css                       */
+/* designed by *105 GmbH & Co. KG              */
+/* http://www.stern105.de                      */
+/***********************************************/
+
+/***********************************************/
+/* HTML tag styles                             */
+/*********************************************+*/ 
+
+html, body { height:100%; }
+
+* {
+	font-family: Verdana,Arial,sans-serif;
+	font-size: 9pt;
+	color:#000;
+	margin: 0px;
+	padding: 0px;
+	line-height:1.4;
+		
+	SCROLLBAR-FACE-COLOR: #fff;
+	SCROLLBAR-HIGHLIGHT-COLOR: #fff; 
+    SCROLLBAR-SHADOW-COLOR: #fff; 
+    SCROLLBAR-ARROW-COLOR: #d4d4d4; 
+    SCROLLBAR-BASE-COLOR: #d4d4d4; 
+	SCROLLBAR-DARKSHADOW-COLOR: #d4d4d4;
+	SCROLLBAR-TRACK-COLOR: #fff;
+}
+
+
+/***********************************************/
+/* COMMON STYLES                               */
+/***********************************************/
+
+a {color:#006293; text-decoration:none; font-weight:bold;}
+.ui-tabs-anchor {text-decoration:none; font-weight:normal;}
+a:hover {color:#000; text-decoration:none; }
+
+hr {margin-top: 8px; margin-bottom: 8px; border:0;}
+p {margin:8px 3px 8px 0; padding:0; }
+
+* HTML #hack {width: 955px; w\idth: 906px;}
+/* with n height HACK (neccessary for margin n padding */
+
+h1, h2, h3, h4, h5, h6 {margin: 0px; padding: 0px;}
+
+H1 {padding:13px 8px 6px 8px; font-weight:bold; font-size:1.8em; color:#027d8d;}
+H1.first {font-size:1em; margin-bottom: 20px; margin-top:0px;}
+H2 {padding:13px 8px 6px 8px; font-weight:bold; font-size:1.4em;}
+H3 {padding:13px 8px 6px 8px; color:#027d8d; font-size:1.2em;}
+	
+UL {margin:0; padding:0; list-style:square inside;}
+LI {margin:0; padding:0;}
+UL {margin:2px 0 10px 13px;}
+
+.bgJournal {background-color:#f2b005; color:#fff;}
+.bgCompany {background-color:#43bbd1;}
+.bgShop {background-color:#b1c800;}
+.bgStudents {background-color:#934c94;}
+
+.borderGrey {border:1px solid #d4d4d4;}
+.borderJournal {border:1px solid #f2b005;}
+
+img {border:0px;}
+.imgCenter {text-align:center;}
+
+.uc{text-transform:uppercase;}
+
+.iconbar {
+		font-size:7pt;
+		color:white;
+		font-weight:bold;
+		text-align:center;
+
+}
+
+
+/***********************************************/
+/* Layout Divs                                 */
+/***********************************************/
+
+DIV#header {height:100px; background:url(../../../themes/new/images/bg_header.jpg) top left repeat-y #43bbd1; margin-bottom:0px;}
+DIV#header2 {border:1px solid rgb(2, 125, 141);; background-color:#d5ecf2; height:20px; width:100%; }
+SPAN#headertoolbar {
+
+ font-family: Arial, Helvetica, sans-serif;
+ font-weight:bold;
+  font-size: 10pt;
+text-shadow:white 1px 2px 2px;
+  color: #027d8d;
+  margin: 5px;
+  margin-left: 12px;
+    text-transform: uppercase;
+  padding: 0px;
+
+}
+SPAN#headertoolbar2 {
+
+ font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #027d8d;
+  text-transform: uppercase;
+}
+	
+DIV#footer {
+	height:32px; margin-top:-6px;
+	background:url(../../../themes/new/images/bg_header.jpg) top left repeat-y #43bbd1; 
+	text-align:center; color: #fff;}
+
+
+
+
+/***********************************************/
+/* CONTENT Divs                                */
+/***********************************************/
+
+/************* #box styles ************************/
+.box {height:190px; overflow:hidden;}
+.box ul, .container ul {padding:5px 0 20px 0; list-style:none outside; line-height:1.1;}
+.box li, .container li {margin:4px 0; padding:0 0 0 22px; background:url(../images/menue_arrow.png) center left no-repeat;}
+.box A, .container A {color:#fff; font-weight:bold; text-decoration:none;}
+.box A:HOVER, .container A:HOVER {color:#fff; font-weight:bold; text-decoration:underline;}
+	
+/************* #claim styles ************************/
+DIV#claim {font-size:1.3em; font-weight:bold; padding-left:10px; width: 180px;}
+* HTML #claim {width: 190px; w\idth: 180px;}
+
+/************* #bodyText styles ************************/
+DIV#bodyText H1 {padding:20px 0 10px 0; color:#006293; font-size:1.3em;}
+DIV#bodyText H2 {padding:17px 0 6px 0; color:#006293; font-size:1.1em;}
+DIV#bodyText .shortText {margin:13px 0 20px 0; color:#006293; font-weight:bold;}
+DIV#bodyText .shortText a {color:#000; text-decoration:underline;}
+DIV#bodyText .shortText a:hover {color:#006293; text-decoration:underline;}
+
+/***********************************************/
+/* Table Styles                                */
+/***********************************************/
+DIV#bodyText TABLE.tableJournal {border:1px solid #f2b005; margin:5px 0px 10px 0px; font-size:1em;}
+DIV#bodyText TABLE.tableJournal-1 {margin:5px 0px 10px 0px; font-size:1em;}
+DIV#bodyText TABLE TR TD {vertical-align:top;}
+/* erste Spalte, erste Zeile */
+DIV#bodyText TABLE TR.tr-0 TD, TABLE.contenttable TR TD.td-0 {padding:6px 8px; color:#fff; font-weight:bold; background-color:#f2b005; text-align:left;} 
+DIV#bodyText TABLE TD {padding:2px 8px; margin:0px;}
+DIV#bodyText TABLE TR.tr-odd {background-color:#FCE7C1;}
+DIV#bodyText TABLE TR.tr-even {background-color:#fff4de;}
+
+
+
+
+/***********************************************/
+/* Form Divs                                   */
+/***********************************************/
+form {display: inline; margin:0; padding:0;}
+input[type=text], input[type=password], textarea, select {font-size:11px; color:#000; padding:3px 5px;}
+input[type=text].error, input[type=password].error {border:1px solid #63c3d3;}
+input[type=text].long, input[type=password].long {width:220px;}
+input[type=text].small {width:40px;}
+input[type=text].medium {width:162px;}
+.error {font-weight:bold; color:#63c3d3;}
+.inputField {border:1px solid #c7cdcd;}
+.btnSubmit {background-color:#63c3d3; color:#fff; font-weight:bold; padding:3px 12px; border:1px solid #63c3d3; cursor:pointer;}
+
+
+
+ul#Navigation {
+    width: 170px;
+    margin: 0;
+    padding: 0.2em 0.2em 0.2em;
+  }
+  ul#Navigation li {
+    list-style: none;
+    margin: 0.1em; padding: 0;
+  }
+
+  ul#Navigation a, ul#Navigation span, ul#Navigation h2 {
+    display:block;
+		font-weight:bold;
+    text-decoration: none;
+    margin: 0.1em; padding: 0.3em;
+    border-left-color: white; border-top-color: white;
+    color: black; background-color: #eee;
+  }
+  ul#Navigation a:hover, ul#Navigation span {
+    border-color: white;
+		font-weight:bold;
+    border-left-color: black; border-top-color: black;
+    color: white; background-color: gray;
+  }
+  ul#Navigation h2 {
+    font-size: 1em;
+    margin: 0.1em; padding: 0.3em;
+    border:1px solid #ccc;
+    color: black; background-color: #bde5f8;
+  }
+
+  ul#Navigation h2.allgemein {
+    color: black; background-color: #e5efa6;
+  }
+
+   ul#Navigation h2.hauptmenu {
+    color: black; background-color: red;
+  }
+
+#jsddm
+{ margin: 0;
+  padding: 0; z-index: 1000; }
+
+  #jsddm li
+  { float: left;
+    list-style: none;
+		font-weight:bold;
+    font: 12px Tahoma, Arial}
+
+  #jsddm li a
+  { display: block;
+/*    background: #d5ecf2;*/
+		font-weight:bold;
+    padding: 5px 12px;
+    text-decoration: none;
+    border-right: 1px solid white;
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+    width: 92px;
+    /*color: #027d8d;*/
+		background:none;
+		color:white;
+    white-space: nowrap}
+
+  #jsddm li a:hover
+  { background: #F8F8FF; color: black;}
+
+    #jsddm li ul
+    { margin: 0;
+      padding: 0;
+      z-index: 1000;
+      position: absolute;
+      visibility: hidden;
+      border-top: 1px solid white;}
+
+    #jsddm li ul li
+    { float: none;
+      display: inline;}
+
+    #jsddm li ul li a
+    { width: auto;
+      background: #d5ecf2; color: #027d8d;}
+
+    #jsddm li ul li a:hover
+    { background: #F8F8FF;}
+
+
+
+input[type=text],input[type=password], select, textarea { font-size:11px; font-family:Verdana,sans-serif; border:1px solid #ddd; background-color:#F8F8FF;}
+
+input[type=text].pflicht, textarea.pflicht {
+        background-color: #FFDFDF;
+}
+
+
+.info, .success, .warning, .error, .validation, .error2 {
+padding:15px 10px 15px 50px;
+background-repeat: no-repeat;
+background-position: 10px center;
+}
+
+.info {
+color: #219CB0;
+background-color: #D5ECF2;
+background-image: url('./themes/new/images/info.png');
+}
+.warning {
+color: #6DA033;
+background-color: #E5F5D2;
+background-image: url('./themes/new/images/warning.png');
+}
+
+.error {
+color: #FF7F2A;
+background-color: #FFE6D5;
+background-image: url('./themes/new/images/error.png');
+}
+
+
+.error2 {
+color: #219CB0;
+background-color: #D5ECF2;
+background-image: url('./themes/new/images/info.png');
+}
+
+
+.success {
+color: #4F8A10;
+background-color: #DFF2BF;
+background-image:url('./themes/new/images/success.png');
+}
+
+
+input[disabled] {
+	border: 1px solid #999;
+	background-color:	#D0D0D0;
+}
+
+
+textarea.cols3 { height: 200px; width: 98%;}
+
+.mybox {margin-bottom:10px; padding: 3px 3px; width:99%; display: inline-block;}
+
+.mybox a {
+  display: inline-block;
+  color: #027D8D;
+  border: 1px solid #A6C9E2;
+  background: #D5ECF2;
+  padding: 3px 5px;
+  margin: 2px 2px;
+}
+
+.mybox a:hover { color: #000; }
+
+.mybox a.active { color: #71BFC9; }
+
+.rules {
+  color: #FFF;
+  font-weight: 700;
+  background-color: #6EB6D5;
+  border: 1px solid #4297D7;
+  text-align: left;
+  padding: 3px 0px 3px 10px;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+tr.tablefooter td {padding: 3px 2px;  background-color: #6EB6D5; text-align: center;}
+
+table.linkedit {text-align: left;}
+table.linkedit td{ padding: 2px 5px;}
+
+h2.fieldheader {
+	float:left;
+}
+
+span.found {
+	background-color: #F78181;
+	border: 1px solid red;
+}
+
+span.replaced {
+  background-color: #64FE2E;
+  border: 1px solid green;
+}
+
+ul.home_termine {
+	margin: 0px;
+	padding: 0px;
+}
+
+ul.home_termine li {
+	list-style-type: none;
+	margin: 3px;
+	padding: 2px 5px;
+	background-color: #3366CC;
+	color: #FFFFFF;
+	border: 1px solid #3366CC;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+ul.home_termine li span.description {
+	display:inline-block;
+	width:160px;
+}
+
+a#wiki_startseite_edit {
+	display: inline-block;
+	border: 1px solid #aaaaaa;
+	float:right;
+	padding: 2px 5px;
+	color: #0645AD;
+	font-style: normal;
+	font-weight: 400;
+}
+
+a#wiki_startseite_edit:hover, a#wiki_startseite_edit:focus { 
+	text-decoration: underline;
+}
+
+
+div.noteit {
+font-family:Helvetica,Helv; font-size:100%; padding: 5px; margin:5px; width:190px; 
+border: 1px solid #ccc;
+-moz-box-shadow: -1px -1px 1px #888;
+-webkit-box-shadow: -1px -1px 1px #888;
+box-shadow: -1px -1px 1px #888;
+} 
+
+div.noteit_prio {
+background-color:#E5F5D2;
+font-family:Helvetica,Helv; font-size:100%; padding: 5px; margin:5px; width:190px; 
+border: 1px solid #ccc;
+-moz-box-shadow: -1px -1px 1px #888;
+-webkit-box-shadow: -1px -1px 1px #888;
+box-shadow: -1px -1px 1px #888;
+}
+
+div.noteit_highprio {
+background-color:#FFE6D5;
+font-family:Helvetica,Helv; font-size:100%; padding: 5px; margin:5px; width:190px; 
+border: 1px solid #ccc;
+-moz-box-shadow: -1px -1px 1px #888;
+-webkit-box-shadow: -1px -1px 1px #888;
+box-shadow: -1px -1px 1px #888;
+}
+
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
+.ui-timepicker-rtl dl dt{ float: right; clear: right; }
+.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }
+
+
+
+.greyh2 {
+width:99%; background-color:#999; color:white; padding:2px; font-size:9pt;padding-left:5px;
+}
+
+
+.gentable,.editable {
+  vertical-align: text-top;
+}
+
+
+

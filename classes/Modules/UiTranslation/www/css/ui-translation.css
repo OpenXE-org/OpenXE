@@ -1,0 +1,50 @@
+.edittranslation {
+    border: 1px dashed red;
+}
+
+#ui-translation-overlay {
+    display: none;
+    position: fixed;
+    z-index: 100001;
+    bottom: 20px;
+    right: 20px;
+    width: 360px;
+    min-height: 100px;
+    border: 2px solid rgb(166, 201, 226);
+    background-color: var(--body-background);
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, .33);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#ui-translation-overlay legend {
+    width: 100%;
+    cursor: move;
+}
+
+#ui-translation-overlay .line {
+    margin: 0 0 5px 0;
+    padding: 5px 0;
+}
+
+#ui-translation-item {
+    display: none;
+    z-index: 9999;
+    position: absolute;
+    background-color: var(--body-background);
+    border: 2px solid rgb(166, 201, 226);
+    margin: 0 20px;
+    padding: 5px 10px;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, .33);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#ui-translation-item .line {
+    margin: 0 0 5px 0;
+    padding: 5px 0;
+}
