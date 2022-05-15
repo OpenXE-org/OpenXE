@@ -353,7 +353,11 @@
 <title>xentral Installer</title>
 </head><body class=\"slide-{$step}\"><div id=\"main\"><div class=\"header\"><h1 class=\"headline\">xentral Installer</h1></div><div class=\"content\"><form action=\"\" method=\"POST\">
  {$html}
-</form></div><div class=\"footer\"><p>Nutzen Sie unseren <a href=\"https://shop.xentral.biz/sonstige/1-jahr-zugang-updateserver-open-source-version.html?c=164?c=164\" target=\"_blank\">Update-Server</a> um auch mit der Open-Source Version mit Updates versorgt zu sein.</p></div></div></body></html>";
+</form></div>
+<!--
+<div class=\"footer\"><p>Nutzen Sie unseren <a href=\"https://shop.xentral.biz/sonstige/1-jahr-zugang-updateserver-open-source-version.html?c=164?c=164\" target=\"_blank\">Update-Server</a> um auch mit der Open-Source Version mit Updates versorgt zu sein.</p></div>
+--!>
+</div></body></html>";
 	}
 
 	/**
