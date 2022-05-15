@@ -13,8 +13,8 @@
 
 	$setup[2]['fields']['WFdbhost']['text'] = "Host";
 	$setup[2]['fields']['WFdbhost']['default'] = "localhost";
-	$setup[2]['fields']['WFdbname'] = "Datenbank";
-	$setup[2]['fields']['WFdbuser'] = "Benutzername";
+	$setup[2]['fields']['WFdbname']['default'] = "Datenbank";
+	$setup[2]['fields']['WFdbuser']['default'] = "Benutzername";
 	$setup[2]['fields']['WFdbpass']['text'] = "Passwort";
 	$setup[2]['fields']['WFdbpass']['type'] = "password";
 
