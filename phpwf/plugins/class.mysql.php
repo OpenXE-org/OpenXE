@@ -72,7 +72,7 @@ class DB{
     mysqli_select_db($this->connection,$dbname);
     mysqli_query($this->connection, "SET NAMES 'utf8'");
     mysqli_query($this->connection, "SET SESSION SQL_MODE := ''");
-    mysqli_query($this->connection, "SET CHARACTER_SET 'utf8'");
+    mysqli_query($this->connection, "SET CHARACTER SET 'utf8'");
     mysqli_query($this->connection, 'SET lc_time_names = "de_DE" ');
     mysqli_query($this->connection, 'SET SQL_BIG_SELECTS=1');
   }
