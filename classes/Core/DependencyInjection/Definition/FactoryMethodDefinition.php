@@ -21,9 +21,16 @@ final class FactoryMethodDefinition
     public function __construct($callable, $shared = true)
     {
         if (!is_callable($callable, false)) {
+	/*
+	
+	xenomporio
+	unknown compatibility issue
+	commented out as hotfix
+
             throw new InvalidArgumentException(sprintf(
                 'Definition can\'t be created. "%s::%s" is not callable.', $callable[0], $callable[1]
             ));
+	*/
         }
 
         $this->callable = $callable;
