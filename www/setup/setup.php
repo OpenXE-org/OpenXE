@@ -136,18 +136,16 @@
                 {
                                                             mysqli_set_charset($db,"utf8");
                                                             mysqli_query($db,"SET SESSION SQL_MODE :=''");
-                  //mysql_real_escape_string($import); 
-                  $import = explode (";", $import); 
+                  //mysqli_real_escape_string($db,$import); 
+
+                  $import = explode (";\n", $import); 
 
                   foreach ($import as $imp){
                     if ($imp != '' && $imp != ' ' && trim($imp) != ''){
-
                       mysqli_query($db,$imp);
-
-
-
                     }
                   }
+
                   if(isset($_POST['BeispielTpl']) && $_POST['BeispielTpl'])
                            mysqli_query($db, "INSERT INTO `user` (`id`, `username`, `password`, `repassword`, `description`, `settings`, `parentuser`, `activ`, `type`, `adresse`, `fehllogins`, `standarddrucker`, `firma`, `logdatei`, `startseite`, `hwtoken`, `hwkey`, `hwcounter`, `motppin`, `motpsecret`, `passwordmd5`, `externlogin`, `projekt_bevorzugen`, `email_bevorzugen`, `projekt`, `rfidtag`, `vorlage`, `kalender_passwort`, `kalender_ausblenden`, `kalender_aktiv`, `gpsstechuhr`, `standardetikett`, `standardfax`, `internebezeichnung`, `hwdatablock`) VALUES
                           (3, 'demomitarbeiter', 'pllIX0pw7JU9c', 0, '', 'a:6:{s:16:\"pos_list_projekt\";s:1:\"0\";s:18:\"pos_list_kassierer\";s:1:\"0\";s:22:\"pos_list_kassierername\";s:1:\"0\";s:18:\"pos_list_lkadresse\";s:1:\"0\";s:18:\"lohnabrechnung_von\";s:0:\"\";s:18:\"lohnabrechnung_bis\";s:0:\"\";}', 0, 1, 'standard', 6, 0, 0, 1, '2015-10-26 16:01:23', '', 0, '', 0, '', '', '2ad71933e4b074c4671425c8e6b48021', 0, 0, 1, 0, '', '', '', 0, 0, 0, 0, 0, NULL, '');
@@ -350,13 +348,14 @@
 "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
 <html><head>
 <style type=\"text/css\">{$cssContent}</style>
-<title>xentral Installer</title>
-</head><body class=\"slide-{$step}\"><div id=\"main\"><div class=\"header\"><h1 class=\"headline\">xentral Installer</h1></div><div class=\"content\"><form action=\"\" method=\"POST\">
+<title>Xenomporio Installer</title>
+</head><body class=\"slide-{$step}\"><div id=\"main\"><div class=\"header\"><h1 class=\"headline\">Xenomporio Installer</h1></div><div class=\"content\"><form action=\"\" method=\"POST\">
  {$html}
 </form></div>
 <!--
 <div class=\"footer\"><p>Nutzen Sie unseren <a href=\"https://shop.xentral.biz/sonstige/1-jahr-zugang-updateserver-open-source-version.html?c=164?c=164\" target=\"_blank\">Update-Server</a> um auch mit der Open-Source Version mit Updates versorgt zu sein.</p></div>
 --!>
+<div class=\"footer\"><p>Xenomporio is free open source software under AGPL-3.0 license, based on Xentral® by Xentral ERP Software GmbH.</p></div>
 </div></body></html>";
 	}
 
