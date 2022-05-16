@@ -28804,13 +28804,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   }
 
   function string2array ($string, $template){
-#search defined dividers
+//#search defined dividers
     preg_match_all ("|%(.+)%|U", $template, $template_matches);
-#replace dividers with "real dividers"
+//#replace dividers with "real dividers"
     $template = preg_replace ("|%(.+)%|U", "(.+)", $template);
-#search matches
+//#search matches
     preg_match ("|" . $template . "|", $string, $string_matches);
-#[template_match] => $string_match
+//#[template_match] => $string_match
     foreach ($template_matches[1] as $key => $value){
       $output[$value] = $string_matches[($key + 1)];
     }
