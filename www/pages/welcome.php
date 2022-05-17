@@ -2664,7 +2664,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
   public function WelcomeLogin()
   {
     
-    if($this->app->User->GetID()!='')
+    if($this->app->User->GetID()>0)
     {
       // alle cookies SpryMedia loeschen
 
