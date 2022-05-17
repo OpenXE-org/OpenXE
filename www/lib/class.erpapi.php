@@ -8790,9 +8790,7 @@ if($stufe == 0 || $stufe == 3)
 
     $this->CheckTable('payment_transaction');
     $this->CheckColumn('returnorder_id', 'INT(11)', 'payment_transaction','DEFAULT 0 NOT NULL');
-    $this->CheckAlterTable(
-        "ALTER TABLE `payment_transaction` CHANGE `liabilitiy_id` `liability_id` INT(11) NOT NULL DEFAULT '0';"
-    );
+
     $this->CheckColumn('liability_id', 'INT(11)', 'payment_transaction','DEFAULT 0 NOT NULL');
     $this->CheckColumn('payment_status', 'VARCHAR(32)', 'payment_transaction',"DEFAULT '' NOT NULL");
     $this->CheckColumn('payment_account_id', 'INT(11)', 'payment_transaction','DEFAULT 0 NOT NULL');
