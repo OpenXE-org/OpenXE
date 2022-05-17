@@ -9642,7 +9642,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
   $this->CheckColumn("keinhintergrund","tinyint(1)","drucker","DEFAULT '0' NOT NULL");
   $this->CheckColumn("faxserver","int(1)","drucker","DEFAULT '0' NOT NULL");
   $this->CheckColumn("format","varchar(64)","drucker","DEFAULT '' NOT NULL");
-  $this->CheckAlterTable('ALTER TABLE `drucker` DROP COLUMN `printermodule`');
   $this->CheckColumn('json','TEXT','drucker');
 
     $this->CheckColumn("ust_befreit","int(1)","lieferschein","NOT NULL");
