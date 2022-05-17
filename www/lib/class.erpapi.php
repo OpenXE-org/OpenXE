@@ -9058,8 +9058,6 @@ if($stufe == 0 || $stufe == 3)
     $this->CheckColumn('property_value_from','varchar(255)','article_property_translation',"DEFAULT '' NOT NULL");
     $this->CheckColumn('property_value_to','varchar(255)','article_property_translation',"DEFAULT '' NOT NULL");
 
-    $this->CheckAlterTable("ALTER TABLE `article_property_translation` CHANGE `article_property_translation_id` `id` INT(11) NOT NULL AUTO_INCREMENT;");
-
     $this->CheckIndex('article_property_translation', 'article_id');
     $this->CheckIndex('article_property_translation', 'category_id');
     $this->CheckIndex('article_property_translation', 'shop_id');
