@@ -8129,7 +8129,15 @@ function UpgradeDatabase($stufe = 0)
     }
   }
 
-  $this->CheckAlterTable("ALTER TABLE `firmendaten_werte` ADD PRIMARY KEY(`id`);");
+  $keys = $this->app->DB->Select("SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = 'firmendaten'
+    AND COLUMN_KEY = 'PRI'");
+
+  if ($keys != 'id') { // Only if id is not already primary key
+      $this->CheckAlterTable("ALTER TABLE `firmendaten_werte` ADD PRIMARY KEY(`id`);");
+  }
+
   $maxid = 1+(int)$this->app->DB->Select("SELECT max(id) FROM `firmendaten_werte`");
   $this->CheckAlterTable("ALTER TABLE `firmendaten_werte` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=".$maxid);
 
