@@ -257,7 +257,10 @@ class DB{
         && !empty($this->app->stringcleaner)) {
         $jsarray = $this->app->stringcleaner->CheckSQLHtml($sql);
       }
-      while( $row = @mysqli_fetch_array($this->results)) {
+
+     // Don't process boolean results (e.g. UPDATE successfull)
+     if ($this->results !== true) {
+       while( $row = @mysqli_fetch_array($this->results)) {
         if($jsarray) {
           $j = -1;
           foreach($row as $k => $v)  {
@@ -286,13 +289,14 @@ class DB{
                 $row[$k] = $this->app->stringcleaner->CleanString($v, 'nojs', $dummy);
               }
             }
-
           }
         }
         $data[$count] = $row;
         $count++;
+       }      
+       @mysqli_free_result($this->results);
       }
-      @mysqli_free_result($this->results);
+
       if($data === null) {
         return $data;
       }
