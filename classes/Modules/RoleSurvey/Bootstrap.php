@@ -48,7 +48,7 @@ final class Bootstrap
      *
      * @return SurveyService
      */
-    public function onInitSurveyService(ContainerInterface $container): SurveyService
+    public static function onInitSurveyService(ContainerInterface $container): SurveyService
     {
         return new SurveyService($container->get('Database'), $container->get('SurveyGateway'));
     }
@@ -58,7 +58,7 @@ final class Bootstrap
      *
      * @return SurveyGateway
      */
-    public function onInitSurveyGateway(ContainerInterface $container): SurveyGateway
+    public static function onInitSurveyGateway(ContainerInterface $container): SurveyGateway
     {
         return new SurveyGateway($container->get('Database'));
     }
