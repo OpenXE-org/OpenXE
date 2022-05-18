@@ -8455,7 +8455,7 @@ function UpgradeDatabase($stufe = 0)
     $this->CheckColumn("aktiv", "int(11)", "shopexport_zahlweisen", "DEFAULT '0' NOT NULL");
     $this->CheckColumn("keinerechnung", "tinyint(1)", "shopexport_zahlweisen", "DEFAULT '0' NOT NULL");
     $this->CheckColumn("created", "TIMESTAMP", "shopexport_zahlweisen", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
-    $this->CheckColumn("updated", "TIMESTAMP", "shopexport_zahlweisen", "DEFAULT NULL");
+    $this->CheckColumn("updated", "TIMESTAMP", "shopexport_zahlweisen", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
     $this->CheckColumn("updatedby", "varchar(255)", "shopexport_zahlweisen", "DEFAULT '' NOT NULL");
     $this->CheckColumn("keinerechnung", "tinyint(1)", "shopexport_zahlweisen", "DEFAULT '0' NOT NULL");
     $this->CheckColumn("fastlane", "TINYINT(1)", "shopexport_zahlweisen", "NOT NULL DEFAULT 0");
@@ -8471,7 +8471,7 @@ function UpgradeDatabase($stufe = 0)
     $this->CheckColumn("land", "TEXT", "shopexport_versandarten", "DEFAULT '' NOT NULL");
     $this->CheckColumn("aktiv", "int(11)", "shopexport_versandarten", "DEFAULT '0' NOT NULL");
     $this->CheckColumn("created", "TIMESTAMP", "shopexport_versandarten", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
-    $this->CheckColumn("updated", "TIMESTAMP", "shopexport_versandarten", "NULL DEFAULT NULL");
+    $this->CheckColumn("updated", "TIMESTAMP", "shopexport_versandarten", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
     $this->CheckColumn("updatedby", "varchar(255)", "shopexport_versandarten", "DEFAULT '' NOT NULL");
     $this->CheckColumn("fastlane", "TINYINT(1)", "shopexport_versandarten", "NOT NULL DEFAULT 0");
 
@@ -8482,7 +8482,7 @@ function UpgradeDatabase($stufe = 0)
   $this->CheckColumn("freifeld_shop", "varchar(255)", "shopexport_freifelder", "DEFAULT '' NOT NULL");
   $this->CheckColumn("aktiv", "tinyint(1)", "shopexport_freifelder", "DEFAULT '0' NOT NULL");
   $this->CheckColumn("created", "TIMESTAMP", "shopexport_freifelder", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
-  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_freifelder", "NULL DEFAULT NULL");
+  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_freifelder", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
   $this->CheckColumn("updatedby", "varchar(255)", "shopexport_freifelder", "DEFAULT '' NOT NULL");
 
   $this->CheckTable("shopexport_sprachen");
@@ -8493,7 +8493,7 @@ function UpgradeDatabase($stufe = 0)
   $this->CheckColumn("projekt", "int(11)", "shopexport_sprachen", "DEFAULT '0' NOT NULL");
   $this->CheckColumn("aktiv", "tinyint(1)", "shopexport_sprachen", "DEFAULT '1' NOT NULL");
   $this->CheckColumn("created", "TIMESTAMP", "shopexport_sprachen", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
-  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_sprachen", "NULL DEFAULT NULL");
+  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_sprachen", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
   $this->CheckColumn("updatedby", "varchar(255)", "shopexport_sprachen", "DEFAULT '' NOT NULL");
 
   $this->CheckTable('shopexport_kundengruppen');
@@ -8519,7 +8519,7 @@ function UpgradeDatabase($stufe = 0)
   $this->CheckColumn("extname", "varchar(255)", "shopexport_kategorien", "DEFAULT '' NOT NULL");
   $this->CheckColumn("aktiv", "tinyint(1)", "shopexport_kategorien", "DEFAULT '1' NOT NULL");
   $this->CheckColumn("created", "TIMESTAMP", "shopexport_kategorien", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
-  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_kategorien", "NULL DEFAULT NULL");
+  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_kategorien", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
   $this->CheckColumn("updatedby", "varchar(255)", "shopexport_kategorien", "DEFAULT '' NOT NULL");
   $this->CheckIndex("shopexport_kategorien", "shop");
   $this->CheckIndex("shopexport_kategorien", "kategorie");
@@ -8550,7 +8550,7 @@ function UpgradeDatabase($stufe = 0)
   $this->CheckColumn("sprache", "varchar(64)", "shopexport_subshop", "DEFAULT '' NOT NULL");
   $this->CheckColumn("aktiv", "tinyint(1)", "shopexport_subshop", "DEFAULT '0' NOT NULL");
   $this->CheckColumn("created", "TIMESTAMP", "shopexport_subshop", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
-  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_subshop", "NULL DEFAULT NULL");
+  $this->CheckColumn("updated", "TIMESTAMP", "shopexport_subshop", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
   $this->CheckColumn("updatedby", "varchar(255)", "shopexport_subshop", "DEFAULT '' NOT NULL");
 
   $this->CheckTable('shopexport_voucher_cache');
@@ -10444,7 +10444,7 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
   $this->CheckColumn("vk_geplant","DECIMAL(18,8)","projekt_artikel","DEFAULT '0' NOT NULL");
   $this->CheckColumn("kalkulationbasis","varchar(64)","projekt_artikel","DEFAULT 'prostueck' NOT NULL");
   $this->CheckColumn("nr","varchar(64)","projekt_artikel","DEFAULT '' NOT NULL");
-  $this->CheckColumn("last_cache","timestamp","projekt_artikel","NULL DEFAULT NULL");
+  $this->CheckColumn("last_cache","timestamp","projekt_artikel","DEFAULT CURRENT_TIMESTAMP NOT NULL");
   $this->CheckColumn("kommentar","varchar(1024)","projekt_artikel","DEFAULT '' NOT NULL");
   $this->CheckColumn("showinmonitoring","tinyint(1)","projekt_artikel","DEFAULT '0' NOT NULL");
   $this->CheckColumn("adresse_abrechnung","int(11)","zeiterfassung");
@@ -10796,7 +10796,7 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckColumn("kostenstelle","varchar(10)","kontoauszuege","DEFAULT '' NOT NULL");
     $this->CheckColumn("importgroup","bigint","kontoauszuege");
     $this->CheckColumn("diff","DECIMAL(12,4)","kontoauszuege", "NOT NULL DEFAULT '0'");
-    $this->CheckColumn("diffangelegt","TIMESTAMP","kontoauszuege", "NULL DEFAULT NULL");
+    $this->CheckColumn("diffangelegt","TIMESTAMP","kontoauszuege", "DEFAULT CURRENT_TIMESTAMP NOT NULL");
     $this->CheckColumn("internebemerkung","text","kontoauszuege");
     $this->CheckColumn("importfehler","int(1)","kontoauszuege");
     $this->CheckColumn("parent", "int(11)", "kontoauszuege", "NOT NULL DEFAULT '0'");
