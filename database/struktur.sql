@@ -14820,6 +14820,19 @@ CREATE TABLE IF NOT EXISTS `ups` (
                                      `aktiv` tinyint(1) NOT NULL DEFAULT '0',
                                      PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/* Reconstructed from SELECT statement */
+CREATE TABLE IF NOT EXISTS `stechuhrdevice` (
+                                `id` int(11) NOT NULL AUTO_INCREMENT,
+                                `url` varchar(255) NOT NULL DEFAULT '',
+                                `reduziert` int(11) NOT NULL DEFAULT 0,
+                                `code` int(11) NOT NULL DEFAULT 0,
+                                `aktiv` int(11) NOT NULL DEFAULT 0,
+                                `IP` int(4) NOT NULL DEFAULT 0,
+                                `submask` int(4) NOT NULL DEFAULT 0,
+                                 PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
