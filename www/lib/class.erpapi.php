@@ -12190,8 +12190,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckColumn("blocktyp","varchar(64)","hook_layout","DEFAULT '' NOT NULL");
     $this->CheckColumn("aktiv","tinyint(1)","hook_layout","DEFAULT '1' NOT NULL");
 
-  $this->CheckAlterTable("ALTER TABLE `kommissionierung` DROP `module`;");
-
     $this->app->DB->Delete("DELETE FROM `hook` WHERE `name` = '0'");
     $this->addAliasToHook('adresse_create', 'AfterAddressCreate');
 
@@ -12531,22 +12529,18 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckAlterTable("ALTER TABLE `produktion_position` CHANGE `geliefert_menge` `geliefert_menge` DECIMAL(".(10+$this->GetLagerNachkommastellen()).",".$this->GetLagerNachkommastellen().") NOT NULL");
     $this->CheckAlterTable("ALTER TABLE `zwischenlager` CHANGE `menge` `menge` DECIMAL(".(10+$this->GetLagerNachkommastellen()).",".$this->GetLagerNachkommastellen().") NOT NULL; ");
 
-    $this->CheckAlterTable("ALTER TABLE `user` ADD DEFAULT '1' FOR activ");
+    $this->CheckAlterTable("ALTER TABLE `user` ALTER activ SET DEFAULT '1'");
 
     $this->CheckAlterTable("ALTER TABLE `einkaufspreise` CHANGE `vpe` `vpe` VARCHAR( 64 ) NOT NULL DEFAULT '1'");
     $this->CheckAlterTable("ALTER TABLE `verkaufspreise` CHANGE `vpe` `vpe` VARCHAR( 64 ) NOT NULL DEFAULT '1'");
 
     $this->CheckAlterTable("ALTER TABLE `wiki` CHANGE `content` `content` LONGTEXT NOT NULL ");
-    $this->CheckAlterTable("ALTER TABLE `wiki` CHANGE `lastcontent` `content` LONGTEXT NOT NULL ");
+    $this->CheckAlterTable("ALTER TABLE `wiki` CHANGE `lastcontent` `lastcontent` LONGTEXT NOT NULL ");
 
     $this->CheckAlterTable("ALTER TABLE `artikel` CHANGE `mlmpunkte` `mlmpunkte` DECIMAL( 10, 2 ) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `artikel` CHANGE `mlmbonuspunkte` `mlmbonuspunkte` DECIMAL( 10, 2 ) NOT NULL ");
 
     $this->CheckAlterTable("ALTER TABLE `rechnung` CHANGE `auftrag` `auftrag` VARCHAR( 255 ) NOT NULL ");
-
-    $this->CheckAlterTable("ALTER TABLE `artikel` CHANGE `punkte` `punkte` DECIMAL( 10, 2 ) NOT NULL ");
-
-    $this->CheckAlterTable("ALTER TABLE `artikel` CHANGE `bonuspunkte` `bonuspunkte` DECIMAL( 10, 2 ) NOT NULL ");
 
     $this->CheckAlterTable("ALTER TABLE `angebot_position` CHANGE `rabatt` `rabatt` DECIMAL( 10, 2 ) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `auftrag_position` CHANGE `rabatt` `rabatt` DECIMAL( 10, 2 ) NOT NULL ");
@@ -12575,7 +12569,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckAlterTable("ALTER TABLE `auftrag_position` CHANGE `artikel` `artikel` INT( 11 ) NOT NULL ");
 
     $this->CheckAlterTable("ALTER TABLE `dokumente_send` CHANGE `ansprechpartner` `ansprechpartner` VARCHAR(255) NOT NULL ");
-    $this->CheckAlterTable("ALTER TABLE `auftrag` DROP COLUMN teillieferung_von_auftrag");
 
     $this->CheckAlterTable("ALTER TABLE `auftrag` CHANGE `zahlungszielskonto` `zahlungszielskonto` DECIMAL(10,2) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `angebot` CHANGE `zahlungszielskonto` `zahlungszielskonto` DECIMAL(10,2) NOT NULL ");
@@ -12591,7 +12584,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckAlterTable("ALTER TABLE `gutschrift` CHANGE `belegnr` `belegnr` VARCHAR(255) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `bestellung` CHANGE `belegnr` `belegnr` VARCHAR(255) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `reisekosten` CHANGE `belegnr` `belegnr` VARCHAR(255) NOT NULL ");
-    $this->CheckAlterTable("ALTER TABLE `arbeitsnachweis` CHANGE `belegnr` `belegnr` VARCHAR(255) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `anfrage` CHANGE `belegnr` `belegnr` VARCHAR(255) NOT NULL ");
 
     $this->CheckAlterTable("ALTER TABLE `adresse` CHANGE `kundennummer` `kundennummer` VARCHAR(255) NOT NULL ");
@@ -12606,7 +12598,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckAlterTable("ALTER TABLE `gutschrift_position` CHANGE `gutschrift` `gutschrift` INT(11) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `rechnung_position` CHANGE `rechnung` `rechnung` INT(11) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `reisekosten_position` CHANGE `reisekosten` `reisekosten` INT(11) NOT NULL ");
-    $this->CheckAlterTable("ALTER TABLE `arbeitsnachweis_position` CHANGE `arbeitsnachweis` `arbeitsnachweis` INT(11) NOT NULL ");
     $this->CheckAlterTable("ALTER TABLE `lager_reserviert` CHANGE `reserviertdatum` `reserviertdatum` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
     $this->CheckAlterTable("ALTER TABLE `shopimport_auftraege` CHANGE `warenkorb` `warenkorb` MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;");
     $this->CheckAlterTable("ALTER TABLE `shopimport_auftraege` CHANGE `extid` `extid` VARCHAR(255) NOT NULL DEFAULT '';");
@@ -12620,7 +12611,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckAlterTable("ALTER TABLE `bestellung_position` CHANGE `preis` `preis` DECIMAL(18,8) DEFAULT '0' NOT NULL");
     $this->CheckAlterTable("ALTER TABLE `sammelrechnung_position` CHANGE `preis` `preis` DECIMAL(18,8) DEFAULT '0' NOT NULL");
     $this->CheckAlterTable("ALTER TABLE `reisekosten_position` CHANGE `betrag` `betrag` DECIMAL(18,8) DEFAULT '0' NOT NULL");
-    $this->CheckAlterTable("ALTER TABLE `produktion_position` CHANGE `betrag` `betrag` DECIMAL(18,8) DEFAULT '0' NOT NULL");
     $this->CheckAlterTable("ALTER TABLE `produktion_position` CHANGE `menge` `menge` DECIMAL(".(10+$this->GetLagerNachkommastellen()).",".$this->GetLagerNachkommastellen().") NOT NULL;");
     $this->CheckAlterTable("ALTER TABLE `produktion_charge` CHANGE `ausgelagert` `ausgelagert` DECIMAL(".(10+$this->GetLagerNachkommastellen()).",".$this->GetLagerNachkommastellen().") NOT NULL DEFAULT '0';");
     $this->CheckAlterTable("ALTER TABLE `rechnung` CHANGE `ist` `ist` DECIMAL(18,2) DEFAULT '0' NOT NULL");
@@ -12645,8 +12635,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckAlterTable("ALTER TABLE `angebot` CHANGE `provision_summe` `provision_summe` DECIMAL(18,2) DEFAULT '0' NOT NULL");
     $this->CheckAlterTable("ALTER TABLE `angebot` CHANGE `umsatz_netto` `umsatz_netto` DECIMAL(18,2) DEFAULT '0' NOT NULL");
     $this->CheckAlterTable("ALTER TABLE `angebot` CHANGE `erloes_netto` `erloes_netto` DECIMAL(18,2) DEFAULT '0' NOT NULL");
-
-    $this->CheckAlterTable("ALTER TABLE `provisionenartikel_abrechnungen_provisionen` CHANGE `betrag` `betrag` DECIMAL(18,8) DEFAULT '0' NOT NULL");
 
     $this->app->DB->Update("UPDATE zeiterfassung SET status = 'abgeschlossen' WHERE (isnull(status) || status = '') AND abrechnen = 0 || abgerechnet = 1");
     $this->app->DB->Update("UPDATE zeiterfassung SET status = 'offen' WHERE (isnull(status) || status = '') AND abrechnen = 1 AND abgerechnet = 0");
@@ -12800,8 +12788,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckColumn("bezeichnung_de", "varchar(255)", "laender", "NOT NULL DEFAULT ''");
     $this->CheckColumn("bezeichnung_en", "varchar(255)", "laender", "NOT NULL DEFAULT ''");
     $this->CheckColumn("eu", "tinyint(1)", "laender", "DEFAULT '0' NOT NULL");
-
-    $this->DeleteColumn("kreditlimiteinmalig","adresse");
 
     $this->CheckColumn("preis", "DECIMAL(" . (10 + $this->GetLagerNachkommastellen()) . "," . $this->GetLagerNachkommastellen() . ")", "verbindlichkeit_position", "DEFAULT '0' NOT NULL");
     $this->CheckColumn("menge", "DECIMAL(" . (10 + $this->GetLagerNachkommastellen()) . "," . $this->GetLagerNachkommastellen() . ")", "verbindlichkeit_position", "DEFAULT '0' NOT NULL");
