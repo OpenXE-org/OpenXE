@@ -12856,6 +12856,10 @@ Bitte kontaktieren Sie uns und lassen Sie uns dies vermeiden: 0123/45678');
         $bezeichnung_en = $laender_en[$iso];
         $bezeichnung = html_entity_decode($bezeichnung);
         if(in_array($iso, $laender_eu)) $eu = 1;else $eu = 0;
+
+	$bezeichnung = mysqli_real_escape_string($this->app->DB->connection,$bezeichnung);
+	$bezeichnung_en = mysqli_real_escape_string($this->app->DB->connection,$bezeichnung_en);
+
         $this->app->DB->Insert("INSERT INTO laender (id,iso,bezeichnung_de,bezeichnung_en,eu) VALUES ('','$iso','$bezeichnung','$bezeichnung_en','$eu')");
       }
     }
