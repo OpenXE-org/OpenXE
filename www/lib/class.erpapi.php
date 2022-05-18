@@ -11361,13 +11361,6 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckColumn("artikel_freitext1_suche","int(1)","firmendaten","DEFAULT '0' NOT NULL");
     $this->CheckColumn("iconset_dunkel","tinyint(1)","firmendaten","DEFAULT '0' NOT NULL");
 
-    $this->CheckAlterTable("ALTER TABLE `firmendaten` CHANGE `footer_0_0` `footer_0_0` VARCHAR(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
-    $this->CheckAlterTable("ALTER TABLE `firmendaten` CHANGE `footer_0_1` `footer_0_1` VARCHAR(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
-    $this->CheckAlterTable("ALTER TABLE `firmendaten` CHANGE `footer_0_2` `footer_0_2` VARCHAR(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
-    $this->CheckAlterTable("ALTER TABLE `firmendaten` CHANGE `footer_0_3` `footer_0_3` VARCHAR(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
-    $this->CheckAlterTable("ALTER TABLE `firmendaten` CHANGE `footer_0_4` `footer_0_4` VARCHAR(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
-    $this->CheckAlterTable("ALTER TABLE `firmendaten` CHANGE `footer_0_5` `footer_0_5` VARCHAR(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
-
     $this->CheckColumn("eigenernummernkreis","int(11)","projekt");
     $this->CheckColumn("next_angebot","varchar(64)","projekt","DEFAULT ''");
     $this->CheckColumn("next_auftrag","varchar(64)","projekt","DEFAULT ''");
