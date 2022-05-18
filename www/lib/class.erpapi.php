@@ -28962,8 +28962,12 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
 
     $Values = array();
-    while(list($Key,$Val) = each($staaten))
-      $Values[$Val] = $Key;
+/*    while(list($Key,$Val) = each($staaten))
+      $Values[$Val] = $Key; */
+
+    foreach($staaten as $Key => $Val) {
+       $$Values[$Val] = $Key;
+    }
 
     if($staatenliste)
       return $staaten;
