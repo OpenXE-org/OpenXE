@@ -138,7 +138,7 @@
                                                             mysqli_query($db,"SET SESSION SQL_MODE :=''");
                   //mysqli_real_escape_string($db,$import); 
 
-                  $import = explode (";\n", $import); 
+                  $import = explode (";\r\n", $import); 
 
                   foreach ($import as $imp){
                     if ($imp != '' && $imp != ' ' && trim($imp) != ''){
