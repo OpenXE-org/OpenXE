@@ -138,6 +138,21 @@
                                                             mysqli_query($db,"SET SESSION SQL_MODE :=''");
                   //mysqli_real_escape_string($db,$import); 
 
+		if($value == '../../database/struktur.sql') 
+		{
+               		// Clear target DB
+        	        mysqli_query($db,'SET foreign_key_checks = 0');
+	                if ($result = mysqli_query($db,"SHOW TABLES"))
+	                {
+	                    while($row = $result->fetch_array(MYSQLI_NUM))
+	                    {
+	                        mysqli_query($db,'DROP TABLE IF EXISTS '.$row[0]);
+	                    }
+	                }
+	                mysqli_query($db,'SET foreign_key_checks = 1');
+		}
+
+
                   $import = explode (";\r\n", $import); 
 
                   foreach ($import as $imp){
