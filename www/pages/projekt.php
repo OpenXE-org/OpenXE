@@ -127,9 +127,6 @@ class Projekt extends GenProjekt {
                         if(v.skonto > 0,CONCAT(v.skonto,' %'),'-') as skonto, if(v.zahlungsweise='','rechnung',v.zahlungsweise), if(v.status='bezahlt','ja','nein'),
                           (" . $app->YUI->IconsSQLVerbindlichkeit() . ")  as icons,
                             v.id FROM `verbindlichkeit` AS `v` LEFT JOIN adresse a ON v.adresse = a.id LEFT JOIN arbeitspaket ap ON v.teilprojekt = ap.id
-                            
-                            
-                            
                             ";
 
 
@@ -140,9 +137,7 @@ class Projekt extends GenProjekt {
         
         // gesamt anzahl
         $count = "SELECT COUNT(v.id) FROM `verbindlichkeit` AS `v` WHERE $where ";
-        
-
-            
+       
       break;
       case 'projekttabelle':
         $allowed['projekt'] = array('list');
@@ -153,8 +148,8 @@ class Projekt extends GenProjekt {
         $geplant = $app->YUI->TableSearchFilter($name, 15, 'geplant', 0,0,'checkbox');
         // headings
 
-        $heading = array('Kennung','Beschreibung','Kunden-Nr.','Kunde','Verantwortlicher');
-        $width = array('8%', '20%','5%','15%', '15%');
+        $heading = array('','Kennung','Beschreibung','Kunden-Nr.','Kunde','Verantwortlicher');
+        $width = array('1%','8%', '20%','5%','15%', '15%');
         $moreinfo = true;
         $moreinfoaction='projektuebersicht';
         $findcols = array('p.abkuerzung','p.name','a.kundennummer','a.name','p.verantwortlicher');
@@ -1969,7 +1964,7 @@ class Projekt extends GenProjekt {
       }
     }
     $s = 1;
-    array_multisort($sort[$s], SORT_ASC, $spalte[$s]);
+//    array_multisort($sort[$s], SORT_ASC, $spalte[$s]);
     $tmpi = 0;
     $output = '';
     foreach($spalte[$s] as $k => $v)
