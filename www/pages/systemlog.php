@@ -17,7 +17,7 @@ class Systemlog {
   /** @var Application $app */
   var $app;
 
-  public const TLS_TEST_URL = 'https://update.xentral.biz/tlstest.php';
+//  public const TLS_TEST_URL = 'https://update.xentral.biz/tlstest.php';
 
   /**
    * Systemlog constructor.
@@ -473,7 +473,7 @@ class Systemlog {
    */
   public function isTls12Available(): bool
   {
-    $ch = curl_init();
+/*    $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, self::TLS_TEST_URL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt ($ch, CURLOPT_SSLVERSION, 6);
@@ -482,6 +482,8 @@ class Systemlog {
     curl_close($ch);
 
     return (int)$curlInfo['http_code'] !== 0;
+*/
+	return(false);
   }
 
   /**

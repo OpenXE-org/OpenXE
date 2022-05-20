@@ -165,7 +165,7 @@ class Welcome
         $this->app->User->GetID(),
         $this->app->Secure->POST
       );
-      try{
+/*      try{
         $surveyService->sendToXentral(
           $surveyId,
           "https://{$this->app->Conf->updateHost}/sendsurvey.php",
@@ -175,7 +175,7 @@ class Welcome
       }
       catch (Exception $e) {
 
-      }
+      }*/
     }
     catch(Exception $e) {
       return new JsonResponse(
@@ -840,6 +840,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     )
     ); 
 
+/*
     $result_news = file_get_contents("https://{$this->app->Conf->updateHost}/news.php?version=".$this->app->erp->Version(),0, $ctx);
 
     if($result_news=='')
@@ -851,10 +852,11 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
                     <a href="//community.xentral.com/hc/de/articles/360017815440-Top-Features-ab-Version-20-3" target="_blank" class="to-nues">Neues von Xentral</a>
                     </div>';
     }
-
-
     $this->app->Tpl->Set('EXTERNALNEWS', $result_news);
+*/
 
+
+/*
     $result_handbook =  file_get_contents('https://xentral.biz/handbook.php?version='.$this->app->erp->Version(),0, $ctx);
     if($result_handbook=='')
     {
@@ -867,6 +869,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     }
 
     $this->app->Tpl->Set('EXTERNALHANDBOOK', $result_handbook);
+*/
 
     // Aufgabe-Bearbeiten-Popup
     $pinnwaende = $this->app->erp->GetPinwandSelect();
@@ -1110,7 +1113,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     {
       $version = $this->app->erp->Version();
       $revision = $this->app->erp->Revision();
-
+/*
       $tmp = explode('.',$revision);
       $branch = strtolower($version).'_'.$tmp[0].'.'.$tmp[1];
 
@@ -1191,6 +1194,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       }
       $this->app->erp->RunHook('welcome_news');
       $this->app->Tpl->Parse('WELCOMENEWS','welcome_news.tpl');
+*/
     }
   }
 
