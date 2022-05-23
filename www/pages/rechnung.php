@@ -768,7 +768,7 @@ class Rechnung extends GenRechnung
     $sammelrechnung = false;
     if($this->app->DB->Select("SELECT id FROM sammelrechnung_position LIMIT 1"))$sammelrechnung = true;
     $gruppenrechnung = false;
-    if($this->app->DB->Select("SELECT id FROM gruppenrechnung_position LIMIT 1"))$gruppenrechnung = true;
+//    if($this->app->DB->Select("SELECT id FROM gruppenrechnung_position LIMIT 1"))$gruppenrechnung = true;
     $rechnungid = false;
     $this->app->DB->Select("SELECT rechnungid FROM lieferschein LIMIT 1");
     if(!$this->app->DB->error())$rechnungid =true;
@@ -855,7 +855,7 @@ class Rechnung extends GenRechnung
     $table = new EasyTable($this->app);
 
     $table->Query("SELECT if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung) as artikel, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer, ".$this->app->erp->FormatMenge("ap.menge")." as Menge,".$this->app->erp->FormatPreis("ap.preis*(100-ap.rabatt)/100",2)." as Preis
-          FROM rechnung_position ap, artikel a WHERE ap.rechnung='$id' AND a.id=ap.artikel ORDER by ap.sort");
+          FROM rechnung_position ap, artikel a WHERE ap.rechnung='$id' AND a.id=ap.artikel ORDER by ap.sort",0,"");
 
     $table->align = array('left','left','right','right');
     $artikel = $table->DisplayNew("return","Preis","noAction","false",0,0,false);
@@ -890,27 +890,31 @@ class Rechnung extends GenRechnung
 
     
     $this->app->Tpl->Set('ZAHLUNGEN',"<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>Erst ab Version Enterprise verf&uuml;gbar</table>");
-    if(count($gutschrift) > 0)
-      $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"info\">Zu dieser Rechnung existiert eine Gutschrift!</div>");
-    else {
 
-      if($auftragArr[0]['zahlungsstatus']!="bezahlt")
-        $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"warning\">Diese Rechnung ist noch nicht komplett bezahlt!</div>");
-      else
-      {
-        if(!empty($auftragArr[0]['bezahlt_am']) && $auftragArr[0]['bezahlt_am'] != '0000-00-00')
-        {
-          $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"success\">Diese Rechnung wurde am ".$this->app->String->Convert($auftragArr[0]['bezahlt_am'],"%1-%2-%3","%3.%2.%1")." bezahlt.</div>");
-        }else{
-          $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"success\">Diese Rechnung ist bezahlt.</div>");
-        }
-      }
-    }
+	if (!is_null($gutschrift)) {
+
+	    if(count($gutschrift) > 0)
+	      $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"info\">Zu dieser Rechnung existiert eine Gutschrift!</div>");
+	    else {
+
+	      if($auftragArr[0]['zahlungsstatus']!="bezahlt")
+	        $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"warning\">Diese Rechnung ist noch nicht komplett bezahlt!</div>");
+	      else
+	      {
+	        if(!empty($auftragArr[0]['bezahlt_am']) && $auftragArr[0]['bezahlt_am'] != '0000-00-00')
+	        {
+	          $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"success\">Diese Rechnung wurde am ".$this->app->String->Convert($auftragArr[0]['bezahlt_am'],"%1-%2-%3","%3.%2.%1")." bezahlt.</div>");
+	        }else{
+	          $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"success\">Diese Rechnung ist bezahlt.</div>");
+	        }
+	      }
+	    }
+	}
 
     $this->app->Tpl->Set('RECHNUNGADRESSE',$this->Rechnungsadresse($auftragArr[0]['id']));
 
     $tmp = new EasyTable($this->app);
-    $tmp->Query("SELECT zeit,bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' ORDER by zeit DESC");
+    $tmp->Query("SELECT zeit,bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' ORDER by zeit DESC",0,"");
     $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
 
 
@@ -1903,7 +1907,7 @@ class Rechnung extends GenRechnung
     $table = new EasyTable($this->app);
     $table->Query("SELECT bezeichnung as artikel, nummer as Nummer, menge, vpe as VPE, FORMAT(preis,4) as preis
         FROM rechnung_position
-        WHERE rechnung='$id'");
+        WHERE rechnung='$id'",0,"");
     $table->DisplayNew('POSITIONEN',"Preis","noAction");
     $summe = $this->app->DB->Select("SELECT FORMAT(SUM(menge*preis),2) FROM rechnung_position
         WHERE rechnung='$id'");

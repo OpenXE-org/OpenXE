@@ -4707,12 +4707,12 @@ title: 'Abschicken',
         for($i=0;$i<$ctracking;$i++) {
           $tmptracking[] = $tracking[$i]['tracking'];
         }
-
+/*
         $nve = $this->app->DB->SelectArr("SELECT nve FROM spedition_packstuecke WHERE lieferschein='".$lieferscheine[$li]['id']."' AND nve!='' AND status!='storniert'");
         $cnve = !empty($nve)?count($nve):0;
         for($i=0;$i<$cnve;$i++) {
           $tmpnve[] = $nve[$i]['nve'];
-        }
+        }*/
       }
       $text = str_replace('{TRACKINGNUMMER}',!empty($tmptracking)?implode(", ",$tmptracking):'',$text);
       $text = str_replace('{NVE}',!empty($tmpnve)?implode(", ",$tmpnve):'',$text);

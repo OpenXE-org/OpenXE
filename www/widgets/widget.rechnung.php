@@ -132,13 +132,21 @@ class WidgetRechnung extends WidgetGenRechnung
 
 
     $zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, type FROM zahlungsweisen WHERE verhalten = 'rechnung'");
-    for($iz=0;$iz<count($zahlungsweisenmodule);$iz++) $cmdcheck[] = " cmd=='".$zahlungsweisenmodule[$iz]['type']."'";
+
+	if (!is_null($zahlungsweisenmodule)) {
+	    for($iz=0;$iz<count($zahlungsweisenmodule);$iz++) $cmdcheck[] = " cmd=='".$zahlungsweisenmodule[$iz]['type']."'";
+	}
 
     $field = new HTMLSelect("zahlungsweise",0);
-    if(count($zahlungsweisenmodule) > 0)
-      $field->onchange="var cmd = this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value; if(".implode(' || ',$cmdcheck).") cmd='rechnung';  aktion_buchen(cmd);";
-    else
-      $field->onchange="var cmd = this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value;  aktion_buchen(cmd);";
+
+	if (!is_null($zahlungsweisenmodule)) 
+	{
+	    if(count($zahlungsweisenmodule) > 0)
+	      $field->onchange="var cmd = this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value; if(".implode(' || ',$cmdcheck).") cmd='rechnung';  aktion_buchen(cmd);";
+	    else
+	      $field->onchange="var cmd = this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value;  aktion_buchen(cmd);";
+	}
+
     $field->AddOptionsSimpleArray($zahlungsweise);
     $this->form->NewField($field);
 
