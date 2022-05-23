@@ -774,14 +774,20 @@ class erpooSystem extends Application
     /*********** select field for projekt ***************/
     $selectid = $this->Secure->GetPOST('projekt');
     if($selectid=='' && $module !== 'projekt') {
-      if(!empty($this->Conf->WFdbType) && $this->Conf->WFdbType==='postgre')
+    /*  
+
+	Removed because of module tables that have no projekt id
+
+	if(!empty($this->Conf->WFdbType) && $this->Conf->WFdbType==='postgre')
       {
         //POSTGRE -->  dringend bei statements wo es die tabelle gibt machen!
         $selectid = $this->DB->Select("SELECT projekt FROM `$module` WHERE id='$id' LIMIT 1");
 
       } else {
         $selectid = $id > 0?$this->DB->Select("SELECT projekt FROM `$module` WHERE id='$id' LIMIT 1"):NULL;
-      }
+      }*/
+
+
     }
 
     $color_selected = '';
