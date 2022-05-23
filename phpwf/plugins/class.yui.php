@@ -6084,7 +6084,6 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         
         //if($tmp!="")$tmp .= " AND r.belegnr!='' ";
 
-
         $more_data1 = $this->app->Secure->GetGET("more_data1");
         if ($more_data1 == 1) $subwhere[] = " (r.zahlungsstatus!='bezahlt' AND (r.manuell_vorabbezahlt='' OR r.manuell_vorabbezahlt='0000-00-00' OR r.manuell_vorabbezahlt IS NULL)) ";
 
@@ -6094,8 +6093,10 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $more_data3 = $this->app->Secure->GetGET("more_data3");
         if ($more_data3 == 1) $subwhere[] = " (r.manuell_vorabbezahlt IS NULL OR r.manuell_vorabbezahlt='0000-00-00') ";
 
-
-        for ($j = 0;$j < count($subwhere);$j++) $tmp.= " AND " . $subwhere[$j];
+	$tmp = '';
+	if (!is_null($subwhere)) {
+	        for ($j = 0;$j < count($subwhere);$j++) $tmp.= " AND " . $subwhere[$j];
+	}
 
         $where = " r.status!='angelegt' AND  r.id!='' ".$tmp ." ". $this->app->erp->ProjektRechte('p.id', true, 'r.vertriebid');
 
