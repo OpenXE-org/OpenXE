@@ -80,7 +80,7 @@ class Supportapp Extends GenSupportapp {
           $tmp = explode(' ', $tmp);
           $tmp = reset($tmp);
           $tmp = $app->DB->Select("SELECT id FROM artikel WHERE nummer <> '' AND ifnull(geloescht,0) = 0 AND nummer = '".$app->DB->real_escape_string($tmp)."' LIMIT 1");
-          if($tmp)$enterprisearr[] = $tmp;
+          if($tmp)$enterprisearr = $tmp;
         }
         
         $abgelaufene = $app->YUI->TableSearchFilter($name, 1, 'abgelaufene',0,0,'checkbox');
@@ -92,7 +92,7 @@ class Supportapp Extends GenSupportapp {
                 LEFT JOIN (
                     SELECT r.adresse 
                     FROM rechnung r 
-                    INNER JOIN rechnung_position rp ON r.status <> 'storniert' AND r.belegnr <> '' AND r.id = rp.rechnung AND rp.artikel in (".implode(',', $enterprisearr).") AND rp.artikel <> 0
+                    INNER JOIN rechnung_position rp ON r.status <> 'storniert' AND r.belegnr <> '' AND r.id = rp.rechnung AND rp.artikel in (".$enterprisearr.") AND rp.artikel <> 0
                     LEFT JOIN abrechnungsartikel abo ON r.adresse = abo.adresse AND abo.artikel = rp.artikel
                       AND abo.artikel <> 0 
                     WHERE isnull(abo.adresse) OR 
@@ -114,7 +114,7 @@ class Supportapp Extends GenSupportapp {
                 LEFT JOIN (
                            SELECT r.adresse 
                     FROM rechnung r 
-                    INNER JOIN rechnung_position rp ON r.status <> 'storniert' AND r.belegnr <> '' AND r.id = rp.rechnung AND rp.artikel in (".implode(',', $enterprisearr).") AND rp.artikel <> 0
+                    INNER JOIN rechnung_position rp ON r.status <> 'storniert' AND r.belegnr <> '' AND r.id = rp.rechnung AND rp.artikel in (".$enterprisearr.") AND rp.artikel <> 0
                     LEFT JOIN abrechnungsartikel abo ON r.adresse = abo.adresse AND abo.artikel = rp.artikel
                       AND abo.artikel <> 0 
                     WHERE  
@@ -239,19 +239,22 @@ class Supportapp Extends GenSupportapp {
         $artikektechnikerarr = array(0);
         $artikekenterprisearr = array(0);
         $artikeltmp = $app->DB->SelectArr("SELECT * FROM supportapp_artikel");
-        for ($i=0; $i < count($artikeltmp); $i++) { 
-          switch ($artikeltmp[$i]['typ']) {
-            case '1':
-              $artikektelefonarr[] = $artikeltmp[$i]['artikel'];
-              break;
-            case '2':
-              $artikektechnikerarr[] = $artikeltmp[$i]['artikel'];
-              break;
-            case '3':
-              $artikekenterprisearr[] = $artikeltmp[$i]['artikel'];
-              break;
-          }
-        }
+
+	if (!is_null($artikeltmp)) {
+	        for ($i=0; $i < count($artikeltmp); $i++) { 
+	          switch ($artikeltmp[$i]['typ']) {
+	            case '1':
+	              $artikektelefonarr[] = $artikeltmp[$i]['artikel'];
+	              break;
+	            case '2':
+	              $artikektechnikerarr[] = $artikeltmp[$i]['artikel'];
+	              break;
+	            case '3':
+	              $artikekenterprisearr[] = $artikeltmp[$i]['artikel'];
+	              break;
+	          }
+	        }
+	}
 
 //$supportvertrag2 = $->app->DB->Select("SELECT rp.id, r.datum FROM rechnung_position rp LEFT JOIN rechnung r ON rp.rechnung = r.id WHERE artikel in (".implode(', ', $artikekenterprisearr).") AND artikel <> 0 AND adresse = '$kundenid' AND r.datum >= (now() - INTERVAL 1 YEAR)");
 
@@ -339,12 +342,16 @@ class Supportapp Extends GenSupportapp {
         $moredataarray = array();
         $schrittearray = array();
         $filterschritte = $app->DB->SelectArr("SELECT ws.id AS id, wg.bezeichnung AS wgb, ws.bezeichnung AS wsb FROM supportapp_schritte ws LEFT JOIN supportapp_gruppen wg ON ws.gruppe = wg.id WHERE ws.aktiv = '1' and filter = '1' ORDER BY wg.id, ws.sort");
-        if(count($filterschritte) > 0){
-          for ($i=4; $i < count($filterschritte)+4; $i++) {
-            $moredataarray[$i] = $app->Secure->GetGET("more_data".$i);
-            $schrittearray[$i] = $filterschritte[$i-4]['id'];
-          }
-        }
+
+	if (!is_null($filterschritte)) {
+
+	        if(count($filterschritte) > 0){
+	          for ($i=4; $i < count($filterschritte)+4; $i++) {
+	            $moredataarray[$i] = $app->Secure->GetGET("more_data".$i);
+	            $schrittearray[$i] = $filterschritte[$i-4]['id'];
+	          }
+	        }
+	}
 
         if ($more_data2 == 1)
           $where = " w.status='geplant' ";
@@ -678,6 +685,10 @@ class Supportapp Extends GenSupportapp {
         $kundenid = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer ='$kundennummer' LIMIT 1");
         $mitarbeiterid = $this->app->DB->Select("SELECT id FROM adresse WHERE mitarbeiternummer = '$mitarbeiternummer' LIMIT 1");
 
+	if (gettype($startdatum) !== 'DateTimeInterface') {
+		$startdatum = new DateTime('now');	
+	}
+
         if($einrichtungid > 0){
           $this->app->DB->Update("UPDATE supportapp SET adresse='$kundenid',mitarbeiter='$mitarbeiterid',startdatum='".date_format($startdatum, 'Y-m-d')."',zeitgeplant='$zeitgeplant', intervall='$intervall', version='$version',bemerkung='$bemerkung',status='$status',phase='$phase' WHERE id='$einrichtungid'");
         }else{
@@ -703,28 +714,31 @@ class Supportapp Extends GenSupportapp {
     $this->app->erp->Headlines('','Einrichtung');
     $filterschritte = $this->app->DB->SelectArr("SELECT ws.id AS id, wg.bezeichnung AS wgb, ws.bezeichnung AS wsb FROM supportapp_schritte ws LEFT JOIN supportapp_gruppen wg ON ws.gruppe = wg.id WHERE ws.aktiv = '1' and filter = '1' ORDER BY wg.id, ws.sort");
 
-    if(count($filterschritte) > 0){
-      $filterinhalt = "<fieldset style=\"width:33em;\"><legend>Einzelfilter</legend><table>";
-      $filtergruppe_tmp = "";
-      for ($i=0; $i < count($filterschritte); $i++) {
-        if($filtergruppe_tmp != $filterschritte[$i]['wgb']){
-          $filterinhalt .= '<tr><td></td></tr><tr><td colspan="2"><b>'.$filterschritte[$i]['wgb'].'</b></td></tr>';
-          $filtergruppe_tmp = $filterschritte[$i]['wgb'];
-        }
-        $filterinhalt .= '<tr><td><input type="checkbox" id="filter_'.$filterschritte[$i]['id'].'"></td><td rowspan="2"><label for="filter_'.$filterschritte[$i]['id'].'">'.$filterschritte[$i]['wsb'].' fehlt</label></td></tr><tr></tr>';
+	if (!is_null($filterschritte)) {
 
-        $this->app->Tpl->Add('JQUERYREADY', "$('#filter_".$filterschritte[$i]['id']."').click(function() { fnFilterColumn".($i+4)."( 0 ); } );");
-        $this->app->Tpl->Add('JAVASCRIPT', '
-         function fnFilterColumn'.($i+4).'( i ){
-         if(oMoreData'.($i+4).'supportapp_list==1)oMoreData'.($i+4).'supportapp_list=0;
-         else
-         oMoreData'.($i+4).'supportapp_list=1;
-         $(\'#supportapp_list\').dataTable().fnFilter(\'A\',i,0,0);
-         }
-         ');
-      }
-      $filterinhalt .= "</table></fieldset>";
-    }
+	    if(count($filterschritte) > 0){
+	      $filterinhalt = "<fieldset style=\"width:33em;\"><legend>Einzelfilter</legend><table>";
+	      $filtergruppe_tmp = "";
+	      for ($i=0; $i < count($filterschritte); $i++) {
+	        if($filtergruppe_tmp != $filterschritte[$i]['wgb']){
+	          $filterinhalt .= '<tr><td></td></tr><tr><td colspan="2"><b>'.$filterschritte[$i]['wgb'].'</b></td></tr>';
+	          $filtergruppe_tmp = $filterschritte[$i]['wgb'];
+	        }
+	        $filterinhalt .= '<tr><td><input type="checkbox" id="filter_'.$filterschritte[$i]['id'].'"></td><td rowspan="2"><label for="filter_'.$filterschritte[$i]['id'].'">'.$filterschritte[$i]['wsb'].' fehlt</label></td></tr><tr></tr>';
+
+	        $this->app->Tpl->Add('JQUERYREADY', "$('#filter_".$filterschritte[$i]['id']."').click(function() { fnFilterColumn".($i+4)."( 0 ); } );");
+	        $this->app->Tpl->Add('JAVASCRIPT', '
+	         function fnFilterColumn'.($i+4).'( i ){
+	         if(oMoreData'.($i+4).'supportapp_list==1)oMoreData'.($i+4).'supportapp_list=0;
+	         else
+	         oMoreData'.($i+4).'supportapp_list=1;
+	         $(\'#supportapp_list\').dataTable().fnFilter(\'A\',i,0,0);
+	         }
+	         ');
+	      }
+	      $filterinhalt .= "</table></fieldset>";
+	    }
+	}
 
     $this->app->YUI->DatePicker("startdatum");
     $this->app->YUI->CkEditor("bemerkung","basic",array('height'=>'200px', 'width'=>'500px'));
@@ -923,19 +937,24 @@ class Supportapp Extends GenSupportapp {
     $artikekenterprisearr = array(0);
 
     $artikeltmp = $this->app->DB->SelectArr("SELECT wa.* FROM supportapp_artikel wa JOIN artikel a ON wa.artikel = a.id WHERE a.geloescht = 0");
-    for ($i=0; $i < count($artikeltmp); $i++) { 
-      switch ($artikeltmp[$i]['typ']) {
-        case '1':
-          $artikektelefonarr[] = $artikeltmp[$i]['artikel'];
-          break;
-        case '2':
-          $artikektechnikerarr[] = $artikeltmp[$i]['artikel'];
-          break;
-        case '3':
-          $artikekenterprisearr[] = $artikeltmp[$i]['artikel'];
-          break;
-      }
-    }
+
+	if (!is_null($artikeltmp)) {
+
+	    for ($i=0; $i < count($artikeltmp); $i++) { 
+	      switch ($artikeltmp[$i]['typ']) {
+	        case '1':
+	          $artikektelefonarr[] = $artikeltmp[$i]['artikel'];
+	          break;
+	        case '2':
+	          $artikektechnikerarr[] = $artikeltmp[$i]['artikel'];
+	          break;
+	        case '3':
+	          $artikekenterprisearr[] = $artikeltmp[$i]['artikel'];
+	          break;
+	      }
+	    }
+	}
+
     $telefonsupport = $this->app->DB->Select("SELECT id FROM abrechnungsartikel  WHERE artikel in (".implode(', ', $artikektelefonarr).")  AND artikel <> 0 AND (enddatum IS NULL OR enddatum >= CURDATE()) AND adresse = '$kundenid' LIMIT 1");
 
     $techniksupport = $this->app->DB->Select("SELECT id FROM abrechnungsartikel  WHERE artikel in (".implode(', ', $artikektechnikerarr).") AND artikel <> 0 AND (enddatum IS NULL OR enddatum >= CURDATE()) AND adresse = '$kundenid' LIMIT 1");
@@ -955,15 +974,19 @@ class Supportapp Extends GenSupportapp {
 
     if($kundenid != ''){
       $gruppenzumhinzufuegen= $this->app->DB->SelectArr("SELECT ap.id, was.gruppe FROM auftrag_position ap JOIN auftrag a ON ap.auftrag = a.id LEFT JOIN supportapp_gruppen wag ON ap.artikel = wag.artikel LEFT JOIN supportapp_schritte was ON wag.id = was.gruppe LEFT JOIN supportapp_auftrag_check wac ON wac.auftragposition = ap.id WHERE a.adresse = '$kundenid' AND a.status <> 'storniert' AND a.belegnr <> '' AND wag.aktiv = 1 AND was.aktiv = 1 AND ISNULL(wac.id) GROUP BY ap.id");
-      for ($i=0; $i < count($gruppenzumhinzufuegen); $i++) {
-        $einzelschritte = $this->app->DB->Select("SELECT * FROM supportapp_schritte WHERE aktiv = 1 AND gruppe = ".$gruppenzumhinzufuegen[$i]['gruppe']);
-        for ($j=0; $j < count($einzelschritte); $j++) {
-          $vorhanden = $this->app->DB->Select("SELECT id FROM supportapp_auftrag_check WHERE auftragposition = '".$gruppenzumhinzufuegen[$i]['id']."' AND gruppe = '".$gruppenzumhinzufuegen[$i]['gruppe']."' AND adresse = '$kundenid' AND schritt = '".$einzelschritte[$j]['id']."' LIMIT 1");
-          if($vorhanden == ''){
-            $this->app->DB->Insert("INSERT INTO supportapp_auftrag_check (adresse, gruppe, schritt, auftragposition, status) VALUES ('$kundenid','".$gruppenzumhinzufuegen[$i]['gruppe']."','".$einzelschritte[$j]['id']."','".$gruppenzumhinzufuegen[$i]['id']."','0')");
-          }
-        }
-      }
+
+	if (!is_null($gruppezumhinzufuegen)) {
+
+	      for ($i=0; $i < count($gruppenzumhinzufuegen); $i++) {
+	        $einzelschritte = $this->app->DB->Select("SELECT * FROM supportapp_schritte WHERE aktiv = 1 AND gruppe = ".$gruppenzumhinzufuegen[$i]['gruppe']);
+	        for ($j=0; $j < count($einzelschritte); $j++) {
+	          $vorhanden = $this->app->DB->Select("SELECT id FROM supportapp_auftrag_check WHERE auftragposition = '".$gruppenzumhinzufuegen[$i]['id']."' AND gruppe = '".$gruppenzumhinzufuegen[$i]['gruppe']."' AND adresse = '$kundenid' AND schritt = '".$einzelschritte[$j]['id']."' LIMIT 1");
+	          if($vorhanden == ''){
+	            $this->app->DB->Insert("INSERT INTO supportapp_auftrag_check (adresse, gruppe, schritt, auftragposition, status) VALUES ('$kundenid','".$gruppenzumhinzufuegen[$i]['gruppe']."','".$einzelschritte[$j]['id']."','".$gruppenzumhinzufuegen[$i]['id']."','0')");
+	          }
+	        }
+	      }
+	}
     }
 
     /*
@@ -1045,17 +1068,22 @@ class Supportapp Extends GenSupportapp {
         <td>Rabatt</td>
       </tr>';
     $modules = $this->app->DB->SelectArr("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') AS datum, ar.nummer, ap.bezeichnung, ".$this->app->erp->FormatMenge("ap.menge")." AS menge, ".$this->app->erp->FormatPreis("ap.preis",2)." AS preis, ".$this->app->erp->FormatPreis("ap.rabatt",2)." AS rabatt FROM auftrag a LEFT JOIN auftrag_position ap ON a.id = ap.auftrag LEFT JOIN artikel ar ON ar.id = ap.artikel WHERE a.status <> 'angelegt' AND a.status <> 'storniert' AND a.adresse = '$kundenid'");
-    for ($i=0; $i < count($modules); $i++) {
-      $module .= '
-      <tr>
-        <td>'.$modules[$i]['datum'].'</td>
-        <td>'.$modules[$i]['nummer'].'</td>
-        <td>'.$modules[$i]['bezeichnung'].'</td>
-        <td align="right">'.$modules[$i]['menge'].'</td>
-        <td align="right">'.$modules[$i]['preis'].'</td>
-        <td  align="right">'.$modules[$i]['rabatt'].'</td>
-      </tr>';
-    }
+
+	if (!is_null($modules)) {
+
+	    for ($i=0; $i < count($modules); $i++) {
+	      $module .= '
+	      <tr>
+	        <td>'.$modules[$i]['datum'].'</td>
+	        <td>'.$modules[$i]['nummer'].'</td>
+	        <td>'.$modules[$i]['bezeichnung'].'</td>
+	        <td align="right">'.$modules[$i]['menge'].'</td>
+	        <td align="right">'.$modules[$i]['preis'].'</td>
+	        <td  align="right">'.$modules[$i]['rabatt'].'</td>
+	      </tr>';
+	    }
+	}
+
     $module .= '</table>';
 
     $belege ='<table class="mkTable" cellpadding="0" cellspacing="0">
@@ -1070,17 +1098,22 @@ class Supportapp Extends GenSupportapp {
     $steuersatznormal = 1+$this->app->erp->GetStandardSteuersatzNormal()/100;
     $steuersatzermaessigt = 1+$this->app->erp->GetStandardSteuersatzErmaessigt()/100;
     $beleges = $this->app->DB->SelectArr("SELECT 'Angebot' AS art,a.belegnr, DATE_FORMAT(a.datum,'%d.%m.%Y') AS datum, ".$this->app->erp->FormatPreis("IF(ISNULL(SUM(ap.preis)),0,SUM(ap.preis*ap.menge*IF(ap.umsatzsteuer = 'normal',$steuersatznormal,$steuersatzermaessigt)))",2)." AS summe, a.status, CONCAT('<a href=\"index.php?module=angebot&action=pdf&id=',a.id,'\"><img src=\"themes/new/images/pdf.svg\" border=\"0\"></a>') AS pdf FROM angebot a LEFT JOIN angebot_position ap ON a.id = ap.angebot WHERE adresse = '$kundenid' GROUP BY a.id UNION SELECT 'Auftrag' AS art,a.belegnr, DATE_FORMAT(a.datum,'%d.%m.%Y') AS datum, ".$this->app->erp->FormatPreis("IF(ISNULL(SUM(ap.preis)),0,SUM(ap.preis*ap.menge*IF(ap.umsatzsteuer = 'normal',$steuersatznormal,$steuersatzermaessigt)))",2)." AS summe, a.status, CONCAT('<a href=\"index.php?module=auftrag&action=pdf&id=',a.id,'\"><img src=\"themes/new/images/pdf.svg\" border=\"0\"></a>') AS pdf FROM auftrag a LEFT JOIN auftrag_position ap ON a.id = ap.auftrag WHERE adresse = '$kundenid' GROUP BY a.id");
-    for ($i=0; $i < count($beleges); $i++) {
-      $belege .= '
-      <tr>
-        <td>'.$beleges[$i]['art'].'</td>
-        <td>'.$beleges[$i]['belegnr'].'</td>
-        <td>'.$beleges[$i]['datum'].'</td>
-        <td align="right">'.$beleges[$i]['summe'].'</td>
-        <td>'.$beleges[$i]['status'].'</td>
-        <td><center>'.$beleges[$i]['pdf'].'</center></td>
-      </tr>';
-    }
+
+	if (!is_null($beleges)) {
+
+	    for ($i=0; $i < count($beleges); $i++) {
+	      $belege .= '
+	      <tr>
+	        <td>'.$beleges[$i]['art'].'</td>
+	        <td>'.$beleges[$i]['belegnr'].'</td>
+	        <td>'.$beleges[$i]['datum'].'</td>
+	        <td align="right">'.$beleges[$i]['summe'].'</td>
+	        <td>'.$beleges[$i]['status'].'</td>
+	        <td><center>'.$beleges[$i]['pdf'].'</center></td>
+	      </tr>';
+	    }
+	}
+
     $belege .= '</table>';
 
     $logbuch ='<table class="mkTable" cellpadding="0" cellspacing="0">
@@ -1091,14 +1124,18 @@ class Supportapp Extends GenSupportapp {
       </tr>';
     $logbuchs = $this->app->DB->SelectArr("SELECT wl.logdatei, a.name, wl.details FROM supportapp_log wl LEFT JOIN adresse a ON wl.bearbeiter = a.id WHERE adresse = '$kundenid' ORDER BY wl.logdatei DESC");  
 
-    for ($i=0; $i < count($logbuchs); $i++) {
-      $logbuch .= '
-      <tr>
-        <td>'.date_format(date_create($logbuchs[$i]['logdatei']), 'H:i d.m.y').'</td>
-        <td>'.$logbuchs[$i]['name'].'</td>
-        <td>'.$logbuchs[$i]['details'].'</td>
-      </tr>';
-    }
+	if (!is_null($logbuchs)) {
+
+	    for ($i=0; $i < count($logbuchs); $i++) {
+	      $logbuch .= '
+	      <tr>
+	        <td>'.date_format(date_create($logbuchs[$i]['logdatei']), 'H:i d.m.y').'</td>
+	        <td>'.$logbuchs[$i]['name'].'</td>
+	        <td>'.$logbuchs[$i]['details'].'</td>
+	      </tr>';
+	    }
+	}
+
     $logbuch .= '</table>';
 
     $einrichtung ='<table class="mkTable" cellpadding="0" cellspacing="0">
@@ -1108,41 +1145,51 @@ class Supportapp Extends GenSupportapp {
         <td>Bemerkung</td>
       </tr>';
     $einrichtungs = $this->app->DB->SelectArr("SELECT status, DATE_FORMAT(startdatum,'%d.%m.%Y') AS startdatum ,bemerkung FROM supportapp WHERE adresse='$kundenid' ORDER BY startdatum");  
-    for ($i=0; $i < count($einrichtungs); $i++) {
-      $einrichtung .= '
-      <tr>
-        <td>'.$einrichtungs[$i]['status'].'</td>
-        <td>'.$einrichtungs[$i]['startdatum'].'</td>
-        <td>'.$einrichtungs[$i]['bemerkung'].'</td>
-      </tr>';
-    }
-    $einrichtung .= '</table>';
 
+	if (!is_null($einrichtungs)) {
+
+	    for ($i=0; $i < count($einrichtungs); $i++) {
+	      $einrichtung .= '
+	      <tr>
+	        <td>'.$einrichtungs[$i]['status'].'</td>
+	        <td>'.$einrichtungs[$i]['startdatum'].'</td>
+	        <td>'.$einrichtungs[$i]['bemerkung'].'</td>
+	      </tr>';
+	    }
+	}
+
+    $einrichtung .= '</table>';
 
     $gruppen = $this->app->DB->SelectArr("SELECT wag.id AS id, ap.id AS auftragsposition, a.belegnr AS auftrag, ap.bezeichnung AS bezeichnung, COUNT(was.id) AS gesamt, x.erledigt FROM auftrag_position ap JOIN auftrag a ON ap.auftrag = a.id LEFT JOIN supportapp_gruppen wag ON ap.artikel = wag.artikel LEFT JOIN supportapp_schritte was ON wag.id = was.gruppe LEFT JOIN (SELECT auftragposition, SUM(status) AS erledigt FROM supportapp_auftrag_check WHERE adresse = '$kundenid' GROUP BY auftragposition) x ON x.auftragposition = ap.id WHERE a.adresse = '$kundenid' AND a.status <> 'storniert' AND a.belegnr <> '' AND wag.aktiv = 1 AND was.aktiv = 1 GROUP BY ap.id");
     $checkboxen = "<table>";
     $zeilen = 0;
     $kopfzeilen = 0;
-    for ($i=0; $i < count($gruppen); $i++) {
-      if($gruppen[$i]['gesamt'] > $gruppen[$i]['erledigt']){
-        $schritte = $this->app->DB->SelectArr("SELECT ws.*, IF(wac.status=1,1,0) AS status FROM supportapp_schritte ws LEFT JOIN (SELECT * FROM supportapp_auftrag_check WHERE adresse = '".$kundenid."' AND auftragposition = '".$gruppen[$i]['auftragsposition']."') wac ON ws.id = wac.schritt WHERE ws.gruppe = '".$gruppen[$i]['id']."' AND ws.aktiv = '1' ORDER BY sort ASC");
-        $checkboxen .= '<tr><td colspan="4"><b><u>'.$gruppen[$i]['auftrag']." - ".$gruppen[$i]['bezeichnung'].'<u><b></td><tr>';
-        $kopfzeilen++;
-        $checkboxen .= '<tr>';
-        for ($j=0; $j < count($schritte); $j++) {
-          if(($j % 4) == 0 && $j != 0){
-            $checkboxen .= '</tr><tr>';
-          }
-          if(($j % 4) == 0 || $j == 0){
-            $zeilen++;
-          }
-          $cbname = 'gs_'.$gruppen[$i]['id'].'_'.$schritte[$j]['id'].'_'.$gruppen[$i]['auftragsposition'];
-          $checkboxen .= '<td><input type="checkbox" name="'.$cbname.'" id="'.$cbname.'" onchange="changeschritt(\''.$kundenid.'\',\''.$cbname.'\');" '.($schritte[$j]['status']=='1'?'checked':'').'></td><td colspan=2><label for="'.$cbname.'">'.$schritte[$j]['bezeichnung'].'</label></td>';
-        }
-        $checkboxen .="</tr><tr>";
-        $checkboxen .= '</tr>';
-      }
-    }
+
+	if (!is_null($gruppen)) {
+
+	    for ($i=0; $i < count($gruppen); $i++) {
+	      if($gruppen[$i]['gesamt'] > $gruppen[$i]['erledigt']){
+	        $schritte = $this->app->DB->SelectArr("SELECT ws.*, IF(wac.status=1,1,0) AS status FROM supportapp_schritte ws LEFT JOIN (SELECT * FROM supportapp_auftrag_check WHERE adresse = '".$kundenid."' AND auftragposition = '".$gruppen[$i]['auftragsposition']."') wac ON ws.id = wac.schritt WHERE ws.gruppe = '".$gruppen[$i]['id']."' AND ws.aktiv = '1' ORDER BY sort ASC");
+	        $checkboxen .= '<tr><td colspan="4"><b><u>'.$gruppen[$i]['auftrag']." - ".$gruppen[$i]['bezeichnung'].'<u><b></td><tr>';
+	        $kopfzeilen++;
+	        $checkboxen .= '<tr>';
+	        for ($j=0; $j < count($schritte); $j++) {
+	          if(($j % 4) == 0 && $j != 0){
+	            $checkboxen .= '</tr><tr>';
+	          }
+	          if(($j % 4) == 0 || $j == 0){
+	            $zeilen++;
+	          }
+	          $cbname = 'gs_'.$gruppen[$i]['id'].'_'.$schritte[$j]['id'].'_'.$gruppen[$i]['auftragsposition'];
+	          $checkboxen .= '<td><input type="checkbox" name="'.$cbname.'" id="'.$cbname.'" onchange="changeschritt(\''.$kundenid.'\',\''.$cbname.'\');" '.($schritte[$j]['status']=='1'?'checked':'').'></td><td colspan=2><label for="'.$cbname.'">'.$schritte[$j]['bezeichnung'].'</label></td>';
+	        }
+	        $checkboxen .="</tr><tr>";
+	        $checkboxen .= '</tr>';
+	      }
+	    }
+	}
+
+
     $checkboxen .= "</table>";
 
     $stundensumme = $this->app->DB->Select("SELECT IFNULL(SUM(TIME_TO_SEC(TIMEDIFF(bis, von)))/3600,0) AS Dauer FROM zeiterfassung WHERE adresse_abrechnung = '$kundenid' AND MONTH(von) = MONTH(CURRENT_DATE) AND YEAR(von) = YEAR(CURRENT_DATE)");
@@ -1159,10 +1206,13 @@ class Supportapp Extends GenSupportapp {
     $this->supportappMenuNormal($kundenid);
     $vorlagenarray = $this->app->DB->SelectArr("SELECT * FROM supportapp_vorlagen");
     $vorlagen = "";
-    for ($i=0; $i < count($vorlagenarray); $i++) {
-      $vorlagen .= '<option value="'.$vorlagenarray[$i]['id'].'">'.$vorlagenarray[$i]['bezeichnung'].'</option>';
-    }
 
+	if (!is_null($vorlagenarray)) {
+
+	    for ($i=0; $i < count($vorlagenarray); $i++) {
+	      $vorlagen .= '<option value="'.$vorlagenarray[$i]['id'].'">'.$vorlagenarray[$i]['bezeichnung'].'</option>';
+	    }
+	}
 
     if($telefonsupport == ''){
       $this->app->Tpl->Set("TELEFON", "telefonsupport_grey.png");
@@ -1406,7 +1456,7 @@ class Supportapp Extends GenSupportapp {
           FROM zeiterfassung z LEFT JOIN projekt p ON p.id=z.projekt LEFT JOIN arbeitspaket ap ON z.arbeitspaket=ap.id LEFT JOIN adresse a ON z.adresse=a.id
           WHERE z.adresse_abrechnung=".$adresse."
           ORDER BY z.id DESC LIMIT 100
-          ");
+          ",0,"");
     $table->DisplayNew('LETZTEBUCHUNGEN',"Mitarbeiter","noAction");
 
     $adr = $this->app->DB->SelectArr("select *, DATE_FORMAT(mandatsreferenzdatum, '%e.%m.%Y') AS mandatsreferenzdatumd from adresse where id = ".$adresse." limit 1");
@@ -1428,14 +1478,12 @@ class Supportapp Extends GenSupportapp {
     }
 
     $table = new EasyTable($this->app);
-    $table->Query("SELECT a.name, a.bereich, a.email, a.telefon, a.mobil FROM ansprechpartner a WHERE adresse='$adresse'  AND a.name!='Neuer Datensatz' ORDER by id DESC");
+    $table->Query("SELECT a.name, a.bereich, a.email, a.telefon, a.mobil FROM ansprechpartner a WHERE adresse='$adresse'  AND a.name!='Neuer Datensatz' ORDER by id DESC",0,"");
     $table->DisplayNew('ANSPRECHPARTNER',"Mobil","noAction");
 
     $table = new EasyTable($this->app);
-    $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum,a.belegnr as auftrag, ap.nummer as 'Artikel-Nr.',CONCAT('<b>',ap.bezeichnung,'</b><br>',REPLACE(ap.beschreibung,'\r\n','<br>')) as bezeichnung, ap.menge FROM auftrag a LEFT JOIN auftrag_position ap ON ap.auftrag=a.id WHERE a.adresse='$adresse'  ORDER by ap.id DESC");
+    $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum,a.belegnr as auftrag, ap.nummer as 'Artikel-Nr.',CONCAT('<b>',ap.bezeichnung,'</b><br>',REPLACE(ap.beschreibung,'\r\n','<br>')) as bezeichnung, ap.menge FROM auftrag a LEFT JOIN auftrag_position ap ON ap.auftrag=a.id WHERE a.adresse='$adresse'  ORDER by ap.id DESC",0,"");
     $table->DisplayNew('ARTIKEL',"Menge","noAction",false,0,0,false);
-
-
 
     $this->app->Tpl->Output("supportapp_minidetail.tpl");
     exit;

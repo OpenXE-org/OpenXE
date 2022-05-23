@@ -6758,7 +6758,9 @@ title: 'Abschicken',
 
 
     reset($ISO10646XHTMLTrans);
-    while(list($UnicodeChar, $XHTMLEquiv) = each($ISO10646XHTMLTrans)) {
+//    while(list($UnicodeChar, $XHTMLEquiv) = each($ISO10646XHTMLTrans)) {
+    foreach($ISO10646XHTMLTrans as $UniccideChar => $XHTMLEquiv) 
+    {
       $content = str_replace($UnicodeChar, $XHTMLEquiv, $content);
     }
 
