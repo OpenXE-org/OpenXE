@@ -18022,10 +18022,12 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
     // wenn ziel formular
 
-    //return $abkuerzung;
-    if($value == round($value, 2)) {
-      return number_format((float)$value,2,',','');
-    }
+	if ($value != "") {
+	    //return $abkuerzung;
+	    if($value == round($value, 2)) {
+	      return number_format((float)$value,2,',','');
+	    }
+	}
 
     return rtrim(str_replace('.',',',$value),'0');
   }

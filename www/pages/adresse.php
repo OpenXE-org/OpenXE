@@ -2268,7 +2268,7 @@ function AdresseRollen()
         DATE_FORMAT(a.von,'%d.%m.%Y') as seit, if(a.bis='0000-00-00','aktuell',DATE_FORMAT(a.bis,'%d.%m.%Y')) as bis,  a.id
         FROM adresse_rolle a  LEFT JOIN projekt p ON a.parameter=p.id 
         LEFT JOIN gruppen g ON g.id=a.parameter
-        WHERE a.adresse='$id'");
+        WHERE a.adresse='$id'",0,"");
 
   $table->DisplayNew('TAB1NEXT', "<!--<a href=\"index.php?module=adresse&action=rolleeditpopup&frame=false&id=%value%\" 
       onclick=\"makeRequest(this);return false\"><img src=\"./themes/[THEME]/images/edit.svg\" border=\"0\"></a>&nbsp;-->
@@ -5078,8 +5078,12 @@ function AdresseBelege()
     $von = $this->app->Secure->GetGET("von");
     $bis = $this->app->Secure->GetGET("bis");
   }
-  $von = date_format(date_create_from_format('d.m.Y', $von), 'Y-m-d');
-  $bis = date_format(date_create_from_format('d.m.Y', $bis), 'Y-m-d');
+
+if (!is_null($von) && !is_null($bis)) 
+{
+	$von = date_format(date_create_from_format('d.m.Y', $von), 'Y-m-d');
+	$bis = date_format(date_create_from_format('d.m.Y', $bis), 'Y-m-d');
+}
 
   $rechnungt = $this->app->DB->Select("SELECT SUM(soll-ist) FROM rechnung WHERE status != 'angelegt' AND zahlungsstatus != 'bezahlt' AND adresse = '$id' AND datum >= '$von' AND datum <= '$bis'");
   //$gutschriftt = $this->app->DB->Select("SELECT SUM(soll-ist) FROM gutschrift WHERE status != 'angelegt' AND (manuell_vorabbezahlt != '0000-00-00' OR manuell_vorabbezahlt IS NOT NULL) AND adresse = '$id' AND datum >= '$von' AND datum <= '$bis'");

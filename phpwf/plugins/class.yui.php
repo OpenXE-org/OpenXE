@@ -4440,19 +4440,21 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
           $heading[$startindex]="Men&uuml;";
           $findcols[$startindex]="b.menu";
 
+	if (!is_null($tmpsql)) {
           $tmpsqlstring = implode(',',$tmpsql);
+	}
 
           if($tmpsqlstring!="")$tmpsqlstring .=",";
         }
 
         
+	if (!is_null($tmp_or)) {
 
-        if(count($tmp_or)>0)
-        {  
-          $tmp = "AND (".implode(' or ',$tmp_or).")";
-        }
-
-        
+	        if(count($tmp_or)>0)
+	        {  
+	          $tmp = "AND (".implode(' or ',$tmp_or).")";
+	        }
+	}        
 
         //auftrag
         if($fauftrag && $this->app->erp->RechteVorhanden('auftrag','list')){
