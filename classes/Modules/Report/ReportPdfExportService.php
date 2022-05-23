@@ -88,10 +88,16 @@ class ReportPdfExportService extends AbstractReportExportService
                 $prepareHeaderLine = false;
             }
 
+		if (gettype($columnKey != 'int')) 
+		{
+			$columnKey = 0;
+		}
+		$keyint = $columnKey + 1;
+
             $columnCounter = 0;
             foreach($row as $columnKey=>$columnValue){
                 $pdf->Cell($colWidths[$columnCounter],6,$this->stringReadyForPdf($columnValue),'LRTB',0,$colAligns[$columnCounter],true);
-                if(!empty($sumcolsa) && in_array($columnKey+1,$sumcolsa, false))
+                if(!empty($sumcolsa) && in_array($keyint,$sumcolsa, false))
                 {
                     if(empty($sums[$columnKey])){
                         $sums[$columnKey] = 0;

@@ -170,7 +170,7 @@ final class Bootstrap
      *
      * @return ReportColumnFormatter
      */
-    public function onInitReportColumnFormatter(ContainerInterface $container): ReportColumnFormatter
+    public static function onInitReportColumnFormatter(ContainerInterface $container): ReportColumnFormatter
     {
         return new ReportColumnFormatter();
     }
