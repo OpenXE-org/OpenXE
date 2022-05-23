@@ -548,7 +548,7 @@ class Gutschrift extends GenGutschrift
     $table = new EasyTable($this->app);
 
     $table->Query("SELECT if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung) as artikel, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer, ".$this->app->erp->FormatMenge("ap.menge")." as Menge,".$this->app->erp->FormatPreis("ap.preis*(100-ap.rabatt)/100",2)." as Preis
-          FROM gutschrift_position ap, artikel a WHERE ap.gutschrift='$id' AND a.id=ap.artikel ORDER by ap.sort");
+          FROM gutschrift_position ap, artikel a WHERE ap.gutschrift='$id' AND a.id=ap.artikel ORDER by ap.sort",0,'');
 
 
     $table->align = array('left','left','right','right');
@@ -587,7 +587,7 @@ class Gutschrift extends GenGutschrift
     $this->app->Tpl->Set('GUTSCHRIFTADRESSE',$this->Gutschriftadresse($auftragArr[0]['id']));
 
     $tmp = new EasyTable($this->app);
-    $tmp->Query("SELECT zeit,bearbeiter,grund FROM gutschrift_protokoll WHERE gutschrift='$id' ORDER by zeit DESC");
+    $tmp->Query("SELECT zeit,bearbeiter,grund FROM gutschrift_protokoll WHERE gutschrift='$id' ORDER by zeit DESC",0,'');
     $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
 
     if(class_exists('GutschriftPDFCustom'))
@@ -1256,12 +1256,14 @@ class Gutschrift extends GenGutschrift
     $rechnungid = $this->app->DB->Select("SELECT id FROM rechnung WHERE id='$rechnungid' AND belegnr!='' LIMIT 1");
     $alle_gutschriften = $this->app->DB->SelectArr("SELECT id,belegnr FROM gutschrift WHERE rechnungid='$rechnungid' AND rechnungid>0");
 
-    if(count($alle_gutschriften) > 1)
-    {
-      for($agi=0;$agi<count($alle_gutschriften);$agi++)
-        $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi][id]."\" target=\"_blank\">".$alle_gutschriften[$agi][belegnr]."</a> ";
-      $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
-    }
+	if (!is_null($alle_gutschriften)) {
+	    if(count($alle_gutschriften) > 1)
+	    {
+	      for($agi=0;$agi<count($alle_gutschriften);$agi++)
+	        $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi][id]."\" target=\"_blank\">".$alle_gutschriften[$agi][belegnr]."</a> ";
+	      $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
+	    }
+	}
 
 
     //    if($status=="versendet")
@@ -1315,9 +1317,7 @@ class Gutschrift extends GenGutschrift
 
     // easy table mit arbeitspaketen YUI als template 
     $table = new EasyTable($this->app);
-    $table->Query("SELECT bezeichnung as artikel, nummer as Nummer, menge, vpe as VPE, FORMAT(preis,4) as preis
-        FROM gutschrift_position
-        WHERE gutschrift='$id'");
+    $table->Query("SELECT bezeichnung as artikel, nummer as Nummer, menge, vpe as VPE, FORMAT(preis,4) as preis        FROM gutschrift_position        WHERE gutschrift='$id'",0,'');
     $table->DisplayNew('POSITIONEN','Preis','noAction');
     /*
        $table->Query("SELECT nummer as Nummer, menge,vpe as VPE, FORMAT(preis,4) as preis, FORMAT(menge*preis,4) as gesamt

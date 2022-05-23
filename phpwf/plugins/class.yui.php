@@ -14163,8 +14163,8 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       $dcol = 0;
       $einkaufspreissumme = 0;
       $deckungsbeitragsumme = 0;
-      if ($sort) $table->Query($sql . (strpos($sql,'b.sort')? " ORDER BY b.sort":" ORDER BY sort"));
-      else $table->Query($sql);
+      if ($sort) $table->Query($sql . (strpos($sql,'b.sort')? " ORDER BY b.sort":" ORDER BY sort"),0,'');
+      else $table->Query($sql,0,'');
 
       $this->app->erp->RunHook('sortlistadd', 3, $module, $id, $table);
 
