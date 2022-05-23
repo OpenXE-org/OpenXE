@@ -1495,7 +1495,16 @@ class DB{
     if($pid <= 0) {
       return false;
     }
-    return mysqli_query($this->connection, 'KILL QUERY '.$pid);
+
+	// Get list of processes
+	$list_of_processes = mysqli_query($this->connection, "select id from information_schema.processlist where id=$pid");
+	if (get_class($list_of_processes) == 'mysqli') {
+		if (mysqli_num_rows($list_of_processes) > 0) {
+			$result = mysqli_query($this->connection, 'KILL QUERY '.$pid);
+			return($result);
+		}
+	}
+	return(false);	
   }
 
   /**
