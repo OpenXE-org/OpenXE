@@ -68,7 +68,7 @@ class EasyTable {
         }
 
         $this->page = $page;
-        $this->start = ($page - 1) * $this->limit;
+        $this->start = ((int)$page - 1) * ((int) $this->limit);
 
         $sql .= " LIMIT {$this->start},{$this->limit}";
       }
