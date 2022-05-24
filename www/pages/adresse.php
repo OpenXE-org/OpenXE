@@ -734,7 +734,7 @@ class Adresse extends GenAdresse {
       $this->app->Tpl->Set('WAEHRUNG',$adr['waehrung']);
       
       $table = new EasyTable($this->app);
-      $table->Query("SELECT a.name, a.bereich, a.email, a.telefon, a.telefax, a.mobil FROM ansprechpartner a WHERE adresse='$id'  AND a.name!='Neuer Datensatz' ORDER by id DESC");
+      $table->Query("SELECT a.name, a.bereich, a.email, a.telefon, a.telefax, a.mobil FROM ansprechpartner a WHERE adresse='$id'  AND a.name!='Neuer Datensatz' ORDER by id DESC",0,"");
       $table->DisplayNew('ANSPRECHPARTNER','Mobil','noAction');
 
       $table = new EasyTable($this->app);
@@ -744,17 +744,17 @@ class Adresse extends GenAdresse {
         DATE_FORMAT(a.von,'%d.%m.%Y') as seit, if(a.bis='0000-00-00','aktuell',DATE_FORMAT(a.bis,'%d.%m.%Y')) as bis
         FROM adresse_rolle a  LEFT JOIN projekt p ON a.parameter=p.id
         LEFT JOIN gruppen g ON g.id=a.parameter
-        WHERE a.adresse='$id'");
+        WHERE a.adresse='$id'",0,"");
       $table->DisplayNew('ROLLEN','Bis','noAction');
 
 
       $table2 = new EasyTable($this->app);
       $table2->Query("SELECT  if(l.standardlieferadresse,CONCAT('<strong>',l.name,' (Standardlieferadresse)</strong>'),l.name) as name2, l.strasse, 
-                                             l.land, l.plz, l.ort, l.telefon,l.email FROM lieferadressen l where  l.adresse='". $id . "' AND l.name!='Neuer Datensatz'" );
+                                             l.land, l.plz, l.ort, l.telefon,l.email FROM lieferadressen l where  l.adresse='". $id . "' AND l.name!='Neuer Datensatz'",0,"");
       $table2->DisplayNew('LIEFERANTEN','Email','noAction');
 
       $table3 = new EasyTable($this->app);
-      $table3->Query($this->GetAddressCrmSql($id, 15));
+      $table3->Query($this->GetAddressCrmSql($id, 15),0,"");
       $table3->DisplayNew('CRMDATEIEN','PDF','noAction');
     }
     if($parsetarget=='')
