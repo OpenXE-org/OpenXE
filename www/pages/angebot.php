@@ -409,7 +409,7 @@ class Angebot extends GenAngebot
         FROM angebot_position ap, artikel a 
         WHERE ap.angebot='$id' AND a.id=ap.artikel 
         ORDER by ap.sort"
-      );
+      ,0,"");
       $artikel = $table->DisplayNew("return","Preis","noAction","false",0,0,false);
 
       $this->app->Tpl->Add('JAVASCRIPT',"
@@ -427,7 +427,7 @@ class Angebot extends GenAngebot
         FROM angebot_position ap, artikel a
         WHERE ap.angebot='$id' AND a.id=ap.artikel 
         ORDER by ap.sort"
-      );
+      ,0,"");
       $artikel = $table->DisplayNew("return","Preis","noAction");
     }
 
@@ -460,7 +460,7 @@ class Angebot extends GenAngebot
     }
 
     $tmp = new EasyTable($this->app);
-    $tmp->Query("SELECT zeit,bearbeiter,grund FROM angebot_protokoll WHERE angebot='$id' ORDER by zeit DESC");
+    $tmp->Query("SELECT zeit,bearbeiter,grund FROM angebot_protokoll WHERE angebot='$id' ORDER by zeit DESC",0,"");
     $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
 
     $this->app->Tpl->Set('RECHNUNGLIEFERADRESSE',$this->AngebotRechnungsLieferadresse($auftragArr[0]['id']));
@@ -526,7 +526,7 @@ class Angebot extends GenAngebot
 
     // wenn abweichende rechnungsadresse bei kunden aktiv ist dann diese verwenden
 
-    $abweichende = $this->app->DB->Select("SELECT abweichende_rechnungsadresse FROM adresse WHERE id='".$data[0][adresse]."' LIMIT 1");
+    $abweichende = $this->app->DB->Select("SELECT abweichende_rechnungsadresse FROM adresse WHERE id='".$data[0]['adresse']."' LIMIT 1");
     if($abweichende=="1")
     {
       $adresse_data = $this->app->DB->SelectArr("SELECT * FROM adresse WHERE id='".$data[0]['adresse']."' LIMIT 1");
@@ -680,11 +680,11 @@ class Angebot extends GenAngebot
           if(a.porto,'-',if((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel) > ap.menge,(SELECT TRIM(SUM(l.menge))+0 FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel),
               if((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel)>0,CONCAT('<font color=red><b>',(SELECT TRIM(SUM(l.menge))+0 FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel),'</b></font>'),
                 '<font color=red><b>aus</b></font>'))) as Lager,".$this->app->erp->FormatPreis("ap.preis*(100-ap.rabatt)/100",2)." as preis
-          FROM angebot_position ap, artikel a WHERE ap.angebot='$id' AND a.id=ap.artikel");
+          FROM angebot_position ap, artikel a WHERE ap.angebot='$id' AND a.id=ap.artikel",0,"");
       $artikel = $table->DisplayNew("return","Preis","noAction");
     } else {
       $table->Query("SELECT SUBSTRING(ap.bezeichnung,1,20) as artikel, ap.nummer as Nummer, TRIM(ap.menge)+0 as Menge,".$this->app->erp->FormatPreis("ap.preis*(100-ap.rabatt)/100",2)." as preis
-          FROM angebot_position ap, artikel a WHERE ap.angebot='$id' AND a.id=ap.artikel");
+          FROM angebot_position ap, artikel a WHERE ap.angebot='$id' AND a.id=ap.artikel",0,"");
       $artikel = $table->DisplayNew("return","Preis","noAction");
     }
     echo $artikel;
@@ -857,7 +857,7 @@ class Angebot extends GenAngebot
 
     $this->app->Tpl->Set('TABTEXT',"Protokoll");
     $tmp = new EasyTable($this->app);
-    $tmp->Query("SELECT zeit,bearbeiter,grund FROM angebot_protokoll WHERE angebot='$id' ORDER by zeit DESC");
+    $tmp->Query("SELECT zeit,bearbeiter,grund FROM angebot_protokoll WHERE angebot='$id' ORDER by zeit DESC",0,"");
     $tmp->DisplayNew('TAB1',"Protokoll","noAction");
 
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
@@ -1273,7 +1273,7 @@ class Angebot extends GenAngebot
           CONCAT('<input type=\"text\" size=\"8\" value=\"00.00.0000\" id=\"datum',v.id,'\">
             <img src=\"./themes/new/images/kalender.png\" height=\"12\" onclick=\"displayCalendar(document.forms[1].datum',v.id,',\'dd.mm.yyyy\',this)\" border=0 align=right>') as Lieferdatum, 
           CONCAT('<input type=\"text\" size=\"3\" value=\"\" id=\"menge',v.id,'\">') as menge, v.id as id
-          FROM artikel a LEFT JOIN verkaufspreise v ON a.id=v.artikel LEFT JOIN projekt p ON v.projekt=p.id WHERE v.ab_menge>=1");
+          FROM artikel a LEFT JOIN verkaufspreise v ON a.id=v.artikel LEFT JOIN projekt p ON v.projekt=p.id WHERE v.ab_menge>=1",0,"");
       $table->DisplayNew('INHALT', "<input type=\"button\" 
           onclick=\"document.location.href='index.php?module=angebot&action=addposition&id=$id&sid=%value%&menge=' + document.getElementById('menge%value%').value + '&datum=' + document.getElementById('datum%value%').value;\" value=\"anlegen\">");
       $this->app->Tpl->Parse('UEBERSICHT',"rahmen70.tpl");
@@ -1814,7 +1814,7 @@ class Angebot extends GenAngebot
     $table = new EasyTable($this->app);
     $table->Query("SELECT bezeichnung as artikel, nummer as Nummer, menge, vpe as VPE, FORMAT(preis,4) as preis
         FROM angebot_position 
-        WHERE angebot='$id'");
+        WHERE angebot='$id'",0,"");
     $table->DisplayNew('POSITIONEN',"Preis","noAction");
 
     // $bearbeiter = $this->app->DB->Select("SELECT bearbeiter FROM angebot WHERE id='$id' LIMIT 1");

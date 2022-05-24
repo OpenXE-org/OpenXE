@@ -4671,7 +4671,7 @@ title: 'Abschicken',
       $ddate = $result[0]['gueltigbis'];
       $result[0]['gueltigbis'] = $this->app->String->Convert($result[0]['gueltigbis'],"%1-%2-%3","%3.%2.%1");
       $duedt = explode("-", $ddate);
-      $date  = mktime(0, 0, 0, $duedt[1], $duedt[2], $duedt[0]);
+      $date  = mktime(0, 0, 0, (int) $duedt[1], (int) $duedt[2], (int) $duedt[0]);
       $week  = date('W/Y', $date);
       $text = str_replace('{GUELTIGBIS}',$result[0]['gueltigbis'],$text);
       $text = str_replace('{GUELTIGBISWOCHE}',$week,$text);
@@ -45019,6 +45019,7 @@ function Firmendaten($field,$projekt="")
         $letzter_preis = 0;
 
         // einmal rueckwaerts aufraeumen
+
         $cvkarr = !empty($vkarr)?count($vkarr):0;
         for($vi=0;$vi<$cvkarr;$vi++)
         {
@@ -45043,7 +45044,14 @@ function Firmendaten($field,$projekt="")
           if($vkarr[$vi]['ab_menge'] > 0)
             $vkarr2[] = $vkarr[$vi];
         }
-        $vkarr = array_reverse($vkarr2);
+
+	if (!is_null($vkarr2)) {
+	        $vkarr = array_reverse($vkarr2);
+	}
+	else {
+		$vkarr = $vkarr2;
+	}
+
         // an schluss pruefen und unnötige rausschmeissen
         return $vkarr;
       }
