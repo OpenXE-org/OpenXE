@@ -183,7 +183,7 @@ class Dateien {
     $this->app->Tpl->Set('SUBHEADING','Neuste Dateien');
     //Jeder der in Nachbesserung war egal ob auto oder manuell wandert anschliessend in Manuelle-Freigabe");
     $table = new EasyTable($this->app);
-    $table->Query("SELECT d.titel, s.subjekt, v.version, v.ersteller, v.bemerkung, d.id FROM datei d LEFT JOIN datei_stichwoerter s ON d.id=s.datei                                                                  LEFT JOIN datei_version v ON v.datei=d.id ORDER by d.id DESC LIMIT 10");
+    $table->Query("SELECT d.titel, s.subjekt, v.version, v.ersteller, v.bemerkung, d.id FROM datei d LEFT JOIN datei_stichwoerter s ON d.id=s.datei                                                                  LEFT JOIN datei_version v ON v.datei=d.id ORDER by d.id DESC LIMIT 10",0,"");
     $table->Display('INHALT');
     $this->app->Tpl->Parse('PAGE',"rahmen.tpl");
     $this->app->Tpl->Set('INHALT','');
@@ -312,7 +312,7 @@ class Dateien {
     $this->app->Tpl->Set('NUMMER',$nummer);
 
     $table = new EasyTable($this->app);
-    $table->Query("SELECT version,dateiname,datum,ersteller,bemerkung,id FROM datei_version WHERE datei='$id'");
+    $table->Query("SELECT version,dateiname,datum,ersteller,bemerkung,id FROM datei_version WHERE datei='$id'",0,"");
     $table->DisplayNew('VERSIONEN',"
       <!--<a href=\"index.php?module=adresse&action=dateiversion&id=$id&lid=%value%\">edit</a>-->
       <a href=\"#\"onclick=\"if(!confirm('Wirklich löschen?')) return false; else window.location.href='index.php?module=dateien&action=delete&fid=%value%&version=true&id=$id';\" ><img src=\"./themes/new/images/delete.svg\" border=\"0\"></a>
@@ -322,7 +322,7 @@ class Dateien {
   
 
     $table = new EasyTable($this->app);
-    $table->Query("SELECT subjekt,objekt,parameter FROM datei_stichwoerter WHERE datei='$id'");
+    $table->Query("SELECT subjekt,objekt,parameter FROM datei_stichwoerter WHERE datei='$id'",0,"");
     $table->DisplayNew('STICHWORTE',"Parameter","noAction");
 
     $this->app->Tpl->Set('HEADING',"Datei (Bearbeiten)");
