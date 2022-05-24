@@ -223,23 +223,28 @@ function fillArtikel(id,menge)
 			menge = res.substr(0,first_space)
 			id = tmp[0];
 		
-     strSource = "./index.php";
-     id = $.base64Encode( id);
-     strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
-     intType= 0; //GET
-     intID = 0;
-     command = 'fillArtikel';
-     sendRequest(strSource,strData,intType,intID);
-		} else {
- 		 strSource = "./index.php";
-     id = $.base64Encode( id);
-     strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
-     intType= 0; //GET
-     intID = 0;
-     command = 'fillArtikel';
-     sendRequest(strSource,strData,intType,intID);
-		}
+			     strSource = "./index.php";
 
+			     // Force string type	
+			     id = ""+id;
+			     id = $.base64Encode(id);
+
+			     strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
+			     intType= 0; //GET
+			     intID = 0;
+			     command = 'fillArtikel';
+			     sendRequest(strSource,strData,intType,intID);
+		} else {
+	 		 strSource = "./index.php";
+			     // Force string type	
+			     id = ""+id;
+			     id = $.base64Encode( id);
+			     strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
+			     intType= 0; //GET
+			     intID = 0;
+			     command = 'fillArtikel';
+			     sendRequest(strSource,strData,intType,intID);
+		}
 }
 
 

@@ -1503,6 +1503,7 @@ function processData( xmlHttp, intID )
     case 'fillArtikel':
       var myString = xmlHttp.responseText;
       var mySplitResult = myString.split("#*#");
+
       if(myString.length>3)
       {
         render=1;

@@ -3671,7 +3671,8 @@ class Artikel extends GenArtikel {
       //echo $id;
       //      if(!is_numeric($id))
       //        exit;
-      $tmp_id = explode(' ',$id);
+
+      $tmp_id = explode(',',$id);
       $id = $tmp_id[0];
 
       $id = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$id' AND intern_gesperrt!=1 LIMIT 1");
@@ -3682,7 +3683,7 @@ class Artikel extends GenArtikel {
       //if($posanz == 0){
       //  $waehrung = '';
       //}
-      
+
       $sprache = $this->app->DB->Select("SELECT sprache FROM adresse WHERE id='$adresse' LIMIT 1");
 
       $name = $this->app->DB->Select("SELECT name_de FROM artikel WHERE id='$id' LIMIT 1");

@@ -2301,10 +2301,11 @@ class YUI {
             $originalpreis = $preis;
             $originalwaehrung = $waehrung;
             $ekpreisp =  $this->app->erp->GetEinkaufspreisWaehrung($artikel_id, $menge, $waehrung, $originalwaehrung, $originalpreis);
-            $dbeitrag = 1;
-            if($ekpreisp && $preis*(100-$rabatt)/100 != 0)
+            $dbeitrag = 1;	
+
+            if(!is_null($ekpreisp) && (int)$preis*(100-(int)$rabatt)/100 != 0)
             {
-              $dbeitrag = ($preis*(100-$rabatt)/100-$ekpreisp)/($preis*(100-$rabatt)/100);
+              $dbeitrag = ((int)$preis*(100-(int)$rabatt)/100-(int)$ekpreisp)/((int)$preis*(100-(int)$rabatt)/100);
             }
             $this->app->DB->Update("UPDATE $table SET einkaufspreis = '$ekpreisp', einkaufspreisurspruenglich = '$originalpreis',ekwaehrung = '$originalwaehrung', deckungsbeitrag = '$dbeitrag' WHERE id = '$newposid' LIMIT 1");
             $ust_befreit = $this->app->DB->Select("SELECT ust_befreit FROM $module WHERE id = '$id' LIMIT 1");
@@ -7118,7 +7119,9 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
           }
         }
 
-        for ($j = 0;$j < count($subwhere);$j++) $tmp.= " AND " . $subwhere[$j];
+	if (!is_null($subwhere)) {
+	        for ($j = 0;$j < count($subwhere);$j++) $tmp.= " AND " . $subwhere[$j];
+	}
 
         // START EXTRA more
         $where = " b.id!='' AND b.status!='angelegt' $tmp " . $this->app->erp->ProjektRechte();
