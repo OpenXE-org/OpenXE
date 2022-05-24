@@ -526,7 +526,7 @@ class Dsgvo{
 
     $table = new EasyTable($this->app);
 
-    $table->Query("SELECT kommentar FROM dsgvo_loeschauftrag WHERE adresse = '$id' LIMIT 1");
+    $table->Query("SELECT kommentar FROM dsgvo_loeschauftrag WHERE adresse = '$id' LIMIT 1",0,"");
     
     $table->DisplayNew("TABELLE","Grund","noAction");
 
