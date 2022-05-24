@@ -33069,7 +33069,9 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         $this->app->DB->Update("UPDATE firmendaten_werte SET wert = '".$this->app->DB->real_escape_string($value)."' WHERE id = '".$check['id']."'");
       }
     }
-    $this->app->DB->Update("UPDATE firmendaten SET " . $field . "='$value' WHERE id='" . $firmendatenid . "'");
+	else {
+	    $this->app->DB->Update("UPDATE firmendaten SET " . $field . "='$value' WHERE id='" . $firmendatenid . "'");
+	}
     $db = $this->app->Conf->WFdbname;
     if(!empty($this->firmendaten[$db])) {
       $this->firmendaten[$db][$field] = $value;
@@ -33087,11 +33089,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     if(strpos($field,'next') !== false)
     {
       $firmendatenid = (int)$this->app->DB->Select('SELECT MAX(id) FROM firmendaten LIMIT 1');
-      $firmendaten_value = $this->app->DB->Select(
-        sprintf(
-          'SELECT `%s` FROM firmendaten WHERE id = %d LIMIT 1',
-          $field, $firmendatenid)
-      );
+
+	if ($this->app->DB->Select("SHOW COLUMNS FROM firmendaten LIKE '$field'")) {
+	      $firmendaten_value = $this->app->DB->Select(
+	        sprintf(
+	          'SELECT `%s` FROM firmendaten WHERE id = %d LIMIT 1',
+	          $field, $firmendatenid)
+	      );
+	}
       if(!$this->app->DB->error()) {
         return $firmendaten_value;
       }
@@ -44996,6 +45001,10 @@ function Firmendaten($field,$projekt="")
 
           }
         }
+
+	if(is_null($rabatt)) {
+		$rabatt = 0;
+	}
 
         if(!$guenstigste_vk)
         {

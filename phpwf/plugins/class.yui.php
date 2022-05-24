@@ -1870,13 +1870,21 @@ class YUI {
         if($waehrung=="")
         {
           // schaue ob es gebuchte positionen gibt dann diese waehrung
-          $waehrung = $this->app->DB->Select("SELECT waehrung FROM $table WHERE $module='$id' LIMIT 1");
+
+          $waehrung = "";
+	  if (!is_null($table)) {
+                if ($this->app->DB->Select("SHOW COLUMNS FROM `$table` LIKE 'waehrung'")) {
+		      $waehrung = $this->app->DB->Select("SELECT waehrung FROM $table WHERE $module='$id' LIMIT 1");
+                }
+         }
 
           if($waehrung==""){
             $waehrung = $this->app->erp->GetStandardWaehrung($projekt);
           }
 
-          if($waehrung!="") $this->app->DB->Update("UPDATE $module SET waehrung='$waehrung' WHERE id='$id' AND waehrung='' LIMIT 1");
+          if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'waehrung'")) {
+	          if($waehrung!="") $this->app->DB->Update("UPDATE $module SET waehrung='$waehrung' WHERE id='$id' AND waehrung='' LIMIT 1");
+	  }
         }
         
         $umsatzsteuer = $articleArr['umsatzsteuer'];//$this->app->DB->Select("SELECT umsatzsteuer FROM artikel WHERE id='$artikel_id' LIMIT 1");
@@ -14504,7 +14512,8 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       
       if ($module == "lieferschein" || $module == "retoure") {
         $table->headings[6] = 'ausgeliefert';
-        $zwischensumme = $this->app->DB->Select("SELECT sum(menge*preis) FROM $module"."_position WHERE $module = '$id'");
+//        $zwischensumme = $this->app->DB->Select("SELECT sum(menge*preis) FROM $module"."_position WHERE $module = '$id'");
+// 	  lieferschein has no preis
       } else
       if($module == "anfrage" || $module == "preisanfrage" ) {
         $table->headings[6] = 'Aktion';

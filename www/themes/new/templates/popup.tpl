@@ -301,7 +301,8 @@ function fillArtikelProduktion(id,menge)
 	
  
     strSource = "./index.php";
-     id = $.base64Encode( id);
+
+    id = $.base64Encode( id);
     strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
     intType= 0; //GET
     intID = 0;
@@ -320,7 +321,11 @@ function fillArtikelLieferschein(id,menge)
      if(menge < 1)
       menge=1;
      strSource = "./index.php";
-     id = $.base64Encode( id);
+
+     // Force string type	
+     id = ""+id;
+     id = $.base64Encode(id);
+
      strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
      intType= 0; //GET
      intID = 0;

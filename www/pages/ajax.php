@@ -3073,8 +3073,11 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           ".$artikelnummer_suche_where."  
           AND ($subwhere) $tmp_where LIMIT 20");
 
-
-        $rabatt = $this->app->DB->Select("SELECT realrabatt FROM $smodule WHERE id='$sid' LIMIT 1");
+	if ($module != "") {
+		if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'realrabatt'")) {
+		        $rabatt = $this->app->DB->Select("SELECT realrabatt FROM $smodule WHERE id='$sid' LIMIT 1");
+		}
+	}
         $sql_erweiterung = '';
         $carr = !empty($arr)?count($arr):0;
         for($i=0;$i<$carr;$i++)  {

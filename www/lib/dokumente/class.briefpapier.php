@@ -2493,12 +2493,25 @@ class Briefpapier extends SuperFPDF {
     $belege_stuecklisteneinrueckenmm = $this->getStyleElement('belege_stuecklisteneinrueckenmm');
     $doctype = $this->table?$this->table:$this->doctype;
     $doctypeId = $this->id;
-    $docArr = $this->app->DB->SelectRow(
-      sprintf(
-        'SELECT projekt,adresse,steuersatz_normal,steuersatz_ermaessigt FROM `%s` WHERE id = %d',
-        $doctype, $doctypeId
-      )
-    );
+
+    $has_steuer = $this->app->DB->Select("SHOW COLUMNS FROM `$doctype` LIKE 'steuersatz_normal'");
+
+	if ($has_steuer) {
+	    $docArr = $this->app->DB->SelectRow(
+	      sprintf(
+	        'SELECT projekt,adresse,steuersatz_normal,steuersatz_ermaessigt FROM `%s` WHERE id = %d',
+	        $doctype, $doctypeId
+	      )
+	    );
+	} else {
+	    $docArr = $this->app->DB->SelectRow(
+	      sprintf(
+	        'SELECT projekt,adresse, 0 AS steuersatz_normal, 0 AS steuersatz_ermaessigt FROM `%s` WHERE id = %d',
+	        $doctype, $doctypeId
+	      )
+	    );
+	}
+
     $query = sprintf("SELECT `sprache` FROM `%s` 
       WHERE `id` = %d 
       LIMIT 1",
@@ -2514,15 +2527,25 @@ class Briefpapier extends SuperFPDF {
     }
     $inventurohnepreis = null;
     if(!in_array($this->table ? $this->table : $this->doctype, ['rechnung','auftrag','angebot','bestellung'])) {
-      $inventurohnepreis = $this->app->DB->Select(
-        sprintf(
-          'SELECT noprice 
-          FROM `%s`
-          WHERE id = %d 
-          LIMIT 1',
-          $this->table ? $this->table : $this->doctype, $this->id
-        )
-      );
+
+	$from =  $this->table ? $this->table : $this->doctype;
+
+	if ($this->app->DB->Select("SHOW COLUMNS FROM `$from` LIKE 'noprice'")) {
+
+	      $inventurohnepreis = $this->app->DB->Select(
+	        sprintf(
+	          'SELECT noprice 
+	          FROM `%s`
+	          WHERE id = %d 
+	          LIMIT 1',
+		$from,
+		$this->id
+	        )
+	      );
+	}
+	else {
+		$inventurohnepreis = false;
+	}
     }
     if($inventurohnepreis){
       $descWidth += 40;

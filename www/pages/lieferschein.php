@@ -319,7 +319,7 @@ class Lieferschein extends GenLieferschein
     $id = (int)$this->app->Secure->GetGET('id');
     
     $table = new EasyTable($this->app);
-    $table->Query("SELECT date_format(datum,'%d.%m.%Y') as Datum,belegnr as Lieferschein FROM lieferschein WHERE kommissionierung = '$id' ORDER BY id");
+    $table->Query("SELECT date_format(datum,'%d.%m.%Y') as Datum,belegnr as Lieferschein FROM lieferschein WHERE kommissionierung = '$id' ORDER BY id",0,"");
     echo $table->DisplayNew('return', 'Lieferschein', 'noAction');
     exit;
   }
@@ -510,11 +510,11 @@ class Lieferschein extends GenLieferschein
           if(a.porto,'-',if((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel) > ap.menge,(SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel),
               if((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel)>0,CONCAT('<font color=red><b>',(SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel),'</b></font>'),
                 if(a.lagerartikel=1,'<font color=red><b>aus</b></font>','kein Lagerartikel' ))) as L
-          FROM lieferschein_position ap, artikel a WHERE ap.lieferschein='$id' AND a.id=ap.artikel");
+          FROM lieferschein_position ap, artikel a WHERE ap.lieferschein='$id' AND a.id=ap.artikel",0,"");
       $artikel = $table->DisplayNew("return","A","noAction");
     } else {
       $table->Query("SELECT SUBSTRING(ap.bezeichnung,1,20) as artikel, ap.nummer as Nummer, ap.menge as M
-          FROM lieferschein_position ap, artikel a WHERE ap.lieferschein='$id' AND a.id=ap.artikel");
+          FROM lieferschein_position ap, artikel a WHERE ap.lieferschein='$id' AND a.id=ap.artikel",0,"");
       $artikel = $table->DisplayNew("return","Menge","noAction");
     }
     echo $artikel;
@@ -931,7 +931,7 @@ class Lieferschein extends GenLieferschein
           WHERE ap.id IN (".$positionIdsImplode.") AND ap.lieferschein='$id' 
           ORDER BY ap.sort, ap.id";
 
-      $table->Query($sql);
+      $table->Query($sql,0,"");
       $gewichtanzeigen = false;
       if($table->datasets) {
         foreach($table->datasets as $k => $row) {
@@ -1019,7 +1019,9 @@ class Lieferschein extends GenLieferschein
         }
       }
 
-    $this->app->Tpl->Set('TRACKING',implode(', ',$tmp));
+	if (!is_null($tmp)) {
+	    $this->app->Tpl->Set('TRACKING',implode(', ',$tmp));
+	}
 
 
     $returnOrders = (array)$this->app->DB->SelectArr(
@@ -1057,7 +1059,7 @@ class Lieferschein extends GenLieferschein
 
     $this->app->Tpl->Set('LIEFERADRESSE',$this->Lieferadresse($auftragArr[0]['id']));
     $tmp = new EasyTable($this->app);
-    $tmp->Query("SELECT zeit,bearbeiter,grund FROM lieferschein_protokoll WHERE lieferschein='$id' ORDER by zeit DESC");
+    $tmp->Query("SELECT zeit,bearbeiter,grund FROM lieferschein_protokoll WHERE lieferschein='$id' ORDER by zeit DESC",0,"");
     $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
 
     if(class_exists('LieferscheinPDFCustom'))
@@ -1145,11 +1147,13 @@ class Lieferschein extends GenLieferschein
     }
 
     $name = $this->app->DB->Select("SELECT a.name FROM lieferschein b LEFT JOIN adresse a ON a.id=b.adresse WHERE b.id='$id' LIMIT 1");
+
+/*
     $summe = $this->app->DB->Select("SELECT FORMAT(SUM(menge*preis),2) FROM lieferschein_position
         WHERE lieferschein='$id'");
     $waehrung = $this->app->DB->Select("SELECT waehrung FROM lieferschein_position
         WHERE lieferschein='$id' LIMIT 1");
-
+*/
 
     $extra = $this->app->erp->CheckboxEntwurfsmodus("lieferschein",$id);
 
@@ -1494,7 +1498,7 @@ class Lieferschein extends GenLieferschein
 
     $this->app->Tpl->Set('TABTEXT',"Protokoll");
     $tmp = new EasyTable($this->app);
-    $tmp->Query("SELECT zeit,bearbeiter,grund FROM lieferschein_protokoll WHERE lieferschein='$id' ORDER by zeit DESC");
+    $tmp->Query("SELECT zeit,bearbeiter,grund FROM lieferschein_protokoll WHERE lieferschein='$id' ORDER by zeit DESC",0,"");
     $tmp->DisplayNew('TAB1',"Protokoll","noAction");
 
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
@@ -1910,7 +1914,7 @@ class Lieferschein extends GenLieferschein
     $table = new EasyTable($this->app);
     $table->Query("SELECT nummer as Nummer, bezeichnung, menge,vpe as VPE
         FROM lieferschein_position
-        WHERE lieferschein='$id'");
+        WHERE lieferschein='$id'",0,"");
     $table->DisplayNew('POSITIONEN',"VPE","noAction");
 
     $status= $this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
