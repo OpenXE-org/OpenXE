@@ -206,10 +206,15 @@ class Verkaufszahlen {
     }
 
     $einnahmen_auftrag = str_replace(',','',$data[0]['umsatz_netto2']);
-    $ausgaben_auftrag = str_replace(',','',$data[0]['umsatz_netto2']) - str_replace(',','',$data[0]['erloes_netto2']);
+    $ausgaben_auftrag = str_replace(',','',(int) $data[0]['umsatz_netto2']) - (int) str_replace(',','',$data[0]['erloes_netto2']);
 
-    $deckungsbeitrag = $einnahmen_auftrag - $ausgaben_auftrag;
-    $deckungsbeitragprozent = $einnahmen_auftrag == 0?0:($deckungsbeitrag / $einnahmen_auftrag)*100;
+    $deckungsbeitrag = (int) $einnahmen_auftrag - (int) $ausgaben_auftrag;
+
+	if ((int) $einnahmen_auftrag != 0) {
+	    $deckungsbeitragprozent = $einnahmen_auftrag == 0?0:((int)$deckungsbeitrag  / (int) $einnahmen_auftrag)*100;
+	} else {
+	    $deckungsbeitragprozent = 0;	
+	}
 
     if($einnahmen_auftrag <=0) {
       $einnahmen_auftrag='0.00';
@@ -658,10 +663,16 @@ class Verkaufszahlen {
     /* tages uebersicht detail */
 
     $table = new EasyTable($this->app);
-    $table->Query("SELECT 
+
+	$tmp = 
+
+"SELECT 
         DATE_FORMAT(a.datum,'%d.%m.%Y') as datum,p.abkuerzung as projekt, ".$this->app->erp->FormatPreis("SUM(ap.preis*ap.menge*(IF(ap.rabatt > 0, (100-ap.rabatt)/100, 1)))")." as Auftragseingang, COUNT(ap.id) as positionen, 
         CONCAT('<a href=\"index.php?module=verkaufszahlen&action=details&frame=false&id=',DATE_FORMAT(a.datum,'%Y-%m-%d'),'-',a.projekt,'\" onclick=\"makeRequest(this); return false;\">Details</a>') as id FROM auftrag_position ap INNER JOIN auftrag a ON ap.auftrag=a.id 
-        LEFT JOIN projekt p ON p.id=a.projekt WHERE a.status!='storniert' ".$this->app->erp->ProjektRechte('a.projekt')." GROUP by a.datum DESC, a.projekt LIMIT 14");
+        LEFT JOIN projekt p ON p.id=a.projekt WHERE a.status!='storniert' ".$this->app->erp->ProjektRechte('a.projekt')." GROUP by a.datum DESC, a.projekt LIMIT 14";
+
+	$table->Query($tmp);
+
     $table->DisplayNew('TAGESUEBERSICHTDETAIL','');
 
     // top artikel

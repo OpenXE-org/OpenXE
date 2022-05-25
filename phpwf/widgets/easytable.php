@@ -54,7 +54,7 @@ class EasyTable {
    * @param string|int   $limit
    * @param string       $newevent
    */
-  function Query($sql,$limit='',$newevent='')
+  function Query($sql,$limit=0,$newevent='')
   {
     if(!is_array($sql)) {
       $this->sql = $sql;
