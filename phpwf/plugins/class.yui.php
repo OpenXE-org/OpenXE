@@ -8541,7 +8541,10 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         $more_data4 = $this->app->Secure->GetGET("more_data4");
         if($more_data4=="1") $subwhere[] = " v.adresse = 0 AND v.gruppe=0 ";
 
-        for ($j = 0;$j < count($subwhere);$j++) $tmp.= "  AND " . $subwhere[$j];
+	if (!is_null($subwhere)) 
+	{
+	        for ($j = 0;$j < count($subwhere);$j++) $tmp.= "  AND " . $subwhere[$j];
+	}
  
         if ($more_data1 == 1) 
           $where = "v.artikel='$id' AND v.geloescht = 0 ".$tmp; 

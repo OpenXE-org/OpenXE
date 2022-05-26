@@ -29948,11 +29948,15 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetSelectEtiketten($art,$selected="")
   {
     $user = $this->app->DB->SelectArr("SELECT * FROM etiketten WHERE verwendenals='$art' ORDER by name");
-    for($i=0;$i<count($user);$i++)
-    {
-      if($user[$i]['id']==$selected) $mark="selected"; else $mark="";
-      $tpl .="<option value=\"{$user[$i]['id']}\" $mark>{$user[$i]['name']}</option>";
-    }
+
+	if (!is_null($user)) {
+
+	    for($i=0;$i<count($user);$i++)
+	    {
+	      if($user[$i]['id']==$selected) $mark="selected"; else $mark="";
+	      $tpl .="<option value=\"{$user[$i]['id']}\" $mark>{$user[$i]['name']}</option>";
+	    }
+	}
     return $tpl;
   }
 
