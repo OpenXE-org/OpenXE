@@ -21,7 +21,7 @@ class WidgetExportvorlage extends WidgetGenExportvorlage
   {
     //$table->Query("SELECT nummer,beschreibung, id FROM exportvorlage");
  		$table = new EasyTable($this->app);
-    $this->app->Tpl->Set(INHALT,"");
+    $this->app->Tpl->Set('INHALT',"");
 		$this->app->YUI->TableSearch($this->parsetarget,"exportvorlage");
   }
 
