@@ -529,10 +529,13 @@ function AufgabenEdit(id, projekt) {
 
         if (!isNaN(data.id) || data.id > 0) {
           $('#editAufgaben').find('#editlabelrow').show();
-          $('#editlabelcontainer').labels({
+
+/* not resolved */
+/*          $('#editlabelcontainer').labels({
             referenceTable: 'aufgabe',
             referenceId: data.id
-          });
+          }); */
+
         }
         // Wiedervorlage anlegen > Labels ausblenden
         if (isNaN(data.id) || data.id === 0) {
