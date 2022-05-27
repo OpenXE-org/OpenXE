@@ -11694,7 +11694,9 @@ $this->RegisterHook('ImportAuftragBefore','onlineshops','ImportAuftragBeforeHook
     $this->CheckColumn("gesamtbetragfestsetzen","tinyint(1)","shopexport","DEFAULT '0' NOT NULL");
     $this->CheckColumn("lastschriftdatenueberschreiben","tinyint(1)","shopexport","DEFAULT '0' NOT NULL");
     $this->CheckColumn("gesamtbetragfestsetzendifferenz","decimal(10,2)","shopexport","DEFAULT '0' NOT NULL");
+/*
     $this->CheckAlterTable("ALTER TABLE shopexport DROP COLUMN `gesamtbetragfestsetzendifferenz`");
+*/
     $this->CheckTable("shopexport_archiv");
     $this->CheckColumn("id","int(11)","shopexport_archiv","NOT NULL AUTO_INCREMENT");
     $this->CheckColumn("shop","int(11)","shopexport_archiv","DEFAULT '0' NOT NULL");
