@@ -229,10 +229,10 @@ class Managementboard
       case 17:
       case 21:
         $intervall = (int)(($col - 12) / 4);
-        if($col{3} === '1') {
+        if($col[3] === '1') {
           $sql = "SELECT sum(umsatz_netto) FROM rechnung WHERE DATE_FORMAT(datum,'%Y-%m')=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL $intervall MONTH),'%Y-%m') AND status!='angelegt'";
         }
-        if($col{3} === '2') {
+        if($col[3] === '2') {
           $sql = "SELECT sum(umsatz_netto) FROM gutschrift WHERE DATE_FORMAT(datum,'%Y-%m')=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL $intervall MONTH),'%Y-%m') AND status!='angelegt'";
         }
         break;
@@ -240,11 +240,11 @@ class Managementboard
       case 19:
       case 23:
         $intervall = (int)(($col - 14) / 4);
-        if($col{3} === '1') {
+        if($col[3] === '1') {
           $sql = "SELECT sum(k.haben) FROM kontoauszuege k LEFT JOIN kontorahmen ko ON ko.sachkonto=k.gegenkonto WHERE (k.importfehler!=1 OR k.importfehler IS NULL) AND 
           DATE_FORMAT(k.buchung,'%Y-%m')=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL $intervall MONTH),'%Y-%m')  AND ko.art=1 ";
         }
-        if($col{3} === '2') {
+        if($col[3] === '2') {
           $sql = "SELECT sum(k.soll) FROM kontoauszuege k LEFT JOIN kontorahmen ko ON ko.sachkonto=k.gegenkonto WHERE (k.importfehler!=1 OR k.importfehler IS NULL) AND 
           DATE_FORMAT(k.buchung,'%Y-%m')=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL $intervall MONTH),'%Y-%m') AND ko.art=1 ";
         }
@@ -254,11 +254,11 @@ class Managementboard
       case 24:
 
         $intervall = (int)(($col - 15) / 4);
-        if($col{3} === '1') {
+        if($col[3] === '1') {
           $sql = "SELECT sum(haben) FROM kontoauszuege WHERE (importfehler!=1 OR importfehler IS NULL) AND 
             DATE_FORMAT(buchung,'%Y-%m')=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL $intervall MONTH),'%Y-%m')";
         }
-        if($col{3} === '2') {
+        if($col[3] === '2') {
           $sql = "SELECT sum(soll) FROM kontoauszuege WHERE (importfehler!=1 OR importfehler IS NULL) AND 
             DATE_FORMAT(buchung,'%Y-%m')=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL $intervall MONTH),'%Y-%m')";
         }
