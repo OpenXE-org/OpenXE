@@ -3282,7 +3282,7 @@ class Projekt extends GenProjekt {
     $id = $this->app->Secure->GetGET('id');
 
     $arbeitsschritttabelle = new EasyTable($this->app);
-    $arbeitsschritttabelle->Query("SELECT p.belegnr AS produktion, pa.sort AS nr, pa.name AS arbeitsanweisung, ag.bezeichnung, 
+    $arbeitsschritttabelle->Query("SELECT p.belegnr AS produktion, pa.sort AS nr, pa.name AS arbeitsanweisung, '', 
                     a.name AS 'geplanter Mitarbeiter', 
                     CONCAT(
                     IF(pa.einzelzeit >= 3600,
@@ -3296,7 +3296,6 @@ class Projekt extends GenProjekt {
                     ) as einzelzeit, pa.status 
                    FROM produktion_arbeitsanweisung pa
                    LEFT JOIN adresse a ON pa.geplanter_mitarbeiter = a.id
-                   LEFT JOIN arbeitsplatzgruppen ag ON pa.arbeitsplatzgruppe = ag.id  
                    JOIN produktion p ON pa.produktion = p.id 
                    WHERE pa.status = 'gestartet' AND p.projekt = '$id' AND p.status = 'gestartet'
                    ORDER BY p.id, pa.sort");

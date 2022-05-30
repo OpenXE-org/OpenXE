@@ -3911,14 +3911,20 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         // alle artikel die ein Kunde kaufen kann mit preisen netto brutto
         $cmd = $this->app->Secure->GetGET('smodule');
         $adresse = 0;
+
         if(!empty($cmd) && $id > 0){
-          $adresse = $this->app->DB->Select(
-            sprintf(
-              'SELECT adresse FROM `%s` WHERE id=%d LIMIT 1',
-              $cmd, (int)$id
-            )
-          );
-        }
+
+		if ($this->app->DB->Select("SHOW columns FROM `$cmd` LIKE 'adresse'")) {
+
+	          $adresse = $this->app->DB->Select(
+	            sprintf(
+	              'SELECT adresse FROM `%s` WHERE id=%d LIMIT 1',
+	              $cmd, (int)$id
+	            )
+	          );
+	        }
+	}
+
         $sortmodus = $this->TableSearchFilter($name, 1, 'sortmodus',  0,0,  'checkbox');
         // headings
         $heading = array('','','','Titel', 'Stichwort', 'Version','Gr&ouml;&szlig;e', 'Ersteller','Version','Datum','Sortierung','Men&uuml;');
