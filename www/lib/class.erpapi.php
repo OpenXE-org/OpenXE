@@ -34526,10 +34526,11 @@ function Firmendaten($field,$projekt="")
 
       if(!$preis)
       {
-         $stundensatz = (float)$this->app->DB->Select("SELECT stundensatz 
+/*         $stundensatz = (float)$this->app->DB->Select("SELECT stundensatz 
           FROM `zeiterfassung_kosten` 
           WHERE adresse = '$adr_id' AND (gueltig_ab <= curdate() OR gueltig_ab = '0000-00-00') 
-          ORDER BY gueltig_ab DESC  LIMIT 1");
+          ORDER BY gueltig_ab DESC  LIMIT 1");*/
+
         if($stundensatz)$this->app->DB->Update("UPDATE zeiterfassung SET stundensatz = '$stundensatz' WHERE id = '$ret' LIMIT 1");
       }
       return $ret;

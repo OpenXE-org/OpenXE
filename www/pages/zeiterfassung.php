@@ -463,8 +463,16 @@ class Zeiterfassung { //extends GenZeiterfassung {
 
     if($cmd=='data' ||  $cmd=='getzeiterfassung' || $cmd=='updatezeiterfassung' || $cmd=='savezeiterfassung' || $cmd=='kalenderansicht' || $cmd=='formularansicht' || $cmd=='delzeiterfassung' || $cmd=='mitarbeiteransichtdata' || $cmd=='copyzeiterfassung')
     {
-      $start_datum = date('Y-m-d', $this->app->Secure->GetGET('start'));
-      $end_datum = date('Y-m-d', $this->app->Secure->GetGET('end'));
+	$start_string = $this->app->Secure->GetGET('start');
+	if ($start_string != "") {
+	      $start_datum = date('Y-m-d', $this->app->Secure->GetGET('start'));
+	}
+
+	$end_string = $this->app->Secure->GetGET('end');
+	if ($end_string != "") {
+	      $end_datum = date('Y-m-d', $this->app->Secure->GetGET('end'));
+	}
+
       switch($cmd)
       {
         case 'formularansicht':
@@ -577,7 +585,7 @@ class Zeiterfassung { //extends GenZeiterfassung {
           $data['art']=$result['art'];
           $data['internerkommentar']=$result['internerkommentar'];
           $data['projekt_manuell']=$this->app->DB->Select("SELECT CONCAT(abkuerzung,' ',name) FROM projekt WHERE id='".$result['projekt']."' LIMIT 1");
-          $data['serviceauftrag'] = $this->app->DB->Select("SELECT belegnr FROM serviceauftrag WHERE id='".$result["serviceauftrag"]."' LIMIT 1");
+        //  $data['serviceauftrag'] = $this->app->DB->Select("SELECT belegnr FROM serviceauftrag WHERE id='".$result["serviceauftrag"]."' LIMIT 1");
           $data['adresse_abrechnung'] = $this->app->DB->Select("SELECT CONCAT(kundennummer,' ',name) FROM adresse WHERE id='".$result["adresse_abrechnung"]."'");
           $data['auftragpositionid']=$this->app->DB->Select("SELECT CONCAT(a.belegnr,'-',ap.sort,' ',a.name,' ',DATE_FORMAT(a.datum,'%d.%m.%Y'),' ',ap.bezeichnung) FROM auftrag_position ap LEFT JOIN auftrag a ON ap.auftrag=a.id WHERE ap.id='".$result["auftragpositionid"]."'");
           $data['produktion']=$this->app->DB->Select("SELECT CONCAT(belegnr,' ',name,' ', DATE_FORMAT(datum,'%d.%m.%Y')) FROM produktion WHERE id='".$result["produktion"]."'");
@@ -708,8 +716,8 @@ class Zeiterfassung { //extends GenZeiterfassung {
           $arbeitspaket = strstr($arbeitspaket, ' ', true);
           $arbeitspaket = $this->app->DB->Select("SELECT id FROM arbeitspaket WHERE id='".$arbeitspaket."' LIMIT 1");
 
-          $serviceauftrag = reset(explode(' ',$serviceauftrag));
-          $serviceauftrag = $this->app->DB->Select("SELECT id FROM serviceauftrag WHERE belegnr='".$serviceauftrag."' LIMIT 1");
+/*          $serviceauftrag = reset(explode(' ',$serviceauftrag));
+          $serviceauftrag = $this->app->DB->Select("SELECT id FROM serviceauftrag WHERE belegnr='".$serviceauftrag."' LIMIT 1");*/
 
           // Projekt grabben und notfalls wieder anzeigen
           $projekt_kennung = reset(explode(' ',$projekt_manuell));
@@ -1382,9 +1390,12 @@ class Zeiterfassung { //extends GenZeiterfassung {
       $bisZeit='';
     }
     $this->app->Tpl->Set('BISZEIT',$bisZeit?$bisZeit:'');
+
+/*
     $serviceauftrag = $this->app->Secure->GetPOST('serviceauftrag');
     $serviceauftrag = reset(explode(' ',$serviceauftrag));
     $serviceauftrag = $this->app->DB->Select("SELECT id FROM serviceauftrag WHERE belegnr='".$serviceauftrag."' LIMIT 1");
+*/
     
     // Projekt grabben und notfalls wieder anzeigen
     $projekt_kennung = reset(explode(' ',$projekt));
