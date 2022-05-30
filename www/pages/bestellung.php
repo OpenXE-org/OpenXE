@@ -91,17 +91,19 @@ class Bestellung extends GenBestellung
       );
     }
 
-    if($nummer=='' && !empty($bestRow)){
+    if($nummer=='' && !empty($bestRow) && gettype($bestRow) == 'array'){
       $adresse = $bestRow['name'];
     }
     else{
       $adresse = $nummer;
     }
 
-    $nummer = !empty($bestRow)?$bestRow['belegnr']:'';
-    if($nummer=='' || $nummer=='0') {
-      $nummer='ohne Nummer';
-    }
+	if (gettype($bestRow) == 'array') {
+	    $nummer = !empty($bestRow)?$bestRow['belegnr']:'';
+	    if($nummer=='' || $nummer=='0') {
+	      $nummer='ohne Nummer';
+	    }
+	}
 
     $this->app->Tpl->Set('UEBERSCHRIFT','Bestellung:&nbsp;'.$adresse.' ('.$nummer.')');
     $this->app->Tpl->Set('FARBE','[FARBE2]');

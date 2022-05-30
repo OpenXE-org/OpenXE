@@ -1555,6 +1555,7 @@ function processData( xmlHttp, intID )
         render=1;
         document.getElementById("artikel").value=trim(mySplitResult[0]);
         document.getElementById("nummer").value=mySplitResult[1];
+
         if(mySplitResult[1]=="") { 
           alert('In der Schnelleingabe können nur Artikel aus den Stammdaten eingefügt werden. Klicken Sie auf Artikel manuell suchen / neu anlegen.');
         } else {

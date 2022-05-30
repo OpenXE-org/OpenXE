@@ -3489,7 +3489,7 @@ class Artikel extends GenArtikel {
         }
       } else {
         $commandline = $id;
-        $tmp_id = explode(' ',$commandline);
+        $tmp_id = explode(',',$commandline);
         $tmp_id = $tmp_id[0];
         //     $id = substr($id,0,6);
         if($tmp_id!='')
@@ -3511,8 +3511,10 @@ class Artikel extends GenArtikel {
         } else {
           $this->app->ExitXentral();
         }
+
         $id = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$id' AND geloescht!=1 AND intern_gesperrt!=1 LIMIT 1");
       }
+
       if(!is_numeric($id))
       {
         echo '#*##*##*##*##*##*##*#';
