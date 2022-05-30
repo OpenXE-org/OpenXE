@@ -30108,11 +30108,14 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     //$tpl .="<option value=\"0\">-- kein --</option>";
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='1'");
-    for($i=0;$i<count($drucker);$i++)
-    {
-      if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
-      $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";
-    }
+
+	if (gettype($drucker) == 'array') {
+	    for($i=0;$i<count($drucker);$i++)
+	    {
+	      if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
+	      $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";
+	    }
+	}
     return $tpl;
   }
 

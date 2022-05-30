@@ -1009,13 +1009,20 @@ class Benutzer
       for($i=0;$i<$maxcols || $i<count($value);$i++) {
         if($i%$maxcols==0) $out .= "<tr>";
 
-        if(isset($value[$i]) && in_array($value[$i], $rights[$module])) {
-          $class = 'class="blue"';
-          $active = '1';
-        }else{
+	if (gettype($rights[$module]) == 'array') {
+
+	        if(isset($value[$i]) && in_array($value[$i], $rights[$module])) {
+	          $class = 'class="blue"';
+	          $active = '1';
+	        }else{
+	          $class = 'class="grey"';
+	          $active = 0;
+	        }
+	} else {
           $class = 'class="grey"';
           $active = 0;
-        }
+	}
+
         $class = ((isset($value[$i])) ? $class : '');
 
         $action = ((isset($value[$i])) ? strtolower($value[$i]) : '');
