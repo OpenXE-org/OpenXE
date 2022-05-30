@@ -6057,6 +6057,7 @@ CREATE TABLE IF NOT EXISTS `gutschrift_position` (
                                                      `umsatzsteuer` varchar(255) NOT NULL,
                                                      `bemerkung` text NOT NULL,
                                                      `logdatei` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                                     `explodiert_parent` int(11) NOT NULL DEFAULT '0',
                                                      `explodiert_parent_artikel` int(11) NOT NULL DEFAULT '0',
                                                      `keinrabatterlaubt` int(1) DEFAULT NULL,
                                                      `grundrabatt` decimal(10,2) DEFAULT NULL,

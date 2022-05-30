@@ -321,7 +321,7 @@ class Briefpapier extends SuperFPDF {
       $auftrag_position_id = $this->app->DB->Select("SELECT auftrag_position_id FROM rechnung_position WHERE id='$posid'");
     }
     if($doctype === 'gutschrift'){
-      $auftrag_position_id = $this->app->DB->Select("SELECT gutschrift_position_id FROM rechnung_position WHERE id='$posid'");
+//      $auftrag_position_id = $this->app->DB->Select("SELECT gutschrift_position_id FROM rechnung_position WHERE id='$posid'");
     }
     if($doctype === 'rechnung')
     {
