@@ -40,6 +40,10 @@ class Berichte extends GenBerichte {
 
         $id = $app->Secure->GetGET('id');
 
+	if (is_null($id)) {
+		return;
+	}
+
         $arr = $this->app->DB->SelectRow('SELECT * FROM berichte WHERE id = '.$id);
 
         $spaltenausrichtung = explode(';',rtrim($this->app->erp->ReadyForPDF($arr['spaltenausrichtung']),';'));
@@ -617,7 +621,7 @@ class Berichte extends GenBerichte {
     $ausrichtung = explode(';',$spaltenausrichtung);
     $cw = count($w);
     for($i=0;$i<$cw;$i++) {
-      $pdf->Cell($w[$i], 7, $header[$i], 1, 0, $ausrichtung[$i], true);
+      $pdf->Cell(intval($w[$i],10), 7, intval($header[$i]), 1, 0, intval($ausrichtung[$i],10), true);
     }
     $pdf->Ln();
     $sums = [];
@@ -625,7 +629,7 @@ class Berichte extends GenBerichte {
     {
       $colcounter = 0;
       foreach($row as $key=>$value){
-        $pdf->Cell($w[$colcounter],6,$this->app->erp->ReadyForPDF($value),'LRTB',0,$ausrichtung[$colcounter],true);
+        $pdf->Cell(intval($w[$colcounter],10),6,$this->app->erp->ReadyForPDF($value),'LRTB',0,$ausrichtung[$colcounter],true);
         if(!empty($sumcolsa) && in_array($key+1,$sumcolsa))
         {
           if(empty($sums[$key])){
