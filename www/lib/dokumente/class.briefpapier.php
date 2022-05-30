@@ -1182,9 +1182,12 @@ class Briefpapier extends SuperFPDF {
   public function ArchiviereDocument($schreibschutz = false, $force = false, $parameter = ''): void
   {
     if(!$schreibschutz){
-      $schreibschutz = (bool)$this->app->DB->Select(
-        "SELECT `schreibschutz` FROM `{$this->table}` WHERE `id` = '{$this->id}' LIMIT 1"
-      );
+
+	if (!is_null($this->table)) {
+	      $schreibschutz = (bool)$this->app->DB->Select(
+	        "SELECT `schreibschutz` FROM `{$this->table}` WHERE `id` = '{$this->id}' LIMIT 1"
+	      );
+	}
     }
 
     if($parameter == ''){
@@ -1195,9 +1198,11 @@ class Briefpapier extends SuperFPDF {
       return;
     }
 
-    $isDraft = $this->app->DB->Select(
-      "SELECT `id` FROM `{$this->table}` WHERE `id` = '{$this->id}' AND `belegnr` <> '' AND `belegnr` <> '0' LIMIT 1"
-    ) === null;
+	if (!is_null($this->table)) {
+	    $isDraft = $this->app->DB->Select(
+	      "SELECT `id` FROM `{$this->table}` WHERE `id` = '{$this->id}' AND `belegnr` <> '' AND `belegnr` <> '0' LIMIT 1"
+	    ) === null;
+	}
 
     if($isDraft){
       return;

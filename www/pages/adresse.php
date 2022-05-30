@@ -3819,14 +3819,25 @@ function AdresseBriefCreatePDF($dokumentId, $display=true) {
       LIMIT 1
       ');
 
-  $data['firma'] = $this->app->DB->Select('
+/*  $data['firma'] = $this->app->DB->Select('
       SELECT
       absender
       FROM
       firmendaten
       WHERE
       id = ' . $data['firma'] . '
+      ');*/
+
+  $data['firma'] = $this->app->DB->Select('
+      SELECT
+      wert
+      FROM
+      firmendaten_werte
+      WHERE
+      name = \'absender\'
       ');
+
+
 
   $korrespondenz = new KorrespondenzPDF($this->app,$data['projekt']);
   $korrespondenz->SetBetreff($this->app->erp->ReadyForPDF($data['betreff']));

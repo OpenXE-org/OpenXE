@@ -48,7 +48,8 @@ class Dokumentenvorlage extends SuperFPDF {
     $this->absender = '';
     $this->firmendatenid = $this->app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
 
-    $hintergrund = $this->app->DB->Select("SELECT hintergrund FROM firmendaten WHERE id='".$this->firmendatenid."' LIMIT 1");
+//    $hintergrund = $this->app->DB->Select("SELECT hintergrund FROM firmendaten WHERE id='".$this->firmendatenid."' LIMIT 1");
+    $hintergrund = $this->app->DB->Select("SELECT wert FROM firmendaten_werte WHERE name='hintergrund' LIMIT 1");
     if($hintergrund=="logo")
     {
       $logo = $this->app->erp->getSettingsFile('logo');
