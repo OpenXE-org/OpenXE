@@ -3679,8 +3679,10 @@ class Artikel extends GenArtikel {
 
       $id = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$id' AND intern_gesperrt!=1 LIMIT 1");
       $warnung = 1-(int)$this->app->DB->Select("SELECT if(rabatt=1,1,vkmeldungunterdruecken) FROM artikel WHERE id = '$id' LIMIT 1");
-      $adresse = $this->app->DB->Select("SELECT adresse FROM $smodule WHERE id='$sid' LIMIT 1");
 
+	if (!is_null($id)) {
+	      $adresse = $this->app->DB->Select("SELECT adresse FROM $smodule WHERE id='$sid' LIMIT 1");
+	}
 
 	if (!is_null($module)) {
 		if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'waehrung'")) {
@@ -3688,7 +3690,9 @@ class Artikel extends GenArtikel {
 		}
 	}
 
-      $posanz = (int)$this->app->DB->Select("SELECT count(id) FROM $smodule"."_position WHERE $smodule = '$sid'");
+	if (!is_null($id)) {
+	      $posanz = (int)$this->app->DB->Select("SELECT count(id) FROM $smodule"."_position WHERE $smodule = '$sid'");
+	}
       //if($posanz == 0){
       //  $waehrung = '';
       //}
