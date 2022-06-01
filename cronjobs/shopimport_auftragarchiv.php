@@ -45,7 +45,7 @@ if(!class_exists('HttpClient')){
 if(!class_exists('AES')){
   $aes = '';
   $phpversion = PHP_VERSION;
-  if(strpos($phpversion,'7') === 0 && (int)$phpversion{2} > 0)
+  if(strpos($phpversion,'7') === 0 && (int)$phpversion[2] > 0)
   {
     $aes = '2';
   }

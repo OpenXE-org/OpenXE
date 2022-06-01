@@ -5,7 +5,7 @@ include("../lib/imap.inc.php");
 include("../lib/class.remote.php");
 $aes = '';
 $phpversion = (String)phpversion();
-if($phpversion{0} == '7' && (int)$phpversion{2} > 0)$aes = '2';
+if($phpversion[0] == '7' && (int)$phpversion[2] > 0)$aes = '2';
 if($aes == 2 && is_file(dirname(__FILE__)."/../www/lib/class.aes".$aes.".php"))
 {
   include_once(dirname(__FILE__)."/../www/lib/class.aes".$aes.".php");
