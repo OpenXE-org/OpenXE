@@ -112,7 +112,7 @@ class WidgetArtikelgruppen extends WidgetGenArtikelgruppen
 
   public function Table()
   {
-		$this->app->YUI->TableSearch(INHALT,"artikelgruppenlist");
+		$this->app->YUI->TableSearch('INHALT',"artikelgruppenlist");
     $this->app->Tpl->Parse($this->parsetarget,"rahmen70.tpl");
 
   }
