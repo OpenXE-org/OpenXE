@@ -21,7 +21,7 @@ if(is_file(dirname(__DIR__).'/www/lib/class.erpapi_custom.php')){
 include_once dirname(__DIR__).'/www/lib/class.httpclient.php';
 $aes = '';
 $phpversion = PHP_VERSION;
-if(strpos($phpversion,'7') === 0 && (int)$phpversion{2} > 0)
+if(strpos($phpversion,'7') === 0 && (int)$phpversion[2] > 0)
 {
   $aes = '2';
 }

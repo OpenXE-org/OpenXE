@@ -728,6 +728,7 @@ class Prozessstarter extends GenProzessstarter {
    */
   public function setCronjobStatus($status, $prozessstarter = null)
   {
+
     if($prozessstarter !== null) {
       $this->currentCronjobId = $prozessstarter;
       if(emptY($this->currentCronjobId)) {
@@ -1180,6 +1181,7 @@ class Prozessstarter extends GenProzessstarter {
         $task['bezeichnung'], $uid, $task['id'], $runningTask['id']
       )
     );
+
     $this->setCronjobStatus('error', $task['id']);
     $this->setCronjobRunning($uid, $task['id'], false);
   }
@@ -1190,6 +1192,9 @@ class Prozessstarter extends GenProzessstarter {
    */
   public function closeAndLogCronjob($uid, $fromStarter2 = false)
   {
+
+// REMARK: this never gets called -> Check
+
     $cronjob = $this->getCronjobByUid($uid);
     if(empty($cronjob)) {
       return;
@@ -1205,6 +1210,7 @@ class Prozessstarter extends GenProzessstarter {
     }
     $this->app->erp->LogFile('Cronjob with uid: '.$uid.' was killed by module: '.$cronjob['cronjob_name']);
     if(!empty($cronjob['task_id'])) {
+
       $this->setCronjobStatus('error', $cronjob['task_id']);
       try {
         /** @var Systemhealth $systemhealth */
@@ -1419,11 +1425,13 @@ class Prozessstarter extends GenProzessstarter {
    * @param bool       $active
    */
   public function setCronjobRunning($uid, $task = null, $active = true) {
+
     if($active === false) {
       if(!empty($task)) {
         $this->app->DB->Update(
           sprintf(
-            'UPDATE cronjob_starter_running SET `task_id` = 0, last_time = NOW() WHERE uid = \'%s\' AND `active` = 1',
+//            'UPDATE cronjob_starter_running SET `task_id` = 0, last_time = NOW() WHERE uid = \'%s\' AND `active` = 1',
+            'UPDATE cronjob_starter_running SET `active` = 0, last_time = NOW() WHERE uid = \'%s\' AND `active` = 1',
             $this->app->DB->real_escape_string($uid)
           )
         );
@@ -1435,11 +1443,13 @@ class Prozessstarter extends GenProzessstarter {
           $this->app->DB->real_escape_string($uid)
         )
       );
+
       if(is_numeric($uid)){
         $this->changeUid($uid);
       }
       return;
     }
+
     $check = $this->app->DB->SelectRow(
       sprintf(
         'SELECT * FROM cronjob_starter_running WHERE uid = \'%s\' LIMIT 1',
@@ -1456,6 +1466,7 @@ class Prozessstarter extends GenProzessstarter {
       );
       return;
     }
+
     if(!empty($check['task_id']) && ($uid != $check['uid'] || $check['task_id'] != $task['id'])) {
       $this->app->erp->LogFile(
         $this->app->DB->real_escape_string(

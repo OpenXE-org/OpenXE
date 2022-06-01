@@ -217,6 +217,7 @@ class Importvorlage extends GenImportvorlage {
 
   public function doCronjob()
   {
+
     $jobs = $this->app->DB->SelectArr(
       sprintf(
         "SELECT * FROM `importmasterdata` WHERE `status` = 'in_queue' ORDER BY `created_at` LIMIT 1"
@@ -4283,6 +4284,10 @@ class Importvorlage extends GenImportvorlage {
                 $uhrzeit = $tmp['uhrzeit'][$i];
               }
 
+		if (is_null($mitarbeiteradresse)) {
+			$mitarbeiteradresse = '';
+		}
+
               if($mitarbeiteradresse>0){
                 $bearbeiter = $this->app->DB->Select("SELECT CONCAT(mitarbeiternummer,' ',name) FROM adresse WHERE id='$mitarbeiteradresse' LIMIT 1");
               }
@@ -4290,8 +4295,10 @@ class Importvorlage extends GenImportvorlage {
                 $bearbeiter='Import';
               }
 
-              $this->app->DB->Insert("INSERT INTO dokumente (id,adresse_to,adresse_from,typ,betreff,content,datum,uhrzeit,bearbeiter)
-                VALUES ('',$adresse,$mitarbeiteradresse,'notiz','$betreff','$text','$datum','$uhrzeit','$bearbeiter')");
+		$query = "INSERT INTO dokumente (id,adresse_to,adresse_from,typ,betreff,content,datum,uhrzeit,bearbeiter)
+                VALUES ('','$adresse','$mitarbeiteradresse','notiz','$betreff','$text','$datum','$uhrzeit','$bearbeiter')";
+
+              $this->app->DB->Insert($query);
             }
           }
           break;

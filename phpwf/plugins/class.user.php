@@ -527,7 +527,7 @@ class User
     }
     $this->loadUserRowInCacheProperty();
 
-    return $this->cache[$cacheKey]['adresse'];
+//    return $this->cache[$cacheKey]['adresse'];
   }
 
   /**
