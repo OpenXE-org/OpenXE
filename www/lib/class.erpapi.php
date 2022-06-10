@@ -31859,10 +31859,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     } else { $this->app->Tpl->Set('HISTORIE',"<div class=\"info\">Dieses Dokument wurde noch nicht versendet!</div>"); }
 
+	if (gettype($attachments) == 'string') {
+		$attachments = (Array) $attachments;
+	}
 
     for($i=0;$i<(!empty($attachments)?count($attachments):0);$i++)
     {
-      $this->app->Tpl->Add('ANHAENGE',"<a href=\"\">".basename($attachments)."</a>&nbsp;");
+      $this->app->Tpl->Add('ANHAENGE',"<a href=\"\">".basename($attachments[$i])."</a>&nbsp;");
     }
     if((!empty($attachments)?count($attachments):0)==0) $this->app->Tpl->Add('ANHAENGE',"keine Anh&auml;nge vorhanden");
 
