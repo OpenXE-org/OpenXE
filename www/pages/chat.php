@@ -368,7 +368,7 @@ class Chat {
       $numOfUrlsToReplace = 0;
       for($i=0; $i<$numOfMatches; $i++) {
         $alreadyAdded = false;
-        $numOfUrlsToReplace = count($urlsToReplace);
+        $numOfUrlsToReplace = (!empty($urlsToReplace)?count($urlsToReplace):0);
         for($j=0; $j<$numOfUrlsToReplace; $j++) {
           if($urlsToReplace[$j] == $urls[0][$i]) {
             $alreadyAdded = true;
@@ -378,7 +378,7 @@ class Chat {
           array_push($urlsToReplace, $urls[0][$i]);
         }
       }
-      $numOfUrlsToReplace = count($urlsToReplace);
+      $numOfUrlsToReplace = (!empty($urlsToReplace)?count($urlsToReplace):0);
       for($i=0; $i<$numOfUrlsToReplace; $i++) {
         $str = str_replace($urlsToReplace[$i], "<a href=\"".$urlsToReplace[$i]."\" target=\"_blank\">".$urlsToReplace[$i]."</a> ", $str);
       }

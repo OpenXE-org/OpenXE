@@ -76,7 +76,7 @@ class Pinwand {
     if($id > 0 && $speichern!="" && $name !="")
     {
       $this->app->DB->Delete("DELETE FROM pinwand_user WHERE pinwand='$id'");
-      for($i=0;$i<count($personen);$i++)
+      for($i=0;$i<(!empty($personen)?count($personen):0);$i++)
       {
         $this->app->DB->Insert("INSERT INTO pinwand_user (id,pinwand,user) VALUES ('','$id','".$personen[$i]."')");
       } 
@@ -87,12 +87,12 @@ class Pinwand {
     $users = $this->app->DB->SelectArr("SELECT u.id, a.name as description FROM user u LEFT JOIN adresse a ON a.id=u.adresse 
       WHERE u.activ='1' AND a.geloescht=0 ORDER BY a.name");
     $permissions = $this->app->DB->SelectArr("SELECT DISTINCT pu.user FROM pinwand_user pu WHERE pu.pinwand='$id'");
-    for($i=0;$i<count($permissions);$i++)
+    for($i=0;$i<(!empty($permissions)?count($permissions):0);$i++)
     {
       $check_permissions[] = $permissions[$i]['user'];
     }
 
-    for($i=0; $i<count($users);$i++){
+    for($i=0; $i<(!empty($users)?count($users):0);$i++){
 
       $select = (($user==$users[$i]['id']) || in_array($users[$i]['id'],$check_permissions) ? "checked" : "");
       $user_out .= "<input name=\"personen[]\" type=\"checkbox\" value=\"{$users[$i]['id']}\" $select>{$users[$i]['description']}<br>";

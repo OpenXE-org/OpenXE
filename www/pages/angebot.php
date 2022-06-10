@@ -1079,7 +1079,7 @@ class Angebot extends GenAngebot
         $abgeschlossen = $this->app->Secure->GetPOST('abgeschlossen');
       }
       $wiedervorlage = $this->app->DB->SelectArr("SELECT * from wiedervorlage WHERE module = 'angebot' AND parameter = '$id'");
-      if(count($wiedervorlage)> 0)
+      if((!empty($wiedervorlage)?count($wiedervorlage):0)> 0)
       {
         $wiedervorlage = reset($wiedervorlage);
         $datum_angelegt = $wiedervorlage['datum_angelegt'];
@@ -2148,7 +2148,7 @@ class Angebot extends GenAngebot
               //$Brief->ArchiviereDocument();
             }
 
-            if(count($tmpfile) > 0)
+            if((!empty($tmpfile)?count($tmpfile):0) > 0)
             {
               try {
                 /** @var PdfMerger $pdfMerger */

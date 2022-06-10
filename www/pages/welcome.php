@@ -373,7 +373,7 @@ class Welcome
   protected function GetMeineApps()
   {
     if(is_array($this->_meineapps)) {
-      return count($this->_meineapps);
+      return (!empty($this->_meineapps)?count($this->_meineapps):0);
     }
 
     $anz = 0;
@@ -1759,7 +1759,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 1 von 2: Dateien aktualisieren</h2><tab
         $this->app->erp->check_column_missing_run = true;
         $this->app->erp->UpgradeDatabase();
         
-        if(count($this->app->erp->check_column_missing) > 0)
+        if((!empty($this->app->erp->check_column_missing)?count($this->app->erp->check_column_missing):0) > 0)
         {
           $result .= "\r\n**** INFORMATION DATENBANK ****\r\n";
           foreach($this->app->erp->check_column_missing as $tablename=>$columns)
@@ -1771,7 +1771,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 1 von 2: Dateien aktualisieren</h2><tab
           }
           $result .= "\r\n**** INFORMATION DATENBANK ****\r\n\r\n";
         }
-        if(count($this->app->erp->check_index_missing) > 0)
+        if((!empty($this->app->erp->check_index_missing)?count($this->app->erp->check_index_missing):0) > 0)
         {
           $result .= "\r\n**** INFORMATION DATENBANK INDEXE ****\r\n";
           foreach($this->app->erp->check_index_missing as $tablename=>$columns)
@@ -1852,7 +1852,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
         }</script>';
       }
 
-      if(!$termine || count($termine)==0) {
+      if(!$termine || (!empty($termine)?count($termine):0)==0) {
         $out = '<center><i>{|Keine Termine vorhanden|}</i></center>';
       }
 
@@ -2321,7 +2321,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
     }
 
     // Einzelne Datei herunterladen
-    if (count($unprinted) === 1) {
+    if ((!empty($unprinted)?count($unprinted):0) === 1) {
       $this->DownloadSpoolerFile($unprinted[0]);
     } else {
       $this->DownloadSpoolerZipCompilation($unprinted, $printerId);
@@ -2746,7 +2746,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
     $params = explode('&',$url['query']);
     foreach($params as $value){
       $attribut = explode('=',$value);
-      $arrPara[$attribut[0]] = count($attribut) > 1?$attribut[1]:'';
+      $arrPara[$attribut[0]] = (!empty($attribut)?count($attribut):0) > 1?$attribut[1]:'';
     }
 
     $adresse = $this->app->User->GetAdresse();

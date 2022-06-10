@@ -945,7 +945,7 @@ class Shopimporter_Shopify extends ShopimporterBase
                 foreach ($tmp[$i]['artikel_varianten'][0]['eigenschaften'] as $ekey => $evalue) {
                   $optionsteile[] = $evalue['name'];
                 }
-                if(count($optionsteile) > 0){
+                if((!empty($optionsteile)?count($optionsteile):0) > 0){
                   $optionsname = implode(' | ', $optionsteile);
                 }
               }
@@ -1163,7 +1163,7 @@ class Shopimporter_Shopify extends ShopimporterBase
             foreach ($value['eigenschaften'] as $ekey => $evalue){
               $eigenschaftenwerte[] = $evalue['values'];
             }
-            if(count($eigenschaftenwerte) > 0){
+            if((!empty($eigenschaftenwerte)?count($eigenschaftenwerte):0) > 0){
               $titel = implode(' | ', $eigenschaftenwerte);
             }
           }
@@ -2496,10 +2496,10 @@ class Shopimporter_Shopify extends ShopimporterBase
               foreach($result['orders'][$i]['line_items'][$ii]['discount_allocations'] as $discountAll) {
                 if(isset($discountAll['discount_application_index']) && $discountAll['discount_application_index'] == $linePercentageDiscountsKey) {
                   $rabattItemPrice = -(!empty($discountAll['amount_set']['shop_money']['amount'])?$discountAll['amount_set']['shop_money']['amount']:$discountAll['amount']);
-                  if(isset($articlearray[count($articlearray) -1]['price_netto'])
-                    && $articlearray[count($articlearray) -1]['price_netto'] == -$rabattItemPrice) {
-                    unset($articlearray[count($articlearray) -1]['price_netto']);
-                    $articlearray[count($articlearray) -1]['price'] = abs($rabattItemPrice);
+                  if(isset($articlearray[(!empty($articlearray)?count($articlearray):0) -1]['price_netto'])
+                    && $articlearray[(!empty($articlearray)?count($articlearray):0) -1]['price_netto'] == -$rabattItemPrice) {
+                    unset($articlearray[(!empty($articlearray)?count($articlearray):0) -1]['price_netto']);
+                    $articlearray[(!empty($articlearray)?count($articlearray):0) -1]['price'] = abs($rabattItemPrice);
                   }
                   $articlearray[] = array(
                     'articleid'=>  $linePercentageDiscountsValue['nummer'],
@@ -2516,7 +2516,7 @@ class Shopimporter_Shopify extends ShopimporterBase
                         0
                       )
                   );
-                  $itemKey = count($articlearray) - 2;
+                  $itemKey = (!empty($articlearray)?count($articlearray):0) - 2;
                   if(!empty($articlearray[$itemKey]['price_netto']) && round(-$rabattItemPrice, 2)
                     === round($articlearray[$itemKey]['price_netto'] * $articlearray[$itemKey]['quantity'], 2)
                   ) {
@@ -2539,7 +2539,7 @@ class Shopimporter_Shopify extends ShopimporterBase
                       $warenkorb['rabattnetto'] -= abs($rabattItemPrice);
                     }
                   }
-                  $lastKey = count($articlearray) - 1;
+                  $lastKey = (!empty($articlearray)?count($articlearray):0) - 1;
                   if($articlearray[$lastKey]['steuersatz'] == 0
                     && !empty($articlearray[$lastKey]['price'])
                     && !isset($articlearray[$lastKey]['price_netto'])) {
@@ -2684,14 +2684,14 @@ class Shopimporter_Shopify extends ShopimporterBase
           $summegesamt += (isset($value['price_netto'])?$value['price_netto']:$value['price'])*$value['quantity'];
         }
 
-        if(count($steuergruppen) > 1){
-          if(!empty($discount_applications_absolute) && count($discount_applications_absolute) === 1 && round(-$discount_applications_absolute_sum,2) == round($warenkorb['rabattnetto'],2)){
+        if((!empty($steuergruppen)?count($steuergruppen):0) > 1){
+          if(!empty($discount_applications_absolute) && (!empty($discount_applications_absolute)?count($discount_applications_absolute):0) === 1 && round(-$discount_applications_absolute_sum,2) == round($warenkorb['rabattnetto'],2)){
             $absolutekey = array_keys($discount_applications_absolute);
             $absolutekey = reset($absolutekey);
             $warenkorb['rabattbrutto'] = $warenkorb['rabattnetto'];
             $warenkorb['rabattsteuer'] = $absolutekey;
             unset($warenkorb['rabattnetto']);
-          }elseif(!empty($discount_applications_absolute) && count($discount_applications_absolute) > 1 && round(-$discount_applications_absolute_sum,2) == round($warenkorb['rabattnetto'],2)){
+          }elseif(!empty($discount_applications_absolute) && (!empty($discount_applications_absolute)?count($discount_applications_absolute):0) > 1 && round(-$discount_applications_absolute_sum,2) == round($warenkorb['rabattnetto'],2)){
             $rabattartikelid = $this->app->DB->Select("SELECT artikelrabatt FROM shopexport WHERE id='$this->shopid' LIMIT 1");
             $rabattartikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='$rabattartikelid' LIMIT 1");
             foreach($discount_applications_absolute as $steuersatz => $value)
@@ -2716,8 +2716,8 @@ class Shopimporter_Shopify extends ShopimporterBase
               }
               if(is_numeric($steuersatz))
               {
-                $articlearray[count($articlearray)-1]['steuersatz'] = $steuersatz;
-                $articlearray[count($articlearray)-1]['price_netto'] = $articlearray[count($articlearray)-1]['price'] / (1+$steuersatz/100);
+                $articlearray[(!empty($articlearray)?count($articlearray):0)-1]['steuersatz'] = $steuersatz;
+                $articlearray[(!empty($articlearray)?(!empty($articlearray)?count($articlearray):0):0)-1]['price_netto'] = $articlearray[count($articlearray)-1]['price'] / (1+$steuersatz/100);
               }
             }
             unset($warenkorb['rabattnetto']);
@@ -2749,8 +2749,8 @@ class Shopimporter_Shopify extends ShopimporterBase
                   }
                   if(is_numeric($steuersatz))
                   {
-                    $articlearray[count($articlearray)-1]['steuersatz'] = $steuersatz;
-                    $articlearray[count($articlearray)-1]['price_netto'] = $articlearray[count($articlearray)-1]['price'] / (1+$steuersatz/100);
+                    $articlearray[(!empty($articlearray)?count($articlearray):0)-1]['steuersatz'] = $steuersatz;
+                    $articlearray[(!empty($articlearray)?(!empty($articlearray)?count($articlearray):0):0)-1]['price_netto'] = $articlearray[count($articlearray)-1]['price'] / (1+$steuersatz/100);
                   }
                 }
               }else{
@@ -2812,7 +2812,7 @@ class Shopimporter_Shopify extends ShopimporterBase
         $warenkorb['steuerfrei']=1;
       }
 
-      if(count($steuersaetze) === 1)
+      if((!empty($steuersaetze)?count($steuersaetze):0) === 1)
       {
         $steuersaetze = array_keys($steuersaetze);
         $steuersaetze = reset($steuersaetze);
@@ -2822,7 +2822,7 @@ class Shopimporter_Shopify extends ShopimporterBase
         }elseif($steuersaetze <= 10 && $steuersaetze > 0){
           $warenkorb['umsatzsteuer_ermassigt'] = $steuersaetze;
         }
-      }elseif(count($steuersaetze) === 2)
+      }elseif((!empty($steuersaetze)?count($steuersaetze):0) === 2)
       {
         $steuersaetze = array_keys($steuersaetze);
         if($steuersaetze[0] > 0 && $steuersaetze[1] > 0 && $steuersaetze[0] > $steuersaetze[1])
@@ -2855,9 +2855,9 @@ class Shopimporter_Shopify extends ShopimporterBase
         }
       }
 
-      if(!empty($steuergruppen) && count($steuergruppen) === 1  && empty($warenkorb['rabattsteuer']) && !empty($warenkorb['rabattbrutto']) && empty($warenkorb['rabattnetto']))
+      if(!empty($steuergruppen) && (!empty($steuergruppen)?count($steuergruppen):0) === 1  && empty($warenkorb['rabattsteuer']) && !empty($warenkorb['rabattbrutto']) && empty($warenkorb['rabattnetto']))
       {
-        if(!empty($discount_applications_percent) && count($discount_applications_percent) === 1){
+        if(!empty($discount_applications_percent) && (!empty($discount_applications_percent)?count($discount_applications_percent):0) === 1){
           foreach($discount_applications_percent as $tax_percent => $prices)
           {
             if(is_numeric($tax_percent)){
@@ -2865,7 +2865,7 @@ class Shopimporter_Shopify extends ShopimporterBase
             }
             break;
           }
-        }elseif(!empty($discount_applications_absolute) && count($discount_applications_absolute) === 1)
+        }elseif(!empty($discount_applications_absolute) && (!empty($discount_applications_absolute)?count($discount_applications_absolute):0) === 1)
         {
           foreach($discount_applications_absolute as $tax_percent => $prices)
           {
@@ -2879,7 +2879,7 @@ class Shopimporter_Shopify extends ShopimporterBase
 
       if($this->autofullfilltax && empty($warenkorb['versandkostennetto']) && !empty($warenkorb['versandkostenbrutto']))
       {
-        if(is_array($steuersaetze) &&  count($steuersaetze) > 1){
+        if(is_array($steuersaetze) &&  (!empty($steuersaetze)?count($steuersaetze):0) > 1){
           $itemtaxes = [];
           foreach ($articlearray as $value) {
             if(!empty($value['steuersatz']) && $value['steuersatz']){
@@ -2891,7 +2891,7 @@ class Shopimporter_Shopify extends ShopimporterBase
               }
             }
           }
-          if(count($itemtaxes) > 1){
+          if((!empty($itemtaxes)?count($itemtaxes):0) > 1){
             arsort($itemtaxes);
             $itemtaxes = array_keys($itemtaxes);
             $itemtaxes = reset($itemtaxes);
@@ -3397,7 +3397,7 @@ class Shopimporter_Shopify extends ShopimporterBase
           if(isset($options[''])){
             unset($options['']);
           }
-          if(count($options) === 1) {
+          if((!empty($options)?count($options):0) === 1) {
             $options = array_keys($options);
             $data['fulfillment']['location_id'] = reset($options);
           }
@@ -3896,7 +3896,7 @@ class Shopimporter_Shopify extends ShopimporterBase
       ]
     ];
 
-    if(count($locations) > 2) {
+    if((!empty($locations)?count($locations):0) > 2) {
       $page['form'][] = [
         'id' => 0,
         'name' => 'exportArticlesGroup',

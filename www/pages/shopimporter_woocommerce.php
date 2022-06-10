@@ -124,7 +124,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     }
 
-    return count($pendingOrders);
+    return (!empty($pendingOrders)?count($pendingOrders):0);
   }
 
 
@@ -188,7 +188,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
 
     // Return an empty array in case there are no orders to import
-    if (count($pendingOrders) === 0) {
+    if ((!empty($pendingOrders)?count($pendingOrders):0) === 0) {
       return null;
     }
 
@@ -497,7 +497,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   {
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
 
     for($i=0;$i<$ctmp;$i++)
     {
@@ -585,7 +585,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $anzahl = 0;
 
-    for($i=0;$i<count($tmp);$i++){
+    for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++){
 
 
 
@@ -754,7 +754,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
             )
           );
         }
-        if(count($kategorien)>0){
+        if((!empty($kategorien)?count($kategorien):0)>0){
 
           // Retrive all WC categories via API
           $allWooCommerceCategories = $this->client->get('products/categories', ['per_page' => '100']);

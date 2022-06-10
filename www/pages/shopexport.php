@@ -320,7 +320,7 @@ class Shopexport
       $methodName = 'RemoteConnection';
       $r = new ReflectionMethod($className, $methodName);
       $params = $r->getParameters();
-      $anzargs = count($params);
+      $anzargs = (!empty($params)?count($params):0);
       if($anzargs > 1) {
         $pageContents = $this->app->remote->RemoteConnection($id, true);
       }
@@ -512,7 +512,7 @@ class Shopexport
         }
       }
       //print_r($checkarray);
-      if(is_array($checkarray) && count($checkarray)>0) {
+      if(is_array($checkarray) && (!empty($checkarray)?count($checkarray):0)>0) {
         $delete=0;
         foreach($checkarray as $key=>$value) {
           if($checkarray[$key]!=='mark' && $checkarray[$key]!=='delete' && $checkarray[$key]!=='update') {

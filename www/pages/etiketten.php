@@ -173,7 +173,7 @@ class Etiketten extends GenEtiketten {
         );
         if(!empty($checkserriennummer)){
           foreach($checkserriennummer as $checkSeriennummerRow) {
-          //for ($ics = 0; $ics < count($checkserriennummer); $ics++) {
+          //for ($ics = 0; $ics < (!empty($checkserriennummer)?count($checkserriennummer):0); $ics++) {
             $tmp['name_de'] = $row['bezeichnung'];
             $tmp['nummer'] = $row['nummer'];
             unset($tmp['bezeichnung']);

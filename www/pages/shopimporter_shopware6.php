@@ -424,7 +424,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     if ($includedInfo['type'] === 'property_group_option') {
                         $optionInfo[$includedInfo['id']] = $includedInfo['attributes'];
                         if (empty($optionGroupInfo[$includedInfo['attributes']['groupId']])) {
-                            $optionGroupInfo[$includedInfo['attributes']['groupId']] = count($optionGroupInfo) + 1;
+                            $optionGroupInfo[$includedInfo['attributes']['groupId']] = (!empty($optionGroupInfo)?count($optionGroupInfo):0) + 1;
                         }
                     }
                 }
@@ -1380,7 +1380,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
         foreach ($internalArticleData['Dateien'] as $internalFile) {
             $filename = explode('.', $internalFile['filename']);
-            unset($filename[count($filename) - 1]);
+            unset($filename[(!empty($filename)?count($filename):0) - 1]);
             $filename = $internalFile['id'].'_'.implode($filename);
             $extension = $internalFile['extension'];
             $imageTitle = (string)$internalFile['titel'];
@@ -1510,7 +1510,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         }
         foreach ($articleInXentral['Dateien'] as $xentralFile) {
             $filename = explode('.', $xentralFile['filename']);
-            unset($filename[count($filename) - 1]);
+            unset($filename[(!empty($filename)?count($filename):0) - 1]);
             $filename = $xentralFile['id'].'_'.implode($filename);
 
             $searchdata = [

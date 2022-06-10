@@ -73,8 +73,8 @@ class Adapterbox extends GenAdapterbox {
             $this->app->DB->real_escape_string($authkeys[$device])
           );
         }
-        $col1 .= "''".str_repeat(')', count($tmpdevices));
-        $col2 .= "''".str_repeat(')', count($tmpdevices));
+        $col1 .= "''".str_repeat(')', (!empty($tmpdevices)?count($tmpdevices):0));
+        $col2 .= "''".str_repeat(')', (!empty($tmpdevices)?count($tmpdevices):0));
         $heading = ['Typ','Bezeichnung','Seriennummer','AuthKey',''];
         $width = ['10%', '20%', '20%', '20%',  '1%'];
         $findcols = [

@@ -879,7 +879,7 @@ class Onlineshops extends GenShopexport {
   public function ShopexportMinidetail()
   {
     $ida = explode('-',$this->app->Secure->GetGET('id'));
-    if(count($ida) < 2)
+    if((!empty($ida)?count($ida):0) < 2)
     {
       $this->app->ExitXentral();
     }
@@ -2574,7 +2574,7 @@ class Onlineshops extends GenShopexport {
       }
       $form = $obj->getCreateForm();
       if(!empty($form)) {
-        $form[count($form) - 1]['link'] = [
+        $form[(!empty($form)?count($form):0) - 1]['link'] = [
           'link' => 'index.php?module=onlineshops&action=create&auswahl=' . $module,
           'title' => 'Expertenmodus',
         ];
@@ -2804,7 +2804,7 @@ class Onlineshops extends GenShopexport {
 
       $sequence = array_intersect($sequence, array_keys($importerCapabilities));
 
-      $cShops = count($sequence);
+      $cShops = (!empty($sequence)?count($sequence):0);
       $cTables = (int)ceil($cShops / 10);
       $cTablesPerRow = (int)ceil($cShops / $cTables);
 
@@ -3104,7 +3104,7 @@ class Onlineshops extends GenShopexport {
           }
         }
 
-        $message = 'Geänderte Felder: '.count($differenceInValues);
+        $message = 'Geänderte Felder: '.(!empty($differenceInValues)?count($differenceInValues):0);
         if(empty($differenceInValues)){
           $message = 'Keine Änderung';
         }
@@ -3259,7 +3259,7 @@ class Onlineshops extends GenShopexport {
       $methodName = 'RemoteConnection';
       $r = new ReflectionMethod($className, $methodName);
       $params = $r->getParameters();
-      $anzargs = count($params);
+      $anzargs = (!empty($params)?count($params):0);
       try {
         if($anzargs > 1){
           $pageContents = $this->app->remote->RemoteConnection($id, true);
@@ -3856,7 +3856,7 @@ class Onlineshops extends GenShopexport {
       return $ret;
     }
     foreach($attributes as $key => $attribute) {
-      if((is_array($attribute) || is_object($attribute)) && count($attribute) === 1) {
+      if((is_array($attribute) || is_object($attribute)) && (!empty($attribute)?count($attribute):0) === 1) {
         $ret .= ' '.$key.'="'.reset($attribute).'"';
         continue;
       }
@@ -3914,7 +3914,7 @@ class Onlineshops extends GenShopexport {
       unset($arr['@attributes']);
     }
     $keys = array_keys($arr);
-    $count =  count($keys);
+    $count =  (!empty($keys)?count($keys):0);
     if($isObject && !empty($arr)) {
       foreach($object as $key => $value) {
         if($key === '@attributes') {
@@ -3928,8 +3928,8 @@ class Onlineshops extends GenShopexport {
           unset($valueArr['@attributes']);
         }
         if(is_object($value) && !empty($valueArr)) {
-          $cValue = count($value);
-          $cValueArr = count($valueArr);
+          $cValue = (!empty($value)?count($value):0);
+          $cValueArr = (!empty($valueArr)?count($valueArr):0);
           $attributes = $value->attributes();
           $attributeKey = $this->attributeKey($attributes);
           if(isset($array[$key.$attributeKey])) {
@@ -4094,9 +4094,9 @@ class Onlineshops extends GenShopexport {
     $treeObject = $this->app->loadModule('artikelbaum');
     $categories = [['id'=> 0, 'bezeichnung'=>'root', 'parent' => 0,],];
     $treeObject->getKategorien($categories, 0);
-    if(count($categories) > 1) {
-      if((string)$categories[count($categories) -1]['id'] === '0'){
-        unset($categories[count($categories) - 1]);
+    if((!empty($categories)?count($categories):0) > 1) {
+      if((string)$categories[(!empty($categories)?count($categories):0) -1]['id'] === '0'){
+        unset($categories[(!empty($categories)?count($categories):0) - 1]);
       }
     }
     if($checkedId > 0 && !$this->isIdInCategories($checkedId, $categories)) {

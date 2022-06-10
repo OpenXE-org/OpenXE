@@ -221,7 +221,7 @@ class Bestellung extends GenBestellung
       $alleLagerArtikelVonBestellung = $this->app->DB->SelectArr($sql);
 
       //nur wenn auch Lagerartikel enthalten sind, soll automatisch abgeschlossen werden können.
-      if(count($alleLagerArtikelVonBestellung)>0){
+      if((!empty($alleLagerArtikelVonBestellung)?count($alleLagerArtikelVonBestellung):0)>0){
         $lagerArtikelIds = [];
         foreach ($alleLagerArtikelVonBestellung as $l){
           $lagerArtikelIds[] = $l['id'];
@@ -1482,7 +1482,7 @@ class Bestellung extends GenBestellung
     WHERE bp.bestellung='$id' GROUP BY a.belegnr, a.id ORDER BY a.belegnr, a.id");
     if($check)
     {
-      $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Zu dieser Bestellung geh&ouml;r".(count($check) == 1?'t der Auftrag':'en die Auftr&auml;ge:'));
+      $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Zu dieser Bestellung geh&ouml;r".((!empty($check)?count($check):0) == 1?'t der Auftrag':'en die Auftr&auml;ge:'));
       foreach($check as $row)
       {
         $this->app->Tpl->Add('MESSAGE','&nbsp;<a href="index.php?module=auftrag&action=edit&id='.$row['id'].'" target="_blank"><input type="button" value="'.($row['belegnr']?$row['belegnr']:'Entwurf')." (".$row['name'].')" /></a>');
@@ -1965,7 +1965,7 @@ class Bestellung extends GenBestellung
               }
             }
 
-            if(count($tmpfile) > 0){
+            if((!empty($tmpfile)?count($tmpfile):0) > 0){
               try {
                 /** @var PdfMerger $pdfMerger */
                 $pdfMerger = $this->app->Container->get('PdfMerger');

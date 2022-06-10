@@ -2959,8 +2959,8 @@ XML;
         //$out .= '</'.$position['beleg'].'>';
       }
       $anz_belegegesamt++;
-      //$out .= '</beleg_list><anz_gesamt>'.count($belege).'</anz_gesamt><anz_result>'.$j.'</anz_result>';
-      $xmlobj->AddChild('anz_gesamt',count($belege));
+      //$out .= '</beleg_list><anz_gesamt>'.(!empty($belege)?count($belege):0).'</anz_gesamt><anz_result>'.$j.'</anz_result>';
+      $xmlobj->AddChild('anz_gesamt',(!empty($belege)?count($belege):0));
       $xmlobj->AddChild('anz_result',$j);
       if(!$groupbyartikel)
       {
@@ -3823,7 +3823,7 @@ XML;
       return false;
     }
 
-      if((get_class($xml) === 'stdClass' && count($xml) >  0) || (isset($xml->xml) && count($xml->xml) > 0)) {
+      if((get_class($xml) === 'stdClass' && (!empty($xml)?count($xml):0) >  0) || (isset($xml->xml) && (!empty($xml->xml)?count($xml->xml):0) > 0)) {
         foreach($xml as $key0 => $value0) {
           if($key0 === 'status') {
             $status = &$value0;
@@ -4165,13 +4165,13 @@ XML;
     if(!is_array($xml) && !is_object($xml)) {
       return true;
     }
-    if(count($xml) === 0) {
+    if((!empty($xml)?count($xml):0) === 0) {
       return true;
     }
 
     foreach($xml as $key => $value) {
       if($key == $typ.'_position_list'){
-        if((is_array($value) || is_object($value)) && count($value) > 0) {
+        if((is_array($value) || is_object($value)) && (!empty($value)?count($value):0) > 0) {
           foreach($value as $key2 => $value2)  {
             if($key2 === $typ.'_position' && isset($value2->id_ext)) {
               $id_ext2 = (string)$value2->id_ext;
@@ -4215,7 +4215,7 @@ XML;
       return false;
     }
 
-    if(count($xml) === 0) {
+    if((!empty($xml)?count($xml):0) === 0) {
       return false;
     }
     $id = 0;
@@ -4938,7 +4938,7 @@ XML;
         }
 
         $mhd = $xml->mhd;
-        if(!empty($mhd) && !is_string($mhd) && !is_numeric($mhd) &&  count($mhd) === 1 && empty($mhd->datum)
+        if(!empty($mhd) && !is_string($mhd) && !is_numeric($mhd) &&  (!empty($mhd)?count($mhd):0) === 1 && empty($mhd->datum)
           && empty($mhd->mhddatum) && empty($mhd->anzahl)) {
           $mhd = reset($mhd);
         }
@@ -4972,7 +4972,7 @@ XML;
           $mhdcharge = json_decode(json_encode($mhd->charge),true);
         }
         elseif(isset($xml->charge)
-          && (is_string($xml->charge) || (!is_numeric($xml->charge) && count($xml->charge) === 1))) {
+          && (is_string($xml->charge) || (!is_numeric($xml->charge) && (!empty($xml->charge)?count($xml->charge):0) === 1))) {
           $mhdcharge = [(string)$xml->charge];
         }
 
@@ -5032,7 +5032,7 @@ XML;
                   if($v['mhddatum'] == $datum){
                     if($artArr['chargenverwaltung'] > 0 && !empty($charge)){
                       if((string)$charge !== (string)$v['charge']){
-                        if(count($mhddatum) === 1){
+                        if((!empty($mhddatum)?count($mhddatum):0) === 1){
                           unset($wawimhd[$k]);
                         }
                         continue;
@@ -5371,7 +5371,7 @@ XML;
           }
         }
         $charge = $xml->charge;
-        if(!empty($charge) && !is_string($charge) && !is_numeric($charge) &&  count($charge) === 1 && empty($charge->charge)
+        if(!empty($charge) && !is_string($charge) && !is_numeric($charge) &&  (!empty($charge)?count($charge):0) === 1 && empty($charge->charge)
           && empty($charge->anzahl)) {
           $charge = reset($charge);
         }
@@ -7090,7 +7090,7 @@ XML;
         if(!isset($position->mhd_charge_block)) {
           continue;
         }
-        $sCount = count($position->mhd_charge_block);
+        $sCount = (!empty($position->mhd_charge_block)?count($position->mhd_charge_block):0);
         if($sCount > 0) {
           $bestBefores = [];
           foreach($position->mhd_charge_block as $mhd) {
@@ -7128,7 +7128,7 @@ XML;
           if(empty($posDb)) {
             continue;
           }
-          if(count($bestBefores) === 1 && empty($bestBefores[0]['amount'])) {
+          if((!empty($bestBefores)?count($bestBefores):0) === 1 && empty($bestBefores[0]['amount'])) {
             $bestBefores[0]['amount'] = $posDb['menge'];
           }
           $posDb['menge'] = $this->app->erp->ReplaceMenge(1, $posDb['menge'], 1);
@@ -7273,7 +7273,7 @@ XML;
         if(!isset($position->serial)) {
           continue;
         }
-        $sCount = count($position->serial);
+        $sCount = (!empty($position->serial)?count($position->serial):0);
         if($sCount > 0) {
           $serials = [];
           foreach($position->serial as $serial) {
@@ -11118,8 +11118,8 @@ XML;
 XML;
       $_xmlobj = new SimpleXMLExtended($xmlstr);
       $xmlobj = $_xmlobj->AddChild('kontakte','');
-      $xmlobj->AddChild('anz_gesamt',count($kontakte));
-      $xmlobj->AddChild('anz_result',count($kontakte));
+      $xmlobj->AddChild('anz_gesamt',(!empty($kontakte)?count($kontakte):0));
+      $xmlobj->AddChild('anz_result',(!empty($kontakte)?count($kontakte):0));
       //$sxe->addAttribute('type', 'documentary');
 
       foreach($kontakte as $kontakt)
@@ -11742,7 +11742,7 @@ XML;
           //$xml .= '<adresse>';
           $RowKeys = array_keys($adresse);
           $RowValues = array_values($adresse);
-          $cRowKeys = count($RowKeys);
+          $cRowKeys = (!empty($RowKeys)?count($RowKeys):0);
           for($k = 1; $k < $cRowKeys;$k+=2)
           {
             if($RowKeys[$k] !== 're_iskat' && $RowKeys[$k] !== 'gu_iskat' && $RowKeys[$k] !== 'be_iskat' && $RowKeys[$k] !== 'ab_iskat' && $RowKeys[$k] !== 'an_iskat')
@@ -11945,7 +11945,7 @@ XML;
       $sql .= "  inner join artikelkategorien ak on ak.id = SUBSTRING_INDEX(a.typ,'_',1)";
     }
     $wherevorhanden = false;
-    $ckeys = count($keys);
+    $ckeys = (!empty($keys)?count($keys):0);
     for($i=0; $i<$ckeys; $i++){
       if( ($keys[$i] != "order") && ($keys[$i] != "field") && ($keys[$i] != "limit") && ($keys[$i] != "offset") ){
         $this->app->DB->Select("SELECT '" . $keys[$i] . "' FROM artikel LIMIT 1");
@@ -12037,11 +12037,11 @@ XML;
 
     $output = "";
 
-    if(count($ergebnis)>0)
+    if((!empty($ergebnis)?count($ergebnis):0)>0)
     {
       $output .= "<items>";
 
-      $cergebnis = count($ergebnis);
+      $cergebnis = (!empty($ergebnis)?count($ergebnis):0);
       for($i=0;$i<$cergebnis;$i++)
       {
         $output .= "<item>";
@@ -12056,7 +12056,7 @@ XML;
         $output .= "</item>";
       }
       $output .= "<anz_gesamt>".$anz_gesamt."</anz_gesamt>";
-      $output .= "<anz_result>".count($ergebnis)."</anz_result>";
+      $output .= "<anz_result>".(!empty($ergebnis)?count($ergebnis):0)."</anz_result>";
       $output .= "<sql>".$sql."</sql>";
       $output .= "</items>";
     }
@@ -14094,7 +14094,7 @@ XML;
             $csvseparator = ';';
           }
           while (($data = fgetcsv($handle, 0, $csvseparator,'"')) !== FALSE) {
-            $num = count($data);
+            $num = (!empty($data)?count($data):0);
             //echo "<p> $num Felder in Zeile $row: <br /></p>\n";
 
             if($row > 1){
@@ -14258,7 +14258,7 @@ XML;
                     if(strpos($data[$c],'.') !== false)
                     {
                       $datuma = explode('.',$data[$c]);
-                      if(count($datuma) == 3)
+                      if((!empty($datuma)?count($datuma):0) == 3)
                       {
                         if(strlen($datuma[2]) == 2)
                         {
@@ -14279,7 +14279,7 @@ XML;
                     if(strpos($data[$c],'.') !== false)
                     {
                       $datuma = explode('.',$data[$c]);
-                      if(count($datuma) == 3)
+                      if((!empty($datuma)?count($datuma):0) == 3)
                       {
                         if(strlen($datuma[2]) == 2)
                         {
@@ -14300,7 +14300,7 @@ XML;
                     if(strpos($data[$c],'.') !== false)
                     {
                       $datuma = explode('.',$data[$c]);
-                      if(count($datuma) == 3)
+                      if((!empty($datuma)?count($datuma):0) == 3)
                       {
                         if(strlen($datuma[2]) == 2)
                         {
@@ -14321,7 +14321,7 @@ XML;
                     if(strpos($data[$c],'.') !== false)
                     {
                       $datuma = explode('.',$data[$c]);
-                      if(count($datuma) == 3)
+                      if((!empty($datuma)?count($datuma):0) == 3)
                       {
                         if(strlen($datuma[2]) == 2)
                         {

@@ -236,7 +236,7 @@ class Bundesstaaten {
       }
     }
 
-    $anzahlfehlen = count($fehlende) + count($fehlenat) + count($fehlench) + count($fehlenus) + count($fehlenca);
+    $anzahlfehlen = (!empty($fehlende)?count($fehlende):0) + (!empty($fehlenat)?count($fehlenat):0) + (!empty($fehlench)?count($fehlench):0) + (!empty($fehlenus)?count($fehlenus):0) + (!empty($fehlenca)?count($fehlenca):0);
 
 
     if($anzahlfehlen > 0){
@@ -252,31 +252,31 @@ class Bundesstaaten {
 
     $nachladen = $this->app->Secure->GetPOST("nachladen");
     if($nachladen != ""){
-      if(count($fehlende) > 0){
+      if((!empty($fehlende)?count($fehlende):0) > 0){
         foreach($fehlende as $key=>$value){
           $this->app->DB->Insert("INSERT INTO bundesstaaten (land, iso, bundesstaat, aktiv) VALUES ('DE', '$key', '$value', 1)");
         }
       }
 
-      if(count($fehlenat) > 0){
+      if((!empty($fehlenat)?count($fehlenat):0) > 0){
         foreach($fehlenat as $key=>$value){
           $this->app->DB->Insert("INSERT INTO bundesstaaten (land, iso, bundesstaat, aktiv) VALUES ('AT', '$key', '$value', 1)");
         }
       }
 
-      if(count($fehlench) > 0){
+      if((!empty($fehlench)?count($fehlench):0) > 0){
         foreach($fehlench as $key=>$value){
           $this->app->DB->Insert("INSERT INTO bundesstaaten (land, iso, bundesstaat, aktiv) VALUES ('CH', '$key', '$value', 1)");
         }
       }
 
-      if(count($fehlenus) > 0){
+      if((!empty($fehlenus)?count($fehlenus):0) > 0){
         foreach($fehlenus as $key=>$value){
           $this->app->DB->Insert("INSERT INTO bundesstaaten (land, iso, bundesstaat, aktiv) VALUES ('US', '$key', '$value', 1)");
         }
       }
 
-      if(count($fehlenca) > 0){
+      if((!empty($fehlenca)?count($fehlenca):0) > 0){
         foreach($fehlenca as $key=>$value){
           $this->app->DB->Insert("INSERT INTO bundesstaaten (land, iso, bundesstaat, aktiv) VALUES ('CA', '$key', '$value', 1)");
         }

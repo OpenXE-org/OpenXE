@@ -284,7 +284,7 @@ class Sipgate
 
         if (!$target) {
             $ida = explode('-', $this->app->Secure->GetGET('id'));
-            if (count($ida) == 2) {
+            if ((!empty($ida)?count($ida):0) == 2) {
                 $id = (int)$ida[1];
                 switch ($ida[0]) {
                     case '1':

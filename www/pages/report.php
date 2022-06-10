@@ -287,7 +287,7 @@ class Report
                 $heading[] = '';
                 $width[] = '1%';
 
-                if (count($sumcolumns)) {
+                if ((!empty($sumcolumns)?count($sumcolumns):0)) {
                     $sumcol = $sumcolumns;
                 }
 
@@ -319,7 +319,7 @@ class Report
 
                 $queryString = $service->resolveParameters($report);
                 //fix possible semicolon
-                if (preg_match('/^([^;]+)(\s*;\s*)$/', $queryString, $parts) && count($parts) > 1) {
+                if (preg_match('/^([^;]+)(\s*;\s*)$/', $queryString, $parts) && (!empty($parts)?count($parts):0) > 1) {
                     $queryString = $parts[1];
                 }
                 if (!$service->isSqlStatementAllowed($queryString)) {
@@ -3002,7 +3002,7 @@ class Report
             return 0;
         }
         $nameParts = explode(' ', $apiName);
-        if (count($nameParts) < 2) {
+        if ((!empty($nameParts)?count($nameParts):0) < 2) {
             return 0;
         }
         $id = $nameParts[0];
@@ -3044,7 +3044,7 @@ class Report
             return 0;
         }
         $nameParts = explode(' ', $projectName);
-        if (count($nameParts) < 2) {
+        if ((!empty($nameParts)?count($nameParts):0) < 2) {
             return 0;
         }
         $shortName = $nameParts[0];
@@ -3138,7 +3138,7 @@ class Report
                 $importPaths[] = sprintf('%s/%s', $importDir, $filename);
             }
         }
-        if (count($importPaths) === 0) {
+        if ((!empty($importPaths)?count($importPaths):0) === 0) {
             $this->app->erp->LogFile('No files available for import.', $importDir);
 
             return;
@@ -3158,7 +3158,7 @@ class Report
                 $content = file_get_contents($filePath);
                 $data = json_decode($content, true);
                 $errors = $importer->findJsonStructureErrors($data);
-                if (count($errors) > 0) {
+                if ((!empty($errors)?count($errors):0) > 0) {
                     $this->app->erp->Logfile(
                         sprintf(
                         'Json parse error in File %s.', $filePath),

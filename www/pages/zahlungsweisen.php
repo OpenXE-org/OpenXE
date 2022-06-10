@@ -453,7 +453,7 @@ class Zahlungsweisen {
     $form = $obj->getCreateForm();
 
     if(!empty($form)) {
-      $form[count($form) - 1]['link'] = [
+      $form[(!empty($form)?count($form):0) - 1]['link'] = [
         'link' => 'index.php?module=zahlungsweisen&action=create&auswahl=' . $module,
         'title' => 'Expertenmodus',
       ];
@@ -1013,13 +1013,13 @@ class Zahlungsweisen {
                 )
               ) {
                 $typa = explode('_', $input['type']);
-                if(count($typa) == 1 || !is_numeric($typa[count($typa)-1]))
+                if((!empty($typa)?(!empty($typa)?count($typa):0):0) == 1 || !is_numeric($typa[count($typa)-1]))
                 {
                   $input['type'] .= '_1';
                 }
                 else{
-                  $counter = $typa[count($typa)-1]+1;
-                  unset($typa[count($typa)-1]);
+                  $counter = $typa[(!empty($typa)?count($typa):0)-1]+1;
+                  unset($typa[(!empty($typa)?count($typa):0)-1]);
                   $input['type'] = implode('_', $typa).'_'.$counter;
                 }
               }
@@ -1093,12 +1093,12 @@ class Zahlungsweisen {
             )
           ) {
             $typa = explode('_', $input['type']);
-            if(count($typa) == 1 || !is_numeric($typa[count($typa)-1])) {
+            if((!empty($typa)?(!empty($typa)?count($typa):0):0) == 1 || !is_numeric($typa[count($typa)-1])) {
               $input['type'] .= '_1';
             }
             else{
-              $counter = $typa[count($typa)-1]+1;
-              unset($typa[count($typa)-1]);
+              $counter = $typa[(!empty($typa)?count($typa):0)-1]+1;
+              unset($typa[(!empty($typa)?count($typa):0)-1]);
               $input['type'] = implode('_', $typa).'_'.$counter;
             }
           }

@@ -166,7 +166,7 @@ class Projekt extends GenProjekt {
 
         $heading[] = 'Men&uuml;';
 
-        $menucol = count($heading)-1;
+        $menucol = (!empty($heading)?count($heading):0)-1;
 
         $width[] = '1%';
         $findcols[] = 'p.id';
@@ -577,7 +577,7 @@ class Projekt extends GenProjekt {
 
         $findcols[] = 'w.id';
 
-        $menucol = count($findcols)-1;
+        $menucol = (!empty($findcols)?count($findcols):0)-1;
 
         $menu = '<input type="hidden" value="%value%">';
 
@@ -679,7 +679,7 @@ class Projekt extends GenProjekt {
       return;
     }
     $parent = -1;
-    if(!empty($ret))$parent = count($ret)-1;
+    if(!empty($ret))$parent = (!empty($ret)?count($ret):0)-1;
     $stueckliste = $this->app->DB->SelectArr("SELECT id, menge, artikel,stuecklistevonartikel FROM  stueckliste WHERE stuecklistevonartikel = '$artikel'");
     if($stueckliste)
     {
@@ -1453,7 +1453,7 @@ class Projekt extends GenProjekt {
     foreach($arbeitspakete as $paket)
     {
       $i++;
-      if($i < count($arbeitspakete))
+      if($i < (!empty($arbeitspakete)?count($arbeitspakete):0))
       {
         $tmp = null;
         $ind = $this->getProjektArtikelBaum($tmp, 0, $id, $paket['id'],'',$ind);
@@ -1716,7 +1716,7 @@ class Projekt extends GenProjekt {
           $v['kosten_geplant']  = number_format($v['kosten_geplant'],2,',','.');
           
         }
-        $projekteindex = empty($projekte)?0:count($projekte);
+        $projekteindex = empty($projekte)?0:(!empty($projekte)?count($projekte):0);
 
         // checken ob es so besser ist
         //foreach($v as $v_key=>$v_value)
@@ -1732,7 +1732,7 @@ class Projekt extends GenProjekt {
         $oldgebucht_summiert = $gebucht_summiert;
         $oldzeit_summiert = $zeit_summiert;
         
-        $anzahlteilprojekte = count($projekte);
+        $anzahlteilprojekte = (!empty($projekte)?count($projekte):0);
         $liste = $this->getProjektBaum($projekte, $v['id'], $projekt, $v['nr'], 
         array($zeit_summiert,$gebucht_summiert, $kosten_summiert, $abgerechnet_summiert,$offen_summiert
         ,$gesamt_zeit_ek_geplant,$gesamt_zeit_ek_gebucht,$gesamt_zeit_ek_offen
@@ -1743,9 +1743,9 @@ class Projekt extends GenProjekt {
         ,$gesamt_rohertrag_zeit_geplant,$gesamt_rohertrag_artikel_geplant,$gesamt_rohertrag_gesamt_geplant
         ), $onlynummertitel);
         
-        if(count($projekte) == $anzahlteilprojekte)
+        if((!empty($projekte)?count($projekte):0) == $anzahlteilprojekte)
         {
-          //$projekte[count($projekte)-1]['editierbar'] = true;
+          //$projekte[(!empty($projekte)?count($projekte):0)-1]['editierbar'] = true;
         }
         
         
@@ -1977,9 +1977,9 @@ class Projekt extends GenProjekt {
             $optionen = null;
             $beza = explode('|', $bez);
             $bez = trim($beza[0]);
-            if(count($beza) > 1)
+            if((!empty($beza)?count($beza):0) > 1)
             {
-              for($inds = 1; $inds < count($beza); $inds++)$optionen[] = trim($beza[$inds]);
+              for($inds = 1; $inds < (!empty($beza)?count($beza):0); $inds++)$optionen[] = trim($beza[$inds]);
             }
           }
       if(empty($bez))$bez = 'Freifeld '.$v['index'];
@@ -2162,7 +2162,7 @@ class Projekt extends GenProjekt {
     $adresse = $this->app->DB->Select("SELECT kunde FROM projekt WHERE id='$id' LIMIT 1");
 
     //			$lieferschein = $this-app->erp->CreateLieferschein($adresse);
-    for($i=0;$i<count($z_id);$i++)
+    for($i=0;$i<(!empty($z_id)?count($z_id):0);$i++)
     {
     $single_z_id = $z_id[$i];
     //$dauer = $this->app->DB->Select("SELECT TIME_TO_SEC(TIMEDIFF(z.bis, z.von))/3600 AS Dauer FROM zeiterfassung z WHERE z.id='".$single_z_id."'");
@@ -2184,7 +2184,7 @@ class Projekt extends GenProjekt {
     else
     $options.="<option value=\"ohne\">Ohne</option>";
 
-    for($i=0;$i<count($tmp);$i++)
+    for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
     {
 
     if($sid==$tmp[$i][id])$checked="selected"; else $checked="";
@@ -3014,7 +3014,7 @@ class Projekt extends GenProjekt {
     if($abgerechnet!="")
     {
       $zid = $this->app->Secure->GetPOST("z_id");
-      for($i=0;$i<count($zid);$i++)
+      for($i=0;$i<(!empty($zid)?count($zid):0);$i++)
       {
         $zid_i = (int)$zid[$i];
         $this->app->DB->Update("UPDATE zeiterfassung SET ist_abgerechnet=1, abgerechnet=1 WHERE id='$zid_i' LIMIT 1");
@@ -3205,8 +3205,8 @@ class Projekt extends GenProjekt {
       }
 
       // Schreibe Personen
-      if(is_numeric($event) && is_array($personen) && count($personen) && $mode!="delete" && $mode != "") {
-        for($p=0;$p<count($personen);$p++)
+      if(is_numeric($event) && is_array($personen) && (!empty($personen)?count($personen):0) && $mode!="delete" && $mode != "") {
+        for($p=0;$p<(!empty($personen)?count($personen):0);$p++)
           $this->app->DB->Insert("INSERT INTO kalender_user (event, userid) VALUES ('$event', '{$personen[$p]}')");
       }
     }
@@ -3239,7 +3239,7 @@ class Projekt extends GenProjekt {
     }
     $user = $this->app->User->GetID();
     $users = $this->app->DB->SelectArr("SELECT u.id, a.name as description FROM user u LEFT JOIN adresse a ON a.id=u.adresse WHERE u.activ='1' AND u.kalender_ausblenden!=1 ORDER BY u.username");
-    for($i=0; $i<count($users);$i++){
+    for($i=0; $i<(!empty($users)?count($users):0);$i++){
       $user_out .= "<option value=\"{$users[$i]['id']}\" $select>{$users[$i]['description']}</option>";
     }
     $this->app->Tpl->Set('PERSONEN', $user_out);
@@ -3326,7 +3326,7 @@ class Projekt extends GenProjekt {
       $freifelder[$value['name']] = $value['wert'];
     }
 
-    for ($i=1;$i<=count($freifelder);$i++) {
+    for ($i=1;$i<=(!empty($freifelder)?count($freifelder):0);$i++) {
       if($freifelder['projektfreifeld'.$i] === ''){
         $freifelder['projektfreifeld'.$i] = 'Freifeld '.$i;
       }
@@ -3551,7 +3551,7 @@ class Projekt extends GenProjekt {
   {
     $doppelteids = $this->app->Secure->GetGET("id");
     $ids = preg_split('/\-/',$doppelteids);
-    if(count($ids) > 1)
+    if((!empty($ids)?count($ids):0) > 1)
     {
       $typ = (int)$ids[0];
       $id = (int)$ids[1];

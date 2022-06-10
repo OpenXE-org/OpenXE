@@ -241,7 +241,7 @@ class Supportapp Extends GenSupportapp {
         $artikeltmp = $app->DB->SelectArr("SELECT * FROM supportapp_artikel");
 
 	if (!is_null($artikeltmp)) {
-	        for ($i=0; $i < count($artikeltmp); $i++) { 
+	        for ($i=0; $i < (!empty($artikeltmp)?count($artikeltmp):0); $i++) { 
 	          switch ($artikeltmp[$i]['typ']) {
 	            case '1':
 	              $artikektelefonarr[] = $artikeltmp[$i]['artikel'];
@@ -345,8 +345,8 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($filterschritte)) {
 
-	        if(count($filterschritte) > 0){
-	          for ($i=4; $i < count($filterschritte)+4; $i++) {
+	        if((!empty($filterschritte)?count($filterschritte):0) > 0){
+	          for ($i=4; $i < (!empty($filterschritte)?count($filterschritte):0)+4; $i++) {
 	            $moredataarray[$i] = $app->Secure->GetGET("more_data".$i);
 	            $schrittearray[$i] = $filterschritte[$i-4]['id'];
 	          }
@@ -372,10 +372,10 @@ class Supportapp Extends GenSupportapp {
             $aktivefilterschritte[] = "wac.schritt = ".$schrittearray[$key];
           }
         }
-        if(count($aktivefilterschritte) > 0 ){
+        if((!empty($aktivefilterschritte)?count($aktivefilterschritte):0) > 0 ){
           $filterjoin = "LEFT JOIN (SELECT wac.adresse, SUM(wac.status) AS sumx, COUNT(IF(ws.vorgaenger,IF(wac2.status = 1,1,NULL),wac.status)) AS countx FROM supportapp_auftrag_check wac LEFT JOIN supportapp_schritte ws ON wac.schritt = ws.id LEFT JOIN supportapp_auftrag_check wac2 ON wac2.auftragposition = wac.auftragposition AND wac2.schritt = ws.vorgaenger WHERE (".implode(" OR ", $aktivefilterschritte).") GROUP BY adresse) AS wac ON wac.adresse = ku.id";
           $countfilter = "LEFT JOIN (SELECT wac.adresse, SUM(wac.status) AS sumx, COUNT(IF(ws.vorgaenger,IF(wac2.status = 1,1,NULL),wac.status)) AS countx FROM supportapp_auftrag_check wac LEFT JOIN supportapp_schritte ws ON wac.schritt = ws.id LEFT JOIN supportapp_auftrag_check wac2 ON wac2.auftragposition = wac.auftragposition AND wac2.schritt = ws.vorgaenger WHERE (".implode(" OR ", $aktivefilterschritte).") GROUP BY adresse) AS wac ON wac.adresse = w.adresse";
-          $where .= "AND wac.sumx < wac.countx AND wac.countx>=".count($aktivefilterschritte);
+          $where .= "AND wac.sumx < wac.countx AND wac.countx>=".(!empty($aktivefilterschritte)?count($aktivefilterschritte):0);
         }
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS w.id, '<img src=./themes/{$app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open,
@@ -514,13 +514,13 @@ class Supportapp Extends GenSupportapp {
     if($this->app->DB->real_escape_string($this->app->Secure->GetPOST('schritteerrechnen'))){
       $kunden = $this->app->DB->SelectArr("SELECT adresse FROM supportapp WHERE status='gestartet'");
       $schrittzahl = 0;
-      $kundenzahl = count($kunden);
-      for ($h=0; $h < count($kunden); $h++) {
+      $kundenzahl = (!empty($kunden)?count($kunden):0);
+      for ($h=0; $h < (!empty($kunden)?count($kunden):0); $h++) {
         $kundenid = $kunden[$h]['adresse'];
         $gruppenzumhinzufuegen= $this->app->DB->SelectArr("SELECT ap.id, was.gruppe FROM auftrag_position ap JOIN auftrag a ON ap.auftrag = a.id LEFT JOIN supportapp_gruppen wag ON ap.artikel = wag.artikel LEFT JOIN supportapp_schritte was ON wag.id = was.gruppe LEFT JOIN supportapp_auftrag_check wac ON wac.schritt = was.id WHERE a.adresse = '$kundenid' AND a.status <> 'storniert' AND a.belegnr <> '' AND wag.aktiv = 1 AND was.aktiv = 1 GROUP BY ap.id, was.id");
-        for ($i=0; $i < count($gruppenzumhinzufuegen); $i++) {
+        for ($i=0; $i < (!empty($gruppenzumhinzufuegen)?count($gruppenzumhinzufuegen):0); $i++) {
           $einzelschritte = $this->app->DB->SelectArr("SELECT * FROM supportapp_schritte WHERE aktiv = 1 AND gruppe = ".$gruppenzumhinzufuegen[$i]['gruppe']);
-          for ($j=0; $j < count($einzelschritte); $j++) {
+          for ($j=0; $j < (!empty($einzelschritte)?count($einzelschritte):0); $j++) {
             $vorhanden = $this->app->DB->Select("SELECT id FROM supportapp_auftrag_check WHERE auftragposition = '".$gruppenzumhinzufuegen[$i]['id']."' AND gruppe = '".$gruppenzumhinzufuegen[$i]['gruppe']."' AND adresse = '$kundenid' AND schritt = '".$einzelschritte[$j]['id']."' LIMIT 1");
             if($vorhanden == ''){
               $schrittzahl += 1;
@@ -716,10 +716,10 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($filterschritte)) {
 
-	    if(count($filterschritte) > 0){
+	    if((!empty($filterschritte)?count($filterschritte):0) > 0){
 	      $filterinhalt = "<fieldset style=\"width:33em;\"><legend>Einzelfilter</legend><table>";
 	      $filtergruppe_tmp = "";
-	      for ($i=0; $i < count($filterschritte); $i++) {
+	      for ($i=0; $i < (!empty($filterschritte)?count($filterschritte):0); $i++) {
 	        if($filtergruppe_tmp != $filterschritte[$i]['wgb']){
 	          $filterinhalt .= '<tr><td></td></tr><tr><td colspan="2"><b>'.$filterschritte[$i]['wgb'].'</b></td></tr>';
 	          $filtergruppe_tmp = $filterschritte[$i]['wgb'];
@@ -940,7 +940,7 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($artikeltmp)) {
 
-	    for ($i=0; $i < count($artikeltmp); $i++) { 
+	    for ($i=0; $i < (!empty($artikeltmp)?count($artikeltmp):0); $i++) { 
 	      switch ($artikeltmp[$i]['typ']) {
 	        case '1':
 	          $artikektelefonarr[] = $artikeltmp[$i]['artikel'];
@@ -977,9 +977,9 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($gruppezumhinzufuegen)) {
 
-	      for ($i=0; $i < count($gruppenzumhinzufuegen); $i++) {
+	      for ($i=0; $i < (!empty($gruppenzumhinzufuegen)?count($gruppenzumhinzufuegen):0); $i++) {
 	        $einzelschritte = $this->app->DB->Select("SELECT * FROM supportapp_schritte WHERE aktiv = 1 AND gruppe = ".$gruppenzumhinzufuegen[$i]['gruppe']);
-	        for ($j=0; $j < count($einzelschritte); $j++) {
+	        for ($j=0; $j < (!empty($einzelschritte)?count($einzelschritte):0); $j++) {
 	          $vorhanden = $this->app->DB->Select("SELECT id FROM supportapp_auftrag_check WHERE auftragposition = '".$gruppenzumhinzufuegen[$i]['id']."' AND gruppe = '".$gruppenzumhinzufuegen[$i]['gruppe']."' AND adresse = '$kundenid' AND schritt = '".$einzelschritte[$j]['id']."' LIMIT 1");
 	          if($vorhanden == ''){
 	            $this->app->DB->Insert("INSERT INTO supportapp_auftrag_check (adresse, gruppe, schritt, auftragposition, status) VALUES ('$kundenid','".$gruppenzumhinzufuegen[$i]['gruppe']."','".$einzelschritte[$j]['id']."','".$gruppenzumhinzufuegen[$i]['id']."','0')");
@@ -1071,7 +1071,7 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($modules)) {
 
-	    for ($i=0; $i < count($modules); $i++) {
+	    for ($i=0; $i < (!empty($modules)?count($modules):0); $i++) {
 	      $module .= '
 	      <tr>
 	        <td>'.$modules[$i]['datum'].'</td>
@@ -1101,7 +1101,7 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($beleges)) {
 
-	    for ($i=0; $i < count($beleges); $i++) {
+	    for ($i=0; $i < (!empty($beleges)?count($beleges):0); $i++) {
 	      $belege .= '
 	      <tr>
 	        <td>'.$beleges[$i]['art'].'</td>
@@ -1126,7 +1126,7 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($logbuchs)) {
 
-	    for ($i=0; $i < count($logbuchs); $i++) {
+	    for ($i=0; $i < (!empty($logbuchs)?count($logbuchs):0); $i++) {
 	      $logbuch .= '
 	      <tr>
 	        <td>'.date_format(date_create($logbuchs[$i]['logdatei']), 'H:i d.m.y').'</td>
@@ -1148,7 +1148,7 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($einrichtungs)) {
 
-	    for ($i=0; $i < count($einrichtungs); $i++) {
+	    for ($i=0; $i < (!empty($einrichtungs)?count($einrichtungs):0); $i++) {
 	      $einrichtung .= '
 	      <tr>
 	        <td>'.$einrichtungs[$i]['status'].'</td>
@@ -1167,13 +1167,13 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($gruppen)) {
 
-	    for ($i=0; $i < count($gruppen); $i++) {
+	    for ($i=0; $i < (!empty($gruppen)?count($gruppen):0); $i++) {
 	      if($gruppen[$i]['gesamt'] > $gruppen[$i]['erledigt']){
 	        $schritte = $this->app->DB->SelectArr("SELECT ws.*, IF(wac.status=1,1,0) AS status FROM supportapp_schritte ws LEFT JOIN (SELECT * FROM supportapp_auftrag_check WHERE adresse = '".$kundenid."' AND auftragposition = '".$gruppen[$i]['auftragsposition']."') wac ON ws.id = wac.schritt WHERE ws.gruppe = '".$gruppen[$i]['id']."' AND ws.aktiv = '1' ORDER BY sort ASC");
 	        $checkboxen .= '<tr><td colspan="4"><b><u>'.$gruppen[$i]['auftrag']." - ".$gruppen[$i]['bezeichnung'].'<u><b></td><tr>';
 	        $kopfzeilen++;
 	        $checkboxen .= '<tr>';
-	        for ($j=0; $j < count($schritte); $j++) {
+	        for ($j=0; $j < (!empty($schritte)?count($schritte):0); $j++) {
 	          if(($j % 4) == 0 && $j != 0){
 	            $checkboxen .= '</tr><tr>';
 	          }
@@ -1209,7 +1209,7 @@ class Supportapp Extends GenSupportapp {
 
 	if (!is_null($vorlagenarray)) {
 
-	    for ($i=0; $i < count($vorlagenarray); $i++) {
+	    for ($i=0; $i < (!empty($vorlagenarray)?count($vorlagenarray):0); $i++) {
 	      $vorlagen .= '<option value="'.$vorlagenarray[$i]['id'].'">'.$vorlagenarray[$i]['bezeichnung'].'</option>';
 	    }
 	}

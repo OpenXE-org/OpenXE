@@ -123,7 +123,7 @@ class Generic  {
 		$data = $this->app->DB->SelectArr("SELECT * FROM accordion ORDER BY position ASC");
 
 		$out = '';
-		for($i=0;$i<count($data);$i++) {
+		for($i=0;$i<(!empty($data)?count($data):0);$i++) {
 			$color = (($i%2) ? '#e0e0e0' : '#fff');
 			$out .= "<tr style=\"background-color:$color\">
 								<td class=\"gentable\">{$data[$i]['position']}</td>

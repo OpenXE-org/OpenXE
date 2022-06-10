@@ -503,7 +503,7 @@ class Systemlog {
       $tmp['text'] = 'fsocket verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['fsocket'] = count($ret) - 1;
+    $typeToMessage['fsocket'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('mysqli_connect')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'MYSQLi nicht installiert';
@@ -514,7 +514,7 @@ class Systemlog {
       $tmp['text'] = 'MYSQLi verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['mysqli'] = count($ret) - 1;
+    $typeToMessage['mysqli'] = (!empty($ret)?count($ret):0) - 1;
     if(!extension_loaded('mysqlnd')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'Mysqlnd nicht installiert';
@@ -525,7 +525,7 @@ class Systemlog {
       $tmp['text'] = 'Mysqlnd verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['mysqlnd'] = count($ret) - 1;
+    $typeToMessage['mysqlnd'] = (!empty($ret)?count($ret):0) - 1;
     if(!class_exists('\PDO')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'PDO nicht installiert';
@@ -536,7 +536,7 @@ class Systemlog {
       $tmp['text'] = 'PDO verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['pdo'] = count($ret) - 1;
+    $typeToMessage['pdo'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('curl_init')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'cURL nicht installiert';
@@ -547,7 +547,7 @@ class Systemlog {
       $tmp['text'] = 'cURL verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['curl'] = count($ret) - 1;
+    $typeToMessage['curl'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('stream_socket_enable_crypto')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'stream_socket_enable_crypto nicht installiert';
@@ -558,7 +558,7 @@ class Systemlog {
       $tmp['text'] = 'stream_socket_enable_crypto verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['crypto'] = count($ret) - 1;
+    $typeToMessage['crypto'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('openssl_error_string')) {
       $tmp['status'] = 'warning';
       $tmp['text'] = 'OpenSSL nicht installiert';
@@ -569,7 +569,7 @@ class Systemlog {
       $tmp['text'] = 'OpenSSL verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['openssl'] = count($ret) - 1;
+    $typeToMessage['openssl'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('mb_encode_numericentity')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'php-mbstring nicht installiert';
@@ -580,7 +580,7 @@ class Systemlog {
       $tmp['text'] = 'php-mbstring verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['php-mbstring'] = count($ret) - 1;
+    $typeToMessage['php-mbstring'] = (!empty($ret)?count($ret):0) - 1;
     if(!class_exists('SoapClient')) {
       $tmp['status'] = 'warning';
       $tmp['text'] = 'php-soap nicht installiert';
@@ -591,7 +591,7 @@ class Systemlog {
       $tmp['text'] = 'php-soap verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['php-soap'] = count($ret) - 1;
+    $typeToMessage['php-soap'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('imap_open')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'imap nicht installiert';
@@ -602,7 +602,7 @@ class Systemlog {
       $tmp['text'] = 'imap verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['imap'] = count($ret) - 1;
+    $typeToMessage['imap'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('simplexml_load_string')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'php-xml nicht installiert';
@@ -613,7 +613,7 @@ class Systemlog {
       $tmp['text'] = 'php-xml verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['php-xml'] = count($ret) - 1;
+    $typeToMessage['php-xml'] = (!empty($ret)?count($ret):0) - 1;
     if(!class_exists('ZipArchive')) {
       $tmp['status'] = 'error';
       $tmp['text'] = 'php-zip nicht installiert';
@@ -624,7 +624,7 @@ class Systemlog {
       $tmp['text'] = 'php-zip verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['php-zip'] = count($ret) - 1;
+    $typeToMessage['php-zip'] = (!empty($ret)?count($ret):0) - 1;
     try {
       $hasZip = $this->hasExectuableExtension('zip');
     }
@@ -658,7 +658,7 @@ class Systemlog {
         );
       }
     }
-    $typeToMessage['extension-zip'] = count($ret) - 1;
+    $typeToMessage['extension-zip'] = (!empty($ret)?count($ret):0) - 1;
 
     if(!function_exists('imagejpeg')) {
       $tmp['status'] = 'warning';
@@ -670,7 +670,7 @@ class Systemlog {
       $tmp['text'] = 'PHP GD-Erweiterung verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['php-gd'] = count($ret) - 1;
+    $typeToMessage['php-gd'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('ldap_connect')) {
       $tmp['status'] = 'warning';
       $tmp['text'] = 'PHP LDAP-Erweiterung nicht installiert';
@@ -681,7 +681,7 @@ class Systemlog {
       $tmp['text'] = 'PHP LDAP-Erweiterung verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['php-ldap'] = count($ret) - 1;
+    $typeToMessage['php-ldap'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('ssh2_connect')) {
       $tmp['status'] = 'warning';
       $tmp['text'] = 'PHP SSH2-Erweiterung nicht installiert';
@@ -692,7 +692,7 @@ class Systemlog {
       $tmp['text'] = 'PHP SSH2-Erweiterung verf&uuml;gbar';
       $ret[] = $tmp;
     }
-    $typeToMessage['tls1-2'] = count($ret) - 1;
+    $typeToMessage['tls1-2'] = (!empty($ret)?count($ret):0) - 1;
     if(!$this->isTls12Available()) {
       $tmp['status'] = 'warning';
       $tmp['text'] = 'TLS 1.2 ist nicht verfügbar';
@@ -719,7 +719,7 @@ class Systemlog {
         );
       }
     }
-    $typeToMessage['php-ssh2'] = count($ret) - 1;
+    $typeToMessage['php-ssh2'] = (!empty($ret)?count($ret):0) - 1;
     if(!function_exists('ioncube_loader_version')) {
       $tmp['status'] = 'warning';
       $tmp['text'] = 'Ioncube ist nicht installiert (Eine Installation ist trotzdem m&ouml;glich)';
@@ -738,7 +738,7 @@ class Systemlog {
         $ret[] = $tmp;
       }
     }
-    $typeToMessage['ioncube'] = count($ret) - 1;
+    $typeToMessage['ioncube'] = (!empty($ret)?count($ret):0) - 1;
     $post_max_size = @ini_get('client_max_body_size');
     if($post_max_size == ''){
       $post_max_size = @ini_get('post_max_size');

@@ -718,11 +718,11 @@ class Rechnung extends GenRechnung
 
     if(!empty($gutschrift))
     {
-      $cgutschrift = !empty(count($gutschrift))?:0;
+      $cgutschrift = !empty((!empty($gutschrift)?count($gutschrift):0))?:0;
       for($li=0;$li<$cgutschrift;$li++)
       {
         $this->app->Tpl->Add('GUTSCHRIFT',$gutschrift[$li]['gutschrift']);
-        if($li<count($gutschrift)){
+        if($li<(!empty($gutschrift)?count($gutschrift):0)){
           $this->app->Tpl->Add('GUTSCHRIFT', "<br>");
         }
       }
@@ -893,7 +893,7 @@ class Rechnung extends GenRechnung
 
 	if (!is_null($gutschrift)) {
 
-	    if(count($gutschrift) > 0)
+	    if((!empty($gutschrift)?count($gutschrift):0) > 0)
 	      $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"info\">Zu dieser Rechnung existiert eine Gutschrift!</div>");
 	    else {
 
@@ -2233,7 +2233,7 @@ class Rechnung extends GenRechnung
               $tmpfile[] = $Brief->displayTMP();
             }
 
-            if(count($tmpfile) > 0) {
+            if((!empty($tmpfile)?count($tmpfile):0) > 0) {
               try {
                 /** @var PdfMerger $pdfMerger */
                 $pdfMerger = $this->app->Container->get('PdfMerger');

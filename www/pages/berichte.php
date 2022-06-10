@@ -493,12 +493,12 @@ class Berichte extends GenBerichte {
     $csv = '';
     //spaltennamen
     $countcolumns = 0;
-    if(count($header) > count($w)) {
-      $countcolumns = count($header);
+    if((!empty($header)?count($header):0) > (!empty($w)?count($w):0)) {
+      $countcolumns = (!empty($header)?count($header):0);
     } else {
-      $countcolumns = count($w);
+      $countcolumns = (!empty($w)?count($w):0);
     }
-    $cheader = count($header);
+    $cheader = (!empty($header)?count($header):0);
     for($i=0;$i<$cheader;$i++)
     {
       if(!isset($header[$i])) {
@@ -619,7 +619,7 @@ class Berichte extends GenBerichte {
     $header = explode(';',$spaltennamen);
 
     $ausrichtung = explode(';',$spaltenausrichtung);
-    $cw = count($w);
+    $cw = (!empty($w)?count($w):0);
     for($i=0;$i<$cw;$i++) {
       $pdf->Cell(intval($w[$i],10), 7, intval($header[$i]), 1, 0, intval($ausrichtung[$i],10), true);
     }

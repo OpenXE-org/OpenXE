@@ -245,7 +245,7 @@ class Wareneingang
           'Nummer', 'Beschreibung', 'Retoure', 'Datum', 'Projekt', 'Menge',
           'Geliefert', 'Offen', 'Aktion'
         );
-        $menucol = count($heading);
+        $menucol = (!empty($heading)?count($heading):0);
         $width = array('5%', '5%', '5%', '30%', '5%', '5%', '5%', '5%', '5%', '5%');
         $findcols = array('art.nummer','art.name_de',  'b.belegnr',
           "DATE_FORMAT(b.datum,'%d.%m.%Y')",
@@ -2350,7 +2350,7 @@ class Wareneingang
               if($etiketten=='') {
                 $etiketten='artikel_klein';
               }
-              if(!empty($tmpdataseriennummern) && is_array($tmpdataseriennummern) && count($tmpdataseriennummern)>0) {
+              if(!empty($tmpdataseriennummern) && is_array($tmpdataseriennummern) && (!empty($tmpdataseriennummern)?count($tmpdataseriennummern):0)>0) {
                 if($etiketten!=='keineetiketten') {
                   foreach($tmpdataseriennummern as $srn)  {
                     $data['seriennummer']=$srn;
@@ -2949,7 +2949,7 @@ public function WareneingangPaketannahme()
       }
       $this->app->Tpl->Add('INFO','<div class="warning">Es wurde keine offene Bestellung mit diesem Artikel gefunden.</div>');
     }
-    elseif(count($best) > 1) {
+    elseif((!empty($best)?count($best):0) > 1) {
       $this->app->Tpl->Add('INFO','<div class="warning">Es wurden mehrere offene Bestellung mit diesem Artikel gefunden.</div>');
     }else{
       $vorlage = 'bestellung';
@@ -3024,7 +3024,7 @@ public function WareneingangPaketannahme()
   if(!$this->app->erp->RechteVorhanden('wareneingang','distriabschluss')){
     $rechteproblem[] = 'distriabschluss';
   }
-  if(count($rechteproblem) > 0){
+  if((!empty($rechteproblem)?count($rechteproblem):0) > 0){
     $this->app->Tpl->Set('INFO','<br /><div class="info">Es werden im Menü nicht alle Icons angezeigt, da die nötigen Rechte nicht vorliegen für: Wareneingang > '.implode(', ', $rechteproblem).'</div>');
   }
 

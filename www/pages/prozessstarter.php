@@ -97,7 +97,7 @@ class Prozessstarter extends GenProzessstarter {
         $menu .= '</tr>';
         $menu .= '</table>';
         $moreinfo = true;
-        $menucol = count($heading) - 1;
+        $menucol = (!empty($heading)?count($heading):0) - 1;
 
         // SQL statement
         $sql = "SELECT SQL_CALC_FOUND_ROWS p.id,
@@ -239,7 +239,7 @@ class Prozessstarter extends GenProzessstarter {
     if(empty($parmeterList)) {
       return '';
     }
-    if(count($parmeterList) === 1) {
+    if((!empty($parmeterList)?count($parmeterList):0) === 1) {
       return 'Der Prozessstarter '
         .implode(', ', $parmeterList).' l&auml;uft h&auml;ufiger als empfohlen';
     }
@@ -362,19 +362,19 @@ class Prozessstarter extends GenProzessstarter {
       $cronjobIntervals = [];
       foreach($arr as $rowIndex => $row) {
         if($row[$fieldValue] > 0) {
-          if(empty($cronjobIntervals) || empty($cronjobIntervals[count($cronjobIntervals) - 1])) {
+          if(empty($cronjobIntervals) || empty($cronjobIntervals[(!empty($cronjobIntervals)?count($cronjobIntervals):0) - 1])) {
             $cronjobIntervals[] = ['start' => $this->roundDate($row[$dateField]), 'startexact'=>$row[$dateField]];
           }
-          $cronjobIntervals[count($cronjobIntervals) - 1]['end'] = $this->roundDate($row[$dateField], $interval->i);
-          $cronjobIntervals[count($cronjobIntervals) - 1]['endexact'] = $row[$dateField];
+          $cronjobIntervals[(!empty($cronjobIntervals)?count($cronjobIntervals):0) - 1]['end'] = $this->roundDate($row[$dateField], $interval->i);
+          $cronjobIntervals[(!empty($cronjobIntervals)?count($cronjobIntervals):0) - 1]['endexact'] = $row[$dateField];
         }
         else {
           if(empty($cronjobIntervals)) {
             continue;
           }
-          if(!empty($cronjobIntervals[count($cronjobIntervals) - 1])) {
-            $cronjobIntervals[count($cronjobIntervals) - 1]['end'] = $this->roundDate($row[$dateField], $interval->i);
-            $cronjobIntervals[count($cronjobIntervals) - 1]['endexact'] = $row[$dateField];
+          if(!empty($cronjobIntervals[(!empty($cronjobIntervals)?count($cronjobIntervals):0) - 1])) {
+            $cronjobIntervals[(!empty($cronjobIntervals)?count($cronjobIntervals):0) - 1]['end'] = $this->roundDate($row[$dateField], $interval->i);
+            $cronjobIntervals[(!empty($cronjobIntervals)?count($cronjobIntervals):0) - 1]['endexact'] = $row[$dateField];
           }
           $cronjobIntervals[] = [];
         }

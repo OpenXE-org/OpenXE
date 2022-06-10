@@ -108,7 +108,7 @@ class Databaseviewer {
           'SHOW COLUMNS FROM `%s` ', $tableName), 60, 'xcs_column'
       );
       $html = '';
-      if(count($tableColumns) > 75) {
+      if((!empty($tableColumns)?count($tableColumns):0) > 75) {
         $html = '<div class="warning">Die Tabellenansicht wurde auf 75 Spalten gek&uuml;rzt</div>';
       }
       $this->app->YUI->TableSearch('PAGE', 'database_table_view', 'show', '', '', basename(__FILE__), __CLASS__);

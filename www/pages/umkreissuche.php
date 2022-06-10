@@ -110,7 +110,7 @@ class Umkreissuche
     if(strlen($this->plz) > 1){
       try {
         $plzundland = explode(' ', $this->plz);
-        if(count($plzundland) > 1) {
+        if((!empty($plzundland)?count($plzundland):0) > 1) {
           $res = $this->plzToCoord($plzundland[0], $plzundland[1]);
         }
         else {
@@ -374,8 +374,8 @@ class Umkreissuche
       }
     }
 */
-    if(count($this->adresses) > 200){
-      $this->errorMsg = 'Zu viele Treffer (' . count($this->adresses) . '), bitte Suchradius verringern';
+    if((!empty($this->adresses)?count($this->adresses):0) > 200){
+      $this->errorMsg = 'Zu viele Treffer (' . (!empty($this->adresses)?count($this->adresses):0) . '), bitte Suchradius verringern';
     }
     if($new > 0){
       $this->displayInfo("$new adressen neu konvertiert");
@@ -458,7 +458,7 @@ class Umkreissuche
 
     foreach ($result->results as $key => $value) {
       //Für jede zurückgegebene Adresse, durchsuche Komponenten nach Länderkennung
-      $cadress_components = count($value->address_components);
+      $cadress_components = (!empty($value->address_components)?count($value->address_components):0);
       for ($i=0; $i < $cadress_components; $i++) {
         if($value->address_components[$i]->short_name == $land){
           //Bei Fund der Länderkennung Geodatenspeichern und zurückgeben

@@ -134,7 +134,7 @@ class Exportvorlage extends GenExportvorlage {
     $fields = str_replace(';;',';',$fields);
 
     $fieldsarray = explode(';',$fields);
-    for($i=0;$i<count($fieldsarray);$i++)
+    for($i=0;$i<(!empty($fieldsarray)?count($fieldsarray):0);$i++)
     {
       $fieldsarray_items = explode(':',$fieldsarray[$i]);
       foreach($fieldsarray_items as $k => $v)$fieldsarray_items[$k] = trim($v);
@@ -244,7 +244,7 @@ ean;';
     $join = implode( ' ', $joins);
     $subwhere = '';
     $this->app->erp->RunHook('exportvorlage_export',4,$ziel,$fields_array, $join, $subwhere);
-    //for($i=0;$i<count($fieldsarray);$i++)
+    //for($i=0;$i<(!empty($fieldsarray)?count($fieldsarray):0);$i++)
 
 
     $sql_fields = implode(',',$fields_array);
@@ -370,7 +370,7 @@ ean;';
 
     $sql .= ' '.$join. ' ';
 
-    if(count($fields_array_where) > 0 && trim($sql_fields_where)!=''){
+    if((!empty($fields_array_where)?count($fields_array_where):0) > 0 && trim($sql_fields_where)!=''){
       $sql .= ' WHERE ' . trim($sql_fields_where).' '.$subwhere ;
     } elseif(!empty($subwhere)) {
       $sql .= ' WHERE '.$subwhere;
@@ -1391,7 +1391,7 @@ ean;';
 
   function ExportPrepareHeader($ziel,$csv_fields_keys,$csv_fields)
   {
-    $number_of_fields =count($csv_fields_keys);
+    $number_of_fields =(!empty($csv_fields_keys)?count($csv_fields_keys):0);
 
     switch($ziel)
     {
@@ -1418,7 +1418,7 @@ ean;';
 
   function ExportPrepareRow($rowcounter,$ziel,$data,$csv_fields_keys,$csv_fields)
   {
-    $number_of_fields =count($csv_fields_keys);
+    $number_of_fields =(!empty($csv_fields_keys)?count($csv_fields_keys):0);
     //Standard
     $fields[waehrung] = 'EUR';
 

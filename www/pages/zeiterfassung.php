@@ -432,7 +432,7 @@ class Zeiterfassung { //extends GenZeiterfassung {
 
     // Data
     $fill = false;
-    for($i=0;$i<count($tmp);$i++)
+    for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
     {
       if($tmp[$i]["prio"]==0) $prio="";
       else if($tmp[$i]["prio"]==1) $prio="Ja";

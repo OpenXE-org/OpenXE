@@ -728,7 +728,7 @@ class GoogleApi
 
         if ($data['type'] === 'mail') {
             $users = $this->gateway->getApiUsersByAccount($data['id_name']);
-            if (count($users) > 0) {
+            if ((!empty($users)?count($users):0) > 0) {
                 $this->auth->removeUserToken($users[0]);
             }
 
@@ -837,7 +837,7 @@ class GoogleApi
         if ($api !== null && $api->getType() === 'mail') {
             $users = $this->gateway->getApiUsersByAccount($api->getIdName());
             $token = '';
-            if (count($users) > 0) {
+            if ((!empty($users)?count($users):0) > 0) {
                 $token = $users[0]->getAccessToken();
             }
         } else {

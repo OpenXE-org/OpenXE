@@ -815,7 +815,7 @@ class Lieferschein extends GenLieferschein
       for($li=0;$li<$crechnung;$li++)
       {
         $this->app->Tpl->Add('RECHNUNG',$rechnung[$li]['rechnung']);
-        if($li<count($rechnung))
+        if($li<(!empty($rechnung)?count($rechnung):0))
           $this->app->Tpl->Add('RECHNUNG',"<br>");
       }
     }
@@ -2242,7 +2242,7 @@ class Lieferschein extends GenLieferschein
               $tmpfile[] = $Brief->displayTMP();
             }
 
-            if(count($tmpfile) > 0) {
+            if((!empty($tmpfile)?count($tmpfile):0) > 0) {
               try {
                 /** @var PdfMerger $pdfMerger */
                 $pdfMerger = $this->app->Container->get('PdfMerger');
@@ -2464,7 +2464,7 @@ class Lieferschein extends GenLieferschein
             firma,bundesstaat,keinerechnung,ihrebestellnummer,lieferbedingung,internebezeichnung,lieferantenretoure,lieferant FROM lieferschein WHERE id='$id' LIMIT 1");
     $this->app->DB->UpdateArr('lieferschein',$newid,'id',$arr, true);
     $pos = $this->app->DB->SelectArr("SELECT * FROM lieferschein_position WHERE lieferschein='$id'");
-    $cpos = !empty(count($pos))?count($pos):0;
+    $cpos = !empty((!empty($pos)?count($pos):0))?count($pos):0;
     for($i=0;$i<$cpos;$i++){
       $this->app->DB->Insert("INSERT INTO lieferschein_position (lieferschein) VALUES ($newid)");
       $newposid = $this->app->DB->GetInsertID();

@@ -183,7 +183,7 @@ class Shopimporter_Shopware extends ShopimporterBase
         JOIN gruppen g ON ar.parameter = g.id 
         WHERE ar.adresse = '$adressId'  AND ar.subjekt = 'Mitglied' AND ar.objekt = 'Gruppe'");
 
-      if(count($gruppen)>0){
+      if((!empty($gruppen)?count($gruppen):0)>0){
         foreach ($gruppen as $key => $value) {
           $gruppenfilter = 'filter[0][property]=key&filter[0][expression]==&filter[0][value]='.$value['kennziffer'];
           $gruppenresult = $this->adapter->get('customerGroups',[],$gruppenfilter);
@@ -582,7 +582,7 @@ class Shopimporter_Shopware extends ShopimporterBase
   public function ImportPartnerList()
   {
     $tmp = $this->CatchRemoteCommand('data');
-    if(count($tmp) > 0)
+    if((!empty($tmp)?count($tmp):0) > 0)
     {
       foreach($tmp as $key=>$value)
       {
@@ -648,7 +648,7 @@ class Shopimporter_Shopware extends ShopimporterBase
           $staffelpreise[] = array('ab_menge'=>$staffelpreis['from'], 'preis'=>$staffelpreis['price'], 'brutto'=>$staffelpreis['customerGroup']['taxInput']);
         }
       }
-      if(count($staffelpreise) >1){
+      if((!empty($staffelpreise)?count($staffelpreise):0) >1){
         $data['staffelpreise'] = $staffelpreise;
       }
       $data['artikelnummerausshop'] = $result['data']['mainDetail']['number'];
@@ -826,28 +826,28 @@ class Shopimporter_Shopware extends ShopimporterBase
             }
 
             $arrayOfArticles[] = $data;
-            unset($arrayOfArticles[count($arrayOfArticles)-1]['pseudopreis']);
-            $arrayOfArticles[count($arrayOfArticles)-1]['nummer'] = $vdetail['number'];
+            unset($arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['pseudopreis']);
+            $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['nummer'] = $vdetail['number'];
             if(!empty($vdetail['number']))
             {
-              $arrayOfArticles[count($arrayOfArticles)-1]['artikelnummerausshop'] = $vdetail['number'];
+              $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['artikelnummerausshop'] = $vdetail['number'];
             }
-            $arrayOfArticles[count($arrayOfArticles)-1]['name'] = $arrayOfArticles[0]['name'];
+            $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['name'] = $arrayOfArticles[0]['name'];
             if(isset($vdetail['price']) && $vdetail['price']!=''){
-              $arrayOfArticles[count($arrayOfArticles) - 1]['preis_netto'] = $vdetail['data']['price'];
+              $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0) - 1]['preis_netto'] = $vdetail['data']['price'];
             }
             elseif(!empty($vdetail['prices']) && !empty($vdetail['prices'][0]) && $vdetail['prices'][0]['price'] != 0){
-              $arrayOfArticles[count($arrayOfArticles) - 1]['preis_netto'] = $vdetail['prices'][0]['price'];
+              $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0) - 1]['preis_netto'] = $vdetail['prices'][0]['price'];
             }
             if(isset( $vdetail['prices'][0]['pseudoPrice']) &&  $vdetail['prices'][0]['pseudoPrice']!='' &&
               round($vdetail['prices'][0]['price'],5)!==round($vdetail['prices'][0]['pseudoPrice'],5)){
-              $arrayOfArticles[count($arrayOfArticles)-1]['pseudopreis'] = $vdetail['prices'][0]['pseudoPrice'] * ((100 + $result['data']['tax']['tax']) / 100);
+              $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['pseudopreis'] = $vdetail['prices'][0]['pseudoPrice'] * ((100 + $result['data']['tax']['tax']) / 100);
             }
-            if(isset($vdetail['shippingTime']) && $vdetail['shippingTime'] != '')$arrayOfArticles[count($arrayOfArticles)-1]['lieferzeitmanuell'] = $vdetail['shippingTime'];
-            if(isset($vdetail['ean']) && $vdetail['ean'] != '')$arrayOfArticles[count($arrayOfArticles)-1]['ean'] = $vdetail['ean'];
-            if(isset($vdetail['supplierNumber']) && $vdetail['supplierNumber'] != '')$arrayOfArticles[count($arrayOfArticles)-1]['herstellernummer'] = $vdetail['supplierNumber'];
-            if(isset($vdetail['weight']) && $vdetail['shippingTime'] > 0)$arrayOfArticles[count($arrayOfArticles)-1]['gewicht'] = $vdetail['weight'];
-            if(isset($vdetail['active']))$arrayOfArticles[count($arrayOfArticles)-1]['aktiv'] = $vdetail['active'];
+            if(isset($vdetail['shippingTime']) && $vdetail['shippingTime'] != '')$arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['lieferzeitmanuell'] = $vdetail['shippingTime'];
+            if(isset($vdetail['ean']) && $vdetail['ean'] != '')$arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['ean'] = $vdetail['ean'];
+            if(isset($vdetail['supplierNumber']) && $vdetail['supplierNumber'] != '')$arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['herstellernummer'] = $vdetail['supplierNumber'];
+            if(isset($vdetail['weight']) && $vdetail['shippingTime'] > 0)$arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['gewicht'] = $vdetail['weight'];
+            if(isset($vdetail['active']))$arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['aktiv'] = $vdetail['active'];
             if(!empty($vdetail['configuratorOptions']))
             {
               $namea = null;
@@ -859,7 +859,7 @@ class Shopimporter_Shopware extends ShopimporterBase
                 }
               }
               sort($namea);
-              $arrayOfArticles[count($arrayOfArticles)-1]['name'] .= ' '.implode(' ', $namea);
+              $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['name'] .= ' '.implode(' ', $namea);
             }
             if(!empty($vdetail['attribute']))
             {
@@ -867,7 +867,7 @@ class Shopimporter_Shopware extends ShopimporterBase
               {
                 if(strpos($k, 'attr') === 0)
                 {
-                  $arrayOfArticles[count($arrayOfArticles)-1]['freifeld_'.$k] = $v;
+                  $arrayOfArticles[(!empty($arrayOfArticles)?count($arrayOfArticles):0)-1]['freifeld_'.$k] = $v;
                 }
               }
             }
@@ -963,7 +963,7 @@ class Shopimporter_Shopware extends ShopimporterBase
   {
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
     for($i=0;$i<$ctmp;$i++)
     {
       $artikel = $tmp[$i]['artikel'];
@@ -1089,7 +1089,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
     $bilderarray = array();
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
     $shopeinstellungen = $this->app->DB->SelectArr("SELECT * FROM shopexport WHERE id = '".$this->shopid."' AND aktiv = 1 LIMIT 1");
     if(!empty($shopeinstellungen))
     {
@@ -1392,7 +1392,7 @@ class Shopimporter_Shopware extends ShopimporterBase
             'to' => $bismenge-1);
           $bismenge = $key;
         }
-        $prices[count($prices)-1]['from'] = 1;
+        $prices[(!empty($prices)?count($prices):0)-1]['from'] = 1;
       }else{
         //Einfacher Preis
         $prices[] = array(
@@ -1431,7 +1431,7 @@ class Shopimporter_Shopware extends ShopimporterBase
               'to' => $bismenge-1);
             $bismenge = $abmenge;
           }
-          $prices[count($prices)-1]['from'] = 1;
+          $prices[(!empty($prices)?count($prices):0)-1]['from'] = 1;
         }
       }
 
@@ -1635,7 +1635,7 @@ class Shopimporter_Shopware extends ShopimporterBase
                 'to' => $vbismenge-1);
               $vbismenge = $vkey;
             }
-            $vprices[count($vprices)-1]['from'] = 1;
+            $vprices[(!empty($vprices)?count($vprices):0)-1]['from'] = 1;
 
 
             if(count($varr[0]['staffelpreise_gruppen'])>0){
@@ -1667,7 +1667,7 @@ class Shopimporter_Shopware extends ShopimporterBase
                     'to' => $bismenge-1);
                   $bismenge = $abmenge;
                 }
-                $vprices[count($vprices)-1]['from'] = 1;
+                $vprices[(!empty($vprices)?count($vprices):0)-1]['from'] = 1;
               }
             }
 
@@ -2018,7 +2018,7 @@ class Shopimporter_Shopware extends ShopimporterBase
         $posbild = 0;
         if($shopbilderuebertragen){
           foreach ($bilderarray as $key => $value) {
-            $cvalue = count($value);
+            $cvalue = (!empty($value)?count($value):0);
             for ($k = 0; $k < $cvalue; $k++) {
 
               $mediaId = '';
@@ -2175,7 +2175,7 @@ class Shopimporter_Shopware extends ShopimporterBase
                 }
               }
 
-              if(count($uebersetzung) > 0 ){
+              if((!empty($uebersetzung)?count($uebersetzung):0) > 0 ){
                 $uebersetzungsdaten = array('shopId' => $value['subshopkennung'], 'type' => 'article', 'key' => $artikelid, 'data' => $uebersetzung);
                 $tresult = $this->adapter->post('translations',  $uebersetzungsdaten);
               }
@@ -2256,7 +2256,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     $anzahl = 0;
     $this->app->DB->Delete('DELETE FROM inhalt');
     if(!empty($tmp)){
-      $ctmp = count($tmp);
+      $ctmp = (!empty($tmp)?count($tmp):0);
       for ($i = 0; $i < $ctmp; $i++) {
         $this->app->DB->Insert("INSERT INTO inhalt (id) VALUES ('')");
         $id = $this->app->DB->GetInsertID();
@@ -2337,7 +2337,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     $anzahl = 0;
     //$this->app->DB->Delete("DELETE FROM exportlink WHERE datum < DATE_ADD(NOW(), INTERVAL 5 DAYS)");
 
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
     for($i=0;$i<$ctmp;$i++)
     {
       $this->app->DB->Insert("INSERT INTO exportlink (id,datum) VALUES ('',NOW())");
@@ -2360,7 +2360,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
     $this->app->DB->Delete('DELETE FROM artikelgruppen');
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
     for($i=0;$i<$ctmp;$i++)
     {
       $id = $tmp[$i]['id'];
@@ -2384,7 +2384,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
     $this->app->DB->Delete('DELETE FROM shopnavigation');
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
     for($i=0;$i<$ctmp;$i++)
     {
       $id = $tmp[$i]['id'];
@@ -2408,7 +2408,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
     $this->app->DB->Delete('DELETE FROM artikel_artikelgruppe');
-    $ctmp = count($tmp);
+    $ctmp = (!empty($tmp)?count($tmp):0);
     for($i=0;$i<$ctmp;$i++)
     {
       $id = $tmp[$i]['id'];
@@ -2989,18 +2989,18 @@ class Shopimporter_Shopware extends ShopimporterBase
           );
       //$result['data']['details'][$i]['mode'] <- kann der Wert mit Gewissheit für Gutscheine verwendet werden? Wäre mitunter besser als stur vom Preis auszugehen
 
-      $rates[count($articlearray)-1] = $result['data']['details'][$i]['taxRate'];
+      $rates[(!empty($articlearray)?count($articlearray):0)-1] = $result['data']['details'][$i]['taxRate'];
       if(!$gutscheinalslagerartikel && $result['data']['details'][$i]['price'] < 0)
       {
-        $articlearray[count($articlearray)-1]['lagerartikel'] = 0;
+        $articlearray[(!empty($articlearray)?count($articlearray):0)-1]['lagerartikel'] = 0;
       }
     }
     //$warenkorb['taxRates'] = $taxRates;
-    if(count($taxRates) > 1)
+    if((!empty($taxRates)?count($taxRates):0) > 1)
     {
       rsort($taxRates);
       $warenkorb['steuersatz_normal'] = $taxRates[0];
-      $warenkorb['steuersatz_ermaessigt'] = $taxRates[count($taxRates) - 1];
+      $warenkorb['steuersatz_ermaessigt'] = $taxRates[(!empty($taxRates)?count($taxRates):0) - 1];
       if($warenkorb['versandkostenbrutto'] > 0 && (float)$result['data']['invoiceShippingNet'] > 0)
       {
         $satz = round(100*(($warenkorb['versandkostenbrutto']/(float)$result['data']['invoiceShippingNet']) - 1));
@@ -3019,7 +3019,7 @@ class Shopimporter_Shopware extends ShopimporterBase
           $articlearray[$k]['umsatzsteuer'] = 'ermaessigt';
         }
       }
-    }elseif(count($taxRates) > 0)
+    }elseif((!empty($taxRates)?count($taxRates):0) > 0)
     {
       $steuersatz_normal = (float)$this->app->erp->Firmendaten('steuersatz_normal');
       $steuersatz_ermaessigt = (float)$this->app->erp->Firmendaten('steuersatz_ermaessigt');

@@ -1453,7 +1453,7 @@ class Auftrag extends GenAuftrag
           foreach($table->datasets as $dataSetKey => $dataset) {
             unset($table->datasets[$dataSetKey]['MHD-Menge']);
           }
-          unset($table->headings[count($table->headings)-1]);
+          unset($table->headings[(!empty($table->headings)?count($table->headings):0)-1]);
         } else {
           $lastCol = 'MHD-Menge';
           $table->align[2] = 'right';
@@ -1496,7 +1496,7 @@ class Auftrag extends GenAuftrag
           foreach($table->datasets as $dataSetKey => $dataset) {
             unset($table->datasets[$dataSetKey]['Chargen-Menge']);
           }
-          unset($table->headings[count($table->headings)-1]);
+          unset($table->headings[(!empty($table->headings)?count($table->headings):0)-1]);
         } else {
           $lastCol = 'Chargen-Menge';
           $table->align[2] = 'right';
@@ -1727,10 +1727,10 @@ class Auftrag extends GenAuftrag
     );
 
     if(!empty($angebot)) {
-      $cangebot = count($angebot);
+      $cangebot = (!empty($angebot)?count($angebot):0);
       for($li=0;$li<$cangebot;$li++) {
         $this->app->Tpl->Add('ANGEBOT',$angebot[$li]['angebot']);
-        if($li<count($angebot)){
+        if($li<(!empty($angebot)?count($angebot):0)){
           $this->app->Tpl->Add('ANGEBOT', "<br>");
         }
       }
@@ -2675,7 +2675,7 @@ class Auftrag extends GenAuftrag
         }
         if($lastcolumn == $_lastcolumn)
         {
-          unset($table->headings[count($table->headings)-1]);
+          unset($table->headings[(!empty($table->headings)?count($table->headings):0)-1]);
         }else {
           $cheading = !empty($table->headings)?count($table->headings):0;
           for($hc = 0; $hc < $cheading; $hc++)
@@ -2699,9 +2699,9 @@ class Auftrag extends GenAuftrag
 
         if($lastcolumn == $_lastcolumn)
         {
-          $lastcolumn = $table->headings[count($table->headings)-1];
+          $lastcolumn = $table->headings[(!empty($table->headings)?count($table->headings):0)-1];
           if($lastcolumn == 'Aktion'){
-            $lastcolumn = $table->headings[count($table->headings)-2];
+            $lastcolumn = $table->headings[(!empty($table->headings)?count($table->headings):0)-2];
           }
         }
       }
@@ -4126,9 +4126,9 @@ class Auftrag extends GenAuftrag
 
     $unterartikel = $this->app->DB->SelectArr("SELECT * FROM auftrag_position WHERE explodiert_parent='$sid' ORDER BY sort");
 
-    if($unterartikel && count($unterartikel)>0 && $sid >0 && $id >0)
+    if($unterartikel && (!empty($unterartikel)?count($unterartikel):0)>0 && $sid >0 && $id >0)
     {
-      $cunterartikel = count($unterartikel);
+      $cunterartikel = (!empty($unterartikel)?count($unterartikel):0);
       for($i=0;$i<$cunterartikel;$i++)
       {
         $sidexplodiert = $unterartikel[$i]['id'];
@@ -4405,7 +4405,7 @@ class Auftrag extends GenAuftrag
       )
     );
     if(!empty($anzahlteillieferungen)) {
-      $canzahlteillieferungen = count($anzahlteillieferungen);
+      $canzahlteillieferungen = (!empty($anzahlteillieferungen)?count($anzahlteillieferungen):0);
       for($ati=0;$ati<$canzahlteillieferungen;$ati++) {
         if($canzahlteillieferungen[$ati]['teillieferungnummer'] + 1 > $teillieferungnummermax) {
           $teillieferungnummermax = $canzahlteillieferungen[$ati]['teillieferungnummer'] + 1;
@@ -4449,8 +4449,8 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Add(
         'MESSAGE',
         "<div class=\"info\">Zu diesem Auftrag geh&ouml;r"
-        .(count($check) == 1?'t':'en')
-        ." die Bestellung".(count($check) == 1?':':'en:')
+        .((!empty($check)?count($check):0) == 1?'t':'en')
+        ." die Bestellung".((!empty($check)?count($check):0) == 1?':':'en:')
       );
       foreach($check as $supplierOrderId => $supplieryNumber) {
         $this->app->Tpl->Add('MESSAGE','&nbsp;<a href="index.php?module=bestellung&action=edit&id='
@@ -5589,7 +5589,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             {
               // alle anhaenge drucken! wo auftrag datei anhang
               $this->app->erp->GetDateiSubjektObjekt('anhang','Auftrag',$id);
-              //                                                                     for($i=0;$i<count($tmpanhang);$i++)
+              //                                                                     for($i=0;$i<(!empty($tmpanhang)?count($tmpanhang):0);$i++)
               //                                                                     $this->app->printer->Drucken($druckercode,$tmpanhang[$i]);
               $tmpanhang ='';
             }
@@ -6070,7 +6070,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $entfernen = $this->app->Secure->GetPOST('entfernen');
     $bezeichnung = (string)$this->app->Secure->GetPOST('bezeichnung');
     if($entfernen && $auftraegemarkiert){
-      $cauftraegemarkiert = count($auftraegemarkiert);
+      $cauftraegemarkiert = (!empty($auftraegemarkiert)?count($auftraegemarkiert):0);
       for($i=0;$i<$cauftraegemarkiert;$i++) {
         $this->app->DB->Update("UPDATE auftrag SET cronjobkommissionierung = 0 WHERE id = '".$auftraegemarkiert[$i]."' LIMIT 1");
       }
@@ -6602,7 +6602,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               //$Brief->ArchiviereDocument();
             }
 
-            if(count($tmpfile) > 0){
+            if((!empty($tmpfile)?count($tmpfile):0) > 0){
               try {
                 /** @var \Xentral\Components\Pdf\PdfMerger $pdfMerger */
                 $pdfMerger = $this->app->Container->get('PdfMerger');

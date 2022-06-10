@@ -332,10 +332,10 @@ class Dsgvo{
     if($adresse['mitarbeiternummer']!="")
       $numbers[] = array("Mitarbeiter Nr.",$adresse['mitarbeiternummer']);  
 
-    if(count($numbers)>0){
+    if((!empty($numbers)?count($numbers):0)>0){
       //$pdf->renderInfoBox($numbers);
       $height = 5;
-      for($i=0;$i<count($numbers);$i++)
+      for($i=0;$i<(!empty($numbers)?count($numbers):0);$i++)
       {
         $pdf->MultiCell(50,$height,$this->app->erp->ReadyForPDF($numbers[$i][0]).":","BTL",'L');
         $pdf->SetY($pdf->GetY()-$height); $pdf->SetX(50); $pdf->MultiCell(140,$height,$this->app->erp->ReadyForPDF($numbers[$i][1]),"BTR",'L');
@@ -358,7 +358,7 @@ class Dsgvo{
 
     //$pdf->renderInfoBox($infofields);
     $height = 5;
-    for($i=0;$i<count($infofields);$i++)
+    for($i=0;$i<(!empty($infofields)?count($infofields):0);$i++)
     {
       $pdf->MultiCell(50,$height,$this->app->erp->ReadyForPDF($infofields[$i][0]).":","BTL",'L');
       $pdf->SetY($pdf->GetY()-$height); $pdf->SetX(50); $pdf->MultiCell(140,$height,$this->app->erp->ReadyForPDF($infofields[$i][1]),"BTR",'L');
@@ -367,8 +367,8 @@ class Dsgvo{
 
     $accounts_tmp = $this->app->DB->SelectArr("SELECT CONCAT('Bezeichnung: ', bezeichnung, ', ', 'Art: ', art, ', URL: ', url, ', Benutzername: ', benutzername) as 'value' FROM adresse_accounts WHERE adresse='".$adresse['id']."'");
 
-    for($i=0;$i<count($accounts_tmp);$i++) $accounts[] = $accounts_tmp[$i]['value'];
-    if(count($accounts) > 0){
+    for($i=0;$i<(!empty($accounts_tmp)?count($accounts_tmp):0);$i++) $accounts[] = $accounts_tmp[$i]['value'];
+    if((!empty($accounts)?count($accounts):0) > 0){
       $pdf->Ln(5);
       $height = 8;
       $betreffszeile = $this->app->erp->Firmendaten('betreffszeile');
@@ -382,7 +382,7 @@ class Dsgvo{
       $height = 5;
       if(is_array($accounts))
       {
-        for($i=0;$i<count($accounts);$i++)
+        for($i=0;$i<(!empty($accounts)?count($accounts):0);$i++)
         {
           $pdf->MultiCell(175,$height,$pdf->WriteHTML($this->app->erp->ReadyForPDF($accounts[$i])),"",'L');
         }
@@ -409,8 +409,8 @@ class Dsgvo{
       ', E-Mail: ',email
       ) as 'value' FROM ansprechpartner WHERE adresse='".$adresse['id']."'");
 
-    for($i=0;$i<count($ansprechpartner_tmp);$i++) $ansprechpartner[] = $ansprechpartner_tmp[$i]['value'];
-    if(count($ansprechpartner) > 0)
+    for($i=0;$i<(!empty($ansprechpartner_tmp)?count($ansprechpartner_tmp):0);$i++) $ansprechpartner[] = $ansprechpartner_tmp[$i]['value'];
+    if((!empty($ansprechpartner)?count($ansprechpartner):0) > 0)
     { 
       $pdf->Ln(5);
       //$pdf->renderHeading("Ansprechpartner",8);
@@ -427,7 +427,7 @@ class Dsgvo{
       $height = 5;
       if(is_array($ansprechpartner))
       {
-        for($i=0;$i<count($ansprechpartner);$i++)
+        for($i=0;$i<(!empty($ansprechpartner)?count($ansprechpartner):0);$i++)
         {
           $pdf->MultiCell(175,$height,$pdf->WriteHTML($this->app->erp->ReadyForPDF($ansprechpartner[$i])),"",'L');
         }
@@ -441,7 +441,7 @@ class Dsgvo{
       telefon,email
       FROM lieferadressen WHERE adresse='".$adresse['id']."' ORDER by standardlieferadresse DESC");
 
-    for($i=0;$i<count($lieferadressen_tmp);$i++) {
+    for($i=0;$i<(!empty($lieferadressen_tmp)?count($lieferadressen_tmp):0);$i++) {
       $lieferadressen_tmp[$i]['value']=""; 
       foreach($lieferadressen_tmp[$i] as $key=>$value)
       {
@@ -470,7 +470,7 @@ class Dsgvo{
       $lieferadressen[] = $lieferadressen_tmp[$i]['value'].$standard;
     }
    
-    if(count($lieferadressen) > 0)
+    if((!empty($lieferadressen)?count($lieferadressen):0) > 0)
     { 
       $pdf->Ln(5);
       //$pdf->renderHeading("Lieferadressen",8);
@@ -486,7 +486,7 @@ class Dsgvo{
       $height = 8;
       if(is_array($lieferadressen))
       {
-        for($i=0;$i<count($lieferadressen);$i++)
+        for($i=0;$i<(!empty($lieferadressen)?count($lieferadressen):0);$i++)
         {
           $pdf->MultiCell(175,$height,$pdf->WriteHTML($this->app->erp->ReadyForPDF($lieferadressen[$i])),"",'L');
         }

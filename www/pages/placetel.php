@@ -149,7 +149,7 @@ class Placetel {
     if($apikey!="")
     {
       $result = json_decode($this->PlacetelAPI("getVoIPUsers"),true);
-      for($i=0;$i<count($result);$i++)
+      for($i=0;$i<(!empty($result)?count($result):0);$i++)
       {
         $this->app->Tpl->Add(ACCOUNTROW,"<tr><td>".$result[$i]['name']."</td><td>".$result[$i]['stype']."</td><td>".$result[$i]['uid']."</td></tr>");
       }
@@ -180,7 +180,7 @@ class Placetel {
     // Set some options - we are passing in a useragent too here
     curl_setopt_array($curl, array(
       CURLOPT_RETURNTRANSFER => 1,
-      CURLOPT_POST => count($fields),
+      CURLOPT_POST => (!empty($fields)?count($fields):0),
       CURLOPT_POSTFIELDS => $fields_string,
       CURLOPT_URL => 'https://api.placetel.de/api/'.$request.'.json',
       CURLOPT_USERAGENT => 'Codular Sample cURL Request'
@@ -203,7 +203,7 @@ class Placetel {
     if(!$target)
     {
       $ida = explode('-',$this->app->Secure->GetGET('id'));
-      if(count($ida) == 2)
+      if((!empty($ida)?count($ida):0) == 2)
       {
         $id = (int)$ida[1];
         switch($ida[0])
@@ -240,11 +240,11 @@ class Placetel {
   
     $tmp = explode(PHP_EOL,trim($accounts));
 
-    for($i=0;$i<count($tmp);$i++)
+    for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
     {
       $subtmp = explode(':',trim($tmp[$i]));
 
-      if(count($subtmp)>0)
+      if((!empty($subtmp)?count($subtmp):0)>0)
       {
         $subtmp[0] = trim($subtmp[0]);
         $subtmp[1] = trim($subtmp[1]);

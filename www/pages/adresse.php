@@ -648,7 +648,7 @@ class Adresse extends GenAdresse {
   {
     $doppelteids = $this->app->Secure->GetGET('id');
     $ids = preg_split('/\-/',$doppelteids);
-    if(count($ids) > 1)
+    if((!empty($ids)?count($ids):0) > 1)
     {
       $typ = (int)$ids[0];
       $id = (int)$ids[1];
@@ -1945,7 +1945,7 @@ class Adresse extends GenAdresse {
     $this->app->YUI->SaveReally();
 
     $adresse_kontakte = $this->app->Secure->GetPOST('adresse_kontakte');
-    if(!empty($adresse_kontakte) && count($adresse_kontakte) > 0) {
+    if(!empty($adresse_kontakte) && (!empty($adresse_kontakte)?count($adresse_kontakte):0) > 0) {
       foreach($adresse_kontakte as $key=>$value)
         $this->app->DB->Update("UPDATE adresse_kontakte SET kontakt='$value' WHERE id='$key' LIMIT 1");
     }
@@ -3047,7 +3047,7 @@ function AdresseAnsprechpartner($als_lieferadresse=false)
           $gruppen = $this->app->DB->real_escape_string($this->app->Secure->GetPOST('gruppen'));
           $gruppenarray = explode("|", $gruppen);
  
-          for ($i=0; $i < count($gruppenarray) ; $i++) { 
+          for ($i=0; $i < (!empty($gruppenarray)?count($gruppenarray):0) ; $i++) { 
             if($gruppenarray[$i] != ''){
               $gruppenid = substr($gruppenarray[$i], 3);
               $this->app->DB->Insert("INSERT INTO ansprechpartner_gruppen (ansprechpartner, gruppe, aktiv) VALUES ('$lid', '".$gruppenid."', '1')");
@@ -6241,22 +6241,22 @@ function AdresseVerein()
 
 
   function down($a,$x) {
-    if( count($a)-1 > $x ) {
+    if( (!empty($a)?count($a):0)-1 > $x ) {
       $b = array_slice($a,0,$x,true);
       $b[] = $a[$x+1];
       $b[] = $a[$x];
-      $b += array_slice($a,$x+2,count($a),true);
+      $b += array_slice($a,$x+2,(!empty($a)?count($a):0),true);
       return($b);
     }
     return $a;
   }
 
   function up($a,$x) {
-    if( $x > 0 && $x < count($a) ) {
+    if( $x > 0 && $x < (!empty($a)?count($a):0) ) {
       $b = array_slice($a,0,($x-1),true);
       $b[] = $a[$x];
       $b[] = $a[$x-1];
-      $b += array_slice($a,($x+1),count($a),true);
+      $b += array_slice($a,($x+1),(!empty($a)?count($a):0),true);
       return($b);
     }
     return $a;

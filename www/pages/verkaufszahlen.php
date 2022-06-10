@@ -505,7 +505,7 @@ class Verkaufszahlen {
     if(!empty($diagramme))
     {
       $projektefirst = $this->GetDiagrammProjekte($diagramme[0]['id'],true);
-      if(count($diagramme) <= 1)
+      if((!empty($diagramme)?count($diagramme):0) <= 1)
       {
         $this->app->Tpl->Set('VORDEAKTIVIEREN','/*');
         $this->app->Tpl->Set('NACHDEAKTIVIEREN','*/');
@@ -523,7 +523,7 @@ class Verkaufszahlen {
 
     $projekte_arr = $this->app->DB->SelectArr("SELECT id as projekt FROM projekt WHERE verkaufszahlendiagram='1' AND geloescht!='1'  ".$this->app->erp->ProjektRechte('id').' order by abkuerzung');
     if(!empty($projekte_arr)){
-      $cprojekte_arr = count($projekte_arr);
+      $cprojekte_arr = (!empty($projekte_arr)?count($projekte_arr):0);
       for ($i = 0; $i < $cprojekte_arr; $i++) {
         $projekte[] = $projekte_arr[$i]['projekt'];
 
@@ -534,7 +534,7 @@ class Verkaufszahlen {
           $farbe = '#eee';
         }
 
-        if($i < count($projekte_arr) - 1){
+        if($i < (!empty($projekte_arr)?count($projekte_arr):0) - 1){
           $this->app->Tpl->Add('PLOTLEGENDS', '{ label: "' . $abkuerzung . '",  data: d' . ($i + 1) . ', color: "' . $farbe . '"},');
         }
         else{

@@ -48,7 +48,7 @@ class Firmendaten  {
         foreach($documents as $documentKey => $document) {
           $colDocument .= sprintf("IF(dci.doctype = '%s', '%s',", $documentKey, $document);
         }
-        $colDocument .= 'dci.doctype'. str_repeat(')', count($documents));
+        $colDocument .= 'dci.doctype'. str_repeat(')', (!empty($documents)?count($documents):0));
         // headings
         $heading = array('', 'Belegart', 'zus&auml;tzliche Sprachen', 'Projekt', 'Aktiv','', 'Men&uuml;');
         $width = array('1%', '10%', '20%', '15%', '5%', '1%', '1%');
@@ -197,7 +197,7 @@ class Firmendaten  {
     if(@is_file($filename)) {
       @unlink($filename);
     }
-    if($palette && count($palette) == 1) {
+    if($palette && (!empty($palette)?count($palette):0) == 1) {
       $color = array_keys($palette);
       return League\ColorExtractor\Color::fromIntToHex(reset($color));
     }

@@ -112,7 +112,7 @@ class Importvorlage extends GenImportvorlage {
             $this->app->DB->real_escape_string($statusMessage)
           );
         }
-        $statusCol .= "'')".str_repeat(')', count($statusMapping));
+        $statusCol .= "'')".str_repeat(')', (!empty($statusMapping)?count($statusMapping):0));
 
         $searchsql = [
           'adr.name',
@@ -141,7 +141,7 @@ class Importvorlage extends GenImportvorlage {
           .$this->app->Conf->WFconf['defaulttheme']
           .'/images/delete.svg" alt="löschen" class="deletejob" data-id="%value%" />';
         $menu .= '</td></tr></table>';
-        $menucol = count($heading);
+        $menucol = (!empty($heading)?count($heading):0);
         $filterComplete = $this->app->YUI->TableSearchFilter($name,1 ,'importvorlage-filter-complete',0,0,'checkbox');
         $filterCancelled = $this->app->YUI->TableSearchFilter($name,2 ,'importvorlage-filter-cancelled',0,0,'checkbox');
         $sql = "SELECT imd.id,
@@ -827,7 +827,7 @@ class Importvorlage extends GenImportvorlage {
     );
 
     $fieldsarray = explode(';',$fields);
-    $cFieldsarray = count($fieldsarray);
+    $cFieldsarray = (!empty($fieldsarray)?count($fieldsarray):0);
     for($i=0;$i<$cFieldsarray;$i++) {
       $fieldsarray_items = explode(':',$fieldsarray[$i]);
       $fieldsarray_items[0] = str_replace('!','',$fieldsarray_items[0]);
@@ -865,7 +865,7 @@ class Importvorlage extends GenImportvorlage {
     $fields = $this->cleanFields($fields);
 
     $fieldsarray = explode(';',$fields);
-    //for($i=0;$i<count($fieldsarray);$i++)
+    //for($i=0;$i<(!empty($fieldsarray)?count($fieldsarray):0);$i++)
     foreach($fieldsarray as $key =>  $fieldsrow) {
       $fieldsarray_items = explode(':',$fieldsrow,3);
       $fieldsarray_items1 = trim(str_replace('!','',$fieldsarray_items[1]));
@@ -911,7 +911,7 @@ class Importvorlage extends GenImportvorlage {
     );
 
     $fieldsarray = explode(';',$fields);
-    $cFieldsarray = count($fieldsarray);
+    $cFieldsarray = (!empty($fieldsarray)?count($fieldsarray):0);
     for($i=0;$i<$cFieldsarray;$i++) {
       $fieldsarray_items = explode(':',$fieldsarray[$i]);
       if($fieldsarray_items[1]!=''){
@@ -946,7 +946,7 @@ class Importvorlage extends GenImportvorlage {
     );
 
     $fieldsarray = explode(';',$fields);
-    $cFieldsarray = count($fieldsarray);
+    $cFieldsarray = (!empty($fieldsarray)?count($fieldsarray):0);
     for($i=0;$i<$cFieldsarray;$i++) {
       $fieldsarray_items = explode(':',$fieldsarray[$i]);
       if($fieldsarray_items[1]!=''){
@@ -1018,7 +1018,7 @@ class Importvorlage extends GenImportvorlage {
     if($importdatenmaskierung==='gaensefuesschen') {
       $importdatenmaskierung='"';
     }
-    //$number_of_fields = count($csv_fields);
+    //$number_of_fields = (!empty($csv_fields)?count($csv_fields):0);
 
 
     $limit_erreicht = false;
@@ -1198,13 +1198,13 @@ class Importvorlage extends GenImportvorlage {
 
     $fieldsarray = explode(';',$fieldstring);
     foreach($fieldsarray as $field) {
-      //for($i=0;$i<count($fieldsarray);$i++)
+      //for($i=0;$i<(!empty($fieldsarray)?count($fieldsarray):0);$i++)
       //{
       $fieldsarray_items = explode(':',$field);
       foreach($fieldsarray_items as $k => $v) {
         $fieldsarray_items[$k] = trim($v);
       }
-      if(count($fieldsarray_items) > 1){
+      if((!empty($fieldsarray_items)?count($fieldsarray_items):0) > 1){
         if($fieldsarray_items[1] != ''){
           if($fieldsarray_items[0] == (int)$fieldsarray_items[0]){
             //$csv_fields[$fieldsarray_items[0]]= $fieldsarray_items[1];
@@ -1303,13 +1303,13 @@ class Importvorlage extends GenImportvorlage {
       $stueckliste_csv
     );
 
-    $number_of_fields = count($csv_fields_keys);
+    $number_of_fields = (!empty($csv_fields_keys)?count($csv_fields_keys):0);
     if (($handle = fopen($stueckliste_csv, 'r')) !== FALSE) {
       $rowcounter = 0;
       $rowcounter_real = 0;
       while (($data = fgetcsv($handle, 0, $importtrennzeichen)) !== FALSE) {
         $rowcounter++;
-        $num = count($data);
+        $num = (!empty($data)?count($data):0);
         if($rowcounter >= $importerstezeilenummer) {
           if(empty($data)) {
             continue;
@@ -1976,7 +1976,7 @@ class Importvorlage extends GenImportvorlage {
                   $artikelbaumteile = explode("|", $artikelbaumanweisung);
                   $artikelbaumzumhinzufuegen = array();
                   $artikelbaumtmpkategorieid = 0;
-                  for ($ii=0; $ii < count($artikelbaumteile); $ii++) {
+                  for ($ii=0; $ii < (!empty($artikelbaumteile)?count($artikelbaumteile):0); $ii++) {
                     $kategorieid = $this->app->DB->Select("SELECT id FROM artikelkategorien WHERE bezeichnung = '".$this->app->DB->real_escape_string($artikelbaumteile[$ii])."' AND parent = '$artikelbaumtmpkategorieid' LIMIT 1");
                     if($kategorieid == ''){
                       break;
@@ -1986,7 +1986,7 @@ class Importvorlage extends GenImportvorlage {
                     }
                   }
 
-                  for ($ii=0; $ii < count($artikelbaumzumhinzufuegen); $ii++) {
+                  for ($ii=0; $ii < (!empty($artikelbaumzumhinzufuegen)?count($artikelbaumzumhinzufuegen):0); $ii++) {
                     $vorhanden = $this->app->DB->Select("SELECT id FROM artikelbaum_artikel WHERE artikel = '$artikelid' AND kategorie = '".$artikelbaumzumhinzufuegen[$ii]."' LIMIT 1");
                     if($vorhanden == ''){
                       $this->app->DB->Insert("INSERT INTO artikelbaum_artikel (artikel, kategorie) VALUES ('$artikelid','".$artikelbaumzumhinzufuegen[$ii]."')");
@@ -2930,7 +2930,7 @@ class Importvorlage extends GenImportvorlage {
                       $artikelbaumteile = explode("|", $artikelbaumanweisung);
                       $artikelbaumzumhinzufuegen = array();
                       $artikelbaumtmpkategorieid = 0;
-                      for ($ii=0; $ii < count($artikelbaumteile); $ii++) {
+                      for ($ii=0; $ii < (!empty($artikelbaumteile)?count($artikelbaumteile):0); $ii++) {
                         $kategorieid = $this->app->DB->Select("SELECT id FROM artikelkategorien WHERE geloescht = 0 AND bezeichnung = '".$this->app->DB->real_escape_string($artikelbaumteile[$ii])."' AND parent = '$artikelbaumtmpkategorieid' LIMIT 1");
                         if($kategorieid == ''){
                           break;
@@ -2940,7 +2940,7 @@ class Importvorlage extends GenImportvorlage {
                         }
                       }
 
-                      for ($ii=0; $ii < count($artikelbaumzumhinzufuegen); $ii++) {
+                      for ($ii=0; $ii < (!empty($artikelbaumzumhinzufuegen)?count($artikelbaumzumhinzufuegen):0); $ii++) {
                         $vorhanden = $this->app->DB->Select("SELECT id FROM artikelbaum_artikel WHERE artikel = '$artikelid' AND kategorie = '".$artikelbaumzumhinzufuegen[$ii]."' LIMIT 1");
                         if($vorhanden == ''){
                           $this->app->DB->Insert("INSERT INTO artikelbaum_artikel (artikel, kategorie) VALUES ('$artikelid','".$artikelbaumzumhinzufuegen[$ii]."')");
@@ -3990,8 +3990,8 @@ class Importvorlage extends GenImportvorlage {
               foreach ($tmp as $feldname => $feldwerte) {
                 if(strpos($feldname,'_') !== false){
                   $feldnametmp = explode('_',$feldname);
-                  $sprache = $feldnametmp[count($feldnametmp)-1];
-                  unset($feldnametmp[count($feldnametmp)-1]);
+                  $sprache = $feldnametmp[(!empty($feldnametmp)?count($feldnametmp):0)-1];
+                  unset($feldnametmp[(!empty($feldnametmp)?count($feldnametmp):0)-1]);
                   $feldnameohnepsrache = implode('_',$feldnametmp);
 
                   $output_array = [];
@@ -5604,7 +5604,7 @@ class Importvorlage extends GenImportvorlage {
    */
   function ImportPrepareHeader($ziel,$fieldset)
   {
-    $number_of_fields =count($fieldset);
+    $number_of_fields =(!empty($fieldset)?count($fieldset):0);
 
     switch($ziel)
     {
@@ -5648,7 +5648,7 @@ class Importvorlage extends GenImportvorlage {
    */
   function ImportPrepareRow($rowcounter,$ziel,$data,$fieldset)
   {
-    $number_of_fields =count($fieldset);
+    $number_of_fields =(!empty($fieldset)?count($fieldset):0);
     //Standard
     $fields['waehrung'] = 'EUR';
 

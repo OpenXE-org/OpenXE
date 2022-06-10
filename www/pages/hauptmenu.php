@@ -43,7 +43,7 @@ class Hauptmenu {
 
         if (!is_null($menu)) {
 
-            if (count($menu) > 0) {
+            if ((!empty($menu)?count($menu):0) > 0) {
                 foreach ($menu as $key => $value) {
                     $i++;
                     if ($value[first][2] != "")

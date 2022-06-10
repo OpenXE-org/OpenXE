@@ -470,7 +470,7 @@ class Gutschrift extends GenGutschrift
 
   $orderIds = [];
     if(!empty($rechnung)) {
-      $cRechnung = count($rechnung);
+      $cRechnung = (!empty($rechnung)?count($rechnung):0);
       for($li=0;$li<$cRechnung;$li++) {
         $orderIds[] = (int)$rechnung[$li]['auftragid'];
         $this->app->Tpl->Add('RECHNUNG',$rechnung[$li]['rechnung']);
@@ -691,7 +691,7 @@ class Gutschrift extends GenGutschrift
          OR (ke.objekt='auftrag' AND ke.parameter='$auftragid' AND ke.parameter>0)
         OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0)"
     );
-    $ceingangArr = empty($eingangArr)?0:count($eingangArr);
+    $ceingangArr = empty($eingangArr)?0:(!empty($eingangArr)?count($eingangArr):0);
 
     for($i=0;$i<$ceingangArr;$i++) {
       $waehrung = 'EUR';
@@ -709,7 +709,7 @@ class Gutschrift extends GenGutschrift
 /*
     $gutschriften = $this->app->DB->SelectArr("SELECT belegnr, DATE_FORMAT(datum,'%d.%m.%Y') as datum,soll FROM gutschrift WHERE rechnungid='$id'");
 
-    for($i=0;$i<count($gutschriften);$i++)
+    for($i=0;$i<(!empty($gutschriften)?count($gutschriften):0);$i++)
       $eingang .="<tr><td class=auftrag_cell>".$gutschriften[$i]['datum']."</td><td class=auftrag_cell>GS ".$gutschriften[$i]['belegnr']."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($gutschriften[$i]['soll'])." EUR</td></tr>";
 
 */
@@ -725,7 +725,7 @@ class Gutschrift extends GenGutschrift
          OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0) 
         OR (ke.objekt='auftrag' AND ke.parameter='$auftragid'  AND ke.parameter>0)"
     );
-    $cAusgangArr = empty($ausgangArr)?0:count($ausgangArr);
+    $cAusgangArr = empty($ausgangArr)?0:(!empty($ausgangArr)?count($ausgangArr):0);
     for($i=0;$i<$cAusgangArr;$i++) {
       $waehrung = 'EUR';
       if($ausgangArr[$i]['waehrung']) {
@@ -1257,9 +1257,9 @@ class Gutschrift extends GenGutschrift
     $alle_gutschriften = $this->app->DB->SelectArr("SELECT id,belegnr FROM gutschrift WHERE rechnungid='$rechnungid' AND rechnungid>0");
 
 	if (!is_null($alle_gutschriften)) {
-	    if(count($alle_gutschriften) > 1)
+	    if((!empty($alle_gutschriften)?count($alle_gutschriften):0) > 1)
 	    {
-	      for($agi=0;$agi<count($alle_gutschriften);$agi++)
+	      for($agi=0;$agi<(!empty($alle_gutschriften)?count($alle_gutschriften):0);$agi++)
 	        $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi][id]."\" target=\"_blank\">".$alle_gutschriften[$agi][belegnr]."</a> ";
 	      $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
 	    }
@@ -1657,7 +1657,7 @@ class Gutschrift extends GenGutschrift
               $tmpfile[] = $Brief->displayTMP();
             }
 
-            if(count($tmpfile) > 0) {
+            if((!empty($tmpfile)?count($tmpfile):0) > 0) {
               try {
                 /** @var PdfMerger $pdfMerger */
                 $pdfMerger = $this->app->Container->get('PdfMerger');

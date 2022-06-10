@@ -203,7 +203,7 @@ class Artikelbaum
     $kategorien = null;
     $this->getKategorien($kategorien, 0);
     if($this->app->Secure->GetGET('cmd') === 'suche' && $kategorien) {
-      $kategorien[count($kategorien)-1] = [
+      $kategorien[(!empty($kategorien)?count($kategorien):0)-1] = [
         'id'          =>0,
         'bezeichnung' => 'zur&uuml;cksetzen',
         'parent'      => 0

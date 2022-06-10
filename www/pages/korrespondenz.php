@@ -71,7 +71,7 @@ class Korrespondenz
 			$post['datum'] = date("d.m.Y");
 
 			$userdata = $this->app->DB->SelectArr("SELECT * FROM adresse WHERE id='{$post['user']}' LIMIT 1");
-			if(is_array($userdata) && count($userdata)>0) {
+			if(is_array($userdata) && (!empty($userdata)?count($userdata):0)>0) {
 				$vorname = '';
 				if(($userdata[0]['typ']=='herr' || $userdata[0]['typ']=='frau') && $userdata[0]['vorname']!='')
 					$vorname =  "{$userdata[0]['vorname']} ";
@@ -234,7 +234,7 @@ class Korrespondenz
       $selected = $this->app->DB->Select("SELECT standarddrucker FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");
 
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE firma='".$this->app->User->GetFirma()."' AND aktiv='1'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
       $out .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";

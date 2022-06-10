@@ -97,7 +97,7 @@ class Shopimporter_Shopify_Adapter
       {
         $len = strlen($header);
         $header = explode(':', $header, 2);
-        if (count($header) < 2){
+        if ((!empty($header)?count($header):0) < 2){
           // ignore invalid headers
           return $len;
         }

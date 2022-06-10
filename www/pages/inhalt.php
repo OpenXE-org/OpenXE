@@ -477,7 +477,7 @@ class Inhalt{
         foreach($unterpunkte as $upunkt)
           $tmp["{$upunkt["id"]}"]="&nbsp;&nbsp;&nbsp;".$upunkt["bezeichnung"];
       }
-			if(count($tmp) < 1) return '<option value=""> -- Keine Navigation vorhanden --</option>';
+			if((!empty($tmp)?count($tmp):0) < 1) return '<option value=""> -- Keine Navigation vorhanden --</option>';
 
 			$out = '';
 			foreach($tmp as $key=>$value) {

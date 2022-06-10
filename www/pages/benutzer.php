@@ -817,12 +817,12 @@ class Benutzer
     $modules = $this->ScanModules();
     if($hwtoken == 4)
     {
-      $modulecount = count($modules);
+      $modulecount = (!empty($modules)?count($modules):0);
       $curModule = 0;
       foreach($modules as $module=>$actions) {
         $lower_m = strtolower($module);	
         $curModule++;
-        $actioncount = count($actions);
+        $actioncount = (!empty($actions)?count($actions):0);
         for($i=0;$i<$actioncount;$i++) {
           $delimiter = (($curModule<$modulecount || $i+1<$actioncount) ? ', ' : ';');  
           $active = 0;
@@ -844,12 +844,12 @@ class Benutzer
         }
         //$sql = 'INSERT INTO userrights (user, module, action, permission) VALUES ';
 
-        $modulecount = count($modules);
+        $modulecount = (!empty($modules)?count($modules):0);
         $curModule = 0;
         foreach($modules as $module=>$actions) {
           $lower_m = strtolower($module);	
           $curModule++;
-          $actioncount = count($actions);
+          $actioncount = (!empty($actions)?count($actions):0);
           for($i=0;$i<$actioncount;$i++) {
             $delimiter = (($curModule<$modulecount || $i+1<$actioncount) ? ', ' : ';');  
             $active = ((isset($mytemplate[$lower_m]) && in_array($actions[$i], $mytemplate[$lower_m])) ? '1' : '0');
@@ -885,7 +885,7 @@ class Benutzer
     $group = $this->app->DB->Select("SELECT `type` FROM `user` WHERE id='$id' LIMIT 1");
 
     $rights = $this->app->Conf->WFconf['permissions'][$group];
-    if(is_array($dbrights) && count($dbrights)>0) 
+    if(is_array($dbrights) && (!empty($dbrights)?count($dbrights):0)>0) 
       $rights = $this->AdaptRights($dbrights, $rights, $group);
 
     $modules = $this->ScanModules();
@@ -975,7 +975,7 @@ class Benutzer
 
   function AdaptRights($dbarr, $rights) 
   {
-    $cnt = count($dbarr);
+    $cnt = (!empty($dbarr)?count($dbarr):0);
     for($i=0;$i<$cnt;$i++) {
       $module = $dbarr[$i]['module'];
       $action = $dbarr[$i]['action'];
@@ -1006,7 +1006,7 @@ class Benutzer
 
       $out .= "<tr><td><table class=\"action\">";
       $module = strtolower($key); 
-      for($i=0;$i<$maxcols || $i<count($value);$i++) {
+      for($i=0;$i<$maxcols || $i<(!empty($value)?count($value):0);$i++) {
         if($i%$maxcols==0) $out .= "<tr>";
 
 	if (gettype($rights[$module]) == 'array') {

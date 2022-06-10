@@ -207,7 +207,7 @@ class Versandarten {
               try {
                 $r = new ReflectionMethod($classname, '__construct');
                 $params = $r->getParameters();
-                $anzargs = count($params);
+                $anzargs = (!empty($params)?count($params):0);
               }
               catch(Exception $e) {
                 $anzargs = 1;
@@ -329,12 +329,12 @@ class Versandarten {
               ))
               {
                 $typa = explode('_', $input['typ']);
-                if(count($typa) == 1 || !is_numeric($typa[count($typa)-1]))
+                if((!empty($typa)?(!empty($typa)?count($typa):0):0) == 1 || !is_numeric($typa[count($typa)-1]))
                 {
                   $input['typ'] .= '_1';
                 }else{
-                  $counter = $typa[count($typa)-1]+1;
-                  unset($typa[count($typa)-1]);
+                  $counter = $typa[(!empty($typa)?count($typa):0)-1]+1;
+                  unset($typa[(!empty($typa)?count($typa):0)-1]);
                   $input['typ'] = implode('_', $typa).'_'.$counter;
                 }
               }
@@ -396,12 +396,12 @@ class Versandarten {
 
           while($this->app->DB->Select(sprintf("SELECT `id` FROM `versandarten` WHERE `type` = '%s' LIMIT 1", $input['typ'])))  {
             $typa = explode('_', $input['typ']);
-            if(count($typa) == 1 || !is_numeric($typa[count($typa)-1]))
+            if((!empty($typa)?(!empty($typa)?count($typa):0):0) == 1 || !is_numeric($typa[count($typa)-1]))
             {
               $input['typ'] .= '_1';
             }else{
-              $counter = $typa[count($typa)-1]+1;
-              unset($typa[count($typa)-1]);
+              $counter = $typa[(!empty($typa)?count($typa):0)-1]+1;
+              unset($typa[(!empty($typa)?count($typa):0)-1]);
               $input['typ'] = implode('_', $typa).'_'.$counter;
             }
           }
@@ -839,7 +839,7 @@ class Versandarten {
     }
     $form = $obj->getCreateForm();
     if(!empty($form)) {
-      $form[count($form) - 1]['link'] = [
+      $form[(!empty($form)?count($form):0) - 1]['link'] = [
         'link' => 'index.php?module=versandarten&action=create&auswahl=' . $module,
         'title' => 'Expertenmodus',
       ];

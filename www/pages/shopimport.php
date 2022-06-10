@@ -448,12 +448,12 @@ class Shopimport
     {
       $anz = 0;
       $fp = $this->app->erp->ProzessLock('shopimport_alle');
-      $cshops = count($shops);
+      $cshops = (!empty($shops)?count($shops):0);
       for($i=0;$i<$cshops-1;$i++)
       {
         $anz += $this->ShopimportImport($shops[$i]['id'],$anz,true);
       }
-      $lastshop=$shops[count($shops)-1]['id'];
+      $lastshop=$shops[(!empty($shops)?count($shops):0)-1]['id'];
       $this->app->erp->ProzessUnlock($fp);
     }
     if($lastshop && is_numeric($lastshop)){
@@ -1256,7 +1256,7 @@ class Shopimport
           {
             $maxtime = false;
             $mintime = false;
-            $gesamtanzahl = count($result);
+            $gesamtanzahl = (!empty($result)?count($result):0);
             for($i = 0; $i < $gesamtanzahl; $i++)
             {
               $projekt = $this->app->DB->Select("SELECT projekt FROM shopexport WHERE id = '$id' LIMIT 1");
@@ -1754,7 +1754,7 @@ class Shopimport
     }
 
     $arr = $this->app->DB->SelectArr("SELECT sa.*, p.abkuerzung FROM shopimport_auftraege sa left join projekt p on sa.projekt = p.id WHERE sa.imported='0' AND sa.trash='0' $where ORDER BY sa.logdatei LIMIT 100");
-    if(is_array($arr) && count($arr) > 0)
+    if(is_array($arr) && (!empty($arr)?count($arr):0) > 0)
     {
 
       //Alte Auftraege prüfen

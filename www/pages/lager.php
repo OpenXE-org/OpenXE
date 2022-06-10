@@ -2276,7 +2276,7 @@ class Lager extends GenLager {
 
       $this->app->Tpl->Set('SHOWCHRSTART','<!--');
       $this->app->Tpl->Set('SHOWCHREND','-->');
-      if(count($mhd) <=0)
+      if((!empty($mhd)?count($mhd):0) <=0)
       {
         $this->app->Tpl->Set('SHOWMHDSTART','<!--');
         $this->app->Tpl->Set('SHOWMHDEND','-->');
@@ -2977,9 +2977,9 @@ class Lager extends GenLager {
           $this->app->Tpl->Set('SUMME', $summe);
           if($anzsrn > 0)  { 
             $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>{|MHD|}</td><td>{|Seriennummer|}</td><td>{|Charge|}</td></tr>");
-          } else if (count($tmpmhd) > 0) {
+          } else if ((!empty($tmpmhd)?count($tmpmhd):0) > 0) {
             $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>{|Mindesthalt.|}</td><td width=30></td><td>{|Charge|}</td></tr>");
-          } else if (count($tmpcharge) > 0) {
+          } else if ((!empty($tmpcharge)?count($tmpcharge):0) > 0) {
             $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>{|Charge|}</td></tr>");
           }
           $artikelArr = $this->app->DB->SelectRow(
@@ -3651,10 +3651,10 @@ class Lager extends GenLager {
           $nummer = $this->app->DB->Select("SELECT belegnr FROM produktion WHERE id='$produktion' LIMIT 1");
           $this->app->Tpl->Add('TAB1', "<tr><td>Produktion $nummer</td><td>$bezeichnung</td><td align=center><a href=\"index.php?module=lager&action=auslagernproduktion&id=$produktion&cmd=produktion\"><img src=\"./themes/[THEME]/images/forward.svg\"></a></td></tr>");
           $artikellistesumm = $this->app->DB->SelectArr("SELECT DISTINCT artikel FROM lager_reserviert WHERE objekt='produktion' AND parameter='$produktion'");
-          if (count($artikellistesumm) == 0) continue;
+          if ((!empty($artikellistesumm)?count($artikellistesumm):0) == 0) continue;
           $artikelliste = $this->app->DB->SelectArr("SELECT DISTINCT artikel FROM lager_reserviert WHERE objekt='produktion' AND parameter='$produktion'");
 
-          $gesamtanzahlartikel  = $gesamtanzahlartikel + count($artikelliste);
+          $gesamtanzahlartikel  = $gesamtanzahlartikel + (!empty($artikelliste)?count($artikelliste):0);
      }
      $this->app->Tpl->Add('TAB1', "</table>");
 
@@ -3683,11 +3683,11 @@ class Lager extends GenLager {
       if ($projekt == 0 || $projekt == "") $projektName = "Ohne Projekt";
       $artikellistesumm = $this->app->DB->SelectArr("SELECT DISTINCT artikel FROM lager_reserviert WHERE objekt='lieferschein' AND projekt='$projekt' ");
 
-      if (count($artikellistesumm) == 0) continue;
+      if ((!empty($artikellistesumm)?count($artikellistesumm):0) == 0) continue;
       $this->app->Tpl->Add('INHALT', "<h2>$projektName Lieferungen Stand " . date('d.m.Y') . "</h2>");
       $artikelliste = $this->app->DB->SelectArr("SELECT DISTINCT artikel FROM lager_reserviert WHERE objekt='lieferschein' AND projekt='$projekt' ");
       $orderarray = $this->LagerAuslagernArtikelliste($artikelliste,$projekt,true);
-      $gesamtanzahlartikel = count($orderarray);
+      $gesamtanzahlartikel = (!empty($orderarray)?count($orderarray):0);
       $this->LagerAuslagernArtikellisteRender($orderarray);
     } // ende projekt schleife
     if ($gesamtanzahlartikel <= 0) {
@@ -3738,7 +3738,7 @@ class Lager extends GenLager {
 
       // neu sortieren
       asort($tmparray);
-      if(count($tmparray)>0)
+      if((!empty($tmparray)?count($tmparray):0)>0)
       { 
         foreach($tmparray as $key=>$value)
         {
@@ -4338,7 +4338,7 @@ class Lager extends GenLager {
 
         $this->app->Tpl->Set('IMPORT',$lagerimport);
 
-        if(count($tmp) > 0) {
+        if((!empty($tmp)?count($tmp):0) > 0) {
           $sorttxt = ($neuesort > 0?" ($neuesort x Reihenfolge angepasst)":"");
           if($neue == 1){
             $this->app->Tpl->Set('MESSAGE3', "<div class=\"info\">$neue Regal wurde neu angelegt$sorttxt!</div>");
@@ -4628,8 +4628,8 @@ class Lager extends GenLager {
           $data = $this->app->erp->base64_url_encode(serialize(array('drucker'=>$etikettendrucker,'etiketten'=>$etikettenauswahl,'von'=>$von,'bis'=>$bis)));
           $tmp = $this->app->DB->SelectArr("SELECT kurzbezeichnung FROM lager_platz WHERE kurzbezeichnung >='$von' AND kurzbezeichnung<='$bis'");
 
-          if(count($tmp)>0){
-            echo json_encode(array('status'=>1, 'anzahl' => count($tmp), 'daten'=>$data));
+          if((!empty($tmp)?count($tmp):0)>0){
+            echo json_encode(array('status'=>1, 'anzahl' => (!empty($tmp)?count($tmp):0), 'daten'=>$data));
             $this->app->ExitXentral();
           }
           

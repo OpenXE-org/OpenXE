@@ -2153,7 +2153,7 @@ CONCAT(if(a.prio=1 OR (a.abgabe_bis <= NOW() AND a.abgabe_bis!='0000-00-00'),CON
       WHERE a.abgabe_bis<='$end' AND a.abgabe_bis >='$start' $subwhere ORDER by a.abgabe_bis");
 
     if($data){
-      $cdata = count($data);
+      $cdata = (!empty($data)?count($data):0);
       for ($i = 0; $i < $cdata; $i++) {
         $data[$i]['allDay'] = 1;//(($data[$i]['allDay']=='1')?true:false);
         $data[$i]['public'] = 1;//(($data[$i]['public']=='1')?true:false);

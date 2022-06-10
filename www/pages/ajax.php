@@ -1171,7 +1171,7 @@ class Ajax {
     $terma = explode( ' ', $term);
     $term2a = explode( ' ', $term2);
     $term3a = explode( ' ', $term3);
-    if(count($terma) === 1)
+    if((!empty($terma)?count($terma):0) === 1)
     {
       $wherea = [];
       foreach($fields as $v) {
@@ -1414,7 +1414,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
       case "laender":
         $laender = $this->app->erp->GetSelectLaenderliste();
         $_term = explode(',',$term);
-        $_term = $_term[count($_term)-1];
+        $_term = $_term[(!empty($_term)?count($_term):0)-1];
         if($laender){
           foreach($laender as $key => $value)
           {
@@ -3506,22 +3506,22 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $terma22 = '';
           $terma31 = '';
           $terma32 = '';
-          if(count($terma2) > 1)
+          if((!empty($terma2)?count($terma2):0) > 1)
           {
-            $terma22 = $terma2[count($terma2)-1];
-            unset($terma2[count($terma2)-1]);
+            $terma22 = $terma2[(!empty($terma2)?count($terma2):0)-1];
+            unset($terma2[(!empty($terma2)?count($terma2):0)-1]);
             $terma21 = implode('%', $terma2);
           }          
-          if(count($terma3) > 1)
+          if((!empty($terma3)?count($terma3):0) > 1)
           {
-            $terma32 = $terma3[count($terma3)-1];
-            unset($terma3[count($terma3)-1]);
+            $terma32 = $terma3[(!empty($terma3)?count($terma3):0)-1];
+            unset($terma3[(!empty($terma3)?count($terma3):0)-1]);
             $terma31 = implode('%', $terma3);
           }
           
-          if(count($terma) > 1) {
-            $terma12 = $terma[count($terma)-1];
-            unset($terma[count($terma)-1]);
+          if((!empty($terma)?count($terma):0) > 1) {
+            $terma12 = $terma[(!empty($terma)?count($terma):0)-1];
+            unset($terma[(!empty($terma)?count($terma):0)-1]);
             $terma11 = implode('%', $terma);
             $subwheretmpa1 = null;
             $subwheretmpa2 = null;
@@ -4221,7 +4221,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
       }
       else
       {
-        if(!empty($searchsql) && count($searchsql) >0){
+        if(!empty($searchsql) && (!empty($searchsql)?count($searchsql):0) >0){
           $sWhere = " WHERE $where AND (";
         }
         else{
@@ -4230,7 +4230,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
       }
 
       
-      for($i=0;$i<count($searchsql)-1;$i++)
+      for($i=0;$i<(!empty($searchsql)?count($searchsql):0)-1;$i++)
       {
         $sWhere .= $searchsql[$i]." LIKE '%".$this->app->DB->real_escape_string($sSearch )."%' OR ";
       }
@@ -4340,7 +4340,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
     }
     if(strpos($spalte, 'datum')) {
       $spaltea = explode('.', $spalte);
-      if(count($spaltea) === 2){
+      if((!empty($spaltea)?count($spaltea):0) === 2){
         return ' ( DATE_FORMAT('.$spalte.",'%d.%m.%Y %H:%i:%s') LIKE '%".$this->app->DB->real_escape_string($sSearch )."%' OR ".$spalte." LIKE '%".$this->app->DB->real_escape_string($sSearch )."%') ";
       }
     }elseif(($numbercol || $spalte === 'soll' || $spalte === 'gesamtsumme') && strpos($sSearch,','))
@@ -4349,11 +4349,11 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
     }elseif((strpos($spalte, 'soll') || strpos($spalte, 'gesamtsumme'))  && strpos($sSearch,','))
     {
       $spaltea = explode('.', $spalte);
-      if(count($spaltea) === 2){
+      if((!empty($spaltea)?count($spaltea):0) === 2){
         return ' ( '.$spalte." LIKE '%".$this->app->DB->real_escape_string(str_replace(',','.',$sSearch) )."%' OR ".$spalte." LIKE '%".$this->app->DB->real_escape_string($sSearch )."%') ";
       }
     }
-    if(count($sSearcha) > 1)
+    if((!empty($sSearcha)?count($sSearcha):0) > 1)
     {
       return ' ('.$this->AjaxTableWhereBuilderArray($spalte, $sSearcha).')';
     }
@@ -4366,13 +4366,13 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
     {
       return '';
     }
-    $csSearcha = count($sSearcha);
+    $csSearcha = (!empty($sSearcha)?count($sSearcha):0);
     $tmp = [];
     foreach($sSearcha as $v)
     {
       $tmp[strtolower($v)] = 1+(!empty($tmp[strtolower($v)])?$tmp[strtolower($v)]:0);
     }
-    if(count($tmp) === 1)
+    if((!empty($tmp)?count($tmp):0) === 1)
     {
       $sSearch = implode('%', $sSearcha);
 
@@ -4540,7 +4540,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
       //$defaultorderdesc = $this->app->YUI->TableSearch("",$cmd,"defaultorderdesc","","",$frommodule, $fromclass);
       $defaultorderdesc = $YUIs['defaultorderdesc'];
       if($defaultorder<=0) {
-        $defaultorder = count($findcolstmp);
+        $defaultorder = (!empty($findcolstmp)?count($findcolstmp):0);
         $defaultorderdesc = 1;
       }
 
@@ -4613,7 +4613,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
             }
             if($this->app->DB->real_escape_string( $sSearch ) !== $this->app->erp->ConvertForTableSearch( $sSearch ))
             {
-              if(count($sSearcha) > 1)
+              if((!empty($sSearcha)?count($sSearcha):0) > 1)
               {
                 $SqlElementQuery .= $this->AjaxTableWhereBuilderArray($valWhere, $sSearcha, $sSearcha2);
               }else{
@@ -4621,7 +4621,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
                 {$valWhere} LIKE '%" . $this->app->erp->ConvertForTableSearch($sSearch) . "%' ) ";
               }
             }else{
-              if(count($sSearcha) > 1)
+              if((!empty($sSearcha)?count($sSearcha):0) > 1)
               {
                 $SqlElementQuery .= $this->AjaxTableWhereBuilderArray($valWhere, $sSearcha);
               }else{
@@ -4634,7 +4634,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
               {
                 $SqlElementQuery .=" OR ({$valWhere} LIKE '%".$this->app->DB->real_escape_string( $sSearch2 )."%' OR {$valWhere} LIKE '%".$this->app->erp->ConvertForTableSearch( $sSearch2 )."%' ) ";
               }else{
-                if(count($sSearcha) > 1)
+                if((!empty($sSearcha)?count($sSearcha):0) > 1)
                 {
                   $SqlElementQuery .= ' OR ('. $this->AjaxTableWhereBuilderArray($valWhere, $sSearcha2).') ';
                 }else{
@@ -4720,14 +4720,14 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
             {
               $searchsql2[] = $v2;
               if($datesearchcol && in_array($k, $datesearchcol)) {
-                $datesearchcol2[] = count($searchsql2)-1;
+                $datesearchcol2[] = (!empty($searchsql2)?count($searchsql2):0)-1;
               }
             }
           }else{
             $searchsql2[] = $v;
             if($datesearchcol && in_array($k, $datesearchcol))
             {
-              $datesearchcol2[] = count($searchsql2)-1;
+              $datesearchcol2[] = (!empty($searchsql2)?count($searchsql2):0)-1;
             }
           }
         }
@@ -4737,7 +4737,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
       }
       else
       {
-        if(count($searchsql) > 0){
+        if((!empty($searchsql)?count($searchsql):0) > 0){
           $sWhere = " WHERE $where AND (";
         }
         else{
@@ -4780,7 +4780,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           {
             $sWhere .= '('.$this->AjaxTableWhereBuilder($searchsql2[$i], $sSearch, true, false).' OR  '.$this->AjaxTableWhereBuilder($searchsql2[$i], $this->app->erp->ConvertForTableSearch( $sSearch ), true, false).")";
           }else{
-            if(count($sSearcha) > 1)
+            if((!empty($sSearcha)?count($sSearcha):0) > 1)
             {
               $sWhere .= $this->AjaxTableWhereBuilderArray($searchsql2[$i], $sSearcha, $sSearcha2);
             }else{
@@ -4792,7 +4792,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           if($datesearchcol2 && in_array($i, $datesearchcol2)) {
             $sWhere .= $this->AjaxTableWhereBuilder($searchsql2[$i], $sSearch, true, false);
           }else{
-            if(count($sSearcha) > 1)
+            if((!empty($sSearcha)?count($sSearcha):0) > 1)
             {
               $sWhere .= $this->AjaxTableWhereBuilderArray($searchsql2[$i], $sSearcha);
             }else{
@@ -4808,7 +4808,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           {
             $sWhere .=" OR ({$searchsql2[$i]} LIKE '%".$this->app->DB->real_escape_string( $sSearch2 )."%' OR {$searchsql2[$i]} LIKE '%".$this->app->erp->ConvertForTableSearch( $sSearch2 )."%' ) ";
           }else{
-            if(count($sSearcha) > 1)
+            if((!empty($sSearcha)?count($sSearcha):0) > 1)
             {
               $sWhere .= ' OR ('. $this->AjaxTableWhereBuilderArray($searchsql2[$i], $sSearcha2).') ';
             }else{
@@ -4839,7 +4839,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         $sSearch .= '*';
         $searchfulltext = ' MATCH(e.subject,e.sender,e.action,e.action_html) AGAINST (\''.$this->app->erp->ConvertForTableSearch($sSearch).'\' IN BOOLEAN MODE ) ';
       }
-      if(count($searchsql2) > 0){
+      if((!empty($searchsql2)?count($searchsql2):0) > 0){
         if($searchfulltext == '')
         {
           $sWhere .= ' 0)';
@@ -5003,7 +5003,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
       //TODO Alte Prozesse killen
       $_sql = substr($this->app->YUI->CodiereSQLForOneQuery($tmp, $cmd),0, 100);
       $processlist = $this->app->DB->SelectArr('SHOW PROCESSLIST');
-      if(count($processlist) > 1) {
+      if((!empty($processlist)?count($processlist):0) > 1) {
         foreach($processlist as $v) {
           if($v['Time'] > 1 && $v['db'] == $this->app->Conf->WFdbname && $v['User'] == $this->app->Conf->WFdbuser && substr($v['Info'], 0, 100) == $_sql) {
             $this->app->DB->kill($v['Id']);
@@ -5056,7 +5056,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           };
           $processed++;
         }
-      } while ($processed < count($all_links));
+      } while ($processed < (!empty($all_links)?count($all_links):0));
     }
     else{
       $rResult = $this->app->DB->Query($sQuery);
@@ -5107,7 +5107,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
               };
               $processed++;
             }
-          } while ($processed < count($all_links));
+          } while ($processed < (!empty($all_links)?count($all_links):0));
           if(!empty($YUIs['onequeryperuser'])) {
             $this->app->User->deleteParameter('tablesearch_'.$cmd.'_id2');
           }
@@ -5155,7 +5155,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
               };
               $processed++;
             }
-          } while ($processed < count($all_links));
+          } while ($processed < (!empty($all_links)?count($all_links):0));
           if(!empty($YUIs['onequeryperuser'])) {
             $this->app->User->deleteParameter('tablesearch_'.$cmd.'_id2');
           }

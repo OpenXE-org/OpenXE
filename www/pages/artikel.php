@@ -415,11 +415,11 @@ class Artikel extends GenArtikel {
                   }else{
                     $zusatzcols[] = $this->app->erp->FormatMenge('cache.' . $zusatzfeld);
                   }
-                  $alignright[] = count($findcols);
+                  $alignright[] = (!empty($findcols)?count($findcols):0);
                   break;
                 case 'Preis':
                   $zusatzcols[] = $this->app->erp->FormatPreis('cache.'.$zusatzfeld,2);
-                  $alignright[] = count($findcols);
+                  $alignright[] = (!empty($findcols)?count($findcols):0);
                   break;
                 default:
                   $zusatzcols[] = 'cache.'.$zusatzfeld;
@@ -1101,7 +1101,7 @@ class Artikel extends GenArtikel {
         }
 
         $findcols = array_merge($findcols, array($lpicol, 'p.abkuerzung'));
-        $alignright = array(count($heading)-1);
+        $alignright = array((!empty($heading)?count($heading):0)-1);
         $artikelzusatzfelder = $this->app->erp->getZusatzfelderArtikel();
         $artikelcachedfelder = $this->app->erp->getArtikelCachedfelder();
         $zusatzcols = null;
@@ -1126,14 +1126,14 @@ class Artikel extends GenArtikel {
                     $zusatzcols[] = $this->app->erp->FormatMenge('cache.' . $zusatzfeld);
                   }
                   $findcols[] = 'cache.'.$zusatzfeld;
-                  $alignright[] = count($findcols);
-                  $numbercols[] = count($findcols) - 1;
+                  $alignright[] = (!empty($findcols)?count($findcols):0);
+                  $numbercols[] = (!empty($findcols)?count($findcols):0) - 1;
                   break;
                 case 'Preis':
                   $findcols[] = 'ROUND(cache.'.$zusatzfeld.',2)';
                   $zusatzcols[] = $this->app->erp->FormatPreis('cache.'.$zusatzfeld,2);
-                  $alignright[] = count($findcols);
-                  $numbercols[] = count($findcols) - 1;
+                  $alignright[] = (!empty($findcols)?count($findcols):0);
+                  $numbercols[] = (!empty($findcols)?count($findcols):0) - 1;
                   break;
                 default:
                   $zusatzcols[] = 'cache.'.$zusatzfeld;
@@ -1196,7 +1196,7 @@ class Artikel extends GenArtikel {
         $heading[] = 'Men&uuml;';
         $width[] = '1%';
         $findcols[] = 'a.id';
-        $menucol = count($heading) - 1;
+        $menucol = (!empty($heading)?count($heading):0) - 1;
 
         /*
         $heading = array('', 'Bild', 'Nummer', 'Artikel', 'Lagerbestand', 'Projekt', 'Men&uuml;');
@@ -2964,7 +2964,7 @@ class Artikel extends GenArtikel {
     $artikelmarkiert = $this->app->Secure->GetPOST('artikelmarkiert');
     $artikelmarkierthidden = $this->app->Secure->GetPOST('artikelmarkierthidden');
 
-    $cartikelmarkiert = count($artikelmarkiert);
+    $cartikelmarkiert = (!empty($artikelmarkiert)?count($artikelmarkiert):0);
     if($jetztgruen!='') 
     {
       for($i=0;$i < $cartikelmarkiert; $i++) {
@@ -3858,7 +3858,7 @@ class Artikel extends GenArtikel {
       if(strpos($v,':'))
       {
         $va = explode(':',$v);
-        if(count($va) > 1){
+        if((!empty($va)?count($va):0) > 1){
           $waehrung = trim($va[0]);
           $preis = (float)str_replace(',','.',trim($va[1]));
           if($waehrung)
@@ -4879,8 +4879,8 @@ class Artikel extends GenArtikel {
 
         $tpl .= "<td class=\"gentable\">".$array_mindestmengen[$j_am].'</td>';
 
-        if(count($fehlende_preise) > 0) {
-          $tpl3 .= "<td class=\"gentable;\"><font color=red>".count($fehlende_preise).'</font></td>';
+        if((!empty($fehlende_preise)?count($fehlende_preise):0) > 0) {
+          $tpl3 .= "<td class=\"gentable;\"><font color=red>".(!empty($fehlende_preise)?count($fehlende_preise):0).'</font></td>';
           $tpl2 .= '<td class="gentable">-</td>';
         }
         else {
@@ -4916,7 +4916,7 @@ class Artikel extends GenArtikel {
         }
         $teile_tpl .="<td nowrap>$fehlende_artikel_links</td>";
 
-        if(count($fehlende_preise) <=0){
+        if((!empty($fehlende_preise)?count($fehlende_preise):0) <=0){
           $tpl22 .='<td>-</td>';
         } else {
           $tpl22 .='<td><s>'.number_format($summe_fehlende_preise_max+$preis,2,",","")."</s></td>";
@@ -4938,7 +4938,7 @@ class Artikel extends GenArtikel {
         $this->app->Tpl->Set('TAB5',"
             <table width=\"100%\"><tr><td width=\"100\"><b>Artikel-Nr.</b></td><td><b>Name</b></td><td width=100><b>Aktion</b></td></tr>");
         sort($artikel_ohne_ek_eins);
-        $cartikel_ohne_ek_eins = count($artikel_ohne_ek_eins);
+        $cartikel_ohne_ek_eins = (!empty($artikel_ohne_ek_eins)?count($artikel_ohne_ek_eins):0);
         for($j_am=0;$j_am<$cartikel_ohne_ek_eins;$j_am++) {
           if($j_am % 2) {
             $color='#e0e0e0';
@@ -7222,7 +7222,7 @@ class Artikel extends GenArtikel {
         }
 
       }
-      if($lvl == count($hw) -1)
+      if($lvl == (!empty($hw)?count($hw):0) -1)
       {
         if($found !== null)
         {
@@ -7242,7 +7242,7 @@ class Artikel extends GenArtikel {
           }
         }
 
-      } elseif($lvl < count($hw) -1) {
+      } elseif($lvl < (!empty($hw)?count($hw):0) -1) {
 
         $html .= $this->ArtikelgenEigenschaften($hw, $produkte, $foundnew , $lvl +1);
       }
@@ -7563,11 +7563,11 @@ class Artikel extends GenArtikel {
                 }
               }
             }
-            if($canimport === 0 || $canimport === count($shops))
+            if($canimport === 0 || $canimport === (!empty($shops)?count($shops):0))
             {
               $return['hideallimportplaceholder'];
             }
-            if($canexport === 0 || $canexport === count($shops))
+            if($canexport === 0 || $canexport === (!empty($shops)?count($shops):0))
             {
               $return['hideallexportplaceholder'];
             }
@@ -8039,7 +8039,7 @@ class Artikel extends GenArtikel {
 
     $articleLabelPrinter = $this->app->DB->SelectArr("SELECT id, name FROM drucker WHERE aktiv='1' AND art='2'");
     $articleLabelPrinterSelection = "";
-    for($i=0;$i<count($articleLabelPrinter);$i++)
+    for($i=0;$i<(!empty($articleLabelPrinter)?count($articleLabelPrinter):0);$i++)
     {
       $articleLabelPrinterSelection .="<option value='".$articleLabelPrinter[$i]['id']."'>".$articleLabelPrinter[$i]['name']."</option>";
     }
@@ -8224,7 +8224,7 @@ class Artikel extends GenArtikel {
       {
         if($cols[$i]!='') $colcounter++;
       }
-      if($colcounter<count($fields))
+      if($colcounter<(!empty($fields)?count($fields):0))
       {
         $findcols .= '<div class="error">Alle Spalten müssen auswählt werden</div>';
         $importerror++;
@@ -8237,7 +8237,7 @@ class Artikel extends GenArtikel {
           $rowcounter = 1;
           while (($data = fgetcsv($handle, 1000, $this->app->User->GetParameter("artikel_stueckliste_delimiter"))) !== FALSE) {
             $rowcounter++;
-            $num = count($data);
+            $num = (!empty($data)?count($data):0);
 
             if($rowcounter > $row_post){        
               for ($c=0; $c < $num; $c++) {
@@ -8297,7 +8297,7 @@ border: 1px solid #000;
 padding: 10px;\">
            <table border=0 cellpadding=0 cellspacing=0>";       
            while (($data = fgetcsv($handle, 1000, $this->app->User->GetParameter("artikel_stueckliste_delimiter"))) !== FALSE) {
-             $num = count($data);
+             $num = (!empty($data)?count($data):0);
 
              if($row==1)
              {
@@ -8309,7 +8309,7 @@ padding: 10px;\">
                    &nbsp;&nbsp;<select name=\"cols[$c]\"><option></option>";
 
                  foreach($fields as $key=>$value){
-                   if(count($cols)==0) { 
+                   if((!empty($cols)?count($cols):0)==0) { 
                      if($preselected[$key]==($c+1)) {
                        $selected='selected';
                      } else $selected='';
@@ -8750,7 +8750,7 @@ padding: 10px;\">
     }
     if(file_exists($cachefolder)) {
       $vorschaua = explode('_',$vorschau);
-      if(count($vorschaua) == 3) {
+      if((!empty($vorschaua)?count($vorschaua):0) == 3) {
         $cachefolderPrev = $cachefolder;
         $cachefolder = $this->app->erp->GetDMSPath($vorschau, $cachefolderPrev, true);
         if(is_numeric($vorschaua[0]) && is_numeric($vorschaua[1]) && is_numeric($vorschaua[2])

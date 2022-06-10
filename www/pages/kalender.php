@@ -333,8 +333,8 @@ class Kalender {
       }
 
       // Schreibe Personen
-      if(is_numeric($event) && is_array($personen) && count($personen) && $mode!=='delete') {
-        $cpersonen = count($personen);
+      if(is_numeric($event) && is_array($personen) && (!empty($personen)?count($personen):0) && $mode!=='delete') {
+        $cpersonen = (!empty($personen)?count($personen):0);
         for($p=0;$p<$cpersonen;$p++) {
           $this->app->DB->Insert("INSERT INTO kalender_user (event, userid) VALUES ('$event', '{$personen[$p]}')");
         }
@@ -346,8 +346,8 @@ class Kalender {
 
 
       // Schreibe Gruppenkalender
-      if(is_numeric($event) && is_array($gruppenkalender) && count($gruppenkalender) && $mode!=='delete') {
-        $cgruppenkalender = count($gruppenkalender);
+      if(is_numeric($event) && is_array($gruppenkalender) && (!empty($gruppenkalender)?count($gruppenkalender):0) && $mode!=='delete') {
+        $cgruppenkalender = (!empty($gruppenkalender)?count($gruppenkalender):0);
         for($p=0;$p<$cgruppenkalender;$p++){
           // stelle farbe von kalender eintrag um wenn gruppe (also erste gruppe in auswahl)
           if($p==0){
@@ -1325,7 +1325,7 @@ class Kalender {
       //$to_name="";
 
       $parts = explode(',',$emailcc);
-      $cparts = count($parts);
+      $cparts = (!empty($parts)?count($parts):0);
       for($i=0;$i<$cparts;$i++)
       {
         $from = strstr($parts[$i], '<', true); // Ab PHP 5.3.0
