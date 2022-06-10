@@ -1227,11 +1227,11 @@ public function NavigationHooks(&$menu)
     if($v['sec'] !== '' || !isset($first[$v['first']])) {
       if($v['sec'] == '') {
         $menu[] = array('first'=>array($v['first'], $v['module'],$v['action']));
-        $first[$v['first']] = count($menu)-1;
+        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
       }
       elseif($v['sec'] != '' && !isset($first[$v['first']])){
         $menu[] = array('first'=>array($v['first'], '',''),'sec'=>array(array($v['sec'],$v['module'],$v['action'])));
-        $first[$v['first']] = count($menu)-1;
+        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
       }
       else{
         if(isset($menu[$first[$v['first']]])) {
@@ -1715,7 +1715,7 @@ public function NavigationHooks(&$menu)
       {
         $subtmp = explode(':',trim($tmp[$i]));
 
-        if(count($subtmp)>0)
+        if((!empty($subtmp)?count($subtmp):0)>0)
         {
           $subtmp[0] = trim($subtmp[0]);
           $subtmp[1] = !empty($subtmp[1])?trim($subtmp[1]):'';
@@ -1898,7 +1898,7 @@ public function NavigationHooks(&$menu)
     $messages = $notifyGateway->findByUserId($this->app->User->GetID(), 0, 5);
 
     $result = array();
-    if(count($messages) > 0) {
+    if((!empty($messages)?count($messages):0) > 0) {
 
       $cleaner = new Stringcleaner($this->app);
 
@@ -1966,7 +1966,7 @@ public function NavigationHooks(&$menu)
       }
     }
 
-    if(count($result)>0){
+    if((!empty($result)?count($result):0)>0){
       return $result;
     }
     return false;
@@ -2020,7 +2020,7 @@ public function NavigationHooks(&$menu)
     if($nachrichten)
     {
       if($delete)$this->app->DB->Delete("DELETE from boxnachrichten WHERE id = '".$nachrichten[0]['id']."' LIMIT 1");
-      return array('anzahl'=>count($nachrichten),'nachricht'=>reset($nachrichten));
+      return array('anzahl'=>(!empty($nachrichten)?count($nachrichten):0),'nachricht'=>reset($nachrichten));
     }
     return array('anzahl'=>0);
   }
@@ -2409,9 +2409,9 @@ public function NavigationHooks(&$menu)
         }
         
         $this->DokumentSend($adresse,$typ, $id, $versandart,$emailtext['betreff'],$emailtext['text'],$dateien,"","",$projekt,$email, $name);
-        if($dateien && count($dateien) > 1)
+        if($dateien && (!empty($dateien)?count($dateien):0) > 1)
         {
-          for($i = 1; $i < count($dateien); $i++)
+          for($i = 1; $i < (!empty($dateien)?count($dateien):0); $i++)
           {
             if(@is_file($dateien[$i])){
               @unlink($dateien[$i]);
@@ -3135,7 +3135,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             );
             if(!empty($snDeliveryNoteStorage)) {
               $extraorder = sprintf(' lpi.lager_platz = %d DESC, ', $snDeliveryNoteStorage[0]['storage_location_id']);
-              if($snDeliveryNoteStorage[0]['amount'] < $restmenge && $snDeliveryNoteStorage[0]['amount'] > 0 && count($snDeliveryNoteStorage) > 1) {
+              if($snDeliveryNoteStorage[0]['amount'] < $restmenge && $snDeliveryNoteStorage[0]['amount'] > 0 && (!empty($snDeliveryNoteStorage)?count($snDeliveryNoteStorage):0) > 1) {
                 $maxAuslagern = $snDeliveryNoteStorage[0]['amount'];
               }
             }
@@ -3622,7 +3622,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
   // @refactor in Session Klasse
   function ClearCookies()
   {
-    if(count($_COOKIE) > 0)
+    if((!empty($_COOKIE)?count($_COOKIE):0) > 0)
     {
       foreach($_COOKIE as $key=>$value)
       {
@@ -4986,7 +4986,7 @@ title: 'Abschicken',
       break;
     }
 
-    if(count($belege_check)>0)
+    if((!empty($belege_check)?count($belege_check):0)>0)
     {
       foreach($belege_check as $table=>$tableid) {
         $belege_arr = $this->app->DB->SelectRow("SELECT * FROM $table WHERE id='".$tableid."'");
@@ -5169,7 +5169,7 @@ title: 'Abschicken',
     if($else !== false)
     {
       $elses[] = $else;
-      while(false !== ($dummy = strpos($text, '{ELSE}', $elses[count($elses)-1]+1)))
+      while(false !== ($dummy = strpos($text, '{ELSE}', $elses[(!empty($elses)?count($elses):0)-1]+1)))
       {
         $elses[] = $dummy;
       }
@@ -5177,15 +5177,15 @@ title: 'Abschicken',
     $ifs[] = $if;
     $thens[] = $then;
     $endifs[] = $endif;
-    while(false !== ($dummy = strpos($text, '{IF}', $ifs[count($ifs)-1]+1)))
+    while(false !== ($dummy = strpos($text, '{IF}', $ifs[(!empty($ifs)?count($ifs):0)-1]+1)))
     {
       $ifs[] = $dummy;
     }
-    while(false !== ($dummy = strpos($text, '{THEN}', $thens[count($thens)-1]+1)))
+    while(false !== ($dummy = strpos($text, '{THEN}', $thens[(!empty($thens)?count($thens):0)-1]+1)))
     {
       $thens[] = $dummy;
     }
-    while(false !== ($dummy = strpos($text, '{ENDIF}', $endifs[count($endifs)-1]+1)))
+    while(false !== ($dummy = strpos($text, '{ENDIF}', $endifs[(!empty($endifs)?count($endifs):0)-1]+1)))
     {
       $endifs[] = $dummy;
     }
@@ -5208,7 +5208,7 @@ title: 'Abschicken',
         $element[$v] = array('else', $v);
       }
     }
-    if(count($ifs) != count($thens) || count($ifs) != count($endifs))
+    if((!empty($ifs)?(!empty($ifs)?count($ifs):0):0) != (!empty($thens)?count($thens):0) || count($ifs) != (!empty($endifs)?count($endifs):0))
     {
       return $text;
     } //Fehlende Elemente
@@ -5233,20 +5233,20 @@ title: 'Abschicken',
         $elements[] = array('pos' => $v[1], 'type' => $v[0], 'stufe' => $stufe, 'akt' => $akt[$stufe]);
         if($v[0] == 'endif'){
           if(isset($lastif[$stufe])){
-            $elements[count($elements) - 1]['if'] = $lastif[$stufe];
-            $elements[$lastif[$stufe]]['endif'] = count($elements) - 1;
+            $elements[(!empty($elements)?count($elements):0) - 1]['if'] = $lastif[$stufe];
+            $elements[$lastif[$stufe]]['endif'] = (!empty($elements)?count($elements):0) - 1;
             unset($lastif[$stufe]);
             $stufe--;
           }
         }elseif($v[0] == 'then'){
           if(isset($lastif[$stufe])){
-            $elements[count($elements) - 1]['if'] = $lastif[$stufe];
-            $elements[$lastif[$stufe]]['then'] = count($elements) - 1;
+            $elements[(!empty($elements)?count($elements):0) - 1]['if'] = $lastif[$stufe];
+            $elements[$lastif[$stufe]]['then'] = (!empty($elements)?count($elements):0) - 1;
           }
         }elseif($v[0] == 'else'){
           if(isset($lastif[$stufe])){
-            $elements[count($elements) - 1]['if'] = $lastif[$stufe];
-            $elements[$lastif[$stufe]]['else'] = count($elements) - 1;
+            $elements[(!empty($elements)?count($elements):0) - 1]['if'] = $lastif[$stufe];
+            $elements[$lastif[$stufe]]['else'] = (!empty($elements)?count($elements):0) - 1;
           }
         }
       }
@@ -5843,11 +5843,11 @@ title: 'Abschicken',
         $this->app->User->GetAdresse()
       )
     );
-    //if($sql!="" && count($result)>0) $sql .= " OR ";
+    //if($sql!="" && (!empty($result)?count($result):0)>0) $sql .= " OR ";
     if(empty($result)) {
       return '';
     }
-    $cResult = count($result);
+    $cResult = (!empty($result)?count($result):0);
     $sql = '';
     for($i=0;$i<$cResult;$i++) {
       $sql .= "p.id='".$result[$i]['parameter']."'";
@@ -6028,7 +6028,7 @@ title: 'Abschicken',
         $sql = '';
       }
       $sql .= $prefix."='".$result[$i]['parameter']."'";
-      if($i < count($result) - 1){
+      if($i < (!empty($result)?count($result):0) - 1){
         $sql .= ' OR ';
       }
     }
@@ -6853,7 +6853,7 @@ title: 'Abschicken',
     $colors = array('#004704','#C40046','#832BA8','#FF8128','#7592A0');
 
     $out = "<option value=\"\" style=\"background-color: #FFFFFF;color:red\">Keine</option>";
-    for($i=0;$i<count($colors);$i++)
+    for($i=0;$i<(!empty($colors)?count($colors):0);$i++)
       $out .= "<option value=\"{$colors[$i]}\" style=\"background-color: {$colors[$i]}\">".$colors[$i]."</option>";
 
     return $out;
@@ -6920,7 +6920,7 @@ title: 'Abschicken',
     $permission_module_new=null;
     if($permissions_module)
     {
-      for($i=0;$i<count($permissions_module);$i++)
+      for($i=0;$i<(!empty($permissions_module)?count($permissions_module):0);$i++)
       {
         if(@is_file("./pages/".$permissions_module[$i]["module"].".php") && $this->ModulVorhanden($permissions_module[$i]["module"]))
           $permission_module_new[] = $permissions_module[$i]["module"]."_".$permissions_module[$i]["action"];
@@ -7285,7 +7285,7 @@ public function LiveImport($konto)
   try {
     $r = new ReflectionMethod($tmp, 'Import');
     $params = $r->getParameters();
-    $anzargs = count($params);
+    $anzargs = (!empty($params)?count($params):0);
   }
   catch(Exception $e) {
     $anzargs = 1;
@@ -7874,7 +7874,7 @@ public function CheckCronjob($checkMaintenance = true)
   }
 
   $dbs = ConfigLoader::loadAllWithActiveCronjobs();
-  if(!empty($dbs) && count($dbs) > 1){
+  if(!empty($dbs) && (!empty($dbs)?count($dbs):0) > 1){
     foreach($dbs as $v) {
       if($v->WFdbhost === $confhost && $v->WFdbname === $confdb) {
         return true;
@@ -13028,7 +13028,7 @@ Bitte kontaktieren Sie uns und lassen Sie uns dies vermeiden: 0123/45678');
         $onlyInstallFromKey++;
       }
     }
-    $cModules = count($modules);
+    $cModules = (!empty($modules)?count($modules):0);
     $actIndex = $cModules;
     $apps = $this->getAppList();
     foreach($apps as $module => $app) {
@@ -14839,9 +14839,9 @@ function NeueArtikelNummer($artikelart="",$firma="",$projekt="")
       if($model=="marel")
       {
         $result = explode("kg",$result);
-        $last_string =  $result[count($result)-2];
+        $last_string =  $result[(!empty($result)?count($result):0)-2];
         $result = explode(" ",$last_string);
-        return $result[count($result)-2];
+        return $result[(!empty($result)?count($result):0)-2];
       }
       if($model=="sartorius")
       {
@@ -14862,9 +14862,9 @@ function NeueArtikelNummer($artikelart="",$firma="",$projekt="")
         //altes modell
         $result = explode("Kg",$result);
 
-        $last_string =  $result[count($result)-2];
+        $last_string =  $result[(!empty($result)?count($result):0)-2];
         $result = explode(" ",$last_string);
-        $tmp =  $result[count($result)-2];
+        $tmp =  $result[(!empty($result)?count($result):0)-2];
 
         preg_match_all("/\d+/",$tmp,$result);
         return (int)$result[0][count($result[0])-1]/1000;
@@ -14876,7 +14876,7 @@ function NeueArtikelNummer($artikelart="",$firma="",$projekt="")
 function SendPaypalFromAuftrag($auftrag, $test = false)
 {
   $konten = $this->app->DB->SelectArr("SELECT * FROM konten WHERE type = 'paypal' AND aktiv = 1");
-  if(empty($konten) || count($konten) != 1) {
+  if(empty($konten) || (!empty($konten)?count($konten):0) != 1) {
     return false;
   }
 
@@ -14978,7 +14978,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
   if(empty($arr['ansprechpartner']))
   {
     $name = explode(' ',$arr['name'],2);
-    if(count($name) == 2)
+    if((!empty($name)?count($name):0) == 2)
     {
       $data->shipping_info->first_name = $name[0];
       $data->shipping_info->last_name = $name[1];
@@ -15168,7 +15168,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       {
         return;
       }
-      for($i=0;$i<count($artikel);$i++)
+      for($i=0;$i<(!empty($artikel)?count($artikel):0);$i++)
       {
         $artikelid = $artikel[$i]['artikel'];
         $variablen = reset($artikel);
@@ -15711,7 +15711,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
         {
           $from = array('\-','[y]','[z]','[Y]','[Z]','SIGNCET','SIGNEPSI','SIGNGCET','SIGNGEPSI');
           $to = array('/','SIGNCET','SIGNEPSI','SIGNGCET','SIGNGEPSI','z','y','Z','Y');
-          for($i_from=0;$i_from<count($from);$i_from++)
+          for($i_from=0;$i_from<(!empty($from)?count($from):0);$i_from++)
           {
             $do = true;
             $i = 0;
@@ -15797,7 +15797,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
           $content = (String)$tagcontent[0];
 
           $tmp = explode("\n",wordwrap($content,$wrap));
-          $ctmp = count($tmp);
+          $ctmp = (!empty($tmp)?count($tmp):0);
           for($i=0;$i<$ctmp;$i++)
           {
             $newxml .= '<line x="'.$x.'" y="'.$y.'" size="'.$size.'">'.$tmp[$i].'</line>';
@@ -16339,7 +16339,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       );
       return;
     }
-    if((count($hooks) === 1 || $hooks[0]['name'] === $alias) && $hooks[0]['alias'] === $name) {
+    if(((!empty($hooks)?count($hooks):0) === 1 || $hooks[0]['name'] === $alias) && $hooks[0]['alias'] === $name) {
       $this->app->DB->Update(
         sprintf(
           "UPDATE `hook` 
@@ -16710,15 +16710,15 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     $_link = $link;
     $beschreibung = $this->app->Tpl->pruefeuebersetzung($beschreibung,'menu');
     $link = $this->formatmenulink($link, $beschreibung, $mark);
-    if(is_array($this->menuquery) && count($this->menuquery) > 0)
+    if(is_array($this->menuquery) && (!empty($this->menuquery)?count($this->menuquery):0) > 0)
     {
-      for($k = 0; $k < count($this->menuquery);$k++)
+      for($k = 0; $k < (!empty($this->menuquery)?count($this->menuquery):0);$k++)
       {
         if($_link == $this->menuquery[$k]['_link'])return;
         if((strpos($this->menuquery[$k]['link'],'module='.$modulebefore) !== false) && (empty($actionbefore) || (!empty($actionbefore) && strpos($this->menuquery[$k]['link'],'action='.$actionbefore) !== false)))
         {
           $found = $k;
-          for($i = $k+1; $i < count($this->menuquery); $i++)
+          for($i = $k+1; $i < (!empty($this->menuquery)?count($this->menuquery):0); $i++)
           {
             if($this->menuquery[$i]['ind'] == $k)
             {
@@ -16726,9 +16726,9 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
             }else break;
           }
           //Alle nach found um eins erhöhen
-          if($found < count($this->menuquery) -1)
+          if($found < (!empty($this->menuquery)?count($this->menuquery):0) -1)
           {
-            for($j = count($this->menuquery) -1 ; $j > $found; $j--)
+            for($j = (!empty($this->menuquery)?count($this->menuquery):0) -1 ; $j > $found; $j--)
             {
               $this->menuquery[$j+1] = $this->menuquery[$j];
             }
@@ -16740,15 +16740,15 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
         }
       }
     }
-    $this->menuquery[] = array('link' => $link,'_link'=>$_link,'ind' => count($this->menuquery));
+    $this->menuquery[] = array('link' => $link,'_link'=>$_link,'ind' => (!empty($this->menuquery)?count($this->menuquery):0));
   }
 
   // @refactor Menu Widget
   function InsertMenu($link, $_link)
   {
-    if(is_array($this->menuquery) && count($this->menuquery) > 0)
+    if(is_array($this->menuquery) && (!empty($this->menuquery)?count($this->menuquery):0) > 0)
     {
-      for($k = 0; $k < count($this->menuquery);$k++)
+      for($k = 0; $k < (!empty($this->menuquery)?count($this->menuquery):0);$k++)
       {
         if($_link == $this->menuquery[$k]['_link'])return;
       }
@@ -16760,7 +16760,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
   function ParseMenu()
   {
     $this->app->erp->RunHook('parse_menu',2, $this->menuquery, $this->backlink);
-    if(is_array($this->menuquery) && count($this->menuquery) > 0)
+    if(is_array($this->menuquery) && (!empty($this->menuquery)?count($this->menuquery):0) > 0)
     {
       foreach($this->menuquery as $k => $v)
       {
@@ -17150,7 +17150,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $this->app->Tpl->Add(
           'INLINEHELP',
           '<div class="outeryoutubeweitere">'
-          .(count($weitereyoutube) > 2?'<div class="pfeillinks youtubepfeil" ></div>':'')
+          .((!empty($weitereyoutube)?count($weitereyoutube):0) > 2?'<div class="pfeillinks youtubepfeil" ></div>':'')
           .'<div class="youtubeweiterecontainer2"><div class="youtubeweiterecontainer"><div class="youtubeweiterecontainerinner">'
       );
       foreach($weitereyoutube as $k => $v) {
@@ -17169,7 +17169,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $this->app->Tpl->Add(
           'INLINEHELP',
           '</div></div></div>'
-          .(count($weitereyoutube) > 2?'<div class="pfeilrechts youtubepfeil" ></div>':'')
+          .((!empty($weitereyoutube)?count($weitereyoutube):0) > 2?'<div class="pfeilrechts youtubepfeil" ></div>':'')
           .'</div>'
       );
     }
@@ -17474,7 +17474,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
 
     $changed = false;
     if($artikelarr) {
-      for($k=0;$k<count($artikelarr); $k++)
+      for($k=0;$k<(!empty($artikelarr)?count($artikelarr):0); $k++)
       {
         $menge = $artikelarr[$k]['menge'] - $artikelarr[$k]['geliefert_menge'];
         $artikel = $artikelarr[$k]['artikel'];
@@ -19725,7 +19725,7 @@ function BestellungErweiterteVerbindlichkeiten($id)
     $alleids[] = $this->app->DB->SelectArr("SELECT id, bestellung{$i}betrag as betrag FROM verbindlichkeit WHERE bestellung$i='$id'");
   }
 
-  for($i=0;$i<count($alleids);$i++)
+  for($i=0;$i<(!empty($alleids)?count($alleids):0);$i++)
   {
     for($ij=0;$ij<count($alleids[$i]);$ij++)
     {
@@ -19752,7 +19752,7 @@ function get_emails ($str)
   //preg_match_all("/\b\w+\@w+[\-\.\w+]+\b/", $str, $output);
   preg_match_all($pattern, $str, $output);
   foreach($output[0] as $email) array_push ($emails, trim(strtolower($email)));
-  if (count ($emails) >= 1) return $emails;
+  if ((!empty($emails)?count($emails):0) >= 1) return $emails;
   else return false;
 }
 
@@ -21400,7 +21400,7 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
 
   }
   $altersfreigabe = 0;
-  for($i=0;$i<count($artikel_positionen);$i++)
+  for($i=0;$i<(!empty($artikel_positionen)?count($artikel_positionen):0);$i++)
   {
     $artikelaltersfreigabe = (int)$this->app->DB->Select("SELECT altersfreigabe FROM artikel WHERE id = '".$artikel_positionen[$i]['artikel']."' LIMIT 1");
     if($artikelaltersfreigabe > $altersfreigabe)$altersfreigabe = $artikelaltersfreigabe;
@@ -22029,7 +22029,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     $to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='$adresse' LIMIT 1");
     $to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresse' LIMIT 1");
 
-    for($iauftrag=0;$iauftrag<count($auftragarr);$iauftrag++)
+    for($iauftrag=0;$iauftrag<(!empty($auftragarr)?count($auftragarr):0);$iauftrag++)
     {
       $auftrag = $auftragarr[$iauftrag]['id'];
 
@@ -22681,7 +22681,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
         $Brief->ArchiviereDocument(true, true);
       }
 
-      $md5arr[] = @md5_file($arrtmpfile[count($arrtmpfile)-1]);
+      $md5arr[] = @md5_file($arrtmpfile[(!empty($arrtmpfile)?count($arrtmpfile):0)-1]);
       // anhaenge automatisch mitversenden
       $resultdateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter WHERE objekt LIKE 'Rechnung' AND parameter='$id'");
       $cResultdateien = !empty($resultdateien)?count($resultdateien):0;
@@ -23568,7 +23568,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   function ImportvorlageLogDelete($zeitstempel)
   {
     $tmp = $this->app->DB->SelectArr("SELECT * FROM importvorlage_log WHERE zeitstempel='$zeitstempel' AND user='".$this->app->User->GetID()."'");
-    for($i=0;$i<count($tmp);$i++)
+    for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
     {
       $datensatz = $tmp[$i]['datensatz'];
       switch($tmp[$i]['tabelle'])
@@ -23832,7 +23832,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     if($parents !== null && is_numeric($parents)) {
       $parents = [$parents];
     }
-    if(is_array($parents) && count($parents) > 0) {
+    if(is_array($parents) && (!empty($parents)?count($parents):0) > 0) {
       if(in_array($artikel, $parents)) {
         return $artikel;
       }
@@ -23875,7 +23875,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     if($parents !== null && is_numeric($parents)) {
       $parents = [$parents];
     }
-    if(is_array($parents) && count($parents) > 0) {
+    if(is_array($parents) && (!empty($parents)?count($parents):0) > 0) {
       if(in_array($artikel, $parents)) {
         return $artikel;
       }
@@ -24391,7 +24391,7 @@ function CheckShopTabelle($artikel)
         $anweisung[] = "mandatsreferenz='".$this->app->DB->real_escape_string($warenkorb['bankverbindung']['mandatsreferenz'])."'";
       }
 
-      if(count($anweisung) > 0){
+      if((!empty($anweisung)?count($anweisung):0) > 0){
         $this->app->DB->Update('UPDATE adresse SET '.implode(', ',$anweisung)." WHERE id='$adresse'");
       }
     }
@@ -25741,7 +25741,7 @@ function CheckShopTabelle($artikel)
         );
       }
       if(!empty($positions)
-        && count($positions) === 1
+        && (!empty($positions)?count($positions):0) === 1
         && $positions[0]['steuersatz'] < 0
         && $positions[0]['umsatzsteuer'] === 'ermaessigt'
       ) {
@@ -26187,7 +26187,7 @@ function CheckShopTabelle($artikel)
   function CheckDateValidate($input="0000-00-00")
   {
     $inputa = explode('-', $input);
-    if(count($inputa) == 3 && strlen($inputa[1]) == 2 && strlen($inputa[2]) == 2 && strlen($inputa[0]) == 4 &&
+    if((!empty($inputa)?count($inputa):0) == 3 && strlen($inputa[1]) == 2 && strlen($inputa[2]) == 2 && strlen($inputa[0]) == 4 &&
       checkdate($inputa[1],$inputa[2],$inputa[0]))
     {
       return true;
@@ -27608,7 +27608,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $result = $this->app->DB->SelectArr("SELECT lager_platz,SUM(menge) as gesamt,projekt,max(firma) as firma,max(inventur) as inventur, min(id) as minid,lager_platz_vpe FROM lager_platz_inhalt WHERE artikel='$artikel' ".($regal?" AND lager_platz = '$regal' ":'')." GROUP by lager_platz,lager_platz_vpe  having count(id) > 1");
       //echo "DELETE FROM lager_platz_inhalt WHERE artikel='".$artikel."';";
       if($result) {
-        $cresult = count($result);
+        $cresult = (!empty($result)?count($result):0);
         for($i=0;$i<$cresult;$i++)  {
           $this->app->DB->Delete("DELETE FROM lager_platz_inhalt WHERE  artikel='$artikel' AND lager_platz = '".$result[$i]['lager_platz']."' AND lager_platz_vpe = '".$result[$i]['lager_platz_vpe']."' ");
           if(empty($result[$i]['lager_platz'])) {
@@ -29577,7 +29577,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     else {
       $tmp = $this->app->DB->SelectPairs('SELECT iso, bezeichnung_de FROM sprachen ORDER BY bezeichnung_de');
     }
-    if(!empty($tmp) && count($tmp) > 1) {
+    if(!empty($tmp) && (!empty($tmp)?count($tmp):0) > 1) {
       return array_merge([''], $tmp);
     }
 
@@ -29643,7 +29643,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     else {
       $tmp = $this->app->DB->SelectPairs('SELECT iso, bezeichnung_en FROM sprachen ORDER BY bezeichnung_en');
     }
-    if(!empty($tmp) && count($tmp) > 1) {
+    if(!empty($tmp) && (!empty($tmp)?count($tmp):0) > 1) {
       return array_merge([''], $tmp);
     }
 
@@ -29773,7 +29773,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     $emails = array_keys(array_flip($emails));
 
 
-    for($i=0;$i<count($emails);$i++)
+    for($i=0;$i<(!empty($emails)?count($emails):0);$i++)
     {
       if($emails[$i]===$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$emails[$i]}\" $mark>{$emails[$i]}</option>";
@@ -29804,7 +29804,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     $emails = array_keys(array_flip($emails));
 
-    for($i=0;$i<count($emails);$i++)
+    for($i=0;$i<(!empty($emails)?count($emails):0);$i++)
     {
       if($emails[$i]==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$emails[$i]}\" $mark>{$emails[$i]}</option>";
@@ -29870,7 +29870,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     $tpl ="<option value=\"0\">$first</option>";
 
-    for($i=0;$i<count($others);$i++)
+    for($i=0;$i<(!empty($others)?count($others):0);$i++)
     {
       if($others[$i]['id']==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"".$others[$i]['id']."\" $mark>{$others[$i]['name']}</option>";
@@ -29882,7 +29882,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   {
     $user = $this->app->DB->SelectArr("SELECT * FROM arbeitspaket WHERE projekt='".$projekt."' AND id!='$disableid' AND art!='material'");
     $tpl[0]="keinen";
-    for($i=0;$i<count($user);$i++)
+    for($i=0;$i<(!empty($user)?count($user):0);$i++)
     {
       $tpl[$user[$i]['id']]=$user[$i]['aufgabe'];
     }
@@ -29893,7 +29893,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   {
     $user = $this->app->DB->SelectArr("SELECT DISTINCT a.id,a.name FROM adresse a INNER JOIN adresse_rolle ar on ar.adresse=a.id AND ar.subjekt='Mitarbeiter'        WHERE a.mitarbeiternummer!='' AND a.geloescht!=1 AND (ar.bis = '0000-00-00' or ar.bis >= now()) ORDER by name");
 
-    for($i=0;$i<count($user);$i++)
+    for($i=0;$i<(!empty($user)?count($user):0);$i++)
     {
       $tmp[$i]['id'] = $user[$i]['id'];
       $tmp[$i]['name'] = $user[$i]['name'];
@@ -29905,7 +29905,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetReisekostenartAssoc()
   {
     $user = $this->app->DB->SelectArr("SELECT * FROM reisekostenart ORDER by nummer");
-    for($i=0;$i<count($user);$i++)
+    for($i=0;$i<(!empty($user)?count($user):0);$i++)
     {
       $tmp[(string)$user[$i]['id']] = "{$user[$i]['nummer']}- {$user[$i]['beschreibung']}";
     }
@@ -29953,7 +29953,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
 	if (!is_null($user)) {
 
-	    for($i=0;$i<count($user);$i++)
+	    for($i=0;$i<(!empty($user)?count($user):0);$i++)
 	    {
 	      if($user[$i]['id']==$selected) $mark="selected"; else $mark="";
 	      $tpl .="<option value=\"{$user[$i]['id']}\" $mark>{$user[$i]['name']}</option>";
@@ -29997,7 +29997,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetSelectReisekostenart($selected="")
   {
     $user = $this->app->DB->SelectArr("SELECT * FROM reisekostenart ORDER by nummer");
-    for($i=0;$i<count($user);$i++)
+    for($i=0;$i<(!empty($user)?count($user):0);$i++)
     {
       if($user[$i]['id']==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$user[$i]['id']}\" $mark>{$user[$i]['nummer']}- {$user[$i]['beschreibung']}</option>";
@@ -30008,7 +30008,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetSelectUserVorlage($selected="",$disableid="")
   {
     $user = $this->app->DB->SelectArr("SELECT * FROM uservorlage WHERE id!='$disableid' ORDER by bezeichnung");
-    for($i=0;$i<count($user);$i++)
+    for($i=0;$i<(!empty($user)?count($user):0);$i++)
     {
       if($user[$i]['id']==$selected) $mark=" selected"; else $mark="";
       $tpl .="<option value=\"{$user[$i]['id']}\"$mark>{$user[$i]['bezeichnung']}</option>";
@@ -30019,7 +30019,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetSelectUser($selected="",$disableid="")
   {
     $user = $this->app->DB->SelectArr("SELECT * FROM user WHERE id!='$disableid'");
-    for($i=0;$i<count($user);$i++)
+    for($i=0;$i<(!empty($user)?count($user):0);$i++)
     {
       $user[$i]['description'] = $this->app->DB->Select("SELECT name FROM adresse WHERE id='".$user[$i]['adresse']."' LIMIT 1");
       if($user[$i]['id']==$selected) $mark="selected"; else $mark="";
@@ -30087,7 +30087,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $tpl .="<option value=\"0\">-- kein --</option>";
 
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='2'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";
@@ -30110,7 +30110,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='1'");
 
 	if (gettype($drucker) == 'array') {
-	    for($i=0;$i<count($drucker);$i++)
+	    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
 	    {
 	      if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
 	      $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";
@@ -30127,7 +30127,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     $drucker = $this->app->DB->SelectArr("SELECT id, bezeichnung FROM adapterbox WHERE verwendenals='bondrucker'");
 
     $tpl ="<option value=\"0\">-- kein --</option>";
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['bezeichnung']}</option>";
@@ -30139,7 +30139,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetPosAdapterbox()
   {
     $drucker = $this->app->DB->SelectArr("SELECT id, bezeichnung FROM adapterbox WHERE verwendenals='bondrucker' OR verwendenals='rksvlight'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       $result[$drucker[$i]['id']]=$drucker[$i]['bezeichnung'];
     }
@@ -30150,7 +30150,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetBondrucker()
   {
     $drucker = $this->app->DB->SelectArr("SELECT id, bezeichnung FROM adapterbox WHERE verwendenals='bondrucker'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       $result[$drucker[$i]['id']]=$drucker[$i]['bezeichnung'];
     }
@@ -30161,7 +30161,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   {
     //$tpl .="<option value=\"0\">-- kein --</option>";
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM etiketten");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       $result[$drucker[$i]['id']]=$drucker[$i]['name'];
     }
@@ -30173,7 +30173,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   {
     //$tpl .="<option value=\"0\">-- kein --</option>";
     $drucker = $this->app->DB->SelectArr("SELECT id, bezeichnung FROM adapterbox WHERE verwendenals='waage'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       $result[$drucker[$i]['id']]=$drucker[$i]['bezeichnung'];
     }
@@ -30185,7 +30185,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   {
     //$tpl .="<option value=\"0\">-- kein --</option>";
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='2'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       $result[$drucker[$i]['id']]=$drucker[$i]['name'];
     }
@@ -30196,7 +30196,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   function GetDrucker()
   {
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='0'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       $result[$drucker[$i]['id']]=$drucker[$i]['name'];
     }
@@ -30213,7 +30213,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     $tpl ="<option value=\"0\">-- kein --</option>";
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='0'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";
@@ -30236,7 +30236,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     $tpl .="<option value=\"0\">-- kein --</option>";
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='0'");
-    for($i=0;$i<count($drucker);$i++)
+    for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
       if($drucker[$i]['id']==$selected) $mark="selected"; else $mark="";
       $tpl .="<option value=\"{$drucker[$i]['id']}\" $mark>{$drucker[$i]['name']}</option>";
@@ -30488,7 +30488,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $this->app->User->SetParameter("dokumente_abschickenmask_".$typ."_fax","0");
     }
 
-    for($tmpis=0;$tmpis<count($tmpsenden);$tmpis++)
+    for($tmpis=0;$tmpis<(!empty($tmpsenden)?count($tmpsenden):0);$tmpis++)
     {
       $deckblatt = false;
       //BRIEFCHECKED
@@ -30529,13 +30529,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
                     fclose($handle);
                     $_dateien[] = rtrim($this->app->erp->GetTMP(),'/')."/".$dateiname;
                     $dateisort = $pk;
-                    if($dateisort)$dateiensort[$dateisort] = count($_dateien)-1;
+                    if($dateisort)$dateiensort[$dateisort] = (!empty($_dateien)?count($_dateien):0)-1;
                     $zuloeschen[]  = rtrim($this->app->erp->GetTMP(),'/')."/".$dateiname;
                   }
                 }else{
                   $_dateien[] = $dateiname;
                   $dateisort = $pk;
-                  if($dateisort)$dateiensort[$dateisort] = count($_dateien)-1;
+                  if($dateisort)$dateiensort[$dateisort] = (!empty($_dateien)?count($_dateien):0)-1;
                   $zuloeschen[]  = $dateiname;
                 }
               }
@@ -30563,7 +30563,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
                     fclose($handle);
                     $_dateien[] = rtrim($this->app->erp->GetTMP(),'/')."/".$dateiname;
                     $dateisort = (int)$this->app->Secure->GetPOST('dateisort_'.$pka[1]);
-                    if($dateisort)$dateiensort[$dateisort] = count($_dateien)-1;
+                    if($dateisort)$dateiensort[$dateisort] = (!empty($_dateien)?count($_dateien):0)-1;
                     $zuloeschen[]  = rtrim($this->app->erp->GetTMP(),'/')."/".$dateiname;
                   }
                 }
@@ -31606,7 +31606,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $data[]=array('name'=>$item['name'],'email'=>$item['email']);
     }
 
-    for($i=0;$i<count($data);$i++)
+    for($i=0;$i<(!empty($data)?count($data):0);$i++)
     {
       if($data[$i]['email']!=$tmp_mail && $data[$i]['name']!=$tmp_name)
       {
@@ -31827,13 +31827,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     }
 
-    if(count($tmp)>0)
+    if((!empty($tmp)?count($tmp):0)>0)
     {
       $this->app->Tpl->Set('HISTORIE',"<table align=\"left\" width=780>");
       $this->app->Tpl->Add('HISTORIE',"<tr valign=\"top\"><td style=\"font-size: 8pt\"><b>Zeit</b></td><td style=\"font-size: 8pt\"><b>An</b></td><td style=\"font-size: 8pt\"><b>Von</b></td>
           <td style=\"font-size: 8pt\"><b>Art</b></td>
           <td style=\"font-size: 8pt\"><b>Anschreiben</b></td><td style=\"font-size: 8pt\"><b>Dokument</b></td></tr>");
-      for($i=0;$i<count($tmp);$i++)
+      for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
       {
 
         if($tmp[$i]['versendet']==0) $tmp[$i]['versendet'] = "nein"; else $tmp[$i]['versendet'] = "ja";
@@ -31860,13 +31860,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     } else { $this->app->Tpl->Set('HISTORIE',"<div class=\"info\">Dieses Dokument wurde noch nicht versendet!</div>"); }
 
 
-    for($i=0;$i<count($attachments);$i++)
+    for($i=0;$i<(!empty($attachments)?count($attachments):0);$i++)
     {
       $this->app->Tpl->Add('ANHAENGE',"<a href=\"\">".basename($attachments)."</a>&nbsp;");
     }
-    if(count($attachments)==0) $this->app->Tpl->Add('ANHAENGE',"keine Anh&auml;nge vorhanden");
+    if((!empty($attachments)?count($attachments):0)==0) $this->app->Tpl->Add('ANHAENGE',"keine Anh&auml;nge vorhanden");
 
-    if(count($tmp)>0)
+    if((!empty($tmp)?count($tmp):0)>0)
     {
       $tmp[0]['betreff'] = str_replace('{FIRMA}',$this->Firmendaten("name"),$tmp[0]['betreff']);
       $tmp[0]['text'] = str_replace('{FIRMA}',$this->Firmendaten("name"),$tmp[0]['text']);
@@ -32665,7 +32665,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
     if(is_array($files))
     {
-      for($i=0;$i<count($files);$i++)
+      for($i=0;$i<(!empty($files)?count($files):0);$i++)
       {
         if(@is_file($files[$i]))
           $this->app->mail->AddAttachment($files[$i]);
@@ -32770,13 +32770,13 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     if(method_exists($this->app->mail,'GetCC')){
       $cc = $this->app->mail->GetCC();
       $bcc = $this->app->mail->GetBCC();
-      if($cc && count($cc) > 0){
-        for ($i=0; $i < count($cc); $i++) {
+      if($cc && (!empty($cc)?count($cc):0) > 0){
+        for ($i=0; $i < (!empty($cc)?count($cc):0); $i++) {
         $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit, art) VALUES ('','$subject','$body','$from','".$cc[$i][0]."','$status',NOW(), '1')");
         }
       }
-      if($bcc && count($bcc) > 0){
-        for ($i=0; $i < count($bcc); $i++) {
+      if($bcc && (!empty($bcc)?count($bcc):0) > 0){
+        for ($i=0; $i < (!empty($bcc)?count($bcc):0); $i++) {
         $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit, art) VALUES ('','$subject','$body','$from','".$bcc[$i][0]."','$status',NOW(), '2')");
         }
       }
@@ -33361,8 +33361,8 @@ function Firmendaten($field,$projekt="")
     $tmp = array('artikel_klein'=>'Artikel klein');
 
     $result = $this->app->DB->SelectArr("SELECT * FROM etiketten WHERE (verwendenals='artikel_klein' OR verwendenals='seriennummer') AND ausblenden!=1 ORDER by name");
-    if(count($result) > 0) $tmp = array();
-    for($i=0;$i<count($result);$i++)
+    if((!empty($result)?count($result):0) > 0) $tmp = array();
+    for($i=0;$i<(!empty($result)?count($result):0);$i++)
     {
       $tmp[$result[$i]['id']]=$result[$i]['name'];
     }
@@ -33623,7 +33623,7 @@ function Firmendaten($field,$projekt="")
     $tmp = $this->app->DB->SelectArr("SELECT type,bezeichnung FROM versandarten WHERE aktiv='1' AND geloescht!='1' AND (projekt = '$projekt' OR projekt = 0) ORDER by bezeichnung");
     if($tmp)
     {
-      for($i=0;$i<count($tmp);$i++)
+      for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
       {
         $result[$tmp[$i]['type']]=$tmp[$i]['bezeichnung'];
       }
@@ -33646,17 +33646,17 @@ function Firmendaten($field,$projekt="")
     {
       $result = $this->app->DB->SelectArr("SELECT id,name FROM artikeleigenschaften WHERE projekt='$projekt' AND geloescht!=1 ORDER by name");
       // gibt es keine projekt gruppen dann die ohne projekt verwenden
-      if(count($result)<=0)
+      if((!empty($result)?count($result):0)<=0)
         $result = $this->app->DB->SelectArr("SELECT id,name FROM artikeleigenschaften WHERE geloescht!=1 AND projekt <=0 ORDER by name");
     } else
     {
       $result = $this->app->DB->SelectArr("SELECT id,name FROM artikeleigenschaften WHERE geloescht!=1 AND projekt <=0 ORDER by name");
     }
 
-    if(count($result) > 0)
+    if((!empty($result)?count($result):0) > 0)
     {
 
-      for($i=0;$i<count($result);$i++)
+      for($i=0;$i<(!empty($result)?count($result):0);$i++)
       {
         $tmp[$result[$i]['id']]=$result[$i]['name'];
       }
@@ -33673,17 +33673,17 @@ function Firmendaten($field,$projekt="")
       {
         $result = $this->app->DB->SelectArr("SELECT id,bezeichnung FROM artikelkategorien WHERE (projekt='$projekt' OR projekt = 0) AND parent = 0 AND geloescht!=1 ORDER by bezeichnung");
         // gibt es keine projekt gruppen dann die ohne projekt verwenden
-        if(count($result)<=0)
+        if((!empty($result)?count($result):0)<=0)
           $result = $this->app->DB->SelectArr("SELECT id,bezeichnung FROM artikelkategorien WHERE geloescht!=1 AND projekt <=0 AND parent = 0 ORDER by bezeichnung");
       } else
       {
         $result = $this->app->DB->SelectArr("SELECT id,bezeichnung FROM artikelkategorien WHERE geloescht!=1 AND projekt <=0 AND parent = 0 ORDER by bezeichnung");
       }
 
-      if($result && count($result) > 0)
+      if($result && (!empty($result)?count($result):0) > 0)
       {
 
-        for($i=0;$i<count($result);$i++)
+        for($i=0;$i<(!empty($result)?count($result):0);$i++)
         {
           $tmp[$result[$i]['id']."_kat"]=$result[$i]['bezeichnung'];
         }
@@ -33928,7 +33928,7 @@ function Firmendaten($field,$projekt="")
         $tmp = $this->app->DB->SelectArr("SELECT iso,alias, bezeichnung_de,aktiv FROM sprachen WHERE iso <> '' ORDER BY iso = '$land' DESC, bezeichnung_de");
         $deutschfound = false;
         $englischfound = false;
-        for($i=0;$i<count($tmp);$i++)
+        for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
         {
           if($tmp[$i]['alias'] != '' && $wert != $tmp[$i]['iso'])
           {
@@ -33976,7 +33976,7 @@ function Firmendaten($field,$projekt="")
 
         $result['']='Bitte w&auml;hlen';
 
-        for($i=0;$i<count($tmp);$i++)
+        for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++)
           $result[$tmp[$i]['type']]=$tmp[$i]['bezeichnung'];
 
 
@@ -38815,7 +38815,7 @@ function Firmendaten($field,$projekt="")
         $arbeitspakete = $this->app->DB->SelectArr("SELECT id,vorgaenger FROM arbeitspaket WHERE projekt = '$id'");
 
         for ($i=0; $i < count($data['arbeitspaket']); $i++) {
-          for ($j=0; $j < count($arbeitspakete); $j++) {
+          for ($j=0; $j < (!empty($arbeitspakete)?count($arbeitspakete):0); $j++) {
             if(($arbeitspakete[$j]['id'] == $data['arbeitspaket'][$i]) && ($arbeitspakete[$j]['vorgaenger'] != '0')){
               if(!in_array($arbeitspakete[$j]['vorgaenger'], $data['arbeitspaket'])){
                 $data['arbeitspaket'][] = $arbeitspakete[$j]['vorgaenger'];
@@ -39499,7 +39499,7 @@ function Firmendaten($field,$projekt="")
 
       if(!empty($portosorts)) {
         foreach($portosorts as $k => $v) {
-          if($v == count($pos) -1)
+          if($v == (!empty($pos)?count($pos):0) -1)
           {
             $this->app->DB->Delete("DELETE FROM beleg_zwischenpositionen WHERE doctype = 'lieferschein' AND doctypeid = '$newid' AND pos = '".($v)."' AND postype LIKE 'gruppe'");
           }
@@ -39538,7 +39538,7 @@ function Firmendaten($field,$projekt="")
         }
       }
       //Belegpositionen nach letzter Position
-      $sort = count($arr);
+      $sort = (!empty($arr)?count($arr):0);
       $restpositionen = $this->app->DB->SelectArr("SELECT id FROM  beleg_zwischenpositionen where doctype = '$doctype' AND doctypeid = '$id' AND pos > $sort ORDER BY pos, sort");
       if($restpositionen) {
         $beleg_zwischenpositionensort = $this->app->DB->SelectArr("SELECT id, sort FROM beleg_zwischenpositionen where doctype = '$doctype' AND doctypeid = '$id' AND pos = '".($sort)."' ORDER BY sort DESC LIMIT 1");
@@ -39674,7 +39674,7 @@ function Firmendaten($field,$projekt="")
         case 'produktion': $kurz='pd'; break;
       }
       
-      $cpos = count($pos);
+      $cpos = (!empty($pos)?count($pos):0);
       for($i=0;$i<$cpos;$i++)
       {
         $artikel_id = $pos[$i]['artikel'];
@@ -40422,7 +40422,7 @@ function Firmendaten($field,$projekt="")
         $arr[0]['autoversand'] = 1-(int)$this->Projektdaten($arr[0]['projekt'],'deactivateautoshipping');
         $this->app->DB->UpdateArr('auftrag',$newid, 'id', $arr[0], true);
         $pos = $this->app->DB->SelectArr("SELECT * FROM angebot_position WHERE angebot='$id' order by sort");
-        for($i=0;$i<count($pos);$i++){
+        for($i=0;$i<(!empty($pos)?count($pos):0);$i++){
           $this->app->DB->Insert("INSERT INTO auftrag_position (id) VALUES('')");
           $newposid = $this->app->DB->GetInsertID();
           $idtoid[$pos[$i]['id']] = $newposid;
@@ -40484,7 +40484,7 @@ function Firmendaten($field,$projekt="")
       function PaketannahmenAbschliessen()
       {
         $arr = $this->app->DB->SelectArr("SELECT id FROM paketannahme WHERE status!='abgeschlossen'");
-        for($i=0;$i<count($arr);$i++)
+        for($i=0;$i<(!empty($arr)?count($arr):0);$i++)
         {
 
 
@@ -41104,7 +41104,7 @@ function Firmendaten($field,$projekt="")
 
         //pruefe ob es auf auftrag einen Zahlungseingang gibt
         $zahlungen = $this->app->DB->SelectArr("SELECT * FROM kontoauszuege_zahlungseingang WHERE objekt='auftrag' AND parameter='$auftrag_org'");
-        for($i=0;$i<count($zahlungen);$i++)
+        for($i=0;$i<(!empty($zahlungen)?count($zahlungen):0);$i++)
         {
           if($zahlungen[$i]['betrag'] > $gesamtsumme_new)
           {
@@ -41706,7 +41706,7 @@ function Firmendaten($field,$projekt="")
             }
             if($first) {
               $taxesToAdd[] = $tax;
-              $taxToaddKey = count($taxesToAdd)-1;
+              $taxToaddKey = (!empty($taxesToAdd)?count($taxesToAdd):0)-1;
               $taxesToAdd[$taxToaddKey]['brutto'] -= $brutto;
               $taxesToAdd[$taxToaddKey]['netto'] -= $netto;
               $tax['brutto'] = $brutto;
@@ -41718,9 +41718,9 @@ function Firmendaten($field,$projekt="")
               $first = false;
               continue;
             }
-            $taxToaddKey = count($taxesToAdd)-1;
+            $taxToaddKey = (!empty($taxesToAdd)?count($taxesToAdd):0)-1;
             $taxesToAdd[] = $taxesToAdd[$taxToaddKey];
-            $taxToaddKey = count($taxesToAdd)-1;
+            $taxToaddKey = (!empty($taxesToAdd)?count($taxesToAdd):0)-1;
             $taxesToAdd[$taxToaddKey]['brutto'] -= $brutto;
             $taxesToAdd[$taxToaddKey]['netto'] -= $netto;
             $taxesToAdd[$taxToaddKey - 1]['brutto'] = $brutto;
@@ -42190,11 +42190,11 @@ function Firmendaten($field,$projekt="")
         } else {
           $gruppenarray = $this->GetGruppen($adresse);
 
-          for($gi=0;$gi<count($gruppenarray);$gi++)
+          for($gi=0;$gi<(!empty($gruppenarray)?count($gruppenarray):0);$gi++)
           {
             $sql_erweiterung .= " id='".$gruppenarray[$gi]."' ";
 
-            if($gi<count($gruppenarray)-1)
+            if($gi<(!empty($gruppenarray)?count($gruppenarray):0)-1)
               $sql_erweiterung .= " OR ";
           }
           $checkgruppeportofrei = $this->app->DB->Select("SELECT id FROM gruppen WHERE ($sql_erweiterung) AND portofrei_aktiv='1' ORDER BY portofreiab LIMIT 1");
@@ -43618,7 +43618,7 @@ function Firmendaten($field,$projekt="")
         $ida = str_split($id, 2);
         $path .= '/d'.implode('/d',$ida);
         if(is_file($path.'/'.$id))return $path;
-        if($cache && count($ids) > 0)
+        if($cache && (!empty($ids)?count($ids):0) > 0)
         {
           if(is_file($path.'/'.$ids[0].'_'.$ids[1]))return $path;
           if(is_file($_path.'/'.$ids[0].'_'.$ids[1]))return $_path;
@@ -43923,8 +43923,8 @@ function Firmendaten($field,$projekt="")
         }
         $pathArr = explode('/', rtrim($dirRelative,'/'));
 
-        if(substr($pathArr[count($pathArr) - 1],0,1) !== 'd') {
-          unset($pathArr[count($pathArr) - 1]);
+        if(substr($pathArr[(!empty($pathArr)?count($pathArr):0) - 1],0,1) !== 'd') {
+          unset($pathArr[(!empty($pathArr)?count($pathArr):0) - 1]);
         }
         if(empty($pathArr) || !is_dir($prefix.'/'.implode('/', $pathArr))) {
           return;
@@ -43933,8 +43933,8 @@ function Firmendaten($field,$projekt="")
         if(!empty($glob)) {
           return;
         }
-        if(@rmdir($prefix.implode('/', $pathArr)) && count($pathArr) > 1) {
-          unset($pathArr[count($pathArr) - 1]);
+        if(@rmdir($prefix.implode('/', $pathArr)) && (!empty($pathArr)?count($pathArr):0) > 1) {
+          unset($pathArr[(!empty($pathArr)?count($pathArr):0) - 1]);
           $this->deleteEmptyDmsPath($prefix.implode('/', $pathArr));
         }
       }
@@ -43972,7 +43972,7 @@ function Firmendaten($field,$projekt="")
             if(is_dir($cachedir))
             {
               $caches = glob($this->app->Conf->WFuserdata."/dms/".$this->app->Conf->WFdbname."/cache/".$vers['id'].'_*');
-              if(is_array($caches) && count($caches) > 0)
+              if(is_array($caches) && (!empty($caches)?count($caches):0) > 0)
               {
                 foreach($caches as $cache)unlink($cache);
               }
@@ -43981,7 +43981,7 @@ function Firmendaten($field,$projekt="")
             if(is_dir($cachedir))
             {
               $caches = glob($cachedir.'/'.$vers['id'].'_*');
-              if(is_array($caches) && count($caches) > 0)
+              if(is_array($caches) && (!empty($caches)?count($caches):0) > 0)
               {
                 foreach($caches as $cache){
                   unlink($cache);
@@ -44237,7 +44237,7 @@ function Firmendaten($field,$projekt="")
           $zusaetzlicheStichworter = $this->app->DB->SelectArr(
             "SELECT * FROM datei_stichwortvorlagen WHERE modul='$modul' OR modul='' ORDER by beschriftung"
           );
-          $cZusaetzlicheStichworter = empty($zusaetzlicheStichworter)?0:count($zusaetzlicheStichworter);
+          $cZusaetzlicheStichworter = empty($zusaetzlicheStichworter)?0:(!empty($zusaetzlicheStichworter)?count($zusaetzlicheStichworter):0);
           for($i=0;$i<$cZusaetzlicheStichworter;$i++){
             $dateiTypen[] = ['wert' => $zusaetzlicheStichworter[$i]['beschriftung'], 'beschriftung' => $zusaetzlicheStichworter[$i]['beschriftung']];
           }
@@ -45002,11 +45002,11 @@ function Firmendaten($field,$projekt="")
         $gruppenarray = $this->GetGruppen($adresse);
         if($gruppenarray)
         {
-          if(count($gruppenarray)>0) $sql_erweiterung = " OR ";
-          for($gi=0;$gi<count($gruppenarray);$gi++) {
+          if((!empty($gruppenarray)?count($gruppenarray):0)>0) $sql_erweiterung = " OR ";
+          for($gi=0;$gi<(!empty($gruppenarray)?count($gruppenarray):0);$gi++) {
             $sql_erweiterung .= " gruppe='" . $gruppenarray[$gi] . "' ";
 
-            if ($gi < count($gruppenarray) - 1)
+            if ($gi < (!empty($gruppenarray)?count($gruppenarray):0) - 1)
               $sql_erweiterung .= " OR ";
 
           }
@@ -45137,7 +45137,7 @@ function Firmendaten($field,$projekt="")
         $letzte_menge = -1;  //$vkarr[0][ab_menge];
         $letzter_preis = 99999999999;
 
-        for($vi=0;$vi<count($vkarr);$vi++)
+        for($vi=0;$vi<(!empty($vkarr)?count($vkarr):0);$vi++)
         {
           if(($vkarr[$vi]['ab_menge'] > $letzte_menge) && ($vkarr[$vi]['preis']<$letzter_preis) && (($menge < 1?1:$menge) >= $vkarr[$vi]['ab_menge']))
           {
@@ -45172,7 +45172,7 @@ function Firmendaten($field,$projekt="")
         $letzte_menge = -1;  //$vkarr[0][ab_menge];
         $letzter_preis = 99999999999;
 
-        for($vi=0;$vi<count($vkarr);$vi++)
+        for($vi=0;$vi<(!empty($vkarr)?count($vkarr):0);$vi++)
         {
           if(($vkarr[$vi]['ab_menge'] > $letzte_menge) && ($vkarr[$vi]['preis']<$letzter_preis) && (($menge < 1?1:$menge) >= $vkarr[$vi]['ab_menge']))
           {
@@ -45307,7 +45307,7 @@ function Firmendaten($field,$projekt="")
         $gruppenarr = $this->GetGruppen($adresse);
         $sql_erweiterung = '';
         if($gruppenarr) {
-          for ($i = 0; $i < count($gruppenarr); $i++) {
+          for ($i = 0; $i < (!empty($gruppenarr)?count($gruppenarr):0); $i++) {
             if ($gruppenarr[$i] > 0)
               $sql_erweiterung .= " OR gruppe='" . $gruppenarr[$i] . "' ";
           }
@@ -45358,7 +45358,7 @@ function Firmendaten($field,$projekt="")
         $letzter_preis = 99999999999;
         if($vkarr)
         {
-          for($vi=0;$vi<count($vkarr);$vi++)
+          for($vi=0;$vi<(!empty($vkarr)?count($vkarr):0);$vi++)
           {
             if(($vkarr[$vi]['ab_menge'] > $letzte_menge) && ($vkarr[$vi]['preis']<$letzter_preis) && ((($menge >= 1?$menge:1) >= $vkarr[$vi]['ab_menge'])|| $auchpreisegrmenge))
             {
@@ -46405,7 +46405,7 @@ function Firmendaten($field,$projekt="")
       foreach($tmp as $row) {
         $subtmp = explode(':',trim($row));
 
-        if(count($subtmp)>0)
+        if((!empty($subtmp)?count($subtmp):0)>0)
         {
           $subtmp[0] = trim($subtmp[0]);
           $subtmp[1] = trim($subtmp[1]);

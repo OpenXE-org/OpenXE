@@ -71,7 +71,7 @@ class Navigation {
     if(isset($form[btnUp])) $this->PosUp();
     if(isset($form[btnDown])) $this->PosDown();
     $this->ArrNav = $this->GetArrNav();
-    if(count($this->ArrNav)>0)if($this->actNavID=="") $this->actNavID = key($this->ArrNav);
+    if((!empty($this->ArrNav)?count($this->ArrNav):0)>0)if($this->actNavID=="") $this->actNavID = key($this->ArrNav);
     $this->SetVar();
     $this->ArrowButton(); 
   }

@@ -461,7 +461,7 @@ class USTID
      * for each key in the extract, replace the string
      */
     $rep = array();
-    if (is_array($keys) && count($keys) == 2) {
+    if (is_array($keys) && (!empty($keys)?count($keys):0) == 2) {
       foreach ($keys[1] as $key) {
         if (!array_key_exists($key, $env)) {
           continue;

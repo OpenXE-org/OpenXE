@@ -66,7 +66,7 @@ class XTEA {
       }
 
       $a = 1;
-      for($i = 0; $i<count($text); $i+=2) {
+      for($i = 0; $i<(!empty($text)?count($text):0); $i+=2) {
          if($this->cbc == 1) {
             //$text mit letztem Geheimtext XOR Verknuepfen
             //$text is XORed with the previous ciphertext
@@ -79,7 +79,7 @@ class XTEA {
       }
 
       $output = "";
-      for($i = 0; $i<count($cipher); $i++) {
+      for($i = 0; $i<(!empty($cipher)?count($cipher):0); $i++) {
          $output .= $this->_long2str($cipher[$i][0]);
          $output .= $this->_long2str($cipher[$i][1]);
       }
@@ -100,7 +100,7 @@ class XTEA {
       else
          $i = 0; //Message start at first block
 
-      for($i; $i<count($cipher); $i+=2) {
+      for($i; $i<(!empty($cipher)?count($cipher):0); $i+=2) {
          $return = $this->block_decrypt($cipher[$i],$cipher[$i+1]);
 
          //Xor Verknuepfung von $return und Geheimtext aus von den letzten beiden Bloecken
@@ -112,7 +112,7 @@ class XTEA {
       }
 
       $output = "";
-      for($i = 0; $i<count($plain); $i++) {
+      for($i = 0; $i<(!empty($plain)?count($plain):0); $i++) {
          $output .= $this->_long2str($plain[$i][0]);
          $output .= $this->_long2str($plain[$i][1]);
       }

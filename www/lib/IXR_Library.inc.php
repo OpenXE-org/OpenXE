@@ -25,7 +25,7 @@ class IXR_Value {
             }
         }
         if ($type == 'array') {
-            for ($i = 0, $j = count($this->data); $i < $j; $i++) {
+            for ($i = 0, $j = (!empty($this->data)?count($this->data):0); $i < $j; $i++) {
                 $this->data[$i] = new IXR_Value($this->data[$i]);
             }
         }
@@ -253,14 +253,14 @@ class IXR_Message {
                 $value = trim($value);
             }
             */
-            if (count($this->_arraystructs) > 0) {
+            if ((!empty($this->_arraystructs)?count($this->_arraystructs):0) > 0) {
                 // Add value to struct or array
-                if ($this->_arraystructstypes[count($this->_arraystructstypes)-1] == 'struct') {
+                if ($this->_arraystructstypes[(!empty($this->_arraystructstypes)?count($this->_arraystructstypes):0)-1] == 'struct') {
                     // Add to struct
-                    $this->_arraystructs[count($this->_arraystructs)-1][$this->_currentStructName[count($this->_currentStructName)-1]] = $value;
+                    $this->_arraystructs[(!empty($this->_arraystructs)?count($this->_arraystructs):0)-1][$this->_currentStructName[(!empty($this->_currentStructName)?count($this->_currentStructName):0)-1]] = $value;
                 } else {
                     // Add to array
-                    $this->_arraystructs[count($this->_arraystructs)-1][] = $value;
+                    $this->_arraystructs[(!empty($this->_arraystructs)?count($this->_arraystructs):0)-1][] = $value;
                 }
             } else {
                 // Just add as a paramater
@@ -328,7 +328,7 @@ EOD;
         }
         $method = $this->callbacks[$methodname];
         // Perform the callback and send the response
-        if (count($args) == 1) {
+        if ((!empty($args)?count($args):0) == 1) {
             // If only one paramater just send that instead of the whole array
             $args = $args[0];
         }
@@ -703,14 +703,14 @@ class IXR_IntrospectionServer extends IXR_Server {
         $signature = $this->signatures[$methodname];
         $returnType = array_shift($signature);
         // Check the number of arguments
-        if (count($args) != count($signature)) {
-            // print 'Num of args: '.count($args).' Num in signature: '.count($signature);
+        if ((!empty($args)?count($args):0) != (!empty($signature)?count($signature):0)) {
+            // print 'Num of args: '.(!empty($args)?count($args):0).' Num in signature: '.(!empty($signature)?count($signature):0);
             return new IXR_Error(-32602, 'server error. wrong number of method parameters');
         }
         // Check the argument types
         $ok = true;
         $argsbackup = $args;
-        for ($i = 0, $j = count($args); $i < $j; $i++) {
+        for ($i = 0, $j = (!empty($args)?count($args):0); $i < $j; $i++) {
             $arg = array_shift($args);
             $type = array_shift($signature);
             switch ($type) {

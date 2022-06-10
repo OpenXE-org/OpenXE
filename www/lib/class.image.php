@@ -281,7 +281,7 @@ class ImageManipulator
         $height = max($height, $this->height);
         
         $temp = imagecreatetruecolor($width, $height);
-        if (count($rgb) == 3) {
+        if ((!empty($rgb)?count($rgb):0) == 3) {
             $bg = imagecolorallocate($temp, $rgb[0], $rgb[1], $rgb[2]);
             imagefill($temp, 0, 0, $bg);
         }
@@ -312,7 +312,7 @@ class ImageManipulator
         if (!is_resource($this->image)) {
             throw new RuntimeException('No image set');
         }
-        if (is_array($x1) && 4 == count($x1)) {
+        if (is_array($x1) && 4 == (!empty($x1)?count($x1):0)) {
             list($x1, $y1, $x2, $y2) = $x1;
         }
         

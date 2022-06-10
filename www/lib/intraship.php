@@ -391,7 +391,7 @@ class Versandart_intraship extends Versanddienstleister{
 
         }
         $altersfreigabe = 0;
-        for($i=0;$i<count($artikel_positionen);$i++)
+        for($i=0;$i<(!empty($artikel_positionen)?count($artikel_positionen):0);$i++)
         {
           $artikelaltersfreigabe = (int)$this->app->DB->Select("SELECT altersfreigabe FROM artikel WHERE id = '".$artikel_positionen[$i]['artikel']."' LIMIT 1");
           if($artikelaltersfreigabe > $altersfreigabe)$altersfreigabe = $artikelaltersfreigabe;
@@ -1276,7 +1276,7 @@ class Versandart_intraship extends Versanddienstleister{
       $export['exportTypeDescription'] = $this->info['export_reason'];
       $export['commodityCode'] = "";
       $export['termsOfTrade'] = "DDP";
-      $export['amount'] = count($artikel);
+      $export['amount'] = (!empty($artikel)?count($artikel):0);
       //$export['Description'] = $this->info['export_reason'];
       //$export['CountryCodeOrigin'] = "DE";
       $export['additionalFee'] = "10";
@@ -1292,7 +1292,7 @@ class Versandart_intraship extends Versanddienstleister{
       $export['ExportTypeDescription'] = $this->info['export_reason'];
       $export['CommodityCode'] = "";
       $export['TermsOfTrade'] = "DDP";
-      $export['Amount'] = count($artikel);
+      $export['Amount'] = (!empty($artikel)?count($artikel):0);
       $export['Description'] = $this->info['export_reason'];
       $export['CountryCodeOrigin'] = "DE";
       $export['AdditionalFee'] = "10";
@@ -1302,7 +1302,7 @@ class Versandart_intraship extends Versanddienstleister{
     }
 
     $p=0;
-    for($i=0;$i<count($artikel);$i++)
+    for($i=0;$i<(!empty($artikel)?count($artikel):0);$i++)
     {
       if($p>4 && (($export['ExportDocPosition'][4]['CustomsValue'] + $artikel[$i]['value']*$artikel[$i]['amount']) > 0)) {
         if($artikel[$i]['currency']=="") $artikel[$i]['currency']="EUR";

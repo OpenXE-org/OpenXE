@@ -285,7 +285,7 @@ class Remote
       return '';
     }
     $loop = 0;
-    $call = count($all);
+    $call = (!empty($all)?count($all):0);
     for($i=0;$i<$call;$i++)
     {
       $auftragid = $all[$i]['auftrag'];
@@ -389,7 +389,7 @@ class Remote
     if(empty($all)) {
       return '';
     }
-    $call = count($all);
+    $call = (!empty($all)?count($all):0);
 
     $data = array();
     for ($i = 0; $i < $call; $i++) {
@@ -1198,7 +1198,7 @@ class Remote
       $data[$i] = ['artikel' => $artikel,'artikelid' => $artikel];
       $data[$i]['nummer'] = $tmp->GetNummer();
       $projekt = $tmp->GetProjekt();
-      if(is_array($extnummer) && count($extnummer) > $i && !empty($extnummer[$i]) && trim($extnummer[$i]) != '')
+      if(is_array($extnummer) && (!empty($extnummer)?count($extnummer):0) > $i && !empty($extnummer[$i]) && trim($extnummer[$i]) != '')
       {
         if($data[$i]['nummer'] != trim($extnummer[$i])){
           $data[$i]['fremdnummer'] = trim($extnummer[$i]);
@@ -2013,7 +2013,7 @@ class Remote
                     ORDER BY mega.id, moza.id', $eigenschaft['artikel']);
             $matrixdaten = $this->app->DB->SelectArr($query);
 
-            for ($iv = 0, $ivMax = count($matrixdaten); $iv < $ivMax; $iv++) {
+            for ($iv = 0, $ivMax = (!empty($matrixdaten)?count($matrixdaten):0); $iv < $ivMax; $iv++) {
               $data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']][$iv]['name'] = $matrixdaten[$iv]['gruppe'];
               $data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']][$iv]['values'] = $matrixdaten[$iv]['wert'];
             }
@@ -2335,7 +2335,7 @@ class Remote
             $allPositions = false;
           }
         }
-        if($allPositions && count($itemlist) <
+        if($allPositions && (!empty($itemlist)?count($itemlist):0) <
           $this->app->DB->Select(
             sprintf('SELECT count(id) FROM auftrag_position WHERE auftrag = %d', $orderId)
           )

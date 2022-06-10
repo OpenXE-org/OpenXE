@@ -198,7 +198,7 @@ class LabelPrinter
 	function AddLabel($vartext, $linetext)
 	{
 		$varcounter = 0;
-		$varcounter = count($this->variable);
+		$varcounter = (!empty($this->variable)?count($this->variable):0);
 
 		$varnumber = "V".str_pad($varcounter, 2, "0", STR_PAD_LEFT);
 
@@ -215,7 +215,7 @@ class LabelPrinter
 				.'FK"Label1"'."\r\n"
 				.'FS"Label1"'."\r\n";
 		
-		for($i=0; $i<count($this->variable); $i++)
+		for($i=0; $i<(!empty($this->variable)?count($this->variable):0); $i++)
 		{
 			$label .= $this->variable[$i]."\r\n";
 		}
@@ -225,7 +225,7 @@ class LabelPrinter
 		$label .= 'q'.$this->width."\r\n"
 				.'Q'.$this->height.','.$this->height_between."\r\n";
 		
-		for($i=0; $i<count($this->lines); $i++)
+		for($i=0; $i<(!empty($this->lines)?count($this->lines):0); $i++)
 		{
 			$label .= $this->lines[$i]."\r\n";
 		}
@@ -243,7 +243,7 @@ class LabelPrinter
 		$inhalt = 'FR"Label1"'."\r\n"
 					.'?'."\r\n";
 			
-		for($i=0; $i<count($this->lines); $i++)
+		for($i=0; $i<(!empty($this->lines)?count($this->lines):0); $i++)
 		{
 			$inhalt .= $this->contents[$i]."\r\n";
 		}

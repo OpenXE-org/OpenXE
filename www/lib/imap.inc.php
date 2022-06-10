@@ -164,8 +164,8 @@ function flattenParts($messageParts, $flattenedParts = array(), $prefix = '', $i
     $attachments = array();
     $structure = imap_fetchstructure($connection, $message_number);
 
-    if(!empty($structure->parts) && count($structure->parts)) {
-        $cparts = count($structure->parts);
+    if(!empty($structure->parts) && (!empty($structure->parts)?count($structure->parts):0)) {
+        $cparts = (!empty($structure->parts)?count($structure->parts):0);
         for($i = 0; $i < $cparts; $i++) {
    
             $attachments[$i] = array(
