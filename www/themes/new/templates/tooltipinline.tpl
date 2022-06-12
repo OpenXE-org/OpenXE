@@ -56,8 +56,8 @@
 			<div id="inlinehelplink">[INLINEHELPLINK]</div>
 		</div>
 		<div class="footer-actions">
-			<a href="//community.xentral.com" target="_blank" class="button button-secondary">{| Mit unserer Community verbinden |}</a>
-			<a href="//support.wawision.de/open.php" target="_blank" class="button button-primary">{| Ticket anlegen |}</a>
+			<a href="//community.xentral.com" target="_blank" class="button button-secondary">{| Zur Xentral community |}</a>
+<!--			<a href="//support.wawision.de/open.php" target="_blank" class="button button-primary">{| Ticket anlegen |}</a> -->
 		</div>
 	</div>
 </div>

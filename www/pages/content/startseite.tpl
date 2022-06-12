@@ -96,6 +96,7 @@
 								</fieldset>
 							</div>
 						</div>
+<!--
 						[BEFORELEARNINGDASHBOARDTILE]
 						<div class="col-xs-12 col-md-6 col-md-height">
 							<div class="inside inside-full-height">
@@ -115,6 +116,7 @@
 							</div>
 						</div>
 						[AFTERLEARNINGDASHBOARDTILE]
+-->
 					</div>
 				</div>
 
@@ -123,7 +125,7 @@
 
 		<div class="row">
 			<div class="row-height">
-				<div class="col-xs-12 col-md-6 col-md-height">
+<!--				<div class="col-xs-12 col-md-6 col-md-height">
 					<div class="inside inside-full-height">
 						<fieldset class="home-news">
 							<legend>{|Neues von Xentral|}</legend>
@@ -131,7 +133,8 @@
 						</fieldset>
 					</div>
 				</div>
-				<div class="col-xs-6 col-md-3 col-md-height">
+-->
+<!--				<div class="col-xs-6 col-md-3 col-md-height">
 					<div class="inside inside-full-height">
 						<fieldset>
 							<legend>{|Update Center|}</legend>
@@ -152,6 +155,7 @@
 						</fieldset>
 					</div>
 				</div>
+-->
 			</div>
 		</div>
 
