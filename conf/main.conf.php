@@ -16,7 +16,7 @@ class Config
 
     public function __construct()
     {
-        $this->updateHost = getenv('XENTRAL_UPDATE_HOST') ?: 'update.xentral.biz';
+        $this->updateHost = getenv('XENTRAL_UPDATE_HOST') ?: 'removed.upgrade.host';
 
         include("user.inc.php");
 

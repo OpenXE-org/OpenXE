@@ -3,9 +3,9 @@
 require_once __DIR__ . '/xentral_autoloader.php';
 if (class_exists(Config::class)){
     $config = new Config();
-    $updateHost = $config->updateHost ?: 'update.xentral.biz';
+    $updateHost = $config->updateHost ?: 'removed.upgrade.host';
 }else{
-    $updateHost = 'update.xentral.biz';
+    $updateHost = 'removed.upgrade.host';
 }
 
 $WAWISION['host']=$updateHost;

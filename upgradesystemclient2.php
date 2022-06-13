@@ -23,7 +23,7 @@ $app->Conf = new Config();
 $app->DB = new DB($app->Conf->WFdbhost,$app->Conf->WFdbname,$app->Conf->WFdbuser,$app->Conf->WFdbpass,null,$app->Conf->WFdbport);
 $erp = new erpAPI($app);
 
-$WAWISION['host'] = $app->Conf->updateHost ?? 'update.xentral.biz';
+$WAWISION['host'] = $app->Conf->updateHost ?? 'removed.upgrade.host';
 $WAWISION['port']="443";
 
 $myUpd = new UpgradeClient($WAWISION);
