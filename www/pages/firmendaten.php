@@ -665,7 +665,7 @@ class Firmendaten  {
     $this->app->Tpl->Set('NEXT_LIEFERSCHEIN_MAX',$this->app->DB->Select("SELECT MAX(belegnr) FROM lieferschein WHERE DATE_FORMAT(datum,'%Y')=DATE_FORMAT(NOW(),'%Y')"));
     $this->app->Tpl->Set('NEXT_GUTSCHRIFT_MAX',$this->app->DB->Select("SELECT MAX(belegnr) FROM gutschrift WHERE DATE_FORMAT(datum,'%Y')=DATE_FORMAT(NOW(),'%Y')"));
     $this->app->Tpl->Set('NEXT_BESTELLUNG_MAX',$this->app->DB->Select("SELECT MAX(belegnr) FROM bestellung WHERE DATE_FORMAT(datum,'%Y')=DATE_FORMAT(NOW(),'%Y')"));
-    $this->app->Tpl->Set('NEXT_ARBEITSNACHWEIS_MAX',$this->app->DB->Select("SELECT MAX(belegnr) FROM arbeitsnachweis WHERE DATE_FORMAT(datum,'%Y')=DATE_FORMAT(NOW(),'%Y')"));
+//    $this->app->Tpl->Set('NEXT_ARBEITSNACHWEIS_MAX',$this->app->DB->Select("SELECT MAX(belegnr) FROM arbeitsnachweis WHERE DATE_FORMAT(datum,'%Y')=DATE_FORMAT(NOW(),'%Y')"));
 
     $this->app->Tpl->Set('NEXT_KUNDENNUMMER_MAX',$this->app->DB->Select("SELECT MAX(kundennummer) FROM adresse"));
     $this->app->Tpl->Set('NEXT_LIEFERANTENNUMMER_MAX',$this->app->DB->Select("SELECT MAX(lieferantennummer) FROM adresse"));
@@ -2513,7 +2513,7 @@ class Firmendaten  {
       return $lang;
     }
 
-    $this->app->erp->AddNeuenFirmendatenWert('preferredLanguage','varchar','64','','deutsch','deutsch',0,0);
+//    $this->app->erp->AddNeuenFirmendatenWert('preferredLanguage','varchar','64','','deutsch','deutsch',0,0);
     return 'deutsch';
   }
 
