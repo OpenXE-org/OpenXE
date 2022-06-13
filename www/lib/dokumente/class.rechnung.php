@@ -626,7 +626,7 @@ class RechnungPDF extends BriefpapierCustom {
       if($positionenkaufmaenischrunden == 3) {
         $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
       }else{
-        $netto_gesamt = $value['menge'] * ($value['preis'] - ($value['preis'] / 100 * $value['rabatt']));
+        $netto_gesamt = ((float) $value['menge']) * ((float) $value['preis'] - ((float) $value['preis'] / 100.0 * (float) $value['rabatt']));
       }
       $netto_gesamt_ungerundet = $netto_gesamt;
       if($positionenkaufmaenischrunden)

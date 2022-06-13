@@ -31961,7 +31961,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         if($drucker==$this->app->User->GetEmail())
           $from_name = $this->app->User->GetName();
         else {
-          $from_name = $this->app->DB->Select("SELECT absendername FROM firmendaten WHERE absendername!='' AND email!='' AND email='$drucker' LIMIT 1");
+//          $from_name = $this->app->DB->Select("SELECT absendername FROM firmendaten WHERE absendername!='' AND email!='' AND email='$drucker' LIMIT 1");
+          $from_name = $this->app->DB->Select("SELECT wert FROM firmendaten_werte WHERE name = 'absendername' LIMIT 1");
 
           if($from_name=="")
             $from_name = $this->app->DB->Select("SELECT smtp_fromname FROM emailbackup WHERE smtp_fromname!='' AND smtp_frommail!='' AND smtp_frommail='$drucker' AND geloescht!=1 LIMIT 1");
@@ -39443,9 +39444,11 @@ function Firmendaten($field,$projekt="")
 
         $portosorts = null;
         $cpos = $pos?count($pos):0;
-        for($i=0;$i<$cpos;$i++){
+      
+	  for($i=0;$i<$cpos;$i++){
           /* nur lager artikel in den Lieferschein */
-          $portoartikel = $portoartikelArr[$pos[$i]];
+
+          $portoartikel = !empty($portoartikel)?$portoartikelArr[$pos[(int) $i]]:0;
           if($portoartikel==0) {
             $this->app->DB->Insert("INSERT INTO lieferschein_position (id) VALUES('')");
             $newposid = $this->app->DB->GetInsertID();

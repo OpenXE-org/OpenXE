@@ -2900,7 +2900,7 @@ class Briefpapier extends SuperFPDF {
 
 
         // wenn steuerfrei komplett immer 0 steuer anzeigen
-        $item['tmptax'] = $item['tax'] + 1;
+        $item['tmptax'] = (float) $item['tax'] + 1;
 
         // standard anzeige mit steuer
         if(!$this->ust_spalteausblende){
