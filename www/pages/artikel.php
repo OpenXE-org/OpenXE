@@ -4699,6 +4699,13 @@ class Artikel extends GenArtikel {
 
       $preis_min_ek = $this->getCalcPriceByMinBasePrice($id);
       $preis_max_ek =$this->getCalcPriceByMaxBasePrice($id);
+
+	if (empty($kursusd)) {
+		$kursusd = 0;
+	}	
+	if (empty($kurschf)) {
+		$kurschf = 0;
+	}	
           
       $this->app->Tpl->Set('TAB5KALKULATION','<div class="info">Dies ist nur ein grober Richtpreis aus dem kleinsten und größten Einkaufspreis.</div>');
 
@@ -4714,7 +4721,7 @@ class Artikel extends GenArtikel {
       $kalkulationstabelle .= "<td><b>Kalkulierter EK</b></td>";
       $kalkulationstabelle .= "</tr>";
 
-      $artikelkalkulation = $this->app->DB->SelectArr("SELECT a.id as artikelid, a.name_de as artikelname, a.nummer, trim(s.menge)+0 as menge, 
+	$sql_query = "SELECT a.id as artikelid, a.name_de as artikelname, a.nummer, trim(s.menge)+0 as menge, 
           (SELECT l2.name FROM einkaufspreise e LEFT JOIN adresse l2 ON l2.id=e.adresse WHERE e.artikel=a.id AND (e.objekt='Standard' OR e.objekt='') AND (e.gueltig_bis='0000-00-00' OR e.gueltig_bis >= curdate()) AND e.geloescht!=1 ORDER by e.preis ASC LIMIT 1) as lieferant,
       (SELECT e.bestellnummer FROM einkaufspreise e WHERE e.artikel=a.id AND (e.objekt='Standard' OR e.objekt='') AND (e.gueltig_bis='0000-00-00' OR e.gueltig_bis >= curdate()) AND e.geloescht!=1 ORDER by e.preis ASC LIMIT 1) as bestellnummer,
 
@@ -4763,8 +4770,9 @@ class Artikel extends GenArtikel {
           FROM stueckliste s
           LEFT JOIN artikel a ON a.id=s.artikel 
           LEFT JOIN adresse l ON l.id=a.adresse
-          WHERE s.stuecklistevonartikel='$id' ORDER by s.sort");
+          WHERE s.stuecklistevonartikel='$id' ORDER by s.sort";
 
+      $artikelkalkulation = $this->app->DB->SelectArr($sql_query);
 
       $calculatedPurchasePriceService = $this->app->Container->get('PurchasePriceService');
 
