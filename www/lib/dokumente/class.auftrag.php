@@ -529,6 +529,11 @@ class AuftragPDF extends BriefpapierCustom {
               "keineeinzelartikelanzeigen"=>$value['keineeinzelartikelanzeigen'],
               "anzahlunterartikel"=>$value['anzahlunterartikel']));
       }
+
+	if (!is_numeric($value['preis'])) {
+		$value['preis'] = 0;
+	}
+
       if($positionenkaufmaenischrunden == 3) {
         $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
       }
