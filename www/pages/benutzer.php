@@ -524,7 +524,7 @@ class Benutzer
     if($data[0]['type']=="admin"){
       $this->app->Tpl->Set('HINWEISADMIN',"<div class=\"info\">Dieser Benutzer ist vom Typ Administrator. Administratoren haben immer Vollzugriff - daher können diesem keine Rechte genommen werden.</div>");
     } else {
-      $this->app->Tpl->Add("HINWEISADMIN","<br><i>Hinweis: Blau = erlaubt, Grau = gesperrt</i>");
+      $this->app->Tpl->Add("HINWEISADMIN","<br><i>Hinweis: Blau = erlaubt, Grau = gesperrt, Sobald eine Vorlage eingetragen ist k&ouml;nnen Rechte der Vorlage dem Benutzer nicht mehr entzogen werden.</i>");
     }
     $this->SetInput($data[0]);
     $this->UserRights();
@@ -944,18 +944,40 @@ class Benutzer
         {
           $this->app->DB->Update("UPDATE userrights SET permission='$value' WHERE id='$id' LIMIT 1");
         }
-        else
-          $this->app->DB->Delete("DELETE FROM userrights WHERE user='$user' AND module='$module' AND action='$action'");
-      }
-      //$this->app->DB->Update("UPDATE userrights SET permission='$value' WHERE id='$id' LIMIT 1");
-      else
-        $this->app->DB->Insert("INSERT INTO userrights (user, module, action, permission) VALUES ('$user', '$module', '$action', '$value')");
+        else 
+	{
+	 
 
+		$sql = "
+			SELECT
+			    permission
+			FROM
+			    `uservorlagerights`
+			INNER JOIN `uservorlage` INNER JOIN `user` ON `uservorlagerights`.`vorlage` = `uservorlage`.`id` AND `user`.`vorlage` = `uservorlage`.`bezeichnung`
+			WHERE
+			    `user`.`id` = '$user' AND `uservorlagerights`.`module` = '$module' AND `uservorlagerights`.`action` = '$action' LIMIT 1";
+
+		$uservorlageright = $this->app->DB->Select($sql);
+
+		$fromtemplate = false;
+		if (!empty($uservorlageright)) {		
+			if ($uservorlageright[0] == '1') {
+				$fromtemplate = true;
+			}
+		}
+
+		if (!$fromtemplate) {
+		         $this->app->DB->Delete("DELETE FROM userrights WHERE user='$user' AND module='$module' AND action='$action'");
+		}	
+	}
+      }
+      else {
+        $this->app->DB->Insert("INSERT INTO userrights (user, module, action, permission) VALUES ('$user', '$module', '$action', '$value')");
+      }
       $this->permissionLog($this->app->User->GetID(),$user,$module,$action,$value);
     }
 
     echo $this->app->DB->Select("SELECT permission FROM userrights WHERE user='$user' AND module='$module' AND action='$action' LIMIT 1");
-
 
     exit;
   }

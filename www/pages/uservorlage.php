@@ -219,8 +219,6 @@ class Uservorlage
           );
 
           $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
-
-          $this->app->erp->AbgleichBenutzerVorlagen($id);
         }	
     }	// END Input Get
 
@@ -338,6 +336,8 @@ class Uservorlage
     }
 
     echo $this->app->DB->Select("SELECT permission FROM uservorlagerights WHERE vorlage='$vorlage' AND module='$module' AND action='$action' LIMIT 1");
+    $this->app->erp->AbgleichBenutzerVorlagen(null, $id, $module, $action); // Update permissions for all users
+
     exit;
   }
 
