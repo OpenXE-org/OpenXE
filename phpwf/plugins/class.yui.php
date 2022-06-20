@@ -8784,6 +8784,42 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
 
         $count = "SELECT COUNT(id) FROM user";
         break;
+      case "usertemplatelist":
+        $allowed['user'] = array('list');
+        $allowed['benutzer'] = array('list');
+
+        // START EXTRA checkboxen
+        
+        // ENDE EXTRA checkboxen
+
+        
+        // headings
+
+//        $heading = array('Login','Bezeichnung', 'Beschreibung', 'Aktiv', 'Extern', 'Anzahl Rechte', 'Hardware', 'Men&uuml;');
+        $heading = array('Bezeichnung', 'Beschreibung', 'Men&uuml;');
+        $width = array('20%' ,'50%', '10%');
+//        $findcols = array('u.username','u.type' ,'a.name', "if(u.activ,'ja','-')", "if(u.externlogin,'erlaubt','-')", "IF(u.type = 'standard', (SELECT COUNT(ur.id) FROM userrights ur WHERE ur.user = u.id), 'alle')", 'u.hwtoken', 'u.id'); //'a.name','a.kundennummer',"SUM(TIME_TO_SEC(TIMEDIFF(z.bis, z.von)))/3600",'id');
+        $findcols = array('id','bezeichnung' ,'beschreibung');
+
+        $searchsql = array('id','bezeichnung', 'beschreibung');
+        $defaultorder = 1; //Optional wenn andere Reihenfolge gewuenscht
+
+        $defaultorderdesc = 0;
+        $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=uservorlage&action=edit&id=%value%\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;" . "<a href=\"index.php?module=uservorlage&action=download&id=%value%\" title=\"Rechte herunterladen\"><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=uservorlage&action=delete&id=%value%\");>" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;</td></tr></table>";
+
+        // SQL statement
+//        $sql = "SELECT SQL_CALC_FOUND_ROWS u.id, u.username as login, u.type,  a.name as beschreibung, if(u.activ,'ja','-') as aktiv,  if(u.externlogin,'erlaubt','-') as extern, IF(u.type = 'standard' OR u.type = 'lightuser', (SELECT COUNT(ur.id) FROM userrights ur WHERE ur.user = u.id), 'alle') as anzahlrechte, 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS id, bezeichnung, beschreibung, id FROM uservorlage";
+        $where = ""; // z.abrechnen=1 AND z.abgerechnet!=1 AND a.id > 0 ";
+
+        
+        //$groupby=" GROUP by z.adresse_abrechnung ";
+
+        
+        // gesamt anzahl
+
+        $count = "SELECT COUNT(id) FROM user";
+        break;
       case "geschaeftsbrief_vorlagenlist":
         $allowed['geschaeftsbrief_vorlagen'] = array('list');
 
