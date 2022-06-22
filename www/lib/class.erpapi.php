@@ -6379,11 +6379,16 @@ title: 'Abschicken',
       return;
     }
     foreach($actions as $action) {
-      $this->app->DB->Insert(
+
+	$sql = 
         sprintf(
-          "INSERT INTO `module_action` (`module`,`action`) VALUES ('%s','%s')",
-          $this->app->DB->real_escape_string($module), $this->app->DB->real_escape_string($action)
-        )
+          "INSERT INTO `module_action` (`module`,`action`) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE `module`='%s', `action`='%s'",
+          $this->app->DB->real_escape_string($module), $this->app->DB->real_escape_string($action),
+          $this->app->DB->real_escape_string($module), $this->app->DB->real_escape_string($action)        
+      );
+
+      $this->app->DB->Insert(
+	$sql
       );
       $this->moduleActions[$module][] = $action;
     }
