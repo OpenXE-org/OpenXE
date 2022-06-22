@@ -601,7 +601,7 @@ class Supportapp Extends GenSupportapp {
     $this->app->erp->CheckColumn("id", "int(11)", "supportapp_artikel", "NOT NULL AUTO_INCREMENT");
     $this->app->erp->CheckColumn("artikel", "int(11)", "supportapp_artikel", "NOT NULL DEFAULT '0'"); //artikel
     $this->app->erp->CheckColumn("typ", "int(11)", "supportapp_artikel", "NOT NULL DEFAULT '0'"); //) 1: Telefonsupport, 2: Technikersupport, 3: Enterprise, etc 
-    $this->app->erp->RegisterMenuHook('startseite','supportappMenuHook', $this);
+//    $this->app->erp->RegisterMenuHook('startseite','supportappMenuHook', $this);
 
     if($artikeluebernehmen){ //Nur für das erste mal notwending, kann später gelöscht werden 
       //Damit bei der Änderung der Artikelzuweisung nicht alle Artikel nochmal angelegt werden müssen

@@ -10,7 +10,7 @@
         </svg>
     </div>
 
-    <a class="logo-index" href="index.php" title="Xentral">
+    <a class="logo-index" href="index.php" title="Xenomporio">
         [SIDEBARLOGO]
     </a>
 

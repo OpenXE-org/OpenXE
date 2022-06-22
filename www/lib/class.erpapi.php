@@ -7123,9 +7123,9 @@ title: 'Abschicken',
 
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Startseite','welcome','start');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Meine Apps','welcome','meineapps');
+//    $navarray['menu']['admin'][$menu]['sec'][]  = array('Meine Apps','welcome','meineapps');
     if($this->app->User->GetType() === 'admin') {
-      $navarray['menu']['admin'][$menu]['sec'][]  = ['Learning Dashboard', 'learningdashboard', 'list'];
+  //    $navarray['menu']['admin'][$menu]['sec'][]  = ['Learning Dashboard', 'learningdashboard', 'list'];
     }
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Tickets','ticket','list');
@@ -7137,14 +7137,14 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Chat','chat','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Zeiterfassung','zeiterfassung','create');
 
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Stechuhr','stechuhr','list');
+//    $navarray['menu']['admin'][$menu]['sec'][]  = array('Stechuhr','stechuhr','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Wiedervorlage','wiedervorlage','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Wiki','wiki','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Interner Support', 'internalsupport', 'list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Einstellungen','welcome','settings');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Datenschutz', 'dataprotection','list');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Lizenz','appstore','buy');
+//    $navarray['menu']['admin'][$menu]['sec'][]  = array('Datenschutz', 'dataprotection','list');
+//    $navarray['menu']['admin'][$menu]['sec'][]  = array('Lizenz','appstore','buy');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abmelden','welcome','logout');
 
     return $this->CalculateNavigation($navarray);

@@ -240,10 +240,11 @@ class Welcome
  
   public function MenuHook()
   {
-    if($this->GetMeineApps())
+/*    if($this->GetMeineApps())
     {
       $this->app->erp->InsertMenuAfter('index.php?module=welcome&action=meineapps','Meine Apps','welcome','start');
     }
+*/
   }
 
   public function StartseiteMenu()
@@ -2480,8 +2481,8 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
       $this->app->Tpl->Add('TAB1',"Sie benutzen die kommerzielle Version von Xentral. Alle Rechte vorbehalten. Beachten Sie die Nutzungsbedinungen.<br><br>&copy; Copyright by Xentral ERP Software GmbH Augsburg");
     }
     else {
-      $this->app->Tpl->Add('TAB1',"Sie benutzen die Open-Source Version von Xentral. Die Software steht unter der AGPLv3.0 (<a href=\"https://xentral.biz/lizenzhinweis\" target=\"_blank\">Hinweis</a>).<br><br><div class=\"info\">Das Logo und der Link zur Homepage <a href=\"https://xentral.biz\" target=\"_blank\">https://xentral.biz</a> d&uuml;rfen
-          nicht entfernt werden.</div><br>&copy; Copyright by Xentral ERP Software GmbH Augsburg");
+      $this->app->Tpl->Add('TAB1',"Sie benutzen Xenomporio, die freie ERP-Software auf Basis der Open-Source Version 20.3 von Xentral. Die Software steht unter der AGPLv3.0 <br><br><div class=\"info\"><img src=\"themes/new/images/Xentral_ERP_Logo-200.png\"><br>Das Logo und der Link zur Homepage <a href=\"https://xentral.biz\" target=\"_blank\">https://xentral.biz</a> d&uuml;rfen
+          nicht entfernt werden.</div><br>&copy; Copyright by Xenomporio project & Xentral ERP Software GmbH Augsburg");
     }
 
     if($this->app->erp->isIoncube() && method_exists($this->app->erp, 'IoncubeProperty'))

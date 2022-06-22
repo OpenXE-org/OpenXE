@@ -475,10 +475,10 @@ class erpooSystem extends Application
 
       // Creates user specific items
       $possibleUserItems = [
-          'Inbox' => [
+/*          'Inbox' => [
               'link' => 'index.php?module=ticket&action=offene',
               'counter' => $this->erp->AnzahlOffeneTickets()
-          ],
+          ],*/
           'Aufgaben' => [
               'link' => 'index.php?module=aufgaben&action=list',
               'counter' => $this->erp->AnzahlOffeneAufgaben()
@@ -492,9 +492,9 @@ class erpooSystem extends Application
               'counter' => $appointmentCount
               ],
       ];
-      $possibleUserItems['Apps'] = [
+/*      $possibleUserItems['Apps'] = [
         'link'=> 'index.php?module=appstore&action=list&cmd=allapps'
-      ];
+      ];*/
 
 
       if(!empty(erpAPI::Ioncube_Property('testlizenz')) && $this->User->GetType() === 'admin'){
@@ -587,7 +587,7 @@ class erpooSystem extends Application
       }
 
       // Creates fixed bottom navigation items
-      $possibleFixedItems['Datenschutz'] = 'index.php?module=dataprotection&action=list';
+//      $possibleFixedItems['Datenschutz'] = 'index.php?module=dataprotection&action=list';
 
       $fixedItems = '<div class="sidebar-list bottom">';
 
@@ -618,7 +618,7 @@ class erpooSystem extends Application
 
       $version = '';
       if(isset($version_revision) && $version_revision != '') {
-        $version .= '<div class="sidebar-software-version">xentral.com, v. '. $version_revision .'</div>';
+        $version .= '<div class="sidebar-software-version">Xenomporio V.'. $version_revision .'</div>';
       }
 
       if($userId = $this->User->GetID()){
@@ -1160,7 +1160,7 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
 
     $this->Tpl->SetText('MODUL',ucfirst($module));
 
-    $this->Tpl->Set('HTMLTITLE','{|[MODUL]|} | Xentral ');
+    $this->Tpl->Set('HTMLTITLE','{|[MODUL]|} | Xenomporio ');
 
 
     switch($module)
@@ -1175,7 +1175,9 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
           break;
           default: $artikeltmpid = $id;
         }
-        $this->Tpl->AddText('HTMLTITLE','| '.$this->DB->Select("SELECT CONCAT(nummer,' ',name_de) FROM artikel WHERE id='$artikeltmpid' LIMIT 1"));
+	if (!empty($artikeltmpid)) {
+	        $this->Tpl->AddText('HTMLTITLE','| '.$this->DB->Select("SELECT CONCAT(nummer,' ',name_de) FROM artikel WHERE id='$artikeltmpid' LIMIT 1"));
+	}
       break;
       case 'angebot':
       case 'auftrag':
@@ -1184,7 +1186,9 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
       case 'gutschrift':
       case 'bestellung':
       case 'anfrage':
-        $this->Tpl->AddText('HTMLTITLE','| '.$this->DB->Select("SELECT CONCAT(if(belegnr!='',belegnr,'ENTWURF'),' ',name) FROM $module WHERE id='$id' lIMIT 1"));
+	if (!empty($id)) {
+	        $this->Tpl->AddText('HTMLTITLE','| '.$this->DB->Select("SELECT CONCAT(if(belegnr!='',belegnr,'ENTWURF'),' ',name) FROM $module WHERE id='$id' lIMIT 1"));
+	}
       break;
     }
 
