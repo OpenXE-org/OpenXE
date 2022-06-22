@@ -1023,6 +1023,7 @@ class Firmendaten  {
         if(isset($sql2a)){
           unset($sql2a);
         }
+/*
         foreach($toupdate as $v) {
           $sql2a[] = $v ." = '".$data[$v]."' ";
         }
@@ -1030,11 +1031,19 @@ class Firmendaten  {
         
         unset($sql2a);
         $this->app->DB->Update($sql2);
-        if($this->app->DB->error()) {
+*/
+
+//        if($this->app->DB->error()) {
+
           foreach($toupdate as $v) {
-            $this->app->DB->Update("UPDATE firmendaten SET ".$v." = '".($data[$v])."'"." WHERE firma = '$id' LIMIT 1");
+
+		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$v'");
+		if ($check) {
+	            $this->app->DB->Update("UPDATE firmendaten SET ".$v." = '".($data[$v])."'"." WHERE firma = '$id' LIMIT 1");
+		}
           }
-        }
+
+//        }
         
         if(isset($firmendaten_werte_spalten)) {
           foreach($toupdate as $key) {
@@ -1063,17 +1072,23 @@ class Firmendaten  {
           }
         }        
         
-        foreach($toupdate2 as $k => $v) {
+/*        foreach($toupdate2 as $k => $v) {
           $sql2a[] = $k ." = '".$v."' ";
         }
         $sql2 = "UPDATE firmendaten SET ".implode(',',$sql2a)." WHERE firma = '$id' LIMIT 1";
         unset($sql2a);
         $this->app->DB->Update($sql2);
-        if($this->app->DB->error()) {
+
+*/
+
+//        if($this->app->DB->error()) {
           foreach($toupdate2 as $k => $v) {
-            $this->app->DB->Update("UPDATE firmendaten SET ".$k." = '".$v."'"." WHERE firma = '$id' LIMIT 1");
+		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$k'");
+		if ($check) {
+	            $this->app->DB->Update("UPDATE firmendaten SET ".$k." = '".$v."'"." WHERE firma = '$id' LIMIT 1");
+		}
           }
-        }
+//        }
         
         if(isset($firmendaten_werte_spalten)) {
           foreach($toupdate2 as $key => $v) {
@@ -1197,13 +1212,23 @@ class Firmendaten  {
           }
           $sqla[] = " $key='{$data[$key]}' ";
         }
+
+/*
         $sql = "UPDATE firmendaten SET ".implode(', ',$sqla)." WHERE firma='$id' LIMIT 1";
         $this->app->DB->Update($sql);
-        if($this->app->DB->error()) {
+
+*/
+
+//        if($this->app->DB->error()) {
+
           foreach($fields as $key) {
-            $this->app->DB->Update("UPDATE firmendaten SET $key='{$data[$key]}' WHERE firma='$id' LIMIT 1");
+		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$key'");
+		if ($check) {
+	            $this->app->DB->Update("UPDATE firmendaten SET $key='{$data[$key]}' WHERE firma='$id' LIMIT 1");
+		}
           }
-        }
+
+//        }
         $fields_checkbox = $this->app->erp->GetFirmaFieldsCheckbox();
         
         if(isset($sqla)){
@@ -1226,18 +1251,26 @@ class Firmendaten  {
             unset($firmendaten_werte_spalten[$key]);
           }
         }
+/*
         $sql = "UPDATE firmendaten SET ".implode(', ',$sqla)." WHERE firma='$id' LIMIT 1";
         $this->app->DB->Update($sql);
-        if($this->app->DB->error()) {
+
+*/
+
+//        if($this->app->DB->error()) {
           foreach($fields_checkbox as $key) {
             $_data[$key] = $data[$key];
             if($_data[$key] === 'checked'){
               $_data[$key] = 1;
             }
             $_data[$key] = (int)$_data[$key];
-            $this->app->DB->Update("UPDATE firmendaten SET $key='{$_data[$key]}' WHERE firma='$id' LIMIT 1");
+
+		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$key'");
+		if ($check) {
+	           $this->app->DB->Update("UPDATE firmendaten SET $key='{$_data[$key]}' WHERE firma='$id' LIMIT 1");
+		}
           }
-        }
+//        }
         
         $firmendaten = $this->app->DB->SelectArr("SELECT * FROM firmendaten WHERE firma='$id' LIMIT 1");
         if($firmendaten && isset($firmendaten_werte_spalten)) {
@@ -1261,7 +1294,7 @@ class Firmendaten  {
           }
         }
         
-        $this->app->DB->Update("UPDATE firma SET name='{$data[name]}', standardprojekt='{$data[projekt]}' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("UPDATE firma SET name='{$data['name']}', standardprojekt='{$data['projekt']}' WHERE id='$id' LIMIT 1");
 
         $this->app->Tpl->Set('MESSAGE', "<div class=\"error2\">Ihre Daten wurden erfolgreich gespeichert.</div>");
         $this->FillFormFromDB($id); 
@@ -2494,12 +2527,13 @@ class Firmendaten  {
    */
   private function savePreferredLanguage($language){
 
+/* THIS NEEDS TO BE REIMPLEMENTED
     $lang = $this->app->erp->Firmendaten('preferredLanguage');
-
     if($lang != $language){
       $this->app->erp->FirmendatenSet('preferredLanguage',$language);
       $this->app->DB->Update("UPDATE `user` SET sprachebevorzugen = '".$language."'");
     }
+*/
   }
 
   /**
