@@ -1,49 +1,56 @@
-<!-- Example for multiple tabs
 <div id="tabs">
-<ul>
-<li><a href="#tabs-1">First Tab</a></li>
-<li><a href="#tabs-2">Second Tab</a></li>
-</ul>
--->
-<form action="" method="post">
+    <ul>
+        <li><a href="#tabs-1"></a></li>
+    </ul>
+    <!-- Example for multiple tabs
+    <ul hidden">
+        <li><a href="#tabs-1">First Tab</a></li>
+        <li><a href="#tabs-2">Second Tab</a></li>
+    </ul>
+    -->
     <div id="tabs-1">
         [MESSAGE]
-        <div class="row">
-	    	<div class="row-height">
-	    		<div class="col-xs-12 col-md-12 col-md-height">
-	    			<div class="inside inside-full-height">
-	    				<fieldset>
-                            <legend>{|PLACEHOLDER_LEGEND|}</legend>
-                            <table width="100%" border="0" class="mkTableFormular">
-                                PLACEHOLDER_FIELDS
-                            </table>
-                        </fieldset>            
-                        <input type="submit" name="submit" value="Speichern" style="float:right"/>    
-                    </div>
-           		</div>
-           	</div>	
-        </div>
-    </div>
-<!-- Example for second tab
+        <form action="" method="post">   
+            [FORMHANDLEREVENT]
+            <div class="row">
+	        	<div class="row-height">
+	        		<div class="col-xs-12 col-md-12 col-md-height">
+	        			<div class="inside inside-full-height">
+	        				<fieldset>
+                                <legend>{|PLACEHOLDER_LEGEND|}</legend>
+                                <table width="100%" border="0" class="mkTableFormular">
+                                    PLACEHOLDER_FIELDS
+                                </table>
+                            </fieldset>            
+                        </div>
+               		</div>
+               	</div>	
+            </div>
+            <input type="submit" name="submit" value="Speichern" style="float:right"/>
+        </form>
+    </div>    
+    <!-- Example for 2nd tab
     <div id="tabs-2">
         [MESSAGE]
-        <div class="row">
-	    	<div class="row-height">
-	    		<div class="col-xs-12 col-md-12 col-md-height">
-	    			<div class="inside inside-full-height">
-	    				<fieldset>
-                            <legend>{|Legend goes here|}</legend>
-                            <table width="100%" border="0" class="mkTableFormular">
-                                PLACEHOLDER_FIELDS
-                            </table>
-                        </fieldset>            
-                        <input type="submit" name="submit" value="Speichern" style="float:right"/>    
-                    </div>
-           		</div>
-           	</div>	
-        </div>
-    </div>
--->
-</form>
-
+        <form action="" method="post">   
+            [FORMHANDLEREVENT]
+            <div class="row">
+            	<div class="row-height">
+            		<div class="col-xs-12 col-md-12 col-md-height">
+            			<div class="inside inside-full-height">
+            				<fieldset>
+                                <legend>{|...|}</legend>
+                                <table width="100%" border="0" class="mkTableFormular">
+                                    ...
+                                </table>
+                            </fieldset>            
+                        </div>
+               		</div>
+               	</div>	
+            </div>
+            <input type="submit" name="submit" value="Speichern" style="float:right"/>
+        </form>
+    </div>    
+    -->
+</div>
 

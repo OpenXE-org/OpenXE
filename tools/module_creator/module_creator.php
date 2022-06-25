@@ -25,9 +25,20 @@ $user = 'xenomporiodev';
 $passwd = 'xenomporiodev';
 $schema = 'xenomporiodev';
 
-if ($argc == 2) {
+if ($argc >= 2) {
 
-    $module_name = $argv[1];
+    if (in_array('-v', $argv)) {
+      $verbose = true;
+    } else {
+      $verbose = false;
+    } 
+
+    if (!str_starts_with($argv[1],'-')) {
+      $module_name = $argv[1];
+    } else {
+      info();
+      exit;
+    }
     $module_class_name = ucfirst($module_name);
     $php_file_name = $module_name . ".php";
     $php_template_file_name = "module_creator_php_template.txt";
@@ -109,6 +120,9 @@ if ($argc == 2) {
     $list_of_columns = implode(', ', $columns);
     $list_of_columns_in_quotes = "'" . implode('\', \'', $columns) . "'";
 
+    $get_input = "";
+    $set_input = "";
+
     foreach ($columns as $column) {
         $get_input = $get_input . "\$input['$column'] = \$this->app->Secure->GetPOST('$column');\n\t";
         $set_input = $set_input . "\$this->app->Tpl->Set('" . strtoupper($column) . "', \$input['$column']);\n\t";
@@ -132,10 +146,6 @@ if ($argc == 2) {
     $php_file_contents = str_replace('PLACEHOLDER_SET_INPUT', $set_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_COLUMNS', $list_of_columns_in_quotes, $php_file_contents);
 
-    if ($verbose) {
-        echo($php_file_contents);
-    }
-
     $php_file = fopen($target_php_folder . $php_file_name, "w");
     if (empty($php_file)) {
         echo ("Failed to write to " . $target_php_folder . $php_file_name);
@@ -153,9 +163,6 @@ if ($argc == 2) {
     fclose($php_file);
 
     $list_template_contents = file_get_contents("module_creator_list.tpl");
-    if ($verbose) {
-        echo($list_template_contents);
-    }
     fwrite($template_list_file, $list_template_contents);
     fclose($template_list_file);
 
@@ -163,18 +170,45 @@ if ($argc == 2) {
     $edit_template_contents = str_replace('PLACEHOLDER_LEGEND', "<!--Legend for this form area goes here>-->".$module_name, $edit_template_contents);
     $edit_template_contents = str_replace('PLACEHOLDER_FIELDS', $edit_form, $edit_template_contents);
 
-    if ($verbose) {
-        echo($edit_template_contents);
-    }
     fwrite($template_edit_file, $edit_template_contents);
     fclose($template_edit_file);
 
     echo("\n\nCreated module files: \n");
     echo ($target_php_folder . $php_file_name . "\n");
+    if ($verbose) {
+        echo("-----------\n\n");
+        echo($php_file_contents);
+        echo("-----------\n\n");
+    }
+
     echo ($target_tpl_folder . $template_list_file_name . "\n");
+    if ($verbose) {
+        echo("-----------\n\n");
+        echo($list_template_contents);
+        echo("-----------\n\n");
+    }
+
     echo ($target_tpl_folder . $template_edit_file_name . "\n");
+    if ($verbose) {
+        echo("-----------\n\n");
+        echo($edit_template_contents);
+        echo("-----------\n\n");
+    }
+
 } else {
-    echo("Wrong parameters\n");
+  info();
+  exit;
+}
+
+function info() {
+    echo("\nXenomporio module creator\n");
+    echo("Copyright 2022 (c) Xenomporio project\n\n");
+    echo("Create a module.php file, a template for listing and a template for editing, based on a SQL table\n");
+    echo("\n");
+    echo("arg1: SQL table name\n");
+    echo("Options\n");
+    echo("\t-v: verbose output\n");
+    echo("\n");
 }
 
 

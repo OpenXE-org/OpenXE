@@ -14,14 +14,11 @@ class PLACEHOLDER_MODULECLASSNAME {
             return;
 
         $this->app->ActionHandlerInit($this);
-
         $this->app->ActionHandler("list", "PLACEHOLDER_LIST");        
         $this->app->ActionHandler("create", "PLACEHOLDER_EDIT"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "PLACEHOLDER_EDIT");
         $this->app->ActionHandler("delete", "PLACEHOLDER_DELETE");
-
         $this->app->DefaultActionHandler("list");
-
         $this->app->ActionHandlerListen($app);
     }
 
@@ -46,10 +43,9 @@ class PLACEHOLDER_MODULECLASSNAME {
 
                 $sql = "PLACEHOLDER_SQL_LIST";
 
-        $where = "1
-";
-//        $groupby = "";
+                $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM PLACEHOLDER_MODULENAME WHERE $where";
+//                $groupby = "";
 
                 break;
         }
@@ -57,8 +53,9 @@ class PLACEHOLDER_MODULECLASSNAME {
         $erg = false;
 
         foreach ($erlaubtevars as $k => $v) {
-            if (isset($$v))
+            if (isset($$v)) {
                 $erg[$v] = $$v;
+            }
         }
         return $erg;
     }
@@ -130,8 +127,7 @@ class PLACEHOLDER_MODULECLASSNAME {
 
             $sql = "INSERT INTO PLACEHOLDER_MODULENAME (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
 
-
-            echo($sql);
+//            echo($sql);
 
             $this->app->DB->Update($sql);
 
@@ -150,8 +146,7 @@ class PLACEHOLDER_MODULECLASSNAME {
         foreach ($result[0] as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
-
-                
+             
         /*
          * Add displayed items later
          * 
