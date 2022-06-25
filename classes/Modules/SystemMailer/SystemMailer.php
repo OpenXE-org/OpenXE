@@ -57,7 +57,7 @@ final class SystemMailer
      *
      * @return bool success
      */
-    public function send(EmailMessage $email, EmailBackupAccount $account): bool
+    public function send(EmailMessage $email, EmailBackupAccount $account, &$mailerror_text): bool
     {
         $transport = $this->factory->createMailerTransport($account);
         $email = $this->cleaner->cleanEmailBody($email);
@@ -65,19 +65,26 @@ final class SystemMailer
         try {
             $success = $mailer->send($email);
             $this->emailLog->logOutgoingMail($email, $account, $transport->getStatus());
-            if ($transport->hasErrors()) {
-                $this->logger->error('Error while sending email.', ['error' => $transport->getErrorMessages()]);
+            if ($transport->hasErrors()) {               
+
+                $errors = ['error' => $transport->getErrorMessages()];
+                $this->logger->error('Error while sending email.', $errors);
+                $mailerror_text = 'Error while sending email. '.implode(', ',$errors['error']);
             }
         } catch (MailerTransportException $e) {
             $this->logger->error($e->getMessage(), ['dump' => $transport->getErrorMessages()]);
 
+                $errors = ['error' => $transport->getErrorMessages()];
+                $this->logger->error('Error while sending email.', $errors);
+                $mailerror_text = 'Error while sending email. '.implode(', ',$errors['error']);
+
             return false;
         } catch (AuthorizationExpiredException $e) {
             $this->logger->error(
-                'Sending Email Failed: Google authorization expired',
+                'Error while sending email. Google authorization expired',
                 ['exception' => $e]
             );
-
+            $mailerror_text =  'Error while sending email. Google authorization expired';
             return false;
         }
 
@@ -106,15 +113,18 @@ final class SystemMailer
         $body,
         $attachFiles = [],
         $ccs = [],
-        $bccs = []
+        $bccs = [],
+        &$mailerror_text
     ): bool {
         //cannot use Mailer component if no emailbackup account exists
         $account = null;
+
         try {
             $account = $this->accountGateway->getAccountByEmail($senderEmail);
         } catch (Exception $e) {
             $account = null;
             $this->logger->error($e->getMessage(), ['exception' => $e]);
+            $mailerror_text = 'Error while sending email: Account not found.';
         }
 
         if ($account === null) {
@@ -144,7 +154,12 @@ final class SystemMailer
             ->withDisplayName($senderName);
 
         //send email with new Mailer component
-        return $this->send($email, $account);
+
+        $mailerror_text = "";
+
+        $result = $this->send($email, $account, $mailerror_text);
+
+        return ($result);
     }
 
     /**

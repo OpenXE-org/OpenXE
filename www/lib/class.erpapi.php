@@ -32413,98 +32413,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     return $erg;
   }
 
-
-  function MailSendNoBCCHTML($from,$from_name,$to,$to_name,$betreff,$text,$files="",$cc="",$bcc="")
-  {
-    $from_name = $this->ClearDataBeforeOutput($from_name);
-    $to_name = $this->ClearDataBeforeOutput($to_name);
-    //$to = ""; // testmail
-    $betreff  =  $this->ReadyForPDF($betreff);
-    $text =  $this->ReadyForPDF($text);
-
-    $this->app->mail->ClearData();
-    $countCc = !empty($cc)?count($cc):0;
-    for($i=0;$i<$countCc;$i++)
-    {
-      if($cc[$i]!="" && $cc[$i]!=$to)
-        $this->app->mail->AddCC($cc[$i]);
-    }
-    $countBcc = !empty($bcc)?count($bcc):0;
-    for($i=0;$i<$countBcc;$i++)
-    {
-      if($bcc[$i]!="" && $bcc[$i]!=$to)
-        $this->app->mail->AddBCC($bcc[$i]);
-    }
-
-    $this->app->mail->From       = $from;
-    $this->app->mail->FromName   = $from_name;
-
-    $this->app->mail->Subject    = $betreff;
-
-    if($this->app->Conf->WFtestmode==true){
-      $this->app->mail->AddAddress($from, $to_name);
-    }else{
-      $this->app->mail->AddAddress($to, $to_name);
-    }
-
-    $this->app->mail->Body = utf8_decode(str_replace('\r\n',"\n",$text).nl2br($this->Signatur()));
-
-    $this->app->mail->IsHTML(true);
-    $cFiles = !empty($files)?count($files):0;
-    for($i=0;$i<$cFiles;$i++)
-    {
-      if(@is_file($files[$i]))
-        $this->app->mail->AddAttachment($files[$i]);
-    }
-
-    if(!$this->app->mail->Send()) {
-      $error =  "Mailer Error: " . $this->app->mail->ErrorInfo;
-      return 0;
-    }
-    $error = "Message sent!";
-    return 1;
-  }
-
-
-
-  function MailSendNoBCC($from,$from_name,$to,$to_name,$betreff,$text,$files="")
-  {
-    $from_name = $this->ClearDataBeforeOutput($from_name);
-    $to_name = $this->ClearDataBeforeOutput($to_name);
-    $betreff  =  $this->ReadyForPDF($betreff);
-    $text =  $this->ReadyForPDF($text);
-
-    $this->app->mail->ClearData();
-
-    $this->app->mail->From       = $from;
-    $this->app->mail->FromName   = $from_name;
-
-    $this->app->mail->Subject    = $betreff;
-    if($this->app->mail->Subject=="") $this->app->mail->Subject=$betreff;
-
-    if($this->app->Conf->WFtestmode==true){
-      $this->app->mail->AddAddress($from, $to_name);
-    }else{
-      $this->app->mail->AddAddress($to, $to_name);
-    }
-
-    $this->app->mail->Body = utf8_decode(str_replace('\r\n',"\n",$text).$this->Signatur());
-
-
-    $cFiles = !empty($files)?count($files):0;
-    for($i=0;$i<$cFiles;$i++)
-    {
-      if(@is_file($files[$i]))
-        $this->app->mail->AddAttachment($files[$i]);
-    }
-    if(!$this->app->mail->Send()) {
-      $error =  "Mailer Error: " . $this->app->mail->ErrorInfo;
-      return 0;
-    }
-    $error = "Message sent!";
-    return 1;
-  }
-
   function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
   {
     $bcc1 = $this->Firmendaten('bcc1');
@@ -32528,50 +32436,17 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $signature = false;
   }
 
+  if($projekt > 0 && $this->Projektdaten($projekt,"absendeadresse")!=""){
+    $from = $this->Projektdaten($projekt, "absendeadresse");
+  }
+
     $from_name = $this->ClearDataBeforeOutput($from_name);
     $to_name = $this->ClearDataBeforeOutput($to_name);
     $to_name = $this->ReadyForPDF($to_name);
     $from_name = $this->ReadyForPDF($from_name);
-    $this->app->mail->ClearData();
-    $ccc = $cc?count($cc):0;
-    for($i=0;$i<$ccc;$i++)
-    {
-      if($cc[$i]!="" && $cc[$i]!=$to)
-        $this->app->mail->AddCC($cc[$i]);
-    }
-
-    $cbcc = $bcc?count($bcc):0;
-    for($i=0;$i<$cbcc;$i++)
-    {
-      if($bcc[$i]!="" && $bcc[$i]!=$to)
-      {
-        $this->app->mail->AddBCC($bcc[$i]);
-      }
-    }
-
-    $bcc3 = $this->Firmendaten('bcc3');
-    if($bcc3!="")
-    {
-      $this->app->mail->AddBCC($bcc3);
-    }
-
-
-    if($projekt > 0 && $this->Projektdaten($projekt,"absendeadresse")!=""){
-      $this->app->mail->From = $this->Projektdaten($projekt, "absendeadresse");
-    }else{
-      $this->app->mail->From = $from;
-    }
-
-    if($projekt > 0 && $this->Projektdaten($projekt,"absendename")!=""){
-      $this->app->mail->FromName = $this->ReadyForPDF($this->Projektdaten($projekt, "absendename"));
-    }else{
-      $this->app->mail->FromName = $from_name;
-    }
-
     $betreff  =  $this->ReadyForPDF($betreff);
     $text =  $this->ReadyForPDF($text);
     $text = str_replace('€','&euro;',$text);
-    //$text = htmlentities($text);
 
     $texthtml = htmlspecialchars_decode(
       htmlentities($text, ENT_NOQUOTES, 'UTF-8', false)
@@ -32579,34 +32454,25 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     );
     if($texthtml!=$text)
     {
-      $this->app->mail->IsHTML(true);
       $text = $texthtml;
-    }
-
-    $this->app->mail->Subject = $betreff;
-
-    if($this->app->Conf->WFtestmode==true){
-      $this->app->mail->AddAddress($from, $to_name);
-    }else{
-      $this->app->mail->AddAddress($to, $to_name);
     }
 
     if($signature)
     {
       $eigenesignatur = $this->app->DB->Select("SELECT eigenesignatur FROM emailbackup WHERE email='$from' AND email !='' AND geloescht!=1 LIMIT 1");
       //$this->app->erp->LogFile(addslashes("SELECT eigenesignatur FROM emailbackup WHERE email='$from' AND email !='' LIMIT 1"));
-      if(strlen(trim($this->Signatur($this->app->mail->From))) > 0 && $eigenesignatur == 1)
+      if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 1)
       {
         if($this->isHTML($text))
         {
-          $signaturtext = $this->Signatur($this->app->mail->From);
+          $signaturtext = $this->Signatur($from);
           if($this->isHTML($signaturtext))
             $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".$signaturtext;
           else
             $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
         }
         else{
-          $body = utf8_decode(str_replace('\r\n',"\n",$text)).$this->Signatur($this->app->mail->From);
+          $body = utf8_decode(str_replace('\r\n',"\n",$text)).$this->Signatur($from);
         }
       }else{
         if($projekt > 0 && $this->Projektdaten($projekt,"absendesignatur")!=""){
@@ -32621,16 +32487,16 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
             $body = utf8_decode(str_replace('\r\n',"\n",$text))."\r\n\r\n".$this->ReadyForPDF($this->Projektdaten($projekt,"absendesignatur"));
           }
         }else{
-          if(strlen(trim($this->Signatur($this->app->mail->From))) > 0 && $eigenesignatur == 0){
+          if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 0){
             if($this->isHTML($text))
             {
-              $signaturtext = $this->Signatur($this->app->mail->From);
+              $signaturtext = $this->Signatur($from);
               if($this->isHTML($signaturtext))
                 $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
               else
                 $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
             }else{
-              $body = utf8_decode(str_replace('\r\n',"\n",$text)).$this->Signatur($this->app->mail->From);
+              $body = utf8_decode(str_replace('\r\n',"\n",$text)).$this->Signatur($from);
             }
           }else{
             $body = utf8_decode(str_replace('\r\n',"\n",$text));
@@ -32664,22 +32530,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $body = str_replace('{CONTENT}',$body,$email_html_template);
     }
 
-    if($this->isHTML($body))
-    {
-      $this->app->mail->IsHTML(true);
-      $this->app->mail->MsgHTML($body);
-    } else {
-      $this->app->mail->Body=$body;
-    }
-
-    if(is_array($files))
-    {
-      for($i=0;$i<(!empty($files)?count($files):0);$i++)
-      {
-        if(@is_file($files[$i]))
-          $this->app->mail->AddAttachment($files[$i]);
-      }
-    }
     $sysMailerSent = false;
     $sysMailer = null;
     $emailObj = null;
@@ -32688,61 +32538,75 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     }
 
     if ($sysMailer !== null) {
+      
       $recipients = [];
-      foreach ($this->app->mail->to as $item)  {
-        $recipients[] = new EmailRecipient($item[0], $item[1]);
-      }
+      $recipients[] = new EmailRecipient($to, $to_name);
+
       $ccRecipients = [];
-      foreach ($this->app->mail->GetCC() as $item)  {
-        $ccRecipients[] = new EmailRecipient($item[0], $item[1]);
+      if (is_array($cc)) {
+        foreach ($cc as $item)  {
+          $ccRecipients[] = new EmailRecipient($item, $item);
+        }
+      } else {
+        foreach (explode(',',str_replace(" ","",$cc)) as $item)  {
+          $ccRecipients[] = new EmailRecipient($item, $item);
+        }
       }
+
       $bccRecipients = [];
-      foreach ($this->app->mail->GetBCC() as $item)  {
-        $bccRecipients[] = new EmailRecipient($item[0], $item[1]);
+      if (is_array($bcc)) {
+        foreach ($bcc as $item)  {
+          $bccRecipients[] = new EmailRecipient($item, $item);
+        }
+      } else {
+        foreach (explode(',',str_replace(" ","",$bcc)) as $item)  {
+          $bccRecipients[] = new EmailRecipient($item, $item);
+        }
       }
-      $emailObj = $sysMailer->composeEmail(
-          $recipients,
-          $this->app->mail->Subject,
-          $this->app->mail->Body,
-          $files,
-          $ccRecipients,
-          $bccRecipients
-      );
+
+      $bcc3 = $this->Firmendaten('bcc3');
+      if($bcc3!="")
+      {
+        $bccRecipients[] = new EmailRecipient($bcc3[0], $bcc3[1]);
+      }
+
       $sysMailerSent = $sysMailer->composeAndSendEmail(
-          $this->app->mail->From,
-          $this->app->mail->FromName,
+          $from,
+          $from_name,
           $recipients,
-          $this->app->mail->Subject,
-          $this->app->mail->Body,
+          $betreff,
+          $body,
           $files,
           $ccRecipients,
-          $bccRecipients
+          $bccRecipients,
+          $sendmail_error
       );
     }
-    if($sysMailerSent === false && !$this->app->mail->Send()) {
-      $this->app->erp->LogFile("Mailer Error: " . $this->app->mail->ErrorInfo);
-      $this->MailLogFile();
-      $this->mail_error =  "Mailer Error: " . $this->app->mail->ErrorInfo;
+
+    if($sysMailerSent === false) {
+      $this->app->erp->LogFile("Mailer Error: " . $sendmail_error);
+      $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
+      $this->mail_error =  "Mailer Error: " . $sendmail_error;
 
       if(isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetID'))
       {
-        $this->app->erp->InternesEvent($this->app->User->GetID(),"Fehler bei Mailversand: ".$this->app->mail->ErrorInfo,"alert",1);
+        $this->app->erp->InternesEvent($this->app->User->GetID(),"Fehler bei Mailversand: ".$sendmail_error,"alert",1);
       }
       return 0;
     }
     // schreiben in post ausgang
-    $this->MailLogFile();
-    $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$this->app->mail->From."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
+    $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
+    $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$fromm."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
     if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name) && !preg_match("/WaWision Kopie/",$to_name))
     {
-      $imap_data = $this->app->DB->SelectRow("SELECT * FROM emailbackup WHERE email='".$this->app->mail->From."' AND geloescht!=1 LIMIT 1");
-      $imapCopyMessage = $this->app->mail->mailmessage;
+      $imap_data = $this->app->DB->SelectRow("SELECT * FROM emailbackup WHERE email='".$from."' AND geloescht!=1 LIMIT 1");
+      $imapCopyMessage = $body;
       if ($sysMailerSent === true && $emailObj !== null) {
         /** @var MimeMessageFormatterInterface $formatter */
         $formatter = $this->app->Container->get('MailClientMimeMessageFormatter');
         $imapCopyMessage = $formatter->formatMessage(
           $emailObj,
-          new EmailRecipient($this->app->mail->From, $this->app->mail->FromName)
+          new EmailRecipient($from, $from_name)
         );
       }
       try {
@@ -32754,40 +32618,35 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         $client->appendMessage($imapCopyMessage, $account->getImapOutgoingFolder());
       } catch (Exception $e) {}
 
-      $this->app->erp->LogFile("IMAP Ausgang FROM ".$this->app->mail->From." S $server P $port T $type SP $server_path B ".$imap_data['benutzername']." SF ".$imap_data['imap_sentfolder']);
+      $this->app->erp->LogFile("IMAP Ausgang FROM ".$from." S $server P $port T $type SP $server_path B ".$imap_data['benutzername']." SF ".$imap_data['imap_sentfolder']);
     }
     $this->mail_error = "";
     return 1;
   }
 
 
-
-  function MailLogFile()
+  function MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
   {
-    $subject = $this->app->DB->real_escape_string($this->app->mail->Subject);
-    $body =   $this->app->DB->real_escape_string($this->app->mail->Body);
-    $status = $this->app->DB->real_escape_string($this->app->mail->ErrorInfo);
+    $subject = $subject;
+    $body =   $body;
+    $status = $errorinfo;
 
     if($status!="") {
-      $status .= " (Host: ".$this->app->mail->Host." User: ".$this->app->mail->Username.") ";
+      $status .= " (Host: ".$host." User: ".$username.") ";
     }
 
-    $from =   $this->app->DB->real_escape_string($this->app->mail->From);
-    $to =   $this->app->DB->real_escape_string($this->app->mail->to[0][0]);
+    $from =   $this->app->DB->real_escape_string($from);
+    $to =   $this->app->DB->real_escape_string($to);
 
     $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit) VALUES ('','$subject','$body','$from','$to','$status',NOW())");
-    if(method_exists($this->app->mail,'GetCC')){
-      $cc = $this->app->mail->GetCC();
-      $bcc = $this->app->mail->GetBCC();
-      if($cc && (!empty($cc)?count($cc):0) > 0){
-        for ($i=0; $i < (!empty($cc)?count($cc):0); $i++) {
-        $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit, art) VALUES ('','$subject','$body','$from','".$cc[$i][0]."','$status',NOW(), '1')");
-        }
+    if($cc && (!empty($cc)?count($cc):0) > 0){
+      for ($i=0; $i < (!empty($cc)?count($cc):0); $i++) {
+      $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit, art) VALUES ('','$subject','$body','$from','".$cc[$i][0]."','$status',NOW(), '1')");
       }
-      if($bcc && (!empty($bcc)?count($bcc):0) > 0){
-        for ($i=0; $i < (!empty($bcc)?count($bcc):0); $i++) {
-        $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit, art) VALUES ('','$subject','$body','$from','".$bcc[$i][0]."','$status',NOW(), '2')");
-        }
+    }
+    if($bcc && (!empty($bcc)?count($bcc):0) > 0){
+      for ($i=0; $i < (!empty($bcc)?count($bcc):0); $i++) {
+      $this->app->DB->Insert("INSERT INTO mailausgang (id,`subject`,`body`,`from`,`to`,`status`,zeit, art) VALUES ('','$subject','$body','$from','".$bcc[$i][0]."','$status',NOW(), '2')");
       }
     }
     $this->app->DB->Delete("DELETE FROM `mailausgang` WHERE DATE_SUB(CURDATE(), INTERVAL 90 DAY) >= zeit");

@@ -161,38 +161,6 @@ class erpooSystem extends Application
       $backlinkmodule = $this->Secure->GetGET('backlinkmodule');
       $backlinkParameter = $this->Secure->GetGET('backlinkparameter');
 
-      // mail
-      $this->mail = new PHPMailer($this);
-      $this->mail->CharSet = 'UTF-8';
-      $this->mail->PluginDir = 'plugins/phpmailer/';
-
-      if($mailanstellesmtp == '1'){
-        $this->mail->IsMail();
-      }else{
-        $this->mail->IsSMTP();
-
-        if($noauth == '1') {
-          $this->mail->SMTPAuth = false;
-        }
-        else {
-          $this->mail->SMTPAuth = true;
-        }
-
-        if($mailssl == 1){
-          $this->mail->SMTPSecure = 'tls';                 // sets the prefix to the servier
-        }
-        else if($mailssl == 2){
-          $this->mail->SMTPSecure = 'ssl';                 // sets the prefix to the servier
-        }
-
-        $this->mail->Host = $host;
-
-        $this->mail->Port = $port;                   // set the SMTP port for the GMAIL server
-
-        $this->mail->Username = $benutzername;  // GMAIL username
-        $this->mail->Password = $passwort;            // GMAIL password
-      }
-
       // templates
     }
 
