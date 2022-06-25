@@ -33,6 +33,12 @@ if ($argc >= 2) {
       $verbose = false;
     } 
 
+    if (in_array('-f', $argv)) {
+      $force = true;
+    } else {
+      $force = false;
+    } 
+
     if (!str_starts_with($argv[1],'-')) {
       $module_name = $argv[1];
     } else {
@@ -47,8 +53,9 @@ if ($argc >= 2) {
     $target_php_folder = "../../www/pages/";
     $target_tpl_folder = "../../www/pages/content/";
 
-    if (file_exists($php_file_name)) {
-        echo("File exists: ." . $php_file_name . "\n");
+    if (!$force && file_exists($target_php_folder.$php_file_name)) {
+        echo("File exists: ." .$target_php_folder.$php_file_name . "\n");
+        echo("Use -f to force overwrite.\n");
         exit;
     }
 
