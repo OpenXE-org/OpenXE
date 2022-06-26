@@ -99,13 +99,6 @@
     document.forms[0].elements['footer[3][4]'].value = "";
     document.forms[0].elements['footer[3][5]'].value = "";
 
-
-    document.forms[0].benutzername.value = "musterman";
-    document.forms[0].passwort.value = "passwort";
-    document.forms[0].host.value = "smtp.server.de";
-    document.forms[0].port.value = "25";
-    document.forms[0].ssl.checked = true;
-
     document.forms[0].email.value = "info@server.de";
     document.forms[0].absendername.value = "Meine Firma";
     document.forms[0].signatur.value = "--\n"
@@ -663,19 +656,11 @@
 		<div class="row-height">
 			<div class="col-xs-12 col-md-12 col-md-height">
 				<div class="inside inside-full-height">
-					<fieldset id="fieldset-mailversand-einstellungen">
-						<legend>{|Versand Einstellungen|}</legend>
+					<fieldset>
+						<legend>Standard Einstellung E-Mail (bei Versand von E-Mails)</legend>
 						<table cellspacing="5" width="100%">
-							<tr><td width="300">Benutzername (E-Mail):&nbsp;</td><td><input type="text" name="benutzername" size="40" value="[BENUTZERNAME]"></td></tr>
-							<tr><td>Passwort:&nbsp;</td><td><input type="password" name="passwort" size="40" value="[PASSWORT]" AUTOCOMPLETE="off"></td></tr>
-							<tr><td>Postausgangsserver:&nbsp;</td><td><input type="text" name="host" size="40" value="[HOST]"></td></tr>
-							<tr><td>Port:&nbsp;</td><td><input type="text" name="port" size="4" value="[PORT]"></td></tr>
-							<tr><td width="50">Verschl&uuml;sselung:</td><td><select name="mailssl"><option value="0">keine</option><option value="1" [TLS]>TLS</option><option value="2" [SSL]>SSL</option></select></td></tr>
 							<tr><td>Testmail Empf&auml;nger:&nbsp;</td><td><input type="text" name="testmailempfaenger" size="40" value="[TESTMAILEMPFAENGER]"></td></tr>
-							<tr><td width="50">Testmail:</td><td><input type="submit" name="submitFirmendaten" onclick="$('#firmendatenform').attr('action','#tabs-4');" value="Speichern">&nbsp;<input type="button" value="Testmail senden" id="testmail-senden-button">&nbsp;<i>Bitte erst speichern und dann senden!</i></td></tr>
-							<tr><td width="50">PHP mail() verwenden (nur in Ausnahme!):</td><td><input type="checkbox" name="mailanstellesmtp" [MAILANSTELLESMTP]></td></tr>
-							<tr><td width="50">Keine SMTP Authentifizierung:</td><td><input type="checkbox" name="noauth" [NOAUTH]></td></tr>
-							<!--<tr><td align="center"></td><td><input type="button" name="testmail" value="Testmail schicken (zum Account Testen)"></td></tr>-->
+							<tr><td width="50">Testmail:</td><td><input type="button" value="Testmail senden" id="testmail-senden-button">&nbsp;<i>Bitte erst speichern und dann senden!</i></td></tr>
 						</table>
 					</fieldset>
 				</div>
@@ -690,7 +675,9 @@
 					<fieldset>
 						<legend>Standard Einstellung E-Mail (bei Versand von E-Mails)</legend>
 						<table cellspacing="5" width="100%">
-							<tr><td width="300">E-Mailadresse:</td><td><input type="text" name="email" value="[EMAIL]" size="40"></td>
+							<tr><td width="300">E-Mailadresse:</td><td><select name="email">
+                [EMAIL]
+              </select></td>
 							<tr><td>Name des Absenders:</td><td><input type="text" name="absendername" value="[ABSENDERNAME]" size="40"></td>
 							<tr><td>Standardsignatur:</td><td><textarea name="signatur" id="signatur" rows="15" cols="80">[SIGNATUR]</textarea></td>
 							<tr><td>Standard Gru&szlig;formel:</td><td><textarea name="mailgrussformel" id="mailgrussformel" rows="5" cols="80" data-lang="mailgrussformel">[MAILGRUSSFORMEL]</textarea>&nbsp;<i>Variable Absendername {MITARBEITER}</i></td>

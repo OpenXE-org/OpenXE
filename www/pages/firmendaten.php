@@ -1711,19 +1711,11 @@ class Firmendaten  {
         $this->app->Tpl->Set('HINTERGRUNDBRIEFPAPIER2TEXT', "<a class=\"button\" href=\"index.php?module=firmendaten&action=briefpapier&cmd=briefpapier2\">PDF herunterladen</a>");
       }
 
-      //Versand E-Mail
-      $this->app->Tpl->Set('BENUTZERNAME' , $data[0]['benutzername']);
-      $this->app->Tpl->Set('PASSWORT' , $data[0]['passwort']);
-      $this->app->Tpl->Set('HOST' , $data[0]['host']);
-      $this->app->Tpl->Set('PORT' , $data[0]['port']);
-      if($data[0]['mailssl']=="2")
-        $this->app->Tpl->Set('SSL' , "selected");
-      else if($data[0]['mailssl']=="1")
-        $this->app->Tpl->Set('TLS' , "selected");
-
       // Signatur
       $this->app->Tpl->Set('SIGNATUR' , base64_decode($data[0]['signatur']));
-      $this->app->Tpl->Set('EMAIL' , $data[0]['email']);
+
+      $this->app->Tpl->Set('EMAIL', $this->app->erp->GetSelectEmail($data[0]['email']));    
+
       $this->app->Tpl->Set('ABSENDERNAME' , $data[0]['absendername']);
       $this->app->Tpl->Set('BCC1' , $data[0]['bcc1']);
       $this->app->Tpl->Set('BCC2' , $data[0]['bcc2']);

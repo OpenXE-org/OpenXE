@@ -139,6 +139,7 @@ final class SystemMailer
                 && $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_GMAIL
             )
         ) {
+            $mailerror_text = 'Authtype error.';
             return false;
         }
 

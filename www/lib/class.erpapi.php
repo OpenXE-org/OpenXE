@@ -29734,7 +29734,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
   function GetSelectEmailMitName($selected="")
   {
-    $own = $this->app->User->GetEmail();
+  /*  $own = $this->app->User->GetEmail();
     $name = $this->app->User->GetName();
 
     $selected = str_replace(' <',' &lt;',$selected);
@@ -29769,9 +29769,14 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
 
     $email_addr = $this->app->DB->SelectArr("SELECT if(smtp_frommail!='',smtp_frommail,email) as email,smtp_fromname FROM emailbackup WHERE (smtp_frommail!='' OR email!='') AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
+*/
+// Force only existing emailbackup accounts
+
+    $email_addr = $this->app->DB->SelectArr("SELECT email, angezeigtername FROM emailbackup WHERE email != '' AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
+
     foreach($email_addr AS $mail)
     {
-      if($mail['smtp_fromname']!="") $emails[] = $mail['smtp_fromname']." &lt;".$mail['email']."&gt;";
+      if($mail['angezeigtername']!="") $emails[] = $mail['angezeigtername']." &lt;".$mail['email']."&gt;";
       else $emails[] = $firmenname." &lt;".$mail['email']."&gt;";
     }
 
@@ -29789,6 +29794,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
   function GetSelectEmail($selected="")
   {
+/*
     $own = $this->app->User->GetEmail();
     $email_addr= $this->Firmendaten("email");
 
@@ -29804,16 +29810,28 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $emails[] = $email_addr;
 
     $email_addr = $this->app->DB->SelectArr("SELECT if(smtp_frommail!='',smtp_frommail,email) as email FROM emailbackup WHERE (smtp_frommail!='' OR email!='') AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
-    foreach($email_addr AS $mail)
+*/
+// Force only existing emailbackup accounts
+
+    $email_addr = $this->app->DB->SelectArr("SELECT email FROM emailbackup WHERE email != '' AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
+
+    foreach($email_addr AS $mail) {
       $emails[] = $mail['email'];
+    }
 
     $emails = array_keys(array_flip($emails));
 
     for($i=0;$i<(!empty($emails)?count($emails):0);$i++)
     {
-      if($emails[$i]==$selected) $mark="selected"; else $mark="";
+      if($emails[$i]==$selected) {
+         $mark="selected"; 
+      }
+      else {
+         $mark="";
+      }
       $tpl .="<option value=\"{$emails[$i]}\" $mark>{$emails[$i]}</option>";
     }
+
     return $tpl;
   }
 
