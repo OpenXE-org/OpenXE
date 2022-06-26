@@ -32547,7 +32547,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         foreach ($cc as $item)  {
           $ccRecipients[] = new EmailRecipient($item, $item);
         }
-      } else {
+      } else if (!empty($cc)) {
         foreach (explode(',',str_replace(" ","",$cc)) as $item)  {
           $ccRecipients[] = new EmailRecipient($item, $item);
         }
@@ -32558,7 +32558,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         foreach ($bcc as $item)  {
           $bccRecipients[] = new EmailRecipient($item, $item);
         }
-      } else {
+      } else if (!empty($bcc)) {
         foreach (explode(',',str_replace(" ","",$bcc)) as $item)  {
           $bccRecipients[] = new EmailRecipient($item, $item);
         }
