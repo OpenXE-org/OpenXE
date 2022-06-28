@@ -124,7 +124,7 @@ final class SystemMailer
         } catch (Exception $e) {
             $account = null;
             $this->logger->error($e->getMessage(), ['exception' => $e]);
-            $mailerror_text = 'Error while sending email: Account not found.';
+            $mailerror_text = 'Error while sending email: Account not found: '.$senderEmail;
         }
 
         if ($account === null) {
