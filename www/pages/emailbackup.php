@@ -18,6 +18,8 @@ class Emailbackup {
         $this->app->ActionHandler("create", "emailbackup_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "emailbackup_edit");
         $this->app->ActionHandler("delete", "emailbackup_delete");
+        $this->app->ActionHandler("test_smtp",'emailbackup_test_smtp');
+
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -203,8 +205,8 @@ $width = array('10%'); // Fill out manually later
 	$input['smtp_extra'] = $this->app->Secure->GetPOST('smtp_extra');
 	$input['smtp_ssl'] = $this->app->Secure->GetPOST('smtp_ssl');
 	$input['smtp_port'] = $this->app->Secure->GetPOST('smtp_port');
-	$input['smtp_frommail'] = $this->app->Secure->GetPOST('smtp_frommail');
-	$input['smtp_fromname'] = $this->app->Secure->GetPOST('smtp_fromname');
+	$input['smtp_frommail'] = $this->app->Secure->GetPOST('email'); // use only these
+	$input['smtp_fromname'] = $this->app->Secure->GetPOST('angezeigtername'); // use only these
 	$input['client_alias'] = $this->app->Secure->GetPOST('client_alias');
 	$input['smtp_authtype'] = $this->app->Secure->GetPOST('smtp_authtype');
 	$input['smtp_authparam'] = $this->app->Secure->GetPOST('smtp_authparam');
@@ -255,8 +257,6 @@ $width = array('10%'); // Fill out manually later
 	$this->app->Tpl->Set('SMTP_EXTRA', $input['smtp_extra']);
 	$this->app->Tpl->Set('SMTP_SSL', $input['smtp_ssl']);
 	$this->app->Tpl->Set('SMTP_PORT', $input['smtp_port']);
-	$this->app->Tpl->Set('SMTP_FROMMAIL', $input['smtp_frommail']);
-	$this->app->Tpl->Set('SMTP_FROMNAME', $input['smtp_fromname']);
 	$this->app->Tpl->Set('CLIENT_ALIAS', $input['client_alias']);
 	$this->app->Tpl->Set('SMTP_AUTHTYPE', $input['smtp_authtype']);
 	$this->app->Tpl->Set('SMTP_AUTHPARAM', $input['smtp_authparam']);
@@ -269,5 +269,36 @@ $width = array('10%'); // Fill out manually later
 	$this->app->Tpl->Set('EMAIL', $input['email']);
 	
     }
+
+  function emailbackup_test_smtp() {
+
+    $id = $this->app->Secure->GetGET('id');
+
+    $result = $this->app->DB->SelectArr("SELECT angezeigtername, email FROM emailbackup WHERE id='$id' LIMIT 1");
+
+    if(
+      $this->app->erp->MailSend(
+        $result[0]['email'],
+        $result[0]['angezeigtername'],
+        $result[0]['email'],
+        $result[0]['angezeigtername'],
+        'Xenomporio ERP: Testmail',
+        'Dies ist eine Testmail',
+        '',0,true,'','',
+        true
+      )
+    ) {
+      $msg = $this->app->erp->base64_url_encode(
+        '<div class="info">Die Testmail wurde erfolgreich versendet an '.$result[0]['email'].'. '.$this->app->erp->mail_error.'</div>'
+      );
+    }
+    else {
+      $msg = $this->app->erp->base64_url_encode(
+        '<div class="error">Die Testmail wurde nicht versendet: '.$this->app->erp->mail_error.'</div>'
+      );
+    }
+    $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
+  }
+
 
 }
