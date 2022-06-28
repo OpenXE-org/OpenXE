@@ -116,7 +116,7 @@ if ($argc >= 2) {
         //       <tr><td>{|Bezeichnung|}:*</td><td><input type="text" id="bezeichnung" name="bezeichnung" value="[BEZEICHNUNG]" size="40"></td></tr>
 
         if ($row['Field'] != 'id') {
-            $edit_form = $edit_form . '<tr><td>{|' . $row['Field'] . '|}:</td><td><input type="text" name="' . $row['Field'] . '" value="[' . strtoupper($row['Field']) . ']" size="40"></td></tr>' . "\n";
+            $edit_form = $edit_form . '<tr><td>{|' . ucfirst($row['Field']) . '|}:</td><td><input type="text" name="' . $row['Field'] . '" value="[' . strtoupper($row['Field']) . ']" size="40"></td></tr>' . "\n";
         }
 
         echo("\n");
@@ -138,7 +138,7 @@ if ($argc >= 2) {
     $php_file_contents = file_get_contents($php_template_file_name);
 
     if (empty($php_file_contents)) {
-        echo("Failed to load" . $php_template_file_name . "\n");
+        echo("Failed to load " . $php_template_file_name . "\n");
         exit;
     }
 
