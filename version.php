@@ -1,1 +1,1 @@
-<?php $version="OSS"; $version_revision="20.3.c9ffacf";?>
+<?php $version="OSS"; $version_revision="1.0.RC1";?>

@@ -22155,7 +22155,12 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   //@refactor Geschaeftsbrief_vorlagen Modul
   function GetGeschaeftsBriefText($subjekt,$sprache='',$projekt='',$dokument='',$dokumentid=0)
   {
-    $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+
+    $dbcheck = $this->app->DB->Select("SHOW TABLES LIKE '$dokument'");
+
+    if ($dbcheck) {
+      $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+    }
     if($abweichend>0 && !preg_match('/_Abweichend/',$subjekt))
     {
       $text = $this->GetGeschaeftsBriefText($subjekt."_Abweichend",$sprache,$projekt,$dokument,$dokumentid);
@@ -22197,7 +22202,11 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   function GetGeschaeftsBriefBetreff($subjekt,$sprache="",$projekt="",$dokument="",$dokumentid=0)
   {
 
-    $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+    $dbcheck = $this->app->DB->Select("SHOW TABLES LIKE '$dokument'");
+
+    if ($dbcheck) {
+      $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+    }
     if($abweichend>0 && !preg_match('/_Abweichend/',$subjekt))
     {
       $text = $this->GetGeschaeftsBriefBetreff($subjekt."_Abweichend",$sprache,$projekt,$dokument,$dokumentid);
