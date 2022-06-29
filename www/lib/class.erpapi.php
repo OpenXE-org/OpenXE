@@ -32517,10 +32517,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
   // keine leeren email versenden
   if($text=="" && $betreff=="") return;
 
-  $isSystemTemplate = $system && is_file(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
+/*  $isSystemTemplate = $system && is_file(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
   if($isSystemTemplate) {
     $signature = false;
-  }
+  }*/
 
     $from_name = $this->ClearDataBeforeOutput($from_name);
     $to_name = $this->ClearDataBeforeOutput($to_name);
@@ -32637,6 +32637,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     }
 
     // wenn html rahmen
+/*
     if($isSystemTemplate) {
       $email_html_template = file_get_contents(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
       $email_html_template = str_replace(
@@ -32644,13 +32645,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         str_replace('index.php','',$this->app->Location->getServer()),
         $email_html_template
       );
-    }
-    else{
+    } 
+    else */
+    {
       $email_html_template = $this->Projektdaten($projekt, "email_html_template");
       if($email_html_template == ""){
         $email_html_template = $this->Firmendaten('email_html_template');
       }
-    }
+    } 
     if($email_html_template!="" && preg_match("/{CONTENT}/",$email_html_template))
     {
       $email_html_template = preg_replace('~\x{00a0}~siu',' ',$email_html_template);
