@@ -37,8 +37,11 @@
 		[PAGE]
 		<div id="login-footer">
 			<div class="copyright">
-				&copy; [YEAR] Xenomporio project & Xentral ERP Software GmbH<br>
+				&copy; [YEAR] Xenomporio project &  by Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.
+<br>
 				[WAWIVERSION]
+</br>
+Xenomporio is free open source software under AGPL-3.0 license, based on <a href="https://xentral.com" target="_blank">Xentral®</a>.
 <!--	 dead link			[LIZENZHINWEIS] -->
 			</div>
 		</div>
