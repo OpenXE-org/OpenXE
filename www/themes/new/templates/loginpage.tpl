@@ -10,10 +10,8 @@
 	<link rel="icon" type="image/png" href="./themes/new/images/favicon/favicon-32x32.png" sizes="32x32">
 	<script type="text/javascript" src="./js/jquery/jquery-3.5.0.min.js"></script>
 	<script type="text/javascript" src="[JQUERYMIGRATESRC]"></script>
-	<script src="themes/new/js/slick.min.js"></script>
 	<script src="themes/new/js/scripts_login.js"></script>
 	<link rel="stylesheet" href="themes/new/css/normalize.min.css?v=5">
-	<link rel="stylesheet" href="themes/new/css/slick.css">
 	<link rel="stylesheet" href="themes/new/css/login_styles.css?v=3">
 </head>
 

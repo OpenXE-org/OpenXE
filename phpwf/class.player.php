@@ -377,7 +377,7 @@ class Player {
           else{
             $this->app->Tpl->Set(
               'LOGINSLIDER',
-              '<div class="slide" style="background-image: url(\'./themes/new/templates/white-cup-filled-by-coffee.jpg\');">
+              '<div class="slide" style="background-image: url(\'./themes/new/images/login_screen_picture.jpg\');">
               </div>'
             );
           }

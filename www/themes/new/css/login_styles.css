@@ -66,17 +66,17 @@ body {
 
 #login-slider-wrapper {
     width: 61.13%;
-    background: pink;
     position: relative;
 }
 #login-slider {
     position: fixed;
+    background: #4a738c;
     width: 61.13%;
     height: 100vh;
 }
 #login-slider .slide {
     height: 100vh;
-    background-size: cover;
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;
     position: relative;
