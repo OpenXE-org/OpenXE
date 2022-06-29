@@ -370,7 +370,8 @@
 <!--
 <div class=\"footer\"><p>Nutzen Sie unseren <a href=\"https://shop.xentral.biz/sonstige/1-jahr-zugang-updateserver-open-source-version.html?c=164?c=164\" target=\"_blank\">Update-Server</a> um auch mit der Open-Source Version mit Updates versorgt zu sein.</p></div>
 --!>
-<div class=\"footer\"><p>Xenomporio is free open source software under AGPL-3.0 license, based on Xentral® by Xentral ERP Software GmbH.</p></div>
+<div class=\"footer\"><p>
+Xenomporio is free open source software under AGPL-3.0 license, based on <a href="https://xentral.com" target="_blank">Xentral®</a> by Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.</p></div>
 </div></body></html>";
 	}
 
