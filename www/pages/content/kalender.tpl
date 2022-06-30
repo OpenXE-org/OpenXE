@@ -90,15 +90,15 @@
                                     <td colspan="3"><input type="text" name="ort" id="ort" size="40"></td>
                                 </tr>
                                 <tr>
-                                    <td>{|Termin mit|}:</td>
+                                    <td>{|Termin mit Adresse|}:</td>
                                     <td colspan="3"><input type="text" name="adresse" id="adresse" size="40">[LINKADRESSE]</td>
                                 </tr>
                                 <tr>
-                                    <td>{|Ansprechpartner|}:</td>
+                                    <td>{|Ansprechpartner bei Adresse|}:</td>
                                     <td colspan="3"><input type="text" name="ansprechpartner" id="ansprechpartner" size="40">[LINKANSPRECHPARTNER]</td>
                                 </tr>
                                 <tr>
-                                    <td>{|Verantwortlicher|}:</td>
+                                    <td>{|Verantwortlicher intern|}:</td>
                                     <td colspan="3"><input type="text" name="adresseintern" id="adresseintern" size="40"></td>
                                 </tr>
                                 <tr>

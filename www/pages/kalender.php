@@ -194,6 +194,7 @@ class Kalender {
     $adresse = $this->app->Secure->GetPOST("adresse");
     $ansprechpartner = $this->app->Secure->GetPOST("ansprechpartner");
     $adresseintern = $this->app->Secure->GetPOST("adresseintern");
+
     $projekt = $this->app->Secure->GetPOST("projekt");
 
     $personen = $this->app->Secure->GetPOST("personen");
@@ -246,6 +247,7 @@ class Kalender {
       $rest = explode(" ",$adresseintern);
       $rest = $rest[0];
       $adresseintern =  $this->app->DB->Select("SELECT id FROM adresse WHERE id='$rest' AND geloescht=0 LIMIT 1");
+  
 
       $projekt = trim($projekt);
       $projekt =  $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='$projekt' AND abkuerzung!='' LIMIT 1");
@@ -289,8 +291,11 @@ class Kalender {
         // Personenzuordnung entfernen (alle)
         $this->app->DB->Delete("DELETE FROM kalender_user WHERE event = '$eventid' AND userid > 0");
         // Gruppenzuordnung entfernen (nur Gruppen in denen der User ist)
-        $eigene_kalendergruppen_ids = array_column($eigene_kalendergruppen, 'id');
-        $this->app->DB->Delete("DELETE FROM kalender_user WHERE event = '$eventid' AND gruppe > 0 AND gruppe IN (".implode(',', $eigene_kalendergruppen_ids).")");
+
+        if (!empty($eigene_kalendergruppen)) {
+          $eigene_kalendergruppen_ids = array_column($eigene_kalendergruppen, 'id');
+          $this->app->DB->Delete("DELETE FROM kalender_user WHERE event = '$eventid' AND gruppe > 0 AND gruppe IN (".implode(',', $eigene_kalendergruppen_ids).")");
+        }
         $event = $eventid;
       }
 
@@ -410,7 +415,6 @@ class Kalender {
       $this->app->Tpl->Add("GRUPPENKALENDER","<option value=\"{$gruppenkalender[$i]['id']}\" $select>{$gruppenkalender[$i]['bezeichnung']}</option>");
     }
 
-
     $this->app->Tpl->Set('LINKADRESSE',"<a href=\"#\" onclick=\"splitstring = document.getElementById('adresse').value; felder = splitstring.split(' ', 3); if( felder[0] > 0) window.location.href='index.php?module=adresse&action=brief&id=' + felder[0];\" style=\"font-weight:normal;text-decoration:underline; position:absolute;margin-top:5px;margin-left:5px;\"><img src=\"themes/new/images/forward.svg\"></a>");
     if($this->app->erp->RechteVorhanden("adresse","ansprechpartner")){
       $this->app->Tpl->Set('LINKANSPRECHPARTNER', "<a href=\"#\" onclick=\"splitstring = document.getElementById('adresse').value; felder = splitstring.split(' ', 3); if( felder[0] > 0) window.location.href='index.php?module=adresse&action=ansprechpartner&id=' + felder[0];\" style=\"font-weight:normal;text-decoration:underline;position:absolute;margin-top:5px;margin-left:5px;\"><img src=\"themes/new/images/forward.svg\"></a>");
@@ -429,15 +433,12 @@ class Kalender {
       $this->app->YUI->AutoSaveUserParameter('kalender_gruppe_'.$gruppenkalender[$gk]['id'],'kalender_gruppe_'.$gruppenkalender[$gk]['id'],"$('#calendar').fullCalendar('refetchEvents');");
     }
 
-
-
     $this->app->YUI->AutoSaveUserParameter("aufgaben","adresse_kalender_aufgaben","$('#calendar').fullCalendar('refetchEvents');");
 
     if($this->app->User->GetParameter("adresse_kalender_aufgaben")=="1")
     {
       $this->app->Tpl->Set("AUFGABENCHECKED","checked");
     }
-
 
     $this->app->YUI->AutoSaveUserParameter("termine","adresse_kalender_termine","$('#calendar').fullCalendar('refetchEvents');");
 
@@ -446,7 +447,6 @@ class Kalender {
       $this->app->Tpl->Set("TERMINECHECKED","checked");
     }
 
-
     $this->app->YUI->AutoSaveUserParameter("projekte","adresse_kalender_projekte","$('#calendar').fullCalendar('refetchEvents');");
 
     if($this->app->User->GetParameter("adresse_kalender_projekte")=="1")
@@ -454,14 +454,12 @@ class Kalender {
       $this->app->Tpl->Set("PROJEKTECHECKED","checked");
     }
 
-
     $this->app->YUI->AutoSaveUserParameter("urlaub","adresse_kalender_urlaub","$('#calendar').fullCalendar('refetchEvents');");
 
     if($this->app->User->GetParameter("adresse_kalender_urlaub")=="1")
     {
       $this->app->Tpl->Set("URLAUBCHECKED","checked");
     }
-
 
     if($this->app->erp->ModulVorhanden("serviceauftrag")){
       $this->app->YUI->AutoSaveUserParameter("serviceauftrag","adresse_kalender_serviceauftrag","$('#calendar').fullCalendar('refetchEvents');");
@@ -495,7 +493,10 @@ class Kalender {
     $this->app->YUI->TimePicker("von");
     $this->app->YUI->TimePicker("bis");
     $this->app->YUI->AutoComplete("adresse", "adresse", 0,"","","","","TerminForm");
-    $this->app->YUI->AutoComplete("adresseintern", "adresse", 0,"","","","","TerminForm");
+
+    $this->app->YUI->AutoComplete('adresseintern','mitarbeiterid');
+
+//    $this->app->YUI->AutoComplete("adresseintern", "adresse", 0,"","","","","TerminForm");
     $this->app->YUI->AutoComplete("projekt", "projektname", 1,"","","","","TerminForm");
     $this->app->YUI->CkEditor("einladungtext", "internal", array("height" => "250"));
 
@@ -976,16 +977,62 @@ class Kalender {
     $cmd = $this->app->Secure->GetGET("cmd");
     header('Content-type: application/json');
     switch($cmd) {
-      case "getEinladung":
-        $data = $this->app->DB->SelectRow("SELECT k.adresse, k.adresseintern, IFNULL(a.sprache,''),k.projekt,k.bezeichnung,k.beschreibung,k.ort,
+      case "getEinladung": // Ajax to prepare the pop up for invitation mask
+
+      /*
+      *
+      * Organizer:
+      * If there is an adresseintern, use this, otherwise use the user's address
+      *
+      * Recipients:
+      * if there is an address and a person, use the person
+      * if there is an address and no person, use the address
+      * add the addresses of the selected users
+      * each address only once
+      *       
+      */
+
+        $ret = array();
+
+        $data = $this->app->DB->SelectRow("SELECT k.adresse, k.ansprechpartner_id, k.adresseintern, IFNULL(a.sprache,''),k.projekt,k.bezeichnung,k.beschreibung,k.ort,
           DATE_FORMAT(k.von,'%d.%m.%Y %H:%i') as von, DATE_FORMAT(k.bis,'%d.%m.%Y %H:%i') as bis 
           FROM kalender_event k LEFT JOIN adresse a ON a.id=k.adresse WHERE k.id='" . $event . "' LIMIT 1");
         $sprache = $data['sprache'];
-        $projekt = 0;//$data['projekt'];
+        $projekt = 0; //$data['projekt'];
 
+        $adresseintern = $data['adresseintern'];
+        
+        if (empty($adresseintern)) {
+          $organizer_to = $this->app->User->GetEmail();
+          $organizer_to_name = $this->app->User->GetName();
+        }
+        else {
+          $organizer_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
+          $organizer_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
+        }
 
-        $to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
-        $to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
+        // Add Organizer
+        $ret['einladungcc'] = $ret['einladungcc'].$organizer_to_name." <".$organizer_to.">";
+
+        $address = $data['adresse'];
+        $recipient_to = "";
+        $recipient_to_name = "";
+        if (!empty($address)) 
+        {
+          // Check for ansprechpartner person 
+          $ansprechpartner_id = $data['ansprechpartner_id'];
+          if (!empty($ansprechpartner_id)) {
+            $recipient_result = $this->app->DB->SelectArr("SELECT name, email FROM ansprechpartner WHERE id='$ansprechpartner_id' AND geloescht!=1 LIMIT 1");
+            if (!empty($recipient_result)) {
+              $recipient_to = $recipient_result[0]['email'];
+              $recipient_to_name = $recipient_result[0]['name'];
+            }
+          } else 
+          {
+            $recipient_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
+            $recipient_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
+         }
+        }
 
         $vorlage = $this->app->erp->Geschaeftsbriefvorlage($sprache, "EinladungKalender", $projekt);
 
@@ -994,33 +1041,33 @@ class Kalender {
           $vorlage['text'] = str_replace('{' . strtoupper($key) . '}', $value, $vorlage['text']);
         }
 
+        // Add primary recipient
+        if ($recipient_to != "") {
+          if ($recipient_to_name == "") {
+            $recipient_to_name = $recipient_to;
+         }         
+          $ret['einladungcc'] = $ret['einladungcc'].", ".$recipient_to_name." <".$recipient_to.">";
+        }
+
         // jetzt holen wir alle Email-Adressen
         $emailadresse[$data['adresse']] = $data['adresse'];
         $emailadresse[$data['adresseintern']] = $data['adresseintern'];
         $dataPersonen = $this->app->DB->SelectArr("SELECT a.id as userid FROM kalender_user ku  LEFT JOIN user u ON u.id=ku.userid LEFT JOIN adresse a ON a.id=u.adresse WHERE ku.event='" . $event . "'");
         if (is_array($dataPersonen)) {
           foreach ($dataPersonen as $person) {
-            if ($person['userid'] > 0)
+            if ($person['userid'] > 0) 
               $emailadressenlist[$person['userid']] = $person['userid'];
           }
         }
-        $emailadressen = $this->app->DB->SelectArr("SELECT id, name, email FROM adresse WHERE email != '' AND id IN (" . implode(",", $emailadressenlist) . ") AND geloescht!='1'");
-        $ret = array();
-        if ($to != "") {
-          if ($to_name != "")
-            $ret['einladungcc'] = $to_name . " <" . $to . ">,";
-          else
-            $ret['einladungcc'] = $to;
-        }
+       
+        $emailadressen = $this->app->DB->SelectArr("SELECT id, name, email FROM adresse WHERE email != '' AND id IN (" . implode(",", $emailadressenlist) . ") AND geloescht!='1' AND email != '$recipient_to' AND email != '$organizer_to'");
 
         foreach ($emailadressen as $email) {
           if ($email['name'] != "")
-            $ret['einladungcc'] .= $email['name'] . " <" . $email['email'] . ">,";
+            $ret['einladungcc'] .= ", ".$email['name'] . " <" . $email['email'] . ">";
           else
-            $ret['einladungcc'] .= $email['email'] . ",";
+            $ret['einladungcc'] .= ", ".$email['email'] . ",";
         }
-        $ret['einladungcc'] = rtrim($ret['einladungcc'], ",");
-
 
         $ret['betreff'] = $vorlage['betreff'];
         $ret['text'] = $vorlage['text'];
@@ -1030,7 +1077,7 @@ class Kalender {
         $this->app->ExitXentral();
         break;
 
-      case "sendEinladung" :
+      case "sendEinladung" : // AJAX to send the invitation mails
         $betreff = $this->app->Secure->GetPOST("betreff");
         $text = $this->app->Secure->GetPOST("text");
         $emailcc= $this->app->Secure->GetPOST("emailcc");
@@ -1052,7 +1099,7 @@ class Kalender {
         $this->app->ExitXentral();
       break;
 
-      default:
+      default: // AJAX to fill the pop up with the event data
 
         if (is_numeric($event) && $event > 0) {
           $data = $this->app->DB->SelectArr("SELECT id, ort, bezeichnung AS titel, beschreibung, von, bis, allDay, color, public,erinnerung,adresse,ansprechpartner_id,adresseintern,projekt FROM kalender_event WHERE id='$event' LIMIT 1");
@@ -1069,7 +1116,14 @@ class Kalender {
         $data[0]['adressid'] = $data[0]['adresse'];
         $data[0]['adresse'] = $this->app->DB->Select("SELECT if(a.lieferantennummer,CONCAT(a.id,' ',a.name,' (Kdr: ',a.kundennummer,' Liefr: ',a.lieferantennummer,')'),CONCAT(a.id,' ',a.name,' (Kdr: ',a.kundennummer,')')) FROM adresse a WHERE a.id='" . $data[0]['adresse'] . "' AND a.geloescht=0 LIMIT 1");
         $data[0]['ansprechpartner'] = $this->app->DB->Select("SELECT CONCAT(an.id, ' ', an.name, ' (', a.name, IF(a.lieferantennummer, CONCAT(', Kdr: ',a.kundennummer,' Liefr: ',a.lieferantennummer,')'),CONCAT(', Kdr: ',a.kundennummer,')')) ) FROM ansprechpartner an LEFT JOIN adresse a ON an.adresse = a.id WHERE an.id = '".$data[0]['ansprechpartner_id']."' AND a.geloescht = 0 LIMIT 1");
-        $data[0]['adresseintern'] = $this->app->DB->Select("SELECT if(a.lieferantennummer,CONCAT(a.id,' ',a.name,' (Kdr: ',a.kundennummer,' Liefr: ',a.lieferantennummer,')'),CONCAT(a.id,' ',a.name,' (Kdr: ',a.kundennummer,')')) FROM adresse a WHERE a.id='" . $data[0]['adresseintern'] . "' AND a.geloescht=0 LIMIT 1");
+
+        // Force user if empty  
+        if ($data[0]['adresseintern'] == 0) {
+          $data[0]['adresseintern'] = $this->app->User->GetID();
+        }
+
+        $data[0]['adresseintern'] = $this->app->DB->Select("SELECT CONCAT(a.id,' ',a.name) FROM adresse a WHERE a.id='" . $data[0]['adresseintern'] . "' AND a.geloescht=0 LIMIT 1");
+
         $data[0]['projekt'] = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id='" . $data[0]['projekt'] . "' AND id > 0 LIMIT 1");
 
         $data[0]['allDay'] = (($data[0]['allDay'] == '1') ? true : false);
@@ -1110,7 +1164,6 @@ class Kalender {
         $data[0]['googleEventEdit'] = $canEditGoogleEvent;
 
         $data = $data[0];
-
 
         echo json_encode($data);
         $this->app->ExitXentral();
@@ -1218,6 +1271,10 @@ class Kalender {
     $this->app->ExitXentral();
   }
 
+  /*
+  * Pick participants and create invitation mail
+  * Use new sendmail with multiple recipients
+  */
   public function KalenderMail($event,$betreff='',$text='',$emailcc='')
   {
     $datum = '';
@@ -1232,12 +1289,10 @@ class Kalender {
     $adresse = $arraufgabe[0]["adresse"];
     $adresseintern = $arraufgabe[0]["adresseintern"];
 
-    //$this->LogFile("sende an adresse ".$adresse);
-
     $to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='$adresse' AND geloescht!=1 LIMIT 1");
     $to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresse' AND geloescht!=1 LIMIT 1");
 
-    if($adresseintern >0)
+    if($adresseintern > 0)
     {
       $initiator_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
       $initiator_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
@@ -1285,13 +1340,12 @@ class Kalender {
 
     $ical = "BEGIN:VCALENDAR\r\n";
     $ical .= "VERSION:2.0\r\n";
-    $ical .= "PRODID:-//WaWision//Termin//DE\r\n";
+    $ical .= "PRODID:-//Xenomporio//Termin//DE\r\n";
     $ical .= "METHOD:REQUEST\r\n";
     $ical .= "BEGIN:VEVENT\r\n";
-    //$ical .= "ORGANIZER;SENT-BY=\"MAILTO:$initiator_to\":MAILTO:onbehalfoforganizer@kaserver.com\r\n";
-    $ical .= "ORGANIZER;SENT-BY=\"MAILTO:$initiator_to\"\r\n";
-    $ical .= "ATTENDEE;CN=$to;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:$initiator_to\r\n";
-    $ical .= "UID:".strtoupper(md5($event_id))."-wawision\r\n";
+    $ical .= "ORGANIZER;CN=$initiator_to_name:MAILTO:$initiator_to\"\r\n";
+    $ical .= "ATTENDEE;CN=$to_name:MAILTO:$to;RSVP=TRUE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION\r\n";
+    $ical .= "UID:".strtoupper(md5($event_id))."-xenomporio\r\n";
     $ical .= "SEQUENCE:".$sequence."\r\n";
     $ical .= "STATUS:".$status."\r\n";
     $ical .= "DTSTAMPTZID=Europe/Berlin:".date('Ymd').'T'.date('His')."\r\n";
@@ -1299,7 +1353,6 @@ class Kalender {
     $ical .= "DTEND:".$end."T".$end_time."\r\n";
     $ical .= "LOCATION:".$venue."\r\n";
     $ical .= "SUMMARY:".$beschreibung."\r\n";
-//    $ical .= "DESCRIPTION:".$beschreibung."\r\n";
     $ical .= "BEGIN:VALARM\r\n";
     $ical .= "TRIGGER:-PT15M\r\n";
     $ical .= "ACTION:DISPLAY\r\n";
