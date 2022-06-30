@@ -1652,6 +1652,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         }
 
         $limit = '';
+
         if($adressId <= 0){
           $adresse = explode(' ', $adressId);
           $adressId = $this->app->DB->Select("SELECT id FROM adresse WHERE name = '".$adresse[0]."' AND name != '' LIMIT 1");
@@ -1660,18 +1661,18 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           }
         }
 
-        if($adressId > 0){
+//        if($adressId > 0){
           $subwhere = " AND a.id = '$adressId'";
-        }else{
-          $subwhere = '';
-        }
+//        }else{
+//          $subwhere = '';
+//        }
 
         $felder = array('an.name');
         $subwhere2 = $this->AjaxFilterWhere($termorig,$felder);
 
         $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(an.id, ' ', an.name, ' ', IF(a.lieferantennummer,CONCAT('(', a.name, ', Kdr: ', a.kundennummer, ' Liefr: ', a.lieferantennummer, ')'), CONCAT('(', a.name, ', Kdr: ', a.kundennummer, ')'))) AS name 
                         FROM ansprechpartner an 
-                        LEFT JOIN adresse a ON an.adresse = a.id 
+                        INNER JOIN adresse a ON an.adresse = a.id 
                         WHERE ($subwhere2) AND a.id > 0 AND a.geloescht = 0 $subwhere ".$this->app->erp->ProjektRechte('a.projekt').$limit);
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++) {
