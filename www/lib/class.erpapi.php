@@ -32456,7 +32456,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
 {
   // keine leeren email versenden
-  if($text=="" && $betreff=="") return;
+  if($text=="" && $betreff=="") return;  
 
 /*  $isSystemTemplate = $system && is_file(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
   if($isSystemTemplate) {
@@ -32468,8 +32468,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
   }
 
     $from_name = $this->ClearDataBeforeOutput($from_name);
-    $to_name = $this->ClearDataBeforeOutput($to_name);
-    $to_name = $this->ReadyForPDF($to_name);
     $from_name = $this->ReadyForPDF($from_name);
     $betreff  =  $this->ReadyForPDF($betreff);
     $text =  $this->ReadyForPDF($text);
@@ -32569,7 +32567,48 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     if ($sysMailer !== null) {
       
       $recipients = [];
-      $recipients[] = new EmailRecipient($to, $to_name);
+
+      // Prepare names and addresses
+      if (is_array($to)) {
+        foreach ($to as $item)  {
+          $to_array[] = $item;
+        }
+      } else if (!empty($to)) {
+        foreach (explode(',',str_replace(" ","",$to)) as $item)  {
+          $to_array[] = $item;
+        }
+      }
+      if (is_array($to_name)) {
+        foreach ($to_name as $item)  {
+          $to_name_array[] = $item;
+        }
+      } else if (!empty($to_name)) {
+        foreach (explode(',',str_replace(" ","",$to_name)) as $item)  {
+          $to_name_array[] = $item;
+        }
+      }
+
+      // Fill empty names with address
+
+      $number_of_names = empty($to_name_array)?0:count($to_name_array);
+
+      if (count($to_array) > $number_of_names) {
+        $itemcount = 0;
+        foreach ($to_array as $item) {
+          $itemcount++;
+          if ($itemcount > $number_of_names) {
+            $to_name_array[] = $item;
+          }
+        }
+      }
+
+      $to_combined_array = array_combine($to_array,$to_name_array);
+
+      foreach ($to_combined_array as $key => $value) {
+        $value = $this->ClearDataBeforeOutput($value);
+        $value = $this->ReadyForPDF($value);
+        $recipients[] = new EmailRecipient($key, $value);
+      }
 
       $ccRecipients = [];
       if (is_array($cc)) {
