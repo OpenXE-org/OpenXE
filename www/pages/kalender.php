@@ -595,9 +595,6 @@ class Kalender {
     $this->app->ExitXentral();
   }
 
-
-
-
   function KalenderData()
   {
     $user = $this->app->User->GetID();
@@ -971,102 +968,134 @@ class Kalender {
     $this->app->ExitXentral();
   }
 
+  /*
+  * Retrieve the participants and the organizer of an event
+  * Result structure 2-dimensional array of name,email
+  * The first entry is the organizer and can reoccurr as participant
+  */
+  function KalenderGetParticipants($event) {
+  /*
+  *
+  * Organizer:
+  * If there is an adresseintern, use this, otherwise use the user's address
+  *
+  * Recipients:
+  * if there is an address and a person, use the person
+  * if there is an address and no person, use the address
+  * add the addresses of the selected users
+  * each address only once
+  *       
+  */
+
+    $ret = array();
+
+    $data = $this->app->DB->SelectRow("SELECT k.adresse, k.ansprechpartner_id, k.adresseintern, IFNULL(a.sprache,''),k.projekt,k.bezeichnung,k.beschreibung,k.ort,
+      DATE_FORMAT(k.von,'%d.%m.%Y %H:%i') as von, DATE_FORMAT(k.bis,'%d.%m.%Y %H:%i') as bis 
+      FROM kalender_event k LEFT JOIN adresse a ON a.id=k.adresse WHERE k.id='" . $event . "' LIMIT 1");
+    $sprache = $data['sprache'];
+    $projekt = 0; //$data['projekt'];
+
+    $adresseintern = $data['adresseintern'];
+    
+    if (empty($adresseintern)) {
+      $organizer_to = $this->app->User->GetEmail();
+      $organizer_to_name = $this->app->User->GetName();
+    }
+    else {
+      $organizer_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
+      $organizer_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
+    }
+
+    // Add Organizer
+    $organizer = array();
+    $organizer['name'] = $organizer_to_name;
+    $organizer['email'] = $organizer_to;
+    $ret[] = $organizer;
+
+    $address = $data['adresse'];
+    $recipient_to = "";
+    $recipient_to_name = "";
+    if (!empty($address)) 
+    {
+      // Check for ansprechpartner person 
+      $ansprechpartner_id = $data['ansprechpartner_id'];
+      if (!empty($ansprechpartner_id)) {
+        $recipient_result = $this->app->DB->SelectArr("SELECT name, email FROM ansprechpartner WHERE id='$ansprechpartner_id' AND geloescht!=1 LIMIT 1");
+        if (!empty($recipient_result)) {
+          $recipient_to = $recipient_result[0]['email'];
+          $recipient_to_name = $recipient_result[0]['name'];
+        }
+      } else 
+      {
+        $recipient_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
+        $recipient_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
+     }
+    }
+
+    // Add primary recipient
+    $recipient = array();
+    if ($recipient_to != "") {
+      if ($recipient_to_name == "") {
+        $recipient_to_name = $recipient_to;
+     }         
+      
+      $recipient['name'] = $recipient_to_name;
+      $recipient['email'] = $recipient_to;
+      $ret[] = $recipient;
+    }
+
+    // jetzt holen wir alle Email-Adressen
+    $emailadresse[$data['adresse']] = $data['adresse'];
+    $emailadresse[$data['adresseintern']] = $data['adresseintern'];
+    $dataPersonen = $this->app->DB->SelectArr("SELECT a.id as userid FROM kalender_user ku  LEFT JOIN user u ON u.id=ku.userid LEFT JOIN adresse a ON a.id=u.adresse WHERE ku.event='" . $event . "'");
+    if (is_array($dataPersonen)) {
+      foreach ($dataPersonen as $person) {
+        if ($person['userid'] > 0) 
+          $emailadressenlist[$person['userid']] = $person['userid'];
+      }
+    }
+   
+    $emailadressen = $this->app->DB->SelectArr("SELECT name, email FROM adresse WHERE email != '' AND id IN (" . implode(",", $emailadressenlist) . ") AND geloescht!='1' AND email != '$recipient_to'");
+    
+    if (!empty($emailadressen)) {
+      $ret = array_merge($ret, $emailadressen);
+    }
+    return($ret);
+  }
+
   function KalenderEventData() 
   {
     $event = $this->app->Secure->GetGET("id");
     $cmd = $this->app->Secure->GetGET("cmd");
     header('Content-type: application/json');
     switch($cmd) {
-      case "getEinladung": // Ajax to prepare the pop up for invitation mask
+      case "getEinladung": // Ajax to prepare the pop up for invitation mask     
+       
+        $emailadressen = $this->KalenderGetParticipants($event);
+        $comma = "";
 
-      /*
-      *
-      * Organizer:
-      * If there is an adresseintern, use this, otherwise use the user's address
-      *
-      * Recipients:
-      * if there is an address and a person, use the person
-      * if there is an address and no person, use the address
-      * add the addresses of the selected users
-      * each address only once
-      *       
-      */
+        // Remove organizer
+        if (count($emailadressen) > 1) {
+          unset($emailadressen[0]);
+        }
 
-        $ret = array();
+        foreach ($emailadressen as $email) {
+          if ($email['name'] != "")
+            $ret['einladungcc'] .= $comma.$email['name'] . " <" . $email['email'] . ">";
+          else
+            $ret['einladungcc'] .= $comma.$email['email'];
+          $comma = ", ";
+        }
 
         $data = $this->app->DB->SelectRow("SELECT k.adresse, k.ansprechpartner_id, k.adresseintern, IFNULL(a.sprache,''),k.projekt,k.bezeichnung,k.beschreibung,k.ort,
           DATE_FORMAT(k.von,'%d.%m.%Y %H:%i') as von, DATE_FORMAT(k.bis,'%d.%m.%Y %H:%i') as bis 
           FROM kalender_event k LEFT JOIN adresse a ON a.id=k.adresse WHERE k.id='" . $event . "' LIMIT 1");
-        $sprache = $data['sprache'];
-        $projekt = 0; //$data['projekt'];
-
-        $adresseintern = $data['adresseintern'];
-        
-        if (empty($adresseintern)) {
-          $organizer_to = $this->app->User->GetEmail();
-          $organizer_to_name = $this->app->User->GetName();
-        }
-        else {
-          $organizer_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
-          $organizer_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresseintern' AND geloescht!=1 LIMIT 1");
-        }
-
-        // Add Organizer
-        $ret['einladungcc'] = $ret['einladungcc'].$organizer_to_name." <".$organizer_to.">";
-
-        $address = $data['adresse'];
-        $recipient_to = "";
-        $recipient_to_name = "";
-        if (!empty($address)) 
-        {
-          // Check for ansprechpartner person 
-          $ansprechpartner_id = $data['ansprechpartner_id'];
-          if (!empty($ansprechpartner_id)) {
-            $recipient_result = $this->app->DB->SelectArr("SELECT name, email FROM ansprechpartner WHERE id='$ansprechpartner_id' AND geloescht!=1 LIMIT 1");
-            if (!empty($recipient_result)) {
-              $recipient_to = $recipient_result[0]['email'];
-              $recipient_to_name = $recipient_result[0]['name'];
-            }
-          } else 
-          {
-            $recipient_to = $this->app->DB->Select("SELECT email FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
-            $recipient_to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='" . $data['adresse'] . "' AND geloescht!=1 LIMIT 1");
-         }
-        }
 
         $vorlage = $this->app->erp->Geschaeftsbriefvorlage($sprache, "EinladungKalender", $projekt);
 
         foreach ($data as $key => $value) {
           $vorlage['betreff'] = str_replace('{' . strtoupper($key) . '}', $value, $vorlage['betreff']);
           $vorlage['text'] = str_replace('{' . strtoupper($key) . '}', $value, $vorlage['text']);
-        }
-
-        // Add primary recipient
-        if ($recipient_to != "") {
-          if ($recipient_to_name == "") {
-            $recipient_to_name = $recipient_to;
-         }         
-          $ret['einladungcc'] = $ret['einladungcc'].", ".$recipient_to_name." <".$recipient_to.">";
-        }
-
-        // jetzt holen wir alle Email-Adressen
-        $emailadresse[$data['adresse']] = $data['adresse'];
-        $emailadresse[$data['adresseintern']] = $data['adresseintern'];
-        $dataPersonen = $this->app->DB->SelectArr("SELECT a.id as userid FROM kalender_user ku  LEFT JOIN user u ON u.id=ku.userid LEFT JOIN adresse a ON a.id=u.adresse WHERE ku.event='" . $event . "'");
-        if (is_array($dataPersonen)) {
-          foreach ($dataPersonen as $person) {
-            if ($person['userid'] > 0) 
-              $emailadressenlist[$person['userid']] = $person['userid'];
-          }
-        }
-       
-        $emailadressen = $this->app->DB->SelectArr("SELECT id, name, email FROM adresse WHERE email != '' AND id IN (" . implode(",", $emailadressenlist) . ") AND geloescht!='1' AND email != '$recipient_to' AND email != '$organizer_to'");
-
-        foreach ($emailadressen as $email) {
-          if ($email['name'] != "")
-            $ret['einladungcc'] .= ", ".$email['name'] . " <" . $email['email'] . ">";
-          else
-            $ret['einladungcc'] .= ", ".$email['email'] . ",";
         }
 
         $ret['betreff'] = $vorlage['betreff'];
@@ -1087,7 +1116,7 @@ class Kalender {
           $ret['status'] = 0;
           $ret['statusText'] = "Bitte mindestens einen Empfänger angeben!";
         }
-        else if($this->KalenderMail($id,$betreff,$text,$emailcc))
+        else if($this->KalenderMailNew($id,$betreff,$text,$emailcc))
         {
           $ret['status'] = 1;
           $ret['statusText'] = "Einladung wurde per Mail versendet.";
@@ -1272,9 +1301,153 @@ class Kalender {
   }
 
   /*
-  * Pick participants and create invitation mail
+  * Create invitation mail
+  * All (!) E-mail recipients are in $recipients, participants for ICS are in the event
   * Use new sendmail with multiple recipients
   */
+ public function KalenderMailNew($event,$betreff='',$text='',$recipients)
+  {
+
+    $arraufgabe = $this->app->DB->SelectArr("SELECT *,DATE_FORMAT(von,'%d.%m.%Y') as datum,
+        DATE_FORMAT(bis,'%d.%m.%Y') as datumbis,
+        DATE_FORMAT(von,'%Y%m%d') as icaldatumvon,
+        DATE_FORMAT(bis,'%Y%m%d') as icaldatumbis, DATE_FORMAT(von,'%H%i00') as icaluhrzeitvon, DATE_FORMAT(bis,'%H%i00') as icaluhrzeitbis,
+        DATE_FORMAT(von,'%H:%i') as zeit,
+        DATE_FORMAT(bis,'%H:%i') as zeitbis
+        FROM kalender_event WHERE id='$event' LIMIT 1");
+
+    if($betreff=="")
+      $betreff = "Einladung für Termin ".$arraufgabe[0]["bezeichnung"];
+
+    if($text=="")
+    {
+      if($arraufgabe[0]["datumbis"]!="00.00.0000" && $arraufgabe[0]["datum"]!=$arraufgabe[0]["datumbis"])
+      {
+        $text = "Datum: ".$arraufgabe[0]["datum"]." bis ".$arraufgabe[0]["datumbis"];//Hallo hier die mail";
+      }
+      else {
+        if($arraufgabe[0]["zeit"]!="00:00" && $arraufgabe[0]["zeitbis"]!="00:00")
+          $text = "Datum: ".$arraufgabe[0]["datum"]." von ".$arraufgabe[0]["zeit"]." bis ".$arraufgabe[0]["zeitbis"];//Hallo hier die mail";
+        else if($arraufgabe[0]["zeit"]!="00:00")
+          $text = "Datum: ".$arraufgabe[0]["datum"]." um ".$arraufgabe[0]["zeit"];
+        else
+          $text = "Datum: ".$arraufgabe[0]["datum"];
+      }
+    } else {
+      $text .= "\r\n";
+    }
+    $text .= "\r\n";
+
+    $beschreibung = $arraufgabe[0]["bezeichnung"];
+
+    $venue = $arraufgabe[0]["ort"];
+    $start = $arraufgabe[0]["icaldatumvon"];
+    $start_time = $arraufgabe[0]["icaluhrzeitvon"];
+    $end = $arraufgabe[0]["icaldatumbis"];
+    $end_time = $arraufgabe[0]["icaluhrzeitbis"];
+
+    $status = 'TENTATIVE';
+    $sequence = 0;
+
+    $event_id = $event;
+
+    $ical = "BEGIN:VCALENDAR\r\n";
+    $ical .= "VERSION:2.0\r\n";
+    $ical .= "PRODID:-//Xenomporio//Termin//DE\r\n";
+    $ical .= "METHOD:REQUEST\r\n";
+    $ical .= "BEGIN:VEVENT\r\n";
+
+    // Add participants
+    $participants = $this->KalenderGetParticipants($event);
+    // The first one is the organizer
+
+    $organizer_name = $participants[0]['name'];
+    $organizer_email = $participants[0]['email'];
+    $ical .= "ORGANIZER;CN=$organizer_name:mailto:$organizer_email\r\n";
+
+    if (count($participants) > 1) {    
+
+      unset($participants[0]);
+
+      foreach($participants as $participant) {
+        $participant_name = $participant['name'];
+        $participant_email = $participant['email'];
+        $ical .= "ATTENDEE;CN=$participant_name;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:$participant_email\r\n";
+      }
+    } 
+
+    $ical .= "UID:".strtoupper(md5($event_id))."-xenomporio\r\n";
+    $ical .= "SEQUENCE:".$sequence."\r\n";
+    $ical .= "STATUS:".$status."\r\n";
+    $ical .= "DTSTAMPTZID=Europe/Berlin:".date('Ymd').'T'.date('His')."\r\n";
+    $ical .= "DTSTART:".$start."T".$start_time."\r\n";
+    $ical .= "DTEND:".$end."T".$end_time."\r\n";
+    $ical .= "LOCATION:".$venue."\r\n";
+    $ical .= "SUMMARY:".$beschreibung."\r\n";
+    $ical .= "BEGIN:VALARM\r\n";
+    $ical .= "TRIGGER:-PT15M\r\n";
+    $ical .= "ACTION:DISPLAY\r\n";
+    $ical .= "DESCRIPTION:Reminder\r\n";
+    $ical .= "END:VALARM\r\n";
+    $ical .= "END:VEVENT\r\n";
+    $ical .= "END:VCALENDAR\r\n";
+
+    $datei = $this->app->erp->GetTMP().'Einladung_'.$beschreibung.'_'.$arraufgabe[0]["datum"].".ics";
+    file_put_contents($datei,$ical);
+    if($start!='00000000'){
+      $dateien = array($datei);
+    }
+    else{
+      $dateien = '';
+    }
+
+    $bcc = array();
+
+    if($recipients!='')
+    {
+      //$to="";
+      //$to_name="";
+
+      $parts = explode(',',$recipients);
+      $cparts = (!empty($parts)?count($parts):0);
+      for($i=0;$i<$cparts;$i++)
+      {
+        $from = strstr($parts[$i], '<', true); // Ab PHP 5.3.0
+        $email = strstr($parts[$i], '<'); // Ab PHP 5.3.0
+        if($from !="" )
+        {
+          $email = str_replace(['<','>'],'',$email);
+        } else {
+          $email = $parts[$i];
+        }
+
+        if($i==0)
+        {
+          if($to==""){
+            $to = $email;
+            $to_name = $from;
+          }
+        } else {
+          if($email!=$to)
+          {
+            if($from=="") $bcc[]=$email;
+            else $bcc[]=$email;//$from." <".$email.">";
+          }
+        }
+      }
+    }
+
+    $result = $this->app->erp->MailSend($this->app->erp->GetFirmaMail(),$this->app->erp->GetFirmaAbsender(),$to,$to_name,$betreff,$text,$dateien,"",false,$bcc);
+
+    unlink($datei);
+    return $result;
+  }
+
+
+  /*
+  * Original version
+  */
+
   public function KalenderMail($event,$betreff='',$text='',$emailcc='')
   {
     $datum = '';
@@ -1343,8 +1516,8 @@ class Kalender {
     $ical .= "PRODID:-//Xenomporio//Termin//DE\r\n";
     $ical .= "METHOD:REQUEST\r\n";
     $ical .= "BEGIN:VEVENT\r\n";
-    $ical .= "ORGANIZER;CN=$initiator_to_name:MAILTO:$initiator_to\"\r\n";
-    $ical .= "ATTENDEE;CN=$to_name:MAILTO:$to;RSVP=TRUE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION\r\n";
+    $ical .= "ORGANIZER;SENT-BY=\"MAILTO:$initiator_to\"\r\n";
+    $ical .= "ATTENDEE;CN=$to;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:$initiator_to\r\n";
     $ical .= "UID:".strtoupper(md5($event_id))."-xenomporio\r\n";
     $ical .= "SEQUENCE:".$sequence."\r\n";
     $ical .= "STATUS:".$status."\r\n";

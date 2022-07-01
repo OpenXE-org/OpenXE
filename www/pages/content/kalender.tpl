@@ -98,7 +98,7 @@
                                     <td colspan="3"><input type="text" name="ansprechpartner" id="ansprechpartner" size="40">[LINKANSPRECHPARTNER]</td>
                                 </tr>
                                 <tr>
-                                    <td>{|Verantwortlicher intern|}:</td>
+                                    <td>{|Verantwortlicher intern*|}:</td>
                                     <td colspan="3"><input type="text" name="adresseintern" id="adresseintern" size="40"></td>
                                 </tr>
                                 <tr>
@@ -148,7 +148,7 @@
                             <legend>&nbsp;</legend>
                             <table width="100%" border="0">
                                 <tr>
-                                    <td valign="top">{|Personen|}:</td>
+                                    <td valign="top">{|Teilnehmer intern*|}:</td>
                                     <td colspan="3">
                                         <select name="personen[]" id="personen" style="width: 250px" multiple>
                                             [PERSONEN]
