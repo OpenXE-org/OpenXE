@@ -3940,8 +3940,8 @@ class Lager extends GenLager {
 
       $this->app->Tpl->Set("MESSAGE", "<div class=\"info\" style=\"margin-top:7px\">Bewegungen Lager: $lager bis zum " . date('d.m.Y')."</div>");
 
+      $this->app->YUI->AutoComplete('lager_platz_bewegung', 'lagerplatz',0,'&lager='.$id);
 
-      $this->app->YUI->AutoComplete('lager_platz_bewegung', 'lagerplatz');
       $this->app->YUI->AutoComplete('artikel_bewegung', 'artikelnummer');
       $this->app->YUI->AutoSaveUserParameter('lager_platz_bewegung','lager_bewegung_lagerplatz','updateLiveTable();');
       $this->app->YUI->AutoSaveUserParameter('artikel_bewegung','lager_bewegung_artikel','updateLiveTable();');
