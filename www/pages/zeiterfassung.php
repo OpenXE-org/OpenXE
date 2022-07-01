@@ -1212,7 +1212,13 @@ class Zeiterfassung { //extends GenZeiterfassung {
       $adresse_abrechnung = $tmp[0]['adresse_abrechnung'];
       $projektabgeschlossen = $this->app->DB->Select("SELECT id FROM projekt WHERE id = '".$tmp[0]['projekt']."' AND status = 'abgeschlossen' LIMIT 1");
       $projekt_komplett = $this->app->DB->Select("SELECT CONCAT(abkuerzung,' ',name) FROM projekt WHERE id='".$tmp[0]['projekt']."'");
-      $serviceauftrag_anzeige = $this->app->DB->Select("SELECT belegnr FROM serviceauftrag WHERE id='".$tmp[0]['serviceauftrag']."' LIMIT 1");
+
+      $check = $this->app->DB->Select("SHOW TABLES LIKE 'SERVICEAUFTRAG'");
+
+      if (!empty($check)) {                     
+        $serviceauftrag_anzeige = $this->app->DB->Select("SELECT belegnr FROM serviceauftrag WHERE id='".$tmp[0]['serviceauftrag']."' LIMIT 1");
+      }
+
       $adresse_abrechnung_komplett = $this->app->DB->Select("SELECT CONCAT(kundennummer,' ',name) FROM adresse WHERE id='".$tmp[0]['adresse_abrechnung']."'");
 
       if($tmp[0]['adresse_abrechnung']<=0){
