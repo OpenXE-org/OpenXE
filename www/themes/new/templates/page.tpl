@@ -25,7 +25,7 @@
 	<script type="text/javascript" src="./js/jquery.cookie.js" ></script>
 	<script type="text/javascript" src="./js/jquery-multidownload.js" ></script>
 	<script type="text/javascript" src="./js/jquery.loadingOverlay.js" ></script>
-  	<script type="text/javascript" src="./js/lib/[VUEJS]"></script>
+	<script type="text/javascript" src="./js/lib/[VUEJS]"></script>
 
 	<link rel="stylesheet" type="text/css" href="./js/datatables/datatables.min.css"/>
 	<link rel="stylesheet" type="text/css" href="./themes/[THEME]/css/datatables_custom.css?v=3"/>
@@ -49,15 +49,9 @@
 	<link rel="stylesheet" href="./themes/[THEME]/css/calendar.css?v=3">
 	<script type="text/javascript" src="./js/bootstrap.min.js" ></script>
 
-  	<link rel="apple-touch-icon" sizes="180x180" href="./themes/new/images/favicon/apple-touch-icon.png">
-  	<link rel="icon" type="image/png" sizes="32x32" href="./themes/new/images/favicon/favicon-32x32.png">
-  	<link rel="icon" type="image/png" sizes="16x16" href="./themes/new/images/favicon/favicon-16x16.png">
-  	<link rel="manifest" href="./themes/new/images/favicon/site.webmanifest">
-  	<link rel="mask-icon" href="./themes/new/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
-  	<link rel="shortcut icon" href="./themes/new/images/favicon/favicon.ico">
-  	<meta name="msapplication-TileColor" content="#9f00a7">
-  	<meta name="msapplication-config" content="./themes/new/images/favicon/browserconfig.xml">
-  	<meta name="theme-color" content="#ffffff">
+	<link rel="icon" type="image/png" sizes="32x32" href="./themes/new/images/favicon/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./themes/new/images/favicon/favicon-16x16.png">
+	<link rel="shortcut icon" href="./themes/new/images/favicon/favicon.ico">
 
 	<link type="text/css" href="./themes/[THEME]/css/start/jquery-ui-1.10.3.custom.css?v=4" rel="Stylesheet" />
 	<link href="./themes/[THEME]/css/colorPicker.css" rel="stylesheet" type="text/css" />
