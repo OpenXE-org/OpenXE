@@ -3984,7 +3984,8 @@ class Lager extends GenLager {
         $this->LagerPDF();
       }
 
-      $this->app->YUI->AutoComplete('lager_platz_inhalt', 'lagerplatz');
+      $lager = $this->app->Secure->GetGET('id');
+      $this->app->YUI->AutoComplete('lager_platz_inhalt', 'lagerplatz',0,'&lager='.$lager);
       $this->app->YUI->AutoComplete('artikel_inhalt', 'artikelnummer');
 
       $this->app->YUI->AutoSaveUserParameter('artikel_inhalt','lager_inhalt_artikel','updateLiveTable();');
