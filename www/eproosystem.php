@@ -483,14 +483,14 @@ class erpooSystem extends Application
               'link' => 'index.php?module=aufgaben&action=list',
               'counter' => $this->erp->AnzahlOffeneAufgaben()
           ],
-          'Wiedervorlage' => [
+/*          'Wiedervorlage' => [
               'link' => 'index.php?module=wiedervorlage&action=list',
               'counter' => $resubmissionCount,
-          ],
+          ],*/
           'Kalender' => [
               'link' => 'index.php?module=kalender&action=list',
               'counter' => $appointmentCount
-              ],
+              ]
       ];
 /*      $possibleUserItems['Apps'] = [
         'link'=> 'index.php?module=appstore&action=list&cmd=allapps'
