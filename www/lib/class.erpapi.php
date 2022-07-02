@@ -18033,7 +18033,8 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
 
 	if ($value != "") {
 	    //return $abkuerzung;
-	    if($value == round($value, 2)) {
+ 
+	    if($value == round((float) $value, 2)) {
 	      return number_format((float)$value,2,',','');
 	    }
 	}
