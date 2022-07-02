@@ -30,7 +30,7 @@ final class ResultCollection implements JsonSerializableAlias
      */
     public function isEmpty()
     {
-        return count($this->groups) === 0;
+        return (empty($this->groups)?0:(count($this->groups) === 0));
     }
 
     /**
