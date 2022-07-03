@@ -106,16 +106,16 @@
 <table width="800" border="0" align="center">
 <tr align="center">
   <td width="25%"><a href="index.php?module=prozessstarter&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_22.gif" border="0" width="30%"></a></td>
+  <td width="25%"><a href="index.php?module=logfile&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_22.gif" border="0" width="30%"></a></td>
   <td width="25%"><a href="index.php?module=welcome&action=info"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_23.gif" border="0" width="30%"></a></td>
   <td width="25%"><a href="index.php?module=drucker&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_24.gif" border="0" width="30%"></a></td>
-  <td width="25%"><a href="index.php?module=adapterbox&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%"></a></td>
 </tr>
 
 <tr align="center">
   <td><a href="index.php?module=prozessstarter&action=list">{|Prozessstarter|}</a></td>
+  <td><a href="index.php?module=prozessstarter&action=list">{|Errorlog|}</a></td>
   <td><a href="index.php?module=welcome&action=info">{|Lizenz|}</a></td>
   <td><a href="index.php?module=drucker&action=list">{|Drucker|}</a></td>
-  <td><a href="index.php?module=adapterbox&action=list">{|Adapterbox|}</a></td>
 </tr>
 </table>
 <table width="800" border="0" align="center">
@@ -138,14 +138,14 @@
 <tr align="center">
   <td width="25%"><a href="index.php?module=support&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_23.gif" border="0" width="30%"></a></td>
   <td width="25%"><a href="index.php?module=api_account&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%"></td>
-  <td width="25%" style="position:relative"></td>
+  <td width="25%"><a href="index.php?module=adapterbox&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%"></a></td>
   <td width="25%" style="position:relative"></td>
 </tr>
 
 <tr align="center">
   <td><a href="index.php?module=support&action=list">{|Support|}</a></td>
   <td><a href="index.php?module=api_account&action=list">{|API-Account|}</a></td>
-  <td></td>
+  <td><a href="index.php?module=adapterbox&action=list">{|Adapterbox|}</a></td>
   <td width="25%"></td>
 </tr>
 </table>
