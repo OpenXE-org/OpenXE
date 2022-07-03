@@ -50,8 +50,6 @@
 	<link id="favicon" rel="icon" href="./themes/new/images/favicon/favicon.ico" type="image/x-icon">
 	<link rel="icon" type="image/png" href="./themes/new/images/favicon/favicon-16x16.png" sizes="16x16">
 	<link rel="icon" type="image/png" href="./themes/new/images/favicon/favicon-32x32.png" sizes="32x32">
-	<meta name="msapplication-TileColor" content="#ffffff">
-	<meta name="msapplication-navbutton-color" content="#ffffff">
 
 	<link type="text/css" href="./themes/[THEME]/css/start/jquery-ui-1.10.3.custom.css?v=3" rel="Stylesheet" />
 	<link href="./themes/[THEME]/css/colorPicker.css" rel="stylesheet" type="text/css" />

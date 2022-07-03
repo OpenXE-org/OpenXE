@@ -7107,12 +7107,9 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Ein- und auslagern','lager','bucheneinlagern');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Zwischenlager','lager','buchenzwischenlager');
 
-
-
-    $navarray['menu']['admin'][++$menu]['first']  = array('Administration','rechnung','list');
+    $navarray['menu']['admin'][++$menu]['first']  = array('System','rechnung','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Einstellungen','einstellungen','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Online-Shops / Marktplätze','onlineshops','list');
-
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Backup','backup','list','recover','delete','reset');
     //$navarray['menu']['admin'][$menu]['sec'][]  = array('AppStore','appstore','list');
 
