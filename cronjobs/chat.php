@@ -7,6 +7,7 @@
  * - Cronjob prüft ob es Chat-Nachrichten gibt die seit 30 Minuten ungelesen sind.
  *   Benutzer wird dann per Mail über ungelesene Chat-Nachrichten informiert.
  */
+
 if(!class_exists('app_t2')) {
   class app_t2 extends ApplicationCore
   {
@@ -38,6 +39,7 @@ if(empty($app->erp)) {
 
 // Alle Benutzer ermitteln die seit 30 Minuten ungelesene private Nachrichten haben
 // u.kalender_ausblenden = "Im Kalender/Chat ausblenden"; außerdem keine Chat-Benachrichtigung empfangen
+
 $usersWithUnreadPrivateMessages = $app->DB->SelectArr(
   'SELECT c.user_to AS id, MAX(c.zeitstempel) AS message_date, COUNT(c.id) AS message_count 
   FROM `user` AS u 
@@ -45,7 +47,7 @@ $usersWithUnreadPrivateMessages = $app->DB->SelectArr(
   LEFT JOIN `chat_gelesen` AS g ON c.id = g.message 
   WHERE g.id IS NULL AND u.activ = 1 AND u.kalender_ausblenden != 1 AND DATE_ADD(c.zeitstempel, INTERVAL 30 MINUTE) < NOW()
   GROUP BY c.user_to'
-);
+); 
 
 // Alle Benutzer ermitteln die seit 30 Minuten ungelesene öffentliche Nachrichten haben
 // u.kalender_ausblenden = "Im Kalender/Chat ausblenden"; außerdem keine Chat-Benachrichtigung empfangen
@@ -65,11 +67,8 @@ $usersWithUnreadMessages = combineUserResult(
 );
 
 if(empty($usersWithUnreadMessages)){
-  return;
+  return; 
 }
-
-// PHPMailer konfigurieren
-ConfigurePhpMailer();
 
 foreach ($usersWithUnreadMessages as $user) {
 
@@ -79,10 +78,10 @@ foreach ($usersWithUnreadMessages as $user) {
   // Datum gleich > User hat bereits Benachrichtigung bekommen + keine neuen Nachrichten vorhanden > Benachrichtigung NICHT senden
   // Datum ungleich > User hat bereits Benachrichtigung bekommen + Neue Nachrichten vorhanden > Benachrichtigung senden
   // Kein Datum hinterlegt > User hat noch nie Benachrichtigung bekommen > Benachrichtigung senden
-  if($previousDate === false || $previousDate !== $currentDate){
+//  if(empty($previousDate) || $previousDate !== $currentDate){
     sendNotificationMail($user['id'], $user['private_count'], $user['public_count']);
     setUserCacheValue($user['id'], $currentDate);
-  }
+//  }
 }
 
 
@@ -90,55 +89,6 @@ foreach ($usersWithUnreadMessages as $user) {
    ENDE: Ab hier nur Funktionen
 ******************************************/
 
-
-/**
- * PHPMailer konfigurieren
- *
- * @return void
- */
-function ConfigurePhpMailer()
-{
-  global $app;
-
-  // Mail-Konfiguration laden
-  $mailConfig = [
-    'benutzername' => $app->erp->Firmendaten("benutzername"),
-    'passwort' => $app->erp->Firmendaten("passwort"),
-    'host' => $app->erp->Firmendaten("host"),
-    'port' => $app->erp->Firmendaten("port"),
-    'mailssl' => (int)$app->erp->Firmendaten("mailssl"),
-    'noauth' => (int)$app->erp->Firmendaten("noauth"),
-    'mailanstellesmtp' => (int)$app->erp->Firmendaten("mailanstellesmtp"),
-  ];
-
-  // PHPMailer initialisieren
-  $app->mail = new PHPMailer($app);
-  $app->mail->CharSet = 'UTF-8';
-  $app->mail->PluginDir = 'plugins/phpmailer/';
-
-  if($mailConfig['mailanstellesmtp'] === 1){
-    $app->mail->IsMail();
-  }else{
-    $app->mail->IsSMTP();
-
-    if($mailConfig['noauth'] === 1){
-      $app->mail->SMTPAuth = false;
-    }else{
-      $app->mail->SMTPAuth = true;
-    }
-
-    if($mailConfig['mailssl'] === 1){
-      $app->mail->SMTPSecure = 'tls';
-    }else if($mailConfig['mailssl'] === 2){
-      $app->mail->SMTPSecure = 'ssl';
-    }
-
-    $app->mail->Host = $mailConfig['host'];
-    $app->mail->Port = $mailConfig['port'];
-    $app->mail->Username = $mailConfig['benutzername'];
-    $app->mail->Password = $mailConfig['passwort'];
-  }
-}
 
 /**
  * Timestamp der letzten ungelesenen Chat-Nachricht abrufen, zu der eine Mail-Benachrichtigung versendet wurde
@@ -205,25 +155,25 @@ function setUserCacheValue($userId, $cacheValue)
  *
  * @return array
  */
-function combineUserResult($private = [], $public = [])
+function combineUserResult($privates = [], $publics = [])
 {
-  if (empty($private)) {
-    $private = [];
+  if (empty($privates)) {
+    $privates = [];
   }
-  if (empty($public)) {
-    $public = [];
+  if (empty($publics)) {
+    $publics = [];
   }
 
   $result = [];
 
-  foreach ($private as $user) {
+  foreach ($privates as $user) {
     $userId = $user['id'];
     $result[$userId]['id'] = $userId;
     $result[$userId]['private_date'] = strtotime($user['message_date']);
     $result[$userId]['private_count'] = $user['message_count'];
   }
 
-  foreach ($public as $user) {
+  foreach ($publics as $user) {
     $userId = $user['id'];
     $result[$userId]['id'] = $userId;
     $result[$userId]['public_date'] = strtotime($user['message_date']);
@@ -249,6 +199,7 @@ function sendNotificationMail($userId, $privateMessages, $publicMessages)
   if((int)$userId === 0){
     return false;
   }
+
   if((int)$publicMessages === 0 && (int)$privateMessages === 0){
     return false;
   }
@@ -267,46 +218,48 @@ function sendNotificationMail($userId, $privateMessages, $publicMessages)
   );
 
   if(empty($toMail)){
-    return false;
+    return false; 
   }
-
-  $app->mail->ClearData();
-  $app->mail->AddAddress($toMail, $toName);
 
   $fromMail = $app->erp->GetFirmaMail();
   $fromName = $app->erp->GetFirmaName();
-  $subject = '[Xentral] Ungelesene Chat-Nachrichten';
+  $subject = 'Ungelesene Chat-Nachrichten';
   $totalMessageCount = (int)$privateMessages + (int)$publicMessages;
 
   $messages = GetNewestMessagesForUser($userId);
   if (empty($messages)) {
-    return false;
+    return;
   }
 
-  // Xentral-Logo einbinden
-  $logoFilePath = dirname(__DIR__) . '/www/themes/new/images/xentral_logo.png';
-  $app->mail->AddEmbeddedImage($logoFilePath, 'logo', 'logo.png');
-
-  // Profilbilder einbinden
+/*  // Profilbilder einbinden
   $userFromIds = array_unique(array_column($messages, 'user_from'));
   foreach ($userFromIds as $userFromId) {
     $profileImage = GetProfilImage($userFromId);
     $app->mail->AddEmbeddedImage($profileImage['path'], $profileImage['cid'], $profileImage['name']);
+  }*/
+
+//  $text = GetHtmlMessage($toName, $totalMessageCount, $messages); ?!? -> IF we want to use formatted mails, we will have to make use of templates
+
+  // Very lean implementation:
+  $text = "Neue Chat-Nachrichten vorhanden.</br></br>";
+  foreach ($messages as $message) {
+    $zeitstempel = strtotime($message['zeitstempel']);
+    $message['zeitstempel'] = 'am&nbsp;' . date('d.m.Y', $zeitstempel) . '&nbsp;um&nbsp;' . date('H:i', $zeitstempel) .'&nbsp;Uhr';
+
+    $text .= "\"".$message['message']."\"</br>";
+    if (empty($message['user_to'])) {
+      $text .= "<i>(&ouml;ffentlich)</i></br>";
+    }
+    $text .= "<i>".$message['user_from_name']." ".$message['zeitstempel']."</i></br></br>";
+    $text = htmlspecialchars($text);
   }
 
-  $app->mail->From = $fromMail;
-  $app->mail->FromName = $fromName;
-  $app->mail->Subject = $subject;
-  $app->mail->Body = GetHtmlMessage($toName, $totalMessageCount, $messages);
-  $app->mail->IsHTML(true);
+//  function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
+  $app->erp->MailSend($fromMail,$fromName,$toMail,$toName,$subject,$text,"","",false,"","", true);
 
-  if(!$app->mail->Send()){
-    echo $app->mail->ErrorInfo;
-    $app->erp->LogFile("Mailer Error: " . $app->mail->ErrorInfo);
-    return false;
-  }
+  $app->erp->LogFile("Mailed ".$subject." to ".$toMail);
 
-  return true;
+
 }
 
 /**
@@ -468,7 +421,7 @@ function GetHtmlMessage($receipientName, $messageTotalCount, $messages = [])
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[Xentral] Ungelesene Chat-Nachrichten</title>
+  <title>[Xenomporio] Ungelesene Chat-Nachrichten</title>
   <style type="text/css">
     body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; width: 100%; max-width: 100%; font-size: 17px; line-height: 24px; color: #48494B; background: #F5F5F5; }
     h1, h2, h3, h4 { color: #42B8C4; margin-bottom: 12px; line-height: 26px; }
