@@ -3,7 +3,6 @@ include(dirname(__FILE__)."/../conf/main.conf.php");
 include(dirname(__FILE__)."/../phpwf/plugins/class.mysql.php");
 include(dirname(__FILE__)."/../www/lib/imap.inc.php");
 include(dirname(__FILE__)."/../www/lib/class.erpapi.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
 
 class app_t {
   var $DB;

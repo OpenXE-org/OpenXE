@@ -39,8 +39,6 @@ if($aes == 2 && is_file(dirname(__FILE__)."/../www/lib/class.aes".$aes.".php"))
   include_once(dirname(__FILE__)."/../www/lib/class.aes".$aes.".php");
 }else
   include_once(dirname(__FILE__)."/../www/lib/class.aes.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
 
 $classes = array('briefpapier','lieferschein','auftrag','anfrage','gutschrift','bestellung','rechnung','mahnwesen');
 foreach($classes as $class)
@@ -65,8 +63,6 @@ include_once(dirname(__FILE__)."/../www/lib/dokumente/class.bestellung.php");
 include_once(dirname(__FILE__)."/../www/lib/dokumente/class.rechnung.php");
 include_once(dirname(__FILE__)."/../www/lib/dokumente/class.mahnwesen.php");*/
 include_once(dirname(__FILE__)."/../phpwf/plugins/class.string.php");
-require_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
-require_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
 chdir(__DIR__.'/../www/');
 
 if(!class_exists('app_t2'))
@@ -369,40 +365,6 @@ function GetLaender()
 
 
 //ENDE
-
-  $benutzername = $app->erp->Firmendaten("benutzername");
-  $passwort = $app->erp->Firmendaten("passwort");
-  $host = $app->erp->Firmendaten("host");
-  $port = $app->erp->Firmendaten("port");
-  $mailssl = $app->erp->Firmendaten("mailssl");
-  $noauth = $app->erp->Firmendaten("noauth");
-  $mailanstellesmtp = $app->erp->Firmendaten("mailanstellesmtp");
-
-  // mail
-  $app->mail = new PHPMailer($app);
-  $app->mail->CharSet = "UTF-8";
-  $app->mail->PluginDir="plugins/phpmailer/";
-
-  if($mailanstellesmtp=="1"){
-    $app->mail->IsMail();
-  } else {
-    $app->mail->IsSMTP();
-
-    if($noauth=="1") $app->mail->SMTPAuth = false;
-    else $app->mail->SMTPAuth   = true;
-
-    if($mailssl==1) 
-        $app->mail->SMTPSecure = "tls";                 // sets the prefix to the servier
-    else if ($mailssl==2)
-        $app->mail->SMTPSecure = "ssl";                 // sets the prefix to the servier
-
-    $app->mail->Host       = $host;
-
-    $app->mail->Port       = $port;                   // set the SMTP port for the GMAIL server
-
-    $app->mail->Username   = $benutzername;  // GMAIL username
-    $app->mail->Password   = $passwort;            // GMAIL password
-  }
 
 $app->DB->Update(
   "UPDATE `prozessstarter` 

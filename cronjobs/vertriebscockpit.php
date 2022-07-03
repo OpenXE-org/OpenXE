@@ -7,10 +7,6 @@ include(dirname(__FILE__)."/../www/lib/class.erpapi.php");
 include(dirname(__FILE__)."/../www/lib/class.remote.php");
 include(dirname(__FILE__)."/../www/lib/class.httpclient.php");
 include(dirname(__FILE__)."/../www/lib/class.aes.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
-
-
 
 class app_t {
   var $DB;
@@ -59,39 +55,6 @@ $app->erp->LogFile("Starte Synchronisation");
 //$app->DB->Update("UPDATE artikel SET cache_lagerplatzinhaltmenge='999'");
 
 $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
-
-
-$benutzername = $app->erp->Firmendaten("benutzername");
-$passwort = $app->erp->Firmendaten("passwort");
-$host = $app->erp->Firmendaten("host");
-$port = $app->erp->Firmendaten("port");
-$mailssl = $app->erp->Firmendaten("mailssl");
-$mailanstellesmtp = $app->erp->Firmendaten("mailanstellesmtp");
-$noauth = $app->erp->Firmendaten("noauth");
-
-$app->mail = new PHPMailer($app);
-$app->mail->CharSet = "UTF-8";
-
-  if($mailanstellesmtp=="1"){
-    $app->mail->IsMail();
-  } else {
-    $app->mail->IsSMTP();
-
-    if($noauth=="1") $app->mail->SMTPAuth = false;
-    else $app->mail->SMTPAuth   = true;
-
-    if($mailssl==1)
-        $app->mail->SMTPSecure = "tls";                 // sets the prefix to the servier
-    else if ($mailssl==2)
-        $app->mail->SMTPSecure = "ssl";                 // sets the prefix to the servier
-
-    $app->mail->Host       = $host;
-
-    $app->mail->Port       = $port;                   // set the SMTP port for the GMAIL server
-
-    $app->mail->Username   = $benutzername;  // GMAIL username
-    $app->mail->Password   = $passwort;            // GMAIL password
-  }
 
 $obj = $app->erp->LoadModul('vertriebscockpit');
 if($obj)

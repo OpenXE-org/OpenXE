@@ -31,8 +31,6 @@ if($aes === '2' && is_file(dirname(__DIR__).'/www/lib/class.aes'.$aes.'.php'))
   include_once dirname(__DIR__) . '/www/lib/class.aes.php';
 }
 include_once dirname(__DIR__).'/www/lib/class.remote.php';
-include_once dirname(__DIR__).'/www/plugins/phpmailer/class.phpmailer.php';
-include_once dirname(__DIR__).'/www/plugins/phpmailer/class.smtp.php';
 if(!class_exists('app_t')){
   class app_t extends ApplicationCore
   {

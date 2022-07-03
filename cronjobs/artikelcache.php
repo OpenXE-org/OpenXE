@@ -61,12 +61,6 @@ if(!class_exists('AES')){
 if(!class_exists('Printer')){
   include_once(dirname(__DIR__) . '/www/lib/class.printer.php');
 }
-if(!class_exists('PHPMailer')){
-  include_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.phpmailer.php');
-}
-if(!class_exists('SMTP')){
-  include_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.smtp.php');
-}
 $classes = array('briefpapier','lieferschein','auftrag','anfrage','gutschrift','bestellung','rechnung','mahnwesen');
 foreach($classes as $class)
 {
@@ -406,38 +400,6 @@ if(empty($app->erp)) {
 
 
 //ENDE
-
-  $benutzername = $app->erp->Firmendaten("benutzername");
-  $passwort = $app->erp->Firmendaten("passwort");
-  $host = $app->erp->Firmendaten("host");
-  $port = $app->erp->Firmendaten("port");
-  $mailssl = $app->erp->Firmendaten("mailssl");
-  $mailanstellesmtp = $app->erp->Firmendaten("mailanstellesmtp");
-
-  // mail
-  $app->mail = new PHPMailer($app);
-  $app->mail->CharSet = "UTF-8";
-  $app->mail->PluginDir="plugins/phpmailer/";
-
-  if($mailanstellesmtp=="1"){
-    $app->mail->IsMail();
-  } else {
-    $app->mail->IsSMTP();
-    $app->mail->SMTPAuth   = true;                  // enable SMTP authentication
-    if($mailssl==1){
-      $app->mail->SMTPSecure = "tls";                 // sets the prefix to the servier
-    }
-    else if ($mailssl==2){
-      $app->mail->SMTPSecure = "ssl";                 // sets the prefix to the servier
-    }
-
-    $app->mail->Host       = $host;
-
-    $app->mail->Port       = $port;                   // set the SMTP port for the GMAIL server
-
-    $app->mail->Username   = $benutzername;  // GMAIL username
-    $app->mail->Password   = $passwort;            // GMAIL password
-  }
 
   $app->FormHandler = new FormHandler($app);
 

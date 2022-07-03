@@ -42,8 +42,6 @@ if($aes == 2 && is_file(dirname(__FILE__)."/../www/lib/class.aes".$aes.".php"))
   include_once(dirname(__FILE__)."/../www/lib/class.aes".$aes.".php");
 }else
   include_once(dirname(__FILE__)."/../www/lib/class.aes.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
 
 $classes = array('briefpapier','lieferschein','auftrag','anfrage','gutschrift','bestellung','rechnung','mahnwesen');
 foreach($classes as $class)

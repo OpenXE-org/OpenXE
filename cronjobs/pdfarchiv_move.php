@@ -73,12 +73,6 @@ if(!class_exists('AES')){
   }
 }
 
-if(!class_exists('PHPMailer')){
-  include_once dirname(__DIR__) . '/www/plugins/phpmailer/class.phpmailer.php';
-}
-if(!class_exists('SMTP')){
-  include_once dirname(__DIR__) . '/www/plugins/phpmailer/class.smtp.php';
-}
 if(!class_exists('image'))
 {
   include_once dirname(__DIR__).'/www/lib/class.image.php';

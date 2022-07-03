@@ -75,36 +75,6 @@ if (method_exists($app->erp, 'CheckCronjob') && !$app->erp->CheckCronjob()) {
 }
 $firmendatenid = $app->DB->Select('SELECT MAX(id) FROM firmendaten LIMIT 1');
 
-$benutzername = $app->DB->Select("SELECT benutzername FROM firmendaten WHERE id='" . $firmendatenid . "' LIMIT 1");
-$passwort = $app->DB->Select("SELECT passwort FROM firmendaten WHERE id='" . $firmendatenid . "' LIMIT 1");
-$host = $app->DB->Select("SELECT host FROM firmendaten WHERE id='" . $firmendatenid . "' LIMIT 1");
-$port = $app->DB->Select("SELECT port FROM firmendaten WHERE id='" . $firmendatenid . "' LIMIT 1");
-$mailssl = $app->DB->Select("SELECT mailssl FROM firmendaten WHERE id='" . $firmendatenid . "' LIMIT 1");
-$noauth = $app->erp->Firmendaten('noauth');
-
-$app->mail = new PHPMailer($app);
-$app->mail->CharSet = 'UTF-8';
-//$app->mail->PluginDir="plugins/phpmailer/";
-$app->mail->IsSMTP();
-
-if ($noauth == '1') {
-  $app->mail->SMTPAuth = false;
-} else {
-  $app->mail->SMTPAuth = true;
-}
-if($mailssl == 1){
-  $app->mail->SMTPSecure = 'tls';
-}else if($mailssl == 2){
-  $app->mail->SMTPSecure = 'ssl';
-}
-
-$app->mail->Host = $host;
-$app->mail->Port = $port;                   // set the SMTP port for the GMAIL server
-
-$app->mail->Username = $benutzername;
-$app->mail->Password = $passwort;
-
-
 $app->erp->SetKonfigurationValue('prozessstarter_letzteraufruf', date('Y-m-d H:i:s'));
 
 /** @var \Xentral\Modules\SystemHealth\Service\SystemHealthService $service */

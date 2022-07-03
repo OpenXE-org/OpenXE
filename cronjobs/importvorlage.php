@@ -49,8 +49,6 @@ if(!class_exists('AES')){
     include_once(dirname(__DIR__) . '/www/lib/class.aes.php');
   }
 }
-include_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.phpmailer.php');
-include_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.smtp.php');
 
 $classes = array('briefpapier','lieferschein','auftrag','anfrage','gutschrift','bestellung','rechnung',
   'mahnwesen');
@@ -84,12 +82,6 @@ include_once(__DIR__."/../www/lib/ShopimporterBase.php");
 */
 if(!class_exists('WawiString')){
   include_once(dirname(__DIR__) . '/phpwf/plugins/class.string.php');
-}
-if(!class_exists('SMTP')){
-  require_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.smtp.php');
-}
-if(!class_exists('PHPMailer')){
-  require_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.phpmailer.php');
 }
 if(!class_exists('app_t2'))
 {
@@ -401,47 +393,6 @@ if(!defined('FPDF_FONTPATH'))
 
 
 //ENDE
-
-
-$benutzername = $app->erp->Firmendaten("benutzername");
-$passwort = $app->erp->Firmendaten("passwort");
-$host = $app->erp->Firmendaten("host");
-$port = $app->erp->Firmendaten("port");
-$mailssl = $app->erp->Firmendaten("mailssl");
-$noauth = $app->erp->Firmendaten("noauth");
-$mailanstellesmtp = $app->erp->Firmendaten("mailanstellesmtp");
-
-// mail
-$app->mail = new PHPMailer($app);
-$app->mail->CharSet = "UTF-8";
-$app->mail->PluginDir=dirname(__DIR__).'/www/plugins/phpmailer/';
-
-if($mailanstellesmtp=="1"){
-  $app->mail->IsMail();
-} else {
-  $app->mail->IsSMTP();
-
-  if($noauth=="1"){
-    $app->mail->SMTPAuth = false;
-  }
-  else {
-    $app->mail->SMTPAuth   = true;
-  }
-
-  if($mailssl==1){
-    $app->mail->SMTPSecure = "tls";                 // sets the prefix to the servier
-  }
-  elseif ($mailssl==2){
-    $app->mail->SMTPSecure = "ssl";                 // sets the prefix to the servier
-  }
-
-  $app->mail->Host       = $host;
-
-  $app->mail->Port       = $port;                   // set the SMTP port for the GMAIL server
-
-  $app->mail->Username   = $benutzername;  // GMAIL username
-  $app->mail->Password   = $passwort;            // GMAIL password
-}
 
 $app->FormHandler = new FormHandler($app);
 

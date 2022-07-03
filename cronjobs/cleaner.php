@@ -25,8 +25,6 @@ if(!class_exists('AES')){
   }
 }
 include_once dirname(__DIR__).'/www/pages/shopimport.php';
-include_once dirname(__DIR__).'/www/plugins/phpmailer/class.phpmailer.php';
-include_once dirname(__DIR__).'/www/plugins/phpmailer/class.smtp.php';
 include_once dirname(__DIR__).'/phpwf/plugins/class.secure.php';
 
 if(!class_exists('app_t'))

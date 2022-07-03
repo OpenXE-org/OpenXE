@@ -9,8 +9,6 @@ include_once(dirname(__FILE__)."/../www/lib/class.remote.php");
 include_once(dirname(__FILE__)."/../www/lib/class.httpclient.php");
 include_once(dirname(__FILE__)."/../www/lib/class.aes.php");
 include_once(dirname(__DIR__)."/phpwf/plugins/class.secure.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
 include_once(dirname(__DIR__)."/www/pages/shopimport.php");
 include(dirname(__FILE__)."/../phpwf/plugins/class.stringcleaner.php");
 */
@@ -62,12 +60,6 @@ if(!class_exists('ShopimportCustom') &&
   file_exists(dirname(__DIR__) . '/www/pages/shopimport_custom.php'))
 {
   include_once dirname(__DIR__) . '/www/pages/shopimport_custom.php';
-}
-if(!class_exists('PHPMailer')){
-  include_once dirname(__DIR__) . '/www/plugins/phpmailer/class.phpmailer.php';
-}
-if(!class_exists('SMTP')){
-  include_once dirname(__DIR__) . '/www/plugins/phpmailer/class.smtp.php';
 }
 if(!class_exists('Secure')){
   include_once dirname(__DIR__) . '/phpwf/plugins/class.secure.php';

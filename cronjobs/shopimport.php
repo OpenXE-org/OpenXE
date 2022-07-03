@@ -38,12 +38,6 @@ if(!class_exists('AES')){
 if(!class_exists('Shopimport')){
   include_once(dirname(__DIR__) . '/www/pages/shopimport.php');
 }
-if(!class_exists('PHPMailer')){
-  include_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.phpmailer.php');
-}
-if(!class_exists('SMTP')){
-  include_once(dirname(__DIR__) . '/www/plugins/phpmailer/class.smtp.php');
-}
 if(!class_exists('Secure')){
   include_once(dirname(__DIR__) . '/phpwf/plugins/class.secure.php');
 }
@@ -457,46 +451,7 @@ $app->User = new User($app);
 
 $app->FormHandler = new FormHandler($app);
 $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
-$benutzername = $app->erp->Firmendaten('benutzername');
-$passwort = $app->erp->Firmendaten('passwort');
-$host = $app->erp->Firmendaten('host');
-$port = $app->erp->Firmendaten('port');
-$mailssl = $app->erp->Firmendaten('mailssl');
-$mailanstellesmtp = $app->erp->Firmendaten('mailanstellesmtp');
-$noauth = $app->erp->Firmendaten('noauth');
 
-
-// mail
-$app->mail = new PHPMailer($app);
-$app->mail->CharSet = 'UTF-8';
-$app->mail->PluginDir='plugins/phpmailer/';
-
-if($mailanstellesmtp=='1'){
-  $app->mail->IsMail();
-} else {
-  $app->mail->IsSMTP();
-
-  if($noauth=='1') {
-    $app->mail->SMTPAuth = false;
-  }
-  else {
-    $app->mail->SMTPAuth   = true;
-  }
-
-  if($mailssl==1){
-    $app->mail->SMTPSecure = 'tls';                 // sets the prefix to the servier
-  }
-  else if ($mailssl==2){
-    $app->mail->SMTPSecure = 'ssl';                 // sets the prefix to the servier
-  }
-
-  $app->mail->Host       = $host;
-
-  $app->mail->Port       = $port;                   // set the SMTP port for the GMAIL server
-
-  $app->mail->Username   = $benutzername;  // GMAIL username
-  $app->mail->Password   = $passwort;            // GMAIL password
-}
 $app->DB->Update("UPDATE prozessstarter SET mutexcounter = mutexcounter + 1 WHERE mutex = 1 AND (parameter = 'shopimport') AND aktiv = 1");
 if(!$app->DB->Select("SELECT id FROM prozessstarter WHERE mutex = 0 AND parameter = 'shopimport' AND aktiv = 1")) {
   return;

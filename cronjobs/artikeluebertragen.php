@@ -8,8 +8,6 @@ include(dirname(__FILE__)."/../www/lib/class.erpapi_custom.php");
 include(dirname(__FILE__)."/../www/lib/class.remote.php");
 include(dirname(__FILE__)."/../www/lib/class.httpclient.php");
 include(dirname(__FILE__)."/../www/lib/class.aes.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
 
 
 

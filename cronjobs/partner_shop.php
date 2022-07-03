@@ -8,8 +8,6 @@ if(file_exists(dirname(__FILE__)."/../www/lib/class.erpapi_custom.php"))include_
 include_once(dirname(__FILE__)."/../www/lib/class.remote.php");
 include_once(dirname(__FILE__)."/../www/lib/class.httpclient.php");
 include_once(dirname(__FILE__)."/../www/lib/class.aes.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include_once(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
 */
 
 if(!class_exists('app_t'))

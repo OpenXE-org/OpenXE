@@ -10,8 +10,6 @@ include_once dirname(__DIR__).'/www/lib/class.erpapi.php';
 include_once dirname(__DIR__).'/www/lib/class.remote.php';
 include_once dirname(__DIR__).'/www/lib/class.httpclient.php';
 include_once dirname(__DIR__).'/www/lib/class.aes.php';
-include_once dirname(__DIR__).'/www/plugins/phpmailer/class.phpmailer.php';
-include_once dirname(__DIR__).'/www/plugins/phpmailer/class.smtp.php';
 include_once dirname(__DIR__).'/www/lib/ShopimporterBase.php';
 
 $app = new ApplicationCore();

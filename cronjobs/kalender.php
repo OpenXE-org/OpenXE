@@ -4,10 +4,6 @@ include(dirname(__FILE__)."/../conf/main.conf.php");
 include(dirname(__FILE__)."/../phpwf/plugins/class.mysql.php");
 include(dirname(__FILE__)."/../www/lib/imap.inc.php");
 include(dirname(__FILE__)."/../www/lib/class.erpapi.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
-
-
 
 class app_t {
   var $DB;
@@ -43,50 +39,8 @@ if(empty($app->erp)){
 
 $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
 
-$benutzername = $app->erp->Firmendaten("benutzername");
-$passwort = $app->erp->Firmendaten("passwort");
-$host = $app->erp->Firmendaten("host");
-$port = $app->erp->Firmendaten("port");
-$mailssl = $app->erp->Firmendaten("mailssl");
-$mailanstellesmtp = $app->erp->Firmendaten("mailanstellesmtp");
-$noauth = $app->erp->Firmendaten("noauth");
-
-
-  // mail
-  $app->mail = new PHPMailer($app);
-  $app->mail->CharSet = 'UTF-8';
-  $app->mail->PluginDir='plugins/phpmailer/';
-
-  if($mailanstellesmtp=='1'){
-    $app->mail->IsMail();
-  } else {
-    $app->mail->IsSMTP();
-
-    if($noauth=='1') {
-      $app->mail->SMTPAuth = false;
-    }
-    else {
-      $app->mail->SMTPAuth   = true;
-    }
-
-    if($mailssl==1){
-      $app->mail->SMTPSecure = 'tls';                 // sets the prefix to the servier
-    }
-    else if ($mailssl==2){
-      $app->mail->SMTPSecure = 'ssl';                 // sets the prefix to the servier
-    }
-
-    $app->mail->Host       = $host;
-
-    $app->mail->Port       = $port;                   // set the SMTP port for the GMAIL server
-
-    $app->mail->Username   = $benutzername;  // GMAIL username
-    $app->mail->Password   = $passwort;            // GMAIL password
-  }
-
 $app->DB->Update("UPDATE prozessstarter SET mutexcounter = mutexcounter + 1 WHERE mutex = 1 AND (parameter = 'kalender' ) AND aktiv = 1");
 if(!$app->DB->Select("SELECT id FROM prozessstarter WHERE mutex = 0 AND (parameter = 'kalender') AND aktiv = 1"))return;
-
 
 // alle termine innerhalb der nächsten 15 Minuten
 $termine = $app->DB->SelectArr("SELECT ke.id,ke.bezeichnung,DATE_FORMAT(ke.von,'%H:%i') as start,ke.beschreibung,ke.allDay 

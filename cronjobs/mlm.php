@@ -13,8 +13,6 @@ include(dirname(__FILE__)."/../www/lib/class.erpapi.php");
 include(dirname(__FILE__)."/../www/lib/class.remote.php");
 include(dirname(__FILE__)."/../www/lib/class.httpclient.php");
 include(dirname(__FILE__)."/../www/lib/class.aes.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.phpmailer.php");
-include(dirname(__FILE__)."/../www/plugins/phpmailer/class.smtp.php");
 
 class app_t {
   var $DB;
