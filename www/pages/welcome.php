@@ -3217,6 +3217,8 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
 
     $pages[] = $firstPage;
 
+
+/*/ This is pointless because the mailaccount is not configured yet
     if($isAdminAdmin) {
       $isFirstAdmin = $this->app->User->GetType() === 'admin' && $this->app->User->GetName('admin');
       if($isFirstAdmin) {
@@ -3271,7 +3273,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
         ];
       }
     }
-
+*/
     $subHeadline = 'Du kannst nun loslegen.';
     if($isAdminAdmin && !empty(erpAPI::Ioncube_Property('isdevelopmentversion'))) {
       $subHeadline = 'Es handelt sich hier um eine Development-Version. 
