@@ -467,8 +467,8 @@ class Firmendaten  {
         $this->app->erp->Firmendaten('email'),
         $this->app->erp->Firmendaten('absendername'),
         $this->app->erp->Firmendaten('testmailempfaenger'),
-        'Testmail Empfaenger',
-        'Xentral ERP: Testmail',
+        $this->app->erp->Firmendaten('testmailempfaenger'),
+        'Xenomporio ERP: Testmail',
         'Dies ist eine Testmail',
         '',0,true,'','',
         true

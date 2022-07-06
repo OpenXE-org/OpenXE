@@ -29779,7 +29779,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 */
 // Force only existing emailbackup accounts
 
+    $tpl = "<option value=\"\">-</option>";
+
     $email_addr = $this->app->DB->SelectArr("SELECT email, angezeigtername FROM emailbackup WHERE email != '' AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
+
+    if (empty($email_addr)) {
+      return "";
+    }
 
     foreach($email_addr AS $mail)
     {
@@ -29788,7 +29794,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
 
     $emails = array_keys(array_flip($emails));
-
 
     for($i=0;$i<(!empty($emails)?count($emails):0);$i++)
     {
@@ -29820,7 +29825,13 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 */
 // Force only existing emailbackup accounts
 
+    $tpl = "<option value=\"\">-</option>";
+
     $email_addr = $this->app->DB->SelectArr("SELECT email FROM emailbackup WHERE email != '' AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
+
+    if (empty($email_addr)) {
+      return "";
+    }
 
     foreach($email_addr AS $mail) {
       $emails[] = $mail['email'];
