@@ -153,7 +153,7 @@
 		}
 
 
-                  $import = explode (";\r\n", $import); 
+                  $import = explode (";\n", $import); 
 
                   foreach ($import as $imp){
                     if ($imp != '' && $imp != ' ' && trim($imp) != ''){

@@ -1,7 +1,7 @@
 -- phpMyAdmin SQL Dump
 -- version 4.2.12deb2
 -- http://www.phpmyadmin.net
---
+-- 
 -- Host: localhost
 -- Erstellungszeit: 26. Okt 2015 um 17:47
 -- Server Version: 5.5.44-0+deb8u1
