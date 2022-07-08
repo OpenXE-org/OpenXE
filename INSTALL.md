@@ -1,10 +1,28 @@
-# Xentral Installation
+# Xenomporio installation
 
-1. aktuelle .tar.gz entpacken in einem Ordner
-2. per Browser auf auf Verzeichnis gehen
-3. setup durchfuehren (trotz Hinweis der Rechte (diese muessen passen) weiter klicken)
-4. Der Webserver-Pfad sollte dringend auf www gesetzte werden, sodass die 
-Firmen kritischen Dateien auf keinen Fall durch eine fehlerhafte .htaccess 
-Datei jemals online stehen (es geht primaer um den Ordner userdata und conf).
+## Place the installation files into a folder in /var/www/html/.
+
+`cd /var/www/html`
+
+e.g. Release 1.0:
+
+`sudo wget https://github.com/xenomporio-org/Xenomporio/archive/refs/tags/V.1.0.zip`
+
+`unzip V.1.0.zip`
+
+## Set folder permissions:
+
+`sudo chown www-data:www-data Xenomporio-V.1.0 -R`
+
+## Fire up the setup page in a browser
+
+http://yourserverip/Xenomporio-V.1.0 (watch out, its case sensitive)
+
+
+
+
+
+
+
 
 
