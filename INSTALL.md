@@ -18,7 +18,13 @@ e.g. Release 1.0:
 
 http://yourserverip/Xenomporio-V.1.0 (watch out, its case sensitive)
 
-
+[<img src="doc/Install-10.png" width="800px">]
+[<img src="doc/Install-20.png" width="800px">]
+[<img src="doc/Install-30.png" width="800px">]
+[<img src="doc/Install-40.png" width="800px">]
+[<img src="doc/Install-50.png" width="800px">]
+[<img src="doc/Install-60.png" width="800px">]
+[<img src="doc/Install-done.png" width="800px">]
 
 
 
