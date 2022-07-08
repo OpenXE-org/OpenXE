@@ -13,4 +13,9 @@ Xenomporio ist eine umfassende webbasierte Anwendung zur Abwicklung aller kaufm√
 * Aufgaben- und Terminverwaltung
 * Zeitabrechnung
 
+
+[Hier gehts zur Server Installation](SERVER_INSTALL.md)
+
+[Hier gehts zur Xenomporio Installation](INSTALL.md)
+
 Xenomporio ist freie Software, lizensiert unter AGPL 3 und basiert auf der Open Source Version von Xentral https://xentral.com/  
