@@ -5,6 +5,9 @@ e.g. 8 GB RAM, 128 GB hard drive, 4 CPUs.
 
 ## Install the operating system
 
+(...)
+It is recommended install OpenSSH during install.
+
 ## Refresh the update system
 `sudo apt-get update`
 
