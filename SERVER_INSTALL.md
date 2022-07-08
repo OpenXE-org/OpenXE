@@ -181,3 +181,5 @@ MariaDB [(none)]> quit
 Bye
 ```
 ## --> Reset your server
+
+Continue with [Xenomporio Installation](INSTALL.md)
