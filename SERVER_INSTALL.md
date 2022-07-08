@@ -180,4 +180,4 @@ MariaDB [(none)]> show databases;
 MariaDB [(none)]> quit
 Bye
 ```
-# Reset your server
+## --> Reset your server
