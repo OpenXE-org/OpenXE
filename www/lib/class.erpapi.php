@@ -33040,20 +33040,23 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     if($field === 'mysql55') {
       return '1';
     }
-    if(strpos($field,'next') !== false)
+
+    if(strpos($field,'next') != false)
     {
       $firmendatenid = (int)$this->app->DB->Select('SELECT MAX(id) FROM firmendaten LIMIT 1');
 
-	if ($this->app->DB->Select("SHOW COLUMNS FROM firmendaten LIKE '$field'")) {
-	      $firmendaten_value = $this->app->DB->Select(
-	        sprintf(
-	          'SELECT `%s` FROM firmendaten WHERE id = %d LIMIT 1',
-	          $field, $firmendatenid)
-	      );
-	}
+    	if ($this->app->DB->Select("SHOW COLUMNS FROM firmendaten LIKE '$field'")) {
+        $firmendaten_value = $this->app->DB->Select(
+         sprintf(
+           'SELECT `%s` FROM firmendaten WHERE id = %d LIMIT 1',
+           $field, $firmendatenid)
+        );
+  	  }
+
       if(!$this->app->DB->error()) {
         return $firmendaten_value;
       }
+
       $firmendaten_value = $this->app->DB->SelectRow(
         sprintf('SELECT id, wert FROM firmendaten_werte WHERE `name` = \'%s\' LIMIT 1', $field)
       );
