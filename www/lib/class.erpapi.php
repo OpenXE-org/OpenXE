@@ -2089,7 +2089,7 @@ public function NavigationHooks(&$menu)
   // @refactor FileLock Komponente
   function ProzessUnlock($fp)
   {
-    if(!$fp)return;
+    if(gettype($fp) != 'resource') return;
     fflush($fp); // leere Ausgabepuffer bevor die Sperre frei gegeben wird
     flock($fp, LOCK_UN); // Gib Sperre frei
     fclose($fp);
@@ -22154,19 +22154,17 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   function GetGeschaeftsBriefText($subjekt,$sprache='',$projekt='',$dokument='',$dokumentid=0)
   {
 
-    $dbcheck = $this->app->DB->Select("SHOW TABLES LIKE '$dokument'");
-
-    if ($dbcheck) {
-      $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+    $text = '';
+    if ($dokument != '') {
+      $dbcheck = $this->app->DB->Select("SHOW TABLES LIKE '$dokument'");     
+      if (!empty($dbcheck)) {
+        $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+      }
+      if($abweichend>0 && !preg_match('/_Abweichend/',$subjekt))
+      {
+       $text = $this->GetGeschaeftsBriefText($subjekt."_Abweichend",$sprache,$projekt,$dokument,$dokumentid); 
+      } 
     }
-    if($abweichend>0 && !preg_match('/_Abweichend/',$subjekt))
-    {
-      $text = $this->GetGeschaeftsBriefText($subjekt."_Abweichend",$sprache,$projekt,$dokument,$dokumentid);
-    }else{
-      $text = '';
-    }
-
-
 
     if($text=='')
     {
@@ -22200,14 +22198,16 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   function GetGeschaeftsBriefBetreff($subjekt,$sprache="",$projekt="",$dokument="",$dokumentid=0)
   {
 
-    $dbcheck = $this->app->DB->Select("SHOW TABLES LIKE '$dokument'");
-
-    if ($dbcheck) {
-      $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
-    }
-    if($abweichend>0 && !preg_match('/_Abweichend/',$subjekt))
-    {
-      $text = $this->GetGeschaeftsBriefBetreff($subjekt."_Abweichend",$sprache,$projekt,$dokument,$dokumentid);
+    $text = '';
+    if ($dokument != '') {
+      $dbcheck = $this->app->DB->Select("SHOW TABLES LIKE '$dokument'");
+      if ($dbcheck) {
+        $abweichend = $this->app->DB->Select("SELECT abweichendebezeichnung FROM $dokument WHERE id='$dokumentid' LIMIT 1");
+      }
+      if($abweichend>0 && !preg_match('/_Abweichend/',$subjekt))
+     {
+       $text = $this->GetGeschaeftsBriefBetreff($subjekt."_Abweichend",$sprache,$projekt,$dokument,$dokumentid);
+     }
     }
 
     if($text=="")

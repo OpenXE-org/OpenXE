@@ -507,10 +507,7 @@ class Auftrag extends GenAuftrag
           $paramsArray[] = "a.email LIKE '%".$parameter['email']."%' ";
         }
 
-
-        /* XXX */
         if(isset($parameter['datumVon']) && !empty($parameter['datumVon'])) {
-
           $paramsArray[] = "a.datum >= '" . date('Y-m-d',strtotime($parameter['datumVon']))."' ";
         }
 
@@ -582,6 +579,44 @@ class Auftrag extends GenAuftrag
         $moreinfo = true; // EXTRA
 
         break;
+    case 'auftraegeoffeneauto':
+
+     $allowed['auftraegeoffeneauto'] = array('list');
+
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','');
+        $width = array('1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%');
+
+   $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+                $menu = "";
+
+                $sql = "SELECT 
+                a.id,
+                '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+                CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
+                belegnr,
+                datum,
+                lieferantkdrnummer,
+                name,
+                land,
+                zahlungsweise,
+                gesamtsumme,
+                (" . $this->app->YUI->IconsSQL() . ")  AS icons,
+                id
+                FROM
+                auftrag a";
+
+                $where = "1";
+                $count = "SELECT count(DISTINCT id) FROM auftrag WHERE $where";
+//                $groupby = "";
+
+
+        break;
+
     }
     $erg = [];
     foreach($erlaubtevars as $k => $v) {
@@ -666,6 +701,8 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("einkaufspreise", "AuftragEinkaufspreise");
     $this->app->ActionHandler("alsfreigegeben", "AuftragAlsfreigegeben");
     $this->app->ActionHandler("steuer", "AuftragSteuer");
+    $this->app->ActionHandler("berechnen", "Auftraegeberechnen");
+
     $this->app->DefaultActionHandler("list");
 
     $id = $this->app->Secure->GetGET('id');
@@ -2852,7 +2889,6 @@ class Auftrag extends GenAuftrag
       );
     }
 
-
     $vorkasse_ok = $this->app->DB->Select("SELECT vorkasse_ok FROM auftrag WHERE id='$id' LIMIT 1");
     $zahlungsweise = $auftragArr[0]['zahlungsweise'];
     if($vorkasse_ok==1){
@@ -3151,7 +3187,7 @@ class Auftrag extends GenAuftrag
       if($suchwort!="")
       {
         $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
-            LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.name LIKE '%$suchwort%' OR a.email LIKE '%$suchwort%' OR a.plz LIKE '$suchwort%' OR a.internet LIKE '%$suchwort%' OR (adr.kundennummer='$suchwort' AND adr.kundennummer!=0)
+            LEFT JOIN adresse adr ON adr.id = b.adresse WHERE (a.name LIKE '%$suchwort%' OR a.email LIKE '%$suchwort%' OR a.plz LIKE '$suchwort%' OR a.internet LIKE '%$suchwort%' OR (adr.kundennummer='$suchwort' AND adr.kundennummer!=0)
               OR (a.gesamtsumme='$suchwort' AND a.gesamtsumme!=0) OR (a.belegnr='$suchwort' AND a.belegnr!='' ))");
       } else {
         if($name!="")
@@ -5990,6 +6026,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=list','&Uuml;bersicht');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=create','Neuen Auftrag anlegen');
+    $this->app->erp->MenuEintrag('index.php?module=auftrag&action=versandzentrum','Versandzentrum');
 
     if(strlen($backurl)>5){
       $this->app->erp->MenuEintrag("$backurl", 'Zur&uuml;ck zur &Uuml;bersicht');
@@ -6077,9 +6114,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     }
 
     if($this->app->Secure->GetPOST('ausfuehren')){
+
       $drucker = $this->app->Secure->GetPOST('seldruckerversand');
       $aktion = $this->app->Secure->GetPOST('auftrag_versandauswahl');
-      $auftraegemarkiert = $this->app->Secure->GetPOST('auftraegemarkiert');
+//      $auftraegemarkiert = $this->app->Secure->GetPOST('auftraegemarkiert');
+      $auftraegemarkiert = $this->app->Secure->GetPOST('auswahl');
       $bezeichnung = (string)$this->app->Secure->GetPOST('bezeichnung');
 
       $selectedIds = [];
@@ -6303,6 +6342,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           oder entfernen Sie die betreffenden Auftr&auml;ge in der Warteschlange</div>'
         );
       }
+
     }
     else{
       $this->app->Tpl->Set('VORTABS3UEBERSCHRIFT','<!--');
@@ -6315,11 +6355,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->Tpl->Parse('PAGE','auftraguebersicht.tpl');
       return;
     }
-    if($this->app->erp->RechteVorhanden('auftrag','berechnen'))
+//    if($this->app->erp->RechteVorhanden('auftrag','berechnen'))
     {
       $this->app->Tpl->Set('AUTOBERECHNEN','<input type="button" class="btnGreen" value="Auto-Versand berechnen" onclick="window.location.href=\'index.php?module=auftrag&action=berechnen\'">');
-    }else{
-      $this->app->Tpl->Set('AUTOBERECHNEN2','');
+//    }else{
+//      $this->app->Tpl->Set('AUTOBERECHNEN2','');
     }
     $infolink = '<a href="https://xentral.biz/helpdesk/kurzanleitung-ablauf-des-versands-von-auftraegen#nav-autoversand-mit-prozessstarter-berechnen" target="_blank">(Information)</a>';
     $last_order_calc = $this->app->erp->GetKonfiguration('last_order_calc');
@@ -6329,9 +6369,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     else{
       $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln wurde noch nicht ermittelt. '.$infolink.' [AUTOBERECHNEN]</div>');
     }
-    $this->app->YUI->TableSearch('TAB2','auftraegeoffeneauto');
+
+//    $this->app->YUI->TableSearch('TAB1','auftraege', 'show','','',basename(__FILE__), __CLASS__);
+    $this->app->YUI->TableSearch('TAB2','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
+//    $this->app->Tpl->Parse('PAGE',"auftraguebersicht.tpl");
+
+// TEST
     $this->app->Tpl->Parse('PAGE','auftrag_versandzentrum.tpl');
-  }
+// TEST
+  } // Ende 
 
 
   public function AuftragList()
@@ -6814,6 +6860,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->YUI->SortListEvent('del','auftrag_position','auftrag',$order_id, $position['id']);
       $this->removeExplodedPosition($order_id, $pos_id);
     }
+  }
+
+
+  /*
+  * Calculate order auto status for all open orders
+  */
+  public function Auftraegeberechnen() {
+    $this->app->erp->AuftraegeBerechnen();
+    header('Location: index.php?module=auftrag&action=versandzentrum');
   }
 
 }
