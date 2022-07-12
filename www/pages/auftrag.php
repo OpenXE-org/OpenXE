@@ -583,8 +583,8 @@ class Auftrag extends GenAuftrag
 
      $allowed['auftraegeoffeneauto'] = array('list');
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','');
-        $width = array('1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+        $width = array('1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
 
    $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
 
@@ -599,21 +599,27 @@ class Auftrag extends GenAuftrag
                 '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
                 CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
                 belegnr,
-                datum,
+                DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
                 lieferantkdrnummer,
                 name,
                 land,
                 zahlungsweise,
                 gesamtsumme,
                 (" . $this->app->YUI->IconsSQL() . ")  AS icons,
-                id
+                a.id
                 FROM
                 auftrag a";
 
-                $where = "1";
-                $count = "SELECT count(DISTINCT id) FROM auftrag WHERE $where";
+                $where = "a.status = 'freigegeben'";
+                $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
 //                $groupby = "";
 
+                $moreinfo = true; // Allow drop down details
+
+                $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
+                $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
+                $menu .= "</a>";
+                $menucol = 8; // For moredata
 
         break;
 
