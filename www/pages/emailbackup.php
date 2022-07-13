@@ -283,8 +283,8 @@ $width = array('10%'); // Fill out manually later
         $result[0]['email'],
         $result[0]['angezeigtername'],
         'Xenomporio ERP: Testmail',
-        'Dies ist eine Testmail',
-        '',0,true,'','',
+        'Dies ist eine Testmail für Account "'.$result[0]['email'].'".',
+        '',0,false,'','',
         true
       )
     ) {
