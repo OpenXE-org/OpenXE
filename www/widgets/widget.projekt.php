@@ -19,7 +19,11 @@ class WidgetProjekt extends WidgetGenProjekt
     $id = $this->app->Secure->GetGET("id");
     $kommissionierverfahren = array(
         'rechnungsmail'=>'Ohne Lagerbuchung',
-        'lieferschein'=>'Einfache Lagerbuchung ohne weiteren Prozess');
+        'lieferschein'=>'Einfache Lagerbuchung ohne weiteren Prozess',
+        'lieferscheinscan'=>'Lieferscheinscan',
+        'lieferscheinlagerscan'=>'Lieferscheinlagerscan',
+        'lieferscheinlager'=>'Lieferscheinlager',
+        'zweistufig'=>'Zweistufig');
     $field = new HTMLSelect("kommissionierverfahren",0);
     $field->AddOptionsAsocSimpleArray($kommissionierverfahren);
     $this->form->NewField($field);

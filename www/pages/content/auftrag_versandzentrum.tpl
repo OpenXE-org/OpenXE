@@ -1,16 +1,14 @@
 
 <div id="tabs">
 <ul>
-        <li><a href="#tabs-2">[TABTEXT2]</a></li>
-       [VORTABS3UEBERSCHRIFT]<li><a href="#tabs-3">[TABTEXT3]</a></li>[NACHTABS3UEBERSCHRIFT]
- </ul>
+        <li><a href="#tabs-1">[TABTEXT1]</a></li>
+       [VORTABS2UEBERSCHRIFT]<li><a href="#tabs-2">[TABTEXT2]</a></li>[NACHTABS2UEBERSCHRIFT]
+</ul>
 
-
-<div id="tabs-2">
+<div id="tabs-1">
+[MESSAGE]
 [AUTOVERSANDBERECHNEN]
-
-<form action="#tabs-2" id="frmauto" name="frmauto" method="post">
-
+<form action="#tabs-1" id="frmauto" name="frmauto" method="post">
   <div class="filter-box filter-usersave">
     <div class="filter-block filter-inline">
       <div class="filter-title">{|Filter|}</div>
@@ -39,8 +37,7 @@
       </ul>
     </div>
   </div>
-
-[TAB2]
+[TAB1]
 <fieldset>
   <legend>Stapelverarbeitung</legend>
   <input type="checkbox" value="1" id="autoalle" checked="checked" />&nbsp;alle markieren&nbsp;
@@ -59,10 +56,11 @@
 </fieldset>
 </form>
 </div>
-<div id="tabs-3">
-[VORTABS3UEBERSCHRIFT]
-<form action="#tabs-3" method="post">
 
+
+<div id="tabs-2">
+[VORTABS2UEBERSCHRIFT]
+<form action="#tabs-2" method="post">
   <div class="filter-box filter-usersave">
     <div class="filter-block filter-inline">
       <div class="filter-title">{|Filter|}</div>
@@ -77,14 +75,12 @@
       </ul>
     </div>
   </div>
-
-[TAB3]
+[TAB2]
 <table width="100%"><tr><td><input type="submit" value="Auftr&auml;ge aus Liste entfernen" name="entfernen"></td>
 </tr></table>
 </form>
-[NACHTABS3UEBERSCHRIFT]
+[NACHTABS2UEBERSCHRIFT]
 </div>
-
 </div>
 <script>
 

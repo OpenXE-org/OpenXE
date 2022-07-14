@@ -622,6 +622,13 @@ class Auftrag extends GenAuftrag
                 $menucol = 8; // For moredata
 
         break;
+/*        case 'auftraegeoffeneautowartend':
+
+          // TODO for cronjob commissioning
+          
+
+
+        break;*/
 
     }
     $erg = [];
@@ -5245,6 +5252,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     return $return;
   }
 
+  /*
+    order processed true or false
+  */
+
   public function AuftragVersand($id='', $ignoriereliefertermin = false, &$ergebnis = null, $paketmarkedrucken = false)
   {
     if(!$this->kommissionierung)
@@ -6076,6 +6087,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   {
     $this->AuftraguebersichtMenu();
     $targetMessage = 'AUTOVERSANDBERECHNEN';
+
+    $this->app->Tpl->Set('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand.</div>');
+
     $autoshipmentEnabled = true;
     $this->app->erp->RunHook('OrderAutoShipment', 2, $targetMessage, $autoshipmentEnabled);
 
@@ -6143,6 +6157,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
         switch($aktion){
           case 'versandstarten':
+
+          /*
+          *   If one of the cronjobs is active, orders only get marked. Sending will be handled by the cronjob.
+          *   If not, sending will be done here.
+          */
+
             $cronjobActive = $this->app->DB->Select(
               "SELECT ps.id 
               FROM `prozessstarter` AS `ps`
@@ -6179,6 +6199,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               //sort($auftraegemarkiert);
             }
             if($check){
+
+              /* Send all to cronjob */
+  
               $maxcronjobkommissionierung = $this->createCronjobCommission((string)$bezeichnung);
 
               $cauftraegemarkiert = $auftraegemarkiert ? count($auftraegemarkiert) : 0;
@@ -6195,6 +6218,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               }
             }
             else {
+
+              /* Process here now  */
+
               $cauftraegemarkiert = $auftraegemarkiert ? count($auftraegemarkiert) : 0;
               for ($i = 0; $i < $cauftraegemarkiert; $i++) {
                 $projekt = (int)$this->app->DB->Select(
@@ -6211,9 +6237,20 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                   continue;
                 }
                 $this->kommissionierung = $this->app->erp->GetNextKommissionierung($bezeichnung);
+    
+                $processed_orders_num = 0;
+
                 foreach ($auftraege as $auftrag) {
-                  $this->AuftragVersand($auftrag);
+
+                  /* Process each order */
+                  if($this->AuftragVersand($auftrag)) {
+                    $processed_orders_num++;
+                  }
+
                 }
+
+                $this->app->Tpl->Set('MESSAGE','<div class="info">'.$processed_orders_num.' Auftr&auml;ge wurden verarbeitet.</div>');
+
                 if(empty($this->kommissionierung)) {
                   continue;
                 }
@@ -6336,9 +6373,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $warteschleife='';
       }
 
-      $this->app->Tpl->Set('TABTEXT2','Unversendet '.$unversendet);
-      $this->app->Tpl->Set('TABTEXT3','Warteschleife '.$warteschleife);
-      $this->app->YUI->TableSearch('TAB3','auftraegeoffeneautowartend');
+      $this->app->Tpl->Set('MESSAGE','<div class="error">Cronjob order processing not yet implemented!</div>');
+
+      $this->app->Tpl->Set('TABTEXT1','Unversendet '.$unversendet);
+      $this->app->Tpl->Set('TABTEXT2','Warteschleife '.$warteschleife);
+//      $this->app->YUI->TableSearch('TAB2','auftraegeoffeneautowartend');
+
       if($warteschleife > 0 && !$cronjobActive) {
         $this->app->Tpl->Add(
           'AUTOVERSANDBERECHNEN',
@@ -6351,8 +6391,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     }
     else{
-      $this->app->Tpl->Set('VORTABS3UEBERSCHRIFT','<!--');
-      $this->app->Tpl->Set('NACHTABS3UEBERSCHRIFT','-->');
+      $this->app->Tpl->Set('VORTABS2UEBERSCHRIFT','<!--');
+      $this->app->Tpl->Set('NACHTABS2UEBERSCHRIFT','-->');
     }
 
     $this->app->Tpl->Set('SELDRUCKERVERSAND', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
@@ -6368,6 +6408,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 //      $this->app->Tpl->Set('AUTOBERECHNEN2','');
     }
     $infolink = '<a href="https://xentral.biz/helpdesk/kurzanleitung-ablauf-des-versands-von-auftraegen#nav-autoversand-mit-prozessstarter-berechnen" target="_blank">(Information)</a>';
+
+/*
     $last_order_calc = $this->app->erp->GetKonfiguration('last_order_calc');
     if(!empty($last_order_calc)) {
       $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln war am '.$last_order_calc.'. '.$infolink.' [AUTOBERECHNEN]</div>');
@@ -6375,14 +6417,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     else{
       $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln wurde noch nicht ermittelt. '.$infolink.' [AUTOBERECHNEN]</div>');
     }
+*/
 
-//    $this->app->YUI->TableSearch('TAB1','auftraege', 'show','','',basename(__FILE__), __CLASS__);
-    $this->app->YUI->TableSearch('TAB2','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
-//    $this->app->Tpl->Parse('PAGE',"auftraguebersicht.tpl");
-
-// TEST
+    $this->app->YUI->TableSearch('TAB1','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
     $this->app->Tpl->Parse('PAGE','auftrag_versandzentrum.tpl');
-// TEST
   } // Ende 
 
 
@@ -6830,8 +6868,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->Tpl->Add('LAENDER',$laenderStr);
     $this->app->Tpl->Parse('TAB1',"auftrag_table_filter.tpl");
 
-    $this->app->YUI->TableSearch('TAB2',"auftraegeoffeneauto");
     $this->app->YUI->TableSearch('TAB1','auftraege', 'show','','',basename(__FILE__), __CLASS__);
+//    $this->app->YUI->TableSearch('TAB2',"auftraegeoffeneauto");
     $this->app->YUI->TableSearch('TAB3',"auftraegeoffene");
 
     $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
