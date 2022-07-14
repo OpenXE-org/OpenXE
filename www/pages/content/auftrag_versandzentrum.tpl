@@ -32,7 +32,7 @@
             <input type="checkbox" id="auftrag_lieferdatum">
             <span class="slider round"></span>
           </label>
-          <label for="auftrag_lieferdatum">{|nur Auftr&auml;ge mit zukünftigem Lieferdatum|}</label>
+          <label for="auftrag_lieferdatum">{|inkl. Auftr&auml;ge mit zukünftigem Lieferdatum|}</label>
         </li>
       </ul>
     </div>
