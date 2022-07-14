@@ -580,9 +580,9 @@ class Auftrag extends GenAuftrag
 
      $allowed['auftraegeoffeneauto'] = array('list');
 
-        $heading = array('','','Lane', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
         $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
-        $findcols = array('open','a.belegnr','lane', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -593,8 +593,7 @@ class Auftrag extends GenAuftrag
                 a.id,
                 '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
                 CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
-                IF(a.fastlane=1,'fast','standard') AS `lane`,
-                belegnr,
+                IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
                 DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
                 lieferantkdrnummer,
                 name,
