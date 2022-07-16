@@ -61,22 +61,8 @@
 <div id="tabs-2">
 [VORTABS2UEBERSCHRIFT]
 <form action="#tabs-2" method="post">
-  <div class="filter-box filter-usersave">
-    <div class="filter-block filter-inline">
-      <div class="filter-title">{|Filter|}</div>
-      <ul class="filter-list">
-        <li class="filter-item">
-          <label for="autoallewartend" class="switch">
-            <input type="checkbox" value="1" id="autoallewartend" checked="checked" />
-            <span class="slider round"></span>
-          </label>
-          <label for="autoallewartend">{|Alle|}</label>
-        </li>
-      </ul>
-    </div>
-  </div>
 [TAB2]
-<table width="100%"><tr><td><input type="submit" value="Auftr&auml;ge aus Liste entfernen" name="entfernen"></td>
+<table width="100%"><tr><td><input type="submit" value="Gew&auml;hlte Auftr&auml;ge zurücksetzen" name="entfernen"></td>
 </tr></table>
 </form>
 [NACHTABS2UEBERSCHRIFT]
