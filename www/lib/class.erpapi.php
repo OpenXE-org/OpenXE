@@ -32659,7 +32659,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $sendmail_error
       );
     }
-
     if($sysMailerSent === false) {
       $this->app->erp->LogFile("Mailer Error: " . $sendmail_error);
       $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
@@ -32673,7 +32672,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     }
     // schreiben in post ausgang
     $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
-    $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$fromm."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
+    $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$from."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
     if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name) && !preg_match("/WaWision Kopie/",$to_name))
     {
       $imap_data = $this->app->DB->SelectRow("SELECT * FROM emailbackup WHERE email='".$from."' AND geloescht!=1 LIMIT 1");
@@ -32693,7 +32692,9 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         $client = $clientProvider->createMailClientFromAccount($account);
         $client->connect();
         $client->appendMessage($imapCopyMessage, $account->getImapOutgoingFolder());
-      } catch (Exception $e) {}
+      } catch (Exception $e) {
+        $this->app->erp->LogFile("Mailer Error: " . (string)$e);
+      }
 
       $this->app->erp->LogFile("IMAP Ausgang FROM ".$from." S $server P $port T $type SP $server_path B ".$imap_data['benutzername']." SF ".$imap_data['imap_sentfolder']);
     }

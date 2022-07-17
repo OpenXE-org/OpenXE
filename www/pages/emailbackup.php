@@ -294,7 +294,7 @@ $width = array('10%'); // Fill out manually later
     }
     else {
       $msg = $this->app->erp->base64_url_encode(
-        '<div class="error">Die Testmail wurde nicht versendet: '.$this->app->erp->mail_error.'</div>'
+        '<div class="error">Fehler beim Versende der Testmail: '.$this->app->erp->mail_error.'</div>'
       );
     }
     $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
