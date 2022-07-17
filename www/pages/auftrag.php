@@ -6492,7 +6492,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $warteschleife='';
       }
 
-      $this->app->Tpl->Set('MESSAGE','<div class="error">Cronjob order processing not yet implemented!</div>');
+//      $this->app->Tpl->Set('MESSAGE','<div class="error">Cronjob order processing not yet implemented!</div>');
 
       $this->app->Tpl->Set('TABTEXT1','Bereit '.$unversendet);
       $this->app->Tpl->Set('TABTEXT2','Ausstehend '.$warteschleife);
