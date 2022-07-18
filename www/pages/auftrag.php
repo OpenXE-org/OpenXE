@@ -581,7 +581,7 @@ class Auftrag extends GenAuftrag
      $allowed['auftraegeoffeneauto'] = array('list');
 
         $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
-        $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
+        $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%');
         $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
 
                 $defaultorder = 1;
@@ -606,10 +606,10 @@ class Auftrag extends GenAuftrag
                 FROM
                 auftrag a";
 
-                $status_where =  'a.cronjobkommissionierung = 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1'; // liefertermin_ok special treatment
+                $where = "a.status = 'freigegeben' AND a.cronjobkommissionierung = 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1"; // liefertermin_ok special treatment
 
-                $where = "a.status = 'freigegeben' && ".$status_where;
                 $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
+
 //                $groupby = "";
 
                 $moreinfo = true; // Allow drop down details
@@ -621,23 +621,24 @@ class Auftrag extends GenAuftrag
 
                 for ($r = 1;$r <= 3;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
-                                                 function fnFilterColumn' . $r . ' ( i )
-                                                 {
-                                                 if(oMoreData' . $r . $name . '==1)
-                                                 oMoreData' . $r . $name . ' = 0;
-                                                 else
-                                                 oMoreData' . $r . $name . ' = 1;
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
 
-                                                 $(\'#' . $name . '\').dataTable().fnFilter( 
-                                                   \'\',
-                                                   i, 
-                                                   0,0
-                                                   );
-                                                 }
-                                                 ');
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
                 }
 
                 $more_data1 = $this->app->Secure->GetGET("more_data1");
+
                 if ($more_data1 == 1) {
                    $where .= " AND a.fastlane=1";
                 } else {
@@ -658,13 +659,15 @@ class Auftrag extends GenAuftrag
                 $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
                 $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
                 $menu .= "</a>";
-                $menucol = 9; // For moredata
+
+                $moreinfo = true; // Minidetail active
+                $menucol = 9; // For minidetail
 
         break;
         case 'auftraegeoffeneautowartend':
 
           // Show list for cronjob commissioning
-          $allowed['auftraegeoffeneauto'] = array('list');
+          $allowed['auftraegeoffeneautowartend'] = array('list');
 
           $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
           $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
@@ -694,52 +697,12 @@ class Auftrag extends GenAuftrag
 
                 $status_where =  'a.cronjobkommissionierung > 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1'; // liefertermin_ok special treatment
 
-                $where = "a.status = 'freigegeben' && ".$status_where;
-                $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
+                $where = "a.status = 'freigegeben' AND ".$status_where;
 //                $groupby = "";
 
                 $moreinfo = true; // Allow drop down details
 
-                // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#fastlane').click( function() { fnFilterColumn1( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_kundemehrereauftraege').click( function() { fnFilterColumn2( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_lieferdatum').click( function() { fnFilterColumn3( 0 ); } );");
-
-                for ($r = 1;$r <= 3;$r++) {
-                  $this->app->Tpl->Add('JAVASCRIPT', '
-                                                 function fnFilterColumn' . $r . ' ( i )
-                                                 {
-                                                 if(oMoreData' . $r . $name . '==1)
-                                                 oMoreData' . $r . $name . ' = 0;
-                                                 else
-                                                 oMoreData' . $r . $name . ' = 1;
-
-                                                 $(\'#' . $name . '\').dataTable().fnFilter( 
-                                                   \'\',
-                                                   i, 
-                                                   0,0
-                                                   );
-                                                 }
-                                                 ');
-                }
-
-                $more_data1 = $this->app->Secure->GetGET("more_data1");
-                if ($more_data1 == 1) {
-                   $where .= " AND a.fastlane=1";
-                } else {
-                }
-
-                $more_data3 = $this->app->Secure->GetGET("more_data3");
-                if ($more_data3 == 1) {
-                }
-                else {
-                  $where .= " AND a.liefertermin_ok=1";
-                }                
-
-                $more_data2 = $this->app->Secure->GetGET("more_data2");
-                if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
-
-               // END Toggle filters
+                $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
 
                 $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
                 $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
