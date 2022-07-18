@@ -59,6 +59,24 @@ if(!defined('FPDF_FONTPATH'))
 
 $cronjobname = 'autoversand_manuell';
 
+$mutex = $app->DB->Select(
+  "SELECT MAX(`mutex`) FROM `prozessstarter` WHERE (`parameter` = '".$cronjobname."')"
+);
+if($mutex){
+  $app->DB->Update(
+    "UPDATE `prozessstarter` 
+    SET `mutexcounter`=`mutexcounter`+1 
+    WHERE `mutex` = 1 AND (`parameter` = '".$cronjobname."')"
+  );
+
+  file_append($debugfile,"MUTEX");
+
+  return;
+}
+$app->DB->Update(
+  "UPDATE `prozessstarter` SET `mutex`='1', `mutexcounter` = 0 WHERE (`parameter` = '".$cronjobname."')"
+);
+
 // START APPLICATION
 
 $objAuftrag = $app->loadModule('auftrag');
@@ -71,11 +89,7 @@ $pendingorders = $app->DB->SelectArr(
         "SELECT id 
         FROM auftrag AS a 
         WHERE  a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') 
-          AND a.status='freigegeben' AND a.autoversand='1' AND a.cronjobkommissionierung > 0
-          AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.vorkasse_ok='1' 
-          AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' 
-          AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1' 
-        "
+          AND a.status='freigegeben' AND a.cronjobkommissionierung > 0"
       );
 
 if (!is_null($pendingorders)) {
@@ -84,7 +98,7 @@ if (!is_null($pendingorders)) {
   foreach ($pendingorders as $pendingorder) {
     /* Process each order */
 
-    if($objAuftrag->AuftragVersand($pendingorder['id'])) {
+    if($objAuftrag->AuftragVersand($pendingorder['id'],true)) { // Ignore shipdate -> The order has been marked, send it
       $processed_orders_num++;
     } else {
     }

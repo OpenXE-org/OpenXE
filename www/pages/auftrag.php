@@ -695,7 +695,7 @@ class Auftrag extends GenAuftrag
                 FROM
                 auftrag a";
 
-                $status_where =  'a.cronjobkommissionierung > 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1'; // liefertermin_ok special treatment
+                $status_where =  'a.cronjobkommissionierung > 0';
 
                 $where = "a.status = 'freigegeben' AND ".$status_where;
 //                $groupby = "";
@@ -6439,8 +6439,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $unversendet = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1' AND a.cronjobkommissionierung = 0  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
                                      AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' " . $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid'));
 
-      $warteschleife = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1'  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
-                                     AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' AND a.cronjobkommissionierung > 0 " . $this->app->erp->ProjektRechte('p.id', true, "a.vertriebid"));
+      $warteschleife = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.cronjobkommissionierung > 0 " . $this->app->erp->ProjektRechte('p.id', true, "a.vertriebid"));
  
       if($unversendet > 0) {
         $unversendet ='('.$unversendet.')';
