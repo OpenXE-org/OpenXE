@@ -5855,11 +5855,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
       }
       
-      if($autodruckrechnungstufe1mail && $rechnung > 0)
-      {
-        $this->app->erp->Rechnungsmail($rechnung);
-      }
-      
+      // Rechnungsmail was here, but now at the end to prioritise processing and printing over mail
+
       // auftrag abschliessen
       $this->app->DB->Update("UPDATE auftrag SET status='abgeschlossen',schreibschutz='1' WHERE id='$id' LIMIT 1");
       $this->app->erp->PDFArchivieren('auftrag',$id);
@@ -5975,6 +5972,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
         unlink($tmpfile);
       }
+
+      // Send the invoice as last step
+      if($autodruckrechnungstufe1mail && $rechnung > 0)
+      {
+        $this->app->erp->Rechnungsmail($rechnung);
+      }      
 
       $this->app->erp->RunHook('auftrag_versand_ende', 1, $id);
 
