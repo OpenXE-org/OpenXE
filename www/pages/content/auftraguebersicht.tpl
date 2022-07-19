@@ -12,7 +12,7 @@ document.onkeydown = function(evt) {
 <div id="tabs">
 <ul>
         <li><a href="#tabs-1">{|Auftr&auml;ge|}</a></li>
-        <li><a href="#tabs-5">{|in Bearbeitung|}</a></li>
+        <li><a href="#tabs-5">{|in Bearbeitung|}[TABTEXT5]</a></li>
  </ul>
 <div id="tabs-1">
 
@@ -113,10 +113,6 @@ document.onkeydown = function(evt) {
 <div id="tabs-5">
 [TAB5]
 </div>
-
-
-
-
 </div>
 <div id="lagermehrpopup" style="display:none;">
 <div id="lagermehrpopupinhalt">

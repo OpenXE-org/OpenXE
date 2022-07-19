@@ -6952,8 +6952,22 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->YUI->TableSearch('TAB1','auftraege', 'show','','',basename(__FILE__), __CLASS__);
 //    $this->app->YUI->TableSearch('TAB2',"auftraegeoffeneauto");
     $this->app->YUI->TableSearch('TAB3',"auftraegeoffene");
-
     $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
+
+
+      $inbearbeitung = $this->app->DB->Select("SELECT count(a.id) FROM auftrag a WHERE a.id!='' AND a.status='angelegt'");
+ 
+      if($inbearbeitung > 0) {
+        $inbearbeitung =' ('.$inbearbeitung.')';
+      }
+      else {
+        $inbearbeitung='';
+      }
+
+//      $this->app->Tpl->Set('MESSAGE','<div class="error">Cronjob order processing not yet implemented!</div>');
+
+    $this->app->Tpl->Set('TABTEXT5',$inbearbeitung);
+
     $this->app->YUI->TableSearch('TAB5',"auftraegeinbearbeitung");
     $this->app->erp->RunHook('auftraguebersicht_filter', 0);
     $this->app->Tpl->Parse('PAGE',"auftraguebersicht.tpl");
