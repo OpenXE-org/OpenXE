@@ -10365,7 +10365,7 @@ CREATE TABLE IF NOT EXISTS `proformarechnung_protokoll` (
 CREATE TABLE IF NOT EXISTS `projekt` (
                                          `id` int(10) NOT NULL AUTO_INCREMENT,
                                          `name` text NOT NULL,
-                                         `abkuerzung` text NOT NULL,
+                                         `abkuerzung` varchar(128) NOT NULL,
                                          `verantwortlicher` text NOT NULL,
                                          `beschreibung` text NOT NULL,
                                          `sonstiges` text NOT NULL,

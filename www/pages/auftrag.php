@@ -204,9 +204,6 @@ class Auftrag extends GenAuftrag
         $heading[] = 'Monitor';
         $heading[] = 'Men&uuml;';
 
-
-
-
         $parameter = $this->app->User->GetParameter('table_filter_auftrag');
         $parameter = base64_decode($parameter);
         $parameter = json_decode($parameter, true);
@@ -507,10 +504,7 @@ class Auftrag extends GenAuftrag
           $paramsArray[] = "a.email LIKE '%".$parameter['email']."%' ";
         }
 
-
-        /* XXX */
         if(isset($parameter['datumVon']) && !empty($parameter['datumVon'])) {
-
           $paramsArray[] = "a.datum >= '" . date('Y-m-d',strtotime($parameter['datumVon']))."' ";
         }
 
@@ -582,6 +576,142 @@ class Auftrag extends GenAuftrag
         $moreinfo = true; // EXTRA
 
         break;
+    case 'auftraegeoffeneauto':
+
+     $allowed['auftraegeoffeneauto'] = array('list');
+
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+        $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%');
+        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+                $menu = "";
+
+                $sql = "SELECT 
+                a.id,
+                '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+                CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
+                IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
+                DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
+                lieferantkdrnummer,
+                name,
+                DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
+                land,
+                zahlungsweise,
+                gesamtsumme,
+                (" . $this->app->YUI->IconsSQL() . ")  AS icons,
+                a.id
+                FROM
+                auftrag a";
+
+                $where = "a.status = 'freigegeben' AND a.cronjobkommissionierung = 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1"; // liefertermin_ok special treatment
+
+                $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
+
+//                $groupby = "";
+
+                $moreinfo = true; // Allow drop down details
+
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#fastlane').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_kundemehrereauftraege').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_lieferdatum').click( function() { fnFilterColumn3( 0 ); } );");
+
+                for ($r = 1;$r <= 3;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+
+                if ($more_data1 == 1) {
+                   $where .= " AND a.fastlane=1";
+                } else {
+                }
+
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                }
+                else {
+                  $where .= " AND a.liefertermin_ok=1";
+                }                
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
+
+               // END Toggle filters
+
+                $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
+                $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
+                $menu .= "</a>";
+
+                $moreinfo = true; // Minidetail active
+                $menucol = 9; // For minidetail
+
+        break;
+        case 'auftraegeoffeneautowartend':
+
+          // Show list for cronjob commissioning
+          $allowed['auftraegeoffeneautowartend'] = array('list');
+
+          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+          $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
+          $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+                $menu = "";
+
+                $sql = "SELECT 
+                a.id,
+                '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+                CONCAT('<input type=\"checkbox\" name=\"auswahlcronjob[]\" value=\"',a.id,'\" />') AS `auswahl`,
+                IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
+                DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
+                lieferantkdrnummer,
+                name,
+                DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
+                land,
+                zahlungsweise,
+                gesamtsumme,
+                (" . $this->app->YUI->IconsSQL() . ")  AS icons,
+                a.id
+                FROM
+                auftrag a";
+
+                $status_where =  'a.cronjobkommissionierung > 0';
+
+                $where = "a.status = 'freigegeben' AND ".$status_where;
+//                $groupby = "";
+
+                $moreinfo = true; // Allow drop down details
+
+                $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
+
+                $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
+                $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
+                $menu .= "</a>";
+                $menucol = 9; // For moredata
+
+
+        break;
+
     }
     $erg = [];
     foreach($erlaubtevars as $k => $v) {
@@ -666,6 +796,8 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("einkaufspreise", "AuftragEinkaufspreise");
     $this->app->ActionHandler("alsfreigegeben", "AuftragAlsfreigegeben");
     $this->app->ActionHandler("steuer", "AuftragSteuer");
+    $this->app->ActionHandler("berechnen", "Auftraegeberechnen");
+
     $this->app->DefaultActionHandler("list");
 
     $id = $this->app->Secure->GetGET('id');
@@ -2852,7 +2984,6 @@ class Auftrag extends GenAuftrag
       );
     }
 
-
     $vorkasse_ok = $this->app->DB->Select("SELECT vorkasse_ok FROM auftrag WHERE id='$id' LIMIT 1");
     $zahlungsweise = $auftragArr[0]['zahlungsweise'];
     if($vorkasse_ok==1){
@@ -3151,7 +3282,7 @@ class Auftrag extends GenAuftrag
       if($suchwort!="")
       {
         $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
-            LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.name LIKE '%$suchwort%' OR a.email LIKE '%$suchwort%' OR a.plz LIKE '$suchwort%' OR a.internet LIKE '%$suchwort%' OR (adr.kundennummer='$suchwort' AND adr.kundennummer!=0)
+            LEFT JOIN adresse adr ON adr.id = b.adresse WHERE (a.name LIKE '%$suchwort%' OR a.email LIKE '%$suchwort%' OR a.plz LIKE '$suchwort%' OR a.internet LIKE '%$suchwort%' OR (adr.kundennummer='$suchwort' AND adr.kundennummer!=0)
               OR (a.gesamtsumme='$suchwort' AND a.gesamtsumme!=0) OR (a.belegnr='$suchwort' AND a.belegnr!='' ))");
       } else {
         if($name!="")
@@ -5203,6 +5334,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     return $return;
   }
 
+  /*
+    order processed true or false
+  */
+
   public function AuftragVersand($id='', $ignoriereliefertermin = false, &$ergebnis = null, $paketmarkedrucken = false)
   {
     if(!$this->kommissionierung)
@@ -5720,11 +5855,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
       }
       
-      if($autodruckrechnungstufe1mail && $rechnung > 0)
-      {
-        $this->app->erp->Rechnungsmail($rechnung);
-      }
-      
+      // Rechnungsmail was here, but now at the end to prioritise processing and printing over mail
+
       // auftrag abschliessen
       $this->app->DB->Update("UPDATE auftrag SET status='abgeschlossen',schreibschutz='1' WHERE id='$id' LIMIT 1");
       $this->app->erp->PDFArchivieren('auftrag',$id);
@@ -5840,6 +5972,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
         unlink($tmpfile);
       }
+
+      // Send the invoice as last step
+      if($autodruckrechnungstufe1mail && $rechnung > 0)
+      {
+        $this->app->erp->Rechnungsmail($rechnung);
+      }      
 
       $this->app->erp->RunHook('auftrag_versand_ende', 1, $id);
 
@@ -5990,6 +6128,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=list','&Uuml;bersicht');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=create','Neuen Auftrag anlegen');
+    $this->app->erp->MenuEintrag('index.php?module=auftrag&action=versandzentrum','Versandzentrum');
 
     if(strlen($backurl)>5){
       $this->app->erp->MenuEintrag("$backurl", 'Zur&uuml;ck zur &Uuml;bersicht');
@@ -6013,7 +6152,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         'SELECT MAX(`cronjobkommissionierung`) FROM `auftrag`'
     );
 
-    $this->app->DB->Insert(
+/*    $this->app->DB->Insert(
       "INSERT INTO `cronjob_kommissionierung` (`id`, `bezeichnung`) 
         VALUES ({$nextCronjobCommissionId}, '{$description}') "
     );
@@ -6024,7 +6163,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       "UPDATE `cronjob_kommissionierung` 
       SET `bezeichnung` = '{$description}' 
       WHERE `id` = {$nextCronjobCommissionId}"
-    );
+    );*/
 
     return $nextCronjobCommissionId;
   }
@@ -6033,6 +6172,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   {
     $this->AuftraguebersichtMenu();
     $targetMessage = 'AUTOVERSANDBERECHNEN';
+
+    $this->app->Tpl->Add('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand.</div>');
+
     $autoshipmentEnabled = true;
     $this->app->erp->RunHook('OrderAutoShipment', 2, $targetMessage, $autoshipmentEnabled);
 
@@ -6066,7 +6208,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     // AUFTAEGE ABSCHLIESSEN!
     $submit = $this->app->Secure->GetPOST('submit');
-    $auftraegemarkiert = $this->app->Secure->GetPOST('auftraegemarkiert');
+    $auftraegemarkiert = $this->app->Secure->GetPOST('auswahlcronjob');
     $entfernen = $this->app->Secure->GetPOST('entfernen');
     $bezeichnung = (string)$this->app->Secure->GetPOST('bezeichnung');
     if($entfernen && $auftraegemarkiert){
@@ -6077,9 +6219,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     }
 
     if($this->app->Secure->GetPOST('ausfuehren')){
+
       $drucker = $this->app->Secure->GetPOST('seldruckerversand');
       $aktion = $this->app->Secure->GetPOST('auftrag_versandauswahl');
-      $auftraegemarkiert = $this->app->Secure->GetPOST('auftraegemarkiert');
+//      $auftraegemarkiert = $this->app->Secure->GetPOST('auftraegemarkiert');
+      $auftraegemarkiert = $this->app->Secure->GetPOST('auswahl');
       $bezeichnung = (string)$this->app->Secure->GetPOST('bezeichnung');
 
       $selectedIds = [];
@@ -6098,6 +6242,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
         switch($aktion){
           case 'versandstarten':
+
+          /*
+          *   If one of the cronjobs is active, orders only get marked. Sending will be handled by the cronjob.
+          *   If not, sending will be done here.
+          */
+
             $cronjobActive = $this->app->DB->Select(
               "SELECT ps.id 
               FROM `prozessstarter` AS `ps`
@@ -6134,6 +6284,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               //sort($auftraegemarkiert);
             }
             if($check){
+
+              /* Send all to cronjob */
+  
               $maxcronjobkommissionierung = $this->createCronjobCommission((string)$bezeichnung);
 
               $cauftraegemarkiert = $auftraegemarkiert ? count($auftraegemarkiert) : 0;
@@ -6150,6 +6303,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               }
             }
             else {
+
+              /* Process here now  */
+
               $cauftraegemarkiert = $auftraegemarkiert ? count($auftraegemarkiert) : 0;
               for ($i = 0; $i < $cauftraegemarkiert; $i++) {
                 $projekt = (int)$this->app->DB->Select(
@@ -6166,9 +6322,20 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                   continue;
                 }
                 $this->kommissionierung = $this->app->erp->GetNextKommissionierung($bezeichnung);
+    
+                $processed_orders_num = 0;
+
                 foreach ($auftraege as $auftrag) {
-                  $this->AuftragVersand($auftrag);
+
+                  /* Process each order */
+                  if($this->AuftragVersand($auftrag)) {
+                    $processed_orders_num++;
+                  }
+
                 }
+
+                $this->app->Tpl->Set('MESSAGE','<div class="info">'.$processed_orders_num.' Auftr&auml;ge wurden verarbeitet.</div>');
+
                 if(empty($this->kommissionierung)) {
                   continue;
                 }
@@ -6271,42 +6438,36 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       );
     }
 
-    if($check || $cronjobActive) {
-      $unversendet = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1' AND a.cronjobkommissionierung = 0  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
-                                     AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' " . $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid'));
+    $unversendet = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1' AND a.cronjobkommissionierung = 0  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
+                                   AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' " . $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid'));
 
-      $warteschleife = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1'  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
-                                     AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' AND a.cronjobkommissionierung > 0 " . $this->app->erp->ProjektRechte('p.id', true, "a.vertriebid"));
- 
-      if($unversendet > 0) {
-        $unversendet ='('.$unversendet.')';
-      }
-      else {
-        $unversendet='';
-      }
-      if($warteschleife > 0) {
-        $warteschleife ='('.$warteschleife.')';
-      }
-      else {
-        $warteschleife='';
-      }
+    $warteschleife = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.cronjobkommissionierung > 0 " . $this->app->erp->ProjektRechte('p.id', true, "a.vertriebid"));
 
-      $this->app->Tpl->Set('TABTEXT2','Unversendet '.$unversendet);
-      $this->app->Tpl->Set('TABTEXT3','Warteschleife '.$warteschleife);
-      $this->app->YUI->TableSearch('TAB3','auftraegeoffeneautowartend');
-      if($warteschleife > 0 && !$cronjobActive) {
-        $this->app->Tpl->Add(
-          'AUTOVERSANDBERECHNEN',
-          '<div class="warning">Der Prozessstarter &quot;Autoversand Manuell&quot; ist deaktivert, 
-          es befinden sich aber Auftr&auml;ge in der Warteschlange. 
-          Bitte aktieren Sie den Prozessstarter 
-          oder entfernen Sie die betreffenden Auftr&auml;ge in der Warteschlange</div>'
-        );
-      }
+    if($unversendet > 0) {
+      $unversendet ='('.$unversendet.')';
     }
-    else{
-      $this->app->Tpl->Set('VORTABS3UEBERSCHRIFT','<!--');
-      $this->app->Tpl->Set('NACHTABS3UEBERSCHRIFT','-->');
+    else {
+      $unversendet='';
+    }
+    if($warteschleife > 0) {
+      $warteschleife ='('.$warteschleife.')';
+    }
+    else {
+      $warteschleife='';
+    }
+
+    $this->app->Tpl->Set('TABTEXT1','Bereit '.$unversendet);
+    $this->app->Tpl->Set('TABTEXT2','Ausstehend '.$warteschleife);
+
+    if($warteschleife != '' && is_null($cronjobActive)) {
+
+      $this->app->Tpl->Add(
+        'MESSAGE',
+        '<div class="warning">Der Prozessstarter &quot;Autoversand Manuell&quot; ist deaktivert, 
+        es befinden sich aber ausstehende Auftr&auml;ge in der Warteschlange. 
+        Bitte aktieren Sie den Prozessstarter 
+        oder entfernen Sie die betreffenden Auftr&auml;ge in der Warteschlange</div>'
+      );
     }
 
     $this->app->Tpl->Set('SELDRUCKERVERSAND', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
@@ -6315,13 +6476,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->Tpl->Parse('PAGE','auftraguebersicht.tpl');
       return;
     }
-    if($this->app->erp->RechteVorhanden('auftrag','berechnen'))
+//    if($this->app->erp->RechteVorhanden('auftrag','berechnen'))
     {
       $this->app->Tpl->Set('AUTOBERECHNEN','<input type="button" class="btnGreen" value="Auto-Versand berechnen" onclick="window.location.href=\'index.php?module=auftrag&action=berechnen\'">');
-    }else{
-      $this->app->Tpl->Set('AUTOBERECHNEN2','');
+//    }else{
+//      $this->app->Tpl->Set('AUTOBERECHNEN2','');
     }
     $infolink = '<a href="https://xentral.biz/helpdesk/kurzanleitung-ablauf-des-versands-von-auftraegen#nav-autoversand-mit-prozessstarter-berechnen" target="_blank">(Information)</a>';
+
+/*
     $last_order_calc = $this->app->erp->GetKonfiguration('last_order_calc');
     if(!empty($last_order_calc)) {
       $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln war am '.$last_order_calc.'. '.$infolink.' [AUTOBERECHNEN]</div>');
@@ -6329,10 +6492,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     else{
       $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln wurde noch nicht ermittelt. '.$infolink.' [AUTOBERECHNEN]</div>');
     }
-    $this->app->YUI->TableSearch('TAB2','auftraegeoffeneauto');
-    $this->app->Tpl->Parse('PAGE','auftrag_versandzentrum.tpl');
-  }
+*/
 
+    $this->app->YUI->TableSearch('TAB1','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
+    $this->app->YUI->TableSearch('TAB2','auftraegeoffeneautowartend', 'show','','',basename(__FILE__), __CLASS__);
+    $this->app->Tpl->Parse('PAGE','auftrag_versandzentrum.tpl');
+  } // Ende 
 
   public function AuftragList()
   {
@@ -6778,11 +6943,25 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->Tpl->Add('LAENDER',$laenderStr);
     $this->app->Tpl->Parse('TAB1',"auftrag_table_filter.tpl");
 
-    $this->app->YUI->TableSearch('TAB2',"auftraegeoffeneauto");
     $this->app->YUI->TableSearch('TAB1','auftraege', 'show','','',basename(__FILE__), __CLASS__);
+//    $this->app->YUI->TableSearch('TAB2',"auftraegeoffeneauto");
     $this->app->YUI->TableSearch('TAB3',"auftraegeoffene");
-
     $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
+
+
+      $inbearbeitung = $this->app->DB->Select("SELECT count(a.id) FROM auftrag a WHERE a.id!='' AND a.status='angelegt'");
+ 
+      if($inbearbeitung > 0) {
+        $inbearbeitung =' ('.$inbearbeitung.')';
+      }
+      else {
+        $inbearbeitung='';
+      }
+
+//      $this->app->Tpl->Set('MESSAGE','<div class="error">Cronjob order processing not yet implemented!</div>');
+
+    $this->app->Tpl->Set('TABTEXT5',$inbearbeitung);
+
     $this->app->YUI->TableSearch('TAB5',"auftraegeinbearbeitung");
     $this->app->erp->RunHook('auftraguebersicht_filter', 0);
     $this->app->Tpl->Parse('PAGE',"auftraguebersicht.tpl");
@@ -6814,6 +6993,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->YUI->SortListEvent('del','auftrag_position','auftrag',$order_id, $position['id']);
       $this->removeExplodedPosition($order_id, $pos_id);
     }
+  }
+
+
+  /*
+  * Calculate order auto status for all open orders
+  */
+  public function Auftraegeberechnen() {
+    $this->app->erp->AuftraegeBerechnen();
+    header('Location: index.php?module=auftrag&action=versandzentrum');
   }
 
 }

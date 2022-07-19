@@ -12,7 +12,7 @@
 class Config
 {
     /** @var string  */
-    public $updateHost = 'update.xentral.biz';
+    public $updateHost = 'removed.upgrade.host';
 
     public function __construct()
     {
