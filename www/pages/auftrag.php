@@ -6173,7 +6173,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->AuftraguebersichtMenu();
     $targetMessage = 'AUTOVERSANDBERECHNEN';
 
-    $this->app->Tpl->Set('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand.</div>');
+    $this->app->Tpl->Add('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand.</div>');
 
     $autoshipmentEnabled = true;
     $this->app->erp->RunHook('OrderAutoShipment', 2, $targetMessage, $autoshipmentEnabled);
@@ -6438,45 +6438,36 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       );
     }
 
-    if($check || $cronjobActive) {
-      $unversendet = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1' AND a.cronjobkommissionierung = 0  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
-                                     AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' " . $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid'));
+    $unversendet = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1' AND a.cronjobkommissionierung = 0  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
+                                   AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' " . $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid'));
 
-      $warteschleife = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.cronjobkommissionierung > 0 " . $this->app->erp->ProjektRechte('p.id', true, "a.vertriebid"));
- 
-      if($unversendet > 0) {
-        $unversendet ='('.$unversendet.')';
-      }
-      else {
-        $unversendet='';
-      }
-      if($warteschleife > 0) {
-        $warteschleife ='('.$warteschleife.')';
-      }
-      else {
-        $warteschleife='';
-      }
+    $warteschleife = $this->app->DB->Select("SELECT count(a.id) FROM auftrag as a LEFT JOIN projekt p ON p.id=a.projekt WHERE a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.cronjobkommissionierung > 0 " . $this->app->erp->ProjektRechte('p.id', true, "a.vertriebid"));
 
-//      $this->app->Tpl->Set('MESSAGE','<div class="error">Cronjob order processing not yet implemented!</div>');
-
-      $this->app->Tpl->Set('TABTEXT1','Bereit '.$unversendet);
-      $this->app->Tpl->Set('TABTEXT2','Ausstehend '.$warteschleife);
-
-      if($warteschleife != '' && is_null($cronjobActive)) {
-
-        $this->app->Tpl->Add(
-          'MESSAGE',
-          '<div class="warning">Der Prozessstarter &quot;Autoversand Manuell&quot; ist deaktivert, 
-          es befinden sich aber ausstehende Auftr&auml;ge in der Warteschlange. 
-          Bitte aktieren Sie den Prozessstarter 
-          oder entfernen Sie die betreffenden Auftr&auml;ge in der Warteschlange</div>'
-        );
-      }
-
+    if($unversendet > 0) {
+      $unversendet ='('.$unversendet.')';
     }
-    else{
-      $this->app->Tpl->Set('VORTABS2UEBERSCHRIFT','<!--');
-      $this->app->Tpl->Set('NACHTABS2UEBERSCHRIFT','-->');
+    else {
+      $unversendet='';
+    }
+    if($warteschleife > 0) {
+      $warteschleife ='('.$warteschleife.')';
+    }
+    else {
+      $warteschleife='';
+    }
+
+    $this->app->Tpl->Set('TABTEXT1','Bereit '.$unversendet);
+    $this->app->Tpl->Set('TABTEXT2','Ausstehend '.$warteschleife);
+
+    if($warteschleife != '' && is_null($cronjobActive)) {
+
+      $this->app->Tpl->Add(
+        'MESSAGE',
+        '<div class="warning">Der Prozessstarter &quot;Autoversand Manuell&quot; ist deaktivert, 
+        es befinden sich aber ausstehende Auftr&auml;ge in der Warteschlange. 
+        Bitte aktieren Sie den Prozessstarter 
+        oder entfernen Sie die betreffenden Auftr&auml;ge in der Warteschlange</div>'
+      );
     }
 
     $this->app->Tpl->Set('SELDRUCKERVERSAND', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
