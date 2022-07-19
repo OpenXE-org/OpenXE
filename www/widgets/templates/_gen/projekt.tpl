@@ -148,7 +148,7 @@
       </div>
       <div class="col-xs-12 col-sm-6 col-sm-height">
         <div class="inside inside-full-height">
-          <fieldset>
+          <fieldset disabled>
             <legend>{|Stufe 2 (Pack) an Versandstation|}</legend>
             <table border="0" width="100%" class="mkTable">
               <tr><td width="300"></td><td>{|Drucker|}</td><td width="30%">{|Anzahl Exemplare|}</td><td width="30%">{|E-Mail|}</td></tr>
