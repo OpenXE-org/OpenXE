@@ -1119,11 +1119,11 @@ class Wareneingang
     }
     $this->app->ActionHandlerInit($this);
 
-    $this->app->ActionHandler("main","WareneingangMain");
+//    $this->app->ActionHandler("main","WareneingangMain");
     $this->app->ActionHandler("list","WareneingangList");
-    $this->app->ActionHandler("help","WareneingangHelp");
-    $this->app->ActionHandler("vorgang","VorgangAnlegen");
-    $this->app->ActionHandler("removevorgang","VorgangEntfernen");
+//    $this->app->ActionHandler("help","WareneingangHelp");
+//    $this->app->ActionHandler("vorgang","VorgangAnlegen");
+//    $this->app->ActionHandler("removevorgang","VorgangEntfernen");
     //$this->app->ActionHandler("create","WareneingangCreate");
     $this->app->ActionHandler("paketannahme","WareneingangPaketannahme");
     $this->app->ActionHandler("paketzustand","WareneingangPaketZustand");
@@ -1138,7 +1138,7 @@ class Wareneingang
     $this->app->ActionHandler("stornieren","WareneingangStornieren");
     $this->app->ActionHandler("settings","WareneingangSettings");
 
-    $this->app->DefaultActionHandler("login");
+    $this->app->DefaultActionHandler("list");
     $this->app->erp->Headlines('Wareneinang');
 
     $this->app->ActionHandlerListen($app);
@@ -1901,7 +1901,7 @@ class Wareneingang
       );
     }
 //    if($isSupplier){
-      $this->app->Tpl->Parse('PAGE', 'wareneingangpaketdistribution.tpl');
+      $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
 //    }
 //    else {
 //      $this->app->Tpl->Parse('PAGE', 'wareneingangpaketdistribution2.tpl');
@@ -2324,7 +2324,7 @@ class Wareneingang
         //$this->app->Tpl->Add(TAB1TEXT,"<li><a>Lagerartikel</a></li>");
 
         $this->app->YUI->AutoComplete('lager','lagerplatz',0,'&zwischenlager='.$withZwischenlager.'&withstandardlager='.$withStandardlager);
-        $this->app->Tpl->Parse('TAB1','wareneingangpaketdistribution_tab3_lager.tpl');
+        $this->app->Tpl->Parse('TAB1','wareneingang_lager.tpl');
       }
       else if($artikelcheckliste || $funktionstest || $endmontage) {
       }
@@ -2333,7 +2333,7 @@ class Wareneingang
         $typ = 'mitarbeiter';
         $this->app->erp->RunHook('wareneingang_display_hook_rma1', 3, $id, $pos, $menge);
         $this->app->Tpl->Add('TAB1TEXT','<li><a>Kein Lagerartikel</a></li>');
-        $this->app->Tpl->Parse('TAB1','wareneingangpaketdistribution_tab3_mitarbeiter.tpl');
+        $this->app->Tpl->Parse('TAB1','wareneingang_mitarbeiter.tpl');
       }
       else {
         echo 'Diesen Fall gibt es nicht. Xentral Entwicklung kontaktieren!';
@@ -2997,14 +2997,11 @@ public function WareneingangPaketAbschliessen()
   }
 }
 
-
-
-
 public function WareneingangList()
 {
     $this->WareneingangPaketMenu();
     $this->app->YUI->TableSearch('TAB1', 'paketannahme_list', "show", "", "", basename(__FILE__), __CLASS__);
-    $this->app->Tpl->Parse('PAGE', "wareneingangpaketdistribution_list.tpl");
+    $this->app->Tpl->Parse('PAGE', "wareneingang_list.tpl");
 }
 
   /**
@@ -3208,7 +3205,7 @@ public function WareneingangPaketannahme()
 
   $this->app->Tpl->Set('AKTIV_TAB1','tabs-1');
   $this->app->User->SetParameter('wareneingang_action', 'paketannahme');
-  $this->app->Tpl->Parse('PAGE','wareneingangpaketannahme.tpl');
+  $this->app->Tpl->Parse('PAGE','wareneingang_paketannahme.tpl');
 }
 
 }
