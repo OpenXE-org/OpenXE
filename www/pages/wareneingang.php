@@ -1030,15 +1030,18 @@ class Wareneingang
 //                $groupby = "";
 */
                 $allowed['paketannahme_list'] = array('list');
-                $heading = array('Paket-Nr.','Status','Name', 'Kunde', 'Lieferant', 'Bearbeiter','Datum', 'Bemerkung', 'Men&uuml;');
+                $heading = array('Paket-Nr.','Datum','Status','Name', 'Kunde', 'Lieferant','LS-Nr.','RE-Nr.', 'Bearbeiter','Bemerkung', 'Men&uuml;');
                 $width = array('5%','10%','10%','10%','10%','10%','10%','10%','10%'); // Fill out manually later
 
                 $findcols = array(
                     'paketannahme.id', 
+                    'paketannahme.datum', 
                     'paketannahme.status',
                     'adresse.name', 
                     'adresse.kundennummer', 
                     'adresse.lieferantennummer', 
+                    'paketannahme.lsnr', 
+                    'paketannahme.renr', 
                     'paketannahme.bearbeiter', 
                     'paketannahme.datum', 
                     'paketannahme.bemerkung', 
@@ -1046,11 +1049,13 @@ class Wareneingang
 
                 $searchsql = array(
                     'paketannahme.status',
+                    'paketannahme.datum', 
                     'adresse.name', 
                     'adresse.kundennummer', 
                     'adresse.lieferantennummer', 
+                    'paketannahme.lsnr', 
+                    'paketannahme.renr', 
                     'paketannahme.bearbeiter', 
-                    'paketannahme.datum', 
                     'paketannahme.bemerkung'); 
 
                 $defaultorder = 6;
@@ -1061,12 +1066,14 @@ class Wareneingang
                 $sql = "SELECT 
                     paketannahme.id, 
                     paketannahme.id, 
+                    DATE_FORMAT(paketannahme.datum, '%d.%m.%Y %H:%i'), 
                     paketannahme.status,
                     adresse.name, 
                     adresse.kundennummer, 
                     adresse.lieferantennummer, 
+                    paketannahme.lsnr, 
+                    paketannahme.renr, 
                     paketannahme.bearbeiter, 
-                    paketannahme.datum, 
                     paketannahme.bemerkung, 
                     paketannahme.id 
                     FROM paketannahme 
@@ -1694,7 +1701,7 @@ class Wareneingang
     $bemerkung = $this->app->Secure->GetPOST('bemerkung');
 
     // Load from DB
-    if (($lsnr == '' || $renr == '' || $bemerkung == '') && $id != '') {
+    if (($lsnr == '' && $renr == '' && $bemerkung == '') && $id != '') {
       $fields = $this->app->DB->SelectArr(
       sprintf(
         'SELECT `lsnr`, `renr`,`bemerkung` FROM `paketannahme` WHERE `id` = %d LIMIT 1',
@@ -2602,14 +2609,15 @@ class Wareneingang
             else {
               if($cmd === 'manuell') {
                 $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id", '', $id); 
-
-                $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
-                $bemerkung = $lagerplatz_name;
               }
               else{
                 $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id, Bestellung $bestellung_belegnr", '', $id);
                 $this->app->erp->RunHook('wareneingang_bestellung', 5, $bparr, $artikel, $menge, $lager, $id);
               }
+
+              $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
+              $bemerkung = $lagerplatz_name;
+
             }
             $typ2 = 'lager_platz';
             $tmpid2 = array('artikel'=>$artikel,'lager_platz'=>$lager,'menge'=>$menge);
