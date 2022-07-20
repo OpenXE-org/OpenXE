@@ -18981,14 +18981,14 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $dbformat = 1;
       $id = $value;
       if($id > 0){
-        $abkuerzung = $this->app->DB->Select("SELECT bezeichnung FROM steuerregelngruppe WHERE id='$id' LIMIT 1");
+// Removed, table does not exist        $abkuerzung = $this->app->DB->Select("SELECT bezeichnung FROM steuerregelngruppe WHERE id='$id' LIMIT 1");
       }else{
         $abkuerzung = '';
       }
     } else {
       $dbformat = 0;
       $value = $this->app->DB->real_escape_string($value);
-      $id =  $this->app->DB->Select("SELECT id FROM steuerregelngruppe WHERE bezeichnung = '$value' ORDER BY aktiv = 1 DESC LIMIT 1");
+// Removed, table does not exist      $id =  $this->app->DB->Select("SELECT id FROM steuerregelngruppe WHERE bezeichnung = '$value' ORDER BY aktiv = 1 DESC LIMIT 1");
       if($id <=0) $id=0;
     }
 
