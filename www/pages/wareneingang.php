@@ -1125,6 +1125,7 @@ class Wareneingang
 //    $this->app->ActionHandler("vorgang","VorgangAnlegen");
 //    $this->app->ActionHandler("removevorgang","VorgangEntfernen");
     //$this->app->ActionHandler("create","WareneingangCreate");
+    $this->app->ActionHandler("create","WareneingangPaketannahme");
     $this->app->ActionHandler("paketannahme","WareneingangPaketannahme");
     $this->app->ActionHandler("paketzustand","WareneingangPaketZustand");
     $this->app->ActionHandler("paketetikett","WareneingangPaketEtikett");
@@ -1220,8 +1221,8 @@ class Wareneingang
     $action = $this->app->Secure->GetGET('action');
     $this->app->Tpl->Set('ID',$id);
     $this->app->Tpl->Add('KURZUEBERSCHRIFT',' Paketannahme');
-    $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=paketannahme','Paketannahme');
-    $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=list','Archiv');
+    $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=paketannahme','Neu');
+    $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=list','&Uuml;bersicht');
     $this->app->erp->RunMenuHook('wareneingangpaket');
     $this->app->erp->MenuEintrag(
       'index.php?module=wareneingang&action=settings&menu=paket',
