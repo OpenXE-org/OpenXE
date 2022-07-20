@@ -5,7 +5,7 @@
       <tr valign="top" colspan="3">
         <td>
 
-<div class="info">Der Artikel ist f&uuml;r einen Mitarbeiter.</div>
+<div class="info">Dies ist kein Lagerartikel.</div>
 [MESSAGE]
 <br><br>
 <table width="60%" style="background-color: #fff; border: solid 1px #000;" align="center">
@@ -15,12 +15,12 @@
 
 <table height="200" border="0" width="450">
 <tr valign="top"><td><b>Artikel:</b></td><td><u>[NAME]</u></td></tr> 
-<tr valign="top"><td>Lieferant:</td><td>[LIEFERANT]</td></tr> 
+<!--<tr valign="top"><td>Lieferant:</td><td>[LIEFERANT]</td></tr> -->
 <tr valign="top"><td><br></td><td align="center"></td></tr> 
 <tr valign="top"><td><b>Bemerkung:</b></td><td><textarea cols="35" rows="2" name="bemerkung">[BEMERKUNG]</textarea>
 </td></tr>
 <tr valign="top"><td><br></td><td align="center"></td></tr>
-<tr valign="top"><td nowrap><b>1. Schritt:</b></td><td>Artikel zu Mitarbeiter [MITARBEITER] bringen
+<tr valign="top"><td nowrap><b>Anmerkung:</b></td><td>Artikel zu Mitarbeiter [MITARBEITER] bringen
 [DISPLAY_WARENEINGANG_RMA_HOOK1]
 <tr valign="top"><td><br></td><td align="center"><input type="submit" name="submit" value="Speichern" />&nbsp;<input type="button" onclick="window.location.href='index.php?module=wareneingang&action=distriinhalt&id=[ID]'"      value="Abbrechen" /></td></tr>
 </td></tr> 

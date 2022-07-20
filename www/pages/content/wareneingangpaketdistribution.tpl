@@ -15,34 +15,60 @@
     [TAB1START]
 
     [MESSAGE1]
-    <div class="row">
-      <div class="row-height">
-        <div class="col-xs-12 col-md-10 col-md-height">
-          <div class="inside-white inside-full-height">
-            [TAB1]
+    <form action="" method="post">
+      <div class="row">
+        <div class="row-height">
+          <div class="col-xs-12 col-md-10 col-md-height">
+            <div class="inside inside-full-height">
+              <fieldset>
+                <legend>{|[LEGENDE]|}</legend>
+                <table>
+                  <tr><td>{|Lieferschein-Nr.|}:</td><td><input type=text size="40" name="lsnr" value=[LSNR]></td></tr>
+                  <tr><td>{|Rechnung-Nr.|}:</td><td><input type=text size="40" name="renr" value=[RENR]></td></tr>
+                  <tr><td>{|Bemerkung|}:</td><td><textarea rows="5" cols="40" name="bemerkung">[BEMERKUNG]</textarea></td></tr>
+                  <tr><td><input type="submit" name="speichern" class="btnGreenNew" value="Speichern"></td>
+                </table>
+              </fieldset>
+            </div>
           </div>
-        </div>
-        <div class="col-xs-12 col-md-2 col-md-height">
-          <div class="inside inside-full-height">
-            <fieldset>
-              <legend>{|Aktionen|}</legend>
-              [BUTTONS]
-              [BEFOREFRM]
-              <form action="" method="post">
-              [AFTERFRM]
-                [DISTRIINHALTBUTTONS]
-                <input type="submit" name="abschliessen" id="btnabschliessen" class="btnGreenNew"  value="Paketinhalt ist erfasst">
-                [BEFOREMANUELLERFASSEN]
-                <input type="submit" name="manuellerfassen" class="btnBlueNew" value="Artikel manuell erfassen">
-                [AFTERMANUELLERFASSEN]
-              [BEFOREFRM]
-              </form>
-              [AFTERFRM]
-            </fieldset>
+          <div class="col-xs-12 col-md-2 col-md-height">
+            <div class="inside inside-full-height">
+              <fieldset>
+                <legend>{|Aktionen|}</legend>
+                [BUTTONS]
+                [BEFOREFRM]
+                [AFTERFRM]
+                  [DISTRIINHALTBUTTONS]
+                  <input type="submit" name="abschliessen" id="btnabschliessen" class="btnGreenNew"  value="Paketinhalt ist erfasst">
+                  [BEFOREMANUELLERFASSEN]
+                  <input type="submit" name="manuellerfassen" class="btnBlueNew" value="Artikel manuell erfassen">
+                  [AFTERMANUELLERFASSEN]
+                [BEFOREFRM]
+                [AFTERFRM]
+              </fieldset>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <div class="row">
+        <div class="row-height">
+          <div class="col-xs-12 col-md-10 col-md-height">
+            <div class="inside-white inside-full-height">
+              [TAB1]
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-height">
+          <div class="col-xs-12 col-md-10 col-md-height">
+            <div class="inside-white inside-full-height">
+              [TAB1_SECOND]
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
     [TAB1ENDE]
   </div>
   [AFTERTAB1]

@@ -116,7 +116,7 @@ class Wareneingang
         $wareneingangauftragzubestellung = $this->app->erp->Firmendaten('wareneingangauftragzubestellung');
         if($wareneingangauftragzubestellung)
         {
-          $heading = array('Bestellnummer', 'Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Auftrag', 'Menge', 'Aktion');
+          $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Auftrag', 'Menge', 'Aktion');
           $width = array('5%', '5%', '5%', '30%', '5%', '5%', '5%', '5%', '5%', '5%', '5%', '5%');
           $findcols = array('bp.bestellnummer', 'art.nummer', 'b.belegnr',
             "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant, 
@@ -133,7 +133,7 @@ class Wareneingang
                                    IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
                                    )", "if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert',"if((SELECT COUNT(auf2.id) FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ) > 0,(SELECT auf2.belegnr FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ORDER BY belegnr LIMIT 1),'-' )");
         }else{
-          $heading = array('Bestellnummer', 'Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Aktion');
+          $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Aktion');
           $width = array('5%', '5%', '5%', '30%', '5%', '5%', '5%', '5%', '5%', '5%');
           $findcols = array('bp.bestellnummer', 'art.nummer', 'b.belegnr',
             "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant, 
@@ -970,6 +970,117 @@ class Wareneingang
               LEFT JOIN lieferschein l ON lp.lieferschein=l.id LEFT JOIN projekt p ON l.projekt=p.id LEFT JOIN artikel a ON a.id=lp.artikel WHERE ($where)";
         $moreinfo = false;
         break;
+        case 'paketdistribution_list':
+                $allowed['paketdistribution_list'] = array('list');
+/*                $heading = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position', 'Men&uuml;');
+                $width = array('10%'); // Fill out manually later
+
+                $findcols = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position');
+                $searchsql = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position');
+*/
+ 
+
+                $heading = array('Lieferant-Art.-Nr.','Art.-Nummer','Bestellung', 'Beschreibung', 'Menge','Bemerkung','');
+                $width = array('5%', '5%', '5%', '30%', '5%','5%','45%');
+
+                $findcols = array('p.nummer','p.bestellbezug','p.name', 'p.menge','p.bemerkung');
+                $searchsql = array('p.nummer','p.name','p.bemerkung');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+                /*$sql = "SELECT p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
+                        (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, ".$this->app->erp->FormatMenge("sum(paketdistribution.menge)")." as menge, paketdistribution.bemerkung 
+                        FROM paketdistribution 
+                        INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
+                        LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
+                        LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
+                        where paketannahme = $id GROUP BY bestellung_position, paketdistribution.artikel) as p";*/
+
+               $sql = "SELECT p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
+                        (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, ".$this->app->erp->FormatMenge("paketdistribution.menge")." as menge, paketdistribution.bemerkung 
+                        FROM paketdistribution 
+                        INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
+                        LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
+                        LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
+                        where paketannahme = $id) as p";
+
+                $where = "";
+                $count = "SELECT count(DISTINCT artikel) FROM paketdistribution p WHERE paketannahme = $id";
+//                $groupby = "";
+
+        break;
+          case "paketannahme_list":
+/*                $allowed['paketdistribution_list'] = array('list');
+                $heading = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position', 'Men&uuml;');
+                $width = array('10%'); // Fill out manually later
+
+                $findcols = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position');
+                $searchsql = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=paketdistribution&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=paketdistribution&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+
+                $sql = "SELECT id, bearbeiter, zeit, paketannahme, adresse, artikel, menge, vpe, etiketten, bemerkung, bestellung_position, logdatei, retoure_position, id FROM paketdistribution";
+
+                $where = "1";
+                $count = "SELECT count(DISTINCT id) FROM paketdistribution WHERE $where";
+//                $groupby = "";
+*/
+                $allowed['paketannahme_list'] = array('list');
+                $heading = array('Paket-Nr.','Status','Name', 'Kunde', 'Lieferant', 'Bearbeiter','Datum', 'Bemerkung', 'Men&uuml;');
+                $width = array('5%','10%','10%','10%','10%','10%','10%','10%','10%'); // Fill out manually later
+
+                $findcols = array(
+                    'paketannahme.id', 
+                    'paketannahme.status',
+                    'adresse.name', 
+                    'adresse.kundennummer', 
+                    'adresse.lieferantennummer', 
+                    'paketannahme.bearbeiter', 
+                    'paketannahme.datum', 
+                    'paketannahme.bemerkung', 
+                    'paketannahme.id'); 
+
+                $searchsql = array(
+                    'paketannahme.status',
+                    'adresse.name', 
+                    'adresse.kundennummer', 
+                    'adresse.lieferantennummer', 
+                    'paketannahme.bearbeiter', 
+                    'paketannahme.datum', 
+                    'paketannahme.bemerkung'); 
+
+                $defaultorder = 6;
+                $defaultorderdesc = 0;
+
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=distriinhalt&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>&nbsp;</td></tr></table>";
+
+                $sql = "SELECT 
+                    paketannahme.id, 
+                    paketannahme.id, 
+                    paketannahme.status,
+                    adresse.name, 
+                    adresse.kundennummer, 
+                    adresse.lieferantennummer, 
+                    paketannahme.bearbeiter, 
+                    paketannahme.datum, 
+                    paketannahme.bemerkung, 
+                    paketannahme.id 
+                    FROM paketannahme 
+                    INNER JOIN adresse 
+                    ON paketannahme.adresse = adresse.id";
+
+                $where = "1";
+                $count = "SELECT count(paketannahme.id) FROM paketannahme 
+                    INNER JOIN adresse 
+                    ON paketannahme.adresse = adresse.id";
+//                $groupby = "";
+
+
+                break;
     }
 
     $erg = [];
@@ -1103,6 +1214,7 @@ class Wareneingang
     $this->app->Tpl->Set('ID',$id);
     $this->app->Tpl->Add('KURZUEBERSCHRIFT',' Paketannahme');
     $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=paketannahme','Paketannahme');
+    $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=list','Archiv');
     $this->app->erp->RunMenuHook('wareneingangpaket');
     $this->app->erp->MenuEintrag(
       'index.php?module=wareneingang&action=settings&menu=paket',
@@ -1572,13 +1684,46 @@ class Wareneingang
 
   public function WareneingangPaketDistriInhalt()
   {
+
+    $this->WareneingangPaketMenu();
+
+    $id = $this->app->Secure->GetGET('id');
     $cmd = $this->app->Secure->GetGET('cmd');
+    $lsnr = $this->app->Secure->GetPOST('lsnr');
+    $renr = $this->app->Secure->GetPOST('renr');
+    $bemerkung = $this->app->Secure->GetPOST('bemerkung');
+
+    // Load from DB
+    if (($lsnr == '' || $renr == '' || $bemerkung == '') && $id != '') {
+      $fields = $this->app->DB->SelectArr(
+      sprintf(
+        'SELECT `lsnr`, `renr`,`bemerkung` FROM `paketannahme` WHERE `id` = %d LIMIT 1',
+        $id
+      ));
+
+      $lsnr = $fields[0]['lsnr'];
+      $renr = $fields[0]['renr'];
+      $bemerkung = $fields[0]['bemerkung'];
+    } else {    
+
+      // Save header
+      $this->app->DB->Update(
+        "UPDATE paketannahme SET 
+          lsnr='".$lsnr."',
+          renr='".$renr."',
+          bemerkung='".$bemerkung."'
+           WHERE id='$id' LIMIT 1");
+    }
+
+    $this->app->Tpl->Set('LSNR', $lsnr);
+    $this->app->Tpl->Set('RENR', $renr);
+    $this->app->Tpl->Set('BEMERKUNG', $bemerkung);
+
     $isCmdFromReturnOrder = $cmd === 'fromreturnorder';
     if($isCmdFromReturnOrder) {
       /** @var Retoure $returnOrderObj */
       $returnOrderObj = $this->app->loadModule('retoure');
       if(!empty($returnOrderObj)) {
-        $id = $this->app->Secure->GetGET('id');
         $receiptDocument = $returnOrderObj->getReceiptDocumentArrByParcelId($id);
         if(!empty($receiptDocument['return_order_id'])) {
           $this->LocatateToReturnOrderPosition($receiptDocument['return_order_id']);
@@ -1596,13 +1741,10 @@ class Wareneingang
       $response->send();
       $this->app->ExitXentral();
     }
-    $id = $this->app->Secure->GetGET('id');
     $this->app->erp->RunHook('wareneingang_distriinhalt_start', 1, $id);
 
     $submit = $this->app->Secure->GetPOST('submit');
-    $submitkunde = $this->app->Secure->GetPOST('submitkunde');
-
-    $this->WareneingangPaketDistriMenu();
+    $submitkunde = $this->app->Secure->GetPOST('submitkunde');   
 
     if($submit!='') {
       $tmp = $this->app->Secure->GetPOST('pos'); 
@@ -1707,11 +1849,9 @@ class Wareneingang
       $this->app->Tpl->Set('TAB1ENDE','-->');*/
       $this->app->Tpl->Set('TAB1START','');
       $this->app->Tpl->Set('TAB1ENDE','');
-      $this->app->Tpl->Set('BEFORETAB1', '<!--');
-      $this->app->Tpl->Set('AFTERTAB1', '-->');
+     // $this->app->Tpl->Set('BEFORETAB1', '<!--');
+     // $this->app->Tpl->Set('AFTERTAB1', '-->');
     }
-
-
 
     if(!$isSupplier && !$isCustomer) {
       $this->app->Tpl->Set('TAB1START','');
@@ -1724,7 +1864,15 @@ class Wareneingang
           Bitte vergeben Sie diese, dann sehen Sie Bestellungen oder versendete Waren.</div>'
       );
     }
-    
+
+
+    if (!empty($addressRow['name'])) {
+         $this->app->Tpl->Set('LEGENDE',"Paket <b>Nr.$id</b> erfassen f&uuml;r Adresse '".$addressRow['name']."':");
+    }
+
+    $this->app->Tpl->Add('TAB1_SECOND',"<br><h1>Paketinhalt (eingebucht):</h1><br>");  
+    $this->app->YUI->TableSearch('TAB1_SECOND', 'paketdistribution_list', "show", "", "", basename(__FILE__), __CLASS__);
+  
     $this->app->erp->RunHook('wareneingang_distriinhalt', 1, $id);
     if($showcreateReturnOrder) {
       $this->app->Tpl->addButton(
@@ -1745,12 +1893,12 @@ class Wareneingang
         'zur&uuml;ck zur &Uuml;bersicht'
       );
     }
-    if($isSupplier){
+//    if($isSupplier){
       $this->app->Tpl->Parse('PAGE', 'wareneingangpaketdistribution.tpl');
-    }
-    else {
-      $this->app->Tpl->Parse('PAGE', 'wareneingangpaketdistribution2.tpl');
-    }
+//    }
+//    else {
+//      $this->app->Tpl->Parse('PAGE', 'wareneingangpaketdistribution2.tpl');
+//    }
     $returnordergeprueft = $this->app->Secure->GetPOST('returnordergeprueft');
     $abschliessen = $this->app->Secure->GetPOST('abschliessen');
     if($abschliessen!='' || $returnordergeprueft != '') {
@@ -1762,8 +1910,15 @@ class Wareneingang
           $id
         )
       );
-      $this->app->DB->Update("UPDATE paketannahme SET status='abgeschlossen' WHERE id='$id' LIMIT 1");
 
+      // Save header and finish
+      $this->app->DB->Update(
+        "UPDATE paketannahme SET 
+          status='abgeschlossen', 
+          lsnr='".$lsnr."',
+          renr='".$renr."',
+          bemerkung='".$bemerkung."'
+           WHERE id='$id' LIMIT 1");
 
       $this->app->erp->RunHook('wareneinang_paketannahme_abschliessen',1, $id);
       $this->app->Location->execute('index.php?module=wareneingang&action=paketannahme');
@@ -1773,7 +1928,9 @@ class Wareneingang
     if($manuellerfassen!='') {
       $this->app->Location->execute('index.php?module=wareneingang&action=manuellerfassen&id='.$id);
     }
+        
   }
+  // END WareneingangPaketDistriInhalt
 
   public function WareneingangMiniDetail()
   {
@@ -2168,7 +2325,7 @@ class Wareneingang
       {
         $typ = 'mitarbeiter';
         $this->app->erp->RunHook('wareneingang_display_hook_rma1', 3, $id, $pos, $menge);
-        $this->app->Tpl->Add('TAB1TEXT','<li><a>Artikel f&uuml;r Mitarbeiter</a></li>');
+        $this->app->Tpl->Add('TAB1TEXT','<li><a>Kein Lagerartikel</a></li>');
         $this->app->Tpl->Parse('TAB1','wareneingangpaketdistribution_tab3_mitarbeiter.tpl');
       }
       else {
@@ -2444,10 +2601,13 @@ class Wareneingang
             }
             else {
               if($cmd === 'manuell') {
-                $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', 'Wareneingang manuell', '', $id);
+                $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id", '', $id); 
+
+                $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
+                $bemerkung = $lagerplatz_name;
               }
               else{
-                $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang von Bestellung $bestellung_belegnr", '', $id);
+                $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id, Bestellung $bestellung_belegnr", '', $id);
                 $this->app->erp->RunHook('wareneingang_bestellung', 5, $bparr, $artikel, $menge, $lager, $id);
               }
             }
@@ -2512,7 +2672,15 @@ class Wareneingang
           $geliefert += $menge;
           $this->app->DB->Update("UPDATE bestellung_position SET geliefert='$geliefert' WHERE id='$pos' LIMIT 1");
         }
+      } else if ($cmd == 'manuell') {
+           // Save the manually added entries to paketdistribution
+        $this->app->DB->Insert("INSERT INTO paketdistribution 
+                (id,bearbeiter,zeit,paketannahme,adresse,artikel,menge,vpe,etiketten,bemerkung)
+                VALUES ('','".$this->app->User->GetName()."',NOW(),'$id','$adresse','$artikel','$menge','$vpe','$etiketten','$bemerkung')");           
+
       }
+
+
       // alles passt weiter im abschluss
       if($weiterleitung) {
         $this->app->Location->execute($weiterleitung);
@@ -2826,18 +2994,9 @@ public function WareneingangPaketAbschliessen()
 
 public function WareneingangList()
 {
-  $this->WareneingangMenu();
-
-  $this->app->Tpl->Set('SUBHEADING','Lieferungen');
-  //Jeder der in Nachbesserung war egal ob auto oder manuell wandert anschliessend in Manuelle-Freigabe");
-  $table = new EasyTable($this->app);
-  $table->Query("SELECT '23.11.2009' as datum, 'Olimex' as lieferant,id FROM aufgabe LIMIT 3");
-  $table->DisplayNew('INHALT','<a href="index.php?module=ticket&action=assistent&id=%value%">Lesen</a>');
-  $this->app->Tpl->Parse('TAB1','rahmen.tpl');
-  $this->app->Tpl->Set('INHALT','');
-
-  $this->app->Tpl->Set('AKTIV_TAB1','tabs-1');
-  $this->app->Tpl->Parse('PAGE','wareneinganguebersicht.tpl');
+    $this->WareneingangPaketMenu();
+    $this->app->YUI->TableSearch('TAB1', 'paketannahme_list', "show", "", "", basename(__FILE__), __CLASS__);
+    $this->app->Tpl->Parse('PAGE', "wareneingangpaketdistribution_list.tpl");
 }
 
   /**
