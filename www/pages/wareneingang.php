@@ -1712,6 +1712,7 @@ class Wareneingang
       $lsnr = $fields[0]['lsnr'];
       $renr = $fields[0]['renr'];
       $bemerkung = $fields[0]['bemerkung'];
+
     } else {    
 
       // Save header
@@ -1929,7 +1930,7 @@ class Wareneingang
            WHERE id='$id' LIMIT 1");
 
       $this->app->erp->RunHook('wareneinang_paketannahme_abschliessen',1, $id);
-      $this->app->Location->execute('index.php?module=wareneingang&action=paketannahme');
+      $this->app->Location->execute('index.php?module=wareneingang&action=list');
     }
 
     $manuellerfassen = $this->app->Secure->GetPOST('manuellerfassen');

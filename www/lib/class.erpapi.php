@@ -7019,7 +7019,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktion','produktion','list');
 
     $navarray['menu']['admin'][++$menu]['first'] = array('Lager','lager','list');
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Wareneingang','wareneingang','paketannahme');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Wareneingang','wareneingang','list');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Lieferschein','lieferschein','list');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Lagerverwaltung','lager','list');
     if($this->ModulVorhanden('lagermobil')) {
