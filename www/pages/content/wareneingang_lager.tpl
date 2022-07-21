@@ -15,7 +15,7 @@
                 <tr valign="top"><td><b>{|Nummer|}:</b></td><td>[NUMMER]</td></tr>
                 [BILDERFASSENSTART]
                   <tr valign="top"><td><br></td><td align="center"></td></tr>
-                  <tr valign="top"><td><b>{|Bild erfassen|}:</b></td><td> <input name="wareneingangartikelbild" type="file" /></td></tr>
+                  <tr valign="top"><td><b>{|Bild für Artikelstammdaten erfassen|}:</b></td><td> <input name="wareneingangartikelbild" type="file" /></td></tr>
                   <tr valign="top"><td><b>{|Bildtyp|}:</b></td><td><select name="bildtyp">[BILDTYPEN]</select></td></tr>
                 [BILDERFASSENENDE]
                 <tr valign="top"><td><br></td><td align="center"></td></tr>

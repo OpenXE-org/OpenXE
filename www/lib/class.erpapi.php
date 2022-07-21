@@ -7018,12 +7018,28 @@ title: 'Abschicken',
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktion','produktion','list');
 
-    $navarray['menu']['admin'][++$menu]['first']  = array('Wareneingang','wareneingang','paketannahme');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Paket Annahme','wareneingang','paketannahme');
-
-    if($this->Firmendaten("wareneingang_gross")=="1"){
-      $navarray['menu']['admin'][$menu]['sec'][] = array('Paket Distribution', 'wareneingang', 'distribution');
+    $navarray['menu']['admin'][++$menu]['first'] = array('Lager','lager','list');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Wareneingang','wareneingang','list');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Lieferschein','lieferschein','list');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Lagerverwaltung','lager','list');
+    if($this->ModulVorhanden('lagermobil')) {
+      $navarray['menu']['admin'][$menu]['sec'][]   = array('Mobile Lagerverwaltung','lagermobil','list');
     }
+    if($this->ModulVorhanden('multiorderpicking')) {
+      $navarray['menu']['admin'][$menu]['sec'][]  = array('Multiorder-Picking','multiorderpicking','list');
+    }
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Reservierungen','lager','reservierungen');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Inventur','inventur','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Versandzentrum','versanderzeugen','offene');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktionszentrum','produktionszentrum','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Kommissionieraufkleber','kommissionieraufkleber','list');
+
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Mindesthaltbarkeit','mhdwarning','list');
+
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Lagermindestmengen','lagermindestmengen','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Artikelkontingente','artikelkontingente','list');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Ein- und auslagern','lager','bucheneinlagern');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Zwischenlager','lager','buchenzwischenlager');
 
     $navarray['menu']['admin'][++$menu]['first']  = array('Buchhaltung','rechnung','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Rechnungen','rechnung','list');
@@ -7084,28 +7100,6 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Service & Support','service','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Etikettendrucker','etikettendrucker','list');
-
-    $navarray['menu']['admin'][++$menu]['first'] = array('Lager','lager','list');
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Lieferschein','lieferschein','list');
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Lagerverwaltung','lager','list');
-    if($this->ModulVorhanden('lagermobil')) {
-      $navarray['menu']['admin'][$menu]['sec'][]   = array('Mobile Lagerverwaltung','lagermobil','list');
-    }
-    if($this->ModulVorhanden('multiorderpicking')) {
-      $navarray['menu']['admin'][$menu]['sec'][]  = array('Multiorder-Picking','multiorderpicking','list');
-    }
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Reservierungen','lager','reservierungen');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Inventur','inventur','list');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Versandzentrum','versanderzeugen','offene');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktionszentrum','produktionszentrum','list');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Kommissionieraufkleber','kommissionieraufkleber','list');
-
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Mindesthaltbarkeit','mhdwarning','list');
-
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Lagermindestmengen','lagermindestmengen','list');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Artikelkontingente','artikelkontingente','list');
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Ein- und auslagern','lager','bucheneinlagern');
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Zwischenlager','lager','buchenzwischenlager');
 
     $navarray['menu']['admin'][++$menu]['first']  = array('System','rechnung','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Einstellungen','einstellungen','list');
@@ -18981,14 +18975,14 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $dbformat = 1;
       $id = $value;
       if($id > 0){
-        $abkuerzung = $this->app->DB->Select("SELECT bezeichnung FROM steuerregelngruppe WHERE id='$id' LIMIT 1");
+// Removed, table does not exist        $abkuerzung = $this->app->DB->Select("SELECT bezeichnung FROM steuerregelngruppe WHERE id='$id' LIMIT 1");
       }else{
         $abkuerzung = '';
       }
     } else {
       $dbformat = 0;
       $value = $this->app->DB->real_escape_string($value);
-      $id =  $this->app->DB->Select("SELECT id FROM steuerregelngruppe WHERE bezeichnung = '$value' ORDER BY aktiv = 1 DESC LIMIT 1");
+// Removed, table does not exist      $id =  $this->app->DB->Select("SELECT id FROM steuerregelngruppe WHERE bezeichnung = '$value' ORDER BY aktiv = 1 DESC LIMIT 1");
       if($id <=0) $id=0;
     }
 
