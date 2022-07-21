@@ -14,15 +14,14 @@ use Xentral\Modules\Ticket\Task\TicketImportHelperFactory;
 
 $DEBUG = 0;
 
-
+/*
 $debugfile = "/var/www/html/Xenomporio/debug.txt";
-
 function file_append($filename,$text) {
   $oldtext = file_get_contents($filename);
   file_put_contents($filename,$oldtext.$text);
 }
-
 file_put_contents($debugfile,"0");
+*/
 
 /** @var ApplicationCore $app */
 
@@ -43,9 +42,6 @@ if($mutex){
     SET `mutexcounter`=`mutexcounter`+1 
     WHERE `mutex` = 1 AND (`parameter` = '".$cronjobname."')"
   );
-
-  file_append($debugfile,"MUTEX");
-
   return;
 }
 $app->DB->Update(
@@ -57,9 +53,6 @@ $app->DB->Update(
 /** @var EmailAccountGateway $accountGateway */
 $accountGateway = $app->Container->get('EmailAccountGateway');
 $accounts = $accountGateway->getAccountsWithTicketActive();
-
-  file_append($debugfile,"Accs:".count($accounts).";");
-
 
 // only load services if there is at least one account to import (performance)
 $ticketModule = null;
@@ -86,51 +79,28 @@ foreach ($accounts as $account) {
       'Start imap ticket import for {email}',
       ['email' => $account->getEmailAddress(), 'account' => $account]
   );
-
-  file_append($debugfile,"Account ".$account->getemailAddress());
-
   // create mail client
   try {
     $mailConfig = $configProvider->createImapConfigFromAccount($account);
     $mailClient = $factory->createImapClient($mailConfig);
   } catch (Exception $e) {
     $logger->error('Failed to create email client', ['error' => (string)$e, 'account' => $account]);
-
-  file_append($debugfile,"Failed 1");
-
     continue;
   }
 
-  file_append($debugfile,"Connect to ".."SSL: ".$configProvider->isSslEnabled()." auth ".getAuthType()."\n");
-
   // connect mail client
   try {
-    try {
-      $mailClient->connect();
-
-      file_append($debugfile,"Meh");
-
+    $mailClient->connect();
     } catch (Exception $e) {
-      $logger->error('Error during imap connection', ['error' => (string)$e, 'account' => $account]);
-
-      file_append($debugfile,"Error ".(string)$e);
-   
-      continue;
-    } 
+      $logger->error('Error during imap connection', ['error' => (string)$e, 'account' => $account]);   
+    continue;
   }
-
-  file_append($debugfile,"2");
 
   // connet to INBOX folder
   try {
     $mailClient->selectFolder('INBOX');
   } catch (Exception $e) {
     $logger->error('Failed to select INBOX folder', ['error' => (string)$e, 'account' => $account]);
-
-
-  file_append($debugfile,"Failed 2");
-
-
     continue;
   }
 
@@ -147,17 +117,11 @@ foreach ($accounts as $account) {
     $criteria = 'UNSEEN';
   }
 
-  file_append($debugfile,"3");
-
   // search new messages
   try {
     $searchResult = $mailClient->searchMessages($criteria);
   } catch (Exception $e) {
     $logger->error('Error during imap search', ['exception' => $e]);
-
-  file_append($debugfile,"Failed 3");
-
-
     continue;
   }
   $logger->debug('unread emails to import: {message_count}', ['message_count' => count($searchResult)]);
@@ -171,7 +135,7 @@ foreach ($accounts as $account) {
       );
   }
   $importer = $importHelperFactory->create($mailClient, $account, $projectId);
-  $insertedMailsCount = $importer->importMessages($searchResult);
+  $insertedMailsCount = $importer->importMessages($searchResult); // TicketImportHelper->importMessages()
   $totalEmailsImportCount += $insertedMailsCount;
 
   // set mutex if the total amount of imported emails is more than 10
@@ -192,10 +156,6 @@ foreach ($accounts as $account) {
   ) {
 
     $logger->error('Tickets error');
-
-  file_append($debugfile,"Failed 5");
-
-
     return;
   }
   $app->DB->Update(
@@ -209,4 +169,3 @@ $app->DB->Update(
   "UPDATE `prozessstarter` SET `mutex`=0,`mutexcounter`=0 WHERE (`parameter` = '".$cronjobname."')"
 );
 
-file_append($debugfile,"END");
