@@ -52,6 +52,7 @@ if ($argc >= 2) {
     $template_edit_file_name = $module_name . "_edit.tpl";
     $target_php_folder = "../../www/pages/";
     $target_tpl_folder = "../../www/pages/content/";
+    $table_short_name = substr($module_name,0,1);
 
     if (!$force && file_exists($target_php_folder.$php_file_name)) {
         echo("File exists: ." .$target_php_folder.$php_file_name . "\n");
@@ -82,6 +83,7 @@ if ($argc >= 2) {
     }
 
     $columns = array();
+    $sql_columns = array();
     $edit_form = "";
 
     /* Iterate through the result set */
@@ -96,6 +98,7 @@ if ($argc >= 2) {
 
                     if ($value != 'id') {
                         $columns[] = $value;
+                        $sql_columns[] = $table_short_name.".".$value;
                     }
 
                     break;
@@ -126,6 +129,8 @@ if ($argc >= 2) {
 
     $list_of_columns = implode(', ', $columns);
     $list_of_columns_in_quotes = "'" . implode('\', \'', $columns) . "'";
+    $sql_list_of_columns = implode(', ', $sql_columns);
+    $sql_list_of_columns_in_quotes = "'" . implode('\', \'', $sql_columns) . "'";
 
     $get_input = "";
     $set_input = "";
@@ -147,11 +152,12 @@ if ($argc >= 2) {
     $php_file_contents = str_replace('PLACEHOLDER_LIST', $module_name . "_list", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_EDIT', $module_name . "_edit", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_DELETE', $module_name . "_delete", $php_file_contents);
-    $php_file_contents = str_replace('PLACEHOLDER_SQL_LIST', "SELECT id, $list_of_columns, id FROM $module_name", $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_SQL_LIST', "SELECT $table_short_name.id, $sql_list_of_columns, $table_short_name.id FROM $module_name $table_short_name", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SQL_EDIT', "INSERT INTO $module_name ($list_of_columns, id) values ('\".implode('\', \'',\$input).\"', \$id) ON DUPLICATE KEY UPDATE SET ", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_GET_INPUT', $get_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SET_INPUT', $set_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_COLUMNS', $list_of_columns_in_quotes, $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_SQL_COLUMNS', $sql_list_of_columns_in_quotes, $php_file_contents);
 
     $php_file = fopen($target_php_folder . $php_file_name, "w");
     if (empty($php_file)) {

@@ -33,8 +33,8 @@ class PLACEHOLDER_MODULECLASSNAME {
                 $heading = array(PLACEHOLDER_COLUMNS, 'Men&uuml;');
                 $width = array('10%'); // Fill out manually later
 
-                $findcols = array(PLACEHOLDER_COLUMNS);
-                $searchsql = array(PLACEHOLDER_COLUMNS);
+                $findcols = array(PLACEHOLDER_SQL_COLUMNS);
+                $searchsql = array(PLACEHOLDER_SQL_COLUMNS);
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
