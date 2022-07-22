@@ -443,10 +443,10 @@ class erpooSystem extends Application
 
       // Creates user specific items
       $possibleUserItems = [
-/*          'Inbox' => [
-              'link' => 'index.php?module=ticket&action=offene',
+          'Tickets' => [
+              'link' => 'index.php?module=ticket&action=list',
               'counter' => $this->erp->AnzahlOffeneTickets()
-          ],*/
+          ],
           'Aufgaben' => [
               'link' => 'index.php?module=aufgaben&action=list',
               'counter' => $this->erp->AnzahlOffeneAufgaben()

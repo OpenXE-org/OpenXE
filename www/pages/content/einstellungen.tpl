@@ -24,7 +24,7 @@
 </tr>
 <tr align="center">
 	<td><a [TICKETVORLAGENLINK]>{|Ticket Vorlagen|}</a></td>
-	<td><a [WARTESCHLANGENLINK]>{|Warteschlangen|}</a></td>
+	<td><a [WARTESCHLANGENLINK]>{|Ticket Warteschlangen|}</a></td>
 	<!--<td><a href="index.php?module=generic&action=edit">Startseite</a></td>-->
   <td><a [ARTIKELKATEGORIENLINK]>{|Artikel Kategorien|}</a></td>
 	<td><a href="index.php?module=artikeleinheit&action=list">{|Artikel Einheiten|}</a></td>

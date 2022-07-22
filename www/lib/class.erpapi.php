@@ -2631,7 +2631,7 @@ public function NavigationHooks(&$menu)
 
   public function AnzahlOffeneTickets($eigene=true)
   {
-    return 0;
+    return (int)$this->app->DB->Select("SELECT COUNT(t.id) FROM ticket t WHERE t.status = 'neu' AND t.warteschlange IN (SELECT w.adresse FROM warteschlangen w WHERE w.adresse = '".$this->app->User->GetAdresse()."')");
   }
 
 
