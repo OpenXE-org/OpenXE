@@ -2631,7 +2631,7 @@ public function NavigationHooks(&$menu)
 
   public function AnzahlOffeneTickets($eigene=true)
   {
-    return (int)$this->app->DB->Select("SELECT COUNT(t.id) FROM ticket t WHERE t.status = 'neu' AND t.warteschlange IN (SELECT w.adresse FROM warteschlangen w WHERE w.adresse = '".$this->app->User->GetAdresse()."')");
+    return (int)$this->app->DB->Select("SELECT COUNT(t.id) FROM ticket t WHERE t.status = 'neu' AND (t.warteschlange = 0 OR t.warteschlange IN (SELECT w.adresse FROM warteschlangen w WHERE w.adresse = '".$this->app->User->GetAdresse()."'))");
   }
 
 
@@ -32488,44 +32488,28 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     if($signature)
     {
       $eigenesignatur = $this->app->DB->Select("SELECT eigenesignatur FROM emailbackup WHERE email='$from' AND email !='' AND geloescht!=1 LIMIT 1");
-      //$this->app->erp->LogFile(addslashes("SELECT eigenesignatur FROM emailbackup WHERE email='$from' AND email !='' LIMIT 1"));
+
       if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 1)
       {
-        if($this->isHTML($text))
-        {
-          $signaturtext = $this->Signatur($from);
-          if($this->isHTML($signaturtext))
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".$signaturtext;
-          else
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
-        }
-        else{
-          $body = utf8_decode(str_replace('\r\n',"\n",$text)).$this->Signatur($from);
-        }
+        $signaturtext = $this->Signatur($from);
+        if($this->isHTML($signaturtext))
+          $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".$signaturtext;
+        else
+          $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
       }else{
         if($projekt > 0 && $this->Projektdaten($projekt,"absendesignatur")!=""){
-          if($this->isHTML($text))
-          {
-            $signaturtext = $this->Projektdaten($projekt,"absendesignatur");
-            if($this->isHTML($signaturtext))
-              $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$signaturtext;
-            else
-              $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
-          } else {
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."\r\n\r\n".$this->ReadyForPDF($this->Projektdaten($projekt,"absendesignatur"));
-          }
+          $signaturtext = $this->Projektdaten($projekt,"absendesignatur");
+          if($this->isHTML($signaturtext))
+            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$signaturtext;
+          else
+            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
         }else{
           if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 0){
-            if($this->isHTML($text))
-            {
-              $signaturtext = $this->Signatur($from);
-              if($this->isHTML($signaturtext))
-                $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
-              else
-                $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
-            }else{
-              $body = utf8_decode(str_replace('\r\n',"\n",$text)).$this->Signatur($from);
-            }
+            $signaturtext = $this->Signatur($from);
+            if($this->isHTML($signaturtext))
+              $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
+            else
+              $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
           }else{
             $body = utf8_decode(str_replace('\r\n',"\n",$text));
           }
@@ -32536,17 +32520,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $body = utf8_decode(str_replace('\r\n',"\n",$text));
     }
 
-    // wenn html rahmen
-/*
-    if($isSystemTemplate) {
-      $email_html_template = file_get_contents(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
-      $email_html_template = str_replace(
-        '{SERVER}',
-        str_replace('index.php','',$this->app->Location->getServer()),
-        $email_html_template
-      );
-    } 
-    else */
     {
       $email_html_template = $this->Projektdaten($projekt, "email_html_template");
       if($email_html_template == ""){
@@ -32653,6 +32626,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $sendmail_error
       );
     }
+
     if($sysMailerSent === false) {
       $this->app->erp->LogFile("Mailer Error: " . $sendmail_error);
       $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
@@ -32680,17 +32654,21 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         );
       }
       try {
+
+        $this->app->erp->LogFile("Trying IMAP Ausgang FROM ".$from." user ".$imap_data['benutzername']." folder ".$imap_data['imap_sentfolder']);
+
+        $email = "From: $from_name <$from>\r\nTo: $to_name <$to>\r\nSubject: $betreff\r\nContent-Type: text/html; charset=utf-8\r\n\r\n$body";
+
         $account = EmailBackupAccount::fromDbState($imap_data);
         /** @var MailClientProvider $clientProvider */
         $clientProvider = $this->app->Container->get('MailClientProvider');
         $client = $clientProvider->createMailClientFromAccount($account);
         $client->connect();
-        $client->appendMessage($imapCopyMessage, $account->getImapOutgoingFolder());
+        $client->appendMessage($email, $account->getImapOutgoingFolder());
       } catch (Exception $e) {
         $this->app->erp->LogFile("Mailer Error: " . (string)$e);
       }
 
-      $this->app->erp->LogFile("IMAP Ausgang FROM ".$from." S $server P $port T $type SP $server_path B ".$imap_data['benutzername']." SF ".$imap_data['imap_sentfolder']);
     }
     $this->mail_error = "";
     return 1;
