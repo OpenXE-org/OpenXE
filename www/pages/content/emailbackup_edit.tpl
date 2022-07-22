@@ -67,7 +67,10 @@
 <tr><td>{|imap_sentfolder_aktiv|}:</td><td><input type="text" name="imap_sentfolder_aktiv" value="[IMAP_SENTFOLDER_AKTIV]" size="40"></td></tr>
 <tr><td>{|imap_sentfolder|}:</td><td><input type="text" name="imap_sentfolder" value="[IMAP_SENTFOLDER]" size="40"></td></tr>
 <tr><td>{|imap_port|}:</td><td><input type="text" name="imap_port" value="[IMAP_PORT]" size="40"></td></tr>
-<tr><td>{|imap_type|}:</td><td><input type="text" name="imap_type" value="[IMAP_TYPE]" size="40"><i>0 = standard, 1 = SSL</i></td></tr>
+<tr><td>{|imap_type|}:</td><td><input type="text" name="imap_type" value="[IMAP_TYPE]" size="40"><i>1 = standard, 3 = SSL, 5 = OAuth</i></td></tr>
+<tr><td width="50">Testmail:</td><td>
+        <input type="submit" form="imap_test" value="IMAP testen" id="testimap-button">&nbsp;<i>Bitte erst speichern und dann testen!</i>
+</td></tr>
 </table>
                       </fieldset>            
                     </div>
@@ -165,6 +168,12 @@
 <form id="smtp_test" action = "index.php">
 <input type="text" name="module" value="emailbackup" style="display:none">
 <input type="text" name="action" value="test_smtp" style="display:none">
+<input type="text" name="id" value="[ID]" style="display:none">
+</form>
+
+<form id="imap_test" action = "index.php">
+<input type="text" name="module" value="emailbackup" style="display:none">
+<input type="text" name="action" value="test_imap" style="display:none">
 <input type="text" name="id" value="[ID]" style="display:none">
 </form>
 

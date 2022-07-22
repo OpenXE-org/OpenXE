@@ -5,6 +5,7 @@
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
+use Xentral\Components\Logger\Logger;
 
 class Emailbackup {
 
@@ -19,6 +20,7 @@ class Emailbackup {
         $this->app->ActionHandler("edit", "emailbackup_edit");
         $this->app->ActionHandler("delete", "emailbackup_delete");
         $this->app->ActionHandler("test_smtp",'emailbackup_test_smtp');
+        $this->app->ActionHandler("test_imap",'emailbackup_test_imap');
 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -294,11 +296,90 @@ $width = array('10%'); // Fill out manually later
     }
     else {
       $msg = $this->app->erp->base64_url_encode(
-        '<div class="error">Fehler beim Versende der Testmail: '.$this->app->erp->mail_error.'</div>'
+        '<div class="error">Fehler beim Versenden der Testmail: '.$this->app->erp->mail_error.'</div>'
       );
     }
     $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
   }
 
+  function emailbackup_test_imap() {
+
+    $id = $this->app->Secure->GetGET('id');
+
+    // get email Account
+    /** @var EmailAccountGateway $accountGateway */
+    $accountGateway = $this->app->Container->get('EmailAccountGateway');
+    $account = $accountGateway->getEmailAccountById($id);
+
+    if(!empty($account)) {
+      /** @var Ticket $ticketModule */
+      $ticketModule = $this->app->erp->LoadModul('ticket');
+      /** @var MailClientFactory $factory */
+      $factory = $this->app->Container->get('MailClientFactory');
+      /** @var MailClientConfigProvider $configProvider */
+      $configProvider = $this->app->Container->get('MailClientConfigProvider');
+      /** @var TicketFormatter $formatHelper */
+      $formatHelper = $this->app->Container->get('TicketFormatter');
+      /** @var TicketImportHelperFactory $importHelperFactory */
+      $importHelperFactory = $this->app->Container->get('TicketImportHelperFactory');
+
+        /** @var Logger $logger */
+        $logger = $this->app->Container->get('Logger');
+
+      $logger->debug(
+          'Start imap test {email}',
+          ['email' => $account->getEmailAddress(), 'account' => $account]
+      );
+      // create mail client
+      try {
+        $mailConfig = $configProvider->createImapConfigFromAccount($account);
+        $mailClient = $factory->createImapClient($mailConfig);
+      } catch (Exception $e) {
+        $logger->error('Failed to create email client', ['error' => (string)$e, 'account' => $account]);
+        $msg = $this->app->erp->base64_url_encode(
+        '<div class="error">Fehler IMAP Test: '.$this->app->erp->mail_error.'</div>');
+        $error = true;
+      }
+
+      // connect mail client
+      try {
+        $mailClient->connect();
+        } catch (Exception $e) {
+          $logger->error('Error during imap connection', ['error' => (string)$e, 'account' => $account]);   
+        $msg = $this->app->erp->base64_url_encode(
+        '<div class="error">Fehler IMAP Test: '.$this->app->erp->mail_error.'</div>');
+        $error = true;
+      }
+
+      // connet to INBOX folder
+      try {
+        $mailClient->selectFolder('INBOX');
+      } catch (Exception $e) {
+        $logger->error('Failed to select INBOX folder', ['error' => (string)$e, 'account' => $account]);
+        $msg = $this->app->erp->base64_url_encode(
+        '<div class="error">Fehler IMAP Test: '.$this->app->erp->mail_error.'</div>');
+        $error = true;
+      }
+
+      $mailClient->expunge();
+      $mailClient->disconnect();
+
+        if (!$error) {
+          $msg = $this->app->erp->base64_url_encode(
+          '<div class="info">IMAP Verbindung erfolgreich!</div>');
+          $logger->debug(
+          'IMAP test ok {email}',
+          ['email' => $account->getEmailAddress(), 'account' => $account]
+      );
+
+        }
+    } else 
+    {
+        $msg = $this->app->erp->base64_url_encode(
+        '<div class="error">Kein Account gefunden!</div>');
+            
+    }
+    $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
+  } 
 
 }
