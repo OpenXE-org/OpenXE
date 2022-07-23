@@ -32614,6 +32614,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         $bccRecipients[] = new EmailRecipient($bcc3[0], $bcc3[1]);
       }
 
+      // This will build the mail with phpmailer 6 and send it out
+      // There is no way to retrieve the created mail e.g. for IMAP output
+      // This should be migrated to laminas-mail (used for imap)
+      // Phpmailer 6 can then be removed
       $sysMailerSent = $sysMailer->composeAndSendEmail(
           $from,
           $from_name,
@@ -32625,10 +32629,9 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $bccRecipients,
           $sendmail_error
       );
-    }
+    }    
 
     if($sysMailerSent === false) {
-      $this->app->erp->LogFile("Mailer Error: " . $sendmail_error);
       $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
       $this->mail_error =  "Mailer Error: " . $sendmail_error;
 
@@ -32637,39 +32640,59 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         $this->app->erp->InternesEvent($this->app->User->GetID(),"Fehler bei Mailversand: ".$sendmail_error,"alert",1);
       }
       return 0;
-    }
-    // schreiben in post ausgang
-    $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
-    $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$from."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
-    if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name) && !preg_match("/WaWision Kopie/",$to_name))
-    {
-      $imap_data = $this->app->DB->SelectRow("SELECT * FROM emailbackup WHERE email='".$from."' AND geloescht!=1 LIMIT 1");
-      $imapCopyMessage = $body;
-      if ($sysMailerSent === true && $emailObj !== null) {
-        /** @var MimeMessageFormatterInterface $formatter */
-        $formatter = $this->app->Container->get('MailClientMimeMessageFormatter');
-        $imapCopyMessage = $formatter->formatMessage(
-          $emailObj,
-          new EmailRecipient($from, $from_name)
+    } else {
+
+      $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
+
+      // Put the mail in IMAP sent folder
+      // Note that this is implemented with laminas-mail and only this
+      // The created mail may differ from the sent one because it is created by different libraries 
+
+      $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$from."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
+      if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name) && !preg_match("/WaWision Kopie/",$to_name))
+      {
+
+        // This will build the mail as EmailMessage (Xentral\Components\Mailer\Data) and then rebuild it with laminas-mail message to produce the raw output
+        $emailObj = $sysMailer->composeEmail(
+            $recipients,
+            $betreff,
+            $body,
+            $files,
+            $ccRecipients,
+            $bccRecipients
         );
+
+        if ($emailObj !== null) {
+          /** @var MimeMessageFormatterInterface $formatter */
+
+          $formatter = $this->app->Container->get('MailClientMimeMessageFormatter');
+          $imapCopyMessage = $formatter->formatMessage(
+            $emailObj,
+            new EmailRecipient($from, $from_name)
+          );
+        } else {
+          $this->app->erp->LogFile("Mailer Error: Email could not be composed!");
+        }
+
+        // Load the mail to IMAP using laminas
+        try {
+          $imap_data = $this->app->DB->SelectRow("SELECT * FROM emailbackup WHERE email='".$from."' AND geloescht!=1 LIMIT 1");
+          $account = EmailBackupAccount::fromDbState($imap_data);
+          /** @var MailClientProvider $clientProvider */
+          $clientProvider = $this->app->Container->get('MailClientProvider');
+          $client = $clientProvider->createMailClientFromAccount($account);
+          $client->connect();
+          $client->appendMessage($imapCopyMessage, $account->getImapOutgoingFolder());
+        } catch (Exception $e) {
+          $this->app->erp->LogFile("Mailer Error: " . (string) $e);
+          if(isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetID'))
+          {
+            $this->app->erp->InternesEvent($this->app->User->GetID(),"IMAP-Fehler","alert",1);
+          }
+          return 0;
+        }
       }
-      try {
-
-        $this->app->erp->LogFile("Trying IMAP Ausgang FROM ".$from." user ".$imap_data['benutzername']." folder ".$imap_data['imap_sentfolder']);
-
-        $email = "From: $from_name <$from>\r\nTo: $to_name <$to>\r\nSubject: $betreff\r\nContent-Type: text/html; charset=utf-8\r\n\r\n$body";
-
-        $account = EmailBackupAccount::fromDbState($imap_data);
-        /** @var MailClientProvider $clientProvider */
-        $clientProvider = $this->app->Container->get('MailClientProvider');
-        $client = $clientProvider->createMailClientFromAccount($account);
-        $client->connect();
-        $client->appendMessage($email, $account->getImapOutgoingFolder());
-      } catch (Exception $e) {
-        $this->app->erp->LogFile("Mailer Error: " . (string)$e);
-      }
-
-    }
+    } // sysMailersent
     $this->mail_error = "";
     return 1;
   }
