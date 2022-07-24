@@ -292,7 +292,6 @@ class TicketImportHelper
     {
 //        $this->db->beginTransaction();
         try {
-            $this->markTicketMessagesCompleted($ticketNumber);
             $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`,
                         `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`
@@ -325,6 +324,7 @@ class TicketImportHelper
             $this->logger->error('Failed to insert ticket message into db', ['exception' => $e]);
 
         }
+            $this->markTicketMessagesCompleted($ticketNumber);
     }
 
     /* End TicketService */   
@@ -403,8 +403,13 @@ class TicketImportHelper
 
         //check if email exists in database
         $date = $message->getDate();
-        $timestamp = $date->getTimestamp();
-        $frommd5 = md5($from . $subject . $timestamp);
+        if (is_null($date)) { // This should not be happening -> Todo check getDate function
+            $this->logger->debug('Null date',['subject' => $message->getSubject()]);            
+            $frommd5 = md5($from . $subject);
+        } else {
+            $timestamp = $date->getTimestamp();
+            $frommd5 = md5($from . $subject . $timestamp);
+        }
         $empfang = $date->format('Y-m-d H:i:s');
         $sql = "SELECT COUNT(id) 
                         FROM `emailbackup_mails` 
@@ -492,13 +497,13 @@ class TicketImportHelper
                 $from
             );
 
+        } else {
+            $this->logger->debug('Add message to existing ticket',['ticketnummer' => $schluessel]);
         }
-
-        $this->logger->debug('Add message to ticket',['']);
 
         // Add message to new or existing ticket
         $ticketnachricht = $this->addTicketMessage(
-            (string) $ticketNumber,
+            (string) $schluessel,
             $timestamp,
             $action_html, //?
             $subject,

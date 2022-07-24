@@ -1287,7 +1287,14 @@ class Ajax {
         for($i = 0; $i < $carr; $i++) {
           $newarr[] = "{$arr[$i]['name2']}";
         }
-        break;
+      break;
+      case 'warteschlangename':
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(label, ' ', warteschlange) as result from warteschlangen");
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++) {
+          $newarr[] = "{$arr[$i]['result']}";
+        }
+       break;
 /*
 
 select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.kundennummer order by a2.projekt = 13 DESC, a2.projekt = 0 DESC, projekt LIMIT 1) as name FROM adresse a WHERE a.kundennummer like '10500' group by a.kundennummer 
