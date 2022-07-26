@@ -29773,7 +29773,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 */
 // Force only existing emailbackup accounts
 
-    $tpl = "<option value=\"\">-</option>";
+//    $tpl = "<option value=\"\">-</option>";
 
     $email_addr = $this->app->DB->SelectArr("SELECT email, angezeigtername FROM emailbackup WHERE email != '' AND (adresse<=0 OR adresse='".$this->app->User->GetAdresse()."') AND geloescht!=1 ORDER BY email");
 
@@ -32456,10 +32456,16 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     return $this->MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc, $system);
   }
 
+/*
+* Return 0 = not ok, return 1 = ok
+*/
 function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
 {
   // keine leeren email versenden
-  if($text=="" && $betreff=="") return;  
+  if($text=="" && $betreff=="") {
+     $this->mail_error =  "Mailer Error: " . "Empty mail.";
+     return 0;  
+  }
 
 /*  $isSystemTemplate = $system && is_file(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
   if($isSystemTemplate) {
