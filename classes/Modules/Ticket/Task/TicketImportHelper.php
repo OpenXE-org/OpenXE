@@ -147,7 +147,7 @@ class TicketImportHelper
                     `status` = 'neu',
                     `zugewiesen` = '0',
                     `inbearbeitung` = '0'
-                    WHERE `schluessel` = '".$ticket_number."'";
+                    WHERE `schluessel` LIKE '".$ticketNumber."'";
         $this->db->Update($sql);
     }
 
@@ -509,7 +509,7 @@ class TicketImportHelper
             $subject,
             $fromname,
             $from,
-            'Neu', // ?
+            'neu',
             $fromname,
             $from
         );
