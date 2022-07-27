@@ -109,6 +109,10 @@ class Ticket {
         $this->ticket_list();
     } 
 
+    function get_messages_of_ticket($ticket_id) {
+        return $this->app->DB->SelectArr("SELECT n.id, n.betreff, n.verfasser, n.mail, n.zeit, n.versendet, n.text FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE t.id = ".$ticket_id." ORDER BY n.zeit DESC");        
+    }
+
     function ticket_edit() {
         $id = $this->app->Secure->GetGET('id');
               
@@ -119,6 +123,7 @@ class Ticket {
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
+        $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));
                 
         if (empty($id)) {
             // New item
@@ -183,7 +188,7 @@ class Ticket {
         $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
 
         // Get messsages
-        $messages = $this->app->DB->SelectArr("SELECT n.betreff, n.verfasser, n.mail, n.zeit, n.versendet, n.text FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE t.id = ".$id." ORDER BY n.zeit DESC");
+        $messages = $this->get_messages_of_ticket($id);
 
         switch ($submit) {
           case 'neue_email':
@@ -234,7 +239,6 @@ class Ticket {
                   true
               ) != 0
             ) {
-              $msg =  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'. '.$this->app->erp->mail_error.'</div>';
 
                 // Put message into ticket_nachricht
                 $sql = "INSERT INTO `ticket_nachricht` (
@@ -255,13 +259,16 @@ class Ticket {
 
                 $this->app->DB->Insert($sql);
 
+                $msg =  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'. '.$this->app->erp->mail_error.'</div>';
+                header("Location: index.php?module=ticket&action=edit&id=".$id."&msg=".$this->app->erp->base64_url_encode($msg));
+
             }
             else {
               $msg = '<div class="error">Fehler beim Versenden der E-Mail: '.$this->app->erp->mail_error.'</div>';
             }
 
             // Get messsages again
-            $messages = $this->app->DB->SelectArr("SELECT n.betreff, n.verfasser, n.mail, n.zeit, n.versendet, n.text FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE t.id = ".$id." ORDER BY n.zeit DESC");
+            $messages = $this->get_messages_of_ticket($id);
 
           break;
         }
@@ -280,6 +287,26 @@ class Ticket {
             $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
             $this->app->Tpl->Set("NACHRICHT_EMAILADRESSE",$message['mail']);
             $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
+
+            $file_attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$message['id']);           
+
+            if (!empty($file_attachments)) {
+
+              $this->app->Tpl->Add('NACHRICHT_ANHANG',"<hr style=\"border-style:solid; border-width:1px\">");
+
+              foreach ($file_attachments as $file_attachment) {
+                  $this->app->Tpl->Add('NACHRICHT_ANHANG',                    
+                      "<a href=\"index.php?module=dateien&action=send&id=".$file_attachment.
+                      "\">".
+                      htmlentities($this->app->erp->GetDateiName($file_attachment)).
+                      " (".
+                      $this->app->erp->GetDateiSize($file_attachment).
+                      ")".  
+                      "</a>".
+                      "</br>");
+              }
+            }
+
             $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
         }
 
@@ -308,7 +335,6 @@ class Ticket {
       	$input['email_bcc'] = $this->app->Secure->GetPOST('email_bcc');
       	$input['email_betreff'] = $this->app->Secure->GetPOST('email_betreff');
       	$input['email_text'] = $this->app->Secure->GetPOST('email_text');
-
         return $input;
     }
 

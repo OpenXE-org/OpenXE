@@ -29858,7 +29858,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     return '';
   }
 
-
   function GetSelectDokumentKunde($typ,$adresse,$select)
   {
     $typ_bezeichnung = ucfirst($typ);
@@ -43965,7 +43964,8 @@ function Firmendaten($field,$projekt="")
         $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
         $newid = $this->app->DB->Select("SELECT dateiname FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
 
-        return $this->UmlauteEntfernen($newid);
+//        return $this->UmlauteEntfernen($newid);
+        return $newid;
       }
 
 
@@ -43990,7 +43990,7 @@ function Firmendaten($field,$projekt="")
           $tmpname = tempnam($this->GetTMP(), $prefix);
           $newname = $tmpname."_".$this->GetDateiName($datei['datei']);
 
-          copy($this->GetDateiPfad($datei['datei']),$newname);
+          copy($this->GetDateiPfad($datei['datei']),$newname); // Why in the world..?!
 
           $tmp[] = $newname;
         }
@@ -44005,7 +44005,8 @@ function Firmendaten($field,$projekt="")
         }
         $tmp = [];
         foreach($dateien as $datei) {
-          $tmp[] = $this->GetDateiPfad($datei['datei']);
+//          $tmp[] = $this->GetDateiPfad($datei['datei']);
+          $tmp[] = $datei['datei']; // return the datei id
         }
         return $tmp;
       }

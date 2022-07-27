@@ -70,6 +70,7 @@ class MailAttachmentData implements MailAttachmentInterface
             throw new InvalidArgumentException('missing header: "Content-Disposition"');
         }
         $disposition = $dispositionHeader->getValue();
+
         if (!preg_match('/(.+);\s*filename="([^"]+)".*$/m', $disposition, $matches)) {
             throw new InvalidArgumentException(
                 sprintf('unexpected header value "Content-Disposition" = %s', $disposition)
@@ -77,6 +78,17 @@ class MailAttachmentData implements MailAttachmentInterface
         }
         $isInline = strtolower($matches[1]) === 'inline';
         $filename = $matches[2];
+
+        // Thunderbird UTF URL-Format
+        $UTF_pos = strpos($filename,'UTF-8\'\'');
+        if ($UTF_pos !== false) {
+            
+            $wasUTF = "JA";
+
+            $filename = substr($filename,$UTF_pos);
+            $filename = rawurldecode($filename);
+        }
+
         $cid = null;
         $contentIdHeader = $part->getHeader('content-id');
         if ($contentIdHeader !== null) {

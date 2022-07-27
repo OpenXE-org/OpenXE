@@ -15,6 +15,7 @@ use Xentral\Components\MailClient\Data\MailMessageInterface;
 use Xentral\Modules\SystemMailer\Data\EmailBackupAccount;
 use Xentral\Modules\Ticket\Importer\TicketFormatter;
 use Xentral\Modules\Ticket\Exception\NumberGeneratorException;
+use Xentral\Modules\Ticket\Exception\InvalidArgumentException;
 
 /**
  * Utility functions for tickets cronjob for improved testability
@@ -173,7 +174,13 @@ class TicketImportHelper
     private function ensureTicketNumberExists(string $ticketNumber): void
     {
 
-       if (!$this->db->Select('SELECT id FROM ticket WHERE schluessel = '.$ticketNumber)) {
+        if ($ticketNumber == '') {
+            throw new InvalidArgumentException(
+                sprintf('ticket number empty')
+            );
+        }
+
+        if (!$this->db->Select('SELECT id FROM ticket WHERE schluessel = '.$ticketNumber)) {
             throw new InvalidArgumentException(
                 sprintf('ticket number "%s" does not exist', $ticketNumber)
             );
@@ -234,7 +241,7 @@ class TicketImportHelper
         int $timestamp,
         string $replyToName,
         string $replyToAddress
-    ): int
+    ): string
     {
         $assigneeAddressId = $this->mailAccount->getAddressId();
         if ($assigneeAddressId < 1) {
@@ -275,7 +282,7 @@ class TicketImportHelper
         $this->logger->debug('inserted ticket',['id' => $ticketId,'ticketnr' => $ticketNumber]);
                     
         //  todo als rueckgabe ticketnachricht
-        return (int) $ticketNumber;
+        return $ticketNumber;
     }
     
   public function addTicketMessage(
@@ -311,7 +318,7 @@ class TicketImportHelper
             $this->db->Insert($sql);
             $messageId = $this->db->GetInsertID();
 
-            $this->logger->debug('inserted',['id' => $messageId]);
+            $this->logger->debug('inserted',['id' => $messageId, 'schluessel' => $ticketNumber]);
 
             $this->updateTicketMessagesCount($ticketNumber);
             $this->resetTicketStatus($ticketNumber);
@@ -469,15 +476,14 @@ class TicketImportHelper
             echo "ticket suchen oder anlegen\n";
         }
 
-        $_schluessel = null;
-        $schluessel = null;
+        $ticketNumber = null;
         $ticketexists = null;
         if (preg_match("/Ticket #[0-9]{12}/i", $subject, $matches)) {
-            $schluessel = str_replace('Ticket #', '', $matches[0]);
+            $ticketNumber = str_replace('Ticket #', '', $matches[0]);
             $ticketexists = $this->db->Select(
                 "SELECT schluessel 
                              FROM ticket 
-                             WHERE schluessel LIKE '" . $schluessel . "' 
+                             WHERE schluessel LIKE '" . $ticketNumber . "' 
                              AND schluessel!='' LIMIT 1"
             );
         }
@@ -498,12 +504,12 @@ class TicketImportHelper
             );
 
         } else {
-            $this->logger->debug('Add message to existing ticket',['ticketnummer' => $schluessel]);
+            $this->logger->debug('Add message to existing ticket',['ticketnummer' => $ticketNumber]);
         }
 
         // Add message to new or existing ticket
         $ticketnachricht = $this->addTicketMessage(
-            (string) $schluessel,
+            (string) $ticketNumber,
             $timestamp,
             $action_html, //?
             $subject,
@@ -513,136 +519,6 @@ class TicketImportHelper
             $fromname,
             $from
         );
-
-/* OLD CODE
-        if ($ticketexists) {
-            if ($DEBUG) {
-                echo "ticket nummer in betreff gefunden\n";
-            }
-
-            $schluessel = str_replace('Ticket #', '', $matches[0]);
-
-            if ($action_html != '') {
-                $sql = "INSERT INTO `ticket_nachricht` 
-                                (
-                                 `id`,
-                                 `ticket`,
-                                 `zeit`,
-                                 `text`,
-                                 `betreff`,
-                                 `medium`,
-                                 `verfasser`,
-                                 `mail`,
-                                 `status`,
-                                 `verfasser_replyto`,
-                                 `mail_replyto`
-                                 ) VALUES (
-                                    NULL,
-                                    '$schluessel',
-                                    FROM_UNIXTIME($timestamp),
-                                    '" . $this->db->real_escape_string($action_html) . "',
-                                    '" . $this->db->real_escape_string($subject) . "',
-                                    'email',
-                                    '" . $this->db->real_escape_string($name_sender) . "',
-                                    '" . $this->db->real_escape_string($from) . "',
-                                    'neu',
-                                    '" . $this->db->real_escape_string($verfasser_replyto) . "',
-                                    '" . $this->db->real_escape_string($mail_replyto) . "'
-                                 );";
-            } else {
-                $sql = "INSERT INTO `ticket_nachricht` 
-                                (
-                                 `id`,
-                                 `ticket`,
-                                 `zeit`,
-                                 `text`,
-                                 `betreff`,
-                                 `medium`,
-                                 `verfasser`,
-                                 `mail`,
-                                 `status`,
-                                 `verfasser_replyto`,
-                                 `mail_replyto`
-                                 ) VALUES (
-                                   NULL,
-                                   '$schluessel',
-                                   FROM_UNIXTIME($timestamp),
-                                   '" . $this->db->real_escape_string($action) . "',
-                                   '" . $this->db->real_escape_string($subject) . "',
-                                   'email',
-                                   '" . $this->db->real_escape_string($name_sender) . "',
-                                   '" . $this->db->real_escape_string($from) . "',
-                                   'neu',
-                                   '" . $this->db->real_escape_string($verfasser_replyto) . "',
-                                   '" . $this->db->real_escape_string($mail_replyto) . "'
-                                 );";
-            }
-
-
-            if (!$DEBUG) {
-                $this->db->InsertWithoutLog(
-                    "UPDATE ticket_nachricht
-                            SET status = 'abgeschlossen'
-                            WHERE ticket LIKE '$schluessel'"
-                );
-                $this->db->InsertWithoutLog($sql);
-                $ticketnachricht = $this->db->GetInsertID();
-                $this->db->InsertWithoutLog(
-                    "UPDATE ticket
-                            SET status='neu', zugewiesen = 0, inbearbeitung=0 
-                            WHERE schluessel LIKE '$schluessel'"
-                );
-                $this->db->Update(
-                    "UPDATE `ticket` AS `t` 
-                                 INNER JOIN (
-                                   SELECT COUNT(`id`) AS `co`, `ticket` 
-                                   FROM `ticket_nachricht` 
-                                   GROUP BY `ticket`
-                                 ) AS `tn` ON t.schluessel = tn.ticket 
-                                 SET t.nachrichten_anz = tn.co 
-                                 WHERE t.schluessel = '$schluessel'"
-                );
-            }
-        } else {
-            if (!$DEBUG) {
-                if ($action_html != '') {
-                    $ticketnachricht = $this->ticketModule->CreateTicket(
-                        $this->projectId,
-                        $mailacc,
-                        $name_sender,
-                        $from,
-                        $subject,
-                        $action_html,
-                        $timestamp,
-                        "email",
-                        null,
-                        $verfasser_replyto,
-                        $mail_replyto
-                    ); // ACHTUNG immer Projekt eprooshop
-                } else {
-                    $ticketnachricht = $this->ticketModule->CreateTicket(
-                        $this->projectId,
-                        $mailacc,
-                        $name_sender,
-                        $from,
-                        $subject,
-                        $action,
-                        $timestamp,
-                        "email",
-                        null,
-                        $verfasser_replyto,
-                        $mail_replyto
-                    ); // ACHTUNG immer Projekt eprooshop
-                }
-                $schluessel = $this->db->Select(
-                    "SELECT `ticket`
-                            FROM `ticket_nachricht`
-                            WHERE `id`='$ticketnachricht' LIMIT 1"
-                );
-            } else {
-                echo "Lege neues Ticket an\n";
-            }
-        } */
 
         if ($ticketnachricht > 0 && $id > 0) {
             $this->db->Update(
@@ -702,6 +578,9 @@ class TicketImportHelper
                 }
             }
 
+            $this->logger->debug('Add attachments',['ticketnummer' => $ticketNumber, 'nachricht' => $ticketnachricht, 'count' => count($attachments)]);
+
+
             foreach ($attachments as $attachment) {
                 if ($attachment->getFileName() !== '') {
                     if ($DEBUG) {
@@ -715,11 +594,14 @@ class TicketImportHelper
                     //Schreibe Anhänge in Datei-Tabelle
                     $datei = $ordner . '/' . $attachment->getFileName();
                     $dateiname = $attachment->getFileName();
-                    if (stripos($dateiname, '=?utf-8') !== false) {
+
+                    $this->logger->debug("Attachment", ['filename' => $dateiname]);
+
+                    if (stripos(strtoupper($dateiname), '=?UTF-8') !== false) {
                         $dateiname = $this->formatter->encodeToUtf8($dateiname);
                         $dateiname = htmlspecialchars_decode($dateiname);
                     }
-                    if (stripos($dateiname, '=?iso-8859') !== false) {
+                    if (stripos(strtoupper($dateiname), '=?ISO-8859') !== false) {
                         $dateiname = $this->formatter->encodeToUtf8($dateiname);
                         $dateiname = htmlspecialchars_decode($dateiname);
                     }
@@ -743,6 +625,9 @@ class TicketImportHelper
                     if ($DEBUG) {
                         echo "AddDateiStichwort $tmpid,'Anhang','Ticket',$ticketnachricht,true)\n";
                     } else {
+
+                        $this->logger->debug('Add attachment',['ticketnummer' => $ticketNumber,'id' => $tmpid, 'nachricht' => $ticketnachricht]);
+
                         $this->erpApi->AddDateiStichwort(
                             $tmpid,
                             'Anhang',
@@ -770,9 +655,9 @@ class TicketImportHelper
             if (empty($text)) $text = '';
             if (empty($betreff)) $betreff = '';
 
-            $text = str_replace('{TICKET}', $schluessel, $text);
+            $text = str_replace('{TICKET}', $ticketNumber, $text);
             $text = str_replace('{BETREFF}', $subject, $text);
-            $betreff = str_replace('{TICKET}', $schluessel, $betreff);
+            $betreff = str_replace('{TICKET}', $ticketNumber, $betreff);
             $betreff = str_replace('{BETREFF}', $subject, $betreff);
 
 

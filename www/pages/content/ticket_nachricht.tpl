@@ -9,6 +9,7 @@
                                     <tr><td>{|[NACHRICHT_RICHTUNG]|}:</td><td>[NACHRICHT_NAME] &lt;[NACHRICHT_EMAILADRESSE]&gt;</td></tr>
                                     <tr><td colspan=2><hr style="border-style:solid; border-width:1px"></td></tr>
                                     <tr><td colspan=2><div id="body" style="overflow:scroll; max-height:400px;">[NACHRICHT_TEXT]</div></td></tr>
+                                    <tr><td colspan=2><div id="body" style="overflow:scroll; max-height:400px;">[NACHRICHT_ANHANG]</div></td></tr>
                                 </table>
                             </fieldset> 
                         </div>
