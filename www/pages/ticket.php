@@ -198,7 +198,13 @@ class Ticket {
             $recv_messages = $this->app->DB->SelectArr("SELECT n.betreff, n.verfasser, n.mail, n.zeit, n.versendet, n.text FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE t.id = ".$id." AND n.versendet != 1 ORDER BY n.zeit DESC");
            	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
 
-           	$this->app->Tpl->Set('EMAIL_BETREFF', "RE: ".$messages[0]['betreff']);
+
+            if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
+               $this->app->Tpl->Set('EMAIL_BETREFF', "RE: ".$recv_messages[0]['betreff']);
+            } else {
+               $this->app->Tpl->Set('EMAIL_BETREFF', $recv_messages[0]['betreff']);
+            }
+
             $this->app->Tpl->Set('EMAIL_SENDER', $this->app->erp->GetSelectEmailMitName($dokument['von']));
 
             $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$result[0]['adresse']."' LIMIT 1");
