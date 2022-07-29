@@ -5,6 +5,7 @@
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
+use Xentral\Modules\Ticket\Task;
 
 class Ticket {
 
@@ -15,7 +16,7 @@ class Ticket {
 
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "ticket_list");        
-        $this->app->ActionHandler("create", "ticket_edit"); // This automatically adds a "New" button
+        $this->app->ActionHandler("create", "ticket_create"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "ticket_edit");
         $this->app->ActionHandler("edit_raw", "ticket_edit_raw");
         $this->app->ActionHandler("delete", "ticket_delete");
@@ -109,8 +110,122 @@ class Ticket {
         $this->ticket_list();
     } 
 
-    function get_messages_of_ticket($ticket_id) {
-        return $this->app->DB->SelectArr("SELECT n.id, n.betreff, n.verfasser, n.mail, n.zeit, n.versendet, n.text FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE t.id = ".$ticket_id." ORDER BY n.zeit DESC");        
+    function get_messages_of_ticket($ticket_id, $where) {
+        return $this->app->DB->SelectArr("SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC");        
+    }
+
+
+     /**
+    * @throws NumberGeneratorException
+    *
+    * @return string
+    */
+    private function generateRandomTicketNumber(): string
+    {
+        $random = rand(300,700);
+        $loopCounter = 0;
+        while(true) {
+            $candidate = sprintf('%s%04d', date('Ymd'), $random++);
+
+            if (!$this->app->DB->Select('SELECT id FROM ticket WHERE schluessel = '.$candidate)) {
+                return($candidate);            
+            }
+
+            if ($loopCounter > 99) {
+                throw new NumberGeneratorException('ticket number generation failed');
+            }
+            $loopCounter++;
+        }
+    }
+
+    function ticket_save_to_db($id, $input) {
+         // Write to database
+            
+        // Add checks here
+        if (empty($id)) {
+            // New item
+            $id = 'NULL';
+        } 
+
+        $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
+        $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+        $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
+
+        $columns = "id, ";
+        $values = "$id, ";
+        $update = ""; 
+
+        $fix = "";
+
+        foreach ($input as $key => $value) {
+
+          if ($this->app->DB->ColumnExists('ticket',$key)) {
+            $columns = $columns.$fix.$key;
+            $values = $values.$fix."'".$value."'";
+            $update = $update.$fix.$key." = '$value'";
+            $fix = ", ";  
+          }
+        }
+
+        $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+
+        $this->app->DB->Update($sql);
+        $id = $this->app->DB->GetInsertID();      
+        return($id);
+    }
+
+    function save_draft($id, $input) {
+        $columns = "id, ";
+        $values = "$id, ";
+        $update = ""; 
+
+        $fix = "";
+
+        // Translate form to table        
+        $input['betreff'] = $input['email_betreff'];
+        $input['mail'] = $input['email_an'];
+        $input['mail_cc'] = $input['email_cc'];
+        $input['text'] = $input['email_text'];
+
+        foreach ($input as $key => $value) {
+
+          if ($this->app->DB->ColumnExists('ticket_nachricht',$key)) {
+            $columns = $columns.$fix.$key;
+            $values = $values.$fix."'".$value."'";
+            $update = $update.$fix.$key." = '$value'";
+            $fix = ", ";  
+          }
+        }
+
+        $sql = "INSERT INTO ticket_nachricht (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+
+        $this->app->DB->Update($sql);
+    }
+
+    function ticket_create() {
+
+        $submit = $this->app->Secure->GetPOST('submit');
+        $input = $this->GetInput();        
+
+        if ($submit != '') {
+
+            $input['schluessel'] =  $this->generateRandomTicketNumber();       
+            $input['zeit'] = date('Y-m-d H:i:s', time());
+            $input['kunde'] = $this->app->User->GetName();
+
+            $id = $this->ticket_save_to_db($id, $input);
+
+            header("Location: index.php?module=ticket&action=edit&id=$id");
+            exit();
+        }
+
+        $this->app->Tpl->Set('STATUSICON', $this->ticket_status_icon('neu')."&nbsp;");
+        $this->app->YUI->AutoComplete("adresse","adresse");
+        $this->app->YUI->AutoComplete("projekt","projektname",1);
+        $this->app->YUI->AutoComplete("status","ticketstatus",1);
+        $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect('neu'));
+        $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
+        $this->app->Tpl->Parse('PAGE', "ticket_create.tpl");
     }
 
     function ticket_edit() {
@@ -123,51 +238,13 @@ class Ticket {
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
-        $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));
-                
-        if (empty($id)) {
-            // New item
-            $id = 'NULL';
-        } 
+        $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));                      
 
         // Always save
         if ($submit != '')
         {
-
-            // Write to database
-            
-            // Add checks here
-
-            $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
-            $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
-            $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
-
-            $columns = "id, ";
-            $values = "$id, ";
-            $update = ""; 
-    
-            $fix = "";
-
-            foreach ($input as $key => $value) {
-
-              if ($this->app->DB->ColumnExists('ticket',$key)) {
-                $columns = $columns.$fix.$key;
-                $values = $values.$fix."'".$value."'";
-                $update = $update.$fix.$key." = '$value'";
-                $fix = ", ";  
-              }
-            }
-
-            $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-
-            $this->app->DB->Update($sql);
-
-            if ($id == 'NULL') {
-                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=ticket&action=list&msg=$msg");
-            } else {
-                $msg = "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>";
-            }
+           $this->ticket_save_to_db($id, $input);  
+           $msg = "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>";
         }
 
         // Load values again from database
@@ -186,83 +263,138 @@ class Ticket {
         $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect($result[0]['status']));
         $input['projekt'] = $this->app->erp->ReplaceProjekt(false,$input['projekt'],false); // Parameters: Target db?, value, from form?
         $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
+        // END Header
 
-        // Get messsages
-        $messages = $this->get_messages_of_ticket($id);
+        // Check for draft
+        $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL");     
+
+        if (!empty($drafted_messages)) {
+
+            // Draft from form?
+            if ($submit != '') {
+                $this->save_draft($drafted_messages[0]['id'],$input);
+                // Reload        
+                $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL");                 
+            }
+
+            // Load the draft for editing
+            $this->app->Tpl->Set('EMAIL_AN', $drafted_messages[0]['mail']);
+            $this->app->Tpl->Set('EMAIL_CC', $drafted_messages[0]['mail_cc']);
+            $this->app->Tpl->Set('EMAIL_BCC', $drafted_messages[0]['mail_bcc']);
+            $this->app->Tpl->Set('EMAIL_BETREFF', $drafted_messages[0]['betreff']);
+            $this->app->Tpl->Set('EMAIL_TEXT',$drafted_messages[0]['text']);
+
+            // Show new message dialog                   
+            $this->app->Tpl->Set('EMAIL_SENDER', $this->app->erp->GetSelectEmailMitName($dokument['von']));
+            $this->app->YUI->AutoComplete("email_an","emailname");
+            $this->app->YUI->AutoComplete("email_cc","emailname");
+            $this->app->YUI->AutoComplete("email_bcc","emailname");
+            $this->app->YUI->CkEditor("email_text","internal", null, 'JQUERY');
+            $this->app->Tpl->Parse('NEW_MESSAGE', "ticket_new_message.tpl");
+        }     
+
+        // END Draft
+
+        // Get all messsages
+        $messages = $this->get_messages_of_ticket($id, 1);
 
         switch ($submit) {
           case 'neue_email':
-            // Show new message dialog?
-            $msg = ""; // Suppress save message
 
-            $recv_messages = $this->app->DB->SelectArr("SELECT n.betreff, n.verfasser, n.mail, n.zeit, n.versendet, n.text FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE t.id = ".$id." AND n.versendet != 1 ORDER BY n.zeit DESC");
-           	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
+            if (empty($drafted_messages)) {
+                // Create new message and save it for editing   
 
+                $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1");
+               	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
 
-            if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
-               $this->app->Tpl->Set('EMAIL_BETREFF', "RE: ".$recv_messages[0]['betreff']);
-            } else {
-               $this->app->Tpl->Set('EMAIL_BETREFF', $recv_messages[0]['betreff']);
-            }
+                if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
+                   $betreff = "RE: ".$recv_messages[0]['betreff'];
+                } else {
+                   $betreff = $recv_messages[0]['betreff'];
+                }
 
-            $this->app->Tpl->Set('EMAIL_SENDER', $this->app->erp->GetSelectEmailMitName($dokument['von']));
+                $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$result[0]['adresse']."' LIMIT 1");
+                if($anschreiben=="")
+                {
+                  $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben").",\n".$this->app->erp->Grussformel($projekt,$sprache);
+                }
 
-            $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$result[0]['adresse']."' LIMIT 1");
+                $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
+                $senderAddress = $this->app->erp->GetFirmaMail();
+                           
+                $sql = "INSERT INTO `ticket_nachricht` (
+                        `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
+                        `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`
+                    ) VALUES ('".$result[0]['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','','','neu','".$senderName."','".$senderAddress."');";
 
-            if($anschreiben=="")
-            {
-              $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben");
-            }
-    
-            $this->app->Tpl->Set('EMAIL_TEXT',$anschreiben.",\n".$this->app->erp->Grussformel($projekt,$sprache));;
+                $this->app->DB->Insert($sql);         
+            } 
 
+            // Show new message dialog                   
             $this->app->YUI->AutoComplete("email_an","emailname");
             $this->app->YUI->AutoComplete("email_cc","emailname");
             $this->app->YUI->AutoComplete("email_bcc","emailname");
             $this->app->YUI->CkEditor("email_text","internal", null, 'JQUERY');
             $this->app->Tpl->Parse('NEW_MESSAGE', "ticket_new_message.tpl");
           break;
-          case 'absenden':
+/*
+          case 'entwurfloeschen':
+            if (!empty($drafted_messages)) {
+                $sql = "UPDATE ticket_nachricht SET ticket = '' WHERE id=".$drafted_messages[0]['id'];
+                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde gel&ouml;scht..</div>");
+                header("Location: index.php?module=ticket&action=edit&msg=$msg&id=$id");
+            }
+          break;
+          case 'addfile':
 
-            $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
-            $senderAddress = $this->app->erp->GetFirmaMail();
+            $msg .= $result['userfile'];
+            
+            $this->app->Tpl->Set('EMAIL_AN', $input['email_an']);
+            $this->app->Tpl->Set('EMAIL_TEXT', $input['email_text']);
+            $this->app->Tpl->Set('EMAIL_BETREFF', $input['email_betreff']);
+            $this->app->Tpl->Set('EMAIL_SENDER', $input['email_sender']);
+
+            $this->app->YUI->AutoComplete("email_an","emailname");
+            $this->app->YUI->AutoComplete("email_cc","emailname");
+            $this->app->YUI->AutoComplete("email_bcc","emailname");
+            $this->app->YUI->CkEditor("email_text","internal", null, 'JQUERY');
+            $this->app->Tpl->Parse('NEW_MESSAGE', "ticket_new_message.tpl");
+
+            break;
+*/
+          case 'absenden':            
+
+            if (empty($drafted_messages)) {
+                break;
+            }
 
             // Enforce Ticket #
-            if (!preg_match("/Ticket #[0-9]{12}/i", $input['email_betreff'])) {
-              $input['email_betreff'].= " Ticket #".$result[0]['schluessel'];
+            if (!preg_match("/Ticket #[0-9]{12}/i", $drafted_messages[0]['betreff'])) {
+              $drafted_messages[0]['betreff'].= " Ticket #".$result[0]['schluessel'];
             }
             
+            echo($drafted_messages[0]['id']."<br>");
+            echo($drafted_messages[0]['verfasser_replyto']."<br>");
+            echo($drafted_messages[0]['mail_replyto']."<br>");
+            echo($drafted_messages[0]['mail']."<br>");
+            echo($drafted_messages[0]['betreff']."<br>");
+            echo($drafted_messages[0]['text']."<br>");
 
             if (
                 $this->app->erp->MailSend(
-                  $senderAddress,
-                  $senderName,
-                  $input['email_an'],
-                  $input['email_an'],
-                  $input['email_betreff'],
-                  $input['email_text'],
+                  $drafted_messages[0]['mail_replyto'],
+                  $drafted_messages[0]['verfasser_replyto'],
+                  $drafted_messages[0]['mail'],
+                  $drafted_messages[0]['mail'],
+                  $drafted_messages[0]['betreff'],
+                  $drafted_messages[0]['text'],
                   '',0,false,'','',
                   true
               ) != 0
             ) {
 
-                // Put message into ticket_nachricht
-                $sql = "INSERT INTO `ticket_nachricht` (
-                        `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
-                        `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`
-                    ) VALUES (
-                '".$result[0]['schluessel']."',
-                NOW(),
-                '".$input['email_text']."',
-                '".$input['email_betreff']."',
-                '".'email'."',
-                '1',
-                '".$senderName."',
-                '".$senderAddress."',
-                'gesendet', 
-                '".$senderName."',
-                '".$senderAddress."');";
-
+                // Update message in ticket_nachricht
+                $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$drafted_messages[0]['betreff']."' WHERE id = ".$drafted_messages[0]['id'];
                 $this->app->DB->Insert($sql);
 
                 $msg =  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'. '.$this->app->erp->mail_error.'</div>';
@@ -274,22 +406,29 @@ class Ticket {
             }
 
             // Get messsages again
-            $messages = $this->get_messages_of_ticket($id);
+            $messages = $this->get_messages_of_ticket($id,1);
 
           break;
-        }
+        } 
 
         // Add Messages now
         foreach ($messages as $message) {
-            $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
-            $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
             if ($message['versendet'] == '1') {
+
+                if (is_null($message['zeitausgang'])) {
+                    continue;
+                }
+
+
                 $this->app->Tpl->Set("NACHRICHT_RICHTUNG","An");
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
+                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
             } else {
                 $this->app->Tpl->Set("NACHRICHT_RICHTUNG","Von");
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
+                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
             }
+            $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
             $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
             $this->app->Tpl->Set("NACHRICHT_EMAILADRESSE",$message['mail']);
             $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
@@ -334,7 +473,7 @@ class Ticket {
       	$input['prio'] = $this->app->Secure->GetPOST('prio');
       	$input['notiz'] = $this->app->Secure->GetPOST('notiz');
       	$input['tags'] = $this->app->Secure->GetPOST('tags');
-
+      	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
       	$input['email_sender'] = $this->app->Secure->GetPOST('email_sender');
       	$input['email_an'] = $this->app->Secure->GetPOST('email_an');
       	$input['email_cc'] = $this->app->Secure->GetPOST('email_cc');
@@ -382,29 +521,29 @@ class Ticket {
         // $this->app->Tpl->Set('EMAIL', $input['email']);        
         
         $this->app->Tpl->Set('SCHLUESSEL', $input['schluessel']);
-	$this->app->Tpl->Set('ZEIT', $input['zeit']);
-	$this->app->Tpl->Set('PROJEKT', $input['projekt']);
-	$this->app->Tpl->Set('BEARBEITER', $input['bearbeiter']);
-	$this->app->Tpl->Set('QUELLE', $input['quelle']);
-	$this->app->Tpl->Set('STATUS', $input['status']);
-	$this->app->Tpl->Set('ADRESSE', $input['adresse']);
-	$this->app->Tpl->Set('KUNDE', $input['kunde']);
-	$this->app->Tpl->Set('WARTESCHLANGE', $input['warteschlange']);
-	$this->app->Tpl->Set('MAILADRESSE', $input['mailadresse']);
-	$this->app->Tpl->Set('PRIO', $input['prio']);
-	$this->app->Tpl->Set('BETREFF', $input['betreff']);
-	$this->app->Tpl->Set('ZUGEWIESEN', $input['zugewiesen']);
-	$this->app->Tpl->Set('INBEARBEITUNG', $input['inbearbeitung']);
-	$this->app->Tpl->Set('INBEARBEITUNG_USER', $input['inbearbeitung_user']);
-	$this->app->Tpl->Set('FIRMA', $input['firma']);
-	$this->app->Tpl->Set('NOTIZ', $input['notiz']);
-	$this->app->Tpl->Set('BITTEANTWORTEN', $input['bitteantworten']);
-	$this->app->Tpl->Set('SERVICE', $input['service']);
-	$this->app->Tpl->Set('KOMMENTAR', $input['kommentar']);
-	$this->app->Tpl->Set('PRIVAT', $input['privat']);
-	$this->app->Tpl->Set('DSGVO', $input['dsgvo']);
-	$this->app->Tpl->Set('TAGS', $input['tags']);
-	$this->app->Tpl->Set('NACHRICHTEN_ANZ', $input['nachrichten_anz']);
+	    $this->app->Tpl->Set('ZEIT', $input['zeit']);
+	    $this->app->Tpl->Set('PROJEKT', $input['projekt']);
+	    $this->app->Tpl->Set('BEARBEITER', $input['bearbeiter']);
+	    $this->app->Tpl->Set('QUELLE', $input['quelle']);
+	    $this->app->Tpl->Set('STATUS', $input['status']);
+	    $this->app->Tpl->Set('ADRESSE', $input['adresse']);
+	    $this->app->Tpl->Set('KUNDE', $input['kunde']);
+	    $this->app->Tpl->Set('WARTESCHLANGE', $input['warteschlange']);
+	    $this->app->Tpl->Set('MAILADRESSE', $input['mailadresse']);
+	    $this->app->Tpl->Set('PRIO', $input['prio']);
+	    $this->app->Tpl->Set('BETREFF', $input['betreff']);
+	    $this->app->Tpl->Set('ZUGEWIESEN', $input['zugewiesen']);
+	    $this->app->Tpl->Set('INBEARBEITUNG', $input['inbearbeitung']);
+	    $this->app->Tpl->Set('INBEARBEITUNG_USER', $input['inbearbeitung_user']);
+	    $this->app->Tpl->Set('FIRMA', $input['firma']);
+	    $this->app->Tpl->Set('NOTIZ', $input['notiz']);
+	    $this->app->Tpl->Set('BITTEANTWORTEN', $input['bitteantworten']);
+	    $this->app->Tpl->Set('SERVICE', $input['service']);
+	    $this->app->Tpl->Set('KOMMENTAR', $input['kommentar']);
+	    $this->app->Tpl->Set('PRIVAT', $input['privat']);
+	    $this->app->Tpl->Set('DSGVO', $input['dsgvo']);
+	    $this->app->Tpl->Set('TAGS', $input['tags']);
+	    $this->app->Tpl->Set('NACHRICHTEN_ANZ', $input['nachrichten_anz']);
 	
     }
 

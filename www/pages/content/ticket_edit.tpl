@@ -21,7 +21,7 @@
                                     <legend>{|[STATUSICON]<b>Ticket <font color="blue">#[SCHLUESSEL]</font></b>|}</legend>
                                     <tr><td>{|Betreff|}:</td><td>[BETREFF]</td></tr>
                                     <tr><td>{|Zeit|}:</td><td>[ZEIT]</td></tr>
-                                    <tr><td>{|Von|}:</td><td>[KUNDE] &lt;[MAILADRESSE]&gt;</td></tr>
+                                    <tr><td>{|Von|}:</td><td>[KUNDE] [MAILADRESSE]</td></tr>
                                     <tr><td>{|Projekt|}:</td><td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20"></td></tr>
                                     <tr><td>{|Adresse|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20"></td></tr>
                                     <tr><td>{|Tags|}:</td><td><input type="text" name="tags" value="[TAGS]" size="20"></td></tr>
@@ -59,11 +59,5 @@
        [MESSAGES]
     </div>    
 </div>
-
-<form id="respond" action = "index.php">
-<input type="text" name="module" value="ticket" style="display:none">
-<input type="text" name="action" value="respond" style="display:none">
-<input type="text" name="id" value="[ID]" style="display:none">
-</form>
 
 
