@@ -34,33 +34,23 @@
                         </tr>
                         <tr valign="top">
                             <td>Anh&auml;nge:</td>
-                            <td>
-                                <table width="100%" class="mkTable" cellpadding="0" cellspacing="0">
-                                    <tr>
-                                        <th width="20"></th>
-                                        <th>Datei</th>
-                                        <th width=20></th>
-                                    </tr>
-                                    [ANHAENGE]
-                                </table>
+                            <td>                                
+                                    [ANHAENGE]                                
                             </td>
                         </tr>
                         <tr>
-                            <td><input type="file" name="userfile" id="userfile")"/></td>
+                            <td><input type="file" name="upload[]" id="file" multiple/></td>
                         </tr>
                         <tr>
                             <td align="left" valign="bottom">
                                 <button name="submit" value="addfile" id="addfile" class="ui-button-icon">Hinzufügen</button>                                           
                             </td>
                             <script type="text/javascript">
-                                document.getElementById("userfile").onchange = function(e) {
+                                document.getElementById("file").onchange = function(e) {
                                     document.getElementById("addfile").click();
                                 }
                              </script>
                            </tr>
-                        <tr>
-                            <td colspan="3"><br></td>
-                        </tr>
                         <tr>
                             <td colspan="3">
                                 <table width="100%" border="0" cellpadding="2" cellspacing="0">

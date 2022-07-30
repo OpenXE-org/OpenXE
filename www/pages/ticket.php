@@ -53,7 +53,7 @@ class Ticket {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticket&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=ticket&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticket&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>" . "</td></tr></table>";
 
 
                 $timedifference = "if (
@@ -112,6 +112,37 @@ class Ticket {
 
     function get_messages_of_ticket($ticket_id, $where) {
         return $this->app->DB->SelectArr("SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC");        
+    }
+
+    function add_attachments_html($ticket_id, $message_id,$templatepos,$showdelete) {
+        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$message_id);           
+
+        if (!empty($file_attachments)) {
+
+          $this->app->Tpl->Add('NACHRICHT_ANHANG',"<hr style=\"border-style:solid; border-width:1px\">");
+
+          foreach ($file_attachments as $file_attachment) {
+
+                if ($showdelete) {
+                    $deletetext = '<a href=index.php?module=ticket&action=edit&id='.$ticket_id.'&cmd=deleteattachment'.'&fileid='.$file_attachment.'>'.
+                  '<img src="./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/delete.svg" />';
+                } else {
+                   $deletetext = "";
+                }   
+
+              $this->app->Tpl->Add($templatepos,                    
+                  "<a href=\"index.php?module=dateien&action=send&id=".$file_attachment.
+                  "\">".
+                  htmlentities($this->app->erp->GetDateiName($file_attachment)).
+                  " (".
+                  $this->app->erp->GetDateiSize($file_attachment).
+                  ")".  
+                  "</a>".
+                  $deletetext.
+                  "</a>". 
+                  "</br>");
+          }
+        }
     }
 
 
@@ -230,12 +261,17 @@ class Ticket {
 
     function ticket_edit() {
         $id = $this->app->Secure->GetGET('id');
-              
+
+        if (empty($id)) {
+            return;
+        }
+             
         $this->app->Tpl->Set('ID', $id);
 
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=edit&id=$id", "Details");
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
+        $cmd = $this->app->Secure->GetGET('cmd');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
         $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));                      
@@ -266,7 +302,7 @@ class Ticket {
         // END Header
 
         // Check for draft
-        $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL");     
+        $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL AND versendet = '1'");     
 
         if (!empty($drafted_messages)) {
 
@@ -274,7 +310,7 @@ class Ticket {
             if ($submit != '') {
                 $this->save_draft($drafted_messages[0]['id'],$input);
                 // Reload        
-                $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL");                 
+                $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL AND versendet = '1'");     
             }
 
             // Load the draft for editing
@@ -290,10 +326,46 @@ class Ticket {
             $this->app->YUI->AutoComplete("email_cc","emailname");
             $this->app->YUI->AutoComplete("email_bcc","emailname");
             $this->app->YUI->CkEditor("email_text","internal", null, 'JQUERY');
+
+            // Delete attachment from draft
+            if ($cmd=='deleteattachment') {
+                $fileid = $this->app->Secure->GetGET('fileid');
+
+                // Check if this file is only attached to this draft and nowhere else
+                $check = $this->app->erp->GetDateiStichwoerter($fileid);
+
+                $save_to_delete = true;
+                foreach ($check as $stichwort) {
+                    if ($stichwort['subjekt'] != 'anhang' || $stichwort['objekt'] != 'Ticket' || $stichwort['parameter'] != $drafted_messages[0]['id']) {
+                        $save_to_delete = false;
+                        break;
+                    }       
+                }
+                if ($save_to_delete) {
+                    $this->app->erp->DeleteDatei($fileid);    
+                } else {
+                    $msg .= "<div class=\"success\">Fehler beim Löschen der Datei: In Verwendung.</div>";
+                }
+            }
+
+            // Upload of attachments
+            if(isset($_FILES['upload']) && is_array($_FILES['upload']))
+            {
+              foreach($_FILES['upload']['tmp_name'] as $key => $file)
+              {
+                if($file != "")
+                {
+                  $fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'][$key], $_FILES['upload']['name'][$key], "", "", $_FILES['upload']['tmp_name'][$key], $this->app->User->GetName());
+                  // stichwoerter hinzufuegen
+                  $this->app->erp->AddDateiStichwort($fileid, "anhang", "Ticket", $drafted_messages[0]['id']);
+                }
+              }
+            }
+
+            $this->add_attachments_html($id,$drafted_messages[0]['id'],'ANHAENGE',true);
             $this->app->Tpl->Parse('NEW_MESSAGE', "ticket_new_message.tpl");
         }     
-
-        // END Draft
+        // END Draft    
 
         // Get all messsages
         $messages = $this->get_messages_of_ticket($id, 1);
@@ -306,11 +378,17 @@ class Ticket {
 
                 $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1");
                	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
-
-                if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
-                   $betreff = "RE: ".$recv_messages[0]['betreff'];
-                } else {
-                   $betreff = $recv_messages[0]['betreff'];
+                
+                if (!empty($recv_messages)) {
+                    if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
+                        $betreff = "RE: ".$recv_messages[0]['betreff'];
+                    }
+                    else {
+                        $betreff = $recv_messages[0]['betreff'];
+                    }
+                }
+                else {
+                    $betreff = $result[0]['betreff'];
                 }
 
                 $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$result[0]['adresse']."' LIMIT 1");
@@ -325,43 +403,23 @@ class Ticket {
                 $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
                         `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`
-                    ) VALUES ('".$result[0]['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','','','neu','".$senderName."','".$senderAddress."');";
+                    ) VALUES ('".$result[0]['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','','".$recv_messages[0]['mail']."','neu','".$senderName."','".$senderAddress."');";
 
                 $this->app->DB->Insert($sql);         
+                // Show new message dialog                   
+                header("Location: index.php?module=ticket&action=edit&id=$id");          
+                $this->app->ExitXentral();
             } 
-
-            // Show new message dialog                   
-            $this->app->YUI->AutoComplete("email_an","emailname");
-            $this->app->YUI->AutoComplete("email_cc","emailname");
-            $this->app->YUI->AutoComplete("email_bcc","emailname");
-            $this->app->YUI->CkEditor("email_text","internal", null, 'JQUERY');
-            $this->app->Tpl->Parse('NEW_MESSAGE', "ticket_new_message.tpl");
-          break;
-/*
+        break;
           case 'entwurfloeschen':
             if (!empty($drafted_messages)) {
                 $sql = "UPDATE ticket_nachricht SET ticket = '' WHERE id=".$drafted_messages[0]['id'];
-                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde gel&ouml;scht..</div>");
+                $this->app->DB->Update($sql);  
+                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Der Entwurf wurde gel&ouml;scht.</div>");
                 header("Location: index.php?module=ticket&action=edit&msg=$msg&id=$id");
+                $this->app->ExitXentral();
             }
           break;
-          case 'addfile':
-
-            $msg .= $result['userfile'];
-            
-            $this->app->Tpl->Set('EMAIL_AN', $input['email_an']);
-            $this->app->Tpl->Set('EMAIL_TEXT', $input['email_text']);
-            $this->app->Tpl->Set('EMAIL_BETREFF', $input['email_betreff']);
-            $this->app->Tpl->Set('EMAIL_SENDER', $input['email_sender']);
-
-            $this->app->YUI->AutoComplete("email_an","emailname");
-            $this->app->YUI->AutoComplete("email_cc","emailname");
-            $this->app->YUI->AutoComplete("email_bcc","emailname");
-            $this->app->YUI->CkEditor("email_text","internal", null, 'JQUERY');
-            $this->app->Tpl->Parse('NEW_MESSAGE', "ticket_new_message.tpl");
-
-            break;
-*/
           case 'absenden':            
 
             if (empty($drafted_messages)) {
@@ -372,14 +430,14 @@ class Ticket {
             if (!preg_match("/Ticket #[0-9]{12}/i", $drafted_messages[0]['betreff'])) {
               $drafted_messages[0]['betreff'].= " Ticket #".$result[0]['schluessel'];
             }
-            
-            echo($drafted_messages[0]['id']."<br>");
-            echo($drafted_messages[0]['verfasser_replyto']."<br>");
-            echo($drafted_messages[0]['mail_replyto']."<br>");
-            echo($drafted_messages[0]['mail']."<br>");
-            echo($drafted_messages[0]['betreff']."<br>");
-            echo($drafted_messages[0]['text']."<br>");
+                
+            // Attachments
+            $files = $this->app->erp->GetDateiSubjektObjektDateiname('Anhang','Ticket',$drafted_messages[0]['id'],"");
 
+            foreach ($files as $file) {
+                $msg .= $file."<br>";
+            }
+   
             if (
                 $this->app->erp->MailSend(
                   $drafted_messages[0]['mail_replyto'],
@@ -388,7 +446,8 @@ class Ticket {
                   $drafted_messages[0]['mail'],
                   $drafted_messages[0]['betreff'],
                   $drafted_messages[0]['text'],
-                  '',0,false,'','',
+                  $files,
+                  0,false,'','',
                   true
               ) != 0
             ) {
@@ -397,7 +456,7 @@ class Ticket {
                 $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$drafted_messages[0]['betreff']."' WHERE id = ".$drafted_messages[0]['id'];
                 $this->app->DB->Insert($sql);
 
-                $msg =  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'. '.$this->app->erp->mail_error.'</div>';
+                $msg .=  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'. '.$this->app->erp->mail_error.'</div>';
                 header("Location: index.php?module=ticket&action=edit&id=".$id."&msg=".$this->app->erp->base64_url_encode($msg));
 
             }
@@ -433,25 +492,9 @@ class Ticket {
             $this->app->Tpl->Set("NACHRICHT_EMAILADRESSE",$message['mail']);
             $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
 
-            $file_attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$message['id']);           
-
-            if (!empty($file_attachments)) {
-
-              $this->app->Tpl->Add('NACHRICHT_ANHANG',"<hr style=\"border-style:solid; border-width:1px\">");
-
-              foreach ($file_attachments as $file_attachment) {
-                  $this->app->Tpl->Add('NACHRICHT_ANHANG',                    
-                      "<a href=\"index.php?module=dateien&action=send&id=".$file_attachment.
-                      "\">".
-                      htmlentities($this->app->erp->GetDateiName($file_attachment)).
-                      " (".
-                      $this->app->erp->GetDateiSize($file_attachment).
-                      ")".  
-                      "</a>".
-                      "</br>");
-              }
-            }
-
+            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
+            $this->add_attachments_html($id,$message['id'],'NACHRICHT_ANHANG',false);
+         
             $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
         }
 

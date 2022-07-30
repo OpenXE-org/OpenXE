@@ -32485,6 +32485,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       htmlentities($text, ENT_NOQUOTES, 'UTF-8', false)
     , ENT_NOQUOTES
     );
+
     if($texthtml!=$text)
     {
       $text = $texthtml;
@@ -43995,6 +43996,16 @@ function Firmendaten($field,$projekt="")
           $tmp[] = $newname;
         }
         return $tmp;
+      }
+
+      function GetDateiStichwoerter($dateiid) {
+        $stichwoerter = $this->app->DB->SelectArr("SELECT subjekt, objekt, parameter FROM datei_stichwoerter WHERE datei=".$dateiid);
+        if (empty($stichwoerter)) {
+          return null;
+        }
+        else {
+          return $stichwoerter;
+        }
       }
 
       function GetDateiSubjektObjekt($subjekt,$objekt,$parameter)

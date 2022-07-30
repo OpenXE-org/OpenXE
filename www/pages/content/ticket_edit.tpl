@@ -10,7 +10,7 @@
     -->
     <div id="tabs-1">
         [MESSAGE]
-        <form action="" method="post">   
+        <form action="" enctype="multipart/form-data" method="POST">   
             [FORMHANDLEREVENT]
             <div class="row">
 	        	<div class="row-height">
@@ -19,7 +19,7 @@
 	        				<fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <legend>{|[STATUSICON]<b>Ticket <font color="blue">#[SCHLUESSEL]</font></b>|}</legend>
-                                    <tr><td>{|Betreff|}:</td><td>[BETREFF]</td></tr>
+                                    <tr><td>{|Betreff|}:</td><td><input type="text" name="betreff" id="betreff" value="[BETREFF]" size="20"></td></tr>
                                     <tr><td>{|Zeit|}:</td><td>[ZEIT]</td></tr>
                                     <tr><td>{|Von|}:</td><td>[KUNDE] [MAILADRESSE]</td></tr>
                                     <tr><td>{|Projekt|}:</td><td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20"></td></tr>
