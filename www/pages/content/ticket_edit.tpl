@@ -35,7 +35,7 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr><td>{|Status|}:</td><td><select name="status">[STATUS]</select></td></tr>
                                     <tr><td>{|Verantwortlich|}:</td><td><input type="text" name="warteschlange" id="warteschlange" value="[WARTESCHLANGE]" size="20"></td></tr>
-                                    <tr><td>{|Prio|}:</td><td><input type="text" name="prio" value="[PRIO]" size="20"></td></tr>
+                                    <tr><td>{|Prio|}:</td><td><input type="checkbox" name="prio" id="prio" value="1" [PRIO] size="20"></td></tr>
                                     <tr><td>{|Notiz|}:</td><td><textarea name="notiz" id="notiz" rows="6" style="width:100%;">[NOTIZ]</textarea></td></tr>
                                 </table>
                             </fieldset> 

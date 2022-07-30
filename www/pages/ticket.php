@@ -44,7 +44,7 @@ class Ticket {
         switch ($name) {
             case "ticket_list":
                 $allowed['ticket_list'] = array('list');
-                $heading = array('','','Ticket #', 'Datum', 'Adresse', 'Betreff', 'Notiz', 'Tags', 'Verantwortlich', 'Anzahl Nachrichten', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
+                $heading = array('','','Ticket #', 'Datum', 'Adresse', 'Betreff', 'Notiz', 'Tags', 'Verantwortlich', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
                 $width = array('1%','1%','5%',     '5%',    '5%',      '20%',      '20%',    '5%',   '5%',             '1%',                 '1%',     '5%',    '5%',      '5%');
 
                 $findcols = array('t.id','t.id','t.schluessel', 't.zeit', 't.bearbeiter', 'a.name', 't.betreff', 't.notiz', 't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status', 't.projekt');
@@ -64,7 +64,9 @@ class Ticket {
 
                 $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',t.id,'\" />') AS `auswahl`";
 
-                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, t.betreff, t.notiz, t.tags, w.warteschlange, (SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel) as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
+                $priobetreff = "if(t.prio!=1,t.betreff,CONCAT('<b><font color=red>',t.betreff,'</font></b>'))";
+
+                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, ".$priobetreff.", t.notiz, t.tags, w.warteschlange, (SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel) as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
                         FROM ticket t 
                         LEFT JOIN adresse a ON t.adresse = a.id 
                         LEFT JOIN warteschlangen w ON t.warteschlange = w.label 
@@ -199,7 +201,6 @@ class Ticket {
         }
 
         $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-
         $this->app->DB->Update($sql);
         $id = $this->app->DB->GetInsertID();      
         return($id);
@@ -284,12 +285,13 @@ class Ticket {
         }
 
         // Load values again from database
-        $result = $this->app->DB->SelectArr("SELECT t.id, t.schluessel, t.zeit, p.abkuerzung as projekt, t.bearbeiter, t.quelle, t.status, t.adresse, t.kunde, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.mailadresse, t.prio, t.betreff, t.zugewiesen, t.inbearbeitung, t.inbearbeitung_user, t.firma, t.notiz, t.bitteantworten, t.service, t.kommentar, t.privat, t.dsgvo, t.tags, t.nachrichten_anz, t.id FROM ticket t LEFT JOIN adresse a ON t.adresse = a.id LEFT JOIN projekt p on t.projekt = p.id LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id");
+        $result = $this->app->DB->SelectArr("SELECT t.id, t.schluessel, t.zeit, p.abkuerzung as projekt, t.bearbeiter, t.quelle, t.status, t.prio, t.adresse, t.kunde, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.mailadresse, t.betreff, t.zugewiesen, t.inbearbeitung, t.inbearbeitung_user, t.firma, t.notiz, t.bitteantworten, t.service, t.kommentar, t.privat, t.dsgvo, t.tags, t.nachrichten_anz, t.id FROM ticket t LEFT JOIN adresse a ON t.adresse = a.id LEFT JOIN projekt p on t.projekt = p.id LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id");
 
         foreach ($result[0] as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
   
+      	$this->app->Tpl->Set('PRIO', $result[0]['prio']==1?"checked":"");
        	$this->app->Tpl->Set('STATUSICON', $this->ticket_status_icon($result[0]['status'])."&nbsp;");
         $this->app->YUI->AutoComplete("adresse","adresse");
         $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$result[0]['adresse'],false)); // Convert ID to form display
@@ -513,7 +515,7 @@ class Ticket {
       	$input['status'] = $this->app->Secure->GetPOST('status');
       	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
       	$input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
-      	$input['prio'] = $this->app->Secure->GetPOST('prio');
+      	$input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";
       	$input['notiz'] = $this->app->Secure->GetPOST('notiz');
       	$input['tags'] = $this->app->Secure->GetPOST('tags');
       	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
@@ -524,70 +526,5 @@ class Ticket {
       	$input['email_betreff'] = $this->app->Secure->GetPOST('email_betreff');
       	$input['email_text'] = $this->app->Secure->GetPOST('email_text');
         return $input;
-    }
-
-    public function GetInput_raw(): array {
-        $input = array();
-        //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
-        
-        $input['schluessel'] = $this->app->Secure->GetPOST('schluessel');
-      	$input['zeit'] = $this->app->Secure->GetPOST('zeit');
-      	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
-        $input['bearbeiter'] = $this->app->Secure->GetPOST('bearbeiter');
-      	$input['quelle'] = $this->app->Secure->GetPOST('quelle');
-      	$input['status'] = $this->app->Secure->GetPOST('status');
-      	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
-      	$input['kunde'] = $this->app->Secure->GetPOST('kunde');
-      	$input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
-      	$input['mailadresse'] = $this->app->Secure->GetPOST('mailadresse');
-      	$input['prio'] = $this->app->Secure->GetPOST('prio');
-      	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
-      	$input['zugewiesen'] = $this->app->Secure->GetPOST('zugewiesen');
-      	$input['inbearbeitung'] = $this->app->Secure->GetPOST('inbearbeitung');
-      	$input['inbearbeitung_user'] = $this->app->Secure->GetPOST('inbearbeitung_user');
-      	$input['firma'] = $this->app->Secure->GetPOST('firma');
-      	$input['notiz'] = $this->app->Secure->GetPOST('notiz');
-      	$input['bitteantworten'] = $this->app->Secure->GetPOST('bitteantworten');
-      	$input['service'] = $this->app->Secure->GetPOST('service');
-      	$input['kommentar'] = $this->app->Secure->GetPOST('kommentar');
-      	$input['privat'] = $this->app->Secure->GetPOST('privat');
-      	$input['dsgvo'] = $this->app->Secure->GetPOST('dsgvo');
-      	$input['tags'] = $this->app->Secure->GetPOST('tags');
-      	$input['nachrichten_anz'] = $this->app->Secure->GetPOST('nachrichten_anz');
-        return $input;
-    }
-
-    /*
-     * Set all fields in the page corresponding to $input
-     */
-    function SetInput($input) {
-        // $this->app->Tpl->Set('EMAIL', $input['email']);        
-        
-        $this->app->Tpl->Set('SCHLUESSEL', $input['schluessel']);
-	    $this->app->Tpl->Set('ZEIT', $input['zeit']);
-	    $this->app->Tpl->Set('PROJEKT', $input['projekt']);
-	    $this->app->Tpl->Set('BEARBEITER', $input['bearbeiter']);
-	    $this->app->Tpl->Set('QUELLE', $input['quelle']);
-	    $this->app->Tpl->Set('STATUS', $input['status']);
-	    $this->app->Tpl->Set('ADRESSE', $input['adresse']);
-	    $this->app->Tpl->Set('KUNDE', $input['kunde']);
-	    $this->app->Tpl->Set('WARTESCHLANGE', $input['warteschlange']);
-	    $this->app->Tpl->Set('MAILADRESSE', $input['mailadresse']);
-	    $this->app->Tpl->Set('PRIO', $input['prio']);
-	    $this->app->Tpl->Set('BETREFF', $input['betreff']);
-	    $this->app->Tpl->Set('ZUGEWIESEN', $input['zugewiesen']);
-	    $this->app->Tpl->Set('INBEARBEITUNG', $input['inbearbeitung']);
-	    $this->app->Tpl->Set('INBEARBEITUNG_USER', $input['inbearbeitung_user']);
-	    $this->app->Tpl->Set('FIRMA', $input['firma']);
-	    $this->app->Tpl->Set('NOTIZ', $input['notiz']);
-	    $this->app->Tpl->Set('BITTEANTWORTEN', $input['bitteantworten']);
-	    $this->app->Tpl->Set('SERVICE', $input['service']);
-	    $this->app->Tpl->Set('KOMMENTAR', $input['kommentar']);
-	    $this->app->Tpl->Set('PRIVAT', $input['privat']);
-	    $this->app->Tpl->Set('DSGVO', $input['dsgvo']);
-	    $this->app->Tpl->Set('TAGS', $input['tags']);
-	    $this->app->Tpl->Set('NACHRICHTEN_ANZ', $input['nachrichten_anz']);
-	
-    }
-
+    }   
 }
