@@ -18,8 +18,7 @@ class Ticket {
         $this->app->ActionHandler("list", "ticket_list");        
         $this->app->ActionHandler("create", "ticket_create"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "ticket_edit");
-        $this->app->ActionHandler("edit_raw", "ticket_edit_raw");
-        $this->app->ActionHandler("delete", "ticket_delete");
+        $this->app->ActionHandler("minidetail", "ticket_minidetail");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -66,7 +65,9 @@ class Ticket {
 
                 $priobetreff = "if(t.prio!=1,t.betreff,CONCAT('<b><font color=red>',t.betreff,'</font></b>'))";
 
-                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, ".$priobetreff.", t.notiz, t.tags, w.warteschlange, (SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel) as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
+                $anzahlnachrichten = "(SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel)";
+
+                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, ".$priobetreff.", t.notiz, t.tags, w.warteschlange, ".$anzahlnachrichten." as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
                         FROM ticket t 
                         LEFT JOIN adresse a ON t.adresse = a.id 
                         LEFT JOIN warteschlangen w ON t.warteschlange = w.label 
@@ -103,17 +104,17 @@ class Ticket {
         $this->app->Tpl->Parse('PAGE', "ticket_list.tpl");
     }    
 
-    public function ticket_delete() {
-        $id = (int) $this->app->Secure->GetGET('id');
+    function get_messages_of_ticket($ticket_id, $where, $limit) {
+
+        if ($limit) {
+            $limitsql = " LIMIT ".((int) $limit);
+        } else {
+            $limitsql = "";
+        }
+
+        $sql = "SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC ".$limitsql; 
         
-        $this->app->DB->Delete("DELETE FROM `ticket` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
-
-        $this->ticket_list();
-    } 
-
-    function get_messages_of_ticket($ticket_id, $where) {
-        return $this->app->DB->SelectArr("SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC");        
+        return $this->app->DB->SelectArr($sql);        
     }
 
     function add_attachments_html($ticket_id, $message_id,$templatepos,$showdelete) {
@@ -144,6 +145,40 @@ class Ticket {
                   "</a>". 
                   "</br>");
           }
+        }
+    }
+
+    function add_messages_tpl($messages, $showdrafts) {
+
+        // Add Messages now
+        foreach ($messages as $message) {
+            if ($message['versendet'] == '1') {
+
+                if (is_null($message['zeitausgang'])) {                    
+                    if (!$showdrafts) {
+                        continue;
+                    }
+                    $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']." (Entwurf)");
+                }
+
+                $this->app->Tpl->Set("NACHRICHT_RICHTUNG","An");
+                $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
+                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
+            } else {
+                $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
+                $this->app->Tpl->Set("NACHRICHT_RICHTUNG","Von");
+                $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
+                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
+            }
+
+            $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
+            $this->app->Tpl->Set("NACHRICHT_EMAILADRESSE",$message['mail']);
+            $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
+
+            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
+            $this->add_attachments_html($id,$message['id'],'NACHRICHT_ANHANG',false);
+         
+            $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
         }
     }
 
@@ -304,7 +339,7 @@ class Ticket {
         // END Header
 
         // Check for draft
-        $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL AND versendet = '1'");     
+        $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL AND versendet = '1'",NULL);     
 
         if (!empty($drafted_messages)) {
 
@@ -312,7 +347,7 @@ class Ticket {
             if ($submit != '') {
                 $this->save_draft($drafted_messages[0]['id'],$input);
                 // Reload        
-                $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL AND versendet = '1'");     
+                $drafted_messages = $this->get_messages_of_ticket($id, "zeitausgang IS NULL AND versendet = '1'",NULL);     
             }
 
             // Load the draft for editing
@@ -370,7 +405,7 @@ class Ticket {
         // END Draft    
 
         // Get all messsages
-        $messages = $this->get_messages_of_ticket($id, 1);
+        $messages = $this->get_messages_of_ticket($id, 1, NULL);
 
         switch ($submit) {
           case 'neue_email':
@@ -378,7 +413,7 @@ class Ticket {
             if (empty($drafted_messages)) {
                 // Create new message and save it for editing   
 
-                $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1");
+                $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1",NULL);
                	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
                 
                 if (!empty($recv_messages)) {
@@ -472,33 +507,7 @@ class Ticket {
           break;
         } 
 
-        // Add Messages now
-        foreach ($messages as $message) {
-            if ($message['versendet'] == '1') {
-
-                if (is_null($message['zeitausgang'])) {
-                    continue;
-                }
-
-
-                $this->app->Tpl->Set("NACHRICHT_RICHTUNG","An");
-                $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
-                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
-            } else {
-                $this->app->Tpl->Set("NACHRICHT_RICHTUNG","Von");
-                $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
-                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
-            }
-            $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
-            $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
-            $this->app->Tpl->Set("NACHRICHT_EMAILADRESSE",$message['mail']);
-            $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
-
-            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
-            $this->add_attachments_html($id,$message['id'],'NACHRICHT_ANHANG',false);
-         
-            $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
-        }
+        $this->add_messages_tpl($messages, false);
 
         $this->app->Tpl->Set('MESSAGE', $msg);
         $this->app->Tpl->Parse('PAGE', "ticket_edit.tpl");
@@ -527,4 +536,32 @@ class Ticket {
       	$input['email_text'] = $this->app->Secure->GetPOST('email_text');
         return $input;
     }   
+
+    public function ticket_minidetail($parsetarget='',$menu=true) {
+
+        $id = $this->app->Secure->GetGET('id');
+
+        // Get last 3 messages
+        $messages = $this->get_messages_of_ticket($id, "1", 3);        
+
+        if(!empty($messages)) {
+            $this->add_messages_tpl($messages, true); // With drafts
+            $render = true;
+        } else {
+        }
+
+        if($parsetarget=='')
+        {
+          if ($render) {
+             $this->app->Tpl->Output('ticket_minidetail.tpl');
+          }
+          $this->app->ExitXentral();
+        }
+        if ($render) {
+          $this->app->Tpl->Parse($parsetarget,'ticket_minidetail.tpl');
+        }
+    }
 }
+
+
+
