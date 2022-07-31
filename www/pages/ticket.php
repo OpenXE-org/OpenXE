@@ -43,9 +43,6 @@ class Ticket {
         switch ($name) {
             case "ticket_list":
 
-                $this->app->YUI->TagEditor('taglist', array('width'=>370));
-                $this->app->Tpl->Add('SCRIPTJAVASCRIPT','<link rel="stylesheet" type="text/css" href="./css/jquery.tag-editor.css">');
-
                 $allowed['ticket_list'] = array('list');
                 $heading = array('','','Ticket #', 'Letzte Aktion', 'Adresse', 'Betreff',  'Tags', 'Verant.', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
                 $width = array('1%','1%','5%',     '5%',            '5%',      '30%',      '1%',     '5%',     '1%',    '1%',     '1%',    '1%',      '1%');
@@ -169,10 +166,43 @@ class Ticket {
     } 
     
     function ticket_list() {
+  
+        // Process multi action
+        $auswahl = $this->app->Secure->GetPOST('auswahl');
+        $selectedIds = [];
+        if(!empty($auswahl)) {
+          foreach($auswahl as $selectedId) {
+            $selectedId = (int)$selectedId;
+            if($selectedId > 0) {
+              $selectedIds[] = $selectedId;
+            }
+          }
+
+          $status = $this->app->Secure->GetPOST('status');
+          $warteschlange = $this->app->Secure->GetPOST('warteschlange');
+
+          $sql = "UPDATE ticket SET status = '".$status."'";
+          if ($warteschlange != '') {
+            $sql .= ", warteschlange = '".explode(" ",$warteschlange)[0]."'";
+          }
+
+          $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
+          
+          $this->app->DB->Update($sql);
+
+        }
+
+        // List
+        $this->app->YUI->TagEditor('taglist', array('width'=>370));
+        $this->app->Tpl->Add('SCRIPTJAVASCRIPT','<link rel="stylesheet" type="text/css" href="./css/jquery.tag-editor.css">');
+
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
+
+        $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect('neu'));
+        $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
 
         $this->app->YUI->TableSearch('TAB1', 'ticket_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "ticket_list.tpl");

@@ -42,8 +42,29 @@
               </ul>
             </div>
           </div>
-        </form>
       [TAB1]
+            <fieldset>
+                <table>
+                    <legend>Stapelverarbeitung</legend>
+                    <tr><td>{|Status|}:</td><td><select name="status">[STATUS]</select></td></tr>
+                     <tr><td>{|Verantwortlich|}:</td><td><input type="text" name="warteschlange" id="warteschlange" value="[WARTESCHLANGE]" size="20"></td></tr>
+                    <tr>
+                        <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;</td><td><input type="submit" class="btnBlue" name="ausfuehren" value="{|Zuordnen|}" /></td>
+                    </tr>
+                </table>
+
+            </fieldset>
+        </form>
       [TAB1NEXT]
     </div>
 </div>
+
+<script>
+
+    $('#autoalle').on('change',function(){
+      var wert = $(this).prop('checked');
+      $('#ticket_list').find('input[type="checkbox"]').prop('checked',wert);
+      $('#ticket_list').find('input[type="checkbox"]').first().trigger('change');
+    });
+  
+</script>
