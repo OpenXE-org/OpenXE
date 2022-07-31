@@ -42,12 +42,16 @@ class Ticket {
 
         switch ($name) {
             case "ticket_list":
-                $allowed['ticket_list'] = array('list');
-                $heading = array('','','Ticket #', 'Letzte Aktion', 'Adresse', 'Betreff', 'Notizen', 'Tags', 'Verantwortlich', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
-                $width = array('1%','1%','5%',     '5%',    '5%',      '20%',      '20%',    '5%',   '5%',             '1%',                 '1%',     '5%',    '5%',      '5%');
 
-                $findcols = array('t.id','t.id','t.schluessel', 't.zeit', 't.bearbeiter', 'a.name', 't.betreff', 't.notiz', 't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status', 't.projekt');
-                $searchsql = array('t.schluessel', 't.zeit', 't.bearbeiter', 'a.name', 't.betreff', 't.notiz', 't.tags', 'w.warteschlange', 't.status', 't.projekt');
+                $this->app->YUI->TagEditor('taglist', array('width'=>370));
+                $this->app->Tpl->Add('SCRIPTJAVASCRIPT','<link rel="stylesheet" type="text/css" href="./css/jquery.tag-editor.css">');
+
+                $allowed['ticket_list'] = array('list');
+                $heading = array('','','Ticket #', 'Letzte Aktion', 'Adresse', 'Betreff',  'Tags', 'Verant.', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
+                $width = array('1%','1%','5%',     '5%',            '5%',      '30%',      '1%',     '5%',     '1%',    '1%',     '1%',    '1%',      '1%');
+
+                $findcols = array('t.id','t.id','t.schluessel', 't.zeit', 'a.name', 't.betreff',            't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status','t.zeit', 't.projekt');
+                $searchsql = array(             't.schluessel', 't.zeit', 'a.name', 't.betreff','t.notiz',  't.tags', 'w.warteschlange', 't.status', 't.projekt');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -66,7 +70,22 @@ class Ticket {
 
                 $anzahlnachrichten = "(SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel)";
 
-                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, ".$priobetreff.", replace(substring(t.notiz,1,500),'\n','<br/>'), t.tags, w.warteschlange, ".$anzahlnachrichten." as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
+                $tagstart = "<li class=\"tag-editor-tag\">";
+                $tagend = "</li>";
+
+                $sql = "SELECT 
+                        t.id,
+                        ".$dropnbox.",
+                        t.schluessel,
+                        t.zeit,
+                        a.name,
+                        CONCAT('<b>',".$priobetreff.",'</b><br/><i>',replace(substring(t.notiz,1,500),'\n','<br/>'),'</i>'), CONCAT('<div class=\"ticketoffene\"><ul class=\"tag-editor\">'\n,'".$tagstart."',replace(t.tags,',','".$tagend."<div class=\"tag-editor-spacer\">&nbsp;</div>".$tagstart."'),'".$tagend."','</ul></div>'),
+                        w.warteschlange,
+                        ".$anzahlnachrichten." as nachrichten_anz,
+                        ".ticket_iconssql().",
+                        ".$timedifference.",
+                        p.abkuerzung,
+                        t.id 
                         FROM ticket t 
                         LEFT JOIN adresse a ON t.adresse = a.id 
                         LEFT JOIN warteschlangen w ON t.warteschlange = w.label 
@@ -128,7 +147,7 @@ class Ticket {
                 // END Toggle filters
 
                 $moreinfo = true; // Allow drop down details
-                $menucol = 13; // For moredata
+                $menucol = 12; // For moredata
 
                 $count = "SELECT count(DISTINCT id) FROM ticket t WHERE $where";
 
@@ -395,6 +414,7 @@ class Ticket {
         $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$result[0]['adresse'],false)); // Convert ID to form display
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("status","ticketstatus",1);
+        $this->app->YUI->TagEditor('tags', array('width'=>370));
 
         $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect($result[0]['status']));
         $input['projekt'] = $this->app->erp->ReplaceProjekt(false,$input['projekt'],false); // Parameters: Target db?, value, from form?

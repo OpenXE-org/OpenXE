@@ -2445,6 +2445,12 @@ ul.tag-editor {
     border: 0 solid transparent;
     background-color: transparent;
 }
+
+.ticketoffene .tag-editor-tag {
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
 .ticketoffene input.tageditor {
     visibility: hidden;
 }

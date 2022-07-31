@@ -24,7 +24,7 @@
                                     <tr><td>{|Von|}:</td><td>[KUNDE] [MAILADRESSE]</td></tr>
                                     <tr><td>{|Projekt|}:</td><td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20"></td></tr>
                                     <tr><td>{|Adresse|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20"></td></tr>
-                                    <tr><td>{|Tags|}:</td><td><input type="text" name="tags" value="[TAGS]" size="20"></td></tr>
+                                    <tr><td>{|Tags|}:</td><td><input type="text" name="tags" id="tags" value="[TAGS]" size="20"></td></tr>
                                 </table>
                             </fieldset> 
                         </div>
