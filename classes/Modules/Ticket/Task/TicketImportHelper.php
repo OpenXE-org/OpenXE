@@ -147,7 +147,8 @@ class TicketImportHelper
         $sql = "UPDATE `ticket` SET 
                     `status` = 'neu',
                     `zugewiesen` = '0',
-                    `inbearbeitung` = '0'
+                    `inbearbeitung` = '0',
+                    `zeit` = now()
                     WHERE `schluessel` LIKE '".$ticketNumber."'";
         $this->db->Update($sql);
     }

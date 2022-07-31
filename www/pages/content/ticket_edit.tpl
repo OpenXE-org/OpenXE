@@ -20,7 +20,7 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <legend>{|[STATUSICON]<b>Ticket <font color="blue">#[SCHLUESSEL]</font></b>|}</legend>
                                     <tr><td>{|Betreff|}:</td><td><input type="text" name="betreff" id="betreff" value="[BETREFF]" size="20"></td></tr>
-                                    <tr><td>{|Zeit|}:</td><td>[ZEIT]</td></tr>
+                                    <tr><td>{|Letzte Aktion|}:</td><td>[ZEIT]</td></tr>
                                     <tr><td>{|Von|}:</td><td>[KUNDE] [MAILADRESSE]</td></tr>
                                     <tr><td>{|Projekt|}:</td><td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20"></td></tr>
                                     <tr><td>{|Adresse|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20"></td></tr>
@@ -36,7 +36,8 @@
                                     <tr><td>{|Status|}:</td><td><select name="status">[STATUS]</select></td></tr>
                                     <tr><td>{|Verantwortlich|}:</td><td><input type="text" name="warteschlange" id="warteschlange" value="[WARTESCHLANGE]" size="20"></td></tr>
                                     <tr><td>{|Prio|}:</td><td><input type="checkbox" name="prio" id="prio" value="1" [PRIO] size="20"></td></tr>
-                                    <tr><td>{|Notiz|}:</td><td><textarea name="notiz" id="notiz" rows="6" style="width:100%;">[NOTIZ]</textarea></td></tr>
+                                    <tr><td>{|Neue Notiz|}:</td><td><textarea name="neue_notiz" id="neue_notiz" rows="1" style="width:100%;"></textarea></td></tr>
+                                    <tr><td>{|Notizen|}:</td><td><textarea name="notiz" id="notiz" rows="6" style="width:100%;">[NOTIZ]</textarea></td></tr>
                                 </table>
                             </fieldset> 
                         </div>

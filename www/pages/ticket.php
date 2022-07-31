@@ -32,7 +32,7 @@ class Ticket {
     }
 
 
-    static function TableSearch(&$app, $name, $erlaubtevars) {
+    public function TableSearch(&$app, $name, $erlaubtevars) {
 
 
        function ticket_iconssql() {
@@ -43,7 +43,7 @@ class Ticket {
         switch ($name) {
             case "ticket_list":
                 $allowed['ticket_list'] = array('list');
-                $heading = array('','','Ticket #', 'Datum', 'Adresse', 'Betreff', 'Notiz', 'Tags', 'Verantwortlich', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
+                $heading = array('','','Ticket #', 'Letzte Aktion', 'Adresse', 'Betreff', 'Notizen', 'Tags', 'Verantwortlich', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
                 $width = array('1%','1%','5%',     '5%',    '5%',      '20%',      '20%',    '5%',   '5%',             '1%',                 '1%',     '5%',    '5%',      '5%');
 
                 $findcols = array('t.id','t.id','t.schluessel', 't.zeit', 't.bearbeiter', 'a.name', 't.betreff', 't.notiz', 't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status', 't.projekt');
@@ -56,10 +56,9 @@ class Ticket {
 
 
                 $timedifference = "if (
-                                    TIMESTAMPDIFF(hour, t.zeit, curdate()) < 24,
-                                    CONCAT(TIMESTAMPDIFF(hour, t.zeit, curdate()), 'h '),
-                                    CONCAT(
-                                        TIMESTAMPDIFF(day, t.zeit, curdate()), 'd ',MOD(TIMESTAMPDIFF(hour, t.zeit, curdate()), 24), 'h'))";
+                                    TIMESTAMPDIFF(hour, t.zeit, NOW()) < 24,
+                                    CONCAT(TIMESTAMPDIFF(hour, t.zeit, NOW()),'h'),
+                                    CONCAT(TIMESTAMPDIFF(day, t.zeit, NOW()), 'd ',MOD(TIMESTAMPDIFF(hour, t.zeit, NOW()),24),'h'))";
 
                 $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',t.id,'\" />') AS `auswahl`";
 
@@ -67,7 +66,7 @@ class Ticket {
 
                 $anzahlnachrichten = "(SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel)";
 
-                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, ".$priobetreff.", t.notiz, t.tags, w.warteschlange, ".$anzahlnachrichten." as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
+                $sql = "SELECT t.id,".$dropnbox.", t.schluessel, t.zeit, a.name, ".$priobetreff.", replace(substring(t.notiz,1,500),'\n','<br/>'), t.tags, w.warteschlange, ".$anzahlnachrichten." as nachrichten_anz, ".ticket_iconssql().", ".$timedifference.", p.abkuerzung, t.id 
                         FROM ticket t 
                         LEFT JOIN adresse a ON t.adresse = a.id 
                         LEFT JOIN warteschlangen w ON t.warteschlange = w.label 
@@ -75,10 +74,66 @@ class Ticket {
 
                 $where = "1";
 
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#meinetickets').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#prio').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#geschlossene').click( function() { fnFilterColumn3( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#archiv').click( function() { fnFilterColumn4( 0 ); } );");
+
+                for ($r = 1;$r <= 4;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= " AND t.warteschlange IN (SELECT w.label FROM warteschlangen w WHERE adresse=".$this->app->User->GetAdresse().")"; // Queues of user
+                } else {
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                  $where .= " AND t.prio = '1'";
+                }
+                else {
+                }                
+
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {            
+                }
+                else {
+                  $where .= " AND (t.status <> 'abgeschlossen' AND t.status <> 'spam')"; // Exclude papierkorb and geschlossen
+                }                
+
+                $more_data4 = $this->app->Secure->GetGET("more_data4");
+                if ($more_data4 == 1) {
+                }
+                else {
+                  $where .= " AND timestampdiff(DAY,t.zeit,NOW()) < 365";
+                }                
+                // END Toggle filters
+
                 $moreinfo = true; // Allow drop down details
                 $menucol = 13; // For moredata
 
-                $count = "SELECT count(DISTINCT id) FROM ticket WHERE $where";
+                $count = "SELECT count(DISTINCT id) FROM ticket t WHERE $where";
+
+//                echo(htmlentities($sql." ".$where));
+
 //                $groupby = "";
 
                 break;
@@ -215,9 +270,14 @@ class Ticket {
             $id = 'NULL';
         } 
 
+        if ($input['betreff'] == '') {
+          $input['betreff'] = "...";
+        }
+
         $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
         $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
         $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
+        $input['zeit'] = date('Y-m-d H:i:s', time());
 
         $columns = "id, ";
         $values = "$id, ";
@@ -277,9 +337,8 @@ class Ticket {
         if ($submit != '') {
 
             $input['schluessel'] =  $this->generateRandomTicketNumber();       
-            $input['zeit'] = date('Y-m-d H:i:s', time());
             $input['kunde'] = $this->app->User->GetName();
-
+          
             $id = $this->ticket_save_to_db($id, $input);
 
             header("Location: index.php?module=ticket&action=edit&id=$id");
@@ -311,6 +370,10 @@ class Ticket {
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
         $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));                      
+
+        if ($input['neue_notiz'] != '') {
+            $input['notiz'] = $this->app->User->GetName()." ".date("d.m.Y H:i").": ".$input['neue_notiz']."\r\n".$input['notiz'];
+        }
 
         // Always save
         if ($submit != '')
@@ -502,7 +565,7 @@ class Ticket {
             }
 
             // Get messsages again
-            $messages = $this->get_messages_of_ticket($id,1);
+            $messages = $this->get_messages_of_ticket($id,1,NULL);
 
           break;
         } 
@@ -525,6 +588,7 @@ class Ticket {
       	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
       	$input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
       	$input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";
+      	$input['neue_notiz'] = $this->app->Secure->GetPOST('neue_notiz');
       	$input['notiz'] = $this->app->Secure->GetPOST('notiz');
       	$input['tags'] = $this->app->Secure->GetPOST('tags');
       	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
