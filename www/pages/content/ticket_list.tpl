@@ -30,15 +30,15 @@
                     <input type="checkbox" id="geschlossene">
                     <span class="slider round"></span>
                   </label>
-                  <label for="geschlossene">{|+Geschlossene|}</label>
+                  <label for="geschlossene">{|Zzgl. abgeschlossen|}</label>
                 </li>
                 <li class="filter-item">
-                  <label for="archiv" class="switch">
-                    <input type="checkbox" id="archiv">
+                  <label for="spam" class="switch">
+                    <input type="checkbox" id="spam">
                     <span class="slider round"></span>
                   </label>
-                  <label for="archiv">{|+&Auml;lter als 1 Jahr|}</label>
-                </li>                  
+                  <label for="spam">{|Zzgl. Papierkorb|}</label>
+                </li>
               </ul>
             </div>
           </div>

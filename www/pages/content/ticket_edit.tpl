@@ -14,14 +14,14 @@
             [FORMHANDLEREVENT]
             <div class="row">
 	        	<div class="row-height">
-	        		<div class="col-xs-13 col-md-6 col-md-height">
+	        		<div class="col-xs-14 col-md-6 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <legend>{|[STATUSICON]<b>Ticket <font color="blue">#[SCHLUESSEL]</font></b>|}</legend>
                                     <tr><td>{|Betreff|}:</td><td><input type="text" name="betreff" id="betreff" value="[BETREFF]" size="20"></td></tr>
                                     <tr><td>{|Letzte Aktion|}:</td><td>[ZEIT]</td></tr>
-                                    <tr><td>{|Von|}:</td><td>[KUNDE] [MAILADRESSE]</td></tr>
+                                    <tr><td>{|Von|}:</td><td>[MAILADRESSE] ([KUNDE])</td></tr>
                                     <tr><td>{|Projekt|}:</td><td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20"></td></tr>
                                     <tr><td>{|Adresse|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20"></td></tr>
                                     <tr><td>{|Tags|}:</td><td><input type="text" name="tags" id="tags" value="[TAGS]" size="20"></td></tr>
@@ -29,7 +29,7 @@
                             </fieldset> 
                         </div>
                		</div>
-	        		<div class="col-xs-13 col-md-6 col-md-height">
+	        		<div class="col-xs-14 col-md-6 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">
@@ -42,7 +42,7 @@
                             </fieldset> 
                         </div>
                		</div>
-	        		<div class="col-xs-13 col-md-1 col-md-height">
+	        		<div class="col-xs-14 col-md-2 col-md-height">
 	        			<div class="inside inside-full-height">
                             <fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">

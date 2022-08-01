@@ -94,7 +94,7 @@ class Ticket {
                 $this->app->Tpl->Add('JQUERYREADY', "$('#meinetickets').click( function() { fnFilterColumn1( 0 ); } );");
                 $this->app->Tpl->Add('JQUERYREADY', "$('#prio').click( function() { fnFilterColumn2( 0 ); } );");
                 $this->app->Tpl->Add('JQUERYREADY', "$('#geschlossene').click( function() { fnFilterColumn3( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#archiv').click( function() { fnFilterColumn4( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#spam').click( function() { fnFilterColumn4( 0 ); } );");
 
                 for ($r = 1;$r <= 4;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
@@ -132,14 +132,14 @@ class Ticket {
                 if ($more_data3 == 1) {            
                 }
                 else {
-                  $where .= " AND (t.status <> 'abgeschlossen' AND t.status <> 'spam')"; // Exclude papierkorb and geschlossen
+                  $where .= " AND (t.status <> 'abgeschlossen')"; // Exclude and geschlossen
                 }                
 
                 $more_data4 = $this->app->Secure->GetGET("more_data4");
                 if ($more_data4 == 1) {
                 }
                 else {
-                  $where .= " AND timestampdiff(DAY,t.zeit,NOW()) < 365";
+                  $where .= " AND (t.status <> 'spam')";
                 }                
                 // END Toggle filters
 
@@ -216,8 +216,24 @@ class Ticket {
             $limitsql = "";
         }
 
-        $sql = "SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC ".$limitsql; 
-        
+//        $sql = "SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto, (SELECT GROUP_CONCAT(value SEPARATOR ', ' FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'cc') value from) as cc FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC ".$limitsql; 
+
+        $sql =  "SELECT n.id,
+                n.betreff,
+                n.verfasser,
+                n.mail,
+                n.zeit,
+                n.zeitausgang,
+                n.versendet,
+                n.text,
+                n.verfasser_replyto,
+                n.mail_replyto,
+                n.mail_cc,
+                (SELECT GROUP_CONCAT(value SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'cc') as mail_cc_recipients,
+                (SELECT GROUP_CONCAT(value SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'to') as mail_recipients
+                FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket 
+                WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC ".$limitsql; 
+
         return $this->app->DB->SelectArr($sql);        
     }
 
@@ -264,19 +280,21 @@ class Ticket {
                     }
                     $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']." (Entwurf)");
                 }
-
-                $this->app->Tpl->Set("NACHRICHT_RICHTUNG","An");
+                $this->app->Tpl->Set("NACHRICHT_SENDER",$message['mail_replyto']." (".$message['verfasser'].")");
+                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",$message['mail']);
+                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",$message['mail_cc']);  
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
+                $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
             } else {
+                $this->app->Tpl->Set("NACHRICHT_SENDER",$message['mail']." (".$message['verfasser'].")");
+                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",$message['mail_recipients']);
+                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",$message['mail_cc_recipients']);
                 $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
-                $this->app->Tpl->Set("NACHRICHT_RICHTUNG","Von");
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
             }
 
-            $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
-            $this->app->Tpl->Set("NACHRICHT_EMAILADRESSE",$message['mail']);
             $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
 
             $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
@@ -519,6 +537,7 @@ class Ticket {
 
         // Get all messsages
         $messages = $this->get_messages_of_ticket($id, 1, NULL);
+        $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1",NULL);
 
         switch ($submit) {
           case 'neue_email':
@@ -526,8 +545,13 @@ class Ticket {
             if (empty($drafted_messages)) {
                 // Create new message and save it for editing   
 
-                $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1",NULL);
                	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
+
+                $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
+                $senderAddress = $this->app->erp->GetFirmaMail();
+
+                $to = $recv_messages[0]['mail'];
+                $cc = "";
                 
                 if (!empty($recv_messages)) {
                     if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
@@ -536,6 +560,11 @@ class Ticket {
                     else {
                         $betreff = $recv_messages[0]['betreff'];
                     }
+
+                    $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='to'";
+                    $to .= ", ".$this->app->DB->Select($sql);
+                    $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='cc'";
+                    $cc = $this->app->DB->Select($sql);
                 }
                 else {
                     $betreff = $result[0]['betreff'];
@@ -547,20 +576,17 @@ class Ticket {
                   $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben").",\n".$this->app->erp->Grussformel($projekt,$sprache);
                 }
 
-                $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
-                $senderAddress = $this->app->erp->GetFirmaMail();
-                           
                 $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
-                        `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`
-                    ) VALUES ('".$result[0]['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','','".$recv_messages[0]['mail']."','neu','".$senderName."','".$senderAddress."');";
+                        `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`,`mail_cc`
+                    ) VALUES ('".$result[0]['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','".$senderName."','".$to."','neu','".$senderName."','".$senderAddress."','".$cc."');";
 
                 $this->app->DB->Insert($sql);         
                 // Show new message dialog                   
                 header("Location: index.php?module=ticket&action=edit&id=$id");          
                 $this->app->ExitXentral();
             } 
-        break;
+          break;
           case 'entwurfloeschen':
             if (!empty($drafted_messages)) {
                 $sql = "UPDATE ticket_nachricht SET ticket = '' WHERE id=".$drafted_messages[0]['id'];
@@ -570,11 +596,21 @@ class Ticket {
                 $this->app->ExitXentral();
             }
           break;
+          case 'zitat':
+            if (!empty($drafted_messages) && !empty($recv_messages)) {
+                $sql = "UPDATE ticket_nachricht SET text='".$drafted_messages[0]['text']."--------------------<br />".$recv_messages[0]['verfasser']." &lt;".$recv_messages[0]['mail']."&gt; (".$recv_messages[0]['zeit']."): <br />".$recv_messages[0]['text']."' WHERE id=".$drafted_messages[0]['id'];
+                $this->app->DB->Update($sql);  
+                header("Location: index.php?module=ticket&action=edit&id=$id");
+                $this->app->ExitXentral();
+            }
+          break;
           case 'absenden':            
 
             if (empty($drafted_messages)) {
                 break;
             }
+
+            $msg = "";
 
             // Enforce Ticket #
             if (!preg_match("/Ticket #[0-9]{12}/i", $drafted_messages[0]['betreff'])) {
@@ -587,6 +623,8 @@ class Ticket {
             foreach ($files as $file) {
                 $msg .= $file."<br>";
             }
+
+            $cc = explode(',',$drafted_messages[0]['mail_cc']);            
    
             if (
                 $this->app->erp->MailSend(
@@ -597,7 +635,9 @@ class Ticket {
                   $drafted_messages[0]['betreff'],
                   $drafted_messages[0]['text'],
                   $files,
-                  0,false,'','',
+                  0,false,
+                  $cc,
+                  '',
                   true
               ) != 0
             ) {
@@ -606,7 +646,14 @@ class Ticket {
                 $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$drafted_messages[0]['betreff']."' WHERE id = ".$drafted_messages[0]['id'];
                 $this->app->DB->Insert($sql);
 
-                $msg .=  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'. '.$this->app->erp->mail_error.'</div>';
+                $msg .=  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'.'; 
+
+                if ($drafted_messages[0]['mail_cc'] != '') {
+                  $msg .= ' (CC: '.$drafted_messages[0]['mail_cc'].')</div>';
+                }
+                else {
+                  $msg .= '</div>';
+                }
                 header("Location: index.php?module=ticket&action=edit&id=".$id."&msg=".$this->app->erp->base64_url_encode($msg));
 
             }

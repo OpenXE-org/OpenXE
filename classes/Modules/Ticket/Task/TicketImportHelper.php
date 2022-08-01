@@ -527,6 +527,9 @@ class TicketImportHelper
                         SET ticketnachricht='$ticketnachricht'
                         WHERE id='$id' LIMIT 1"
             );
+
+
+            // Add all the ccs to the header table
             if (is_array($cc_recv)) {
                 foreach ($cc_recv as $mail) {
                     if ($mail['name'] != '') {
@@ -547,6 +550,22 @@ class TicketImportHelper
                     }
                 }
                 $cc_recv = [];
+            }
+
+
+            // Add all the recipients to the header table
+            if (count($message->getRecipients()) > 1) {
+
+                foreach ($message->getRecipients() as $recipient) {
+                    $recipient_address = $this->db->real_escape_string($recipient->getEmail());
+                    if ($recipient_address != '') {
+                        $sql = "INSERT INTO ticket_header
+                                        (`id`,`ticket_nachricht`,`type`,`value`)
+                                        VALUES
+                                        ('', '$ticketnachricht', 'to', '" . $recipient_address . "')";
+                        $this->db->InsertWithoutLog($sql);
+                    }
+                }
             }
         }
 
