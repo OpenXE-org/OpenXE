@@ -659,8 +659,10 @@ class Adresse extends GenAdresse {
         $this->AdresseBriefPreview('dokumente',$id,false);
         break;
         case '2':
-        
-        $this->AdresseBriefPreview('dokumente_send',$id,false);
+          $this->AdresseBriefPreview('dokumente_send',$id,false);
+        break;
+        case '4':
+          $this->AdresseBriefPreview('ticket_nachricht',$id,false);
         break;
         
         case '5':
@@ -4069,6 +4071,19 @@ function AdresseBriefPreview($type = '', $id = '', $json = true) {
           text as content
             FROM
             dokumente_send
+            WHERE
+            id = ' . $id . '
+            ';
+        break;
+      case 'ticket_nachricht':
+        $query .= '
+          SELECT
+          id,
+          DATE_FORMAT(zeit, "%d.%m.%Y") as datum,
+          betreff,
+          text as content
+            FROM
+            ticket_nachricht
             WHERE
             id = ' . $id . '
             ';

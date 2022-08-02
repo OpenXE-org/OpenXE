@@ -9459,64 +9459,89 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
             
             ';
 
-
-
             if($this->app->erp->RechteVorhanden('wiedervorlage','list')){
               if($this->app->erp->GetKonfiguration('adresse_crm_collateerror') && method_exists($this,'ConvertLatin1UTF'))
               {
                 $sql .= '
-            UNION ALL
+                UNION ALL
 
-            (
-              SELECT
-                w.id,"<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
-                CONCAT(DATE_FORMAT(datum_erinnerung, "%Y-%m-%d"), " ", IF(zeit_erinnerung IS NULL OR DATE_FORMAT(zeit_erinnerung, "%H:%i")="00:00", "", DATE_FORMAT(zeit_erinnerung, "%H:%i")) ) as datum,
-                '. $this->ConvertLatin1UTF('w.bezeichnung').'   as title,\'\' as ansprechpartner,
-                '. $this->ConvertLatin1UTF('p.abkuerzung').'   as abkuerzung,
-                adr.name COLLATE utf8_general_ci as bearbeiter,
-                CONCAT("Wiedervorlage") as art,
-                CONCAT("<a data-type=wiedervorlage data-id=", w.id, "></a>") as gesendet,
-                "" as pdf,
-                concat("5","-",w.id) as did,'. $this->ConvertLatin1UTF('w.beschreibung').'  as suchtext,\'\' as internebezeichnung
-              FROM
-                wiedervorlage w left join adresse adr on w.bearbeiter = adr.id
-                LEFT JOIN projekt p ON p.id=w.projekt
-              WHERE
-                w.adresse = ' . $adresseId . '
-            )';
-              }else{
+                (
+                  SELECT
+                    w.id,"<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
+                    CONCAT(DATE_FORMAT(datum_erinnerung, "%Y-%m-%d"), " ", IF(zeit_erinnerung IS NULL OR DATE_FORMAT(zeit_erinnerung, "%H:%i")="00:00", "", DATE_FORMAT(zeit_erinnerung, "%H:%i")) ) as datum,
+                    '. $this->ConvertLatin1UTF('w.bezeichnung').'   as title,\'\' as ansprechpartner,
+                    '. $this->ConvertLatin1UTF('p.abkuerzung').'   as abkuerzung,
+                    adr.name COLLATE utf8_general_ci as bearbeiter,
+                    CONCAT("Wiedervorlage") as art,
+                    CONCAT("<a data-type=wiedervorlage data-id=", w.id, "></a>") as gesendet,
+                    "" as pdf,
+                    concat("5","-",w.id) as did,'. $this->ConvertLatin1UTF('w.beschreibung').'  as suchtext,\'\' as internebezeichnung
+                  FROM
+                    wiedervorlage w left join adresse adr on w.bearbeiter = adr.id
+                    LEFT JOIN projekt p ON p.id=w.projekt
+                  WHERE
+                    w.adresse = ' . $adresseId . '
+                )';
+              } else {
                 $sql .= '
-            UNION ALL
+                UNION ALL
 
-            (
-              SELECT
-                w.id,"<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
-                CONCAT(DATE_FORMAT(datum_erinnerung, "%Y-%m-%d"), " ", IF(zeit_erinnerung IS NULL OR DATE_FORMAT(zeit_erinnerung, "%H:%i")="00:00", "", DATE_FORMAT(zeit_erinnerung, "%H:%i")) ) as datum,
-                w.bezeichnung  COLLATE utf8_general_ci as title,\'\' as ansprechpartner,
-                p.abkuerzung  COLLATE utf8_general_ci as abkuerzung,
-                adr.name COLLATE utf8_general_ci as bearbeiter,
-                CONCAT("Wiedervorlage") as art,
-                CONCAT("<a data-type=wiedervorlage data-id=", w.id, "></a>") as gesendet,
-                "" as pdf,
-                concat("5","-",w.id) as did,w.beschreibung COLLATE utf8_general_ci as suchtext,\'\' as internebezeichnung
-              FROM
-                wiedervorlage w left join adresse adr on w.bearbeiter = adr.id
-                LEFT JOIN projekt p ON p.id=w.projekt
-              WHERE
-                w.adresse = ' . $adresseId . '
-            )';
+                (
+                  SELECT
+                    w.id,
+                    "<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
+                    CONCAT(DATE_FORMAT(datum_erinnerung, "%Y-%m-%d"), " ", IF(zeit_erinnerung IS NULL OR DATE_FORMAT(zeit_erinnerung, "%H:%i")="00:00", "", DATE_FORMAT(zeit_erinnerung, "%H:%i")) ) as datum,
+                    w.bezeichnung  COLLATE utf8_general_ci as title,
+                    \'\' as ansprechpartner,
+                    p.abkuerzung  COLLATE utf8_general_ci as abkuerzung,
+                    adr.name COLLATE utf8_general_ci as bearbeiter,
+                    CONCAT("Wiedervorlage") as art,
+                    CONCAT("<a data-type=wiedervorlage data-id=", w.id, "></a>") as gesendet,
+                    "" as pdf,
+                    concat("5","-",w.id) as did,
+                    w.beschreibung COLLATE utf8_general_ci as suchtext,
+                    \'\' as internebezeichnung
+                  FROM
+                    wiedervorlage w left join adresse adr on w.bearbeiter = adr.id
+                    LEFT JOIN projekt p ON p.id=w.projekt
+                  WHERE
+                    w.adresse = ' . $adresseId . '
+                )';
               }
-            }
-            $sql .='
-          ) a
-        ';
+            } // RechteVorhanden wiedervorlage
 
+            $sql .= 'UNION ALL
+                 (
+                   SELECT
+                     t.id,
+                     "<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
+                     tn.zeit,
+                     tn.betreff,
+                     ifnull((SELECT name FROM ansprechpartner ap WHERE ap.adresse = a.id AND ap.email = tn.mail LIMIT 1),tn.mail) as ansprechpartner,                     
+                     t.projekt,
+                     tn.verfasser,
+                     \'Ticketnachricht\' as art,
+                     CONCAT(IF(tn.versendet = 1, "JA", "NEIN"),"<a data-type=ticket_nachricht data-id=", t.id, "></a>") as gesendet,
+                     \'\' as PDF,
+                     concat("4","-",tn.id) as did,
+                     CONCAT(tn.text,t.notiz) as suchtext,
+                     \'\' as intern
+                  FROM
+                      ticket_nachricht tn
+                  INNER JOIN ticket t ON
+                      tn.ticket = t.schluessel
+                  INNER JOIN adresse a ON t.adresse = a.id
+                  WHERE t.adresse = '.$adresseId.' AND !(tn.versendet = 1 AND tn.zeitausgang IS NULL)  
+                )
+                ';
+
+        $sql .= ') a ';
 
         $moreinfo = true;
         $doppelteids = true;
         $moreinfoaction = 'brief';
         $menucol = 9;
-   
+    
         $more_data1 = $this->app->Secure->GetGET("more_data1");
         $more_data2 = $this->app->Secure->GetGET("more_data2");
         $more_data3 = $this->app->Secure->GetGET("more_data3");
@@ -9531,11 +9556,17 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         if ($more_data1 == 1) {
           $subWhereConditions[] = 'art LIKE "brief%"';
         }
+        if ($more_data2 == 1) {
+          $subWhereConditions[] = 'art LIKE "email"';
+        }
         if ($more_data3 == 1) {
           $subWhereConditions[] = 'art LIKE "telefon"';
         }
         if ($more_data4 == 1) {
           $subWhereConditions[] = 'art LIKE "notiz"';
+        }
+        if ($more_data5 == 1) {
+          $subWhereConditions[] = 'art LIKE "ticket%"';
         }
         if ($more_data10 == 1) {
           $subWhereConditions[] = 'art LIKE "wiedervorlage"';

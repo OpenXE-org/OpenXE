@@ -228,12 +228,12 @@ input[type=button].anlegen_close {
 var ersterEintrag = [TABELLEFLAG];
   function edit_Eintrag(elem)
   {
-		var entryData = $(elem).parent().parent().parent().parent().parent().parent().find('a').first();
-		var entryDataDokument = entryData.attr('data-type');
-			entryDataId = entryData.attr('data-id');
-			// entryData = entryData.split('||');
+	var entryData = $(elem).parent().parent().parent().parent().parent().parent().find('a').first();
+	var entryDataDokument = entryData.attr('data-type');
 
-		if (entryDataDokument != 'dokumente' && entryDataDokument != 'wiedervorlage' && entryDataDokument != 'kalender') {
+	entryDataId = entryData.attr('data-id');
+    
+    if (entryDataDokument != 'dokumente' && entryDataDokument != 'wiedervorlage' && entryDataDokument != 'kalender') {
       if(entryDataDokument == 'dokumente_send')
       {
         var artel = $(elem).parents('tr').first().parents('tr').first().find('span.editlink').first();
@@ -243,7 +243,7 @@ var ersterEintrag = [TABELLEFLAG];
       }
       else if(entryDataDokument == 'ticket_nachricht')
       {
-        window.open('index.php?module=ticket&action=assistent&id='+entryDataId,'_blank');
+        window.open('index.php?module=ticket&action=edit&id='+entryDataId,'_blank');
         return;
       }
 
