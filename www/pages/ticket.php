@@ -620,12 +620,10 @@ class Ticket {
             // Attachments
             $files = $this->app->erp->GetDateiSubjektObjektDateiname('Anhang','Ticket',$drafted_messages[0]['id'],"");
 
-            foreach ($files as $file) {
-                $msg .= $file."<br>";
+            if ($cc != '') {
+              $cc = explode(',',$drafted_messages[0]['mail_cc']);            
             }
 
-            $cc = explode(',',$drafted_messages[0]['mail_cc']);            
-   
             if (
                 $this->app->erp->MailSend(
                   $drafted_messages[0]['mail_replyto'],
