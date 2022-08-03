@@ -562,7 +562,13 @@ class Ticket {
                     }
 
                     $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='to'";
-                    $to .= ", ".$this->app->DB->Select($sql);
+
+                    $to_additional = $this->app->DB->Select($sql);
+
+                    if (!empty($to_additional)) {
+                      $to .= ", ".$to_additional;
+                    }
+
                     $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='cc'";
                     $cc = $this->app->DB->Select($sql);
                 }
@@ -620,8 +626,10 @@ class Ticket {
             // Attachments
             $files = $this->app->erp->GetDateiSubjektObjektDateiname('Anhang','Ticket',$drafted_messages[0]['id'],"");
 
-            if ($cc != '') {
+            if ($drafted_messages[0]['mail_cc'] != '') {
               $cc = explode(',',$drafted_messages[0]['mail_cc']);            
+            } else {
+              $cc = null;
             }
 
             if (

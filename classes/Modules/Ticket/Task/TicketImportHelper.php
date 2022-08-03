@@ -554,7 +554,7 @@ class TicketImportHelper
 
 
             // Add all the recipients to the header table
-            if (count($message->getRecipients()) > 1) {
+            if (count($message->getRecipients()) > 0) {
 
                 foreach ($message->getRecipients() as $recipient) {
                     $recipient_address = $this->db->real_escape_string($recipient->getEmail());
