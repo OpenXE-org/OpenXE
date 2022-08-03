@@ -181,7 +181,7 @@ class Ticket {
           $status = $this->app->Secure->GetPOST('status');
           $warteschlange = $this->app->Secure->GetPOST('warteschlange');
 
-          $sql = "UPDATE ticket SET status = '".$status."'";
+          $sql = "UPDATE ticket SET status = '".$status."', zeit = NOW()";
           if ($warteschlange != '') {
             $sql .= ", warteschlange = '".explode(" ",$warteschlange)[0]."'";
           }
@@ -400,6 +400,8 @@ class Ticket {
 
         $submit = $this->app->Secure->GetPOST('submit');
         $input = $this->GetInput();        
+        $projekt_id = $this->app->User->DefaultProjekt();
+        $projekt = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id = ".$projekt_id);
 
         if ($submit != '') {
 
@@ -411,6 +413,8 @@ class Ticket {
             header("Location: index.php?module=ticket&action=edit&id=$id");
             exit();
         }
+
+        $this->app->Tpl->Set('PROJEKT', $projekt);
 
         $this->app->Tpl->Set('STATUSICON', $this->ticket_status_icon('neu')."&nbsp;");
         $this->app->YUI->AutoComplete("adresse","adresse");
