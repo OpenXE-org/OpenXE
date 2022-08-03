@@ -47,7 +47,7 @@ class Ticket {
                 $heading = array('','','Ticket #', 'Letzte Aktion', 'Adresse', 'Betreff',  'Tags', 'Verant.', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
                 $width = array('1%','1%','5%',     '5%',            '5%',      '30%',      '1%',     '5%',     '1%',    '1%',     '1%',    '1%',      '1%');
 
-                $findcols = array('t.id','t.id','t.schluessel', 't.zeit', 'a.name', 't.betreff',            't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status','t.zeit', 't.projekt');
+                $findcols = array('t.id','t.zeit','t.schluessel', 't.zeit', 'a.name', 't.betreff',            't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status','t.zeit', 't.projekt');
                 $searchsql = array(             't.schluessel', 't.zeit', 'a.name', 't.betreff','t.notiz',  't.tags', 'w.warteschlange', 't.status', 't.projekt');
 
                 $defaultorder = 1;
