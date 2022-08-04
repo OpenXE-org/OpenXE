@@ -4985,6 +4985,7 @@ function AdresseBrief() {
   $count += $this->app->DB->Select('SELECT count(id) FROM dokumente_send WHERE adresse = ' . $id);
   $count += $this->app->DB->Select('SELECT count(id) FROM wiedervorlage WHERE adresse = ' . $id);
   $count += $this->app->DB->Select('SELECT count(id) FROM kalender_event WHERE adresse = '.$id);
+  $count += $this->app->DB->Select('SELECT count(tn.id) FROM ticket_nachricht tn INNER JOIN ticket t ON tn.ticket = t.schluessel WHERE t.adresse = '.$id);
 
   if ($count > 0) {
     $this->app->YUI->TableSearch('TABELLE', 'adresse_brief');
@@ -6373,6 +6374,8 @@ function AdresseVerein()
   }
 
   /**
+   * Query for adresse minidetail
+   * CRM view inside adresse page is in adresse.php
    * @param int $adresseId  AdressID
    * @param int $maxResults SQL-Limit; Maximale Anzahl der Ergebnisse
    *
@@ -6504,7 +6507,8 @@ function AdresseVerein()
             SELECT
               w.id,
               CONCAT(DATE_FORMAT(datum_erinnerung, "%Y-%m-%d"), " ", IF(zeit_erinnerung IS NULL OR DATE_FORMAT(zeit_erinnerung, "%H:%i")="00:00", "", DATE_FORMAT(zeit_erinnerung, "%H:%i")) ) as datum,
-              w.bezeichnung  COLLATE utf8_general_ci as title,\'\' as ansprechpartner,
+              w.bezeichnung  COLLATE utf8_general_ci as title,
+              \'\' as ansprechpartner,
               p.abkuerzung  COLLATE utf8_general_ci as abkuerzung,
               adr.name COLLATE utf8_general_ci as bearbeiter,
               CONCAT("Wiedervorlage") as art,
@@ -6521,6 +6525,31 @@ function AdresseVerein()
           )';
       }
     }
+
+    $sql .= 'UNION ALL
+                 (
+                   SELECT
+                     t.id,
+                     tn.zeit,
+                     tn.betreff,
+                     ifnull((SELECT name FROM ansprechpartner ap WHERE ap.adresse = a.id AND ap.email = tn.mail LIMIT 1),tn.mail) as ansprechpartner,
+                     t.projekt,
+                     tn.verfasser,
+                     \'Ticketnachricht\' as art,
+                     CONCAT(IF(tn.versendet = 1, "JA", "NEIN"),"<a data-type=ticket_nachricht data-id=", t.id, "></a>") as gesendet,
+                     \'\' as PDF,
+                     concat("4","-",tn.id) as did,
+                     CONCAT(tn.text,t.notiz) as suchtext,
+                     \'\' as intern
+                  FROM
+                      ticket_nachricht tn
+                  INNER JOIN ticket t ON
+                      tn.ticket = t.schluessel
+                  INNER JOIN adresse a ON t.adresse = a.id
+                  WHERE t.adresse = '.$adresseId.' AND !(tn.versendet = 1 AND tn.zeitausgang IS NULL)  
+                )
+                ';
+
     $sql .= ') AS a ';
     $sql .= 'ORDER BY a.datum DESC ';
     $sql .= 'LIMIT 0, ' . $maxResults;
@@ -6528,4 +6557,5 @@ function AdresseVerein()
     return $sql;
   }
 }
+
 
