@@ -32458,6 +32458,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
 /*
 * Return 0 = not ok, return 1 = ok
+* $to, $to_name, $cc, $bcc can be csv or arrays
 */
 function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
 {
@@ -32551,23 +32552,30 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       
       $recipients = [];
 
+      $to_csv = "";
+      $to_name_csv = "";
+
       // Prepare names and addresses
       if (is_array($to)) {
         foreach ($to as $item)  {
           $to_array[] = $item;
+          $to_csv .= $item;
         }
       } else if (!empty($to)) {
         foreach (explode(',',str_replace(" ","",$to)) as $item)  {
           $to_array[] = $item;
+          $to_csv .= $item;
         }
       }
       if (is_array($to_name)) {
         foreach ($to_name as $item)  {
           $to_name_array[] = $item;
+          $to_name_csv .= $item;
         }
       } else if (!empty($to_name)) {
         foreach (explode(',',str_replace(" ","",$to_name)) as $item)  {
           $to_name_array[] = $item;
+          $to_name_csv .= $item;
         }
       }
 
@@ -32639,7 +32647,8 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     }    
 
     if($sysMailerSent === false) {
-      $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
+
+      $this->MailLogFile($from,$from_name,$to_csv,$to_name_csv,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
       $this->mail_error =  "Mailer Error: " . $sendmail_error;
 
       if(isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetID'))
@@ -32649,14 +32658,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       return 0;
     } else {
 
-      $this->MailLogFile($from,$from_name,$to,$to_name,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
+      $this->MailLogFile($from,$from_name,$to_csv,$to_name_csv,$betreff,$text,$files,$projekt,$signature,$cc,$bcc,$system);
 
       // Put the mail in IMAP sent folder
       // Note that this is implemented with laminas-mail and only this
       // The created mail may differ from the sent one because it is created by different libraries 
 
       $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$from."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
-      if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name) && !preg_match("/WaWision Kopie/",$to_name))
+      if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name_csv) && !preg_match("/WaWision Kopie/",$to_name_csv))
       {
 
         // This will build the mail as EmailMessage (Xentral\Components\Mailer\Data) and then rebuild it with laminas-mail message to produce the raw output

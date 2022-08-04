@@ -279,10 +279,12 @@ class Ticket {
                         continue;
                     }
                     $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']." (Entwurf)");
+                } else {
+                  $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
                 }
-                $this->app->Tpl->Set("NACHRICHT_SENDER",$message['mail_replyto']." (".$message['verfasser'].")");
-                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",$message['mail']);
-                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",$message['mail_cc']);  
+                $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail_replyto'].">"));
+                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail']));
+                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc']));  
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
                 $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
@@ -630,8 +632,14 @@ class Ticket {
             // Attachments
             $files = $this->app->erp->GetDateiSubjektObjektDateiname('Anhang','Ticket',$drafted_messages[0]['id'],"");
 
+            $pattern = '/[a-z0-9_\-\+\.]+@[a-z0-9\-]+\.([a-z]{2,4})(?:\.[a-z]{2})?/i';
+            preg_match_all($pattern, $drafted_messages[0]['mail'], $matches);
+            $to = $matches[0];
+
             if ($drafted_messages[0]['mail_cc'] != '') {
-              $cc = explode(',',$drafted_messages[0]['mail_cc']);            
+              $pattern = '/[a-z0-9_\-\+\.]+@[a-z0-9\-]+\.([a-z]{2,4})(?:\.[a-z]{2})?/i';
+              preg_match_all($pattern, $drafted_messages[0]['mail_cc'], $matches);
+              $cc = $matches[0];
             } else {
               $cc = null;
             }
@@ -640,8 +648,8 @@ class Ticket {
                 $this->app->erp->MailSend(
                   $drafted_messages[0]['mail_replyto'],
                   $drafted_messages[0]['verfasser_replyto'],
-                  $drafted_messages[0]['mail'],
-                  $drafted_messages[0]['mail'],
+                  $to,
+                  $to,
                   $drafted_messages[0]['betreff'],
                   $drafted_messages[0]['text'],
                   $files,
