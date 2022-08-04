@@ -278,21 +278,21 @@ class Ticket {
                     if (!$showdrafts) {
                         continue;
                     }
-                    $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']." (Entwurf)");
+                    $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']." (Entwurf)"));
                 } else {
-                  $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
+                  $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']));
                 }
                 $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail_replyto'].">"));
                 $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail']));
                 $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc']));  
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
-                $this->app->Tpl->Set("NACHRICHT_NAME",$message['verfasser']);
+                $this->app->Tpl->Set("NACHRICHT_NAME",htmlentities($message['verfasser']));
             } else {
-                $this->app->Tpl->Set("NACHRICHT_SENDER",$message['mail']." (".$message['verfasser'].")");
-                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",$message['mail_recipients']);
-                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",$message['mail_cc_recipients']);
-                $this->app->Tpl->Set("NACHRICHT_BETREFF",$message['betreff']);
+                $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail'].">"));
+                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail_recipients']));
+                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
+                $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']));
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
             }
@@ -488,10 +488,10 @@ class Ticket {
             }
 
             // Load the draft for editing
-            $this->app->Tpl->Set('EMAIL_AN', $drafted_messages[0]['mail']);
-            $this->app->Tpl->Set('EMAIL_CC', $drafted_messages[0]['mail_cc']);
-            $this->app->Tpl->Set('EMAIL_BCC', $drafted_messages[0]['mail_bcc']);
-            $this->app->Tpl->Set('EMAIL_BETREFF', $drafted_messages[0]['betreff']);
+            $this->app->Tpl->Set('EMAIL_AN', htmlentities($drafted_messages[0]['mail']));
+            $this->app->Tpl->Set('EMAIL_CC', htmlentities($drafted_messages[0]['mail_cc']));
+            $this->app->Tpl->Set('EMAIL_BCC', htmlentities($drafted_messages[0]['mail_bcc']));
+            $this->app->Tpl->Set('EMAIL_BETREFF', htmlentities($drafted_messages[0]['betreff']));
             $this->app->Tpl->Set('EMAIL_TEXT',$drafted_messages[0]['text']);
 
             // Show new message dialog                   
@@ -551,7 +551,7 @@ class Ticket {
             if (empty($drafted_messages)) {
                 // Create new message and save it for editing   
 
-               	$this->app->Tpl->Set('EMAIL_AN', $recv_messages[0]['mail']);
+               	$this->app->Tpl->Set('EMAIL_AN', htmlentities($recv_messages[0]['mail']));
 
                 $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
                 $senderAddress = $this->app->erp->GetFirmaMail();
