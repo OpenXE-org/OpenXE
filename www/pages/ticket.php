@@ -456,21 +456,21 @@ class Ticket {
         }
 
         // Load values again from database
-        $result = $this->app->DB->SelectArr("SELECT t.id, t.schluessel, t.zeit, p.abkuerzung as projekt, t.bearbeiter, t.quelle, t.status, t.prio, t.adresse, t.kunde, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.mailadresse, t.betreff, t.zugewiesen, t.inbearbeitung, t.inbearbeitung_user, t.firma, t.notiz, t.bitteantworten, t.service, t.kommentar, t.privat, t.dsgvo, t.tags, t.nachrichten_anz, t.id FROM ticket t LEFT JOIN adresse a ON t.adresse = a.id LEFT JOIN projekt p on t.projekt = p.id LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id");
+        $ticket_from_db = $this->app->DB->SelectArr("SELECT t.id, t.schluessel, t.zeit, p.abkuerzung as projekt, t.bearbeiter, t.quelle, t.status, t.prio, t.adresse, t.kunde, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.mailadresse, t.betreff, t.zugewiesen, t.inbearbeitung, t.inbearbeitung_user, t.firma, t.notiz, t.bitteantworten, t.service, t.kommentar, t.privat, t.dsgvo, t.tags, t.nachrichten_anz, t.id FROM ticket t LEFT JOIN adresse a ON t.adresse = a.id LEFT JOIN projekt p on t.projekt = p.id LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id")[0];
 
-        foreach ($result[0] as $key => $value) {
+        foreach ($ticket_from_db as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
   
-      	$this->app->Tpl->Set('PRIO', $result[0]['prio']==1?"checked":"");
-       	$this->app->Tpl->Set('STATUSICON', $this->ticket_status_icon($result[0]['status'])."&nbsp;");
+      	$this->app->Tpl->Set('PRIO', $ticket_from_db['prio']==1?"checked":"");
+       	$this->app->Tpl->Set('STATUSICON', $this->ticket_status_icon($ticket_from_db['status'])."&nbsp;");
         $this->app->YUI->AutoComplete("adresse","adresse");
-        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$result[0]['adresse'],false)); // Convert ID to form display
+        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$ticket_from_db['adresse'],false)); // Convert ID to form display
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("status","ticketstatus",1);
         $this->app->YUI->TagEditor('tags', array('width'=>370));
 
-        $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect($result[0]['status']));
+        $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect($ticket_from_db['status']));
         $input['projekt'] = $this->app->erp->ReplaceProjekt(false,$input['projekt'],false); // Parameters: Target db?, value, from form?
         $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
         // END Header
@@ -556,7 +556,7 @@ class Ticket {
                 $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
                 $senderAddress = $this->app->erp->GetFirmaMail();
 
-                $to = $recv_messages[0]['mail'];
+                $to = "";
                 $cc = "";
                 
                 if (!empty($recv_messages)) {
@@ -569,6 +569,7 @@ class Ticket {
 
                     $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='to'";
 
+                    $to = $recv_messages[0]['mail'];
                     $to_additional = $this->app->DB->Select($sql);
 
                     if (!empty($to_additional)) {
@@ -579,10 +580,14 @@ class Ticket {
                     $cc = $this->app->DB->Select($sql);
                 }
                 else {
-                    $betreff = $result[0]['betreff'];
+                    $betreff = $ticket_from_db['betreff'];
+
+                    $sql = "SELECT email FROM adresse WHERE id =".$ticket_from_db['adresse'];
+                    $to = $this->app->DB->Select($sql);
+
                 }
 
-                $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$result[0]['adresse']."' LIMIT 1");
+                $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$ticket_from_db['adresse']."' LIMIT 1");
                 if($anschreiben=="")
                 {
                   $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben").",\n".$this->app->erp->Grussformel($projekt,$sprache);
@@ -591,7 +596,7 @@ class Ticket {
                 $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
                         `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`,`mail_cc`
-                    ) VALUES ('".$result[0]['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','".$senderName."','".$to."','neu','".$senderName."','".$senderAddress."','".$cc."');";
+                    ) VALUES ('".$ticket_from_db['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','".$senderName."','".$to."','neu','".$senderName."','".$senderAddress."','".$cc."');";
 
                 $this->app->DB->Insert($sql);         
                 // Show new message dialog                   
@@ -626,7 +631,7 @@ class Ticket {
 
             // Enforce Ticket #
             if (!preg_match("/Ticket #[0-9]{12}/i", $drafted_messages[0]['betreff'])) {
-              $drafted_messages[0]['betreff'].= " Ticket #".$result[0]['schluessel'];
+              $drafted_messages[0]['betreff'].= " Ticket #".$ticket_from_db['schluessel'];
             }
                 
             // Attachments
