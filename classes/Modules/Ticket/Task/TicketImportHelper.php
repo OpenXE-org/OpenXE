@@ -91,7 +91,7 @@ class TicketImportHelper
 
         $id = $this->db->Select($searchByEmail);
         if ($id !== null && $id > 0) {
-            return $id;
+            return (int) $id;
         }
 
         $searchByResponsePerson = 'SELECT ap.adresse FROM `ansprechpartner` AS `ap`
@@ -99,14 +99,14 @@ class TicketImportHelper
                                     ORDER BY ap.id DESC';
         $id = $this->db->Select($searchByResponsePerson);
         if ($id !== null && $id > 0) {
-            return $id;
+            return (int) $id;
         }
 
         $searchByContactInfo = 'SELECT ak.adresse FROM `adresse_kontakte` AS `ak`
                                  WHERE ak.kontakt LIKE \''.$emailAddress.'\' ORDER BY ak.id DESC';
         $id = $this->db->Select($searchByContactInfo);
 
-        return $id;
+        return (int) $id;
     }
     
     /* Some functions taken from TicketService (sorry...) */
@@ -244,12 +244,8 @@ class TicketImportHelper
         string $replyToAddress
     ): string
     {
-        $assigneeAddressId = $this->mailAccount->getAddressId();
-        if ($assigneeAddressId < 1) {
-            $assigneeAddressId = $this->tryGetAddressIdByEmailAddress(
-                $this->mailAccount->getEmailAddress()
-            );
-        }
+        $AddressId = $this->tryGetAddressIdByEmailAddress($senderAddress);
+ 
         $ticketNumber = $this->generateRandomTicketNumber();
 
         if($projectId < 1) {
@@ -259,6 +255,12 @@ class TicketImportHelper
             $status =  'abgeschlossen'; //TicketGateway::STATUS_COMPLETED;
         } else {
             $status = 'neu'; //TicketGateway::STATUS_NEW; 
+        }
+
+        $queue_id = $this->mailAccount->getTicketQueueId();
+        
+        if (!empty($queue_id)) {
+          $queue_label = $this->db->Select("SELECT label FROM warteschlangen WHERE id = ".$queue_id." LIMIT 1");
         }
 
         $insertTicket = "INSERT INTO `ticket` (
@@ -274,13 +276,13 @@ class TicketImportHelper
                         '".$senderAddress."',
                         '".'3'."',
                         '".$subject."',
-                        '".$this->mailAccount->getTicketQueueId()."',
-                        '".$assigneeAddressId."');";
+                        '".$queue_label."',
+                        '".$AddressId."');";
        
         $this->db->Insert($insertTicket);
         $ticketId = $this->db->GetInsertID();
 
-        $this->logger->debug('inserted ticket',['id' => $ticketId,'ticketnr' => $ticketNumber]);
+        $this->logger->debug('inserted ticket',['id' => $ticketId,'ticketnr' => $ticketNumber, 'projekt' => $projectId, 'warteschlange' => $this->mailAccount->getTicketQueueId(), 'adresse' => $AddressId]);
                     
         //  todo als rueckgabe ticketnachricht
         return $ticketNumber;
