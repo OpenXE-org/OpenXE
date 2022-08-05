@@ -649,6 +649,8 @@ class Ticket {
               $cc = null;
             }
 
+            //   function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
+
             if (
                 $this->app->erp->MailSend(
                   $drafted_messages[0]['mail_replyto'],
@@ -658,7 +660,8 @@ class Ticket {
                   $drafted_messages[0]['betreff'],
                   $drafted_messages[0]['text'],
                   $files,
-                  0,false,
+                  0,
+                  true,
                   $cc,
                   '',
                   true
