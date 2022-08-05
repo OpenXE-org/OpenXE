@@ -492,7 +492,7 @@ class Ticket {
             $this->app->Tpl->Set('EMAIL_CC', htmlentities($drafted_messages[0]['mail_cc']));
             $this->app->Tpl->Set('EMAIL_BCC', htmlentities($drafted_messages[0]['mail_bcc']));
             $this->app->Tpl->Set('EMAIL_BETREFF', htmlentities($drafted_messages[0]['betreff']));
-            $this->app->Tpl->Set('EMAIL_TEXT',$drafted_messages[0]['text']);
+            $this->app->Tpl->Set('EMAIL_TEXT',htmlentities($drafted_messages[0]['text']));
 
             // Show new message dialog                   
             $this->app->Tpl->Set('EMAIL_SENDER', $this->app->erp->GetSelectEmailMitName($dokument['von']));
@@ -615,7 +615,7 @@ class Ticket {
           break;
           case 'zitat':
             if (!empty($drafted_messages) && !empty($recv_messages)) {
-                $sql = "UPDATE ticket_nachricht SET text='".$drafted_messages[0]['text']."--------------------<br />".$recv_messages[0]['verfasser']." &lt;".$recv_messages[0]['mail']."&gt; (".$recv_messages[0]['zeit']."): <br />".$recv_messages[0]['text']."' WHERE id=".$drafted_messages[0]['id'];
+                $sql = "UPDATE ticket_nachricht SET text='".$drafted_messages[0]['text']."<br /><br />--------------------<br />".$recv_messages[0]['verfasser']." &lt;".$recv_messages[0]['mail']."&gt; (".$recv_messages[0]['zeit']."): <br />".$recv_messages[0]['text']."' WHERE id=".$drafted_messages[0]['id'];
                 $this->app->DB->Update($sql);  
                 header("Location: index.php?module=ticket&action=edit&id=$id");
                 $this->app->ExitXentral();
