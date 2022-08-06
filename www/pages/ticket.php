@@ -615,7 +615,12 @@ class Ticket {
           break;
           case 'zitat':
             if (!empty($drafted_messages) && !empty($recv_messages)) {
-                $sql = "UPDATE ticket_nachricht SET text='".$drafted_messages[0]['text']."<br /><br />--------------------<br />".$recv_messages[0]['verfasser']." &lt;".$recv_messages[0]['mail']."&gt; (".$recv_messages[0]['zeit']."): <br />".$recv_messages[0]['text']."' WHERE id=".$drafted_messages[0]['id'];
+
+                $nl = "<br />";
+                $citation_info =$recv_messages[0]['zeit']." ".$recv_messages[0]['verfasser']." &lt;".$recv_messages[0]['mail']."&gt;";
+                $text = $drafted_messages[0]['text'].$nl.$nl.$citation_info.":".$nl."<blockquote type=\"cite\">".$recv_messages[0]['text']."</blockquote>";
+
+                $sql = "UPDATE ticket_nachricht SET text='".$text."' WHERE id=".$drafted_messages[0]['id'];
                 $this->app->DB->Update($sql);  
                 header("Location: index.php?module=ticket&action=edit&id=$id");
                 $this->app->ExitXentral();
@@ -657,8 +662,8 @@ class Ticket {
                   $drafted_messages[0]['verfasser_replyto'],
                   $to,
                   $to,
-                  $drafted_messages[0]['betreff'],
-                  $drafted_messages[0]['text'],
+                  htmlentities($drafted_messages[0]['betreff']),
+                  htmlentities($drafted_messages[0]['text']),
                   $files,
                   0,
                   true,

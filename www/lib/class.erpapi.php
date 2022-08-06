@@ -32483,15 +32483,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $text =  $this->ReadyForPDF($text);
     $text = str_replace('€','&euro;',$text);
 
-    $texthtml = htmlspecialchars_decode(
+/*    $text = htmlspecialchars_decode( 
       htmlentities($text, ENT_NOQUOTES, 'UTF-8', false)
     , ENT_NOQUOTES
-    );
-
-    if($texthtml!=$text)
-    {
-      $text = $texthtml;
-    }
+    ); */
 
     if($signature)
     {
