@@ -3738,11 +3738,18 @@ function AdresseBriefErstellen() {
         if (!empty($adresse['email'])) {
           $this->app->Tpl->Add('EMAIL_AN',str_replace('"','&#34;',$adresse['name']) . ' &lt;' . $adresse['email'] . '&gt;');
         }
+
+        $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$ticket_from_db['adresse']."' LIMIT 1");
+        if($anschreiben=="")
+        {
+          $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben").",\n".$this->app->erp->Grussformel($projekt,$sprache);
+        }
+        $this->app->Tpl->Add('CONTENT',$anschreiben);
+
         $anhaenge = '';
         $anhaenge .= '<tr><td nowrap>Datei:</td><td><input type="file" name="upload[]" id="file" /></td></tr>';
 //        $anhaenge .= '<tr><td nowrap>Datei 2:</td><td><input type="file" name="upload[]" /></td></tr>';
 //        $anhaenge .= '<tr><td nowrap>Datei 3:</td><td><input type="file" name="upload[]" /></td></tr>';
-         
 
         $this->app->Tpl->Add('ANHAENGEHERAUFLADEN', $anhaenge);
         $anhaenge = '<tr><td colspan=3 align=center><i>Keine Anh&auml;nge vorhanden</i></td></tr>';
