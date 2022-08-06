@@ -53,7 +53,7 @@ class Ticket {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticket&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>" . "</td></tr></table>";
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticket&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
 
                 $timedifference = "if (
@@ -466,6 +466,10 @@ class Ticket {
        	$this->app->Tpl->Set('STATUSICON', $this->ticket_status_icon($ticket_from_db['status'])."&nbsp;");
         $this->app->YUI->AutoComplete("adresse","adresse");
         $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$ticket_from_db['adresse'],false)); // Convert ID to form display
+
+
+        $this->app->Tpl->Set('ADRESSE_ID',$ticket_from_db['adresse']);
+
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("status","ticketstatus",1);
         $this->app->YUI->TagEditor('tags', array('width'=>370));
