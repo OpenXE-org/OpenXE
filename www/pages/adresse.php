@@ -3746,6 +3746,9 @@ function AdresseBriefErstellen() {
         }
         $this->app->Tpl->Add('CONTENT',$anschreiben);
 
+        $projekt = $this->app->DB->Select("SELECT abkuerzung FROM projekt INNER JOIN adresse ON adresse.projekt = projekt.id WHERE adresse.id='".$id."' LIMIT 1");
+        $this->app->Tpl->Set('PROJEKT', $projekt);
+
         $anhaenge = '';
         $anhaenge .= '<tr><td nowrap>Datei:</td><td><input type="file" name="upload[]" id="file" /></td></tr>';
 //        $anhaenge .= '<tr><td nowrap>Datei 2:</td><td><input type="file" name="upload[]" /></td></tr>';
@@ -6540,7 +6543,7 @@ function AdresseVerein()
                      tn.zeit,
                      tn.betreff,
                      ifnull((SELECT name FROM ansprechpartner ap WHERE ap.adresse = a.id AND ap.email = tn.mail LIMIT 1),tn.mail) as ansprechpartner,
-                     t.projekt,
+                     p.abkuerzung,
                      tn.verfasser,
                      \'Ticketnachricht\' as art,
                      CONCAT(IF(tn.versendet = 1, "JA", "NEIN"),"<a data-type=ticket_nachricht data-id=", t.id, "></a>") as gesendet,
@@ -6553,6 +6556,7 @@ function AdresseVerein()
                   INNER JOIN ticket t ON
                       tn.ticket = t.schluessel
                   INNER JOIN adresse a ON t.adresse = a.id
+                  LEFT JOIN projekt p ON t.projekt = p.id
                   WHERE t.adresse = '.$adresseId.' AND !(tn.versendet = 1 AND tn.zeitausgang IS NULL)  
                 )
                 ';
