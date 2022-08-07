@@ -400,18 +400,18 @@ class TicketImportHelper
             $this->updateTicketMessagesCount($ticketNumber);
             $this->resetTicketStatus($ticketNumber);
   //          $this->db->commit();
-            $success = 1;
+            $result = $messageId;
             $this->markTicketMessagesCompleted($ticketNumber);        
         } catch (Throwable $e) {
 //            $this->db->rollBack();
-            $success = 0;
+            $result = 0;
             $this->logger->error('Failed to insert ticket message into db', ['exception' => $e]);
         }
 
 
         $this->applyTicketRules($messageId);
 
-        return($success);
+        return($result);
     }
 
     public function applyTicketRules(int $ticketMessageId): void
@@ -692,12 +692,16 @@ class TicketImportHelper
                 $cc_recv = [];
             }
 
+            $this->logger->debug('Add recipients to header',['count' => count($message->getRecipients())]);
 
             // Add all the recipients to the header table
             if (count($message->getRecipients()) > 0) {
 
                 foreach ($message->getRecipients() as $recipient) {
                     $recipient_address = $this->db->real_escape_string($recipient->getEmail());
+
+                    $this->logger->debug('Add recipient to header',['address' => $recipient_address]);
+
                     if ($recipient_address != '') {
                         $sql = "INSERT INTO ticket_header
                                         (`id`,`ticket_nachricht`,`type`,`value`)
