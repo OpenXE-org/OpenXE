@@ -7084,6 +7084,7 @@ title: 'Abschicken',
 
     $navarray['menu']['admin'][++$menu]['first']  = array('Verwaltung','rechnung','list');
 
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Ticketregeln','ticketregeln','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Zeitkonten','zeiterfassung','list');
     if(!$this->RechteVorhanden('mitarbeiterzeiterfassung','dashboard')){
       $navarray['menu']['admin'][$menu]['sec'][]  = array('Antrag einreichen','mitarbeiterzeiterfassung','timemanagementrequest');

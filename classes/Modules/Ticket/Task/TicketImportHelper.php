@@ -216,7 +216,7 @@ class TicketImportHelper
         }
     }
 
-    /* Function from Gateway */    
+    /* Functions from Gateway */    
      /**
      * @param string $ticketNumber
      *
@@ -233,6 +233,81 @@ class TicketImportHelper
         return (int) $count;
     }
 
+    /**
+     * @param string $recipientMail
+     * @param string $senderMail
+     * @param string $senderName
+     * @param string $subject
+     *
+     * @return array
+     */
+    public function getTicketRules(
+        string $recipientMail,
+        string $senderMail,
+        string $senderName,
+        string $subject
+    ): array {
+
+/*
+        $sql = "SELECT
+            tr.spam AS `is_spam`,
+            tr.dsgvo AS `is_gdpr_relevant`,
+            tr.prio AS `priority`,
+            tr.persoenlich AS `is_private`,
+            tr.warteschlange AS `queue_id`
+        FROM `ticket_regeln` AS `tr`
+        WHERE
+          tr.aktiv = 1
+          AND (tr.empfaenger_email LIKE :source_email OR empfaenger_email = '')
+          AND (
+              tr.sender_email LIKE :sender_email
+              OR (tr.sender_email LIKE '@%' AND :sender_email LIKE CONCAT('%', tr.sender_email))
+              OR tr.sender_email = ''
+          )
+          AND (tr.name LIKE :sender_name OR tr.name = '')
+          AND (tr.betreff LIKE :subject OR tr.betreff = '')";
+        $values = [
+            'source_email' => $recipientMail,
+            'sender_email' => $senderMail,
+            'sender_name'  => $senderName,
+            'subject'      => $subject,
+        ];
+
+        return $this->db->fetchAll($sql, $values);
+
+*/
+
+        // Legacy DB implementation:
+
+        $sql = "SELECT
+            tr.id,
+            tr.spam AS `is_spam`,
+            tr.dsgvo AS `is_gdpr_relevant`,
+            tr.prio AS `priority`,
+            tr.persoenlich AS `is_private`,
+            tr.warteschlange AS `queue_id`
+        FROM `ticket_regeln` AS `tr`
+        WHERE
+          tr.aktiv = 1
+          AND ('".$recipientMail."' LIKE tr.empfaenger_email OR tr.empfaenger_email = '')
+          AND ('".$senderMail."' LIKE tr.sender_email OR tr.sender_email = '')
+          AND ('".$senderMail."' LIKE tr.name OR tr.name = '')
+          AND ('".$subject."' LIKE tr.betreff OR tr.betreff = '')";
+
+         $this->logger->debug('ticket rule',['sql' => $sql]);
+
+         $result = $this->db->SelectArr($sql);
+
+        if ($result != null) {
+          $this->logger->debug('ticket rules',['count',count($result)]);         
+          return ($result);
+        } else {
+         $this->logger->debug('no ticket rules applicable',['']);         
+          return(array());
+        }
+    }
+
+    /* END Functions from Gateway */    
 
     public function createTicket(
         int $projectId,
@@ -322,20 +397,80 @@ class TicketImportHelper
             $messageId = $this->db->GetInsertID();
 
             $this->logger->debug('inserted',['id' => $messageId, 'schluessel' => $ticketNumber]);
-
             $this->updateTicketMessagesCount($ticketNumber);
             $this->resetTicketStatus($ticketNumber);
   //          $this->db->commit();
-
-            return (int) $messageId;
+            $success = 1;
+            $this->markTicketMessagesCompleted($ticketNumber);        
         } catch (Throwable $e) {
 //            $this->db->rollBack();
-
+            $success = 0;
             $this->logger->error('Failed to insert ticket message into db', ['exception' => $e]);
-
         }
-            $this->markTicketMessagesCompleted($ticketNumber);
+
+
+        $this->applyTicketRules($messageId);
+
+        return($success);
     }
+
+    public function applyTicketRules(int $ticketMessageId): void
+    {
+/*        $ticketData = $this->gateway->tryGetTicketDataByByMessage($ticketMessageId); */
+
+        $ticketData = $this->db->SelectArr("SELECT t.id, tn.mail as sender_email, tn.verfasser as sender_name, tn.betreff as subject, t.quelle as source_email FROM ticket t INNER JOIN ticket_nachricht tn ON tn.ticket = t.schluessel WHERE tn.id = '".$ticketMessageId."'")[0];
+
+        if ($ticketData === null) {
+            throw new InvalidArgumentException('cannot find ticket by message id');
+        }
+
+        $ticketId = $ticketData['id'];
+        $senderMail = $ticketData['sender_email'];
+        $senderName = $ticketData['sender_name'];
+        $subject = $ticketData['subject'];
+        $source = $ticketData['source_email'];
+
+        $this->logger->debug('check ticket rules',['tn_id' => $ticketMessageId, 'sender_email' => $senderMail, 'subject' => $subject]);
+
+        //TODO: richtig loggen: $this->app->erp->LogFile("Empfaengermail: $quelle Sendermail: $mailadresse Kunde: $kunde Betreff: $betreff");
+        $ruleArray = $this->getTicketRules($source, $senderMail, $senderName, $subject);
+        if (empty($ruleArray)) {
+            return;
+        }
+
+        foreach ($ruleArray as $rule) {
+
+            $this->logger->debug('ticket rule applies',['rule_id' => $rule['id']]);
+
+/*
+            $update = $this->db->update();
+            $update->table('ticket');
+            if ($rule['is_spam'] === 1) {
+                $update->set('inbearbeitung', 0);
+                $update->set('zugewiesen', 1);
+                $this->db->perform(
+                    'UPDATE `ticket_nachricht` SET `status` = :status WHERE `ticket` = :ticket_id',
+                    ['status' => TicketGateway::STATUS_SPAM, 'ticket_id' => $ticketId]
+                );
+            }
+            $update->set('dsgvo', $rule['is_gdpr_relevant']);
+            $update->set('privat', $rule['is_private'] );
+            $update->set('prio', $rule['priority'] );
+            $update->where('id = :ticket_id');
+            $sql = $update->getStatement();
+            $this->db->perform($sql, ['ticket_id' => $ticketId]);
+*/
+
+            if ($rule['is_spam'] === 1) {
+              $sql = "UPDATE `ticket_nachricht` SET `status` = \'spam\' WHERE `id` = '".$ticketMessageId."'";
+              $this->db->Update($sql);
+            }
+
+            $sql = "UPDATE `ticket` SET `dsgvo` = '".$rule['is_gdpr_relevant']."', `privat` = '".$rule['is_private']."', `prio` = '".$rule['priority']."', `warteschlange` = '".$rule['queue_id']."' WHERE `id` = '".$ticketId."'";
+            $this->db->Update($sql);
+        }
+    }
+
 
     /* End TicketService */   
 
@@ -355,6 +490,9 @@ class TicketImportHelper
                 continue;
             }
             try {
+
+                $this->logger->debug('Start import', ['message' => $message->getSubject()]);
+
                 $this->importMessage($message);
                 $insertedMailsCount++;
                 if ($this->mailAccount->isDeleteAfterImportEnabled()) {
