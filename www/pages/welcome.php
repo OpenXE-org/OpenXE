@@ -3147,7 +3147,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
         :'index.php?module=welcome&action=settings&cmd=changeroleclickbyclick',
       'icon' => $isAdminAdmin?'password-icon':'add-person-icon',
       'headline' => $isAdminAdmin?'Passwort ändern':'Ihre Rolle',
-      'subHeadline' => $isAdminAdmin?'Bitte gib ein Passwort ein und bestätige es mit einer zweiten Eingabe'
+      'subHeadline' => $isAdminAdmin?'Bitte geben Sie ein Passwort ein und bestätige es mit einer zweiten Eingabe'
         :'Bitte geben Sie Ihre Rolle im Unternehmen ein',
       'form' => [],
       'ctaButtons' => [
@@ -3274,7 +3274,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
       }
     }
 */
-    $subHeadline = 'Du kannst nun loslegen.';
+    $subHeadline = 'Es kann nun losgehen.';
     if($isAdminAdmin && !empty(erpAPI::Ioncube_Property('isdevelopmentversion'))) {
       $subHeadline = 'Es handelt sich hier um eine Development-Version. 
       Diese ist nicht für den produktiven Einsatz gedacht.';
@@ -3294,7 +3294,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
       'subHeadline' => $subHeadline,
       'ctaButtons' => [
         [
-          'title' => 'Klasse',
+          'title' => 'Ok',
           'action' => 'close'
         ]
       ]
@@ -3520,7 +3520,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
     $passwordunescaped = $this->app->Secure->GetPOST('setPassword', '', '', 'noescape');
     if(empty($password)) {
       return new JsonResponse(
-        ['error'=>'Passworteingabe falsch! Bitte gebe ein Passwort ein!'],
+        ['error'=>'Passworteingabe falsch! Bitte geben Sie ein Passwort ein!'],
         JsonResponse::HTTP_BAD_REQUEST
       );
     }
@@ -3955,7 +3955,7 @@ $this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table 
       if (!$credService->existCredentials()) {
           $this->app->Tpl->Add(
               'MSG_NO_GMAILAPI',
-              '<div class="info">Die Goolge Schnittstelle ist im System nicht aktiv.'
+              '<div class="info">Die Google Schnittstelle ist im System nicht aktiv.'
           );
           $this->app->Tpl->Set('GMAIL_AUTH_DISABLE', 'disabled');
           $this->app->Tpl->Set('GMAIL_ADDRESS_DISABLE', 'disabled');
