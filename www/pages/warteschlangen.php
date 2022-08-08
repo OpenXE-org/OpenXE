@@ -41,7 +41,7 @@ class Warteschlangen {
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=warteschlangen&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=warteschlangen&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
-                $sql = "SELECT w.id, w.warteschlange, w.label, (SELECT a.name from adresse a WHERE a.id = w.adresse), id FROM warteschlangen w";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS w.id, w.warteschlange, w.label, (SELECT a.name from adresse a WHERE a.id = w.adresse), id FROM warteschlangen w";
 
                 $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM warteschlangen WHERE $where";

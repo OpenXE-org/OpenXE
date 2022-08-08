@@ -41,7 +41,7 @@ class Ticketregeln {
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticketregeln&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=ticketregeln&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
-                $sql = "SELECT t.id, t.empfaenger_email, t.sender_email, t.name, t.betreff, t.spam, t.persoenlich, t.prio, t.dsgvo, w.warteschlange, t.aktiv, t.id FROM ticket_regeln t LEFT JOIN warteschlangen w ON t.warteschlange = w.label";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS t.id, t.empfaenger_email, t.sender_email, t.name, t.betreff, t.spam, t.persoenlich, t.prio, t.dsgvo, w.warteschlange, t.aktiv, t.id FROM ticket_regeln t LEFT JOIN warteschlangen w ON t.warteschlange = w.label";
 
                 $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM ticket_regeln WHERE $where";

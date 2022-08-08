@@ -1061,9 +1061,9 @@ class Wareneingang
                 $defaultorder = 6;
                 $defaultorderdesc = 0;
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=distriinhalt&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>&nbsp;</td></tr></table>";
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=distriinhalt&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;</td></tr></table>";
 
-                $sql = "SELECT 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS 
                     paketannahme.id, 
                     paketannahme.id, 
                     DATE_FORMAT(paketannahme.datum, '%d.%m.%Y %H:%i'), 

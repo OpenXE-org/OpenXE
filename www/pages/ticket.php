@@ -70,7 +70,7 @@ class Ticket {
                 $tagstart = "<li class=\"tag-editor-tag\">";
                 $tagend = "</li>";
 
-                $sql = "SELECT 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS 
                         t.id,
                         ".$dropnbox.",
                         t.schluessel,

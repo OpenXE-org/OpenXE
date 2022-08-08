@@ -589,7 +589,7 @@ class Auftrag extends GenAuftrag
 
                 $menu = "";
 
-                $sql = "SELECT 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
                 a.id,
                 '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
                 CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
@@ -678,7 +678,7 @@ class Auftrag extends GenAuftrag
 
                 $menu = "";
 
-                $sql = "SELECT 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
                 a.id,
                 '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
                 CONCAT('<input type=\"checkbox\" name=\"auswahlcronjob[]\" value=\"',a.id,'\" />') AS `auswahl`,
