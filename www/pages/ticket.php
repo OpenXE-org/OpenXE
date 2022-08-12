@@ -248,10 +248,16 @@ class Ticket {
 
                 if ($showdelete) {
                     $deletetext = '<a href=index.php?module=ticket&action=edit&id='.$ticket_id.'&cmd=deleteattachment'.'&fileid='.$file_attachment.'>'.
-                  '<img src="./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/delete.svg" />';
+                  '<img src="./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/delete.svg" /></a>';
                 } else {
                    $deletetext = "";
-                }   
+                }
+  
+                $attachtext = "";
+/*              Not implemented -> Attachment of ticket_nachricht to business object is the better option -> implement later
+               $attachtext = '<a href=index.php?module=dateien&action=edit&id='.$file_attachment.'>'.
+                  '<img src="./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/copy.svg" /></a>';  */
+
 
               $this->app->Tpl->Add($templatepos,                    
                   "<a href=\"index.php?module=dateien&action=send&id=".$file_attachment.
@@ -262,8 +268,8 @@ class Ticket {
                   ")".  
                   "</a>".
                   $deletetext.
-                  "</a>". 
-                  "</br>");
+                  $attachtext.
+                  "<br>");
           }
         }
     }

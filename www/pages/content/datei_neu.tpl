@@ -19,7 +19,7 @@
 	    <tr valign="middle"><td>Stichwort:</td><td colspan="3">
 	      <table>
 	      <tr> 
-	      <td><select name="huhu" onchange="document.getElementById('subjekt').value=document.eprooform.huhu.options[document.eprooform.huhu.selectedIndex].value">
+	      <td><select name="subjektselect" onchange="document.getElementById('subjekt').value=document.eprooform.subjektselect.options[document.eprooform.subjektselect.selectedIndex].value">
 		<option value=""></option>
 		<option value="Bild">Bild</option>
 		<option value="Schaltplan">Schaltplan</option>
@@ -32,17 +32,17 @@
 		<option value="Schaltplan">UST-Pr&uuml;fung</option>
 	      </select></td>
 	      <td>von</td>
-	      <td><select> 
-		<option value="Projekt">Projekt %</option>
-		<option value="Kunde">Kunde %</option>
-		<option value="Artikel">Artikel %</option>
-		<option value="Auftrag">Auftrag %</option>
+	      <td><select name="objekt"> 
+		    <option value="Projekt">Projekt ID</option>
+		    <option value="Kunde">Kunde ID</option>
+		    <option value="Artikel">Artikel ID</option>
+		    <option value="Auftrag">Auftrag ID</option>
 		</select></td>
 	      </tr>
 	      <tr>
 	      <td><input type="text" size="15" name="subjekt" id="subjekt" value="[SUBJEKT]"></td>
 	      <td>&nbsp;</td>
-	      <td><input type="text" size="15" name="objekt" value="[OBJEKT]"></td>
+	      <td><input type="text" size="15" name="nummer" value="[NUMMER]"></td>
 	      </tr>
 	      </table>
 	    </td></tr>

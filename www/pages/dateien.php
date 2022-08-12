@@ -39,7 +39,6 @@ class Dateien {
       // alle artikel die ein Kunde kaufen kann mit preisen netto brutto
       $cmd = $app->Secure->GetGET("smodule");
       $cmd = strtolower($_objekt);
-      $adresse = $app->DB->Select("SELECT adresse FROM {$cmd} WHERE id='$id' LIMIT 1");
 
       // headings
       $heading = array('','','','Titel', 'Stichwort', 'Version','Gr&ouml;&szlig;e', 'Ersteller','Version','Datum','Men&uuml;');
@@ -89,6 +88,31 @@ class Dateien {
       LEFT JOIN datei_version v ON v.datei=d.id WHERE $where";
         
     }
+
+   switch ($name) {
+      case "dateien_list":
+          $allowed['dateien_list'] = array('list');
+          $heading = array('ID','Titel', 'Beschreibung', 'Verkn&uuml;pfung', 'Geloescht', 'Logdatei',  'Men&uuml;');
+          $width = array('10%'); // Fill out manually later
+
+          $findcols = array('d.id','d.titel', 'd.beschreibung', 'd.nummer', 'd.geloescht', 'd.logdatei');
+          $searchsql = array('d.titel', 'd.beschreibung', 'd.nummer', 'd.geloescht', 'd.logdatei');
+
+          $defaultorder = 1;
+          $defaultorderdesc = 0;
+
+          $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=dateien&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a></td></tr></table>";
+
+          $sql = "SELECT SQL_CALC_FOUND_ROWS d.id, d.id, d.titel, d.beschreibung, GROUP_CONCAT(ds.objekt SEPARATOR ', '), d.geloescht, d.logdatei, d.id FROM datei d LEFT join datei_stichwoerter ds ON ds.datei = d.id";
+
+          $where = "1";
+          $count = "SELECT count(DISTINCT id) FROM datei WHERE $where";
+
+          $groupby = " GROUP BY d.id ";
+
+         break;
+    }
+
     $erg = [];
    
     foreach($erlaubtevars as $k => $v)
@@ -113,7 +137,7 @@ class Dateien {
 
     $this->app->ActionHandler("create","DateienCreate");
     $this->app->ActionHandler("edit","DateienEdit");
-    $this->app->ActionHandler("list","DateienList");
+    $this->app->ActionHandler("list","datei_list");
     $this->app->ActionHandler("archiv","DateienArchiv");
     $this->app->ActionHandler("artikel","DateienArtikel");
     $this->app->ActionHandler("send","DateienSend");
@@ -172,23 +196,16 @@ class Dateien {
     $this->app->erp->Headlines('Dateien');
   }
 
+  function datei_list() {
+    $this->app->erp->MenuEintrag("index.php?module=dateien&action=list", "&Uuml;bersicht");
+    $this->app->erp->MenuEintrag("index.php?module=dateien&action=create", "Neu anlegen");
 
-  function DateienList()
-  {
-    $this->DateienHauptMenu();
-    
-    /* Dateiene zur Nachbesserung */ 
-    $this->app->Tpl->Set('HEADING','Dateien');
+    $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
-    $this->app->Tpl->Set('SUBHEADING','Neuste Dateien');
-    //Jeder der in Nachbesserung war egal ob auto oder manuell wandert anschliessend in Manuelle-Freigabe");
-    $table = new EasyTable($this->app);
-    $table->Query("SELECT d.titel, s.subjekt, v.version, v.ersteller, v.bemerkung, d.id FROM datei d LEFT JOIN datei_stichwoerter s ON d.id=s.datei                                                                  LEFT JOIN datei_version v ON v.datei=d.id ORDER by d.id DESC LIMIT 10",0,"");
-    $table->Display('INHALT');
-    $this->app->Tpl->Parse('PAGE',"rahmen.tpl");
-    $this->app->Tpl->Set('INHALT','');
-  }
-  
+    $this->app->YUI->TableSearch('TAB1', 'dateien_list', "show", "", "", basename(__FILE__), __CLASS__);
+    $this->app->Tpl->Parse('PAGE', "dateien_list.tpl");
+  }    
+
   function DateienDownload()
   {
     $typ = $this->app->Secure->GetGET('typ');
@@ -274,7 +291,7 @@ class Dateien {
         $fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'],$titel,$beschreibung,$nummer,$_FILES['upload']['tmp_name'],$this->app->User->GetName());
 
         // stichwoerter hinzufuegen
-        $this->app->erp->AddDateiStichwort($fileid,$subjekt,$objekt);
+        $this->app->erp->AddDateiStichwort($fileid,$subjekt,$objekt,$nummer);
         $this->app->Location->execute('index.php?module=dateien&action=edit&id='.$fileid);
         //loeschen von /tmp	
       }
@@ -305,7 +322,6 @@ class Dateien {
     $beschreibung = $this->app->DB->Select("SELECT beschreibung FROM datei WHERE id='$id' LIMIT 1");
     $nummer= $this->app->DB->Select("SELECT nummer FROM datei WHERE id='$id' LIMIT 1");
 
-
     $this->app->Tpl->Set('TITEL',$titel);
     $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$titel);
     $this->app->Tpl->Set('BESCHREIBUNG',$beschreibung);
@@ -313,17 +329,22 @@ class Dateien {
 
     $table = new EasyTable($this->app);
     $table->Query("SELECT version,dateiname,datum,ersteller,bemerkung,id FROM datei_version WHERE datei='$id'",0,"");
-    $table->DisplayNew('VERSIONEN',"
+/*    $table->DisplayNew('VERSIONEN',"
       <!--<a href=\"index.php?module=adresse&action=dateiversion&id=$id&lid=%value%\">edit</a>-->
       <a href=\"#\"onclick=\"if(!confirm('Wirklich löschen?')) return false; else window.location.href='index.php?module=dateien&action=delete&fid=%value%&version=true&id=$id';\" ><img src=\"./themes/new/images/delete.svg\" border=\"0\"></a>
       <a href=\"index.php?module=dateien&action=send&fid=%value%&id=$id\"><img src=\"./themes/new/images/download.svg\" border=\"0\"></a>
       ",
-      "<!--<a href=\"index.php?module=adresse&action=lieferadresseneu&id=$id\">Neue Version anlegen</a>-->");
+      "<!--<a href=\"index.php?module=adresse&action=lieferadresseneu&id=$id\">Neue Version anlegen</a>-->");*/
+     $table->DisplayNew('VERSIONEN',"
+      <a href=\"index.php?module=dateien&action=send&fid=%value%&id=$id\"><img src=\"./themes/new/images/download.svg\" border=\"0\"></a>
+      ");
   
-
     $table = new EasyTable($this->app);
     $table->Query("SELECT subjekt,objekt,parameter FROM datei_stichwoerter WHERE datei='$id'",0,"");
-    $table->DisplayNew('STICHWORTE',"Parameter","noAction");
+    $table->DisplayNew('STICHWOERTER',"Parameter","noAction");
+
+    $this->app->YUI->AutoComplete("auftrag_zuordnen","auftrag");
+    $this->app->YUI->AutoComplete("verbindlichkeit_zuordnen","verbindlichkeit");
 
     $this->app->Tpl->Set('HEADING',"Datei (Bearbeiten)");
     $this->app->Tpl->Parse('PAGE',"datei.tpl");
@@ -346,32 +367,9 @@ class Dateien {
 
     $this->app->erp->RunHook('LayouttemplateAttachmentItemsDelete', 2, $id, $cmd);
 
-    $version = $this->app->Secure->GetGET("version");
-    if($version!='')
-    {
-      if(is_numeric($fid)){
-        $this->app->DB->Delete("DELETE FROM datei_version WHERE id='$fid' AND datei='$id' LIMIT 1");
-      }
-      // TODO Datei aus dem Dateisystem entfernen
-      $this->app->Location->execute("index.php?module=dateien&action=edit&id=$id");
-    }
-    // stichweoeter loeschen
-    if(is_numeric($id)){
+    // Deletion of files removed, they only get marketd
 
-      if($cmd!="")
-      {
-        $this->app->DB->Delete("DELETE FROM datei_stichwoerter WHERE datei='$id' AND objekt LIKE '$cmd' LIMIT 1");
-      } else {
-        $this->app->DB->Delete("DELETE FROM datei_stichwoerter WHERE datei='$id'");
-      }
-
-      $check = $this->app->DB->Select("SELECT COUNT(id) FROM datei_stichwoerter WHERE datei='$id'");
-      if($check <=0)
-      {
-        $this->app->DB->Delete("DELETE FROM datei_version WHERE datei='$id'");
-        $this->app->DB->Update("UPDATE datei SET geloescht=1 WHERE id='$id'");
-      }
-    }
+    $this->app->DB->Update("UPDATE datei SET geloescht=1 WHERE id='$id'");
     $refer = $_SERVER['HTTP_REFERER'];
     $this->app->Location->execute($refer);
   }
