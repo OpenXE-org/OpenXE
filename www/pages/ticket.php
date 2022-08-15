@@ -73,7 +73,7 @@ class Ticket {
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                         t.id,
                         ".$dropnbox.",
-                        t.schluessel,
+                        CONCAT('<a href=\"index.php?module=ticket&action=edit&id=',t.id,'\">',t.schluessel,'</a>'),
                         t.zeit,
                         a.name,
                         CONCAT('<b>',".$priobetreff.",'</b><br/><i>',replace(substring(t.notiz,1,500),'\n','<br/>'),'</i>'), CONCAT('<div class=\"ticketoffene\"><ul class=\"tag-editor\">'\n,'".$tagstart."',replace(t.tags,',','".$tagend."<div class=\"tag-editor-spacer\">&nbsp;</div>".$tagstart."'),'".$tagend."','</ul></div>'),
@@ -220,12 +220,15 @@ class Ticket {
 
         $sql =  "SELECT n.id,
                 n.betreff,
+                n.bearbeiter,
                 n.verfasser,
                 n.mail,
+                t.quelle,
                 n.zeit,
                 n.zeitausgang,
                 n.versendet,
                 n.text,
+                n.textausgang,
                 n.verfasser_replyto,
                 n.mail_replyto,
                 n.mail_cc,
@@ -278,7 +281,25 @@ class Ticket {
 
         // Add Messages now
         foreach ($messages as $message) {
-            if ($message['versendet'] == '1') {
+
+            // Clear this first
+            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
+
+            // Xentral 20 compatibility
+            if ($message['textausgang'] != '') {
+              // Sent message 
+              $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff'].' (gesendet)'));
+              $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
+              $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
+              $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
+              $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['bearbeiter']));
+              $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['verfasser']." <".$message['mail'].">"));
+              $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
+            }
+
+            if ($message['versendet'] == '1' && empty($message['textausgang'])) { //  textausgang is always empty, except for old Xentral 20 tickets
+
+               // Sent message          
 
                 if (is_null($message['zeitausgang'])) {                    
                     if (!$showdrafts) {
@@ -295,8 +316,18 @@ class Ticket {
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
                 $this->app->Tpl->Set("NACHRICHT_NAME",htmlentities($message['verfasser']));
             } else {
+
+                // Received message
+
                 $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail'].">"));
-                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail_recipients']));
+
+                if ($message['mail_recipients'] != '') {
+                  $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail_recipients']));
+                }
+                else {
+                  // Xentral 20 compatibility
+                  $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['quelle']));
+                }
                 $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
                 $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']));
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
@@ -305,10 +336,10 @@ class Ticket {
 
             $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
 
-            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
             $this->add_attachments_html($id,$message['id'],'NACHRICHT_ANHANG',false);
          
             $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
+
         }
     }
 
