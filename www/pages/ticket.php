@@ -19,6 +19,8 @@ class Ticket {
         $this->app->ActionHandler("create", "ticket_create"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "ticket_edit");
         $this->app->ActionHandler("minidetail", "ticket_minidetail");
+        $this->app->ActionHandler("text", "ticket_text"); // Output text for iframe display
+        $this->app->ActionHandler("text_ausgang", "ticket_text_ausgang"); // Output text for iframe display
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -217,6 +219,16 @@ class Ticket {
             $limitsql = "";
         }
 
+        if (empty($ticket_id)) {
+          $ticket_where = "";
+        } else {
+          $ticket_where = " AND t.id = ".$ticket_id;
+        }
+
+        if (empty($where)) {
+          $where = "1";
+        }
+
 //        $sql = "SELECT n.id, n.betreff, n.verfasser, n.mail, n.mail_cc, n.zeit, n.zeitausgang, n.versendet, n.text, n.verfasser_replyto, mail_replyto, (SELECT GROUP_CONCAT(value SEPARATOR ', ' FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'cc') value from) as cc FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC ".$limitsql; 
 
         $sql =  "SELECT n.id,
@@ -236,7 +248,7 @@ class Ticket {
                 (SELECT GROUP_CONCAT(value SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'cc') as mail_cc_recipients,
                 (SELECT GROUP_CONCAT(value SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'to') as mail_recipients
                 FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket 
-                WHERE (".$where.") AND t.id = ".$ticket_id." ORDER BY n.zeit DESC ".$limitsql; 
+                WHERE (".$where.") ".$ticket_where." ORDER BY n.zeit DESC ".$limitsql; 
 
         return $this->app->DB->SelectArr($sql);        
     }
@@ -289,12 +301,17 @@ class Ticket {
             // Xentral 20 compatibility
             if ($message['textausgang'] != '') {
               // Sent message 
-              $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff'].' (gesendet)'));
+
+              $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
               $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
               $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
               $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
               $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['bearbeiter']));
               $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['verfasser']." <".$message['mail'].">"));
+
+//              $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
+              $this->app->Tpl->Set("NACHRICHT_TEXT",'<iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>');
+
               $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
             }
 
@@ -330,12 +347,14 @@ class Ticket {
                   $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['quelle']));
                 }
                 $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
-                $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']));
+                $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
             }
 
-            $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
+//            $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
+            $this->app->Tpl->Set("NACHRICHT_TEXT",'<iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>');
+
 
             $this->add_attachments_html($id,$message['id'],'NACHRICHT_ANHANG',false);
          
@@ -344,6 +363,40 @@ class Ticket {
         }
     }
 
+
+    function ticket_text() {
+        $mid = $this->app->Secure->GetGET('mid');
+
+        if (empty($mid)) {
+          return;
+        }
+
+        $messages = $this->get_messages_of_ticket("", "n.id = ".$mid, NULL);
+
+        if (empty($messages)) {
+        }
+
+        $this->app->Tpl->Set("TEXT",$messages[0]['text']);
+        $this->app->Tpl->Output('ticket_text.tpl');
+        $this->app->ExitXentral();
+    }
+
+    function ticket_text_ausgang() {
+        $mid = $this->app->Secure->GetGET('mid');
+
+        if (empty($mid)) {
+          return;
+        }
+
+        $messages = $this->get_messages_of_ticket("", "n.id = ".$mid, NULL);
+
+        if (empty($messages)) {
+        }
+
+        $this->app->Tpl->Set("TEXT",$messages[0]['textausgang']);
+        $this->app->Tpl->Output('ticket_text.tpl');
+        $this->app->ExitXentral();
+    }
 
      /**
     * @throws NumberGeneratorException

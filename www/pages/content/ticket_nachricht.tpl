@@ -10,8 +10,8 @@
                                     <tr><td>{|An|}:</td><td>[NACHRICHT_RECIPIENTS]</td></tr>
                                     <tr><td>{|CC|}:</td><td>[NACHRICHT_CC_RECIPIENTS]</td></tr>
                                     <tr><td colspan=2><hr style="border-style:solid; border-width:1px"></td></tr>
-                                    <tr><td colspan=2><div id="body" style="overflow:scroll; max-height:400px;">[NACHRICHT_TEXT]</div></td></tr>
-                                    <tr><td colspan=2><div id="body" style="overflow:scroll; max-height:400px;">[NACHRICHT_ANHANG]</div></td></tr>
+                                    <tr><td colspan=2><div id="body" class="ticket_text_div">[NACHRICHT_TEXT]</div></td></tr>
+                                    <tr><td colspan=2><div id="body" class="ticket_attachments">[NACHRICHT_ANHANG]</div></td></tr>
                                 </table>
                             </fieldset> 
                         </div>

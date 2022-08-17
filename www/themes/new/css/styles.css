@@ -2455,6 +2455,12 @@ ul.tag-editor {
     visibility: hidden;
 }
 
+.ticket_text {
+    width: 100%;
+    border: none;
+}
+
+
 .ui-button-icon,
 .ui-button:not(.ui-dialog-titlebar-close):not(.button-secondary),
 input[type=submit]:not(.button-secondary) {
