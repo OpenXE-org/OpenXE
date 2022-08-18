@@ -21,6 +21,7 @@ class Ticket {
         $this->app->ActionHandler("minidetail", "ticket_minidetail");
         $this->app->ActionHandler("text", "ticket_text"); // Output text for iframe display
         $this->app->ActionHandler("text_ausgang", "ticket_text_ausgang"); // Output text for iframe display
+        $this->app->ActionHandler("statusfix", "ticket_statusfix"); // Xentral 20 compatibility set all ticket status to latest ticket_nachricht status
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -799,55 +800,104 @@ class Ticket {
         $this->app->Tpl->Parse('PAGE', "ticket_edit.tpl");
     }
 
-    /**
-     * Get all paramters from html form and save into $input
-     */
-    public function GetInput(): array {
-        $input = array();
-        //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
-        
-      	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
-      	$input['status'] = $this->app->Secure->GetPOST('status');
-      	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
-      	$input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
-      	$input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";
-      	$input['neue_notiz'] = $this->app->Secure->GetPOST('neue_notiz');
-      	$input['notiz'] = $this->app->Secure->GetPOST('notiz');
-      	$input['tags'] = $this->app->Secure->GetPOST('tags');
-      	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
-      	$input['email_sender'] = $this->app->Secure->GetPOST('email_sender');
-      	$input['email_an'] = $this->app->Secure->GetPOST('email_an');
-      	$input['email_cc'] = $this->app->Secure->GetPOST('email_cc');
-      	$input['email_bcc'] = $this->app->Secure->GetPOST('email_bcc');
-      	$input['email_betreff'] = $this->app->Secure->GetPOST('email_betreff');
-      	$input['email_text'] = $this->app->Secure->GetPOST('email_text');
-        return $input;
-    }   
+  /**
+   * Get all paramters from html form and save into $input
+   */
+  public function GetInput(): array {
+      $input = array();
+      //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
+      
+    	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
+    	$input['status'] = $this->app->Secure->GetPOST('status');
+    	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
+    	$input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
+    	$input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";
+    	$input['neue_notiz'] = $this->app->Secure->GetPOST('neue_notiz');
+    	$input['notiz'] = $this->app->Secure->GetPOST('notiz');
+    	$input['tags'] = $this->app->Secure->GetPOST('tags');
+    	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
+    	$input['email_sender'] = $this->app->Secure->GetPOST('email_sender');
+    	$input['email_an'] = $this->app->Secure->GetPOST('email_an');
+    	$input['email_cc'] = $this->app->Secure->GetPOST('email_cc');
+    	$input['email_bcc'] = $this->app->Secure->GetPOST('email_bcc');
+    	$input['email_betreff'] = $this->app->Secure->GetPOST('email_betreff');
+    	$input['email_text'] = $this->app->Secure->GetPOST('email_text');
+      return $input;
+  }   
 
-    public function ticket_minidetail($parsetarget='',$menu=true) {
+  public function ticket_minidetail($parsetarget='',$menu=true) {
 
-        $id = $this->app->Secure->GetGET('id');
+      $id = $this->app->Secure->GetGET('id');
 
-        // Get last 3 messages
-        $messages = $this->get_messages_of_ticket($id, "1", 3);        
+      // Get last 3 messages
+      $messages = $this->get_messages_of_ticket($id, "1", 3);        
 
-        if(!empty($messages)) {
-            $this->add_messages_tpl($messages, true); // With drafts
-            $render = true;
-        } else {
-        }
+      if(!empty($messages)) {
+          $this->add_messages_tpl($messages, true); // With drafts
+          $render = true;
+      } else {
+      }
 
-        if($parsetarget=='')
-        {
-          if ($render) {
-             $this->app->Tpl->Output('ticket_minidetail.tpl');
-          }
-          $this->app->ExitXentral();
-        }
+      if($parsetarget=='')
+      {
         if ($render) {
-          $this->app->Tpl->Parse($parsetarget,'ticket_minidetail.tpl');
+           $this->app->Tpl->Output('ticket_minidetail.tpl');
         }
+        $this->app->ExitXentral();
+      }
+      if ($render) {
+        $this->app->Tpl->Parse($parsetarget,'ticket_minidetail.tpl');
+      }
+  }
+
+  /*
+  * After import of Xentral 20 ticket system
+  * Set all ticket status to the status of the latest ticket_nachricht
+  */
+  function ticket_statusfix() {
+
+    $confirmed = $this->app->Secure->GetGET('confirmed');
+ 
+    if ($confirmed == "yes") {
+
+      $sql = "UPDATE
+                  ticket
+              SET
+              STATUS
+                  =ifnull((
+                  SELECT
+                      tn.status
+                  FROM
+                      ticket_nachricht tn
+                  INNER JOIN(
+                      SELECT
+                          ticket,
+                          MAX(zeit) AS lastzeit
+                      FROM
+                          ticket_nachricht
+                      GROUP BY
+                          ticket
+                  ) l
+              ON
+                  tn.ticket = l.ticket AND tn.zeit = l.lastzeit
+              WHERE
+                  ticket.schluessel = tn.ticket   
+                      LIMIT 1
+              ),'abgeschlossen')
+              WHERE ticket.status = 'neu'";
+
+      $this->app->DB->Update($sql);
+
+      $this->app->Tpl->Set('TEXT', "Done.");
+      $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
     }
+    else {
+      $this->app->Tpl->Set('TEXT', "This will replace all ticket status with the status of the latest ticket_nachricht. To confirm, press here: ");
+      $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=statusfix&confirmed=yes">Confirm</a>');
+      $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
+    }
+
+  }
 }
 
 
