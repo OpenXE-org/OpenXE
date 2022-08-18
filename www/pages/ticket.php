@@ -22,6 +22,7 @@ class Ticket {
         $this->app->ActionHandler("text", "ticket_text"); // Output text for iframe display
         $this->app->ActionHandler("text_ausgang", "ticket_text_ausgang"); // Output text for iframe display
         $this->app->ActionHandler("statusfix", "ticket_statusfix"); // Xentral 20 compatibility set all ticket status to latest ticket_nachricht status
+        $this->app->ActionHandler("datefix", "ticket_datefix"); // Xentral 20 compatibility set all ticket dates to latest ticket_nachricht date
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -894,6 +895,38 @@ class Ticket {
     else {
       $this->app->Tpl->Set('TEXT', "This will replace all ticket status with the status of the latest ticket_nachricht. To confirm, press here: ");
       $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=statusfix&confirmed=yes">Confirm</a>');
+      $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
+    }
+
+  }
+  /*
+  * After import of Xentral 20 ticket system
+  * Set all ticket dates to the date of the latest ticket_nachricht
+  */
+  function ticket_datefix() {
+
+    $confirmed = $this->app->Secure->GetGET('confirmed');
+ 
+    if ($confirmed == "yes") {
+
+      $sql = "UPDATE ticket set zeit = 
+              (SELECT    
+                  MAX(zeit) AS lastzeit
+              FROM
+                  ticket_nachricht
+              WHERE ticket.schluessel = ticket_nachricht.ticket AND ticket.schluessel
+              LIMIT 1
+              )    
+              WHERE ticket.status <> 'abgeschlossen' AND ticket.status <> 'spam'";
+
+      $this->app->DB->Update($sql);
+
+      $this->app->Tpl->Set('TEXT', "Done.");
+      $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
+    }
+    else {
+      $this->app->Tpl->Set('TEXT', "This will replace all open ticket dates with the date of the latest ticket_nachricht. To confirm, press here: ");
+      $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=datefix&confirmed=yes">Confirm</a>');
       $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
     }
 
