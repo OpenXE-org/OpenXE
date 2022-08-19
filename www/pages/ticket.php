@@ -889,12 +889,13 @@ class Ticket {
 
       $this->app->DB->Update($sql);
 
-      $this->app->Tpl->Set('TEXT', "Done.");
+      $this->app->Tpl->Set('TEXT', "Status fix abgeschlossen.");
       $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
     }
     else {
-      $this->app->Tpl->Set('TEXT', "This will replace all ticket status with the status of the latest ticket_nachricht. To confirm, press here: ");
-      $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=statusfix&confirmed=yes">Confirm</a>');
+//      $this->app->Tpl->Set('TEXT', "This will replace all ticket status with the status of the latest ticket_nachricht. To confirm, press here: ");
+      $this->app->Tpl->Set('TEXT', "Dieser Assistent ersetzt den Status aller offenen Tickets (Weder abgeschlossen noch Spam) mit dem Status der letzten Nachricht im Ticket. Hier starten: ");
+      $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=statusfix&confirmed=yes"><button>OK</button></a>');
       $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
     }
 
@@ -921,12 +922,13 @@ class Ticket {
 
       $this->app->DB->Update($sql);
 
-      $this->app->Tpl->Set('TEXT', "Done.");
+      $this->app->Tpl->Set('TEXT', "Datum fix abgeschlossen.");
       $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
     }
     else {
-      $this->app->Tpl->Set('TEXT', "This will replace all open ticket dates with the date of the latest ticket_nachricht. To confirm, press here: ");
-      $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=datefix&confirmed=yes">Confirm</a>');
+//      $this->app->Tpl->Set('TEXT', "This will replace all open ticket dates with the date of the latest ticket_nachricht. To confirm, press here: ");
+      $this->app->Tpl->Set('TEXT', "Dieser Assistent ersetzt das Datum aller offenen Tickets (Weder abgeschlossen noch Spam) mit dem Datum der letzten Nachricht im Ticket. Hier starten: ");
+      $this->app->Tpl->Add('TEXT', '<a href="index.php?module=ticket&action=datefix&confirmed=yes"><button>OK</button></a>');
       $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
     }
 
