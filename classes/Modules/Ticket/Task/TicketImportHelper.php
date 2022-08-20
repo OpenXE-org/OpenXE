@@ -769,7 +769,7 @@ class TicketImportHelper
                         $dateiname = $this->formatter->encodeToUtf8($dateiname);
                         $dateiname = htmlspecialchars_decode($dateiname);
                     }
-                    if (stripos(strtoupper($dateiname), 'UTF-8\'\'') == 0) {
+                    if (stripos(strtoupper($dateiname), 'UTF-8\'\'') === 0) {
                         $dateiname = $this->formatter->encodeToUtf8(urldecode(substr($dateiname,7)));
                         $dateiname = htmlspecialchars_decode($dateiname);
                     }

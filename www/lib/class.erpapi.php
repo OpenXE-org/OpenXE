@@ -43887,7 +43887,7 @@ function Firmendaten($field,$projekt="")
         if(empty($pathArr) || !is_dir($prefix.'/'.implode('/', $pathArr))) {
           return;
         }
-        $glob = glob($prefix.implode('/', $pathArr).'/*');
+        $glob = glob($prefix.implode('/', $pathArr).'/*'); /*/*
         if(!empty($glob)) {
           return;
         }
@@ -43985,6 +43985,9 @@ function Firmendaten($field,$projekt="")
         return strtolower($tmp['extension']);
       }
 
+    /*
+    * Retrieve files from stichwoerter and provide them in tmp for access
+    */
 
       function GetDateiSubjektObjektDateiname($subjekt,$objekt,$parameter,$prefix="")
       {
@@ -43994,11 +43997,13 @@ function Firmendaten($field,$projekt="")
         }
         $tmp = [];
         foreach($dateien as $datei) {
-          $tmpname = tempnam($this->GetTMP(), $prefix);
-          $newname = $tmpname."_".$this->GetDateiName($datei['datei']);
 
-          copy($this->GetDateiPfad($datei['datei']),$newname); // Why in the world..?!
+//          $tmpname = tempnam($this->GetTMP(), $prefix);
 
+          $tmpname = $this->GetTMP().md5(uniqid(mt_rand(), true));
+          mkdir ($tmpname);
+          $newname = $tmpname."/".$this->GetDateiName($datei['datei']);
+          copy($this->GetDateiPfad($datei['datei']),$newname); 
           $tmp[] = $newname;
         }
         return $tmp;

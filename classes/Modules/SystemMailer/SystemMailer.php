@@ -145,8 +145,11 @@ final class SystemMailer
 
         $email = new EmailMessage($subject, $body, $recipients, $ccs, $bccs);
         foreach ($attachFiles as $file) {
+            $this->logger->debug("Attaching file", ['filename' => $file]);
             if ($file !== null && file_exists($file)) {
                 $email->addAttachment(new FileAttachment($file));
+            } else {
+                $this->logger->debug("Attaching file failed", ['filename' => $file]);
             }
         }
 
