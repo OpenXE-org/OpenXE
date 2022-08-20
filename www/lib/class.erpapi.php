@@ -43887,7 +43887,7 @@ function Firmendaten($field,$projekt="")
         if(empty($pathArr) || !is_dir($prefix.'/'.implode('/', $pathArr))) {
           return;
         }
-        $glob = glob($prefix.implode('/', $pathArr).'/*'); /*/*
+        $glob = glob($prefix.implode('/', $pathArr).'/*'); /**/
         if(!empty($glob)) {
           return;
         }
