@@ -890,18 +890,23 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
 
     $this->app->erp->RunHook('welcome_start', 1 , $this);
 
-    if(empty($this->app->User->GetField('role')) || $this->app->acl->IsAdminadmin()) {
-      $this->app->ModuleScriptCache->IncludeWidgetNew('ClickByClickAssistant');
-      $this->app->ModuleScriptCache->IncludeJavascriptFiles(
+    // Xentral 20 database compatibility
+    if ($this->app->DB->Select("SHOW COLUMNS FROM `user` LIKE 'role'")) {
+
+      if(empty($this->app->User->GetField('role')) || $this->app->acl->IsAdminadmin()) {
+        $this->app->ModuleScriptCache->IncludeWidgetNew('ClickByClickAssistant');
+        $this->app->ModuleScriptCache->IncludeJavascriptFiles(
         'welcome',
         [
           'body' => [
             './classes/Modules/Welcome/www/js/welcome_firststart.js',
             ],
         ]
-      );
-      $this->app->Tpl->Parse('AUFGABENPOPUP', 'welcome_firststart.tpl');
+        );
+        $this->app->Tpl->Parse('AUFGABENPOPUP', 'welcome_firststart.tpl');        
+      }
     }
+
     if($this->app->User->GetType() === 'admin') {
       $this->app->Tpl->Set('COLROWTASKS', '6');
     }

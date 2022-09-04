@@ -654,7 +654,15 @@ class Acl
       if($this->app->DB->error())$usesha512 = false;
       
       $stechuhrdevicelogin = false;
-      $devices = $this->app->DB->SelectArr("SELECT * from stechuhrdevice where aktiv = 1 and code = '$code' AND code <> ''");
+
+      // Xentral 20 database compatibility
+      $check = $this->app->DB->Select("SHOW TABLES LIKE 'stechuhrdevice'");
+
+      $devices = null;
+      if (!empty($check)) {
+        $devices = $this->app->DB->SelectArr("SELECT * from stechuhrdevice where aktiv = 1 and code = '$code' AND code <> ''");
+      }
+
       if($devices)
       {
         foreach($devices as $device)
