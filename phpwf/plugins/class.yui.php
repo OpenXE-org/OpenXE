@@ -12174,7 +12174,6 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
       }
     }
 
-/* NOT USED
     function AutoCompleteAuftrag($fieldname, $filter, $onlyfirst = 0, $extendurl = "") {
 
       $module = $this->app->Secure->GetGET("module");
@@ -12246,7 +12245,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       }
       return str_replace($replace, $new, $sql);
     }
-    
+   
     function AutoCompleteBestellung($fieldname, $filter, $onlyfirst = 0, $extendurl = "") {
 
       $module = $this->app->Secure->GetGET("module");
@@ -12276,7 +12275,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . '"
       $this->app->Tpl->Set(strtoupper($fieldname) . 'START', '<div style="font-size: 8pt;"><div class="ui-widget" style="font-size: 8pt;">');
       $this->app->Tpl->Set(strtoupper($fieldname) . 'ENDE', '</div></div>');
     }
-    
+  
     function AutoCompleteAddCut($fieldname, $filter, $onlyfirst = 0, $extendurl = "") {
 
       
@@ -12330,7 +12329,6 @@ return false;
       $this->app->Tpl->Set(strtoupper($fieldname) . 'ENDE', '</div></div>');
     }
 
-*/
     
     function AutoCompleteAdd($fieldname, $filter, $onlyfirst = 0, $extendurl = "") {
 
@@ -12387,8 +12385,6 @@ return false;
     }
 
 
-/* NOT USED  
-   
     function AutoCompleteAddEvent($fieldname, $filter, $onlyfirst = 0, $extendurl = "") {
       if ($onlyfirst) {
         $tpl = '
@@ -12479,7 +12475,6 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
 
     }
     
-*/
     
     function AutoComplete($fieldname, $filter, $onlyfirst = 0, $extendurl = "", $extendedelement = "", $extendurl2 ="", $extendedelement2 = "", $appendto = "", $return = false) {
 
