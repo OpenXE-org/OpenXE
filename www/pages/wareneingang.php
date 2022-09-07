@@ -163,8 +163,10 @@ class Wareneingang
         //&NBSP;<a href=\"#\" onclick=\"if(!confirm('Auftrag wirklich aus dem Versand nehmen?')) return false; else window.location.href='index.php?module=versanderzeugen&action=delete&id=%value%';\"><img src=\"./themes/[THEME]/images/delete.svg\" border=\"0\"></a></td></tr></table>";
         $menucol = 4;
 
-        if($this->app->erp->Firmendaten("wareneingang_lagerartikel")) $lagerartikel = "AND art.lagerartikel = 1";
-        else $lagerartikel = "";
+//        if($this->app->erp->Firmendaten("wareneingang_lagerartikel")) $lagerartikel = "AND art.lagerartikel = 1";
+//        else 
+
+$lagerartikel = "";
         $receiptDocument = $this->app->erp->ModulVorhanden('receiptdocument');
         if($receiptDocument) {
           $this->app->DB->Select('SELECT id FROM receiptdocument LIMIT 1');
