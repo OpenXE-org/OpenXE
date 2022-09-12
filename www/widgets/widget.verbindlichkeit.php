@@ -151,7 +151,8 @@ class WidgetVerbindlichkeit extends WidgetGenVerbindlichkeit
     $speichern = $this->app->Secure->GetPOST("speichern");
     if($action=="edit" && $speichern!="")
     {
-        $this->app->erp->VerbindlichkeitProtokoll($id,"Verbindlichkeit gespeichert");
+// Missing in API
+//        $this->app->erp->VerbindlichkeitProtokoll($id,"Verbindlichkeit gespeichert");
     }
 
     $this->app->Tpl->Parse("OCRDIALOGE","verbindlichkeit_ocrdialoge.tpl");
