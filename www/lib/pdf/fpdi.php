@@ -353,11 +353,17 @@ class fpdi extends fpdf_tpl {
     			$this->_out("<<",false);
 
     			reset ($value[1]);
-
+                        /*
     			while (list($k, $v) = each($value[1])) {
     				$this->_out($k . " ",false);
     				$this->pdf_write_value($v);
     			}
+                        */ 
+
+		        foreach($value[1] as $k => $v) {
+		          $this->_out($k . " ",false);
+		          $this->pdf_write_value($v);
+		        }
 
     			$this->_out(">>");
     			break;
