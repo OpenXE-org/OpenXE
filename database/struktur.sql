@@ -15208,6 +15208,7 @@ CREATE TABLE IF NOT EXISTS `verbindlichkeit` (
                                                  `klaergrund` varchar(255) NOT NULL DEFAULT '',
                                                  `skonto_erhalten` decimal(10,2) NOT NULL DEFAULT '0.00',
                                                  `kurs` decimal(18,8) NOT NULL DEFAULT '0.00000000',
+                                                 `sprache` varchar(25) NOT NULL DEFAULT '',
                                                  PRIMARY KEY (`id`),
                                                  KEY `adresse` (`adresse`),
                                                  KEY `bestellung` (`bestellung`)
