@@ -13,6 +13,14 @@ Xenomporio ist eine umfassende webbasierte Anwendung zur Abwicklung aller kaufm�
 * Aufgaben- und Terminverwaltung
 * Zeitabrechnung
 
+# Neue Community-Seite: https://openxe.org/
+
+An alle Interessenten:
+
+Dieses Projekt startet mit einer leistungsfähigen Software, aber gerade am Anfang ist es schwierig, die potenziellen Anwender abzuschätzen. Das ist jedoch eine wichtige Information und auch Motivation für alle, die sich aktiv am Projekt beteiligen. Wir bitten daher, alle Interessenten für OpenXE, sich hier anzumelden. Die Anmeldung ist kostenfrei und mit keinerlei Verpflichtungen versehen. Ausserdem habt Ihr den Vorteil, Euch bei Fragen direkt im Communitybereich zu melden oder selber aktiv mitzugestalten.
+
+Wir freuen uns über Eure Teilnahme, egal ob als stiller Mitleser oder aktiver User.
+
 # Letzte Änderungen: Ticket System
 
 Neu in [V.1.3](https://github.com/xenomporio-org/Xenomporio/releases/tag/V.1.3):
