@@ -1,4 +1,4 @@
-# Xenomporio - The free ERP
+# Xenomporio / OpenXE - The free ERP
 
 ![Xenomporio overview](https://github.com/xenomporio-org/Xenomporio/blob/master/www/themes/new/images/login_screen_picture.jpg "Xenomporio")
 
