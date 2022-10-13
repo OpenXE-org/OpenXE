@@ -1,4 +1,4 @@
-# Xenomporio / OpenXE - The free ERP
+# OpenXE - The free ERP
 
 ![Xenomporio overview](https://github.com/xenomporio-org/Xenomporio/blob/master/www/themes/new/images/login_screen_picture.jpg "Xenomporio")
 
@@ -36,4 +36,4 @@ Neuimplementierung des Xentral 20 Enterprise Ticketsystems mit vielen Verbesseru
 
 [Hier gehts zur Xenomporio Installation](INSTALL.md)
 
-Xenomporio ist freie Software, lizensiert unter AGPL 3 und basiert auf der Open Source Version von Xentral https://xentral.com/  
+OpenXE ist freie Software, lizensiert unter AGPL 3 und basiert auf der Open Source Version von Xentral https://xentral.com/  
