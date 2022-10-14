@@ -586,7 +586,7 @@ class erpooSystem extends Application
 
       $version = '';
       if(isset($version_revision) && $version_revision != '') {
-        $version .= '<div class="sidebar-software-version">Xenomporio V.'. $version_revision .'</div>';
+        $version .= '<div class="sidebar-software-version">OpenXE V.'. $version_revision .'</div>';
       }
 
       if($userId = $this->User->GetID()){
@@ -618,7 +618,9 @@ class erpooSystem extends Application
         );
       }
       else{
-        $this->Tpl->Add('SIDEBARLOGO', @file_get_contents(__DIR__ . '/themes/new/templates/sidebar_logo.svg'));
+//        $this->Tpl->Add('SIDEBARLOGO', @file_get_contents(__DIR__ . '/themes/new/templates/sidebar_logo.svg'));
+        $this->Tpl->Add('SIDEBARLOGO','<div class="sidebar_logo">'.@file_get_contents(__DIR__ . '/themes/new/templates/sidebar_logo.svg').'</div>');
+        $this->Tpl->Add('SIDEBARLOGO','<div class="sidebar_icon_logo">'.@file_get_contents(__DIR__ . '/themes/new/templates/sidebar_icon_logo.svg').'</div>');
       }
 
       $this->Tpl->Parse('SIDEBAR', 'sidebar.tpl');
@@ -1128,7 +1130,7 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
 
     $this->Tpl->SetText('MODUL',ucfirst($module));
 
-    $this->Tpl->Set('HTMLTITLE','{|[MODUL]|} | Xenomporio ');
+    $this->Tpl->Set('HTMLTITLE','{|[MODUL]|} | OpenXE ');
 
 
     switch($module)
@@ -1280,7 +1282,7 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
         $this->Tpl->Set('TPLLOGOFIRMA', './themes/new/images/logo_cache.png');
     }elseif($this->erp->Firmendaten('firmenlogoaktiv')!='1')
     {
-      $this->Tpl->Set('TPLLOGOFIRMA', './themes/new/images/xentral_logo.svg');
+      $this->Tpl->Set('TPLLOGOFIRMA', './themes/new/images/openxe_logo.svg');
     }else{
       $this->Tpl->Set('TPLLOGOFIRMA', './index.php?module=welcome&action=logo');
     }

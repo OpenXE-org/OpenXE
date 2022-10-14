@@ -1,6 +1,6 @@
 # OpenXE - The free ERP
 
-![Xenomporio overview](https://github.com/xenomporio-org/Xenomporio/blob/master/www/themes/new/images/login_screen_picture.jpg "Xenomporio")
+![OpenXE overview](https://github.com/openxe-org/OpenXE/blob/master/www/themes/new/images/login_screen_picture.jpg "OpenXE")
 
 OpenXE ist eine umfassende webbasierte Anwendung zur Abwicklung aller kaufmännischen Prozesse. Zu den Funktionen gehören unter Anderem:
 
@@ -23,7 +23,7 @@ Wir freuen uns über Eure Teilnahme, egal ob als stiller Mitleser oder aktiver U
 
 # Letzte Änderungen: Ticket System
 
-Neu in [V.1.3](https://github.com/xenomporio-org/Xenomporio/releases/tag/V.1.3):
+Neu in [V.1.3](https://github.com/openxe-org/OpenXE/releases/tag/V.1.3):
 Neuimplementierung des Xentral 20 Enterprise Ticketsystems mit vielen Verbesserungen, z.B.:
 - Anhänge werden auch bei ausgehenden Nachrichten gespeichert
 - Verbesserte Kommentarfunktion

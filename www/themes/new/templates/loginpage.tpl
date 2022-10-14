@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Xenomporio - Login</title>
+	<title>OpenXE - Login</title>
 	<link id="shortcuticon" rel="shortcut icon" href="./themes/new/images/favicon/favicon.ico" type="image/x-icon">
 	<link id="favicon" rel="icon" href="./themes/new/images/favicon/favicon.ico" type="image/x-icon">
 	<link rel="icon" type="image/png" href="./themes/new/images/favicon/favicon-16x16.png" sizes="16x16">
@@ -28,7 +28,7 @@
 	</img>
 
 		<div class="intro">
-			Willkommen bei Xenomporio ERP.<br/>
+			Willkommen bei OpenXE ERP.<br/>
 			Bitte gib Deinen Benutzernamen und Passwort ein!
 		</div>
 		<div style="[LOGINWARNING]" class="warning"><p>Achtung: Es werden gerade Wartungsarbeiten in Ihrem System (z.B. Update oder Backup) durch Ihre IT-Abteilung durchgeführt. Das System sollte in wenigen Minuten wieder erreichbar sein. Für Rückfragen wenden Sie sich bitte an Ihren Administrator.</p></div>
@@ -37,11 +37,11 @@
 		[PAGE]
 		<div id="login-footer">
 			<div class="copyright">
-				&copy; [YEAR] Xenomporio project &  by Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.
+				&copy; [YEAR] by OpenXE-org & Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.
 <br>
 				[WAWIVERSION]
 </br>
-Xenomporio is free open source software under AGPL-3.0 license, based on <a href="https://xentral.com" target="_blank">Xentral®</a>.
+OpenXE is free open source software under AGPL-3.0 license, based on <a href="https://xentral.com" target="_blank">Xentral®</a>.
 <!--	 dead link			[LIZENZHINWEIS] -->
 			</div>
 		</div>

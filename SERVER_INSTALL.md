@@ -129,7 +129,7 @@ installation should now be secure.
 
 Thanks for using MariaDB!
 ```
-## Create database for xenomporio
+## Create database for openxe
 `mysql -u root -p`
 
 ```
@@ -141,13 +141,13 @@ Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-MariaDB [(none)]> CREATE DATABASE xenomporio;
+MariaDB [(none)]> CREATE DATABASE openxe;
 Query OK, 1 row affected (0.001 sec)
 
-MariaDB [(none)]> CREATE USER 'xenomporio'@'localhost' IDENTIFIED BY 'enteryourpasswordhere';
+MariaDB [(none)]> CREATE USER 'openxe'@'localhost' IDENTIFIED BY 'enteryourpasswordhere';
 Query OK, 0 rows affected (0.015 sec)
 
-MariaDB [(none)]> GRANT ALL PRIVILEGES ON xenomporio.* TO 'xenomporio'@'localhost' WITH GRANT OPTION;
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON openxe.* TO 'openxe'@'localhost' WITH GRANT OPTION;
 Query OK, 0 rows affected (0.012 sec)
 
 MariaDB [(none)]> FLUSH PRIVILEGES;
@@ -159,7 +159,7 @@ Bye
 ```
 
 You can test your database like this:
-`mysql -u xenomporio -p`
+`mysql -u openxe -p`
 
 ```
 Enter password: 
@@ -176,7 +176,7 @@ MariaDB [(none)]> show databases;
 | Database           |
 +--------------------+
 | information_schema |
-| xenomporio         |
+| openxe         |
 +--------------------+
 2 rows in set (0.001 sec)
 
@@ -185,4 +185,4 @@ Bye
 ```
 ## --> Reset your server
 
-Continue with [Xenomporio Installation](INSTALL.md)
+Continue with [OpenXE Installation](INSTALL.md)

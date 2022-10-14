@@ -421,7 +421,7 @@ function GetHtmlMessage($receipientName, $messageTotalCount, $messages = [])
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[Xenomporio] Ungelesene Chat-Nachrichten</title>
+  <title>[OpenXE] Ungelesene Chat-Nachrichten</title>
   <style type="text/css">
     body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; width: 100%; max-width: 100%; font-size: 17px; line-height: 24px; color: #48494B; background: #F5F5F5; }
     h1, h2, h3, h4 { color: #42B8C4; margin-bottom: 12px; line-height: 26px; }

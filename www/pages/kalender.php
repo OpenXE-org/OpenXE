@@ -1353,7 +1353,7 @@ class Kalender {
 
     $ical = "BEGIN:VCALENDAR\r\n";
     $ical .= "VERSION:2.0\r\n";
-    $ical .= "PRODID:-//Xenomporio//Termin//DE\r\n";
+    $ical .= "PRODID:-//OpenXE//Termin//DE\r\n";
     $ical .= "METHOD:REQUEST\r\n";
     $ical .= "BEGIN:VEVENT\r\n";
 
@@ -1376,7 +1376,7 @@ class Kalender {
       }
     } 
 
-    $ical .= "UID:".strtoupper(md5($event_id))."-xenomporio\r\n";
+    $ical .= "UID:".strtoupper(md5($event_id))."-openxe\r\n";
     $ical .= "SEQUENCE:".$sequence."\r\n";
     $ical .= "STATUS:".$status."\r\n";
     $ical .= "DTSTAMPTZID=Europe/Berlin:".date('Ymd').'T'.date('His')."\r\n";
@@ -1513,12 +1513,12 @@ class Kalender {
 
     $ical = "BEGIN:VCALENDAR\r\n";
     $ical .= "VERSION:2.0\r\n";
-    $ical .= "PRODID:-//Xenomporio//Termin//DE\r\n";
+    $ical .= "PRODID:-//OpenXE//Termin//DE\r\n";
     $ical .= "METHOD:REQUEST\r\n";
     $ical .= "BEGIN:VEVENT\r\n";
     $ical .= "ORGANIZER;SENT-BY=\"MAILTO:$initiator_to\"\r\n";
     $ical .= "ATTENDEE;CN=$to;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:$initiator_to\r\n";
-    $ical .= "UID:".strtoupper(md5($event_id))."-xenomporio\r\n";
+    $ical .= "UID:".strtoupper(md5($event_id))."-openxe\r\n";
     $ical .= "SEQUENCE:".$sequence."\r\n";
     $ical .= "STATUS:".$status."\r\n";
     $ical .= "DTSTAMPTZID=Europe/Berlin:".date('Ymd').'T'.date('His')."\r\n";

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (c) 2022 Xenomporio project */
+/* Copyright (c) 2022 OpenXE-org */
 /*
   Refresh the githash number in githash.txt
 */

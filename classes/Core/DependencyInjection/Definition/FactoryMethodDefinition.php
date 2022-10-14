@@ -23,7 +23,7 @@ final class FactoryMethodDefinition
         if (!is_callable($callable, false)) {
 	/*
 	
-	xenomporio
+	OpenXE-todo
 	unknown compatibility issue
 	commented out as hotfix
 

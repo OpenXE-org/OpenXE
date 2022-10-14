@@ -10,7 +10,7 @@
         </svg>
     </div>
 
-    <a class="logo-index" href="index.php" title="Xenomporio">
+    <a class="logo-index" href="index.php" title="OpenXE">
         [SIDEBARLOGO]
     </a>
 

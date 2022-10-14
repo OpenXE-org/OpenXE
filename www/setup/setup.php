@@ -363,15 +363,15 @@
 "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
 <html><head>
 <style type=\"text/css\">{$cssContent}</style>
-<title>Xenomporio Installer</title>
-</head><body class=\"slide-{$step}\"><div id=\"main\"><div class=\"header\"><h1 class=\"headline\">Xenomporio Installer</h1></div><div class=\"content\"><form action=\"\" method=\"POST\">
+<title>OpenXE Installer</title>
+</head><body class=\"slide-{$step}\"><div id=\"main\"><div class=\"header\"><h1 class=\"headline\">OpenXE Installer</h1></div><div class=\"content\"><form action=\"\" method=\"POST\">
  {$html}
 </form></div>
 <!--
 <div class=\"footer\"><p>Nutzen Sie unseren <a href=\"https://shop.xentral.biz/sonstige/1-jahr-zugang-updateserver-open-source-version.html?c=164?c=164\" target=\"_blank\">Update-Server</a> um auch mit der Open-Source Version mit Updates versorgt zu sein.</p></div>
 --!>
 <div class=\"footer\"><p>
-Xenomporio is free open source software under AGPL-3.0 license, based on <a href=\"https://xentral.com\" target=\"_blank\">Xentral®</a> by Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.</p></div>
+OpenXE is free open source software under AGPL-3.0 license, based on <a href=\"https://xentral.com\" target=\"_blank\">Xentral®</a> by Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.</p></div>
 </div></body></html>";
 	}
 

@@ -13,7 +13,7 @@
 <script type="text/javascript" src="./jquery-ui-update.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <!--<meta name="viewport" content="width=1200, user-scalable=yes" />-->
-<title>Xenomporio Update</title>
+<title>OpenXE Update</title>
 <link rel="stylesheet" type="text/css" href="./jquery-ui.min.css">
 
 
@@ -471,7 +471,7 @@ display:none;
 </style>
 <div id="scroller2" style="margin-top:3px; padding:0px; position:relative; height:53px;">
   
-<h1>Xenomporio Update</h1>
+<h1>OpenXE Update</h1>
 </div>
 <div id="page_container">
 [PAGE]
@@ -483,7 +483,7 @@ display:none;
 <div id="progressbarupdate"></div>
 <div id="dbhinweis">Datenbank Update:</div>
 <div id="progressbardbupgrade"></div>
-<div id="wawilink"><a href="./index.php" class="button">Installation vollst&auml;ndig - Zur&uuml;ck zu Xenomporio</a></div>
+<div id="wawilink"><a href="./index.php" class="button">Installation vollst&auml;ndig - Zur&uuml;ck zu OpenXE</a></div>
 <div id="upgradediv"><form id="upgradefrm" method="POST" action="index.php?module=welcome&action=upgradedb"><input type="hidden" name="upgradedb" value="1" /><input type="submit" style="display:none;" value=" "></form></div>
 </div>
 
@@ -867,7 +867,7 @@ display:none;
 		<!-- end RIGHT -->
         
         <div id="footer" class="grid_6">
-    		&copy; [YEAR] Xenomporio project & Xentral ERP Software GmbH
+    		&copy; [YEAR] OpenXE project & Xentral ERP Software GmbH
 		</div>
         <!-- end FOOTER -->
 		<div class="clear"></div>

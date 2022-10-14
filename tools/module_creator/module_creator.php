@@ -4,7 +4,7 @@
  * Create module for listing and editing based on SQL table
  * Create template files accordingly
  *
- * Copyright (c) 2022 Xenomporio project
+ * Copyright (c) 2022 OpenXE project
  *
  * Placeholders:
  * PLACEHOLDER_MODULENAME
@@ -21,9 +21,9 @@
  */
 
 $host = 'localhost';
-$user = 'xenomporiodev';
-$passwd = 'xenomporiodev';
-$schema = 'xenomporiodev';
+$user = 'openxedev';
+$passwd = 'openxedev';
+$schema = 'openxedev';
 
 if ($argc >= 2) {
 
@@ -214,8 +214,8 @@ if ($argc >= 2) {
 }
 
 function info() {
-    echo("\nXenomporio module creator\n");
-    echo("Copyright 2022 (c) Xenomporio project\n\n");
+    echo("\nOpenXE module creator\n");
+    echo("Copyright 2022 (c) OpenXE project\n\n");
     echo("Create a module.php file, a template for listing and a template for editing, based on a SQL table\n");
     echo("\n");
     echo("arg1: SQL table name\n");

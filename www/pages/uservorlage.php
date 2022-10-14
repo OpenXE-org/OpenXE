@@ -11,7 +11,7 @@
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 
-Copyright (c) 2022 Xenomporio project
+Copyright (c) 2022 OpenXE project
 
 */
 ?>

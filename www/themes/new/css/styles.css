@@ -223,9 +223,21 @@ html {
     padding-left: 25px;
 }
 
+#sidebar .logo-index .sidebar_icon_logo{
+    display: none;
+}
+
 #sidebar.collapsed .logo-index{
     width: 55px;
     text-align: left;
+}
+
+#sidebar.collapsed .logo-index .sidebar_logo {
+    display: none;
+}
+
+#sidebar.collapsed .logo-index .sidebar_icon_logo {
+    display: block;
 }
 
 #sidebar .sidebar-list{

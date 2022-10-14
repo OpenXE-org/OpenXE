@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Xenomporio project
+ * Copyright (c) 2022 OpenXE project
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
@@ -284,7 +284,7 @@ $width = array('10%'); // Fill out manually later
         $result[0]['angezeigtername'],
         $result[0]['email'],
         $result[0]['angezeigtername'],
-        'Xenomporio ERP: Testmail',
+        'OpenXE ERP: Testmail',
         'Dies ist eine Testmail für Account "'.$result[0]['email'].'".',
         '',0,false,'','',
         true

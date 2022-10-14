@@ -20,7 +20,7 @@ final class ErrorPageData implements JsonSerializable
     public function __construct($exception, $title = null)
     {
         $this->exception = $exception;
-        $this->title = !empty($title) ? (string)$title : 'Xenomporio: Es ist ein unerwarteter Fehler aufgetreten!';
+        $this->title = !empty($title) ? (string)$title : 'OpenXE: Es ist ein unerwarteter Fehler aufgetreten!';
 
     }
 

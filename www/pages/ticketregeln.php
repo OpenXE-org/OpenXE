@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Xenomporio project
+ * Copyright (c) 2022 OpenXE project
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
