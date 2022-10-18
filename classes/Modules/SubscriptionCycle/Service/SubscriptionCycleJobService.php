@@ -11,7 +11,7 @@ use Xentral\Modules\SubscriptionCycle\Exception\InvalidArgumentException;
 
 final class SubscriptionCycleJobService
 {
-    private $db;
+    private Database $db;
 
     /**
      * SubscriptionCycleJobService constructor.
@@ -57,29 +57,27 @@ final class SubscriptionCycleJobService
      * @param string                 $documentType
      * @param string|null            $jobType
      * @param int|null               $printerId
-     * @param DateTimeInterface|null $simulatedDay
      *
      * @throws InvalidArgumentException
      *
      * @return int
      */
-    public function create(int $addressId, string $documentType, ?string $jobType, ?int $printerId, ?DateTimeInterface $simulatedDay = null): int
+    public function create(int $addressId, string $documentType, ?string $jobType = null, ?int $printerId = null): int
     {
         $this->ensureDocumentType($documentType);
         $this->db->perform(
             'INSERT INTO `subscription_cycle_job` 
-            (`address_id`, `document_type`, `job_type`, `printer_id`, `created_at`, `simulated_day`)
-            VALUES (:address_id, :document_type, :job_type, :printer_id, NOW(), :simulated_day)',
+            (`address_id`, `document_type`, `job_type`, `printer_id`, `created_at`)
+            VALUES (:address_id, :document_type, :job_type, :printer_id, NOW())',
             [
                 'address_id'    => $addressId,
                 'document_type' => $documentType,
                 'job_type'      => $jobType,
                 'printer_id'    => $printerId,
-                'simulated_day' => $simulatedDay === null ? null : $simulatedDay->format('Y-m-d'),
             ]
         );
 
-        return (int)$this->db->lastInsertId();
+        return $this->db->lastInsertId();
     }
 
     /**

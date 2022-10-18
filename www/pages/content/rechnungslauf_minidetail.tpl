@@ -8,7 +8,7 @@
 		<th>{|Menge|}</th>
 		<th>{|Einzelpreis (netto)|}</th>
 		<th>{|Rabatt|}</th>
-		<th>{|UST|}</th>
+		<th>{|Zyklen|}</th>
 		<th>{|Gesamtpreis (netto)|}</th>
 		<th>{|Währung|}</th>
 	</tr>
