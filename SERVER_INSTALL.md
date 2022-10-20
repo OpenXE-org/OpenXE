@@ -44,7 +44,7 @@ upload_max_filesize = 100M
 max_execution_time = 3600
 max_input_time = 3600
 magic_quotes_gpc = Off
-file_uploads = Yes (gesetzt: file_uploads = On)
+file_uploads = Yes
 max_file_uploads = 20
 short_open_tag = On
 max_input_vars=3000
