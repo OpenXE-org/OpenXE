@@ -13,7 +13,7 @@
  * PLACEHOLDER_EDIT
  * PLACEHOLDER_DELETE
  * PLACEHOLDER_SQL_LIST
- * PLACEHOLDER_SQL_LIST
+ * PLACEHOLDER_DROPNBOX
  * PLACEHOLDER_GET_INPUT
  * PLACEHOLDER_SET_INPUT
  * PLACEHOLDER_COLUMNS
@@ -21,9 +21,9 @@
  */
 
 $host = 'localhost';
-$user = 'openxedev';
-$passwd = 'openxedev';
-$schema = 'openxedev';
+$user = 'openxe';
+$passwd = 'openxe';
+$schema = 'openxe';
 
 if ($argc >= 2) {
 
@@ -152,7 +152,8 @@ if ($argc >= 2) {
     $php_file_contents = str_replace('PLACEHOLDER_LIST', $module_name . "_list", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_EDIT', $module_name . "_edit", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_DELETE', $module_name . "_delete", $php_file_contents);
-    $php_file_contents = str_replace('PLACEHOLDER_SQL_LIST', "SELECT SQL_CALC_FOUND_ROWS $table_short_name.id, $sql_list_of_columns, $table_short_name.id FROM $module_name $table_short_name", $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_DROPNBOX',"'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\\\"checkbox\\\" name=\\\"auswahl[]\\\" value=\\\"',".$table_short_name.".id,'\\\" />') AS `auswahl`", $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_SQL_LIST', "SELECT SQL_CALC_FOUND_ROWS $table_short_name.id, \$dropnbox, $sql_list_of_columns, $table_short_name.id FROM $module_name $table_short_name", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SQL_EDIT', "INSERT INTO $module_name ($list_of_columns, id) values ('\".implode('\', \'',\$input).\"', \$id) ON DUPLICATE KEY UPDATE SET ", $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_GET_INPUT', $get_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SET_INPUT', $set_input, $php_file_contents);

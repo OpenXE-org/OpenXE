@@ -30,14 +30,16 @@ class PLACEHOLDER_MODULECLASSNAME {
         switch ($name) {
             case "PLACEHOLDER_LIST":
                 $allowed['PLACEHOLDER_LIST'] = array('list');
-                $heading = array(PLACEHOLDER_COLUMNS, 'Men&uuml;');
-                $width = array('10%'); // Fill out manually later
+                $heading = array('','',PLACEHOLDER_COLUMNS, 'Men&uuml;');
+                $width = array('1%','1%','10%'); // Fill out manually later
 
                 $findcols = array(PLACEHOLDER_SQL_COLUMNS);
                 $searchsql = array(PLACEHOLDER_SQL_COLUMNS);
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
+
+		$dropnbox = "PLACEHOLDER_DROPNBOX";
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=PLACEHOLDER_MODULENAME&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=PLACEHOLDER_MODULENAME&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
