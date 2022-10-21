@@ -1,65 +1,69 @@
 <?php 
-class Versanddienstleister {
+abstract class Versanddienstleister {
   /** @var int $id */
   public $id;
   /** @var Application $app */
   public $app;
 
+  public function isEtikettenDrucker(): bool {
+    return false;
+  }
+
   public function GetAdressdaten($id, $sid)
   {
     if($sid==='rechnung'){
-      $rechnung = $id;
+      $rechnungId = $id;
     }
     else
     {
-      $rechnung ='';
+      $rechnungId ='';
     }
 
     if($sid==='versand')
     {
-      $tid = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$id' LIMIT 1");
-      $rechnung  = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$id' LIMIT 1");
+      $lieferscheinId = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$id' LIMIT 1");
+      $rechnungId  = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$id' LIMIT 1");
       $sid = 'lieferschein';
     } else {
-      $tid = $id;
+      $lieferscheinId = $id;
       if($sid === 'lieferschein'){
-        $rechnung = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein = '$tid' LIMIT 1");
+        $rechnungId = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein = '$lieferscheinId' LIMIT 1");
       }
-      if($rechnung<=0) {
-        $rechnung = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$tid' LIMIT 1");
+      if($rechnungId<=0) {
+        $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
       }
     }
-    $ret['tid'] = $tid;
-    $ret['rechnung'] = $rechnung;
+    $ret['lieferscheinId'] = $lieferscheinId;
+    $ret['rechnungId'] = $rechnungId;
 
-    if($rechnung){
-      $artikel_positionen = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung='$rechnung'");
+    if($rechnungId){
+      $artikel_positionen = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung='$rechnungId'");
     } else {
-      $artikel_positionen = $this->app->DB->SelectArr(sprintf('SELECT * FROM `%s` WHERE `%s` = %d',$sid.'_position',$sid,$tid));
+      $artikel_positionen = $this->app->DB->SelectArr(sprintf('SELECT * FROM `%s` WHERE `%s` = %d',$sid.'_position',$sid,$lieferscheinId));
     }
 
     if($sid==='rechnung' || $sid==='lieferschein' || $sid==='adresse')
     {
-      $docArr = $this->app->DB->SelectRow(sprintf('SELECT * FROM `%s` WHERE id = %d LIMIT 1',$sid, $tid));
+      $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $lieferscheinId LIMIT 1");
 
-      $name = trim($docArr['name']);//trim($this->app->DB->Select("SELECT name FROM $sid WHERE id='$tid' LIMIT 1"));
-      $name2 = trim($docArr['adresszusatz']);//trim($this->app->DB->Select("SELECT adresszusatz FROM $sid WHERE id='$tid' LIMIT 1"));
+      $name = trim($docArr['name']);
+      $name2 = trim($docArr['adresszusatz']);
       $abt = 0;
       if($name2==='')
       {
-        $name2 = trim($docArr['abteilung']);//trim($this->app->DB->Select("SELECT abteilung FROM $sid WHERE id='$tid' LIMIT 1"));
+        $name2 = trim($docArr['abteilung']);
         $abt=1;
       }
-      $name3 = trim($docArr['ansprechpartner']);//trim($this->app->DB->Select("SELECT ansprechpartner FROM $sid WHERE id='$tid' LIMIT 1"));
+      $name3 = trim($docArr['ansprechpartner']);
       if($name3==='' && $abt!==1){
-        $name3 = trim($docArr['abteilung']);//trim($this->app->DB->Select("SELECT abteilung FROM $sid WHERE id='$tid' LIMIT 1"));
+        $name3 = trim($docArr['abteilung']);
       }
 
       //unterabteilung versuchen einzublenden
       if($name2==='') {
-        $name2 = trim($docArr['unterabteilung']);//trim($this->app->DB->Select("SELECT unterabteilung FROM $sid WHERE id='$tid' LIMIT 1"));
+        $name2 = trim($docArr['unterabteilung']);
       } else if ($name3==='') {
-        $name3 = trim($docArr['unterabteilung']);//trim($this->app->DB->Select("SELECT unterabteilung FROM $sid WHERE id='$tid' LIMIT 1"));
+        $name3 = trim($docArr['unterabteilung']);
       }
 
       if($name3!=='' && $name2==='') {
@@ -67,10 +71,10 @@ class Versanddienstleister {
         $name3='';
       }
 
-      $ort = trim($docArr['ort']);//trim($this->app->DB->Select("SELECT ort FROM $sid WHERE id='$tid' LIMIT 1"));
-      $plz = trim($docArr['plz']);//trim($this->app->DB->Select("SELECT plz FROM $sid WHERE id='$tid' LIMIT 1"));
-      $land = trim($docArr['land']);//trim($this->app->DB->Select("SELECT land FROM $sid WHERE id='$tid' LIMIT 1"));
-      $strasse = trim($docArr['strasse']);//trim($this->app->DB->Select("SELECT strasse FROM $sid WHERE id='$tid' LIMIT 1"));
+      $ort = trim($docArr['ort']);
+      $plz = trim($docArr['plz']);
+      $land = trim($docArr['land']);
+      $strasse = trim($docArr['strasse']);
       $strassekomplett = $strasse;
       $hausnummer = trim($this->app->erp->ExtractStreetnumber($strasse));
 
@@ -82,26 +86,22 @@ class Versanddienstleister {
         $strasse = trim($hausnummer);
         $hausnummer = '';
       }
-      $telefon = trim($docArr['telefon']);//trim($this->app->DB->Select("SELECT telefon FROM $sid WHERE id='$tid' LIMIT 1"));
-      $email = trim($docArr['email']);//trim($this->app->DB->Select("SELECT email FROM $sid WHERE id='$tid' LIMIT 1"));
+      $telefon = trim($docArr['telefon']);
+      $email = trim($docArr['email']);
 
+      $ret['order_number'] = $docArr['auftrag'];
+      $ret['addressId'] = $docArr['adresse'];
     }
     // wenn rechnung im spiel entweder durch versand oder direkt rechnung
-    if($rechnung >0)
+    if($rechnungId >0)
     {
-      $zahlungsweise =  $this->app->DB->Select("SELECT zahlungsweise FROM rechnung WHERE id='$rechnung' LIMIT 1");
-      $soll =  $this->app->DB->Select("SELECT soll FROM rechnung WHERE id='$rechnung' LIMIT 1");
+      $invoice_data =  $this->app->DB->SelectRow("SELECT zahlungsweise, soll, belegnr FROM rechnung WHERE id='$rechnungId' LIMIT 1");
+      $ret['zahlungsweise'] = $invoice_data['zahlungsweise'];
+      $ret['betrag'] = $invoice_data['soll'];
+      $ret['invoice_number'] = $invoice_data['belegnr'];
 
-      if($zahlungsweise==='nachnahme'){
-        $nachnahme = true;
-      }
-
-      if($soll >= 500 && $soll <= 2500){
-        $versichert = true;
-      }
-
-      if($soll > 2500) {
-        $extraversichert = true;
+      if($invoice_data['zahlungsweise']==='nachnahme'){
+        $ret['nachnahme'] = true;
       }
     }
 
@@ -109,11 +109,8 @@ class Versanddienstleister {
     if(isset($inhalt))$ret['inhalt'] = $inhalt;
     if(isset($keinealtersabfrage))$ret['keinealtersabfrage'] = $keinealtersabfrage;
     if(isset($altersfreigabe))$ret['altersfreigabe'] = $altersfreigabe;
-    if(isset($zahlungsweise))$ret['zahlungsweise'] = $zahlungsweise;
     if(isset($versichert))$ret['versichert'] = $versichert;
-    if(isset($soll))$ret['betrag'] = $soll;
     if(isset($extraversichert))$ret['extraversichert'] = $extraversichert;
-    if(isset($nachnahme))$ret['nachnahme'] = $nachnahme;
     $ret['name'] = $name;
     $ret['name2'] = $name2;
     $ret['name3'] = $name3;
@@ -139,12 +136,11 @@ class Versanddienstleister {
     }
 
     if($sid==="lieferschein"){
-      $standardkg = $this->app->erp->VersandartMindestgewicht($tid);
+      $standardkg = $this->app->erp->VersandartMindestgewicht($lieferscheinId);
     }
     else{
       $standardkg = $this->app->erp->VersandartMindestgewicht();
     }
-    //$this->app->erp->PaketmarkeGewichtForm($anzahl, $standardkg, $this->VersandartMindestgewicht());
     $ret['standardkg'] = $standardkg;
     $ret['anzahl'] = $anzahl;
     return $ret;
@@ -328,29 +324,15 @@ class Versanddienstleister {
     return '';
   }
 
+  protected abstract function EinstellungenStruktur();
+
     /**
      * @param string $target
      *
      * @return bool
      */
-  public function checkInputParameters($target = '')
+  public function checkInputParameters(string $target = ''): bool
   {
-      $error = '';
-      if (trim($this->app->Secure->GetPOST('bezeichnung')) === '') {
-          $error = 'Bitte alle Pflichtfelder ausfüllen!';
-          $this->app->Tpl->Set('MSGBEZEICHNUNG','<span style="color:red">Pflichtfeld!</span>');
-      }
-      if (trim($this->app->Secure->GetPOST('typ')) === '') {
-          $error = 'Bitte alle Pflichtfelder ausfüllen!';
-          $this->app->Tpl->Set('MSGTYP','<span style="color:red">Pflichtfeld!</span>');
-      }
-
-      if ($error !== '') {
-          $this->app->Tpl->Add($target, sprintf('<div class="error">%s</div>', $error));
-
-          return false;
-      }
-
       return true;
   }
 
@@ -413,6 +395,10 @@ class Versanddienstleister {
     $rawlink = '';
     $link = '';
     return true;
+  }
+
+  public function Paketmarke(string $target, string $doctype, int $docid): void {
+
   }
   
 }

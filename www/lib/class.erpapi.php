@@ -20463,33 +20463,11 @@ if($id > 0)
 }
 
 //@refactor ApplicationCore
-function LoadVersandModul($modul, $id)
+function LoadVersandModul(string $modul, int $id): Versanddienstleister
 {
-  if(empty($modul) ||
-    strpos($modul,'..') !== false ||
-    !@is_file(__DIR__.'/versandarten/'.$modul.'.php')
-  )
-  {
-    return;
-  }
-  $class_name = 'Versandart_'.$modul;
-  $class_name_custom = 'Versandart_'.$modul.'Custom';
-  if(!class_exists($class_name))
-  {
-    if(@is_file(__DIR__.'/versandarten/'.$modul.'_custom.php'))
-    {
-      include_once(__DIR__.'/versandarten/'.$modul.'_custom.php');
-    }else{
-      include_once(__DIR__.'/versandarten/'.$modul.'.php');
-    }
-  }
-  if(class_exists($class_name_custom))
-  {
-    return new $class_name_custom($this->app, $id);
-  }elseif(class_exists($class_name))
-  {
-    return new $class_name($this->app, $id);
-  }
+  /** @var Versandarten $versandarten */
+  $versandarten = $this->app->loadModule('versandarten');
+  return $versandarten->loadModule($modul, $id);
 }
 
 //@refactor versanddiestleister Modul
@@ -20562,131 +20540,131 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
       }
     }
 
-  if($sid=="versand")
-  {
-    // falche tracingnummer bei DHL da wir in der Funktion PaketmarkeDHLEmbedded sind
-    if((strlen($tracking) < 12 || strlen($tracking) > 21) && $trackingsubmitcancel=="" && ($typ=="DHL" || $typ=="Intraship"))
+    if($sid=="versand")
     {
-      header("Location: index.php?module=versanderzeugen&action=frankieren&id=$id&land=$land&tracking_again=1");
-      exit;
-    }
-    else
-    {
-/*      $versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul,bezeichnung FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($typ)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-      if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
+      // falche tracingnummer bei DHL da wir in der Funktion PaketmarkeDHLEmbedded sind
+      if((strlen($tracking) < 12 || strlen($tracking) > 21) && $trackingsubmitcancel=="" && ($typ=="DHL" || $typ=="Intraship"))
       {
-        $obj = $this->LoadVersandModul($versandartenmodul[0]['modul'], $versandartenmodul[0]['id']);
-        if(!empty($obj) && method_exists($obj, 'TrackingReplace'))
-        {
-          $tracking = $obj->TrackingReplace($tracking);
-        }
+        header("Location: index.php?module=versanderzeugen&action=frankieren&id=$id&land=$land&tracking_again=1");
+        exit;
       }
+      else
+      {
+  /*      $versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul,bezeichnung FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($typ)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
+        if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
+        {
+          $obj = $this->LoadVersandModul($versandartenmodul[0]['modul'], $versandartenmodul[0]['id']);
+          if(!empty($obj) && method_exists($obj, 'TrackingReplace'))
+          {
+            $tracking = $obj->TrackingReplace($tracking);
+          }
+        }
 */
 
-      $trackingUser = !empty($this->app->User) && method_exists($this->app->User,'GetParameter')?
-        $this->app->User->GetParameter('versand_lasttracking'):'';
+        $trackingUser = !empty($this->app->User) && method_exists($this->app->User,'GetParameter')?
+          $this->app->User->GetParameter('versand_lasttracking'):'';
 
-      if(!empty($trackingUser) && in_array($trackingUser,[$trackingBefore,$tracking])) {
-        $this->app->User->SetParameter('versand_lasttracking','');
-        $this->app->User->SetParameter('versand_lasttracking_link','');
-        $this->app->User->SetParameter('versand_lasttracking_versand', '');
-        $this->app->User->SetParameter('versand_lasttracking_lieferschein', '');
-      }
+        if(!empty($trackingUser) && in_array($trackingUser,[$trackingBefore,$tracking])) {
+          $this->app->User->SetParameter('versand_lasttracking','');
+          $this->app->User->SetParameter('versand_lasttracking_link','');
+          $this->app->User->SetParameter('versand_lasttracking_versand', '');
+          $this->app->User->SetParameter('versand_lasttracking_lieferschein', '');
+        }
 
-      $this->app->DB->Update("UPDATE versand SET versandunternehmen='$versand', tracking='$tracking',
-          versendet_am=NOW(),versendet_am_zeitstempel=NOW(), abgeschlossen='1',logdatei=NOW() WHERE id='$id' LIMIT 1");
-      if($lieferschein = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id = '$id' LIMIT 1")) {
-        $this->app->erp->LieferscheinProtokoll($lieferschein,'Verarbeitung im Versandzentrum');
-      }
-      $rechnung = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id = '$id' LIMIT 1");
-      if($lieferschein && ($auftrag = $this->app->DB->Select("SELECT auftragid FROM lieferschein WHERE id = '$lieferschein'"))) {
-        $this->app->erp->AuftragProtokoll($auftrag,'Verarbeitung im Versandzentrum');
+        $this->app->DB->Update("UPDATE versand SET versandunternehmen='$versand', tracking='$tracking',
+            versendet_am=NOW(),versendet_am_zeitstempel=NOW(), abgeschlossen='1',logdatei=NOW() WHERE id='$id' LIMIT 1");
+        if($lieferschein = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id = '$id' LIMIT 1")) {
+          $this->app->erp->LieferscheinProtokoll($lieferschein,'Verarbeitung im Versandzentrum');
+        }
+        $rechnung = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id = '$id' LIMIT 1");
+        if($lieferschein && ($auftrag = $this->app->DB->Select("SELECT auftragid FROM lieferschein WHERE id = '$lieferschein'"))) {
+          $this->app->erp->AuftragProtokoll($auftrag,'Verarbeitung im Versandzentrum');
 
-        if(empty($rechnung)) {
-          $rechnung = $this->app->DB->Select(
-            sprintf(
-              "SELECT id FROM rechnung WHERE auftragid = %d AND status <> 'storniert' AND belegnr <> '' LIMIT 1",
-              $auftrag
-            )
-          );
-          if($rechnung) {
-            $this->app->DB->Update(
+          if(empty($rechnung)) {
+            $rechnung = $this->app->DB->Select(
               sprintf(
-                'UPDATE versand SET rechnung = %d WHERE id = %d AND rechnung = 0',
-                $rechnung, $id
+                "SELECT id FROM rechnung WHERE auftragid = %d AND status <> 'storniert' AND belegnr <> '' LIMIT 1",
+                $auftrag
               )
             );
+            if($rechnung) {
+              $this->app->DB->Update(
+                sprintf(
+                  'UPDATE versand SET rechnung = %d WHERE id = %d AND rechnung = 0',
+                  $rechnung, $id
+                )
+              );
+            }
           }
         }
-      }
 
-      $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = '$lieferschein' LIMIT 1");
-      if($lieferschein) {
+        $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = '$lieferschein' LIMIT 1");
+        if($lieferschein) {
 
-        $this->PDFArchivieren('lieferschein', $lieferschein, true);
-      }
-      $proformaPrinted = false;
-      $druckennachtracking = $this->app->erp->Projektdaten($projekt,'druckennachtracking');
-      if($druckennachtracking
-        && !($proformarechnung = $this->app->DB->Select(
-          sprintf(
-            'SELECT id FROM proformarechnung WHERE lieferschein = %d LIMIT 1',
-            $lieferschein
+          $this->PDFArchivieren('lieferschein', $lieferschein, true);
+        }
+        $proformaPrinted = false;
+        $druckennachtracking = $this->app->erp->Projektdaten($projekt,'druckennachtracking');
+        if($druckennachtracking
+          && !($proformarechnung = $this->app->DB->Select(
+            sprintf(
+              'SELECT id FROM proformarechnung WHERE lieferschein = %d LIMIT 1',
+              $lieferschein
+            )
           )
-        )
-        )
-      ) {
-        /** @var Versanderzeugen $versandObj */
-        $versandObj = $this->LoadModul('versanderzeugen');
-        if($versandObj !== null && method_exists($versandObj, 'checkPrintCreateProformaInvoice')) {
-          $druckercode = $this->app->DB->Select("SELECT druckerlogistikstufe2 FROM projekt WHERE id='$projekt' LIMIT 1");
+          )
+        ) {
+          /** @var Versanderzeugen $versandObj */
+          $versandObj = $this->LoadModul('versanderzeugen');
+          if($versandObj !== null && method_exists($versandObj, 'checkPrintCreateProformaInvoice')) {
+            $druckercode = $this->app->DB->Select("SELECT druckerlogistikstufe2 FROM projekt WHERE id='$projekt' LIMIT 1");
 
-          if($druckercode <=0) {
-            $druckercode = $this->app->erp->Firmendaten('standardversanddrucker'); // standard = 3 // 2 buchhaltung  // 1 empfang
+            if($druckercode <=0) {
+              $druckercode = $this->app->erp->Firmendaten('standardversanddrucker'); // standard = 3 // 2 buchhaltung  // 1 empfang
+            }
+            $userversanddrucker = $this->app->DB->Select("SELECT standardversanddrucker FROM user WHERE id='".$this->app->User->GetID()."'");
+            if($userversanddrucker>0) {
+              $druckercode = $userversanddrucker;
+            }
+            $deliveryArr = $this->app->DB->SelectRow(
+              sprintf('SELECT land FROM lieferschein WHERE id = %d', $lieferschein)
+            );
+            $country = $deliveryArr['land'];
+            $versandObj->checkPrintCreateProformaInvoice($lieferschein,$country,$projekt,$druckercode,true);
+            $proformaPrinted = $druckercode > 0;
           }
-          $userversanddrucker = $this->app->DB->Select("SELECT standardversanddrucker FROM user WHERE id='".$this->app->User->GetID()."'");
-          if($userversanddrucker>0) {
-            $druckercode = $userversanddrucker;
-          }
-          $deliveryArr = $this->app->DB->SelectRow(
-            sprintf('SELECT land FROM lieferschein WHERE id = %d', $lieferschein)
+        }
+        if($rechnung) {
+          $this->PDFArchivieren('rechnung', $rechnung, true);
+        }
+        elseif($auftrag && $druckennachtracking
+          && $this->app->DB->Select(
+          sprintf(
+            "SELECT id FROM auftrag WHERE id = %d AND art <> 'lieferung'",
+            $auftrag
+          )
+          )
+        ) {
+          $rechnung = $this->WeiterfuehrenAuftragZuRechnung($auftrag);
+          $this->BelegFreigabe('rechnung', $rechnung);
+          $this->app->DB->Update(
+            sprintf(
+              'UPDATE versand SET rechnung = %d WHERE id = %d LIMIT 1',
+              $rechnung, $id
+            )
           );
-          $country = $deliveryArr['land'];
-          $versandObj->checkPrintCreateProformaInvoice($lieferschein,$country,$projekt,$druckercode,true);
-          $proformaPrinted = $druckercode > 0;
+          $this->app->DB->Update(
+            sprintf(
+              "UPDATE rechnung SET schreibschutz = 1, status = 'versendet' WHERE id = %d",
+              $rechnung
+            )
+          );
+          $this->PDFArchivieren('rechnung', $rechnung, true);
         }
-      }
-      if($rechnung) {
-        $this->PDFArchivieren('rechnung', $rechnung, true);
-      }
-      elseif($auftrag && $druckennachtracking
-        && $this->app->DB->Select(
-        sprintf(
-          "SELECT id FROM auftrag WHERE id = %d AND art <> 'lieferung'",
-          $auftrag
-        )
-        )
-      ) {
-        $rechnung = $this->WeiterfuehrenAuftragZuRechnung($auftrag);
-        $this->BelegFreigabe('rechnung', $rechnung);
-        $this->app->DB->Update(
-          sprintf(
-            'UPDATE versand SET rechnung = %d WHERE id = %d LIMIT 1',
-            $rechnung, $id
-          )
-        );
-        $this->app->DB->Update(
-          sprintf(
-            "UPDATE rechnung SET schreibschutz = 1, status = 'versendet' WHERE id = %d",
-            $rechnung
-          )
-        );
-        $this->PDFArchivieren('rechnung', $rechnung, true);
-      }
 
-      if($rechnung > 0 && $druckennachtracking
-        && $this->app->DB->Select("SELECT count(id) FROM versand WHERE lieferschein = '$lieferschein'") <= 1) {
-        $druckercode = $this->app->DB->Select("SELECT druckerlogistikstufe2 FROM projekt WHERE id='$projekt' LIMIT 1");
+        if($rechnung > 0 && $druckennachtracking
+          && $this->app->DB->Select("SELECT count(id) FROM versand WHERE lieferschein = '$lieferschein'") <= 1) {
+          $druckercode = $this->app->DB->Select("SELECT druckerlogistikstufe2 FROM projekt WHERE id='$projekt' LIMIT 1");
 
           if($druckercode <=0)
             $druckercode = $this->app->erp->Firmendaten("standardversanddrucker"); // standard = 3 // 2 buchhaltung  // 1 empfang
@@ -20695,32 +20673,12 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
           if($userversanddrucker>0)
             $druckercode = $userversanddrucker;
 
-        $this->app->erp->BriefpapierHintergrundDisable($druckercode);
+          $this->app->erp->BriefpapierHintergrundDisable($druckercode);
 
-        $addressId = $this->app->DB->Select("SELECT `adresse` FROM `rechnung` WHERE `id` = '{$rechnung}' LIMIT 1");
-        $printInvoice = $this->app->DB->Select("SELECT `rechnung_papier` FROM `adresse` WHERE `id` = '{$addressId}' LIMIT 1");
-        $amountPrintedInvoices = $this->app->DB->Select("SELECT `rechnung_anzahlpapier` FROM `adresse` WHERE `id` = '{$addressId}' LIMIT 1");
-        if($printInvoice === '1' && $amountPrintedInvoices > 0){
-          if(class_exists('RechnungPDFCustom'))
-          {
-            $Brief = new RechnungPDFCustom($this->app,$projekt);
-          }else{
-            $Brief = new RechnungPDF($this->app,$projekt);
-          }
-          $Brief->GetRechnung($rechnung);
-          $tmpfile = $Brief->displayTMP();
-
-          for($i = 1; $i <= $amountPrintedInvoices; $i++) {
-            $this->app->printer->Drucken($druckercode,$tmpfile);
-          }
-        } else {
-          $autodruckrechnungmenge = $this->app->erp->Projektdaten($projekt,"autodruckrechnungmenge");
-          $autodruckrechnung= $this->app->erp->Projektdaten($projekt,"autodruckrechnung");
-
-          if($autodruckrechnungmenge < 0)$autodruckrechnungmenge = 1;
-
-          if($autodruckrechnung > 0)
-          {
+          $addressId = $this->app->DB->Select("SELECT `adresse` FROM `rechnung` WHERE `id` = '{$rechnung}' LIMIT 1");
+          $printInvoice = $this->app->DB->Select("SELECT `rechnung_papier` FROM `adresse` WHERE `id` = '{$addressId}' LIMIT 1");
+          $amountPrintedInvoices = $this->app->DB->Select("SELECT `rechnung_anzahlpapier` FROM `adresse` WHERE `id` = '{$addressId}' LIMIT 1");
+          if($printInvoice === '1' && $amountPrintedInvoices > 0){
             if(class_exists('RechnungPDFCustom'))
             {
               $Brief = new RechnungPDFCustom($this->app,$projekt);
@@ -20730,88 +20688,108 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
             $Brief->GetRechnung($rechnung);
             $tmpfile = $Brief->displayTMP();
 
-            for($i = 1; $i <= $autodruckrechnungmenge; $i++) {
+            for($i = 1; $i <= $amountPrintedInvoices; $i++) {
               $this->app->printer->Drucken($druckercode,$tmpfile);
             }
+          } else {
+            $autodruckrechnungmenge = $this->app->erp->Projektdaten($projekt,"autodruckrechnungmenge");
+            $autodruckrechnung= $this->app->erp->Projektdaten($projekt,"autodruckrechnung");
+
+            if($autodruckrechnungmenge < 0)$autodruckrechnungmenge = 1;
+
+            if($autodruckrechnung > 0)
+            {
+              if(class_exists('RechnungPDFCustom'))
+              {
+                $Brief = new RechnungPDFCustom($this->app,$projekt);
+              }else{
+                $Brief = new RechnungPDF($this->app,$projekt);
+              }
+              $Brief->GetRechnung($rechnung);
+              $tmpfile = $Brief->displayTMP();
+
+              for($i = 1; $i <= $autodruckrechnungmenge; $i++) {
+                $this->app->printer->Drucken($druckercode,$tmpfile);
+              }
+            }
           }
-        }
 
 
-        // Print additional invoices for export
-        $exportdruckrechnung = $this->app->erp->Projektdaten($projekt,"exportdruckrechnung");
-        if($exportdruckrechnung)
-        {
-          $exportland = $this->app->DB->Select("SELECT land FROM rechnung WHERE id = '$rechnung' LIMIT 1");
-          $exportdruckrechnung = $this->app->erp->Export($exportland);
+          // Print additional invoices for export
+          $exportdruckrechnung = $this->app->erp->Projektdaten($projekt,"exportdruckrechnung");
           if($exportdruckrechnung)
           {
-            $mengedruck = $this->app->erp->Projektdaten($projekt,"exportdruckrechnungmenge");
-            for($mengedruck;$mengedruck > 0;$mengedruck--)
+            $exportland = $this->app->DB->Select("SELECT land FROM rechnung WHERE id = '$rechnung' LIMIT 1");
+            $exportdruckrechnung = $this->app->erp->Export($exportland);
+            if($exportdruckrechnung)
             {
-              $this->app->printer->Drucken($druckercode,$tmpfile);
+              $mengedruck = $this->app->erp->Projektdaten($projekt,"exportdruckrechnungmenge");
+              for($mengedruck;$mengedruck > 0;$mengedruck--)
+              {
+                $this->app->printer->Drucken($druckercode,$tmpfile);
+              }
             }
           }
-        }
 
-        unlink($tmpfile);
-        if($this->app->erp->Projektdaten($projekt,"automailrechnung")=="1")
-        {
-          // aber nur das erste mal also wenn es einen eintrag in der versand tabelle gibt
-          $rechnungbereitsversendet = $this->app->DB->Select("SELECT versendet FROM rechnung WHERE id = '$rechnung' LIMIT 1");
-          if($rechnungbereitsversendet!="1")
+          unlink($tmpfile);
+          if($this->app->erp->Projektdaten($projekt,"automailrechnung")=="1")
           {
-            $this->app->erp->Rechnungsmail($rechnung);
-          }
-        }
-        $this->BriefpapierHintergrundEnable();
-      }
-
-      if($druckennachtracking && $lieferschein && $this->Export($land)
-        && $this->Projektdaten($projekt, 'proformainvoice_amount') && $proformaRechnungId = $this->app->DB->Select(
-        sprintf(
-          "SELECT id FROM proformarechnung WHERE lieferschein = %d AND status <> 'storniert' LIMIT 1",
-          $lieferschein
-        ))
-      ) {
-        /** @var Versanderzeugen $objProforma */
-        $objVersand = $this->LoadModul('versanderzeugen');
-        if($objVersand && method_exists($objVersand,'checkPrintCreateProformaInvoice')){
-          if(empty($druckercode)) {
-            $druckercode = $this->app->DB->Select("SELECT druckerlogistikstufe2 FROM projekt WHERE id='$projekt' LIMIT 1");
-
-            if($druckercode <= 0) {
-              $druckercode = $this->app->erp->Firmendaten('standardversanddrucker'); // standard = 3 // 2 buchhaltung  // 1 empfang
-            }
-            $userversanddrucker = $this->app->DB->Select("SELECT standardversanddrucker FROM user WHERE id='" . $this->app->User->GetID() . "'");
-            if($userversanddrucker > 0) {
-              $druckercode = $userversanddrucker;
+            // aber nur das erste mal also wenn es einen eintrag in der versand tabelle gibt
+            $rechnungbereitsversendet = $this->app->DB->Select("SELECT versendet FROM rechnung WHERE id = '$rechnung' LIMIT 1");
+            if($rechnungbereitsversendet!="1")
+            {
+              $this->app->erp->Rechnungsmail($rechnung);
             }
           }
-          $objVersand->checkPrintCreateProformaInvoice($lieferschein, $land, $projekt, $druckercode, empty($proformaPrinted));
+          $this->BriefpapierHintergrundEnable();
         }
-      }
 
-      if(!$this->app->erp->Firmendaten('versandmail_zwischenspeichern') || !$this->app->DB->Select("SELECT id FROM prozessstarter WHERE parameter = 'versandmailsundrueckmeldung' AND aktiv = 1"))
-      {
-        $this->VersandAbschluss($id);
-        $this->RunHook('versanderzeugen_frankieren_hook1', 1, $id);
-        //versand mail an kunden
-        $this->Versandmail($id);
-      }else{
-        $this->app->DB->Update("UPDATE versand SET cronjob = 1 WHERE id = '$id' LIMIT 1");
-      }
-      $weiterespaket=$this->app->Secure->GetPOST("weiterespaket");
-      $lieferscheinkopie=$this->app->Secure->GetPOST("lieferscheinkopie");
-      if($weiterespaket=="1")
-      {
-        if($lieferscheinkopie=="1") $lieferscheinkopie=0; else $lieferscheinkopie=1;
-        //$this->app->erp->LogFile("Lieferscheinkopie $lieferscheinkopie");
-        $all = $this->app->DB->SelectArr("SELECT * FROM versand WHERE id='$id' LIMIT 1");
-        $this->app->DB->Insert("INSERT INTO versand (id,adresse,rechnung,lieferschein,versandart,projekt,bearbeiter,versender,versandunternehmen,firma,
-          keinetrackingmail,gelesen,paketmarkegedruckt,papieregedruckt,weitererlieferschein)
-            VALUES ('','{$all[0]['adresse']}','{$all[0]['rechnung']}','{$all[0]['lieferschein']}','{$all[0]['versandart']}','{$all[0]['projekt']}',
-              '{$all[0]['bearbeiter']}','{$all[0]['versender']}','{$all[0]['versandunternehmen']}',
-              '{$all[0]['firma']}','{$all[0]['keinetrackingmail']}','{$all[0]['gelesen']}',0,$lieferscheinkopie,1)");
+        if($druckennachtracking && $lieferschein && $this->Export($land)
+          && $this->Projektdaten($projekt, 'proformainvoice_amount') && $proformaRechnungId = $this->app->DB->Select(
+          sprintf(
+            "SELECT id FROM proformarechnung WHERE lieferschein = %d AND status <> 'storniert' LIMIT 1",
+            $lieferschein
+          ))
+        ) {
+          /** @var Versanderzeugen $objProforma */
+          $objVersand = $this->LoadModul('versanderzeugen');
+          if($objVersand && method_exists($objVersand,'checkPrintCreateProformaInvoice')){
+            if(empty($druckercode)) {
+              $druckercode = $this->app->DB->Select("SELECT druckerlogistikstufe2 FROM projekt WHERE id='$projekt' LIMIT 1");
+
+              if($druckercode <= 0) {
+                $druckercode = $this->app->erp->Firmendaten('standardversanddrucker'); // standard = 3 // 2 buchhaltung  // 1 empfang
+              }
+              $userversanddrucker = $this->app->DB->Select("SELECT standardversanddrucker FROM user WHERE id='" . $this->app->User->GetID() . "'");
+              if($userversanddrucker > 0) {
+                $druckercode = $userversanddrucker;
+              }
+            }
+            $objVersand->checkPrintCreateProformaInvoice($lieferschein, $land, $projekt, $druckercode, empty($proformaPrinted));
+          }
+        }
+
+        if(!$this->app->erp->Firmendaten('versandmail_zwischenspeichern') || !$this->app->DB->Select("SELECT id FROM prozessstarter WHERE parameter = 'versandmailsundrueckmeldung' AND aktiv = 1"))
+        {
+          $this->VersandAbschluss($id);
+          $this->RunHook('versanderzeugen_frankieren_hook1', 1, $id);
+          //versand mail an kunden
+          $this->Versandmail($id);
+        }else{
+          $this->app->DB->Update("UPDATE versand SET cronjob = 1 WHERE id = '$id' LIMIT 1");
+        }
+        $weiterespaket=$this->app->Secure->GetPOST("weiterespaket");
+        $lieferscheinkopie=$this->app->Secure->GetPOST("lieferscheinkopie");
+        if($weiterespaket=="1")
+        {
+          if($lieferscheinkopie=="1") $lieferscheinkopie=0; else $lieferscheinkopie=1;
+          //$this->app->erp->LogFile("Lieferscheinkopie $lieferscheinkopie");
+          $all = $this->app->DB->SelectArr("SELECT * FROM versand WHERE id='$id' LIMIT 1");
+          $this->app->DB->Insert("INSERT INTO versand (id,adresse,rechnung,lieferschein,versandart,projekt,bearbeiter,versender,versandunternehmen,firma,
+            keinetrackingmail,gelesen,paketmarkegedruckt,papieregedruckt,weitererlieferschein)
+              VALUES ('','{$all[0]['adresse']}','{$all[0]['rechnung']}','{$all[0]['lieferschein']}','{$all[0]['versandart']}','{$all[0]['projekt']}',
+                '{$all[0]['bearbeiter']}','{$all[0]['versender']}','{$all[0]['versandunternehmen']}',
+                '{$all[0]['firma']}','{$all[0]['keinetrackingmail']}','{$all[0]['gelesen']}',0,$lieferscheinkopie,1)");
 
           $newid = $this->app->DB->GetInsertID();
 
@@ -20849,7 +20827,7 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
         $this->app->DB->Insert("INSERT INTO versand (id,versandunternehmen, tracking,
           versendet_am,abgeschlossen,retoure,
           freigegeben,firma,adresse,projekt,gewicht,paketmarkegedruckt,anzahlpakete)
-            VALUES ('','$versand','$tracking',NOW(),1,'$id',1,'".$this->app->User->GetFirma()."','$adresse','$projekt','$kg','1','1') ");
+          VALUES ('','$versand','$tracking',NOW(),1,'$id',1,'".$this->app->User->GetFirma()."','$adresse','$projekt','$kg','1','1') ");
 
         $versandid = $this->app->DB->GetInsertID();
         if($this->app->DB->Select("SELECT automailversandbestaetigung FROM projekt WHERE id = '$projekt' LIMIT 1"))$this->Versandmail($versandid);
@@ -20878,23 +20856,6 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
         if($kg=="") {
           $kg = $this->VersandartMindestgewicht($id);
         }
-/*
-	//Brauchen wir nicht
-        $versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul,bezeichnung FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($versand)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-        if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
-        {
-          $class_name = 'Versandart_'.$versandartenmodul[0]['modul'];
-          if(!class_exists($class_name))include_once(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php');
-          if(class_exists($class_name))
-          {
-            $obj = new $class_name($this->app, $versandartenmodul[0]['id']);
-            if(method_exists($obj, 'TrackingReplace')){
-              $tracking = $obj->TrackingReplace($tracking);
-            }
-          }
-        }
-*/
-
         $trackingUser = !empty($this->app->User) && method_exists($this->app->User,'GetParameter')?
           $this->app->User->GetParameter('versand_lasttracking'):'';
 
@@ -20905,9 +20866,9 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
           $this->app->User->SetParameter('versand_lasttracking_lieferschein', '');
         }
 
-      $this->app->DB->Insert("INSERT INTO versand (id,versandunternehmen, tracking, tracking_link, 
-        versendet_am,abgeschlossen,lieferschein,
-        freigegeben,firma,adresse,projekt,gewicht,paketmarkegedruckt,anzahlpakete)
+        $this->app->DB->Insert("INSERT INTO versand (id,versandunternehmen, tracking, tracking_link, 
+          versendet_am,abgeschlossen,lieferschein,
+          freigegeben,firma,adresse,projekt,gewicht,paketmarkegedruckt,anzahlpakete)
           VALUES ('','$versand','$tracking', '{$trackingLink}',NOW(),1,'$id',1,'".$this->app->User->GetFirma()."','$adresse','$projekt','$kg','1','1') ");
 
         $versandid = $this->app->DB->GetInsertID();
@@ -20928,8 +20889,7 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
               'SELECT zahlweise FROM rechnung WHERE id = %d', $rechnung
             )
           );
-        }
-        else{
+        } else {
           $rechnung_projekt = $this->app->DB->Select(
             sprintf(
               'SELECT projekt FROM auftrag WHERE id = %d', $auftrag
@@ -21064,176 +21024,17 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
 
       if($kg=="") $kg=$this->VersandartMindestgewicht($lieferschein);
 
-    //$versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul FROM versanddienstleister WHERE aktiv = 1 AND modul = '".$this->app->DB->real_escape_string($typ)."' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-    $versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul,bezeichnung, einstellungen_json FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($typ)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-    if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
-    {
-      $obj = $this->LoadVersandModul($versandartenmodul[0]['modul'], $versandartenmodul[0]['id']);
-      $this->app->Tpl->Set("ZUSATZ",$versandartenmodul[0]['bezeichnung']);
-
-      if(!empty($obj) && method_exists($obj, 'Paketmarke'))
+      $versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul,bezeichnung, einstellungen_json FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($typ)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
+      if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
       {
-        $error = $obj->Paketmarke($sid!=''?$sid:'lieferschein',$id);
-      }else $error[] = 'Versandmodul '.$typ.' fehlerhaft!';
-    }else{
-      switch($typ)
-      {
-        case "DHL":
-          if($nachnahme=="" && $versichert=="" && $extraversichert=="")
-          {
-            $this->EasylogPaketmarkeStandard($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg);
-          } else if ($nachnahme=="1" && $versichert=="" && $extraversichert=="")
-          {
-            $this->EasylogPaketmarkeNachnahme($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer);
-          } else if ($versichert=="1" && $extraversichert=="" && $nachnahme=="")
-          {
-            $this->EasylogPaketmarke2500($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg);
-          } else if ($versichert=="1" && $extraversichert=="" && $nachnahme=="1")
-          {
-            $this->EasylogPaketmarkeNachnahme2500($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer);
-          } else if ($versichert=="" && $extraversichert=="1" && $nachnahme=="1")
-          {
-            $this->EasylogPaketmarkeNachnahme25000($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer);
-          } else if ($extraversichert=="1" && $versichert=="" && $nachnahme=="")
-          {
-            $this->EasylogPaketmarke25000($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg);
-          }
-          break;
-        case "Intraship":
-          $kg = (float)str_replace(',','.',$kg);
+        $obj = $this->LoadVersandModul($versandartenmodul[0]['modul'], $versandartenmodul[0]['id']);
+        $this->app->Tpl->Set("ZUSATZ",$versandartenmodul[0]['bezeichnung']);
 
-            $abholdatum = $this->app->Secure->GetPOST("abholdatum");
-            $retourenlabel= $this->app->Secure->GetPOST("retourenlabel");
-            if($retourenlabel)
-            {
-              $this->app->Tpl->Set('RETOURENLABEL', ' checked="checked" ');
-              $zusaetzlich['retourenlabel'] = 1;
-            }
-            if($abholdatum){
-              $this->app->Tpl->Set('ABHOLDATUM',$abholdatum);
-              $zusaetzlich['abholdatum'] = date('Y-m-d', strtotime($abholdatum));
-              $this->app->User->SetParameter("paketmarke_abholdatum",$zusaetzlich['abholdatum']);
-            }
-            if($altersfreigabe)$zusaetzlich['altersfreigabe'] = 1;
-            if($nachnahme=="1")
-              $error = $this->IntrashipPaketmarkeNachnahme($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer,$zusaetzlich);
-            else
-              $error = $this->IntrashipPaketmarkeStandard($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,"",$rechnungsnummer,$zusaetzlich);
-            break;
-          case "UPS":
-             $error = $this->UPSPaketmarke($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer);
-          break;
-          case "FEDEX":
-            $error = $this->FEDEXPaketmarke($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer);
-          break;
-          case 'Go':
-            if($name && $strasse && $plz && $ort && (($hausnummer && (!$land || $land == 'DE') || ($land && $land != 'DE'))))
-            {
-              $kg = $this->app->Secure->GetPOST("kg");
-              if($kg=="") $kg=$this->VersandartMindestgewicht($lieferschein);
-              $kg = str_replace(',','.',$kg);
-              $frei = $this->app->Secure->GetPOST("frei")==1?1:0;
-              $auftragid = $this->app->DB->Select("SELECT auftragid FROM lieferschein where id = ".(int)$lieferschein." limit 1");
-
-              if($frei){
-                $this->app->Tpl->Set('FREI',' checked="checked" ');
-                $zusaetzlich['frei'] = 1;
-              }
-              $selbstabholung = $this->app->Secure->GetPOST("selbstabholung");
-              if($selbstabholung){
-                $this->app->Tpl->Set('SELBSTABHOLUNG',' checked="checked" ');
-                $zusaetzlich['selbstabholung'] = 1;
-              }
-              $landesvorwahl = $this->app->Secure->GetPOST("landesvorwahl");
-              if($landesvorwahl){
-                $this->app->Tpl->Set('LANDESVORWAHL',$landesvorwahl);
-                $zusaetzlich['landesvorwahl'] = $landesvorwahl;
-              }
-              $ortsvorwahl = $this->app->Secure->GetPOST("ortsvorwahl");
-              if($ortsvorwahl){
-                $this->app->Tpl->Set('ORTSVORWAHL',$ortsvorwahl);
-                $zusaetzlich['ortsvorwahl'] = $ortsvorwahl;
-              }
-              if($telefon)
-              {
-                $this->app->Tpl->Set('TELEFON',$telefon);
-                $zusaetzlich['telefon'] = $telefon;
-              }
-              if($email)
-              {
-                $this->app->Tpl->Set('EMAIL',trim($email));
-                $zusaetzlich['email'] = trim($email);
-              }
-
-
-              $selbstanlieferung = $this->app->Secure->GetPOST("selbstanlieferung");
-              if($selbstanlieferung){
-                $this->app->Tpl->Set('SELBSTANLIEFERUNG',' checked="checked" ');
-                $zusaetzlich['selbstanlieferung'] = 1;
-              }
-              $abholdatum = $this->app->Secure->GetPOST("abholdatum");
-              if($abholdatum){
-                $this->app->Tpl->Set('ABHOLDATUM',$abholdatum);
-                $zusaetzlich['abholdatum'] = $abholdatum;
-                $this->app->User->SetParameter("paketmarke_abholdatum",$zusaetzlich['abholdatum']);
-              }
-              $zustelldatum = $this->app->Secure->GetPOST("zustelldatum");
-              if(!$zustelldatum)
-              {
-                //$zustelldatum = $this->app->DB->Select("SELECT lieferdatum FROM rechnung where id = ".(int)$rechnungid." and lieferdatum > now() limit 1");
-                $zustelldatum = $this->app->DB->Select("SELECT lieferdatum FROM auftrag where id = ".(int)$auftragid." limit 1");
-              }
-              if($zustelldatum){
-                $this->app->Tpl->Set('ZUSTELLDATUM',$zustelldatum);
-                $zusaetzlich['zustelldatum'] = $zustelldatum;
-              }
-
-              if(!$abholdatum)
-              {
-                //$abholdatum = $this->app->DB->Select("SELECT tatsaechlicheslieferdatum FROM rechnung where id = ".(int)$rechnungid." and tatsaechlicheslieferdatum > now() limit 1");
-                $abholdatum = $this->app->DB->Select("SELECT date_format(now(),'%d.%m.%Y')");
-                /*if(!$abholdatum)
-                {
-                  $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$auftragid' LIMIT 1");
-                  $differenztage = $this->Projektdaten($projekt,"differenz_auslieferung_tage");
-                  if($differenztage<0) $differenztage=2;
-                  $abholdatum =  $this->app->DB->Select("SELECT DATE_SUB(lieferdatum, INTERVAL $differenztage DAY) from auftrag WHERE id='$auftragid' and DATE_SUB(lieferdatum, INTERVAL $differenztage DAY) > now() LIMIT 1");
-                }*/
-                if($abholdatum)
-                {
-                  $this->app->Tpl->Set('ABHOLDATUM',$abholdatum);
-                  $zusaetzlich['abholdatum'] = $abholdatum;
-                  $this->app->User->SetParameter("paketmarke_abholdatum",$zusaetzlich['abholdatum']);
-                }
-              }
-
-
-              $Zustellhinweise = $this->app->Secure->GetPOST("Zustellhinweise");
-              if($Zustellhinweise){
-                $this->app->Tpl->Set('ZUSTELLHINWEISE',$Zustellhinweise);
-                $zusaetzlich['Zustellhinweise'] = $Zustellhinweise;
-              }
-              $Abholhinweise = $this->app->Secure->GetPOST("Abholhinweise");
-              if($Abholhinweise){
-                $this->app->Tpl->Set('ABHOLHINWEISE',$Abholhinweise);
-                $zusaetzlich['Abholhinweise'] = $Abholhinweise;
-              }
-
-
-              if($anzahl)$zusaetzlich['menge'] = $anzahl;
-              $inhalt = $this->app->Secure->GetPOST("inhalt");
-              if($inhalt){
-                $this->app->Tpl->Set('INHALT',$inhalt);
-                $zusaetzlich['inhalt'] = $inhalt;
-              }
-              if(isset($nachnahme))$zusaetzlich['nachnahme'] = $nachnahme;
-              $this->GoPaketmarke($id,$name,$name2,$name3,$strasse,$hausnummer,$plz,$ort,$land,$kg,$betrag,$rechnungsnummer, $zusaetzlich);
-            } else header("Location: index.php?module=lieferschein&action=paketmarke&id=$id");
-          break;
-
-        }
+        if(!empty($obj) && method_exists($obj, 'Paketmarke'))
+        {
+          $error = $obj->Paketmarke($sid!=''?$sid:'lieferschein',$id);
+        }else $error[] = 'Versandmodul '.$typ.' fehlerhaft!';
       }
-
       if(!isset($error) || !$error)$this->app->DB->Update("UPDATE versand SET gewicht='$kg',paketmarkegedruckt=1,anzahlpakete='$anzahl' WHERE id='$id' LIMIT 1");
     }
     if(!$error)
@@ -21266,8 +21067,7 @@ function Paketmarke($parsetarget,$sid="",$zusatz="",$typ="DHL")
              break;
 
           }
-          $this->app->DB->Insert("INSERT INTO versandpakete (id,versand,gewicht,nr,versender) VALUES ('','$id','$kg','$anzahli','".$this->app->User->GetName()."')");
-        }
+          $this->app->DB->Insert("INSERT INTO versandpakete (id,versand,gewicht,nr,versender) VALUES ('','$id','$kg','$anzahli','".$this->app->User->GetName()."')");        }
 
       }
 

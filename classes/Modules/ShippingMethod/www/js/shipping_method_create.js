@@ -11,35 +11,14 @@ var ShippingMethodCreate = function ($) {
             vueElementId: '#shipment-create',
         },
         search: function (el) {
-            $.ajax({
-                url: 'index.php?module=versandarten&action=create&cmd=suche',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    val: $(el).val()
-                }
+            let val = $(el).val().toLowerCase();
+            $('.createbutton').each(function() {
+                let desc = $(this).find('.tilegrid-tile-title').text();
+                if (desc.toLowerCase().indexOf(val)>=0)
+                    $(this).show();
+                else
+                    $(this).hide();
             })
-             .done(function (data) {
-                 if (typeof data != 'undefined' && data != null) {
-                     if (typeof data.ausblenden != 'undefined' && data.ausblenden != null) {
-                         me.storage.hideElements = data.ausblenden.split(';');
-                         $.each(me.storage.hideElements, function (k, v) {
-                             if (v != '') {
-                                 $('#' + v).hide();
-                             }
-                         });
-
-                     }
-                     if (typeof data.anzeigen != 'undefined' && data.anzeigen != null) {
-                         me.storage.showElements = data.anzeigen.split(';');
-                         $.each(me.storage.showElements, function (k, v) {
-                             if (v != '') {
-                                 $('#' + v).show();
-                             }
-                         });
-                     }
-                 }
-             });
         },
         init: function () {
             if ($(me.selector.vueElementId).length === 0) {

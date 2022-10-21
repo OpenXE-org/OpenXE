@@ -12,17 +12,10 @@
         <fieldset class="moduleList">
             <legend>{|Auswahl|}</legend>
             <div id="searchdiv">
-                <label for="suche">{|Suche|}:</label> <input type="text" id="suche" />
+                <label for="suche">{|Suche|}:</label> <input type="text" id="createSearchInput" />
             </div>
             [MODULEINSTALLIERT]
         </fieldset>
-        [BEFOREMODULESTOBUY]
-        <fieldset class="moduleList">
-            <legend>{|Kaufschnittstellen|}</legend>
-            [MODULEVERFUEGBAR]
-            <br />
-        </fieldset>
-        [AFTERMODULESTOBUY]
         [TAB1NEXT]
     </div>
 
