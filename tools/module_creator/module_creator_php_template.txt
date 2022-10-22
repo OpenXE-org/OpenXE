@@ -143,6 +143,7 @@ class PLACEHOLDER_MODULECLASSNAME {
 
     
         // Load values again from database
+	$dropnbox = "PLACEHOLDER_DROPNBOX";
         $result = $this->app->DB->SelectArr("PLACEHOLDER_SQL_LIST"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
