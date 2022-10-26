@@ -1,0 +1,5 @@
+conf/user.inc.php
+conf/user_defined.php
+userdata/cronjobkey.txt
+userdata/tmp/
+www/cache/
