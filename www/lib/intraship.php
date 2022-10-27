@@ -99,7 +99,7 @@ class Versandart_intraship extends Versanddienstleister{
     return 'DHL Instrahship';
   }
   
-  function EinstellungenStruktur()
+  function AdditionalSettings()
   {
     return array(
     

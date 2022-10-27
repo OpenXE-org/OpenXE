@@ -163,28 +163,17 @@ class TemplateParser {
 
   public function addMessage($class, $text, $html = false, $_var = 'MESSAGE')
   {
-    $ret = '';
-    switch($class)
-    {
-      case 'error':
-      case 'warning':
-      case 'info':
-
-        break;
-      default:
-        $class = 'info';
-      break;
-    }
+    if(!in_array($class, ['error', 'warning', 'info', 'success']))
+      $class = 'info';
     if(!$html)
     {
       $text = $this->htmlspecialchars($text);
     }
-    $ret .= '<div class="'.$class.'">'.$text.'</div>';
+    $ret = sprintf('<div class="%s">%s</div>', $class, $text);
     if($_var === 'return')
-    {
       return $ret;
-    }
-    return $this->app->Tpl->Add($_var, $ret);
+
+    $this->app->Tpl->Add($_var, $ret);
   }
 
   public function addSelect($_var, $id, $name, $options, $selected = '', $class = '')

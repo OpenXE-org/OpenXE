@@ -14,15 +14,13 @@
                         <td>{|Bezeichnung|}:</td>
                         <td>
                             <input type="text" name="bezeichnung" value="[BEZEICHNUNG]" size="40"
-                                   data-lang="versandart_bezeichnung_[ID]">
-                            <span style="color:red">[MSGBEZEICHNUNG]</span>
+                                   data-lang="versandart_bezeichnung_[ID]" required>
                         </td>
                     </tr>
                     <tr>
                         <td>{|Typ|}:</td>
                         <td>
-                            <input type="text" name="typ" value="[TYP]" size="40">
-                            <span style="color:red">[MSGTYP]</span>
+                            <input type="text" name="type" value="[TYPE]" size="40" required>
                             <i>{|z.B. dhl,ups,etc.|}</i>
                         </td>
                     </tr>
@@ -64,7 +62,7 @@
                         <td>{|Textvorlage|}:</td>
                         <td>[SELGESCHAEFTSBRIEF_VORLAGE]</td>
                     </tr>
-                    [JSON]
+                    [MODULESETTINGS]
                 </table>
             </fieldset>
             <input type="submit" name="speichern" value="{|Speichern|}" id="speichern" style="float:right"/>

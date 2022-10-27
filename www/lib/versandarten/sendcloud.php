@@ -12,32 +12,14 @@ require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
 class Versandart_sendcloud extends Versanddienstleister
 {
+  protected SendCloudApi $api;
+  protected array $options;
 
-  /* @var SendCloudApi $api */
-  protected $api;
-
-  /* @var array $settings */
-  protected $settings;
-
-  protected $options;
-
-  /**
-   * Versandart_sendcloud constructor.
-   *
-   * @param ApplicationCore $app
-   * @param int $id
-   */
-  public function __construct($app, $id)
+  public function __construct(Application $app, ?int $id)
   {
-    $this->app = $app;
-    $this->id = $id;
-
-    //TODO move to better place
-    $res = $this->app->DB->SelectRow("SELECT * FROM versandarten WHERE id=$this->id");
-    $this->settings = json_decode($res['einstellungen_json']);
-    $this->type = $res['type'];
-    $this->paketmarke_drucker = $res['paketmarke_drucker'];
-
+    parent::__construct($app, $id);
+    if (!isset($this->id))
+      return;
     $this->api = new SendCloudApi($this->settings->public_key, $this->settings->private_key);
   }
 
@@ -59,10 +41,10 @@ class Versandart_sendcloud extends Versanddienstleister
     $this->options['products'] = array_map(fn(ShippingProduct $x) => $x->Name, $shippingProducts ?? []);
     $this->options['products'][0] = '';
     $this->options['selectedProduct'] = $shippingProducts[$this->settings->shipping_product];
-    asort($this->options['products']);
+    natcasesort($this->options['products']);
   }
 
-  protected function EinstellungenStruktur()
+  public function AdditionalSettings(): array
   {
     $this->FetchOptionsFromApi();
     return [

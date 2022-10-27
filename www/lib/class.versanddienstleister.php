@@ -1,9 +1,31 @@
 <?php 
 abstract class Versanddienstleister {
-  /** @var int $id */
-  public $id;
-  /** @var Application $app */
-  public $app;
+  protected int $id;
+  protected Application $app;
+  protected string $type;
+  protected int $projectId;
+  protected ?int $labelPrinterId;
+  protected ?int $documentPrinterId;
+  protected bool $shippingMail;
+  protected ?int $businessLetterTemplateId;
+  protected object $settings;
+
+  public function __construct(Application $app, ?int $id)
+  {
+    $this->app = $app;
+    if ($id === null || $id === 0)
+      return;
+    $this->id = $id;
+    $row = $this->app->DB->SelectRow("SELECT * FROM versandarten WHERE id=$this->id");
+    $this->type = $row['type'];
+    $this->projectId = $row['projekt'];
+    $this->labelPrinterId = $row['paketmarke_drucker'];
+    $this->documentPrinterId = $row['export_drucker'];
+    $this->shippingMail = $row['versandmail'];
+    $this->businessLetterTemplateId = $row['geschaeftsbrief_vorlage'];
+    $this->settings = json_decode($row['einstellungen_json']);
+  }
+
 
   public function isEtikettenDrucker(): bool {
     return false;
@@ -147,18 +169,32 @@ abstract class Versanddienstleister {
   }
 
   /**
-   * @param string $target
+   * Returns an array of additional field definitions to be stored for this module:
+   * [
+   *   'field_name' => [
+   *     'typ' => text(default)|textarea|checkbox|select
+   *     'default' => default value
+   *     'optionen' => just for selects [key=>value]
+   *     'size' => size attribute for text fields
+   *     'placeholder' => placeholder attribute for text fields
+   *   ]
+   * ]
    *
-   * @return string
+   * @return array
    */
-  public function Einstellungen($target = 'return')
+  public function AdditionalSettings(): array {
+    return [];
+  }
+
+  /**
+   * Renders all additional settings as fields into $target
+   * @param string $target template placeholder for rendered output
+   * @param array $form data for form values (from database or form submit)
+   * @return void
+   */
+  public function RenderAdditionalSettings(string $target, array $form): void
   {
-    if(!$this->id)
-    {
-      return '';
-    }
-    //$id = $this->id;
-    $struktur = $this->EinstellungenStruktur();
+    $fields = $this->AdditionalSettings();
     if($this->app->Secure->GetPOST('speichern'))
     {
       $json = $this->app->DB->Select("SELECT einstellungen_json FROM versandarten WHERE id = '".$this->id."' LIMIT 1");
@@ -168,7 +204,7 @@ abstract class Versanddienstleister {
         $json = @json_decode($json, true);
       }else{
         $json = array();
-        foreach($struktur as $name => $val)
+        foreach($fields as $name => $val)
         {
           if(isset($val['default']))
           {
@@ -180,7 +216,7 @@ abstract class Versanddienstleister {
       {
         $json = null;
       }
-      foreach($struktur as $name => $val)
+      foreach($fields as $name => $val)
       {
 
         if($modul === $this->app->Secure->GetPOST('modul_name'))
@@ -201,101 +237,53 @@ abstract class Versanddienstleister {
       $json_str = $this->app->DB->real_escape_string(json_encode($json));
       $this->app->DB->Update("UPDATE versandarten SET einstellungen_json = '$json_str' WHERE id = '".$this->id."' LIMIT 1");
     }
-    $id = $this->id;
     $html = '';
    
-    $json = $this->app->DB->Select("SELECT einstellungen_json FROM versandarten WHERE id = '$id' LIMIT 1");
-    if($json)
+    foreach($fields as $name => $val) // set missing default values
     {
-      $json = json_decode($json, true);
-    }else{
-      $json = null;
-    }
-
-    $changed = false;
-    foreach($struktur as $name => $val)
-    {
-      if(isset($val['default']) && !isset($json[$name]))
+      if(isset($val['default']) && !isset($form[$name]))
       {
-        $changed = true;
-        $json[$name] = $val['default'];
+        $form[$name] = $val['default'];
       }
     }
-    if($changed)
-    {
-      $json_str = $this->app->DB->real_escape_string(json_encode($json));
-      $this->app->DB->Update("UPDATE versandarten SET einstellungen_json = '$json_str' WHERE id = '".$this->id."' LIMIT 1");      
-    }
-    $first = true;
-    foreach($struktur as $name => $val)
+    foreach($fields as $name => $val)
     {
       if(isset($val['heading']))
-      {
         $html .= '<tr><td colspan="2"><b>'.html_entity_decode($val['heading']).'</b></td></tr>';
-      }
-      $html .= '<tr><td>'.($first?'<input type="hidden" name="modul_name" value="'.$this->app->DB->Select("SELECT modul FROM versandarten WHERE id = '$id' LIMIT 1").'" />':'').(empty($val['bezeichnung'])?$name:$val['bezeichnung']).'</td><td>';
-      $typ = 'text';
-      if(!empty($val['typ']))
-      {
-        $typ = $val['typ'];
-      }
+
+      $html .= '<tr><td>'.($val['bezeichnung'] ?? $name).'</td><td>';
       if(isset($val['replace']))
       {
         switch($val['replace'])
         {
           case 'lieferantennummer':
-            $json[$name] = $this->app->erp->ReplaceLieferantennummer(0,$json[$name],0);
-            if($target !== 'return')
-            {
-              $this->app->YUI->AutoComplete($name, 'lieferant', 1);
-            }
-          break;
+            $form[$name] = $this->app->erp->ReplaceLieferantennummer(0,$form[$name],0);
+            $this->app->YUI->AutoComplete($name, 'lieferant', 1);
+            break;
           case 'shop':
-            $json[$name] .= ($json[$name]?' '.$this->app->DB->Select("SELECT bezeichnung FROM shopexport WHERE id = '".(int)$json[$name]."'"):'');
-            if($target !== 'return')
-            {
-              $this->app->YUI->AutoComplete($name, 'shopnameid');
-            }
-          break;
+            $form[$name] .= ($form[$name]?' '.$this->app->DB->Select("SELECT bezeichnung FROM shopexport WHERE id = '".(int)$form[$name]."'"):'');
+            $this->app->YUI->AutoComplete($name, 'shopnameid');
+            break;
           case 'etiketten':
-            //$json[$name] = $this->app->erp->ReplaceLieferantennummer(0,$json[$name],0);
-            if($target !== 'return')
-            {
-              $this->app->YUI->AutoComplete($name, 'etiketten');
-            }
-          break;
- 
+            $this->app->YUI->AutoComplete($name, 'etiketten');
+            break;
         }
       }
-      /*if(!isset($json[$name]) && isset($val['default']))
-      {
-        $json[$name] = $val['default'];
-      }*/
-      switch($typ)
+      switch($val['typ'] ?? 'text')
       {
         case 'textarea':
-          $html .= '<textarea name="'.$name.'" id="'.$name.'">'.(!isset($json[$name])?'':$json[$name]).'</textarea>';
-        break;
+          $html .= '<textarea name="'.$name.'" id="'.$name.'">'.($form[$name] ?? '').'</textarea>';
+          break;
         case 'checkbox':
-          $html .= '<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.((isset($json[$name]) && $json[$name])?' checked="checked" ':'').' />';
-        break;
+          $html .= '<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.($form[$name] ?? false ? ' checked="checked" ':'').' />';
+          break;
         case 'select':
-          $html .= '<select name="'.$name.'">';
-          if(isset($val['optionen']) && is_array($val['optionen']))
-          {
-            foreach($val['optionen'] as $k => $v)
-            {
-              $html .= '<option value="'.$k.'"'.($k == (isset($json[$name])?$json[$name]:'')?' selected="selected" ':'').'>'.$v.'</option>';
-            }
-          }
-          $html .= '</select>';
-        break;
+          $html .= $this->app->Tpl->addSelect('return', $name, $name, $val['optionen'], $form[$name]);
+          break;
         case 'submit':
           if(isset($val['text']))
-          {
             $html .= '<form method="POST"><input type="submit" name="'.$name.'" value="'.$val['text'].'"></form>';
-          }
-        break;
+          break;
         case 'custom':
           if(isset($val['function']))
           {
@@ -305,35 +293,31 @@ abstract class Versanddienstleister {
               $html .= $this->$tmpfunction();
             }
           }
-        break;
+          break;
         default:
-
-          $html .= '<input type="text" '.(!empty($val['size'])?' size="'.$val['size'].'" ':'').' '.(!empty($val['placeholder'])?' placeholder="'.$val['placeholder'].'" ':'').' name="'.$name.'" id="'.$name.'" value="'.(!isset($json[$name])?'':htmlspecialchars($json[$name])).'" />';
+          $html .= '<input type="text"'
+              .(!empty($val['size'])?' size="'.$val['size'].'"':'')
+              .(!empty($val['placeholder'])?' placeholder="'.$val['placeholder'].'"':'')
+              .' name="'.$name.'" id="'.$name.'" value="'.(isset($form[$name])?htmlspecialchars($form[$name]):'').'" />';
         break;
       }
-      if(isset($val['info']) && $val['info'])$html .= ' <i>'.$val['info'].'</i>';
+      if(isset($val['info']) && $val['info'])
+        $html .= ' <i>'.$val['info'].'</i>';
       
       $html .= '</td></tr>';
-      $first = false;
-    }
-    
-    if($target === 'return') {
-      return $html;
     }
     $this->app->Tpl->Add($target, $html);
-    return '';
   }
 
-  protected abstract function EinstellungenStruktur();
-
-    /**
-     * @param string $target
-     *
-     * @return bool
-     */
-  public function checkInputParameters(string $target = ''): bool
+  /**
+   * Validate form data for this module
+   * Form data is passed by reference so replacements (id instead of text) can be performed here as well
+   * @param array $form submitted form data
+   * @return array
+   */
+  public function CheckInputParameters(array &$form): array
   {
-      return true;
+      return [];
   }
 
 

@@ -149,7 +149,7 @@ class Versandarten {
   public function VersandartenEdit(): void
   {
     $id = (int)$this->app->Secure->GetGET('id');
-    $save = $this->app->Secure->GetPOST('speichern');
+    $submit = $this->app->Secure->GetPOST('speichern');
 
     if (!$id)
       return;
@@ -157,62 +157,59 @@ class Versandarten {
     $this->app->erp->MenuEintrag('index.php?module=versandarten&action=edit&id='.$id,'Details');
     $this->app->erp->MenuEintrag('index.php?module=versandarten&action=list','Zur&uuml;ck zur &Uuml;bersicht');
 
-    $input = $this->GetInput();
-
     $error = [];
-    if($save != ''){
-      $moduleObject = $this->loadModule($input['selmodul'], $id);
-      if ($moduleObject === null)
-        $error[] = sprintf('Versandart "%s" existiert nicht.', $input['selmodul']);
+    if($submit != '') { // handle form submit
+      $form = $this->GetInput();
+      $obj = $this->loadModule($form['modul'], $id);
+      if ($obj === null)
+        $error[] = sprintf('Versandart "%s" existiert nicht.', $form['selmodul']);
 
-      if(trim($input['bezeichnung']) == '') {
-        $error[] = 'Bitte alle Pflichtfelder ausfüllen!';
-        $this->app->Tpl->Set('MSGBEZEICHNUNG','Pflichtfeld!');
-      }
-      if(trim($input['typ']) == '')
-      {
-        $error[] = 'Bitte alle Pflichtfelder ausfüllen!';
-        $this->app->Tpl->Set('MSGTYP','Pflichtfeld!');
-      }
+      if(trim($form['bezeichnung']) == '')
+        $error[] = 'Bitte eine Bezeichnung angeben!';
 
-      $projektid = 0;
-      if(!empty($input['projekt'])){
-        $projektid = $this->app->DB->Select(
-            "SELECT `id` FROM `projekt` WHERE `abkuerzung` = '{$input['projekt']}' LIMIT 1"
+      if(trim($form['type']) == '')
+        $error[] = 'Bitte einen Typ angeben!';
+
+      $projektId = 0;
+      if(!empty($form['projekt'])){
+        $projektId = $this->app->DB->Select(
+            "SELECT `id` FROM `projekt` WHERE `abkuerzung` = '{$form['projekt']}' LIMIT 1"
         );
       }
 
       if ($this->app->DB->Select(
-          "SELECT `id` FROM `versandarten` WHERE `type` = '{$input['typ']}' AND `id` <> $id LIMIT 1"
-      )) {
+          "SELECT `id` FROM `versandarten` WHERE `type` = '{$form['type']}' AND `id` <> $id LIMIT 1"
+      ))
         $error[] = 'Typ ist bereits für eine andere Versandart vergeben';
+
+      foreach ($obj->AdditionalSettings() as $k => $v) {
+        $form[$k] = $this->app->Secure->GetPOST($k);
       }
+      $error = array_merge($error, $obj->CheckInputParameters($form));
+      foreach ($obj->AdditionalSettings() as $k => $v) {
+        $json[$k] = $form[$k];
+      }
+      $json = json_encode($json ?? null);
 
       foreach ($error as $e) {
         $this->app->Tpl->addMessage('error', $e);
       }
 
-      $inputCheckResult = $moduleObject->checkInputParameters('MESSAGE');
-      if (empty($error) && $inputCheckResult) {
+      if (empty($error)) {
         $this->app->DB->Update(
             "UPDATE `versandarten`
-                SET `bezeichnung`='{$input['bezeichnung']}', `type` ='{$input['typ']}',
-                    `projekt`=$projektid, `aktiv`={$input['aktiv']}, `modul`='{$input['selmodul']}',
-                    `export_drucker` = {$input['export_drucker']}, 
-                    `paketmarke_drucker` = {$input['paketmarke_drucker']}, 
-                    `ausprojekt` = {$input['ausprojekt']}, `versandmail` = {$input['versandmail']},
-                    `geschaeftsbrief_vorlage` = {$input['geschaeftsbrief_vorlage']},
-                    `keinportocheck`={$input['keinportocheck']} 
+                SET `bezeichnung`='{$form['bezeichnung']}', `type` ='{$form['type']}',
+                    `projekt`=$projektId, `aktiv`={$form['aktiv']}, `modul`='{$form['modul']}',
+                    `export_drucker` = {$form['export_drucker']}, 
+                    `paketmarke_drucker` = {$form['paketmarke_drucker']}, 
+                    `ausprojekt` = {$form['ausprojekt']}, `versandmail` = {$form['versandmail']},
+                    `geschaeftsbrief_vorlage` = {$form['geschaeftsbrief_vorlage']},
+                    `keinportocheck`={$form['keinportocheck']},
+                    einstellungen_json='$json'
                 WHERE `id` = $id LIMIT 1"
         );
 
-        if($input['aktiv'] == 1){
-          $this->app->Tpl->Set('AKTIV', "checked");
-        }
-        if($input['keinportocheck'] == 1){
-          $this->app->Tpl->Set('KEINPORTOCHECK', "checked");
-        }
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Daten wurden erfolgreich gespeichert!</div>");
+        $this->app->Tpl->addMessage('success', "Die Daten wurden erfolgreich gespeichert!");
       }
     }
     $daten = $this->app->DB->SelectRow("SELECT * FROM `versandarten` WHERE `id` = $id LIMIT 1");
@@ -222,28 +219,34 @@ class Versandarten {
     $this->app->erp->Headlines('', $daten['bezeichnung']);
     $this->app->Tpl->Set('AKTMODUL', $daten['modul']);
     $obj = $this->loadModule($daten['modul'], $daten['id']);
-    $bezeichnung = $daten['bezeichnung'];
-    $typ = $daten['type'];
-    $projekt = $daten['projekt'];
-    $aktiv = $daten['aktiv'];
-    $keinportocheck = $daten['keinportocheck'];
-    $projektname = $this->app->erp->Projektdaten($projekt, 'abkuerzung');
-    $obj->Einstellungen('JSON');
-    $etikettendrucker = $obj->isEtikettenDrucker();
+
+    if (empty($error) || !isset($form)) { //overwrite form data from database if no validation error is present
+      $form = json_decode($daten['einstellungen_json'],true);
+      $form['bezeichnung'] = $daten['bezeichnung'];
+      $form['type'] = $daten['type'];
+      $form['projekt'] = $this->app->erp->Projektdaten($daten['projekt'], 'abkuerzung');
+      $form['aktiv'] = $daten['aktiv'];
+      $form['keinportocheck'] = $daten['keinportocheck'];
+      $form['modul'] = $daten['modul'];
+      $form['export_drucker'] = $daten['export_drucker'];
+      $form['paketmarke_drucker'] = $daten['paketmarke_drucker'];
+    }
+
+    $obj->RenderAdditionalSettings('MODULESETTINGS', $form);
 
     $drucker_export = $this->app->erp->GetDrucker();
     $drucker_export[0] = '';
-    asort($drucker_export);
+    natcasesort($drucker_export);
     $this->app->Tpl->addSelect('EXPORT_DRUCKER', 'export_drucker', 'export_drucker',
-        $drucker_export, $daten['export_drucker']);
+        $drucker_export, $form['export_drucker']);
 
     $drucker_paketmarke = $this->app->erp->GetDrucker();
-    if($etikettendrucker)
+    if($obj->isEtikettenDrucker())
       $drucker_paketmarke = array_merge($drucker_paketmarke, $this->app->erp->GetEtikettendrucker());
     $drucker_paketmarke[0] = '';
-    asort($drucker_paketmarke);
+    natcasesort($drucker_paketmarke);
     $this->app->Tpl->addSelect('PAKETMARKE_DRUCKER', 'paketmarke_drucker', 'paketmarke_drucker',
-        $drucker_paketmarke, $daten['paketmarke_drucker']);
+        $drucker_paketmarke, $form['paketmarke_drucker']);
 
     $this->app->YUI->HideFormular('versandmail', array('0'=>'versandbetreff','1'=>'dummy'));
     $this->app->Tpl->addSelect('SELVERSANDMAIL', 'versandmail', 'versandmail', [
@@ -258,30 +261,19 @@ class Versandarten {
       LEFT JOIN `projekt` AS `p` ON gv.projekt = p.id 
       ORDER by gv.subjekt"
     );
-
     $this->app->Tpl->addSelect('SELGESCHAEFTSBRIEF_VORLAGE', 'geschaeftsbrief_vorlage',
         'geschaeftsbrief_vorlage', $geschaeftsbrief_vorlagen, $daten['geschaeftsbrief_vorlage']);
 
-    if(empty($error)){
-      $selectedModule = $daten['modul'] ?? '';
-    }
-    else {
-      $selectedModule = $input['selmodul'];
-    }
-    $this->app->Tpl->addSelect('SELMODUL', 'selmodul', 'selmodul',
-        $this->VersandartenSelModul(), $selectedModule);
-    $this->app->Tpl->Set('BEZEICHNUNG', empty($error)?$bezeichnung:$input['bezeichnung']);
-    $this->app->Tpl->Set('TYP', empty($error)?$typ:$input['typ']);
-    $this->app->Tpl->Set('PROJEKT', empty($error)?$projektname:$input['projekt']);
-    if((empty($error) && $aktiv == 1) || (!empty($error) && $input['aktiv'])){
-      $this->app->Tpl->Set('AKTIV', 'checked');
-    }
-    if((empty($error) && $keinportocheck == 1) || (!empty($error) && $input['keinportocheck'])){
-      $this->app->Tpl->Set('KEINPORTOCHECK', 'checked');
-    }
+    $this->app->Tpl->addSelect('SELMODUL', 'modul', 'modul',
+        $this->VersandartenSelModul(), $form['modul']);
+    $this->app->Tpl->Set('BEZEICHNUNG', $form['bezeichnung']);
+    $this->app->Tpl->Set('TYPE', $form['type']);
+    $this->app->Tpl->Set('PROJEKT', $form['projekt']);
     $this->app->YUI->AutoComplete('projekt', 'projektname', 1);
+    if($form['aktiv']) $this->app->Tpl->Set('AKTIV', 'checked');
+    if($form['keinportocheck']) $this->app->Tpl->Set('KEINPORTOCHECK', 'checked');
     if ($obj->Beta ?? false)
-      $this->app->Tpl->Add('MESSAGE','<div class="info">Dieses Modul ist noch im Beta Stadium.</div>');
+      $this->app->Tpl->addMessage('warning','Dieses Modul ist noch im Beta Stadium');
     $this->app->Tpl->Parse('PAGE', 'versandarten_edit.tpl');
   }
 
@@ -747,9 +739,9 @@ class Versandarten {
   {
     $input = [];
     $input['bezeichnung'] = $this->app->Secure->GetPOST('bezeichnung');
-    $input['typ'] = $this->app->Secure->GetPOST('typ');
+    $input['type'] = $this->app->Secure->GetPOST('type');
     $input['projekt'] = $this->app->Secure->GetPOST('projekt');
-    $input['selmodul'] = $this->app->Secure->GetPOST('selmodul');
+    $input['modul'] = $this->app->Secure->GetPOST('modul');
     $input['aktiv'] = (int)$this->app->Secure->GetPOST('aktiv');
     $input['keinportocheck'] = (int)$this->app->Secure->GetPOST('keinportocheck');
     $input['ausprojekt'] = (int)$this->app->Secure->GetPOST('ausprojekt');
