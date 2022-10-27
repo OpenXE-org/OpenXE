@@ -60,9 +60,12 @@ Menü
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
+		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . 
+                        "<a href=\"index.php?module=produktion&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;".
+                        "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . 
+                        "</td></tr></table>";
 
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.datum, p.art, p.projekt, p.belegnr, p.internet, p.bearbeiter, p.angebot, p.freitext, p.internebemerkung, p.status, p.adresse, p.name, p.abteilung, p.unterabteilung, p.strasse, p.adresszusatz, p.ansprechpartner, p.plz, p.ort, p.land, p.ustid, p.ust_befreit, p.ust_inner, p.email, p.telefon, p.telefax, p.betreff, p.kundennummer, p.versandart, p.vertrieb, p.zahlungsweise, p.zahlungszieltage, p.zahlungszieltageskonto, p.zahlungszielskonto, p.bank_inhaber, p.bank_institut, p.bank_blz, p.bank_konto, p.kreditkarte_typ, p.kreditkarte_inhaber, p.kreditkarte_nummer, p.kreditkarte_pruefnummer, p.kreditkarte_monat, p.kreditkarte_jahr, p.firma, p.versendet, p.versendet_am, p.versendet_per, p.versendet_durch, p.autoversand, p.keinporto, p.keinestornomail, p.abweichendelieferadresse, p.liefername, p.lieferabteilung, p.lieferunterabteilung, p.lieferland, p.lieferstrasse, p.lieferort, p.lieferplz, p.lieferadresszusatz, p.lieferansprechpartner, p.packstation_inhaber, p.packstation_station, p.packstation_ident, p.packstation_plz, p.packstation_ort, p.autofreigabe, p.freigabe, p.nachbesserung, p.gesamtsumme, p.inbearbeitung, p.abgeschlossen, p.nachlieferung, p.lager_ok, p.porto_ok, p.ust_ok, p.check_ok, p.vorkasse_ok, p.nachnahme_ok, p.reserviert_ok, p.bestellt_ok, p.zeit_ok, p.versand_ok, p.partnerid, p.folgebestaetigung, p.zahlungsmail, p.stornogrund, p.stornosonstiges, p.stornorueckzahlung, p.stornobetrag, p.stornobankinhaber, p.stornobankkonto, p.stornobankblz, p.stornobankbank, p.stornogutschrift, p.stornogutschriftbeleg, p.stornowareerhalten, p.stornomanuellebearbeitung, p.stornokommentar, p.stornobezahlt, p.stornobezahltam, p.stornobezahltvon, p.stornoabgeschlossen, p.stornorueckzahlungper, p.stornowareerhaltenretour, p.partnerausgezahlt, p.partnerausgezahltam, p.kennen, p.logdatei, p.bezeichnung, p.datumproduktion, p.anschreiben, p.usereditid, p.useredittimestamp, p.steuersatz_normal, p.steuersatz_zwischen, p.steuersatz_ermaessigt, p.steuersatz_starkermaessigt, p.steuersatz_dienstleistung, p.waehrung, p.schreibschutz, p.pdfarchiviert, p.pdfarchiviertversion, p.typ, p.reservierart, p.auslagerart, p.projektfiliale, p.datumauslieferung, p.datumbereitstellung, p.unterlistenexplodieren, p.charge, p.arbeitsschrittetextanzeigen, p.einlagern_ok, p.auslagern_ok, p.mhd, p.auftragmengenanpassen, p.internebezeichnung, p.mengeoriginal, p.teilproduktionvon, p.teilproduktionnummer, p.parent, p.parentnummer, p.bearbeiterid, p.mengeausschuss, p.mengeerfolgreich, p.abschlussbemerkung, p.auftragid, p.funktionstest, p.seriennummer_erstellen, p.unterseriennummern_erfassen, p.datumproduktionende, p.standardlager, p.id FROM produktion p";
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.belegnr, p.kundennummer, p.name, p.datum, \"SUBSELECT\", \"SUBSELECT\", p.mengeerfolgreich, \"-\", \"-\", p.projekt, p.status, p.status, p.id FROM produktion p";
@@ -81,6 +84,7 @@ Menü
 			(SELECT projekt.abkuerzung FROM projekt WHERE p.projekt = projekt.id LIMIT 1),
 			p.status,
 		        (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
+			p.id,
 			p.id
 			FROM produktion p";
 
@@ -101,7 +105,7 @@ Menü
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
+        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
@@ -135,7 +139,7 @@ Menü
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
+		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
@@ -183,8 +187,15 @@ Menü
     public function produktion_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
         
-        $this->app->DB->Delete("DELETE FROM `produktion` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
+        // Check if storno possible -> No partial production yet
+
+	    $geliefert_menge = $this->app->DB->SelectArr("SELECT geliefert_menge FROM produktion_position pp WHERE pp.produktion = $id");
+        
+        if (empty($geliefert_menge)) {
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"info\">Der Eintrag wurde storniert.</div>");           
+        } else {
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag kann nicht storniert werden, da bereits Buchungen vorhanden sind.</div>");           
+        } 
 
         $this->produktion_list();
     } 
@@ -252,7 +263,164 @@ Menü
     
         // Load values again from database
 
-	$sql = "SELECT SQL_CALC_FOUND_ROWS p.id, p.datum, p.art, p.projekt, p.belegnr, p.internet, p.bearbeiter, p.angebot, p.freitext, p.internebemerkung, p.status, p.adresse, p.name, p.abteilung, p.unterabteilung, p.strasse, p.adresszusatz, p.ansprechpartner, p.plz, p.ort, p.land, p.ustid, p.ust_befreit, p.ust_inner, p.email, p.telefon, p.telefax, p.betreff, p.kundennummer, p.versandart, p.vertrieb, p.zahlungsweise, p.zahlungszieltage, p.zahlungszieltageskonto, p.zahlungszielskonto, p.bank_inhaber, p.bank_institut, p.bank_blz, p.bank_konto, p.kreditkarte_typ, p.kreditkarte_inhaber, p.kreditkarte_nummer, p.kreditkarte_pruefnummer, p.kreditkarte_monat, p.kreditkarte_jahr, p.firma, p.versendet, p.versendet_am, p.versendet_per, p.versendet_durch, p.autoversand, p.keinporto, p.keinestornomail, p.abweichendelieferadresse, p.liefername, p.lieferabteilung, p.lieferunterabteilung, p.lieferland, p.lieferstrasse, p.lieferort, p.lieferplz, p.lieferadresszusatz, p.lieferansprechpartner, p.packstation_inhaber, p.packstation_station, p.packstation_ident, p.packstation_plz, p.packstation_ort, p.autofreigabe, p.freigabe, p.nachbesserung, p.gesamtsumme, p.inbearbeitung, p.abgeschlossen, p.nachlieferung, p.lager_ok, p.porto_ok, p.ust_ok, p.check_ok, p.vorkasse_ok, p.nachnahme_ok, p.reserviert_ok, p.bestellt_ok, p.zeit_ok, p.versand_ok, p.partnerid, p.folgebestaetigung, p.zahlungsmail, p.stornogrund, p.stornosonstiges, p.stornorueckzahlung, p.stornobetrag, p.stornobankinhaber, p.stornobankkonto, p.stornobankblz, p.stornobankbank, p.stornogutschrift, p.stornogutschriftbeleg, p.stornowareerhalten, p.stornomanuellebearbeitung, p.stornokommentar, p.stornobezahlt, p.stornobezahltam, p.stornobezahltvon, p.stornoabgeschlossen, p.stornorueckzahlungper, p.stornowareerhaltenretour, p.partnerausgezahlt, p.partnerausgezahltam, p.kennen, p.logdatei, p.bezeichnung, p.datumproduktion, p.anschreiben, p.usereditid, p.useredittimestamp, p.steuersatz_normal, p.steuersatz_zwischen, p.steuersatz_ermaessigt, p.steuersatz_starkermaessigt, p.steuersatz_dienstleistung, p.waehrung, p.schreibschutz, p.pdfarchiviert, p.pdfarchiviertversion, p.typ, p.reservierart, p.auslagerart, p.projektfiliale, p.datumauslieferung, p.datumbereitstellung, p.unterlistenexplodieren, p.charge, p.arbeitsschrittetextanzeigen, p.einlagern_ok, p.auslagern_ok, p.mhd, p.auftragmengenanpassen, p.internebezeichnung, p.mengeoriginal, p.teilproduktionvon, p.teilproduktionnummer, p.parent, p.parentnummer, p.bearbeiterid, p.mengeausschuss, p.mengeerfolgreich, p.abschlussbemerkung, p.auftragid, p.funktionstest, p.seriennummer_erstellen, p.unterseriennummern_erfassen, p.datumproduktionende, p.standardlager, p.id FROM produktion p"." WHERE id=$id";	
+	$sql = "SELECT SQL_CALC_FOUND_ROWS 
+                p.id,
+    			(SELECT pp.bezeichnung FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1) as artikelname,
+                p.datum,
+                p.art,
+                p.projekt,
+                p.belegnr,
+                p.internet,
+                p.bearbeiter,
+                p.angebot,
+                p.freitext,
+                p.internebemerkung,
+                p.status,
+                p.adresse,
+                p.name,
+                p.abteilung,
+                p.unterabteilung,
+                p.strasse,
+                p.adresszusatz,
+                p.ansprechpartner,
+                p.plz,
+                p.ort,
+                p.land,
+                p.ustid,
+                p.ust_befreit,
+                p.ust_inner,
+                p.email,
+                p.telefon,
+                p.telefax,
+                p.betreff,
+                p.kundennummer,
+                p.versandart,
+                p.vertrieb,
+                p.zahlungsweise,
+                p.zahlungszieltage,
+                p.zahlungszieltageskonto,
+                p.zahlungszielskonto,
+                p.bank_inhaber,
+                p.bank_institut,
+                p.bank_blz,
+                p.bank_konto,
+                p.kreditkarte_typ,
+                p.kreditkarte_inhaber,
+                p.kreditkarte_nummer,
+                p.kreditkarte_pruefnummer,
+                p.kreditkarte_monat,
+                p.kreditkarte_jahr,
+                p.firma,
+                p.versendet,
+                p.versendet_am,
+                p.versendet_per,
+                p.versendet_durch,
+                p.autoversand,
+                p.keinporto,
+                p.keinestornomail,
+                p.abweichendelieferadresse,
+                p.liefername,
+                p.lieferabteilung,
+                p.lieferunterabteilung,
+                p.lieferland,
+                p.lieferstrasse,
+                p.lieferort,
+                p.lieferplz,
+                p.lieferadresszusatz,
+                p.lieferansprechpartner,
+                p.packstation_inhaber,
+                p.packstation_station,
+                p.packstation_ident,
+                p.packstation_plz,
+                p.packstation_ort,
+                p.autofreigabe,
+                p.freigabe,
+                p.nachbesserung,
+                p.gesamtsumme,
+                p.inbearbeitung,
+                p.abgeschlossen,
+                p.nachlieferung,
+                p.lager_ok,
+                p.porto_ok,
+                p.ust_ok,
+                p.check_ok,
+                p.vorkasse_ok,
+                p.nachnahme_ok,
+                p.reserviert_ok,
+                p.bestellt_ok,
+                p.zeit_ok,
+                p.versand_ok,
+                p.partnerid,
+                p.folgebestaetigung,
+                p.zahlungsmail,
+                p.stornogrund,
+                p.stornosonstiges,
+                p.stornorueckzahlung,
+                p.stornobetrag,
+                p.stornobankinhaber,
+                p.stornobankkonto,
+                p.stornobankblz,
+                p.stornobankbank,
+                p.stornogutschrift,
+                p.stornogutschriftbeleg,
+                p.stornowareerhalten,
+                p.stornomanuellebearbeitung,
+                p.stornokommentar,
+                p.stornobezahlt,
+                p.stornobezahltam,
+                p.stornobezahltvon,
+                p.stornoabgeschlossen,
+                p.stornorueckzahlungper,
+                p.stornowareerhaltenretour,
+                p.partnerausgezahlt,
+                p.partnerausgezahltam,
+                p.kennen,
+                p.logdatei,
+                p.bezeichnung,
+                p.datumproduktion,
+                p.anschreiben,
+                p.usereditid,
+                p.useredittimestamp,
+                p.steuersatz_normal,
+                p.steuersatz_zwischen,
+                p.steuersatz_ermaessigt,
+                p.steuersatz_starkermaessigt,
+                p.steuersatz_dienstleistung,
+                p.waehrung,
+                p.schreibschutz,
+                p.pdfarchiviert,
+                p.pdfarchiviertversion,
+                p.typ,
+                p.reservierart,
+                p.auslagerart,
+                p.projektfiliale,
+                p.datumauslieferung,
+                p.datumbereitstellung,
+                p.unterlistenexplodieren,
+                p.charge,
+                p.arbeitsschrittetextanzeigen,
+                p.einlagern_ok,
+                p.auslagern_ok,
+                p.mhd,
+                p.auftragmengenanpassen,
+                p.internebezeichnung,
+                p.mengeoriginal,
+                p.teilproduktionvon,
+                p.teilproduktionnummer,
+                p.parent,
+                p.parentnummer,
+                p.bearbeiterid,
+                p.mengeausschuss,
+                p.mengeerfolgreich,
+                p.abschlussbemerkung,
+                p.auftragid,
+                p.funktionstest,
+                p.seriennummer_erstellen,
+                p.unterseriennummern_erfassen,
+                p.datumproduktionende,
+                p.standardlager,
+                p.id FROM produktion p"." WHERE id=$id";	
+
         $result = $this->app->DB->SelectArr($sql);
 
         foreach ($result[0] as $key => $value) {
@@ -263,24 +431,59 @@ Menü
          * Add displayed items later
          */ 
 
-	$sql = "SELECT " . $this->app->YUI->IconsSQL_produktion('p') . " AS `icons` FROM produktion p WHERE id=$id";
-	$icons = $this->app->DB->SelectArr($sql);
+    	$sql = "SELECT " . $this->app->YUI->IconsSQL_produktion('p') . " AS `icons` FROM produktion p WHERE id=$id";
+	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
+        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $result[0]['artikelname']." (Produktion ".$result[0]['belegnr'].")");
+
+        $this->app->YUI->AutoComplete("projekt", "projektname", 1);
+        $this->app->YUI->AutoComplete("kundennummer", "kunde", 1);
+        $this->app->YUI->AutoComplete("auftragid", "auftrag", 1);
+
+        $this->app->YUI->AutoComplete("standardlager", "lagerplatz", 1);
+
+        $this->app->YUI->DatePicker("datum");
+        $this->app->YUI->DatePicker("datumauslieferung");
+        $this->app->YUI->DatePicker("datumbereitstellung");
+        $this->app->YUI->DatePicker("datumproduktionende");
+        $this->app->YUI->DatePicker("datumproduktion");
 
 
+        $this->app->YUI->CkEditor("freitext","internal", null, 'JQUERY');
+        $this->app->YUI->CkEditor("internebemerkung","internal", null, 'JQUERY');
 
-/*
-        $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
-        $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
-         */
-
-//        $this->SetInput($input);              
-
-
-    // Parse positions                                      
-        $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);
+        // Parse positions                                      
+        $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
         $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
+
+        // Action menu
+        switch ($result[0]['status']) {
+            case 'angelegt':                
+                $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
+            break;
+            case 'freigegeben':
+                $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
+            break;
+            case 'gestartet':
+                $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
+            break;
+            case 'abgeschlossen':
+                $this->app->Tpl->Set('AKTION_SPEICHERN_DISABLED','disabled');
+                $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
+            break;
+            case 'storniert':
+                $this->app->Tpl->Set('AKTION_SPEICHERN_DISABLED','disabled');
+                $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
+            break;
+        }
 
         $this->app->Tpl->Parse('PAGE', "produktion_edit.tpl");
     }
