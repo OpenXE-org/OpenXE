@@ -113,10 +113,10 @@ Menü
                     p.id,
                     $dropnbox,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
-                    (SELECT projekt.abkuerzung FROM projekt WHERE p.projekt = projekt.id LIMIT 1) as projekt,
+                    (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     FORMAT(p.menge,0,'de_DE'),
-                    FORMAT(p.menge,0,'de_DE') as Lager,
+                    'tbd' as Lager,
                     FORMAT(p.geliefert_menge,0,'de_DE'),
                     p.id 
                     FROM produktion_position p";
@@ -130,8 +130,8 @@ Menü
                 case "produktion_position_source_list":
                 $id = $app->Secure->GetGET('id');
                 $allowed['produktion_position_list'] = array('list');
-                $heading = array('','', 'Artikel', 'Projekt', 'Nummer', 'Planmenge', 'Lager', 'Reserviert', 'Verbraucht', 'Men&uuml;');
-                $width = array('1%','1%','10%'); // Fill out manually later
+                $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Planmenge', 'Lager', 'Reserviert', 'Verbraucht', 'Men&uuml;');
+                $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',    '1%',         '1%' ,            '1%'); // Fill out manually later
 
                 $findcols = array('(SELECT a.name FROM artikel a WHERE a.id = p.artikel LIMIT 1)', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
                 $searchsql = array('p.produktion', 'p.artikel', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
@@ -146,12 +146,12 @@ Menü
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                     p.id,
                     $dropnbox,
-                    (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
-                    (SELECT projekt.abkuerzung FROM projekt WHERE p.projekt = projekt.id LIMIT 1) as projekt,
                     (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
+                    (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
+                    (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(p.menge,0,'de_DE'),
-                    FORMAT(p.menge,0,'de_DE') as Lager,
-                    FORMAT(p.menge,0,'de_DE') as Reserviert,
+                    'tbd' as Lager,
+                    'tbd' as Reserviert,
                     FORMAT(p.geliefert_menge,0,'de_DE'),
                     p.id 
                     FROM produktion_position p";
@@ -208,62 +208,128 @@ Menü
     function produktion_edit() {
         $id = $this->app->Secure->GetGET('id');
               
+        $submit = $this->app->Secure->GetPOST('submit');
+
         $this->app->Tpl->Set('ID', $id);
 
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=edit&id=$id", "Details");
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
-        $submit = $this->app->Secure->GetPOST('submit');
-                
+
+               
+//        foreach ($input as $key => $value) {
+//            echo($key." -> ".$value."<br>\n");
+//        }
+
+
         if (empty($id)) {
             // New item
-            $id = 'NULL';
-        } 
+            $id = 'NULL';        
+        } else {
+        }
 
         if ($submit != '')
         {
-
-            // Write to database
+            switch ($submit) {
+                case 'speichern':
+                    // Write to database
             
-            // Add checks here
+                    // Add checks here
+                    $input['standardlager'] = $this->app->erp->ReplaceLagerPlatz(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
 
-            $columns = "id, ";
-            $values = "$id, ";
-            $update = "";
-    
-            $fix = "";
+                    $columns = "id, ";
+                    $values = "$id, ";
+                    $update = "";
+            
+                    $fix = "";
 
-            foreach ($input as $key => $value) {
-                $columns = $columns.$fix.$key;
-                $values = $values.$fix."'".$value."'";
-                $update = $update.$fix.$key." = '$value'";
+                    foreach ($input as $key => $value) {
+                        $columns = $columns.$fix.$key;
+                        $values = $values.$fix."'".$value."'";
+                        $update = $update.$fix.$key." = '$value'";
 
-                $fix = ", ";
-            }
+                        $fix = ", ";
+                    }
 
-//            echo($columns."<br>");
-//            echo($values."<br>");
-//            echo($update."<br>");
+                    $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+                    $this->app->DB->Update($sql);
 
-            $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+                    if ($id == 'NULL') {
+                        $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
+                        header("Location: index.php?module=produktion&action=list&msg=$msg");
+                    } else {
+                        $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                    }
+                break;
+                case 'planen':
+                    
+                    // Check 
+                    // Parse positions            
+                	$sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+            	    $produktionsartikel = $this->app->DB->SelectArr($sql);
 
-//            echo($sql);
+                    if (!empty($produktionsartikel)) {
+                        $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Bereits geplant.</div>");
+                        break;                        
+                    }
 
-            $this->app->DB->Update($sql);
+                    $artikel_planen = $this->app->Secure->GetPOST('artikel_planen');
+                    $artikel_planen_menge = $this->app->Secure->GetPOST('artikel_planen_menge');
+                        
+                    $sql = "SELECT id FROM artikel WHERE stueckliste = '1' AND nummer = '".$artikel_planen."'";
+              	    $artikel_id = $this->app->DB->SelectArr($sql)[0]['id'];
 
-            if ($id == 'NULL') {
-                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=produktion&action=list&msg=$msg");
-            } else {
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
-            }
+                    if (!$artikel_id) {
+                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Artikel ist keine St&uuml;ckliste.</div>");
+                        break;
+                    }
+
+                    // Insert positions
+
+                    $position_array = array();
+
+                    $sql = "SELECT '".$id."' as id, artikel, menge, '0' as stuecklistestufe FROM stueckliste WHERE stuecklistevonartikel = ".$artikel_id;
+                    $stueckliste =  $this->app->DB->SelectArr($sql);
+
+                    if (empty($stueckliste)) {
+                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">St&uuml;ckliste ist leer.</div>");
+                        break;
+                    }
+
+                    foreach ($stueckliste as $key => $value) {                        
+                        $value['menge'] = $value['menge'] * $artikel_planen_menge;
+                        $position_values[] = '('.implode(",",$value).',\'\')';
+                    }
+
+                    $sql = "INSERT INTO produktion_position (produktion, artikel, menge, stuecklistestufe, projekt) VALUES ( $id, $artikel_id, $artikel_planen_menge, 1, ''), ".implode(',',$position_values);
+
+//                    echo($sql);
+
+                    $this->app->DB->Update($sql);                   
+
+                    $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Planung angelegt.</div>");
+                break;            
+                case 'freigeben':
+                    $sql = "UPDATE produktion SET status = 'freigegeben' WHERE id=$id";
+                    $this->app->DB->Update($sql);                   
+                break;
+                case 'produzieren':
+                    $sql = "UPDATE produktion SET status = 'gestartet' WHERE id=$id";
+                    $this->app->DB->Update($sql);                   
+                break;
+                case 'abschliessen':
+                    $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
+                    $this->app->DB->Update($sql);                   
+                break;
+
+            }           
         }
 
     
         // Load values again from database
 
-	$sql = "SELECT SQL_CALC_FOUND_ROWS 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
                 p.id,
     			(SELECT pp.bezeichnung FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1) as artikelname,
                 p.datum,
@@ -410,8 +476,8 @@ Menü
                 p.parent,
                 p.parentnummer,
                 p.bearbeiterid,
-                p.mengeausschuss,
-                p.mengeerfolgreich,
+                FORMAT(p.mengeausschuss,0) as mengeausschuss,
+                FORMAT(p.mengeerfolgreich,0) as mengeerfolgreich,
                 p.abschlussbemerkung,
                 p.auftragid,
                 p.funktionstest,
@@ -421,10 +487,10 @@ Menü
                 p.standardlager,
                 p.id FROM produktion p"." WHERE id=$id";	
 
-        $result = $this->app->DB->SelectArr($sql);
+        $produktion_from_db = $this->app->DB->SelectArr($sql)[0];
 
-        foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
+        foreach ($produktion_from_db as $key => $value) {
+            $this->app->Tpl->Set(strtoupper($key), $value);             
         }
              
         /*
@@ -434,13 +500,15 @@ Menü
     	$sql = "SELECT " . $this->app->YUI->IconsSQL_produktion('p') . " AS `icons` FROM produktion p WHERE id=$id";
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
-        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $result[0]['artikelname']." (Produktion ".$result[0]['belegnr'].")");
 
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->YUI->AutoComplete("kundennummer", "kunde", 1);
         $this->app->YUI->AutoComplete("auftragid", "auftrag", 1);
 
-        $this->app->YUI->AutoComplete("standardlager", "lagerplatz", 1);
+        $this->app->YUI->AutoComplete("artikel_planen", "artikelnummer", 1);
+
+        $this->app->YUI->AutoComplete("standardlager", "lagerplatz");
+        $this->app->Tpl->Set('STANDARDLAGER', $this->app->erp->ReplaceLagerPlatz(false,$produktion_from_db['standardlager'],false)); // Convert ID to form display
 
         $this->app->YUI->DatePicker("datum");
         $this->app->YUI->DatePicker("datumauslieferung");
@@ -452,12 +520,28 @@ Menü
         $this->app->YUI->CkEditor("freitext","internal", null, 'JQUERY');
         $this->app->YUI->CkEditor("internebemerkung","internal", null, 'JQUERY');
 
-        // Parse positions                                      
-        $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
-        $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
+        // Reparse positions            
+    	$sql = "SELECT id,artikel, FORMAT(menge,0) as menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+        $produktionsartikel = $this->app->DB->SelectArr($sql)[0];
+
+        $this->app->Tpl->Set('MENGE_GEPLANT',$produktionsartikel['menge']);
+
+        if (empty($produktionsartikel)) {
+            $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');      
+            $this->app->Tpl->Set('ARTIKEL_MENGE_VISIBLE','hidden');            
+        } else {                                     
+            $this->app->Tpl->Set('AKTION_ARTIKEL_PLANEN_VISIBLE','hidden');
+            $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
+            $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
+            $produktionsartikel_id = $produktionsartikel['artikel'];
+            $sql = "SELECT name_de,nummer FROM artikel WHERE id=".$produktionsartikel_id;
+            $produktionsartikel_name = $this->app->DB->SelectArr($sql)[0]['name_de'];
+        }
+
+        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $produktionsartikel_name." (Produktion ".$produktion_from_db['belegnr'].")");
 
         // Action menu
-        switch ($result[0]['status']) {
+        switch ($produktion_from_db['status']) {
             case 'angelegt':                
                 $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
@@ -483,6 +567,9 @@ Menü
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
             break;
+            default: // new item
+                $this->app->Tpl->Set('POSITIONEN_TAB_VISIBLE','hidden="hidden"');
+            break;
         }
 
         $this->app->Tpl->Parse('PAGE', "produktion_edit.tpl");
@@ -493,326 +580,31 @@ Menü
      */
     public function GetInput(): array {
         $input = array();
-        //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
-        
+
+    	$input['kundennummer'] = $this->app->Secure->GetPOST('kundennummer');
+    	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
+    	$input['auftragid'] = $this->app->Secure->GetPOST('auftragid');
+	    $input['internebezeichnung'] = $this->app->Secure->GetPOST('internebezeichnung');   
+
         $input['datum'] = $this->app->Secure->GetPOST('datum');
-	$input['art'] = $this->app->Secure->GetPOST('art');
-	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
-	$input['belegnr'] = $this->app->Secure->GetPOST('belegnr');
-	$input['internet'] = $this->app->Secure->GetPOST('internet');
-	$input['bearbeiter'] = $this->app->Secure->GetPOST('bearbeiter');
-	$input['angebot'] = $this->app->Secure->GetPOST('angebot');
-	$input['freitext'] = $this->app->Secure->GetPOST('freitext');
-	$input['internebemerkung'] = $this->app->Secure->GetPOST('internebemerkung');
-//	$input['status'] = $this->app->Secure->GetPOST('status');
-	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
-	$input['name'] = $this->app->Secure->GetPOST('name');
-	$input['abteilung'] = $this->app->Secure->GetPOST('abteilung');
-	$input['unterabteilung'] = $this->app->Secure->GetPOST('unterabteilung');
-	$input['strasse'] = $this->app->Secure->GetPOST('strasse');
-	$input['adresszusatz'] = $this->app->Secure->GetPOST('adresszusatz');
-	$input['ansprechpartner'] = $this->app->Secure->GetPOST('ansprechpartner');
-	$input['plz'] = $this->app->Secure->GetPOST('plz');
-	$input['ort'] = $this->app->Secure->GetPOST('ort');
-	$input['land'] = $this->app->Secure->GetPOST('land');
-	$input['ustid'] = $this->app->Secure->GetPOST('ustid');
-	$input['ust_befreit'] = $this->app->Secure->GetPOST('ust_befreit');
-	$input['ust_inner'] = $this->app->Secure->GetPOST('ust_inner');
-	$input['email'] = $this->app->Secure->GetPOST('email');
-	$input['telefon'] = $this->app->Secure->GetPOST('telefon');
-	$input['telefax'] = $this->app->Secure->GetPOST('telefax');
-	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
-	$input['kundennummer'] = $this->app->Secure->GetPOST('kundennummer');
-	$input['versandart'] = $this->app->Secure->GetPOST('versandart');
-	$input['vertrieb'] = $this->app->Secure->GetPOST('vertrieb');
-	$input['zahlungsweise'] = $this->app->Secure->GetPOST('zahlungsweise');
-	$input['zahlungszieltage'] = $this->app->Secure->GetPOST('zahlungszieltage');
-	$input['zahlungszieltageskonto'] = $this->app->Secure->GetPOST('zahlungszieltageskonto');
-	$input['zahlungszielskonto'] = $this->app->Secure->GetPOST('zahlungszielskonto');
-	$input['bank_inhaber'] = $this->app->Secure->GetPOST('bank_inhaber');
-	$input['bank_institut'] = $this->app->Secure->GetPOST('bank_institut');
-	$input['bank_blz'] = $this->app->Secure->GetPOST('bank_blz');
-	$input['bank_konto'] = $this->app->Secure->GetPOST('bank_konto');
-	$input['kreditkarte_typ'] = $this->app->Secure->GetPOST('kreditkarte_typ');
-	$input['kreditkarte_inhaber'] = $this->app->Secure->GetPOST('kreditkarte_inhaber');
-	$input['kreditkarte_nummer'] = $this->app->Secure->GetPOST('kreditkarte_nummer');
-	$input['kreditkarte_pruefnummer'] = $this->app->Secure->GetPOST('kreditkarte_pruefnummer');
-	$input['kreditkarte_monat'] = $this->app->Secure->GetPOST('kreditkarte_monat');
-	$input['kreditkarte_jahr'] = $this->app->Secure->GetPOST('kreditkarte_jahr');
-	$input['firma'] = $this->app->Secure->GetPOST('firma');
-	$input['versendet'] = $this->app->Secure->GetPOST('versendet');
-	$input['versendet_am'] = $this->app->Secure->GetPOST('versendet_am');
-	$input['versendet_per'] = $this->app->Secure->GetPOST('versendet_per');
-	$input['versendet_durch'] = $this->app->Secure->GetPOST('versendet_durch');
-	$input['autoversand'] = $this->app->Secure->GetPOST('autoversand');
-	$input['keinporto'] = $this->app->Secure->GetPOST('keinporto');
-	$input['keinestornomail'] = $this->app->Secure->GetPOST('keinestornomail');
-	$input['abweichendelieferadresse'] = $this->app->Secure->GetPOST('abweichendelieferadresse');
-	$input['liefername'] = $this->app->Secure->GetPOST('liefername');
-	$input['lieferabteilung'] = $this->app->Secure->GetPOST('lieferabteilung');
-	$input['lieferunterabteilung'] = $this->app->Secure->GetPOST('lieferunterabteilung');
-	$input['lieferland'] = $this->app->Secure->GetPOST('lieferland');
-	$input['lieferstrasse'] = $this->app->Secure->GetPOST('lieferstrasse');
-	$input['lieferort'] = $this->app->Secure->GetPOST('lieferort');
-	$input['lieferplz'] = $this->app->Secure->GetPOST('lieferplz');
-	$input['lieferadresszusatz'] = $this->app->Secure->GetPOST('lieferadresszusatz');
-	$input['lieferansprechpartner'] = $this->app->Secure->GetPOST('lieferansprechpartner');
-	$input['packstation_inhaber'] = $this->app->Secure->GetPOST('packstation_inhaber');
-	$input['packstation_station'] = $this->app->Secure->GetPOST('packstation_station');
-	$input['packstation_ident'] = $this->app->Secure->GetPOST('packstation_ident');
-	$input['packstation_plz'] = $this->app->Secure->GetPOST('packstation_plz');
-	$input['packstation_ort'] = $this->app->Secure->GetPOST('packstation_ort');
-	$input['autofreigabe'] = $this->app->Secure->GetPOST('autofreigabe');
-	$input['freigabe'] = $this->app->Secure->GetPOST('freigabe');
-	$input['nachbesserung'] = $this->app->Secure->GetPOST('nachbesserung');
-	$input['gesamtsumme'] = $this->app->Secure->GetPOST('gesamtsumme');
-	$input['inbearbeitung'] = $this->app->Secure->GetPOST('inbearbeitung');
-	$input['abgeschlossen'] = $this->app->Secure->GetPOST('abgeschlossen');
-	$input['nachlieferung'] = $this->app->Secure->GetPOST('nachlieferung');
-	$input['lager_ok'] = $this->app->Secure->GetPOST('lager_ok');
-	$input['porto_ok'] = $this->app->Secure->GetPOST('porto_ok');
-	$input['ust_ok'] = $this->app->Secure->GetPOST('ust_ok');
-	$input['check_ok'] = $this->app->Secure->GetPOST('check_ok');
-	$input['vorkasse_ok'] = $this->app->Secure->GetPOST('vorkasse_ok');
-	$input['nachnahme_ok'] = $this->app->Secure->GetPOST('nachnahme_ok');
-	$input['reserviert_ok'] = $this->app->Secure->GetPOST('reserviert_ok');
-	$input['bestellt_ok'] = $this->app->Secure->GetPOST('bestellt_ok');
-	$input['zeit_ok'] = $this->app->Secure->GetPOST('zeit_ok');
-	$input['versand_ok'] = $this->app->Secure->GetPOST('versand_ok');
-	$input['partnerid'] = $this->app->Secure->GetPOST('partnerid');
-	$input['folgebestaetigung'] = $this->app->Secure->GetPOST('folgebestaetigung');
-	$input['zahlungsmail'] = $this->app->Secure->GetPOST('zahlungsmail');
-	$input['stornogrund'] = $this->app->Secure->GetPOST('stornogrund');
-	$input['stornosonstiges'] = $this->app->Secure->GetPOST('stornosonstiges');
-	$input['stornorueckzahlung'] = $this->app->Secure->GetPOST('stornorueckzahlung');
-	$input['stornobetrag'] = $this->app->Secure->GetPOST('stornobetrag');
-	$input['stornobankinhaber'] = $this->app->Secure->GetPOST('stornobankinhaber');
-	$input['stornobankkonto'] = $this->app->Secure->GetPOST('stornobankkonto');
-	$input['stornobankblz'] = $this->app->Secure->GetPOST('stornobankblz');
-	$input['stornobankbank'] = $this->app->Secure->GetPOST('stornobankbank');
-	$input['stornogutschrift'] = $this->app->Secure->GetPOST('stornogutschrift');
-	$input['stornogutschriftbeleg'] = $this->app->Secure->GetPOST('stornogutschriftbeleg');
-	$input['stornowareerhalten'] = $this->app->Secure->GetPOST('stornowareerhalten');
-	$input['stornomanuellebearbeitung'] = $this->app->Secure->GetPOST('stornomanuellebearbeitung');
-	$input['stornokommentar'] = $this->app->Secure->GetPOST('stornokommentar');
-	$input['stornobezahlt'] = $this->app->Secure->GetPOST('stornobezahlt');
-	$input['stornobezahltam'] = $this->app->Secure->GetPOST('stornobezahltam');
-	$input['stornobezahltvon'] = $this->app->Secure->GetPOST('stornobezahltvon');
-	$input['stornoabgeschlossen'] = $this->app->Secure->GetPOST('stornoabgeschlossen');
-	$input['stornorueckzahlungper'] = $this->app->Secure->GetPOST('stornorueckzahlungper');
-	$input['stornowareerhaltenretour'] = $this->app->Secure->GetPOST('stornowareerhaltenretour');
-	$input['partnerausgezahlt'] = $this->app->Secure->GetPOST('partnerausgezahlt');
-	$input['partnerausgezahltam'] = $this->app->Secure->GetPOST('partnerausgezahltam');
-	$input['kennen'] = $this->app->Secure->GetPOST('kennen');
-	$input['logdatei'] = $this->app->Secure->GetPOST('logdatei');
-	$input['bezeichnung'] = $this->app->Secure->GetPOST('bezeichnung');
-	$input['datumproduktion'] = $this->app->Secure->GetPOST('datumproduktion');
-	$input['anschreiben'] = $this->app->Secure->GetPOST('anschreiben');
-	$input['usereditid'] = $this->app->Secure->GetPOST('usereditid');
-	$input['useredittimestamp'] = $this->app->Secure->GetPOST('useredittimestamp');
-	$input['steuersatz_normal'] = $this->app->Secure->GetPOST('steuersatz_normal');
-	$input['steuersatz_zwischen'] = $this->app->Secure->GetPOST('steuersatz_zwischen');
-	$input['steuersatz_ermaessigt'] = $this->app->Secure->GetPOST('steuersatz_ermaessigt');
-	$input['steuersatz_starkermaessigt'] = $this->app->Secure->GetPOST('steuersatz_starkermaessigt');
-	$input['steuersatz_dienstleistung'] = $this->app->Secure->GetPOST('steuersatz_dienstleistung');
-	$input['waehrung'] = $this->app->Secure->GetPOST('waehrung');
-	$input['schreibschutz'] = $this->app->Secure->GetPOST('schreibschutz');
-	$input['pdfarchiviert'] = $this->app->Secure->GetPOST('pdfarchiviert');
-	$input['pdfarchiviertversion'] = $this->app->Secure->GetPOST('pdfarchiviertversion');
-	$input['typ'] = $this->app->Secure->GetPOST('typ');
-	$input['reservierart'] = $this->app->Secure->GetPOST('reservierart');
-	$input['auslagerart'] = $this->app->Secure->GetPOST('auslagerart');
-	$input['projektfiliale'] = $this->app->Secure->GetPOST('projektfiliale');
-	$input['datumauslieferung'] = $this->app->Secure->GetPOST('datumauslieferung');
-	$input['datumbereitstellung'] = $this->app->Secure->GetPOST('datumbereitstellung');
-	$input['unterlistenexplodieren'] = $this->app->Secure->GetPOST('unterlistenexplodieren');
-	$input['charge'] = $this->app->Secure->GetPOST('charge');
-	$input['arbeitsschrittetextanzeigen'] = $this->app->Secure->GetPOST('arbeitsschrittetextanzeigen');
-	$input['einlagern_ok'] = $this->app->Secure->GetPOST('einlagern_ok');
-	$input['auslagern_ok'] = $this->app->Secure->GetPOST('auslagern_ok');
-	$input['mhd'] = $this->app->Secure->GetPOST('mhd');
-	$input['auftragmengenanpassen'] = $this->app->Secure->GetPOST('auftragmengenanpassen');
-	$input['internebezeichnung'] = $this->app->Secure->GetPOST('internebezeichnung');
-	$input['mengeoriginal'] = $this->app->Secure->GetPOST('mengeoriginal');
-	$input['teilproduktionvon'] = $this->app->Secure->GetPOST('teilproduktionvon');
-	$input['teilproduktionnummer'] = $this->app->Secure->GetPOST('teilproduktionnummer');
-	$input['parent'] = $this->app->Secure->GetPOST('parent');
-	$input['parentnummer'] = $this->app->Secure->GetPOST('parentnummer');
-	$input['bearbeiterid'] = $this->app->Secure->GetPOST('bearbeiterid');
-	$input['mengeausschuss'] = $this->app->Secure->GetPOST('mengeausschuss');
-	$input['mengeerfolgreich'] = $this->app->Secure->GetPOST('mengeerfolgreich');
-	$input['abschlussbemerkung'] = $this->app->Secure->GetPOST('abschlussbemerkung');
-	$input['auftragid'] = $this->app->Secure->GetPOST('auftragid');
-	$input['funktionstest'] = $this->app->Secure->GetPOST('funktionstest');
-	$input['seriennummer_erstellen'] = $this->app->Secure->GetPOST('seriennummer_erstellen');
-	$input['unterseriennummern_erfassen'] = $this->app->Secure->GetPOST('unterseriennummern_erfassen');
-	$input['datumproduktionende'] = $this->app->Secure->GetPOST('datumproduktionende');
-	$input['standardlager'] = $this->app->Secure->GetPOST('standardlager');
-	
+    	$input['standardlager'] = $this->app->Secure->GetPOST('standardlager');
+
+	    $input['reservierart'] = $this->app->Secure->GetPOST('reservierart');
+	    $input['auslagerart'] = $this->app->Secure->GetPOST('auslagerart');      
+    	$input['unterlistenexplodieren'] = $this->app->Secure->GetPOST('unterlistenexplodieren');
+    	$input['funktionstest'] = $this->app->Secure->GetPOST('funktionstest');        
+    	$input['arbeitsschrittetextanzeigen'] = $this->app->Secure->GetPOST('arbeitsschrittetextanzeigen');
+    	$input['seriennummer_erstellen'] = $this->app->Secure->GetPOST('seriennummer_erstellen');
+
+    	$input['datumauslieferung'] = $this->app->Secure->GetPOST('datumauslieferung');
+    	$input['datumbereitstellung'] = $this->app->Secure->GetPOST('datumbereitstellung');
+    	$input['datumproduktion'] = $this->app->Secure->GetPOST('datumproduktion');
+    	$input['datumproduktionende'] = $this->app->Secure->GetPOST('datumproduktionende');
+
+    	$input['freitext'] = $this->app->Secure->GetPOST('freitext');
+    	$input['internebemerkung'] = $this->app->Secure->GetPOST('internebemerkung');
 
         return $input;
-    }
-
-    /*
-     * Set all fields in the page corresponding to $input
-     */
-    function SetInput($input) {
-        // $this->app->Tpl->Set('EMAIL', $input['email']);        
-        
-        $this->app->Tpl->Set('DATUM', $input['datum']);
-	$this->app->Tpl->Set('ART', $input['art']);
-	$this->app->Tpl->Set('PROJEKT', $input['projekt']);
-	$this->app->Tpl->Set('BELEGNR', $input['belegnr']);
-	$this->app->Tpl->Set('INTERNET', $input['internet']);
-	$this->app->Tpl->Set('BEARBEITER', $input['bearbeiter']);
-	$this->app->Tpl->Set('ANGEBOT', $input['angebot']);
-	$this->app->Tpl->Set('FREITEXT', $input['freitext']);
-	$this->app->Tpl->Set('INTERNEBEMERKUNG', $input['internebemerkung']);
-	$this->app->Tpl->Set('STATUS', $input['status']);
-	$this->app->Tpl->Set('ADRESSE', $input['adresse']);
-	$this->app->Tpl->Set('NAME', $input['name']);
-	$this->app->Tpl->Set('ABTEILUNG', $input['abteilung']);
-	$this->app->Tpl->Set('UNTERABTEILUNG', $input['unterabteilung']);
-	$this->app->Tpl->Set('STRASSE', $input['strasse']);
-	$this->app->Tpl->Set('ADRESSZUSATZ', $input['adresszusatz']);
-	$this->app->Tpl->Set('ANSPRECHPARTNER', $input['ansprechpartner']);
-	$this->app->Tpl->Set('PLZ', $input['plz']);
-	$this->app->Tpl->Set('ORT', $input['ort']);
-	$this->app->Tpl->Set('LAND', $input['land']);
-	$this->app->Tpl->Set('USTID', $input['ustid']);
-	$this->app->Tpl->Set('UST_BEFREIT', $input['ust_befreit']);
-	$this->app->Tpl->Set('UST_INNER', $input['ust_inner']);
-	$this->app->Tpl->Set('EMAIL', $input['email']);
-	$this->app->Tpl->Set('TELEFON', $input['telefon']);
-	$this->app->Tpl->Set('TELEFAX', $input['telefax']);
-	$this->app->Tpl->Set('BETREFF', $input['betreff']);
-	$this->app->Tpl->Set('KUNDENNUMMER', $input['kundennummer']);
-	$this->app->Tpl->Set('VERSANDART', $input['versandart']);
-	$this->app->Tpl->Set('VERTRIEB', $input['vertrieb']);
-	$this->app->Tpl->Set('ZAHLUNGSWEISE', $input['zahlungsweise']);
-	$this->app->Tpl->Set('ZAHLUNGSZIELTAGE', $input['zahlungszieltage']);
-	$this->app->Tpl->Set('ZAHLUNGSZIELTAGESKONTO', $input['zahlungszieltageskonto']);
-	$this->app->Tpl->Set('ZAHLUNGSZIELSKONTO', $input['zahlungszielskonto']);
-	$this->app->Tpl->Set('BANK_INHABER', $input['bank_inhaber']);
-	$this->app->Tpl->Set('BANK_INSTITUT', $input['bank_institut']);
-	$this->app->Tpl->Set('BANK_BLZ', $input['bank_blz']);
-	$this->app->Tpl->Set('BANK_KONTO', $input['bank_konto']);
-	$this->app->Tpl->Set('KREDITKARTE_TYP', $input['kreditkarte_typ']);
-	$this->app->Tpl->Set('KREDITKARTE_INHABER', $input['kreditkarte_inhaber']);
-	$this->app->Tpl->Set('KREDITKARTE_NUMMER', $input['kreditkarte_nummer']);
-	$this->app->Tpl->Set('KREDITKARTE_PRUEFNUMMER', $input['kreditkarte_pruefnummer']);
-	$this->app->Tpl->Set('KREDITKARTE_MONAT', $input['kreditkarte_monat']);
-	$this->app->Tpl->Set('KREDITKARTE_JAHR', $input['kreditkarte_jahr']);
-	$this->app->Tpl->Set('FIRMA', $input['firma']);
-	$this->app->Tpl->Set('VERSENDET', $input['versendet']);
-	$this->app->Tpl->Set('VERSENDET_AM', $input['versendet_am']);
-	$this->app->Tpl->Set('VERSENDET_PER', $input['versendet_per']);
-	$this->app->Tpl->Set('VERSENDET_DURCH', $input['versendet_durch']);
-	$this->app->Tpl->Set('AUTOVERSAND', $input['autoversand']);
-	$this->app->Tpl->Set('KEINPORTO', $input['keinporto']);
-	$this->app->Tpl->Set('KEINESTORNOMAIL', $input['keinestornomail']);
-	$this->app->Tpl->Set('ABWEICHENDELIEFERADRESSE', $input['abweichendelieferadresse']);
-	$this->app->Tpl->Set('LIEFERNAME', $input['liefername']);
-	$this->app->Tpl->Set('LIEFERABTEILUNG', $input['lieferabteilung']);
-	$this->app->Tpl->Set('LIEFERUNTERABTEILUNG', $input['lieferunterabteilung']);
-	$this->app->Tpl->Set('LIEFERLAND', $input['lieferland']);
-	$this->app->Tpl->Set('LIEFERSTRASSE', $input['lieferstrasse']);
-	$this->app->Tpl->Set('LIEFERORT', $input['lieferort']);
-	$this->app->Tpl->Set('LIEFERPLZ', $input['lieferplz']);
-	$this->app->Tpl->Set('LIEFERADRESSZUSATZ', $input['lieferadresszusatz']);
-	$this->app->Tpl->Set('LIEFERANSPRECHPARTNER', $input['lieferansprechpartner']);
-	$this->app->Tpl->Set('PACKSTATION_INHABER', $input['packstation_inhaber']);
-	$this->app->Tpl->Set('PACKSTATION_STATION', $input['packstation_station']);
-	$this->app->Tpl->Set('PACKSTATION_IDENT', $input['packstation_ident']);
-	$this->app->Tpl->Set('PACKSTATION_PLZ', $input['packstation_plz']);
-	$this->app->Tpl->Set('PACKSTATION_ORT', $input['packstation_ort']);
-	$this->app->Tpl->Set('AUTOFREIGABE', $input['autofreigabe']);
-	$this->app->Tpl->Set('FREIGABE', $input['freigabe']);
-	$this->app->Tpl->Set('NACHBESSERUNG', $input['nachbesserung']);
-	$this->app->Tpl->Set('GESAMTSUMME', $input['gesamtsumme']);
-	$this->app->Tpl->Set('INBEARBEITUNG', $input['inbearbeitung']);
-	$this->app->Tpl->Set('ABGESCHLOSSEN', $input['abgeschlossen']);
-	$this->app->Tpl->Set('NACHLIEFERUNG', $input['nachlieferung']);
-	$this->app->Tpl->Set('LAGER_OK', $input['lager_ok']);
-	$this->app->Tpl->Set('PORTO_OK', $input['porto_ok']);
-	$this->app->Tpl->Set('UST_OK', $input['ust_ok']);
-	$this->app->Tpl->Set('CHECK_OK', $input['check_ok']);
-	$this->app->Tpl->Set('VORKASSE_OK', $input['vorkasse_ok']);
-	$this->app->Tpl->Set('NACHNAHME_OK', $input['nachnahme_ok']);
-	$this->app->Tpl->Set('RESERVIERT_OK', $input['reserviert_ok']);
-	$this->app->Tpl->Set('BESTELLT_OK', $input['bestellt_ok']);
-	$this->app->Tpl->Set('ZEIT_OK', $input['zeit_ok']);
-	$this->app->Tpl->Set('VERSAND_OK', $input['versand_ok']);
-	$this->app->Tpl->Set('PARTNERID', $input['partnerid']);
-	$this->app->Tpl->Set('FOLGEBESTAETIGUNG', $input['folgebestaetigung']);
-	$this->app->Tpl->Set('ZAHLUNGSMAIL', $input['zahlungsmail']);
-	$this->app->Tpl->Set('STORNOGRUND', $input['stornogrund']);
-	$this->app->Tpl->Set('STORNOSONSTIGES', $input['stornosonstiges']);
-	$this->app->Tpl->Set('STORNORUECKZAHLUNG', $input['stornorueckzahlung']);
-	$this->app->Tpl->Set('STORNOBETRAG', $input['stornobetrag']);
-	$this->app->Tpl->Set('STORNOBANKINHABER', $input['stornobankinhaber']);
-	$this->app->Tpl->Set('STORNOBANKKONTO', $input['stornobankkonto']);
-	$this->app->Tpl->Set('STORNOBANKBLZ', $input['stornobankblz']);
-	$this->app->Tpl->Set('STORNOBANKBANK', $input['stornobankbank']);
-	$this->app->Tpl->Set('STORNOGUTSCHRIFT', $input['stornogutschrift']);
-	$this->app->Tpl->Set('STORNOGUTSCHRIFTBELEG', $input['stornogutschriftbeleg']);
-	$this->app->Tpl->Set('STORNOWAREERHALTEN', $input['stornowareerhalten']);
-	$this->app->Tpl->Set('STORNOMANUELLEBEARBEITUNG', $input['stornomanuellebearbeitung']);
-	$this->app->Tpl->Set('STORNOKOMMENTAR', $input['stornokommentar']);
-	$this->app->Tpl->Set('STORNOBEZAHLT', $input['stornobezahlt']);
-	$this->app->Tpl->Set('STORNOBEZAHLTAM', $input['stornobezahltam']);
-	$this->app->Tpl->Set('STORNOBEZAHLTVON', $input['stornobezahltvon']);
-	$this->app->Tpl->Set('STORNOABGESCHLOSSEN', $input['stornoabgeschlossen']);
-	$this->app->Tpl->Set('STORNORUECKZAHLUNGPER', $input['stornorueckzahlungper']);
-	$this->app->Tpl->Set('STORNOWAREERHALTENRETOUR', $input['stornowareerhaltenretour']);
-	$this->app->Tpl->Set('PARTNERAUSGEZAHLT', $input['partnerausgezahlt']);
-	$this->app->Tpl->Set('PARTNERAUSGEZAHLTAM', $input['partnerausgezahltam']);
-	$this->app->Tpl->Set('KENNEN', $input['kennen']);
-	$this->app->Tpl->Set('LOGDATEI', $input['logdatei']);
-	$this->app->Tpl->Set('BEZEICHNUNG', $input['bezeichnung']);
-	$this->app->Tpl->Set('DATUMPRODUKTION', $input['datumproduktion']);
-	$this->app->Tpl->Set('ANSCHREIBEN', $input['anschreiben']);
-	$this->app->Tpl->Set('USEREDITID', $input['usereditid']);
-	$this->app->Tpl->Set('USEREDITTIMESTAMP', $input['useredittimestamp']);
-	$this->app->Tpl->Set('STEUERSATZ_NORMAL', $input['steuersatz_normal']);
-	$this->app->Tpl->Set('STEUERSATZ_ZWISCHEN', $input['steuersatz_zwischen']);
-	$this->app->Tpl->Set('STEUERSATZ_ERMAESSIGT', $input['steuersatz_ermaessigt']);
-	$this->app->Tpl->Set('STEUERSATZ_STARKERMAESSIGT', $input['steuersatz_starkermaessigt']);
-	$this->app->Tpl->Set('STEUERSATZ_DIENSTLEISTUNG', $input['steuersatz_dienstleistung']);
-	$this->app->Tpl->Set('WAEHRUNG', $input['waehrung']);
-	$this->app->Tpl->Set('SCHREIBSCHUTZ', $input['schreibschutz']);
-	$this->app->Tpl->Set('PDFARCHIVIERT', $input['pdfarchiviert']);
-	$this->app->Tpl->Set('PDFARCHIVIERTVERSION', $input['pdfarchiviertversion']);
-	$this->app->Tpl->Set('TYP', $input['typ']);
-	$this->app->Tpl->Set('RESERVIERART', $input['reservierart']);
-	$this->app->Tpl->Set('AUSLAGERART', $input['auslagerart']);
-	$this->app->Tpl->Set('PROJEKTFILIALE', $input['projektfiliale']);
-	$this->app->Tpl->Set('DATUMAUSLIEFERUNG', $input['datumauslieferung']);
-	$this->app->Tpl->Set('DATUMBEREITSTELLUNG', $input['datumbereitstellung']);
-	$this->app->Tpl->Set('UNTERLISTENEXPLODIEREN', $input['unterlistenexplodieren']);
-	$this->app->Tpl->Set('CHARGE', $input['charge']);
-	$this->app->Tpl->Set('ARBEITSSCHRITTETEXTANZEIGEN', $input['arbeitsschrittetextanzeigen']);
-	$this->app->Tpl->Set('EINLAGERN_OK', $input['einlagern_ok']);
-	$this->app->Tpl->Set('AUSLAGERN_OK', $input['auslagern_ok']);
-	$this->app->Tpl->Set('MHD', $input['mhd']);
-	$this->app->Tpl->Set('AUFTRAGMENGENANPASSEN', $input['auftragmengenanpassen']);
-	$this->app->Tpl->Set('INTERNEBEZEICHNUNG', $input['internebezeichnung']);
-	$this->app->Tpl->Set('MENGEORIGINAL', $input['mengeoriginal']);
-	$this->app->Tpl->Set('TEILPRODUKTIONVON', $input['teilproduktionvon']);
-	$this->app->Tpl->Set('TEILPRODUKTIONNUMMER', $input['teilproduktionnummer']);
-	$this->app->Tpl->Set('PARENT', $input['parent']);
-	$this->app->Tpl->Set('PARENTNUMMER', $input['parentnummer']);
-	$this->app->Tpl->Set('BEARBEITERID', $input['bearbeiterid']);
-	$this->app->Tpl->Set('MENGEAUSSCHUSS', $input['mengeausschuss']);
-	$this->app->Tpl->Set('MENGEERFOLGREICH', $input['mengeerfolgreich']);
-	$this->app->Tpl->Set('ABSCHLUSSBEMERKUNG', $input['abschlussbemerkung']);
-	$this->app->Tpl->Set('AUFTRAGID', $input['auftragid']);
-	$this->app->Tpl->Set('FUNKTIONSTEST', $input['funktionstest']);
-	$this->app->Tpl->Set('SERIENNUMMER_ERSTELLEN', $input['seriennummer_erstellen']);
-	$this->app->Tpl->Set('UNTERSERIENNUMMERN_ERFASSEN', $input['unterseriennummern_erfassen']);
-	$this->app->Tpl->Set('DATUMPRODUKTIONENDE', $input['datumproduktionende']);
-	$this->app->Tpl->Set('STANDARDLAGER', $input['standardlager']);
-	
     }
 
 }
