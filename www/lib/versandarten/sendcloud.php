@@ -111,7 +111,6 @@ class Versandart_sendcloud extends Versanddienstleister
              '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
           $this->app->DB->Insert($sql);
           $response['messages'][] = ['class' => 'info', 'text' => "Paketmarke wurde erfolgreich erstellt: $result->TrackingNumber"];
-          $response['messages'][] = ['class' => 'info', 'text' => print_r($result, true)];
 
           $doc = $result->GetDocumentByType(Document::TYPE_LABEL);
           $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
