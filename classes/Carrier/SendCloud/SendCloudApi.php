@@ -63,19 +63,20 @@ class SendCloudApi
     return array_map(fn($x) => ShippingProduct::fromApiResponse($x), $response ?? []);
   }
 
-  /**
-   * @throws Exception
-   */
   public function CreateParcel(ParcelCreation $parcel): ParcelResponse|string|null
   {
     $uri = self::PROD_BASE_URI . '/parcels';
     $response = $this->sendRequest($uri, null, true, [
         'parcel' => $parcel->toApiRequest()
     ]);
-    if (isset($response->parcel))
-      return ParcelResponse::fromApiResponse($response->parcel);
-    if (isset($response->error))
-      return $response->error->message;
+    try {
+      if (isset($response->parcel))
+        return ParcelResponse::fromApiResponse($response->parcel);
+      if (isset($response->error))
+        return $response->error->message;
+    } catch (Exception $e) {
+      return $e->getMessage();
+  }
     return null;
   }
 

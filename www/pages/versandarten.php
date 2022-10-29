@@ -185,7 +185,7 @@ class Versandarten {
       foreach ($obj->AdditionalSettings() as $k => $v) {
         $form[$k] = $this->app->Secure->GetPOST($k);
       }
-      $error = array_merge($error, $obj->CheckInputParameters($form));
+      $error = array_merge($error, $obj->ValidateSettings($form));
       foreach ($obj->AdditionalSettings() as $k => $v) {
         $json[$k] = $form[$k];
       }
@@ -234,19 +234,11 @@ class Versandarten {
 
     $obj->RenderAdditionalSettings('MODULESETTINGS', $form);
 
-    $drucker_export = $this->app->erp->GetDrucker();
-    $drucker_export[0] = '';
-    natcasesort($drucker_export);
     $this->app->Tpl->addSelect('EXPORT_DRUCKER', 'export_drucker', 'export_drucker',
-        $drucker_export, $form['export_drucker']);
+        $this->getPrinterByModule($obj, false), $form['export_drucker']);
 
-    $drucker_paketmarke = $this->app->erp->GetDrucker();
-    if($obj->isEtikettenDrucker())
-      $drucker_paketmarke = array_merge($drucker_paketmarke, $this->app->erp->GetEtikettendrucker());
-    $drucker_paketmarke[0] = '';
-    natcasesort($drucker_paketmarke);
     $this->app->Tpl->addSelect('PAKETMARKE_DRUCKER', 'paketmarke_drucker', 'paketmarke_drucker',
-        $drucker_paketmarke, $form['paketmarke_drucker']);
+        $this->getPrinterByModule($obj), $form['paketmarke_drucker']);
 
     $this->app->YUI->HideFormular('versandmail', array('0'=>'versandbetreff','1'=>'dummy'));
     $this->app->Tpl->addSelect('SELVERSANDMAIL', 'versandmail', 'versandmail', [
@@ -277,12 +269,11 @@ class Versandarten {
     $this->app->Tpl->Parse('PAGE', 'versandarten_edit.tpl');
   }
 
-  protected function getPrinterByModule(Versanddienstleister $obj): array
+  protected function getPrinterByModule(Versanddienstleister $obj, bool $includeLabelPrinter = true): array
   {
-    $isLabelPrinter = $obj->isEtikettenDrucker();
     $printer = $this->app->erp->GetDrucker();
 
-    if ($isLabelPrinter) {
+    if ($includeLabelPrinter && $obj->isEtikettenDrucker()) {
       $labelPrinter = $this->app->erp->GetEtikettendrucker();
       $printer = array_merge($printer ?? [], $labelPrinter ?? []);
     }

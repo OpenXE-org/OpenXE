@@ -14,9 +14,8 @@ class ParcelItem
   public string $Description;
   public string $OriginCountry;
   public float $Price;
-  public string $PriceCurrency;
-  public string $Sku;
-  public string $ProductId;
+  public ?string $Sku = null;
+  public ?string $ProductId = null;
 
   public function toApiRequest(): array {
     return [
@@ -24,13 +23,10 @@ class ParcelItem
       'weight' => number_format($this->Weight / 1000, 3, '.', null),
       'quantity' => $this->Quantity,
       'description' => $this->Description,
-      'price' => [
-        'value' => $this->Price,
-        'currency' => $this->PriceCurrency,
-      ],
+      'value' => $this->Price,
       'origin_country' => $this->OriginCountry,
-      'sku' => $this->Sku,
-      'product_id' => $this->ProductId,
+      'sku' => $this->Sku ?? '',
+      'product_id' => $this->ProductId ?? '',
     ];
   }
 
@@ -41,8 +37,7 @@ class ParcelItem
     $obj->Weight = intval(floatval($data->weight)*1000);
     $obj->Quantity = $data->quantity;
     $obj->Description = $data->description;
-    $obj->Price = $data->price->value;
-    $obj->PriceCurrency = $data->price->currency;
+    $obj->Price = $data->value;
     $obj->OriginCountry = $data->origin_country;
     $obj->Sku = $data->sku;
     $obj->ProductId = $data->product_id;

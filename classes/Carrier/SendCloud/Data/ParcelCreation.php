@@ -29,7 +29,7 @@ class ParcelCreation extends ParcelBase
         'customs_invoice_nr' => $this->CustomsInvoiceNr,
         'customs_shipment_type' => $this->CustomsShipmentType,
         'external_reference' => $this->ExternalReference,
-        'total_insured_value' => $this->TotalInsuredValue,
+        'total_insured_value' => $this->TotalInsuredValue ?? 0,
         'parcel_items' => array_map(fn(ParcelItem $item)=>$item->toApiRequest(), $this->ParcelItems),
         'is_return' => $this->IsReturn,
         'length' => $this->Length,

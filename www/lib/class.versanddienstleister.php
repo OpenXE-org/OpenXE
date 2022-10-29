@@ -26,49 +26,41 @@ abstract class Versanddienstleister {
     $this->settings = json_decode($row['einstellungen_json']);
   }
 
-
   public function isEtikettenDrucker(): bool {
     return false;
   }
 
   public function GetAdressdaten($id, $sid)
   {
-    if($sid==='rechnung'){
+    $auftragId = $lieferscheinId = $rechnungId = $versandId = 0;
+    if($sid==='rechnung')
       $rechnungId = $id;
+    if($sid==='lieferschein') {
+      $lieferscheinId = $id;
+      $auftragId = $this->app->DB->Select("SELECT auftragid FROM lieferschein WHERE id=$lieferscheinId LIMIT 1");
+      $rechnungId = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein = '$lieferscheinId' LIMIT 1");
+      if($rechnungId <= 0)
+        $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
     }
-    else
-    {
-      $rechnungId ='';
-    }
-
     if($sid==='versand')
     {
-      $lieferscheinId = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$id' LIMIT 1");
-      $rechnungId  = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$id' LIMIT 1");
+      $versandId = $id;
+      $lieferscheinId = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$versandId' LIMIT 1");
+      $rechnungId  = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$versandId' LIMIT 1");
       $sid = 'lieferschein';
-    } else {
-      $lieferscheinId = $id;
-      if($sid === 'lieferschein'){
-        $rechnungId = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein = '$lieferscheinId' LIMIT 1");
-      }
-      if($rechnungId<=0) {
-        $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
-      }
     }
-    $ret['lieferscheinId'] = $lieferscheinId;
-    $ret['rechnungId'] = $rechnungId;
 
-    if($rechnungId){
-      $artikel_positionen = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung='$rechnungId'");
-    } else {
-      $artikel_positionen = $this->app->DB->SelectArr(sprintf('SELECT * FROM `%s` WHERE `%s` = %d',$sid.'_position',$sid,$lieferscheinId));
-    }
+    if ($auftragId <= 0 && $rechnungId > 0)
+      $auftragId = $this->app->DB->Select("SELECT auftragid FROM rechnung WHERE id=$rechnungId LIMIT 1");
 
     if($sid==='rechnung' || $sid==='lieferschein' || $sid==='adresse')
     {
-      $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $lieferscheinId LIMIT 1");
+      $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $id LIMIT 1");
 
-      $name = trim($docArr['name']);
+      $addressfields = ['name', 'adresszusatz', 'abteilung', 'ansprechpartner', 'unterabteilung', 'ort', 'plz',
+          'strasse', 'land', 'telefon', 'email'];
+      $ret = array_filter($docArr, fn($key)=>in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
+
       $name2 = trim($docArr['adresszusatz']);
       $abt = 0;
       if($name2==='')
@@ -92,14 +84,12 @@ abstract class Versanddienstleister {
         $name2=$name3;
         $name3='';
       }
+      $ret['name2'] = $name2;
+      $ret['name3'] = $name3;
 
-      $ort = trim($docArr['ort']);
-      $plz = trim($docArr['plz']);
-      $land = trim($docArr['land']);
       $strasse = trim($docArr['strasse']);
-      $strassekomplett = $strasse;
+      $ret['streetwithnumber'] = $strasse;
       $hausnummer = trim($this->app->erp->ExtractStreetnumber($strasse));
-
       $strasse = trim(str_replace($hausnummer,'',$strasse));
       $strasse = str_replace('.','',$strasse);
 
@@ -108,12 +98,10 @@ abstract class Versanddienstleister {
         $strasse = trim($hausnummer);
         $hausnummer = '';
       }
-      $telefon = trim($docArr['telefon']);
-      $email = trim($docArr['email']);
-
-      $ret['order_number'] = $docArr['auftrag'];
-      $ret['addressId'] = $docArr['adresse'];
+      $ret['strasse'] = $strasse;
+      $ret['hausnummer'] = $hausnummer;
     }
+
     // wenn rechnung im spiel entweder durch versand oder direkt rechnung
     if($rechnungId >0)
     {
@@ -127,35 +115,21 @@ abstract class Versanddienstleister {
       }
     }
 
-    if(isset($frei))$ret['frei'] = $frei;
-    if(isset($inhalt))$ret['inhalt'] = $inhalt;
-    if(isset($keinealtersabfrage))$ret['keinealtersabfrage'] = $keinealtersabfrage;
-    if(isset($altersfreigabe))$ret['altersfreigabe'] = $altersfreigabe;
-    if(isset($versichert))$ret['versichert'] = $versichert;
-    if(isset($extraversichert))$ret['extraversichert'] = $extraversichert;
-    $ret['name'] = $name;
-    $ret['name2'] = $name2;
-    $ret['name3'] = $name3;
-    $ret['ort'] = $ort;
-    $ret['plz'] = $plz;
-    $ret['strasse'] = $strasse;
-    $ret['strassekomplett'] = $strassekomplett;
-    $ret['hausnummer'] = $hausnummer;
-    $ret['land'] = $land;
-    $ret['telefon'] = $telefon;
-    $ret['phone'] = $telefon;
-    $ret['email'] = trim($email," \t\n\r\0\x0B\xc2\xa0");
-
-    $check_date = $this->app->DB->Select("SELECT date_format(now(),'%Y-%m-%d')");
-
-    $ret['abholdaumt'] = date('d.m.Y', strtotime($check_date));
-
-    $anzahl = $this->app->Secure->GetGET("anzahl");
-
-    if($anzahl <= 0)
-    {
-      $anzahl=1;
-    }
+    $sql = "SELECT
+        lp.bezeichnung,
+        lp.menge,
+        coalesce(nullif(lp.zolltarifnummer, ''), nullif(rp.zolltarifnummer, ''), nullif(a.zolltarifnummer, '')) zolltarifnummer,
+        coalesce(nullif(lp.herkunftsland, ''), nullif(rp.herkunftsland, ''), nullif(a.herkunftsland, '')) herkunftsland,
+        coalesce(nullif(lp.zolleinzelwert, '0'), rp.preis *(1-rp.rabatt/100)) zolleinzelwert,
+        coalesce(nullif(lp.zolleinzelgewicht, 0), a.gewicht) zolleinzelgewicht,
+        lp.zollwaehrung
+      FROM lieferschein_position lp
+      JOIN artikel a on lp.artikel = a.id
+      LEFT JOIN auftrag_position ap on lp.auftrag_position_id = ap.id
+      LEFT JOIN rechnung_position rp on ap.id = rp.auftrag_position_id
+      WHERE lp.lieferschein = $lieferscheinId
+      ORDER BY lp.sort";
+    $ret['positions'] = $this->app->DB->SelectArr($sql);
 
     if($sid==="lieferschein"){
       $standardkg = $this->app->erp->VersandartMindestgewicht($lieferscheinId);
@@ -163,8 +137,7 @@ abstract class Versanddienstleister {
     else{
       $standardkg = $this->app->erp->VersandartMindestgewicht();
     }
-    $ret['standardkg'] = $standardkg;
-    $ret['anzahl'] = $anzahl;
+    $ret['weight'] = $standardkg;
     return $ret;
   }
 
@@ -315,7 +288,7 @@ abstract class Versanddienstleister {
    * @param array $form submitted form data
    * @return array
    */
-  public function CheckInputParameters(array &$form): array
+  public function ValidateSettings(array &$form): array
   {
       return [];
   }
@@ -381,7 +354,7 @@ abstract class Versanddienstleister {
     return true;
   }
 
-  public function Paketmarke(string $target, string $doctype, int $docid): void {
+  public function Paketmarke(string $target, string $docType, int $docId): void {
 
   }
   
