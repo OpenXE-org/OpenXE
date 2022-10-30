@@ -8,7 +8,7 @@ abstract class Versanddienstleister {
   protected ?int $documentPrinterId;
   protected bool $shippingMail;
   protected ?int $businessLetterTemplateId;
-  protected object $settings;
+  protected ?object $settings;
 
   public function __construct(Application $app, ?int $id)
   {
