@@ -95,15 +95,15 @@ class Dateien {
           $heading = array('ID','Titel', 'Beschreibung', 'Verkn&uuml;pfung', 'Geloescht', 'Logdatei',  'Men&uuml;');
           $width = array('10%'); // Fill out manually later
 
-          $findcols = array('d.id','d.titel', 'd.beschreibung', 'd.nummer', 'd.geloescht', 'd.logdatei');
-          $searchsql = array('d.titel', 'd.beschreibung', 'd.nummer', 'd.geloescht', 'd.logdatei');
+          $findcols = array('d.id','d.titel', 'd.beschreibung', 'ds.objekt', 'd.geloescht', 'd.logdatei');
+          $searchsql = array('d.titel', 'd.beschreibung', 'd.nummer', 'd.geloescht', 'd.logdatei','ds.objekt');
 
           $defaultorder = 1;
           $defaultorderdesc = 0;
 
           $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=dateien&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a></td></tr></table>";
 
-          $sql = "SELECT SQL_CALC_FOUND_ROWS d.id, d.id, d.titel, d.beschreibung, GROUP_CONCAT(ds.objekt SEPARATOR ', '), d.geloescht, d.logdatei, d.id FROM datei d LEFT join datei_stichwoerter ds ON ds.datei = d.id";
+          $sql = "SELECT SQL_CALC_FOUND_ROWS d.id, d.id, d.titel, d.beschreibung, GROUP_CONCAT(ds.objekt SEPARATOR ', ') as verknuepfung, d.geloescht, d.logdatei, d.id FROM datei d LEFT join datei_stichwoerter ds ON ds.datei = d.id";
 
           $where = "1";
           $count = "SELECT count(DISTINCT id) FROM datei WHERE $where";
