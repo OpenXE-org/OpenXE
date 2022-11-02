@@ -8,6 +8,7 @@ use Xentral\Carrier\SendCloud\SendCloudApi;
 use Xentral\Carrier\SendCloud\Data\SenderAddress;
 use Xentral\Carrier\SendCloud\Data\ShippingProduct;
 use Xentral\Carrier\SendCloud\Data\ShippingMethod;
+use Xentral\Carrier\SendCloud\SendcloudApiException;
 
 require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
@@ -22,6 +23,32 @@ class Versandart_sendcloud extends Versanddienstleister
     if (!isset($this->id))
       return;
     $this->api = new SendCloudApi($this->settings->public_key, $this->settings->private_key);
+  }
+
+  protected function FetchOptionsFromApi()
+  {
+    if (isset($this->options))
+      return;
+    try {
+      $list = $this->api->GetSenderAddresses();
+      foreach ($list as $item) {
+        /* @var SenderAddress $item */
+        $senderAddresses[$item->Id] = $item;
+      }
+      $senderCountry = $senderAddresses[$this->settings->sender_address]->Country ?? 'DE';
+      $list = $this->api->GetShippingProducts($senderCountry);
+      foreach ($list as $item) {
+        /* @var ShippingProduct $item */
+        $shippingProducts[$item->Code] = $item;
+      }
+    } catch (SendcloudApiException $e) {
+      $this->app->Tpl->addMessage('error', $e->getMessage());
+    }
+    $this->options['senders'] = array_map(fn(SenderAddress $x) => strval($x), $senderAddresses ?? []);
+    $this->options['products'] = array_map(fn(ShippingProduct $x) => $x->Name, $shippingProducts ?? []);
+    $this->options['products'][0] = '';
+    $this->options['selectedProduct'] = $shippingProducts[$this->settings->shipping_product] ?? [];
+    natcasesort($this->options['products']);
     $this->options['customs_shipment_types'] = [
         0 => 'Geschenk',
         1 => 'Dokumente',
@@ -29,27 +56,6 @@ class Versandart_sendcloud extends Versanddienstleister
         3 => 'Erprobungswaren',
         4 => 'Rücksendung'
     ];
-  }
-
-  protected function FetchOptionsFromApi()
-  {
-    $list = $this->api->GetSenderAddresses();
-    foreach ($list as $item) {
-      /* @var SenderAddress $item */
-      $senderAddresses[$item->Id] = $item;
-    }
-    $senderCountry = $senderAddresses[$this->settings->sender_address]->Country ?? 'DE';
-    $list = $this->api->GetShippingProducts($senderCountry);
-    foreach ($list as $item) {
-      /* @var ShippingProduct $item */
-      $shippingProducts[$item->Code] = $item;
-    }
-
-    $this->options['senders'] = array_map(fn(SenderAddress $x) => strval($x), $senderAddresses ?? []);
-    $this->options['products'] = array_map(fn(ShippingProduct $x) => $x->Name, $shippingProducts ?? []);
-    $this->options['products'][0] = '';
-    $this->options['selectedProduct'] = $shippingProducts[$this->settings->shipping_product] ?? [];
-    natcasesort($this->options['products']);
   }
 
   public function AdditionalSettings(): array
@@ -102,29 +108,33 @@ class Versandart_sendcloud extends Versanddienstleister
           $parcel->ParcelItems[] = $item;
         }
         $parcel->Weight = floatval($json->weight) * 1000;
-        $result = $this->api->CreateParcel($parcel);
-        if ($result instanceof ParcelResponse) {
-          $sql = "INSERT INTO versand 
-            (adresse, lieferschein, versandunternehmen, gewicht, tracking, tracking_link, anzahlpakete) 
-            VALUES 
-            ({$address['addressId']}, {$address['lieferscheinId']}, '$this->type',
-             '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
-          $this->app->DB->Insert($sql);
-          $response['messages'][] = ['class' => 'info', 'text' => "Paketmarke wurde erfolgreich erstellt: $result->TrackingNumber"];
+        try {
+          $result = $this->api->CreateParcel($parcel);
+          if ($result instanceof ParcelResponse) {
+            $sql = "INSERT INTO versand 
+              (adresse, lieferschein, versandunternehmen, gewicht, tracking, tracking_link, anzahlpakete) 
+              VALUES 
+              ({$address['addressId']}, {$address['lieferscheinId']}, '$this->type',
+               '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
+            $this->app->DB->Insert($sql);
+            $response['messages'][] = ['class' => 'info', 'text' => "Paketmarke wurde erfolgreich erstellt: $result->TrackingNumber"];
 
-          $doc = $result->GetDocumentByType(Document::TYPE_LABEL);
-          $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
-          file_put_contents($filename, $this->api->DownloadDocument($doc));
-          $this->app->printer->Drucken($this->labelPrinterId, $filename);
+            $doc = $result->GetDocumentByType(Document::TYPE_LABEL);
+            $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
+            file_put_contents($filename, $this->api->DownloadDocument($doc));
+            $this->app->printer->Drucken($this->labelPrinterId, $filename);
 
-          $doc = $result->GetDocumentByType(Document::TYPE_CN23);
-          $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
-          file_put_contents($filename, $this->api->DownloadDocument($doc));
-          $this->app->printer->Drucken($this->documentPrinterId, $filename);
-        } else {
-          $response['messages'][] = ['class' => 'error', 'text' => $result];
+            $doc = $result->GetDocumentByType(Document::TYPE_CN23);
+            $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
+            file_put_contents($filename, $this->api->DownloadDocument($doc));
+            $this->app->printer->Drucken($this->documentPrinterId, $filename);
+          } else {
+            $response['messages'][] = ['class' => 'error', 'text' => $result];
+          }
+          echo json_encode($response);
+        } catch (SendcloudApiException $e) {
+          $this->app->Tpl->addMessage('error', $e->getMessage());
         }
-        echo json_encode($response);
         $this->app->ExitXentral();
       }
     }

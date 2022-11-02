@@ -28,16 +28,21 @@ class SendCloudApi
     $this->private_key = $private_key;
   }
 
+  /**
+   * @throws SendcloudApiException
+   */
   public function GetSenderAddresses(): array
   {
     $uri = self::PROD_BASE_URI . '/user/addresses/sender';
     $response = $this->sendRequest($uri);
-    $res = array();
-    foreach ($response->sender_addresses as $item)
+    foreach ($response['body']->sender_addresses as $item)
       $res[] = SenderAddress::fromApiResponse($item);
-    return $res;
+    return $res ?? [];
   }
 
+  /**
+   * @throws SendcloudApiException
+   */
   public function GetShippingProducts(string $sourceCountry, ?string $targetCountry = null, ?int $weight = null,
                                       ?int   $height = null, ?int $length = null, ?int $width = null): array
   {
@@ -60,26 +65,36 @@ class SendCloudApi
       $params['width_unit'] = 'centimeter';
     }
     $response = $this->sendRequest($uri, $params);
-    return array_map(fn($x) => ShippingProduct::fromApiResponse($x), $response ?? []);
+    return array_map(fn($x) => ShippingProduct::fromApiResponse($x), $response['body'] ?? []);
   }
 
+  /**
+   * @throws SendcloudApiException
+   */
   public function CreateParcel(ParcelCreation $parcel): ParcelResponse|string|null
   {
     $uri = self::PROD_BASE_URI . '/parcels';
-    $response = $this->sendRequest($uri, null, true, [
-        'parcel' => $parcel->toApiRequest()
-    ]);
-    try {
-      if (isset($response->parcel))
-        return ParcelResponse::fromApiResponse($response->parcel);
-      if (isset($response->error))
-        return $response->error->message;
-    } catch (Exception $e) {
-      return $e->getMessage();
-  }
-    return null;
+    $response = $this->sendRequest($uri, null, true, ['parcel' => $parcel->toApiRequest()], [200,400]);
+    switch ($response['code']) {
+      case 200:
+        if (isset($response->parcel))
+          try {
+            return ParcelResponse::fromApiResponse($response->parcel);
+          } catch (Exception $e) {
+            throw new SendcloudApiException(previous: $e);
+          }
+        break;
+      case 400:
+        if (isset($response->error))
+          return $response->error->message;
+        break;
+    }
+    throw SendcloudApiException::fromResponse($response);
   }
 
+  /**
+   * @throws SendcloudApiException
+   */
   public function DownloadDocument(Document $document): string
   {
     $curl = curl_init();
@@ -90,10 +105,18 @@ class SendCloudApi
             "Authorization: Basic " . base64_encode($this->public_key . ':' . $this->private_key)
         ],
     ]);
-    return curl_exec($curl);
+    $output = curl_exec($curl);
+    $code = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+    if ($code != 200)
+      throw SendcloudApiException::fromResponse(['code' => $code, 'body' => $output]);
+    return $output;
   }
 
-  function sendRequest(string $uri, array $query_params = null, bool $post = false, array $postFields = null)
+  /**
+   * @throws SendcloudApiException
+   */
+  function sendRequest(string $uri, array $query_params = null, bool $post = false, array $postFields = null,
+                       array $allowedResponseCodes = [200]): ?array
   {
     if (empty($this->public_key) || empty($this->private_key))
       return null;
@@ -117,9 +140,18 @@ class SendCloudApi
       ]);
     }
 
-    $output = curl_exec($curl);
+    $output = json_decode(curl_exec($curl));
+    $code = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
     curl_close($curl);
 
-    return json_decode($output);
+    $ret = [
+        'code' => $code,
+        'body' => $output,
+    ];
+
+    if (!in_array($code, $allowedResponseCodes))
+      throw SendcloudApiException::fromResponse($ret);
+
+    return $ret;
   }
 }

@@ -209,6 +209,7 @@ class Versandarten {
                 WHERE `id` = $id LIMIT 1"
         );
 
+        $this->app->Tpl->Set('MESSAGE', '');
         $this->app->Tpl->addMessage('success', "Die Daten wurden erfolgreich gespeichert!");
       }
     }
