@@ -37,7 +37,7 @@ class Produktion {
                 $width = array('1%','1%','10%'); // Fill out manually later
 
 //                $findcols = array('p.datum', 'p.art', 'p.projekt', 'p.belegnr', 'p.internet', 'p.bearbeiter', 'p.angebot', 'p.freitext', 'p.internebemerkung', 'p.status', 'p.adresse', 'p.name', 'p.abteilung', 'p.unterabteilung', 'p.strasse', 'p.adresszusatz', 'p.ansprechpartner', 'p.plz', 'p.ort', 'p.land', 'p.ustid', 'p.ust_befreit', 'p.ust_inner', 'p.email', 'p.telefon', 'p.telefax', 'p.betreff', 'p.kundennummer', 'p.versandart', 'p.vertrieb', 'p.zahlungsweise', 'p.zahlungszieltage', 'p.zahlungszieltageskonto', 'p.zahlungszielskonto', 'p.bank_inhaber', 'p.bank_institut', 'p.bank_blz', 'p.bank_konto', 'p.kreditkarte_typ', 'p.kreditkarte_inhaber', 'p.kreditkarte_nummer', 'p.kreditkarte_pruefnummer', 'p.kreditkarte_monat', 'p.kreditkarte_jahr', 'p.firma', 'p.versendet', 'p.versendet_am', 'p.versendet_per', 'p.versendet_durch', 'p.autoversand', 'p.keinporto', 'p.keinestornomail', 'p.abweichendelieferadresse', 'p.liefername', 'p.lieferabteilung', 'p.lieferunterabteilung', 'p.lieferland', 'p.lieferstrasse', 'p.lieferort', 'p.lieferplz', 'p.lieferadresszusatz', 'p.lieferansprechpartner', 'p.packstation_inhaber', 'p.packstation_station', 'p.packstation_ident', 'p.packstation_plz', 'p.packstation_ort', 'p.autofreigabe', 'p.freigabe', 'p.nachbesserung', 'p.gesamtsumme', 'p.inbearbeitung', 'p.abgeschlossen', 'p.nachlieferung', 'p.lager_ok', 'p.porto_ok', 'p.ust_ok', 'p.check_ok', 'p.vorkasse_ok', 'p.nachnahme_ok', 'p.reserviert_ok', 'p.bestellt_ok', 'p.zeit_ok', 'p.versand_ok', 'p.partnerid', 'p.folgebestaetigung', 'p.zahlungsmail', 'p.stornogrund', 'p.stornosonstiges', 'p.stornorueckzahlung', 'p.stornobetrag', 'p.stornobankinhaber', 'p.stornobankkonto', 'p.stornobankblz', 'p.stornobankbank', 'p.stornogutschrift', 'p.stornogutschriftbeleg', 'p.stornowareerhalten', 'p.stornomanuellebearbeitung', 'p.stornokommentar', 'p.stornobezahlt', 'p.stornobezahltam', 'p.stornobezahltvon', 'p.stornoabgeschlossen', 'p.stornorueckzahlungper', 'p.stornowareerhaltenretour', 'p.partnerausgezahlt', 'p.partnerausgezahltam', 'p.kennen', 'p.logdatei', 'p.bezeichnung', 'p.datumproduktion', 'p.anschreiben', 'p.usereditid', 'p.useredittimestamp', 'p.steuersatz_normal', 'p.steuersatz_zwischen', 'p.steuersatz_ermaessigt', 'p.steuersatz_starkermaessigt', 'p.steuersatz_dienstleistung', 'p.waehrung', 'p.schreibschutz', 'p.pdfarchiviert', 'p.pdfarchiviertversion', 'p.typ', 'p.reservierart', 'p.auslagerart', 'p.projektfiliale', 'p.datumauslieferung', 'p.datumbereitstellung', 'p.unterlistenexplodieren', 'p.charge', 'p.arbeitsschrittetextanzeigen', 'p.einlagern_ok', 'p.auslagern_ok', 'p.mhd', 'p.auftragmengenanpassen', 'p.internebezeichnung', 'p.mengeoriginal', 'p.teilproduktionvon', 'p.teilproduktionnummer', 'p.parent', 'p.parentnummer', 'p.bearbeiterid', 'p.mengeausschuss', 'p.mengeerfolgreich', 'p.abschlussbemerkung', 'p.auftragid', 'p.funktionstest', 'p.seriennummer_erstellen', 'p.unterseriennummern_erfassen', 'p.datumproduktionende', 'p.standardlager');
-                $findcols = array('p.id','p.id','p.belegnr','p.kundennummer','p.name','p.datum');
+                $findcols = array('p.id','p.id','p.belegnr','p.kundennummer','p.name','p.datum','bezeichnung','soll','ist', 'zeit_geplant','zeit_geplant', 'projekt','p.status','icons','id');
 
 //                $searchsql = array('p.datum', 'p.art', 'p.projekt', 'p.belegnr', 'p.internet', 'p.bearbeiter', 'p.angebot', 'p.freitext', 'p.internebemerkung', 'p.status', 'p.adresse', 'p.name', 'p.abteilung', 'p.unterabteilung', 'p.strasse', 'p.adresszusatz', 'p.ansprechpartner', 'p.plz', 'p.ort', 'p.land', 'p.ustid', 'p.ust_befreit', 'p.ust_inner', 'p.email', 'p.telefon', 'p.telefax', 'p.betreff', 'p.kundennummer', 'p.versandart', 'p.vertrieb', 'p.zahlungsweise', 'p.zahlungszieltage', 'p.zahlungszieltageskonto', 'p.zahlungszielskonto', 'p.bank_inhaber', 'p.bank_institut', 'p.bank_blz', 'p.bank_konto', 'p.kreditkarte_typ', 'p.kreditkarte_inhaber', 'p.kreditkarte_nummer', 'p.kreditkarte_pruefnummer', 'p.kreditkarte_monat', 'p.kreditkarte_jahr', 'p.firma', 'p.versendet', 'p.versendet_am', 'p.versendet_per', 'p.versendet_durch', 'p.autoversand', 'p.keinporto', 'p.keinestornomail', 'p.abweichendelieferadresse', 'p.liefername', 'p.lieferabteilung', 'p.lieferunterabteilung', 'p.lieferland', 'p.lieferstrasse', 'p.lieferort', 'p.lieferplz', 'p.lieferadresszusatz', 'p.lieferansprechpartner', 'p.packstation_inhaber', 'p.packstation_station', 'p.packstation_ident', 'p.packstation_plz', 'p.packstation_ort', 'p.autofreigabe', 'p.freigabe', 'p.nachbesserung', 'p.gesamtsumme', 'p.inbearbeitung', 'p.abgeschlossen', 'p.nachlieferung', 'p.lager_ok', 'p.porto_ok', 'p.ust_ok', 'p.check_ok', 'p.vorkasse_ok', 'p.nachnahme_ok', 'p.reserviert_ok', 'p.bestellt_ok', 'p.zeit_ok', 'p.versand_ok', 'p.partnerid', 'p.folgebestaetigung', 'p.zahlungsmail', 'p.stornogrund', 'p.stornosonstiges', 'p.stornorueckzahlung', 'p.stornobetrag', 'p.stornobankinhaber', 'p.stornobankkonto', 'p.stornobankblz', 'p.stornobankbank', 'p.stornogutschrift', 'p.stornogutschriftbeleg', 'p.stornowareerhalten', 'p.stornomanuellebearbeitung', 'p.stornokommentar', 'p.stornobezahlt', 'p.stornobezahltam', 'p.stornobezahltvon', 'p.stornoabgeschlossen', 'p.stornorueckzahlungper', 'p.stornowareerhaltenretour', 'p.partnerausgezahlt', 'p.partnerausgezahltam', 'p.kennen', 'p.logdatei', 'p.bezeichnung', 'p.datumproduktion', 'p.anschreiben', 'p.usereditid', 'p.useredittimestamp', 'p.steuersatz_normal', 'p.steuersatz_zwischen', 'p.steuersatz_ermaessigt', 'p.steuersatz_starkermaessigt', 'p.steuersatz_dienstleistung', 'p.waehrung', 'p.schreibschutz', 'p.pdfarchiviert', 'p.pdfarchiviertversion', 'p.typ', 'p.reservierart', 'p.auslagerart', 'p.projektfiliale', 'p.datumauslieferung', 'p.datumbereitstellung', 'p.unterlistenexplodieren', 'p.charge', 'p.arbeitsschrittetextanzeigen', 'p.einlagern_ok', 'p.auslagern_ok', 'p.mhd', 'p.auftragmengenanpassen', 'p.internebezeichnung', 'p.mengeoriginal', 'p.teilproduktionvon', 'p.teilproduktionnummer', 'p.parent', 'p.parentnummer', 'p.bearbeiterid', 'p.mengeausschuss', 'p.mengeerfolgreich', 'p.abschlussbemerkung', 'p.auftragid', 'p.funktionstest', 'p.seriennummer_erstellen', 'p.unterseriennummern_erfassen', 'p.datumproduktionende', 'p.standardlager');
                 $searchsql = array('p.datum', 'p.art', 'p.projekt', 'p.belegnr', 'p.internet', 'p.bearbeiter', 'p.angebot', 'p.freitext', 'p.internebemerkung', 'p.status', 'p.adresse', 'p.name', 'p.abteilung', 'p.unterabteilung', 'p.strasse', 'p.adresszusatz', 'p.ansprechpartner', 'p.plz', 'p.ort', 'p.land', 'p.ustid', 'p.ust_befreit', 'p.ust_inner', 'p.email', 'p.telefon', 'p.telefax', 'p.betreff', 'p.kundennummer', 'p.versandart', 'p.vertrieb', 'p.zahlungsweise', 'p.zahlungszieltage', 'p.zahlungszieltageskonto', 'p.zahlungszielskonto', 'p.bank_inhaber', 'p.bank_institut', 'p.bank_blz', 'p.bank_konto', 'p.kreditkarte_typ', 'p.kreditkarte_inhaber', 'p.kreditkarte_nummer', 'p.kreditkarte_pruefnummer', 'p.kreditkarte_monat', 'p.kreditkarte_jahr', 'p.firma', 'p.versendet', 'p.versendet_am', 'p.versendet_per', 'p.versendet_durch', 'p.autoversand', 'p.keinporto', 'p.keinestornomail', 'p.abweichendelieferadresse', 'p.liefername', 'p.lieferabteilung', 'p.lieferunterabteilung', 'p.lieferland', 'p.lieferstrasse', 'p.lieferort', 'p.lieferplz', 'p.lieferadresszusatz', 'p.lieferansprechpartner', 'p.packstation_inhaber', 'p.packstation_station', 'p.packstation_ident', 'p.packstation_plz', 'p.packstation_ort', 'p.autofreigabe', 'p.freigabe', 'p.nachbesserung', 'p.gesamtsumme', 'p.inbearbeitung', 'p.abgeschlossen', 'p.nachlieferung', 'p.lager_ok', 'p.porto_ok', 'p.ust_ok', 'p.check_ok', 'p.vorkasse_ok', 'p.nachnahme_ok', 'p.reserviert_ok', 'p.bestellt_ok', 'p.zeit_ok', 'p.versand_ok', 'p.partnerid', 'p.folgebestaetigung', 'p.zahlungsmail', 'p.stornogrund', 'p.stornosonstiges', 'p.stornorueckzahlung', 'p.stornobetrag', 'p.stornobankinhaber', 'p.stornobankkonto', 'p.stornobankblz', 'p.stornobankbank', 'p.stornogutschrift', 'p.stornogutschriftbeleg', 'p.stornowareerhalten', 'p.stornomanuellebearbeitung', 'p.stornokommentar', 'p.stornobezahlt', 'p.stornobezahltam', 'p.stornobezahltvon', 'p.stornoabgeschlossen', 'p.stornorueckzahlungper', 'p.stornowareerhaltenretour', 'p.partnerausgezahlt', 'p.partnerausgezahltam', 'p.kennen', 'p.logdatei', 'p.bezeichnung', 'p.datumproduktion', 'p.anschreiben', 'p.usereditid', 'p.useredittimestamp', 'p.steuersatz_normal', 'p.steuersatz_zwischen', 'p.steuersatz_ermaessigt', 'p.steuersatz_starkermaessigt', 'p.steuersatz_dienstleistung', 'p.waehrung', 'p.schreibschutz', 'p.pdfarchiviert', 'p.pdfarchiviertversion', 'p.typ', 'p.reservierart', 'p.auslagerart', 'p.projektfiliale', 'p.datumauslieferung', 'p.datumbereitstellung', 'p.unterlistenexplodieren', 'p.charge', 'p.arbeitsschrittetextanzeigen', 'p.einlagern_ok', 'p.auslagern_ok', 'p.mhd', 'p.auftragmengenanpassen', 'p.internebezeichnung', 'p.mengeoriginal', 'p.teilproduktionvon', 'p.teilproduktionnummer', 'p.parent', 'p.parentnummer', 'p.bearbeiterid', 'p.mengeausschuss', 'p.mengeerfolgreich', 'p.abschlussbemerkung', 'p.auftragid', 'p.funktionstest', 'p.seriennummer_erstellen', 'p.unterseriennummern_erfassen', 'p.datumproduktionende', 'p.standardlager');
@@ -61,12 +61,12 @@ class Produktion {
 			            p.kundennummer,
 			            p.name,
 			            p.datum,
-			            (SELECT pp.bezeichnung FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1),
-			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE'),
-			            FORMAT(p.mengeerfolgreich,0),
-			            \"-\",
-			            \"-\",
-			            (SELECT projekt.abkuerzung FROM projekt WHERE p.projekt = projekt.id LIMIT 1),
+			            (SELECT pp.bezeichnung FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1) as bezeichnung,
+			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE') as soll,
+			            FORMAT(p.mengeerfolgreich,0) as ist,
+			            \"-\" as zeit_geplant,
+			            \"-\" as zeit_erfasst,
+			            (SELECT projekt.abkuerzung FROM projekt WHERE p.projekt = projekt.id LIMIT 1) as projekt,
 			            p.status,
 		                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
@@ -121,9 +121,9 @@ class Produktion {
                 $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Planmenge', 'Reserviert', 'Verbraucht', 'Men&uuml;');
                 $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); // Fill out manually later
 
-                $findcols = array('(SELECT a.name FROM artikel a WHERE a.id = p.artikel LIMIT 1)', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
-                $searchsql = array('p.produktion', 'p.artikel', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
-
+                $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','menge','reserviert','geliefert_menge');
+                $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
+              
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
@@ -163,19 +163,21 @@ class Produktion {
            	    $standardlager = $app->DB->SelectArr($sql)[0]['standardlager'];
 
                 $allowed['produktion_position_list'] = array('list');
-                $heading = array('Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)','Planmenge',  'Reserviert', 'Verbraucht');
-                $width = array('5%',     '30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); // Fill out manually later
+                $heading = array('','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)','Planmenge',  'Reserviert', 'Verbraucht');
+                $width = array('1%','5%',     '30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); // Fill out manually later
 
-                $findcols = array('(SELECT a.name FROM artikel a WHERE a.id = p.artikel LIMIT 1)', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
-                $searchsql = array('p.produktion', 'p.artikel', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
+                $findcols = array('p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','menge','reserviert','geliefert_menge');
+
+                $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
+		        $drop = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                     p.artikel,
+    		        $drop,
                     (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
@@ -185,10 +187,10 @@ class Produktion {
                         COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0)-
                         COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),0),
                         ')'
-                    ) as Lager,
-                    FORMAT(SUM(p.menge),0,'de_DE'),
-                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0) as Reserviert,
-                    FORMAT(p.geliefert_menge,0,'de_DE'),
+                    ) as lager,
+                    FORMAT(SUM(p.menge),0,'de_DE') as menge,
+                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0) as reserviert,
+                    FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id 
                     FROM produktion_position p";
 
@@ -258,7 +260,7 @@ class Produktion {
 
         $sql = "SELECT status, belegnr FROM produktion WHERE id = '$id'";
         $from_db = $this->app->DB->SelectArr($sql)[0];        
-        $produktionsnummer = $from_db['belegnr'];       
+        $produktionsnummer = $from_db['belegnr'];         
                
 //        foreach ($input as $key => $value) {
 //            echo($key." -> ".$value."<br>\n");
@@ -365,21 +367,18 @@ class Produktion {
             	    $materialbedarf = $this->app->DB->SelectArr($sql);
 
                     // Try to reserve material
-                    $teilreservierung_durchgefuehrt = false;
                     $reservierung_durchgefuehrt = false;
 
                     foreach ($materialbedarf as $materialbedarf_position) {
     
-                        $menge_reservieren = $materialbedarf_position['menge'] - $materialbedarf_position['geliefert_menge'];
-
                     	$sql = "SELECT menge FROM lager_reserviert WHERE objekt='produktion' AND parameter = $id AND artikel = ".$materialbedarf_position['artikel']." AND posid = ".$materialbedarf_position['id'];
-                        $menge_reserviert_lager_platz_diese_produktion = $this->app->DB->SelectArr($sql)[0];
+                        $menge_reserviert_lager_platz_diese_produktion = $this->app->DB->SelectArr($sql)[0]['menge'];
 
                         if ($menge_reserviert_lager_platz_diese_produktion == null) {
                             $menge_reserviert_lager_platz_diese_produktion = 0;
                         }
 
-                    	$sql = "SELECT SUM(menge) as menge FROM lager_reserviert WHERE objekt='produktion' AND parameter = $id AND artikel = ".$materialbedarf_position['artikel'];
+                    	$sql = "SELECT SUM(menge) as menge FROM lager_reserviert WHERE artikel = ".$materialbedarf_position['artikel'];
                         $menge_reserviert_lager_platz = $this->app->DB->SelectArr($sql)[0]['menge'];
 
                         if ($menge_reserviert_lager_platz == null) {
@@ -388,30 +387,42 @@ class Produktion {
 
                     	$sql = "SELECT menge FROM lager_platz_inhalt WHERE lager_platz = $standardlager AND artikel = ".$materialbedarf_position['artikel'];
                         $lagermenge = $this->app->DB->SelectArr($sql)[0]['menge'];
-
                         if ($lagermenge == null) {
                             $lagermenge = 0;
                         }
 
+                        $menge_reservieren = $materialbedarf_position['menge'] - $materialbedarf_position['geliefert_menge'];
+
+                        if ($menge_reservieren < 0) {
+                            break;
+                        }
+
                         $lagermenge_frei = $lagermenge - $menge_reserviert_lager_platz;
 
-//                        echo($materialbedarf_position['nummer']." Lager ".$lagermenge." frei ".$lagermenge_frei." reserviert ".$menge_reserviert_lager_platz."<br>");
+//                        echo($materialbedarf_position['nummer']." Lager $lagermenge reserviert $menge_reserviert_lager_platz frei $lagermenge_frei menge_reservieren $menge_reservieren<br>");
                         
                         if ($lagermenge_frei > 0) {
-                            if ($menge_reservieren > $lagermenge_frei) {                  
-                                // partial                           
-                                $teilreservierung_durchgefuehrt = true;
-                                $menge_reservieren = $lagermenge_frei;                           
-                            }  
-                            // Reserve stock items
 
                             if ($menge_reserviert_lager_platz_diese_produktion > 0) {
                                 // Modify given entry
+
+                                $menge_reservieren = $menge_reservieren+$menge_reserviert_lager_platz; 
+
+                                if ($menge_reservieren > $lagermenge_frei) {
+                                    $menge_reservieren = $lagermenge_frei; // Take all that is there
+                                }
+
                                 $sql = "UPDATE lager_reserviert SET menge=$menge_reservieren WHERE objekt='produktion' AND parameter = $id AND artikel = ".$materialbedarf_position['artikel']." AND posid = ".$materialbedarf_position['id'];
-                               // echo($sql);
+//                                echo($sql);
                                 $this->app->DB->Update($sql);      
-                            } else {
+
+                            } else {                                
                                 // Create new entry
+
+                                if ($menge_reservieren > $lagermenge_frei) {
+                                    $menge_reservieren = $lagermenge_frei; // Take all that is there
+                                }
+
                                 $sql = "INSERT INTO lager_reserviert (menge,objekt,parameter,artikel,posid,lager_platz,grund) VALUES (".
                                         $menge_reservieren.",".
                                         "'produktion',".
@@ -430,12 +441,7 @@ class Produktion {
 
                     // Message output
                     if ($reservierung_durchgefuehrt) {                    
-                        if ($teilreservierung_durchgefuehrt) {
-                            $this->app->Tpl->Add('MESSAGE', "<div class=\"info\">Teilreservierung durchgeführt.</div>");
-                        }
-                        else {
-                            $this->app->Tpl->Add('MESSAGE', "<div class=\"info\">Reservierung durchgeführt.</div>");
-                        }
+                        $this->app->Tpl->Add('MESSAGE', "<div class=\"info\">Reservierung durchgeführt.</div>");
                     } else {
                         $this->app->Tpl->Add('MESSAGE', "<div class=\"error\">Keine Reservierung durchgeführt!</div>");
                     }
@@ -718,7 +724,6 @@ class Produktion {
         $this->app->YUI->CkEditor("freitext","internal", null, 'JQUERY');
         $this->app->YUI->CkEditor("internebemerkung","internal", null, 'JQUERY');
 
-
         /*
             UI Elements
 
@@ -741,6 +746,9 @@ class Produktion {
         } else {                                     
 
             $this->app->Tpl->Set('MENGE_GEPLANT',$produktionsartikel_position['menge']);
+
+            $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$this->CheckLager($id, $produktion_from_db['standardlager']));
+
             $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden');
 //            $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
             $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_POSITION_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
@@ -820,5 +828,46 @@ class Produktion {
         return $input;
     }
 
+    // Check stock situation and reservation to set icon status
+    // Return possible production quantity
+    function CheckLager(int $produktion_id, int $lager) : int {
+
+        $menge_moeglich = PHP_INT_MAX;
+
+  	    $sql = "SELECT id, artikel, FORMAT(SUM(menge),0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=0 GROUP BY artikel";
+	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
+
+  	    $sql = "SELECT id, artikel, FORMAT(SUM(menge),0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=1 GROUP BY artikel";
+	    $menge_plan_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];            
+
+        foreach ($materialbedarf_gesamt as $materialbedarf_artikel) {
+
+            $artikel = $materialbedarf_artikel['artikel'];
+            $position = $materialbedarf_artikel['id'];
+            $menge_plan = $materialbedarf_artikel['menge'];
+            $menge_geliefert = $materialbedarf_artikel['geliefert_menge'];
+
+            $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$lager AND artikel = $artikel";
+    	    $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
+
+            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id AND r.posid = $position";
+    	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
+           
+            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id AND r.posid = $position";
+    	    $menge_reserviert_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
+
+            $menge_verfuegbar = $menge_lager-$menge_reserviert_gesamt+$menge_reserviert_diese;
+            
+            $menge_moeglich_artikel = round($menge_verfuegbar / ($menge_plan_gesamt/$menge_plan), 0, PHP_ROUND_HALF_DOWN);
+
+            if ($menge_moeglich_artikel < $menge_moeglich) {
+                $menge_moeglich = $menge_moeglich_artikel;
+            }
+
+//            echo("------------------------a $artikel m_p $menge_plan m_g $menge_geliefert m_l $menge_lager m_r_p $menge_reserviert_diese m_r_g $menge_reserviert_gesamt m_v $menge_verfuegbar m_m_a $menge_moeglich_artikel m_m $menge_moeglich<br>");
+                
+        }       
+        return($menge_moeglich);
+    }    
 
 }

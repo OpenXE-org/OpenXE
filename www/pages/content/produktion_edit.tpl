@@ -159,7 +159,7 @@
                             <fieldset>
                                 <legend [AKTION_PRODUZIEREN_VISIBLE]>{|Produktion durchf&uuml;hren|}</legend>                            
                                 <table width="100%" border="0" class="mkTableFormular">
-                                    <tr [AKTION_PRODUZIEREN_VISIBLE]><td>{|Menge|}:</td></tr>
+                                    <tr [AKTION_PRODUZIEREN_VISIBLE]><td>{|Menge (max. [MENGE_PRODUZIERBAR])|}:</td></tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]><td><input type="text" name="menge_produzieren" id="menge_produzieren" value="[MENGE_PRODUZIEREN]" size="20" style="width:100%;"></td></tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]><td>{|Ausschuss|}:</td></tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]><td><input type="text" name="menge_ausschuss" id="menge_ausschuss" value="[MENGE_AUSSCHUSS]" size="20" style="width:100%;"></td></tr>
