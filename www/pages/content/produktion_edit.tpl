@@ -2,7 +2,7 @@
     <ul>
         <li><a href="#tabs-1">Allgemein</a></li>
         <li><a href="#tabs-2">Produktion</a></li>
-        <li><a href="#tabs-3">Vorschau</a></li>
+        <li><a href="#tabs-3">Positionen</a></li>
         <li><a href="#tabs-4">Protokoll</a></li>
     </ul>
     <div id="tabs-1">
@@ -207,9 +207,8 @@
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|<!--Legend for this form area goes here>-->produktion|}</legend><i>Info like this.</i>
-                                <table width="100%" border="0" class="mkTableFormular">
-                                </table>
+                                <legend>{|Positionen|}</legend>
+                            [PRODUKTION_POSITION_SOURCE_POSITION_TABELLE]
                             </fieldset>            
                         </div>
                		</div>

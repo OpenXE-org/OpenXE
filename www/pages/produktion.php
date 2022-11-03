@@ -118,7 +118,7 @@ class Produktion {
            	    $standardlager = $app->DB->SelectArr($sql)[0]['standardlager'];
 
                 $allowed['produktion_position_list'] = array('list');
-                $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Planmenge', 'Lager (verf&uuml;gbar)', 'Reserviert', 'Verbraucht', 'Men&uuml;');
+                $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Planmenge', 'Reserviert', 'Verbraucht', 'Men&uuml;');
                 $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); // Fill out manually later
 
                 $findcols = array('(SELECT a.name FROM artikel a WHERE a.id = p.artikel LIMIT 1)', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
@@ -134,10 +134,9 @@ class Produktion {
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                     p.id,
                     $dropnbox,
-                    (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
+                    (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
-                    FORMAT(p.menge,0,'de_DE'),
                     CONCAT (
                         COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0),
                         ' (',
@@ -145,7 +144,8 @@ class Produktion {
                         COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),0),
                         ')'
                     ) as Lager,
-                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0) as Reserviert,
+                    FORMAT(p.menge,0,'de_DE'),
+                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0) as Reserviert,
                     FORMAT(p.geliefert_menge,0,'de_DE'),
                     p.id 
                     FROM produktion_position p";
@@ -154,6 +154,48 @@ class Produktion {
 
                 $count = "SELECT count(DISTINCT id) FROM produktion_position WHERE $where";
 //                $groupby = "";
+
+                break;
+            case "produktion_source_list": // Aggregated per artikel
+                $id = $app->Secure->GetGET('id');
+
+                $sql = "SELECT standardlager FROM produktion WHERE id=$id";
+           	    $standardlager = $app->DB->SelectArr($sql)[0]['standardlager'];
+
+                $allowed['produktion_position_list'] = array('list');
+                $heading = array('Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)','Planmenge',  'Reserviert', 'Verbraucht');
+                $width = array('5%',     '30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); // Fill out manually later
+
+                $findcols = array('(SELECT a.name FROM artikel a WHERE a.id = p.artikel LIMIT 1)', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
+                $searchsql = array('p.produktion', 'p.artikel', 'p.projekt', 'p.bezeichnung', 'p.beschreibung', 'p.internerkommentar', 'p.nummer', 'p.menge', 'p.preis', 'p.waehrung', 'p.lieferdatum', 'p.vpe', 'p.sort', 'p.status', 'p.umsatzsteuer', 'p.bemerkung', 'p.geliefert', 'p.geliefert_menge', 'p.explodiert', 'p.explodiert_parent', 'p.logdatei', 'p.nachbestelltexternereinkauf', 'p.beistellung', 'p.externeproduktion', 'p.einheit', 'p.steuersatz', 'p.steuertext', 'p.erloese', 'p.erloesefestschreiben', 'p.freifeld1', 'p.freifeld2', 'p.freifeld3', 'p.freifeld4', 'p.freifeld5', 'p.freifeld6', 'p.freifeld7', 'p.freifeld8', 'p.freifeld9', 'p.freifeld10', 'p.freifeld11', 'p.freifeld12', 'p.freifeld13', 'p.freifeld14', 'p.freifeld15', 'p.freifeld16', 'p.freifeld17', 'p.freifeld18', 'p.freifeld19', 'p.freifeld20', 'p.freifeld21', 'p.freifeld22', 'p.freifeld23', 'p.freifeld24', 'p.freifeld25', 'p.freifeld26', 'p.freifeld27', 'p.freifeld28', 'p.freifeld29', 'p.freifeld30', 'p.freifeld31', 'p.freifeld32', 'p.freifeld33', 'p.freifeld34', 'p.freifeld35', 'p.freifeld36', 'p.freifeld37', 'p.freifeld38', 'p.freifeld39', 'p.freifeld40', 'p.stuecklistestufe', 'p.teilprojekt');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
+
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
+                    p.artikel,
+                    (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
+                    (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
+                    (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
+                    CONCAT (
+                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0),
+                        ' (',
+                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0)-
+                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),0),
+                        ')'
+                    ) as Lager,
+                    FORMAT(SUM(p.menge),0,'de_DE'),
+                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0) as Reserviert,
+                    FORMAT(p.geliefert_menge,0,'de_DE'),
+                    p.id 
+                    FROM produktion_position p";
+
+                $where = " stuecklistestufe = 0 AND produktion = $id";
+
+                $count = "SELECT count(DISTINCT id) FROM produktion_position WHERE $where";
+                $groupby = " GROUP BY p.artikel ";
 
                 break;
         }
@@ -214,8 +256,9 @@ class Produktion {
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
 
-        $sql = "SELECT status FROM produktion WHERE id = '$id'";
-        $status = $this->app->DB->SELECT($sql);
+        $sql = "SELECT status, belegnr FROM produktion WHERE id = '$id'";
+        $from_db = $this->app->DB->SelectArr($sql)[0];        
+        $produktionsnummer = $from_db['belegnr'];       
                
 //        foreach ($input as $key => $value) {
 //            echo($key." -> ".$value."<br>\n");
@@ -365,19 +408,20 @@ class Produktion {
                             if ($menge_reserviert_lager_platz_diese_produktion > 0) {
                                 // Modify given entry
                                 $sql = "UPDATE lager_reserviert SET menge=$menge_reservieren WHERE objekt='produktion' AND parameter = $id AND artikel = ".$materialbedarf_position['artikel']." AND posid = ".$materialbedarf_position['id'];
-                                echo($sql);
+                               // echo($sql);
                                 $this->app->DB->Update($sql);      
                             } else {
                                 // Create new entry
-                                $sql = "INSERT INTO lager_reserviert (menge,objekt,parameter,artikel,posid,lager_platz) VALUES (".
+                                $sql = "INSERT INTO lager_reserviert (menge,objekt,parameter,artikel,posid,lager_platz,grund) VALUES (".
                                         $menge_reservieren.",".
                                         "'produktion',".
                                         $id.",".
                                         $materialbedarf_position['artikel'].",".
                                         $materialbedarf_position['id'].",".
-                                        $standardlager.
+                                        $standardlager.",".
+                                        "'Reservierung Produktion ".$produktionsnummer."'".
                                         ")";
-                                echo($sql);
+//                                echo($sql);
                                 $this->app->DB->Update($sql);      
                             }
                             $reservierung_durchgefuehrt = true;
@@ -411,8 +455,10 @@ class Produktion {
                     }
 
                     $menge_produzieren = $this->app->Secure->GetPOST('menge_produzieren');
-                    $menge_ausschuss = $this->app->Secure->GetPOST('menge_ausschuss');
-            
+                    if (empty($menge_produzieren)) {
+                        $menge_produzieren = 0;
+                    }                   
+                    $menge_ausschuss = $this->app->Secure->GetPOST('menge_ausschuss');           
                     if (empty($menge_ausschuss)) {
                         $menge_ausschuss = 0;
                     }                   
@@ -424,7 +470,7 @@ class Produktion {
                          $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Planmenge überschritten.</div>");
                         break;    
                     }
-
+                   
                     $sql = "SELECT standardlager FROM produktion WHERE id=$id";
              	    $standardlager = $this->app->DB->SelectArr($sql)[0]['standardlager'];
 
@@ -436,9 +482,11 @@ class Produktion {
                     // ERPAPI  function LagerFreieMenge($artikel, $mitautolagersperre = false, $standardlager = 0, $projektlager = 0)
 
                 	$sql = "SELECT artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
-            	    $materialbedarf = $this->app->DB->SelectArr($sql);
+            	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
 
-                    foreach ($materialbedarf as $materialbedarf_position) {
+                    $materialbedarf = array();
+
+                    foreach ($materialbedarf_gesamt as $materialbedarf_position) {
 
                         if ($materialbedarf_position['menge'] > $this->app->erp->LagerFreieMenge($materialbedarf_position['artikel'], false, $standardlager, 0)) {
                             $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Lagermenge nicht ausreichend.</div>");
@@ -694,8 +742,9 @@ class Produktion {
 
             $this->app->Tpl->Set('MENGE_GEPLANT',$produktionsartikel_position['menge']);
             $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden');
-            $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
-            $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
+//            $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
+            $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_POSITION_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
+            $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_TABELLE', 'produktion_source_list', "show", "", "", basename(__FILE__), __CLASS__);
             $produktionsartikel_id = $produktionsartikel_position['artikel'];
 
             $sql = "SELECT name_de,nummer FROM artikel WHERE id=".$produktionsartikel_id;
