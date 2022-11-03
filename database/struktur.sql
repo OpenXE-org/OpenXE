@@ -9571,7 +9571,7 @@ CREATE TABLE IF NOT EXISTS `produktion` (
                                             `angebot` varchar(255) NOT NULL,
                                             `freitext` text NOT NULL,
                                             `internebemerkung` text NOT NULL,
-                                            `status` varchar(64) NOT NULL,
+                                            `status` varchar(64) NOT NULL default 'angelegt',
                                             `adresse` int(11) NOT NULL,
                                             `name` varchar(255) NOT NULL,
                                             `abteilung` varchar(255) NOT NULL,
