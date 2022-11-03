@@ -61,7 +61,7 @@ class Produktion {
 			            p.kundennummer,
 			            p.name,
 			            p.datum,
-			            (SELECT pp.bezeichnung FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1) as bezeichnung,
+			            (SELECT CONCAT(a.name_de,' (',a.nummer,')') FROM produktion_position pp INNER JOIN artikel a on pp.artikel = a.id WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1) as bezeichnung,
 			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE') as soll,
 			            FORMAT(p.mengeerfolgreich,0) as ist,
 			            \"-\" as zeit_geplant,
