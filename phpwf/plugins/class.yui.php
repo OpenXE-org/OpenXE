@@ -3593,7 +3593,7 @@ class YUI {
                 '$storniert'
             end,
             CASE 
-                WHEN FIND_IN_SET($tablename.status, 'freigegeben, gestartet') THEN
+                WHEN FIND_IN_SET($tablename.status, 'freigegeben,gestartet') THEN
                     CONCAT (
                         if($tablename.lager_ok,'$lager_ok','$lager_nicht_ok'),
                         if($tablename.reserviert_ok,'$reserviert_ok','$reserviert_nicht_ok'),

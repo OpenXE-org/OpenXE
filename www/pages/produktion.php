@@ -100,17 +100,17 @@ class Produktion {
                 $status = $result['status'];
 
                 if (in_array($status,array('angelegt','freigegeben'))) {
-                    $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge pro St&uuml;ck','Planmenge', 'Verbraucht', 'Men&uuml;');
+                    $heading = array('','','Nummer', 'Artikel', 'Projekt', 'Planmenge pro St&uuml;ck', 'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht', 'Men&uuml;');
                     $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',                  '1%'          ,'1%'); 
                     $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";    
                 } else {
-                    $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge pro St&uuml;ck', 'Planmenge', 'Verbraucht','');
+                    $heading = array('','','Nummer', 'Artikel', 'Projekt','Planmenge pro St&uuml;ck',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge', 'Verbraucht','');
                     $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%'                  ,'1%'           ,'1%'); 
                     $menu = "";
                 }            
 
 
-                $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','reserviert','stueckmenge','menge','geliefert_menge');
+                $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','stueckmenge','lager','reserviert','menge','geliefert_menge');
                 $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
               
                 $defaultorder = 1;
@@ -124,6 +124,7 @@ class Produktion {
                     (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
+                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     CONCAT (
                         COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0),
                         ' (',
@@ -132,7 +133,6 @@ class Produktion {
                         ')'
                     ) as Lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0) as Reserviert,
-                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     FORMAT(p.menge,0,'de_DE'),
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id 
@@ -154,10 +154,10 @@ class Produktion {
            	    $standardlager = $app->DB->SelectArr($sql)[0]['standardlager'];
 
                 $allowed['produktion_position_list'] = array('list');
-                $heading = array('','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge pro St&uuml;ck','Planmenge', 'Verbraucht','');
+                $heading = array('','Nummer', 'Artikel', 'Projekt','Planmenge pro St&uuml;ck',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge', 'Verbraucht','');
                 $width = array('1%','5%',     '30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',               '1%'            ,'1%');
 
-                $findcols = array('p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','reserviert','stueckmenge','menge','geliefert_menge');
+                $findcols = array('p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','stueckmenge','lager','reserviert','menge','geliefert_menge');
 
                 $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
 
@@ -172,6 +172,7 @@ class Produktion {
                     (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
+                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     CONCAT (
                         COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0),
                         ' (',
@@ -180,7 +181,6 @@ class Produktion {
                         ')'
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0) as reserviert,
-                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     FORMAT(SUM(p.menge),0,'de_DE') as menge,
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id 
