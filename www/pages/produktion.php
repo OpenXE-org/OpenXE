@@ -91,23 +91,26 @@ class Produktion {
 
                 $allowed['produktion_position_list'] = array('list');
 
+            	$sql = "SELECT menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+        	    $produktionsmenge = $app->DB->SelectArr($sql)[0]['menge'];
+
                 // Get status to control UI element menu availability
                 $sql = "SELECT p.status from produktion p WHERE p.id = $id";
                 $result = $app->DB->SelectArr($sql)[0];
                 $status = $result['status'];
 
                 if (in_array($status,array('angelegt','freigegeben'))) {
-                    $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht', 'Men&uuml;');
-                    $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); 
+                    $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge pro St&uuml;ck','Planmenge', 'Verbraucht', 'Men&uuml;');
+                    $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',                  '1%'          ,'1%'); 
                     $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";    
                 } else {
-                    $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht','');
-                    $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%' ,'1%'); 
+                    $heading = array('','','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge pro St&uuml;ck', 'Planmenge', 'Verbraucht','');
+                    $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%'                  ,'1%'           ,'1%'); 
                     $menu = "";
                 }            
 
 
-                $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','reserviert','menge','geliefert_menge');
+                $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','reserviert','stueckmenge','menge','geliefert_menge');
                 $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
               
                 $defaultorder = 1;
@@ -129,6 +132,7 @@ class Produktion {
                         ')'
                     ) as Lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0) as Reserviert,
+                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     FORMAT(p.menge,0,'de_DE'),
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id 
@@ -143,14 +147,17 @@ class Produktion {
             case "produktion_source_list": // Aggregated per artikel
                 $id = $app->Secure->GetGET('id');
 
+            	$sql = "SELECT menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+        	    $produktionsmenge = $app->DB->SelectArr($sql)[0]['menge'];
+
                 $sql = "SELECT standardlager FROM produktion WHERE id=$id";
            	    $standardlager = $app->DB->SelectArr($sql)[0]['standardlager'];
 
                 $allowed['produktion_position_list'] = array('list');
-                $heading = array('','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge', 'Verbraucht','');
-                $width = array('1%','5%',     '30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',         '1%'); // Fill out manually later
+                $heading = array('','Nummer', 'Artikel', 'Projekt',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge pro St&uuml;ck','Planmenge', 'Verbraucht','');
+                $width = array('1%','5%',     '30%',        '5%',      '1%',        '1%',            '1%' ,         '1%',               '1%'            ,'1%');
 
-                $findcols = array('p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','reserviert','menge','geliefert_menge');
+                $findcols = array('p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','lager','reserviert','stueckmenge','menge','geliefert_menge');
 
                 $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
 
@@ -173,6 +180,7 @@ class Produktion {
                         ')'
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0) as reserviert,
+                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     FORMAT(SUM(p.menge),0,'de_DE') as menge,
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id 
