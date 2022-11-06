@@ -20,10 +20,13 @@ class Produktion {
         $this->app->ActionHandler("delete", "produktion_delete");     
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
+
+        $this->Install();
     }
 
     public function Install() {
-        /* Fill out manually later */
+
+
     }
 
     static function TableSearch(&$app, $name, $erlaubtevars) {
@@ -60,8 +63,8 @@ class Produktion {
 			            p.belegnr,
 			            p.kundennummer,
 			            p.name,
-			            p.datum,
-			            CONCAT(a.name_de,' (',a.nummer,')') as bezeichnung,
+                        DATE_FORMAT(datum,'%d.%m.%Y') as datum,
+			            CONCAT(a.name_de,' (',a.nummer,')','<br><i>',internebezeichnung,'</i>') as bezeichnung,
 			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE') as soll,
 			            FORMAT(p.mengeerfolgreich,0) as ist,
 			            \"-\" as zeit_geplant,
@@ -267,6 +270,17 @@ class Produktion {
                     // Add checks here
                     $input['standardlager'] = $this->app->erp->ReplaceLagerPlatz(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
 
+                    if (empty($input['datum'])) {
+                        $input['datum'] = date("Y-m-d");
+                    } else {
+                        $input['datum'] = $this->app->erp->ReplaceDatum(true,$input['datum'],true);
+                    }
+
+                    $input['datumauslieferung'] = $this->app->erp->ReplaceDatum(true,$input['datumauslieferung'],true);
+                    $input['datumbereitstellung'] = $this->app->erp->ReplaceDatum(true,$input['datumbereitstellung'],true);
+                    $input['datumproduktion'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktion'],true);
+                    $input['datumproduktionende'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktionende'],true);
+
                     $columns = "id, ";
                     $values = "$id, ";
                     $update = "";
@@ -277,11 +291,10 @@ class Produktion {
                         $columns = $columns.$fix.$key;
                         $values = $values.$fix."'".$value."'";
                         $update = $update.$fix.$key." = '$value'";
-                        $fix = ", ";
+                        $fix = ", ";                           
                     }
 
                     $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-
                     $this->app->DB->Update($sql);
 
                     if ($id == 'NULL') {
@@ -652,11 +665,19 @@ class Produktion {
         $this->app->Tpl->Set('STANDARDLAGER', $this->app->erp->ReplaceLagerPlatz(false,$produktion_from_db['standardlager'],false)); // Convert ID to form display
 
         $this->app->YUI->DatePicker("datum");
-        $this->app->YUI->DatePicker("datumauslieferung");
-        $this->app->YUI->DatePicker("datumbereitstellung");
-        $this->app->YUI->DatePicker("datumproduktionende");
-        $this->app->YUI->DatePicker("datumproduktion");
+        $this->app->Tpl->Set('DATUM',$this->app->erp->ReplaceDatum(false,$produktion_from_db['datum'],true));
 
+        $this->app->YUI->DatePicker("datumauslieferung");
+        $this->app->Tpl->Set('DATUMAUSLIEFERUNG',$this->app->erp->ReplaceDatum(false,$produktion_from_db['datumauslieferung'],false));
+
+        $this->app->YUI->DatePicker("datumbereitstellung");
+        $this->app->Tpl->Set('DATUMBEREITSTELLUNG',$this->app->erp->ReplaceDatum(false,$produktion_from_db['datumbereitstellung'],false));
+
+        $this->app->YUI->DatePicker("datumproduktion");
+        $this->app->Tpl->Set('DATUMPRODUKTION',$this->app->erp->ReplaceDatum(false,$produktion_from_db['datumproduktion'],false));
+
+        $this->app->YUI->DatePicker("datumproduktionende");
+        $this->app->Tpl->Set('DATUMPRODUKTIONENDE',$this->app->erp->ReplaceDatum(false,$produktion_from_db['datumproduktionende'],false));
 
         $this->app->YUI->CkEditor("freitext","internal", null, 'JQUERY');
         $this->app->YUI->CkEditor("internebemerkung","internal", null, 'JQUERY');
@@ -698,7 +719,12 @@ class Produktion {
             $produktionsartikel_nummer = $produktionsartikel['nummer'];
       }
 
-        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $produktion_from_db['belegnr']." ".$produktionsartikel_name." (".$produktionsartikel_nummer.")");
+        if (empty($produktion_from_db['belegnr'])) {
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'ENTWURF - '.$produktionsartikel_name." (".$produktionsartikel_nummer.")");
+        } else {
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $produktion_from_db['belegnr']." ".$produktionsartikel_name." (".$produktionsartikel_nummer.")");
+        }
+
         $this->app->Tpl->SetText('ARTIKELNAME', $produktionsartikel_name);
 
         // Action menu
@@ -844,7 +870,6 @@ class Produktion {
 
         if ($menge_reservieren == 0) {
             $sql = "DELETE FROM lager_reserviert WHERE objekt = '$objekt' AND parameter = $objekt_id AND artikel = $artikel AND posid = $position_id";
-            echo($sql);
             $this->app->DB->Update($sql);  
             return(0);
         }

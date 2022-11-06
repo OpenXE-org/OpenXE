@@ -42,7 +42,7 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr><td>{|Status|}:</td><td><input disabled type="text" name="status" value="[STATUS]" size="20"></td></tr>
                                     <tr><td>{|Angelegt am|}:</td><td><input type="text" name="datum" id="datum" value="[DATUM]" size="10"></td></tr>
-                                    <tr><td>{|Standardlager|}:</td><td><input type="text" name="standardlager" id="standardlager" value="[STANDARDLAGER]" size="20"></td></tr>
+                                    <tr><td>{|Lager|}:</td><td><input type="text" name="standardlager" id="standardlager" value="[STANDARDLAGER]" size="20"></td></tr>
                                 </table>
                             </fieldset> 
                         </div>
