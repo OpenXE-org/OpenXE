@@ -129,12 +129,16 @@ class Produktion {
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     CONCAT (
-                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0,'de_DE'),0),
+                        FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                         ' (',
-                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0,'de_DE'),0)-
-                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0,'de_DE'),0),
+                        FORMAT (
+                                IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
+                                IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
+                                0,
+                                'de_DE'
+                        ),
                         ')'
-                    ) as Lager,
+                    ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
                     FORMAT(p.menge,0,'de_DE'),
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
@@ -179,10 +183,14 @@ class Produktion {
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
                     CONCAT (
-                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0,'de_De'),0),
+                        FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                         ' (',
-                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0,'de_DE'),0)-
-                        COALESCE(FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0,'de_DE'),0),
+                        FORMAT (
+                                IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
+                                IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
+                                0,
+                                'de_DE'
+                        ),
                         ')'
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0,'de_DE') as reserviert,
