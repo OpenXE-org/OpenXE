@@ -284,7 +284,7 @@ class Produktion {
                         $input['datum'] = $this->app->erp->ReplaceDatum(true,$input['datum'],true);
                     }
 
-                    if (empty($input['status']) || $input['status'] == '') {
+                    if ($id == 'NULL') {
                         $input['status'] = 'angelegt';
                     }
 
