@@ -148,8 +148,8 @@
                                     <tr [AKTION_PLANEN_VISIBLE]><td><input type="text" name="artikel_planen" id="artikel_planen" value="[ARTIKEL_PLANEN]" size="20"></td></tr>                                    
                                     <tr [AKTION_PLANEN_VISIBLE]><td>{|Planmenge|}:</td></tr>
                                     <tr [AKTION_PLANEN_VISIBLE]><td><input type="text" name="artikel_planen_menge" id="artikel_planen_menge" value="[ARTIKEL_PLANEN_MENGE]" size="20"></td></tr>                                    
-                                    <tr [ARTIKEL_MENGE_VISIBLE]><td>{|Menge geplant|}:</td><td>{|Menge erfolgreich|}:</td><td>{|Ausschuss|}:</td></tr>
-                                    <tr [ARTIKEL_MENGE_VISIBLE]><td>[MENGE_GEPLANT]</td><td>[MENGEERFOLGREICH]</td><td>[MENGEAUSSCHUSS]</td></tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]><td>{|Menge geplant|}:</td><td>{|Menge erfolgreich|}:</td><td>{|Ausschuss|}:</td><td>{|Offen|}</td></tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]><td>[MENGE_GEPLANT]</td><td>[MENGEERFOLGREICH]</td><td>[MENGEAUSSCHUSS]</td><td>[MENGE_OFFEN]</td></tr>
                                 </table>
                             </fieldset>
                             </div>

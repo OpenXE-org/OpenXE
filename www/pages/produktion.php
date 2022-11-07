@@ -377,7 +377,7 @@ class Produktion {
                     // Try to reserve material
                     $reservierung_durchgefuehrt = false;
                     foreach ($materialbedarf as $materialbedarf_position) {
-                        $result = $this->ArtikelReservieren($materialbedarf_position['artikel'], $global_standardlager, $materialbedarf_position['menge'], 'produktion', $id, $materialbedarf_position['id'],'Produktion $global_produktionsnummer');                   
+                        $result = $this->ArtikelReservieren($materialbedarf_position['artikel'], $global_standardlager, $materialbedarf_position['menge'], 'produktion', $id, $materialbedarf_position['id'],"Produktion $global_produktionsnummer");                   
                         if ($result > 0) {
                             $reservierung_durchgefuehrt = true;                            
                         } 
@@ -418,11 +418,6 @@ class Produktion {
 
                     $menge_auslagern = $menge_produzieren+$menge_ausschuss;
 
-                    if ($menge_produzieren + $menge_geliefert > $menge_plan) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Planmenge überschritten.</div>");
-                        break;    
-                    }
-
                     $menge_moeglich = $this->LagerCheckProduktion($id, $global_standardlager);
 
                     if ($menge_auslagern > $menge_moeglich) {
@@ -450,7 +445,7 @@ class Produktion {
                         }                   
 
                         // Adjust reservation
-                        $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,-$menge_artikel_auslagern,'produktion',$id,$material_position['id'],'Produktion $global_produktionsnummer');
+                        $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,-$menge_artikel_auslagern,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
 
                         // Update position
                         $sql = "UPDATE produktion_position SET geliefert_menge = geliefert_menge + $menge_artikel_auslagern WHERE id = ".$material_position['id'];
@@ -483,7 +478,7 @@ class Produktion {
                     foreach ($material as $material_position) {  
                         // Remove reservation
 
-                        $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,'produktion',$id,$material_position['id'],'Produktion $global_produktionsnummer');
+                        $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
                     }
             
                 break;
@@ -715,7 +710,15 @@ class Produktion {
             $this->app->Tpl->Set('ARTIKEL_MENGE_VISIBLE','hidden');            
         } else {                                     
 
-            $this->app->Tpl->Set('MENGE_GEPLANT',$produktionsartikel_position['menge']);
+            $this->app->Tpl->Set('MENGE_GEPLANT',$produktionsartikel_position['menge']);            
+
+            $menge_offen = $produktionsartikel_position['menge']-$produktion_from_db['mengeerfolgreich'];
+            if ($menge_offen < 0) {
+               $menge_offen = 0;
+               $this->app->Tpl->Set('MESSAGE', "<div class=\"info\">Planmenge überschritten.</div>");
+            }
+
+            $this->app->Tpl->Set('MENGE_OFFEN',$menge_offen);
 
             $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$this->LagerCheckProduktion($id, $produktion_from_db['standardlager']));
 
@@ -813,7 +816,12 @@ class Produktion {
 	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
 
   	    $sql = "SELECT id, artikel, FORMAT(SUM(menge),0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=1 GROUP BY artikel";
-	    $menge_plan_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];            
+        $result =  $this->app->DB->SelectArr($sql)[0];
+	    $menge_plan_gesamt = $result['menge'];
+
+  	    $sql = "SELECT FORMAT(SUM(mengeerfolgreich),0) as menge FROM produktion WHERE id=$produktion_id";
+        $result =  $this->app->DB->SelectArr($sql)[0];
+	    $menge_geliefert_gesamt = $result['menge'];
 
         foreach ($materialbedarf_gesamt as $materialbedarf_artikel) {
 
@@ -837,9 +845,7 @@ class Produktion {
             $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE artikel = $artikel";
     	    $menge_reserviert_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
 
-            $menge_verfuegbar_lager = $menge_lager-$menge_reserviert_lager+$menge_reserviert_diese;
-
-            
+            $menge_verfuegbar = $menge_lager-$menge_reserviert_lager+$menge_reserviert_diese;
 
             $menge_moeglich_artikel = round($menge_verfuegbar / ($menge_plan_artikel/$menge_plan_gesamt), 0, PHP_ROUND_HALF_DOWN);
 
@@ -854,6 +860,7 @@ class Produktion {
         if ($menge_moeglich < 0) {
             $menge_moeglich = 0;
         }
+
 
         return($menge_moeglich);
     }    
