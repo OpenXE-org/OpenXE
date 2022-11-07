@@ -74,11 +74,11 @@ class Produktion {
 	                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
 			            FROM produktion p                            
-                        INNER JOIN produktion_position pp ON pp.produktion = p.id
-                        INNER JOIN artikel a ON pp.artikel = a.id
+                        LEFT JOIN produktion_position pp ON pp.produktion = p.id
+                        LEFT JOIN artikel a ON pp.artikel = a.id
                         ";
 
-                $where = " pp.stuecklistestufe = 1 ";
+                $where = " (pp.stuecklistestufe = 1 OR pp.stuecklistestufe IS NULL) ";
                 $count = "SELECT count(DISTINCT p.id) FROM produktion p INNER JOIN produktion_position pp ON pp.produktion = pp.id WHERE $where";
 //                $groupby = "";
 
