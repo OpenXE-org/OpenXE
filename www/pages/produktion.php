@@ -284,6 +284,10 @@ class Produktion {
                         $input['datum'] = $this->app->erp->ReplaceDatum(true,$input['datum'],true);
                     }
 
+                    if (empty($input['status']) || $input['status'] == '') {
+                        $input['status'] = 'angelegt';
+                    }
+
                     $input['datumauslieferung'] = $this->app->erp->ReplaceDatum(true,$input['datumauslieferung'],true);
                     $input['datumbereitstellung'] = $this->app->erp->ReplaceDatum(true,$input['datumbereitstellung'],true);
                     $input['datumproduktion'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktion'],true);
