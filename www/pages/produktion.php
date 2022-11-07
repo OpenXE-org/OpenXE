@@ -74,7 +74,7 @@ class Produktion {
 	                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
 			            FROM produktion p                            
-                        INNER JOIN produktion_position pp ON pp.produktion = pp.id
+                        INNER JOIN produktion_position pp ON pp.produktion = p.id
                         INNER JOIN artikel a ON pp.artikel = a.id
                         ";
 
@@ -825,14 +825,22 @@ class Produktion {
             $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$lager AND artikel = $artikel";
     	    $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
+            $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE artikel = $artikel";
+    	    $menge_lager_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
+
             $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id AND r.posid = $position";
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
            
             $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel";
+    	    $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
+
+            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE AND artikel = $artikel";
     	    $menge_reserviert_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
 
-            $menge_verfuegbar = $menge_lager-$menge_reserviert_gesamt+$menge_reserviert_diese;
+            $menge_verfuegbar_lager = $menge_lager-$menge_reserviert_lager+$menge_reserviert_diese;
+
             
+
             $menge_moeglich_artikel = round($menge_verfuegbar / ($menge_plan_artikel/$menge_plan_gesamt), 0, PHP_ROUND_HALF_DOWN);
 
             if ($menge_moeglich_artikel < $menge_moeglich) {
@@ -842,6 +850,11 @@ class Produktion {
 //            echo("------------------------Lager $lager a $artikel menge_plan_artikel $menge_plan_artikel menge_geliefert $menge_geliefert menge_lager $menge_lager menge_reserviert_diese $menge_reserviert_diese menge_reserviert_gesamt $menge_reserviert_gesamt menge_verfuegbar $menge_verfuegbar menge_moeglich_artikel $menge_moeglich_artikel menge_moeglich $menge_moeglich<br>");
                 
         }       
+
+        if ($menge_moeglich < 0) {
+            $menge_moeglich = 0;
+        }
+
         return($menge_moeglich);
     }    
 
