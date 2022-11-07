@@ -1346,17 +1346,17 @@ class Lager extends GenLager {
       case "lager_reservierungen":
         $allowed['lager'] = array('reservierungen');
                
-        $heading = array('Kunde','Belegart','Belegnr','Status','Artikel','Menge','Projekt','Grund','Men&uuml;');
-        $width = array('20%','20%','5%','10%','20%','1%');
-        $findcols = array('t.kunde', 't.typ', 't.belegnr', 't.status', 't.Artikel', 't.menge', 't.projekt', 't.grund', 't.rid');
-        $searchsql = array('t.kunde', 't.typ', 't.belegnr', 't.status', 't.Artikel', $app->erp->FormatMenge('t.menge'), 't.projekt', 't.grund');
+        $heading = array('Kunde','Belegart','Belegnr','Status','Artikelnummer','Artikel','Menge','Projekt','Grund','Men&uuml;');
+        $width = array('20%',   '10%',     '5%',      '5%',    '5%',          '20%',     '1%',    '10%',     '20%');
+        $findcols = array('t.kunde', 't.typ', 't.belegnr', 't.status','t.Artikelnummer', 't.Artikel', 't.menge', 't.projekt', 't.grund', 't.rid');
+        $searchsql = array('t.kunde', 't.typ', 't.belegnr', 't.status','t.Artikelnummer', 't.Artikel', $app->erp->FormatMenge('t.menge'), 't.projekt', 't.grund');
         
         $defaultorder = 1; //Optional wenn andere Reihenfolge gewuenscht
         $defaultorderdesc = 1;
         //$sumcol = 9;
         $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=artikelentfernenreserviert&reservierung=%value%\"); ><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a></td></tr></table>";
-        $alignright = array(6);
-        $numbercols = array(5);
+        $alignright = array(7);
+        $numbercols = array(6);
         $menucol = 5;
         //$moreinfo = true;
         $sql = "
@@ -1366,6 +1366,7 @@ class Lager extends GenLager {
             t.typ,
             t.belegnr,
             t.status,
+            t.Artikelnummer,
             t.Artikel,
             ".$app->erp->FormatMenge('t.menge').",
             t.projekt,
@@ -1375,43 +1376,43 @@ class Lager extends GenLager {
           FROM 
           (
             (
-              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,if(auf.belegnr = '','ENTWURF',auf.belegnr) as belegnr ,if(auf.status = '','angelegt',auf.status) as status, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,if(auf.belegnr = '','ENTWURF',auf.belegnr) as belegnr ,if(auf.status = '','angelegt',auf.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               INNER JOIN auftrag auf ON auf.id = r.parameter AND r.objekt = 'auftrag'
             )
             UNION ALL 
             (
-              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
               INNER JOIN lieferschein l ON l.id = r.parameter AND r.objekt = 'lieferschein'
             )
             UNION ALL 
             (
-              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
               INNER JOIN produktion l ON l.id = r.parameter AND r.objekt = 'produktion'
             )
             UNION ALL 
             (
-              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               LEFT JOIN auftrag auf ON auf.id = r.parameter AND r.objekt = 'auftrag' WHERE isnull(auf.id) AND r.objekt = 'auftrag'
             )
             UNION ALL 
             (
-              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
               LEFT JOIN lieferschein l ON l.id = r.parameter AND r.objekt = 'lieferschein' WHERE isnull(l.id) AND r.objekt = 'lieferschein'
             )
             UNION ALL 
             (
-              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
               LEFT JOIN produktion l ON l.id = r.parameter AND r.objekt = 'produktion' WHERE isnull(l.id) AND r.objekt = 'produktion'
             )
             UNION ALL 
             (
-              SELECT  r.id as rid, adr.name as kunde,r.objekt as typ,'' as belegnr , '' as status,  a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,r.objekt as typ,'' as belegnr , '' as status, a.nummer as Artikelnummer, a.name_de as Artikel, r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id WHERE r.objekt <> 'auftrag' AND r.objekt <> 'lieferschein'  AND r.objekt <> 'produktion'          
             )
         
