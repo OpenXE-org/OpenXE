@@ -97,6 +97,7 @@ class Produktion_position {
         } else {
             header("Location: index.php?module=produktion_position&action=list&msg=$msg");
         }
+        exit();
     }    
 
 
@@ -139,6 +140,15 @@ class Produktion_position {
             $id = 'NULL';
         } 
 
+        $sql = "SELECT p.status, p.id from produktion p INNER JOIN produktion_position pp ON pp.produktion = p.id WHERE pp.id = $id";
+        $result = $this->app->DB->SelectArr($sql)[0];
+        $status = $result['status'];
+        $produktion_id = $result['id'];
+
+        $sql = "SELECT FORMAT(menge,0) as menge FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
+        $result = $this->app->DB->SelectArr($sql)[0];
+        $planmenge = $result['menge'];
+
         if ($submit != '')
         {
 
@@ -148,12 +158,17 @@ class Produktion_position {
             $input['artikel'] = $this->app->erp->ReplaceArtikel(true, $input['artikel'],true); // Convert from form to db
 
             // Only allowed when produktion is 'freigegeben or angelegt'
-
-            $sql = "SELECT p.status, p.id from produktion p INNER JOIN produktion_position pp ON pp.produktion = p.id WHERE pp.id = $id";
-            $result = $this->app->DB->SelectArr($sql)[0];
-            $status = $result['status'];
             if (!in_array($status,array('angelegt','freigegeben'))) {
                 $this->produktion_position_edit_end("Bearbeiten nicht möglich, Produktionsstatus ist '$status'",true, true);
+            }
+
+            if ($input['menge'] < 0) {
+                $this->produktion_position_edit_end("Ung&uuml;ltige Menge.",true, true);
+            }
+
+            // Only allow quantities that are a multiple of the target quantity
+            if ($input['menge'] % $planmenge != 0) {
+                $this->produktion_position_edit_end("Positionsmenge muss Vielfaches von $planmenge sein.",true, true);
             }
 
             $columns = "id, ";
@@ -213,6 +228,8 @@ class Produktion_position {
 
         $this->app->Tpl->Set('PRODUKTIONID',$result[0]['produktion']);
         $this->app->Tpl->Set('PRODUKTIONBELEGNR',$result[0]['belegnr']);        
+
+        $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Positionsmenge muss Vielfaches von $planmenge sein.</div>");
 
         $this->app->Tpl->Parse('PAGE', "produktion_position_edit.tpl");
     }

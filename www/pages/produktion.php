@@ -64,9 +64,14 @@ class Produktion {
 			            $dropnbox,
 			            p.belegnr,
 			            p.kundennummer,
-			            p.name,
+			            (SELECT name FROM adresse WHERE kundennummer = p.kundennummer AND p.kundennummer != 0 LIMIT 1) as name,
                         DATE_FORMAT(datum,'%d.%m.%Y') as datum,
-			            CONCAT(a.name_de,' (',a.nummer,')','<br><i>',internebezeichnung,'</i>') as bezeichnung,
+                        
+                        CONCAT (
+                            IFNULL((SELECT CONCAT(a.name_de,' (',a.nummer,')','<br>') FROM artikel a INNER JOIN produktion_position pp WHERE pp.stuecklistestufe = 1 AND pp.produktion = p.id LIMIT 1),''),
+                            CONCAT('<i>',internebezeichnung,'</i>')
+                        ) as bezeichnung,
+
 			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE') as soll,
 			            FORMAT(p.mengeerfolgreich,0,'de_DE') as ist,
 			            \"-\" as zeit_geplant,
@@ -76,11 +81,9 @@ class Produktion {
 	                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
 			            FROM produktion p                            
-                        LEFT JOIN produktion_position pp ON pp.produktion = p.id
-                        LEFT JOIN artikel a ON pp.artikel = a.id
                         ";
 
-                $where = " (pp.stuecklistestufe = 1 OR pp.stuecklistestufe IS NULL) ";
+                $where = " 1 ";
                 $count = "SELECT count(DISTINCT p.id) FROM produktion p INNER JOIN produktion_position pp ON pp.produktion = pp.id WHERE $where";
 //                $groupby = "";
 
@@ -262,6 +265,7 @@ class Produktion {
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
+        $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));                      
 
         $sql = "SELECT status, belegnr, projekt, standardlager FROM produktion WHERE id = '$id'";
         $from_db = $this->app->DB->SelectArr($sql)[0];        
@@ -326,7 +330,7 @@ class Produktion {
                         $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
                         header("Location: index.php?module=produktion&action=list&msg=$msg");
                     } else {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                        $msg = "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>";
                     }
                 break;
                 case 'planen':
@@ -337,7 +341,7 @@ class Produktion {
             	    $produktionsartikel = $this->app->DB->SelectArr($sql);
 
                     if (!empty($produktionsartikel)) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Bereits geplant.</div>");
+                        $msg = "<div class=\"success\">Bereits geplant.</div>";
                         break;                        
                     }
 
@@ -345,7 +349,12 @@ class Produktion {
                     $artikel_planen_menge = $this->app->Secure->GetPOST('artikel_planen_menge');                       
 
                     if (!$artikel_planen_id) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Artikel ist keine St&uuml;ckliste.</div>");
+                        $msg = "<div class=\"error\">Artikel ist keine St&uuml;ckliste.</div>";
+                        break;
+                    }
+
+                    if ($artikel_planen_menge < 1) {
+                         $msg = "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
                         break;
                     }
 
@@ -357,7 +366,7 @@ class Produktion {
                     $stueckliste =  $this->app->DB->SelectArr($sql);
 
                     if (empty($stueckliste)) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">St&uuml;ckliste ist leer.</div>");
+                        $msg = "<div class=\"error\">St&uuml;ckliste ist leer.</div>";
                         break;
                     }
 
@@ -369,7 +378,7 @@ class Produktion {
                     $sql = "INSERT INTO produktion_position (produktion, artikel, menge, stuecklistestufe, projekt) VALUES ( $id, $artikel_planen_id, $artikel_planen_menge, 1, '$global_projekt'), ".implode(',',$position_values);
                     $this->app->DB->Update($sql);                   
 
-                    $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Planung angelegt.</div>");
+                     $msg = "<div class=\"success\">Planung angelegt.</div>";
 
                 break;            
                 case 'freigeben':
@@ -380,7 +389,7 @@ class Produktion {
                     // Check quantities and reserve for every position
 
                     if($global_standardlager == 0) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Kein Lager ausgew&auml;hlt.</div>");
+                        $msg = "<div class=\"error\">Kein Lager ausgew&auml;hlt.</div>";
                         break;    
                     }
 
@@ -398,9 +407,9 @@ class Produktion {
 
                     // Message output
                     if ($reservierung_durchgefuehrt) {                    
-                        $this->app->Tpl->Add('MESSAGE', "<div class=\"info\">Reservierung durchgeführt.</div>");
+                         $msg = "<div class=\"info\">Reservierung durchgeführt.</div>";
                     } else {
-                        $this->app->Tpl->Add('MESSAGE', "<div class=\"error\">Keine Reservierung durchgeführt!</div>");
+                         $msg = "<div class=\"error\">Keine Reservierung durchgeführt!</div>";
                     }
                 
                     break;
@@ -413,7 +422,7 @@ class Produktion {
             	    $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
 
                     if (empty($produktionsartikel_position)) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Keine Planung vorhanden.</div>");
+                        $msg = "<div class=\"error\">Keine Planung vorhanden.</div>";
                         break;                        
                     }
 
@@ -431,10 +440,15 @@ class Produktion {
 
                     $menge_auslagern = $menge_produzieren+$menge_ausschuss;
 
+                    if ($menge_auslagern < 1) {
+                         $msg = "<div class=\"error\">Ung&uuml;ltige Menge.</div>";
+                        break;
+                    }
+
                     $menge_moeglich = $this->LagerCheckProduktion($id, $global_standardlager);
 
                     if ($menge_auslagern > $menge_moeglich) {
-                        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Lagermenge nicht ausreichend. ($menge_auslagern > $menge_moeglich)</div>");
+                        $msg = "<div class=\"error\">Lagermenge nicht ausreichend. ($menge_auslagern > $menge_moeglich)</div>";
                         break;       
                     }
 
@@ -452,7 +466,7 @@ class Produktion {
                         // Remove material from stock    
                         $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$produktion_belegnr);
                         if ($result != 1) {
-                            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>");
+                            $msg = "error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>";
                             $error = true;
                             break;   
                         }                   
@@ -479,7 +493,119 @@ class Produktion {
                     $sql = "UPDATE produktion SET mengeerfolgreich = mengeerfolgreich + $menge_produzieren, mengeausschuss = mengeausschuss + $menge_ausschuss WHERE id = $id";
                     $this->app->DB->Update($sql);
 
-                    $this->app->Tpl->Add('MESSAGE', "<div class=\"info\">Produktion durchgeführt.</div>");
+                    $msg = "<div class=\"info\">Produktion durchgeführt.</div>";
+                break;
+                case 'teilen':
+
+                    // Create partial sub production
+    /*
+                    Check open quantities
+                    Reduce open quantities by partial
+                    Adjust reservations
+                    Add new production
+                    Add partial quantities to new production
+*/
+
+                    $menge_abteilen = $this->app->Secure->GetPOST('menge_produzieren');
+
+                    if ($menge_abteilen < 1) {
+                        $msg = "<div class=\"error\">Ung&uuml;ltige Teilmenge.</div>";
+                        break;
+                    }
+
+                    $sql = "SELECT * from produktion WHERE id = $id";
+            	    $produktion_alt = $this->app->DB->SelectArr($sql)[0];
+
+                    // Part production of part production -> select parent
+                    $hauptproduktion_id = $produktion_alt['teilproduktionvon'];
+                    if ($hauptproduktion_id != 0) {
+                        $sql = "SELECT belegnr FROM produktion WHERE id = $hauptproduktion_id";
+                        $hauptproduktion_belegnr = $this->app->DB->SelectArr($sql)[0]['belegnr'];
+                    } else {
+                        $hauptproduktion_id = $produktion_alt['id'];
+                        $hauptproduktion_belegnr = $produktion_alt['belegnr'];
+                    }
+
+                    $sql = "SELECT MAX(teilproduktionnummer) as tpn FROM produktion WHERE teilproduktionvon = $hauptproduktion_id";
+                    $teilproduktionnummer = $this->app->DB->SelectArr($sql)[0]['tpn'];
+                    if (empty($teilproduktionnummer) || $teilproduktionnummer == 0) {
+                        $teilproduktionnummer = '1';
+                    } else {
+                        $teilproduktionnummer++;
+                    }
+
+                    $produktion_neu = array();
+                    $produktion_neu['status'] = 'angelegt';
+                    $produktion_neu['datum'] = date("Y-m-d");
+                    $produktion_neu['art'] = $produktion_alt['art'];
+                    $produktion_neu['projekt'] = $produktion_alt['projekt'];
+                    $produktion_neu['angebot'] = $produktion_alt['angebot'];
+                    $produktion_neu['kundennummer'] = $produktion_alt['kundennummer'];
+                    $produktion_neu['auftragid'] = $produktion_alt['auftragid'];
+                    $produktion_neu['freitext'] = $produktion_alt['freitext'];
+                    $produktion_neu['internebemerkung'] = $produktion_alt['internebemerkung'];
+                    $produktion_neu['adresse'] = $produktion_alt['adresse'];
+                    $produktion_neu['internebemerkung'] = $produktion_alt['internebemerkung'];
+                    $produktion_neu['internebezeichnung '] = $produktion_alt['internebezeichnung'];
+                    $produktion_neu['standardlager'] = $produktion_alt['standardlager'];
+                    $produktion_neu['belegnr'] = $hauptproduktion_belegnr."-".$teilproduktionnummer;
+                    $produktion_neu['teilproduktionvon'] = $hauptproduktion_id;
+                    $produktion_neu['teilproduktionnummer'] = $teilproduktionnummer;
+
+                    $columns = "";
+                    $values = "";
+                    $update = "";
+            
+                    $fix = "";
+
+                    foreach ($produktion_neu as $key => $value) {
+                        $columns = $columns.$fix.$key;
+                        $values = $values.$fix."'".$value."'";
+                        $update = $update.$fix.$key." = '$value'";
+                        $fix = ", ";                           
+                    }
+
+                    $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.")";
+                    $this->app->DB->Update($sql);
+                    $produktion_neu_id = $this->app->DB->GetInsertID();
+
+                    $sql = "SELECT menge FROM produktion_position WHERE produktion = $id AND stuecklistestufe = 1";
+                    $planmenge_alt = $this->app->DB->SelectArr($sql)[0];                    
+
+                    // Now add the positions
+                    $sql = "SELECT * FROM produktion_position WHERE produktion = $id";
+                    $positionen = $this->app->DB->SelectArr($sql); 
+
+                    foreach ($positionen as $position) {
+                        $position['id'] = 'NULL';
+                        $position['geliefert_menge'] = 0;
+                        $position['menge'] = $menge_abteilen*($position['menge']/$planmenge_alt['menge']); 
+                        $position['produktion'] = $produktion_neu_id;
+
+                        $columns = "";
+                        $values = "";
+                        $update = "";
+                        $fix = "";
+
+                        foreach ($position as $key => $value) {
+                            $columns = $columns.$fix.$key;
+                            $values = $values.$fix."'".$value."'";
+                            $update = $update.$fix.$key." = '$value'";
+                            $fix = ", ";
+                        }
+
+                        $sql = "INSERT INTO produktion_position (".$columns.") VALUES (".$values.")";
+                        $this->app->DB->Update($sql);
+
+                    }
+
+                    // Reduce positions in old production TODO
+
+                    // Correct reservations in old production TODO
+
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
+                    header("Location: index.php?module=produktion&action=list&msg=$msg");
+
                 break;
                 case 'abschliessen':
                     $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
@@ -675,6 +801,19 @@ class Produktion {
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
 
+        if ($produktion_from_db['teilproduktionvon'] != 0) {
+            $sql = "SELECT belegnr FROM produktion WHERE id = ".$produktion_from_db['teilproduktionvon'];
+    	    $hauptproduktion_belegnr = $this->app->DB->SelectArr($sql)[0]['belegnr'];
+            $this->app->Tpl->Set('TEILPRODUKTIONINFO',"Teilproduktion von ".$hauptproduktion_belegnr);
+        }
+
+        $sql = "SELECT belegnr FROM produktion WHERE teilproduktionvon = $id";
+	    $teilproduktionen = $this->app->DB->SelectArr($sql);
+
+        if (!empty($teilproduktionen)) {
+            $this->app->Tpl->Set('TEILPRODUKTIONINFO',"Zu dieser Produktion geh&ouml;ren diese Teilproduktionen: ".implode(', ',array_column($teilproduktionen,'belegnr')));
+        }
+
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->YUI->AutoComplete("kundennummer", "kunde", 1);
         $this->app->YUI->AutoComplete("auftragid", "auftrag", 1);
@@ -728,7 +867,7 @@ class Produktion {
             $menge_offen = $produktionsartikel_position['menge']-$produktion_from_db['mengeerfolgreich'];
             if ($menge_offen < 0) {
                $menge_offen = 0;
-               $this->app->Tpl->Set('MESSAGE', "<div class=\"info\">Planmenge überschritten.</div>");
+               $msg = "<div class=\"info\">Planmenge überschritten.</div>";
             }
 
             $this->app->Tpl->Set('MENGE_OFFEN',$menge_offen);
@@ -777,6 +916,7 @@ class Produktion {
                 $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_TEILEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
             break;
             default: // new item
@@ -784,6 +924,7 @@ class Produktion {
             break;
         }
 
+        $this->app->Tpl->Set('MESSAGE', $msg);
         $this->app->Tpl->Parse('PAGE', "produktion_edit.tpl");
     }
 

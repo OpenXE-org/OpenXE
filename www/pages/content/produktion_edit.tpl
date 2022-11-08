@@ -14,8 +14,9 @@
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|<b>Produktion <font color="blue">[BELEGNR]</font></b>|}</legend>
-                                [STATUSICONS]                                
+                                <legend>{|<b>Produktion <font color="blue">[BELEGNR]</font></b>|}</legend>                              
+                                [STATUSICONS]
+                                [TEILPRODUKTIONINFO]
                             </fieldset>            
                         </div>
                		</div>
@@ -131,6 +132,7 @@
 	            				<fieldset>
                                     <legend>{|<b>Produktion <font color="blue">[BELEGNR]</font></b>|}</legend>
                                     [STATUSICONS]                                
+                                    [TEILPRODUKTIONINFO]
                                 </fieldset>            
                             </div>
                    		</div>
@@ -176,6 +178,7 @@
                                         <tr [AKTION_FREIGEBEN_VISIBLE]><td><button name="submit" value="freigeben" class="ui-button-icon" style="width:100%;">Freigeben</button></td></tr>                                                                  
                                         <tr [AKTION_RESERVIEREN_VISIBLE]><td><button name="submit" value="reservieren" class="ui-button-icon" style="width:100%;">Reservieren</button></td></tr>          
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="produzieren" class="ui-button-icon" style="width:100%;">Produzieren</button></td></tr>                                                        
+                                        <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="teilen" class="ui-button-icon" style="width:100%;">Teilproduktion erstellen</button></td></tr>          
                                         <tr [AKTION_ABSCHLIESSEN_VISIBLE]><td><button name="submit" value="abschliessen" class="ui-button-icon" style="width:100%;">Abschliessen</button></td></tr>
                                     </table>
                                 </fieldset>
