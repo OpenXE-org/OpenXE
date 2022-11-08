@@ -181,7 +181,7 @@ class Produktion {
                     (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
-                    FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
+                    FORMAT(SUM(p.menge)/$produktionsmenge,0,'de_DE') as stueckmenge,
                     CONCAT (
                         FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                         ' (',
