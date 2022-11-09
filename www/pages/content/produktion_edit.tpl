@@ -150,8 +150,26 @@
                                     <tr [AKTION_PLANEN_VISIBLE]><td><input type="text" name="artikel_planen" id="artikel_planen" value="[ARTIKEL_PLANEN]" size="20"></td></tr>                                    
                                     <tr [AKTION_PLANEN_VISIBLE]><td>{|Planmenge|}:</td></tr>
                                     <tr [AKTION_PLANEN_VISIBLE]><td><input type="text" name="artikel_planen_menge" id="artikel_planen_menge" value="[ARTIKEL_PLANEN_MENGE]" size="20"></td></tr>                                    
-                                    <tr [ARTIKEL_MENGE_VISIBLE]><td>{|Menge geplant|}:</td><td>{|Menge erfolgreich|}:</td><td>{|Ausschuss|}:</td><td>{|Offen|}</td></tr>
-                                    <tr [ARTIKEL_MENGE_VISIBLE]><td>[MENGE_GEPLANT]</td><td>[MENGEERFOLGREICH]</td><td>[MENGEAUSSCHUSS]</td><td>[MENGE_OFFEN]</td></tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]>
+                                        <td>{|Menge geplant|}:</td>
+                                        <td>{|Menge produziert|}:</td>
+                                        <td>{|Menge erfolgreich|}:</td>
+                                    </tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]>
+                                        <td>[MENGE_GEPLANT]</td>
+                                        <td>[MENGE_PRODUZIERT]</td>
+                                        <td>[MENGEERFOLGREICH]</td>
+                                    </tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]>
+                                        <td>{|Ausschuss|}:</td>
+                                        <td>{|Offen:|}</td>
+                                        <td>{|Produzierbar:|}</td>
+                                    </tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]>
+                                        <td>[MENGEAUSSCHUSS]</td>
+                                        <td>[MENGE_OFFEN]</td>
+                                        <td>[MENGE_PRODUZIERBAR]</td>
+                                    </tr>
                                 </table>
                             </fieldset>
                             </div>
@@ -159,9 +177,9 @@
 	            		<div class="col-xs-14 col-md-6 col-md-height">
 	            			<div class="inside inside-full-height">
                             <fieldset>
-                                <legend [AKTION_PRODUZIEREN_VISIBLE]>{|Produktion durchf&uuml;hren|}</legend>                            
+                                <legend [AKTION_PRODUZIEREN_VISIBLE]>{|Parameter|}</legend>                            
                                 <table width="100%" border="0" class="mkTableFormular">
-                                    <tr [AKTION_PRODUZIEREN_VISIBLE]><td>{|Menge (max. [MENGE_PRODUZIERBAR])|}:</td></tr>
+                                    <tr [AKTION_PRODUZIEREN_VISIBLE]><td>{|Menge|}:</td></tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]><td><input type="text" name="menge_produzieren" id="menge_produzieren" value="[MENGE_PRODUZIEREN]" size="20" style="width:100%;"></td></tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]><td>{|Ausschuss|}:</td></tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]><td><input type="text" name="menge_ausschuss" id="menge_ausschuss" value="[MENGE_AUSSCHUSS]" size="20" style="width:100%;"></td></tr>
@@ -177,8 +195,9 @@
                                         <tr [AKTION_PLANEN_VISIBLE]><td><button name="submit" value="planen" class="ui-button-icon" style="width:100%;">Planen</button></td></tr>                                                                  
                                         <tr [AKTION_FREIGEBEN_VISIBLE]><td><button name="submit" value="freigeben" class="ui-button-icon" style="width:100%;">Freigeben</button></td></tr>                                                                  
                                         <tr [AKTION_RESERVIEREN_VISIBLE]><td><button name="submit" value="reservieren" class="ui-button-icon" style="width:100%;">Reservieren</button></td></tr>          
-                                        <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="produzieren" class="ui-button-icon" style="width:100%;">Produzieren</button></td></tr>                                                        
+                                        <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="produzieren" class="ui-button-icon" style="width:100%;">Produzieren</button></td></tr>
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="teilen" class="ui-button-icon" style="width:100%;">Teilproduktion erstellen</button></td></tr>          
+                                        <tr [AKTION_LEEREN_VISIBLE]><td><button name="submit" value="leeren" class="ui-button-icon" style="width:100%;">Leeren</button></td></tr>                                                                  
                                         <tr [AKTION_ABSCHLIESSEN_VISIBLE]><td><button name="submit" value="abschliessen" class="ui-button-icon" style="width:100%;">Abschliessen</button></td></tr>
                                     </table>
                                 </fieldset>
