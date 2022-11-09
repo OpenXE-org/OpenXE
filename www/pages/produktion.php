@@ -463,21 +463,19 @@ class Produktion {
                         $menge_artikel_auslagern =  $material_position['menge']/$produktionsartikel_position['menge']*$menge_auslagern;
 
                         // Remove material from stock
-                        $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$produktion_belegnr);
-                        if ($result != 1) {
-                            $msg .= "error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>";
-                            $error = true;
-                            break;
-                        }
-
-                        // Adjust reservation
                         if ($material_position['stuecklistestufe'] == 0) {
+                            $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$produktion_belegnr);
+                            if ($result != 1) {
+                                $msg .= "<div class=\"error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>".
+                                $error = true;
+                                break;
+                            }
+                            // Adjust reservation
                             $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,-$menge_artikel_auslagern,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
                         }
 
                         // Update position
                         $sql = "UPDATE produktion_position SET geliefert_menge = geliefert_menge + $menge_artikel_auslagern WHERE id = ".$material_position['id'];
-//                        echo($sql);
                         $this->app->DB->Update($sql);
                     }
 
