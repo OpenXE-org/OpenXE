@@ -619,7 +619,7 @@ class Produktion {
                         $this->app->DB->Update($sql);
                     
                         // Free surplus reservations
-                        $result = $this->ArtikelReservieren($position['artikel'],$global_standardlager,0,$position['menge'],'produktion',$id,$position['id'],"Produktion $global_produktionsnummer");
+                        $result = $this->ArtikelReservieren($position['artikel'],$global_standardlager,0,$position['menge']-$position['geliefert_menge'],'produktion',$id,$position['id'],"Produktion $global_produktionsnummer");
 
                     }
 
