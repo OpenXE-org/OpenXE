@@ -257,6 +257,11 @@ class Produktion {
     function produktion_edit() {
         $id = $this->app->Secure->GetGET('id');
               
+        if($this->app->erp->DisableModul('produktion',$id))
+        {
+          return;
+        }
+
         $submit = $this->app->Secure->GetPOST('submit');
 
         $this->app->Tpl->Set('ID', $id);
