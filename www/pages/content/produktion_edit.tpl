@@ -152,23 +152,25 @@
                                     <tr [AKTION_PLANEN_VISIBLE]><td><input type="text" name="artikel_planen_menge" id="artikel_planen_menge" value="[ARTIKEL_PLANEN_MENGE]" size="20"></td></tr>                                    
                                     <tr [ARTIKEL_MENGE_VISIBLE]>
                                         <td>{|Geplant|}:</td>
-                                        <td>{|Produziert|}:</td>
-                                        <td>{|Erfolgreich|}:</td>
-                                    </tr>
-                                    <tr [ARTIKEL_MENGE_VISIBLE]>
                                         <td>[MENGE_GEPLANT]</td>
-                                        <td>[MENGE_PRODUZIERT]</td>
-                                        <td>[MENGEERFOLGREICH]</td>
-                                    </tr>
-                                    <tr [ARTIKEL_MENGE_VISIBLE]>
-                                        <td>{|Ausschuss|}:</td>
                                         <td>{|Offen:|}</td>
-                                        <td>{|Produzierbar:|}</td>
+                                        <td>[MENGE_OFFEN]</td>
                                     </tr>
                                     <tr [ARTIKEL_MENGE_VISIBLE]>
-                                        <td>[MENGEAUSSCHUSS]</td>
-                                        <td>[MENGE_OFFEN]</td>
+                                        <td>{|Produziert|}:</td>
+                                        <td>[MENGE_PRODUZIERT]</td>
+                                        <td>{|Reserviert:|}</td>
+                                        <td>[MENGE_RESERVIERT]</td>
+                                    </tr>
+                                    <tr [ARTIKEL_MENGE_VISIBLE]>
+                                        <td>{|Erfolgreich|}:</td>
+                                        <td>[MENGEERFOLGREICH]</td>
+                                        <td>{|Produzierbar:|}</td>
                                         <td>[MENGE_PRODUZIERBAR]</td>
+                                    </tr>
+                                    </tr>
+                                        <td>{|Ausschuss|}:</td>                                    
+                                        <td>[MENGEAUSSCHUSS]</td>
                                     </tr>
                                 </table>
                             </fieldset>

@@ -419,7 +419,7 @@ class Produktion {
                     break;
                 case 'produzieren':
 
-                    // Check quanitites -> all must be reserved before production
+                    // Check quanitites
                     // Parse positions
                 	$sql = "SELECT artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
             	    $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
@@ -448,7 +448,7 @@ class Produktion {
                         break;
                     }
 
-                    $menge_moeglich = $this->LagerCheckProduktion($id, $global_standardlager);
+                    $menge_moeglich = $this->LagerCheckProduktion($id, $global_standardlager, false);
 
                     if ($menge_auslagern > $menge_moeglich) {
                         $msg .= "<div class=\"error\">Lagermenge nicht ausreichend. ($menge_auslagern > $menge_moeglich)</div>";
@@ -500,21 +500,13 @@ class Produktion {
                 break;
                 case 'teilen':
 
-                    // Create partial sub production
-    /*
-                    Check open quantities
-                    Reduce open quantities by partial
-                    Adjust reservations
-                    Add new production
-                    Add partial quantities to new production
-*/
+                    // Create partial production
 
                     $menge_abteilen = $this->app->Secure->GetPOST('menge_produzieren');
 
-                    $sql = "SELECT menge,geliefert_menge FROM produktion_position WHERE produktion = $id AND stuecklistestufe = 1";
-                    $produktionsmengen_alt = $this->app->DB->SelectArr($sql)[0];
+                    $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
 
-                    if ($menge_abteilen < 1 || $menge_abteilen > ($produktionsmengen_alt['menge']-$produktionsmengen_alt['geliefert_menge'])) {
+                    if ($menge_abteilen < 1 || $menge_abteilen > ($fortschritt['geplant']-$fortschritt['produziert'])) {
                         $msg .= "<div class=\"error\">Ung&uuml;ltige Teilmenge.</div>";
                         break;
                     }
@@ -592,7 +584,7 @@ class Produktion {
                         // For the new positions
                         $position['id'] = 'NULL';
                         $position['geliefert_menge'] = 0;
-                        $position['menge'] = $menge_abteilen*($position['menge']/$produktionsmengen_alt['menge']); 
+                        $position['menge'] = $menge_abteilen*($position['menge']/$fortschritt['geplant']); 
                         $position['produktion'] = $produktion_neu_id;
 
                         $values = "";
@@ -609,7 +601,7 @@ class Produktion {
                         // Reduce positions in old production
                         $position['id'] = $pos_id;
                         $position['geliefert_menge'] = $geliefert_menge;
-                        $position['menge'] = $menge - $position['menge']; // old - part
+                        $position['menge'] = $menge - $position['menge']; // old quantity - partial quantity
                         $position['produktion'] = $produktion_alt_id;
 
                         $fix = "";
@@ -922,6 +914,7 @@ class Produktion {
     	$sql = "SELECT id,artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
         $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
 
+        // Not planned
         if (empty($produktionsartikel_position)) {
             $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');      
             $this->app->Tpl->Set('ARTIKEL_MENGE_VISIBLE','hidden');         
@@ -930,23 +923,23 @@ class Produktion {
             $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');               
             $this->app->Tpl->Set('AKTION_TEILEN_VISIBLE','hidden');               
         } else {                                     
+        // Planned
 
-            $this->app->Tpl->Set('MENGE_GEPLANT',$produktionsartikel_position['menge']);            
+            $fortschritt = $this->MengeFortschritt($id, $produktion_from_db['standardlager']);
 
-            $menge_offen = $produktionsartikel_position['menge']-$produktion_from_db['mengeerfolgreich'];
-            if ($menge_offen < 0) {
-               $menge_offen = 0;
-               $msg .= "<div class=\"info\">Planmenge überschritten.</div>";
+            if (!empty($fortschritt)) {
+                $this->app->Tpl->Set('MENGE_GEPLANT',$fortschritt['geplant']);
+                $this->app->Tpl->Set('MENGE_PRODUZIERT',$fortschritt['produziert']);
+                $this->app->Tpl->Set('MENGE_OFFEN',$fortschritt['offen']);
+                $this->app->Tpl->Add('MENGE_RESERVIERT',$fortschritt['reserviert']);
+                $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$fortschritt['produzierbar']);
+
+                if ($fortschritt['produziert'] > $fortschritt['geplant']) {
+                    $msg .= "<div class=\"info\">Planmenge überschritten.</div>";
+                }
             }
 
-            $this->app->Tpl->Set('MENGE_PRODUZIERT',$produktionsartikel_position['geliefert_menge']);
-
-            $this->app->Tpl->Set('MENGE_OFFEN',$menge_offen);
-
-            $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$this->LagerCheckProduktion($id, $produktion_from_db['standardlager']));
-
             $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden');
-//            $this->app->YUI->TableSearch('PRODUKTION_POSITION_TARGET_TABELLE', 'produktion_position_target_list', "show", "", "", basename(__FILE__), __CLASS__);      
             $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_POSITION_TABELLE', 'produktion_position_source_list', "show", "", "", basename(__FILE__), __CLASS__);
             $this->app->YUI->TableSearch('PRODUKTION_POSITION_SOURCE_TABELLE', 'produktion_source_list', "show", "", "", basename(__FILE__), __CLASS__);
             $produktionsartikel_id = $produktionsartikel_position['artikel'];
@@ -1032,9 +1025,9 @@ class Produktion {
         return $input;
     }
 
-    // Check stock situation and reservation to set icon status
-    // Return possible production quantity
-    function LagerCheckProduktion(int $produktion_id, int $lager) : int {
+    // Check stock situation and reservation
+    // Return possible production quantity for all stock or just the reserved
+    function LagerCheckProduktion(int $produktion_id, int $lager, bool $only_reservations) : int {
 
         $menge_moeglich = PHP_INT_MAX;
 
@@ -1056,22 +1049,23 @@ class Produktion {
             $menge_plan_artikel = $materialbedarf_artikel['menge'];
             $menge_geliefert = $materialbedarf_artikel['geliefert_menge'];
 
-            $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$lager AND artikel = $artikel";
-    	    $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
-
-            $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE artikel = $artikel";
-    	    $menge_lager_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
-
-            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id AND r.posid = $position";
+            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
            
-            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel";
-    	    $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
+            if ($only_reservations) {
+                $menge_verfuegbar = $menge_reserviert_diese;
+            } else {
+                $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$lager AND artikel = $artikel";
+        	    $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
-            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE artikel = $artikel";
-    	    $menge_reserviert_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
+                $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel";
+    	        $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
-            $menge_verfuegbar = $menge_lager-$menge_reserviert_lager+$menge_reserviert_diese;
+                $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE artikel = $artikel";
+        	    $menge_reserviert_gesamt = $this->app->DB->SelectArr($sql)[0]['menge'];
+
+                $menge_verfuegbar = $menge_lager-$menge_reserviert_lager+$menge_reserviert_diese;
+            }
 
             $menge_moeglich_artikel = round($menge_verfuegbar / ($menge_plan_artikel/$menge_plan_gesamt), 0, PHP_ROUND_HALF_DOWN);
 
@@ -1079,7 +1073,7 @@ class Produktion {
                 $menge_moeglich = $menge_moeglich_artikel;
             }
 
-//            echo("------------------------Lager $lager a $artikel menge_plan_artikel $menge_plan_artikel menge_geliefert $menge_geliefert menge_lager $menge_lager menge_reserviert_diese $menge_reserviert_diese menge_reserviert_gesamt $menge_reserviert_gesamt menge_verfuegbar $menge_verfuegbar menge_moeglich_artikel $menge_moeglich_artikel menge_moeglich $menge_moeglich<br>");
+//          echo("------------------------Lager $lager a $artikel menge_plan_artikel $menge_plan_artikel menge_geliefert $menge_geliefert menge_lager $menge_lager menge_reserviert_diese $menge_reserviert_diese menge_reserviert_gesamt $menge_reserviert_gesamt menge_verfuegbar $menge_verfuegbar menge_moeglich_artikel $menge_moeglich_artikel menge_moeglich $menge_moeglich<br>");
                 
         }       
 
@@ -1190,7 +1184,7 @@ class Produktion {
         if (empty($produktionsmengen_alt)) {
             return(-1);
         }
-        if ($menge_neu <= $produktionsmengen_alt['geliefert_menge']) {
+        if ($menge_neu < $produktionsmengen_alt['geliefert_menge']) {
             return(-1);
         }
 
@@ -1209,6 +1203,52 @@ class Produktion {
             $result = $this->ArtikelReservieren($position['artikel'],$lager,0,$position_menge_neu-$position['geliefert_menge'],'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
         }
         return(1);
+    }
+
+    /*
+    Output progress information
+    ['geplant']
+    ['produziert']
+    ['erfolgreich']
+    ['ausschuss']
+    ['offen']
+    ['reserviert']
+    ['produzierbar']
+    */
+    function MengeFortschritt(int $produktion_id, int $lager) : array {
+        $result = array();
+
+        $sql = "SELECT FORMAT(menge,0) as geplant,FORMAT(geliefert_menge,0) as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
+        $values = $this->app->DB->SelectArr($sql)[0];
+
+        if (empty($values)) {
+            return(null);
+        }
+
+        $result['geplant'] = $values['geplant'];
+        $result['produziert'] = $values['produziert'];
+
+        $sql = "SELECT FORMAT(mengeerfolgreich,0) as erfolgreich,FORMAT(mengeausschuss,0) as ausschuss FROM produktion WHERE id = $produktion_id";
+        $values = $this->app->DB->SelectArr($sql)[0];
+
+        if (empty($values)) {
+            return(null);
+        }
+
+        $result['erfolgreich'] = $values['erfolgreich'];
+        $result['ausschuss'] = $values['ausschuss'];
+
+        $result['offen'] = $result['geplant']-$result['erfolgreich'];
+
+        $result['reserviert'] = $this->LagerCheckProduktion($produktion_id, $lager, true);
+        $result['produzierbar'] = $this->LagerCheckProduktion($produktion_id, $lager, false);
+
+        return($result);
+    }
+  
+    // Do calculations for the status icon display
+    function StatusBerechnen(int $produktion_d) {
+        
     }
 
 }
