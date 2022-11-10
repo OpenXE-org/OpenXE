@@ -398,12 +398,22 @@ class Produktion {
                         break;    
                     }
 
+                    $fortschritt = $this->MengeFortschritt($id,-1);
+
+                    if (empty($fortschritt)) {
+                        break;
+                    }
+
               	    $sql = "SELECT pp.id, pp.artikel, a.name_de, a.nummer, FORMAT(pp.menge,0) as menge, FORMAT(pp.geliefert_menge,0) as geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id AND pp.stuecklistestufe=0";
             	    $materialbedarf = $this->app->DB->SelectArr($sql);
 
                     // Try to reserve material
                     $reservierung_durchgefuehrt = false;
                     foreach ($materialbedarf as $materialbedarf_position) {
+
+                        // Calculate new needed quantity if there is scrap
+                        $materialbedarf_position['menge'] = $materialbedarf_position['menge']*($fortschritt['ausschuss']+$fortschritt['geplant'])/$fortschritt['geplant'];                    
+
                         $result = $this->ArtikelReservieren($materialbedarf_position['artikel'], $global_standardlager, $materialbedarf_position['menge']-$materialbedarf_position['geliefert_menge'], 0, 'produktion', $id, $materialbedarf_position['id'],"Produktion $global_produktionsnummer");                   
                         if ($result > 0) {
                             $reservierung_durchgefuehrt = true;                            
@@ -850,6 +860,8 @@ class Produktion {
          * Add displayed items later
          */ 
 
+        $this->StatusBerechnen($id);
+
     	$sql = "SELECT " . $this->app->YUI->IconsSQL_produktion('p') . " AS `icons` FROM produktion p WHERE id=$id";
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
@@ -1214,9 +1226,21 @@ class Produktion {
     ['offen']
     ['reserviert']
     ['produzierbar']
+
+    If lager <= 0 -> use lager from database
+
     */
     function MengeFortschritt(int $produktion_id, int $lager) : array {
         $result = array();
+
+        if ($lager <= 0) {
+            $sql = "SELECT standardlager FROM produktion WHERE id = $produktion_id";
+            $lager = $this->app->DB->SelectArr($sql)[0]['standardlager'];
+        }
+
+        if (empty($lager)) {
+            return(null);
+        }
 
         $sql = "SELECT FORMAT(menge,0) as geplant,FORMAT(geliefert_menge,0) as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $values = $this->app->DB->SelectArr($sql)[0];
@@ -1247,8 +1271,70 @@ class Produktion {
     }
   
     // Do calculations for the status icon display
-    function StatusBerechnen(int $produktion_d) {
-        
+    function StatusBerechnen(int $produktion_id) {
+        $fortschritt = $this->MengeFortschritt($produktion_id,-1);
+
+        if (empty($fortschritt)) {
+            return;
+        }
+
+        $sql = "SELECT lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok FROM produktion WHERE id = $produktion_id";
+        $values = $this->app->DB->SelectArr($sql)[0];
+
+        // lager_ok
+        if ($fortschritt['produzierbar'] >= $fortschritt['offen']) {
+            $values['lager_ok'] = 1;
+//        } else if ($fortschritt['produzierbar'] > 0) {
+//            $values['lager_ok'] = 2;
+        } else {
+            $values['lager_ok'] = 0;
+        }
+
+        // reserviert_ok
+        if ($fortschritt['reserviert'] >= $fortschritt['offen']) {
+            $values['reserviert_ok'] = 1;
+//        } else if ($fortschritt['reserviert'] > 0) {
+//            $values['reserviert_ok'] = 2;
+        } else {
+            $values['reserviert_ok'] = 0;
+        }
+
+        // auslagern_ok
+        if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
+            $values['auslagern_ok'] = 1;
+//        } else if ($fortschritt['produziert'] > 0) {
+//            $values['auslagern_ok'] = 2;
+        } else {
+            $values['auslagern_ok'] = 0;
+        }
+
+        // einlagern_ok
+        if ($fortschritt['erfolgreich'] >= $fortschritt['geplant']) {
+            $values['einlagern_ok'] = 1;
+//        } else if ($fortschritt['erfolgreich'] > 0) {
+//            $values['einlagern_ok'] = 2;
+        } else {
+            $values['einlagern_ok'] = 0;
+        }
+
+        // reserviert_ok
+        if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
+            $values['auslagern_ok'] = 1;
+//        } else if ($fortschritt['produziert'] > 0) {
+//            $values['auslagern_ok'] = 2;
+        } else {
+            $values['auslagern_ok'] = 0;
+        }
+
+        $fix = "";
+        $update = "";
+        foreach ($values as $key => $value) {
+            $update = $update.$fix.$key." = '".($value)."'";
+            $fix = ", ";
+        }
+
+        $sql = "UPDATE produktion SET $update WHERE id = $produktion_id";
+        $this->app->DB->Update($sql);
     }
 
 }
