@@ -355,7 +355,7 @@ class Produktion {
                     }
 
                     if ($artikel_planen_menge < 1) {
-                         $msg .= "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
+                        $msg .= "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
                         break;
                     }
 
@@ -390,7 +390,6 @@ class Produktion {
                     // Check quantities and reserve for every position
 
                     if($global_standardlager == 0) {
-                        $msg .= "<div class=\"error\">Kein Lager ausgew&auml;hlt.</div>";
                         break;    
                     }
 
@@ -644,6 +643,27 @@ class Produktion {
                     }                    
 
                 break;
+                case 'anpassen':
+
+                    if ($global_status == 'angelegt' || $global_status == 'freigegeben' || $global_status == 'gestartet') {
+
+                        $menge_anpassen = $this->app->Secure->GetPOST('menge_produzieren');
+
+                        if (empty($menge_anpassen)) {
+                            $msg .= "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
+                            break;
+                        }
+
+                        $result = $this->MengeAnpassen($id,$menge_anpassen,$global_standardlager);
+
+                        if ($result == -1) {
+                              $msg .= "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
+                        } else {
+                             $msg .= "<div class=\"info\">Planmenge angepasst.</div>";
+                        }
+                    }
+
+                break;
                 case 'abschliessen':
                     $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
                     $this->app->DB->Update($sql);       
@@ -848,6 +868,10 @@ class Produktion {
 
         if (!empty($teilproduktionen)) {
             $this->app->Tpl->Set('TEILPRODUKTIONINFO',"Zu dieser Produktion geh&ouml;ren die Teilproduktionen: ".implode(', ',array_column($teilproduktionen,'belegnr')));
+        }
+
+        if($produktion_from_db['standardlager'] == 0) {
+            $msg .= "<div class=\"error\">Kein Lager ausgew&auml;hlt.</div>";
         }
 
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
@@ -1146,5 +1170,40 @@ class Produktion {
         return ($menge_reservieren);
 
     }       
+
+
+    /*
+        Adjust the planned quantity of a produktion
+        Lower limit is the already produced quantity
+        Return -1 if not possible, else 1
+    */
+    function MengeAnpassen(int $produktion_id, int $menge_neu, int $lager) : int {
+
+        $sql = "SELECT menge,geliefert_menge FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
+        $produktionsmengen_alt = $this->app->DB->SelectArr($sql)[0];
+
+        if (empty($produktionsmengen_alt)) {
+            return(-1);
+        }
+        if ($menge_neu <= $produktionsmengen_alt['geliefert_menge']) {
+            return(-1);
+        }
+
+        $sql = "SELECT * from produktion WHERE id = $produktion_id";
+        $produktion_alt = $this->app->DB->SelectArr($sql)[0];
+
+        // Process positions
+        $sql = "SELECT * FROM produktion_position WHERE produktion = $produktion_id";
+        $positionen = $this->app->DB->SelectArr($sql); 
+
+        foreach ($positionen as $position) {
+            $position_menge_neu = $menge_neu*($position['menge']/$produktionsmengen_alt['menge']); 
+            $sql = "UPDATE produktion_position SET menge=".$position_menge_neu." WHERE id =".$position['id'];
+            $this->app->DB->Update($sql);
+            // Free surplus reservations
+            $result = $this->ArtikelReservieren($position['artikel'],$lager,0,$position_menge_neu-$position['geliefert_menge'],'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
+        }
+        return(1);
+    }
 
 }

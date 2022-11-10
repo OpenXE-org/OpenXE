@@ -151,9 +151,9 @@
                                     <tr [AKTION_PLANEN_VISIBLE]><td>{|Planmenge|}:</td></tr>
                                     <tr [AKTION_PLANEN_VISIBLE]><td><input type="text" name="artikel_planen_menge" id="artikel_planen_menge" value="[ARTIKEL_PLANEN_MENGE]" size="20"></td></tr>                                    
                                     <tr [ARTIKEL_MENGE_VISIBLE]>
-                                        <td>{|Menge geplant|}:</td>
-                                        <td>{|Menge produziert|}:</td>
-                                        <td>{|Menge erfolgreich|}:</td>
+                                        <td>{|Geplant|}:</td>
+                                        <td>{|Produziert|}:</td>
+                                        <td>{|Erfolgreich|}:</td>
                                     </tr>
                                     <tr [ARTIKEL_MENGE_VISIBLE]>
                                         <td>[MENGE_GEPLANT]</td>
@@ -197,6 +197,7 @@
                                         <tr [AKTION_RESERVIEREN_VISIBLE]><td><button name="submit" value="reservieren" class="ui-button-icon" style="width:100%;">Reservieren</button></td></tr>          
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="produzieren" class="ui-button-icon" style="width:100%;">Produzieren</button></td></tr>
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="teilen" class="ui-button-icon" style="width:100%;">Teilproduktion erstellen</button></td></tr>          
+                                        <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="anpassen" class="ui-button-icon" style="width:100%;">Anpassen</button></td></tr>          
                                         <tr [AKTION_LEEREN_VISIBLE]><td><button name="submit" value="leeren" class="ui-button-icon" style="width:100%;">Leeren</button></td></tr>                                                                  
                                         <tr [AKTION_ABSCHLIESSEN_VISIBLE]><td><button name="submit" value="abschliessen" class="ui-button-icon" style="width:100%;">Abschliessen</button></td></tr>
                                     </table>
