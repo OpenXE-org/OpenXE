@@ -68,7 +68,7 @@ class Produktion {
                         DATE_FORMAT(datum,'%d.%m.%Y') as datum,
                         
                         CONCAT (
-                            IFNULL((SELECT CONCAT(a.name_de,' (',a.nummer,')','<br>') FROM artikel a INNER JOIN produktion_position pp WHERE pp.stuecklistestufe = 1 AND pp.produktion = p.id LIMIT 1),''),
+                            IFNULL((SELECT CONCAT(a.name_de,' (',a.nummer,')','<br>') FROM artikel a INNER JOIN produktion_position pp ON pp.artikel = a.id WHERE pp.stuecklistestufe = 1 AND pp.produktion = p.id LIMIT 1),''),
                             CONCAT('<i>',internebezeichnung,'</i>')
                         ) as bezeichnung,
 
@@ -581,7 +581,7 @@ class Produktion {
 
                         // Preserve these values
                         $pos_id = $position['id'];
-                        $geliefert_menge = ['geliefert_menge'];
+                        $geliefert_menge = $position['geliefert_menge'];
                         $menge = $position['menge'];
                         $produktion_alt_id = $position['produktion'];
 
