@@ -929,7 +929,7 @@ class Produktion {
          * Add displayed items later
          */ 
 
-        $this->StatusBerechnen($id);
+        $this->StatusBerechnen((int)$id);
 
     	$sql = "SELECT " . $this->app->YUI->IconsSQL_produktion('p') . " AS `icons` FROM produktion p WHERE id=$id";
 	    $icons = $this->app->DB->SelectArr($sql);
