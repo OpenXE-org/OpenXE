@@ -29,7 +29,7 @@ class Produktion {
 
     }
 
-    static function TableSearch(&$app, $name, $erlaubtevars) {
+    public function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
             case "produktion_list":
                 $allowed['produktion_list'] = array('list');
@@ -83,7 +83,65 @@ class Produktion {
 			            FROM produktion p                            
                         ";
 
-                $where = " 1 ";
+                $where = "0";
+
+                  // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#angelegte').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#offene').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#geschlossene').click( function() { fnFilterColumn3( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn4( 0 ); } );");
+
+                for ($r = 1;$r <= 4;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= "  OR p.status IN ('angelegt')";
+                } else {
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                  $where .= " OR p.status IN ('freigegeben','gestartet')";
+                }
+                else {
+                }                
+
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {            
+                  $where .= " OR p.status IN ('abgeschlossen')";
+                }
+                else {
+                }                
+
+                $more_data4 = $this->app->Secure->GetGET("more_data4");
+                if ($more_data4 == 1) {
+                  $where .= " OR p.status IN ('storniert')";
+                }
+                else {
+                }                
+                // END Toggle filters
+
+                if ($where=='0') {
+                 $where = " p.status IN ('freigegeben','gestartet')";
+                }
+
                 $count = "SELECT count(DISTINCT p.id) FROM produktion p INNER JOIN produktion_position pp ON pp.produktion = pp.id WHERE $where";
 //                $groupby = "";
 
