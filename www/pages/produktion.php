@@ -226,6 +226,8 @@ class Produktion {
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
+        $this->StatusBerechnen(0); // all open ones
+
         $this->app->YUI->TableSearch('TAB1', 'produktion_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "produktion_list.tpl");
     }    
@@ -398,7 +400,7 @@ class Produktion {
                         break;    
                     }
 
-                    $fortschritt = $this->MengeFortschritt($id,-1);
+                    $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
 
                     if (empty($fortschritt)) {
                         break;
@@ -516,6 +518,10 @@ class Produktion {
 
                     $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
 
+                    if (empty($fortschritt)) {
+                        break;
+                    }
+
                     if ($menge_abteilen < 1 || $menge_abteilen > ($fortschritt['geplant']-$fortschritt['produziert'])) {
                         $msg .= "<div class=\"error\">Ung&uuml;ltige Teilmenge.</div>";
                         break;
@@ -590,11 +596,13 @@ class Produktion {
                         $geliefert_menge = $position['geliefert_menge'];
                         $menge = $position['menge'];
                         $produktion_alt_id = $position['produktion'];
+                        $menge_pro_stueck = $menge/$fortschritt['geplant'];
 
                         // For the new positions
                         $position['id'] = 'NULL';
                         $position['geliefert_menge'] = 0;
-                        $position['menge'] = $menge_abteilen*($position['menge']/$fortschritt['geplant']); 
+
+                        $position['menge'] = $menge_abteilen*$menge_pro_stueck;
                         $position['produktion'] = $produktion_neu_id;
 
                         $values = "";
@@ -623,9 +631,10 @@ class Produktion {
 
                         $sql = "UPDATE produktion_position SET $update WHERE id = $pos_id";
                         $this->app->DB->Update($sql);
-                    
+
                         // Free surplus reservations
-                        $result = $this->ArtikelReservieren($position['artikel'],$global_standardlager,0,$position['menge']-$position['geliefert_menge'],'produktion',$id,$position['id'],"Produktion $global_produktionsnummer");
+                        $restreservierung = $menge_pro_stueck * $fortschritt['offen']-$menge_abteilen;
+                        $result = $this->ArtikelReservieren($position['artikel'],$global_standardlager,0,$restreservierung,'produktion',$id,$position['id'],"Produktion $global_produktionsnummer");
 
                     }
 
@@ -660,6 +669,8 @@ class Produktion {
                             $msg .= "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
                             break;
                         }
+
+                        $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
 
                         $result = $this->MengeAnpassen($id,$menge_anpassen,$global_standardlager);
 
@@ -1190,6 +1201,8 @@ class Produktion {
     */
     function MengeAnpassen(int $produktion_id, int $menge_neu, int $lager) : int {
 
+        $fortschritt = $this->MengeFortschritt($produktion_id,$lager);
+
         $sql = "SELECT menge,geliefert_menge FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $produktionsmengen_alt = $this->app->DB->SelectArr($sql)[0];
 
@@ -1208,11 +1221,15 @@ class Produktion {
         $positionen = $this->app->DB->SelectArr($sql); 
 
         foreach ($positionen as $position) {
-            $position_menge_neu = $menge_neu*($position['menge']/$produktionsmengen_alt['menge']); 
+            $menge_pro_stueck = $position['menge']/$produktionsmengen_alt['menge'];
+            $position_menge_neu = $menge_neu*$menge_pro_stueck;
             $sql = "UPDATE produktion_position SET menge=".$position_menge_neu." WHERE id =".$position['id'];
             $this->app->DB->Update($sql);
+
             // Free surplus reservations
-            $result = $this->ArtikelReservieren($position['artikel'],$lager,0,$position_menge_neu-$position['geliefert_menge'],'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
+            $restreservierung = $menge_pro_stueck * ($menge_neu+$fortschritt['ausschuss']-$fortschritt['produziert']);
+
+            $result = $this->ArtikelReservieren($position['artikel'],$lager,0,$restreservierung,'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
         }
         return(1);
     }
@@ -1271,70 +1288,83 @@ class Produktion {
     }
   
     // Do calculations for the status icon display
+    // id = 0 for all open ones
     function StatusBerechnen(int $produktion_id) {
-        $fortschritt = $this->MengeFortschritt($produktion_id,-1);
 
-        if (empty($fortschritt)) {
-            return;
+        $where = "WHERE status IN ('freigegeben','gestartet') ";
+
+        if ($produktion_id > 0) {
+            $where .= "AND id = $produktion_id";
         }
 
-        $sql = "SELECT lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok FROM produktion WHERE id = $produktion_id";
-        $values = $this->app->DB->SelectArr($sql)[0];
+        $sql = "SELECT id, lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok FROM produktion ".$where;
+        $produktionen = $this->app->DB->SelectArr($sql);
+        
+        foreach ($produktionen as $produktion) {
 
-        // lager_ok
-        if ($fortschritt['produzierbar'] >= $fortschritt['offen']) {
-            $values['lager_ok'] = 1;
-//        } else if ($fortschritt['produzierbar'] > 0) {
-//            $values['lager_ok'] = 2;
-        } else {
-            $values['lager_ok'] = 0;
+            $produktion_id = $produktion['id'];
+
+            $fortschritt = $this->MengeFortschritt($produktion_id,-1);
+
+            if (empty($fortschritt)) {
+                continue;
+            }
+
+            // lager_ok
+            if ($fortschritt['produzierbar'] >= $fortschritt['offen']) {
+                $values['lager_ok'] = 1;
+    //        } else if ($fortschritt['produzierbar'] > 0) {
+    //            $values['lager_ok'] = 2;
+            } else {
+                $values['lager_ok'] = 0;
+            }
+
+            // reserviert_ok
+            if ($fortschritt['reserviert'] >= $fortschritt['offen']) {
+                $values['reserviert_ok'] = 1;
+    //        } else if ($fortschritt['reserviert'] > 0) {
+    //            $values['reserviert_ok'] = 2;
+            } else {
+                $values['reserviert_ok'] = 0;
+            }
+
+            // auslagern_ok
+            if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
+                $values['auslagern_ok'] = 1;
+    //        } else if ($fortschritt['produziert'] > 0) {
+    //            $values['auslagern_ok'] = 2;
+            } else {
+                $values['auslagern_ok'] = 0;
+            }
+
+            // einlagern_ok
+            if ($fortschritt['erfolgreich'] >= $fortschritt['geplant']) {
+                $values['einlagern_ok'] = 1;
+    //        } else if ($fortschritt['erfolgreich'] > 0) {
+    //            $values['einlagern_ok'] = 2;
+            } else {
+                $values['einlagern_ok'] = 0;
+            }
+
+            // reserviert_ok
+            if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
+                $values['auslagern_ok'] = 1;
+    //        } else if ($fortschritt['produziert'] > 0) {
+    //            $values['auslagern_ok'] = 2;
+            } else {
+                $values['auslagern_ok'] = 0;
+            }
+
+            $fix = "";
+            $update = "";
+            foreach ($values as $key => $value) {
+                $update = $update.$fix.$key." = '".($value)."'";
+                $fix = ", ";
+            }
+
+            $sql = "UPDATE produktion SET $update WHERE id = $produktion_id";
+            $this->app->DB->Update($sql);
         }
-
-        // reserviert_ok
-        if ($fortschritt['reserviert'] >= $fortschritt['offen']) {
-            $values['reserviert_ok'] = 1;
-//        } else if ($fortschritt['reserviert'] > 0) {
-//            $values['reserviert_ok'] = 2;
-        } else {
-            $values['reserviert_ok'] = 0;
-        }
-
-        // auslagern_ok
-        if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
-            $values['auslagern_ok'] = 1;
-//        } else if ($fortschritt['produziert'] > 0) {
-//            $values['auslagern_ok'] = 2;
-        } else {
-            $values['auslagern_ok'] = 0;
-        }
-
-        // einlagern_ok
-        if ($fortschritt['erfolgreich'] >= $fortschritt['geplant']) {
-            $values['einlagern_ok'] = 1;
-//        } else if ($fortschritt['erfolgreich'] > 0) {
-//            $values['einlagern_ok'] = 2;
-        } else {
-            $values['einlagern_ok'] = 0;
-        }
-
-        // reserviert_ok
-        if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
-            $values['auslagern_ok'] = 1;
-//        } else if ($fortschritt['produziert'] > 0) {
-//            $values['auslagern_ok'] = 2;
-        } else {
-            $values['auslagern_ok'] = 0;
-        }
-
-        $fix = "";
-        $update = "";
-        foreach ($values as $key => $value) {
-            $update = $update.$fix.$key." = '".($value)."'";
-            $fix = ", ";
-        }
-
-        $sql = "UPDATE produktion SET $update WHERE id = $produktion_id";
-        $this->app->DB->Update($sql);
     }
 
 }
