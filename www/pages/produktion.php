@@ -1256,28 +1256,28 @@ class Produktion {
         }
 
         if (empty($lager)) {
-            return(null);
+            return($result);
         }
 
         $sql = "SELECT FORMAT(menge,0) as geplant,FORMAT(geliefert_menge,0) as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
-        $values = $this->app->DB->SelectArr($sql)[0];
+        $position_values = $this->app->DB->SelectArr($sql)[0];
 
-        if (empty($values)) {
-            return(null);
+        if (empty($position_values)) {
+            return($result);
         }
-
-        $result['geplant'] = $values['geplant'];
-        $result['produziert'] = $values['produziert'];
 
         $sql = "SELECT FORMAT(mengeerfolgreich,0) as erfolgreich,FORMAT(mengeausschuss,0) as ausschuss FROM produktion WHERE id = $produktion_id";
-        $values = $this->app->DB->SelectArr($sql)[0];
+        $produktion_values = $this->app->DB->SelectArr($sql)[0];
 
-        if (empty($values)) {
-            return(null);
+        if (empty($produktion_values)) {
+            return($result);
         }
 
-        $result['erfolgreich'] = $values['erfolgreich'];
-        $result['ausschuss'] = $values['ausschuss'];
+        $result['geplant'] = $position_values['geplant'];
+        $result['produziert'] = $position_values['produziert'];
+
+        $result['erfolgreich'] = $produktion_values['erfolgreich'];
+        $result['ausschuss'] = $produktion_values['ausschuss'];
 
         $result['offen'] = $result['geplant']-$result['erfolgreich'];
 
