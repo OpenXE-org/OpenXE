@@ -1,57 +1,57 @@
-<div class="container-fluid" id="sendcloudapp">
+<div class="container-fluid" id="createshipmentapp">
     <form action="" method="post" v-on:submit.prevent="submit">
         <div class="row">
             <div v-for="msg in messages" :class="msg.class">{{msg.text}}</div>
             <div>
-                <h1>{|Paketmarken Drucker f&uuml;r|} SendCloud</h1>
+                <h1>{|Paketmarken Drucker f&uuml;r|} [CARRIERNAME]</h1>
             </div>
             <div class="col-md-4">
                 <h2>{|Empf&auml;nger|}</h2>
                 <table>
                     <tr>
                         <td>{|Name|}:</td>
-                        <td><input type="text" size="36" v-model="form.l_name"></td>
+                        <td><input type="text" size="36" v-model.trim="form.name"></td>
                     </tr>
                     <tr>
                         <td>{|Firmenname|}:</td>
-                        <td><input type="text" size="36" v-model="form.l_companyname"></td>
+                        <td><input type="text" size="36" v-model.trim="form.companyname"></td>
                     </tr>
                     <tr>
                         <td>{|Strasse/Hausnummer|}:</td>
                         <td>
-                            <input type="text" size="30" v-model="form.strasse">
-                            <input type="text" size="5" v-model="form.hausnummer">
+                            <input type="text" size="30" v-model.trim="form.street">
+                            <input type="text" size="5" v-model.trim="form.streetnumber">
                         </td>
                     </tr>
                     <tr>
                         <td>{|Adresszeile 2|}:</td>
-                        <td><input type="text" size="36" v-model="form.l_address2"></td>
+                        <td><input type="text" size="36" v-model.trim="form.address2"></td>
                     </tr>
                     <tr>
                         <td>{|PLZ/Ort|}:</td>
-                        <td><input type="text" size="5" v-model="form.plz">
-                            <input type="text" size="30" v-model="form.ort">
+                        <td><input type="text" size="5" v-model.trim="form.zip">
+                            <input type="text" size="30" v-model.trim="form.city">
                         </td>
                     </tr>
                     <tr>
                         <td>{|Bundesland|}:</td>
-                        <td><input type="text" size="36" v-model="form.bundesland"></td>
+                        <td><input type="text" size="36" v-model.trim="form.state"></td>
                     </tr>
                     <tr>
                         <td>{|Land|}:</td>
                         <td>
-                            <select v-model="form.land">
+                            <select v-model="form.country" required>
                                 <option v-for="(value, key) in countries" :value="key">{{value}}</option>
                             </select>
                         </td>
                     </tr>
                     <tr>
                         <td>{|E-Mail|}:</td>
-                        <td><input type="text" size="36" v-model="form.email"></td>
+                        <td><input type="text" size="36" v-model.trim="form.email"></td>
                     </tr>
                     <tr>
                         <td>{|Telefon|}:</td>
-                        <td><input type="text" size="36" v-model="form.telefon"></td>
+                        <td><input type="text" size="36" v-model.trim="form.phone"></td>
                     </tr>
 
                 </table>
@@ -61,39 +61,39 @@
                 <table>
                     <tr>
                         <td>{|Name|}</td>
-                        <td>{{form.name}}</td>
+                        <td>{{form.original.name}}</td>
                     </tr>
                     <tr>
                         <td>{|Ansprechpartner|}</td>
-                        <td>{{form.ansprechpartner}}</td>
+                        <td>{{form.original.ansprechpartner}}</td>
                     </tr>
                     <tr>
                         <td>{|Abteilung|}</td>
-                        <td>{{form.abteilung}}</td>
+                        <td>{{form.original.abteilung}}</td>
                     </tr>
                     <tr>
                         <td>{|Unterabteilung|}</td>
-                        <td>{{form.unterabteilung}}</td>
+                        <td>{{form.original.unterabteilung}}</td>
                     </tr>
                     <tr>
                         <td>{|Adresszusatz|}</td>
-                        <td>{{form.adresszusatz}}</td>
+                        <td>{{form.original.adresszusatz}}</td>
                     </tr>
                     <tr>
                         <td>{|Strasse|}</td>
-                        <td>{{form.streetwithnumber}}</td>
+                        <td>{{form.original.strasse}}</td>
                     </tr>
                     <tr>
                         <td>{|PLZ/Ort|}</td>
-                        <td>{{form.plz}} {{form.ort}}</td>
+                        <td>{{form.original.plz}} {{form.original.ort}}</td>
                     </tr>
                     <tr>
                         <td>{|Bundesland|}</td>
-                        <td>{{form.bundesland}}</td>
+                        <td>{{form.original.bundesland}}</td>
                     </tr>
                     <tr>
                         <td>{|Land|}</td>
-                        <td>{{form.land}}</td>
+                        <td>{{form.original.land}}</td>
                     </tr>
                 </table>
             </div>
@@ -102,27 +102,31 @@
                 <table>
                     <tr>
                         <td>{|Gewicht (in kg)|}:</td>
-                        <td><input type="text" v-model="form.weight"></td>
+                        <td><input type="text" v-model.number="form.weight"></td>
                     </tr>
                     <tr>
                         <td>{|H&ouml;he (in cm)|}:</td>
-                        <td><input type="text" size="10" v-model="form.height"></td>
+                        <td><input type="text" size="10" v-model.number="form.height"></td>
                     </tr>
                     <tr>
                         <td>{|Breite (in cm)|}:</td>
-                        <td><input type="text" size="10" v-model="form.width"></td>
+                        <td><input type="text" size="10" v-model.number="form.width"></td>
                     </tr>
                     <tr>
                         <td>{|L&auml;nge (in cm)|}:</td>
-                        <td><input type="text" size="10" v-model="form.length"></td>
+                        <td><input type="text" size="10" v-model.number="form.length"></td>
                     </tr>
                     <tr>
                         <td>{|Produkt|}:</td>
                         <td>
-                            <select v-model="form.method">
-                                <option v-for="(value, key, index) in methods" :value="key">{{value}}</option>
+                            <select v-model="form.product">
+                                <option v-for="prod in products" :value="prod.Id">{{prod.Name}}</option>
                             </select>
                         </td>
+                    </tr>
+                    <tr v-if="serviceAvailable('premium')">
+                        <td>{|Premium|}:</td>
+                        <td><input type="checkbox" v-model="form.services.premium"></td>
                     </tr>
                 </table>
             </div>
@@ -161,25 +165,23 @@
                         <th>{|Herkunftsland|}</th>
                         <th>{|Einzelwert|}</th>
                         <th>{|Einzelgewicht|}</th>
-                        <th>{|Währung|}</th>
                         <th>{|Gesamtwert|}</th>
                         <th>{|Gesamtgewicht|}</th>
                         <th><a v-on:click="addPosition"><img src="themes/new/images/add.png"></a></</th>
                     </tr>
                     <tr v-for="(pos, index) in form.positions">
-                        <td><input type="text" v-model="pos.bezeichnung" required></td>
-                        <td><input type="text" v-model="pos.menge" required></td>
-                        <td><input type="text" v-model="pos.zolltarifnummer" required></td>
-                        <td><input type="text" v-model="pos.herkunftsland" required></td>
-                        <td><input type="text" v-model="pos.zolleinzelwert" required></td>
-                        <td><input type="text" v-model="pos.zolleinzelgewicht" required></td>
-                        <td><input type="text" v-model="pos.zollwaehrung" required></td>
+                        <td><input type="text" v-model.trim="pos.bezeichnung" required></td>
+                        <td><input type="text" v-model.number="pos.menge" required></td>
+                        <td><input type="text" v-model.trim="pos.zolltarifnummer" required></td>
+                        <td><input type="text" v-model.trim="pos.herkunftsland" required></td>
+                        <td><input type="text" v-model.number="pos.zolleinzelwert" required></td>
+                        <td><input type="text" v-model.number="pos.zolleinzelgewicht" required></td>
                         <td>{{Number(pos.menge*pos.zolleinzelwert || 0).toFixed(2)}}</td>
                         <td>{{Number(pos.menge*pos.zolleinzelgewicht || 0).toFixed(3)}}</td>
                         <td><a v-on:click="deletePosition(index)"><img src="themes/new/images/delete.svg"></a></td>
                     </tr>
                     <tr>
-                        <td colspan="7"></td>
+                        <td colspan="6"></td>
                         <td>{{total_value.toFixed(2)}}</td>
                         <td>{{total_weight.toFixed(3)}}</td>
                     </tr>
@@ -187,33 +189,27 @@
             </div>
             <div>
                 <input class="btnGreen" type="submit" value="{|Paketmarke drucken|}" name="drucken">&nbsp;
-                <input type="button" value="{|Andere Versandart auswählen|}" name="anders">&nbsp;
+                <!--<input type="button" value="{|Andere Versandart auswählen|}" name="anders">&nbsp;-->
             </div>
         </div>
     </form>
 </div>
 <script type="text/javascript">
-    const sendcloudApp = new Vue({
-        el: '#sendcloudapp',
-        data: {
-            form: [JSON],
-            countries: [JSON_COUNTRIES],
-            methods: [JSON_METHODS],
-            customs_shipment_types: [JSON_CUSTOMS_SHIPMENT_TYPES],
-            messages: []
-        },
+    const createshipmentapp = new Vue({
+        el: '#createshipmentapp',
+        data: [JSON],
         computed: {
             total_value() {
                 let sum = 0;
                 for(const pos of this.form.positions) {
-                    sum += pos.menge * pos.zolleinzelwert;
+                    sum += (pos.menge * pos.zolleinzelwert) || 0;
                 }
                 return sum;
             },
             total_weight() {
                 let sum = 0;
                 for(const pos of this.form.positions) {
-                    sum += pos.menge * pos.zolleinzelgewicht;
+                    sum += (pos.menge * pos.zolleinzelgewicht) || 0;
                 }
                 return sum;
             }
@@ -235,6 +231,11 @@
             },
             deletePosition: function(index) {
                 this.form.positions.splice(index, 1);
+            },
+            serviceAvailable: function(service) {
+                if (!this.products.hasOwnProperty(this.form.product))
+                    return false;
+                return this.products[this.form.product].AvailableServices.indexOf(service) >= 0;
             }
         }
     })

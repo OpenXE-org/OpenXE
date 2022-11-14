@@ -1,5 +1,11 @@
-<?php 
-abstract class Versanddienstleister {
+<?php
+
+use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
+use Xentral\Modules\ShippingMethod\Model\CustomsInfo;
+use Xentral\Modules\ShippingMethod\Model\Product;
+
+abstract class Versanddienstleister
+{
   protected int $id;
   protected Application $app;
   protected string $type;
@@ -26,91 +32,83 @@ abstract class Versanddienstleister {
     $this->settings = json_decode($row['einstellungen_json']);
   }
 
-  public function isEtikettenDrucker(): bool {
+  public function isEtikettenDrucker(): bool
+  {
     return false;
   }
 
-  public function GetAdressdaten($id, $sid)
+  public abstract function GetName(): string;
+
+  public function GetAdressdaten($id, $sid): array
   {
     $auftragId = $lieferscheinId = $rechnungId = $versandId = 0;
-    if($sid==='rechnung')
+    if ($sid === 'rechnung')
       $rechnungId = $id;
-    if($sid==='lieferschein') {
+    if ($sid === 'lieferschein') {
       $lieferscheinId = $id;
       $auftragId = $this->app->DB->Select("SELECT auftragid FROM lieferschein WHERE id=$lieferscheinId LIMIT 1");
       $rechnungId = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein = '$lieferscheinId' LIMIT 1");
-      if($rechnungId <= 0)
+      if ($rechnungId <= 0)
         $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
     }
-    if($sid==='versand')
-    {
+    if ($sid === 'versand') {
       $versandId = $id;
       $lieferscheinId = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$versandId' LIMIT 1");
-      $rechnungId  = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$versandId' LIMIT 1");
+      $rechnungId = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$versandId' LIMIT 1");
       $sid = 'lieferschein';
     }
 
     if ($auftragId <= 0 && $rechnungId > 0)
       $auftragId = $this->app->DB->Select("SELECT auftragid FROM rechnung WHERE id=$rechnungId LIMIT 1");
 
-    if($sid==='rechnung' || $sid==='lieferschein' || $sid==='adresse')
-    {
+    if ($sid === 'rechnung' || $sid === 'lieferschein' || $sid === 'adresse') {
       $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $id LIMIT 1");
+      $ret['addressId'] = $docArr['adresse'];
+      $ret['auftragId'] = $auftragId;
+      $ret['rechnungId'] = $rechnungId;
+      $ret['lieferscheinId'] = $lieferscheinId;
 
       $addressfields = ['name', 'adresszusatz', 'abteilung', 'ansprechpartner', 'unterabteilung', 'ort', 'plz',
-          'strasse', 'land', 'telefon', 'email'];
-      $ret = array_filter($docArr, fn($key)=>in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
+          'strasse', 'land'];
+      $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
 
-      $name2 = trim($docArr['adresszusatz']);
-      $abt = 0;
-      if($name2==='')
-      {
-        $name2 = trim($docArr['abteilung']);
-        $abt=1;
-      }
-      $name3 = trim($docArr['ansprechpartner']);
-      if($name3==='' && $abt!==1){
-        $name3 = trim($docArr['abteilung']);
-      }
+      $ret['name'] = empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : trim($docArr['ansprechpartner']);
+      $ret['companyname'] = !empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : '';
+      $ret['address2'] = join(';', array_filter([
+          $docArr['abteilung'],
+          $docArr['unterabteilung'],
+          $docArr['adresszusatz']
+      ], fn(string $item) => !empty(trim($item))));
 
-      //unterabteilung versuchen einzublenden
-      if($name2==='') {
-        $name2 = trim($docArr['unterabteilung']);
-      } else if ($name3==='') {
-        $name3 = trim($docArr['unterabteilung']);
-      }
 
-      if($name3!=='' && $name2==='') {
-        $name2=$name3;
-        $name3='';
-      }
-      $ret['name2'] = $name2;
-      $ret['name3'] = $name3;
+      $ret['city'] = $docArr['ort'];
+      $ret['zip'] = $docArr['plz'];
+      $ret['country'] = $docArr['land'];
+      $ret['phone'] = $docArr['telefon'];
+      $ret['email'] = $docArr['email'];
 
       $strasse = trim($docArr['strasse']);
       $ret['streetwithnumber'] = $strasse;
       $hausnummer = trim($this->app->erp->ExtractStreetnumber($strasse));
-      $strasse = trim(str_replace($hausnummer,'',$strasse));
-      $strasse = str_replace('.','',$strasse);
+      $strasse = trim(str_replace($hausnummer, '', $strasse));
+      $strasse = str_replace('.', '', $strasse);
 
-      if($strasse=='')
-      {
+      if ($strasse == '') {
         $strasse = trim($hausnummer);
         $hausnummer = '';
       }
-      $ret['strasse'] = $strasse;
-      $ret['hausnummer'] = $hausnummer;
+      $ret['street'] = $strasse;
+      $ret['streetnumber'] = $hausnummer;
     }
 
     // wenn rechnung im spiel entweder durch versand oder direkt rechnung
-    if($rechnungId >0)
-    {
-      $invoice_data =  $this->app->DB->SelectRow("SELECT zahlungsweise, soll, belegnr FROM rechnung WHERE id='$rechnungId' LIMIT 1");
+    if ($rechnungId > 0) {
+      $invoice_data = $this->app->DB->SelectRow("SELECT zahlungsweise, soll, belegnr FROM rechnung WHERE id='$rechnungId' LIMIT 1");
       $ret['zahlungsweise'] = $invoice_data['zahlungsweise'];
       $ret['betrag'] = $invoice_data['soll'];
       $ret['invoice_number'] = $invoice_data['belegnr'];
 
-      if($invoice_data['zahlungsweise']==='nachnahme'){
+      if ($invoice_data['zahlungsweise'] === 'nachnahme') {
         $ret['nachnahme'] = true;
       }
     }
@@ -118,10 +116,10 @@ abstract class Versanddienstleister {
     $sql = "SELECT
         lp.bezeichnung,
         lp.menge,
-        coalesce(nullif(lp.zolltarifnummer, ''), nullif(rp.zolltarifnummer, ''), nullif(a.zolltarifnummer, '')) zolltarifnummer,
-        coalesce(nullif(lp.herkunftsland, ''), nullif(rp.herkunftsland, ''), nullif(a.herkunftsland, '')) herkunftsland,
-        coalesce(nullif(lp.zolleinzelwert, '0'), rp.preis *(1-rp.rabatt/100)) zolleinzelwert,
-        coalesce(nullif(lp.zolleinzelgewicht, 0), a.gewicht) zolleinzelgewicht,
+        coalesce(nullif(lp.zolltarifnummer, ''), nullif(rp.zolltarifnummer, ''), nullif(a.zolltarifnummer, '')) as zolltarifnummer,
+        coalesce(nullif(lp.herkunftsland, ''), nullif(rp.herkunftsland, ''), nullif(a.herkunftsland, '')) as herkunftsland,
+        coalesce(nullif(lp.zolleinzelwert, '0'), rp.preis *(1-rp.rabatt/100)) as zolleinzelwert,
+        coalesce(nullif(lp.zolleinzelgewicht, 0), a.gewicht) as zolleinzelgewicht,
         lp.zollwaehrung
       FROM lieferschein_position lp
       JOIN artikel a on lp.artikel = a.id
@@ -131,10 +129,9 @@ abstract class Versanddienstleister {
       ORDER BY lp.sort";
     $ret['positions'] = $this->app->DB->SelectArr($sql);
 
-    if($sid==="lieferschein"){
+    if ($sid === "lieferschein") {
       $standardkg = $this->app->erp->VersandartMindestgewicht($lieferscheinId);
-    }
-    else{
+    } else {
       $standardkg = $this->app->erp->VersandartMindestgewicht();
     }
     $ret['weight'] = $standardkg;
@@ -155,7 +152,8 @@ abstract class Versanddienstleister {
    *
    * @return array
    */
-  public function AdditionalSettings(): array {
+  public function AdditionalSettings(): array
+  {
     return [];
   }
 
@@ -168,73 +166,60 @@ abstract class Versanddienstleister {
   public function RenderAdditionalSettings(string $target, array $form): void
   {
     $fields = $this->AdditionalSettings();
-    if($this->app->Secure->GetPOST('speichern'))
-    {
-      $json = $this->app->DB->Select("SELECT einstellungen_json FROM versandarten WHERE id = '".$this->id."' LIMIT 1");
-      $modul = $this->app->DB->Select("SELECT modul FROM versandarten WHERE id = '".$this->id."' LIMIT 1");
-      if(!empty($json))
-      {
+    if ($this->app->Secure->GetPOST('speichern')) {
+      $json = $this->app->DB->Select("SELECT einstellungen_json FROM versandarten WHERE id = '" . $this->id . "' LIMIT 1");
+      $modul = $this->app->DB->Select("SELECT modul FROM versandarten WHERE id = '" . $this->id . "' LIMIT 1");
+      if (!empty($json)) {
         $json = @json_decode($json, true);
-      }else{
+      } else {
         $json = array();
-        foreach($fields as $name => $val)
-        {
-          if(isset($val['default']))
-          {
+        foreach ($fields as $name => $val) {
+          if (isset($val['default'])) {
             $json[$name] = $val['default'];
           }
         }
       }
-      if(empty($json))
-      {
+      if (empty($json)) {
         $json = null;
       }
-      foreach($fields as $name => $val)
-      {
+      foreach ($fields as $name => $val) {
 
-        if($modul === $this->app->Secure->GetPOST('modul_name'))
-        {
-          $json[$name] = $this->app->Secure->GetPOST($name, '','', 1);
+        if ($modul === $this->app->Secure->GetPOST('modul_name')) {
+          $json[$name] = $this->app->Secure->GetPOST($name, '', '', 1);
         }
-       
-        if(isset($val['replace']))
-        {
-          switch($val['replace'])
-          {
+
+        if (isset($val['replace'])) {
+          switch ($val['replace']) {
             case 'lieferantennummer':
-              $json[$name] = $this->app->erp->ReplaceLieferantennummer(1,$json[$name],1);
-            break;
+              $json[$name] = $this->app->erp->ReplaceLieferantennummer(1, $json[$name], 1);
+              break;
           }
         }
       }
       $json_str = $this->app->DB->real_escape_string(json_encode($json));
-      $this->app->DB->Update("UPDATE versandarten SET einstellungen_json = '$json_str' WHERE id = '".$this->id."' LIMIT 1");
+      $this->app->DB->Update("UPDATE versandarten SET einstellungen_json = '$json_str' WHERE id = '" . $this->id . "' LIMIT 1");
     }
     $html = '';
-   
-    foreach($fields as $name => $val) // set missing default values
+
+    foreach ($fields as $name => $val) // set missing default values
     {
-      if(isset($val['default']) && !isset($form[$name]))
-      {
+      if (isset($val['default']) && !isset($form[$name])) {
         $form[$name] = $val['default'];
       }
     }
-    foreach($fields as $name => $val)
-    {
-      if(isset($val['heading']))
-        $html .= '<tr><td colspan="2"><b>'.html_entity_decode($val['heading']).'</b></td></tr>';
+    foreach ($fields as $name => $val) {
+      if (isset($val['heading']))
+        $html .= '<tr><td colspan="2"><b>' . html_entity_decode($val['heading']) . '</b></td></tr>';
 
-      $html .= '<tr><td>'.($val['bezeichnung'] ?? $name).'</td><td>';
-      if(isset($val['replace']))
-      {
-        switch($val['replace'])
-        {
+      $html .= '<tr><td>' . ($val['bezeichnung'] ?? $name) . '</td><td>';
+      if (isset($val['replace'])) {
+        switch ($val['replace']) {
           case 'lieferantennummer':
-            $form[$name] = $this->app->erp->ReplaceLieferantennummer(0,$form[$name],0);
+            $form[$name] = $this->app->erp->ReplaceLieferantennummer(0, $form[$name], 0);
             $this->app->YUI->AutoComplete($name, 'lieferant', 1);
             break;
           case 'shop':
-            $form[$name] .= ($form[$name]?' '.$this->app->DB->Select("SELECT bezeichnung FROM shopexport WHERE id = '".(int)$form[$name]."'"):'');
+            $form[$name] .= ($form[$name] ? ' ' . $this->app->DB->Select("SELECT bezeichnung FROM shopexport WHERE id = '" . (int)$form[$name] . "'") : '');
             $this->app->YUI->AutoComplete($name, 'shopnameid');
             break;
           case 'etiketten':
@@ -242,41 +227,38 @@ abstract class Versanddienstleister {
             break;
         }
       }
-      switch($val['typ'] ?? 'text')
-      {
+      switch ($val['typ'] ?? 'text') {
         case 'textarea':
-          $html .= '<textarea name="'.$name.'" id="'.$name.'">'.($form[$name] ?? '').'</textarea>';
+          $html .= '<textarea name="' . $name . '" id="' . $name . '">' . ($form[$name] ?? '') . '</textarea>';
           break;
         case 'checkbox':
-          $html .= '<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.($form[$name] ?? false ? ' checked="checked" ':'').' />';
+          $html .= '<input type="checkbox" name="' . $name . '" id="' . $name . '" value="1" ' . ($form[$name] ?? false ? ' checked="checked" ' : '') . ' />';
           break;
         case 'select':
           $html .= $this->app->Tpl->addSelect('return', $name, $name, $val['optionen'], $form[$name]);
           break;
         case 'submit':
-          if(isset($val['text']))
-            $html .= '<form method="POST"><input type="submit" name="'.$name.'" value="'.$val['text'].'"></form>';
+          if (isset($val['text']))
+            $html .= '<form method="POST"><input type="submit" name="' . $name . '" value="' . $val['text'] . '"></form>';
           break;
         case 'custom':
-          if(isset($val['function']))
-          {
+          if (isset($val['function'])) {
             $tmpfunction = $val['function'];
-            if(method_exists($this, $tmpfunction))
-            {
+            if (method_exists($this, $tmpfunction)) {
               $html .= $this->$tmpfunction();
             }
           }
           break;
         default:
           $html .= '<input type="text"'
-              .(!empty($val['size'])?' size="'.$val['size'].'"':'')
-              .(!empty($val['placeholder'])?' placeholder="'.$val['placeholder'].'"':'')
-              .' name="'.$name.'" id="'.$name.'" value="'.(isset($form[$name])?htmlspecialchars($form[$name]):'').'" />';
-        break;
+              . (!empty($val['size']) ? ' size="' . $val['size'] . '"' : '')
+              . (!empty($val['placeholder']) ? ' placeholder="' . $val['placeholder'] . '"' : '')
+              . ' name="' . $name . '" id="' . $name . '" value="' . (isset($form[$name]) ? htmlspecialchars($form[$name]) : '') . '" />';
+          break;
       }
-      if(isset($val['info']) && $val['info'])
-        $html .= ' <i>'.$val['info'].'</i>';
-      
+      if (isset($val['info']) && $val['info'])
+        $html .= ' <i>' . $val['info'] . '</i>';
+
       $html .= '</td></tr>';
     }
     $this->app->Tpl->Add($target, $html);
@@ -290,21 +272,20 @@ abstract class Versanddienstleister {
    */
   public function ValidateSettings(array &$form): array
   {
-      return [];
+    return [];
   }
-
 
 
   /**
    * @param string $tracking
-   * @param int    $versand
-   * @param int    $lieferschein
+   * @param int $versand
+   * @param int $lieferschein
    */
-  public function SetTracking($tracking,$versand=0,$lieferschein=0, $trackingLink = '')
+  public function SetTracking($tracking, $versand = 0, $lieferschein = 0, $trackingLink = '')
   {
     //if($versand > 0) $this->app->DB->Update("UPDATE versand SET tracking=CONCAT(tracking,if(tracking!='',';',''),'".$tracking."') WHERE id='$versand' LIMIT 1");
-    $this->app->User->SetParameter('versand_lasttracking',$tracking);
-    $this->app->User->SetParameter('versand_lasttracking_link',$trackingLink);
+    $this->app->User->SetParameter('versand_lasttracking', $tracking);
+    $this->app->User->SetParameter('versand_lasttracking_link', $trackingLink);
     $this->app->User->SetParameter('versand_lasttracking_versand', $versand);
     $this->app->User->SetParameter('versand_lasttracking_lieferschein', $lieferschein);
   }
@@ -314,17 +295,17 @@ abstract class Versanddienstleister {
    */
   public function deleteTrackingFromUserdata($tracking)
   {
-    if(empty($tracking)) {
+    if (empty($tracking)) {
       return;
     }
-    $trackingUser = !empty($this->app->User) && method_exists($this->app->User,'GetParameter')?
-      $this->app->User->GetParameter('versand_lasttracking'):'';
-    if(empty($trackingUser) || $trackingUser !== $tracking) {
+    $trackingUser = !empty($this->app->User) && method_exists($this->app->User, 'GetParameter') ?
+        $this->app->User->GetParameter('versand_lasttracking') : '';
+    if (empty($trackingUser) || $trackingUser !== $tracking) {
       return;
     }
 
-    $this->app->User->SetParameter('versand_lasttracking','');
-    $this->app->User->SetParameter('versand_lasttracking_link','');
+    $this->app->User->SetParameter('versand_lasttracking', '');
+    $this->app->User->SetParameter('versand_lasttracking_link', '');
     $this->app->User->SetParameter('versand_lasttracking_versand', '');
     $this->app->User->SetParameter('versand_lasttracking_lieferschein', '');
   }
@@ -341,21 +322,84 @@ abstract class Versanddienstleister {
 
   /**
    * @param string $tracking
-   * @param int    $notsend
+   * @param int $notsend
    * @param string $link
    * @param string $rawlink
    *
    * @return bool
    */
-  public function Trackinglink($tracking, &$notsend, &$link, &$rawlink)  {
+  public function Trackinglink($tracking, &$notsend, &$link, &$rawlink)
+  {
     $notsend = 0;
     $rawlink = '';
     $link = '';
     return true;
   }
 
-  public function Paketmarke(string $target, string $docType, int $docId): void {
+  public function Paketmarke(string $target, string $docType, int $docId): void
+  {
+    $address = $this->GetAdressdaten($docId, $docType);
+    if (isset($_SERVER['HTTP_CONTENT_TYPE']) && ($_SERVER['HTTP_CONTENT_TYPE'] === 'application/json')) {
+      $json = json_decode(file_get_contents('php://input'));
+      $ret = [];
+      if ($json->submit == 'print') {
+        $result = $this->CreateShipment($json, $address);
+        if ($result->Success) {
+          $sql = "INSERT INTO versand 
+          (adresse, lieferschein, versandunternehmen, gewicht, tracking, tracking_link, anzahlpakete) 
+          VALUES 
+          ({$address['addressId']}, {$address['lieferscheinId']}, '$this->type',
+           '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
+          print_r($sql);
+          $this->app->DB->Insert($sql);
 
+          $filename = $this->app->erp->GetTMP() . join('_', [$this->type, 'Label', $result->TrackingNumber]) . '.pdf';
+          file_put_contents($filename, $result->Label);
+          $this->app->printer->Drucken($this->labelPrinterId, $filename);
+
+          if (isset($result->ExportDocuments)) {
+            $filename = $this->app->erp->GetTMP() . join('_', [$this->type, 'ExportDoc', $result->TrackingNumber]) . '.pdf';
+            file_put_contents($filename, $result->ExportDocuments);
+            $this->app->printer->Drucken($this->documentPrinterId, $filename);
+          }
+          $ret['messages'][] = ['class' => 'info', 'text' => "Paketmarke wurde erfolgreich erstellt: $result->TrackingNumber"];
+        } else {
+          $ret['messages'] = array_map(fn(string $item) => ['class' => 'error', 'text' => $item], array_unique($result->Errors));
+        }
+      }
+      header('Content-Type: application/json');
+      echo json_encode($ret);
+      $this->app->ExitXentral();
+    }
+
+    $address['sendungsart'] = CustomsInfo::CUSTOMS_TYPE_GOODS;
+    $products = $this->GetShippingProducts();
+    $products = array_combine(array_column($products, 'Id'), $products);
+    $address['product'] = $products[0]->Id ?? '';
+
+    $json['form'] = $address;
+    $json['countries'] = $this->app->erp->GetSelectLaenderliste();
+    $json['products'] = $products;
+    $json['customs_shipment_types'] = [
+        CustomsInfo::CUSTOMS_TYPE_GIFT => 'Geschenk',
+        CustomsInfo::CUSTOMS_TYPE_DOCUMENTS => 'Dokumente',
+        CustomsInfo::CUSTOMS_TYPE_GOODS => 'Handelswaren',
+        CustomsInfo::CUSTOMS_TYPE_SAMPLE => 'Erprobungswaren',
+        CustomsInfo::CUSTOMS_TYPE_RETURN => 'Rücksendung'
+    ];
+    $json['messages'] = [];
+    $json['form']['services'] = [
+        Product::SERVICE_PREMIUM => false
+    ];
+    $this->app->Tpl->Set('JSON', json_encode($json));
+    $this->app->Tpl->Set('CARRIERNAME', $this->GetName());
+    $this->app->Tpl->Parse($target, 'createshipment.tpl');
   }
-  
+
+  public abstract function CreateShipment(object $json, array $address): CreateShipmentResult;
+
+  /**
+   * @return Product[]
+   */
+  public abstract function GetShippingProducts(): array;
 }

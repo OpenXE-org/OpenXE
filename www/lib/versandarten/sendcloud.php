@@ -9,6 +9,8 @@ use Xentral\Carrier\SendCloud\Data\SenderAddress;
 use Xentral\Carrier\SendCloud\Data\ShippingProduct;
 use Xentral\Carrier\SendCloud\Data\ShippingMethod;
 use Xentral\Carrier\SendCloud\SendcloudApiException;
+use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
+use Xentral\Modules\ShippingMethod\Model\Product;
 
 require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
@@ -23,6 +25,11 @@ class Versandart_sendcloud extends Versanddienstleister
     if (!isset($this->id))
       return;
     $this->api = new SendCloudApi($this->settings->public_key, $this->settings->private_key);
+  }
+
+  public function GetName(): string
+  {
+    return "SendCloud";
   }
 
   protected function FetchOptionsFromApi()
@@ -49,13 +56,6 @@ class Versandart_sendcloud extends Versanddienstleister
     $this->options['products'][0] = '';
     $this->options['selectedProduct'] = $shippingProducts[$this->settings->shipping_product] ?? [];
     natcasesort($this->options['products']);
-    $this->options['customs_shipment_types'] = [
-        0 => 'Geschenk',
-        1 => 'Dokumente',
-        2 => 'Kommerzielle Waren',
-        3 => 'Erprobungswaren',
-        4 => 'Rücksendung'
-    ];
   }
 
   public function AdditionalSettings(): array
@@ -66,102 +66,77 @@ class Versandart_sendcloud extends Versanddienstleister
         'private_key' => ['typ' => 'text', 'bezeichnung' => 'API Private Key:'],
         'sender_address' => ['typ' => 'select', 'bezeichnung' => 'Absender-Adresse:', 'optionen' => $this->options['senders']],
         'shipping_product' => ['typ' => 'select', 'bezeichnung' => 'Versand-Produkt:', 'optionen' => $this->options['products']],
-        'default_customs_shipment_type' => ['typ' => 'select', 'bezeichnung' => 'Sendungsart:', 'optionen' => $this->options['customs_shipment_types']],
     ];
   }
 
-  public function Paketmarke(string $target, string $docType, int $docId): void
+  public function CreateShipment(object $json, array $address): CreateShipmentResult
   {
-    $address = $this->GetAdressdaten($docId, $docType);
-
-    if (isset($_SERVER['HTTP_CONTENT_TYPE']) && ($_SERVER['HTTP_CONTENT_TYPE'] === 'application/json')) {
-      $json = json_decode(file_get_contents('php://input'));
-      $response = [];
-      if ($json->submit == 'print') {
-        header('Content-Type: application/json');
-        $parcel = new ParcelCreation();
-        $parcel->SenderAddressId = $this->settings->sender_address;
-        $parcel->ShippingMethodId = $json->method;
-        $parcel->Name = $json->l_name;
-        $parcel->CompanyName = $json->l_companyname;
-        $parcel->Country = $json->land;
-        $parcel->PostalCode = $json->plz;
-        $parcel->City = $json->ort;
-        $parcel->Address = $json->strasse;
-        $parcel->Address2 = $json->l_address2;
-        $parcel->HouseNumber = $json->hausnummer;
-        $parcel->EMail = $json->email;
-        $parcel->Telephone = $json->telefon;
-        $parcel->CountryState = $json->bundesland;
-        $parcel->CustomsInvoiceNr = $json->invoice_number;
-        $parcel->CustomsShipmentType = $json->sendungsart;
-        $parcel->TotalInsuredValue = $json->total_insured_value;
-        $parcel->OrderNumber = $json->order_number;
-        foreach ($json->positions as $pos) {
-          $item = new ParcelItem();
-          $item->HsCode = $pos->zolltarifnummer;
-          $item->Description = $pos->bezeichnung;
-          $item->Quantity = $pos->menge;
-          $item->OriginCountry = $pos->herkunftsland;
-          $item->Price = $pos->zolleinzelwert;
-          $item->Weight = $pos->zolleinzelgewicht * 1000;
-          $parcel->ParcelItems[] = $item;
-        }
-        $parcel->Weight = floatval($json->weight) * 1000;
-        try {
-          $result = $this->api->CreateParcel($parcel);
-          if ($result instanceof ParcelResponse) {
-            $sql = "INSERT INTO versand 
-              (adresse, lieferschein, versandunternehmen, gewicht, tracking, tracking_link, anzahlpakete) 
-              VALUES 
-              ({$address['addressId']}, {$address['lieferscheinId']}, '$this->type',
-               '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
-            $this->app->DB->Insert($sql);
-            $response['messages'][] = ['class' => 'info', 'text' => "Paketmarke wurde erfolgreich erstellt: $result->TrackingNumber"];
-
-            $doc = $result->GetDocumentByType(Document::TYPE_LABEL);
-            $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
-            file_put_contents($filename, $this->api->DownloadDocument($doc));
-            $this->app->printer->Drucken($this->labelPrinterId, $filename);
-
-            $doc = $result->GetDocumentByType(Document::TYPE_CN23);
-            $filename = $this->app->erp->GetTMP() . join('_', ['Sendcloud', $doc->Type, $doc->Size, $result->TrackingNumber]) . '.pdf';
-            file_put_contents($filename, $this->api->DownloadDocument($doc));
-            $this->app->printer->Drucken($this->documentPrinterId, $filename);
-          } else {
-            $response['messages'][] = ['class' => 'error', 'text' => $result];
-          }
-          echo json_encode($response);
-        } catch (SendcloudApiException $e) {
-          $this->app->Tpl->addMessage('error', $e->getMessage());
-        }
-        $this->app->ExitXentral();
-      }
+    $parcel = new ParcelCreation();
+    $parcel->SenderAddressId = $this->settings->sender_address;
+    $parcel->ShippingMethodId = $json->product;
+    $parcel->Name = $json->name;
+    $parcel->CompanyName = $json->companyname;
+    $parcel->Country = $json->country;
+    $parcel->PostalCode = $json->zip;
+    $parcel->City = $json->city;
+    $parcel->Address = $json->street;
+    $parcel->Address2 = $json->address2;
+    $parcel->HouseNumber = $json->streetnumber;
+    $parcel->EMail = $json->email;
+    $parcel->Telephone = $json->phone;
+    $parcel->CountryState = $json->state;
+    $parcel->CustomsInvoiceNr = $json->invoice_number;
+    $parcel->CustomsShipmentType = $json->shipment_type;
+    $parcel->TotalInsuredValue = $json->total_insured_value;
+    $parcel->OrderNumber = $json->order_number;
+    foreach ($json->positions as $pos) {
+      $item = new ParcelItem();
+      $item->HsCode = $pos->zolltarifnummer;
+      $item->Description = $pos->bezeichnung;
+      $item->Quantity = $pos->menge;
+      $item->OriginCountry = $pos->herkunftsland;
+      $item->Price = $pos->zolleinzelwert;
+      $item->Weight = $pos->zolleinzelgewicht * 1000;
+      $parcel->ParcelItems[] = $item;
     }
+    $parcel->Weight = floatval($json->weight) * 1000;
+    $ret = new CreateShipmentResult();
+    try {
+      $result = $this->api->CreateParcel($parcel);
+      if ($result instanceof ParcelResponse) {
+        $ret->Success = true;
+        $ret->TrackingNumber = $result->TrackingNumber;
+        $ret->TrackingUrl = $result->TrackingUrl;
 
-    $address['l_name'] = empty(trim($address['ansprechpartner'])) ? trim($address['name']) : trim($address['ansprechpartner']);
-    $address['l_companyname'] = !empty(trim($address['ansprechpartner'])) ? trim($address['name']) : '';
-    $address['l_address2'] = join(';', array_filter([
-        $address['abteilung'],
-        $address['unterabteilung'],
-        $address['adresszusatz']
-    ], fn(string $item) => !empty(trim($item))));
+        $doc = $result->GetDocumentByType(Document::TYPE_LABEL);
+        $ret->Label = $this->api->DownloadDocument($doc);
 
+        $doc = $result->GetDocumentByType(Document::TYPE_CN23);
+        $ret->ExportDocuments = $this->api->DownloadDocument($doc);
+      } else {
+        $ret->Errors[] = $result;
+      }
+    } catch (SendcloudApiException $e) {
+      $ret->Errors[] = $e->getMessage();
+    }
+    return $ret;
+  }
+
+  public function GetShippingProducts(): array
+  {
     $this->FetchOptionsFromApi();
     /** @var ShippingProduct $product */
     $product = $this->options['selectedProduct'];
-    $methods = [];
+    $result = [];
     /** @var ShippingMethod $item */
-    foreach ($product->ShippingMethods as $item)
-      $methods[$item->Id] = $item->Name;
-    $address['method'] = array_key_first($methods);
-    $address['sendungsart'] = $this->settings->default_customs_shipment_type;
-
-    $this->app->Tpl->Set('JSON', json_encode($address));
-    $this->app->Tpl->Set('JSON_COUNTRIES', json_encode($this->app->erp->GetSelectLaenderliste()));
-    $this->app->Tpl->Set('JSON_METHODS', json_encode($methods));
-    $this->app->Tpl->Set('JSON_CUSTOMS_SHIPMENT_TYPES', json_encode($this->options['customs_shipment_types']));
-    $this->app->Tpl->Parse($target, 'versandarten_sendcloud.tpl');
+    foreach ($product->ShippingMethods as $item) {
+      $p = new Product();
+      $p->Id = $item->Id;
+      $p->Name = $item->Name;
+      $result[] = $p;
+    }
+    return $result;
   }
+
 
 }
