@@ -18,6 +18,7 @@ class Produktion {
         $this->app->ActionHandler("create", "produktion_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "produktion_edit");
         $this->app->ActionHandler("copy", "produktion_copy");
+        $this->app->ActionHandler("minidetail", "produktion_minidetail");
         $this->app->ActionHandler("delete", "produktion_delete");     
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -139,6 +140,9 @@ class Produktion {
                 else {
                 }                
                 // END Toggle filters
+
+                $moreinfo = true; // Allow drop down details
+                $menucol = 14; // For moredata
 
                 if ($where=='0') {
                  $where = " p.status IN ('freigegeben','gestartet')";
@@ -1104,6 +1108,40 @@ class Produktion {
             $this->produktion_edit((int) $result);
         }      
     }
+
+
+
+    public function produktion_minidetail($parsetarget='',$menu=true) {
+
+        $id = $this->app->Secure->GetGET('id');
+
+        $fortschritt = $this->MengeFortschritt($id, 0);
+
+        if (!empty($fortschritt)) {
+            $this->app->Tpl->Set('MENGE_GEPLANT',$fortschritt['geplant']);
+            $this->app->Tpl->Set('MENGE_PRODUZIERT',$fortschritt['produziert']);
+            $this->app->Tpl->Set('MENGE_OFFEN',$fortschritt['offen']);
+            $this->app->Tpl->Set('MENGE_RESERVIERT',$fortschritt['reserviert']);
+            $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$fortschritt['produzierbar']);
+            $this->app->Tpl->Set('MENGEERFOLGREICH',$fortschritt['erfolgreich']);
+            $this->app->Tpl->Set('MENGEAUSSCHUSS',$fortschritt['ausschuss']);
+
+            if ($fortschritt['produziert'] > $fortschritt['geplant']) {
+                $msg .= "<div class=\"info\">Planmenge überschritten.</div>";
+            }
+        }
+
+        $this->app->Tpl->Set("FORTSCHRITT",'immer');
+
+        if($parsetarget=='')
+        {
+            $this->app->Tpl->Output('produktion_minidetail.tpl');
+            $this->app->ExitXentral();
+        }
+
+        $this->app->Tpl->Parse($parsetarget,'produktion_minidetail.tpl');
+    }
+
 
     /**
      * Get all paramters from html form and save into $input
