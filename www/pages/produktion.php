@@ -393,8 +393,14 @@ class Produktion {
                     $this->app->DB->Update($sql);
 
                     if ($id == 'NULL') {
-                        $msg .= $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                        header("Location: index.php?module=produktion&action=list&msg=$msg");
+    
+                        $id = $this->app->DB->GetInsertID();
+
+                        if (!empty($id)) {
+                            $msg .= $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");      
+                            header("Location: index.php?module=produktion&action=edit&id=$id&msg=$msg");
+                        }
+                        
                     } else {
                         $msg .= "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>";
                     }
