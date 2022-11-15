@@ -17,6 +17,7 @@ class Produktion {
         $this->app->ActionHandler("list", "produktion_list");        
         $this->app->ActionHandler("create", "produktion_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "produktion_edit");
+        $this->app->ActionHandler("copy", "produktion_copy");
         $this->app->ActionHandler("delete", "produktion_delete");     
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -55,6 +56,7 @@ class Produktion {
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . 
                         "<a href=\"index.php?module=produktion&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;".
                         "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . 
+                        "<a href=\"#\" onclick=CopyDialog(\"index.php?module=produktion&action=copy&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\"></a>" . 
                         "</td></tr></table>";
 
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.datum, p.art, p.projekt, p.belegnr, p.internet, p.bearbeiter, p.angebot, p.freitext, p.internebemerkung, p.status, p.adresse, p.name, p.abteilung, p.unterabteilung, p.strasse, p.adresszusatz, p.ansprechpartner, p.plz, p.ort, p.land, p.ustid, p.ust_befreit, p.ust_inner, p.email, p.telefon, p.telefax, p.betreff, p.kundennummer, p.versandart, p.vertrieb, p.zahlungsweise, p.zahlungszieltage, p.zahlungszieltageskonto, p.zahlungszielskonto, p.bank_inhaber, p.bank_institut, p.bank_blz, p.bank_konto, p.kreditkarte_typ, p.kreditkarte_inhaber, p.kreditkarte_nummer, p.kreditkarte_pruefnummer, p.kreditkarte_monat, p.kreditkarte_jahr, p.firma, p.versendet, p.versendet_am, p.versendet_per, p.versendet_durch, p.autoversand, p.keinporto, p.keinestornomail, p.abweichendelieferadresse, p.liefername, p.lieferabteilung, p.lieferunterabteilung, p.lieferland, p.lieferstrasse, p.lieferort, p.lieferplz, p.lieferadresszusatz, p.lieferansprechpartner, p.packstation_inhaber, p.packstation_station, p.packstation_ident, p.packstation_plz, p.packstation_ort, p.autofreigabe, p.freigabe, p.nachbesserung, p.gesamtsumme, p.inbearbeitung, p.abgeschlossen, p.nachlieferung, p.lager_ok, p.porto_ok, p.ust_ok, p.check_ok, p.vorkasse_ok, p.nachnahme_ok, p.reserviert_ok, p.bestellt_ok, p.zeit_ok, p.versand_ok, p.partnerid, p.folgebestaetigung, p.zahlungsmail, p.stornogrund, p.stornosonstiges, p.stornorueckzahlung, p.stornobetrag, p.stornobankinhaber, p.stornobankkonto, p.stornobankblz, p.stornobankbank, p.stornogutschrift, p.stornogutschriftbeleg, p.stornowareerhalten, p.stornomanuellebearbeitung, p.stornokommentar, p.stornobezahlt, p.stornobezahltam, p.stornobezahltvon, p.stornoabgeschlossen, p.stornorueckzahlungper, p.stornowareerhaltenretour, p.partnerausgezahlt, p.partnerausgezahltam, p.kennen, p.logdatei, p.bezeichnung, p.datumproduktion, p.anschreiben, p.usereditid, p.useredittimestamp, p.steuersatz_normal, p.steuersatz_zwischen, p.steuersatz_ermaessigt, p.steuersatz_starkermaessigt, p.steuersatz_dienstleistung, p.waehrung, p.schreibschutz, p.pdfarchiviert, p.pdfarchiviertversion, p.typ, p.reservierart, p.auslagerart, p.projektfiliale, p.datumauslieferung, p.datumbereitstellung, p.unterlistenexplodieren, p.charge, p.arbeitsschrittetextanzeigen, p.einlagern_ok, p.auslagern_ok, p.mhd, p.auftragmengenanpassen, p.internebezeichnung, p.mengeoriginal, p.teilproduktionvon, p.teilproduktionnummer, p.parent, p.parentnummer, p.bearbeiterid, p.mengeausschuss, p.mengeerfolgreich, p.abschlussbemerkung, p.auftragid, p.funktionstest, p.seriennummer_erstellen, p.unterseriennummern_erfassen, p.datumproduktionende, p.standardlager, p.id FROM produktion p";
@@ -314,9 +316,11 @@ class Produktion {
      * If id is empty, create a new one
      */
         
-    function produktion_edit() {
-        $id = $this->app->Secure->GetGET('id');
-              
+    function produktion_edit($id = NULL) {
+
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+        }
         if($this->app->erp->DisableModul('produktion',$id))
         {
           return;
@@ -328,7 +332,6 @@ class Produktion {
 
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=edit&id=$id", "Details");
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
-        $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));                      
 
@@ -1080,6 +1083,28 @@ class Produktion {
         $this->app->Tpl->Parse('PAGE', "produktion_edit.tpl");
     }
 
+    /*
+        Create a copy as draft
+    */
+    
+    function produktion_copy() {
+        $id = (int) $this->app->Secure->GetGET('id');
+        if (empty($id)) {
+            return;
+        }
+        $result = $this->Copy($id,0);
+        if ($result <= 0) {
+            $msg .= "<div class=\"error\">Fehler beim Anlegen der Kopie.</div>";
+            $this->app->Tpl->Set('MESSAGE', $msg);           
+            $this->produktion_list();
+        }
+        else {
+            $msg .= "<div class=\"success\">Kopie angelegt. $result new $id old</div>";
+            $this->app->Tpl->Set('MESSAGE', $msg);           
+            $this->produktion_edit((int) $result);
+        }      
+    }
+
     /**
      * Get all paramters from html form and save into $input
      */
@@ -1124,6 +1149,10 @@ class Produktion {
   	    $sql = "SELECT id, artikel, FORMAT(SUM(menge),0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=1 GROUP BY artikel";
         $result =  $this->app->DB->SelectArr($sql)[0];
 	    $menge_plan_gesamt = $result['menge'];
+
+        if ($menge_plan_gesamt == 0) {
+            return(0);
+        }
 
   	    $sql = "SELECT FORMAT(SUM(mengeerfolgreich),0) as menge FROM produktion WHERE id=$produktion_id";
         $result =  $this->app->DB->SelectArr($sql)[0];
@@ -1429,6 +1458,101 @@ class Produktion {
             $sql = "UPDATE produktion SET $update WHERE id = $produktion_id";
             $this->app->DB->Update($sql);
         }
+    }
+
+    // Copy an existing produktion as draft, with option to adjust the quantity    
+    // return id on sucess, else negative number
+        
+    function Copy($produktion_id, $menge_abteilen) : int {
+
+        if (empty($produktion_id)) {
+            return(-1);
+        }
+
+        $fortschritt = $this->MengeFortschritt($produktion_id,0);
+        if (empty($fortschritt)) {
+            return(-2);
+        }
+
+        if ($menge_abteilen < 1) {
+            $menge_abteilen = $fortschritt['geplant'];
+        }
+
+        $sql = "SELECT * from produktion WHERE id = $produktion_id";
+	    $produktion_alt = $this->app->DB->SelectArr($sql)[0];
+
+        if (empty($produktion_alt)) {
+            return (-3);
+        }
+
+        $menge_pro_stueck = $menge_abteilen/$fortschritt['geplant'];
+
+        $produktion_neu = array();
+        $produktion_neu['status'] = 'angelegt';
+        $produktion_neu['datum'] = date("Y-m-d");
+        $produktion_neu['art'] = $produktion_alt['art'];
+        $produktion_neu['projekt'] = $produktion_alt['projekt'];
+        $produktion_neu['angebot'] = $produktion_alt['angebot'];
+        $produktion_neu['kundennummer'] = $produktion_alt['kundennummer'];
+        $produktion_neu['auftragid'] = $produktion_alt['auftragid'];
+        $produktion_neu['freitext'] = $produktion_alt['freitext'];
+        $produktion_neu['internebemerkung'] = $produktion_alt['internebemerkung'];
+        $produktion_neu['adresse'] = $produktion_alt['adresse'];
+
+        if ($produktion_alt['belegnr'] != '') {
+            $produktion_neu['internebezeichnung '] = "Kopie von ".$produktion_alt['belegnr']." ".$produktion_alt['internebezeichnung'];
+        } else {
+            $produktion_neu['internebezeichnung '] = $produktion_alt['internebezeichnung'];
+        }
+    
+        $produktion_neu['standardlager'] = $produktion_alt['standardlager'];        
+
+
+        $columns = "";
+        $values = "";
+        $update = "";
+
+        $fix = "";
+
+        foreach ($produktion_neu as $key => $value) {
+            $columns = $columns.$fix.$key;
+            $values = $values.$fix."'".$value."'";
+            $update = $update.$fix.$key." = '$value'";
+            $fix = ", ";                           
+        }
+
+        $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.")";
+        $this->app->DB->Update($sql);
+        $produktion_neu_id = $this->app->DB->GetInsertID();
+
+        // Now add the positions
+        $sql = "SELECT * FROM produktion_position WHERE produktion = $produktion_id";
+        $positionen = $this->app->DB->SelectArr($sql); 
+
+        foreach ($positionen as $position) {
+
+            $columns = "";
+
+            // For the new positions
+            $position['id'] = 'NULL';
+            $position['geliefert_menge'] = 0;
+
+            $position['menge'] = $menge_abteilen*$menge_pro_stueck;
+            $position['produktion'] = $produktion_neu_id;
+
+            $values = "";
+            $fix = "";
+            foreach ($position as $key => $value) {
+                $columns = $columns.$fix.$key;
+                $values = $values.$fix."'".$value."'";
+                $fix = ", ";
+            }
+            $sql = "INSERT INTO produktion_position (".$columns.") VALUES (".$values.")";
+            $this->app->DB->Update($sql);
+
+        }
+
+        return($produktion_neu_id);
     }
 
 }
