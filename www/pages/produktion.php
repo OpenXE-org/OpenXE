@@ -376,6 +376,7 @@ class Produktion {
 
                     if ($id == 'NULL') {
                         $input['status'] = 'angelegt';
+                        $this->ProtokollSchreiben($id,'Produktion angelegt');
                     }
 
                     $input['datumauslieferung'] = $this->app->erp->ReplaceDatum(true,$input['datumauslieferung'],true);
@@ -457,11 +458,13 @@ class Produktion {
                     $sql = "INSERT INTO produktion_position (produktion, artikel, menge, stuecklistestufe, projekt) VALUES ( $id, $artikel_planen_id, $artikel_planen_menge, 1, '$global_projekt'), ".implode(',',$position_values);
                     $this->app->DB->Update($sql);                   
 
-                     $msg .= "<div class=\"success\">Planung angelegt.</div>";
+                    $msg .= "<div class=\"success\">Planung angelegt.</div>";
+                    $this->ProtokollSchreiben($id,'Produktion geplant');
 
                 break;            
                 case 'freigeben':
                     $this->app->erp->BelegFreigabe("produktion",$id);
+                    $this->ProtokollSchreiben($id,'Produktion freigegeben');
                 break;
                 case 'reservieren':
                   
@@ -580,6 +583,8 @@ class Produktion {
                     $this->app->DB->Update($sql);
 
                     $msg .= "<div class=\"info\">Produktion durchgeführt.</div>";
+                    $this->ProtokollSchreiben($id,"Produktion durchgef&uuml;hrt ($menge_produzieren, davon $menge_ausschuss Ausschuss)");
+
                 break;
                 case 'teilen':
 
@@ -752,6 +757,8 @@ class Produktion {
                         }
                     }
 
+                    $this->ProtokollSchreiben($id,"Menge angepasst auf $menge_anpassen");
+
                 break;
                 case 'abschliessen':
                     $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
@@ -765,6 +772,8 @@ class Produktion {
                         $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
                     }
             
+                    $this->ProtokollSchreiben($id,'Produktion abgeschlossen');
+
                 break;
 
             }           
@@ -1084,7 +1093,9 @@ class Produktion {
         }
 
         $this->app->Tpl->Set('MESSAGE', $msg);
+        $this->produktion_minidetail('MINIDETAILINEDIT');
         $this->app->Tpl->Parse('PAGE', "produktion_edit.tpl");
+
     }
 
     /*
@@ -1131,7 +1142,7 @@ class Produktion {
             }
         }
 
-        $this->app->Tpl->Set("FORTSCHRITT",'immer');
+        $this->ProtokollTabelleErzeugen($id, 'PROTOKOLL');
 
         if($parsetarget=='')
         {
@@ -1592,5 +1603,21 @@ class Produktion {
 
         return($produktion_neu_id);
     }
+
+    /*
+        Write something into the log
+    */
+    function ProtokollSchreiben(int $produktion_id, string $text) {
+        $sql = "INSERT INTO produktion_protokoll (produktion, zeit, bearbeiter, grund) VALUES ($produktion_id, NOW(), '".$this->app->DB->real_escape_string($this->app->User->GetName())."','".$this->app->DB->real_escape_string($text)."')";       
+        $this->app->DB->Insert($sql);
+    }
+
+    function ProtokollTabelleErzeugen($produktion_id, $parsetarget)
+    {
+        $tmp = new EasyTable($this->app);
+        $tmp->Query("SELECT zeit,bearbeiter,grund FROM produktion_protokoll WHERE produktion='$produktion_id' ORDER by zeit DESC");
+        $tmp->DisplayNew($parsetarget,'Protokoll','noAction');
+    }
+
 
 }
