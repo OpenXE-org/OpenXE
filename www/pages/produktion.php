@@ -366,7 +366,6 @@ class Produktion {
                     // Write to database
             
                     // Add checks here
-                    $input['standardlager'] = $this->app->erp->ReplaceLagerPlatz(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
 
                     if (empty($input['datum'])) {
                         $input['datum'] = date("Y-m-d");
@@ -376,7 +375,6 @@ class Produktion {
 
                     if ($id == 'NULL') {
                         $input['status'] = 'angelegt';
-                        $this->ProtokollSchreiben($id,'Produktion angelegt');
                     }
 
                     $input['datumauslieferung'] = $this->app->erp->ReplaceDatum(true,$input['datumauslieferung'],true);
@@ -405,7 +403,9 @@ class Produktion {
                         $id = $this->app->DB->GetInsertID();
 
                         if (!empty($id)) {
-                            $msg .= $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");      
+                            $this->ProtokollSchreiben($id,'Produktion angelegt');
+                            $msg .= "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>";      
+                            $msg = $this->app->erp->base64_url_encode($msg);
                             header("Location: index.php?module=produktion&action=edit&id=$id&msg=$msg");
                         }
                         
@@ -459,7 +459,7 @@ class Produktion {
                     $this->app->DB->Update($sql);                   
 
                     $msg .= "<div class=\"success\">Planung angelegt.</div>";
-                    $this->ProtokollSchreiben($id,'Produktion geplant');
+                    $this->ProtokollSchreiben($id,'Produktion geplant ($artikel_planen_menge)');
 
                 break;            
                 case 'freigeben':
@@ -573,17 +573,55 @@ class Produktion {
                        break;
                     }
 
-                    // Insert produced parts into stock
+                    // Insert produced parts into stock               
+                    // Check target stock, if not existing, use default stock of article, if not given use production stock
+
+
+                	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
+
+                    $use_artikel_lager = false;
+                    $ziellager =  $global_standardlager;
+
+                    if (!empty($ziellager_from_form)) {
+                        $sql = "SELECT id FROM lager_platz WHERE id = ".$ziellager_from_form;
+                        $result = $this->app->DB->SelectArr($sql);                            
+                        if (!empty($result)) {   
+                            $ziellager = $ziellager_from_form;
+                        } else {
+                            $use_artikel_lager = true;
+                        }
+                    } else {
+                        $use_artikel_lager = true;                     
+                    }
+
+                    if ($use_artikel_lager) {                
+                        $sql = "SELECT lager_platz FROM artikel WHERE id = ".$produktionsartikel_position['artikel'];
+                        $result = $this->app->DB->SelectArr($sql);                            
+                        if (!empty($result) && !empty($result[0]['lager_platz'])) {
+                            $ziellager = $result[0]['lager_platz'];
+                        } else {
+
+                        }
+                    } else {
+
+                    }
+                    $sql = "SELECT kurzbezeichnung FROM lager_platz WHERE id = $ziellager";
+                    $lagername = $this->app->DB->SelectArr($sql)[0]['kurzbezeichnung'];                                              
+
                     // ERPAPI
                     //   function LagerEinlagern($artikel,$menge,$regal,$projekt,$grund="",$importer="",$paketannahme="",$doctype = "", $doctypeid = 0, $vpeid = 0, $permanenteinventur = 0, $adresse = 0)
-                    $this->app->erp->LagerEinlagern($produktionsartikel_position['artikel'],$menge_produzieren,$global_standardlager,$global_projekt,"Produktion $global_produktionsnummer");
+                    $this->app->erp->LagerEinlagern($produktionsartikel_position['artikel'],$menge_produzieren,$ziellager,$global_projekt,"Produktion $global_produktionsnummer");
                     // No error handling in LagerEinlagern...
 
                     $sql = "UPDATE produktion SET mengeerfolgreich = mengeerfolgreich + $menge_produzieren, mengeausschuss = mengeausschuss + $menge_ausschuss WHERE id = $id";
                     $this->app->DB->Update($sql);
 
-                    $msg .= "<div class=\"info\">Produktion durchgeführt.</div>";
-                    $this->ProtokollSchreiben($id,"Produktion durchgef&uuml;hrt ($menge_produzieren, davon $menge_ausschuss Ausschuss)");
+                    if ($menge_ausschuss < $menge_produzieren) {
+                        $lagertext = ", eingelagert in $lagername";
+                    }
+                    $text = "Produktion durchgef&uuml;hrt ($menge_produzieren, davon $menge_ausschuss Ausschuss)$lagertext";
+                    $msg .= "<div class=\"info\">$text.</div>";
+                    $this->ProtokollSchreiben($id,$text);
 
                 break;
                 case 'teilen':
@@ -714,8 +752,10 @@ class Produktion {
 
                     }
 
-                    $msg .= $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                    header("Location: index.php?module=produktion&action=list&msg=$msg");
+                    $this->ProtokollSchreiben($id,"Teilproduktion erstellt: ".$produktion_neu['belegnr']." (Menge $menge_abteilen)");
+                    $msg .= "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>";
+                    $msg = $this->app->erp->base64_url_encode($msg);
+                    header("Location: index.php?module=produktion&action=edit&id=$produktion_neu_id&msg=$msg");
 
                 break;
                 case 'leeren':
@@ -981,6 +1021,8 @@ class Produktion {
         $this->app->YUI->AutoComplete("artikel_planen", "stuecklistenartikel");
 
         $this->app->YUI->AutoComplete("standardlager", "lagerplatz");
+        $this->app->YUI->AutoComplete("ziellager", "lagerplatz");
+
         $this->app->Tpl->Set('STANDARDLAGER', $this->app->erp->ReplaceLagerPlatz(false,$produktion_from_db['standardlager'],false)); // Convert ID to form display
 
         $this->app->YUI->DatePicker("datum");
@@ -1120,13 +1162,11 @@ class Produktion {
         }      
     }
 
-
-
     public function produktion_minidetail($parsetarget='',$menu=true) {
 
         $id = $this->app->Secure->GetGET('id');
 
-        $fortschritt = $this->MengeFortschritt($id, 0);
+        $fortschritt = $this->MengeFortschritt((int) $id, 0);
 
         if (!empty($fortschritt)) {
             $this->app->Tpl->Set('MENGE_GEPLANT',$fortschritt['geplant']);
@@ -1167,6 +1207,7 @@ class Produktion {
 
         $input['datum'] = $this->app->Secure->GetPOST('datum');
     	$input['standardlager'] = $this->app->Secure->GetPOST('standardlager');
+        $input['standardlager'] = $this->app->erp->ReplaceLagerPlatz(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
 
 	    $input['reservierart'] = $this->app->Secure->GetPOST('reservierart');
 	    $input['auslagerart'] = $this->app->Secure->GetPOST('auslagerart');      
