@@ -8,6 +8,12 @@ use Xentral\Components\Database\Exception\QueryFailureException;
 
 class Produktion {
 
+    // Botched helper function -> Should be replaced with a proper locale solution someday TODO
+    function FormatMenge ($value) {
+        return(number_format($value,0,',','.')); // DE
+//        return(number_format($value,0,'.',',')); // EN
+    }
+
     function __construct($app, $intern = false) {
         $this->app = $app;
         if ($intern)
@@ -404,7 +410,7 @@ class Produktion {
 
                         if (!empty($id)) {
                             $this->ProtokollSchreiben($id,'Produktion angelegt');
-                            $msg .= "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>";      
+                            $msg = "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>"; // Overwrite old MSG
                             $msg = $this->app->erp->base64_url_encode($msg);
                             header("Location: index.php?module=produktion&action=edit&id=$id&msg=$msg");
                         }
@@ -480,7 +486,7 @@ class Produktion {
                         break;
                     }
 
-              	    $sql = "SELECT pp.id, pp.artikel, a.name_de, a.nummer, FORMAT(pp.menge,0) as menge, FORMAT(pp.geliefert_menge,0) as geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id AND pp.stuecklistestufe=0";
+              	    $sql = "SELECT pp.id, pp.artikel, a.name_de, a.nummer, pp.menge as menge, pp.geliefert_menge as geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id AND pp.stuecklistestufe=0";
             	    $materialbedarf = $this->app->DB->SelectArr($sql);
 
                     // Try to reserve material
@@ -507,7 +513,7 @@ class Produktion {
 
                     // Check quanitites
                     // Parse positions
-                	$sql = "SELECT artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+                	$sql = "SELECT artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
             	    $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
 
                     if (empty($produktionsartikel_position)) {
@@ -544,7 +550,7 @@ class Produktion {
                     $sql = "UPDATE produktion SET status = 'gestartet' WHERE id=$id";
                     $this->app->DB->Update($sql);
 
-                	$sql = "SELECT id, artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge, stuecklistestufe FROM produktion_position pp WHERE produktion=$id";
+                	$sql = "SELECT id, artikel, menge, geliefert_menge, stuecklistestufe FROM produktion_position pp WHERE produktion=$id";
             	    $material = $this->app->DB->SelectArr($sql);
 
                     foreach ($material as $material_position) {
@@ -616,10 +622,10 @@ class Produktion {
                     $sql = "UPDATE produktion SET mengeerfolgreich = mengeerfolgreich + $menge_produzieren, mengeausschuss = mengeausschuss + $menge_ausschuss WHERE id = $id";
                     $this->app->DB->Update($sql);
 
-                    if ($menge_ausschuss < $menge_produzieren) {
+                    if ($menge_produzieren > 0) {
                         $lagertext = ", eingelagert in $lagername";
                     }
-                    $text = "Produktion durchgef&uuml;hrt ($menge_produzieren, davon $menge_ausschuss Ausschuss)$lagertext";
+                    $text = "Produktion durchgef&uuml;hrt ($menge_produzieren erfolgreich, $menge_ausschuss Ausschuss)$lagertext";
                     $msg .= "<div class=\"info\">$text.</div>";
                     $this->ProtokollSchreiben($id,$text);
 
@@ -636,7 +642,7 @@ class Produktion {
                         break;
                     }
 
-                    if ($menge_abteilen < 1 || $menge_abteilen > ($fortschritt['geplant']-$fortschritt['produziert'])) {
+                    if (($menge_abteilen < 1) || ($menge_abteilen > $fortschritt['offen'])) {
                         $msg .= "<div class=\"error\">Ung&uuml;ltige Teilmenge.</div>";
                         break;
                     }
@@ -753,7 +759,7 @@ class Produktion {
                     }
 
                     $this->ProtokollSchreiben($id,"Teilproduktion erstellt: ".$produktion_neu['belegnr']." (Menge $menge_abteilen)");
-                    $msg .= "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>";
+                    $msg = "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>"; // Overwrite old MSG
                     $msg = $this->app->erp->base64_url_encode($msg);
                     header("Location: index.php?module=produktion&action=edit&id=$produktion_neu_id&msg=$msg");
 
@@ -761,7 +767,7 @@ class Produktion {
                 case 'leeren':
                     
                     if ($global_status == 'angelegt' || $global_status == 'freigegeben') {
-                        $sql = "SELECT id, artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
+                        $sql = "SELECT id, artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
                 	    $material = $this->app->DB->SelectArr($sql);
                         foreach ($material as $material_position) {  
                             // Remove reservation
@@ -797,14 +803,14 @@ class Produktion {
                         }
                     }
 
-                    $this->ProtokollSchreiben($id,"Menge angepasst auf $menge_anpassen");
+                    $this->ProtokollSchreiben($id,"Menge angepasst auf ".$this->FormatMenge($menge_anpassen));
 
                 break;
                 case 'abschliessen':
                     $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
                     $this->app->DB->Update($sql);       
 
-                	$sql = "SELECT id, artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
+                	$sql = "SELECT id, artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
             	    $material = $this->app->DB->SelectArr($sql);
 
                     foreach ($material as $material_position) {  
@@ -970,8 +976,8 @@ class Produktion {
                 p.parent,
                 p.parentnummer,
                 p.bearbeiterid,
-                FORMAT(p.mengeausschuss,0) as mengeausschuss,
-                FORMAT(p.mengeerfolgreich,0) as mengeerfolgreich,
+                p.mengeausschuss,
+                p.mengeerfolgreich,
                 p.abschlussbemerkung,
                 p.auftragid,
                 p.funktionstest,
@@ -1056,11 +1062,12 @@ class Produktion {
         */
 
         // Reparse positions            
-    	$sql = "SELECT id,artikel, FORMAT(menge,0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+    	$sql = "SELECT id,artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
         $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
 
         // Not planned
         if (empty($produktionsartikel_position)) {
+
             $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');      
             $this->app->Tpl->Set('ARTIKEL_MENGE_VISIBLE','hidden');         
             $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
@@ -1070,18 +1077,20 @@ class Produktion {
         } else {                                     
         // Planned
 
-            $fortschritt = $this->MengeFortschritt($id, $produktion_from_db['standardlager']);
+            $fortschritt = $this->MengeFortschritt((int) $id, 0);
 
             if (!empty($fortschritt)) {
-                $this->app->Tpl->Set('MENGE_GEPLANT',$fortschritt['geplant']);
-                $this->app->Tpl->Set('MENGE_PRODUZIERT',$fortschritt['produziert']);
-                $this->app->Tpl->Set('MENGE_OFFEN',$fortschritt['offen']);
-                $this->app->Tpl->Add('MENGE_RESERVIERT',$fortschritt['reserviert']);
-                $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$fortschritt['produzierbar']);
+                $this->app->Tpl->Set('MENGE_GEPLANT',$this->FormatMenge($fortschritt['geplant']));
+                $this->app->Tpl->Set('MENGE_PRODUZIERT',$this->FormatMenge($fortschritt['produziert']));
+                $this->app->Tpl->Set('MENGE_OFFEN',$this->FormatMenge($fortschritt['offen']));
+                $this->app->Tpl->Set('MENGE_RESERVIERT',$this->FormatMenge($fortschritt['reserviert']));
+                $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$this->FormatMenge($fortschritt['produzierbar']));
+                $this->app->Tpl->Set('MENGEERFOLGREICH',$this->FormatMenge($fortschritt['erfolgreich']));
+                $this->app->Tpl->Set('MENGEAUSSCHUSS',$this->FormatMenge($fortschritt['ausschuss']));
+            }
 
-                if ($fortschritt['produziert'] > $fortschritt['geplant']) {
-                    $msg .= "<div class=\"info\">Planmenge überschritten.</div>";
-                }
+            if ($fortschritt['produziert'] > $fortschritt['geplant']) {
+                $msg .= "<div class=\"info\">Planmenge überschritten.</div>";
             }
 
             $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden');
@@ -1169,17 +1178,13 @@ class Produktion {
         $fortschritt = $this->MengeFortschritt((int) $id, 0);
 
         if (!empty($fortschritt)) {
-            $this->app->Tpl->Set('MENGE_GEPLANT',$fortschritt['geplant']);
-            $this->app->Tpl->Set('MENGE_PRODUZIERT',$fortschritt['produziert']);
-            $this->app->Tpl->Set('MENGE_OFFEN',$fortschritt['offen']);
-            $this->app->Tpl->Set('MENGE_RESERVIERT',$fortschritt['reserviert']);
-            $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$fortschritt['produzierbar']);
-            $this->app->Tpl->Set('MENGEERFOLGREICH',$fortschritt['erfolgreich']);
-            $this->app->Tpl->Set('MENGEAUSSCHUSS',$fortschritt['ausschuss']);
-
-            if ($fortschritt['produziert'] > $fortschritt['geplant']) {
-                $msg .= "<div class=\"info\">Planmenge überschritten.</div>";
-            }
+            $this->app->Tpl->Set('MINI_MENGE_GEPLANT',$this->FormatMenge($fortschritt['geplant']));
+            $this->app->Tpl->Set('MINI_MENGE_PRODUZIERT',$this->FormatMenge($fortschritt['produziert']));
+            $this->app->Tpl->Set('MINI_MENGE_OFFEN',$this->FormatMenge($fortschritt['offen']));
+            $this->app->Tpl->Set('MINI_MENGE_RESERVIERT',$this->FormatMenge($fortschritt['reserviert']));
+            $this->app->Tpl->Set('MINI_MENGE_PRODUZIERBAR',$this->FormatMenge($fortschritt['produzierbar']));
+            $this->app->Tpl->Set('MINI_MENGEERFOLGREICH',$this->FormatMenge($fortschritt['erfolgreich']));
+            $this->app->Tpl->Set('MINI_MENGEAUSSCHUSS',$this->FormatMenge($fortschritt['ausschuss']));
         }
 
         $this->ProtokollTabelleErzeugen($id, 'PROTOKOLL');
@@ -1233,10 +1238,10 @@ class Produktion {
 
         $menge_moeglich = PHP_INT_MAX;
 
-  	    $sql = "SELECT id, artikel, FORMAT(SUM(menge),0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=0 GROUP BY artikel";
+  	    $sql = "SELECT id, artikel, SUM(menge) as menge, geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=0 GROUP BY artikel";
 	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
 
-  	    $sql = "SELECT id, artikel, FORMAT(SUM(menge),0) as menge, FORMAT(geliefert_menge,0) as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=1 GROUP BY artikel";
+  	    $sql = "SELECT id, artikel, SUM(menge) as menge, geliefert_menge as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=1 GROUP BY artikel";
         $result =  $this->app->DB->SelectArr($sql)[0];
 	    $menge_plan_gesamt = $result['menge'];
 
@@ -1244,7 +1249,7 @@ class Produktion {
             return(0);
         }
 
-  	    $sql = "SELECT FORMAT(SUM(mengeerfolgreich),0) as menge FROM produktion WHERE id=$produktion_id";
+  	    $sql = "SELECT SUM(mengeerfolgreich) as menge FROM produktion WHERE id=$produktion_id";
         $result =  $this->app->DB->SelectArr($sql)[0];
 	    $menge_geliefert_gesamt = $result['menge'];
 
@@ -1253,7 +1258,7 @@ class Produktion {
             $artikel = $materialbedarf_artikel['artikel'];
             $position = $materialbedarf_artikel['id'];
             $menge_plan_artikel = $materialbedarf_artikel['menge'];
-            $menge_geliefert = $materialbedarf_artikel['geliefert_menge'];
+            $menge_geliefert = $materialbedarf_artikel['menge_geliefert'];
 
             $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
@@ -1442,14 +1447,14 @@ class Produktion {
             return($result);
         }
 
-        $sql = "SELECT FORMAT(menge,0) as geplant,FORMAT(geliefert_menge,0) as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
+        $sql = "SELECT menge as geplant, geliefert_menge as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $position_values = $this->app->DB->SelectArr($sql)[0];
 
         if (empty($position_values)) {
             return($result);
         }
 
-        $sql = "SELECT FORMAT(mengeerfolgreich,0) as erfolgreich,FORMAT(mengeausschuss,0) as ausschuss FROM produktion WHERE id = $produktion_id";
+        $sql = "SELECT mengeerfolgreich as erfolgreich, mengeausschuss as ausschuss FROM produktion WHERE id = $produktion_id";
         $produktion_values = $this->app->DB->SelectArr($sql)[0];
 
         if (empty($produktion_values)) {
@@ -1662,3 +1667,4 @@ class Produktion {
 
 
 }
+
