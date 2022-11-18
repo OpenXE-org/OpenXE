@@ -43,7 +43,7 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr><td>{|Status|}:</td><td><input disabled type="text" name="status" value="[STATUS]" size="20"></td></tr>
                                     <tr><td>{|Angelegt am|}:</td><td><input type="text" name="datum" id="datum" value="[DATUM]" size="10"></td></tr>
-                                    <tr><td>{|Lager|}:</td><td><input type="text" name="standardlager" id="standardlager" value="[STANDARDLAGER]" size="20"></td></tr>
+                                    <tr><td>{|Materiallager|}:</td><td><input type="text" name="standardlager" id="standardlager" value="[STANDARDLAGER]" size="20"></td></tr>
                                 </table>
                             </fieldset> 
                         </div>
@@ -164,14 +164,14 @@
                                     </tr>
                                     <tr [ARTIKEL_MENGE_VISIBLE]>
                                         <td>{|Erfolgreich|}:</td>
-                                        <td>[MENGEERFOLGREICH]</td>
+                                        <td>[MENGE_ERFOLGREICH]</td>
                                         <td>{|Produzierbar:|}</td>
                                         <td>[MENGE_PRODUZIERBAR]</td>
                                     </tr>
                                     </tr>
                                     <tr [ARTIKEL_MENGE_VISIBLE]>
                                         <td>{|Ausschuss|}:</td>                                    
-                                        <td>[MENGEAUSSCHUSS]</td>
+                                        <td>[MENGE_AUSSCHUSS]</td>
                                     </tr>
                                 </table>
                             </fieldset>
@@ -184,11 +184,11 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]>
                                         <td>{|Menge|}:</td>
-                                        <td><input type="text" name="menge_produzieren" id="menge_produzieren" value="[MENGE_PRODUZIEREN]" size="20""></td>
+                                        <td><input type="number" min="0" name="menge_produzieren" id="menge_produzieren" value="[MENGE_PRODUZIEREN]" size="20""></td>
                                     </tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]>
                                         <td>{|Ausschuss|}:</td>
-                                        <td><input type="text" name="menge_ausschuss" id="menge_ausschuss" value="[MENGE_AUSSCHUSS]" size="20"></td>
+                                        <td><input type="number" min="0" name="menge_ausschuss_produzieren" id="menge_ausschuss_produzieren" value="[MENGE_AUSSCHUSS_PRODUZIEREN]" size="20"></td>
                                     </tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]>
                                         <td>{|Ziellager|}:</td>

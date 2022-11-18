@@ -212,16 +212,18 @@ class Produktion {
                         ),
                         ')'
                     ) as lageralle,
-                    CONCAT (
-                        FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
-                        ' (',
-                        FORMAT (
-                                IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
-                                IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
-                                0,
-                                'de_DE'
-                        ),
-                        ')'
+                    if ('$standardlager' = '0','-',
+                        CONCAT (
+                            FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
+                            ' (',
+                            FORMAT (
+                                    IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
+                                    IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
+                                    0,
+                                    'de_DE'
+                            ),
+                            ')'
+                        )
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
                     FORMAT(p.menge,0,'de_DE'),
@@ -277,16 +279,18 @@ class Produktion {
                         ),
                         ')'
                     ) as lageralle,
-                   CONCAT (
-                        FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
-                        ' (',
-                        FORMAT (
-                                IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
-                                IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
-                                0,
-                                'de_DE'
-                        ),
-                        ')'
+                    if ('$standardlager' = '0','-',
+                        CONCAT (
+                            FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
+                            ' (',
+                            FORMAT (
+                                    IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
+                                    IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
+                                    0,
+                                    'de_DE'
+                            ),
+                            ')'
+                        )
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0,'de_DE') as reserviert,
                     FORMAT(SUM(p.menge),0,'de_DE') as menge,
@@ -550,7 +554,7 @@ class Produktion {
                     if (empty($menge_produzieren)) {
                         $menge_produzieren = 0;
                     }                   
-                    $menge_ausschuss = $this->app->Secure->GetPOST('menge_ausschuss');           
+                    $menge_ausschuss = $this->app->Secure->GetPOST('menge_ausschuss_produzieren');           
                     if (empty($menge_ausschuss)) {
                         $menge_ausschuss = 0;
                     }                   
@@ -1110,8 +1114,8 @@ class Produktion {
                 $this->app->Tpl->Set('MENGE_OFFEN',$this->FormatMenge($fortschritt['offen']));
                 $this->app->Tpl->Set('MENGE_RESERVIERT',$this->FormatMenge($fortschritt['reserviert']));
                 $this->app->Tpl->Set('MENGE_PRODUZIERBAR',$this->FormatMenge($fortschritt['produzierbar']));
-                $this->app->Tpl->Set('MENGEERFOLGREICH',$this->FormatMenge($fortschritt['erfolgreich']));
-                $this->app->Tpl->Set('MENGEAUSSCHUSS',$this->FormatMenge($fortschritt['ausschuss']));
+                $this->app->Tpl->Set('MENGE_ERFOLGREICH',$this->FormatMenge($fortschritt['erfolgreich']));
+                $this->app->Tpl->Set('MENGE_AUSSCHUSS',$this->FormatMenge($fortschritt['ausschuss']));
             }
 
             if ($fortschritt['produziert'] > $fortschritt['geplant']) {
@@ -1468,10 +1472,6 @@ class Produktion {
             $lager = $this->app->DB->SelectArr($sql)[0]['standardlager'];
         }
 
-        if (empty($lager)) {
-            return($result);
-        }
-
         $sql = "SELECT menge as geplant, geliefert_menge as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $position_values = $this->app->DB->SelectArr($sql)[0];
 
@@ -1494,8 +1494,13 @@ class Produktion {
 
         $result['offen'] = $result['geplant']-$result['erfolgreich'];
 
-        $result['reserviert'] = $this->LagerCheckProduktion($produktion_id, $lager, true);
-        $result['produzierbar'] = $this->LagerCheckProduktion($produktion_id, $lager, false);
+        if (empty($lager)) {
+            $result['reserviert'] = 0;
+            $result['produzierbar'] = 0;
+        } else {
+            $result['reserviert'] = $this->LagerCheckProduktion($produktion_id, $lager, true);
+            $result['produzierbar'] = $this->LagerCheckProduktion($produktion_id, $lager, false);
+        }
 
         return($result);
     }
