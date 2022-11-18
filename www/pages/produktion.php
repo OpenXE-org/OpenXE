@@ -367,6 +367,9 @@ class Produktion {
 
         if ($submit != '')
         {
+
+            $msg = "";
+
             switch ($submit) {
                 case 'speichern':
                     // Write to database
