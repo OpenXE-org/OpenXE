@@ -1,84 +1,249 @@
-<br><br><table id="paketmarketab" align="center">
-<tr>
-<td align="center">
-<br>
-<form action="" method="post">
-[ERROR]
-<h1>Paketmarken Drucker f&uuml;r [ZUSATZ]</h1>
-<br>
-<b>Empf&auml;nger</b>
-<br>
-<br>
-<table>
-<tr><td>
+<div class="container-fluid" id="sendcloudapp">
+  <form action="" method="post" v-on:submit.prevent="submit">
+    <div class="row">
+      <div v-for="msg in messages" :class="msg.class">{{msg.text}}</div>
+      <div>
+        <h1>{|Paketmarken Drucker f&uuml;r|} SendCloud</h1>
+      </div>
+      <div class="col-md-4">
+        <h2>{|Empf&auml;nger|}</h2>
+        <table>
+          <tr>
+            <td>{|Name|}:</td>
+            <td><input type="text" size="36" v-model="form.name"></td>
+          </tr>
+          <tr>
+            <td>{|Name 2|}:</td>
+            <td><input type="text" size="36" v-model="form.name2"></td>
+          </tr>
+          <tr>
+            <td>{|Name 3|}:</td>
+            <td><input type="text" size="36" v-model="form.name3"></td>
+          </tr>
+          <tr>
+            <td>{|Strasse/Hausnummer|}:</td>
+            <td>
+              <input type="text" size="30" v-model="form.strasse">
+              <input type="text" size="5" v-model="form.hausnummer">
+            </td>
+          </tr>
+          <tr>
+            <td>{|PLZ/Ort|}:</td>
+            <td><input type="text" size="5" v-model="form.plz">
+              <input type="text" size="30" v-model="form.ort">
+            </td>
+          </tr>
+          <tr>
+            <td>{|Bundesland|}:</td>
+            <td><input type="text" size="36" v-model="form.bundesland"></td>
+          </tr>
+          <tr>
+            <td>{|Land|}:</td>
+            <td>
+              <select v-model="form.land">
+                <option v-for="(value, key) in countries" :value="key">{{value}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>{|E-Mail|}:</td>
+            <td><input type="text" size="36" v-model="form.email"></td>
+          </tr>
+          <tr>
+            <td>{|Telefon|}:</td>
+            <td><input type="text" size="36" v-model="form.telefon"></td>
+          </tr>
 
-
-<table style="float:left;">
-<tr><td>Name:</td><td><input type="text" size="36" value="[NAME]" name="name" id="name"><script type="text/javascript">document.getElementById("name").focus(); </script></td></tr>
-<tr><td>Name 2:</td><td><input type="text" size="36" value="[NAME2]" name="name2"></td></tr>
-<tr><td>Name 3:</td><td><input type="text" size="36" value="[NAME3]" name="name3"></td></tr>
-<tr><td>Land:</td><td>[EPROO_SELECT_LAND]</td></tr>
-<tr><td>PLZ/ort:</td><td><input type="text" name="plz" size="5" value="[PLZ]">&nbsp;<input type="text" size="30" name="ort" value="[ORT]"></td></tr>
-<tr><td>Strasse/Hausnummer:</td><td><input type="text" size="30" value="[STRASSE]" name="strasse">&nbsp;<input type="text" size="5" name="hausnummer" value="[HAUSNUMMER]"></td></tr>
-<tr><td>E-Mail:</td><td><input type="text" size="36" value="[EMAIL]" name="email"></td></tr>
-<tr><td>Telefon:</td><td><input type="text" size="36" value="[TELEFON]" name="telefon"></td></tr>
-</table>
-
-
-
-<table style="float:left;">
-<!--<tr><td width="180">Anzahl Pakete:</td><td nowrap><input type="text" name="anzahl" size="5" value="[ANZAHL]" id="anzahl">&nbsp;<input type="button" onclick=window.location.href="index.php?module=versanderzeugen&action=frankieren&id=[ID]&land=[LAND]&anzahl="+document.getElementById('anzahl').value value="erstellen"></td></tr>-->
-[GEWICHT]
-<!--<tr><td>Foto:</td><td><img src="http://t3.gstatic.com/images?q=tbn:QTV_X4YJEI2p7M:http://notebook.pege.org/2005-inode/paket.jpg"></td></tr>
-<tr><td></td><td><input type="button" value="Nochmal Wiegen+Foto"></td></tr>-->
-</table>
-<!--
-<table>
-<tr><td>Gewicht:</td><td><input type="text" size="5"></td></tr>
-<tr><td>Foto:</td><td><img src="http://t3.gstatic.com/images?q=tbn:QTV_X4YJEI2p7M:http://notebook.pege.org/2005-inode/paket.jpg"></td></tr>
-<tr><td></td><td><input type="button" value="Nochmal Wiegen+Foto"></td></tr>
-</table>
--->
-</tr>
-</table>
-<br><br>
-
-<table align="center">
-  <tr><td colspan="2"><b>Service</b></td></tr>
-  <tr><td>Nachnahme:</td><td style="min-width:200px;"><input type="checkbox" name="nachnahme" value="1" [NACHNAHME]> (Betrag: [BETRAG] EUR)<input type="hidden" name="betrag" value="[BETRAG]"></td></tr>
-  <!--<tr><td>Versichert 2500 EUR:</td><td><input type="checkbox" name="versichert" value="1" [VERSICHERT]></td></tr>
-  <tr><td>Versichert 25000 EUR:</td><td><input type="checkbox" name="extraversichert" value="1" [EXTRAVERSICHERT]></td></tr>-->
-  <tr><td nowrap>Extra Versicherung:</td><td><input type="checkbox" name="versichert" value="1" [VERSICHERT] /></td></tr>
-  <tr class="versicherung"><td>Versicherungssumme:</td><td><input type="text" size="10" id="versicherungssumme" name="versicherungssumme" value="[VERSICHERUNGSSUMME]" /></td></tr>
-  <tr><td>Leitcodierung:</td><td style="min-width:200px;"><input type="checkbox" name="leitcodierung" value="1" [LEITCODIERUNG]>&nbsp;<i>ohne Leitcodierung können extra Kosten entstehen</i></td></tr>
-  <tr><td>Abholdatum:</td><td><input type="text" size="10" id="abholdatum" name="abholdatum" value="[ABHOLDATUM]" /></td></tr>
-  <tr><td>Wunschtermin:</td><td><input type="checkbox" name="wunschtermin" value="1" [WUNSCHTERMIN] /></td></tr>
-  <tr class="wunschzeitraum"><td>Wunschlieferdatum:</td><td><input type="text" size="10" id="wunschlieferdatum" name="wunschlieferdatum" value="[WUNSCHLIEFERDATUM]" /></td></tr>
-  <tr class="wunschzeitraum"><td>Wunschlieferzeitraum:</td>
-  <td><!--<input type="radio" name="wunschzeitraum" id="wunsch10001200" value="10001200" [WUNSCH10001200] /> 10:00 - 12:00
-   <input type="radio" name="wunschzeitraum" id="wunsch12001400" value="12001400" [WUNSCH12001400] /> 12:00 - 14:00
-   <input type="radio" name="wunschzeitraum" id="wunsch14001600" value="14001600" [WUNSCH14001600] /> 14:00 - 16:00
-   <input type="radio" name="wunschzeitraum" id="wunsch16001800" value="16001800" [WUNSCH16001800] /> 16:00 - 18:00 -->
-   <input type="radio" name="wunschzeitraum" id="wunsch18002000" value="18002000" [WUNSCH18002000] /> 18:00 - 20:00
-   <input type="radio" name="wunschzeitraum" id="wunsch19002100" value="19002100" [WUNSCH19002100] /> 19:00 - 21:00
-  </td></tr>
-  [VORRETOURENLABEL]<tr><td nowrap>Retourenlabel drucken:</td><td><input type="checkbox" value="1" id="retourenlabel" name="retourenlabel" [RETOURENLABEL] /></td></tr>[NACHRETOURENLABEL]
-  [VORALTERSFREIGABE]<tr><td nowrap>Altersfreigabe notwendig:</td><td><input type="checkbox" name="altersfreigabe" value="1" [ALTERSFREIGABE]></td></tr>[NACHALTERSFREIGABE]
-</table>
-<br><br>
-<center><input class="btnGreen" type="submit" value="Paketmarke drucken" name="drucken">&nbsp;
-
-[TRACKINGMANUELL]
-&nbsp;<input type="button" value="{|Andere Versandart auswählen|}" onclick="window.location.href='index.php?module=versanderzeugen&action=wechsel&id=[ID]'" name="anders">&nbsp;
-<!--<input type="button" value="Abbrechen">--></center>
-</form>
-</td></tr></table>
-<br><br>
-
-<script type="text/JavaScript" language="javascript">
-$(document).ready(function() {
- $( "#abholdatum" ).datepicker({ dateFormat: 'dd.mm.yy',dayNamesMin: ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'], firstDay:1,
-          showWeek: true, monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai',
-          'Juni', 'Juli', 'August', 'September', 'Oktober',  'November', 'Dezember'], });
-});
+        </table>
+      </div>
+      <div class="col-md-4" v-once>
+        <h2>vollst. Adresse</h2>
+        <table>
+          <tr>
+            <td>{|Name|}</td>
+            <td>{{form.name}}</td>
+          </tr>
+          <tr>
+            <td>{|Ansprechpartner|}</td>
+            <td>{{form.ansprechpartner}}</td>
+          </tr>
+          <tr>
+            <td>{|Abteilung|}</td>
+            <td>{{form.abteilung}}</td>
+          </tr>
+          <tr>
+            <td>{|Unterabteilung|}</td>
+            <td>{{form.unterabteilung}}</td>
+          </tr>
+          <tr>
+            <td>{|Adresszusatz|}</td>
+            <td>{{form.adresszusatz}}</td>
+          </tr>
+          <tr>
+            <td>{|Strasse|}</td>
+            <td>{{form.streetwithnumber}}</td>
+          </tr>
+          <tr>
+            <td>{|PLZ/Ort|}</td>
+            <td>{{form.plz}} {{form.ort}}</td>
+          </tr>
+          <tr>
+            <td>{|Bundesland|}</td>
+            <td>{{form.bundesland}}</td>
+          </tr>
+          <tr>
+            <td>{|Land|}</td>
+            <td>{{form.land}}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-4">
+        <h2>{|Paket|}</h2>
+        <table>
+          <tr>
+            <td>{|Gewicht (in kg)|}:</td>
+            <td><input type="text" v-model="form.weight"></td>
+          </tr>
+          <tr>
+            <td>{|H&ouml;he (in cm)|}:</td>
+            <td><input type="text" size="10" v-model="form.height"></td>
+          </tr>
+          <tr>
+            <td>{|Breite (in cm)|}:</td>
+            <td><input type="text" size="10" v-model="form.width"></td>
+          </tr>
+          <tr>
+            <td>{|L&auml;nge (in cm)|}:</td>
+            <td><input type="text" size="10" v-model="form.length"></td>
+          </tr>
+          <tr>
+            <td>{|Produkt|}:</td>
+            <td>
+              <select v-model="form.method">
+                <option v-for="(value, key, index) in methods" :value="key">{{value}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>{|Nachnahme|}:</td>
+            <td><input type="checkbox" v-model="form.cashOnDelivery"> (Betrag: {{ form.codvalue }}</td>
+          </tr>
+          <tr>
+            <td>{|Wunschtermin|}:</td>
+            <td><input type="date" v-model="form.preferredDay"></td>
+          </tr>
+        </table>
+      </div>
+      <div class="clearfix"></div>
+      <div class="col-md-12">
+        <h2>{|Bestellung|}</h2>
+        <table>
+          <tr>
+            <td>{|Bestellnummer|}:</td>
+            <td><input type="text" size="36" v-model="form.order_number"></td>
+          </tr>
+          <tr>
+            <td>{|Rechnungsnummer|}:</td>
+            <td><input type="text" size="36" v-model="form.invoice_number"></td>
+          </tr>
+          <tr>
+            <td>{|Sendungsart|}:</td>
+            <td>
+              <select v-model="form.sendungsart">
+                <option v-for="(value, key) in customs_shipment_types" :value="key">{{value}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>{|Versicherungssumme|}:</td>
+            <td><input type="text" size="10" v-model="form.total_insured_value"/></td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-12">
+        <table>
+          <tr>
+            <th>{|Bezeichnung|}</th>
+            <th>{|Menge|}</th>
+            <th>{|HSCode|}</th>
+            <th>{|Herkunftsland|}</th>
+            <th>{|Einzelwert|}</th>
+            <th>{|Einzelgewicht|}</th>
+            <th>{|Währung|}</th>
+            <th>{|Gesamtwert|}</th>
+            <th>{|Gesamtgewicht|}</th>
+            <th><a v-on:click="addPosition"><img src="themes/new/images/add.png"></a></</th>
+          </tr>
+          <tr v-for="(pos, index) in form.positions">
+            <td><input type="text" v-model="pos.bezeichnung" required></td>
+            <td><input type="text" v-model="pos.menge" required></td>
+            <td><input type="text" v-model="pos.zolltarifnummer" required></td>
+            <td><input type="text" v-model="pos.herkunftsland" required></td>
+            <td><input type="text" v-model="pos.zolleinzelwert" required></td>
+            <td><input type="text" v-model="pos.zolleinzelgewicht" required></td>
+            <td><input type="text" v-model="pos.zollwaehrung" required></td>
+            <td>{{Number(pos.menge*pos.zolleinzelwert || 0).toFixed(2)}}</td>
+            <td>{{Number(pos.menge*pos.zolleinzelgewicht || 0).toFixed(3)}}</td>
+            <td><a v-on:click="deletePosition(index)"><img src="themes/new/images/delete.svg"></a></td>
+          </tr>
+          <tr>
+            <td colspan="7"></td>
+            <td>{{total_value.toFixed(2)}}</td>
+            <td>{{total_weight.toFixed(3)}}</td>
+          </tr>
+        </table>
+      </div>
+      <div>
+        <input class="btnGreen" type="submit" value="{|Paketmarke drucken|}" name="drucken">&nbsp;
+        <input type="button" value="{|Andere Versandart auswählen|}" name="anders">&nbsp;
+      </div>
+    </div>
+  </form>
+</div>
+<script type="text/javascript">
+  const sendcloudApp = new Vue({
+    el: '#sendcloudapp',
+    data: {
+      form: [JSON],
+      countries: [JSON_COUNTRIES],
+      methods: [JSON_METHODS],
+      customs_shipment_types: [JSON_CUSTOMS_SHIPMENT_TYPES],
+      messages: []
+    },
+    computed: {
+      total_value() {
+        let sum = 0;
+        for(const pos of this.form.positions) {
+          sum += pos.menge * pos.zolleinzelwert;
+        }
+        return sum;
+      },
+      total_weight() {
+        let sum = 0;
+        for(const pos of this.form.positions) {
+          sum += pos.menge * pos.zolleinzelgewicht;
+        }
+        return sum;
+      }
+    },
+    methods: {
+      submit: function() {
+        let app = this;
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', location.href, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+          let json = JSON.parse(this.response);
+          app.messages = json.messages;
+        }
+        xhr.send(JSON.stringify($.extend({submit:'print'}, this.form)));
+      },
+      addPosition: function() {
+        this.form.positions.push({ });
+      },
+      deletePosition: function(index) {
+        this.form.positions.splice(index, 1);
+      }
+    }
+  })
 </script>

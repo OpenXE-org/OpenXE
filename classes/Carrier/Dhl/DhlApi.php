@@ -24,9 +24,9 @@ class DhlApi
   public function __construct(string $user, string $signature)
   {
     $this->soapClient = new SoapClient(__DIR__ . '/Wsdl/geschaeftskundenversand-api-3.4.0.wsdl', [
-      'login' => 'ewsp',
-      'password' => 'rZ*twrzJ5@wr&$',
-      'location' => self::SANDBOX_URL,
+      'login' => 'OpenXE_1',
+      'password' => 'cjzNEpGXxbbnRwcYLISX3ZTTcQrQrz',
+      'location' => self::PRODUCTION_URL,
       'trace' => 1,
       'connection_timeout' => 30,
       'classmap' => [

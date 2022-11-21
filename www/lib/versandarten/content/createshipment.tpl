@@ -9,21 +9,47 @@
                 <h2>{|Empf&auml;nger|}</h2>
                 <table>
                     <tr>
-                        <td>{|Name|}:</td>
+                        <td>{|Adresstyp|}:</td>
+                        <td>
+                            <select v-model.number="form.addresstype">
+                                <option value="0">Haus</option>
+                                <option value="1">Packstation</option>
+                                <option value="2">Filiale</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{|Name / Zeile 1|}:</td>
                         <td><input type="text" size="36" v-model.trim="form.name"></td>
                     </tr>
-                    <tr>
-                        <td>{|Firmenname|}:</td>
-                        <td><input type="text" size="36" v-model.trim="form.companyname"></td>
+                    <tr v-if="form.addresstype === 0">
+                        <td>{|Firmenname / Zeile 2|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.name2"></td>
                     </tr>
-                    <tr>
+                    <tr v-if="form.addresstype === 1 || form.addresstype === 2">
+                        <td>{|Postnummer|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.postnumber"></td>
+                    </tr>
+                    <tr v-if="form.addresstype === 0">
+                        <td>{|Firmenname / Zeile 3|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.name3"></td>
+                    </tr>
+                    <tr v-if="form.addresstype === 0">
                         <td>{|Strasse/Hausnummer|}:</td>
                         <td>
                             <input type="text" size="30" v-model.trim="form.street">
                             <input type="text" size="5" v-model.trim="form.streetnumber">
                         </td>
                     </tr>
-                    <tr>
+                    <tr v-if="form.addresstype === 1">
+                        <td>{|Packstationsnummer|}:</td>
+                        <td><input type="text" size="10" v-model.trim="form.parcelstationNumber"></td>
+                    </tr>
+                    <tr v-if="form.addresstype === 2">
+                        <td>{|Postfilialnummer|}:</td>
+                        <td><input type="text" size="10" v-model.trim="form.postofficeNumber"></td>
+                    </tr>
+                    <tr v-if="form.addresstype === 0">
                         <td>{|Adresszeile 2|}:</td>
                         <td><input type="text" size="36" v-model.trim="form.address2"></td>
                     </tr>
@@ -44,6 +70,10 @@
                                 <option v-for="(value, key) in countries" :value="key">{{value}}</option>
                             </select>
                         </td>
+                    </tr>
+                    <tr>
+                        <td>{|Ansprechpartner|}:</td>
+                        <td><input type="text" size="36" v-model="form.contactperson"></td>
                     </tr>
                     <tr>
                         <td>{|E-Mail|}:</td>
@@ -119,7 +149,7 @@
                     <tr>
                         <td>{|Produkt|}:</td>
                         <td>
-                            <select v-model="form.product">
+                            <select v-model="form.product" required>
                                 <option v-for="prod in products" :value="prod.Id">{{prod.Name}}</option>
                             </select>
                         </td>
@@ -167,15 +197,16 @@
                         <th>{|Einzelgewicht|}</th>
                         <th>{|Gesamtwert|}</th>
                         <th>{|Gesamtgewicht|}</th>
-                        <th><a v-on:click="addPosition"><img src="themes/new/images/add.png"></a></</th>
+                        <th><a v-on:click="addPosition"><img src="themes/new/images/add.png"></a></
+                        </th>
                     </tr>
                     <tr v-for="(pos, index) in form.positions">
                         <td><input type="text" v-model.trim="pos.bezeichnung" required></td>
                         <td><input type="text" v-model.number="pos.menge" required></td>
-                        <td><input type="text" v-model.trim="pos.zolltarifnummer" required></td>
-                        <td><input type="text" v-model.trim="pos.herkunftsland" required></td>
-                        <td><input type="text" v-model.number="pos.zolleinzelwert" required></td>
-                        <td><input type="text" v-model.number="pos.zolleinzelgewicht" required></td>
+                        <td><input type="text" v-model.trim="pos.zolltarifnummer"></td>
+                        <td><input type="text" v-model.trim="pos.herkunftsland"></td>
+                        <td><input type="text" v-model.number="pos.zolleinzelwert"></td>
+                        <td><input type="text" v-model.number="pos.zolleinzelgewicht"></td>
                         <td>{{Number(pos.menge*pos.zolleinzelwert || 0).toFixed(2)}}</td>
                         <td>{{Number(pos.menge*pos.zolleinzelgewicht || 0).toFixed(3)}}</td>
                         <td><a v-on:click="deletePosition(index)"><img src="themes/new/images/delete.svg"></a></td>
@@ -201,21 +232,21 @@
         computed: {
             total_value() {
                 let sum = 0;
-                for(const pos of this.form.positions) {
+                for (const pos of this.form.positions) {
                     sum += (pos.menge * pos.zolleinzelwert) || 0;
                 }
                 return sum;
             },
             total_weight() {
                 let sum = 0;
-                for(const pos of this.form.positions) {
+                for (const pos of this.form.positions) {
                     sum += (pos.menge * pos.zolleinzelgewicht) || 0;
                 }
                 return sum;
             }
         },
         methods: {
-            submit: function() {
+            submit: function () {
                 let app = this;
                 let xhr = new XMLHttpRequest();
                 xhr.open('POST', location.href, true);
@@ -226,13 +257,13 @@
                 }
                 xhr.send(JSON.stringify($.extend({submit:'print'}, this.form)));
             },
-            addPosition: function() {
-                this.form.positions.push({ });
+            addPosition: function () {
+                this.form.positions.push({});
             },
-            deletePosition: function(index) {
+            deletePosition: function (index) {
                 this.form.positions.splice(index, 1);
             },
-            serviceAvailable: function(service) {
+            serviceAvailable: function (service) {
                 if (!this.products.hasOwnProperty(this.form.product))
                     return false;
                 return this.products[this.form.product].AvailableServices.indexOf(service) >= 0;

@@ -75,13 +75,27 @@ class Versandart_sendcloud extends Versanddienstleister
     $parcel->SenderAddressId = $this->settings->sender_address;
     $parcel->ShippingMethodId = $json->product;
     $parcel->Name = $json->name;
-    $parcel->CompanyName = $json->companyname;
+    switch ($json->addresstype) {
+      case 0:
+        $parcel->CompanyName = trim("$json->name2 $json->name3");
+        $parcel->Address = $json->street;
+        $parcel->Address2 = $json->address2;
+        $parcel->HouseNumber = $json->streetnumber;
+        break;
+      case 1:
+        $parcel->CompanyName = $json->postnumber;
+        $parcel->Address = "Packstation";
+        $parcel->HouseNumber = $json->parcelstationNumber;
+        break;
+      case 2:
+        $parcel->CompanyName = $json->postnumber;
+        $parcel->Address = "Postfiliale";
+        $parcel->HouseNumber = $json->postofficeNumber;
+        break;
+    }
     $parcel->Country = $json->country;
     $parcel->PostalCode = $json->zip;
     $parcel->City = $json->city;
-    $parcel->Address = $json->street;
-    $parcel->Address2 = $json->address2;
-    $parcel->HouseNumber = $json->streetnumber;
     $parcel->EMail = $json->email;
     $parcel->Telephone = $json->phone;
     $parcel->CountryState = $json->state;

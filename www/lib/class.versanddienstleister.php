@@ -73,19 +73,19 @@ abstract class Versanddienstleister
       $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
 
       $ret['name'] = empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : trim($docArr['ansprechpartner']);
-      $ret['companyname'] = !empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : '';
-      $ret['address2'] = join(';', array_filter([
+      $ret['name2'] = !empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : '';
+      $ret['name3'] = join(';', array_filter([
           $docArr['abteilung'],
-          $docArr['unterabteilung'],
-          $docArr['adresszusatz']
+          $docArr['unterabteilung']
       ], fn(string $item) => !empty(trim($item))));
-
+      $ret['address2'] = $docArr['adresszusatz'];
 
       $ret['city'] = $docArr['ort'];
       $ret['zip'] = $docArr['plz'];
       $ret['country'] = $docArr['land'];
       $ret['phone'] = $docArr['telefon'];
       $ret['email'] = $docArr['email'];
+      $ret['addresstype'] = 0;
 
       $strasse = trim($docArr['strasse']);
       $ret['streetwithnumber'] = $strasse;
@@ -99,6 +99,20 @@ abstract class Versanddienstleister
       }
       $ret['street'] = $strasse;
       $ret['streetnumber'] = $hausnummer;
+
+      if (str_contains($docArr['strasse'], 'Packstation')) {
+        $ret['addresstype'] = 1;
+        $ret['parcelstationNumber'] = $hausnummer;
+      } else if (str_contains($docArr['strasse'], 'Postfiliale')) {
+        $ret['addresstype'] = 2;
+        $ret['postofficeNumber'] = $hausnummer;
+      }
+
+      $tmp = join(' ', [$docArr['ansprechpartner'], $docArr['abteilung'], $docArr['unterabteilung']]);
+      if (preg_match("/\d{6,10}/", $tmp, $match)) {
+        $ret['postnumber'] = $match[0];
+      }
+
     }
 
     // wenn rechnung im spiel entweder durch versand oder direkt rechnung
@@ -350,7 +364,6 @@ abstract class Versanddienstleister
           VALUES 
           ({$address['addressId']}, {$address['lieferscheinId']}, '$this->type',
            '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
-          print_r($sql);
           $this->app->DB->Insert($sql);
 
           $filename = $this->app->erp->GetTMP() . join('_', [$this->type, 'Label', $result->TrackingNumber]) . '.pdf';

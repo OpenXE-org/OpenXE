@@ -7,7 +7,9 @@
 use Xentral\Carrier\Dhl\Data\Communication;
 use Xentral\Carrier\Dhl\Data\Country;
 use Xentral\Carrier\Dhl\Data\CreateShipmentOrderResponse;
-use Xentral\Carrier\Dhl\Data\NativeAddress;
+use Xentral\Carrier\Dhl\Data\PackStation;
+use Xentral\Carrier\Dhl\Data\Postfiliale;
+use Xentral\Carrier\Dhl\Data\ReceiverNativeAddress;
 use Xentral\Carrier\Dhl\Data\Shipment;
 use Xentral\Carrier\Dhl\Data\ShipmentItem;
 use Xentral\Carrier\Dhl\DhlApi;
@@ -77,7 +79,7 @@ class Versandart_dhl extends Versanddienstleister{
   {
     $shipment = new Shipment();
     $shipment->ShipmentDetails->product = $json->product;
-    $shipment->ShipmentDetails->accountNumber = '22222222220101';
+    $shipment->ShipmentDetails->accountNumber = $this->GetAccountNumber($json->product);
     $shipment->ShipmentDetails->SetShipmentDate(new DateTimeImmutable('today'));
     $shipment->ShipmentDetails->ShipmentItem = new ShipmentItem();
     $shipment->ShipmentDetails->ShipmentItem->weightInKG = $json->weight ?? 0;
@@ -95,12 +97,35 @@ class Versandart_dhl extends Versanddienstleister{
     $shipment->Shipper->Communication->email = $this->settings->sender_email;
     $shipment->Shipper->Communication->contactPerson = $this->settings->sender_contact_person;
     $shipment->Receiver->name1 = $json->name;
-    $shipment->Receiver->Address = new NativeAddress();
-    $shipment->Receiver->Address->streetName = $json->street ?? '';
-    $shipment->Receiver->Address->streetNumber = $json->streetnumber ?? '';
-    $shipment->Receiver->Address->city = $json->city ?? '';
-    $shipment->Receiver->Address->zip = $json->zip ?? '';
-    $shipment->Receiver->Address->Origin = Country::Create($json->country ?? 'DE', $json->state);
+    switch ($json->addresstype) {
+      case 0:
+        $shipment->Receiver->Address = new ReceiverNativeAddress();
+        $shipment->Receiver->Address->name2 = $json->name2;
+        $shipment->Receiver->Address->streetName = $json->street ?? '';
+        $shipment->Receiver->Address->streetNumber = $json->streetnumber;
+        $shipment->Receiver->Address->city = $json->city ?? '';
+        $shipment->Receiver->Address->zip = $json->zip ?? '';
+        $shipment->Receiver->Address->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        if (isset($json->address2) && !empty($json->address2))
+          $shipment->Receiver->Address->addressAddition[] = $json->address2;
+        break;
+      case 1:
+        $shipment->Receiver->Packstation = new PackStation();
+        $shipment->Receiver->Packstation->postNumber = $json->postnumber;
+        $shipment->Receiver->Packstation->packstationNumber = $json->parcelstationNumber;
+        $shipment->Receiver->Packstation->city = $json->city ?? '';
+        $shipment->Receiver->Packstation->zip = $json->zip ?? '';
+        $shipment->Receiver->Packstation->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        break;
+      case 2:
+        $shipment->Receiver->Postfiliale = new Postfiliale();
+        $shipment->Receiver->Postfiliale->postNumber = $json->postnumber;
+        $shipment->Receiver->Postfiliale->postfilialeNumber = $json->postofficeNumber;
+        $shipment->Receiver->Postfiliale->city = $json->city ?? '';
+        $shipment->Receiver->Postfiliale->zip = $json->zip ?? '';
+        $shipment->Receiver->Postfiliale->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        break;
+    }
     $shipment->Receiver->Communication = new Communication();
     $shipment->Receiver->Communication->email = $json->email;
     $shipment->Receiver->Communication->phone = $json->phone;
@@ -120,11 +145,13 @@ class Versandart_dhl extends Versanddienstleister{
         $ret->Label = base64_decode($result->CreationState->LabelData->labelData);
       if (isset($result->CreationState->LabelData->exportLabelData))
         $ret->ExportDocuments = base64_decode($result->CreationState->LabelData->exportLabelData);
-    } else {
+    } else if (isset($result->CreationState)) {
       if (is_array($result->CreationState->LabelData->Status->statusMessage))
         $ret->Errors = $result->CreationState->LabelData->Status->statusMessage;
       else
         $ret->Errors[] = $result->CreationState->LabelData->Status->statusMessage;
+    } else {
+      $ret->Errors[] = $result->Status->statusText;
     }
     return $ret;
   }
@@ -132,38 +159,62 @@ class Versandart_dhl extends Versanddienstleister{
   public function GetShippingProducts(): array
   {
     $result = [];
-    $result[] = Product::Create('V01PAK', 'DHL Paket')
-        ->WithLength(15, 120)
-        ->WithWidth(11, 60)
-        ->WithHeight(1, 60)
-        ->WithWeight(0.01, 31.5);
-    $result[] = Product::Create('V53WPAK', 'DHL Paket International')
-        ->WithLength(15, 120)
-        ->WithWidth(11, 60)
-        ->WithHeight(1, 60)
-        ->WithWeight(0.01, 31.5)
-        ->WithServices([Product::SERVICE_PREMIUM]);
-    $result[] = Product::Create('V54EPAK', 'DHL Europaket')
-        ->WithLength(15, 120)
-        ->WithWidth(11, 60)
-        ->WithHeight(3.5, 60)
-        ->WithWeight(0.01, 31.5);
-    $result[] = Product::Create('V55PAK', 'DHL Paket Connect')
-        ->WithLength(15, 120)
-        ->WithWidth(11, 60)
-        ->WithHeight(3.5, 60)
-        ->WithWeight(0.01, 31.5);
-    $result[] = Product::Create('V62WP', 'DHL Warenpost')
-        ->WithLength(10, 35)
-        ->WithWidth(7, 25)
-        ->WithHeight(0.1, 5)
-        ->WithWeight(0.01, 1);
-    $result[] = Product::Create('V66WPI', 'DHL Warenpost International')
-        ->WithLength(10, 35)
-        ->WithWidth(7, 25)
-        ->WithHeight(0.1, 10)
-        ->WithWeight(0.01, 1)
-        ->WithServices([Product::SERVICE_PREMIUM]);
+    if ($this->settings->accountnumber) {
+      $result[] = Product::Create('V01PAK', 'DHL Paket')
+          ->WithLength(15, 120)
+          ->WithWidth(11, 60)
+          ->WithHeight(1, 60)
+          ->WithWeight(0.01, 31.5);
+    }
+    if ($this->settings->accountnumber_int) {
+      $result[] = Product::Create('V53WPAK', 'DHL Paket International')
+          ->WithLength(15, 120)
+          ->WithWidth(11, 60)
+          ->WithHeight(1, 60)
+          ->WithWeight(0.01, 31.5)
+          ->WithServices([Product::SERVICE_PREMIUM]);
+    }
+    if ($this->settings->accountnumber_euro) {
+      $result[] = Product::Create('V54EPAK', 'DHL Europaket')
+          ->WithLength(15, 120)
+          ->WithWidth(11, 60)
+          ->WithHeight(3.5, 60)
+          ->WithWeight(0.01, 31.5);
+    }
+    if ($this->settings->accountnumber_connect) {
+      $result[] = Product::Create('V55PAK', 'DHL Paket Connect')
+          ->WithLength(15, 120)
+          ->WithWidth(11, 60)
+          ->WithHeight(3.5, 60)
+          ->WithWeight(0.01, 31.5);
+    }
+    if ($this->settings->accountnumber_wp) {
+      $result[] = Product::Create('V62WP', 'DHL Warenpost')
+          ->WithLength(10, 35)
+          ->WithWidth(7, 25)
+          ->WithHeight(0.1, 5)
+          ->WithWeight(0.01, 1);
+    }
+    if ($this->settings->accountnumber_wpint) {
+      $result[] = Product::Create('V66WPI', 'DHL Warenpost International')
+          ->WithLength(10, 35)
+          ->WithWidth(7, 25)
+          ->WithHeight(0.1, 10)
+          ->WithWeight(0.01, 1)
+          ->WithServices([Product::SERVICE_PREMIUM]);
+    }
     return $result;
+  }
+
+  private function GetAccountNumber(string $product):?string {
+    switch ($product) {
+      case 'V01PAK': return $this->settings->accountnumber;
+      case 'V53WPAK': return $this->settings->accountnumber_int;
+      case 'V54EPAK': return $this->settings->accountnumber_euro;
+      case 'V55PAK': return $this->settings->accountnumber_connect;
+      case 'V62WP': return $this->settings->accountnumber_wp;
+      case 'V66WPI': return $this->settings->accountnumber_wpint;
+    }
+    return null;
   }
 }
