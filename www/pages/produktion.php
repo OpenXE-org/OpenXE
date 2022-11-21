@@ -494,7 +494,7 @@ class Produktion {
                     $this->app->DB->Update($sql);                   
 
                     $msg .= "<div class=\"success\">Planung angelegt.</div>";
-                    $this->ProtokollSchreiben($id,'Produktion geplant ($artikel_planen_menge)');
+                    $this->ProtokollSchreiben($id,"Produktion geplant ($artikel_planen_menge)");
 
                 break;            
                 case 'freigeben':
