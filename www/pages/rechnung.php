@@ -889,7 +889,8 @@ class Rechnung extends GenRechnung
     }
 
     
-    $this->app->Tpl->Set('ZAHLUNGEN',"<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>Erst ab Version Enterprise verf&uuml;gbar</table>");
+//    $this->app->Tpl->Set('ZAHLUNGEN',"<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>Erst ab Version Enterprise verf&uuml;gbar</table>");
+    $this->app->Tpl->Set('ZAHLUNGEN',$this->RechnungZahlung(true));
 
 	if (!is_null($gutschrift)) {
 
@@ -2712,4 +2713,183 @@ class Rechnung extends GenRechnung
 
     return $this->app->DB->GetInsertID();
   }
+
+
+  function RechnungZahlung($return=false)
+  {
+    $id = $this->app->Secure->GetGET('id');
+
+    $rechnungArr = $this->app->DB->SelectArr(
+      "SELECT DATE_FORMAT(datum,'%d.%m.%Y') as datum, belegnr, soll, waehrung, rechnungid 
+      FROM rechnung WHERE id='$id' LIMIT 1"
+    );
+    $waehrung = empty($rechnungArr)?'EUR':$rechnungArr[0]['waehrung'];
+    if(!$waehrung) {
+      $waehrung = 'EUR';
+    }
+
+    $rechnungid = empty($rechnungArr)?0: $rechnungArr[0]['rechnungid'];
+
+    $auftragid = $rechnungid <= 0?0:$this->app->DB->Select(
+      sprintf(
+        'SELECT `auftragid` FROM `rechnung` WHERE `id` = %d LIMIT 1',
+        $rechnungid
+      )
+    );
+    $eingang ="<tr><td colspan=\"3\"><b>Zahlungen</b></td></tr>";
+
+
+    $eingang .="<tr><td class=auftrag_cell>".$rechnungArr[0]['datum']
+      ."</td><td class=auftrag_cell>RG ".$rechnungArr[0]['belegnr']
+      ."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($rechnungArr[0]['soll'])
+      ." $waehrung</td></tr>";
+
+    $eingangArr = $this->app->DB->SelectArr(
+      "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%d.%m.%Y') as datum, k.id as kontoauszuege, 
+       ke.betrag as betrag, k.id as zeile,k.waehrung 
+      FROM kontoauszuege_zahlungseingang ke 
+      LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
+      LEFT JOIN konten ko ON k.konto=ko.id 
+      WHERE (ke.objekt='rechnung' AND ke.parameter='$id') 
+         OR (ke.objekt='auftrag' AND ke.parameter='$auftragid' AND ke.parameter>0)
+        OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0)"
+    );
+    $ceingangArr = empty($eingangArr)?0:(!empty($eingangArr)?count($eingangArr):0);
+
+    for($i=0;$i<$ceingangArr;$i++) {
+      $waehrung = 'EUR';
+      if($eingangArr[$i]['waehrung']) {
+        $waehrung = $eingangArr[$i]['waehrung'];
+      }
+      $eingang .="<tr><td class=auftrag_cell>".$eingangArr[$i]['datum']
+        ."</td><td class=auftrag_cell>".$eingangArr[$i]['konto']
+        ."&nbsp;(<a href=\"index.php?module=zahlungseingang&action=editzeile&id="
+        .$eingangArr[$i]['zeile']."\">zur Buchung</a>)</td><td class=auftrag_cell align=right>"
+        .$this->app->erp->EUR($eingangArr[$i]['betrag'])
+        ." $waehrung</td></tr>";
+    }
+    // rechnungen zu dieser rechnung anzeigen
+
+    $rechnungen = $this->app->DB->SelectArr("SELECT belegnr, DATE_FORMAT(datum,'%d.%m.%Y') as datum,soll FROM rechnung WHERE rechnungid='$id'");
+
+    for($i=0;$i<(!empty($rechnungen)?count($rechnungen):0);$i++)
+      $eingang .="<tr><td class=auftrag_cell>".$rechnungen[$i]['datum']."</td><td class=auftrag_cell>GS ".$rechnungen[$i]['belegnr']."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($rechnungen[$i]['soll'])." EUR</td></tr>";
+
+    $ausgang = '';
+    $ausgangArr = $this->app->DB->SelectArr(
+      "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%d.%m.%Y') as datum, ke.betrag as betrag, 
+       k.id as zeile,k.waehrung 
+      FROM kontoauszuege_zahlungsausgang ke 
+      LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
+      LEFT JOIN konten ko ON k.konto=ko.id 
+      WHERE (ke.objekt='rechnung' AND ke.parameter='$id') 
+         OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0) 
+        OR (ke.objekt='auftrag' AND ke.parameter='$auftragid'  AND ke.parameter>0)"
+    );
+    $cAusgangArr = empty($ausgangArr)?0:(!empty($ausgangArr)?count($ausgangArr):0);
+    for($i=0;$i<$cAusgangArr;$i++) {
+      $waehrung = 'EUR';
+      if($ausgangArr[$i]['waehrung']) {
+        $waehrung = $ausgangArr[$i]['waehrung'];
+      }
+      $ausgang .="<tr><td class=auftrag_cell>".$ausgangArr[$i]['datum']."</td><td class=auftrag_cell>"
+        .$ausgangArr[$i]['konto']."&nbsp;(<a href=\"index.php?module=zahlungseingang&action=editzeile&id="
+        .$ausgangArr[$i]['zeile']."\">zur Buchung</a>)</td><td class=auftrag_cell align=right>"
+        .$this->app->erp->EUR($ausgangArr[$i]['betrag'])
+        ." $waehrung</td></tr>";
+    }
+
+    $saldo = $this->app->erp->EUR($this->RechnungSaldo($id));
+
+    if($saldo < 0) {
+      $saldo = "<b style=\"color:red\">$saldo</b>";
+    }
+    $waehrung = $this->app->DB->Select("SELECT waehrung FROM rechnung WHERE id = '$id' LIMIT 1");
+    if(!$waehrung) {
+      $waehrung = 'EUR';
+    }
+    $ausgang .="<tr><td class=auftrag_cell></td><td class=auftrag_cell align=right>Saldo</td><td class=auftrag_cell align=right>$saldo $waehrung</td></tr>";
+
+    if($return) {
+      return "<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$eingang." ".$ausgang."</table>";
+    }
+  }
+
+public function RechnungSaldo($id)
+  {
+    if($id <= 0) {
+      return 0;
+    }
+
+    $rechnungid = $this->app->DB->Select(
+      sprintf(
+        'SELECT `rechnungid` FROM `rechnung` WHERE `id`= %d LIMIT 1',
+        $id
+      )
+    );
+    $auftragid = $rechnungid <= 0?0:$this->app->DB->Select(
+      sprintf(
+        'SELECT `auftragid` FROM `rechnung` WHERE `id`=%d LIMIT 1',
+        $rechnungid
+      )
+    );
+
+    $eingangArr = $this->app->DB->SelectArr(
+      sprintf(
+        "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%%d.%%m.%%Y') as datum, k.id as kontoauszuege, ke.betrag as betrag 
+        FROM `kontoauszuege_zahlungseingang` AS `ke`
+        LEFT JOIN `kontoauszuege` AS `k` ON ke.kontoauszuege=k.id 
+        LEFT JOIN `konten` AS `ko` ON k.konto=ko.id 
+        WHERE (ke.objekt='rechnung' AND ke.parameter=%d) 
+          OR (ke.objekt='auftrag' AND ke.parameter=%d AND ke.parameter>0)
+          OR (ke.objekt='rechnung' AND ke.parameter=%d  AND ke.parameter>0)",
+        $id, $auftragid, $rechnungid
+      )
+    );
+    $einnahmen = 0;
+    if(!empty($eingangArr)) {
+      foreach($eingangArr AS $eingangRow) {
+        $einnahmen += $eingangRow['betrag'];
+      }
+    }
+
+    //$rechnungen = $this->app->DB->SelectArr("SELECT belegnr, DATE_FORMAT(datum,'%d.%m.%Y') as datum,soll FROM rechnung WHERE rechnungid='$id' "); // alt
+    $rechnungen = $this->app->DB->SelectArr(
+      sprintf(
+        "SELECT ro.belegnr, DATE_FORMAT(ro.datum,'%%d.%%m.%%Y') as datum, ro.soll 
+        FROM `rechnung` AS `ro` 
+        WHERE ro.`id` = %d ",
+        $id
+      )
+    );
+
+    if(!empty($rechnungen)) {
+      foreach($rechnungen as $rechnungRow) {
+        $einnahmen += $rechnungRow['soll'];
+      }
+    }
+
+    $ausgangArr = $this->app->DB->SelectArr(
+      sprintf(
+        "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%%d.%%m') as datum, ke.betrag as betrag 
+        FROM kontoauszuege_zahlungsausgang ke
+        LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
+        LEFT JOIN konten ko ON k.konto=ko.id 
+        WHERE (ke.objekt='rechnung' AND ke.parameter=%d) 
+           OR (ke.objekt='rechnung' AND ke.parameter=%d  AND ke.parameter>0)
+           OR (ke.objekt='auftrag' AND ke.parameter=%d AND ke.parameter>0)",
+        $id, $rechnungid, $auftragid
+      )
+    );
+    $ausgaben = 0;
+    if(!empty($ausgangArr)){
+      foreach($ausgangArr as $ausgangRow) {
+        $ausgaben += $ausgangRow['betrg'];
+      }
+    }
+
+    return $einnahmen - $ausgaben;
+  }
+
+
 }

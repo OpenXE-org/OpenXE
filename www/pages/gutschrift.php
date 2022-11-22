@@ -620,6 +620,8 @@ class Gutschrift extends GenGutschrift
       $tmp3->DisplayNew('PDFARCHIV','Men&uuml;','noAction');
     }
 
+    $this->app->Tpl->Add('ZAHLUNGEN',$this->GutschriftZahlung(true));
+
     if($parsetarget=='') {
       $this->app->Tpl->Output('gutschrift_minidetail.tpl');
       $this->app->ExitXentral();
@@ -738,7 +740,7 @@ class Gutschrift extends GenGutschrift
         ." $waehrung</td></tr>";
     }
 
-    $saldo = $this->app->erp->EUR($this->app->erp->GutschriftSaldo($id));
+    $saldo = $this->app->erp->EUR($this->GutschriftSaldo($id));
 
     if($saldo < 0) {
       $saldo = "<b style=\"color:red\">$saldo</b>";
