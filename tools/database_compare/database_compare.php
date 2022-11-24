@@ -346,19 +346,6 @@ if ($argc > 1) {
   exit;
 }
 
-function info() {
-    echo("\nOpenXE database extractor\n");
-    echo("Copyright 2022 (c) OpenXE project\n\n");
-    echo("\n");
-    echo("Export database structures in a defined format for database comparison / upgrade\n");
-    echo("Options\n");
-    echo("\t-v: verbose output\n");
-    echo("\t-f: force override of existing files\n");
-    echo("\t-e: export database structure to files\n");
-    echo("\t-c: compare content of files with database structure\n");
-    echo("\n");
-}
-
 // Compare two definitions
 // Report based on the first array
 // Return Array
@@ -448,4 +435,16 @@ function compare_table_array(array $nominal, array $actual, bool $check_column_d
     return($compare_differences);
 }
 
+function info() {
+    echo("OpenXE database compare\n");
+    echo("Copyright 2022 (c) OpenXE project\n");
+    echo("\n");
+    echo("Export database structures in a defined format for database comparison / upgrade\n");
+    echo("Options:\n");
+    echo("\t-v: verbose output\n");
+    echo("\t-f: force override of existing files\n");
+    echo("\t-e: export database structure to files\n");
+    echo("\t-c: compare content of files with database structure\n");
+    echo("\n");
+}
 
