@@ -122,7 +122,6 @@ if ($argc > 1) {
         echo "Query error: '" . mysqli_error($mysqli)."'";
         exit;
     } 
-    $tables = array();
     while ($row = mysqli_fetch_assoc($result)) {
         $table = array();
         $table['name'] = $row['Tables_in_'.$schema];
@@ -307,10 +306,10 @@ if ($argc > 1) {
 
         // Do the comparison
 
-        echo("--------------- Comparison database vs. CSV ---------------\n");
+        echo("--------------- Comparison database (nominal) vs. CSV (actual) ---------------\n");
 
-        echo("Number of tables: ".count($tables)." in Database, ".count($compare_tables)." in CSV.\n");
-        $compare_differences = compare_table_array($tables,$compare_tables,true,$verbose);
+        echo("Number of tables: ".count($tables)." in database, ".count($compare_tables)." in CSV.\n");
+        $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",true,$verbose);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
     
         foreach ($compare_differences as $compare_difference) {
@@ -321,8 +320,8 @@ if ($argc > 1) {
             }
             echo("\n");
         }           
-        echo("--------------- Comparison CSV vs. database ---------------\n");
-        $compare_differences = compare_table_array($compare_tables,$tables,false,$verbose);
+        echo("--------------- Comparison CSV (nominal) vs. database (actual) ---------------\n");
+        $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",false,$verbose);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
     
         foreach ($compare_differences as $compare_difference) {
@@ -349,13 +348,15 @@ if ($argc > 1) {
 // Compare two definitions
 // Report based on the first array
 // Return Array
-function compare_table_array(array $nominal, array $actual, bool $check_column_definitions, bool $verbose) : array {
- 
+function compare_table_array(array $nominal, string $nominal_name, array $actual, string $actual_name, bool $check_column_definitions, bool $verbose) : array {
+
+    $compare_differences = array();
+
     if (count($nominal) != count($actual)) {
         $compare_difference = array();
         $compare_difference['type'] = "Table count";
-        $compare_difference['nominal'] = count($nominal);
-        $compare_difference['actual'] = count($actual);
+        $compare_difference[$nominal_name] = count($nominal);
+        $compare_difference[$actual_name] = count($actual);
         $compare_differences[] = $compare_difference;
     }
 
@@ -398,8 +399,8 @@ function compare_table_array(array $nominal, array $actual, bool $check_column_d
                                 $compare_difference['type'] = "Column definition";
                                 $compare_difference['table'] = $database_table['name'];
                                 $compare_difference['column'] = $column['Field'];
-                                $compare_difference['nominal'] = $key."=".$value;
-                                $compare_difference['actual'] = $key."=".$found_column[$key];
+                                $compare_difference[$nominal_name] = $key."=".$value;
+                                $compare_difference[$actual_name] = $key."=".$found_column[$key];
                                 $compare_differences[] = $compare_difference;
                                 if ($verbose) {
                                     echo($color_red."Difference:".$color_default." Column '".$column['Field']."' (".$key."=".$value.") from table '".$database_table['name']."' is different from '".$found_table['name']."' (".$key."=".$found_column[$key].") in CSV.\n");
@@ -412,7 +413,7 @@ function compare_table_array(array $nominal, array $actual, bool $check_column_d
                     $compare_difference = array();
                     $compare_difference['type'] = "Column existance";
                     $compare_difference['table'] = $database_table['name'];
-                    $compare_difference['column'] = $column['Field'];
+                    $compare_difference[$nominal_name] = $column['Field'];
                     $compare_differences[] = $compare_difference;
                     if ($verbose) {
                         echo($color_red."Difference:".$color_default." Column '".$column['Field']."' from table '".$database_table['name']."' in table '".$found_table['name']."' not found in CSV.\n");
@@ -423,7 +424,7 @@ function compare_table_array(array $nominal, array $actual, bool $check_column_d
         } else {
             $compare_difference = array();
             $compare_difference['type'] = "Table existance";
-            $compare_difference['table'] = $database_table['name'];
+            $compare_difference[$nominal_name] = $database_table['name'];
             $compare_differences[] = $compare_difference;
             if ($verbose) {
                 echo($color_red."Difference:".$color_default." Table '".$database_table['name']."' not found in CSV '$tables_file_name'.\n");
