@@ -98,6 +98,18 @@ if ($argc > 1) {
       $onlytables = false;
     } 
 
+    if (in_array('-upgrade', $argv)) {
+      $upgrade = true;
+    } else {
+      $upgrade = false;
+    } 
+
+    if (in_array('-clean', $argv)) {
+      $clean = true;
+    } else {
+      $clean = false;
+    } 
+
     echo("--------------- Loading from database $schema@$host... ---------------\n");
     $tables = load_tables_from_db($host, $schema, $user, $passwd);
 
@@ -122,7 +134,7 @@ if ($argc > 1) {
         echo("--------------- Export to CSV complete. ---------------\n");
     }
 
-    if ($compare) {
+    if ($compare || $upgrade) {
 
         // Results here as ['text'] ['diff']
         $compare_differences = array();
@@ -166,6 +178,142 @@ if ($argc > 1) {
         }           
 
         echo("--------------- Comparison complete. ---------------\n");
+    }
+
+    if ($upgrade) {
+        // First create all tables that are missing in the db
+        echo("--------------- Upgrading database... ---------------\n");
+
+        $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
+
+        foreach ($compare_differences as $compare_difference) {
+            switch ($compare_difference['type']) {
+                case 'Table existance':
+
+                    // Get table definition from CSV
+
+                    $table_name = $compare_difference['in CSV']; 
+
+                    $table_key = array_search($table_name,array_column($compare_tables,'name'));
+
+                    if (!empty($table_key)) {
+                        $table = $compare_tables[$table_key];
+
+                        switch ($table['type']) {
+                            case 'BASE TABLE':
+
+                                // Create table in DB
+                                $sql = "";
+                                $sql = "CREATE TABLE `".$table['name']."` (";                     
+                
+                                $comma = "";
+
+                                $primary_keys = array();
+                                $keys = array();
+
+                                foreach ($table['columns'] as $column) {
+
+                                    $sql .= $comma.column_sql_definition($table_name, $column);
+                                 
+                                    $comma = ",";
+
+                                    if ($column['Key'] == 'PRI') {
+                                        $primary_keys[] = $column['Field'];
+                                    }
+                                    if ($column['Key'] == 'MUL') {
+                                        $keys[] = $column['Field'];
+                                    }
+                                }
+        
+                                if (!empty($primary_keys)) {
+                                    $sql .= ", PRIMARY KEY (".implode(",",$primary_keys).")";
+                                }
+                                if (!empty($keys)) {
+                                    $sql .= ", KEY (".implode("), KEY (",$keys).")";
+                                }
+
+
+                                $sql .= ");";     
+                
+                                echo($sql."\n");
+
+                            break;
+                            default:
+                                echo("Upgrade type '".$table['type']."' on table '".$table['name']."' not supported.\n");
+                            break;
+                        }
+                    } else {
+                        echo("Error while creating table $table_name.\n");
+                    }
+
+                break;
+                case 'Column existance':
+                    $table_name = $compare_difference['table']; 
+                    $column_name = $compare_difference['in CSV']; 
+                    $table_key = array_search($table_name,array_column($compare_tables,'name'));
+                    if (!empty($table_key)) {
+                        $table = $compare_tables[$table_key];
+                        $columns = $table['columns'];                  
+                        $column_key = array_search($column_name,array_column($columns,'Field'));
+                        if (!empty($column_key)) {
+                            $column = $table['columns'][$column_key];
+                            $sql = "ALTER TABLE `$table_name` CREATE COLUMN "; 
+                            $sql .= column_sql_definition($table_name, $column);
+                            $sql .= ";";
+                            echo($sql."\n");
+
+                            // KEYS?
+
+                        }
+                        else {
+                            echo("Error column_key while creating column $column_name in table '".$table['name']."'\n");
+                        }
+                    }
+                    else {
+                        echo("Error table_key while creating column $column_name in table $table_name.\n");
+                    }
+                    // Create Column in DB
+                break;
+                case 'Column definition':
+                    $table_name = $compare_difference['table']; 
+                    $column_name = $compare_difference['column']; 
+                    $table_key = array_search($table_name,array_column($compare_tables,'name'));
+                    if (!empty($table_key)) {
+                        $table = $compare_tables[$table_key];
+                        $columns = $table['columns'];                   
+                        $column_key = array_search($column_name,array_column($columns,'Field'));
+                        if (!empty($column_key)) {
+                            $column = $table['columns'][$column_key];
+                            $sql = "ALTER TABLE `$table_name` MODIFY COLUMN ";
+                            $sql .= column_sql_definition($table_name, $column);
+                            $sql .= ";";
+                            echo($sql."\n");
+                        }
+                        else {
+                            echo("Error column_key while modifying column $column_name in table '".$table['name']."'\n");
+
+                            print_r($columns);
+                        }
+                    }
+                    else {
+                        echo("Error table_key while modifying column $column_name in table $table_name.\n");
+                    }
+                    // Modify Column in DB
+                break;
+                case 'Table count':
+                    // Nothing to do
+                break;
+                case 'Table type':
+                   echo("Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.\n");
+                break;
+                default:
+                   echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
+                break;
+            }
+        }
+
+        // Then add the columns to the created tables according to the CSV definition
+        echo("--------------- Upgrading database complete. ---------------\n");
     }
 
     echo("--------------- Done. ---------------\n");
@@ -421,6 +569,38 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
     return($compare_differences);
 }
 
+
+// Generate SQL to create or modify column
+function column_sql_definition(string $table_name, array $column) : string {    
+
+    // These default values will not be in quotes
+    $mysql_default_values_without_quote = array('current_timestamp()');
+
+    if ($column['Null'] == "NO") {
+        $column['Null'] = "NOT"; // Idiotic...
+    }
+    if ($column['Null'] == "YES") {
+        $column['Null'] = ""; // Also Idiotic...
+    }
+
+    if ($column['Default'] != '') {
+       if (in_array(strtolower($column['Default']),$mysql_default_values_without_quote)) {
+            $quote = "";
+       } else {
+            $quote = "'";
+       }
+       $column['Default'] = "DEFAULT $quote".$column['Default']."$quote"; 
+    }
+
+    $sql =                             
+        "`".$column['Field']."` ".
+        $column['Type']." ".
+        $column['Null']." NULL ".
+        $column['Default'];
+
+    return($sql);
+}
+
 function info() {
     echo("OpenXE database compare\n");
     echo("Copyright 2022 (c) OpenXE project\n");
@@ -432,6 +612,8 @@ function info() {
     echo("\t-e: export database structure to files\n");
     echo("\t-c: compare content of files with database structure\n");
     echo("\t-i: ignore column definitions\n");
+    echo("\t-upgrade: upgrade the database to match the CSV definition (risky)\n");
+    echo("\t-clean: remove items from the database that are not in the CSV definition (risky)\n");
     echo("\n");
 }
 
