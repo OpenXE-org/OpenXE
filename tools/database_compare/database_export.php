@@ -307,80 +307,37 @@ if ($argc > 1) {
 
         // Do the comparison
 
-        echo("--------------- Comparison... ---------------\n");
+        echo("--------------- Comparison database vs. CSV ---------------\n");
 
         echo("Number of tables: ".count($tables)." in Database, ".count($compare_tables)." in CSV.\n");
-
-        if (count($tables) != count($compare_tables)) {
-
-        }
-
-   
-        foreach ($tables as $database_table) {
-            
-            $found_table = array(); 
-            foreach ($compare_tables as $compare_table) {
-                if ($database_table['name'] == $compare_table['name']) {
-                    $found_table = $compare_table;
-                    break;
-                }
+        $compare_differences = compare_table_array($tables,$compare_tables,true,$verbose);
+        echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
+    
+        foreach ($compare_differences as $compare_difference) {
+            $comma = "";
+            foreach ($compare_difference as $key => $value) {
+                echo($comma."$key => '$value'");
+                $comma = ", ";
             }
-            unset($compare_table);
-
-            if ($found_table) {
-
-                if ($verbose) {
-                    echo("Table '".$database_table['name']."' found in CSV '$tables_file_name'.\n");
-                }              
-              
-                // Check columns
-                $compare_table_columns = array_column($found_table['columns'],'Field');
-
-                foreach ($database_table['columns'] as $column) {
-
-                    $column_name_to_find = $column['Field'];
-                    $column_key = array_search($column_name_to_find,$compare_table_columns,true);
-                    if ($column_key !== false) {
-                            
-                        if ($verbose) {
-                            echo("Column '".$column['Field']."' from table '".$database_table['name']."' in table '".$found_table['name']."' found in CSV.\n");
-                        }
-
-                        $column_diff = array_diff($column,$found_table['columns'][$column_key]);
-                            
-                        if (!empty($column_diff)) {
-                            $compare_difference = array();
-                            $compare_difference['text'] = $color_red."Difference:".$color_default." Column '".$column['Field']."' from table '".$database_table['name']."' is different from '".$found_table['name']."' in CSV.\n";
-                            $compare_difference['diff'] = $column_diff;
-                            $compare_differences[] = $compare_difference;
-                            echo($compare_difference['text']);
-                        }
-                    } else {
-                        $compare_difference = array();
-                        $compare_difference['text'] = $color_red."Difference:".$color_default." Column '".$column['Field']."' from table '".$database_table['name']."' in table '".$found_table['name']."' not found in CSV.\n";
-                        $compare_difference['diff'] = $column_diff;
-                        $compare_differences[] = $compare_difference;
-                        echo($compare_difference['text']);          
-                    }
-                } 
-                unset($column); 
-            } else {
-                $compare_difference = array();
-                $compare_difference['text'] = $color_red."Difference:".$color_default." Table '".$database_table['name']."' not found in CSV '$tables_file_name'.\n";
-                $compare_difference['diff'] = $column_diff;
-                $compare_differences[] = $compare_difference;
-                echo($compare_difference['text']);     
+            echo("\n");
+        }           
+        echo("--------------- Comparison CSV vs. database ---------------\n");
+        $compare_differences = compare_table_array($compare_tables,$tables,false,$verbose);
+        echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
+    
+        foreach ($compare_differences as $compare_difference) {
+            $comma = "";
+            foreach ($compare_difference as $key => $value) {
+                echo($comma."$key => '$value'");
+                $comma = ", ";
             }
-        }
-        unset($database_table);
+            echo("\n");
+        }           
 
-        echo("\nComparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
-        
         echo("--------------- Comparison complete. ---------------\n");
-
     }
 
-    echo("--------------- Done! ---------------\n");
+    echo("--------------- Done. ---------------\n");
 
     echo("\n");
 
@@ -402,5 +359,93 @@ function info() {
     echo("\n");
 }
 
+// Compare two definitions
+// Report based on the first array
+// Return Array
+function compare_table_array(array $nominal, array $actual, bool $check_column_definitions, bool $verbose) : array {
+ 
+    if (count($nominal) != count($actual)) {
+        $compare_difference = array();
+        $compare_difference['type'] = "Table count";
+        $compare_difference['nominal'] = count($nominal);
+        $compare_difference['actual'] = count($actual);
+        $compare_differences[] = $compare_difference;
+    }
+
+    foreach ($nominal as $database_table) {
+        
+        $found_table = array(); 
+        foreach ($actual as $compare_table) {
+            if ($database_table['name'] == $compare_table['name']) {
+                $found_table = $compare_table;
+                break;
+            }
+        }
+        unset($compare_table);
+
+        if ($found_table) {
+
+            if ($verbose) {
+                echo("Table '".$database_table['name']."' found in CSV '$tables_file_name'.\n");
+            }              
+          
+            // Check columns
+            $compare_table_columns = array_column($found_table['columns'],'Field');
+
+            foreach ($database_table['columns'] as $column) {
+
+                $column_name_to_find = $column['Field'];
+                $column_key = array_search($column_name_to_find,$compare_table_columns,true);
+                if ($column_key !== false) {
+                        
+                    if ($verbose) {
+                        echo("Column '".$column['Field']."' from table '".$database_table['name']."' in table '".$found_table['name']."' found in CSV.\n");
+                    }
+
+                    // Compare the properties of the columns
+                    if ($check_column_definitions) {
+                        $found_column = $found_table['columns'][$column_key];
+                        foreach ($column as $key => $value) {                            
+                            if ($found_column[$key] != $value) {
+                                $compare_difference = array();
+                                $compare_difference['type'] = "Column definition";
+                                $compare_difference['table'] = $database_table['name'];
+                                $compare_difference['column'] = $column['Field'];
+                                $compare_difference['nominal'] = $key."=".$value;
+                                $compare_difference['actual'] = $key."=".$found_column[$key];
+                                $compare_differences[] = $compare_difference;
+                                if ($verbose) {
+                                    echo($color_red."Difference:".$color_default." Column '".$column['Field']."' (".$key."=".$value.") from table '".$database_table['name']."' is different from '".$found_table['name']."' (".$key."=".$found_column[$key].") in CSV.\n");
+                                }
+                            }
+                        }
+                        unset($value);                          
+                    } // $check_column_definitions
+                } else {
+                    $compare_difference = array();
+                    $compare_difference['type'] = "Column existance";
+                    $compare_difference['table'] = $database_table['name'];
+                    $compare_difference['column'] = $column['Field'];
+                    $compare_differences[] = $compare_difference;
+                    if ($verbose) {
+                        echo($color_red."Difference:".$color_default." Column '".$column['Field']."' from table '".$database_table['name']."' in table '".$found_table['name']."' not found in CSV.\n");
+                    }
+                }
+            } 
+            unset($column); 
+        } else {
+            $compare_difference = array();
+            $compare_difference['type'] = "Table existance";
+            $compare_difference['table'] = $database_table['name'];
+            $compare_differences[] = $compare_difference;
+            if ($verbose) {
+                echo($color_red."Difference:".$color_default." Table '".$database_table['name']."' not found in CSV '$tables_file_name'.\n");
+            }
+        }
+    }
+    unset($database_table);
+
+    return($compare_differences);
+}
 
 
