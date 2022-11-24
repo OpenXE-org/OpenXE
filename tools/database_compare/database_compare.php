@@ -92,135 +92,33 @@ if ($argc > 1) {
       $compare = false;
     } 
 
-
-/*    if (strpos($argv[1],'-') == 0) {
-        $module_name = $argv[1];
+    if (in_array('-i', $argv)) {
+      $onlytables = true;
     } else {
-      info();
-      exit;
-    }*/
-
-    // First get the contents of the database table structure
-    $mysqli = mysqli_connect($host, $user, $passwd, $schema);
-
-    /* Check if the connection succeeded */
-    if (!$mysqli) {
-        echo "Connection failed\n";
-        echo "Error number: " . mysqli_connect_errno() . "\n";
-        echo "Error message: '" . mysqli_connect_error() . "'\n\n";
-        exit;
-    }
-
-    echo "--------------- Successfully connected! --------------- \n";  
-    echo("--------------- Loading from database... ---------------\n");
-
-    // Get tables and views
-    $tables = array();
-    $sql = "SHOW FULL TABLES"; 
-    $result = mysqli_query($mysqli, $sql);
-    if (!$result) {
-        echo "Query error: '" . mysqli_error($mysqli)."'";
-        exit;
+      $onlytables = false;
     } 
-    while ($row = mysqli_fetch_assoc($result)) {
-        $table = array();
-        $table['name'] = $row['Tables_in_'.$schema];
-        $table['type'] = $row['Table_type'];
-        $tables[] = $table; // Add table to list of tables
+
+    echo("--------------- Loading from database $schema@$host... ---------------\n");
+    $tables = load_tables_from_db($host, $schema, $user, $passwd);
+
+    if (empty($tables)) {
+        echo ("Could not load from $schema@$host\n");
+        exit;
     }
-
-    // Get and add columns of the table
-    foreach ($tables as &$table) {    
-        $sql = "SHOW FULL COLUMNS FROM ".$table['name'];
-        $result = mysqli_query($mysqli, $sql);
-
-        if (!$result) {
-            echo "Query error: '" . mysqli_error($mysqli)."'\n\n";
-            exit;
-        }
-
-        $columns = array();
-        while ($column = mysqli_fetch_assoc($result)) {
-            $columns[] = $column; // Add column to list of columns
-        }     
-
-        $table['columns'] = $columns;     
-
-        if ($verbose) {
-                echo("Table '".$table['name']."' of type '".$table['type']."'\n");   
-        }
-   
-    }   
-    unset($table);    
-    // ------ IMPORT COMPLETE ------
 
     echo("--------------- Loading from database complete. ---------------\n");
-
 
     if ($export) {
 
         echo("--------------- Export to CSV... ---------------\n");
+        $result = save_tables_to_csv($tables, $target_folder, $tables_file_name, $delimiter, $quote, $force);
 
-        // Prepare tables file
-        if (!is_dir($target_folder)) {
-            mkdir($target_folder);
-        }
-        if (!$force && file_exists($tables_file_name)) {
-            echo("File exists: '" .$tables_file_name . "'!\n");
-            echo("Use -f to force overwrite.\n\n");
+        if (!$result) {
+            echo ("Could not save to CSV $path/$tables_file_name\n");
             exit;
         }
-
-        $tables_file = fopen($tables_file_name, "w");
-        if (empty($tables_file)) {
-            echo ("Failed to write to '" . $tables_file_name."'!\n\n");
-            exit();
-        }
-
-        $first_table = true;
-        // Now export all colums of the tables
-        foreach ($tables as $export_table) {
-        
-            if ($verbose) {
-                echo("Table '".$export_table['name']."' of type '".$export_table['type']."' loaded from database.\n");   
-            }
-            if ($first_table) {
-                $first_table = false;
-                fwrite($tables_file,$quote.'name'.$quote.$delimiter.$quote.'type'.$quote."\n");  
-            }
-            fwrite($tables_file,$quote.$export_table['name'].$quote.$delimiter.$quote.$export_table['type'].$quote."\n");  
-
-            // Prepare export_table file
-            $table_file_name = $target_folder."/".$export_table['name'].".txt";
-            if (!$force && file_exists($table_file_name)) {
-                echo("File exists: '" .$table_file_name . "'!\n");
-                echo("Use -f to force overwrite.\n\n");
-                exit;
-            }
-            $table_file = fopen($table_file_name, "w");
-            if (empty($table_file)) {
-                echo ("Failed to write to '" . $table_file_name."'!\n\n");
-                exit();
-            }  
-
-            $first_column = true;
-
-            foreach ($export_table['columns'] as $column) {
-                if ($first_column) {
-                    $first_column = false;
-                    fwrite($table_file,implode_with_quote($quote,$delimiter,array_keys($column))."\n");  
-                }
-                fwrite($table_file,implode_with_quote($quote,$delimiter,array_values($column))."\n");  
-            }
-            unset($column);
-
-            fclose($table_file);
-        }
-        unset($export_table);
-
+    
         echo("Exported ".count($tables)." tables.\n");
-        fwrite($tables_file,"\n");  
-        fclose($tables_file);
         echo("--------------- Export to CSV complete. ---------------\n");
     }
 
@@ -230,86 +128,20 @@ if ($argc > 1) {
         $compare_differences = array();
 
         echo("--------------- Loading from CSV... ---------------\n");
+        $compare_tables = load_tables_from_csv($target_folder, $tables_file_name_wo_folder, $delimiter, $quote);
 
-        $compare_tables = array();
-        $first_table = true;
-        $tables_file = fopen($tables_file_name, "r");
-
-        if (!$tables_file) {
-            echo("File not found: '" .$tables_file_name . "'\n");
-            echo("\n");
+        if (empty($compare_tables)) {
+            echo ("Could not load from CSV $path/$tables_file_name\n");
             exit;
         }
-
-        while (($csv_line = fgetcsv($tables_file,0,$delimiter,$quote)) !== FALSE) {
-
-            if ($first_table) {
-                $first_table = false;
-            } else if (count($csv_line) == 2) {
-                $new_compare_table = array();
-                $new_compare_table['name'] = $csv_line['0'];
-                $new_compare_table['type'] = $csv_line['1'];
-                $compare_tables[] = $new_compare_table;
-
-                if ($verbose) {
-                    echo("Table '".$new_compare_table['name']."' loaded from CSV '$tables_file_name'.\n");
-                }
-
-            } else {
-                         
-            }
-        }
-        fclose($tables_file);
-
-        // Get columns for each compare_table
-
-        foreach ($compare_tables as &$compare_table) {
-    
-            $table_file_name = $target_folder."/".$compare_table['name'].".txt";
-            if (!file_exists($table_file_name)) {
-                echo("File not found: '" .$table_file_name . "'\n");
-                echo("\n");
-                exit;
-            }
-            $table_file = fopen($table_file_name, "r");
-            if (empty($table_file)) {
-                echo ("Failed to open '" . $table_file_name."'\n\n");
-                exit();
-            }  
-
-            $first_column = true;
-            $column_headers = array();
-            $columns = array();
-            $column = array();
-            while (($csv_line = fgetcsv($table_file,0,$delimiter,$quote)) !== FALSE) {
-
-                if ($first_column) {
-                    $first_column = false;
-                    $column_headers = $csv_line;
-                } else {                    
-                    for ($cr = 0;$cr < count($csv_line);$cr++) {
-                        $column[$column_headers[$cr]] = $csv_line[$cr];
-                    }   
-                    $columns[] = $column;                                     
-                }
-            }            
-
-            $compare_table['columns'] = $columns;
-
-            if ($verbose) {
-               echo("Colums loaded for '".$compare_table['name']."' from CSV $table_file_name. \n");
-            }
-        }
-        unset($compare_table);
-
         echo("--------------- Loading from CSV complete. ---------------\n");
 
         // Do the comparison
 
-        echo("--------------- Comparison database (nominal) vs. CSV (actual) ---------------\n");
+        echo("--------------- Comparison Databse DB vs. CSV ---------------\n");
 
-        echo("Number of tables: ".count($tables)." in database, ".count($compare_tables)." in CSV.\n");
-        $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",true,$verbose);
+        echo(count($tables)." tables in DB, ".count($compare_tables)." in CSV.\n");
+        $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",!$onlytables,$verbose);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
     
         foreach ($compare_differences as $compare_difference) {
@@ -343,6 +175,165 @@ if ($argc > 1) {
 } else {
   info();
   exit;
+}
+
+// Load all tables from a DB connection into a tables array
+
+function load_tables_from_db(string $host, string $schema, string $user, string $passwd) : array {
+
+    // First get the contents of the database table structure
+    $mysqli = mysqli_connect($host, $user, $passwd, $schema);
+
+    /* Check if the connection succeeded */
+    if (!$mysqli) {
+        return(array());
+    }
+
+    // Get tables and views
+
+    $sql = "SHOW FULL TABLES"; 
+    $query_result = mysqli_query($mysqli, $sql);
+    if (!$query_result) {
+        return(array());
+    } 
+    while ($row = mysqli_fetch_assoc($query_result)) {
+        $table = array();
+        $table['name'] = $row['Tables_in_'.$schema];
+        $table['type'] = $row['Table_type'];
+        $tables[] = $table; // Add table to list of tables
+    }
+
+    // Get and add columns of the table
+    foreach ($tables as &$table) {    
+        $sql = "SHOW FULL COLUMNS FROM ".$table['name'];
+        $query_result = mysqli_query($mysqli, $sql);
+
+        if (!$query_result) {
+            return(array());
+        }
+
+        $columns = array();
+        while ($column = mysqli_fetch_assoc($query_result)) {
+            $columns[] = $column; // Add column to list of columns
+        }     
+        $table['columns'] = $columns;       
+    }   
+    unset($table);    
+    return($tables);   
+}
+
+// Save all tables to CSV files
+function save_tables_to_csv(array $tables, string $path, string $tables_file_name, string $delimiter, string $quote, bool $force) : bool {
+    
+    // Prepare tables file
+    if (!is_dir($path)) {
+        mkdir($path);
+    }
+    if (!$force && file_exists($path."/".$tables_file_name)) {
+        return(false);
+    }
+
+    $tables_file = fopen($tables_file_name, "w");
+    if (empty($tables_file)) {
+        return(false);
+    }
+
+    $first_table = true;
+    // Now export all colums of the tables
+    foreach ($tables as $export_table) {         
+        if ($first_table) {
+            $first_table = false;
+            fwrite($tables_file,$quote.'name'.$quote.$delimiter.$quote.'type'.$quote."\n");  
+        }
+        fwrite($tables_file,$quote.$export_table['name'].$quote.$delimiter.$quote.$export_table['type'].$quote."\n");  
+
+        // Prepare export_table file
+        $table_file_name = $path."/".$export_table['name'].".txt";
+        if (!$force && file_exists($table_file_name)) {
+            return(false);
+        }
+        $table_file = fopen($table_file_name, "w");
+        if (empty($table_file)) {
+            return(false);
+        }  
+
+        $first_column = true;
+
+        foreach ($export_table['columns'] as $column) {
+            if ($first_column) {
+                $first_column = false;
+                fwrite($table_file,implode_with_quote($quote,$delimiter,array_keys($column))."\n");  
+            }
+            fwrite($table_file,implode_with_quote($quote,$delimiter,array_values($column))."\n");  
+        }
+        unset($column);
+
+        fclose($table_file);
+    }
+    unset($export_table);
+    fwrite($tables_file,"\n");  
+    fclose($tables_file);
+    return(true);
+}
+
+// Load all tables from CSV files
+function load_tables_from_csv(string $path, string $tables_file_name, string $delimiter, string $quote) : array {
+    
+    $tables = array();
+    $first_table = true;
+    $tables_file = fopen($path."/".$tables_file_name, "r");
+
+    if (!$tables_file) {
+        return(array());
+    }
+
+    while (($csv_line = fgetcsv($tables_file,0,$delimiter,$quote)) !== FALSE) {
+
+        if ($first_table) {
+            $first_table = false;
+        } else if (count($csv_line) == 2) {
+            $new_table = array();
+            $new_table['name'] = $csv_line['0'];
+            $new_table['type'] = $csv_line['1'];
+            $tables[] = $new_table;
+        } else {
+                     
+        }
+    }
+    fclose($tables_file);
+
+    // Get columns for each table
+
+    foreach ($tables as &$table) {
+
+        $table_file_name = $path."/".$table['name'].".txt";
+        if (!file_exists($table_file_name)) {
+            return(array());
+        }
+        $table_file = fopen($table_file_name, "r");
+        if (empty($table_file)) {
+            return(array());    
+        }  
+
+        $first_column = true;
+        $column_headers = array();
+        $columns = array();
+        $column = array();
+        while (($csv_line = fgetcsv($table_file,0,$delimiter,$quote)) !== FALSE) {
+            if ($first_column) {
+                $first_column = false;
+                $column_headers = $csv_line;
+            } else {                    
+                for ($cr = 0;$cr < count($csv_line);$cr++) {
+                    $column[$column_headers[$cr]] = $csv_line[$cr];
+                }   
+                $columns[] = $column;                                     
+            }
+        }            
+        $table['columns'] = $columns;
+    }
+    unset($table);
+    return($tables);
 }
 
 // Compare two definitions
@@ -446,6 +437,7 @@ function info() {
     echo("\t-f: force override of existing files\n");
     echo("\t-e: export database structure to files\n");
     echo("\t-c: compare content of files with database structure\n");
+    echo("\t-i: ignore column definitions\n");
     echo("\n");
 }
 
