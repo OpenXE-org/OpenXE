@@ -190,6 +190,8 @@ if ($argc > 1) {
         // First create all tables that are missing in the db
         echo("--------------- Calculating database upgrade... ---------------\n");
 
+        $upgrade_sql = array();
+
         $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
 
         foreach ($compare_differences as $compare_difference) {
@@ -232,10 +234,7 @@ if ($argc > 1) {
                                     $sql .= ", KEY (".implode("), KEY (",$keys).")";
                                 }
                                 $sql .= ");";                     
-                                if ($verbose) {
-                                    echo($sql."\n");
-                                }
-
+                                $upgrade_sql[] = $sql;
                             break;
                             default:
                                 echo("Upgrade type '".$table['type']."' on table '".$table['name']."' not supported.\n");
@@ -259,9 +258,7 @@ if ($argc > 1) {
                             $sql = "ALTER TABLE `$table_name` ADD COLUMN "; 
                             $sql .= column_sql_definition($table_name, $column);
                             $sql .= ";";                                                  
-                            if ($verbose) {
-                                echo($sql."\n");
-                            }
+                            $upgrade_sql[] = $sql;
                             // KEYS
                             if ($column['Key'] == 'PRI') {
                                 $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ($column_name);"; // This will not work for composed primary keys...
@@ -269,9 +266,7 @@ if ($argc > 1) {
                             if ($column['Key'] == 'MUL') {
                                 $sql = "ALTER TABLE `$table_name` ADD KEY ($column_name);"; 
                             }
-                            if ($verbose) {
-                                echo($sql."\n");
-                            }
+                            $upgrade_sql[] = $sql;
                         }
                         else {
                             echo("Error column_key while creating column '$column_name' in table '".$table['name']."'\n");
@@ -298,10 +293,7 @@ if ($argc > 1) {
                             $sql = "ALTER TABLE `$table_name` MODIFY COLUMN ";
                             $sql .= column_sql_definition($table_name, $column);
                             $sql .= ";";
-           
-                            if ($verbose) {
-                                echo($sql."\n");
-                            }
+                            $upgrade_sql[] = $sql;
                             // KEYS
                             if ($column['Key'] == 'PRI') {
                                 $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ($column_name);"; // This will not work for composed primary keys...
@@ -309,9 +301,7 @@ if ($argc > 1) {
                             if ($column['Key'] == 'MUL') {
                                 $sql = "ALTER TABLE `$table_name` ADD KEY ($column_name);"; 
                             }
-                            if ($verbose) {
-                                echo($sql."\n");
-                            }
+                            $upgrade_sql[] = $sql;
                         }
                         else {
                             echo("Error column_key while modifying column '$column_name' in table '".$table['name']."'\n");
@@ -335,7 +325,15 @@ if ($argc > 1) {
             }
         }
 
-        // Then add the columns to the created tables according to the CSV definition
+        $upgrade_sql = array_unique($upgrade_sql);
+
+        if ($verbose) {
+            foreach($upgrade_sql as $statement) {
+                echo($statement."\n");
+            }
+        }
+
+        echo(count($upgrade_sql)." upgrade statements\n");
         echo("--------------- Database upgrade calculated (show SQL with -v). ---------------\n");
     }
 
@@ -560,13 +558,16 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                         $found_column = $found_table['columns'][$column_key];
                         foreach ($column as $key => $value) {                            
                             if ($found_column[$key] != $value) {
-                                $compare_difference = array();
-                                $compare_difference['type'] = "Column definition";
-                                $compare_difference['table'] = $database_table['name'];
-                                $compare_difference['column'] = $column['Field'];
-                                $compare_difference[$nominal_name] = $key."=".$value;
-                                $compare_difference[$actual_name] = $key."=".$found_column[$key];
-                                $compare_differences[] = $compare_difference;
+
+//                                if ($key != 'permissions') {                                
+                                    $compare_difference = array();
+                                    $compare_difference['type'] = "Column definition";
+                                    $compare_difference['table'] = $database_table['name'];
+                                    $compare_difference['column'] = $column['Field'];
+                                    $compare_difference[$nominal_name] = $key."=".$value;
+                                    $compare_difference[$actual_name] = $key."=".$found_column[$key];
+                                    $compare_differences[] = $compare_difference;
+//                                }
                             }
                         }
                         unset($value);                          
