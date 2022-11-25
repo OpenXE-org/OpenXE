@@ -59,6 +59,8 @@ $tables_file_name = $target_folder."/".$tables_file_name_wo_folder;
 $delimiter = ";";
 $quote = '"';
 
+$sql_file_name = "upgrade.sql";
+
 $color_red = "\033[31m";
 $color_green = "\033[32m";
 $color_yellow = "\033[33m";
@@ -153,36 +155,40 @@ if ($argc > 1) {
         echo("--------------- Comparison Databse DB vs. CSV ---------------\n");
 
         echo(count($tables)." tables in DB, ".count($compare_tables)." in CSV.\n");
-        $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",!$onlytables);
+        $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",false);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
     
-        foreach ($compare_differences as $compare_difference) {
-            $comma = "";
-            foreach ($compare_difference as $key => $value) {
-                echo($comma."$key => '$value'");
-                $comma = ", ";
-            }
-            echo("\n");
-        }           
-        echo("--------------- Comparison CSV (nominal) vs. database (actual) ---------------\n");
-        $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",false);
+        if ($verbose) {
+            foreach ($compare_differences as $compare_difference) {
+                $comma = "";
+                foreach ($compare_difference as $key => $value) {
+                    echo($comma."$key => '$value'");
+                    $comma = ", ";
+                }
+                echo("\n");
+            }           
+        }
+        echo("--------------- Comparison CSV vs. database ---------------\n");
+        $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
-    
-        foreach ($compare_differences as $compare_difference) {
-            $comma = "";
-            foreach ($compare_difference as $key => $value) {
-                echo($comma."$key => '$value'");
-                $comma = ", ";
-            }
-            echo("\n");
-        }           
+
+        if ($verbose) {
+            foreach ($compare_differences as $compare_difference) {
+                $comma = "";
+                foreach ($compare_difference as $key => $value) {
+                    echo($comma."$key => '$value'");
+                    $comma = ", ";
+                }
+                echo("\n");
+            }           
+        }
 
         echo("--------------- Comparison complete. ---------------\n");
     }
 
     if ($upgrade) {
         // First create all tables that are missing in the db
-        echo("--------------- Upgrading database... ---------------\n");
+        echo("--------------- Calculating database upgrade... ---------------\n");
 
         $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
 
@@ -196,7 +202,7 @@ if ($argc > 1) {
 
                     $table_key = array_search($table_name,array_column($compare_tables,'name'));
 
-                    if (!empty($table_key)) {
+                    if ($table_key !== false) {
                         $table = $compare_tables[$table_key];
 
                         switch ($table['type']) {
@@ -204,19 +210,13 @@ if ($argc > 1) {
 
                                 // Create table in DB
                                 $sql = "";
-                                $sql = "CREATE TABLE `".$table['name']."` (";                     
-                
+                                $sql = "CREATE TABLE `".$table['name']."` (";                                   
                                 $comma = "";
-
                                 $primary_keys = array();
                                 $keys = array();
-
                                 foreach ($table['columns'] as $column) {
-
-                                    $sql .= $comma.column_sql_definition($table_name, $column);
-                                 
+                                    $sql .= $comma.column_sql_definition($table_name, $column);                                 
                                     $comma = ",";
-
                                     if ($column['Key'] == 'PRI') {
                                         $primary_keys[] = $column['Field'];
                                     }
@@ -231,11 +231,10 @@ if ($argc > 1) {
                                 if (!empty($keys)) {
                                     $sql .= ", KEY (".implode("), KEY (",$keys).")";
                                 }
-
-
-                                $sql .= ");";     
-                
-                                echo($sql."\n");
+                                $sql .= ");";                     
+                                if ($verbose) {
+                                    echo($sql."\n");
+                                }
 
                             break;
                             default:
@@ -251,52 +250,76 @@ if ($argc > 1) {
                     $table_name = $compare_difference['table']; 
                     $column_name = $compare_difference['in CSV']; 
                     $table_key = array_search($table_name,array_column($compare_tables,'name'));
-                    if (!empty($table_key)) {
+                    if ($table_key !== false) {
                         $table = $compare_tables[$table_key];
                         $columns = $table['columns'];                  
                         $column_key = array_search($column_name,array_column($columns,'Field'));
-                        if (!empty($column_key)) {
+                        if ($column_key !== false) {
                             $column = $table['columns'][$column_key];
-                            $sql = "ALTER TABLE `$table_name` CREATE COLUMN "; 
+                            $sql = "ALTER TABLE `$table_name` ADD COLUMN "; 
                             $sql .= column_sql_definition($table_name, $column);
-                            $sql .= ";";
-                            echo($sql."\n");
-
-                            // KEYS?
-
+                            $sql .= ";";                                                  
+                            if ($verbose) {
+                                echo($sql."\n");
+                            }
+                            // KEYS
+                            if ($column['Key'] == 'PRI') {
+                                $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ($column_name);"; // This will not work for composed primary keys...
+                            }
+                            if ($column['Key'] == 'MUL') {
+                                $sql = "ALTER TABLE `$table_name` ADD KEY ($column_name);"; 
+                            }
+                            if ($verbose) {
+                                echo($sql."\n");
+                            }
                         }
                         else {
-                            echo("Error column_key while creating column $column_name in table '".$table['name']."'\n");
+                            echo("Error column_key while creating column '$column_name' in table '".$table['name']."'\n");
                         }
                     }
                     else {
-                        echo("Error table_key while creating column $column_name in table $table_name.\n");
+                        echo("Error table_key while creating column '$column_name' in table '$table_name'.\n");
                     }
-                    // Create Column in DB
+                    // Add Column in DB
                 break;
                 case 'Column definition':
                     $table_name = $compare_difference['table']; 
                     $column_name = $compare_difference['column']; 
                     $table_key = array_search($table_name,array_column($compare_tables,'name'));
-                    if (!empty($table_key)) {
+                    if ($table_key !== false) {
                         $table = $compare_tables[$table_key];
-                        $columns = $table['columns'];                   
-                        $column_key = array_search($column_name,array_column($columns,'Field'));
-                        if (!empty($column_key)) {
+                        $columns = $table['columns'];   
+
+                        $column_names = array_column($columns,'Field');              
+                        $column_key = array_search($column_name,$column_names); 
+
+                        if ($column_key !== false) {
                             $column = $table['columns'][$column_key];
                             $sql = "ALTER TABLE `$table_name` MODIFY COLUMN ";
                             $sql .= column_sql_definition($table_name, $column);
                             $sql .= ";";
-                            echo($sql."\n");
+           
+                            if ($verbose) {
+                                echo($sql."\n");
+                            }
+                            // KEYS
+                            if ($column['Key'] == 'PRI') {
+                                $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ($column_name);"; // This will not work for composed primary keys...
+                            }
+                            if ($column['Key'] == 'MUL') {
+                                $sql = "ALTER TABLE `$table_name` ADD KEY ($column_name);"; 
+                            }
+                            if ($verbose) {
+                                echo($sql."\n");
+                            }
                         }
                         else {
-                            echo("Error column_key while modifying column $column_name in table '".$table['name']."'\n");
-
-                            print_r($columns);
+                            echo("Error column_key while modifying column '$column_name' in table '".$table['name']."'\n");
+                            exit;
                         }
                     }
                     else {
-                        echo("Error table_key while modifying column $column_name in table $table_name.\n");
+                        echo("Error table_key while modifying column '$column_name' in table '$table_name'.\n");
                     }
                     // Modify Column in DB
                 break;
@@ -313,7 +336,7 @@ if ($argc > 1) {
         }
 
         // Then add the columns to the created tables according to the CSV definition
-        echo("--------------- Upgrading database complete. ---------------\n");
+        echo("--------------- Database upgrade calculated (show SQL with -v). ---------------\n");
     }
 
     echo("--------------- Done. ---------------\n");
@@ -584,19 +607,31 @@ function column_sql_definition(string $table_name, array $column) : string {
     }
 
     if ($column['Default'] != '') {
-       if (in_array(strtolower($column['Default']),$mysql_default_values_without_quote)) {
+
+        // Check for MYSQL function call as default                
+        if (in_array(strtolower($column['Default']),$mysql_default_values_without_quote)) {
             $quote = "";
-       } else {
+        } else {
+
+            // Remove quotes if there are
+            $column['Default'] = trim($column['Default'],"'");
             $quote = "'";
-       }
-       $column['Default'] = "DEFAULT $quote".$column['Default']."$quote"; 
+        }
+
+        $column['Default'] = "DEFAULT $quote".$column['Default']."$quote"; 
+    }
+
+    if ($column['Collation'] != '')  {
+        $column['Collation'] = "COLLATE ".$column['Collation'];
     }
 
     $sql =                             
         "`".$column['Field']."` ".
         $column['Type']." ".
         $column['Null']." NULL ".
-        $column['Default'];
+        $column['Default']." ".
+        $column['Extra']." ".
+        $column['Collation'];
 
     return($sql);
 }
@@ -612,8 +647,8 @@ function info() {
     echo("\t-e: export database structure to files\n");
     echo("\t-c: compare content of files with database structure\n");
     echo("\t-i: ignore column definitions\n");
-    echo("\t-upgrade: upgrade the database to match the CSV definition (risky)\n");
-    echo("\t-clean: remove items from the database that are not in the CSV definition (risky)\n");
+    echo("\t-upgrade: Create the needed SQL to upgrade the database to match the CSV\n");
+    echo("\t-clean: (not yet implemented) Create the needed SQL to remove items from the database not in the CSV\n");
     echo("\n");
 }
 
