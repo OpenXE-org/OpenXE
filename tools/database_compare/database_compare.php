@@ -112,7 +112,7 @@ if ($argc > 1) {
       $clean = false;
     } 
 
-    echo("--------------- Loading from database $schema@$host... ---------------\n");
+    echo("--------------- Loading from database '$schema@$host'... ---------------\n");
     $tables = load_tables_from_db($host, $schema, $user, $passwd);
 
     if (empty($tables)) {
@@ -120,7 +120,7 @@ if ($argc > 1) {
         exit;
     }
 
-    echo("--------------- Loading from database complete. ---------------\n");
+    echo("--------------- Loading from database '$schema@$host' complete. ---------------\n");
 
     if ($export) {
 
@@ -152,7 +152,7 @@ if ($argc > 1) {
 
         // Do the comparison
 
-        echo("--------------- Comparison Databse DB vs. CSV ---------------\n");
+        echo("--------------- Comparison Databse DB '$schema@$host' vs. CSV ---------------\n");
 
         echo(count($tables)." tables in DB, ".count($compare_tables)." in CSV.\n");
         $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",false);
@@ -168,7 +168,8 @@ if ($argc > 1) {
                 echo("\n");
             }           
         }
-        echo("--------------- Comparison CSV vs. database ---------------\n");
+
+        echo("--------------- Comparison CSV vs. database '$schema@$host' ---------------\n");
         $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
@@ -188,7 +189,7 @@ if ($argc > 1) {
 
     if ($upgrade) {
         // First create all tables that are missing in the db
-        echo("--------------- Calculating database upgrade... ---------------\n");
+        echo("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
 
@@ -214,27 +215,12 @@ if ($argc > 1) {
                                 $sql = "";
                                 $sql = "CREATE TABLE `".$table['name']."` (";                                   
                                 $comma = "";
-                                $primary_keys = array();
-                                $keys = array();
+
                                 foreach ($table['columns'] as $column) {
                                     $sql .= $comma.column_sql_definition($table_name, $column);                                 
                                     $comma = ",";
-                                    if ($column['Key'] == 'PRI') {
-                                        $primary_keys[] = $column['Field'];
-                                    }
-                                    if ($column['Key'] == 'MUL') {
-                                        $keys[] = $column['Field'];
-                                    }
                                 }
-        
-                                if (!empty($primary_keys)) {
-                                    $sql .= ", PRIMARY KEY (".implode(",",$primary_keys).")";
-                                }
-                                if (!empty($keys)) {
-                                    $sql .= ", KEY (".implode("), KEY (",$keys).")";
-                                }
-                                $sql .= ");";                     
-                                $upgrade_sql[] = $sql;
+                                   
                             break;
                             default:
                                 echo("Upgrade type '".$table['type']."' on table '".$table['name']."' not supported.\n");
@@ -258,15 +244,7 @@ if ($argc > 1) {
                             $sql = "ALTER TABLE `$table_name` ADD COLUMN "; 
                             $sql .= column_sql_definition($table_name, $column);
                             $sql .= ";";                                                  
-                            $upgrade_sql[] = $sql;
-                            // KEYS
-                            if ($column['Key'] == 'PRI') {
-                                $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ($column_name);"; // This will not work for composed primary keys...
-                            }
-                            if ($column['Key'] == 'MUL') {
-                                $sql = "ALTER TABLE `$table_name` ADD KEY ($column_name);"; 
-                            }
-                            $upgrade_sql[] = $sql;
+                            $upgrade_sql[] = $sql;                       
                         }
                         else {
                             echo("Error column_key while creating column '$column_name' in table '".$table['name']."'\n");
@@ -290,17 +268,10 @@ if ($argc > 1) {
 
                         if ($column_key !== false) {
                             $column = $table['columns'][$column_key];
+
                             $sql = "ALTER TABLE `$table_name` MODIFY COLUMN ";
                             $sql .= column_sql_definition($table_name, $column);
                             $sql .= ";";
-                            $upgrade_sql[] = $sql;
-                            // KEYS
-                            if ($column['Key'] == 'PRI') {
-                                $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ($column_name);"; // This will not work for composed primary keys...
-                            }
-                            if ($column['Key'] == 'MUL') {
-                                $sql = "ALTER TABLE `$table_name` ADD KEY ($column_name);"; 
-                            }
                             $upgrade_sql[] = $sql;
                         }
                         else {
@@ -334,7 +305,7 @@ if ($argc > 1) {
         }
 
         echo(count($upgrade_sql)." upgrade statements\n");
-        echo("--------------- Database upgrade calculated (show SQL with -v). ---------------\n");
+        echo("--------------- Database upgrade calculated for '$schema@$host' (show SQL with -v). ---------------\n");
     }
 
     echo("--------------- Done. ---------------\n");
@@ -564,8 +535,9 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                                     $compare_difference['type'] = "Column definition";
                                     $compare_difference['table'] = $database_table['name'];
                                     $compare_difference['column'] = $column['Field'];
-                                    $compare_difference[$nominal_name] = $key."=".$value;
-                                    $compare_difference[$actual_name] = $key."=".$found_column[$key];
+                                    $compare_difference['property'] = $key;
+                                    $compare_difference[$nominal_name] = $value;
+                                    $compare_difference[$actual_name] = $found_column[$key];
                                     $compare_differences[] = $compare_difference;
 //                                }
                             }
@@ -601,41 +573,44 @@ function column_sql_definition(string $table_name, array $column) : string {
     $mysql_default_values_without_quote = array('current_timestamp()');
 
     if ($column['Null'] == "NO") {
-        $column['Null'] = "NOT"; // Idiotic...
+        $column['Null'] = " NOT NULL"; // Idiotic...
     }
     if ($column['Null'] == "YES") {
-        $column['Null'] = ""; // Also Idiotic...
+        $column['Null'] = " NULL"; // Also Idiotic...
     }
 
     if ($column['Default'] != '') {
-
         // Check for MYSQL function call as default                
         if (in_array(strtolower($column['Default']),$mysql_default_values_without_quote)) {
             $quote = "";
         } else {
-
             // Remove quotes if there are
             $column['Default'] = trim($column['Default'],"'");
             $quote = "'";
         }
-
-        $column['Default'] = "DEFAULT $quote".$column['Default']."$quote"; 
+        $column['Default'] = " DEFAULT $quote".$column['Default']."$quote"; 
     }
 
+    if ($column['Extra'] != '')  {
+        $column['Extral'] = " ".$column['Extra'];
+    }
+
+
     if ($column['Collation'] != '')  {
-        $column['Collation'] = "COLLATE ".$column['Collation'];
+        $column['Collation'] = " COLLATE ".$column['Collation'];
     }
 
     $sql =                             
         "`".$column['Field']."` ".
-        $column['Type']." ".
-        $column['Null']." NULL ".
-        $column['Default']." ".
-        $column['Extra']." ".
+        $column['Type'].
+        $column['Null'].
+        $column['Default'].
+        $column['Extra'].
         $column['Collation'];
 
     return($sql);
 }
+
 
 function info() {
     echo("OpenXE database compare\n");
