@@ -9,7 +9,7 @@
 
 
 /*
-MariaDB [openxe]> SHOW FULL TABLES;
+MariaDB [openxe]> SHOW FULL db_def;
 +----------------------------------------------+------------+
 | Tables_in_openxe                             | Table_type |
 +----------------------------------------------+------------+
@@ -40,7 +40,16 @@ MariaDB [openxe]> SHOW FULL COLUMNS FROM wiki;
 | parent_id         | int(11)      | NULL               | NO   |     | 0       |                | select,insert,update,references |         |
 | language          | varchar(32)  | utf8mb3_general_ci | NO   |     |         |                | select,insert,update,references |         |
 +-------------------+--------------+--------------------+------+-----+---------+----------------+---------------------------------+---------+
-7 rows in set (0.002 sec)
+
+MariaDB [openxe]> show keys from wiki;
++-------+------------+----------+--------------+-------------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+
+| Table | Non_unique | Key_name | Seq_in_index | Column_name       | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Ignored |
++-------+------------+----------+--------------+-------------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+
+| wiki  |          0 | PRIMARY  |            1 | id                | A         |         244 |     NULL | NULL   |      | BTREE      |         |               | NO      |
+| wiki  |          0 | suche    |            1 | name              | A         |         244 |     NULL | NULL   | YES  | BTREE      |         |               | NO      |
+| wiki  |          0 | suche    |            2 | wiki_workspace_id | A         |         244 |     NULL | NULL   |      | BTREE      |         |               | NO      |
+| wiki  |          1 | name     |            1 | name              | A         |         244 |     NULL | NULL   | YES  | BTREE      |         |               | NO      |
++-------+------------+----------+--------------+-------------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+
 
 */
 
@@ -53,9 +62,9 @@ $user = 'openxe';
 $passwd = 'openxe';
 $schema = 'openxe';
 
-$target_folder = "export";
-$tables_file_name_wo_folder = "0-tables.txt";
-$tables_file_name = $target_folder."/".$tables_file_name_wo_folder;
+$target_folder = ".";
+$tables_file_name_wo_folder = "db_schema.json";
+$tables_file_name_w_folder = $target_folder."/".$tables_file_name_wo_folder;
 $delimiter = ";";
 $quote = '"';
 
@@ -113,9 +122,9 @@ if ($argc > 1) {
     } 
 
     echo("--------------- Loading from database '$schema@$host'... ---------------\n");
-    $tables = load_tables_from_db($host, $schema, $user, $passwd);
+    $db_def = load_tables_from_db($host, $schema, $user, $passwd);
 
-    if (empty($tables)) {
+    if (empty($db_def)) {
         echo ("Could not load from $schema@$host\n");
         exit;
     }
@@ -124,16 +133,20 @@ if ($argc > 1) {
 
     if ($export) {
 
-        echo("--------------- Export to CSV... ---------------\n");
-        $result = save_tables_to_csv($tables, $target_folder, $tables_file_name, $delimiter, $quote, $force);
+        echo("--------------- Export to JSON... ---------------\n");
+//        $result = save_tables_to_csv($db_def, $target_folder, $tables_file_name_wo_folder, $delimiter, $quote, $keys_postfix, $force);
+        $result = save_tables_to_json($db_def, $target_folder, $tables_file_name_wo_folder, $force);
 
-        if (!$result) {
-            echo ("Could not save to CSV $path/$tables_file_name\n");
+        if ($result != 0) {
+
+            $result_texts = array("ok","key postfix error","table list file error","table file error","key file error");
+
+            echo ("Could not save to JSON (".$result_texts[$result]."). To overwrite, use -f.\n");
             exit;
         }
     
-        echo("Exported ".count($tables)." tables.\n");
-        echo("--------------- Export to CSV complete. ---------------\n");
+        echo("Exported ".count($db_def['tables'])." tables.\n");
+        echo("--------------- Export to JSON ($tables_file_name_w_folder) complete. ---------------\n");
     }
 
     if ($compare || $upgrade) {
@@ -141,21 +154,21 @@ if ($argc > 1) {
         // Results here as ['text'] ['diff']
         $compare_differences = array();
 
-        echo("--------------- Loading from CSV... ---------------\n");
-        $compare_tables = load_tables_from_csv($target_folder, $tables_file_name_wo_folder, $delimiter, $quote);
+        echo("--------------- Loading from JSON... ---------------\n");
+        $compare_def = load_tables_from_json($target_folder, $tables_file_name_wo_folder);
 
-        if (empty($compare_tables)) {
-            echo ("Could not load from CSV $path/$tables_file_name\n");
+        if (empty($compare_def)) {
+            echo ("Could not load from JSON $tables_file_name_w_folder\n");
             exit;
         }
-        echo("--------------- Loading from CSV complete. ---------------\n");
+        echo("--------------- Loading from JSON complete. ---------------\n");
 
         // Do the comparison
 
-        echo("--------------- Comparison Databse DB '$schema@$host' vs. CSV ---------------\n");
+        echo("--------------- Comparing JSON '".$compare_def['database']."@".$compare_def['host']."' vs. database '$schema@$host' ---------------\n");
 
-        echo(count($tables)." tables in DB, ".count($compare_tables)." in CSV.\n");
-        $compare_differences = compare_table_array($tables,"in DB",$compare_tables,"in CSV",false);
+        echo(count($compare_def['tables'])." tables in JSON, ".count($db_def['tables'])." tables in database.\n");
+        $compare_differences = compare_table_array($db_def,"in DB",$compare_def,"in JSON",false);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
     
         if ($verbose) {
@@ -169,8 +182,8 @@ if ($argc > 1) {
             }           
         }
 
-        echo("--------------- Comparison CSV vs. database '$schema@$host' ---------------\n");
-        $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
+        echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
+        $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
         echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
         if ($verbose) {
@@ -188,25 +201,25 @@ if ($argc > 1) {
     }
 
     if ($upgrade) {
-        // First create all tables that are missing in the db
+        // First create all db_def that are missing in the db
         echo("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
 
-        $compare_differences = compare_table_array($compare_tables,"in CSV",$tables,"in DB",true);
+        $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
 
         foreach ($compare_differences as $compare_difference) {
             switch ($compare_difference['type']) {
                 case 'Table existance':
 
-                    // Get table definition from CSV
+                    // Get table definition from JSON
 
-                    $table_name = $compare_difference['in CSV']; 
+                    $table_name = $compare_difference['in JSON']; 
 
-                    $table_key = array_search($table_name,array_column($compare_tables,'name'));
+                    $table_key = array_search($table_name,array_column($compare_def,'name'));
 
                     if ($table_key !== false) {
-                        $table = $compare_tables[$table_key];
+                        $table = $compare_def[$table_key];
 
                         switch ($table['type']) {
                             case 'BASE TABLE':
@@ -233,10 +246,10 @@ if ($argc > 1) {
                 break;
                 case 'Column existance':
                     $table_name = $compare_difference['table']; 
-                    $column_name = $compare_difference['in CSV']; 
-                    $table_key = array_search($table_name,array_column($compare_tables,'name'));
+                    $column_name = $compare_difference['in JSON']; 
+                    $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
                     if ($table_key !== false) {
-                        $table = $compare_tables[$table_key];
+                        $table = $compare_def['tables'][$table_key];
                         $columns = $table['columns'];                  
                         $column_key = array_search($column_name,array_column($columns,'Field'));
                         if ($column_key !== false) {
@@ -258,9 +271,9 @@ if ($argc > 1) {
                 case 'Column definition':
                     $table_name = $compare_difference['table']; 
                     $column_name = $compare_difference['column']; 
-                    $table_key = array_search($table_name,array_column($compare_tables,'name'));
+                    $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
                     if ($table_key !== false) {
-                        $table = $compare_tables[$table_key];
+                        $table = $compare_def['tables'][$table_key];
                         $columns = $table['columns'];   
 
                         $column_names = array_column($columns,'Field');              
@@ -317,7 +330,7 @@ if ($argc > 1) {
   exit;
 }
 
-// Load all tables from a DB connection into a tables array
+// Load all db_def from a DB connection into a db_def array
 
 function load_tables_from_db(string $host, string $schema, string $user, string $passwd) : array {
 
@@ -329,9 +342,9 @@ function load_tables_from_db(string $host, string $schema, string $user, string 
         return(array());
     }
 
-    // Get tables and views
+    // Get db_def and views
 
-    $sql = "SHOW FULL TABLES"; 
+    $sql = "SHOW FULL tables"; 
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
@@ -357,123 +370,85 @@ function load_tables_from_db(string $host, string $schema, string $user, string 
             $columns[] = $column; // Add column to list of columns
         }     
         $table['columns'] = $columns;       
+
+        $sql = "SHOW KEYS FROM ".$table['name'];
+        $query_result = mysqli_query($mysqli, $sql);
+        if (!$query_result) {
+            return(array());
+        }       
+        $keys = array();
+        while ($key = mysqli_fetch_assoc($query_result)) {            
+            $keys[] = $key; // Add key to list of keys
+        }     
+
+        // Compose comparable format for keys
+
+        $refined_keys = array();
+
+        foreach ($keys as &$key) {
+
+            $key_pos = array_search($key['Key_name'],array_column($refined_keys,'Key_name'),true);
+
+            if ($key_pos !== false) {
+                $refined_key = &$refined_keys[$key_pos];
+                $refined_key['columns'] = $refined_key['columns'].", ".$key['Column_name'];                
+            } else {
+                $refined_key['Key_name'] = $key['Key_name'];
+                $refined_key['Non_unique'] = $key['Non_unique'];
+                $refined_key['columns'] = $key['Column_name'];
+                $refined_keys[] = $refined_key;
+            }
+        }
+        unset($key);
+        $table['keys'] = $refined_keys;       
+
     }   
     unset($table);    
-    return($tables);   
+
+    $result = array();
+    $result['host'] = $host;
+    $result['database'] = $schema;
+    $result['user'] = $user;
+    $result['tables'] = $tables;
+
+    return($result);   
 }
 
-// Save all tables to CSV files
-function save_tables_to_csv(array $tables, string $path, string $tables_file_name, string $delimiter, string $quote, bool $force) : bool {
-    
-    // Prepare tables file
+function save_tables_to_json(array $db_def, string $path, string $tables_file_name, bool $force) : int {
+  
+    // Prepare db_def file
     if (!is_dir($path)) {
         mkdir($path);
     }
     if (!$force && file_exists($path."/".$tables_file_name)) {
-        return(false);
+        return(2);
     }
 
-    $tables_file = fopen($tables_file_name, "w");
+    $tables_file = fopen($path."/".$tables_file_name, "w");
     if (empty($tables_file)) {
-        return(false);
+        return(2);
     }
 
-    $first_table = true;
-    // Now export all colums of the tables
-    foreach ($tables as $export_table) {         
-        if ($first_table) {
-            $first_table = false;
-            fwrite($tables_file,$quote.'name'.$quote.$delimiter.$quote.'type'.$quote."\n");  
-        }
-        fwrite($tables_file,$quote.$export_table['name'].$quote.$delimiter.$quote.$export_table['type'].$quote."\n");  
+    fwrite($tables_file, json_encode($db_def,JSON_PRETTY_PRINT));
 
-        // Prepare export_table file
-        $table_file_name = $path."/".$export_table['name'].".txt";
-        if (!$force && file_exists($table_file_name)) {
-            return(false);
-        }
-        $table_file = fopen($table_file_name, "w");
-        if (empty($table_file)) {
-            return(false);
-        }  
-
-        $first_column = true;
-
-        foreach ($export_table['columns'] as $column) {
-            if ($first_column) {
-                $first_column = false;
-                fwrite($table_file,implode_with_quote($quote,$delimiter,array_keys($column))."\n");  
-            }
-            fwrite($table_file,implode_with_quote($quote,$delimiter,array_values($column))."\n");  
-        }
-        unset($column);
-
-        fclose($table_file);
-    }
-    unset($export_table);
-    fwrite($tables_file,"\n");  
     fclose($tables_file);
-    return(true);
+    return(0);
 }
 
-// Load all tables from CSV files
-function load_tables_from_csv(string $path, string $tables_file_name, string $delimiter, string $quote) : array {
+// Load all db_def from JSON file
+function load_tables_from_json(string $path, string $tables_file_name) : array {
     
-    $tables = array();
-    $first_table = true;
-    $tables_file = fopen($path."/".$tables_file_name, "r");
+    $db_def = array();
 
-    if (!$tables_file) {
+    $contents = file_get_contents($path."/".$tables_file_name);
+
+    if (!$contents) {
         return(array());
     }
 
-    while (($csv_line = fgetcsv($tables_file,0,$delimiter,$quote)) !== FALSE) {
+    $db_def = json_decode($contents, true);
 
-        if ($first_table) {
-            $first_table = false;
-        } else if (count($csv_line) == 2) {
-            $new_table = array();
-            $new_table['name'] = $csv_line['0'];
-            $new_table['type'] = $csv_line['1'];
-            $tables[] = $new_table;
-        } else {
-                     
-        }
-    }
-    fclose($tables_file);
-
-    // Get columns for each table
-
-    foreach ($tables as &$table) {
-
-        $table_file_name = $path."/".$table['name'].".txt";
-        if (!file_exists($table_file_name)) {
-            return(array());
-        }
-        $table_file = fopen($table_file_name, "r");
-        if (empty($table_file)) {
-            return(array());    
-        }  
-
-        $first_column = true;
-        $column_headers = array();
-        $columns = array();
-        $column = array();
-        while (($csv_line = fgetcsv($table_file,0,$delimiter,$quote)) !== FALSE) {
-            if ($first_column) {
-                $first_column = false;
-                $column_headers = $csv_line;
-            } else {                    
-                for ($cr = 0;$cr < count($csv_line);$cr++) {
-                    $column[$column_headers[$cr]] = $csv_line[$cr];
-                }   
-                $columns[] = $column;                                     
-            }
-        }            
-        $table['columns'] = $columns;
-    }
-    unset($table);
-    return($tables);
+    return($db_def);
 }
 
 // Compare two definitions
@@ -483,18 +458,18 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
 
     $compare_differences = array();
 
-    if (count($nominal) != count($actual)) {
+    if (count($nominal['tables']) != count($actual['tables'])) {
         $compare_difference = array();
         $compare_difference['type'] = "Table count";
-        $compare_difference[$nominal_name] = count($nominal);
-        $compare_difference[$actual_name] = count($actual);
+        $compare_difference[$nominal_name] = count($nominal['tables']);
+        $compare_difference[$actual_name] = count($actual['tables']);
         $compare_differences[] = $compare_difference;
     }
 
-    foreach ($nominal as $database_table) {
+    foreach ($nominal['tables'] as $database_table) {
         
         $found_table = array(); 
-        foreach ($actual as $compare_table) {
+        foreach ($actual['tables'] as $compare_table) {
             if ($database_table['name'] == $compare_table['name']) {
                 $found_table = $compare_table;
                 break;
@@ -517,7 +492,6 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
           
             // Check columns
             $compare_table_columns = array_column($found_table['columns'],'Field');
-
             foreach ($database_table['columns'] as $column) {
 
                 $column_name_to_find = $column['Field'];
@@ -553,6 +527,47 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                 }
             } 
             unset($column); 
+
+
+            // Check keys
+            $compare_table_sql_indexs = array_column($found_table['keys'],'Key_name');
+            foreach ($database_table['keys'] as $sql_index) {
+
+                $sql_index_name_to_find = $sql_index['Key_name'];
+                $sql_index_key = array_search($sql_index_name_to_find,$compare_table_sql_indexs,true);
+                if ($sql_index_key !== false) {
+                        
+                    // Compare the properties of the sql_indexs
+                    if ($check_column_definitions) {
+                        $found_sql_index = $found_table['keys'][$sql_index_key];
+                        foreach ($sql_index as $key => $value) {                            
+                            if ($found_sql_index[$key] != $value) {
+
+//                                if ($key != 'permissions') {                                
+                                    $compare_difference = array();
+                                    $compare_difference['type'] = "key definition";
+                                    $compare_difference['table'] = $database_table['name'];
+                                    $compare_difference['key'] = $sql_index['Key_name'];
+                                    $compare_difference['property'] = $key;
+                                    $compare_difference[$nominal_name] = $value;
+                                    $compare_difference[$actual_name] = $found_sql_index[$key];
+                                    $compare_differences[] = $compare_difference;
+//                                }
+                            }
+                        }
+                        unset($value);                          
+                    } // $check_sql_index_definitions
+                } else {
+                    $compare_difference = array();
+                    $compare_difference['type'] = "key existance";
+                    $compare_difference['table'] = $database_table['name'];
+                    $compare_difference[$nominal_name] = $sql_index['Key_name'];
+                    $compare_differences[] = $compare_difference;
+                }
+            } 
+            unset($sql_index); 
+
+
         } else {
             $compare_difference = array();
             $compare_difference['type'] = "Table existance";
@@ -592,7 +607,7 @@ function column_sql_definition(string $table_name, array $column) : string {
     }
 
     if ($column['Extra'] != '')  {
-        $column['Extral'] = " ".$column['Extra'];
+        $column['Extra'] = " ".$column['Extra'];
     }
 
 
@@ -623,8 +638,8 @@ function info() {
     echo("\t-e: export database structure to files\n");
     echo("\t-c: compare content of files with database structure\n");
     echo("\t-i: ignore column definitions\n");
-    echo("\t-upgrade: Create the needed SQL to upgrade the database to match the CSV\n");
-    echo("\t-clean: (not yet implemented) Create the needed SQL to remove items from the database not in the CSV\n");
+    echo("\t-upgrade: Create the needed SQL to upgrade the database to match the JSON\n");
+    echo("\t-clean: (not yet implemented) Create the needed SQL to remove items from the database not in the JSON\n");
     echo("\n");
 }
 
