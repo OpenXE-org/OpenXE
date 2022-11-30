@@ -219,7 +219,9 @@ if ($argc > 1) {
         echo("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
-        $upgrade_sql[] = ("SET SQL_MODE='ALLOW_INVALID_DATES';");
+        if (count($compare_differences) > 0) {
+            $upgrade_sql[] = ("SET SQL_MODE='ALLOW_INVALID_DATES';");
+        }
 
         $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
 
@@ -384,7 +386,7 @@ if ($argc > 1) {
 
                     $query_result = mysqli_query($mysqli, $sql);
                     if (!$query_result) {
-                        $error = " not ok: ". mysqli_error($mysqli)."\n");
+                        $error = " not ok: ". mysqli_error($mysqli)."\n";
                         echo($error);
                         file_put_contents("./errors.txt",$error.$sql."\n",FILE_APPEND);
                         $error_counter++;
@@ -452,49 +454,48 @@ function load_tables_from_db(string $host, string $schema, string $user, string 
             // Do some harmonization
             sql_replace_reserved_functions($column,$replacers);
             $columns[] = $column; // Add column to list of columns
-        }     
-        $table['columns'] = $columns;       
+        }
+        $table['columns'] = $columns;
 
         $sql = "SHOW KEYS FROM ".$table['name'];
         $query_result = mysqli_query($mysqli, $sql);
         if (!$query_result) {
             return(array());
-        }       
+        }
         $keys = array();
-        while ($key = mysqli_fetch_assoc($query_result)) {            
+        while ($key = mysqli_fetch_assoc($query_result)) {
             $keys[] = $key; // Add key to list of keys
-        }     
-
+        }
         // Compose comparable format for keys
+        $composed_keys = array();
+        foreach ($keys as $key) {
 
-        $refined_keys = array();
+            // Check if this key exists already
 
-        foreach ($keys as &$key) {
+            $key_pos = array_search($key['Key_name'],array_column($composed_keys,'Key_name'));
 
-            $key_pos = array_search($key['Key_name'],array_column($refined_keys,'Key_name'),true);
-
-            if ($key_pos !== false) {
-                $refined_key = &$refined_keys[$key_pos];
-                $refined_key['columns'] = $refined_key['columns'].", ".$key['Column_name'];                
+            if ($key_pos == false) {
+                // New key
+                $composed_key = array();
+                $composed_key['Key_name'] = $key['Key_name'];
+                $composed_key['columns'] = $key['Column_name'];
+                $composed_keys[] = $composed_key;
             } else {
-                $refined_key['Key_name'] = $key['Key_name'];
-                $refined_key['Non_unique'] = $key['Non_unique'];
-                $refined_key['columns'] = $key['Column_name'];
-                $refined_keys[] = $refined_key;
+                // Given key, add column
+                $composed_keys[$key_pos]['columns'] .= ",".$key['Column_name'];
             }
         }
         unset($key);
-        $table['keys'] = $refined_keys;       
-
-    }   
-    unset($table);    
+        $table['keys'] = $composed_keys;
+        unset($composed_keys);
+    }
+    unset($table);
 
     $result = array();
     $result['host'] = $host;
     $result['database'] = $schema;
     $result['user'] = $user;
     $result['tables'] = $tables;
-
     return($result);   
 }
 
