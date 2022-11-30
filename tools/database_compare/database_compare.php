@@ -57,11 +57,7 @@ function implode_with_quote(string $quote, string $delimiter, array $array_to_im
     return($quote.implode($quote.$delimiter.$quote, $array_to_implode).$quote);
 }
 
-$host = 'localhost';
-$user = 'openxe';
-$passwd = 'openxe';
-$schema = 'openxe';
-
+$connection_info_file_name = "connection_info.json";
 $target_folder = ".";
 $tables_file_name_wo_folder = "db_schema.json";
 $tables_file_name_w_folder = $target_folder."/".$tables_file_name_wo_folder;
@@ -134,6 +130,18 @@ if ($argc > 1) {
     } else {
       $clean = false;
     } 
+
+    $connection_info_contents = file_get_contents($connection_info_file_name);
+    if (!$connection_info_contents) {
+        echo("Unable to load $connection_info_file_name\n");
+        exit;
+    }
+    $connection_info = json_decode($connection_info_contents, true);
+
+    $host = $connection_info['host'];
+    $user = $connection_info['user'];
+    $passwd = $connection_info['passwd'];
+    $schema = $connection_info['database'];
 
     echo("--------------- Loading from database '$schema@$host'... ---------------\n");
     $db_def = load_tables_from_db($host, $schema, $user, $passwd, $replacers);
@@ -257,9 +265,9 @@ if ($argc > 1) {
                                     if ($key['Key_name'] == 'PRIMARY') {
                                         $keystring = "PRIMARY KEY ";
                                     } else {
-                                        $keystring = "KEY ".$key['Key_name'];
+                                        $keystring = $key['Index_type']." KEY `".$key['Key_name']."` ";
                                     }
-                                    $sql .= $comma.$keystring."(".$key['columns'].") ";
+                                    $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                                 }
                                 $sql .= ")";
                                 $upgrade_sql[] = $sql;
@@ -315,15 +323,6 @@ if ($argc > 1) {
                             $sql .= column_sql_definition($table_name, $column,array_column($replacers,1));
                             $sql .= ";";
                             $upgrade_sql[] = $sql;
-
-/*
-                            if ($compare_difference['property'] != 'Type') {
-                                $sql .= " ".$column['Type'];
-                            }
-
-                            $sql .= column_sql_create_property_definition($compare_difference['property'],$compare_difference['in JSON']);
-                            $sql .= ";";
-                            $upgrade_sql[] = $sql;*/
                         }
                         else {
                             echo("Error column_key while modifying column '$column_name' in table '".$table['name']."'\n");
@@ -341,8 +340,40 @@ if ($argc > 1) {
                 case 'Table type':
                    echo("Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.\n");
                 break;
+                case 'Key existance':
+
+                    $table_name = $compare_difference['table']; 
+                    $key_name = $compare_difference['in JSON']; 
+                    $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
+                    if ($table_key !== false) {
+                        $table = $compare_def['tables'][$table_key];
+                        $keys = $table['keys'];   
+
+                        $key_names = array_column($keys,'Key_name');
+                        $key_key = array_search($key_name,$key_names); 
+
+                        if ($key_key !== false) {
+                            $key = $table['keys'][$key_key];
+
+                            $sql = "ALTER TABLE `$table_name` ADD KEY `".$key_name."` "; 
+                            $sql .= "(`".implode("`,`",$key['columns'])."`)";
+                            $sql .= ";";
+                            $upgrade_sql[] = $sql;
+                        }
+                        else {
+                            echo("Error key_key while modifying key '$key_name' in table '".$table['name']."'\n");
+                            exit;
+                        }
+                    }
+                    else {
+                        echo("Error table_key while adding key '$key_name' in table '$table_name'.\n");
+                    }
+                    // Modify Column in DB
+
+
+                break;
                 default:
-//                   echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
+                   echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
                 break;
             }
         }
@@ -478,11 +509,12 @@ function load_tables_from_db(string $host, string $schema, string $user, string 
                 // New key
                 $composed_key = array();
                 $composed_key['Key_name'] = $key['Key_name'];
-                $composed_key['columns'] = $key['Column_name'];
+                $composed_key['Index_type'] = $key['Index_type'];
+                $composed_key['columns'][] = $key['Column_name'];
                 $composed_keys[] = $composed_key;
             } else {
                 // Given key, add column
-                $composed_keys[$key_pos]['columns'] .= ",".$key['Column_name'];
+                $composed_keys[$key_pos]['columns'][] .= $key['Column_name'];
             }
         }
         unset($key);
@@ -635,12 +667,12 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
 
 //                                if ($key != 'permissions') {                                
                                     $compare_difference = array();
-                                    $compare_difference['type'] = "key definition";
+                                    $compare_difference['type'] = "Key definition";
                                     $compare_difference['table'] = $database_table['name'];
                                     $compare_difference['key'] = $sql_index['Key_name'];
                                     $compare_difference['property'] = $key;
-                                    $compare_difference[$nominal_name] = $value;
-                                    $compare_difference[$actual_name] = $found_sql_index[$key];
+                                    $compare_difference[$nominal_name] = implode(',',$value);
+                                    $compare_difference[$actual_name] = implode(',',$found_sql_index[$key]);
                                     $compare_differences[] = $compare_difference;
 //                                }
                             }
@@ -649,7 +681,7 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                     } // $check_sql_index_definitions
                 } else {
                     $compare_difference = array();
-                    $compare_difference['type'] = "key existance";
+                    $compare_difference['type'] = "Key existance";
                     $compare_difference['table'] = $database_table['name'];
                     $compare_difference[$nominal_name] = $sql_index['Key_name'];
                     $compare_differences[] = $compare_difference;
