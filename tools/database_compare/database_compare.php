@@ -75,6 +75,14 @@ $color_green = "\033[32m";
 $color_yellow = "\033[33m";
 $color_default = "\033[39m";
 
+// These default values will not be in quotes
+$replacers = [
+    ['current_timestamp','current_timestamp()'],
+    ['on update current_timestamp','on update current_timestamp()']
+];
+
+// -------------------------------- START
+
 echo("\n");
 
 if ($argc > 1) {
@@ -115,6 +123,12 @@ if ($argc > 1) {
       $upgrade = false;
     } 
 
+    if (in_array('-do', $argv)) {
+      $doupgrade = true;
+    } else {
+      $doupgrade = false;
+    } 
+
     if (in_array('-clean', $argv)) {
       $clean = true;
     } else {
@@ -122,7 +136,7 @@ if ($argc > 1) {
     } 
 
     echo("--------------- Loading from database '$schema@$host'... ---------------\n");
-    $db_def = load_tables_from_db($host, $schema, $user, $passwd);
+    $db_def = load_tables_from_db($host, $schema, $user, $passwd, $replacers);
 
     if (empty($db_def)) {
         echo ("Could not load from $schema@$host\n");
@@ -164,7 +178,7 @@ if ($argc > 1) {
         echo("--------------- Loading from JSON complete. ---------------\n");
 
         // Do the comparison
-
+/*
         echo("--------------- Comparing JSON '".$compare_def['database']."@".$compare_def['host']."' vs. database '$schema@$host' ---------------\n");
 
         echo(count($compare_def['tables'])." tables in JSON, ".count($db_def['tables'])." tables in database.\n");
@@ -180,7 +194,7 @@ if ($argc > 1) {
                 }
                 echo("\n");
             }           
-        }
+        }*/
 
         echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
         $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
@@ -205,6 +219,7 @@ if ($argc > 1) {
         echo("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
+        $upgrade_sql[] = ("SET SQL_MODE='ALLOW_INVALID_DATES';");
 
         $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
 
@@ -216,10 +231,10 @@ if ($argc > 1) {
 
                     $table_name = $compare_difference['in JSON']; 
 
-                    $table_key = array_search($table_name,array_column($compare_def,'name'));
+                    $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
 
                     if ($table_key !== false) {
-                        $table = $compare_def[$table_key];
+                        $table = $compare_def['tables'][$table_key];
 
                         switch ($table['type']) {
                             case 'BASE TABLE':
@@ -230,17 +245,29 @@ if ($argc > 1) {
                                 $comma = "";
 
                                 foreach ($table['columns'] as $column) {
-                                    $sql .= $comma.column_sql_definition($table_name, $column);                                 
-                                    $comma = ",";
+                                    $sql .= $comma."`".$column['Field']."` ".column_sql_definition($table_name, $column,array_column($replacers,1));
+                                    $comma = ", ";
                                 }
-                                   
+
+                                // Add keys
+                                $comma = ", ";
+                                foreach ($table['keys'] as $key) {
+                                    if ($key['Key_name'] == 'PRIMARY') {
+                                        $keystring = "PRIMARY KEY ";
+                                    } else {
+                                        $keystring = "KEY ".$key['Key_name'];
+                                    }
+                                    $sql .= $comma.$keystring."(".$key['columns'].") ";
+                                }
+                                $sql .= ")";
+                                $upgrade_sql[] = $sql;
                             break;
                             default:
                                 echo("Upgrade type '".$table['type']."' on table '".$table['name']."' not supported.\n");
                             break;
                         }
                     } else {
-                        echo("Error while creating table $table_name.\n");
+                        echo("Error table_key while creating upgrade for table existance `$table_name`.\n");
                     }
 
                 break;
@@ -254,7 +281,7 @@ if ($argc > 1) {
                         $column_key = array_search($column_name,array_column($columns,'Field'));
                         if ($column_key !== false) {
                             $column = $table['columns'][$column_key];
-                            $sql = "ALTER TABLE `$table_name` ADD COLUMN "; 
+                            $sql = "ALTER TABLE `$table_name` ADD COLUMN `".$column_name."` "; 
                             $sql .= column_sql_definition($table_name, $column);
                             $sql .= ";";                                                  
                             $upgrade_sql[] = $sql;                       
@@ -264,7 +291,7 @@ if ($argc > 1) {
                         }
                     }
                     else {
-                        echo("Error table_key while creating column '$column_name' in table '$table_name'.\n");
+                        echo("Error table_key while creating upgrade for column existance '$column_name' in table '$table_name'.\n");
                     }
                     // Add Column in DB
                 break;
@@ -282,10 +309,19 @@ if ($argc > 1) {
                         if ($column_key !== false) {
                             $column = $table['columns'][$column_key];
 
-                            $sql = "ALTER TABLE `$table_name` MODIFY COLUMN ";
-                            $sql .= column_sql_definition($table_name, $column);
+                            $sql = "ALTER TABLE `$table_name` MODIFY COLUMN `".$column_name."` "; 
+                            $sql .= column_sql_definition($table_name, $column,array_column($replacers,1));
                             $sql .= ";";
                             $upgrade_sql[] = $sql;
+
+/*
+                            if ($compare_difference['property'] != 'Type') {
+                                $sql .= " ".$column['Type'];
+                            }
+
+                            $sql .= column_sql_create_property_definition($compare_difference['property'],$compare_difference['in JSON']);
+                            $sql .= ";";
+                            $upgrade_sql[] = $sql;*/
                         }
                         else {
                             echo("Error column_key while modifying column '$column_name' in table '".$table['name']."'\n");
@@ -304,13 +340,14 @@ if ($argc > 1) {
                    echo("Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.\n");
                 break;
                 default:
-                   echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
+//                   echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
                 break;
             }
         }
 
         $upgrade_sql = array_unique($upgrade_sql);
 
+        echo("--------------- Database upgrade for '$schema@$host'... ---------------\n");
         if ($verbose) {
             foreach($upgrade_sql as $statement) {
                 echo($statement."\n");
@@ -319,7 +356,52 @@ if ($argc > 1) {
 
         echo(count($upgrade_sql)." upgrade statements\n");
         echo("--------------- Database upgrade calculated for '$schema@$host' (show SQL with -v). ---------------\n");
-    }
+
+        if ($doupgrade) {
+            echo("--------------- Executing database upgrade for '$schema@$host' database will be written! ---------------\n");
+
+
+             // First get the contents of the database table structure
+            $mysqli = mysqli_connect($host, $user, $passwd, $schema);
+
+            /* Check if the connection succeeded */
+            if (!$mysqli) {
+                echo ("Failed to connect!\n");
+            } else  {
+
+                $counter = 0;
+                $error_counter = 0;
+                $number_of_statements = count($upgrade_sql);
+
+                foreach ($upgrade_sql as $sql) {
+
+                    $counter++;
+                    echo("Upgrade step $counter of $number_of_statements... ");
+
+                    if ($verbose) {
+                        echo("(".substr($sql,0,100)."...) ");
+                    }
+
+                    $query_result = mysqli_query($mysqli, $sql);
+                    if (!$query_result) {
+                        $error = " not ok: ". mysqli_error($mysqli)."\n");
+                        echo($error);
+                        file_put_contents("./errors.txt",$error.$sql."\n",FILE_APPEND);
+                        $error_counter++;
+                    } else {
+                        echo("ok.\n");
+                    }
+
+                }
+
+                echo("\n");
+                echo("$error_counter errors.\n");
+                echo("--------------- Executing database upgrade for '$schema@$host' done. ---------------\n");
+            }
+        }
+
+
+    } // upgrade
 
     echo("--------------- Done. ---------------\n");
 
@@ -332,7 +414,7 @@ if ($argc > 1) {
 
 // Load all db_def from a DB connection into a db_def array
 
-function load_tables_from_db(string $host, string $schema, string $user, string $passwd) : array {
+function load_tables_from_db(string $host, string $schema, string $user, string $passwd, $replacers) : array {
 
     // First get the contents of the database table structure
     $mysqli = mysqli_connect($host, $user, $passwd, $schema);
@@ -367,6 +449,8 @@ function load_tables_from_db(string $host, string $schema, string $user, string 
 
         $columns = array();
         while ($column = mysqli_fetch_assoc($query_result)) {
+            // Do some harmonization
+            sql_replace_reserved_functions($column,$replacers);
             $columns[] = $column; // Add column to list of columns
         }     
         $table['columns'] = $columns;       
@@ -490,6 +574,11 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                 $compare_differences[] = $compare_difference;
             }
           
+            // Only BASE TABLE supported now
+            if ($found_table['type'] != 'BASE TABLE') {
+                continue;
+            }
+
             // Check columns
             $compare_table_columns = array_column($found_table['columns'],'Field');
             foreach ($database_table['columns'] as $column) {
@@ -582,41 +671,19 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
 
 
 // Generate SQL to create or modify column
-function column_sql_definition(string $table_name, array $column) : string {    
+function column_sql_definition(string $table_name, array $column, array $reserved_words_without_quote) : string {    
 
-    // These default values will not be in quotes
-    $mysql_default_values_without_quote = array('current_timestamp()');
-
-    if ($column['Null'] == "NO") {
-        $column['Null'] = " NOT NULL"; // Idiotic...
-    }
-    if ($column['Null'] == "YES") {
-        $column['Null'] = " NULL"; // Also Idiotic...
+    foreach($column as $key => &$value) {
+        $value = (string) $value;
+        $value = column_sql_create_property_definition($key,$value,$reserved_words_without_quote);
     }
 
-    if ($column['Default'] != '') {
-        // Check for MYSQL function call as default                
-        if (in_array(strtolower($column['Default']),$mysql_default_values_without_quote)) {
-            $quote = "";
-        } else {
-            // Remove quotes if there are
-            $column['Default'] = trim($column['Default'],"'");
-            $quote = "'";
-        }
-        $column['Default'] = " DEFAULT $quote".$column['Default']."$quote"; 
-    }
-
-    if ($column['Extra'] != '')  {
-        $column['Extra'] = " ".$column['Extra'];
-    }
-
-
-    if ($column['Collation'] != '')  {
-        $column['Collation'] = " COLLATE ".$column['Collation'];
+    // Default handling here
+    if ($column['Default'] == " DEFAULT ''") {
+        $column['Default'] = "";
     }
 
     $sql =                             
-        "`".$column['Field']."` ".
         $column['Type'].
         $column['Null'].
         $column['Default'].
@@ -624,6 +691,70 @@ function column_sql_definition(string $table_name, array $column) : string {
         $column['Collation'];
 
     return($sql);
+}
+
+// Generate SQL to modify a single column property
+function column_sql_create_property_definition(string $property, string $property_value, array $reserved_words_without_quote) : string {
+
+    switch ($property) {
+        case 'Type':
+        break;
+        case 'Null':
+            if ($property_value == "NO") {
+                $property_value = " NOT NULL"; // Idiotic...
+            }
+            if ($property_value == "YES") {
+                $property_value = " NULL"; // Also Idiotic...
+            }
+        break;
+        case 'Default':
+            // Check for MYSQL function call as default
+
+            if (in_array(strtolower($property_value),$reserved_words_without_quote)) {
+                $quote = "";
+            } else {
+                // Remove quotes if there are
+                $property_value = trim($property_value,"'");
+                $quote = "'";
+            }
+            $property_value = " DEFAULT $quote".$property_value."$quote"; 
+        break;
+        case 'Extra':
+            if ($property_value != '')  {
+                $property_value = " ".$property_value;
+            }
+        break;
+        case 'Collation':
+            if ($property_value != '')  {
+                $property_value = " COLLATE ".$property_value;
+            }
+        break;
+        default: 
+            $property_value = "";
+        break;
+    }
+
+    return($property_value);
+}
+
+// Replaces different variants of the same function to allow comparison
+function sql_replace_reserved_functions(array &$column, array $replacers) {
+
+    $result = strtolower($column['Default']);
+    foreach ($replacers as $replace) {
+        if ($result == $replace[0]) {
+            $result = $replace[1];
+        } 
+    }
+    $column['Default'] = $result;
+
+    $result = strtolower($column['Extra']);
+    foreach ($replacers as $replace) {
+        if ($result == $replace[0]) {
+            $result = $replace[1];
+        } 
+    }
+    $column['Extra'] = $result;
 }
 
 
@@ -639,6 +770,7 @@ function info() {
     echo("\t-c: compare content of files with database structure\n");
     echo("\t-i: ignore column definitions\n");
     echo("\t-upgrade: Create the needed SQL to upgrade the database to match the JSON\n");
+    echo("\t-do: Execute the SQL to upgrade the database to match the JSON (risky!)\n");
     echo("\t-clean: (not yet implemented) Create the needed SQL to remove items from the database not in the JSON\n");
     echo("\n");
 }
