@@ -206,13 +206,13 @@ if ($argc > 1) {
 
         echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
         $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
-        echo("Comparison found ".(empty($compare_differences)?0:count($compare_differences))." differences.\n");
+        echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
         if ($verbose) {
             foreach ($compare_differences as $compare_difference) {
                 $comma = "";
                 foreach ($compare_difference as $key => $value) {
-                    echo($comma."$key => '$value'");
+                    echo($comma."$key => [$value]");
                     $comma = ", ";
                 }
                 echo("\n");
@@ -265,7 +265,14 @@ if ($argc > 1) {
                                     if ($key['Key_name'] == 'PRIMARY') {
                                         $keystring = "PRIMARY KEY ";
                                     } else {
-                                        $keystring = $key['Index_type']." KEY `".$key['Key_name']."` ";
+
+                                        if(array_key_exists('Index_type', $key)) {
+                                            $index_type = $key['Index_type'];
+                                        } else {
+                                            $index_type = "";
+                                        }
+
+                                        $keystring = $index_type." KEY `".$key['Key_name']."` ";
                                     }
                                     $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                                 }
@@ -292,7 +299,7 @@ if ($argc > 1) {
                         if ($column_key !== false) {
                             $column = $table['columns'][$column_key];
                             $sql = "ALTER TABLE `$table_name` ADD COLUMN `".$column_name."` "; 
-                            $sql .= column_sql_definition($table_name, $column);
+                            $sql .= column_sql_definition($table_name, $column, array_column($replacers,1));
                             $sql .= ";";                                                  
                             $upgrade_sql[] = $sql;                       
                         }
@@ -334,11 +341,36 @@ if ($argc > 1) {
                     }
                     // Modify Column in DB
                 break;
-                case 'Table count':
-                    // Nothing to do
-                break;
-                case 'Table type':
-                   echo("Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.\n");
+                case "Key definition":
+                    $table_name = $compare_difference['table']; 
+                    $key_name = $compare_difference['key']; 
+                    $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
+                    if ($table_key !== false) {
+                        $table = $compare_def['tables'][$table_key];
+                        $keys = $table['keys'];   
+
+                        $key_names = array_column($keys,'Key_name');
+                        $key_key = array_search($key_name,$key_names); 
+
+                        if ($key_key !== false) {
+                            $key = $table['keys'][$key_key];
+
+                            $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;"; 
+                            $upgrade_sql[] = $sql;
+
+                            $sql = "ALTER TABLE `$table_name` ADD KEY `".$key_name."` "; 
+                            $sql .= "(`".implode("`,`",$key['columns'])."`)";
+                            $sql .= ";";
+                            $upgrade_sql[] = $sql;
+                        }
+                        else {
+                            echo("Error key_key while changing key '$key_name' in table '".$table['name']."'\n");
+                            exit;
+                        }
+                    }
+                    else {
+                        echo("Error table_key while changing key '$key_name' in table '$table_name'.\n");
+                    }
                 break;
                 case 'Key existance':
 
@@ -361,16 +393,19 @@ if ($argc > 1) {
                             $upgrade_sql[] = $sql;
                         }
                         else {
-                            echo("Error key_key while modifying key '$key_name' in table '".$table['name']."'\n");
+                            echo("Error key_key while adding key '$key_name' in table '".$table['name']."'\n");
                             exit;
                         }
                     }
                     else {
                         echo("Error table_key while adding key '$key_name' in table '$table_name'.\n");
                     }
-                    // Modify Column in DB
-
-
+                break;
+                case 'Table count':
+                    // Nothing to do
+                break;
+                case 'Table type':
+                   echo("Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.\n");
                 break;
                 default:
                    echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
@@ -409,7 +444,7 @@ if ($argc > 1) {
                 foreach ($upgrade_sql as $sql) {
 
                     $counter++;
-                    echo("Upgrade step $counter of $number_of_statements... ");
+                    echo("\rUpgrade step $counter of $number_of_statements... ");
 
                     if ($verbose) {
                         echo("(".substr($sql,0,100)."...) ");
@@ -422,14 +457,22 @@ if ($argc > 1) {
                         file_put_contents("./errors.txt",$error.$sql."\n",FILE_APPEND);
                         $error_counter++;
                     } else {
-                        echo("ok.\n");
+                        echo("ok.\r");
                     }
 
                 }
 
-                echo("\n");
+                echo("--------------- Executing database upgrade for '$schema@$host' executed. ---------------\n");
                 echo("$error_counter errors.\n");
                 echo("--------------- Executing database upgrade for '$schema@$host' done. ---------------\n");
+
+                echo("--------------- Checking database upgrade for '$schema@$host'... ---------------\n");
+                $db_def = load_tables_from_db($host, $schema, $user, $passwd, $replacers);
+
+                echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
+                $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
+                echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
+
             }
         }
 
@@ -483,7 +526,12 @@ function load_tables_from_db(string $host, string $schema, string $user, string 
         $columns = array();
         while ($column = mysqli_fetch_assoc($query_result)) {
             // Do some harmonization
-            sql_replace_reserved_functions($column,$replacers);
+
+            if ($column['Default'] !== NULL) {
+                sql_replace_reserved_functions($column,$replacers);
+                $column['Default'] = mysql_put_text_type_in_quotes($column['Type'],$column['Default']);
+            } 
+
             $columns[] = $column; // Add column to list of columns
         }
         $table['columns'] = $columns;
@@ -565,6 +613,10 @@ function load_tables_from_json(string $path, string $tables_file_name) : array {
 
     $db_def = json_decode($contents, true);
 
+    if (!$db_def) {
+        return(array());
+    }
+
     return($db_def);
 }
 
@@ -626,7 +678,7 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                         foreach ($column as $key => $value) {                            
                             if ($found_column[$key] != $value) {
 
-//                                if ($key != 'permissions') {                                
+                                if ($key != 'Key') { // Keys will be handled separately
                                     $compare_difference = array();
                                     $compare_difference['type'] = "Column definition";
                                     $compare_difference['table'] = $database_table['name'];
@@ -635,7 +687,7 @@ function compare_table_array(array $nominal, string $nominal_name, array $actual
                                     $compare_difference[$nominal_name] = $value;
                                     $compare_difference[$actual_name] = $found_column[$key];
                                     $compare_differences[] = $compare_difference;
-//                                }
+                                }
                             }
                         }
                         unset($value);                          
@@ -790,6 +842,17 @@ function sql_replace_reserved_functions(array &$column, array $replacers) {
     $column['Extra'] = $result;
 }
 
+// Is it a text type? -> Use quotes then
+function mysql_put_text_type_in_quotes(string $checktype, string $value) : string {
+    $types = array('char','varchar','tinytext','text','mediumtext','longtext');
+
+    foreach($types as $type) {
+        if (stripos($checktype, $type) !== false) {
+            return("'".$value."'");
+        }
+    }
+    return($value);
+}
 
 function info() {
     echo("OpenXE database compare\n");
