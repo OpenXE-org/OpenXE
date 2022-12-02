@@ -54,6 +54,11 @@ class Briefpapier extends SuperFPDF {
   /** @var array **/
   private $styleData;
 
+    // Typed variables to get rid of the typos, $border omitted intenionally
+  function Cell_typed(int $w, int $h = 0, string $txt = '', $border = 0, int $ln = 0, string $align = '', bool $fill = false, string $link = '') {
+    return($this->Cell($w,$h,$txt,$border,$ln,$align,$fill,$link));
+  }
+
   /**
    * Briefpapier constructor.
    *
@@ -1006,9 +1011,9 @@ class Briefpapier extends SuperFPDF {
         $this->cMargin=-3;
 
       if($this->getStyleElement("seite_belegnr"))
-        $this->Cell(0,8,$this->app->erp->Beschriftung("dokument_seite").' '.$this->PageNo().' '.$this->app->erp->Beschriftung("dokument_seitevon").' {nb} '.$this->zusatzfooter,0,0,$this->seite_von_ausrichtung);
+        $this->Cell_typed(0,8,$this->app->erp->Beschriftung("dokument_seite").' '.$this->PageNo().' '.$this->app->erp->Beschriftung("dokument_seitevon").' {nb} '.$this->zusatzfooter,0,0,$this->seite_von_ausrichtung);
       else
-        $this->Cell(0,8,$this->app->erp->Beschriftung("dokument_seite").' '.$this->PageNo().' '.$this->app->erp->Beschriftung("dokument_seitevon").' {nb}',0,0,$this->seite_von_ausrichtung);
+        $this->Cell_typed(0,8,$this->app->erp->Beschriftung("dokument_seite").' '.$this->PageNo().' '.$this->app->erp->Beschriftung("dokument_seitevon").' {nb}',0,0,$this->seite_von_ausrichtung);
 
       $this->cMargin = $tmpc;
 
@@ -1836,8 +1841,10 @@ class Briefpapier extends SuperFPDF {
     //$this->setStationery("/home/eproo/eproo-master/app/main/www/lib/dokumente/demo.pdf");
     $this->SetDisplayMode("real","single");
 
+/*
     if($this->getStyleElement("abstand_seitenrandrechts")=="")
       $this->getStyleElementSet("abstand_seitenrandrechts",$this->getStyleElement("abstand_seitenrandlinks"));
+*/
 
     $this->SetMargins($this->getStyleElement("abstand_seitenrandlinks"),50,$this->getStyleElement("abstand_seitenrandrechts"));
     $this->SetAutoPageBreak(true,$this->getStyleElement("abstand_umbruchunten"));
@@ -1886,7 +1893,7 @@ class Briefpapier extends SuperFPDF {
       $this->SetTextColor(0,0,0);
       if($this->doctype!="lieferschein" && $this->doctype!="preisanfrage" && !$this->nichtsichtbar_summe) {
         $this->renderTotals();
-      } else $this->Cell(1,5,'',0);
+      } else $this->Cell_typed(1,5,'',0);
     }
     $this->renderFooter();
     $this->logofile = "";
@@ -1928,7 +1935,7 @@ class Briefpapier extends SuperFPDF {
     if($this->recipient['anrede']!="" && $this->getStyleElement('typimdokument'))
     {
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-      $this->Cell(80,5,$this->recipient['anrede'],0,1);
+      $this->Cell_typed(80,5,$this->recipient['anrede'],0,1);
     }
 
     $this->SetMargins($this->getStyleElement("abstand_adresszeilelinks"),50);
@@ -1940,10 +1947,10 @@ class Briefpapier extends SuperFPDF {
         $array = explode( "\n", wordwrap($this->recipient['enterprise'], $charlimit));
         foreach($array as $row)
         {
-          $this->Cell(80,5,$this->app->erp->ReadyForPDF($row),0,1);
+          $this->Cell_typed(80,5,$this->app->erp->ReadyForPDF($row),0,1);
         }
       } else {
-        $this->Cell(80,5,$this->app->erp->ReadyForPDF($this->recipient['enterprise']),0,1);
+        $this->Cell_typed(80,5,$this->app->erp->ReadyForPDF($this->recipient['enterprise']),0,1);
       }
 
     }
@@ -1952,30 +1959,30 @@ class Briefpapier extends SuperFPDF {
     if($this->recipient['firstname']!="")
     {
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-      $this->Cell(80,5,$this->recipient['firstname'],0,1);
+      $this->Cell_typed(80,5,$this->recipient['firstname'],0,1);
     }
 
     if($this->recipient['address2']!="") {
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-      $this->Cell(80,5,$this->recipient['address2'],0,1);
+      $this->Cell_typed(80,5,$this->recipient['address2'],0,1);
     }
 
     if($this->recipient['address3']!="")
     {
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-      $this->Cell(80,5,$this->recipient['address3'],0,1);
+      $this->Cell_typed(80,5,$this->recipient['address3'],0,1);
     }
 
     if($this->recipient['address4']!="")
     {
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-      $this->Cell(80,5,$this->recipient['address4'],0,1);
+      $this->Cell_typed(80,5,$this->recipient['address4'],0,1);
     }
 
 
-    //$this->Cell(80,5,$this->recipient['firstname']." ".$this->recipient['familyname'],0,1);
+    //$this->Cell_typed(80,5,$this->recipient['firstname']." ".$this->recipient['familyname'],0,1);
     $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-    $this->Cell(80,5,$this->recipient['address1'],0,1);
+    $this->Cell_typed(80,5,$this->recipient['address1'],0,1);
 
 
     $this->SetFont($this->GetFont(),'',10);
@@ -1987,22 +1994,22 @@ class Briefpapier extends SuperFPDF {
     $inland = $this->getStyleElement("land");
     if($this->recipient['country']!=$inland)
     {
-      //$this->Cell(80,5,$this->recipient['country']."-".$this->recipient['areacode']." ".$this->recipient['city'],0,1);
+      //$this->Cell_typed(80,5,$this->recipient['country']."-".$this->recipient['areacode']." ".$this->recipient['city'],0,1);
 
       if(function_exists('mb_strtoupper'))
-        $this->Cell(80,5,mb_strtoupper($this->recipient['areacode']." ".$this->recipient['city'],"UTF-8"),0,1);
+        $this->Cell_typed(80,5,mb_strtoupper($this->recipient['areacode']." ".$this->recipient['city'],"UTF-8"),0,1);
       else
-        $this->Cell(80,5,strtoupper($this->recipient['areacode']." ".$this->recipient['city']),0,1);
+        $this->Cell_typed(80,5,strtoupper($this->recipient['areacode']." ".$this->recipient['city']),0,1);
 
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
-      $this->Cell(80,5,strtoupper($this->app->erp->UmlauteEntfernen($this->app->GetLandLang($this->recipient['country'],$this->sprache))),0,1);
+      $this->Cell_typed(80,5,strtoupper($this->app->erp->UmlauteEntfernen($this->app->GetLandLang($this->recipient['country'],$this->sprache))),0,1);
 
     }
     else {
-      $this->Cell(80,5,$this->recipient['areacode']." ".$this->recipient['city'],0,1);
+      $this->Cell_typed(80,5,$this->recipient['areacode']." ".$this->recipient['city'],0,1);
     }
     //$this->SetFont($this->GetFont(),'',9);
-    //if(isset($this->recipient['country'])) $this->Cell(80,5,$this->recipient['country'],0,1);
+    //if(isset($this->recipient['country'])) $this->Cell_typed(80,5,$this->recipient['country'],0,1);
 
 
     //FREITEXT1
@@ -2074,9 +2081,9 @@ class Briefpapier extends SuperFPDF {
       $this->SetX($this->getStyleElement("abstand_adresszeilelinks"));
 
       if($this->getStyleElement("absenderunterstrichen")=="1")
-        $this->Cell($this->GetStringWidth($cellStr)+2,5,$cellStr,'B');
+        $this->Cell_typed($this->GetStringWidth($cellStr)+2,5,$cellStr,'B');
       else
-        $this->Cell($this->GetStringWidth($cellStr)+2,5,$cellStr,'');
+        $this->Cell_typed($this->GetStringWidth($cellStr)+2,5,$cellStr,'');
     }
 
     if($this->nichtsichtbar_rechtsoben!=true)
@@ -2088,70 +2095,70 @@ class Briefpapier extends SuperFPDF {
 
       $this->SetXY($xOffset,10);
       $this->SetFont($this->GetFont(),'',9);
-      $this->Cell(30,$lineHeight,"Name der Gesellschaft: ",0,0,'R');
+      $this->Cell_typed(30,$lineHeight,"Name der Gesellschaft: ",0,0,'R');
       $this->SetFont($this->GetFont(),'B',9);
-      $this->Cell(60,$lineHeight,$this->sender['enterprise'],0,2);
+      $this->Cell_typed(60,$lineHeight,$this->sender['enterprise'],0,2);
       if(isset($this->sender['enterprise2']))
-        $this->Cell(60,$lineHeight,$this->sender['enterprise2'],0,2);
+        $this->Cell_typed(60,$lineHeight,$this->sender['enterprise2'],0,2);
 
       $this->SetXY($xOffset,$this->GetY());
       $this->SetFont($this->GetFont(),'',9);
-      $this->Cell(30,$lineHeight,"Sitz der Gesellschaft: ",0,0,'R');
+      $this->Cell_typed(30,$lineHeight,"Sitz der Gesellschaft: ",0,0,'R');
       $this->SetFont($this->GetFont(),'B',9);
-      $this->Cell(60,$lineHeight,$this->sender['address1'],0,2);
+      $this->Cell_typed(60,$lineHeight,$this->sender['address1'],0,2);
       if(isset($this->sender['address2']))
-        $this->Cell(60,$lineHeight,$this->sender['address2'],0,2);
-      $this->Cell(60,$lineHeight,$this->sender['areacode']." ".$this->sender['city'],0,2);
+        $this->Cell_typed(60,$lineHeight,$this->sender['address2'],0,2);
+      $this->Cell_typed(60,$lineHeight,$this->sender['areacode']." ".$this->sender['city'],0,2);
 
       $this->SetXY($xOffset,$this->GetY()+$absatz); //abstand
       $this->SetFont($this->GetFont(),'',9);
       if(isset($this->sender['phone1'])) {
-        $this->Cell(30,$lineHeight,"Fon: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['phone1'],0,2);
+        $this->Cell_typed(30,$lineHeight,"Fon: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['phone1'],0,2);
       }
 
       if(isset($this->sender['fax'])) {
         $this->SetXY($xOffset,$this->GetY());
-        $this->Cell(30,$lineHeight,"Fax: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['fax'],0,2);
+        $this->Cell_typed(30,$lineHeight,"Fax: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['fax'],0,2);
       }
 
 
       $this->SetXY($xOffset, $this->GetY()+$absatz); //abstand
       if(isset($this->sender['email'])) {
-        $this->Cell(30,$lineHeight,"Mail: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['email'],0,2);
+        $this->Cell_typed(30,$lineHeight,"Mail: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['email'],0,2);
       }
 
       if(isset($this->sender['web'])) {
         $this->SetXY($xOffset,$this->GetY());
-        $this->Cell(30,$lineHeight,"Web: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['web'],0,2);
+        $this->Cell_typed(30,$lineHeight,"Web: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['web'],0,2);
       }
 
       $this->SetXY($xOffset, $this->GetY()+$absatz); //abstand
       if(isset($this->sender['ustid'])) {
-        $this->Cell(30,$lineHeight,"UST-ID: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['ustid'],0,2);
+        $this->Cell_typed(30,$lineHeight,"UST-ID: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['ustid'],0,2);
       }
       if(isset($this->sender['taxnr'])) {
         $this->SetXY($xOffset,$this->GetY());
-        $this->Cell(30,$lineHeight,"Steuer-Nr.: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['taxnr'],0,2);
+        $this->Cell_typed(30,$lineHeight,"Steuer-Nr.: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['taxnr'],0,2);
       }
       if(isset($this->sender['hreg'])) {
         $this->SetXY($xOffset,$this->GetY());
-        $this->Cell(30,$lineHeight,"Handelsregister: ",0,0,'R');
-        $this->Cell(60,$lineHeight,$this->sender['hreg'],0,2);
+        $this->Cell_typed(30,$lineHeight,"Handelsregister: ",0,0,'R');
+        $this->Cell_typed(60,$lineHeight,$this->sender['hreg'],0,2);
       }
 
       $this->SetXY($xOffset,$this->GetY());
-      $this->Cell(30,$lineHeight,utf8_encode("Gesch�ftsf�hrung: "),0,0,'R');
-      $this->Cell(60,$lineHeight,$this->sender['firstname'].' '.$this->sender['familyname'],0,2);
+      $this->Cell_typed(30,$lineHeight,utf8_encode("Gesch�ftsf�hrung: "),0,0,'R');
+      $this->Cell_typed(60,$lineHeight,$this->sender['firstname'].' '.$this->sender['familyname'],0,2);
 
       //$this->SetXY($xOffset, $this->GetY()+$absatz+2); //abstand
-      //$this->Cell(30,$lineHeight,"Datum: ",0,0,'R');
-      //$this->Cell(60,$lineHeight,utf8_encode($date),0,2);
+      //$this->Cell_typed(30,$lineHeight,"Datum: ",0,0,'R');
+      //$this->Cell_typed(60,$lineHeight,utf8_encode($date),0,2);
     }
   }
 
@@ -2270,7 +2277,7 @@ class Briefpapier extends SuperFPDF {
 
     $this->SetFont($this->GetFont(),'B',$betreffszeile);
     $this->SetY($this->GetY()+$this->abstand_betreffzeileoben);
-    //$this->Cell(85,6,$this->doctypeOrig);
+    //$this->Cell_typed(85,6,$this->doctypeOrig);
     $this->MultiCell(210-83+$this->abstand_boxrechtsoben_lr-$this->getStyleElement("abstand_seitenrandlinks")-5,6,html_entity_decode($this->doctypeOrig,ENT_QUOTES),0,'L');
     $this->SetY($this->GetY()-$this->abstand_betreffzeileoben);
 
@@ -2593,76 +2600,76 @@ class Briefpapier extends SuperFPDF {
     $this->SetX($this->getStyleElement('abstand_seitenrandlinks')+1); // eventuell einstellbar per GUI
 
     $this->SetFont($this->GetFont(),'B',$tabellenbeschriftung);
-    $this->Cell($posWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_position'),0,0,'C'));
+    $this->Cell_typed($posWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_position'),0,0,'C'));
     if($this->doctype!='arbeitsnachweis')
     {
       if($this->doctype=='zahlungsavis')
       {
-        $this->Cell($itemNoWidth,6,'Nummer');
-        $this->Cell($descWidth-$einheitWidth+$taxWidth+$priceWidth+$rabattWidth,6,'Beleg');
+        $this->Cell_typed($itemNoWidth,6,'Nummer');
+        $this->Cell_typed($descWidth-$einheitWidth+$taxWidth+$priceWidth+$rabattWidth,6,'Beleg');
 
-        $this->Cell($amWidth,6,'',0,0,'R');
+        $this->Cell_typed($amWidth,6,'',0,0,'R');
       }
       else {
-        $this->Cell($itemNoWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikelnummer')));
+        $this->Cell_typed($itemNoWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikelnummer')));
         if($this->getStyleElement('artikeleinheit')=='1'){
-          $this->Cell($descWidth - $einheitWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikel')));
+          $this->Cell_typed($descWidth - $einheitWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikel')));
         }
         else{
-          $this->Cell($descWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikel')));
+          $this->Cell_typed($descWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikel')));
         }
-        $this->Cell($amWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_menge')),0,0,'R');
+        $this->Cell_typed($amWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_menge')),0,0,'R');
       }
     } else {
-      $this->Cell($taxWidth,6,'Mitarbeiter');
-      $this->Cell($itemNoWidth,6,'Ort');
-      $this->Cell($descWidth,6,'Tätigkeit');
-      $this->Cell($amWidth,6,'Stunden',0,0,'R');
+      $this->Cell_typed($taxWidth,6,'Mitarbeiter');
+      $this->Cell_typed($itemNoWidth,6,'Ort');
+      $this->Cell_typed($descWidth,6,'Tätigkeit');
+      $this->Cell_typed($amWidth,6,'Stunden',0,0,'R');
     }
 
     if($this->doctype!='lieferschein' && $this->doctype!='arbeitsnachweis' && $this->doctype!='produktion' && $this->doctype!='zahlungsavis' && $this->doctype!='preisanfrage'){
       if($this->getStyleElement('artikeleinheit')=='1'){
-        $this->Cell($einheitWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_einheit')), 0, 0, 'R');
+        $this->Cell_typed($einheitWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_einheit')), 0, 0, 'R');
       }
 
       if($this->ust_spalteausblende){
-        $this->Cell($taxWidth, 6, '', 0, 0, 'R');
+        $this->Cell_typed($taxWidth, 6, '', 0, 0, 'R');
       }
       else{
-        $this->Cell($taxWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_mwst')), 0, 0, 'R');
+        $this->Cell_typed($taxWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_mwst')), 0, 0, 'R');
       }
 
       if($this->getStyleElement('artikeleinheit')=='1'){
         if(!$inventurohnepreis){
-          $this->Cell($priceWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_einzel')), 0, 0, 'R');
+          $this->Cell_typed($priceWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_einzel')), 0, 0, 'R');
         }
       }
       else{
         if(!$inventurohnepreis){
-          $this->Cell($priceWidth, 6, $this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_stueck'))), 0, 0, 'R');
+          $this->Cell_typed($priceWidth, 6, $this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_stueck'))), 0, 0, 'R');
         }
       }
 
       if($this->rabatt=='1') {
         if(!$inventurohnepreis){
-          $this->Cell($rabattWidth,6,$this->app->erp->Beschriftung('dokument_rabatt'),0,0,'R');
-          $this->Cell($sumWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gesamt'))),0,0,'R');
+          $this->Cell_typed($rabattWidth,6,$this->app->erp->Beschriftung('dokument_rabatt'),0,0,'R');
+          $this->Cell_typed($sumWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gesamt'))),0,0,'R');
         }
       } else {
         if(!$inventurohnepreis){
-          $this->Cell($sumWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gesamt'))),0,0,'R');
+          $this->Cell_typed($sumWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gesamt'))),0,0,'R');
         }
       }
     }
     else if ($this->doctype=='lieferschein' || $this->doctype=='preisanfrage')
     {
       if($this->getStyleElement("artikeleinheit")=='1'){
-        $this->Cell($einheitWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_einheit')), 0, 0, 'R');
+        $this->Cell_typed($einheitWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_einheit')), 0, 0, 'R');
       }
     }
     else if ($this->doctype=='zahlungsavis')
     {
-      $this->Cell($sumWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gesamt'))),0,0,'R');
+      $this->Cell_typed($sumWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gesamt'))),0,0,'R');
     }
 
     $this->Ln();
@@ -2748,7 +2755,7 @@ class Briefpapier extends SuperFPDF {
       $posWidthold = $posWidth;
       if($belege_stuecklisteneinrueckenmm && $newlvl > 0)
       {
-        $this->Cell($belege_stuecklisteneinrueckenmm * $newlvl,$cellhoehe,'');
+        $this->Cell_typed($belege_stuecklisteneinrueckenmm * $newlvl,$cellhoehe,'');
         $posWidth -= $belege_stuecklisteneinrueckenmm * $newlvl;
         if($posWidth < 2* strlen($posstr))
         {
@@ -2760,11 +2767,11 @@ class Briefpapier extends SuperFPDF {
       if($belege_subpositionenstuecklisten)$posstr = $this->CalcPosString($posstr,$oldpostr, $hauptnummer, $oldlvl, $newlvl);
       $oldpostr = $posstr;
       $oldlvl = isset($item['lvl'])?(int)$item['lvl']:0;
-      $this->Cell($posWidth,$cellhoehe,$posstr,0,0,$belege_stuecklisteneinrueckenmm?'':'C');
+      $this->Cell_typed($posWidth,$cellhoehe,$posstr,0,0,$belege_stuecklisteneinrueckenmm?'':'C');
       //artikelnummer
       if($this->doctype==='arbeitsnachweis')
       {
-        $this->Cell($taxWidth,$cellhoehe,trim($item['person']),0);
+        $this->Cell_typed($taxWidth,$cellhoehe,trim($item['person']),0);
 
         $zeilenuntertext  = $this->getStyleElement('zeilenuntertext');
         $this->SetFont($this->GetFont(),'',$zeilenuntertext);
@@ -2785,10 +2792,10 @@ class Briefpapier extends SuperFPDF {
           $this->SetFont($this->GetFont(), '', $tabelleninhalt);
         }
         if(isset($item['itemno'])) {
-          $this->Cell($itemNoWidth,$cellhoehe,$item['itemno'],0);
+          $this->Cell_typed($itemNoWidth,$cellhoehe,$item['itemno'],0);
         }
         else {
-          $this->Cell($itemNoWidth);
+          $this->Cell_typed($itemNoWidth);
         }
         $this->SetFont($this->GetFont(),'',$tabelleninhalt);
       }
@@ -2837,10 +2844,10 @@ class Briefpapier extends SuperFPDF {
       // Menge
 
       if($this->doctype==='zahlungsavis'){
-        $this->Cell($amWidth, $cellhoehe, '', 0, 0, 'R');
+        $this->Cell_typed($amWidth, $cellhoehe, '', 0, 0, 'R');
       }
       else{
-        $this->Cell($amWidth, $cellhoehe, $item['amount'], 0, 0, 'R');
+        $this->Cell_typed($amWidth, $cellhoehe, $item['amount'], 0, 0, 'R');
       }
 
       if($this->doctype!=='lieferschein' && $this->doctype!=='arbeitsnachweis' && $this->doctype!=='produktion' && $this->doctype!=='preisanfrage') {
@@ -2877,7 +2884,7 @@ class Briefpapier extends SuperFPDF {
             }
           }
 
-          $this->Cell($einheitWidth,$cellhoehe,$this->app->erp->ReadyForPDF($einheit),0,0,'R');
+          $this->Cell_typed($einheitWidth,$cellhoehe,$this->app->erp->ReadyForPDF($einheit),0,0,'R');
         }
 
         //			if($item['tax']=="hidden") $item['tax']=="hidden";
@@ -2905,21 +2912,21 @@ class Briefpapier extends SuperFPDF {
         // standard anzeige mit steuer
         if(!$this->ust_spalteausblende){
           if($item['tax']==='hidden'){
-            $this->Cell($taxWidth,$cellhoehe,"",0,0,'R');
+            $this->Cell_typed($taxWidth,$cellhoehe,"",0,0,'R');
           } else {
             $tax = $item['tax']; //= $tax; //="USTV"?0.19:0.07;
             $tax *= 100; $tax = $tax.'%';
 
             if($this->doctype==='zahlungsavis'){
-              $this->Cell($taxWidth,$cellhoehe,"",0,0,'R');
+              $this->Cell_typed($taxWidth,$cellhoehe,"",0,0,'R');
             }
             else{
-              $this->Cell($taxWidth, $cellhoehe, $item['ohnepreis'] ? '' : $tax, 0, 0, 'R');
+              $this->Cell_typed($taxWidth, $cellhoehe, $item['ohnepreis'] ? '' : $tax, 0, 0, 'R');
             }
           }
         } else {
           //kleinunternehmer
-          $this->Cell($taxWidth,$cellhoehe,"",0,0,'R');
+          $this->Cell_typed($taxWidth,$cellhoehe,"",0,0,'R');
         }
 
         if($this->doctype!=='lieferschein' && $this->doctype!=='produktion' && $this->doctype!=='preisanfrage') {
@@ -2933,29 +2940,29 @@ class Briefpapier extends SuperFPDF {
                 //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
                 //&& $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
                 if(!$inventurohnepreis){
-                  $this->Cell($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price']), 0, 0, 'R');
+                  $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price']), 0, 0, 'R');
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price'] * $item['tmptax']), 0, 0, 'R');
+                  $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price'] * $item['tmptax']), 0, 0, 'R');
                 }
               }
             } else
             {
               if($item['ohnepreis']==2) {
                 if(!$inventurohnepreis){
-                  $this->Cell($priceWidth,$cellhoehe,$item['price'],0,0,'R');
+                  $this->Cell_typed($priceWidth,$cellhoehe,$item['price'],0,0,'R');
                 }
               } // text alternativ zu preis
               else {
                 if(!$inventurohnepreis){
-                  $this->Cell($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['price']),0,0,'R');
+                  $this->Cell_typed($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['price']),0,0,'R');
                 }
               }
             }
           } else {
-            $this->Cell($priceWidth,$cellhoehe,"",0,0,'R');
+            $this->Cell_typed($priceWidth,$cellhoehe,"",0,0,'R');
           }
 
           // zentale rabatt spalte
@@ -3023,7 +3030,7 @@ class Briefpapier extends SuperFPDF {
             } else {
               if($item['rabatt']<>0){
                 // && $item['keinrabatterlaubt']!="1")
-                $this->Cell($rabattWidth, $cellhoehe, $item['ohnepreis'] ? '' : $item['rabatt'] . " %", 0, 0, 'R');
+                $this->Cell_typed($rabattWidth, $cellhoehe, $item['ohnepreis'] ? '' : $item['rabatt'] . " %", 0, 0, 'R');
               }
               else
               {
@@ -3032,13 +3039,13 @@ class Briefpapier extends SuperFPDF {
                   $rabatt_or_porto = $this->app->DB->Select("SELECT id FROM artikel WHERE 
                       nummer='".$item['itemno']."' AND (porto='1' OR rabatt='1') LIMIT 1");
                   if($rabatt_or_porto){
-                    $this->Cell($rabattWidth, $cellhoehe, '', 0, 0, 'R');
+                    $this->Cell_typed($rabattWidth, $cellhoehe, '', 0, 0, 'R');
                   }
                   else{
-                    $this->Cell($rabattWidth, $cellhoehe, 'SNP', 0, 0, 'R');
+                    $this->Cell_typed($rabattWidth, $cellhoehe, 'SNP', 0, 0, 'R');
                   }
                 } else {
-                  $this->Cell($rabattWidth,$cellhoehe,"",0,0,'R');
+                  $this->Cell_typed($rabattWidth,$cellhoehe,"",0,0,'R');
                 }
               }
             }
@@ -3046,7 +3053,7 @@ class Briefpapier extends SuperFPDF {
           else {
             // anzeige ohne zentrale rabatt spalte
             if ($item['tax']==="hidden"){
-              $this->Cell($priceWidth,$cellhoehe,"",0,0,'R');
+              $this->Cell_typed($priceWidth,$cellhoehe,"",0,0,'R');
             }
             else {
               if($anzeigeBelegNettoAdrese)
@@ -3054,16 +3061,16 @@ class Briefpapier extends SuperFPDF {
               //   && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
               {
                 if(!$inventurohnepreis){
-                  $this->Cell($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['tprice']),0,0,'R');
+                  $this->Cell_typed($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['tprice']),0,0,'R');
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+                  $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
                 }
               }
 
-              $this->Cell($rabattWidth,$cellhoehe,"",0,0,'R');
+              $this->Cell_typed($rabattWidth,$cellhoehe,"",0,0,'R');
             }
           }
         }
@@ -3072,20 +3079,20 @@ class Briefpapier extends SuperFPDF {
           // if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
           //       && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
             if(!$inventurohnepreis){
-              $this->Cell($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['price']),0,0,'R');
+              $this->Cell_typed($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['price']),0,0,'R');
             }
           else{
             if(!$inventurohnepreis){
-              $this->Cell($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price'] * $item['tmptax']), 0, 0, 'R');
+              $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price'] * $item['tmptax']), 0, 0, 'R');
             }
           }
         }
-        //$this->Cell($sumWidth,$cellhoehe,$this->formatMoney($item['tprice']).' '.$item['currency'],0,0,'R');
+        //$this->Cell_typed($sumWidth,$cellhoehe,$this->formatMoney($item['tprice']).' '.$item['currency'],0,0,'R');
         if($this->rabatt=='1')
         {
           //gesamt preis
           if ($item['tax']==='hidden'){
-            $this->Cell($priceWidth,$cellhoehe,'',0,0,'R');
+            $this->Cell_typed($priceWidth,$cellhoehe,'',0,0,'R');
           }
           else {
             if($this->rabatt=='1'){
@@ -3093,12 +3100,12 @@ class Briefpapier extends SuperFPDF {
                 //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
                 //   && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
                 if(!$inventurohnepreis){
-                  $this->Cell($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
+                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
                 }
               }
             }
@@ -3107,12 +3114,12 @@ class Briefpapier extends SuperFPDF {
                 // if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
                 //   && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
                 if(!$inventurohnepreis){
-                  $this->Cell($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
+                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
                 }
               }
             }
@@ -3148,7 +3155,7 @@ class Briefpapier extends SuperFPDF {
             }
           }
 
-          $this->Cell($einheitWidth,$cellhoehe,$this->app->erp->ReadyForPDF($einheit),0,0,'R');
+          $this->Cell_typed($einheitWidth,$cellhoehe,$this->app->erp->ReadyForPDF($einheit),0,0,'R');
         }
 
       $this->Ln();
@@ -3298,12 +3305,12 @@ class Briefpapier extends SuperFPDF {
         $yBeforeDescription = $this->GetY();
         $this->SetFont($this->GetFont(),'',$zeilenuntertext);
         if($belege_stuecklisteneinrueckenmm && $newlvl > 0){
-          $this->Cell($belege_stuecklisteneinrueckenmm * $newlvl, $cellhoehe, '');
+          $this->Cell_typed($belege_stuecklisteneinrueckenmm * $newlvl, $cellhoehe, '');
         }
-        $this->Cell($posWidth);
-        $this->Cell($itemNoWidth);
+        $this->Cell_typed($posWidth);
+        $this->Cell_typed($itemNoWidth);
         if($this->doctype==='arbeitsnachweis') {
-          $this->Cell($taxWidth);
+          $this->Cell_typed($taxWidth);
         }
 
         if($this->doctype==='lieferschein' && $this->getStyleElement('modul_verband')=='1'){
@@ -3392,17 +3399,17 @@ class Briefpapier extends SuperFPDF {
           }
         }
 
-        $this->Cell($taxWidth);
-        $this->Cell($amWidth);
+        $this->Cell_typed($taxWidth);
+        $this->Cell_typed($amWidth);
         $this->Ln();
         $this->SetFont($this->GetFont(),'',$tabelleninhalt);
 
         $zeilenuntertext  = $this->getStyleElement('zeilenuntertext');
         $this->SetFont($this->GetFont(),'',$zeilenuntertext);
-        $this->Cell($posWidth);
-        $this->Cell($itemNoWidth);
+        $this->Cell_typed($posWidth);
+        $this->Cell_typed($itemNoWidth);
         if($this->doctype==='arbeitsnachweis') {
-          $this->Cell($taxWidth);
+          $this->Cell_typed($taxWidth);
         }
         if($this->getStyleElement('artikeleinheit')=='1'){
           $this->MultiCell($descWidth - $einheitWidth, 4, '', 0); // 4 = abstand zwischen Artikeln
@@ -3410,8 +3417,8 @@ class Briefpapier extends SuperFPDF {
         else{
           $this->MultiCell($descWidth, 4, '', 0); // 4 = abstand zwischen Artikeln
         }
-        $this->Cell($taxWidth);
-        $this->Cell($amWidth);
+        $this->Cell_typed($taxWidth);
+        $this->Cell_typed($amWidth);
         $this->Ln();
         $this->SetFont($this->GetFont(),'',$tabelleninhalt);
         $yAfterDescription = $this->GetY();
@@ -3421,11 +3428,11 @@ class Briefpapier extends SuperFPDF {
         $this->SetY($position_y_end_name);
         $yBeforeDescription = $this->GetY();
         $this->SetFont($this->GetFont(),'',$zeilenuntertext);
-        $this->Cell($posWidth);
-        $this->Cell($itemNoWidth);
+        $this->Cell_typed($posWidth);
+        $this->Cell_typed($itemNoWidth);
         if($this->doctype==='arbeitsnachweis')
         {
-          $this->Cell($taxWidth);
+          $this->Cell_typed($taxWidth);
         }
         if($this->getStyleElement('artikeleinheit')=='1')
         {
@@ -3450,8 +3457,8 @@ class Briefpapier extends SuperFPDF {
           $this->MultiCell($posWidth+$itemNoWidth+$descWidth+$amWidth+$taxWidth+$sumWidth+$priceWidth,($zeilenuntertext/2),trim($staffelpreistext),0,'R');
         }
 
-        $this->Cell($taxWidth);
-        $this->Cell($amWidth);
+        $this->Cell_typed($taxWidth);
+        $this->Cell_typed($amWidth);
         $this->Ln();
         $this->SetFont($this->GetFont(),'',$tabelleninhalt);
         $yAfterDescription = $this->GetY();
@@ -3805,7 +3812,7 @@ class Briefpapier extends SuperFPDF {
                     $this->Image($dateiname, $this->GetX(), $this->GetY(),$width / 10, $hoehe / 10, 'jpg');
                     if($nochtext == '')
                     {
-                      $this->Cell($picwidth,6,'',0,0,'C');
+                      $this->Cell_typed($picwidth,6,'',0,0,'C');
                     }
                     $this->SetXY($this->GetX(), $y + $height / 10 + ($nochtext == ''?5:0));
                   }
@@ -4016,7 +4023,7 @@ class Briefpapier extends SuperFPDF {
           }
 
           $this->SetX($x+$abstand_links);
-          $this->Cell($descWidth,4,$this->WriteHTML($html));
+          $this->Cell_typed($descWidth,4,$this->WriteHTML($html));
           $this->SetX($x+$abstand_links+$descWidth);
           //$this->SetX($x);
 
@@ -4050,7 +4057,7 @@ class Briefpapier extends SuperFPDF {
           {
             $ausrichtung = $data['Text_Ausrichtung'];
           }
-          $this->Cell($priceWidth+$amWidth+$taxWidth+$priceWidth,4,$summe,$rahmen,0,$ausrichtung);
+          $this->Cell_typed($priceWidth+$amWidth+$taxWidth+$priceWidth,4,$summe,$rahmen,0,$ausrichtung);
           if(!empty($data['Abstand_Unten']))
           {
             $this->Ln((int)$data['Abstand_Unten']);
@@ -4098,19 +4105,19 @@ class Briefpapier extends SuperFPDF {
       //$this->Line(110, $this->GetY(), 190, $this->GetY());
       $this->Ln(1);
       $this->SetFont($this->GetFont(),'',$this->getStyleElement('schriftgroesse_gesamt'));
-      $this->Cell($differenz_wegen_abstand,2,'',0);
+      $this->Cell_typed($differenz_wegen_abstand,2,'',0);
       if($this->getStyleElement('kleinunternehmer')!='1' && $this->doctype!='zahlungsavis'){
         $nettoText = $this->app->erp->Beschriftung('dokument_gesamtnetto');
         $nettoAmount = $this->formatMoney(round((double)$this->totals['totalArticles'], 2), 2).' '.$this->waehrung;
         $doctype = $this->doctype;
         $doctypeid = !empty($this->doctypeid)?$this->doctypeid: $this->id;
         $this->app->erp->RunHook('class_briefpapier_render_netto', 4, $doctype, $doctypeid, $nettoText, $nettoAmount);
-        $this->Cell(30,5,$nettoText,0,0,'L');
-        $this->Cell(40,5,$nettoAmount,0,'L','R');
+        $this->Cell_typed(30,5,$nettoText,0,0,'L');
+        $this->Cell_typed(40,5,$nettoAmount,0,0,'R');
       } else {
         //kleinunzernehmer
-        $this->Cell(30,5,'',0,0,'L');
-        $this->Cell(40,5,'',0,'L','R');
+        $this->Cell_typed(30,5,'',0,0,'L');
+        $this->Cell_typed(40,5,'',0,0,'R');
       }
       $this->Ln();
 
@@ -4121,16 +4128,16 @@ class Briefpapier extends SuperFPDF {
         $versand = 'Versandkosten: ';
       }
       if(isset($this->totals['priceOfDispatch'])) {
-        $this->Cell($differenz_wegen_abstand,2,'',0);
-        $this->Cell(30,5,$versand,0,'L','L');
-        $this->Cell(40,5,$this->formatMoney((double)$this->totals['priceOfDispatch'], 2).' '.$this->waehrung,0,'L','R');
+        $this->Cell_typed($differenz_wegen_abstand,2,'',0);
+        $this->Cell_typed(30,5,$versand,0,'L','L');
+        $this->Cell_typed(40,5,$this->formatMoney((double)$this->totals['priceOfDispatch'], 2).' '.$this->waehrung,0,0,'R');
       }
       //$this->Ln();
 
       if(isset($this->totals['priceOfPayment']) && $this->totals['priceOfPayment']!='0.00'){
-        $this->Cell($differenz_wegen_abstand,2,'',0);
-        $this->Cell(30,5,$this->totals['modeOfPayment'],0,'L','L');
-        $this->Cell(40,5,$this->formatMoney((double)$this->totals['priceOfPayment'], 2).' '.$this->waehrung,0,'L','R');
+        $this->Cell_typed($differenz_wegen_abstand,2,'',0);
+        $this->Cell_typed(30,5,$this->totals['modeOfPayment'],0,'L','L');
+        $this->Cell_typed(40,5,$this->formatMoney((double)$this->totals['priceOfPayment'], 2).' '.$this->waehrung,0,0,'R');
         $this->Ln();
       }
 
@@ -4139,7 +4146,7 @@ class Briefpapier extends SuperFPDF {
 
 
       if(isset($this->totals['totalTaxV']) && $this->totals['totalTaxV']!="0.00"){
-        $this->Cell($differenz_wegen_abstand,1,'',0);
+        $this->Cell_typed($differenz_wegen_abstand,1,'',0);
 
         if($this->getStyleElement('kleinunternehmer')!='1'){
           if(!empty($this->doctype) && !empty($this->id) && is_numeric($this->id)){
@@ -4154,23 +4161,23 @@ class Briefpapier extends SuperFPDF {
           //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
           //       && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
           {
-            $this->Cell(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$this->app->erp->GetSteuersatzNormal(false,$this->id,$this->table).' %',0,'L','L'); //1
+            $this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$this->app->erp->GetSteuersatzNormal(false,$this->id,$this->table).' %',0,0,'L'); //1
           }
           else {
-            $this->Cell(30,3,$this->app->erp->Beschriftung('dokument_inklmwst').' '.$this->app->erp->GetSteuersatzNormal(false,$this->id,$this->table).' %',0,'L','L');
+            $this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_inklmwst').' '.$this->app->erp->GetSteuersatzNormal(false,$this->id,$this->table).' %',0,0,'L');
           }
-          $this->Cell(40,3,$this->formatMoney((double)$this->totals['totalTaxV'], 2).' '.$this->waehrung,0,'L','R');
+          $this->Cell_typed(40,3,$this->formatMoney((double)$this->totals['totalTaxV'], 2).' '.$this->waehrung,0,0,'R');
         } else {
           //kleinunternehmer
-          $this->Cell(30,3,'',0,'L','L');
-          $this->Cell(40,3,'',0,'L','R');
+          $this->Cell_typed(30,3,'',0,0,'L');
+          $this->Cell_typed(40,3,'',0,0,'R');
         }
         $this->Ln();
       }
       $projekt = $this->projekt;
       $adresse = $this->app->DB->Select("SELECT adresse FROM ".($this->table?$this->table:$this->doctype)." WHERE id = '".$this->id."' LIMIT 1");
       if(!empty($this->totals['totalTaxR']) && $this->totals['totalTaxR']!='0.00'){
-        $this->Cell($differenz_wegen_abstand,1,'',0);
+        $this->Cell_typed($differenz_wegen_abstand,1,'',0);
 
         if($this->getStyleElement('kleinunternehmer')!='1'){
 
@@ -4178,17 +4185,17 @@ class Briefpapier extends SuperFPDF {
           //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
           //       && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
             {
-              $this->Cell(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$this->app->erp->GetSteuersatzErmaessigt(false,$this->id,$this->table).' %',0,'L','L'); //1
+              $this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$this->app->erp->GetSteuersatzErmaessigt(false,$this->id,$this->table).' %',0,0,'L'); //1
             }
           else {
-            $this->Cell(30,3,$this->app->erp->Beschriftung('dokument_inklmwst').' '.$this->app->erp->GetSteuersatzErmaessigt(false,$this->id,$this->table).' %',0,'L','L');
+            $this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_inklmwst').' '.$this->app->erp->GetSteuersatzErmaessigt(false,$this->id,$this->table).' %',0,0,'L');
             }
 
-          $this->Cell(40,3,$this->formatMoney(round((double)$this->totals['totalTaxR'],2), 2).' '.$this->waehrung,0,'L','R');
+          $this->Cell_typed(40,3,$this->formatMoney(round((double)$this->totals['totalTaxR'],2), 2).' '.$this->waehrung,0,0,'R');
         } else {
           //kleinunternehmer
-          $this->Cell(30,3,'',0,'L','L');
-          $this->Cell(40,3,"",0,'L','R');
+          $this->Cell_typed(30,3,'',0,0,'L');
+          $this->Cell_typed(40,3,"",0,0,'R');
         }
 
         $this->Ln();
@@ -4203,24 +4210,24 @@ class Briefpapier extends SuperFPDF {
           {
             continue;
           }
-          $this->Cell($differenz_wegen_abstand,1,'',0);
+          $this->Cell_typed($differenz_wegen_abstand,1,'',0);
 
           if($this->getStyleElement('kleinunternehmer')!='1'){
             if($this->app->erp->AnzeigeBelegNettoAdresse($this->anrede, $this->doctype, $projekt, $adresse,$this->id))
             //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
             //       && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
             {
-              $this->Cell(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$k.' %',0,'L','L'); //1
+              $this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$k.' %',0,0,'L'); //1
             }else {
-              //$this->Cell(30,3,$this->app->erp->Beschriftung('dokument_inklmwst').' '.$k.' %',0,'L','L'); 09.12.2018 ab heute auskommentiert wegen 829087
-              $this->Cell(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$k.' %',0,'L','L');
+              //$this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_inklmwst').' '.$k.' %',0,'L','L'); 09.12.2018 ab heute auskommentiert wegen 829087
+              $this->Cell_typed(30,3,$this->app->erp->Beschriftung('dokument_zzglmwst').' '.$k.' %',0,0,'L');
             }
 
-            $this->Cell(40,3,$this->formatMoney(round($value,2), 2).' '.$this->waehrung,0,'L','R');
+            $this->Cell_typed(40,3,$this->formatMoney(round($value,2), 2).' '.$this->waehrung,0,0,'R');
           } else {
             //kleinunternehmer
-            $this->Cell(30,3,'',0,'L','L');
-            $this->Cell(40,3,"",0,'L','R');
+            $this->Cell_typed(30,3,'',0,0,'L');
+            $this->Cell_typed(40,3,"",0,0,'R');
           }
 
           $this->Ln();
@@ -4231,7 +4238,7 @@ class Briefpapier extends SuperFPDF {
 
       if(!isset($this->totals['totalTaxR']) && !isset($this->totals['totalTaxV']) && !isset($this->totals['summen']) && $this->doctype!="zahlungsavis")
       {
-        $this->Cell($differenz_wegen_abstand,3,'',0);
+        $this->Cell_typed($differenz_wegen_abstand,3,'',0);
 
         if($this->getStyleElement('kleinunternehmer')!='1')
         {
@@ -4241,24 +4248,24 @@ class Briefpapier extends SuperFPDF {
             {
               if(!($this->ust_befreit==3 && $this->getStyleElement('steuerfrei_inland_ausblenden')=='1')) //steuerfrei inland
               {
-                $this->Cell(30, 3, $this->app->erp->Beschriftung('dokument_zzglmwst') . ' 0.00 %', 0, 'L', 'L'); //1
+                $this->Cell_typed(30, 3, $this->app->erp->Beschriftung('dokument_zzglmwst') . ' 0.00 %', 0, 0, 'L'); //1
               }
             }
           else {
             if(!($this->ust_befreit==3 && $this->getStyleElement('steuerfrei_inland_ausblenden')=='1')) //steuerfrei inland
             {
-              $this->Cell(30, 3, $this->app->erp->Beschriftung('dokument_inklmwst') . ' 0.00 %', 0, 'L', 'L');
+              $this->Cell_typed(30, 3, $this->app->erp->Beschriftung('dokument_inklmwst') . ' 0.00 %', 0, 0, 'L');
             }
           }
 
           if(!($this->ust_befreit==3 && $this->getStyleElement('steuerfrei_inland_ausblenden')=='1')) //steuerfrei inland
           {
-            $this->Cell(40, 3, '0,00 ' . $this->waehrung, 0, 'L', 'R');
+            $this->Cell_typed(40, 3, '0,00 ' . $this->waehrung, 0, 0, 'R');
           }
         } else {
           //kleinunternehmer
-          $this->Cell(30,3,'',0,'L','L');
-          $this->Cell(40,3,'',0,'L','R');
+          $this->Cell_typed(30,3,'',0,0,'L');
+          $this->Cell_typed(40,3,'',0,0,'R');
         }
         $this->Ln();
       }
@@ -4267,32 +4274,32 @@ class Briefpapier extends SuperFPDF {
     }
 
     $this->SetFont($this->GetFont(),'B',$this->getStyleElement('schriftgroesse_gesamt'));
-    $this->Cell($differenz_wegen_abstand,5,'',0);
+    $this->Cell_typed($differenz_wegen_abstand,5,'',0);
     if($this->doctype=='offer'){
-      $this->Cell(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 'L', 'L');
+      $this->Cell_typed(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 0, 'L');
     }
     elseif($this->doctype=='creditnote'){
-      $this->Cell(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 'L', 'L');
+      $this->Cell_typed(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 0, 'L');
     }
     else if($this->doctype=='arbeitsnachweis'){
-      $this->Cell(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 'L', 'L');
+      $this->Cell_typed(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 0, 'L');
     }
     else if($this->doctype=='zahlungsavis'){
-      $this->Cell(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 'L', 'L');
+      $this->Cell_typed(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 0, 'L');
     }
     else{
-      $this->Cell(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 'L', 'L');
+      $this->Cell_typed(30, 5, $this->app->erp->Beschriftung('dokument_gesamt_total'), 0, 0, 'L');
     }
 
     if($this->doctype=='arbeitsnachweis'){
-      $this->Cell(40, 5, $this->totals['total'] . ' ', 0, 'L', 'R');
+      $this->Cell_typed(40, 5, $this->totals['total'] . ' ', 0, 0, 'R');
     }
     else {
       if($this->getStyleElement('kleinunternehmer')!='1'){
-        $this->Cell(40, 5, $this->formatMoney(round((double)$this->totals['total'], 2), 2) . ' ' . $this->waehrung, 0, 'L', 'R');
+        $this->Cell_typed(40, 5, $this->formatMoney(round((double)$this->totals['total'], 2), 2) . ' ' . $this->waehrung, 0, 0, 'R');
       }
       else{
-        $this->Cell(40, 5, $this->formatMoney(round((double)$this->totals['totalArticles'], 2), 2) . ' ' . $this->waehrung, 0, 'L', 'R');
+        $this->Cell_typed(40, 5, $this->formatMoney(round((double)$this->totals['totalArticles'], 2), 2) . ' ' . $this->waehrung, 0, 0, 'R');
       }
     }
 
