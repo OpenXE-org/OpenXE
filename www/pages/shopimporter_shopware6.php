@@ -3017,7 +3017,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
         $ordersToProcess = $this->getOrdersToProcess($this->getOrderSearchLimit());
 
-        return count($ordersToProcess['data']);
+        return (!empty(count($ordersToProcess['data'])?count($ordersToProcess['data']):0);
     }
 
     /**
