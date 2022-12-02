@@ -35713,7 +35713,7 @@ function Firmendaten($field,$projekt="")
         }
         $orderBy = '';
         if($projekt > 0) {
-          $orderBy = sprintf(' ORDER BY %d DESC ', (int)$projekt);
+          $orderBy = ' ORDER BY projekt DESC';
         }
         return (int)$this->app->DB->Select(
           sprintf(
