@@ -90,8 +90,6 @@ class Welcome
     $this->app->ActionHandler("mobileapps","WelcomeMobileApps");
     $this->app->ActionHandler("spooler","WelcomeSpooler");
     $this->app->ActionHandler("redirect","WelcomeRedirect");
-    $this->app->ActionHandler("upgrade","WelcomeUpgrade");
-    $this->app->ActionHandler("upgradedb","WelcomeUpgradeDB");
     $this->app->ActionHandler("startseite","WelcomeStartseite");
     
     $this->app->ActionHandler("addnote","WelcomeAddNote");
@@ -886,8 +884,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     $this->app->Tpl->Parse('AUFGABENPOPUP','aufgaben_popup.tpl');
     // ENDE:Aufgabe-Bearbeiten-Popup
 
-    $this->XentralUpgradeFeed();
-
     $this->app->erp->RunHook('welcome_start', 1 , $this);
 
     // Xentral 20 database compatibility
@@ -1111,97 +1107,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     header('Content-type: text/css');
     echo $tmp;
     $this->app->erp->ExitWawi();
-  }
-
-  protected function XentralUpgradeFeed($max=3)
-  {
-    if(!$this->app->Conf->WFoffline)
-    {
-      $version = $this->app->erp->Version();
-      $revision = $this->app->erp->Revision();
-/*
-      $tmp = explode('.',$revision);
-      $branch = strtolower($version).'_'.$tmp[0].'.'.$tmp[1];
-
-      $BLOGURL = "https://{$this->app->Conf->updateHost}/wawision_2016.php?branch=".$branch;
-      $CACHEFILE = $this->app->erp->GetTMP().md5($BLOGURL);
-      $CACHEFILE2 = $this->app->erp->GetTMP().md5($BLOGURL).'2';
-      if(!file_exists($CACHEFILE2))
-      {
-        if(file_exists($CACHEFILE)){
-          @unlink($CACHEFILE);
-        }
-      }else{
-        if(trim(file_get_contents($CACHEFILE2)) != $version.$revision){
-          @unlink($CACHEFILE);
-        }
-      }
-      $CACHETIME = 4; # hours
-
-      if(!file_exists($CACHEFILE) || ((time() - filemtime($CACHEFILE)) > 3600 * $CACHETIME)) {
-        if($feed_contents = @file_get_contents($BLOGURL)) { 
-          $fp = fopen($CACHEFILE, 'w'); 
-          fwrite($fp, $feed_contents); 
-          fclose($fp);
-          @file_put_contents($CACHEFILE2, $version.$revision);
-        } 
-      }
-      $feed_contents = file_get_contents($CACHEFILE);
-
-      $xml = simplexml_load_string($feed_contents);
-      $json = json_encode($xml);
-      $array = json_decode($json,TRUE);
-      $found = false;
-      $version_revision = null;
-      include dirname(dirname(__DIR__)) .'/version.php';
-      if($version_revision != '') {
-        $ra = explode('.', $version_revision);
-        if(isset($ra[2]) && $ra[2] != '') {
-          $itemsCount = isset($array['channel']['item'])?count($array['channel']['item']):0;
-          for($i = 0; $i< $itemsCount; $i++) {
-            if($found !== false) {
-              unset($array['channel']['item'][$i]);
-            }
-            else{
-              $rev = isset($array['channel']['item'][$i]['guid'])?(string)$array['channel']['item'][$i]['guid']:'';
-              if($rev === '') {
-                $rev = trim(trim($array['channel']['item'][$i]['title']),')');
-                $rev = trim(substr($rev, strrpos($rev, '(')+4));
-              }
-              if($rev == $ra[2]) {
-                $found = $i;
-                unset($array['channel']['item'][$i]);
-              }
-            }
-          }
-        }
-      }
-      if(!empty($array['channel']) && !empty($array['channel']['item']) && is_array($array['channel']['item'])) {
-        $itemsCount = isset($array['channel']['item'])?count($array['channel']['item']):0;
-        for($i = 0; $i < $itemsCount; $i++) {
-          $this->app->Tpl->Add('WAIWISONFEEDS','<tr><td><b>'.$array['channel']['item'][$i]['title']
-                  .'</b></td></tr><tr><td  style="font-size:7pt">'.$array['channel']['item'][$i]['description'].'</td></tr>');
-        }
-      }
-      elseif($found !== false){
-        $this->app->Tpl->Add('WAIWISONFEEDS','<tr><td><br><b>Ihre Version ist auf dem neusten Stand.</b></td></tr>');
-      }
-      $version = $this->app->erp->Version();
-      if($version==='OSS') {
-        $this->app->Tpl->Set('INFO', '<br>Sie verwenden die Open-Source Version.');
-        $this->app->Tpl->Set('TESTBUTTON','<div class="btn">
-          <a href="index.php?module=appstore&action=testen" class="button" target="_blank">14 Tage Business testen</a>
-        </div>');
-      }
-      $this->app->Tpl->Set('RAND',md5(microtime(true)));
-      if(!$this->app->erp->RechteVorhanden('welcome','changelog')) {
-        $this->app->Tpl->Set('BEFORECHANGELOG', '<!--');
-        $this->app->Tpl->Set('AFTERCHANGELOG', '-->');
-      }
-      $this->app->erp->RunHook('welcome_news');
-      $this->app->Tpl->Parse('WELCOMENEWS','welcome_news.tpl');
-*/
-    }
   }
 
   
@@ -1667,156 +1572,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     
     return $out;
   }
-
-  public function WelcomeUpgrade()
-  {
-    $this->app->erp->MenuEintrag('index.php?module=welcome&action=start','zur&uuml;ck zur Startseite');
-    $this->app->erp->Headlines('Update f&uuml;r Xentral');
-
-    $this->app->Tpl->Set('STARTBUTTON','<!--');
-    $this->app->Tpl->Set('ENDEBUTTON','-->');
-
-    $lizenz = $this->app->erp->Firmendaten('lizenz');
-    $schluessel = $this->app->erp->Firmendaten('schluessel');
-    if($lizenz=='' || $schluessel=='')
-    {
-      if(is_file('../wawision.inc.php'))
-      {
-        include_once '../wawision.inc.php';
-        $this->app->erp->FirmendatenSet('lizenz',$WAWISION['serial']);
-        $this->app->erp->FirmendatenSet('schluessel',$WAWISION['authkey']);
-      }
-    }
-
-    $this->app->erp->MenuEintrag('index.php?module=welcome&action=upgrade','Update');
-    $this->XentralUpgradeFeed(5);
-    $result = '';
-    if($this->app->Secure->GetPOST('upgrade'))
-    {
-      ob_start();
-      // dringend nacheinander, sonst wird das alte upgrade nur ausgefuehrt
-        if(!is_dir('.svn'))
-        {
-          echo "new update system\r\n";
-          include '../upgradesystemclient2_include.php';
-        } else {
-          echo "Update in Entwicklungsversion\r\n";
-        }
-
-      $result .= "\r\n>>>>>>Bitte klicken Sie jetzt auf \"Weiter mit Schritt 2\"<<<<<<\r\n\r\n";
-      $result .= ob_get_contents();
-      $result .= "\r\n>>>>>>Bitte klicken Sie jetzt auf \"Weiter mit Schritt 2\"<<<<<<\r\n\r\n";
-      ob_end_clean();
-
-      if(is_dir('.svn'))
-      {
-        $version_revision = 'SVN';
-      } else {
-        include '../version.php';
-      }
-
-      $result .="\r\nIhre Version: $version_revision\r\n";
-
-    } else {
-      $result .=">>>>>Bitte auf \"Dateien aktualisieren jetzt starten\" klicken<<<<<<\r\n";
-    }
-
-    if($this->app->erp->Firmendaten('version')==''){
-      $this->app->erp->FirmendatenSet('version', $this->app->erp->RevisionPlain());
-    }
-
-    $doc_root  = preg_replace("!{$_SERVER['SCRIPT_NAME']}$!", '', $_SERVER['SCRIPT_FILENAME']); # ex: /var/www
-    $path = preg_replace("!^{$doc_root}!", '', __DIR__); 
-
-$this->app->Tpl->Add('TAB1',"<h2>Schritt 1 von 2: Dateien aktualisieren</h2><table width=\"100%\"><tr valign=\"top\"><td width=\"70%\"><form action=\"\" method=\"post\" class=\"updateForm\"><input type=\"hidden\" name=\"upgrade\" value=\"1\">
-        <textarea rows=\"15\" cols=\"90\">$result</textarea>
-        <br><input type=\"submit\" value=\"Dateien aktualisieren jetzt starten\" name=\"upgrade\">&nbsp;        
-       <input type=\"button\" value=\"Weiter mit Schritt 2\" onclick=\"window.location.href='index.php?module=welcome&action=upgradedb'\">&nbsp;
-        </form></td><td>[WELCOMENEWS]</td></tr></table>");
-
-    $this->app->Tpl->Parse('PAGE','tabview.tpl');
-  }
-
-  public function WelcomeUpgradeDB()
-  {
-    $this->app->erp->MenuEintrag('index.php?module=welcome&action=start','zur&uuml;ck zur Startseite');
-    $this->app->erp->Headlines('Update f&uuml;r Xentral');
-
-    $lizenz = $this->app->erp->Firmendaten('lizenz');
-    $schluessel = $this->app->erp->Firmendaten('schluessel');
-    if($lizenz=='' || $schluessel=='')
-    {
-      if(is_file('../wawision.inc.php'))
-      {
-        include_once '../wawision.inc.php';
-        $this->app->erp->FirmendatenSet('lizenz',$WAWISION['serial']);
-        $this->app->erp->FirmendatenSet('schluessel',$WAWISION['authkey']);
-      }
-    }
-    $this->app->erp->MenuEintrag('index.php?module=welcome&action=upgradedb','Update');
-    $this->XentralUpgradeFeed(5);
-    $result = '';
-    if($this->app->Secure->GetPOST('upgradedb'))
-    {
-      ob_start();
-      //   include("upgradesystemclient.php");
-        $result .="Starte DB Update\r\n";
-        $this->app->erp->UpgradeDatabase();
-        $this->app->erp->check_column_missing_run = true;
-        $this->app->erp->UpgradeDatabase();
-        
-        if((!empty($this->app->erp->check_column_missing)?count($this->app->erp->check_column_missing):0) > 0)
-        {
-          $result .= "\r\n**** INFORMATION DATENBANK ****\r\n";
-          foreach($this->app->erp->check_column_missing as $tablename=>$columns)
-          {
-          $result .= "\r\n";
-            foreach($columns as $key=>$columname) {
-              $result .= $tablename . ':' . $columname . "\r\n";
-            }
-          }
-          $result .= "\r\n**** INFORMATION DATENBANK ****\r\n\r\n";
-        }
-        if((!empty($this->app->erp->check_index_missing)?count($this->app->erp->check_index_missing):0) > 0)
-        {
-          $result .= "\r\n**** INFORMATION DATENBANK INDEXE ****\r\n";
-          foreach($this->app->erp->check_index_missing as $tablename=>$columns)
-          {
-            $result .= "\r\n";
-            foreach($columns as $key=>$columname) {
-              $result .= $tablename . ":" . $columname . "\r\n";
-            }
-          }
-          $result .= "\r\n**** INFORMATION DATENBANK INDEXE ****\r\n\r\n";
-        }
-        $result .="Fertig DB Update\r\n";
-        $result .="\r\n\r\nDas Datenbank Update wurde durchgef&uuml;hrt\r\n";
-        $result .="\r\n>>>>>Sie k&ouml;nnen nun mit Xentral weiterarbeiten.<<<<<<\r\n";
-        $result .= ob_get_contents();
-      ob_end_clean();
-    } else {
-      $result .="\r\n>>>>>Bitte auf \"Datenbank Anpassungen jetzt durchf&uuml;hren\" klicken<<<<<<\r\n";
-    }
-
-    if($this->app->erp->Firmendaten('version')==''){
-      $this->app->erp->FirmendatenSet('version', $this->app->erp->RevisionPlain());
-    }
-
-    $doc_root  = preg_replace("!{$_SERVER['SCRIPT_NAME']}$!", '', $_SERVER['SCRIPT_FILENAME']); # ex: /var/www
-    $path = preg_replace("!^{$doc_root}!", '', __DIR__); 
-
-$this->app->Tpl->Add('TAB1',"<h2>Schritt 2 von 2: Datenbank anpassen</h2><table width=\"100%\"><tr valign=\"top\"><td width=\"70%\"><form action=\"\" method=\"post\" class=\"updateForm\"><input type=\"hidden\" name=\"upgrade\" value=\"1\">
-        <textarea rows=\"15\" cols=\"90\">$result</textarea>
-        <br><input type=\"submit\" value=\"Datenbank Anpassungen jetzt durchf&uuml;hren\" name=\"upgradedb\">&nbsp;
-       <input type=\"button\" value=\"Zur&uuml;ck\" onclick=\"window.location.href='index.php?module=welcome&action=upgrade'\">&nbsp;
-       <input type=\"button\" value=\"Abbrechen\" onclick=\"window.location.href='index.php'\">&nbsp;
-        </form></td><td>[WELCOMENEWS]</td></tr></table>");
-
-    $this->app->Tpl->Parse('PAGE','tabview.tpl');
-  }
-
-
-
 
   public function Termine($date)
   {
