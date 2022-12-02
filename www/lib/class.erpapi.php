@@ -7403,7 +7403,7 @@ function ClearSqlCache($shortcode, $seconds = 0)
     if($seconds > 0) {
       $this->app->DB->Delete(
         sprintf(
-          'DELETE FROM sqlcache WHERE DATE_DIFF(zeitstempel, INTERVAL %d SECOND) < NOW()',
+          "DELETE FROM sqlcache WHERE TIMESTAMPDIFF(SECOND,zeitstempel, NOW()) > %d",
           $seconds
         )
       );
@@ -7415,7 +7415,7 @@ function ClearSqlCache($shortcode, $seconds = 0)
   if($seconds > 0) {
     $this->app->DB->Delete(
       sprintf(
-        "DELETE FROM sqlcache WHERE shortcode = '%s' AND DATE_DIFF(zeitstempel, INTERVAL %d SECOND) < NOW()",
+        "DELETE FROM sqlcache WHERE shortcode = 'artikel' AND  TIMESTAMPDIFF(SECOND,zeitstempel, NOW()) > %d",
         $this->app->DB->real_escape_string($shortcode), $seconds
       )
     );
