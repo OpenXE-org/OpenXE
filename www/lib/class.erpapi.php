@@ -7415,7 +7415,7 @@ function ClearSqlCache($shortcode, $seconds = 0)
   if($seconds > 0) {
     $this->app->DB->Delete(
       sprintf(
-        "DELETE FROM sqlcache WHERE shortcode = 'artikel' AND  TIMESTAMPDIFF(SECOND,zeitstempel, NOW()) > %d",
+        "DELETE FROM sqlcache WHERE shortcode = '%s' AND  TIMESTAMPDIFF(SECOND,zeitstempel, NOW()) > %d",
         $this->app->DB->real_escape_string($shortcode), $seconds
       )
     );
