@@ -27,12 +27,17 @@ $remote_file_name = "data/remote.json";
 $datafolder = "data";
 $schema_file_name = "db_schema.json";
 
-function git(string $command, array &$output, bool $verbose) {
+function git(string $command, &$output, bool $verbose, string $error_text) : int {
     $output = array();
     if ($verbose) {
         echo("git ".$command."\n");
     }
     exec("git ".$command,$output,$retval);
+    if (!empty($output)) {
+        if ($verbose || $retval != 0) {
+            echo_output($output);
+        }
+    }
     return($retval);
 }
 
@@ -74,7 +79,28 @@ $remote_info = json_decode($remote_info_contents, true);
 
 // Get changed files on system -> Should be empty
 $output = array();
-$retval = git("ls-files -m ..", $output,$verbose);
+$retval = git("ls-files -m ..", $output,$verbose,"Git not initialized.");
+
+// Not a git repository -> Create it and then go ahead
+if ($retval == 128) { 
+    echo("Setting up git...");
+    $retval = git("init ..", $output,$verbose,"Error while initializing git!");
+    if ($retval != 0) {
+        abort("");
+    }
+    $retval = git("add ../.", $output,$verbose,"Error while initializing git!");   
+    if ($retval != 0) {
+        abort("");
+    }
+    $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'], $output,$verbose,"Error while initializing git!");
+    if ($retval != 0) {
+        abort("");
+    }
+    $retval = git("checkout FETCH_HEAD -f", $output,$verbose,"Error while initializing git!");   
+    if ($retval != 0) {
+        abort("");
+    }
+}
 
 if ($retval != 0) {
     abort("Error while executing git!");
@@ -98,30 +124,30 @@ if (file_exists($lockfile_name)) {
 echo("--------------- Pulling files... ---------------\n");
 
 if ($force) {
-    $retval = git("reset --hard",$output,$verbose);
+    $retval = git("reset --hard",$output,$verbose,"Error while resetting modified files!");
     if ($retval != 0) {
         echo_output($output);
-        abort("Error while resetting modified files!");
+        abort("");
     }       
 } 
 
-$retval = git("pull ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose);
+$retval = git("pull ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,"Error while pulling files!");
 if ($retval != 0) {
     echo_output($output);
-    abort("Error while pulling files!");
+    abort("");
 }
 
-$retval = git("reset --hard",$output,$verbose);
+$retval = git("reset --hard",$output,$verbose,"Error while applying files!");
 if ($retval != 0) {
     echo_output($output);
-    abort("Error while applying files!");
+    abort("");
 }       
 
 echo("--------------- Files upgrade completed ---------------\n");
-$retval = git("log -1 ",$output,$verbose);
+$retval = git("log -1 ",$output,$verbose,"Error while checking files!");
 if ($retval != 0) {
     echo_output($output);
-    abort("Error while pulling files!");
+    abort("");
 }
 echo_output($output);
 
