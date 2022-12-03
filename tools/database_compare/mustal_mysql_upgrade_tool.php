@@ -452,7 +452,7 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 // 10 Error on key definition upgrade
 // 11 Table type upgrade not supported
 // 12 Upgrade type not supported
-function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql) : int {
+function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers) : int {
     $upgrade_sql = array();
 
     $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);

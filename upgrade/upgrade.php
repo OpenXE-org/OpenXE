@@ -74,14 +74,14 @@ $remote_info = json_decode($remote_info_contents, true);
 
 // Get changed files on system -> Should be empty
 $output = array();
-$retval = git("ls-files -m", $output,$verbose);
+$retval = git("ls-files -m ..", $output,$verbose);
 
 if ($retval != 0) {
     abort("Error while executing git!");
 }
 
 if (!empty($output)) {
-    echo("There are modifed files:");
+    echo("There are modified files:");
     echo_output($output);
     if (!$force) {
         abort("Clear modified files or use -f");
@@ -98,10 +98,10 @@ if (file_exists($lockfile_name)) {
 echo("--------------- Pulling files... ---------------\n");
 
 if ($force) {
-    $retval = git("stash",$output,$verbose);
+    $retval = git("reset --hard",$output,$verbose);
     if ($retval != 0) {
         echo_output($output);
-        abort("Error while stashing files!");
+        abort("Error while resetting modified files!");
     }       
 } 
 
@@ -110,6 +110,12 @@ if ($retval != 0) {
     echo_output($output);
     abort("Error while pulling files!");
 }
+
+$retval = git("reset --hard",$output,$verbose);
+if ($retval != 0) {
+    echo_output($output);
+    abort("Error while applying files!");
+}       
 
 echo("--------------- Files upgrade completed ---------------\n");
 $retval = git("log -1 ",$output,$verbose);
@@ -143,7 +149,7 @@ echo("--------------- Calculating database upgrade for '$schema@$host'... ------
 
 $upgrade_sql = array();
 
-$result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql);
+$result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers);
 
 if ($result != 0) {
     echo("Error: $result\n");
@@ -172,9 +178,10 @@ if (!$mysqli) {
         echo("\rUpgrade step $counter of $number_of_statements... ");
 
         $query_result = mysqli_query($mysqli, $sql);
-        if (!$query_result) {
-            $error = " not ok: ". mysqli_error($mysqli)."\n";
+        if (!$query_result) {        
+            $error = " not ok: ". mysqli_error($mysqli);            
             echo($error);
+            echo("\n");
             file_put_contents("./errors.txt",date()." ".$error.$sql."\n",FILE_APPEND);
             $error_counter++;
         } else {
@@ -183,6 +190,7 @@ if (!$mysqli) {
 
     }
 
+    echo("\n");
     echo("$error_counter errors.\n");
     if ($error_counter > 0) {
         echo("See 'errors.txt'\n");
