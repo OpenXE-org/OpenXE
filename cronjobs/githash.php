@@ -7,9 +7,15 @@ $path = '../.git/';
 if (!is_dir($path)) {
   return;
 }
-$head = trim(substr(file_get_contents($path . 'HEAD'), 4));
-$hash = trim(file_get_contents(sprintf($path . $head)));
-
+$head = trim(file_get_contents($path . 'HEAD'));
+$refs = trim(substr($head,0,4));
+if ($refs == 'ref:') {
+    $ref = substr($head,5);
+    echo($path.$ref."\n");
+    $hash = trim(file_get_contents($path . $ref));
+} else {
+    $hash = $head;
+}
 if (!empty($hash)) {
   file_put_contents("../githash.txt", $hash);
 }
