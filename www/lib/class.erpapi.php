@@ -7107,6 +7107,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Einstellungen','einstellungen','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Online-Shops / Marktplätze','onlineshops','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Backup','backup','list','recover','delete','reset');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Upgrade','upgrade','list','recover','delete','reset');
     //$navarray['menu']['admin'][$menu]['sec'][]  = array('AppStore','appstore','list');
 
     $navarray['menu']['admin'][++$menu]['first']  = array('Mein Bereich','welcome','main');
