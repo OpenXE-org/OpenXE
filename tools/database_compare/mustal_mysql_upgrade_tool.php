@@ -462,6 +462,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
     $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
     if (count($compare_differences) > 0) {
         $upgrade_sql[] = ("SET SQL_MODE='ALLOW_INVALID_DATES';");
+        $upgrade_sql[] = ("SET SESSION innodb_strict_mode=OFF;");
     }
 
     foreach ($compare_differences as $compare_difference) {
