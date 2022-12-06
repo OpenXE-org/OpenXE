@@ -201,7 +201,8 @@ function mustal_load_tables_from_json(string $path, string $tables_file_name) : 
 // Compare two definitions
 // Report based on the first array
 // Return Array
-function mustal_compare_table_array(array $nominal, string $nominal_name, array $actual, string $actual_name, bool $check_column_definitions) : array {
+// $column_collation_aliases may contain synonyms for collations e.g. utf8mb3_general_ci vs utf8_general_ci
+function mustal_compare_table_array(array $nominal, string $nominal_name, array $actual, string $actual_name, bool $check_column_definitions, array $column_collation_aliases = array()) : array {
 
     $compare_differences = array();
 
@@ -254,8 +255,19 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                     if ($check_column_definitions) {
                         $found_column = $found_table['columns'][$column_key];
                         foreach ($column as $key => $value) {                            
-                            if ($found_column[$key] != $value) {
 
+                            // Apply aliases                                
+                            if (!empty($column_collation_aliases)) {
+                                foreach($column_collation_aliases as $column_collation_alias) {
+                                    if ($value == $column_collation_alias[0]) {
+                                        $value = $column_collation_alias[1];
+                                    }
+                                    if ($found_column[$key] == $column_collation_alias[0]) {                              
+                                        $found_column[$key] = $column_collation_alias[1];
+                                    }
+                                }
+                            } 
+                            if ($found_column[$key] != $value) {
                                 if ($key != 'Key') { // Keys will be handled separately
                                     $compare_difference = array();
                                     $compare_difference['type'] = "Column definition";

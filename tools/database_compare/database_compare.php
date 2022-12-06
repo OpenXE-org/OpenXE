@@ -123,6 +123,12 @@ if ($argc > 1) {
       $clean = false;
     } 
 
+    if (in_array('-utf8fix', $argv)) {
+      $utf8fix = true;
+    } else {
+      $utf8fix = false;
+    } 
+
     $connection_info_contents = file_get_contents($connection_info_file_name);
     if (!$connection_info_contents) {
         echo("Unable to load $connection_info_file_name\n");
@@ -197,7 +203,16 @@ if ($argc > 1) {
         }*/
 
         echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
-        $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
+
+        if($utf8fix) {
+            $column_collation_aliases = array(
+                ['utf8mb3_general_ci','utf8_general_ci']
+            );
+        } else {
+            $column_collation_aliases = array();
+        }
+
+        $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,$column_collation_aliases);
         echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
         if ($verbose) {
@@ -319,6 +334,7 @@ function info() {
     echo("\t-e: export database structure to files\n");
     echo("\t-c: compare content of files with database structure\n");
     echo("\t-i: ignore column definitions\n");
+    echo("\t-utf8fix: apply fix for 'utf8' != 'utf8mb3'\n");
     echo("\t-upgrade: Create the needed SQL to upgrade the database to match the JSON\n");
     echo("\t-do: Execute the SQL to upgrade the database to match the JSON (risky!)\n");
     echo("\t-clean: (not yet implemented) Create the needed SQL to remove items from the database not in the JSON\n");

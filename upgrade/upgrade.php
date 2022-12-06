@@ -37,6 +37,7 @@ function git(string $command, &$output, bool $verbose, string $error_text) : int
 }
 
 // -------------------------------- START
+
 // Check for correct call method
 $directory = "";
 if (php_sapi_name() == "cli") {
@@ -51,24 +52,50 @@ if (php_sapi_name() == "cli") {
 }
 
 if ($cli) {
-    if (in_array('-v', $argv)) {
-      $verbose = true;
-    } else {
-      $verbose = false;
-    } 
 
-    if (in_array('-f', $argv)) {
-      $force = true;
-    } else {
-      $force = false;
-    } 
+    if ($argc > 1) {
 
-    if (in_array('-do', $argv)) {
-      $do_upgrade = true;
+        if (in_array('-c', $argv)) {
+          $check = true;
+        } else {
+          $check = false;
+        } 
+
+        if (in_array('-v', $argv)) {
+          $verbose = true;
+        } else {
+          $verbose = false;
+        } 
+
+        if (in_array('-f', $argv)) {
+          $force = true;
+        } else {
+          $force = false;
+        } 
+
+        if (in_array('-do', $argv)) {
+          $check = true;
+          $do_upgrade = true;
+        } else {
+          $do_upgrade = false;
+        } 
+
+        if (in_array('-utf8fix', $argv)) {
+          $utf8fix = true;
+        } else {
+          $utf8fix = false;
+        } 
+
+        if ($check) {
+            upgrade_main($directory, $verbose, $do_upgrade, $force);
+        } else {
+            info();
+        }
+
     } else {
-      $do_upgrade = false;
-    } 
-    upgrade_main($directory, $verbose, $do_upgrade, $force);
+        info();
+    }
+
 } 
 // -------------------------------- END
 
@@ -90,7 +117,7 @@ function upgrade_main(string $directory,bool $verbose, bool $do_upgrade, bool $f
 
     echo("--------------- OpenXE upgrade ---------------\n");
 
-    require_once($directory.'/../cronjobs/githash.php');
+    //require_once($directory.'/../cronjobs/githash.php');
 
     $remote_info_contents = file_get_contents($remote_file_name);
     if (!$remote_info_contents) {
@@ -136,8 +163,15 @@ function upgrade_main(string $directory,bool $verbose, bool $do_upgrade, bool $f
 
 
     if ($verbose) {
-        echo("--------------- Update history ---------------\n");
+        echo("--------------- Upgrade history ---------------\n");
         $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~4",$output,$verbose,"Error while showing history!");
+        if ($retval != 0) {
+            abort("");
+            return(-1);
+        }
+    } else {
+        echo("--------------- Current version ---------------\n");
+        $retval = git("log -1 --date=short-local --pretty=\"%cd (%h): %s\" HEAD",$output,$verbose,"Error while showing history!");
         if ($retval != 0) {
             abort("");
             return(-1);
@@ -212,7 +246,18 @@ function upgrade_main(string $directory,bool $verbose, bool $do_upgrade, bool $f
             return(-1);
         }
         echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
-        $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
+
+        if($utf8fix) {
+            $column_collation_aliases = array(
+                ['utf8mb3_general_ci','utf8_general_ci']
+            );
+        } else {
+            $column_collation_aliases = array();
+        }
+
+        
+        $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,$column_collation_aliases);
+
         echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
         echo("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
@@ -273,7 +318,7 @@ function upgrade_main(string $directory,bool $verbose, bool $do_upgrade, bool $f
             $db_def = mustal_load_tables_from_db($host, $schema, $user, $passwd, $mustal_replacers);
 
             echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
-            $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
+            $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,$column_collation_aliases);
             echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
         }
@@ -307,6 +352,21 @@ function upgrade_main(string $directory,bool $verbose, bool $do_upgrade, bool $f
 
     echo("--------------- Done! ---------------\n");
     return(0);
+}
+
+function info() {
+    echo("OpenXE upgrade tool\n");
+    echo("Copyright 2022 (c) OpenXE project\n");
+    echo("\n");
+    echo("Upgrade files and database\n");
+    echo("Options:\n");
+    echo("\t-c: check for upgrades\n");
+    echo("\t-v: verbose output\n");
+    echo("\t-f: force override of existing files\n");
+    echo("\t-utf8fix: apply fix for 'utf8' != 'utf8mb3'\n");
+    echo("\t-do: execute the upgrade\n");
+    echo("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
+    echo("\n");
 }
 
 
