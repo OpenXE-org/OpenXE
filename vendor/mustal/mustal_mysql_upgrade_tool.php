@@ -210,7 +210,8 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
     if($utf8fix) {
         $column_collation_aliases = array(
             ['utf8mb3_general_ci','utf8_general_ci'],
-            ['utf8mb3_unicode_ci','utf8_unicode_ci']
+            ['utf8mb3_unicode_ci','utf8_unicode_ci'],
+            ['utf8mb3_bin','utf8_bin']
         );
     } else {
         $column_collation_aliases = array();
