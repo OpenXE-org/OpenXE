@@ -221,15 +221,18 @@ function upgrade_main(string $directory,bool $verbose, bool $do_upgrade, bool $f
 
         $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers);
 
-        if ($result != 0) {
-            abort("Error: $result\n");
+        if (!empty($result)) {
+            abort(count($result)." errors.\n");
+            if ($verbose) {
+                foreach($result as $error) {
+                    echo("Code: ".$error[0]." '".$error[1]."'.");
+                }
+            }
             return(-1);
         }
 
         echo(count($upgrade_sql)." upgrade statements\n");
-
         echo("--------------- Executing database upgrade for '$schema@$host' database... ---------------\n");            
-
          // First get the contents of the database table structure
         $mysqli = mysqli_connect($host, $user, $passwd, $schema);
 

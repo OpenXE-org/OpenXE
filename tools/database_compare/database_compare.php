@@ -210,7 +210,6 @@ if ($argc > 1) {
                 echo("\n");
             }           
         }
-
         echo("--------------- Comparison complete. ---------------\n");
     }
 
@@ -220,11 +219,21 @@ if ($argc > 1) {
 
         $upgrade_sql = array();
 
-        $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql);
+        $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers);
 
         if ($result != 0) {
             echo("Error: $result\n");
             exit;
+        }
+
+        if (!empty($result)) {
+            echo(count($result)." errors.\n");
+            if ($verbose) {
+                foreach($result as $error) {
+                    echo("Code: ".$error[0]." '".$error[1]."'.");
+                }
+            }
+            return(-1);
         }
 
         echo("--------------- Database upgrade for '$schema@$host'... ---------------\n");
@@ -281,7 +290,7 @@ if ($argc > 1) {
                 $db_def = mustal_load_tables_from_db($host, $schema, $user, $passwd, $mustal_replacers);
 
                 echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
-                $compare_differences = compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
+                $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
                 echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
             }

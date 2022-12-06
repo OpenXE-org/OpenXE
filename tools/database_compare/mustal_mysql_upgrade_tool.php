@@ -438,6 +438,7 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 
 
 // Calculate the sql neccessary to update the database
+// returns array(code,text)
 // Error codes:
 // 0 ok
 // 1 Upgrade type of table not supported
@@ -452,7 +453,10 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 // 10 Error on key definition upgrade
 // 11 Table type upgrade not supported
 // 12 Upgrade type not supported
-function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers) : int {
+
+function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers) : array {
+
+    $result = array();
     $upgrade_sql = array();
 
     $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true);
@@ -507,13 +511,11 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                             $upgrade_sql[] = $sql;
                         break;
                         default:
-                            //echo("Upgrade type '".$table['type']."' on table '".$table['name']."' not supported.\n");
-                            return(1);
+                            $result[] = array(1,"Upgrade type '".$table['type']."' on table '".$table['name']."' not supported.");
                         break;
                     }
                 } else {
-                    // echo("Error table_key while creating upgrade for table existence `$table_name`.\n");
-                    return(2);
+                    $result[] = array(2,"Error table_key while creating upgrade for table existence `$table_name`.");
                 }
 
             break;
@@ -533,13 +535,11 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $upgrade_sql[] = $sql;                       
                     }
                     else {
-                        // echo("Error column_key while creating column '$column_name' in table '".$table['name']."'\n");
-                        return(3);
+                        $result[] = array(3,"Error column_key while creating column '$column_name' in table '".$table['name']."'.");
                     }
                 }
                 else {
-                    // echo("Error table_key while creating upgrade for column existence '$column_name' in table '$table_name'.\n");
-                    return(4);
+                    $result[] = array(4,"Error table_key while creating upgrade for column existence '$column_name' in table '$table_name'.");
                 }
                 // Add Column in DB
             break;
@@ -563,12 +563,11 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $upgrade_sql[] = $sql;
                     }
                     else {
-                        //echo("Error column_key while modifying column '$column_name' in table '".$table['name']."'\n");
-                        return(5);
+                        $result[] = array(5,"Error column_key while modifying column '$column_name' in table '".$table['name']."'.");
                     }
                 }
                 else {
-                    // echo("Error table_key while modifying column '$column_name' in table '$table_name'.\n");
+                    $result[] = array(6,"Error table_key while modifying column '$column_name' in table '$table_name'.");
                     return(6);
                 }
                 // Modify Column in DB
@@ -594,13 +593,11 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $upgrade_sql[] = $sql;
                     }
                     else {
-                        //echo("Error key_key while adding key '$key_name' in table '".$table['name']."'\n");
-                        return(7);
+                        $result[] = array(7,"Error key_key while adding key '$key_name' in table '".$table['name']."'.");
                     }
                 }
                 else {
-                    //echo("Error table_key while adding key '$key_name' in table '$table_name'.\n");
-                    return(8);
+                    $result[] = array(8,"Error table_key while adding key '$key_name' in table '$table_name'.");
                 }
             break;
             case "Key definition":
@@ -626,29 +623,26 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $upgrade_sql[] = $sql;
                     }
                     else {
-                        //echo("Error key_key while changing key '$key_name' in table '".$table['name']."'\n");
-                        return(9);
+                        $result[] = array(9, "Error key_key while changing key '$key_name' in table '".$table['name']."'.");
                     }
                 }
                 else {
-                    // echo("Error table_key while changing key '$key_name' in table '$table_name'.\n");
-                    return(10);
+                    $result[] = array(10,"Error table_key while changing key '$key_name' in table '$table_name'.");
                 }
             break;
             case 'Table count':
                 // Nothing to do
             break;
             case 'Table type':
-                // echo("Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.\n");
-                return(11);
+                $result[] = array(11,"Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.");
             break;
             default:
-                // echo("Upgrade type '".$compare_difference['type']."' not supported.\n");
-                return(12);
+                $result[] = array(12,"Upgrade type '".$compare_difference['type']."' not supported.");
             break;
         }
     }
 
     $upgrade_sql = array_unique($upgrade_sql);
-    return(0);
+
+    return($result);
 }
