@@ -30,38 +30,20 @@
                                		</div>           
                            		</div>
                        		</div>
-                            <div [PENDING_VISIBLE] class="row">
+                            <div class="row">
 	                        	<div class="row-height">
 	                        		<div class="col-xs-14 col-md-12 col-md-height">
 	                        			<div class="inside inside-full-height">
 	                        				<fieldset>
-                                                <legend>{|Verf&uuml;gbare Upgrades|}</legend>
+                                                <legend>{|Ausgabe|}</legend>
                                                 <table width="100%" border="0" class="mkTableFormular">
-                                                     <pre style="white-space:pre-line;">
 [OUTPUT_FROM_CLI]
-                                                    </pre>
                                                 </table>
                                             </fieldset>            
                                         </div>
                                		</div>           
                            		</div>
                        		</div>
-                            <div [PROGRESS_VISIBLE] class="row">
-	                        	<div class="row-height">
-	                        		<div class="col-xs-12 col-md-12 col-full-height">
-	                        			<div class="inside inside-full-height">
-	                        				<fieldset>
-                                                <legend>{|Upgrade-Fortschritt|}</legend>
-                                                <table width="100%" border="0" class="mkTableFormular">
-                                                    <pre style="white-space:pre-line;">
-                [OUTPUT_FROM_CLI]
-                                                    </pre>
-                                                </table>
-                                            </fieldset>            
-                                        </div>
-                               		</div>
-                               	</div>
-                            </div>	
                    		</div>
                		</div>               	
 	            	<div class="col-xs-14 col-md-2 col-md-height">
@@ -69,10 +51,14 @@
             				<fieldset>
                                 <legend>{|Aktionen|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
-                                    <tr><td>{|Details anzeigen|}:</td><td><input type="checkbox" name="details_anzeigen" value=1 size="20"></td></tr>
-                                    <tr><td colspan=2><button name="submit" value="refresh" class="ui-button-icon" style="width:100%;">Auffrischen</button></td></tr>
-                                    <tr><td>{|Erzwingen (-f)|}:</td><td><input type="checkbox" name="erzwingen" value=1 size="20"></td></tr>
-                                    <tr><td colspan=2><button name="submit" value="do_upgrade" class="ui-button-icon" style="width:100%;">UPGRADE!</button></td></tr>
+                                    <tr><td colspan=2><button name="submit" value="refresh" class="ui-button-icon" style="width:100%;">Anzeige auffrischen</button></td></tr>
+                                    <tr><td colspan=2><button name="submit" value="check_upgrade" class="ui-button-icon" style="width:100%;">Upgrades pr&uuml;fen</button></td></tr>
+                                    <tr><td style="width:100%;">{|Upgrade-Details anzeigen|}:</td><td><input type="checkbox" name="details_anzeigen" value=1 size="20"></td></tr>
+                                    <tr [UPGRADE_VISIBLE]><td colspan=2><button name="submit" value="do_upgrade" class="ui-button-icon" style="width:100%;">UPGRADE</button></td></tr>
+                                    <tr [UPGRADE_VISIBLE]><td style="width:100%;">{|Erzwingen (-f)|}:</td><td><input type="checkbox" name="erzwingen" value=1 size="20"></td></tr>
+                                    <tr><td colspan=2><button name="submit" value="check_db" class="ui-button-icon" style="width:100%;">Datenbank pr&uuml;fen</button></td></tr>
+                                    <tr><td style="width:100%;">{|Datenbank-Details anzeigen|}:</td><td><input type="checkbox" name="db_details_anzeigen" value=1 size="20"></td></tr>
+                                    <tr [UPGRADE_DB_VISIBLE]><td colspan=2><button name="submit" value="do_db_upgrade" class="ui-button-icon" style="width:100%;">Datenbank UPGRADE</button></td></tr>
                                 </table>
                             </fieldset>            
                         </div>

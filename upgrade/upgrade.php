@@ -7,24 +7,44 @@
  *
  */
 
+$upgrade_echo_out_file_name = "";
+
+function upgrade_set_out_file_name(string $filename) {
+
+    GLOBAL $upgrade_echo_out_file_name;
+
+    $upgrade_echo_out_file_name = $filename;
+}
+
+function echo_out(string $text) {
+
+    GLOBAL $upgrade_echo_out_file_name;
+
+    if ($upgrade_echo_out_file_name == "") {
+        echo($text);
+    } else {
+        file_put_contents($upgrade_echo_out_file_name,$text, FILE_APPEND);
+    }  
+}
 
 function echo_output(array $output) {
-    echo(implode("\n",$output)."\n");
+    echo_out(implode("\n",$output)."\n");
 }
 
 function abort(string $message) {
-    echo($message."\n");
-    echo("--------------- Aborted! ---------------\n");
+    echo_out($message."\n");
+    echo_out("--------------- Aborted! ---------------\n");
+    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
 }
 
-function git(string $command, &$output, bool $verbose, string $error_text) : int {
+function git(string $command, &$output, bool $show_command, bool $show_output, string $error_text) : int {
     $output = array();
-    if ($verbose) {
-        echo("git ".$command."\n");
+    if ($show_command) {
+        echo_out("git ".$command."\n");
     }
     exec("git ".$command,$output,$retval);
     if (!empty($output)) {
-        if ($verbose || $retval != 0) {
+        if ($show_output || $retval != 0) {
             echo_output($output);
         }
     }
@@ -133,7 +153,8 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     $remote_file_name = $datafolder."/remote.json";
     $schema_file_name = "db_schema.json";
 
-    echo("--------------- OpenXE upgrade ---------------\n");
+    echo_out("--------------- OpenXE upgrade ---------------\n");
+    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
 
     //require_once($directory.'/../cronjobs/githash.php');
 
@@ -149,33 +170,33 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     if ($check_git || $do_git) {
         // Get changed files on system -> Should be empty
         $output = array();
-        $retval = git("ls-files -m ..", $output,$verbose,"Git not initialized.");
+        $retval = git("ls-files -m ..", $output,$verbose,false,"Git not initialized.");
         if (!empty($output)) {
             $modified_files = true;
-            echo("There are modified files:\n");
+            echo_out("There are modified files:\n");
             echo_output($output);
         }
 
         // Not a git repository -> Create it and then go ahead
         if ($retval == 128) { 
-            echo("Setting up git...");
-            $retval = git("init ..", $output,$verbose,"Error while initializing git!");
+            echo_out("Setting up git...");
+            $retval = git("init ..", $output,$verbose,$verbose,"Error while initializing git!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
-            $retval = git("add ../.", $output,$verbose,"Error while initializing git!");   
+            $retval = git("add ../.", $output,$verbose,$verbose,"Error while initializing git!");   
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
-            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'], $output,$verbose,"Error while initializing git!");
+            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while initializing git!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
 
-            $retval = git("checkout FETCH_HEAD -f", $output,$verbose,"Error while initializing git!");   
+            $retval = git("checkout FETCH_HEAD -f", $output,$verbose,$verbose,"Error while initializing git!");   
             if ($retval != 0) {
                 abort("");
                 return(-1);
@@ -186,19 +207,18 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         }
 
         if ($verbose) {
-            echo("--------------- Upgrade history ---------------\n");
-            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~5",$output,$verbose,"Error while showing history!");
+            echo_out("--------------- Upgrade history ---------------\n");
+            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~5",$output,$verbose,$verbose,"Error while showing history!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
         } else {
-            echo("--------------- Current version ---------------\n");
-            $retval = git("log -1 --date=short-local --pretty=\"%cd (%h): %s\" HEAD",$output,false,"Error while showing history!");
+            echo_out("--------------- Current version ---------------\n");
+            $retval = git("log -1 --date=short-local --pretty=\"%cd (%h): %s\" HEAD",$output,$verbose,true,"Error while showing history!");
             if ($retval != 0) {
                 return(-1);
             }
-            echo_output($output);
         }
 
         if ($do_git) {     
@@ -208,58 +228,50 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 return(-1);
             }
       
-            echo("--------------- Pulling files... ---------------\n");
+            echo_out("--------------- Pulling files... ---------------\n");
 
             if ($force) {
-                $retval = git("reset --hard",$output,$verbose,"Error while resetting modified files!");
+                $retval = git("reset --hard",$output,$verbose,$verbose,"Error while resetting modified files!");
                 if ($retval != 0) {
-                    echo_output($output);
-                    abort("");
+                     abort("");
                     return(-1);
                 }       
             } 
 
-            $retval = git("pull ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,"Error while pulling files!");
+            $retval = git("pull ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while pulling files!");
             if ($retval != 0) {
-                echo_output($output);
-                abort("");
+                 abort("");
                 return(-1);
             }
 
-            $retval = git("reset --hard",$output,$verbose,"Error while applying files!");
+            $retval = git("reset --hard",$output,$verbose,$verbose,"Error while applying files!");
             if ($retval != 0) {
-                echo_output($output);
-                abort("");
+                 abort("");
                 return(-1);
             }       
 
-            echo("--------------- Files upgrade completed ---------------\n");
-            $retval = git("log -1 ",$output,$verbose,"Error while checking files!");
+            echo_out("--------------- Files upgrade completed ---------------\n");
+            $retval = git("log -1 ",$output,$verbose,$verbose,"Error while checking files!");
             if ($retval != 0) {
-                echo_output($output);
-                abort("");
+                 abort("");
                 return(-1);
             }
             echo_output($output);
         } // $do_git
         else { // Dry run
-            echo("--------------- Dry run, use -do to upgrade ---------------\n");
-            echo("--------------- Fetching files... ---------------\n");
+            echo_out("--------------- Dry run, use -do to upgrade ---------------\n");
+            echo_out("--------------- Fetching files... ---------------\n");
 
-            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,"Error while fetching files!");
+            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching files!");
             if ($retval != 0) {
-                echo_output($output);
                 abort("");
             }
 
-            echo("--------------- Pending upgrades: ---------------\n");
+            echo_out("--------------- Pending upgrades: ---------------\n");
 
-            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" FETCH_HEAD --not HEAD",$output,$verbose,"Error while fetching files!");
-            if (!$verbose) {
-                echo_output($output);
-            }
+            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" FETCH_HEAD --not HEAD",$output,$verbose,true,"Error while fetching files!");
             if (empty($output)) {
-                echo("No upgrades pending.\n");
+                echo_out("No upgrades pending.\n");
             }
             if ($retval != 0) {
                 abort("");
@@ -268,7 +280,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     } // $check_git
 
     if ($check_db || $do_db) {
-        echo("--------------- Loading from database '$schema@$host'... ---------------\n");
+        echo_out("--------------- Loading from database '$schema@$host'... ---------------\n");
         $db_def = mustal_load_tables_from_db($host, $schema, $user, $passwd, $mustal_replacers);
 
         if (empty($db_def)) {
@@ -277,14 +289,14 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         }
         $compare_differences = array();
 
-        echo("--------------- Loading from JSON... ---------------\n");
+        echo_out("--------------- Loading from JSON... ---------------\n");
         $compare_def = mustal_load_tables_from_json($datafolder, $schema_file_name);
 
         if (empty($compare_def)) {
             abort("Could not load from JSON $schema_file_name\n");
             return(-1);
         }
-        echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
+        echo_out("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
       
         $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
 
@@ -292,16 +304,16 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             foreach ($compare_differences as $compare_difference) {
                 $comma = "";
                 foreach ($compare_difference as $key => $value) {
-                    echo($comma."$key => [$value]");
+                    echo_out($comma."$key => [$value]");
                     $comma = ", ";
                 }
-                echo("\n");
+                echo_out("\n");
             }           
         }
 
-        echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
+        echo_out((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
-        echo("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
+        echo_out("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
         $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers);
@@ -310,7 +322,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             abort(count($result)." errors.\n");
             if ($verbose) {
                 foreach($result as $error) {
-                    echo("Code: ".$error[0]." '".$error[1]."'.");
+                    echo_out("Code: ".$error[0]." '".$error[1]."'.");
                 }
             }
             return(-1);
@@ -318,14 +330,14 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
 
         if ($verbose) {
             foreach($upgrade_sql as $statement) {
-                echo($statement."\n");
+                echo_out($statement."\n");
             }
         }
 
-        echo(count($upgrade_sql)." upgrade statements\n");
+        echo_out(count($upgrade_sql)." upgrade statements\n");
 
         if ($do_db) {
-            echo("--------------- Executing database upgrade for '$schema@$host' database... ---------------\n");            
+            echo_out("--------------- Executing database upgrade for '$schema@$host' database... ---------------\n");            
              // First get the contents of the database table structure
             $mysqli = mysqli_connect($host, $user, $passwd, $schema);
 
@@ -341,67 +353,68 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 foreach ($upgrade_sql as $sql) {
 
                     $counter++;
-                    echo("\rUpgrade step $counter of $number_of_statements... ");
+                    echo_out("\rUpgrade step $counter of $number_of_statements... ");
 
                     $query_result = mysqli_query($mysqli, $sql);
                     if (!$query_result) {        
                         $error = " not ok: ". mysqli_error($mysqli);            
-                        echo($error);
-                        echo("\n");
+                        echo_out($error);
+                        echo_out("\n");
 //                        file_put_contents("./errors.txt",date()." ".$error.$sql."\n",FILE_APPEND);
                         $error_counter++;
                     } else {
-                        echo("ok.\r");
+                        echo_out("ok.\r");
                     }
 
                 }
 
-                echo("\n");
-                echo("$error_counter errors.\n");
+                echo_out("\n");
+                echo_out("$error_counter errors.\n");
                 if ($error_counter > 0) {
-//                    echo("See 'errors.txt'\n");
+//                    echo_out("See 'errors.txt'\n");
                 }
 
-                echo("--------------- Checking database upgrade for '$schema@$host'... ---------------\n");
+                echo_out("--------------- Checking database upgrade for '$schema@$host'... ---------------\n");
                 $db_def = mustal_load_tables_from_db($host, $schema, $user, $passwd, $mustal_replacers);
 
-                echo("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
+                echo_out("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
                 $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
-                echo((empty($compare_differences)?0:count($compare_differences))." differences.\n");
+                echo_out((empty($compare_differences)?0:count($compare_differences))." differences.\n");
             }
         } // $do_db
     } // $check_db
 
 /*
-    echo("--------------- Locking system ---------------\n");
+    echo_out("--------------- Locking system ---------------\n");
     if (file_exists($lockfile_name)) {
-        echo("System is already locked.\n");
+        echo_out("System is already locked.\n");
     } else {
         file_put_contents($lockfile_name," ");
     }
 
-    echo("--------------- Unlocking system ---------------\n");
+    echo_out("--------------- Unlocking system ---------------\n");
     unlink($lockfile_name);
 */
 
-    echo("--------------- Done! ---------------\n");
+    echo_out("--------------- Done! ---------------\n");
+    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
     return(0);
 }
 
 function info() {
-    echo("OpenXE upgrade tool\n");
-    echo("Copyright 2022 (c) OpenXE project\n");
-    echo("\n");
-    echo("Upgrade files and database\n");
-    echo("Options:\n");
-    echo("\t-s: check/do system upgrades\n");
-    echo("\t-db: check/do database upgrades\n");
-    echo("\t-do: execute all upgrades\n");
-    echo("\t-v: verbose output\n");
-    echo("\t-f: force override of existing files\n");
-    echo("\t-utf8fix: apply fix for 'utf8' != 'utf8mb3'\n");
-    echo("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
-    echo("\n");
+    echo_out("OpenXE upgrade tool\n");
+    echo_out("Copyright 2022 (c) OpenXE project\n");
+    echo_out("\n");
+    echo_out("Upgrade files and database\n");
+    echo_out("Options:\n");
+    echo_out("\t-s: check/do system upgrades\n");
+    echo_out("\t-db: check/do database upgrades\n");
+    echo_out("\t-do: execute all upgrades\n");
+    echo_out("\t-v: verbose output\n");
+    echo_out("\t-f: force override of existing files\n");
+    echo_out("\t-utf8fix: apply fix for 'utf8' != 'utf8mb3'\n");
+    echo_out("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
+    echo_out("\n");
 }
 
 

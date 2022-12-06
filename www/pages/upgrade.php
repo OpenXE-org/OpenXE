@@ -27,24 +27,45 @@ class upgrade {
     
         $submit = $this->app->Secure->GetPOST('submit');
         $verbose = $this->app->Secure->GetPOST('details_anzeigen') === '1';
+        $db_verbose = $this->app->Secure->GetPOST('db_details_anzeigen') === '1';
         $force = $this->app->Secure->GetPOST('erzwingen') === '1';
 
-        ob_start();
         include("../upgrade/upgrade.php");
 
-        if ($submit == 'do_upgrade') {
-            $do_upgrade = true;
-            $this->app->Tpl->Set('PENDING_VISIBLE', "hidden");
-        } else {
-            $do_upgrade = false;
-            $this->app->Tpl->Set('PROGRESS_VISIBLE', "hidden");
+        $logfile = "../upgrade/data/upgrade.log";
+        upgrade_set_out_file_name($logfile);
+
+        $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
+        $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
+
+        switch ($submit) {
+            case 'check_upgrade':
+                $this->app->Tpl->Set('UPGRADE_VISIBLE', "");
+                unlink($logfile);
+                upgrade_main("../upgrade",$verbose,true,false,true,false,$force);
+            break;
+            case 'do_upgrade':
+                unlink($logfile);
+                upgrade_main("../upgrade",$verbose,true,true,true,true,$force);  
+            break;    
+            case 'check_db':
+                $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
+                unlink($logfile);
+                upgrade_main("../upgrade",$db_verbose,false,false,true,false,$force);  
+            break;    
+            case 'do_db_upgrade':
+                $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
+                unlink($logfile);
+                upgrade_main("../upgrade",$db_verbose,false,false,true,true,$force);  
+            break;    
+            case 'refresh':
+            break;
         }
 
-        upgrade_main("../upgrade",$verbose,true,$do_upgrade,true,$do_upgrade,$force);
-        $result = ob_get_contents();
-        ob_end_clean();
+        // Read results
+        $result = file_get_contents($logfile);             
         $this->app->Tpl->Set('CURRENT', $this->app->erp->Revision());
-        $this->app->Tpl->Set('OUTPUT_FROM_CLI',$result);
+        $this->app->Tpl->Set('OUTPUT_FROM_CLI',nl2br($result));
         $this->app->Tpl->Parse('PAGE', "upgrade.tpl");
     }   
     
