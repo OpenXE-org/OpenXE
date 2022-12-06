@@ -40,7 +40,7 @@ class upgrade {
             $this->app->Tpl->Set('PROGRESS_VISIBLE', "hidden");
         }
 
-        upgrade_main("../upgrade",$verbose,$do_upgrade,$force);
+        upgrade_main("../upgrade",$verbose,true,$do_upgrade,true,$do_upgrade,$force);
         $result = ob_get_contents();
         ob_end_clean();
         $this->app->Tpl->Set('CURRENT', $this->app->erp->Revision());
