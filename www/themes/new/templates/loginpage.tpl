@@ -31,7 +31,7 @@
 			Willkommen bei OpenXE ERP.<br/>
 			Bitte gib Deinen Benutzernamen und Passwort ein!
 		</div>
-		<div style="[LOGINWARNING]" class="warning"><p>Achtung: Es werden gerade Wartungsarbeiten in Ihrem System (z.B. Update oder Backup) durch Ihre IT-Abteilung durchgeführt. Das System sollte in wenigen Minuten wieder erreichbar sein. Für Rückfragen wenden Sie sich bitte an Ihren Administrator.</p></div>
+		<div [LOGINWARNING_VISIBLE] class="warning"><p>[LOGINWARNING_TEXT]</p></div>
 
 		[SPERRMELDUNGNACHRICHT]
 		[PAGE]

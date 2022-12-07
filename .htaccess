@@ -1,0 +1,11 @@
+# Generated file from class.acl.php
+                        # Disable directory browsing 
+                        Options -Indexes
+
+                        Order deny,allow
+                        Deny from all
+
+                        <Files "index.php">
+                            Order Allow,Deny
+                            Allow from all
+                        </Files>

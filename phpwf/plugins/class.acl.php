@@ -570,11 +570,19 @@ class Acl
 
   public function Login()
   {
-    $this->app->Tpl->Set('LOGINWARNING', 'display:none;visibility:hidden;');
-    if($this->IsInLoginLockMode() === true){
-      $this->app->Tpl->Set('LOGINWARNING', '');
+
+    $result = $this->CheckHtaccess();
+    if ($result !== true) {
+      $this->app->Tpl->Set('LOGINWARNING_TEXT', "Achtung: Zugriffskonfiguration (htaccess) fehlerhaft. Bitte wenden Sie sich an Ihren an Ihren Administrator. <br>($result)");
       return;
     }
+
+    if($this->IsInLoginLockMode() === true)
+    {
+      $this->app->Tpl->Set('LOGINWARNING_TEXT', 'Achtung: Es werden gerade Wartungsarbeiten in Ihrem System (z.B. Update oder Backup) durch Ihre IT-Abteilung durchgeführt. Das System sollte in wenigen Minuten wieder erreichbar sein. Für Rückfragen wenden Sie sich bitte an Ihren Administrator.');
+      return;
+    }
+    $this->app->Tpl->Set('LOGINWARNING_VISIBLE', 'hidden');
 
     $multidbs = $this->app->getDbs();
     if(count($multidbs) > 1)
@@ -1204,6 +1212,67 @@ class Acl
     }
     return false;
 
+  }
+
+  // HTACCESS SECURITY
+  // Check for correct .htaccess settings
+  // true if ok, else error text
+  protected function CheckHtaccess() : mixed {
+
+    $nominal = array(   '# Generated file from class.acl.php
+                        # Disable directory browsing 
+                        Options -Indexes
+
+                        Order deny,allow
+                        Deny from all
+
+                        <Files "index.php">
+                            Order Allow,Deny
+                            Allow from all
+                        </Files>',
+                        '# Generated file from class.acl.php
+                        SetEnv OPENXE_HTACCESS on
+           
+                        # Disable directory browsing 
+                        Options -Indexes
+
+                        Order deny,allow
+                        Allow from all
+
+                        <Files *.php>
+                            Order Allow,Deny
+                            Deny from all
+                        </Files>
+
+                        <Files index.php>
+                            Order Allow,Deny
+                            Allow from all
+                        </Files>');
+    
+    $script_file_name = $_SERVER['SCRIPT_FILENAME'];
+    $htaccess_path = array(
+                        dirname(dirname($script_file_name))."/.htaccess",   // root
+                        dirname($script_file_name)."/.htaccess");           // www
+   
+    for ($count = 0;$count < 2;$count++) {
+        $htaccess = file_get_contents($htaccess_path[$count]);           
+        if ($htacess === false) {
+            return("FATAL: ".$htaccess_path[$count]." nicht gefunden");            
+        }
+
+        $result = strcmp(trim($htaccess[$count]),trim($nominal[$count]));
+        if ($result !== 0) {
+            $result = file_put_contents($htaccess_path[$count],$nominal[$count]);
+            if ($result === false) {
+                return("FATAL: ".$htaccess_path[$count]." fehlerhaft");
+            } 
+        }
+    }
+    if (!isset($_SERVER['OPENXE_HTACCESS'])) {
+        return("FATAL: htaccess nicht aktiv.");
+    }
+    return(true);
+    // HTACCESS SECURITY END
   }
 
 }
