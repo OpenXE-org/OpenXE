@@ -1220,7 +1220,7 @@ class Acl
    // HTACCESS SECURITY
   // Check for correct .htaccess settings
   // true if ok, else error text
-  protected function CheckHtaccess() : mixed {
+  protected function CheckHtaccess() {
 
   $nominal = array('
 # Generated file from class.acl.php
