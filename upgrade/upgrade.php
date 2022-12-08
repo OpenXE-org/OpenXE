@@ -68,7 +68,6 @@ if (php_sapi_name() == "cli") {
 
 if ($cli) {
 
-
     $check_git = false;
     $do_git = false;
     $check_db = false;
@@ -81,6 +80,12 @@ if ($cli) {
           $verbose = true;
         } else {
           $verbose = false;
+        } 
+
+        if (in_array('-e', $argv)) {
+          $export_db = true;
+        } else {
+          $export_db = false;
         } 
 
         if (in_array('-f', $argv)) {
@@ -112,14 +117,8 @@ if ($cli) {
             }
         }
 
-        if (in_array('-utf8fix', $argv)) {
-          $utf8fix = true;
-        } else {
-          $utf8fix = false;
-        }         
-
         if ($check_git || $check_db || $do_git || $do_db) {
-            upgrade_main($directory,$verbose,$check_git,$do_git,$check_db,$do_db,$force);
+            upgrade_main($directory,$verbose,$check_git,$do_git,$export_db,$check_db,$do_db,$force);
         } else {
             info();
         }
@@ -131,7 +130,7 @@ if ($cli) {
 } 
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $check_db, bool $do_db, bool $force) {  
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force) {  
 
     class DatabaseConnectionInfo {
         function __construct($dir) {
@@ -279,14 +278,25 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         } // Dry run
     } // $check_git
 
-    if ($check_db || $do_db) {
+    if ($check_db || $do_db || $export_db) {
         echo_out("--------------- Loading from database '$schema@$host'... ---------------\n");
         $db_def = mustal_load_tables_from_db($host, $schema, $user, $passwd, $mustal_replacers);
 
         if (empty($db_def)) {
-            echo ("Could not load from $schema@$host\n");
+            echo_out("Could not load from $schema@$host\n");
             exit;
         }
+
+        if ($export_db) {
+            $export_file_name = "exported_db_schema.json";
+            if (mustal_save_tables_to_json($db_def, $datafolder, $export_file_name, true) == 0) {
+                echo_out("Database exported to $datafolder/$export_file_name\n");
+            }
+            else {
+                echo_out("Could not export database to $datafolder/$export_file_name\n");
+            }
+        }
+
         $compare_differences = array();
 
         echo_out("--------------- Loading from JSON... ---------------\n");
@@ -296,11 +306,10 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             abort("Could not load from JSON $schema_file_name\n");
             return(-1);
         }
-        echo_out("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
-      
-        $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
-
-         if ($verbose) {
+        echo_out("Table count database ".count($db_def['tables'])." vs. JSON ".count($compare_def['tables'])."\n");
+        echo_out("--------------- Comparing JSON '".$compare_def['database']."@".$compare_def['host']."' vs. database '$schema@$host' ---------------\n");    
+        $compare_differences = mustal_compare_table_array($db_def,"in DB",$compare_def,"in JSON",false,true);
+        if ($verbose) {
             foreach ($compare_differences as $compare_difference) {
                 $comma = "";
                 foreach ($compare_difference as $key => $value) {
@@ -310,7 +319,20 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 echo_out("\n");
             }           
         }
+        echo_out((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
+        echo_out("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");    
+        $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
+        if ($verbose) {
+            foreach ($compare_differences as $compare_difference) {
+                $comma = "";
+                foreach ($compare_difference as $key => $value) {
+                    echo_out($comma."$key => [$value]");
+                    $comma = ", ";
+                }
+                echo_out("\n");
+            }           
+        }
         echo_out((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
         echo_out("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
@@ -322,7 +344,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             abort(count($result)." errors.\n");
             if ($verbose) {
                 foreach($result as $error) {
-                    echo_out("Code: ".$error[0]." '".$error[1]."'.");
+                    echo_out("Code: ".$error[0]." '".$error[1]."'\n");
                 }
             }
             return(-1);
@@ -409,10 +431,10 @@ function info() {
     echo_out("Options:\n");
     echo_out("\t-s: check/do system upgrades\n");
     echo_out("\t-db: check/do database upgrades\n");
+    echo_out("\t-e: export database schema\n");
     echo_out("\t-do: execute all upgrades\n");
     echo_out("\t-v: verbose output\n");
     echo_out("\t-f: force override of existing files\n");
-    echo_out("\t-utf8fix: apply fix for 'utf8' != 'utf8mb3'\n");
     echo_out("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
     echo_out("\n");
 }

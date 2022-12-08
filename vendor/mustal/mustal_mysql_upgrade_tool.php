@@ -79,8 +79,7 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
 
     // Get db_def and views
-
-    $sql = "SHOW FULL tables"; 
+    $sql = "SHOW FULL tables WHERE Table_type = 'BASE TABLE'"; 
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
@@ -149,11 +148,34 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
     unset($table);
 
+    $sql = "SHOW FULL tables WHERE Table_type = 'VIEW'"; 
+    $query_result = mysqli_query($mysqli, $sql);
+    if (!$query_result) {
+        return(array());
+    } 
+    while ($row = mysqli_fetch_assoc($query_result)) {
+        $view = array();
+        $view['name'] = $row['Tables_in_'.$schema];
+        $view['type'] = $row['Table_type'];
+        $views[] = $view; // Add view to list of views
+    }
+
+    foreach ($views as &$view) {    
+        $sql = "SHOW CREATE VIEW ".$view['name'];
+        $query_result = mysqli_query($mysqli, $sql);
+        if (!$query_result) {
+            return(array());
+        }
+        $viewdef = mysqli_fetch_assoc($query_result);
+        $view['Create'] = $viewdef['Create View'];
+    }
+
     $result = array();
     $result['host'] = $host;
     $result['database'] = $schema;
     $result['user'] = $user;
     $result['tables'] = $tables;
+    $result['views'] = $views;
     return($result);   
 }
 
@@ -215,15 +237,6 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
         );
     } else {
         $column_collation_aliases = array();
-    }
-
-
-    if (count($nominal['tables']) != count($actual['tables'])) {
-        $compare_difference = array();
-        $compare_difference['type'] = "Table count";
-        $compare_difference[$nominal_name] = count($nominal['tables']);
-        $compare_difference[$actual_name] = count($actual['tables']);
-        $compare_differences[] = $compare_difference;
     }
 
     foreach ($nominal['tables'] as $database_table) {
@@ -353,6 +366,33 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
     }
     unset($database_table);
 
+    foreach ($nominal['views'] as $database_view) {
+        $found_view = array(); 
+        foreach ($actual['views'] as $compare_view) {
+            if ($database_view['name'] == $compare_view['name']) {
+                $found_view = $compare_view;
+                break;
+            }
+        }
+        unset($compare_view);
+
+        if ($found_view) {
+
+            if ($database_view['Create'] != $found_view['Create']) {
+                $compare_difference = array();
+                $compare_difference['type'] = "View definition";
+                $compare_difference[$nominal_name] = $database_view['name'];
+                $compare_differences[] = $compare_difference;
+            }
+
+        } else {
+            $compare_difference = array();
+            $compare_difference['type'] = "View existence";
+            $compare_difference[$nominal_name] = $database_view['name'];
+            $compare_differences[] = $compare_difference;
+        }
+    }
+
     return($compare_differences);
 }
 
@@ -481,11 +521,14 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers) : array {
 
     $result = array();
-    $upgrade_sql = array();
+    $upgrade_sql = array();    
 
     $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
 
     foreach ($compare_differences as $compare_difference) {
+
+        $drop_view = false;
+
         switch ($compare_difference['type']) {
             case 'Table existence':
 
@@ -656,6 +699,35 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
             break;
             case 'Table type':
                 $result[] = array(11,"Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.");
+            break;
+            case 'View definition':
+                $drop_view = true;            
+            // intentionally omitted break;
+            case 'View existence':
+                $view_name = $compare_difference['in JSON']; 
+                $view_key = array_search($view_name,array_column($compare_def['views'],'name'));
+
+                if ($view_key !== false) {
+                    $view = $compare_def['views'][$view_key];
+
+                    switch ($view['type']) {
+                        case 'VIEW':
+
+                            if ($drop_view === true) {
+                                $sql = "DROP VIEW ".$view['name'];
+                                $upgrade_sql[] = $sql;
+                            }
+
+                            // Create view in DB
+                            $upgrade_sql[] = $view['Create'];
+                        break;
+                        default:
+                            $result[] = array(1,"Upgrade type '".$view['type']."' on view '".$view['name']."' not supported.");
+                        break;
+                    }
+                } else {
+                    $result[] = array(2,"Error view_key while creating upgrade for view existence `$view_name`.");
+                }
             break;
             default:
                 $result[] = array(12,"Upgrade type '".$compare_difference['type']."' not supported.");
