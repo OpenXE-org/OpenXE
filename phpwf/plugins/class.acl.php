@@ -571,6 +571,9 @@ class Acl
   public function Login()
   {
 
+    include dirname(__DIR__).'/../version.php';
+    $this->app->Tpl->Set('XENTRALVERSION',"V.".$version_revision);
+
     $result = $this->CheckHtaccess();
     if ($result !== true) {
       $this->app->Tpl->Set('LOGINWARNING_TEXT', "Achtung: Zugriffskonfiguration (htaccess) fehlerhaft. Bitte wenden Sie sich an Ihren an Ihren Administrator. <br>($result)");
@@ -1219,7 +1222,8 @@ class Acl
   // true if ok, else error text
   protected function CheckHtaccess() : mixed {
 
-  $nominal = array('# Generated file from class.acl.php
+  $nominal = array('
+# Generated file from class.acl.php
 # For detection of htaccess functionality
 SetEnv OPENXE_HTACCESS on
 # Disable directory browsing 
@@ -1236,22 +1240,27 @@ Order deny,allow
 <Files "index.php">
     Order Allow,Deny
     Allow from all
-</Files>',
-'# Generated file from class.acl.php         
+</Files>
+# end
+',
+'
+# Generated file from class.acl.php         
 # Disable directory browsing 
 Options -Indexes
 # Deny access to all *.php
 Order deny,allow
 Allow from all
-<Files *.php>
+<FilesMatch "\.(css|jpg|jpeg|gif|png|svg|js)$">
     Order Allow,Deny
-    Deny from all
-</Files>
+    Allow from all
+</FilesMatch>
 # Allow access to index.php
 <Files index.php>
     Order Allow,Deny
     Allow from all
-</Files>');
+</Files>
+# end
+');
     
     $script_file_name = $_SERVER['SCRIPT_FILENAME'];
     $htaccess_path = array(
@@ -1259,21 +1268,17 @@ Allow from all
                         dirname($script_file_name)."/.htaccess");           // www
    
     for ($count = 0;$count < 2;$count++) {
+        $htaccess = trim(file_get_contents($htaccess_path[$count]));
+        $htaccess_nominal = trim($nominal[$count]);
 
-        $htaccess = file_get_contents($htaccess_path[$count]);           
-         
-        $result = strcmp(trim($htaccess[$count]),trim($nominal[$count]));
+        $result = strcmp($htaccess,$htaccess_nominal);     
 
-        if (($result !== 0) || ($htaccess === false)) {
-            $result = file_put_contents($htaccess_path[$count],trim($nominal[$count]));
-            if ($result === false) {
-
-                if ($htaccess === false) {
-                    return("FATAL: ".$htaccess_path[$count]." nicht vorhanden und kann nicht korrigiert werden.");
-                }
-                return("FATAL: ".$htaccess_path[$count]." fehlerhaft und kann nicht korrigiert werden.");
-            } 
+        if ($result !== 0) {
+            return("FATAL: ".$htaccess_path[$count]." fehlerhaft.");
         }
+        if ($htaccess === false) {
+            return("FATAL: ".$htaccess_path[$count]." nicht vorhanden.");
+        }     
     }
 
     if (!isset($_SERVER['OPENXE_HTACCESS'])) {

@@ -4,12 +4,13 @@ Options -Indexes
 # Deny access to all *.php
 Order deny,allow
 Allow from all
-<Files *.php>
+<FilesMatch "\.(css|jpg|jpeg|gif|png|svg|js)$">
     Order Allow,Deny
-    Deny from all
-</Files>
+    Allow from all
+</FilesMatch>
 # Allow access to index.php
 <Files index.php>
     Order Allow,Deny
     Allow from all
 </Files>
+# end

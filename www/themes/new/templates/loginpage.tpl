@@ -37,12 +37,9 @@
 		[PAGE]
 		<div id="login-footer">
 			<div class="copyright">
-				&copy; [YEAR] by OpenXE-org & Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.
-<br>
-				[WAWIVERSION]
-</br>
-OpenXE is free open source software under AGPL-3.0 license, based on <a href="https://xentral.com" target="_blank">Xentral®</a>.
-<!--	 dead link			[LIZENZHINWEIS] -->
+				&copy; [YEAR] by OpenXE-org & Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.<br>
+                OpenXE is free open source software under AGPL-3.0 license, based on <a href="https://xentral.com" target="_blank">Xentral®</a>.<br>
+				[XENTRALVERSION]
 			</div>
 		</div>
 
