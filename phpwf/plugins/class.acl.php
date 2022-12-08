@@ -1214,40 +1214,44 @@ class Acl
 
   }
 
-  // HTACCESS SECURITY
+   // HTACCESS SECURITY
   // Check for correct .htaccess settings
   // true if ok, else error text
   protected function CheckHtaccess() : mixed {
 
-    $nominal = array(   '# Generated file from class.acl.php
-                        # Disable directory browsing 
-                        Options -Indexes
-
-                        Order deny,allow
-                        Deny from all
-
-                        <Files "index.php">
-                            Order Allow,Deny
-                            Allow from all
-                        </Files>',
-                        '# Generated file from class.acl.php
-                        SetEnv OPENXE_HTACCESS on
-           
-                        # Disable directory browsing 
-                        Options -Indexes
-
-                        Order deny,allow
-                        Allow from all
-
-                        <Files *.php>
-                            Order Allow,Deny
-                            Deny from all
-                        </Files>
-
-                        <Files index.php>
-                            Order Allow,Deny
-                            Allow from all
-                        </Files>');
+  $nominal = array('# Generated file from class.acl.php
+# For detection of htaccess functionality
+SetEnv OPENXE_HTACCESS on
+# Disable directory browsing 
+Options -Indexes
+# Set default page to index.php
+DirectoryIndex "index.php"
+# Deny general access
+Order deny,allow
+<FilesMatch ".">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+# Allow index.php
+<Files "index.php">
+    Order Allow,Deny
+    Allow from all
+</Files>',
+'# Generated file from class.acl.php         
+# Disable directory browsing 
+Options -Indexes
+# Deny access to all *.php
+Order deny,allow
+Allow from all
+<Files *.php>
+    Order Allow,Deny
+    Deny from all
+</Files>
+# Allow access to index.php
+<Files index.php>
+    Order Allow,Deny
+    Allow from all
+</Files>');
     
     $script_file_name = $_SERVER['SCRIPT_FILENAME'];
     $htaccess_path = array(
@@ -1255,24 +1259,29 @@ class Acl
                         dirname($script_file_name)."/.htaccess");           // www
    
     for ($count = 0;$count < 2;$count++) {
-        $htaccess = file_get_contents($htaccess_path[$count]);           
-        if ($htacess === false) {
-            return("FATAL: ".$htaccess_path[$count]." nicht gefunden");            
-        }
 
+        $htaccess = file_get_contents($htaccess_path[$count]);           
+         
         $result = strcmp(trim($htaccess[$count]),trim($nominal[$count]));
-        if ($result !== 0) {
-            $result = file_put_contents($htaccess_path[$count],$nominal[$count]);
+
+        if (($result !== 0) || ($htaccess === false)) {
+            $result = file_put_contents($htaccess_path[$count],trim($nominal[$count]));
             if ($result === false) {
-                return("FATAL: ".$htaccess_path[$count]." fehlerhaft");
+
+                if ($htaccess === false) {
+                    return("FATAL: ".$htaccess_path[$count]." nicht vorhanden und kann nicht korrigiert werden.");
+                }
+                return("FATAL: ".$htaccess_path[$count]." fehlerhaft und kann nicht korrigiert werden.");
             } 
         }
     }
+
     if (!isset($_SERVER['OPENXE_HTACCESS'])) {
         return("FATAL: htaccess nicht aktiv.");
     }
+
     return(true);
-    // HTACCESS SECURITY END
+    // HTACCESS SECURITY END  
   }
 
 }

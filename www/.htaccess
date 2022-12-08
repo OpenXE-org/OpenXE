@@ -1,18 +1,15 @@
-# Generated file from class.acl.php
-                        SetEnv OPENXE_HTACCESS on
-           
-                        # Disable directory browsing 
-                        Options -Indexes
-
-                        Order deny,allow
-                        Allow from all
-
-                        <Files *.php>
-                            Order Allow,Deny
-                            Deny from all
-                        </Files>
-
-                        <Files index.php>
-                            Order Allow,Deny
-                            Allow from all
-                        </Files>
+# Generated file from class.acl.php         
+# Disable directory browsing 
+Options -Indexes
+# Deny access to all *.php
+Order deny,allow
+Allow from all
+<Files *.php>
+    Order Allow,Deny
+    Deny from all
+</Files>
+# Allow access to index.php
+<Files index.php>
+    Order Allow,Deny
+    Allow from all
+</Files>

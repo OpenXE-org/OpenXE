@@ -1,11 +1,18 @@
 # Generated file from class.acl.php
-                        # Disable directory browsing 
-                        Options -Indexes
-
-                        Order deny,allow
-                        Deny from all
-
-                        <Files "index.php">
-                            Order Allow,Deny
-                            Allow from all
-                        </Files>
+# For detection of htaccess functionality
+SetEnv OPENXE_HTACCESS on
+# Disable directory browsing 
+Options -Indexes
+# Set default page to index.php
+DirectoryIndex "index.php"
+# Deny general access
+Order deny,allow
+<FilesMatch ".">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+# Allow index.php
+<Files "index.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
