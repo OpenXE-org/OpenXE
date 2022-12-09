@@ -574,18 +574,19 @@ class Acl
     include dirname(__DIR__).'/../version.php';
     $this->app->Tpl->Set('XENTRALVERSION',"V.".$version_revision);
 
+    $this->app->Tpl->Set('LOGINWARNING_VISIBLE', 'hidden');
+
     $result = $this->CheckHtaccess();
     if ($result !== true) {
+        $this->app->Tpl->Set('LOGINWARNING_VISIBLE', '');
       $this->app->Tpl->Set('LOGINWARNING_TEXT', "Achtung: Zugriffskonfiguration (htaccess) fehlerhaft. Bitte wenden Sie sich an Ihren an Ihren Administrator. <br>($result)");
-      return;
     }
 
     if($this->IsInLoginLockMode() === true)
     {
+      $this->app->Tpl->Set('LOGINWARNING_VISIBLE', '');
       $this->app->Tpl->Set('LOGINWARNING_TEXT', 'Achtung: Es werden gerade Wartungsarbeiten in Ihrem System (z.B. Update oder Backup) durch Ihre IT-Abteilung durchgeführt. Das System sollte in wenigen Minuten wieder erreichbar sein. Für Rückfragen wenden Sie sich bitte an Ihren Administrator.');
-      return;
     }
-    $this->app->Tpl->Set('LOGINWARNING_VISIBLE', 'hidden');
 
     $multidbs = $this->app->getDbs();
     if(count($multidbs) > 1)
@@ -1268,21 +1269,27 @@ Allow from all
                         dirname($script_file_name)."/.htaccess");           // www
    
     for ($count = 0;$count < 2;$count++) {
-        $htaccess = trim(file_get_contents($htaccess_path[$count]));
-        $htaccess_nominal = trim($nominal[$count]);
+        $htaccess = file_get_contents($htaccess_path[$count]);
 
+        if ($htaccess === false) {
+            $missing = true;
+        } else {
+            $htaccess = trim($htaccess);
+        }
+        $htaccess_nominal = trim($nominal[$count]);
         $result = strcmp($htaccess,$htaccess_nominal);     
 
-        if ($result !== 0) {
-            return("FATAL: ".$htaccess_path[$count]." fehlerhaft.");
-        }
         if ($htaccess === false) {
-            return("FATAL: ".$htaccess_path[$count]." nicht vorhanden.");
+            return($htaccess_path[$count]." nicht vorhanden.");
         }     
+
+        if ($result !== 0) {
+            return($htaccess_path[$count]." fehlerhaft.");
+        }
     }
 
     if (!isset($_SERVER['OPENXE_HTACCESS'])) {
-        return("FATAL: htaccess nicht aktiv.");
+        return("htaccess nicht aktiv.");
     }
 
     return(true);
