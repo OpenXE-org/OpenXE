@@ -38,25 +38,27 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
 
+        //function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool   $connection)
+
         switch ($submit) {
             case 'check_upgrade':
                 $this->app->Tpl->Set('UPGRADE_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main("../upgrade",$verbose,true,false,true,false,$force);
+                upgrade_main("../upgrade",$verbose,true,false,false,true,false,$force,false);
             break;
             case 'do_upgrade':
                 unlink($logfile);
-                upgrade_main("../upgrade",$verbose,true,true,true,true,$force);  
+                upgrade_main("../upgrade",$verbose,true,true,false,true,true,$force,false);  
             break;    
             case 'check_db':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main("../upgrade",$db_verbose,false,false,true,false,$force);  
+                upgrade_main("../upgrade",$db_verbose,false,false,false,true,false,$force,false);  
             break;    
             case 'do_db_upgrade':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main("../upgrade",$db_verbose,false,false,true,true,$force);  
+                upgrade_main("../upgrade",$db_verbose,false,false,false,true,true,$force,false);  
             break;    
             case 'refresh':
             break;

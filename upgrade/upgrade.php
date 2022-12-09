@@ -94,6 +94,12 @@ if ($cli) {
           $force = false;
         } 
 
+        if (in_array('-connection', $argv)) {
+          $connection = true;
+        } else {
+          $connection = false;
+        } 
+
         if (in_array('-s', $argv)) {
           $check_git = true;
         } else {
@@ -103,7 +109,7 @@ if ($cli) {
           $check_db = true;
         } else {
         } 
-
+        
         if (in_array('-do', $argv)) {
             if (!$check_git && !$check_db) {
                 $do_git = true;
@@ -118,7 +124,7 @@ if ($cli) {
         }
 
         if ($check_git || $check_db || $do_git || $do_db) {
-            upgrade_main($directory,$verbose,$check_git,$do_git,$export_db,$check_db,$do_db,$force);
+            upgrade_main($directory,$verbose,$check_git,$do_git,$export_db,$check_db,$do_db,$force,$connection);
         } else {
             info();
         }
@@ -130,20 +136,37 @@ if ($cli) {
 } 
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force) {  
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection) {  
 
-    class DatabaseConnectionInfo {
-        function __construct($dir) {
-            require($dir."/../conf/user.inc.php");
+    if ($connection) {
+        $connection_file_name = $directory."/data/connection.json";
+        $connection_file_contents = file_get_contents($connection_file_name);
+        if (!$connection_file_contents) {
+            abort("Unable to load $connection_file_name");
+            return(-1);
+        } 
+        $connection_info = json_decode($connection_file_contents, true);
+
+        $host = $connection_info['host'];
+        $user = $connection_info['user'];
+        $passwd = $connection_info['passwd'];
+        $schema = $connection_info['schema'];
+
+    } else {
+
+        class DatabaseConnectionInfo {
+            function __construct($dir) {
+                require($dir."/../conf/user.inc.php");
+            }
         }
+
+        $dbci = new DatabaseConnectionInfo($directory);
+
+        $host = $dbci->WFdbhost;
+        $user = $dbci->WFdbuser;
+        $passwd = $dbci->WFdbpass;
+        $schema = $dbci->WFdbname;
     }
-
-    $dbci = new DatabaseConnectionInfo($directory);
-
-    $host = $dbci->WFdbhost;
-    $user = $dbci->WFdbuser;
-    $passwd = $dbci->WFdbpass;
-    $schema = $dbci->WFdbname;
 
     require_once($directory.'/../vendor/mustal/mustal_mysql_upgrade_tool.php');
 
@@ -435,6 +458,7 @@ function info() {
     echo_out("\t-do: execute all upgrades\n");
     echo_out("\t-v: verbose output\n");
     echo_out("\t-f: force override of existing files\n");
+    echo_out("\t-connection use connection.json in data folder instead of user.inc.php\n");
     echo_out("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
     echo_out("\n");
 }

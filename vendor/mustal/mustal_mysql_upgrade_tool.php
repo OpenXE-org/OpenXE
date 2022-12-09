@@ -378,7 +378,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 
         if ($found_view) {
 
-            if ($database_view['Create'] != $found_view['Create']) {
+            if (trim($database_view['Create']) != trim($found_view['Create'])) {
                 $compare_difference = array();
                 $compare_difference['type'] = "View definition";
                 $compare_difference[$nominal_name] = $database_view['name'];
