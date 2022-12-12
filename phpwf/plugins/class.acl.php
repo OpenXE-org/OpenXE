@@ -571,6 +571,7 @@ class Acl
   public function Login()
   {
 
+    include dirname(__DIR__).'/../cronjobs/githash.php';
     include dirname(__DIR__).'/../version.php';
     $this->app->Tpl->Set('XENTRALVERSION',"V.".$version_revision);
 
