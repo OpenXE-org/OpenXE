@@ -16798,8 +16798,7 @@ INSERT INTO `prozessstarter` (`id`, `bezeichnung`, `bedingung`, `art`, `startzei
 (6, 'Überzahlte Rechnungen', '', 'uhrzeit', '2015-10-25 23:00:00', '0000-00-00 00:00:00', '', 'cronjob', 'ueberzahlterechnungen', 0, 0, 0, 1, ''),
 (7, 'Umsatzstatistik', '', 'uhrzeit', '2015-10-25 23:30:00', '0000-00-00 00:00:00', '', 'cronjob', 'umsatzstatistik', 0, 0, 0, 1, ''),
 (8, 'Paketmarken Tracking Download', '', 'uhrzeit', '2015-10-25 14:00:00', '0000-00-00 00:00:00', '', 'cronjob', 'wgettracking', 0, 0, 0, 1, ''),
-(9, 'Chat-Benachrichtigung', '', 'periodisch', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '60', 'cronjob', 'chat', 0, 0, 0, 1, ''),
-(10, 'Git Revision einlesen', '', 'periodisch', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '120', 'cronjob', 'githash', 1, 0, 0, 1, '');
+(9, 'Chat-Benachrichtigung', '', 'periodisch', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '60', 'cronjob', 'chat', 0, 0, 0, 1, '');
 
 INSERT INTO `user` (`id`, `username`, `password`, `repassword`, `description`, `settings`, `parentuser`, `activ`, `type`, `adresse`, `fehllogins`, `standarddrucker`, `firma`, `logdatei`, `startseite`, `hwtoken`, `hwkey`, `hwcounter`, `motppin`, `motpsecret`, `passwordmd5`, `externlogin`, `projekt_bevorzugen`, `email_bevorzugen`, `projekt`, `rfidtag`, `vorlage`, `kalender_passwort`, `kalender_ausblenden`, `kalender_aktiv`, `gpsstechuhr`, `standardetikett`, `standardfax`, `internebezeichnung`, `hwdatablock`, `standardversanddrucker`, `passwordsha512`, `salt`) VALUES
 (1, 'admin', 'qnvEQ1sFWNdIg', 0, 'Administrator', 'firstinstall', 0, 1, 'admin', 1, 0, 0, 1, '2016-08-05 08:34:59', NULL, NULL, NULL, NULL, NULL, NULL, '21232f297a57a5a743894a0e4a801fc3', 1, 0, 1, 0, '', NULL, NULL, 0, NULL, NULL, 0, 0, NULL, NULL, 0, '', '');

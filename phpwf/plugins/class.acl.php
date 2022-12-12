@@ -571,7 +571,7 @@ class Acl
   public function Login()
   {
 
-    include dirname(__DIR__).'/../cronjobs/githash.php';
+    $this->refresh_githash();
     include dirname(__DIR__).'/../version.php';
     $this->app->Tpl->Set('XENTRALVERSION',"V.".$version_revision);
 
@@ -1295,6 +1295,24 @@ Allow from all
 
     return(true);
     // HTACCESS SECURITY END  
+  }
+
+  function refresh_githash() {
+    $path = '../.git/';
+    if (!is_dir($path)) {
+      return;
+    }
+    $head = trim(file_get_contents($path . 'HEAD'));
+    $refs = trim(substr($head,0,4));
+    if ($refs == 'ref:') {
+        $ref = substr($head,5);
+        $hash = trim(file_get_contents($path . $ref));
+    } else {
+        $hash = $head;
+    }
+    if (!empty($hash)) {
+      file_put_contents("../githash.txt", $hash);
+    }
   }
 
 }
