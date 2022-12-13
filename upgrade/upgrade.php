@@ -48,25 +48,22 @@ function git(string $command, &$output, bool $show_command, bool $show_output, s
             echo_output($output);
         }
     }
+    if ($retval != 0) {
+        echo_out($error_text."\n");
+    }
     return($retval);
 }
 
 // -------------------------------- START
 
 // Check for correct call method
-$directory = "";
 if (php_sapi_name() == "cli") {
-    $cli = true;
-    $directory = ".";
-} else if (basename(getcwd()) != 'upgrade') {
-    // Started from "www"
-    $directory = "../upgrade";
-} else {
-    abort("Must be executed from 'upgrade' directory.");
-    return(-1);
-}
-
-if ($cli) {
+ 
+    $directory = getcwd();
+    if (basename($directory) != 'upgrade') {
+        abort("Must be executed from 'upgrade' directory.");
+        return(-1);
+    }
 
     $check_git = false;
     $do_git = false;
@@ -137,39 +134,8 @@ if ($cli) {
 // -------------------------------- END
 
 function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection) {  
-
-    if ($connection) {
-        $connection_file_name = $directory."/data/connection.json";
-        $connection_file_contents = file_get_contents($connection_file_name);
-        if (!$connection_file_contents) {
-            abort("Unable to load $connection_file_name");
-            return(-1);
-        } 
-        $connection_info = json_decode($connection_file_contents, true);
-
-        $host = $connection_info['host'];
-        $user = $connection_info['user'];
-        $passwd = $connection_info['passwd'];
-        $schema = $connection_info['schema'];
-
-    } else {
-
-        class DatabaseConnectionInfo {
-            function __construct($dir) {
-                require($dir."/../conf/user.inc.php");
-            }
-        }
-
-        $dbci = new DatabaseConnectionInfo($directory);
-
-        $host = $dbci->WFdbhost;
-        $user = $dbci->WFdbuser;
-        $passwd = $dbci->WFdbpass;
-        $schema = $dbci->WFdbname;
-    }
-
-    require_once($directory.'/../vendor/mustal/mustal_mysql_upgrade_tool.php');
-
+  
+    $mainfolder = dirname($directory);
     $datafolder = $directory."/data";
     $lockfile_name = $datafolder."/.in_progress.flag";
     $remote_file_name = $datafolder."/remote.json";
@@ -185,22 +151,18 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         abort("Unable to load $remote_file_name");
         return(-1);
     } 
-    $remote_info = json_decode($remote_info_contents, true);
-
-    $modified_files = false;
+    $remote_info = json_decode($remote_info_contents, true);    
 
     if ($check_git || $do_git) {
-        // Get changed files on system -> Should be empty
-        $output = array();
-        $retval = git("ls-files -m ..", $output,$verbose,false,"Git not initialized.");
-        if (!empty($output)) {
-            $modified_files = true;
-            echo_out("There are modified files:\n");
-            echo_output($output);
-        }
 
+        $retval = git("log HEAD", $output,$verbose,false,"");
         // Not a git repository -> Create it and then go ahead
-        if ($retval == 128) { 
+        if ($retval == 128) {         
+            if (!$do_git) {
+                abort("Git not initialized, use -do to initialize.");
+                return(-1);               
+            }
+
             echo_out("Setting up git...");
             $retval = git("init ..", $output,$verbose,$verbose,"Error while initializing git!");
             if ($retval != 0) {
@@ -227,7 +189,17 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             abort("Error while executing git!");
             return(-1);
         }
-
+    
+        // Get changed files on system -> Should be empty
+        $modified_files = false;
+        $output = array();
+        $retval = git("ls-files -m ..", $output,$verbose,false,"Error while checking Git status.");
+        if (!empty($output)) {
+            $modified_files = true;
+            echo_out("There are modified files:\n");
+            echo_output($output);
+        }
+ 
         if ($verbose) {
             echo_out("--------------- Upgrade history ---------------\n");
             $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~5",$output,$verbose,$verbose,"Error while showing history!");
@@ -302,6 +274,39 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     } // $check_git
 
     if ($check_db || $do_db || $export_db) {
+
+        if ($connection) {
+            $connection_file_name = $directory."/data/connection.json";
+            $connection_file_contents = file_get_contents($connection_file_name);
+            if (!$connection_file_contents) {
+                abort("Unable to load $connection_file_name");
+                return(-1);
+            } 
+            $connection_info = json_decode($connection_file_contents, true);
+
+            $host = $connection_info['host'];
+            $user = $connection_info['user'];
+            $passwd = $connection_info['passwd'];
+            $schema = $connection_info['schema'];
+
+        } else {
+
+            class DatabaseConnectionInfo {
+                function __construct($dir) {
+                    require($dir."/../conf/user.inc.php");
+                }
+            }
+
+            $dbci = new DatabaseConnectionInfo($directory);
+
+            $host = $dbci->WFdbhost;
+            $user = $dbci->WFdbuser;
+            $passwd = $dbci->WFdbpass;
+            $schema = $dbci->WFdbname;
+        }
+
+        require_once($directory.'/../vendor/mustal/mustal_mysql_upgrade_tool.php');
+
         echo_out("--------------- Loading from database '$schema@$host'... ---------------\n");
         $db_def = mustal_load_tables_from_db($host, $schema, $user, $passwd, $mustal_replacers);
 

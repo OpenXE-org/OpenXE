@@ -30,6 +30,9 @@ class upgrade {
         $db_verbose = $this->app->Secure->GetPOST('db_details_anzeigen') === '1';
         $force = $this->app->Secure->GetPOST('erzwingen') === '1';
 
+      	$this->app->Tpl->Set('DETAILS_ANZEIGEN', $verbose?"checked":"");
+      	$this->app->Tpl->Set('DB_DETAILS_ANZEIGEN', $db_verbose?"checked":"");
+
         include("../upgrade/upgrade.php");
 
         $logfile = "../upgrade/data/upgrade.log";
@@ -40,25 +43,27 @@ class upgrade {
 
         //function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool   $connection)
 
+        $directory = dirname(getcwd())."/upgrade";
+
         switch ($submit) {
             case 'check_upgrade':
                 $this->app->Tpl->Set('UPGRADE_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main("../upgrade",$verbose,true,false,false,true,false,$force,false);
+                upgrade_main($directory,$verbose,true,false,false,true,false,$force,false);
             break;
             case 'do_upgrade':
                 unlink($logfile);
-                upgrade_main("../upgrade",$verbose,true,true,false,true,true,$force,false);  
+                upgrade_main($directory,$verbose,true,true,false,true,true,$force,false);  
             break;    
             case 'check_db':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main("../upgrade",$db_verbose,false,false,false,true,false,$force,false);  
+                upgrade_main($directory,$db_verbose,false,false,false,true,false,$force,false);  
             break;    
             case 'do_db_upgrade':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main("../upgrade",$db_verbose,false,false,false,true,true,$force,false);  
+                upgrade_main($directory,$db_verbose,false,false,false,true,true,$force,false);  
             break;    
             case 'refresh':
             break;
@@ -73,3 +78,4 @@ class upgrade {
     
 
 }
+

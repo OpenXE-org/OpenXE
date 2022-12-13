@@ -53,11 +53,11 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr><td colspan=2><button name="submit" value="refresh" class="ui-button-icon" style="width:100%;">Anzeige auffrischen</button></td></tr>
                                     <tr><td colspan=2><button name="submit" value="check_upgrade" class="ui-button-icon" style="width:100%;">Upgrades pr&uuml;fen</button></td></tr>
-                                    <tr><td style="width:100%;">{|Upgrade-Details anzeigen|}:</td><td><input type="checkbox" name="details_anzeigen" value=1 size="20"></td></tr>
+                                    <tr><td style="width:100%;">{|Upgrade-Details anzeigen|}:</td><td><input type="checkbox" name="details_anzeigen" value=1 [DETAILS_ANZEIGEN] size="20"></td></tr>
                                     <tr [UPGRADE_VISIBLE]><td colspan=2><button name="submit" value="do_upgrade" class="ui-button-icon" style="width:100%;">UPGRADE</button></td></tr>
-                                    <tr [UPGRADE_VISIBLE]><td style="width:100%;">{|Erzwingen (-f)|}:</td><td><input type="checkbox" name="erzwingen" value=1 size="20"></td></tr>
+                                    <tr [UPGRADE_VISIBLE]><td style="width:100%;">{|Erzwingen (-f)|}:</td><td><input type="checkbox" name="erzwingen" value=1 [ERZWINGEN] size="20"></td></tr>
                                     <tr><td colspan=2><button name="submit" value="check_db" class="ui-button-icon" style="width:100%;">Datenbank pr&uuml;fen</button></td></tr>
-                                    <tr><td style="width:100%;">{|Datenbank-Details anzeigen|}:</td><td><input type="checkbox" name="db_details_anzeigen" value=1 size="20"></td></tr>
+                                    <tr><td style="width:100%;">{|Datenbank-Details anzeigen|}:</td><td><input type="checkbox" name="db_details_anzeigen" value=1 [DB_DETAILS_ANZEIGEN] size="20"></td></tr>
                                     <tr [UPGRADE_DB_VISIBLE]><td colspan=2><button name="submit" value="do_db_upgrade" class="ui-button-icon" style="width:100%;">Datenbank UPGRADE</button></td></tr>
                                 </table>
                             </fieldset>            
