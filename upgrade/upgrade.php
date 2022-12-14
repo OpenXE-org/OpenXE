@@ -155,7 +155,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
 
     if ($check_git || $do_git) {
 
-        $retval = git("log HEAD", $output,$verbose,false,"");
+        $retval = git("log HEAD --", $output,$verbose,false,"");
         // Not a git repository -> Create it and then go ahead
         if ($retval == 128) {         
             if (!$do_git) {
@@ -164,12 +164,12 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             }
 
             echo_out("Setting up git...");
-            $retval = git("init ..", $output,$verbose,$verbose,"Error while initializing git!");
+            $retval = git("init $mainfolder", $output,$verbose,$verbose,"Error while initializing git!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
-            $retval = git("add ../.", $output,$verbose,$verbose,"Error while initializing git!");   
+            $retval = git("add $mainfolder", $output,$verbose,$verbose,"Error while initializing git!");   
             if ($retval != 0) {
                 abort("");
                 return(-1);
@@ -180,7 +180,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 return(-1);
             }
 
-            $retval = git("checkout FETCH_HEAD -f", $output,$verbose,$verbose,"Error while initializing git!");   
+            $retval = git("checkout FETCH_HEAD -f --", $output,$verbose,$verbose,"Error while initializing git!");   
             if ($retval != 0) {
                 abort("");
                 return(-1);
@@ -193,7 +193,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         // Get changed files on system -> Should be empty
         $modified_files = false;
         $output = array();
-        $retval = git("ls-files -m ..", $output,$verbose,false,"Error while checking Git status.");
+        $retval = git("ls-files -m $mainfolder", $output,$verbose,false,"Error while checking Git status.");
         if (!empty($output)) {
             $modified_files = true;
             echo_out("There are modified files:\n");
@@ -202,14 +202,14 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
  
         if ($verbose) {
             echo_out("--------------- Upgrade history ---------------\n");
-            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~5",$output,$verbose,$verbose,"Error while showing history!");
+            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~5 --",$output,$verbose,$verbose,"Error while showing history!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
         } else {
             echo_out("--------------- Current version ---------------\n");
-            $retval = git("log -1 --date=short-local --pretty=\"%cd (%h): %s\" HEAD",$output,$verbose,true,"Error while showing history!");
+            $retval = git("log -1 --date=short-local --pretty=\"%cd (%h): %s\" HEAD --",$output,$verbose,true,"Error while showing history!");
             if ($retval != 0) {
                 return(-1);
             }
