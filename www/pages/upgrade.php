@@ -33,7 +33,7 @@ class upgrade {
       	$this->app->Tpl->Set('DETAILS_ANZEIGEN', $verbose?"checked":"");
       	$this->app->Tpl->Set('DB_DETAILS_ANZEIGEN', $db_verbose?"checked":"");
 
-        include("../upgrade/upgrade.php");
+        include("../upgrade/data/upgrade.php");
 
         $logfile = "../upgrade/data/upgrade.log";
         upgrade_set_out_file_name($logfile);

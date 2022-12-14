@@ -15,9 +15,10 @@
         		<div class="col-xs-14 col-md-12 col-md-height">
         			<div class="inside inside-full-height">
         				<fieldset>
-                            <legend>{|Info|}</legend>
+                            <legend>{|OpenXE Upgrade-System|}</legend>
 Das Upgrade funktioniert in 2 Schritten: Dateien aktualisieren, Datenbank auffrischen. Wenn das Upgrade lange l&auml;uft, kann der Fortschritt in einem neuen Fenster mit "Anzeige auffrischen" angezeigt werden.<br><br>
-Zum Start in der Konsole, im Unterordner "upgrade" diesen Befehl starten: <pre>sudo -u www-data php upgrade.php -do</pre>
+Falls nach einem Abbruch oder schwerwiegenden Fehler kein Upgrade möglich ist, im Hauptordner den Ordner ".git" l&ouml;schen und das Upgrade in der Konsole erneut durchf&uuml;hren.
+Dazu im Unterordner "upgrade" diesen Befehl starten: <pre>./upgrade.sh -do</pre>
                         </fieldset>            
                     </div>
            		</div>           
