@@ -91,6 +91,12 @@ if (php_sapi_name() == "cli") {
           $force = false;
         } 
 
+        if (in_array('-o', $argv)) {
+          $origin = true;
+        } else {
+          $origin = false;
+        } 
+
         if (in_array('-connection', $argv)) {
           $connection = true;
         } else {
@@ -121,7 +127,7 @@ if (php_sapi_name() == "cli") {
         }
 
         if ($check_git || $check_db || $do_git || $do_db) {
-            upgrade_main($directory,$verbose,$check_git,$do_git,$export_db,$check_db,$do_db,$force,$connection);
+            upgrade_main($directory,$verbose,$check_git,$do_git,$export_db,$check_db,$do_db,$force,$connection,$origin);
         } else {
             info();
         }
@@ -133,7 +139,7 @@ if (php_sapi_name() == "cli") {
 } 
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection) {  
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection, bool $origin) {  
   
     $mainfolder = dirname($directory);
     $datafolder = $directory."/data";
@@ -146,12 +152,16 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
 
     //require_once($directory.'/../cronjobs/githash.php');
 
-    $remote_info_contents = file_get_contents($remote_file_name);
-    if (!$remote_info_contents) {
-        abort("Unable to load $remote_file_name");
-        return(-1);
-    } 
-    $remote_info = json_decode($remote_info_contents, true);    
+    if ($origin) {
+        $remote_info = array('host' => 'origin','branch' => 'master');    
+    } else {
+        $remote_info_contents = file_get_contents($remote_file_name);
+        if (!$remote_info_contents) {
+            abort("Unable to load $remote_file_name");
+            return(-1);
+        } 
+        $remote_info = json_decode($remote_info_contents, true);    
+    }
 
     if ($check_git || $do_git) {
 
@@ -463,6 +473,7 @@ function info() {
     echo_out("\t-do: execute all upgrades\n");
     echo_out("\t-v: verbose output\n");
     echo_out("\t-f: force override of existing files\n");
+    echo_out("\t-o: update from origin instead of remote.json\n");
     echo_out("\t-connection use connection.json in data folder instead of user.inc.php\n");
     echo_out("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
     echo_out("\n");

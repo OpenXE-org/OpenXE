@@ -41,7 +41,7 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
 
-        //function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool   $connection)
+        //function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection, bool $origin) {  
 
         $directory = dirname(getcwd())."/upgrade";
 
@@ -49,21 +49,21 @@ class upgrade {
             case 'check_upgrade':
                 $this->app->Tpl->Set('UPGRADE_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main($directory,$verbose,true,false,false,true,false,$force,false);
+                upgrade_main($directory,$verbose,true,false,false,true,false,$force,false,false);
             break;
             case 'do_upgrade':
                 unlink($logfile);
-                upgrade_main($directory,$verbose,true,true,false,true,true,$force,false);  
+                upgrade_main($directory,$verbose,true,true,false,true,true,$force,false,false);  
             break;    
             case 'check_db':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main($directory,$db_verbose,false,false,false,true,false,$force,false);  
+                upgrade_main($directory,$db_verbose,false,false,false,true,false,$force,false,false);  
             break;    
             case 'do_db_upgrade':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main($directory,$db_verbose,false,false,false,true,true,$force,false);  
+                upgrade_main($directory,$db_verbose,false,false,false,true,true,$force,false,false);  
             break;    
             case 'refresh':
             break;
