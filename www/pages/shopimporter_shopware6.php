@@ -178,7 +178,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     {
         $accessToken = $this->shopwareToken();
         $url = $this->ShopUrl;
-        $url .= 'v2/' . $endpoint;
+        $url .= $endpoint;
 
         $ch = curl_init();
         $headerInformation[] = 'Content-Type:application/json';
@@ -1430,7 +1430,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             ];
             $this->shopwareRequest('POST', '_action/sync?_response=true', $mediaAssociationData);
 
-            $url = $this->ShopUrl . 'v2/_action/media/' . $mediaId . '/upload?extension=' . $extension . '&fileName=' . $filename;
+            $url = $this->ShopUrl . '_action/media/' . $mediaId . '/upload?extension=' . $extension . '&fileName=' . $filename;
             $ch = curl_init();
             $setHeaders = [
                 'Content-Type:image/' . $extension,
@@ -3480,7 +3480,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $documentId = $documentData['documentId'];
 
             $accessToken = $this->shopwareToken();
-            $url = $this->ShopUrl . 'v2/_action/document/' . $documentId . '/upload?_response=true&extension=pdf&fileName=' . $documentNumber;
+            $url = $this->ShopUrl . '_action/document/' . $documentId . '/upload?_response=true&extension=pdf&fileName=' . $documentNumber;
 
             $ch = curl_init();
             $setHeaders = [
