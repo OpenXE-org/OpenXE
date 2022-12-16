@@ -1261,6 +1261,16 @@ Allow from all
     Order Allow,Deny
     Allow from all
 </Files>
+# Allow access to setup.php
+<Files setup.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# Allow access to inline PDF viewer
+<Files viewer.html>
+    Order Allow,Deny
+    Allow from all
+</Files>
 # end
 ');
     
