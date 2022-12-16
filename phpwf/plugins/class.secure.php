@@ -135,8 +135,10 @@ class Secure
     {
       foreach($this->POST as $key=>$value)
       {
-        $key = $this->GetPOST($key,"alpha+digit+specialchars",20);
-        $ret[$key]=$this->GetPOST($value);
+        $value = $this->GetPOST($key);
+        if ($value !== null) {
+            $ret[$key] = $value;
+        }
       }	
     }
     if(!empty($ret))
@@ -153,8 +155,10 @@ class Secure
     {
       foreach($this->GET as $key=>$value)
       {
-        $key = $this->GetGET($key,"alpha+digit+specialchars",20);
-        $ret[$key]=$this->GetGET($value);
+        $value = $this->GetGET($key);
+        if ($value !== null) {
+            $ret[$key] = $value;
+        }
       }	
     }
     if(!empty($ret))
