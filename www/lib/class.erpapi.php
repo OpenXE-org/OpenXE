@@ -3899,6 +3899,9 @@ title: 'Abschicken',
         //$zahlungszielskonto = round((100 * $skontobetrag / $soll),2); // den wert lassen sonst sieht es komisch am briefpapier aus Ticket 757670
       }
     }
+
+    $zahlungszieltage = (int) $zahlungszieltage;
+
     $zahlungdatum = $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD(datum, INTERVAL $zahlungszieltage DAY),'%d.%m.%Y') FROM $doctype WHERE id='$doctypeid' LIMIT 1");
 
     $anzeigen = false;
@@ -3945,6 +3948,8 @@ title: 'Abschicken',
 
     //$this->RunHook('ZahlungsweisetextZahlungsdatum',4, $doctype, $doctypeid, $zahlungdatum, $zahlungsweisetext);
 
+    $zahlungszieltageskonto = (int) $zahlungszieltageskonto;
+
     $zahlungszielskontodatum = $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD(datum, INTERVAL $zahlungszieltageskonto DAY),'%d.%m.%Y') FROM $doctype WHERE id='$doctypeid' LIMIT 1");
 
     $adresse = !empty($doctypeRow['adresse'])?$doctypeRow['adresse']:0;
@@ -3954,7 +3959,6 @@ title: 'Abschicken',
 
     $skontofaehignetto = $this->Skontofaehig($doctypeid, $doctype,false);
     $skontofaehignetto = number_format((float)$skontofaehignetto,2,',','.');
-
 
     if($zahlungszieltageskonto<=0)
       $zahlungszielskontodatum = $zahlungdatum;
