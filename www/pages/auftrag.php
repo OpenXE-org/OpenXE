@@ -662,7 +662,7 @@ class Auftrag extends GenAuftrag
                 $menu .= "</a>";
 
                 $moreinfo = true; // Minidetail active
-                $menucol = 9; // For minidetail
+                $menucol = 11; // For minidetail
 
         break;
         case 'auftraegeoffeneautowartend':
@@ -708,7 +708,7 @@ class Auftrag extends GenAuftrag
                 $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
                 $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
                 $menu .= "</a>";
-                $menucol = 9; // For moredata
+                $menucol = 11; // For moredata
 
 
         break;
@@ -7131,7 +7131,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                    
                         $id_neu = $this->app->DB->MysqlCopyRow('auftrag','id',$id);  
                         $sql = "UPDATE auftrag SET belegnr = '$belegnr_neu', teillieferungvon = $hauptauftrag_id, teillieferungnummer = $teillieferungnummer WHERE id = $id_neu";
-                            echo("---------------------------".$sql."<br>");
                         $this->app->DB->Update($sql);
 
                         // Adjust quantities
@@ -7151,10 +7150,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $posid_neu = $this->app->DB->MysqlCopyRow('auftrag_position','id',$posid_alt);  
 
                             $sql = "UPDATE auftrag_position SET menge = $menge_reduziert WHERE id = $posid_alt";
-                            echo("---------------------------".$sql."<br>");
                             $this->app->DB->Update($sql);
                             $sql = "UPDATE auftrag_position SET auftrag = $id_neu, menge = $menge_neu WHERE id = $posid_neu";
-                            echo("---------------------------".$sql."<br>");
                             $this->app->DB->Update($sql);                                                        
                         }                    
                     }
