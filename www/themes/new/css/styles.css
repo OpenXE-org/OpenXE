@@ -2467,11 +2467,15 @@ ul.tag-editor {
     visibility: hidden;
 }
 
+.ticket_nachricht_box {
+    border: solid 1px;
+    border-radius: 7px;
+}
+
 .ticket_text {
     width: 100%;
     border: none;
 }
-
 
 .ui-button-icon,
 .ui-button:not(.ui-dialog-titlebar-close):not(.button-secondary),
@@ -3373,7 +3377,7 @@ div.noteit_highprio {
     right: 10px;
     top: 28px;
 }
-
+/*
 @media screen and (min-width: 320px) {
     .mkTableFormular tr td:first-child {
         padding-top: 7px;
@@ -3386,7 +3390,7 @@ div.noteit_highprio {
 }
 .mkTableFormular tr td {
     vertical-align: top;
-}
+}*/
 @media screen and (max-width: 768px) {
     .hide768 {
         display: none;
