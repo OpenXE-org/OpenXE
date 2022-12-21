@@ -27328,7 +27328,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $bcc3 = $this->Firmendaten('bcc3');
       if($bcc3!="")
       {
-        $bccRecipients[] = new EmailRecipient($bcc3[0], $bcc3[1]);
+        $bccRecipients[] = new EmailRecipient($bcc3, $bcc3);
       }
 
       // This will build the mail with phpmailer 6 and send it out
