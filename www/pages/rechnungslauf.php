@@ -231,7 +231,7 @@ class Rechnungslauf {
         foreach ($selection as $value) {
           $subscriptionCycleJobService->deleteJobsByAddressIdAndDoctype($value, 'rechnung');
           $subscriptionCycleJobService->create($value, 'rechnung');
-          $this->app->Tpl->addMessage('info', 'Die Rechnungen werden nun im Hintergrund erstellt', _var: 'MESSAGE_INVOICES');
+          $this->app->Tpl->addMessage('info', 'Die Rechnungen werden nun im Hintergrund erstellt', false, 'MESSAGE_INVOICES');
         }
       }
       else if ($this->app->Secure->GetPOST('createOrders') !== '') {
@@ -241,7 +241,7 @@ class Rechnungslauf {
         foreach ($selection as $value) {
           $subscriptionCycleJobService->deleteJobsByAddressIdAndDoctype($value, 'auftrag');
           $subscriptionCycleJobService->create($value, 'auftrag');
-          $this->app->Tpl->addMessage('info', 'Die Aufträge werden nun im Hintergrund erstellt', _var: 'MESSAGE_ORDERS');
+          $this->app->Tpl->addMessage('info', 'Die Aufträge werden nun im Hintergrund erstellt', false, 'MESSAGE_ORDERS');
         }
       }
       $this->app->Tpl->Parse('PAGE', 'rechnungslauf_list.tpl');
