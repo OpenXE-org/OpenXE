@@ -77,9 +77,10 @@ class SubscriptionModule implements SubscriptionModuleInterface
       $beschreibung .= "<br>Zeitraum: {$pos['start']} - {$pos['end']}";
       $this->app->erp->AddRechnungPositionManuell($invoice, $pos['artikel'], $pos['preis'],
           $pos['menge']*$pos['cycles'], $pos['bezeichnung'], $beschreibung, $pos['waehrung'], $pos['rabatt']);
+      $this->db->update("UPDATE abrechnungsartikel SET abgerechnetbis='{$pos['newend']}' WHERE id={$pos['id']}");
     }
     $this->app->erp->RechnungNeuberechnen($invoice);
-    $this->app->erp->BelegFreigabe('rechnung', $invoice);
+    //$this->app->erp->BelegFreigabe('rechnung', $invoice);
   }
 
   public function CreateOrder(int $address, DateTimeInterface $calculationDate = null) {
@@ -94,8 +95,9 @@ class SubscriptionModule implements SubscriptionModuleInterface
       $beschreibung .= "<br>Zeitraum: {$pos['start']} - {$pos['end']}";
       $this->app->erp->AddAuftragPositionManuell($orderid, $pos['artikel'], $pos['preis'],
           $pos['menge']*$pos['cycles'], $pos['bezeichnung'], $beschreibung, $pos['waehrung'], $pos['rabatt']);
+      $this->db->update("UPDATE abrechnungsartikel SET abgerechnetbis='{$pos['newend']}' WHERE id={$pos['id']}");
     }
     $this->app->erp->AuftragNeuberechnen($orderid);
-    $this->app->erp->BelegFreigabe('auftrag', $orderid);
+    //$this->app->erp->BelegFreigabe('auftrag', $orderid);
   }
 }
