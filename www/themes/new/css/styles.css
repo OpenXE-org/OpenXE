@@ -1809,12 +1809,12 @@ fieldset.usersave div.filter-item > label {
 fieldset {
     position: relative;
     margin: 0;
-    margin-top: 5px;
+/*    margin-top: 5px;
     padding: 5px;
     border: 0 solid transparent;
     border-top: 25px solid transparent;
     border-bottom: 5px solid transparent;
-    border-width: 24px 5px 0;
+    border-width: 24px 5px 0;*/
     border-color: transparent;
     background-color: transparent;
 }
@@ -2469,12 +2469,19 @@ ul.tag-editor {
 
 .ticket_nachricht_box {
     border: solid 1px;
+    border-color: var(--textfield-border);
     border-radius: 7px;
+    padding: 0px !important;
+}
+
+.ticket_nachricht_box fieldset {
+    padding: 0px !important;
 }
 
 .ticket_text {
     width: 100%;
     border: none;
+    height: 300px;
 }
 
 .ui-button-icon,

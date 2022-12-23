@@ -328,7 +328,7 @@ class Ticket {
                     }
                     $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']." (Entwurf)"));
                 } else {
-                  $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']));
+                  $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
                 }
                 $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail_replyto'].">"));
                 $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail']));
@@ -563,6 +563,10 @@ class Ticket {
         $this->app->YUI->AutoComplete("adresse","adresse");
         $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$ticket_from_db['adresse'],false)); // Convert ID to form display
 
+
+        if ($ticket_from_db['mailadresse'] != "") {
+            $this->app->Tpl->Set('MAILADRESSE',"&lt;".$ticket_from_db['mailadresse']."&gt;");
+        }
 
         $this->app->Tpl->Set('ADRESSE_ID',$ticket_from_db['adresse']);
 

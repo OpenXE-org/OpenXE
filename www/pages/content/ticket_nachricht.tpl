@@ -8,6 +8,7 @@
 	                        			<div class="inside inside-full-height" >
 	                        				<fieldset>                                    
                                                 <table width="100%" border="0" class="mkTableFormular">
+                                                    <tr><td>{|Betreff|}:</td><td><b>[NACHRICHT_BETREFF]<b></td></tr>
                                                     <tr><td>{|Zeit|}:</td><td>[NACHRICHT_ZEIT]</td></tr>
                                                     <tr><td>{|Von|}:</td><td>[NACHRICHT_SENDER]</td></tr>
                                                     <tr><td>{|An|}:</td><td>[NACHRICHT_RECIPIENTS]</td></tr>
@@ -20,9 +21,7 @@
                                     <div class="col-xs-12 col-md-8 col-md-height ticket_nachricht_box" style="float:[NACHRICHT_FLOAT]">
 	                        			<div class="inside inside-full-height">
 	                        				<fieldset>
-                                                <legend>{|<b>[NACHRICHT_BETREFF]</b>|}</legend>
                                                 <table width="100%" border="0" class="mkTableFormular">
-                                                    <tr><td colspan=2><hr style="border-style:solid; border-width:1px"></td></tr>
                                                     <tr><td colspan=2><div id="body" class="ticket_text_div">[NACHRICHT_TEXT]</div></td></tr>
                                                 </table>
                                             </fieldset> 
