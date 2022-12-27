@@ -36,7 +36,7 @@ final class SubscriptionCycleManualJobTask
         Database $db,
         TaskMutexServiceInterface $taskMutexService,
         SubscriptionCycleJobService $cycleJobService,
-        SubscriptionModuleInterface $subscriptionModule,
+        SubscriptionModuleInterface $subscriptionModule
     ) {
         $this->app = $app;
         $this->db = $db;

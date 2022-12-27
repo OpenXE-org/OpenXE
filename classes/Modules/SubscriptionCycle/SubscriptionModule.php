@@ -74,10 +74,14 @@ class SubscriptionModule implements SubscriptionModuleInterface
     $this->app->erp->LoadRechnungStandardwerte($invoice, $address);
     foreach ($positions as $pos) {
       $beschreibung = $pos['beschreibung'];
-      $beschreibung .= "<br>Zeitraum: {$pos['start']} - {$pos['end']}";
+
+      $starts = DateTimeImmutable::createFromFormat('Y-m-d', $pos['start'])->format('d.m.Y');
+      $newends = DateTimeImmutable::createFromFormat('Y-m-d', $pos['newend'])->format('d.m.Y');
+      $beschreibung .= "<br>Zeitraum: $starts - $newends";
+
       $this->app->erp->AddRechnungPositionManuell($invoice, $pos['artikel'], $pos['preis'],
           $pos['menge']*$pos['cycles'], $pos['bezeichnung'], $beschreibung, $pos['waehrung'], $pos['rabatt']);
-      $this->db->update("UPDATE abrechnungsartikel SET abgerechnetbis='{$pos['newend']}' WHERE id={$pos['id']}");
+      $this->db->exec("UPDATE abrechnungsartikel SET abgerechnetbis='{$pos['newend']}' WHERE id={$pos['id']}");
     }
     $this->app->erp->RechnungNeuberechnen($invoice);
     //$this->app->erp->BelegFreigabe('rechnung', $invoice);
@@ -92,10 +96,14 @@ class SubscriptionModule implements SubscriptionModuleInterface
     $this->app->erp->LoadAuftragStandardwerte($orderid, $address);
     foreach ($positions as $pos) {
       $beschreibung = $pos['beschreibung'];
-      $beschreibung .= "<br>Zeitraum: {$pos['start']} - {$pos['end']}";
+
+      $starts = DateTimeImmutable::createFromFormat('Y-m-d', $pos['start'])->format('d.m.Y');
+      $newends = DateTimeImmutable::createFromFormat('Y-m-d', $pos['newend'])->format('d.m.Y');
+      $beschreibung .= "<br>Zeitraum: $starts - $newends";
+
       $this->app->erp->AddAuftragPositionManuell($orderid, $pos['artikel'], $pos['preis'],
           $pos['menge']*$pos['cycles'], $pos['bezeichnung'], $beschreibung, $pos['waehrung'], $pos['rabatt']);
-      $this->db->update("UPDATE abrechnungsartikel SET abgerechnetbis='{$pos['newend']}' WHERE id={$pos['id']}");
+      $this->db->exec("UPDATE abrechnungsartikel SET abgerechnetbis='{$pos['newend']}' WHERE id={$pos['id']}");
     }
     $this->app->erp->AuftragNeuberechnen($orderid);
     //$this->app->erp->BelegFreigabe('auftrag', $orderid);
