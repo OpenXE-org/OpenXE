@@ -82,7 +82,7 @@ class Log
                     'Nachricht',
                     '',
                 ];
-                $width = ['1%', '4%', '8%', '4%', '10%', '15%', '20%', '10%', '5%', '40%'];
+                $width = ['1%', '4%', '9%', '4%', '10%', '15%', '20%', '10%', '5%', '40%'];
                 $findcols = [
                     'open',
                     'l.id',
@@ -116,7 +116,7 @@ class Log
                 $sql = "SELECT l.id,
                    '<img src=./themes/new/images/details_open.png class=details>' AS  `open`,
                    l.id,
-                   DATE_FORMAT(l.log_time,'%d.%m.%Y %H:%i:%s') AS `log_time`,
+                   SUBSTRING(DATE_FORMAT(l.log_time,'%d.%m.%Y %H:%i:%s %f'),1,23) AS `log_time`,
                    l.level, l.origin_type, l.origin_detail, l.class, l.method, l.line, l.message, l.id
                    FROM `log` AS `l`";
                 $fastcount = 'SELECT COUNT(l.id) FROM `log` AS `l`';

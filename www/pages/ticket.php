@@ -307,6 +307,7 @@ class Ticket {
               $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
               $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
               $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
+              $this->app->Tpl->Set("META_FLOAT","left");
               $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
               $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['bearbeiter']));
               $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['verfasser']." <".$message['mail'].">"));
@@ -327,12 +328,13 @@ class Ticket {
                     }
                     $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']." (Entwurf)"));
                 } else {
-                  $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']));
+                  $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
                 }
                 $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail_replyto'].">"));
                 $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail']));
                 $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc']));  
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
+                $this->app->Tpl->Set("META_FLOAT","left");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);            
                 $this->app->Tpl->Set("NACHRICHT_NAME",htmlentities($message['verfasser']));
             } else {
@@ -351,6 +353,7 @@ class Ticket {
                 $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
                 $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
+                $this->app->Tpl->Set("META_FLOAT","right");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
             }
 
@@ -560,6 +563,10 @@ class Ticket {
         $this->app->YUI->AutoComplete("adresse","adresse");
         $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$ticket_from_db['adresse'],false)); // Convert ID to form display
 
+
+        if ($ticket_from_db['mailadresse'] != "") {
+            $this->app->Tpl->Set('MAILADRESSE',"&lt;".$ticket_from_db['mailadresse']."&gt;");
+        }
 
         $this->app->Tpl->Set('ADRESSE_ID',$ticket_from_db['adresse']);
 

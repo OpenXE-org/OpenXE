@@ -16728,7 +16728,9 @@ INSERT INTO `firmendaten_werte` (`id`, `name`, `typ`, `typ1`, `typ2`, `wert`, `d
 (385, 'cleaner_shopimport', 'tinyint', '1', '', '1', '1', 0, 0),
 (386, 'cleaner_shopimport_tage', 'int', '11', '', '90', '90', 0, 0),
 (387, 'cleaner_adapterbox', 'tinyint', '1', '', '1', '1', 0, 0),
-(388, 'cleaner_adapterbox_tage', 'int', '11', '', '90', '90', 0, 0);
+(388, 'cleaner_adapterbox_tage', 'int', '11', '', '90', '90', 0, 0),
+(389, 'bcc3', 'varchar', '128', '', '', '', 0, 0)
+;
 
 INSERT INTO `geschaeftsbrief_vorlagen` (`id`, `sprache`, `betreff`, `text`, `subjekt`, `projekt`, `firma`) VALUES
 (1, 'deutsch', 'Bestellung {BELEGNR} von {FIRMA}', '{ANSCHREIBEN},<br><br>anbei übersenden wir Ihnen unsere Bestellung zu. Bitte senden Sie uns als Bestätigung für den Empfang eine Auftragsbestätigung zu.', 'Bestellung', 1, 1),

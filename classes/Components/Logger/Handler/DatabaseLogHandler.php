@@ -66,7 +66,7 @@ final class DatabaseLogHandler extends AbstractLogHandler
         $sql = 'INSERT INTO `log`
                 (`log_time`, `level`, `message`, `class`, `method`, `line`, `origin_type`, `origin_detail`, `dump`) 
                 VALUES 
-                (NOW(), :level, :message, :class, :method, :line, :origin_type, :origin_detail, :dump)';
+                (NOW(3), :level, :message, :class, :method, :line, :origin_type, :origin_detail, :dump)';
         $this->db->perform($sql, $values);
     }
 }

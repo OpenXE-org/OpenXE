@@ -56922,7 +56922,7 @@
                 },
                 {
                     "Field": "log_time",
-                    "Type": "datetime",
+                    "Type": "datetime(3)",
                     "Collation": null,
                     "Null": "YES",
                     "Key": "",
