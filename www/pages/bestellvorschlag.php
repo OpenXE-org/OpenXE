@@ -30,20 +30,20 @@ class Bestellvorschlag {
         switch ($name) {
             case "bestellvorschlag_list":
                 $allowed['bestellvorschlag_list'] = array('list');
-                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Lager','Mindestlager','Vorschlag','Eingabe','');
-                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',   '1%',          '1%',       '5%',     '1%');
+                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Mindestlager','Lager','Bestellt','Vorschlag','Eingabe','');
+                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',        '1%',     '1%',     '1%',     '5%',      '1%');
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('a.id','a.id','l.name','a.nummer','a.name_de','lager','mindestlager','vorschlag');
+                $findcols = array('a.id','a.id','a.nummer','a.name_de','l.name','mindestlager','lager','bestellt','vorschlag');
                 $searchsql = array('a.name_de');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-                $numbercols = array(6,7,8);
+                $numbercols = array(6,7,8,9);
 //                $sumcol = array(6);
-                $alignright = array(6,7,8);
+                $alignright = array(6,7,8,9);
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`";
 
@@ -54,10 +54,39 @@ class Bestellvorschlag {
                         ' name=\"menge_',
                         a.id,
                         '\" value=\"',
-                        (SELECT vorschlag),
-                        '\">',
+                        (SELECT mengen.vorschlag),
+                        '\" style=\"text-align:right\">',
                         '</input>'
                     )";
+
+		$sql_artikel_mengen = "
+			SELECT
+			    a.id,
+			    (
+			        SELECT
+			            COALESCE(SUM(menge),0)
+			        FROM
+			            lager_platz_inhalt lpi
+			        INNER JOIN lager_platz lp ON
+			            lp.id = lpi.lager_platz
+			        WHERE
+			            lpi.artikel = a.id AND lp.sperrlager = 0
+				) AS lager_ber,
+			    (
+			    	SELECT 
+			        	COALESCE(SUM(menge-geliefert))    
+			        FROM
+			        	bestellung_position bp INNER JOIN bestellung b ON bp.bestellung = b.id
+			        WHERE bp.artikel = a.id AND b.status IN ('versendet','freigegeben')
+			    ) AS bestellt_ber,
+			    a.mindestlager - (SELECT lager_ber) - COALESCE((SELECT bestellt_ber),0) as vorschlag_ber,
+			    FORMAT (a.mindestlager,0,'de_DE') as mindestlager,
+			    FORMAT((SELECT lager_ber),0,'de_DE') as lager, 
+			    FORMAT(COALESCE((SELECT bestellt_ber),0),0,'de_DE') as bestellt,
+			    if ((SELECT vorschlag_ber) > 0,FORMAT((SELECT vorschlag_ber),'0','de_DE'),0) as vorschlag    
+			FROM
+			    artikel a
+			              ";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                     a.id, 
@@ -65,16 +94,17 @@ class Bestellvorschlag {
                     a.nummer, 
                     a.name_de, 
                     l.name,
-                    (SELECT 
-                        SUM(menge)
-                        FROM 
-                            lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lp.id = lpi.lager_platz                     
-                        WHERE lpi.artikel = a.id AND lp.sperrlager = 0
-                    ) as lager,
-                    a.mindestlager as mindestlager,                    
-                    if (a.mindestlager - (SELECT lager) > 0,(a.mindestlager - (SELECT lager)),0) as vorschlag,"
-                    .$input_for_menge
-                    ."FROM artikel a INNER JOIN adresse l ON l.id = a.adresse ";
+		    mengen.mindestlager,
+		    mengen.lager,
+	            mengen.bestellt,
+		    mengen.vorschlag,"
+		    .$input_for_menge
+                    ."FROM 
+			artikel a 
+		    INNER JOIN 
+			adresse l ON l.id = a.adresse 
+		    INNER JOIN 
+			(SELECT * FROM ($sql_artikel_mengen) mengen_inner WHERE mengen_inner.vorschlag > 0) as mengen ON mengen.id = a.id";
 
                 $where = "a.adresse != '' AND a.geloescht != 1 AND a.inaktiv != 1";
                 $count = "SELECT count(DISTINCT a.id) FROM artikel a WHERE $where";
