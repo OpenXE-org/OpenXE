@@ -7018,7 +7018,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Preisanfrage','preisanfrage','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Bestellung','bestellung','list');
 
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Bestellvorschlag','bestellvorschlag','ausgehend');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Bestellvorschlag','bestellvorschlag','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Erweiterter Bestellvorschlag','bestellvorschlagapp','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktion','produktion','list');
