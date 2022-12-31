@@ -28444,6 +28444,55 @@
                 }
             ]
         },
+  {
+            "name": "bestellvorschlag",
+            "type": "BASE TABLE",
+            "columns": [
+                {
+                    "Field": "user",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "artikel",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "menge",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                }
+            ],
+            "keys": [
+                {
+                    "Key_name": "PRIMARY",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "artikel",
+                        "user"
+                    ]
+                }
+            ]
+        },
         {
             "name": "bestellvorschlag_app",
             "type": "BASE TABLE",

@@ -15,9 +15,9 @@ class Bestellvorschlag {
 
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "bestellvorschlag_list");        
-        $this->app->ActionHandler("create", "bestellvorschlag_edit"); // This automatically adds a "New" button
-        $this->app->ActionHandler("edit", "bestellvorschlag_edit");
-        $this->app->ActionHandler("delete", "bestellvorschlag_delete");
+//        $this->app->ActionHandler("create", "bestellvorschlag_edit"); // This automatically adds a "New" button
+//        $this->app->ActionHandler("edit", "bestellvorschlag_edit");
+//        $this->app->ActionHandler("delete", "bestellvorschlag_delete");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -30,20 +30,24 @@ class Bestellvorschlag {
         switch ($name) {
             case "bestellvorschlag_list":
                 $allowed['bestellvorschlag_list'] = array('list');
-                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Mindestlager','Lager','Bestellt','Vorschlag','Eingabe','');
-                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',        '1%',     '1%',     '1%',     '5%',      '1%');
+
+                $monate_absatz = $app->Secure->GetPOST('monate_absatz');
+                $monate_voraus = $app->Secure->GetPOST('monate_voraus');
+
+                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Vorschlag','Eingabe','');
+                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',        '1%',     '1%',     '1%',     '1%',      '1%',      '1%');
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('a.id','a.id','a.nummer','a.name_de','l.name','mindestlager','lager','bestellt','vorschlag');
+                $findcols = array('a.id','a.id','a.nummer','a.name_de','l.name','mindestlager','lager','bestellt','auftrag','vorschlag');
                 $searchsql = array('a.name_de');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-                $numbercols = array(6,7,8,9);
+                $numbercols = array(6,7,8,9,10);
 //                $sumcol = array(6);
-                $alignright = array(6,7,8,9);
+                $alignright = array(6,7,8,9,10);
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`";
 
@@ -54,39 +58,142 @@ class Bestellvorschlag {
                         ' name=\"menge_',
                         a.id,
                         '\" value=\"',
-                        (SELECT mengen.vorschlag),
-                        '\" style=\"text-align:right\">',
+                        ROUND((SELECT mengen.vorschlag)),
+                        '\" style=\"text-align:right; width:100%\">',
                         '</input>'
                     )";
 
-		$sql_artikel_mengen = "
-			SELECT
-			    a.id,
-			    (
-			        SELECT
-			            COALESCE(SUM(menge),0)
-			        FROM
-			            lager_platz_inhalt lpi
-			        INNER JOIN lager_platz lp ON
-			            lp.id = lpi.lager_platz
-			        WHERE
-			            lpi.artikel = a.id AND lp.sperrlager = 0
-				) AS lager_ber,
-			    (
-			    	SELECT 
-			        	COALESCE(SUM(menge-geliefert))    
-			        FROM
-			        	bestellung_position bp INNER JOIN bestellung b ON bp.bestellung = b.id
-			        WHERE bp.artikel = a.id AND b.status IN ('versendet','freigegeben')
-			    ) AS bestellt_ber,
-			    a.mindestlager - (SELECT lager_ber) - COALESCE((SELECT bestellt_ber),0) as vorschlag_ber,
-			    FORMAT (a.mindestlager,0,'de_DE') as mindestlager,
-			    FORMAT((SELECT lager_ber),0,'de_DE') as lager, 
-			    FORMAT(COALESCE((SELECT bestellt_ber),0),0,'de_DE') as bestellt,
-			    if ((SELECT vorschlag_ber) > 0,FORMAT((SELECT vorschlag_ber),'0','de_DE'),0) as vorschlag    
-			FROM
-			    artikel a
-			              ";
+                $user = $app->User->GetID();
+
+        		$sql_artikel_mengen = "
+ SELECT
+    a.id,
+    (
+    SELECT
+        COALESCE(SUM(menge),
+        0)
+    FROM
+        lager_platz_inhalt lpi
+    INNER JOIN lager_platz lp ON
+        lp.id = lpi.lager_platz
+    WHERE
+        lpi.artikel = a.id AND lp.sperrlager = 0
+) AS lager,
+(
+    SELECT
+        COALESCE(SUM(menge - geliefert))
+    FROM
+        bestellung_position bp
+    INNER JOIN bestellung b ON
+        bp.bestellung = b.id
+    WHERE
+        bp.artikel = a.id AND b.status IN(
+            'versendet',
+            'freigegeben',
+            'angelegt'
+        )
+) AS bestellt,
+(
+    SELECT
+        COALESCE(SUM(menge - geliefert))
+    FROM
+        auftrag_position aufp
+    INNER JOIN auftrag auf ON
+        aufp.auftrag = auf.id
+    WHERE
+        aufp.artikel = a.id AND auf.status IN(
+            'versendet',
+            'freigegeben',
+            'angelegt'
+        )
+) AS auftrag,
+(
+    SELECT
+        menge
+    FROM
+        bestellvorschlag bv
+    WHERE
+        bv.artikel = a.id AND bv.user = '$user'
+) AS vorschlag_save,
+a.mindestlager -(
+SELECT
+    lager
+) - COALESCE((
+SELECT
+    bestellt
+),
+0)
+ + COALESCE((
+SELECT
+    auftrag
+),
+0) AS vorschlag_ber_raw,
+IF(
+    (
+SELECT
+    vorschlag_ber_raw
+) > 0,
+(
+SELECT
+    vorschlag_ber_raw
+),
+0
+) AS vorschlag_ber,
+COALESCE(
+    (
+SELECT
+    vorschlag_save
+),
+(
+SELECT
+    vorschlag_ber
+)
+) AS vorschlag,
+FORMAT(a.mindestlager, 0, 'de_DE') AS mindestlager_form,
+FORMAT((
+SELECT
+    lager
+),
+0,
+'de_DE') AS lager_form,
+FORMAT(
+    COALESCE((
+SELECT
+    bestellt
+),
+0),
+    0,
+    'de_DE'
+) AS bestellt_form,
+FORMAT(
+    COALESCE((
+SELECT
+    auftrag
+),
+0),
+    0,
+    'de_DE'
+) AS auftrag_form,
+FORMAT(
+    (
+SELECT
+    vorschlag_ber
+),
+'0',
+'de_DE'
+) AS vorschlag_ber_form
+,
+FORMAT(
+    (
+SELECT
+    vorschlag
+),
+'0',
+'de_DE'
+) AS vorschlag_form
+FROM
+    artikel a
+                    ";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                     a.id, 
@@ -94,11 +201,12 @@ class Bestellvorschlag {
                     a.nummer, 
                     a.name_de, 
                     l.name,
-		    mengen.mindestlager,
-		    mengen.lager,
-	            mengen.bestellt,
-		    mengen.vorschlag,"
-		    .$input_for_menge
+        		    mengen.mindestlager_form,
+		            mengen.lager_form,
+    	            mengen.bestellt_form,
+                    mengen.auftrag_form,
+		            mengen.vorschlag_ber_form,"
+        		    .$input_for_menge
                     ."FROM 
 			artikel a 
 		    INNER JOIN 
@@ -124,6 +232,31 @@ class Bestellvorschlag {
     }
     
     function bestellvorschlag_list() {
+
+
+        $submit = $this->app->Secure->GetPOST('submit');
+        $user = $this->app->User->GetID();
+
+        switch ($submit) {
+            case 'loeschen':    
+                $sql = "DELETE FROM bestellvorschlag where user = $user";
+                $this->app->DB->Delete($sql);
+            break;
+            case 'speichern':
+
+                $menge_input = $this->app->Secure->GetPOSTArray();
+                $mengen = array();
+                foreach ($menge_input as $key => $menge) {
+                    if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
+                        $artikel = substr($key,'6');
+                        if ($menge > 0) {
+                            $sql = "INSERT INTO bestellvorschlag (artikel, user, menge) VALUES($artikel,$user,$menge) ON DUPLICATE KEY UPDATE menge = $menge";
+                            $this->app->DB->Insert($sql);
+                        }
+                    }
+                }
+            break;
+        }
 
         $this->app->erp->MenuEintrag("index.php?module=bestellvorschlag&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=bestellvorschlag&action=create", "Neu anlegen");
