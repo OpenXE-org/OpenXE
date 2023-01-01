@@ -3710,10 +3710,10 @@ span.red, b.red {
 }
 
 .dataTables_wrapper .dataTables_processing {
-    background: url('../images/loading.gif') no-repeat;
-    background-position: 50% 0;
-    background-size: 150px;
-    padding-top: 90px;
+    background: url('../images/loading.gif') no-repeat !important;
+    background-position: 50% 0 !important;
+    background-size: 150px !important;
+    padding-top: 90px !important;
 }
 
 a.ui-tabs-anchor:hover {
