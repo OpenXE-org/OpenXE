@@ -5,20 +5,18 @@
         	<div class="row-height">
         		<div class="col-xs-14 col-md-4 col-md-height">
         			<div class="inside inside-full-height">
-                       <fieldset>
-<!---                                
+                       <fieldset>                            
                             <table width="100%" border="0" class="mkTableFormular">
                                 <legend>{|Einstellungen|}</legend>     
 
-                                    <td>{|Absatz der letzten Monate|}:</td>
+                                    <td>{|Absatz ber&uuml;cksichtigen (Monate)|}:</td>
                                     <td><input type="number" min="0" name="monate_absatz" id="monate_absatz" value="[MONATE_ABSATZ]" size="20""></td>
                                 </tr>
                                 <tr>
-                                    <td>{|Vorausplanen Monate|}:</td>
+                                    <td>{|Vorausplanen (Monate)|}:</td>
                                     <td><input type="number" min="0" name="monate_voraus" id="monate_voraus" value="[MONATE_VORAUS]" size="20""></td>
                                 </tr>
                             </table>
---!>
                         </fieldset>
                     </div>
            		</div>
@@ -29,7 +27,7 @@
                 <div class="col-xs-14 col-md-2 col-md-height">
         			<div class="inside inside-full-height">
                        <fieldset>
-                           <table>
+                            <table width="100%" border="0" class="mkTableFormular">
                                 <legend>Aktionen</legend>                              
                                 <tr>
                                     <td><button name="submit" class="ui-button-icon" style="width:100%;" value="loeschen">{|Zur&uuml;cksetzen|}</button></td>

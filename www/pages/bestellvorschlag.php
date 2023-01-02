@@ -26,28 +26,34 @@ class Bestellvorschlag {
         /* Fill out manually later */
     }
 
-    static function TableSearch(&$app, $name, $erlaubtevars) {
+    public function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
             case "bestellvorschlag_list":
                 $allowed['bestellvorschlag_list'] = array('list');
 
-                $monate_absatz = $app->Secure->GetPOST('monate_absatz');
-                $monate_voraus = $app->Secure->GetPOST('monate_voraus');
+                $monate_absatz = $this->app->User->GetParameter('bestellvorschlag_monate_absatz');
+                if (empty($monate_absatz)) {
+                     $monate_absatz = 0;
+                }
+                $monate_voraus = $this->app->User->GetParameter('bestellvorschlag_monate_voraus');
+                if (empty($monate_voraus)) {
+                     $monate_voraus = 0;
+                }
 
-                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Vorschlag','Eingabe','');
-                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',        '1%',     '1%',     '1%',     '1%',      '1%',      '1%');
+                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
+                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',        '1%',     '1%',     '1%',     '1%',    '1%',   '1%',      '1%',     '1%');
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('a.id','a.id','a.nummer','a.name_de','l.name','mindestlager','lager','bestellt','auftrag','vorschlag');
+                $findcols = array('a.id','a.id','a.nummer','a.name_de','l.name','mindestlager','lager','bestellt','auftrag','absatz','voraus','vorschlag');
                 $searchsql = array('a.name_de');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-                $numbercols = array(6,7,8,9,10);
+                $numbercols = array(6,7,8,9,10,11,12);
 //                $sumcol = array(6);
-                $alignright = array(6,7,8,9,10);
+                $alignright = array(6,7,8,9,10,11,12);
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`";
 
@@ -70,8 +76,7 @@ class Bestellvorschlag {
     a.id,
     (
     SELECT
-        COALESCE(SUM(menge),
-        0)
+        COALESCE(SUM(menge),0)
     FROM
         lager_platz_inhalt lpi
     INNER JOIN lager_platz lp ON
@@ -81,7 +86,7 @@ class Bestellvorschlag {
 ) AS lager,
 (
     SELECT
-        COALESCE(SUM(menge - geliefert))
+        COALESCE(SUM(menge - geliefert),0)
     FROM
         bestellung_position bp
     INNER JOIN bestellung b ON
@@ -95,7 +100,7 @@ class Bestellvorschlag {
 ) AS bestellt,
 (
     SELECT
-        COALESCE(SUM(menge - geliefert))
+        COALESCE(SUM(menge - geliefert),0)
     FROM
         auftrag_position aufp
     INNER JOIN auftrag auf ON
@@ -109,7 +114,24 @@ class Bestellvorschlag {
 ) AS auftrag,
 (
     SELECT
-        menge
+        COALESCE(SUM(menge),0)
+    FROM
+       rechnung_position rp
+    INNER JOIN rechnung r ON
+        rp.rechnung = r.id
+    WHERE
+        rp.artikel = a.id AND r.status IN(
+            'versendet',
+            'freigegeben'            
+        ) AND r.datum > LAST_DAY(CURDATE() - INTERVAL ('$monate_absatz'+1) MONTH) AND r.datum <= LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
+) AS absatz,
+ROUND (
+(
+    select absatz
+) / '$monate_absatz' * '$monate_voraus') AS voraus,
+(
+    SELECT
+        COALESCE(menge,0)
     FROM
         bestellvorschlag bv
     WHERE
@@ -127,7 +149,13 @@ SELECT
 SELECT
     auftrag
 ),
-0) AS vorschlag_ber_raw,
+0)
+ + COALESCE((
+SELECT
+    voraus
+),
+0)
+ AS vorschlag_ber_raw,
 IF(
     (
 SELECT
@@ -175,6 +203,24 @@ SELECT
     'de_DE'
 ) AS auftrag_form,
 FORMAT(
+    COALESCE((
+SELECT
+    absatz
+),
+0),
+    0,
+    'de_DE'
+) AS absatz_form,
+FORMAT(
+    COALESCE((
+SELECT
+    voraus
+),
+0),
+    0,
+    'de_DE'
+) AS voraus_form,
+FORMAT(
     (
 SELECT
     vorschlag_ber
@@ -195,6 +241,10 @@ FROM
     artikel a
                     ";
 
+
+//echo($sql_artikel_mengen);
+
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                     a.id, 
                     $dropnbox, 
@@ -205,6 +255,8 @@ FROM
 		            mengen.lager_form,
     	            mengen.bestellt_form,
                     mengen.auftrag_form,
+                    mengen.absatz_form,
+                    mengen.voraus_form,
 		            mengen.vorschlag_ber_form,"
         		    .$input_for_menge
                     ."FROM 
@@ -237,6 +289,19 @@ FROM
         $submit = $this->app->Secure->GetPOST('submit');
         $user = $this->app->User->GetID();
 
+        $monate_absatz = $this->app->Secure->GetPOST('monate_absatz');
+        if (empty($monate_absatz)) {
+             $monate_absatz = 0;
+        }
+        $monate_voraus = $this->app->Secure->GetPOST('monate_voraus');
+        if (empty($monate_voraus)) {
+             $monate_voraus = 0;
+        }
+
+        // For transfer to tablesearch    
+        $this->app->User->SetParameter('bestellvorschlag_monate_absatz', $monate_absatz);
+        $this->app->User->SetParameter('bestellvorschlag_monate_voraus', $monate_voraus);
+
         switch ($submit) {
             case 'loeschen':    
                 $sql = "DELETE FROM bestellvorschlag where user = $user";
@@ -262,6 +327,9 @@ FROM
         $this->app->erp->MenuEintrag("index.php?module=bestellvorschlag&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
+
+        $this->app->Tpl->Set('MONATE_ABSATZ',$monate_absatz);
+        $this->app->Tpl->Set('MONATE_VORAUS',$monate_voraus);
 
         $this->app->YUI->TableSearch('TAB1', 'bestellvorschlag_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "bestellvorschlag_list.tpl");
