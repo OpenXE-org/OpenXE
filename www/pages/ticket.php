@@ -694,8 +694,10 @@ class Ticket {
                 $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$ticket_from_db['adresse']."' LIMIT 1");
                 if($anschreiben=="")
                 {
-                  $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben").",\n".$this->app->erp->Grussformel($projekt,$sprache);
+                  $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben");
                 }
+
+                $anschreiben = $anschreiben.",<br>".$this->app->erp->Grussformel($projekt,$sprache);
 
                 $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
