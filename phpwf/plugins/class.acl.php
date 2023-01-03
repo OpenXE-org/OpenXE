@@ -197,7 +197,7 @@ class Acl
             break;
             case 'dateien':
 
-              $sql = "SELECT objekt FROM datei_stichwoerter WHERE datei = %s";
+              $sql = "SELECT objekt FROM datei_stichwoerter WHERE datei = %s LIMIT 1";
               $dateiModul = strtolower($this->app->DB->Select(sprintf($sql,$id)));
 
               //TODO datei_stichwoerter.objekt ist nicht zuverlässig für alle Datentypen. Deswegen nur zur Absicherung der bekannten Fälle #604706
