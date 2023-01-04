@@ -337,7 +337,7 @@ class TicketImportHelper
         if (!empty($queue_id)) {
           $queue_label = $this->db->Select("SELECT label FROM warteschlangen WHERE id = ".$queue_id." LIMIT 1");
         }
-
+ 
         $insertTicket = "INSERT INTO `ticket` (
                       `schluessel`, `zeit`, `projekt`, `quelle`, `status`, `kunde`,
                       `mailadresse`, `prio`, `betreff`,`warteschlange`,`adresse`
@@ -347,10 +347,10 @@ class TicketImportHelper
                         '".$projectId."',
                         '".$this->mailAccount->getEmailAddress()."',
                         '".$status."',
-                        '".$senderName."',
-                        '".$senderAddress."',
+                        '".$this->db->real_escape_string($senderName)."',
+                        '".$this->db->real_escape_string($senderAddress)."',
                         '".'3'."',
-                        '".$subject."',
+                        '".$this->db->real_escape_string($subject)."',
                         '".$queue_label."',
                         '".$AddressId."');";
        
@@ -383,14 +383,14 @@ class TicketImportHelper
                     ) VALUES (
                 '".$ticketNumber."',
                 '".date('Y-m-d H:i:s', $timestamp)."',
-                '".$message."',
-                '".$subject."',
+                '".$this->db->real_escape_string($message)."',
+                '".$this->db->real_escape_string($subject)."',
                 '".'email'."',
-                '".$senderName."',
-                '".$senderAddress."',
+                '".$this->db->real_escape_string($senderName)."',
+                '".$this->db->real_escape_string($senderAddress)."',
                 '".$status."',
-                '".$replyToName."',
-                '".$replyToAddress."');";
+                '".$this->db->real_escape_string($replyToName)."',
+                '".$this->db->real_escape_string($replyToAddress)."');";
 
             $this->logger->debug('database insert',['query' => $sql]);
             $this->db->Insert($sql);
@@ -555,8 +555,8 @@ class TicketImportHelper
         // Import database emailbackup
         $date = $message->getDate();
         if (is_null($date)) { // This should not be happening -> Todo check getDate function
-            $this->logger->debug('Null date',['subject' => $message->getSubject()]);            
-            $frommd5 = md5($from . $subject);
+            $this->logger->debug('Null date',['subject' => $message->getSubject(), $message->getHeader('date')->getValue()]);            
+            return(false);
         } else {
             $timestamp = $date->getTimestamp();
             $frommd5 = md5($from . $subject . $timestamp);

@@ -308,10 +308,7 @@ final class MailMessageData implements MailMessageInterface, JsonSerializable
         if ($date === null) {
             return null;
         }
-        $dateTime = DateTime::createFromFormat(DateTimeInterface::RFC2822, $date->getValue());
-        if ($dateTime === false) {
-            $dateTime = DateTime::createFromFormat(DateTimeInterface::RFC822, $date->getValue());
-        }
+        $dateTime = date_create($date->getValue());
         if ($dateTime === false) {
             return null;
         }
