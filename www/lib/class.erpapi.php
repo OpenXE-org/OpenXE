@@ -36277,7 +36277,7 @@ function Firmendaten($field,$projekt="")
           $tatsaechlicheslieferdatum = $orderRow['tatsaechlicheslieferdatum'];
           $projekt = $orderRow['projekt'];
           $differenztage = $this->Projektdaten($projekt,'differenz_auslieferung_tage');
-          if($differenztage<0) {
+          if($differenztage<0 || empty($differenztage)) {
             $differenztage=2;
           }
           $lieferdatum = $orderRow['lieferdatum'];
