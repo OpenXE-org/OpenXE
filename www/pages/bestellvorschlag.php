@@ -321,6 +321,86 @@ FROM
                     }
                 }
             break;
+            case 'bestellungen_erzeugen':                
+
+                $auswahl = $this->app->Secure->GetPOST('auswahl');
+                $selectedIds = [];
+
+                if(empty($auswahl)) {
+                    $msg = '<div class="error">Bitte Artikel ausw&auml;hlen.</div>';
+                    break;
+                }
+
+                if(!empty($auswahl)) {
+                    foreach ($auswahl as $selectedId) {
+                        $selectedId = (int) $selectedId;
+                        if ($selectedId > 0) {
+                          $selectedIds[] = $selectedId;
+                        }
+                    }
+                }
+                
+                $menge_input = $this->app->Secure->GetPOSTArray();
+                $mengen = array();
+                           
+                foreach ($selectedIds as $artikel_id) {
+                    foreach ($menge_input as $key => $menge) {
+                        if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
+                            $artikel = substr($key,'6');
+                            if ($menge > 0 && $artikel == $artikel_id) {
+                              $mengen[] = array('id' => $artikel,'menge' => $menge);
+                            }
+                        }
+                    }                      
+                }
+
+                $mengen_pro_adresse = array();
+                foreach ($mengen as $menge) {
+                    $sql = "SELECT adresse FROM artikel WHERE id = ".$menge['id'];
+                    $adresse = $this->app->DB->Select($sql);
+                    if (!empty($adresse)) {
+                        $index = array_search($adresse, array_column($mengen_pro_adresse,'adresse'));
+                        if ($index !== false) {
+                            $mengen_pro_adresse[$index]['positionen'][] = $menge;
+                        } else {
+                            $mengen_pro_adresse[] = array('adresse' => $adresse,'positionen' => array($menge));
+                        }
+                    }
+                }
+
+                $angelegt = 0;
+
+                foreach ($mengen_pro_adresse as $bestelladresse) {
+                    $bestellid = $this->app->erp->CreateBestellung($bestelladresse);                    
+                    if (!empty($bestellid)) {
+
+                        $angelegt++;
+
+                        $this->app->erp->LoadBestellungStandardwerte($bestellid,$bestelladresse['adresse']);
+                        $this->app->erp->BestellungProtokoll($bestellid,"Bestellung angelegt");
+                        foreach ($bestelladresse['positionen'] as $position) {
+                            $preisid = $this->app->erp->Einkaufspreis($position['id'], $position['menge'], $bestelladresse['adresse']);
+
+                            if ($preisid == null) {
+                                $artikelohnepreis = $position['id'];
+                            } else {
+                                $artikelohnepreis = null;
+                            }
+
+                            $this->app->erp->AddBestellungPosition(
+                                $bestellid,
+                                $preisid,
+                                $position['menge'],
+                                $datum,
+                                '',                            
+                                $artikelohnepreis                    
+                            );
+                        }
+                        $this->app->erp->BestellungNeuberechnen($bestellid);
+                    }
+                }
+                $msg .= "<div class=\"success\">Es wurden $angelegt Bestellungen angelegt.</div>";
+            break;
         }
 
         $this->app->erp->MenuEintrag("index.php?module=bestellvorschlag&action=list", "&Uuml;bersicht");
@@ -330,6 +410,8 @@ FROM
 
         $this->app->Tpl->Set('MONATE_ABSATZ',$monate_absatz);
         $this->app->Tpl->Set('MONATE_VORAUS',$monate_voraus);
+
+        $this->app->Tpl->Set('MESSAGE',$msg);
 
         $this->app->YUI->TableSearch('TAB1', 'bestellvorschlag_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "bestellvorschlag_list.tpl");
