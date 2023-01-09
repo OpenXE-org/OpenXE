@@ -27451,8 +27451,13 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function BeschriftungSprache($sprache='')
   {
-    $sprache = strtolower(trim($sprache));
-    $this->beschriftung_sprache='deutsch';
+
+    if ($sprache === '') {
+        $this->beschriftung_sprache='deutsch';
+    } else {
+        $this->beschriftung_sprache=strtolower(trim($sprache));
+    }
+
   }
 
   function BeschriftungStandardwerte($field,$sprache="deutsch",$getvars=false)
@@ -27644,10 +27649,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function getUebersetzung($field, $sprache, $id = true)
   {
-    $sprach = strtolower($sprache);
+    $sprache = strtolower($sprache);
     if(empty($this->uebersetzungId))
     {
-      $arr = $this->app->DB->SelectArr('SELECT id, label, sprache, beschriftung 
+      $arr = $this->app->DB->SelectArr('SELECT id, label, sprache, beschriftung, original 
           FROM uebersetzung 
           WHERE sprache <> "" AND label <> ""');
       if(!empty($arr))
@@ -27655,7 +27660,12 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         foreach($arr as $row)
         {
           $this->uebersetzungId[$row['label']][strtolower($row['sprache'])] = $row['id'];
-          $this->uebersetzungBeschriftung[$row['label']][strtolower($row['sprache'])] = $row['beschriftung'];
+
+          if ($row['beschriftung'] != '') {
+              $this->uebersetzungBeschriftung[$row['label']][strtolower($row['sprache'])] = $row['beschriftung'];
+          } else {
+              $this->uebersetzungBeschriftung[$row['label']][strtolower($row['sprache'])] = $row['original'];
+          }
         }
       }
     }
@@ -27675,13 +27685,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function Beschriftung($field,$sprache='')
   {
-    if($sprache!='') {
+ 
+   if($sprache!='') {
       $this->BeschriftungSprache($sprache);
     }
 
     if($this->beschriftung_sprache==''){
       $this->beschriftung_sprache = 'deutsch';
-    }
+    } 
 
   // wenn feld mit artikel_freifeld beginnt dann freifeld draus machen
   //$field = str_replace('artikel_freifeld','freifeld',$field);
@@ -27715,9 +27726,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     {
       return $wert;
     }
-    //1. deutsches wort als standard
-    $wert = $this->BeschriftungDeutschesWort($field);
-    return $wert;
+    return $field; // Not found!
   }
 
 
