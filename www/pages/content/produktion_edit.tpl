@@ -191,7 +191,7 @@
                                         <td><input type="number" min="0" name="menge_ausschuss_produzieren" id="menge_ausschuss_produzieren" value="[MENGE_AUSSCHUSS_PRODUZIEREN]" size="20"></td>
                                     </tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]>
-                                        <td>{|Ziellager|}:</td>
+                                        <td>{|Ziellager|}:</td><i>Info like this.</i>
                                         <td><input type="text" name="ziellager" id="ziellager" value="[ZIELLAGER]" size="20"></td>
                                     </tr>
                                 </table>
@@ -243,15 +243,24 @@
     </div>
     <div id="tabs-3">
         [MESSAGE]
-        <form action="" method="post">   
+        <form action="index.php?module=produktion_position&action=edit&produktion=[PRODUKTION_ID]" method="post">   
             [FORMHANDLEREVENT]
             <div class="row">
 	        	<div class="row-height">
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|Positionen|}</legend>
-                            [PRODUKTION_POSITION_SOURCE_POSITION_TABELLE]
+                                <legend>{|Positionen|}</legend>                                    
+                                [PRODUKTION_POSITION_SOURCE_POSITION_TABELLE]
+                                <table width="100%" border="0" class="mkTableFormular">
+                                    <tr [AKTION_FREIGEBEN]>
+                                        <td>{|Artikel|}:</td>
+                                        <td><input type="text" name="artikel" id="artikel" size="20"></td>
+                                        <td>{|Menge|}:</td>
+                                        <td><input type="number" min="0" name="menge" id="menge" size="20"></td>
+                                        <td><button name="submit" value="hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button></td>
+                                    </tr>          
+                                </table>
                             </fieldset>            
                         </div>
                		</div>

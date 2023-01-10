@@ -176,11 +176,11 @@ class Produktion {
 
                 if (in_array($status,array('angelegt','freigegeben'))) {
                     $heading = array('','','Nummer', 'Artikel', 'Projekt', 'Planmenge pro St&uuml;ck', 'Lager alle (verf&uuml;gbar)', 'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht', 'Men&uuml;');
-                    $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,      '1%',   '1%',                  '1%'          ,'1%'); 
+                    $width = array(  '1%','1%','5%', '30%',     '5%',      '1%',                       '1%',                          '1%' ,                    '1%',         '1%',        '1%'         ,'1%'); 
                     $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";    
                 } else {
-                    $heading = array('','','Nummer', 'Artikel', 'Projekt','Planmenge pro St&uuml;ck',  'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge', 'Verbraucht','');
-                    $width = array('1%','1%',  '5%','30%',        '5%',      '1%',        '1%',            '1%' ,         '1%'                  ,'1%'           ,'1%'); 
+                    $heading = array('','','Nummer', 'Artikel', 'Projekt','Planmenge pro St&uuml;ck', 'Lager alle (verf&uuml;gbar)',  'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht', '');
+                    $width = array(  '1%','1%','5%', '30%',     '5%',      '1%',                       '1%',                          '1%' ,                    '1%',         '1%',        '1%'         ,'1%'); 
                     $menu = "";
                 }            
 
@@ -201,6 +201,7 @@ class Produktion {
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
+                    IF ((SELECT lagerartikel FROM artikel a WHERE a.id = p.artikel LIMIT 1) != 0,
                     CONCAT (
                         FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.artikel = p.artikel),0),0,'de_DE'),
                         ' (',
@@ -211,8 +212,8 @@ class Produktion {
                                 'de_DE'
                         ),
                         ')'
-                    ) as lageralle,
-                    if ('$standardlager' = '0','-',
+                    ),'') as lageralle,
+                    if (('$standardlager' != '0') && ((SELECT lagerartikel FROM artikel a WHERE a.id = p.artikel LIMIT 1) != 0),
                         CONCAT (
                             FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                             ' (',
@@ -224,6 +225,7 @@ class Produktion {
                             ),
                             ')'
                         )
+                        ,''                    
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
                     FORMAT(p.menge,0,'de_DE'),
@@ -268,6 +270,7 @@ class Produktion {
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(SUM(p.menge)/$produktionsmenge,0,'de_DE') as stueckmenge,
+                    IF ((SELECT lagerartikel FROM artikel a WHERE a.id = p.artikel LIMIT 1) != 0,
                     CONCAT (
                         FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.artikel = p.artikel),0),0,'de_DE'),
                         ' (',
@@ -278,8 +281,8 @@ class Produktion {
                                 'de_DE'
                         ),
                         ')'
-                    ) as lageralle,
-                    if ('$standardlager' = '0','-',
+                    ),'') as lageralle,
+                    if (('$standardlager' != '0') && ((SELECT lagerartikel FROM artikel a WHERE a.id = p.artikel LIMIT 1) != 0),
                         CONCAT (
                             FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                             ' (',
@@ -291,6 +294,7 @@ class Produktion {
                             ),
                             ')'
                         )
+                        ,''                    
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0,'de_DE') as reserviert,
                     FORMAT(SUM(p.menge),0,'de_DE') as menge,
@@ -579,7 +583,7 @@ class Produktion {
                     $sql = "UPDATE produktion SET status = 'gestartet' WHERE id=$id";
                     $this->app->DB->Update($sql);
 
-                	$sql = "SELECT id, artikel, menge, geliefert_menge, stuecklistestufe FROM produktion_position pp WHERE produktion=$id";
+                	$sql = "SELECT pp.id, pp.artikel, pp.menge, pp.geliefert_menge, pp.stuecklistestufe, a.lagerartikel FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id";
             	    $material = $this->app->DB->SelectArr($sql);
 
                     foreach ($material as $material_position) {
@@ -588,7 +592,7 @@ class Produktion {
                         $menge_artikel_auslagern =  $material_position['menge']/$produktionsartikel_position['menge']*$menge_auslagern;
 
                         // Remove material from stock
-                        if ($material_position['stuecklistestufe'] == 0) {
+                        if ($material_position['stuecklistestufe'] == 0 && $material_position['lagerartikel']) {
                             $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$produktion_belegnr);
                             if ($result != 1) {
                                 $msg .= "<div class=\"error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>".
@@ -834,7 +838,7 @@ class Produktion {
 
                     $this->ProtokollSchreiben($id,"Menge angepasst auf ".$this->FormatMenge($menge_anpassen));
 
-                break;
+                break;               
                 case 'abschliessen':
                     $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
                     $this->app->DB->Update($sql);       
@@ -1046,7 +1050,7 @@ class Produktion {
         }
 
         if($produktion_from_db['standardlager'] == 0) {
-            $msg .= "<div class=\"error\">Kein Lager ausgew&auml;hlt.</div>";
+            $msg .= "<div class=\"error\">Kein Materiallager ausgew&auml;hlt.</div>";
         }
 
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
@@ -1054,9 +1058,12 @@ class Produktion {
         $this->app->YUI->AutoComplete("auftragid", "auftrag", 1);
 
         $this->app->YUI->AutoComplete("artikel_planen", "stuecklistenartikel");
+        $this->app->YUI->AutoComplete("artikel_hinzu", "artikelnummer");
 
         $this->app->YUI->AutoComplete("standardlager", "lagerplatz");
         $this->app->YUI->AutoComplete("ziellager", "lagerplatz");
+
+        $this->app->YUI->AutoComplete("artikel", "artikelnummer");
 
         $this->app->Tpl->Set('STANDARDLAGER', $this->app->erp->ReplaceLagerPlatz(false,$produktion_from_db['standardlager'],false)); // Convert ID to form display
 
@@ -1172,6 +1179,8 @@ class Produktion {
             break;
         }
 
+        $this->app->Tpl->Set('PRODUKTION_ID',$id);
+
         $this->app->Tpl->Set('MESSAGE', $msg);
         $this->produktion_minidetail('MINIDETAILINEDIT');
         $this->app->Tpl->Parse('PAGE', "produktion_edit.tpl");
@@ -1267,7 +1276,7 @@ class Produktion {
 
         $menge_moeglich = PHP_INT_MAX;
 
-  	    $sql = "SELECT id, artikel, SUM(menge) as menge, geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=0 GROUP BY artikel";
+  	    $sql = "SELECT pp.id, artikel, SUM(menge) as menge, geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON pp.artikel = a.id WHERE pp.produktion=$produktion_id AND pp.stuecklistestufe=0 AND a.lagerartikel != 0 GROUP BY artikel";
 	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
 
   	    $sql = "SELECT id, artikel, SUM(menge) as menge, geliefert_menge as geliefert_menge FROM produktion_position pp WHERE produktion=$produktion_id AND stuecklistestufe=1 GROUP BY artikel";
