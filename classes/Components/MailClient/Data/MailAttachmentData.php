@@ -62,9 +62,11 @@ class MailAttachmentData implements MailAttachmentInterface
     {
         $encodingHeader = $part->getHeader('content-transfer-encoding');
         if ($encodingHeader === null) {
-            throw new InvalidArgumentException('missing header: "Content-Transfer-Encoding"');
+         // Assume this is no error (?)   throw new InvalidArgumentException('missing header: "Content-Transfer-Encoding"');
+            $encoding = '';
+        } else {
+            $encoding = $encodingHeader->getValue();
         }
-        $encoding = $encodingHeader->getValue();
         $dispositionHeader = $part->getHeader('content-disposition');
         if ($dispositionHeader === null) {
             throw new InvalidArgumentException('missing header: "Content-Disposition"');
@@ -111,9 +113,27 @@ class MailAttachmentData implements MailAttachmentInterface
         else if ($disposition == 'inline') {
             $isInline = true;
             $filename = ""; // This is questionable
-        } else {
+        }
+        else if (strpos($disposition,'attachment;\n') == 0) { // No filename, check for content type message/rfc822
+            
+            $contenttypeHeader = $part->getHeader('content-type');
+            if ($contenttypeHeader === null) {
+                throw new InvalidArgumentException('missing header: "Content-Type"');
+            }
+            $contenttype = $contenttypeHeader->getValue();
+
+            if ($contenttype == 'message/rfc822') {   
+                $isInline = false;             
+                $filename = 'ForwardedMessage.eml';               
+            } else {
+                throw new InvalidArgumentException(
+                    sprintf('unexpected header value "Content-Disposition" = "%s"', $disposition)
+                );
+            }
+        }
+        else {
             throw new InvalidArgumentException(
-                sprintf('unexpected header value "Content-Disposition" = "%s"', $disposition)
+                sprintf('unexpected header value "Content-Disposition" = "%s", not message/rfc822', $disposition)
             );
         }
 

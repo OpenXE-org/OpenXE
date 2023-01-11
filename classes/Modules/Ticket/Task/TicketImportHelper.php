@@ -491,7 +491,7 @@ class TicketImportHelper
             }
             try {
 
-                $this->logger->debug('Start import', ['message' => $message->getSubject()]);
+                $this->logger->debug('Start import', ['message' => $message]);
 
                 $result = $this->importMessage($message);               
 
@@ -545,12 +545,27 @@ class TicketImportHelper
         $htmlBody = $message->getHtmlBody();
         if ($htmlBody === null) {
             $htmlBody = '';
+        }        
+
+        if ($plainTextBody == '' && $htmlBody == '') {
+            $simple_content = $message->getContent();
+            if (empty($simple_content)) {
+                $this->logger->debug('Empty mail',['message' => $message]);    
+            } else {
+                $plainTextBody = $simple_content;
+                $htmlBody = nl2br(htmlentities($simple_content));
+            }
         }
+
+        $this->logger->debug('Text',['plain' => $plainTextBody, 'html' => $htmlBody, 'simple_content' => $simple_content]);            
+
         $action = $this->formatter->encodeToUtf8($plainTextBody);
         $action_html = $this->formatter->encodeToUtf8($htmlBody);
         if (strlen($action_html) < strlen($action)) {
             $action_html = nl2br($action);
         }
+
+        $this->logger->debug('Text (converted)',['plain' => $action, 'html' => $action_html]);
 
         // Import database emailbackup
         $date = $message->getDate();
@@ -576,7 +591,7 @@ class TicketImportHelper
 
         if ($result == 0) {
 
-            $this->logger->debug('Importing message',['']);
+            $this->logger->debug('Importing message',['message' => $message]);
 
             $attachments = $message->getAttachments();
             $anhang = count($attachments) > 0 ? 1 : 0;
