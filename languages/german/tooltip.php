@@ -1083,9 +1083,9 @@ $tooltip['produktionszentrum']['abschluss']['#auftragmengenanpassen']="Die Menge
 
 $tooltip['produktion']['abschluss']['#mengeerfolgreich'] = 'Höhere Mengen als die geplante Menge können nur mit der deaktivierten (kein Haken setzen) Systemeinstellung "Produktionskorrektur nicht verwenden" verbucht werden. ';
 $tooltip['produktion']['edit']['#mengeerfolgreich'] = $tooltip['produktion']['abschluss']['#mengeerfolgreich'];
-$tooltip['produktion']['create']['#standardlager'] = "Lager, aus dem die Artikel für die Produktion ausgelagert werden sollen.Hier können alle Lager ausgewählt werden, in denen sich mindestens ein Lagerplatz befindet, aus dem Produktionen ausgelagert werden dürfen (Einstellung auf Regalebene unter Lager => Lagerverwaltung).";
+$tooltip['produktion']['create']['#standardlager'] = "Lager, aus dem die Artikel für die Produktion ausgelagert werden sollen. Hier können alle Lager ausgewählt werden, in denen sich mindestens ein Lagerplatz befindet, aus dem Produktionen ausgelagert werden dürfen (Einstellung auf Regalebene unter Lager => Lagerverwaltung).";
 $tooltip['produktion']['edit']['#standardlager'] = $tooltip['produktion']['create']['#standardlager'];
-
+$tooltip['produktion']['edit']['#ziellager'] = "Wenn kein Ziellager angegenen ist, wird in das Standard-Lager des Artikels gebucht, wenn es das nicht gibt, in das Materiallager der Produktion.";
 
 /* PROJEKT */
 

@@ -22,12 +22,22 @@ class TicketFormatter
      */
     public function encodeToUtf8(string $string): string
     {
-        $encoding = mb_detect_encoding($string, 'UTF-8, ISO-8859-1, ISO-8859-15', true);
 
-        return mb_convert_encoding(
+        $converted = mb_convert_encoding(
             $string,
             'UTF-8',
-            $encoding
+            'auto'
         );
+
+        // Fallback
+        if ($converted === false) {
+            $converted = mb_convert_encoding(
+                $string,
+                'UTF-8',
+                'iso-8859-1'
+            );
+        }
+
+        return ($converted);
     }
 }

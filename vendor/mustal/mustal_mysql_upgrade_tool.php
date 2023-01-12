@@ -127,10 +127,9 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
         foreach ($keys as $key) {
 
             // Check if this key exists already
-
             $key_pos = array_search($key['Key_name'],array_column($composed_keys,'Key_name'));
 
-            if ($key_pos == false) {
+            if ($key_pos === false) {
                 // New key
                 $composed_key = array();
                 $composed_key['Key_name'] = $key['Key_name'];

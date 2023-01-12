@@ -351,7 +351,7 @@ class Ticket {
                   $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['quelle']));
                 }
                 $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
-                $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
+                $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).'</a>');
                 $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
                 $this->app->Tpl->Set("META_FLOAT","right");
                 $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);            
@@ -368,9 +368,21 @@ class Ticket {
         }
     }
 
+    function ticket_text() {           
 
-    function ticket_text() {
+        $secure_html_tags = array(
+            '<br>',
+            '<p>',
+            '<strong>',
+            '<b>',
+            '<table>',
+            '<tr>',
+            '<td>',
+            '<style>'
+        );
+
         $mid = $this->app->Secure->GetGET('mid');
+        $insecure = $this->app->Secure->GetGET('insecure');
 
         if (empty($mid)) {
           return;
@@ -381,7 +393,18 @@ class Ticket {
         if (empty($messages)) {
         }
 
-        $this->app->Tpl->Set("TEXT",$messages[0]['text']);
+        if ($insecure) {
+            $this->app->Tpl->Set("TEXT",$messages[0]['text']);
+        } else {
+
+            $secure_text = strip_tags($messages[0]['text'],$secure_html_tags);
+
+            if (strlen($secure_text) != strlen($messages[0]['text'])) {
+//                $secure_text = "<p style=\"all: initial;border-bottom-color:black;border-bottom-style:solid;border-bottom-width:1px;display:block;font-size:small;\">Einige Elemente wurden durch OpenXE blockiert.</p>".$secure_text;
+                $secure_text = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/icon-invisible.svg\" alt=\"Einige Elemente wurden durch OpenXE blockiert.\" title=\"Einige Elemente wurden durch OpenXE blockiert.\" border=\"0\" style=\"all: initial;display:block;float:right;font-size:small;\">".$secure_text;
+            }
+            $this->app->Tpl->Set("TEXT",$secure_text);
+        }
         $this->app->Tpl->Output('ticket_text.tpl');
         $this->app->ExitXentral();
     }
@@ -694,8 +717,10 @@ class Ticket {
                 $anschreiben = $this->app->DB->Select("SELECT anschreiben FROM adresse WHERE id='".$ticket_from_db['adresse']."' LIMIT 1");
                 if($anschreiben=="")
                 {
-                  $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben").",\n".$this->app->erp->Grussformel($projekt,$sprache);
+                  $anschreiben = $this->app->erp->Beschriftung("dokument_anschreiben");
                 }
+
+                $anschreiben = $anschreiben.",<br>".$this->app->erp->Grussformel($projekt,$sprache);
 
                 $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
@@ -724,7 +749,7 @@ class Ticket {
                 $citation_info =$recv_messages[0]['zeit']." ".$recv_messages[0]['verfasser']." &lt;".$recv_messages[0]['mail']."&gt;";
                 $text = $drafted_messages[0]['text'].$nl.$nl.$citation_info.":".$nl."<blockquote type=\"cite\">".$recv_messages[0]['text']."</blockquote>";
 
-                $sql = "UPDATE ticket_nachricht SET text='".$text."' WHERE id=".$drafted_messages[0]['id'];
+                $sql = "UPDATE ticket_nachricht SET text='".$this->app->DB->real_escape_string($text)."' WHERE id=".$drafted_messages[0]['id'];
                 $this->app->DB->Update($sql);  
                 header("Location: index.php?module=ticket&action=edit&id=$id");
                 $this->app->ExitXentral();

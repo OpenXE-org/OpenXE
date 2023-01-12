@@ -7018,7 +7018,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Preisanfrage','preisanfrage','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Bestellung','bestellung','list');
 
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Bestellvorschlag','bestellvorschlag','ausgehend');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Bestellvorschlag','bestellvorschlag','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Erweiterter Bestellvorschlag','bestellvorschlagapp','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktion','produktion','list');
@@ -27451,8 +27451,13 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function BeschriftungSprache($sprache='')
   {
-    $sprache = strtolower(trim($sprache));
-    $this->beschriftung_sprache='deutsch';
+
+    if ($sprache === '') {
+        $this->beschriftung_sprache='deutsch';
+    } else {
+        $this->beschriftung_sprache=strtolower(trim($sprache));
+    }
+
   }
 
   function BeschriftungStandardwerte($field,$sprache="deutsch",$getvars=false)
@@ -27644,10 +27649,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function getUebersetzung($field, $sprache, $id = true)
   {
-    $sprach = strtolower($sprache);
+    $sprache = strtolower($sprache);
     if(empty($this->uebersetzungId))
     {
-      $arr = $this->app->DB->SelectArr('SELECT id, label, sprache, beschriftung 
+      $arr = $this->app->DB->SelectArr('SELECT id, label, sprache, beschriftung, original 
           FROM uebersetzung 
           WHERE sprache <> "" AND label <> ""');
       if(!empty($arr))
@@ -27655,7 +27660,12 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         foreach($arr as $row)
         {
           $this->uebersetzungId[$row['label']][strtolower($row['sprache'])] = $row['id'];
-          $this->uebersetzungBeschriftung[$row['label']][strtolower($row['sprache'])] = $row['beschriftung'];
+
+          if ($row['beschriftung'] != '') {
+              $this->uebersetzungBeschriftung[$row['label']][strtolower($row['sprache'])] = $row['beschriftung'];
+          } else {
+              $this->uebersetzungBeschriftung[$row['label']][strtolower($row['sprache'])] = $row['original'];
+          }
         }
       }
     }
@@ -27675,13 +27685,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function Beschriftung($field,$sprache='')
   {
-    if($sprache!='') {
+ 
+   if($sprache!='') {
       $this->BeschriftungSprache($sprache);
     }
 
     if($this->beschriftung_sprache==''){
       $this->beschriftung_sprache = 'deutsch';
-    }
+    } 
 
   // wenn feld mit artikel_freifeld beginnt dann freifeld draus machen
   //$field = str_replace('artikel_freifeld','freifeld',$field);
@@ -27715,9 +27726,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     {
       return $wert;
     }
-    //1. deutsches wort als standard
-    $wert = $this->BeschriftungDeutschesWort($field);
-    return $wert;
+    return $field; // Not found!
   }
 
 
@@ -36277,7 +36286,7 @@ function Firmendaten($field,$projekt="")
           $tatsaechlicheslieferdatum = $orderRow['tatsaechlicheslieferdatum'];
           $projekt = $orderRow['projekt'];
           $differenztage = $this->Projektdaten($projekt,'differenz_auslieferung_tage');
-          if($differenztage<0) {
+          if($differenztage<0 || empty($differenztage)) {
             $differenztage=2;
           }
           $lieferdatum = $orderRow['lieferdatum'];

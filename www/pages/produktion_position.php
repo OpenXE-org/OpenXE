@@ -86,7 +86,6 @@ class Produktion_position {
         }
 
         if ($go_to_production) {
-
             if ($pid == 0) {
                 $id = (int) $this->app->Secure->GetGET('id');
                 $sql = "SELECT p.status, p.id from produktion p INNER JOIN produktion_position pp ON pp.produktion = p.id WHERE pp.id = $id";
@@ -138,16 +137,26 @@ class Produktion_position {
         if (empty($id)) {
             // New item
             $id = 'NULL';
-        } 
+            $produktion_id = $this->app->Secure->GetGET('produktion');
+            $sql = "SELECT p.status from produktion p WHERE p.id = $produktion_id";
+            $result = $this->app->DB->SelectArr($sql)[0];
+            $status = $result['status'];
+        } else {
+            $sql = "SELECT p.status, p.id from produktion p INNER JOIN produktion_position pp ON pp.produktion = p.id WHERE pp.id = $id";
+            $result = $this->app->DB->SelectArr($sql)[0];
+            $status = $result['status'];
+            $produktion_id = $result['id'];
+        }
 
-        $sql = "SELECT p.status, p.id from produktion p INNER JOIN produktion_position pp ON pp.produktion = p.id WHERE pp.id = $id";
-        $result = $this->app->DB->SelectArr($sql)[0];
-        $status = $result['status'];
-        $produktion_id = $result['id'];
+        $input['produktion'] = $produktion_id;
 
         $sql = "SELECT FORMAT(menge,0) as menge FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $result = $this->app->DB->SelectArr($sql)[0];
         $planmenge = $result['menge'];
+
+        if ($planmenge == 0) {
+            $this->produktion_position_edit_end("Keine Planung vorhanden.",true, true, $produktion_id);
+        }
 
         if ($submit != '')
         {
@@ -168,7 +177,7 @@ class Produktion_position {
 
             // Only allow quantities that are a multiple of the target quantity
             if ($input['menge'] % $planmenge != 0) {
-                $this->produktion_position_edit_end("Positionsmenge muss Vielfaches von $planmenge sein.",true, true);
+                $this->produktion_position_edit_end("Positionsmenge muss Vielfaches von $planmenge sein.",true, true, $produktion_id);
             }
 
             $columns = "id, ";
@@ -200,7 +209,7 @@ class Produktion_position {
             } else {
                 $msg = "Die Einstellungen wurden erfolgreich &uuml;bernommen.";
             }
-            $this->produktion_position_edit_end($msg,false,true);
+            $this->produktion_position_edit_end($msg,false,true,$produktion_id);
 
         }
 
@@ -222,8 +231,8 @@ class Produktion_position {
         $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
          */
 
-        //$this->app->YUI->AutoComplete("artikel", "artikelnummer");
-        $this->app->YUI->AutoComplete("artikel", "lagerartikelnummer");
+        $this->app->YUI->AutoComplete("artikel", "artikelnummer");
+        //$this->app->YUI->AutoComplete("artikel", "lagerartikelnummer");
         $this->app->Tpl->Set('ARTIKEL',$this->app->erp->ReplaceArtikel(false, $result[0]['artikel'], false)); // Convert from form to db
 
         $this->app->Tpl->Set('PRODUKTIONID',$result[0]['produktion']);

@@ -3739,7 +3739,7 @@ class Importvorlage extends GenImportvorlage {
                     }
 
                     $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreise WHERE artikel='$artikelid' AND ab_menge='".$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i]."' 
-                        AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) AND adresse <='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND (is_null(gruppe) or gruppe = '') ")." LIMIT 1");
+                        AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) AND adresse <='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND ((gruppe IS NULL) or gruppe = '') ")." LIMIT 1");
 
                     if($altervk != str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i]) && str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i]))
                     {
@@ -3755,7 +3755,7 @@ class Importvorlage extends GenImportvorlage {
                       //verkaufspreis3internerkommentar'][$i]
 
                       $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
-                          WHERE artikel='".$artikelid."' AND adresse='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND (is_null(gruppe) or gruppe = '') ")."
+                          WHERE artikel='".$artikelid."' AND adresse='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND ((gruppe IS NULL) or gruppe = '') ")."
                           AND ab_menge='".$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i]."' LIMIT 1");
 
                       $verkaufspreis1stueckdivisor = 1;
