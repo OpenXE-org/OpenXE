@@ -420,6 +420,7 @@ class Produktion {
                     $input['datumbereitstellung'] = $this->app->erp->ReplaceDatum(true,$input['datumbereitstellung'],true);
                     $input['datumproduktion'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktion'],true);
                     $input['datumproduktionende'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktionende'],true);
+                    $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
 
                     $columns = "id, ";
                     $values = "$id, ";
@@ -1052,6 +1053,8 @@ class Produktion {
         if($produktion_from_db['standardlager'] == 0) {
             $msg .= "<div class=\"error\">Kein Materiallager ausgew&auml;hlt.</div>";
         }
+
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$produktion_from_db['projekt'],false));
 
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->YUI->AutoComplete("kundennummer", "kunde", 1);
