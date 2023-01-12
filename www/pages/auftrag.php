@@ -761,6 +761,109 @@ class Auftrag extends GenAuftrag
 //                $groupby = "";
 
         break;
+      case "offenepositionen":
+    	$allowed['offenepositionen'] = array('list');
+	    $heading = array('Erwartetes Lieferdatum','Urspr&uumlngliches Lieferdatum','Kunde','Auftrag','Position','ArtikelNr.','Artikel','Menge','Auftragsvolumen','Lagermenge','Monitor','Men&uuml');
+        //	$width = array('10%','10%','10%','10%','30%','30%');
+
+	    // Spalten für die Sortierfunktion in der Liste, muss identisch mit SQL-Ergebnis sein, erste Spalte weglassen,Spalten- Alias funktioniert nicht
+        $findcols = array('nix','erwartetes_lieferdatum','urspruengliches_lieferdatum','kunde','belegnr','position','artikel','bezeichnung','menge','umsatz');
+	    // Spalten für die Schnellsuche
+	    $searchsql = array("DATE_FORMAT(erwartetes_lieferdatum,\"%Y-%m-%d\")",'kunde','belegnr','artikel','bezeichnung');
+
+	    // Sortierspalte laut SQL
+	    $defaultorder = 2;
+	    $defaultorderdesc = 0;
+
+        $numbercols = [8,9,10];
+        $sumcol = [8,9];
+        $alignright = [8,9,10];
+
+        $menucol = 12;
+
+        $menu = "<a href=\"index.php?module=auftrag&action=edit&id=%value%\" target=\"blank\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>";
+	
+	// 1. Spalte ist unsichtbar, 2. Für Minidetail, 3. ist Standardsortierung beim öffnen des Moduls
+
+        $sql = "SELECT  SQL_CALC_FOUND_ROWS
+		auftrag_id,
+		DATE_FORMAT(erwartetes_lieferdatum,\"%d.%m.%Y\") erwartetes_lieferdatum_form, 
+		CASE 
+			WHEN urspruengliches_lieferdatum <> erwartetes_lieferdatum THEN CONCAT(\"<p style=\'color:red;\'>\",DATE_FORMAT(urspruengliches_lieferdatum,\"%d.%m.%Y\"),\"</p>\")
+			ELSE DATE_FORMAT(urspruengliches_lieferdatum,\"%d.%m.%Y\")
+			END urspruengliches_lieferdatum_form, 
+		kunde, 
+		belegnr, 
+		position, 
+		CONCAT(\"<a href=index.php?module=artikel&action=edit&id=\",artikel_id,\" target=_blank>\",artikel,\"</a>\") artikel, 
+		bezeichnung, 
+		menge, 
+		umsatz,
+		CASE WHEN menge <= lager THEN CONCAT(\"<a href=index.php?module=artikel&action=lager&id=\",artikel_id,\" target=_blank>\",ROUND(lager,0),\"</a>\")
+		ELSE CONCAT(\"<a href=index.php?module=artikel&action=lager&id=\",artikel_id,\" style=\'color:red;\' target=_blank>\",ROUND(lager,0),\"</a>\")
+		END lagermenge,".
+        $this->app->YUI->IconsSQL(). 		             
+		"autoversand_icon,
+		auftrag_id
+	FROM 
+		(
+		SELECT
+        auf.id,
+        auf.status,
+        auf.lager_ok,
+        auf.porto_ok,
+        auf.ust_ok,
+        auf.vorkasse_ok,
+        auf.nachnahme_ok,
+        auf.check_ok,
+        auf.liefertermin_ok,
+        auf.kreditlimit_ok,    
+        auf.liefersperre_ok,
+        auf.adresse,
+   		CASE 
+                    WHEN auftrag_position.lieferdatum <> '0000-00-00' AND auftrag_position.lieferdatum > CURRENT_DATE THEN auftrag_position.lieferdatum
+                    WHEN auftrag_position.lieferdatum <> '0000-00-00' THEN CURRENT_DATE
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' AND auf.tatsaechlicheslieferdatum > CURRENT_DATE THEN auf.tatsaechlicheslieferdatum      
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN CURRENT_DATE
+                    WHEN auf.lieferdatum <> '0000-00-00' AND auf.lieferdatum > CURRENT_DATE THEN auf.lieferdatum
+                    ELSE CURRENT_DATE
+                END erwartetes_lieferdatum,
+                CASE 
+                    WHEN auftrag_position.lieferdatum <> '0000-00-00' THEN auftrag_position.lieferdatum
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN auf.tatsaechlicheslieferdatum      
+                    WHEN auf.lieferdatum <> '0000-00-00' THEN auf.lieferdatum
+                    ELSE auf.datum
+                END urspruengliches_lieferdatum, 
+                auf.name kunde,
+ 		auf.belegnr belegnr, 
+		auftrag_position.sort position, 
+		artikel.nummer artikel, 
+		artikel.id artikel_id,
+		auftrag_position.bezeichnung bezeichnung, 
+		round(auftrag_position.menge,0) menge, 
+		round(auftrag_position.menge*auftrag_position.preis,2) umsatz,
+	        (SELECT SUM(menge) FROM lager_platz_inhalt INNER JOIN lager_platz ON lager_platz_inhalt.lager_platz = lager_platz.id WHERE lager_platz_inhalt.artikel = artikel.id AND lager_platz.sperrlager <> 1) as lager,
+		auf.autoversand autoversand,
+		auf.id auftrag_id         
+                FROM auftrag auf
+                INNER JOIN auftrag_position ON auf.id = auftrag_position.auftrag
+                INNER JOIN artikel ON auftrag_position.artikel = artikel.id  
+		WHERE auf.status <> 'abgeschlossen' AND auf.belegnr <> ''
+                ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
+                ) a";
+
+	$where = "";
+
+	$groupby = "";
+
+	// Für Anzeige der Gesamteinträge
+	$count = "SELECT count(DISTINCT auftrag_position.id) FROM auftrag a INNER JOIN auftrag_position ON a.id = auftrag_position.auftrag WHERE a.status <>'abgeschlossen' AND a.belegnr <> ''";
+
+	// Spalte mit Farbe der Zeile (immer vorletzte-1)
+//	$trcol = 12;
+//        $moreinfo = true;
+
+      break;
 
     }
     $erg = [];
@@ -847,6 +950,8 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("alsfreigegeben", "AuftragAlsfreigegeben");
     $this->app->ActionHandler("steuer", "AuftragSteuer");
     $this->app->ActionHandler("berechnen", "Auftraegeberechnen");
+
+    $this->app->ActionHandler("offene", "AuftragOffenePositionen");
 
     $this->app->DefaultActionHandler("list");
 
@@ -6187,6 +6292,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=list','&Uuml;bersicht');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=create','Neuen Auftrag anlegen');
+    $this->app->erp->MenuEintrag('index.php?module=auftrag&action=offene','Offene Positionen');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=versandzentrum','Versandzentrum');
 
     if(strlen($backurl)>5){
@@ -7154,6 +7260,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $sql = "UPDATE auftrag_position SET auftrag = $id_neu, menge = $menge_neu WHERE id = $posid_neu";
                             $this->app->DB->Update($sql);                                                        
                         }                    
+
+                        header('Location: index.php?module=auftrag&action=edit&id='.$id_neu);
+
                     }
 
                 break;
@@ -7176,5 +7285,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $this->app->Tpl->Parse('PAGE','auftrag_teillieferung.tpl');
   } // AuftragTeillieferung 
+
+  function AuftragOffenePositionen() {
+    $this->AuftraguebersichtMenu();
+     $this->app->YUI->TableSearch('TAB1','offenepositionen',"show","","",basename(__FILE__), __CLASS__);
+     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
+  }
 
 }
