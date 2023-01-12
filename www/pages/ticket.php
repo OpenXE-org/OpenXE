@@ -680,9 +680,6 @@ class Ticket {
 
                	$this->app->Tpl->Set('EMAIL_AN', htmlentities($recv_messages[0]['mail']));
 
-                $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
-                $senderAddress = $this->app->erp->GetFirmaMail();
-
                 $to = "";
                 $cc = "";
                 
@@ -783,12 +780,15 @@ class Ticket {
               $cc = null;
             }
 
+            $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
+            $senderAddress = $this->app->erp->GetFirmaMail();
+
             //   function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
 
             if (
                 $this->app->erp->MailSend(
-                  $drafted_messages[0]['mail_replyto'],
-                  $drafted_messages[0]['verfasser_replyto'],
+                  $senderAddress,
+                  $senderName,
                   $to,
                   $to,
                   htmlentities($drafted_messages[0]['betreff']),
@@ -803,7 +803,7 @@ class Ticket {
             ) {
 
                 // Update message in ticket_nachricht
-                $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$drafted_messages[0]['betreff']."' WHERE id = ".$drafted_messages[0]['id'];
+                $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$drafted_messages[0]['betreff']."', `verfasser` = '$senderName', `verfasser_replyto` = '$senderName', `mail_replyto` = '$senderAddress' WHERE id = ".$drafted_messages[0]['id'];
                 $this->app->DB->Insert($sql);
 
                 $msg .=  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'.'; 
