@@ -202,7 +202,11 @@ class Uebersetzung {
             $this->app->Tpl->Add('SPRACHENSELECT', "<option value='".$key."'>".$value."</option>");
         }
 
+        $this->app->YUI->CkEditor("beschriftung","internal", null, 'JQUERY');
+        $this->app->YUI->CkEditor("original","internal", null, 'JQUERY');
+
 //        $this->SetInput($input);              
+
         $this->app->Tpl->Parse('PAGE', "uebersetzung_edit.tpl");
     }
 
