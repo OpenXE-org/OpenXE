@@ -767,7 +767,7 @@ class Auftrag extends GenAuftrag
         //	$width = array('10%','10%','10%','10%','30%','30%');
 
 	    // Spalten für die Sortierfunktion in der Liste, muss identisch mit SQL-Ergebnis sein, erste Spalte weglassen,Spalten- Alias funktioniert nicht
-        $findcols = array('nix','erwartetes_lieferdatum','urspruengliches_lieferdatum','kunde','belegnr','position','artikel','bezeichnung','menge','umsatz');
+        $findcols = array('erwartetes_lieferdatum','urspruengliches_lieferdatum','kunde','belegnr','position','artikel','bezeichnung','menge','umsatz');
 	    // Spalten für die Schnellsuche
 	    $searchsql = array("DATE_FORMAT(erwartetes_lieferdatum,\"%Y-%m-%d\")",'kunde','belegnr','artikel','bezeichnung');
 
