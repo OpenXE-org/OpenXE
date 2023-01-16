@@ -680,6 +680,9 @@ class Ticket {
         switch ($submit) {
           case 'neue_email':
 
+            $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
+            $senderAddress = $this->app->erp->GetFirmaMail();
+
             if (empty($drafted_messages)) {
                 // Create new message and save it for editing   
 
