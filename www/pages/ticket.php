@@ -48,11 +48,11 @@ class Ticket {
             case "ticket_list":
 
                 $allowed['ticket_list'] = array('list');
-                $heading = array('','','Ticket #', 'Letzte Aktion', 'Adresse', 'Betreff',  'Tags', 'Verant.', 'Nachr.', 'Status', 'Alter', 'Projekt', 'Men&uuml;');
-                $width = array('1%','1%','5%',     '5%',            '5%',      '30%',      '1%',     '5%',     '1%',    '1%',     '1%',    '1%',      '1%');
+                $heading = array('','','Ticket #', 'Aktion','Adresse', 'Betreff',  'Tags', 'Verant.', 'Nachr.', 'Status', 'Projekt', 'Men&uuml;');
+                $width = array('1%','1%','5%',     '5%',        '5%',      '30%',      '1%',     '5%',     '1%',    '1%',      '1%',      '1%');
 
-                $findcols = array('t.id','t.zeit','t.schluessel', 't.zeit', 'a.name', 't.betreff',            't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status','t.zeit', 't.projekt');
-                $searchsql = array(             't.schluessel', 't.zeit', 'a.name', 't.betreff','t.notiz',  't.tags', 'w.warteschlange', 't.status', 't.projekt');
+                $findcols = array('t.id','t.id','t.schluessel', 't.zeit', 'a.name', 't.betreff',            't.tags', 'w.warteschlange', 'nachrichten_anz', 't.status', 'p.abkuerzung');
+                $searchsql = array(             't.schluessel', 't.zeit', 'a.name', 't.betreff','t.notiz',  't.tags', 'w.warteschlange', 't.status', 'p.abkuerzung','(SELECT mail FROM ticket_nachricht tn WHERE tn.ticket = t.schluessel AND tn.versendet <> 1 LIMIT 1)');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -65,11 +65,14 @@ class Ticket {
                                     CONCAT(TIMESTAMPDIFF(hour, t.zeit, NOW()),'h'),
                                     CONCAT(TIMESTAMPDIFF(day, t.zeit, NOW()), 'd ',MOD(TIMESTAMPDIFF(hour, t.zeit, NOW()),24),'h'))";
 
-                $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',t.id,'\" />') AS `auswahl`";
+                $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`,
+                              CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',t.id,'\" />') AS `auswahl`";
 
                 $priobetreff = "if(t.prio!=1,t.betreff,CONCAT('<b><font color=red>',t.betreff,'</font></b>'))";
 
                 $anzahlnachrichten = "(SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel)";
+
+                $letztemail = $app->erp->FormatDateTimeShort("(SELECT MAX(n.zeit) FROM ticket_nachricht n WHERE n.ticket = t.schluessel AND n.zeit IS NOT NULL)");
 
                 $tagstart = "<li class=\"tag-editor-tag\">";
                 $tagend = "</li>";
@@ -77,15 +80,14 @@ class Ticket {
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                         t.id,
                         ".$dropnbox.",
-                        CONCAT('<a href=\"index.php?module=ticket&action=edit&id=',t.id,'\">',t.schluessel,'</a>'),
-                        t.zeit,
-                        a.name,
+                        CONCAT('<a href=\"index.php?module=ticket&action=edit&id=',t.id,'\">',t.schluessel,'</a>'),".
+                        $app->erp->FormatDateTimeShort('zeit')." as aktion,
+                        CONCAT(COALESCE(CONCAT(a.name,'<br>'),''),COALESCE((SELECT mail FROM ticket_nachricht tn WHERE tn.ticket = t.schluessel AND tn.versendet <> 1 LIMIT 1),'')) as combiadresse,
                         CONCAT('<b>',".$priobetreff.",'</b><br/><i>',replace(substring(ifnull(t.notiz,''),1,500),'\n','<br/>'),'</i>'), 
                         CONCAT('<div class=\"ticketoffene\"><ul class=\"tag-editor\">'\n,'".$tagstart."',replace(t.tags,',','".$tagend."<div class=\"tag-editor-spacer\">&nbsp;</div>".$tagstart."'),'".$tagend."','</ul></div>'),
                         w.warteschlange,
-                        ".$anzahlnachrichten." as nachrichten_anz,
+                        ".$anzahlnachrichten." as `nachrichten_anz`,
                         ".ticket_iconssql().",
-                        ".$timedifference.",
                         p.abkuerzung,
                         t.id 
                         FROM ticket t 
@@ -149,7 +151,7 @@ class Ticket {
                 // END Toggle filters
 
                 $moreinfo = true; // Allow drop down details
-                $menucol = 12; // For moredata
+                $menucol = 11; // For moredata
 
                 $count = "SELECT count(DISTINCT id) FROM ticket t WHERE $where";
 
@@ -239,8 +241,8 @@ class Ticket {
                 n.verfasser,
                 n.mail,
                 t.quelle,
-                n.zeit,
-                n.zeitausgang,
+                ".$this->app->erp->FormatDateTimeShort('n.zeit','zeit').",
+                ".$this->app->erp->FormatDateTimeShort('n.zeitausgang','zeitausgang').",
                 n.versendet,
                 n.text,
                 n.textausgang,
@@ -575,7 +577,10 @@ class Ticket {
         }
 
         // Load values again from database
-        $ticket_from_db = $this->app->DB->SelectArr("SELECT t.id, t.schluessel, t.zeit, p.abkuerzung as projekt, t.bearbeiter, t.quelle, t.status, t.prio, t.adresse, t.kunde, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.mailadresse, t.betreff, t.zugewiesen, t.inbearbeitung, t.inbearbeitung_user, t.firma, t.notiz, t.bitteantworten, t.service, t.kommentar, t.privat, t.dsgvo, t.tags, t.nachrichten_anz, t.id FROM ticket t LEFT JOIN adresse a ON t.adresse = a.id LEFT JOIN projekt p on t.projekt = p.id LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id")[0];
+
+        $sql = "SELECT t.id, t.schluessel, ".$this->app->erp->FormatDateTimeShort("zeit").", p.abkuerzung as projekt, t.bearbeiter, t.quelle, t.status, t.prio, t.adresse, t.kunde, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.mailadresse, t.betreff, t.zugewiesen, t.inbearbeitung, t.inbearbeitung_user, t.firma, t.notiz, t.bitteantworten, t.service, t.kommentar, t.privat, t.dsgvo, t.tags, t.nachrichten_anz, t.id FROM ticket t LEFT JOIN adresse a ON t.adresse = a.id LEFT JOIN projekt p on t.projekt = p.id LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id";
+
+        $ticket_from_db = $this->app->DB->SelectArr($sql)[0];
 
         foreach ($ticket_from_db as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   

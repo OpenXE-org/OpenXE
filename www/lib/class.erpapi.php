@@ -1508,6 +1508,39 @@ public function NavigationHooks(&$menu)
     return "replace(trim($spalte)+0,'.',',')";
   }
 
+  static function add_alias(string $text, $alias = false) {
+    if (empty($alias)) {
+        return($text);
+    }
+    else {
+        return ($text." as `$alias`");
+    }
+  }
+
+  // @refactor DbHelper Komponente
+  function FormatDate(string $spalte, string $alias = null)
+  {
+    return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%Y')", $alias);
+  }
+
+  // @refactor DbHelper Komponente
+  function FormatDateShort(string $spalte, string $alias = null)
+  {
+    return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%y')", $alias);
+  }
+
+  // @refactor DbHelper Komponente
+  function FormatDateTimeShort(string $spalte, string $alias = null)
+  {
+    return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%y %H:%i')", $alias);
+  }
+
+  // @refactor DbHelper Komponente
+  function FormatDateTime(string $spalte, string $alias = null)
+  {
+    return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%Y %H:%i:%s')", $alias);
+  }
+
   public function XMLExportVorlage($id,$filter=array(), $cdata = false)
   {
     /** @var Api $obj */
