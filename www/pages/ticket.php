@@ -172,6 +172,16 @@ class Ticket {
         return $erg;
     } 
     
+    // Ensure status 'offen' on self-assigned tickets
+    function ticket_set_self_assigned_status(array $ids) {
+        $sql = "UPDATE ticket SET status = 'offen' 
+                WHERE 
+                    status = 'neu' 
+                    AND id IN (".implode(',',$ids).")
+                    AND warteschlange IN (SELECT label FROM warteschlangen WHERE adresse = '".$this->app->User->GetAdresse()."')";
+        $this->app->DB->Update($sql);
+    }
+
     function ticket_list() {
   
         // Process multi action
@@ -183,7 +193,7 @@ class Ticket {
             if($selectedId > 0) {
               $selectedIds[] = $selectedId;
             }
-          }
+          }          
 
           $status = $this->app->Secure->GetPOST('status');
           $warteschlange = $this->app->Secure->GetPOST('warteschlange');
@@ -194,8 +204,9 @@ class Ticket {
           }
 
           $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
-          
           $this->app->DB->Update($sql);
+
+          $this->ticket_set_self_assigned_status($selectedIds);
 
         }
 
@@ -488,6 +499,9 @@ class Ticket {
         $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
         $this->app->DB->Update($sql);
         $id = $this->app->DB->GetInsertID();      
+
+        $this->ticket_set_self_assigned_status(array($id));
+
         return($id);
     }
 
