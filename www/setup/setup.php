@@ -101,7 +101,7 @@
 		unset($_POST['_ACTION']);
 		unset($_POST['_SUBMIT']);
 
-		$error = ((function_exists($action)) ? $action() : '');
+		$error = ((function_exists($action ?? '')) ? $action() : '');
 		if($configfile=='')  $error .= "<br>'configfile' for this step is missing";
 
 		if($error=='') {
