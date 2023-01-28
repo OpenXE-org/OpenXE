@@ -154,7 +154,7 @@ class Steuersaetze {
     $ret = [];
     $taxes = $this->app->DB->SelectArr(
       sprintf(
-        "SELECT DISTINCT `satz` 
+        "SELECT DISTINCT `type`, `satz` 
         FROM `steuersaetze` 
         WHERE `aktiv` = 1 
           AND (`country_code` = '%s' OR (`bezeichnung` = '%s' AND `country_code` = ''))",
@@ -163,7 +163,7 @@ class Steuersaetze {
     );
     if(!empty($taxes)) {
       foreach($taxes as $rates) {
-        $ret[] = $rates['satz'];
+        $ret[$rates['type']] = $rates['satz'];
       }
     }
 

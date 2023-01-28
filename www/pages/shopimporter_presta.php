@@ -203,10 +203,10 @@ class Shopimporter_Presta extends ShopimporterBase
       $cart['bestelldatum'] = strval($order->date_add);
 
       $carrier = $this->prestaRequest('GET', "carriers/$order->id_carrier");
-      $cart['lieferung'] = strval($carrier->name);
+      $cart['lieferung'] = strval($carrier->carrier->name);
 
       $customer = $this->prestaRequest('GET', "customers/$order->id_customer");
-      $cart['email'] = strval($customer->email);
+      $cart['email'] = strval($customer->customer->email);
 
       $invoiceAddress = $this->prestaRequest('GET', "addresses/$order->id_address_invoice");
       $invoiceAddress = $invoiceAddress->address;
@@ -262,6 +262,14 @@ class Shopimporter_Presta extends ShopimporterBase
           $cart['ust_befreit'] = 3;
         }
       }
+
+      $taxes = [];
+      $this->app->erp->RunHook('getTaxRatesFromShopOrder', 2, $taxedCountry, $taxes);
+
+      if (isset($taxes['normal']) && $taxes['normal'] > 0)
+        $cart['steuersatz_normal'] = $taxes['normal'];
+      if (isset($taxes['ermaessigt']) && $taxes['ermaessigt'] > 0)
+        $cart['steuersatz_ermaessigt'] = $taxes['ermaessigt'];
 
       $cart['articlelist'] = [];
       foreach ($order->associations->order_rows->order_row as $order_row) {
