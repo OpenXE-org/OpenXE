@@ -289,10 +289,10 @@ class TicketImportHelper
         FROM `ticket_regeln` AS `tr`
         WHERE
           tr.aktiv = 1
-          AND ('".$recipientMail."' LIKE tr.empfaenger_email OR tr.empfaenger_email = '')
-          AND ('".$senderMail."' LIKE tr.sender_email OR tr.sender_email = '')
-          AND ('".$senderMail."' LIKE tr.name OR tr.name = '')
-          AND ('".$subject."' LIKE tr.betreff OR tr.betreff = '')";
+          AND ('".$this->db->real_escape_string($recipientMail)."' LIKE tr.empfaenger_email OR tr.empfaenger_email = '')
+          AND ('".$this->db->real_escape_string($senderMail)."' LIKE tr.sender_email OR tr.sender_email = '')
+          AND ('".$this->db->real_escape_string($senderMail)."' LIKE tr.name OR tr.name = '')
+          AND ('".$this->db->real_escape_string($subject)."' LIKE tr.betreff OR tr.betreff = '')";
 
          $this->logger->debug('ticket rule',['sql' => $sql]);
 
