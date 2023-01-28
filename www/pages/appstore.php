@@ -2620,7 +2620,7 @@ class Appstore {
     ,'shopimporter_presta'=>array('Bezeichnung'=>'Presta',
         'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_presta',
         'Icon'=>'Icons_dunkel_1.gif',
-        'Versionen'=>'ENT','install'=>true, 'beta' => false,'kategorie'=>'{|Shop Schnittstelle|}')
+        'Versionen'=>'ALL','install'=>true, 'beta' => false,'kategorie'=>'{|Shop Schnittstelle|}')
     ,'shopimporter_shopify'=>array(
         'Bezeichnung'=>'Shopify API Advanced',
         'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_shopify',
