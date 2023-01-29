@@ -25,6 +25,8 @@ $user = 'openxe';
 $passwd = 'openxe';
 $schema = 'openxe';
 
+echo("\n");
+
 if ($argc >= 2) {
 
     if (in_array('-v', $argv)) {
@@ -39,12 +41,34 @@ if ($argc >= 2) {
       $force = false;
     } 
 
-    if (!str_starts_with($argv[1],'-')) {
-      $module_name = $argv[1];
+    if (strpos($argv[1],'-') == 0) {
+        $module_name = $argv[1];
     } else {
       info();
       exit;
     }
+
+    // column selection
+    $selected_columns = array();
+    
+    // Set selected_columns here or per parameter -c col1,col2,col3
+    // $selected_columns = array('belegnr','adresse','projekt');
+
+    if (in_array('-c', $argv)) {
+        $pos = array_keys($argv, '-c')[0];
+        $pos++;     
+
+        if (isset($argv[$pos])) {
+            $selected_columns = explode(',',$argv[$pos]);
+        } 
+    }
+
+    if (empty($selected_columns)) {
+        echo("Selected all columns.\n");
+    } else {
+        echo("Selected ".count($selected_columns)." columns,\n");
+    }
+
     $module_class_name = ucfirst($module_name);
     $php_file_name = $module_name . ".php";
     $php_template_file_name = "module_creator_php_template.txt";
@@ -89,40 +113,52 @@ if ($argc >= 2) {
     /* Iterate through the result set */
     echo "FIELD\t\t\t\tType\t\tNull\tKey\tDefault\tExtra\n";
     while ($row = mysqli_fetch_assoc($result)) {
-        foreach ($row as $key => $value) {
-            echo($value);
 
-            switch ($key) {
-                case 'Field':
-                    $colwidth = 32;
+        $column_processed = false;
 
-                    if ($value != 'id') {
-                        $columns[] = $value;
-                        $sql_columns[] = $table_short_name.".".$value;
-                    }
+        if (empty($selected_columns) || in_array($row['Field'],$selected_columns) || $row['Field'] == 'id') {
 
-                    break;
-                case 'Type':
-                    $colwidth = 16;
-                    break;
-                default:
-                    $colwidth = 8;
-                    break;
+            foreach ($row as $key => $value) {
+        
+                echo($value);
+
+                switch ($key) {
+                    case 'Field':
+                        $colwidth = 32;
+
+                        if ($value != 'id') {
+                            $column_processed = true;
+                            $columns[] = $value;
+                            $sql_columns[] = $table_short_name.".".$value;
+                        }
+
+                        break;
+                    case 'Type':
+                        $colwidth = 16;
+                        break;
+                    default:
+                        $colwidth = 8;
+                        break;
+                }
+
+                for ($filler = strlen($value); $filler < $colwidth; $filler++) {
+                    echo(" ");
+                }
             }
 
-            for ($filler = strlen($value); $filler < $colwidth; $filler++) {
-                echo(" ");
-            }
+            // Build edit form
+            //       <tr><td>{|Bezeichnung|}:*</td><td><input type="text" id="bezeichnung" name="bezeichnung" value="[BEZEICHNUNG]" size="40"></td></tr>
+
+            if ($row['Field'] != 'id') {
+                $edit_form = $edit_form . '<tr><td>{|' . ucfirst($row['Field']) . '|}:</td><td><input type="text" name="' . $row['Field'].'" id="'.$row['Field'].'" value="[' . strtoupper($row['Field']) . ']" size="20"></td></tr>' . "\n";
+             }
+             echo("\n");
         }
+    }
 
-        // Build edit form
-        //       <tr><td>{|Bezeichnung|}:*</td><td><input type="text" id="bezeichnung" name="bezeichnung" value="[BEZEICHNUNG]" size="40"></td></tr>
-
-        if ($row['Field'] != 'id') {
-            $edit_form = $edit_form . '<tr><td>{|' . ucfirst($row['Field']) . '|}:</td><td><input type="text" name="' . $row['Field'] . '" value="[' . strtoupper($row['Field']) . ']" size="40"></td></tr>' . "\n";
-        }
-
-        echo("\n");
+    if (empty($columns)) {
+        echo("No matching columns found!\n");
+        exit();
     }
 
 // Create php file
@@ -222,6 +258,8 @@ function info() {
     echo("arg1: SQL table name\n");
     echo("Options\n");
     echo("\t-v: verbose output\n");
+    echo("\t-f: force override of existing files\n");
+    echo("\t-c: select columns like this: -c col1,col2,col3,col3\n");
     echo("\n");
 }
 

@@ -1016,7 +1016,7 @@ class Firmendaten  {
           ,'zahlungszielskonto','kleinunternehmer','schnellanlegen','bestellvorschlaggroessernull','immernettorechnungen','rechnung_header','rechnung_footer',
           'lieferschein_header','lieferschein_footer','auftrag_header','auftrag_footer','angebot_header','angebot_footer','gutschrift_header','gutschrift_footer','bestellung_header','bestellung_footer',
           'arbeitsnachweis_header','arbeitsnachweis_footer','provisionsgutschrift_header','provisionsgutschrift_footer','proformarechnung_header','proformarechnung_footer','eu_lieferung_vermerk','export_lieferung_vermerk'
-          ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2'
+          ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2','bcc3'
           ,'firmenfarbe','name','strasse','plz','ort','steuernummer','projekt','steuer_positionen_export','tabsnavigationfarbe','tabsnavigationfarbeschrift'
         );
 
@@ -1719,6 +1719,7 @@ class Firmendaten  {
       $this->app->Tpl->Set('ABSENDERNAME' , $data[0]['absendername']);
       $this->app->Tpl->Set('BCC1' , $data[0]['bcc1']);
       $this->app->Tpl->Set('BCC2' , $data[0]['bcc2']);
+      $this->app->Tpl->Set('BCC3' , $data[0]['bcc3']);
       $this->app->Tpl->Set('FIRMENFARBE' , $data[0]['firmenfarbe']);
       $this->app->Tpl->Set('NAME' , $data[0]['name']);
       $this->app->Tpl->Set('STRASSE' , $data[0]['strasse']);
@@ -2072,7 +2073,8 @@ class Firmendaten  {
     $this->app->Tpl->Set('EMAIL' , $data['email']);    
     $this->app->Tpl->Set('ABSENDERNAME' , $data['absendername']);    
     $this->app->Tpl->Set('BCC1' , $data['bcc1']);    
-    $this->app->Tpl->Set('BCC2' , $data['bcc2']);    
+    $this->app->Tpl->Set('BCC2' , $data['bcc2']);
+    $this->app->Tpl->Set('BCC3' , $data['bcc3']);        
     $this->app->Tpl->Set('FIRMENFARBE' , $data['firmenfarbe']);    
     $this->app->Tpl->Set('NAME' , $data['name']);    
     $this->app->Tpl->Set('STRASSE' , $data['strasse']);    
@@ -2224,6 +2226,7 @@ class Firmendaten  {
     $data['absendername'] = ($this->app->Secure->POST["absendername"]);
     $data['bcc1'] = ($this->app->Secure->POST["bcc1"]);
     $data['bcc2'] = ($this->app->Secure->POST["bcc2"]);
+    $data['bcc3'] = ($this->app->Secure->POST["bcc3"]);
     $data['name'] = ($this->app->Secure->POST["name"]);
     $data['firmenfarbe'] = ($this->app->Secure->POST["firmenfarbe"]);
     $data['strasse'] = ($this->app->Secure->POST["strasse"]);

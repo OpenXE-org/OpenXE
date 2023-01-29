@@ -83,7 +83,7 @@ function abweichend2()
 
 <fieldset><legend>{|Allgemein|}</legend>
 <table class="mkTableFormular">
-<tr id="kundestyle"><td><legend>{|Kunde|}</legend></td><td nowrap>[ADRESSE][MSGADRESSE]&nbsp;[BUTTON_UEBERNEHMEN]</td></tr>
+<tr id="kundestyle"><td>{|Kunde|}</td><td nowrap>[ADRESSE][MSGADRESSE]&nbsp;[BUTTON_UEBERNEHMEN]</td></tr>
 <tr id="lieferantenauftragstyle"><td><legend>{|Lieferant|}</legend></td><td nowrap>[LIEFERANT][MSGLIEFERANT]&nbsp;[BUTTON_UEBERNEHMEN2]</td></tr>
 <tr><td>{|an Lieferanten|}:</td><td nowrap>[LIEFERANTENAUFTRAG][MSGLIEFERANTENAUFTRAG]&nbsp;</td></tr>
 <tr><td>{|Projekt|}:</td><td>[PROJEKT][MSGPROJEKT]</td></tr>
@@ -228,18 +228,51 @@ function abweichend2()
 <fieldset><legend>{|Auftrag|}</legend>
 <table class="mkTableFormular">
 
-<tr><td>{|Zahlungsweise|}:</td><td>[ZAHLUNGSWEISE][MSGZAHLUNGSWEISE]
-<br>[VORABBEZAHLTMARKIEREN][MSGVORABBEZAHLTMARKIEREN]&nbsp;manuell Zahlungsfreigabe erteilen
-</td></tr>
+<tr>
+    <td>
+        {|Zahlungsweise|}:
+    </td>
+    <td>
+        [ZAHLUNGSWEISE][MSGZAHLUNGSWEISE]
+    </td>   
+</tr>
+<tr>
+    <td>
+        {|Manuell Zahlungsfreigabe erteilen|}:
+    </td>
+    <td>
+        [VORABBEZAHLTMARKIEREN][MSGVORABBEZAHLTMARKIEREN]
+    </td>
+</tr>
 <tr><td>{|Versandart|}:</td><td>[VERSANDART][MSGVERSANDART]</td></tr>
 <tr><td><label for="lieferbedingung">{|Lieferbedingung|}:</label></td><td>[LIEFERBEDINGUNG][MSGLIEFERBEDINGUNG]</td></tr>
 <tr><td>{|Vertrieb|}:</td><td>[VERTRIEB][MSGVERTRIEB]&nbsp;[VERTRIEBBUTTON]</td></tr>
 <tr><td>{|Bearbeiter|}:</td><td>[BEARBEITER][MSGBEARBEITER]&nbsp;[INNENDIENSTBUTTON]</td></tr>
 
-<tr><td>{|Portopr&uuml;fung ausschalten|}:</td><td>[KEINPORTO][MSGKEINPORTO]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-{|Kein Briefpapier und Logo|}:&nbsp;[OHNE_BRIEFPAPIER][MSGOHNE_BRIEFPAPIER]</td></tr>
-<tr><td>{|Artikeltexte ausblenden|}:</td><td>[OHNE_ARTIKELTEXT][MSGOHNE_ARTIKELTEXT]</td></tr>
-
+<tr>
+    <td>
+        {|Portopr&uuml;fung ausschalten|}:
+    </td>
+    <td>
+        [KEINPORTO][MSGKEINPORTO]
+    </td>
+</tr>
+<tr>
+    <td>
+        {|Kein Briefpapier und Logo|}:
+    </td>
+    <td>
+        [OHNE_BRIEFPAPIER][MSGOHNE_BRIEFPAPIER]
+    </td>
+</tr>
+<tr>
+    <td>
+        {|Artikeltexte ausblenden|}:
+    </td>
+    <td>
+        [OHNE_ARTIKELTEXT][MSGOHNE_ARTIKELTEXT]
+    </td>
+</tr>
 </table>
 </fieldset>
 <fieldset><legend>{|Versandzentrum Optionen|}</legend>
@@ -261,7 +294,7 @@ function abweichend2()
 
 <div class="col-xs-12 col-sm-6 col-sm-height">
 <div class="inside inside-full-height">
-<fieldset><legend>{|Sonstiges|}</legend>
+<fieldset><legend>{|Sonstigess|}</legend>
 <table class="mkTableFormular"><tr><td>{|GLN|}:</td><td>[GLN][MSGGLN]</td></tr>[EXTRABEREICHSONSTIGES]</table>
 </fieldset>
 
@@ -295,7 +328,7 @@ function abweichend(cmd)
 
 
 
-<div id="rechnung" style="display:[RECHNUNG]">
+<div id="rechnung">
 <fieldset><legend>{|Rechnung|}</legend>
 <table width="100%">
 <tr><td width="200">{|Zahlungsziel (in Tagen)|}:</td><td>[ZAHLUNGSZIELTAGE][MSGZAHLUNGSZIELTAGE]</td></tr>
@@ -397,8 +430,30 @@ function abweichend(cmd)
 <fieldset><legend>UST-Pr&uuml;fung</legend>
 <table width="100%">
 <tr><td width="200">{|UST ID|}:</td><td>[USTID][MSGUSTID]</td></tr>
-<tr><td>{|Besteuerung|}:</td><td>[UST_BEFREIT][MSGUST_BEFREIT]&nbsp;[KEINSTEUERSATZ][MSGKEINSTEUERSATZ]&nbsp;{|ohne Hinweis bei EU oder Export|}</td></tr>
-<tr><td>{|UST-ID gepr&uuml;ft|}:</td><td>[UST_OK][MSGUST_OK]&nbsp;UST / Export gepr&uuml;ft + Freigabe f&uuml;r Versand</td></tr>
+<tr>
+    <td>
+        {|Besteuerung|}:
+    </td>
+    <td>
+        [UST_BEFREIT][MSGUST_BEFREIT]
+    </td>
+</tr>
+<tr>
+    <td>
+        {|Ohne Hinweis bei EU oder Export|}:
+    </td>
+    <td>
+        [KEINSTEUERSATZ][MSGKEINSTEUERSATZ]
+    </td>
+</tr>
+<tr>
+    <td>
+        {|UST-ID gepr&uuml;ft|}:
+    </td>
+    <td>
+        [UST_OK]&nbsp;UST / Export gepr&uuml;ft + Freigabe f&uuml;r Versand
+    </td>
+</tr>
 </table>
 </fieldset>
 

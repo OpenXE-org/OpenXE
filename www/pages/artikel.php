@@ -288,9 +288,15 @@ class Artikel extends GenArtikel {
       case 'lieferantartikelpreise':
         $id = (int)$this->app->Secure->GetGET('id');
         $allowed['artikel'] = array('profisuche');
-        // alle artikel die ein Kunde kaufen kann mit preisen netto brutto
-        $cmd = $this->app->Secure->GetGET('smodule');
-        $adresse = $this->app->DB->Select("SELECT adresse FROM {$cmd} WHERE id='$id' LIMIT 1");
+    
+        $cmd = $this->app->Secure->GetGET('cmd');            
+        $module = $this->app->Secure->GetGET('module');
+        if ($module == 'artikel') {
+            $table = $cmd;
+        } else {
+            $table = $this->app->Secure->GetGET('smodule');
+        }
+        $adresse = $this->app->DB->Select(sprintf('SELECT adresse FROM `%s` WHERE id=%d LIMIT 1',$table,$id));
 
         // headings
         $heading = array('', 'Nummer', 'Artikel', 'Ab', 'Preis', 'Lager', 'Res.', 'Menge', 'Projekt', 'Men&uuml;');
@@ -340,8 +346,15 @@ class Artikel extends GenArtikel {
         }
 
         // alle artikel die ein Kunde kaufen kann mit preisen netto brutto
-        $cmd = $this->app->Secure->GetGET('smodule');
-        $adresse = $this->app->DB->Select(sprintf('SELECT adresse FROM `%s` WHERE id=%d LIMIT 1',$cmd,$id));
+        $cmd = $this->app->Secure->GetGET('cmd');            
+        $module = $this->app->Secure->GetGET('module');
+        if ($module == 'artikel') {
+            $table = $cmd;
+        } else {
+            $table = $this->app->Secure->GetGET('frommodule');
+            $table = substr($table , 0, strpos($table, "."));
+        }
+        $adresse = $this->app->DB->Select(sprintf('SELECT adresse FROM `%s` WHERE id=%d LIMIT 1',$table,$id));
 
         $sEcho = (int)$this->app->Secure->GetGET('sEcho');
         if ($sEcho === 1) {
@@ -3145,12 +3158,12 @@ class Artikel extends GenArtikel {
       $vpe = '';
 
       if($projekt <=0 ){
-        $projekt = $this->app->DB->Select("SELECT name_de FROM artikel WHERE id='$artikel_id' LIMIT 1");
+        $projekt = $this->app->DB->Select("SELECT projekt FROM artikel WHERE id='$artikel_id' LIMIT 1");
       }
 
       if($projekt <=0){
         $projekt = $this->app->DB->Select("SELECT projekt FROM {$cmd} WHERE id='$id' LIMIT 1");
-      }
+      }         
 
       if($waehrung==''){
         $waehrung = $this->app->DB->Select("SELECT waehrung FROM {$cmd} WHERE id='$id' LIMIT 1");

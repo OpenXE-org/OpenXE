@@ -1,0 +1,26 @@
+# Generated file from class.acl.php         
+# Disable directory browsing 
+Options -Indexes
+# Deny access to all *.php
+Order deny,allow
+Allow from all
+<FilesMatch "\.(css|jpg|jpeg|gif|png|svg|js)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+# Allow access to index.php
+<Files index.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# Allow access to setup.php
+<Files setup.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# Allow access to inline PDF viewer
+<Files viewer.html>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# end

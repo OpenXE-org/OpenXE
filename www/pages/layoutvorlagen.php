@@ -426,7 +426,7 @@ class Layoutvorlagen {
         $schriftartenTpl .= '<option value="' . $schriftartKey . '">' . $schriftart . '</option>';
       }  
     }
-    $this->app->Tpl->Add(SCHRIFTARTEN, $schriftartenTpl);
+    $this->app->Tpl->Add('SCHRIFTARTEN', $schriftartenTpl);
 
     $rahmenbreiten = array(
         '0' => 'Kein Rahmen',

@@ -47,6 +47,20 @@
     <div class="row-height">
       <div class="col-xs-12 col-md-12 col-md-height">
         <div class="inside inside-full-height">
+          <fieldset><legend>{|Briefpapier|}</legend>
+            <table border="0" width="100%">
+              <tr><td width="300">{|Eigenes Briefpapier f&uuml;r Projekt|}:</td><td>[SPEZIALLIEFERSCHEIN][MSGSPEZIALLIEFERSCHEIN]</td></tr>
+              <tr><td>{|Beschriftung|}:</td><td>[SPEZIALLIEFERSCHEINBESCHRIFTUNG][MSGSPEZIALLIEFERSCHEINBESCHRIFTUNG]</td></tr>
+            </table>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row-height">
+      <div class="col-xs-12 col-md-12 col-md-height">
+        <div class="inside inside-full-height">
         </div>
       </div>
     </div>

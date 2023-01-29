@@ -197,7 +197,7 @@ class Acl
             break;
             case 'dateien':
 
-              $sql = "SELECT objekt FROM datei_stichwoerter WHERE datei = %s";
+              $sql = "SELECT objekt FROM datei_stichwoerter WHERE datei = %s LIMIT 1";
               $dateiModul = strtolower($this->app->DB->Select(sprintf($sql,$id)));
 
               //TODO datei_stichwoerter.objekt ist nicht zuverlässig für alle Datentypen. Deswegen nur zur Absicherung der bekannten Fälle #604706
@@ -570,10 +570,23 @@ class Acl
 
   public function Login()
   {
-    $this->app->Tpl->Set('LOGINWARNING', 'display:none;visibility:hidden;');
-    if($this->IsInLoginLockMode() === true){
-      $this->app->Tpl->Set('LOGINWARNING', '');
-      return;
+
+    $this->refresh_githash();
+    include dirname(__DIR__).'/../version.php';
+    $this->app->Tpl->Set('XENTRALVERSION',"V.".$version_revision);
+
+    $this->app->Tpl->Set('LOGINWARNING_VISIBLE', 'hidden');
+
+    $result = $this->CheckHtaccess();
+    if ($result !== true) {
+        $this->app->Tpl->Set('LOGINWARNING_VISIBLE', '');
+      $this->app->Tpl->Set('LOGINWARNING_TEXT', "Achtung: Zugriffskonfiguration (htaccess) fehlerhaft. Bitte wenden Sie sich an Ihren an Ihren Administrator. <br>($result)");
+    }
+
+    if($this->IsInLoginLockMode() === true)
+    {
+      $this->app->Tpl->Set('LOGINWARNING_VISIBLE', '');
+      $this->app->Tpl->Set('LOGINWARNING_TEXT', 'Achtung: Es werden gerade Wartungsarbeiten in Ihrem System (z.B. Update oder Backup) durch Ihre IT-Abteilung durchgeführt. Das System sollte in wenigen Minuten wieder erreichbar sein. Für Rückfragen wenden Sie sich bitte an Ihren Administrator.');
     }
 
     $multidbs = $this->app->getDbs();
@@ -1204,6 +1217,112 @@ class Acl
     }
     return false;
 
+  }
+
+   // HTACCESS SECURITY
+  // Check for correct .htaccess settings
+  // true if ok, else error text
+  protected function CheckHtaccess() {
+
+  $nominal = array('
+# Generated file from class.acl.php
+# For detection of htaccess functionality
+SetEnv OPENXE_HTACCESS on
+# Disable directory browsing 
+Options -Indexes
+# Set default page to index.php
+DirectoryIndex "index.php"
+# Deny general access
+Order deny,allow
+<FilesMatch ".">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+# Allow index.php
+<Files "index.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+# end
+',
+'
+# Generated file from class.acl.php         
+# Disable directory browsing 
+Options -Indexes
+# Deny access to all *.php
+Order deny,allow
+Allow from all
+<FilesMatch "\.(css|jpg|jpeg|gif|png|svg|js)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+# Allow access to index.php
+<Files index.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# Allow access to setup.php
+<Files setup.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# Allow access to inline PDF viewer
+<Files viewer.html>
+    Order Allow,Deny
+    Allow from all
+</Files>
+# end
+');
+    
+    $script_file_name = $_SERVER['SCRIPT_FILENAME'];
+    $htaccess_path = array(
+                        dirname(dirname($script_file_name))."/.htaccess",   // root
+                        dirname($script_file_name)."/.htaccess");           // www
+   
+    for ($count = 0;$count < 2;$count++) {
+        $htaccess = file_get_contents($htaccess_path[$count]);
+
+        if ($htaccess === false) {
+            $missing = true;
+        } else {
+            $htaccess = trim($htaccess);
+        }
+        $htaccess_nominal = trim($nominal[$count]);
+        $result = strcmp($htaccess,$htaccess_nominal);     
+
+        if ($htaccess === false) {
+            return($htaccess_path[$count]." nicht vorhanden.");
+        }     
+
+        if ($result !== 0) {
+            return($htaccess_path[$count]." fehlerhaft.");
+        }
+    }
+
+    if (!isset($_SERVER['OPENXE_HTACCESS'])) {
+        return("htaccess nicht aktiv.");
+    }
+
+    return(true);
+    // HTACCESS SECURITY END  
+  }
+
+  function refresh_githash() {
+    $path = '../.git/';
+    if (!is_dir($path)) {
+      return;
+    }
+    $head = trim(file_get_contents($path . 'HEAD'));
+    $refs = trim(substr($head,0,4));
+    if ($refs == 'ref:') {
+        $ref = substr($head,5);
+        $hash = trim(file_get_contents($path . $ref));
+    } else {
+        $hash = $head;
+    }
+    if (!empty($hash)) {
+      file_put_contents("../githash.txt", $hash);
+    }
   }
 
 }

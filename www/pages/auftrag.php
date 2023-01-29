@@ -40,6 +40,7 @@ class Auftrag extends GenAuftrag
    */
   public function TableSearch($app, $name, $erlaubtevars)
   {
+
     switch($name)
     {
       case 'auftraege':
@@ -661,7 +662,7 @@ class Auftrag extends GenAuftrag
                 $menu .= "</a>";
 
                 $moreinfo = true; // Minidetail active
-                $menucol = 9; // For minidetail
+                $menucol = 11; // For minidetail
 
         break;
         case 'auftraegeoffeneautowartend':
@@ -707,10 +708,162 @@ class Auftrag extends GenAuftrag
                 $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
                 $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
                 $menu .= "</a>";
-                $menucol = 9; // For moredata
+                $menucol = 11; // For moredata
 
 
         break;
+        case 'positionen_teillieferung':
+
+                $id = $app->Secure->GetGET('id');
+                $allowed['positionen_teillieferung'] = array('list');
+                $heading = array('Position','Artikel','Nr.','Menge','Lager','Teilmenge','');
+                $width = array(  '1%',      '60%',    '29%','5%','5%'); // Fill out manually later
+
+                // columns that are aligned right (numbers etc)
+                // $alignright = array(4,5,6,7,8); 
+
+                $findcols = array('ap.sort','a.name_de','a.nummer','ap.menge','lager','teilmenge');
+                $searchsql = array('');
+
+                $defaultorder = 2;
+                $defaultorderdesc = 0;
+
+                $input_for_menge = "CONCAT(
+                        '<input type = \"number\" min=\"0\" max=\"',
+                        ap.menge,                        
+                        '\" name=\"teilmenge_',
+                        ap.id,
+                        '\"',
+                        ' value=\"',
+
+                        '\">',
+                        '</input>'
+                    )";
+
+
+//                            .'(SELECT TRIM(IFNULL(SUM(l.menge),0))+0 FROM lager_platz_inhalt l WHERE l.artikel=a.id) as lager'
+
+                $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                            ap.sort, 
+                            ap.sort, 
+                            a.name_de, 
+                            a.nummer,"
+                            .$this->app->erp->FormatMenge('ap.menge').","
+                            ."(SELECT TRIM(IFNULL(SUM(l.menge),0))+0 FROM lager_platz_inhalt l WHERE l.artikel=a.id) as lager,"
+                            .$input_for_menge
+                            ." FROM auftrag_position ap 
+                                INNER JOIN 
+                            artikel a 
+                            ON ap.artikel = a.id";
+
+                $where = " ap.auftrag = $id ";
+                $count = "SELECT count(DISTINCT ap.id) FROM auftrag_position ap WHERE $where";
+//                $groupby = "";
+
+        break;
+      case "offenepositionen":
+    	$allowed['offenepositionen'] = array('list');
+	    $heading = array('Erwartetes Lieferdatum','Urspr&uumlngliches Lieferdatum','Kunde','Auftrag','Position','ArtikelNr.','Artikel','Menge','Auftragsvolumen','Lagermenge','Monitor','Men&uuml');
+        //	$width = array('10%','10%','10%','10%','30%','30%');
+
+	    // Spalten für die Sortierfunktion in der Liste, muss identisch mit SQL-Ergebnis sein, erste Spalte weglassen,Spalten- Alias funktioniert nicht
+        $findcols = array('erwartetes_lieferdatum','urspruengliches_lieferdatum','kunde','belegnr','position','artikel','bezeichnung','menge','umsatz');
+	    // Spalten für die Schnellsuche
+	    $searchsql = array("DATE_FORMAT(erwartetes_lieferdatum,\"%Y-%m-%d\")",'kunde','belegnr','artikel','bezeichnung');
+
+	    // Sortierspalte laut SQL
+	    $defaultorder = 2;
+	    $defaultorderdesc = 0;
+
+        $numbercols = [8,9,10];
+        $sumcol = [8,9];
+        $alignright = [8,9,10];
+
+        $menucol = 12;
+
+        $menu = "<a href=\"index.php?module=auftrag&action=edit&id=%value%\" target=\"blank\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>";
+	
+	// 1. Spalte ist unsichtbar, 2. Für Minidetail, 3. ist Standardsortierung beim öffnen des Moduls
+
+        $sql = "SELECT  SQL_CALC_FOUND_ROWS
+		auftrag_id,
+		DATE_FORMAT(erwartetes_lieferdatum,\"%d.%m.%Y\") erwartetes_lieferdatum_form, 
+		CASE 
+			WHEN urspruengliches_lieferdatum <> erwartetes_lieferdatum THEN CONCAT(\"<p style=\'color:red;\'>\",DATE_FORMAT(urspruengliches_lieferdatum,\"%d.%m.%Y\"),\"</p>\")
+			ELSE DATE_FORMAT(urspruengliches_lieferdatum,\"%d.%m.%Y\")
+			END urspruengliches_lieferdatum_form, 
+		kunde, 
+		belegnr, 
+		position, 
+		CONCAT(\"<a href=index.php?module=artikel&action=edit&id=\",artikel_id,\" target=_blank>\",artikel,\"</a>\") artikel, 
+		bezeichnung, 
+		menge, 
+		umsatz,
+		CASE WHEN menge <= lager THEN CONCAT(\"<a href=index.php?module=artikel&action=lager&id=\",artikel_id,\" target=_blank>\",ROUND(lager,0),\"</a>\")
+		ELSE CONCAT(\"<a href=index.php?module=artikel&action=lager&id=\",artikel_id,\" style=\'color:red;\' target=_blank>\",ROUND(lager,0),\"</a>\")
+		END lagermenge,".
+        $this->app->YUI->IconsSQL(). 		             
+		"autoversand_icon,
+		auftrag_id
+	FROM 
+		(
+		SELECT
+        auf.id,
+        auf.status,
+        auf.lager_ok,
+        auf.porto_ok,
+        auf.ust_ok,
+        auf.vorkasse_ok,
+        auf.nachnahme_ok,
+        auf.check_ok,
+        auf.liefertermin_ok,
+        auf.kreditlimit_ok,    
+        auf.liefersperre_ok,
+        auf.adresse,
+   		CASE 
+                    WHEN auftrag_position.lieferdatum <> '0000-00-00' AND auftrag_position.lieferdatum > CURRENT_DATE THEN auftrag_position.lieferdatum
+                    WHEN auftrag_position.lieferdatum <> '0000-00-00' THEN CURRENT_DATE
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' AND auf.tatsaechlicheslieferdatum > CURRENT_DATE THEN auf.tatsaechlicheslieferdatum      
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN CURRENT_DATE
+                    WHEN auf.lieferdatum <> '0000-00-00' AND auf.lieferdatum > CURRENT_DATE THEN auf.lieferdatum
+                    ELSE CURRENT_DATE
+                END erwartetes_lieferdatum,
+                CASE 
+                    WHEN auftrag_position.lieferdatum <> '0000-00-00' THEN auftrag_position.lieferdatum
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN auf.tatsaechlicheslieferdatum      
+                    WHEN auf.lieferdatum <> '0000-00-00' THEN auf.lieferdatum
+                    ELSE auf.datum
+                END urspruengliches_lieferdatum, 
+                auf.name kunde,
+ 		auf.belegnr belegnr, 
+		auftrag_position.sort position, 
+		artikel.nummer artikel, 
+		artikel.id artikel_id,
+		auftrag_position.bezeichnung bezeichnung, 
+		round(auftrag_position.menge,0) menge, 
+		round(auftrag_position.menge*auftrag_position.preis,2) umsatz,
+	        (SELECT SUM(menge) FROM lager_platz_inhalt INNER JOIN lager_platz ON lager_platz_inhalt.lager_platz = lager_platz.id WHERE lager_platz_inhalt.artikel = artikel.id AND lager_platz.sperrlager <> 1) as lager,
+		auf.autoversand autoversand,
+		auf.id auftrag_id         
+                FROM auftrag auf
+                INNER JOIN auftrag_position ON auf.id = auftrag_position.auftrag
+                INNER JOIN artikel ON auftrag_position.artikel = artikel.id  
+		WHERE auf.status <> 'abgeschlossen' AND auf.belegnr <> ''
+                ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
+                ) a";
+
+	$where = "";
+
+	$groupby = "";
+
+	// Für Anzeige der Gesamteinträge
+	$count = "SELECT count(DISTINCT auftrag_position.id) FROM auftrag a INNER JOIN auftrag_position ON a.id = auftrag_position.auftrag WHERE a.status <>'abgeschlossen' AND a.belegnr <> ''";
+
+	// Spalte mit Farbe der Zeile (immer vorletzte-1)
+//	$trcol = 12;
+//        $moreinfo = true;
+
+      break;
 
     }
     $erg = [];
@@ -765,7 +918,7 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("rechnung","AuftragRechnung");
     $this->app->ActionHandler("lieferschein","AuftragLieferschein");
     $this->app->ActionHandler("lieferscheinrechnung","AuftragLieferscheinRechnung");
-
+    $this->app->ActionHandler("teillieferung","AuftragTeillieferung");
     $this->app->ActionHandler("nachlieferung","AuftragNachlieferung");
     //    $this->app->ActionHandler("versand","AuftragVersand");
     $this->app->ActionHandler("freigabe","AuftragFreigabe");
@@ -797,6 +950,8 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("alsfreigegeben", "AuftragAlsfreigegeben");
     $this->app->ActionHandler("steuer", "AuftragSteuer");
     $this->app->ActionHandler("berechnen", "Auftraegeberechnen");
+
+    $this->app->ActionHandler("offene", "AuftragOffenePositionen");
 
     $this->app->DefaultActionHandler("list");
 
@@ -1271,7 +1426,11 @@ class Auftrag extends GenAuftrag
     $kommissionierart = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id='$projekt' LIMIT 1");   
     //$art = $this->app->DB->Select("SELECT art FROM auftrag WHERE id='$id' LIMIT 1");
     $alleartikelreservieren = '';
-    $teillieferungen = '';
+
+    if ($status==='angelegt' || $status==='freigegeben') {
+        $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
+    }   
+
     if($status==='freigegeben') {
       $alleartikelreservieren = "<option value=\"reservieren\">alle Artikel reservieren</option>";
 
@@ -1369,9 +1528,14 @@ class Auftrag extends GenAuftrag
       {
         switch(cmd)
         {
-          case 'storno':    if(!confirm('Wirklich stornieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=delete&id=%value%'; break;
-          case 'unstorno':    if(!confirm('Wirklich stornierten Auftrag wieder freigeben?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=undelete&id=%value%'; break;
-          case 'teillieferung':     window.location.href='index.php?module=auftrag&action=teillieferung&id=%value%'; break;
+          case 'storno':
+            if(!confirm('Wirklich stornieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=delete&id=%value%'; break;
+          case 'unstorno':
+            if(!confirm('Wirklich stornierten Auftrag wieder freigeben?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=undelete&id=%value%'; 
+            break;
+          case 'teillieferung': 
+            window.location.href='index.php?module=auftrag&action=teillieferung&id=%value%'; 
+          break;
           case 'anfrage':   if(!confirm('Wirklich rückführen?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=anfrage&id=%value%'; break;
           case 'kreditlimit':       if(!confirm('Wirklich Kreditlimit für diesen Auftrag freigeben?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=kreditlimit&id=%value%'; break;
           case 'copy': if(!confirm('Wirklich kopieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=copy&id=%value%'; break;
@@ -6128,6 +6292,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=list','&Uuml;bersicht');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=create','Neuen Auftrag anlegen');
+    $this->app->erp->MenuEintrag('index.php?module=auftrag&action=offene','Offene Positionen');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=versandzentrum','Versandzentrum');
 
     if(strlen($backurl)>5){
@@ -7002,6 +7167,129 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   public function Auftraegeberechnen() {
     $this->app->erp->AuftraegeBerechnen();
     header('Location: index.php?module=auftrag&action=versandzentrum');
+  }
+
+  /*
+  * Split auftrag into separate documents with submit -> do it and return jump to the new split part
+  */
+  function AuftragTeillieferung() {
+
+    $id = $this->app->Secure->GetGET('id');
+    $this->AuftragMenu();
+    $submit = $this->app->Secure->GetPOST('submit');
+
+
+    $sql = "SELECT * from auftrag WHERE id = $id";
+    $auftrag_alt = $this->app->DB->SelectArr($sql)[0];
+    $msg = "";
+
+    if (in_array($auftrag_alt['status'],array('angelegt','freigegeben'))) {
+        if ($submit != '') {
+            $msg = "";
+            switch ($submit) {
+                case 'speichern':
+                    // Get parameters
+                   
+                    $teilmenge_input = $this->app->Secure->GetPOSTArray();
+
+                    $teilmengen = array();
+
+                    foreach ($teilmenge_input as $key => $value) {
+
+                        if ((strpos($key,'teilmenge_') === 0) && ($value !== '')) {
+                            $posid = substr($key,'10');
+                            $teilmenge = array('posid' => $posid, 'menge' => $value);
+                            $teilmengen[] = $teilmenge;
+                        }
+                    }
+
+                    if (!empty($teilmengen)) {
+
+                        // Create new auftrag
+                        $sql = "SELECT * from auftrag WHERE id = $id";
+                	    $auftrag_alt = $this->app->DB->SelectArr($sql)[0];
+                                          
+                        // Part auftrag of part auftrag -> select parent
+                        $hauptauftrag_id = $auftrag_alt['teillieferungvon'];
+                        if ($hauptauftrag_id != 0) {
+                            $sql = "SELECT belegnr FROM auftrag WHERE id = $hauptauftrag_id";
+                            $hauptauftrag_belegnr = $this->app->DB->SelectArr($sql)[0]['belegnr'];
+                        } else {
+                            $hauptauftrag_id = $auftrag_alt['id'];
+                            $hauptauftrag_belegnr = $auftrag_alt['belegnr'];
+                        }
+
+                        $sql = "SELECT MAX(teillieferungnummer) as tpn FROM auftrag WHERE teillieferungvon = $hauptauftrag_id";
+                        $teillieferungnummer = $this->app->DB->SelectArr($sql)[0]['tpn'];
+                        if (empty($teillieferungnummer) || $teillieferungnummer == 0) {
+                            $teillieferungnummer = '1';
+                        } else {
+                            $teillieferungnummer++;
+                        }
+
+                        $belegnr_neu = $hauptauftrag_belegnr."-".$teillieferungnummer;
+
+                        $auftrag_neu = $auftrag_alt;
+                        $auftrag_neu['id'] = null;
+                        $auftrag_neu['belegnr'] = $belegnr_neu;
+                        $auftrag_neu['teillieferungvon'] = $hauptauftrag_id;
+                        $auftrag_neu['teillieferungnummer'] = $teillieferungnummer;
+                   
+                        $id_neu = $this->app->DB->MysqlCopyRow('auftrag','id',$id);  
+                        $sql = "UPDATE auftrag SET belegnr = '$belegnr_neu', teillieferungvon = $hauptauftrag_id, teillieferungnummer = $teillieferungnummer WHERE id = $id_neu";
+                        $this->app->DB->Update($sql);
+
+                        // Adjust quantities
+                        foreach ($teilmengen as $teilmenge) {
+
+                            $sql = "SELECT menge FROM auftrag_position WHERE id = ".$teilmenge['posid'];
+                    	    $menge_alt = $this->app->DB->SelectArr($sql)[0]['menge'];
+
+                            $menge_neu = $teilmenge['menge'];
+                            if ($menge_neu > $menge_alt) {
+                                $menge_neu = $menge_alt;
+                            } 
+
+                            $menge_reduziert = $menge_alt-$menge_neu;
+                          
+                            $posid_alt = $teilmenge['posid'];
+                            $posid_neu = $this->app->DB->MysqlCopyRow('auftrag_position','id',$posid_alt);  
+
+                            $sql = "UPDATE auftrag_position SET menge = $menge_reduziert WHERE id = $posid_alt";
+                            $this->app->DB->Update($sql);
+                            $sql = "UPDATE auftrag_position SET auftrag = $id_neu, menge = $menge_neu WHERE id = $posid_neu";
+                            $this->app->DB->Update($sql);                                                        
+                        }                    
+
+                        header('Location: index.php?module=auftrag&action=edit&id='.$id_neu);
+
+                    }
+
+                break;
+                case 'abbrechen':
+                    header('Location: index.php?module=auftrag&action=edit&id='.$id);
+                    return;
+                break;
+            }
+        } // Submit
+        else {
+            $msg  = "Teilauftrag: Auswahl der Artikel f&uuml;r den Teilauftrag.";
+        }
+    } // Status ok
+    else {
+        $msg = 'Teilauftrag in diesem Status nicht möglich.';                        
+    }    
+
+    $this->app->Tpl->Add('INFOTEXT',$msg);
+    $this->app->YUI->TableSearch('TABLE','positionen_teillieferung', 'show','','',basename(__FILE__), __CLASS__);
+
+    $this->app->Tpl->Parse('PAGE','auftrag_teillieferung.tpl');
+  } // AuftragTeillieferung 
+
+  function AuftragOffenePositionen() {
+    $this->AuftraguebersichtMenu();
+     $this->app->YUI->TableSearch('TAB1','offenepositionen',"show","","",basename(__FILE__), __CLASS__);
+     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
 
 }

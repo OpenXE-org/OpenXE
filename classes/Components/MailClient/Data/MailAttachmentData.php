@@ -62,33 +62,90 @@ class MailAttachmentData implements MailAttachmentInterface
     {
         $encodingHeader = $part->getHeader('content-transfer-encoding');
         if ($encodingHeader === null) {
-            throw new InvalidArgumentException('missing header: "Content-Transfer-Encoding"');
+         // Assume this is no error (?)   throw new InvalidArgumentException('missing header: "Content-Transfer-Encoding"');
+            $encoding = '';
+        } else {
+            $encoding = $encodingHeader->getValue();
         }
-        $encoding = $encodingHeader->getValue();
         $dispositionHeader = $part->getHeader('content-disposition');
         if ($dispositionHeader === null) {
             throw new InvalidArgumentException('missing header: "Content-Disposition"');
         }
-        $disposition = $dispositionHeader->getValue();
+        $disposition = $dispositionHeader->getValue();      
 
-        if (!preg_match('/(.+);\s*filename="([^"]+)".*$/m', $disposition, $matches)) {
+        /*        
+        Content-Disposition: inline
+        Content-Disposition: attachment
+        Content-Disposition: attachment; filename="filename.jpg"
+
+        This is not correctly implemented -> only the first string is evaluated
+        Content-Disposition: attachment; filename*0="filename_that_is_"
+        Content-Disposition: attachment; filename*1="very_long.jpg"
+
+        */
+
+        if (preg_match('/(.+);\s*filename(?:\*[0-9]){0,1}="([^"]+)".*$/m', $disposition, $matches)) {
+            $isInline = strtolower($matches[1]) === 'inline';
+            $filename = $matches[2];                 
+        }
+        else if ($disposition == 'attachment') {
+            // Filename is given in Content-Type e.g. 
+            /* Content-Type: application/pdf; name="Filename.pdf" 
+               Content-Transfer-Encoding: base64
+               Content-Disposition: attachment
+            */
+
+            $contenttypeHeader = $part->getHeader('content-type');
+            if ($contenttypeHeader === null) {
+                throw new InvalidArgumentException('missing header: "Content-Type"');
+            }
+            $contenttype = $contenttypeHeader->getValue();
+
+            if (preg_match('/(.+);\s*name(?:\*[0-9]){0,1}="([^"]+)".*$/m', $contenttype, $matches)) {
+                $isInline = strtolower($matches[1]) === 'inline';         
+                $filename = $matches[2];                   
+            } else {
+                throw new InvalidArgumentException(
+                    sprintf('missing filename in header value "Content-Type" = "%s"', $contenttype)
+                );
+            }
+        }
+        else if ($disposition == 'inline') {
+            $isInline = true;
+            $filename = ""; // This is questionable
+        }
+        else if (strpos($disposition,'attachment;\n') == 0) { // No filename, check for content type message/rfc822
+            
+            $contenttypeHeader = $part->getHeader('content-type');
+            if ($contenttypeHeader === null) {
+                throw new InvalidArgumentException('missing header: "Content-Type"');
+            }
+            $contenttype = $contenttypeHeader->getValue();
+
+            if ($contenttype == 'message/rfc822') {   
+                $isInline = false;             
+                $filename = 'ForwardedMessage.eml';               
+            } else {
+                throw new InvalidArgumentException(
+                    sprintf('unexpected header value "Content-Disposition" = "%s"', $disposition)
+                );
+            }
+        }
+        else {
             throw new InvalidArgumentException(
-                sprintf('unexpected header value "Content-Disposition" = %s', $disposition)
+                sprintf('unexpected header value "Content-Disposition" = "%s", not message/rfc822', $disposition)
             );
         }
-        $isInline = strtolower($matches[1]) === 'inline';
-        $filename = $matches[2];
 
         // Thunderbird UTF URL-Format
         $UTF_pos = strpos($filename,'UTF-8\'\'');
-        if ($UTF_pos !== false) {
-            
+        if ($UTF_pos !== false) {            
             $wasUTF = "JA";
-
             $filename = substr($filename,$UTF_pos);
             $filename = rawurldecode($filename);
         }
 
+    
         $cid = null;
         $contentIdHeader = $part->getHeader('content-id');
         if ($contentIdHeader !== null) {

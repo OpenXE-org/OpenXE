@@ -337,7 +337,7 @@ class TicketImportHelper
         if (!empty($queue_id)) {
           $queue_label = $this->db->Select("SELECT label FROM warteschlangen WHERE id = ".$queue_id." LIMIT 1");
         }
-
+ 
         $insertTicket = "INSERT INTO `ticket` (
                       `schluessel`, `zeit`, `projekt`, `quelle`, `status`, `kunde`,
                       `mailadresse`, `prio`, `betreff`,`warteschlange`,`adresse`
@@ -347,10 +347,10 @@ class TicketImportHelper
                         '".$projectId."',
                         '".$this->mailAccount->getEmailAddress()."',
                         '".$status."',
-                        '".$senderName."',
-                        '".$senderAddress."',
+                        '".$this->db->real_escape_string($senderName)."',
+                        '".$this->db->real_escape_string($senderAddress)."',
                         '".'3'."',
-                        '".$subject."',
+                        '".$this->db->real_escape_string($subject)."',
                         '".$queue_label."',
                         '".$AddressId."');";
        
@@ -383,14 +383,14 @@ class TicketImportHelper
                     ) VALUES (
                 '".$ticketNumber."',
                 '".date('Y-m-d H:i:s', $timestamp)."',
-                '".$message."',
-                '".$subject."',
+                '".$this->db->real_escape_string($message)."',
+                '".$this->db->real_escape_string($subject)."',
                 '".'email'."',
-                '".$senderName."',
-                '".$senderAddress."',
+                '".$this->db->real_escape_string($senderName)."',
+                '".$this->db->real_escape_string($senderAddress)."',
                 '".$status."',
-                '".$replyToName."',
-                '".$replyToAddress."');";
+                '".$this->db->real_escape_string($replyToName)."',
+                '".$this->db->real_escape_string($replyToAddress)."');";
 
             $this->logger->debug('database insert',['query' => $sql]);
             $this->db->Insert($sql);
@@ -491,14 +491,19 @@ class TicketImportHelper
             }
             try {
 
-                $this->logger->debug('Start import', ['message' => $message->getSubject()]);
+                $this->logger->debug('Start import', ['message' => $message]);
 
-                $this->importMessage($message);
-                $insertedMailsCount++;
-                if ($this->mailAccount->isDeleteAfterImportEnabled()) {
-                    $this->mailClient->deleteMessage((int)$messageNumber);
+                $result = $this->importMessage($message);               
+
+                if ($result === true) {
+                    $insertedMailsCount++;
+                    if ($this->mailAccount->isDeleteAfterImportEnabled()) {
+                        $this->mailClient->deleteMessage((int)$messageNumber);
+                    } else {
+                        $this->mailClient->setFlags((int)$messageNumber, ['\\Seen']);
+                    }
                 } else {
-                    $this->mailClient->setFlags((int)$messageNumber, ['\\Seen']);
+                    $this->logger->error('Error during email import', ['']);
                 }
             } catch (Throwable $e) {
                 $this->logger->error('Error during email import', ['exception' => $e]);
@@ -517,12 +522,10 @@ class TicketImportHelper
     /**
      * @param MailMessageInterface $message
      *
-     * @return void
+     * @return true on success
      */
-    public function importMessage(MailMessageInterface $message): void
+    public function importMessage(MailMessageInterface $message): bool
     {
-        $DEBUG = 0;
-
         // extract email data
         $subject = $this->formatter->encodeToUtf8($message->getSubject());
         $from = $this->formatter->encodeToUtf8($message->getSender()->getEmail());
@@ -542,18 +545,33 @@ class TicketImportHelper
         $htmlBody = $message->getHtmlBody();
         if ($htmlBody === null) {
             $htmlBody = '';
+        }        
+
+        if ($plainTextBody == '' && $htmlBody == '') {
+            $simple_content = $message->getContent();
+            if (empty($simple_content)) {
+                $this->logger->debug('Empty mail',['message' => $message]);    
+            } else {
+                $plainTextBody = $simple_content;
+                $htmlBody = nl2br(htmlentities($simple_content));
+            }
         }
+
+        $this->logger->debug('Text',['plain' => $plainTextBody, 'html' => $htmlBody, 'simple_content' => $simple_content]);            
+
         $action = $this->formatter->encodeToUtf8($plainTextBody);
         $action_html = $this->formatter->encodeToUtf8($htmlBody);
         if (strlen($action_html) < strlen($action)) {
             $action_html = nl2br($action);
         }
 
-        //check if email exists in database
+        $this->logger->debug('Text (converted)',['plain' => $action, 'html' => $action_html]);
+
+        // Import database emailbackup
         $date = $message->getDate();
         if (is_null($date)) { // This should not be happening -> Todo check getDate function
-            $this->logger->debug('Null date',['subject' => $message->getSubject()]);            
-            $frommd5 = md5($from . $subject);
+            $this->logger->debug('Null date',['subject' => $message->getSubject(), $message->getHeader('date')->getValue()]);            
+            return(false);
         } else {
             $timestamp = $date->getTimestamp();
             $frommd5 = md5($from . $subject . $timestamp);
@@ -563,21 +581,21 @@ class TicketImportHelper
                         FROM `emailbackup_mails` 
                         WHERE `checksum`='$frommd5' 
                           AND `empfang`='$empfang'
+                          AND `ticketnachricht` != 0
                           AND `webmail`='" . $this->mailAccount->getId() . "'";
-
 
         $this->logger->debug('Importing message '.$from.' '.$fromname);
 
-        if ($this->db->Select($sql) == 0) {
+        $result = $this->db->Select($sql);
+        $emailbackup_mails_id = null;
 
-            $this->logger->debug('Importing message',['']);
+        if ($result == 0) {
+
+            $this->logger->debug('Importing message',['message' => $message]);
 
             $attachments = $message->getAttachments();
             $anhang = count($attachments) > 0 ? 1 : 0;
             $mailacc = $this->mailAccount->getEmailAddress();
-            if (empty($mailacc) && count($message->getRecipients()) > 0) {
-                $mailacc = array_values($message->getRecipients())[0]->getEmail();
-            }
             $mailaccid = $this->mailAccount->getId();
 
             if (!$this->erpApi->isMailAdr($from)) {
@@ -604,23 +622,24 @@ class TicketImportHelper
                                 '$empfang','$anhang','$frommd5'
                             )";
 
-            $id = null;
-            if ($DEBUG) {
-                echo $sql;
-            } else {
-                $this->db->InsertWithoutLog($sql);
-                $id = $this->db->GetInsertID();
-            }
-        }
-        
-        if ($DEBUG) {
-            echo "ticket suchen oder anlegen\n";
-        }
+            $this->db->InsertWithoutLog($sql);
+            $emailbackup_mails_id = $this->db->GetInsertID();
+        } else {
+            $this->logger->debug('Message already imported.',['']);
+            return(true);
+        }     
 
+        $this->logger->debug('Message emailbackup_mails imported.',['id' => $emailbackup_mails_id]);
+        // END database import emailbackup
+              
+        // Find ticket and add or create new ticket
         $ticketNumber = null;
         $ticketexists = null;
         if (preg_match("/Ticket #[0-9]{12}/i", $subject, $matches)) {
             $ticketNumber = str_replace('Ticket #', '', $matches[0]);
+
+            $this->logger->debug('Check for number',['ticketnummer' => $ticketNumber]);
+
             $ticketexists = $this->db->Select(
                 "SELECT schluessel 
                              FROM ticket 
@@ -648,7 +667,7 @@ class TicketImportHelper
             $this->logger->debug('Add message to existing ticket',['ticketnummer' => $ticketNumber]);
         }
 
-        // Add message to new or existing ticket
+        // Database import ticket: Add message to new or existing ticket
         $ticketnachricht = $this->addTicketMessage(
             (string) $ticketNumber,
             $timestamp,
@@ -661,11 +680,11 @@ class TicketImportHelper
             $from
         );
 
-        if ($ticketnachricht > 0 && $id > 0) {
+        if ($ticketnachricht > 0 && $emailbackup_mails_id > 0) {
             $this->db->Update(
                 "UPDATE `emailbackup_mails`
                         SET ticketnachricht='$ticketnachricht'
-                        WHERE id='$id' LIMIT 1"
+                        WHERE id='$emailbackup_mails_id' LIMIT 1"
             );
 
 
@@ -711,55 +730,57 @@ class TicketImportHelper
                     }
                 }
             }
+        } else {
+            $this->logger->error("Message not imported!", ['Time' => $timestamp, 'Subject' => $subject, 'From' => $from]);
+            $this->db->Delete("DELETE FROM emailbackup_mails WHERE id = ".$emailbackup_mails_id);
+            return(false);
         }
-
-        // Prüfen ob Ordner vorhanden ansonsten anlegen
-        $ordner = $this->config->WFuserdata . '/emailbackup/' . $this->config->WFdbname . "/$id";
-        if (!is_dir($ordner) && $id > 0) {
+        // END database import ticket
+  
+        // File management folder with raw text
+        $ordner = $this->config->WFuserdata . '/emailbackup/' . $this->config->WFdbname . "/$emailbackup_mails_id";
+        if (!is_dir($ordner) && $emailbackup_mails_id > 0) {
             if (!mkdir($ordner, 0777, true) && !is_dir($ordner)) {
+                $this->logger->error("Folder \"{folder}\" was not created", ['folder' => $ordner]);
+                $this->db->Delete("DELETE FROM emailbackup_mails WHERE id = ".$emailbackup_mails_id);
+                return(false);
             }
             $raw_full_email = $message->getRawContent();
             file_put_contents($ordner . '/mail.txt', $raw_full_email);
         }
 
-        //speichere anhang als datei
-        if ($anhang == 1 && $id > 0) {
+        // File management attachments
+        if ($anhang == 1 && $emailbackup_mails_id > 0) {
             $ordner = $this->config->WFuserdata . '/emailbackup/' . $this->config->WFdbname;
             if (!is_dir($ordner)) {
                 if (!mkdir($ordner, 0777, true) && !is_dir($ordner)) {
                     $this->logger->error("Folder \"{folder}\" was not created", ['folder' => $ordner]);
+                    $this->db->Delete("DELETE FROM emailbackup_mails WHERE id = ".$emailbackup_mails_id);
+                    return(false);
                 }
             }
             // Prüfen ob Ordner vorhanden ansonsten anlegen
-            $ordner = $this->config->WFuserdata . '/emailbackup/' . $this->config->WFdbname . "/$id";
+            $ordner = $this->config->WFuserdata . '/emailbackup/' . $this->config->WFdbname . "/$emailbackup_mails_id";
             if (!is_dir($ordner)) {
-                if ($DEBUG) {
-                    echo "mkdir $ordner\n";
-                } else {
-                    if (!mkdir($ordner, 0777, true) && !is_dir($ordner)) {
-                        $this->logger->error("Folder \"{folder}\" was not created", ['folder' => $ordner]);
-                    }
+                if (!mkdir($ordner, 0777, true) && !is_dir($ordner)) {
+                    $this->logger->error("Folder \"{folder}\" was not created", ['folder' => $ordner]);
+                    $this->db->Delete("DELETE FROM emailbackup_mails WHERE id = ".$emailbackup_mails_id);
+                    return(false);
                 }
             }
 
-            $this->logger->debug('Add attachments',['ticketnummer' => $ticketNumber, 'nachricht' => $ticketnachricht, 'count' => count($attachments)]);
-
+            $this->logger->debug('Add '.count($attachments).' attachments',['']); 
 
             foreach ($attachments as $attachment) {
                 if ($attachment->getFileName() !== '') {
-                    if ($DEBUG) {
-                    } else {
-                        $handle = fopen($ordner . '/' . $attachment->getFileName(), 'wb');
-                        if ($handle) {
-                            fwrite($handle, $attachment->getContent());
-                            fclose($handle);
-                        }
+                    $handle = fopen($ordner . '/' . $attachment->getFileName(), 'wb');
+                    if ($handle) {
+                        fwrite($handle, $attachment->getContent());
+                        fclose($handle);
                     }
                     //Schreibe Anhänge in Datei-Tabelle
                     $datei = $ordner . '/' . $attachment->getFileName();
                     $dateiname = $attachment->getFileName();
-
-                    $this->logger->debug("Attachment", ['filename' => $dateiname]);
 
                     if (stripos(strtoupper($dateiname), '=?UTF-8') !== false) {
                         $dateiname = $this->formatter->encodeToUtf8($dateiname);
@@ -774,42 +795,31 @@ class TicketImportHelper
                         $dateiname = htmlspecialchars_decode($dateiname);
                     }
 
-                    $this->logger->debug("Attachment cleaned", ['filename' => $dateiname]);
+                    $tmpid = $this->erpApi->CreateDatei(
+                        $dateiname,
+                        $dateiname,
+                        '',
+                        '',
+                        $datei,
+                        'Support Mail',
+                        true,
+                        $this->config->WFuserdata . '/dms/' . $this->config->WFdbname
+                    );
 
-                    if ($DEBUG) {
-                        echo "CreateDatei($dateiname,{$dateiname},\"\",\"\",\"datei\",\"Support Mail\",true,"
-                            . $this->config->WFuserdata . "/dms/" . $this->config->WFdbname . ")\n";
-                    } else {
-                        $tmpid = $this->erpApi->CreateDatei(
-                            $dateiname,
-                            $dateiname,
-                            '',
-                            '',
-                            $datei,
-                            'Support Mail',
-                            true,
-                            $this->config->WFuserdata . '/dms/' . $this->config->WFdbname
-                        );
-                    }
+                    $this->logger->debug('Add attachment',['filename' => $dateiname, 'ticketnummer' => $ticketNumber,'id' => $tmpid, 'nachricht' => $ticketnachricht]);
 
-                    if ($DEBUG) {
-                        echo "AddDateiStichwort $tmpid,'Anhang','Ticket',$ticketnachricht,true)\n";
-                    } else {
-
-                        $this->logger->debug('Add attachment',['ticketnummer' => $ticketNumber,'id' => $tmpid, 'nachricht' => $ticketnachricht]);
-
-                        $this->erpApi->AddDateiStichwort(
-                            $tmpid,
-                            'Anhang',
-                            'Ticket',
-                            $ticketnachricht,
-                            true
-                        );
-                    }
+                    $this->erpApi->AddDateiStichwort(
+                        $tmpid,
+                        'Anhang',
+                        'Ticket',
+                        $ticketnachricht,
+                        true
+                    );
                 }
             }
-        }      
+        } // END File management  
 
+        // Autoresponder
         if (
             $this->mailAccount->isAutoresponseEnabled()
             && $this->mailAccount->getAutoresponseText() !== ''
@@ -843,5 +853,7 @@ class TicketImportHelper
                 $text
             );
         }
+
+        return(true);
     } 
 }

@@ -48,7 +48,11 @@ final class MultiDbArrayHydrator
             $description = !empty($item['description']) ? $item['description'] : $defaultConfig->WFdbname;
 
             // Cronjobs nur aktivieren, wenn Einstellung vorhanden und gesetzt (Default `false`).
-            $cronjobsActive = (int)$item['cronjob'] === 1;
+            if (array_key_exists('cronjob',$item)) {
+                $cronjobsActive = (int)$item['cronjob'] === 1;
+            } else {
+                $cronjobsActive = false;
+            }
 
             if(!empty($item['dbname']) && $defaultConfig->WFdbname === $item['dbname']) {
                 $item = [];

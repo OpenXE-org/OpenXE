@@ -1289,7 +1289,7 @@ class Ajax {
         }
       break;
       case 'warteschlangename':
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(label, ' ', warteschlange) as result from warteschlangen");
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(label, ' ', warteschlange) as result from warteschlangen WHERE label LIKE '%$term%' OR warteschlange LIKE '%$term%' ORDER BY label");
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++) {
           $newarr[] = "{$arr[$i]['result']}";

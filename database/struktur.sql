@@ -9571,7 +9571,7 @@ CREATE TABLE IF NOT EXISTS `produktion` (
                                             `angebot` varchar(255) NOT NULL,
                                             `freitext` text NOT NULL,
                                             `internebemerkung` text NOT NULL,
-                                            `status` varchar(64) NOT NULL,
+                                            `status` varchar(64) NOT NULL default 'angelegt',
                                             `adresse` int(11) NOT NULL,
                                             `name` varchar(255) NOT NULL,
                                             `abteilung` varchar(255) NOT NULL,
@@ -16728,7 +16728,9 @@ INSERT INTO `firmendaten_werte` (`id`, `name`, `typ`, `typ1`, `typ2`, `wert`, `d
 (385, 'cleaner_shopimport', 'tinyint', '1', '', '1', '1', 0, 0),
 (386, 'cleaner_shopimport_tage', 'int', '11', '', '90', '90', 0, 0),
 (387, 'cleaner_adapterbox', 'tinyint', '1', '', '1', '1', 0, 0),
-(388, 'cleaner_adapterbox_tage', 'int', '11', '', '90', '90', 0, 0);
+(388, 'cleaner_adapterbox_tage', 'int', '11', '', '90', '90', 0, 0),
+(389, 'bcc3', 'varchar', '128', '', '', '', 0, 0)
+;
 
 INSERT INTO `geschaeftsbrief_vorlagen` (`id`, `sprache`, `betreff`, `text`, `subjekt`, `projekt`, `firma`) VALUES
 (1, 'deutsch', 'Bestellung {BELEGNR} von {FIRMA}', '{ANSCHREIBEN},<br><br>anbei übersenden wir Ihnen unsere Bestellung zu. Bitte senden Sie uns als Bestätigung für den Empfang eine Auftragsbestätigung zu.', 'Bestellung', 1, 1),
@@ -16798,8 +16800,7 @@ INSERT INTO `prozessstarter` (`id`, `bezeichnung`, `bedingung`, `art`, `startzei
 (6, 'Überzahlte Rechnungen', '', 'uhrzeit', '2015-10-25 23:00:00', '0000-00-00 00:00:00', '', 'cronjob', 'ueberzahlterechnungen', 0, 0, 0, 1, ''),
 (7, 'Umsatzstatistik', '', 'uhrzeit', '2015-10-25 23:30:00', '0000-00-00 00:00:00', '', 'cronjob', 'umsatzstatistik', 0, 0, 0, 1, ''),
 (8, 'Paketmarken Tracking Download', '', 'uhrzeit', '2015-10-25 14:00:00', '0000-00-00 00:00:00', '', 'cronjob', 'wgettracking', 0, 0, 0, 1, ''),
-(9, 'Chat-Benachrichtigung', '', 'periodisch', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '60', 'cronjob', 'chat', 0, 0, 0, 1, ''),
-(10, 'Git Revision einlesen', '', 'periodisch', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '120', 'cronjob', 'githash', 1, 0, 0, 1, '');
+(9, 'Chat-Benachrichtigung', '', 'periodisch', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '60', 'cronjob', 'chat', 0, 0, 0, 1, '');
 
 INSERT INTO `user` (`id`, `username`, `password`, `repassword`, `description`, `settings`, `parentuser`, `activ`, `type`, `adresse`, `fehllogins`, `standarddrucker`, `firma`, `logdatei`, `startseite`, `hwtoken`, `hwkey`, `hwcounter`, `motppin`, `motpsecret`, `passwordmd5`, `externlogin`, `projekt_bevorzugen`, `email_bevorzugen`, `projekt`, `rfidtag`, `vorlage`, `kalender_passwort`, `kalender_ausblenden`, `kalender_aktiv`, `gpsstechuhr`, `standardetikett`, `standardfax`, `internebezeichnung`, `hwdatablock`, `standardversanddrucker`, `passwordsha512`, `salt`) VALUES
 (1, 'admin', 'qnvEQ1sFWNdIg', 0, 'Administrator', 'firstinstall', 0, 1, 'admin', 1, 0, 0, 1, '2016-08-05 08:34:59', NULL, NULL, NULL, NULL, NULL, NULL, '21232f297a57a5a743894a0e4a801fc3', 1, 0, 1, 0, '', NULL, NULL, 0, NULL, NULL, 0, 0, NULL, NULL, 0, '', '');

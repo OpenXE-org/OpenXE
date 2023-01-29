@@ -3552,50 +3552,66 @@ class YUI {
     '</td></tr></table>')";
   }
   
- function IconsSQL_produktion($tablename) {
-      $freigegeben = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/produkton_laeuft.png\" title=\"Produktion freigegeben\" border=\"0\" style=\"margin-right:1px\">";
-      $angelegt = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/blue.png\" title=\"Produktion angelegt\" border=\"0\" style=\"margin-right:1px\">";
-      $abgeschlossen = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/grey.png\" title=\"Produktion abgeschlossen\" border=\"0\" style=\"margin-right:1px\">";
-      $gestartet = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/produkton_green.png\" title=\"Produktion gestartet\" border=\"0\" style=\"margin-right:1px\">";
-      $storniert = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/storno.png\" title=\"Produktion storniert\" border=\"0\" style=\"margin-right:1px\">";
+    function IconsSQL_produktion($tablename) {
+        $freigegeben = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/produkton_laeuft.png\" title=\"Produktion freigegeben\" border=\"0\" style=\"margin-right:1px\">";
+        $angelegt = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/blue.png\" title=\"Produktion angelegt\" border=\"0\" style=\"margin-right:1px\">";
+        $abgeschlossen = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/grey.png\" title=\"Produktion abgeschlossen\" border=\"0\" style=\"margin-right:1px\">";
+        $gestartet = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/produkton_green.png\" title=\"Produktion gestartet\" border=\"0\" style=\"margin-right:1px\">";
+        $storniert = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/storno.png\" title=\"Produktion storniert\" border=\"0\" style=\"margin-right:1px\">";
 
-      $lager_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" style=\"margin-right:1px\" title=\"Artikel ist im Lager\" border=\"0\">";
-      $lager_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagerstop.png\" style=\"margin-right:1px\" title=\"Artikel fehlt im Lager\" border=\"0\">";
+        for ($z = 0;$z < 6;$z++) {
+            $angelegt_6 .= $angelegt; 
+            $abgeschlossen_6 .= $abgeschlossen; 
+            $storniert_6 .= $storniert; 
+        }
 
-      $reserviert_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_bestellt.png\" style=\"margin-right:1px\" title=\"Artikel reserviert\" border=\"0\">";
-      $reserviert_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_nicht_bestellt.png\" style=\"margin-right:1px\" title=\"Artikel nicht reserviert\" border=\"0\">";
+        $lager_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" style=\"margin-right:1px\" title=\"Artikel ist im Lager\" border=\"0\">";
+        $lager_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagerstop.png\" style=\"margin-right:1px\" title=\"Artikel fehlt im Lager\" border=\"0\">";
 
-      $auslagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ausgelagert.png\" title=\"Produktion ausgelagert\" border=\"0\" style=\"margin-right:1px\">";
-      $auslagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_ausgelagert.png\" title=\"Produktion ausgelagert\" border=\"0\" style=\"margin-right:1px\">";
+        $reserviert_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_bestellt.png\" style=\"margin-right:1px\" title=\"Artikel reserviert\" border=\"0\">";
+        $reserviert_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_nicht_bestellt.png\" style=\"margin-right:1px\" title=\"Artikel nicht reserviert\" border=\"0\">";
 
-      $einlagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/eingelagert.png\" title=\"Produktion eingelagert\" border=\"0\" style=\"margin-right:1px\">";
-      $einlagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_eingelagert.png\" title=\"Produktion eingelagert\" border=\"0\" style=\"margin-right:1px\">";
+        $auslagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ausgelagert.png\" title=\"Produktion ausgelagert\" border=\"0\" style=\"margin-right:1px\">";
+        $auslagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_ausgelagert.png\" title=\"Produktion ausgelagert\" border=\"0\" style=\"margin-right:1px\">";
 
-      $zeit_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/zeit_dreiviertel.png\" style=\"margin-right:1px\" title=\"Zeiten erfasst\" border=\"0\">";
-      $zeit_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/keine_zeiten.png\" style=\"margin-right:1px\" title=\"Zeiten nicht erfasst\" border=\"0\">";
+        $einlagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/eingelagert.png\" title=\"Produktion eingelagert\" border=\"0\" style=\"margin-right:1px\">";
+        $einlagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_eingelagert.png\" title=\"Produktion eingelagert\" border=\"0\" style=\"margin-right:1px\">";
 
-      $versand_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrego.png\" style=\"margin-right:1px\" title=\"Versand ok\" border=\"0\">";
-      $versand_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrestop.png\" style=\"margin-right:1px\" title=\"Versand nicht ok\" border=\"0\">";
+        $zeit_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/zeit_dreiviertel.png\" style=\"margin-right:1px\" title=\"Zeiten erfasst\" border=\"0\">";
+        $zeit_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/keine_zeiten.png\" style=\"margin-right:1px\" title=\"Zeiten nicht erfasst\" border=\"0\">";
 
+        $versand_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrego.png\" style=\"margin-right:1px\" title=\"Versand ok\" border=\"0\">";
+        $versand_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrestop.png\" style=\"margin-right:1px\" title=\"Versand nicht ok\" border=\"0\">";
 
-    return "CONCAT('<table><tr><td nowrap>',
-	    case 
-		when $tablename.status = 'freigegeben' THEN '$freigegeben'
-		when $tablename.status = 'abgeschlossen' THEN '$abgeschlossen'
-		when $tablename.status = 'angelegt' THEN '$angelegt'
-		when $tablename.status = 'gestartet' THEN '$gestartet'
-		else '$storniert'
-	    end,
-	    if($tablename.lager_ok,'$lager_ok','$lager_nicht_ok'),
-	    if($tablename.reserviert_ok,'$reserviert_ok','$reserviert_nicht_ok'),
-	    if($tablename.auslagern_ok,'$auslagern_ok','$auslagern_nicht_ok'),
-	    if($tablename.einlagern_ok,'$einlagern_ok','$einlagern_nicht_ok'),
-	    if($tablename.zeit_ok,'$zeit_ok','$zeit_nicht_ok'),
-	    if($tablename.versand_ok,'$versand_ok','$versand_nicht_ok'),
-	    '</td></tr></table>')";
-
+        return "CONCAT('<table><tr><td nowrap>',
+        CASE 
+                WHEN $tablename.status = 'freigegeben' THEN '$freigegeben'
+                WHEN $tablename.status = 'abgeschlossen' THEN '$abgeschlossen'
+                WHEN $tablename.status = 'angelegt' THEN '$angelegt'
+                WHEN $tablename.status = 'gestartet' THEN '$gestartet'
+            ELSE 
+                '$storniert'
+            end,
+            CASE 
+                WHEN FIND_IN_SET($tablename.status, 'freigegeben,gestartet') THEN
+                    CONCAT (
+                        if($tablename.lager_ok,'$lager_ok','$lager_nicht_ok'),
+                        if($tablename.reserviert_ok,'$reserviert_ok','$reserviert_nicht_ok'),
+                        if($tablename.auslagern_ok,'$auslagern_ok','$auslagern_nicht_ok'),
+                        if($tablename.einlagern_ok,'$einlagern_ok','$einlagern_nicht_ok'),
+                        if($tablename.zeit_ok,'$zeit_ok','$zeit_nicht_ok'),
+                        if($tablename.versand_ok,'$versand_ok','$versand_nicht_ok')
+                   )
+            ELSE  
+                CASE 
+                    WHEN $tablename.status = 'angelegt' THEN '$angelegt_6'
+                    WHEN $tablename.status = 'abgeschlossen' THEN '$abgeschlossen_6'
+                ELSE 
+                    '$storniert_6'
+                END
+            END,
+            '</td></tr></table>')";
     }
-
 
   function TablePositionSearch($parsetarget, $name, $callback = "show", $gener) {
 
