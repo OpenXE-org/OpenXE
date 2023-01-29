@@ -278,7 +278,7 @@ class Shopimporter_Presta extends ShopimporterBase
             'articleid' => strval($order_row->product_reference),
             'name' => strval($order_row->product_name),
             'quantity' => strval($order_row->product_quantity),
-            'price_netto' => strval($order_row->product_price),
+            'price_netto' => strval($order_row->unit_price_tax_excl),
             'steuersatz' => $steuersatz
         ];
       }

@@ -29451,7 +29451,7 @@ function Firmendaten($field,$projekt="")
           $dbfield = "next_$type";
           $belegnr = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
           if (!empty($belegnr)) {
-            $newbelegnr = $this->CalcNextNummer($dbvalue);
+            $newbelegnr = $this->CalcNextNummer($belegnr);
             $this->app->DB->Update("UPDATE projekt SET $dbfield='$newbelegnr' WHERE id='$projekt' LIMIT 1");
           }
         }
