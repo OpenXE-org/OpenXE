@@ -29440,7 +29440,7 @@ function Firmendaten($field,$projekt="")
         $process_lock = $this->app->erp->ProzessLock("erpapi_getnextnummer");
 
         $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$projekt' LIMIT 1");
-        $newbelegnr = '';
+        $belegnr = '';
         if($eigenernummernkreis=='1')
         {
           $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',
@@ -29449,13 +29449,13 @@ function Firmendaten($field,$projekt="")
               'retoure', 'verbindlichkeit', 'goodspostingdocument', 'receiptdocument'];
 
           $dbfield = "next_$type";
-          $dbvalue = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
-          if (!empty($dbvalue)) {
+          $belegnr = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
+          if (!empty($belegnr)) {
             $newbelegnr = $this->CalcNextNummer($dbvalue);
             $this->app->DB->Update("UPDATE projekt SET $dbfield='$newbelegnr' WHERE id='$projekt' LIMIT 1");
           }
         }
-        if (empty($newbelegnr)) {
+        if (empty($belegnr)) {
           // naechste
           switch($type)
           {
