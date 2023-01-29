@@ -126,7 +126,8 @@ class Versandart_sendcloud extends Versanddienstleister
         $ret->Label = $this->api->DownloadDocument($doc);
 
         $doc = $result->GetDocumentByType(Document::TYPE_CN23);
-        $ret->ExportDocuments = $this->api->DownloadDocument($doc);
+        if ($doc)
+          $ret->ExportDocuments = $this->api->DownloadDocument($doc);
       } else {
         $ret->Errors[] = $result;
       }
