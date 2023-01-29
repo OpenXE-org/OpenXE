@@ -21,7 +21,7 @@ use Xentral\Widgets\ClickByClickAssistant\VueUtil;
 class Versandarten {
   const MODULE_NAME = 'ShippingMethod';
 
-  var Application $app;
+  var ApplicationCore $app;
   /** @var string[] $stylesheet */
   public array $stylesheet = [
     './classes/Modules/Appstore/www/css/tilegrid.css',
@@ -35,10 +35,10 @@ class Versandarten {
   /**
    * Versandarten constructor.
    *
-   * @param Application $app
+   * @param ApplicationCore $app
    * @param bool        $intern
    */
-  public function __construct(Application $app, bool $intern = false)
+  public function __construct(ApplicationCore $app, bool $intern = false)
   {
     $this->app=$app;
     if($intern) {

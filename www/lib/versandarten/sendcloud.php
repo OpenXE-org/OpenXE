@@ -19,7 +19,7 @@ class Versandart_sendcloud extends Versanddienstleister
   protected SendCloudApi $api;
   protected array $options;
 
-  public function __construct(Application $app, ?int $id)
+  public function __construct(ApplicationCore $app, ?int $id)
   {
     parent::__construct($app, $id);
     if (!isset($this->id))

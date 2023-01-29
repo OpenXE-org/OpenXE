@@ -7,7 +7,7 @@ use Xentral\Modules\ShippingMethod\Model\Product;
 abstract class Versanddienstleister
 {
   protected int $id;
-  protected Application $app;
+  protected ApplicationCore $app;
   protected string $type;
   protected int $projectId;
   protected ?int $labelPrinterId;
@@ -16,7 +16,7 @@ abstract class Versanddienstleister
   protected ?int $businessLetterTemplateId;
   protected ?object $settings;
 
-  public function __construct(Application $app, ?int $id)
+  public function __construct(ApplicationCore $app, ?int $id)
   {
     $this->app = $app;
     if ($id === null || $id === 0)
