@@ -131,7 +131,7 @@ class Versandart_sendcloud extends Versanddienstleister
         $ret->Errors[] = $result;
       }
     } catch (SendcloudApiException $e) {
-      $ret->Errors[] = $e->getMessage();
+      $ret->Errors[] = strval($e);
     }
     return $ret;
   }

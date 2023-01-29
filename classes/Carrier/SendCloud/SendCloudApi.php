@@ -77,9 +77,9 @@ class SendCloudApi
     $response = $this->sendRequest($uri, null, true, ['parcel' => $parcel->toApiRequest()], [200,400]);
     switch ($response['code']) {
       case 200:
-        if (isset($response->parcel))
+        if (isset($response['body']->parcel))
           try {
-            return ParcelResponse::fromApiResponse($response->parcel);
+            return ParcelResponse::fromApiResponse($response['body']->parcel);
           } catch (Exception $e) {
             throw new SendcloudApiException(previous: $e);
           }

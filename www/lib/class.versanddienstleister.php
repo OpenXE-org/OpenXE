@@ -353,7 +353,7 @@ abstract class Versanddienstleister
   public function Paketmarke(string $target, string $docType, int $docId): void
   {
     $address = $this->GetAdressdaten($docId, $docType);
-    if (isset($_SERVER['HTTP_CONTENT_TYPE']) && ($_SERVER['HTTP_CONTENT_TYPE'] === 'application/json')) {
+    if (isset($_SERVER['CONTENT_TYPE']) && ($_SERVER['CONTENT_TYPE'] === 'application/json')) {
       $json = json_decode(file_get_contents('php://input'));
       $ret = [];
       if ($json->submit == 'print') {
