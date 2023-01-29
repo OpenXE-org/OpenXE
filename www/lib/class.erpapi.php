@@ -29440,10 +29440,22 @@ function Firmendaten($field,$projekt="")
         $process_lock = $this->app->erp->ProzessLock("erpapi_getnextnummer");
 
         $eigenernummernkreis = 0;
+        $newbelegnr = '';
         if($eigenernummernkreis=='1')
         {
+          $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',
+              'bestellung', 'gutschrift', 'kundennummer', 'lieferantennummer', 'mitarbeiternummer', 'waren',
+              'produktion', 'sonstiges', 'anfrage', 'artikelnummer', 'kalkulation', 'preisanfrage', 'proformarechnung',
+              'retoure', 'verbindlichkeit', 'goodspostingdocument', 'receiptdocument'];
 
-        } else {
+          $dbfield = "next_$type";
+          $dbvalue = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
+          if (!empty($dbvalue)) {
+            $newbelegnr = $this->CalcNextNummer($dbvalue);
+            $this->app->DB->Update("UPDATE projekt SET $dbfield='$newbelegnr' WHERE id='$projekt' LIMIT 1");
+          }
+        }
+        if (empty($newbelegnr)) {
           // naechste
           switch($type)
           {

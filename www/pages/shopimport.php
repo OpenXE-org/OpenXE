@@ -830,7 +830,7 @@ class Shopimport
         // denn fall das es kunde 1:1 schon gibt = alte Kundennummer verwenden kommt vor allem vor, wenn ein Kunde an einem Tag oefters bestellt hat
         //								$adresse = $this->app->erp->KundeAnlegen($typ,$name,$abteilung,
         //								$unterabteilung,$ansprechpartner,$adresszusatz,$strasse,$land,$plz,$ort,$email,$telefon,$telefax,$ustid,$partner,$projekt);
-        if(strlen($warenkorb['kundennummer'])!=''){
+        if(!empty($warenkorb['kundennummer'])){
           $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='{$warenkorb['kundennummer']}' $adresseprojekt AND geloescht!=1 LIMIT 1");
         }
 
