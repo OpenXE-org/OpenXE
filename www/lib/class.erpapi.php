@@ -29439,7 +29439,7 @@ function Firmendaten($field,$projekt="")
 
         $process_lock = $this->app->erp->ProzessLock("erpapi_getnextnummer");
 
-        $eigenernummernkreis = 0;
+        $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$projekt' LIMIT 1");
         $newbelegnr = '';
         if($eigenernummernkreis=='1')
         {

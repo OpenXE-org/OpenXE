@@ -253,13 +253,13 @@ class Shopimporter_Presta extends ShopimporterBase
       if (!empty($cart['lieferadresse_land']) && $this->taxationByDestinationCountry) {
         $taxedCountry = $cart['lieferadresse_land'];
       }
-      $lieferschwelle = $this->app->DB->Select("SELECT * FROM lieferschwelle WHERE empfaengerland='$taxedCountry' LIMIT 1");
+      $lieferschwelle = $this->app->DB->SelectArr("SELECT * FROM lieferschwelle WHERE empfaengerland='$taxedCountry' LIMIT 1");
       if ($this->app->erp->IstEU($taxedCountry) || !empty($lieferschwelle['ueberschreitungsdatum'])) {
         $cart['ust_befreit'] = 1;
       } elseif ($this->app->erp->Export($taxedCountry)) {
         $cart['ust_befreit'] = 2;
       }
-      
+
       $taxes = [];
       $this->app->erp->RunHook('getTaxRatesFromShopOrder', 2, $taxedCountry, $taxes);
 
