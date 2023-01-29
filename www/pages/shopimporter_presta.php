@@ -258,7 +258,8 @@ class Shopimporter_Presta extends ShopimporterBase
         $cart['ust_befreit'] = 1;
       } elseif ($this->app->erp->Export($taxedCountry)) {
         $cart['ust_befreit'] = 2;
-
+      }
+      
       $taxes = [];
       $this->app->erp->RunHook('getTaxRatesFromShopOrder', 2, $taxedCountry, $taxes);
 
