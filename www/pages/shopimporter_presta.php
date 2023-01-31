@@ -162,7 +162,7 @@ class Shopimporter_Presta extends ShopimporterBase
 
     $this->prestaRequest('POST', 'order_histories', $obj->asXML());
 
-    $req = $this->prestaRequest('GET', "order_carriers?filter[order_id]=$auftrag&display=[id]");
+    $req = $this->prestaRequest('GET', "order_carriers?filter[id_order]=$auftrag&display=[id]");
     $orderCarrierId = strval($req->order_carriers->order_carrier[0]->id);
     $req = $this->prestaRequest('GET', "order_carriers/$orderCarrierId");
     $req->order_carrier->tracking_number = $this->data['tracking'];
