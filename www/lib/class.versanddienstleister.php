@@ -113,6 +113,16 @@ abstract class Versanddienstleister
         $ret['postnumber'] = $match[0];
       }
 
+      if ($auftragId > 0) {
+        $internet = $this->app->DB->Select("SELECT internet FROM auftrag WHERE id = $auftragId LIMIT 1");
+        if (!empty($internet))
+          $orderNumberParts[] = $internet;
+      }
+      if (!empty($docArr['ihrebestellnummer'])) {
+        $orderNumberParts[] = $docArr['ihrebestellnummer'];
+      }
+      $orderNumberParts[] = $docArr['belegnr'];
+      $ret['order_number'] = implode(' / ', $orderNumberParts);
     }
 
     // wenn rechnung im spiel entweder durch versand oder direkt rechnung
@@ -132,7 +142,7 @@ abstract class Versanddienstleister
         lp.menge,
         coalesce(nullif(lp.zolltarifnummer, ''), nullif(rp.zolltarifnummer, ''), nullif(a.zolltarifnummer, '')) as zolltarifnummer,
         coalesce(nullif(lp.herkunftsland, ''), nullif(rp.herkunftsland, ''), nullif(a.herkunftsland, '')) as herkunftsland,
-        coalesce(nullif(lp.zolleinzelwert, '0'), rp.preis *(1-rp.rabatt/100)) as zolleinzelwert,
+        coalesce(nullif(lp.zolleinzelwert, '0'), rp.preis *(1-rp.rabatt/100), 0) as zolleinzelwert,
         coalesce(nullif(lp.zolleinzelgewicht, 0), a.gewicht) as zolleinzelgewicht,
         lp.zollwaehrung
       FROM lieferschein_position lp
