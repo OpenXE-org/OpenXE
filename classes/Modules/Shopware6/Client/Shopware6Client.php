@@ -73,7 +73,7 @@ final class Shopware6Client
 
         $request = new ClientRequest(
             $method,
-            $this->url . 'v2/' . $endpoint,
+            $this->url . $endpoint,
             $headerInformation,
             empty($body) ? null : json_encode($body)
         );

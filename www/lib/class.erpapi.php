@@ -22527,7 +22527,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $pseudolager = !empty($shopAricleArr['pseudolager'])?(float)$shopAricleArr['pseudolager']:0;
       }
       else {
-        $pseudolager = '';
+        $pseudolager = 0;
       }
       $this->app->erp->RunHook('remote_send_article_list_pseudostorage', 3, $shop, $artikelid, $pseudolager);
       if(is_numeric($pseudolager) && $pseudolager < 0) {
