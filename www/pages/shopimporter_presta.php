@@ -162,7 +162,11 @@ class Shopimporter_Presta extends ShopimporterBase
 
     $this->prestaRequest('POST', 'order_histories', $obj->asXML());
 
-    //TODO Tracking
+    $req = $this->prestaRequest('GET', "order_carriers?filter[order_id]=$auftrag&display=[id]");
+    $orderCarrierId = strval($req->order_carriers->order_carrier[0]->id);
+    $req = $this->prestaRequest('GET', "order_carriers/$orderCarrierId");
+    $req->order_carrier->tracking_number = $this->data['tracking'];
+    $this->prestaRequest('PUT', "order_carriers/$orderCarrierId", $req->asXML());
   }
 
   public function ImportGetAuftraegeAnzahl()
@@ -199,7 +203,7 @@ class Shopimporter_Presta extends ShopimporterBase
       $cart['auftrag'] = strval($order->id);
       $cart['onlinebestellnummer'] = strval($order->reference);
       $cart['gesamtsumme'] = strval($order->total_paid);
-      $cart['versandkostenbrutto'] = strval($order->total_shipping);
+      $cart['versandkostennetto'] = strval($order->total_shipping_tax_excl);
       $cart['bestelldatum'] = strval($order->date_add);
 
       $carrier = $this->prestaRequest('GET', "carriers/$order->id_carrier");
