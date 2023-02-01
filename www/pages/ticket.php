@@ -744,7 +744,22 @@ class Ticket {
                 $sql = "INSERT INTO `ticket_nachricht` (
                         `ticket`, `zeit`, `text`, `betreff`, `medium`, `versendet`,
                         `verfasser`, `mail`,`status`, `verfasser_replyto`, `mail_replyto`,`mail_cc`
-                    ) VALUES ('".$ticket_from_db['schluessel']."',NOW(),'".$anschreiben."','".$betreff."','email','1','".$senderName."','".$to."','neu','".$senderName."','".$senderAddress."','".$cc."');";
+                    ) VALUES ('".
+                        $ticket_from_db['schluessel'].
+                        "',NOW(),'".
+                        $this->app->DB->real_escape_string($anschreiben).
+                        "','".
+                        $this->app->DB->real_escape_string($betreff).
+                        "','email','1','".
+                        $this->app->DB->real_escape_string($senderName).
+                        "','".
+                        $this->app->DB->real_escape_string($to).
+                        "','neu','".
+                        $this->app->DB->real_escape_string($senderName).
+                        "','".
+                        $this->app->DB->real_escape_string($senderAddress).
+                        "','".
+                        $this->app->DB->real_escape_string($cc)."');";
 
                 $this->app->DB->Insert($sql);         
                 // Show new message dialog                   
@@ -825,7 +840,7 @@ class Ticket {
             ) {
 
                 // Update message in ticket_nachricht
-                $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$drafted_messages[0]['betreff']."', `verfasser` = '$senderName', `verfasser_replyto` = '$senderName', `mail_replyto` = '$senderAddress' WHERE id = ".$drafted_messages[0]['id'];
+                $sql = "UPDATE `ticket_nachricht` SET `zeitausgang` = NOW(), `betreff` = '".$this->app->DB->real_escape_string($drafted_messages[0]['betreff'])."', `verfasser` = '$senderName', `verfasser_replyto` = '$senderName', `mail_replyto` = '$senderAddress' WHERE id = ".$drafted_messages[0]['id'];
                 $this->app->DB->Insert($sql);
 
                 $msg .=  '<div class="info">Die E-Mail wurde erfolgreich versendet an '.$input['email_an'].'.'; 
