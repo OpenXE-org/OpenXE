@@ -161,7 +161,7 @@ class MailAttachmentData implements MailAttachmentInterface
         $content = $part->getContent();
         if ($content === null) { // This should not be
             throw new InvalidArgumentException(
-                sprintf('content is null "%s"', substr(print_r($part,true),1000))
+                sprintf('content is null "%s"', substr(print_r($part,true),0,1000))
             );
         }
 

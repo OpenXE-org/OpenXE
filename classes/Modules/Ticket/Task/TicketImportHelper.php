@@ -209,7 +209,7 @@ class TicketImportHelper
                 return($candidate);            
             }
 
-            if ($loopCounter > 99) {
+            if ($loopCounter > 9999) {
                 throw new NumberGeneratorException('ticket number generation failed');
             }
             $loopCounter++;
@@ -483,6 +483,9 @@ class TicketImportHelper
     {
         $insertedMailsCount = 0;
         foreach ($inboxMessageIds as $messageNumber) {
+
+            $this->logger->debug("Fetch $messageNumber", ['']);
+
             try {
                 $message = $this->mailClient->fetchMessage((int)$messageNumber);
             } catch (Throwable $e) {
@@ -491,7 +494,8 @@ class TicketImportHelper
             }
             try {
 
-                $this->logger->debug('Start import', ['message' => $message]);
+//                $this->logger->debug('Start import', ['message' => substr(print_r($message,true),1000)]);
+                $this->logger->debug('Start import', []);
 
                 $result = $this->importMessage($message);               
 
@@ -503,10 +507,11 @@ class TicketImportHelper
                         $this->mailClient->setFlags((int)$messageNumber, ['\\Seen']);
                     }
                 } else {
-                    $this->logger->error('Error during email import', ['']);
+                    $this->logger->error('Error during email import', ['message' => substr(print_r($message,true),0,1000)]);
+                    continue;
                 }
             } catch (Throwable $e) {
-                $this->logger->error('Error during email import', ['exception' => $e]);
+                $this->logger->error('Error during email import', ['message' => substr(print_r($message,true),0,1000)]);
                 continue;
             }
         }
@@ -550,7 +555,7 @@ class TicketImportHelper
         if ($plainTextBody == '' && $htmlBody == '') {
             $simple_content = $message->getContent();
             if (empty($simple_content)) {
-                $this->logger->debug('Empty mail',['message' => $message]);    
+                $this->logger->debug('Empty mail',[]);    
             } else {
                 $plainTextBody = $simple_content;
                 $htmlBody = nl2br(htmlentities($simple_content));
@@ -591,7 +596,8 @@ class TicketImportHelper
 
         if ($result == 0) {
 
-            $this->logger->debug('Importing message',['message' => $message]);
+//            $this->logger->debug('Importing message',['message' => substr(print_r($message,true),1000)]);
+            $this->logger->debug('Importing message attachments',[]);
 
             try {   
                 $attachments = $message->getAttachments();
