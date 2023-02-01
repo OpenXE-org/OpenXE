@@ -175,7 +175,7 @@
                     <tr>
                         <td>{|Sendungsart|}:</td>
                         <td>
-                            <select v-model="form.sendungsart">
+                            <select v-model="form.shipment_type">
                                 <option v-for="(value, key) in customs_shipment_types" :value="key">{{value}}</option>
                             </select>
                         </td>

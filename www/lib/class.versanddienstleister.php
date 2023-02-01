@@ -395,7 +395,7 @@ abstract class Versanddienstleister
       $this->app->ExitXentral();
     }
 
-    $address['sendungsart'] = CustomsInfo::CUSTOMS_TYPE_GOODS;
+    $address['shipment_type'] = CustomsInfo::CUSTOMS_TYPE_GOODS;
     $products = $this->GetShippingProducts();
     $products = array_combine(array_column($products, 'Id'), $products);
     $address['product'] = $products[0]->Id ?? '';
