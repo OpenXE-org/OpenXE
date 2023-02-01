@@ -593,7 +593,14 @@ class TicketImportHelper
 
             $this->logger->debug('Importing message',['message' => $message]);
 
-            $attachments = $message->getAttachments();
+            try {   
+                $attachments = $message->getAttachments();
+            }
+            catch (Throwable $e) { 
+                $this->logger->error('Error while getting attachments',['exception' => $e]);            
+                return(false);
+            }
+
             $anhang = count($attachments) > 0 ? 1 : 0;
             $mailacc = $this->mailAccount->getEmailAddress();
             $mailaccid = $this->mailAccount->getId();
