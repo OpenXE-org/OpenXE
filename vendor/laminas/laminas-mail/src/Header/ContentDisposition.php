@@ -18,7 +18,8 @@ class ContentDisposition implements UnstructuredInterface
      *
      * @var int
      */
-    const MAX_PARAMETER_LENGTH = 76;
+//    const MAX_PARAMETER_LENGTH = 76; // This is the RECOMMENDATION
+    const MAX_PARAMETER_LENGTH = 996; // This is the LIMIT
 
     /**
      * @var string

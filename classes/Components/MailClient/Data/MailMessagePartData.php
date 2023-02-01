@@ -153,8 +153,9 @@ final class MailMessagePartData implements MailMessagePartInterface, JsonSeriali
         if ($encodingHeader === null ) {
             $result =  $this->content;
         }
-
-        $result = $this->decode($this->content, $encodingHeader->getValue());
+        else {
+            $result = $this->decode($this->content, $encodingHeader->getValue());
+        }
 
         $charset = $this->getCharset();
 

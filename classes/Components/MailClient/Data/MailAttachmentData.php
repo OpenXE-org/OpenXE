@@ -60,6 +60,9 @@ class MailAttachmentData implements MailAttachmentInterface
      */
     public static function fromMailMessagePart(MailMessagePartInterface $part): MailAttachmentData
     {
+
+        $isInline = false;             
+
         $encodingHeader = $part->getHeader('content-transfer-encoding');
         if ($encodingHeader === null) {
          // Assume this is no error (?)   throw new InvalidArgumentException('missing header: "Content-Transfer-Encoding"');
@@ -112,7 +115,7 @@ class MailAttachmentData implements MailAttachmentInterface
         }
         else if ($disposition == 'inline') {
             $isInline = true;
-            $filename = ""; // This is questionable
+            $filename = "OpenXE_file.inline"; 
         }
         else if (strpos($disposition,'attachment;\n') == 0) { // No filename, check for content type message/rfc822
             
@@ -123,12 +126,12 @@ class MailAttachmentData implements MailAttachmentInterface
             $contenttype = $contenttypeHeader->getValue();
 
             if ($contenttype == 'message/rfc822') {   
-                $isInline = false;             
                 $filename = 'ForwardedMessage.eml';               
             } else {
-                throw new InvalidArgumentException(
+              /*  throw new InvalidArgumentException(
                     sprintf('unexpected header value "Content-Disposition" = "%s"', $disposition)
-                );
+                );*/
+                $filename = "OpenXE_file.unknown"; 
             }
         }
         else {
@@ -155,9 +158,16 @@ class MailAttachmentData implements MailAttachmentInterface
             }
         }
 
+        $content = $part->getContent();
+        if ($content === null) { // This should not be
+            throw new InvalidArgumentException(
+                sprintf('content is null "%s"', print_r($part,true))
+            );
+        }
+
         return new self(
             $filename,
-            $part->getContent(),
+            $content,
             $part->getContentType(),
             $encoding,
             $isInline,
