@@ -86,6 +86,18 @@ final class MailMessagePartData implements MailMessagePartInterface, JsonSeriali
     /**
      * @inheritDoc
      */
+    public function getHeaderValue(string $name): ?string
+    {
+        $header = $this->getHeader($name);
+        if ($header == null)   {
+            return (null);
+        } 
+        return($header->getValue());
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getContentType(): string
     {
         $header = $this->getHeader('content-type');

@@ -495,7 +495,7 @@ class TicketImportHelper
             try {
 
 //                $this->logger->debug('Start import', ['message' => substr(print_r($message,true),1000)]);
-                $this->logger->debug('Start import', []);
+                $this->logger->debug('Start import '.$messageNumber, []);
 
                 $result = $this->importMessage($message);               
 
@@ -507,11 +507,11 @@ class TicketImportHelper
                         $this->mailClient->setFlags((int)$messageNumber, ['\\Seen']);
                     }
                 } else {
-                    $this->logger->error('Error during email import', ['message' => substr(print_r($message,true),0,1000)]);
+                    $this->logger->error('Error during email import '.$messageNumber, ['message' => substr(print_r($message,true),0,1000)]);
                     continue;
                 }
             } catch (Throwable $e) {
-                $this->logger->error('Error during email import', ['message' => substr(print_r($message,true),0,1000)]);
+                $this->logger->error('Error during email import '.$messageNumber, ['message' => substr(print_r($message,true),0,1000)]);
                 continue;
             }
         }

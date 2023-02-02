@@ -51,9 +51,35 @@ class MailAttachmentData implements MailAttachmentInterface
         $this->cid = $cid;
     }
 
+
+    /*
+        Check the type of Attachment
+        Possible results: application/octet-stream, attachment, inline    
+    */
+    public static function getAttachmentPartType(MailMessagePartInterface $part): ?string {
+
+        if (!$part->isMultipart()) {
+            $header = $part->getHeader('content-disposition');
+            if ($header !== null) {
+                $split = explode(';', $header->getValue());
+                if ($split[0] === 'attachment') {
+                    return ('attachment');
+                } else if ($split[0] === 'inline') {
+                    return ('inline');
+                }
+            } else {    // Check for application/octet-stream
+                $content_type = $part->getContentType();
+                if ($content_type == 'application/octet-stream') {
+                    return('application/octet-stream');
+                }
+            }
+        }
+
+        return(null);
+    }
+
     /**
      * @param MailMessagePartInterface $part
-     *
      * @throws InvalidArgumentException
      *
      * @return MailAttachmentData
@@ -61,21 +87,22 @@ class MailAttachmentData implements MailAttachmentInterface
     public static function fromMailMessagePart(MailMessagePartInterface $part): MailAttachmentData
     {
 
-        $isInline = false;             
+        $attachmenttype = MailAttachmentData::getAttachmentPartType($part);
 
-        $encodingHeader = $part->getHeader('content-transfer-encoding');
-        if ($encodingHeader === null) {
-         // Assume this is no error (?)   throw new InvalidArgumentException('missing header: "Content-Transfer-Encoding"');
-            $encoding = '';
-        } else {
-            $encoding = $encodingHeader->getValue();
+        if ($attachmenttype == null) {
+            throw new InvalidArgumentException('object is no attachment');
         }
-        $dispositionHeader = $part->getHeader('content-disposition');
-        if ($dispositionHeader === null) {
-            throw new InvalidArgumentException('missing header: "Content-Disposition"');
-        }
-        $disposition = $dispositionHeader->getValue();      
 
+        $disposition = $part->getHeaderValue('content-disposition');
+        if ($disposition == null) {
+            $disposition = '';
+        }
+
+        $disposition = str_replace(["\n\r", "\n", "\r"], '', $disposition);
+
+  //      file_put_contents('debug.txt',date("HH:mm:ss")."\nDispo: ".$disposition); // FILE_APPEND
+
+        // Determine filename
         /*        
         Content-Disposition: inline
         Content-Disposition: attachment
@@ -84,60 +111,29 @@ class MailAttachmentData implements MailAttachmentInterface
         This is not correctly implemented -> only the first string is evaluated
         Content-Disposition: attachment; filename*0="filename_that_is_"
         Content-Disposition: attachment; filename*1="very_long.jpg"
-
         */
-
-        if (preg_match('/(.+);\s*filename(?:\*[0-9]){0,1}="([^"]+)".*$/m', $disposition, $matches)) {
-            $isInline = strtolower($matches[1]) === 'inline';
+        $filename = 'OpenXE_file.unknown';
+        if (preg_match('/(.+);\s*filename(?:\*[0-9]){0,1}="*([^"]+)"*.*$/m', $disposition, $matches)) { // Filename in disposition
             $filename = $matches[2];                 
-        }
-        else if ($disposition == 'attachment') {
-            // Filename is given in Content-Type e.g. 
-            /* Content-Type: application/pdf; name="Filename.pdf" 
-               Content-Transfer-Encoding: base64
-               Content-Disposition: attachment
-            */
+        } else {
+            $contenttype = $part->getHeaderValue('content-type');
 
-            $contenttypeHeader = $part->getHeader('content-type');
-            if ($contenttypeHeader === null) {
-                throw new InvalidArgumentException('missing header: "Content-Type"');
-            }
-            $contenttype = $contenttypeHeader->getValue();
+            $contenttype = str_replace(["\n\r", "\n", "\r"], '', $contenttype);
 
-            if (preg_match('/(.+);\s*name(?:\*[0-9]){0,1}="([^"]+)".*$/m', $contenttype, $matches)) {
-                $isInline = strtolower($matches[1]) === 'inline';         
+//            file_put_contents('debug.txt',date("HH:mm:ss")."\nConttype: ".$contenttype,FILE_APPEND); // FILE_APPEND
+
+            if (preg_match('/(.+);\s*name(?:\*[0-9]){0,1}="*([^"]+)"*.*$/m', $contenttype, $matches)) { // Name in content-type
                 $filename = $matches[2];                   
-            } else {
-                throw new InvalidArgumentException(
-                    sprintf('missing filename in header value "Content-Type" = "%s"', $contenttype)
-                );
+            } else if ($contenttype == 'message/rfc822') { // RFC822 message  
+                $filename = 'ForwardedMessage.eml';                     
             }
         }
-        else if ($disposition == 'inline') {
-            $isInline = true;
-            $filename = "OpenXE_file.inline"; 
-        }
-        else if (strpos($disposition,'attachment;\n') == 0) { // No filename, check for content type message/rfc822
-            
-            $contenttypeHeader = $part->getHeader('content-type');
-            if ($contenttypeHeader === null) {
-                throw new InvalidArgumentException('missing header: "Content-Type"');
-            }
-            $contenttype = $contenttypeHeader->getValue();
 
-            if ($contenttype == 'message/rfc822') {   
-                $filename = 'ForwardedMessage.eml';               
-            } else {
-              /*  throw new InvalidArgumentException(
-                    sprintf('unexpected header value "Content-Disposition" = "%s"', $disposition)
-                );*/
-                $filename = "OpenXE_file.unknown"; 
-            }
-        }
-        else {
-            throw new InvalidArgumentException(
-                sprintf('unexpected header value "Content-Disposition" = "%s", not message/rfc822', $disposition)
-            );
+        $encodingHeader = $part->getHeader('content-transfer-encoding');
+        if ($encodingHeader === null) {
+            $content_transfer_encoding = '';
+        } else {
+            $content_transfer_encoding = $encodingHeader->getValue();
         }
 
         // Thunderbird UTF URL-Format
@@ -147,8 +143,7 @@ class MailAttachmentData implements MailAttachmentInterface
             $filename = substr($filename,$UTF_pos);
             $filename = rawurldecode($filename);
         }
-
-    
+   
         $cid = null;
         $contentIdHeader = $part->getHeader('content-id');
         if ($contentIdHeader !== null) {
@@ -157,9 +152,13 @@ class MailAttachmentData implements MailAttachmentInterface
                 $cid = $cidMatches[1];
             }
         }
+        if ($attachmenttype == 'inline' && $cid != null) {
+            $filename = "cid:".$cid;
+        }
 
         $content = $part->getContent();
         if ($content === null) { // This should not be
+//            file_put_contents('debug.txt',date("HH:mm:ss")."\n".print_r($part,true)); // FILE_APPEND
             throw new InvalidArgumentException(
                 sprintf('content is null "%s"', substr(print_r($part,true),0,1000))
             );
@@ -169,8 +168,8 @@ class MailAttachmentData implements MailAttachmentInterface
             $filename,
             $content,
             $part->getContentType(),
-            $encoding,
-            $isInline,
+            $content_transfer_encoding,
+            $attachmenttype == 'inline',
             $cid
         );
     }

@@ -147,6 +147,7 @@ final class MailMessageData implements MailMessageInterface, JsonSerializable
         $parts = [];
         $this->findAttachmentParts($this->contentPart, $parts);
         $attachments = [];
+
         foreach ($parts as $part) {
             $attachments[] = MailAttachmentData::fromMailMessagePart($part);
         }
@@ -161,19 +162,17 @@ final class MailMessageData implements MailMessageInterface, JsonSerializable
      * @return void
      */
     private function findAttachmentParts(MailMessagePartInterface $part, array &$resultArray): void
-    {
-        try {
-            $header = $part->getHeader('content-disposition');
-            $split = explode(';', $header->getValue());
-            if ($split[0] === 'attachment' || $split[0] === 'inline') {
-                $resultArray[] = $part;
+    {             
 
-                return;
-            }
-        } catch (Throwable $e) {
+        if ($part->isMultipart()) {
+            // Recurse subparts
             for ($i = 0; $i < $part->countParts(); $i++) {
                 $this->findAttachmentParts($part->getPart($i), $resultArray);
             }
+        } else {           
+            if (MailAttachmentData::getAttachmentPartType($part) != null) {
+                $resultArray[] = $part;
+            }       
         }
     }
 
