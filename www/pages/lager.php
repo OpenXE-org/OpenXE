@@ -606,20 +606,13 @@ class Lager extends GenLager {
           $app->erp->CheckColumn("kurskalk","DECIMAL(19,8)", "lagerwert", "NOT NULL DEFAULT '0'");
           $app->erp->CheckColumn("kursletzt","DECIMAL(19,8)", "lagerwert", "NOT NULL DEFAULT '0'");
         }
-        $preisart = (String)$app->YUI->TableSearchFilter($name, 1, 'preisart', $app->User->GetParameter("lager_wert_preisart"));
-        if($preisart == '')
-        {
-          $preisart = 'letzterek';
-        }
-        
-        $artikel = (String)$app->YUI->TableSearchFilter($name, 2, 'artikel', $app->User->GetParameter("lager_wert_artikel"));
-        if($artikel)
-        {
-          $artikel = explode(' ', $artikel);
-          $artikel = $app->DB->Select("SELECT id FROM artikel WHERE nummer = '".reset($artikel)."' AND (geloescht = 0 OR isnull(geloescht)) LIMIT 1");
-        }
 
-        $datum = (String)$app->YUI->TableSearchFilter($name, 3, 'datum', $app->User->GetParameter("lager_wert_datum"));
+        // Get HTML form values
+        $preisart = $app->User->GetParameter('preisart');
+        $datum = $app->User->GetParameter('datum');
+        $gruppierenlager = $app->User->GetParameter('gruppierenlager');
+        $preiseineuro = $app->User->GetParameter('preiseineuro');
+
         if($datum)
         {
           $datum = $app->String->Convert($datum, '%1.%2.%3', '%3-%2-%1');
@@ -651,8 +644,7 @@ class Lager extends GenLager {
           $lagerplatz = explode(' ', $lagerplatz);
           $lagerplatz = $app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung = '".reset($lagerplatz)."' AND (geloescht = 0 OR isnull(geloescht)) LIMIT 1");
         }
-        $gruppierenlager = (int)$app->YUI->TableSearchFilter($name, 6, 'gruppierenlager', $app->User->GetParameter("lager_wert_gruppierenlager"),0,'checkbox');
-        $preiseineuro = (int)$app->YUI->TableSearchFilter($name, 7, 'preiseineuro', $app->User->GetParameter("lager_wert_preiseineuro"),0,'checkbox');
+
         if($preiseineuro)
         {
           $kursusd = $app->erp->GetWaehrungUmrechnungskurs('EUR','USD');
@@ -1521,7 +1513,8 @@ class Lager extends GenLager {
     $this->app->ActionHandler("artikelentfernenreserviert", "LagerArtikelEntfernenReserviert");
     $this->app->ActionHandler("letztebewegungen", "LagerLetzteBewegungen");
     $this->app->ActionHandler("schnelleinlagern", "LagerSchnellEinlagern");
-    
+    $this->app->ActionHandler("wert", "LagerWert");
+    $this->app->ActionHandler("wert2", "LagerWert2");
     $this->app->ActionHandler("schnellumlagern", "LagerSchnellUmlagern");
     $this->app->ActionHandler("schnellauslagern", "LagerSchnellAuslagern");
     
@@ -2073,10 +2066,41 @@ class Lager extends GenLager {
   public function LagerWert()
   {
       $this->LagerHauptmenu();
-      $this->app->Tpl->Set('VERS','Professional');
+/*      $this->app->Tpl->Set('VERS','Professional');
       $this->app->Tpl->Set('MODUL','Professional');
-      $this->app->Tpl->Parse('PAGE', 'only_version.tpl');
+      $this->app->Tpl->Parse('PAGE', 'only_version.tpl');    
+
+    ROFLMAO
+
+*/
+
+    // Transfer Parameters to TableSearch
+    $gruppierenlager = $this->app->Secure->GetPOST('gruppierenlager');
+    $this->app->User->SetParameter('gruppierenlager', $gruppierenlager);
+
+    $preiseineuro = $this->app->Secure->GetPOST('preiseineuro');
+    $this->app->User->SetParameter('preiseineuro', $preiseineuro);    
+
+    $datum = $this->app->Secure->GetPOST('datum');
+    $this->app->User->SetParameter('datum', $datum);
+
+    $preisart = $this->app->Secure->GetPOST('preisart');
+    $this->app->User->SetParameter('preisart', $preisart);
+
+    $this->app->YUI->DatePicker("datum");
+ 
+  	$this->app->Tpl->Set('DATUM', $datum);
+  	$this->app->Tpl->Set('PREISEINEURO', $preiseineuro==1?"checked":"");
+    $this->app->Tpl->Set('GRUPPIERENLAGER', $gruppierenlager==1?"checked":"");
+
+  	$this->app->Tpl->Set(strtoupper($preisart), 'selected');
+
+    $this->app->erp->MenuEintrag('index.php?module=lager&action=list','zur&uuml;ck zur &Uuml;bersicht');
+    $this->app->erp->Headlines('','Bestand');
+    $this->app->YUI->TableSearch('TAB1', 'lager_wert', 'show','','',basename(__FILE__), __CLASS__);
+    $this->app->Tpl->Parse('PAGE','lager_wert.tpl');  
   }
+
 
   public function LagerBuchenZwischenlagerDelete()
   {
