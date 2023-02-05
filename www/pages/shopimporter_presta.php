@@ -195,7 +195,6 @@ class Shopimporter_Presta extends ShopimporterBase
 
     $fetchedOrders = [];
     foreach ($ordersToProcess as $currentOrderId) {
-      $this->Log("Importing order from presta", [$this->data, $ordersToProcess, $currentOrderId]);
       $order = $this->prestaRequest('GET', "orders/$currentOrderId");
       $order = $order->order;
       $cart = [];
@@ -217,7 +216,7 @@ class Shopimporter_Presta extends ShopimporterBase
       $invoiceCountry = $this->prestaRequest('GET', "countries/$invoiceAddress->id_country");
       $invoiceCountry = $invoiceCountry->country;
       $cart['name'] = "$invoiceAddress->firstname $invoiceAddress->lastname";
-      if (!empty($invoiceAddress->company)) {
+      if (!empty(strval($invoiceAddress->company))) {
         $cart['ansprechpartner'] = $cart['name'];
         $cart['name'] = strval($invoiceAddress->company);
       }
@@ -231,14 +230,14 @@ class Shopimporter_Presta extends ShopimporterBase
       $cart['ustid'] = strval($invoiceAddress->vat_number);
       $cart['land'] = strval($invoiceCountry->iso_code);
 
-      if ($order->id_address_invoice != $order->id_address_delivery) {
+      if (strval($order->id_address_invoice) != strval($order->id_address_delivery)) {
         $deliveryAddress = $this->prestaRequest('GET', "addresses/$order->id_address_delivery");
         $deliveryAddress = $deliveryAddress->address;
         $deliveryCountry = $this->prestaRequest('GET', "countries/$deliveryAddress->id_country");
         $deliveryCountry = $deliveryCountry->country;
         $cart['abweichendelieferadresse'] = 1;
         $cart['lieferadresse_name'] = "$deliveryAddress->firstname $deliveryAddress->lastname";
-        if (!empty($deliveryAddress->company)) {
+        if (!empty(strval($deliveryAddress->company))) {
           $cart['lieferadresse_ansprechpartner'] = $cart['lieferadresse_name'];
           $cart['lieferadresse_name'] = strval($deliveryAddress->company);
         }
