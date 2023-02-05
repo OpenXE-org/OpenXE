@@ -1503,9 +1503,11 @@ public function NavigationHooks(&$menu)
   }
 
   // @refactor DbHelper Komponente
-  function FormatMenge($spalte)
+  function FormatMenge($spalte, $decimals = 8)
   {
-    return "replace(trim($spalte)+0,'.',',')";
+    return ('FORMAT('.$spalte.','.$decimals.',\'de_DE\')');
+
+//    return "replace(trim($spalte)+0,'.',',')";
   }
 
   static function add_alias(string $text, $alias = false) {
@@ -7131,6 +7133,7 @@ title: 'Abschicken',
     }
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Import/Export Zentrale','importvorlage','uebersicht');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('W&auml;hrungen','waehrungumrechnung','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Seriennummern','seriennummern','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Chargen','chargen','list');
@@ -28852,12 +28855,6 @@ function Firmendaten($field,$projekt="")
         if(!empty($obj) && method_exists($obj,'GetWaehrungUmrechnungskurs'))
         {
           return $obj->GetWaehrungUmrechnungskurs($von,$nach,$onlytable);
-        }
-        if ($von === 'EUR' && $nach === 'USD') {
-          return 1.20;
-        }
-        if ($von==='EUR' && $nach==='CHF') {
-          return 1.06;
         }
         return 0;
       }

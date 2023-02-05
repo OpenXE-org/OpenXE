@@ -10,6 +10,7 @@
 [MESSAGE]
 [TAB1]
 [TAB1NEXT]
+<!--
 <form method="post">
 <table width="100%"><tr><td width="100%" align="center">
 <input type="submit" name="abgleich" value="Nur angelegte Kurse von der ECB holen" />&nbsp;
@@ -17,6 +18,7 @@
 </td></tr>
 </table>
 </form>
+-->
 </div>
 
 <!-- tab view schließen -->
