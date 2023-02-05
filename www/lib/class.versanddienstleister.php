@@ -140,8 +140,8 @@ abstract class Versanddienstleister
     $sql = "SELECT
         lp.bezeichnung,
         lp.menge,
-        coalesce(nullif(lp.zolltarifnummer, ''), nullif(rp.zolltarifnummer, ''), nullif(a.zolltarifnummer, '')) as zolltarifnummer,
-        coalesce(nullif(lp.herkunftsland, ''), nullif(rp.herkunftsland, ''), nullif(a.herkunftsland, '')) as herkunftsland,
+        coalesce(nullif(lp.zolltarifnummer, '0'), nullif(rp.zolltarifnummer, '0'), nullif(a.zolltarifnummer, '')) as zolltarifnummer,
+        coalesce(nullif(lp.herkunftsland, '0'), nullif(rp.herkunftsland, '0'), nullif(a.herkunftsland, '')) as herkunftsland,
         coalesce(nullif(lp.zolleinzelwert, '0'), rp.preis *(1-rp.rabatt/100), 0) as zolleinzelwert,
         coalesce(nullif(lp.zolleinzelgewicht, 0), a.gewicht) as zolleinzelgewicht,
         lp.zollwaehrung
@@ -149,7 +149,10 @@ abstract class Versanddienstleister
       JOIN artikel a on lp.artikel = a.id
       LEFT JOIN auftrag_position ap on lp.auftrag_position_id = ap.id
       LEFT JOIN rechnung_position rp on ap.id = rp.auftrag_position_id
+      LEFT JOIN rechnung r on rp.rechnung = r.id
       WHERE lp.lieferschein = $lieferscheinId
+      AND a.lagerartikel = 1
+      AND r.status != 'storniert'
       ORDER BY lp.sort";
     $ret['positions'] = $this->app->DB->SelectArr($sql);
 
