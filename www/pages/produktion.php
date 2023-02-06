@@ -594,7 +594,7 @@ class Produktion {
 
                         // Remove material from stock
                         if ($material_position['stuecklistestufe'] == 0 && $material_position['lagerartikel']) {
-                            $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$produktion_belegnr);
+                            $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$global_produktionsnummer);
                             if ($result != 1) {
                                 $msg .= "<div class=\"error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>".
                                 $error = true;
