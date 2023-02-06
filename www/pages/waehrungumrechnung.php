@@ -36,7 +36,7 @@ class Waehrungumrechnung {
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('w.waehrung_von', 'w.waehrung_nach', 'w.kurs', 'w.gueltig_bis', 'w.zeitstempel', 'w.bearbeiter', 'w.kommentar');
+                $findcols = array('id','id','w.waehrung_von', 'w.waehrung_nach', 'w.kurs', 'w.gueltig_bis', 'w.zeitstempel', 'w.bearbeiter', 'w.kommentar');
                 $searchsql = array('w.waehrung_von', 'w.waehrung_nach', 'w.kurs', 'w.gueltig_bis', 'w.zeitstempel', 'w.bearbeiter', 'w.kommentar');
 
                 $defaultorder = 1;
