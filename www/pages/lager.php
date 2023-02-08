@@ -207,13 +207,111 @@ class Lager extends GenLager {
    *
    * @return string
    */
-  public static function KursJoin($typ, $live = true)
+
+/*
+    Get the correct currency conversion rate to the date
+*/
+
+  public static function KursJoin(string $datum, string $waehrung_nach = 'EUR')
   {
-    return " LEFT JOIN (
-              SELECT max(kurs) as kurs, waehrung_von, waehrung_nach FROM waehrung_umrechnung WHERE  (isnull(gueltig_bis) OR gueltig_bis >= now() OR gueltig_bis = '0000-00-00') AND (waehrung_von LIKE 'EUR' OR waehrung_nach LIKE 'EUR') GROUP BY waehrung_von,waehrung_nach
-              ) wt ON wt.waehrung_nach <> 'EUR' AND wt.waehrung_nach = ".self::Waehrung($typ, $live)." OR wt.waehrung_von <> 'EUR' AND wt.waehrung_von = ".self::Waehrung($typ, $live)."  ";
+
+    $relevant_dates = "
+        SELECT
+            waehrung_von,
+            waehrung_nach,
+            MIN(
+                DATE
+                (
+                    REPLACE
+                    (
+                        COALESCE(gueltig_bis,'9999-12-31'),
+                        '0000-00-00',
+                        '9999-12-31'
+                    )
+                )
+            ) AS gueltig_datum
+        FROM
+            `waehrung_umrechnung`
+        WHERE
+        REPLACE
+            (
+                COALESCE(gueltig_bis,'9999-12-31'),
+                '0000-00-00',
+                '9999-12-31'
+            ) >= '".$datum."'
+        GROUP BY
+            waehrung_von,
+            waehrung_nach
+    ";
+
+    $list_of_rates = "
+        SELECT
+            waehrung_von,
+            waehrung_nach,
+            DATE
+            (
+                REPLACE
+                (
+                    COALESCE(gueltig_bis,'9999-12-31'),
+                    '0000-00-00',
+                    '9999-12-31'
+                )            
+            ) AS gueltig_datum,
+            kurs
+        FROM
+            waehrung_umrechnung
+    ";
+
+    $sql = "
+    LEFT JOIN 
+    (
+    SELECT
+        lor.waehrung_von,
+        lor.waehrung_nach,
+        MAX(lor.kurs) AS kurs
+    FROM
+        (
+            $list_of_rates
+    ) lor
+    INNER JOIN(
+        $relevant_dates
+    ) rd
+    ON
+        lor.gueltig_datum = rd.gueltig_datum 
+            AND 
+        lor.waehrung_von = rd.waehrung_von 
+            AND 
+        lor.waehrung_nach = rd.waehrung_nach
+        GROUP BY
+        lor.waehrung_von,
+        lor.waehrung_nach
+    ) wt
+    ON
+        wt.waehrung_von = ek.waehrung AND wt.waehrung_nach = '".$waehrung_nach."'";
+
+    return($sql);
 
   }
+
+/*
+LEFT JOIN(
+    SELECT MAX(kurs) AS kurs,
+        waehrung_von,
+        waehrung_nach
+    FROM
+        waehrung_umrechnung
+    WHERE
+        (
+            ISNULL(gueltig_bis) OR gueltig_bis >= NOW() OR gueltig_bis = '0000-00-00') AND(
+                waehrung_von LIKE 'EUR' OR waehrung_nach LIKE 'EUR'
+            )
+        GROUP BY
+            waehrung_von,
+            waehrung_nach
+        ) wt
+    ON
+        wt.waehrung_nach <> 'EUR' AND wt.waehrung_nach = ".self::Waehrung($typ, $live)." OR wt.waehrung_von <> 'EUR' AND wt.waehrung_von = ".self::Waehrung($typ, $live)." ";
+*/
 
   /**
    * @param Application $app
@@ -643,9 +741,10 @@ class Lager extends GenLager {
 
         $preis = self::EinzelPreis($preisart,$live);
         $preiscol = $app->erp->FormatPreis($preis,2);
+        $waehrungcol = self::Waehrung($preisart,$live);
 
         if ($preiseineuro) {
-            $kursjoin = self::KursJoin($preisart, $datum);
+            $kursjoin = self::KursJoin($datum);
             $preisEUR = self::PreisUmrechnung($app, $preisart, true);
             $gesamtcol = "(".$preisEUR.'*'.$colmenge.")";
             $kurs = $app->erp->FormatPreis('kurs',2);
@@ -654,7 +753,6 @@ class Lager extends GenLager {
             $kurs = 1;
         }
 
-        $waehrungcol = self::Waehrung($preisart,$live);
         $findcols[] = $preis;
         $findcols[] = 'waehrung';
         $findcols[] = 'kurs';
