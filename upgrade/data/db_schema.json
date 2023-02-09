@@ -84858,6 +84858,17 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "ftp_passive",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "0",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "email_active",
                     "Type": "tinyint(4)",
                     "Collation": null,
