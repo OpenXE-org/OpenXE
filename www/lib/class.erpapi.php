@@ -1503,7 +1503,7 @@ public function NavigationHooks(&$menu)
   }
 
   // @refactor DbHelper Komponente
-  function FormatMenge($spalte, $decimals = 8)
+  function FormatMenge($spalte, $decimals = 0)
   {
     return ('FORMAT('.$spalte.','.$decimals.',\'de_DE\')');
 
