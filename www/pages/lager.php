@@ -2182,7 +2182,6 @@ class Lager extends GenLager {
       $alles_komplett++;
     }
 
-
     $artikel_tmp = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND nummer!='' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
     $ean = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
     if($artikel_tmp <=0 && $ean > 0) 
@@ -2201,8 +2200,12 @@ class Lager extends GenLager {
 
     // gibts regal
     $regalcheck = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$regal' LIMIT 1");
-    if ($regalcheck != $regal || $regal == '' || $regal == 0) {
+    if ($regalcheck != $regal) {
       $grund.= "<li>Regal gibt es nicht!</li>";
+      $alles_komplett++;
+    }
+    if ($regal == '' || $regal == 0) {
+      $grund.= "<li>Bitte Regal angeben.</li>";
       $alles_komplett++;
     }
 
