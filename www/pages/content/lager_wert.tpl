@@ -41,10 +41,6 @@
                   </select>
                 </td>
             <td>
-              <input type="checkbox" value="1" id="gruppierenlager" name="gruppierenlager" [GRUPPIERENLAGER]/>
-              <label for="gruppierenlager">{|Gruppieren Lager|}</label>
-            </td>
-            <td>
               <input type="checkbox" value="1" id="preiseineuro" name="preiseineuro" [PREISEINEURO]/>
               <label for="preiseineuro">{|alle Preise in EUR anzeigen|}</label>
             </td>
