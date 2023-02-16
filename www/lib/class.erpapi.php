@@ -22853,7 +22853,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       }
 
       $isArticleCacheDifferent = $lagerartikel[$ij]['cache_lagerplatzinhaltmenge']
-        != ($verkaufbare_menge_korrektur + $pseudolager);
+        != ((int) $verkaufbare_menge_korrektur + (int) $pseudolager);
 
       $storageCache = $isArticleCacheDifferent
         ? null : $this->getStorageCacheInfosByShopId((int)$shop, (int)$lagerartikel[$ij]['id']);
@@ -22896,9 +22896,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         }
       }
 
-        $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round($verkaufbare_menge_korrektur - $verkaufbare_menge,7).' Pseudolager: '.round($pseudolager,8));
+        $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8));
 
-        $cacheQuantity = $verkaufbare_menge_korrektur + $pseudolager;
+        $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
         $this->app->DB->Update(
           "UPDATE `artikel` SET `cache_lagerplatzinhaltmenge` = '{$cacheQuantity}'
           WHERE `id`= '{$lagerartikel[$ij]['id']}' LIMIT 1"
