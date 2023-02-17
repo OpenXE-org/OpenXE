@@ -569,6 +569,10 @@ class Firmendaten  {
 
   public function FirmendatenEdit()
   {
+
+    // Make sure the default values are all there, otherwise they are not editable
+    $this->app->erp->StandardFirmendatenWerte();
+
     if($this->app->Secure->GetPOST('installnewpayent')) {
       $this->checkPaymentModules(true);
     }
