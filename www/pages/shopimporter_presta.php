@@ -211,6 +211,11 @@ class Shopimporter_Presta extends ShopimporterBase
       $customer = $this->prestaRequest('GET', "customers/$order->id_customer");
       $cart['email'] = strval($customer->customer->email);
 
+      $language = $this->prestaRequest('GET', "languages/{$customer->customer->id_lang}");
+      if ($language->language->iso_code == "en") {
+        $cart['kunde_sprache'] = 'englisch';
+      }
+
       $invoiceAddress = $this->prestaRequest('GET', "addresses/$order->id_address_invoice");
       $invoiceAddress = $invoiceAddress->address;
       $invoiceCountry = $this->prestaRequest('GET', "countries/$invoiceAddress->id_country");
