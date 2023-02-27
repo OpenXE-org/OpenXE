@@ -1,6 +1,8 @@
 <?php
-
-declare(strict_types=1);
+/*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
 
 namespace Xentral\Modules\SubscriptionCycle;
 
