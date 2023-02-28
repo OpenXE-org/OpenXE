@@ -1,4 +1,12 @@
 <?php
+
+/*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 

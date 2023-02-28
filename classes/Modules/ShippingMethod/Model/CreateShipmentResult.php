@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 namespace Xentral\Modules\ShippingMethod\Model;
 
 class CreateShipmentResult

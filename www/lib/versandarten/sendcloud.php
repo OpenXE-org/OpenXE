@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 use Xentral\Carrier\SendCloud\Data\Document;
 use Xentral\Carrier\SendCloud\Data\ParcelCreation;
 use Xentral\Carrier\SendCloud\Data\ParcelItem;

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2022 Andreas Palm
+
+SPDX-License-Identifier: LicenseRef-EGPL-3.1
+-->
+
 <div class="container-fluid" id="createshipmentapp">
     <form action="" method="post" v-on:submit.prevent="submit">
         <div class="row">
