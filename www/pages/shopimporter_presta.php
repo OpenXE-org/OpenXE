@@ -284,17 +284,20 @@ class Shopimporter_Presta extends ShopimporterBase
 
       $cart['articlelist'] = [];
       foreach ($order->associations->order_rows->order_row as $order_row) {
-
-        $steuersatz = (strval($order_row->unit_price_tax_incl) / strval($order_row->unit_price_tax_excl)) - 1;
-        $steuersatz = round($steuersatz, 1);
-
-        $cart['articlelist'][] = [
+        $article = [
             'articleid' => strval($order_row->product_reference),
             'name' => strval($order_row->product_name),
             'quantity' => strval($order_row->product_quantity),
             'price_netto' => strval($order_row->unit_price_tax_excl),
-            'steuersatz' => $steuersatz
         ];
+
+        if ($order_row->unit_price_tax_excl > 0) {
+          $steuersatz = (strval($order_row->unit_price_tax_incl) / strval($order_row->unit_price_tax_excl)) - 1;
+          $steuersatz = round($steuersatz, 1);
+          $article['steuersatz'] = $steuersatz;
+        }
+
+        $cart['articlelist'][] = $article;
       }
 
       $fetchedOrders[] = [
