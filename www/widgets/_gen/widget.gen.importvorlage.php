@@ -75,9 +75,10 @@ class WidgetGenimportvorlage
     $field->AddOption('Adresse&nbsp;(min. Angabe: name)','adresse');
     $field->AddOption('Artikel&nbsp;(min. Angabe: nummer oder name_de)','artikel');
     $field->AddOption('Einkaufspreise&nbsp;(min. Angabe: lieferantennummer und herstellernummer oder herstellernummer )','einkauf');
-    $field->AddOption('Zeiterfassung&nbsp;(min. Angabe datum_von,zeit_von,datum_bis,zeit_bis,kundennummer,taetigkeit)','zeiterfassung');
-    $field->AddOption('Wiedervorlagen (min. Angabe datum_faellig, kundennummer,mitarbeiternummer,betreff)','wiedervorlagen');
-    $field->AddOption('Notizen (min. Angabe datum,kundennummer,mitarbeiternummer,betreff)','notizen');
+    $field->AddOption('Zeiterfassung&nbsp;(min. Angabe: datum_von,zeit_von,datum_bis,zeit_bis,kundennummer,taetigkeit)','zeiterfassung');
+    $field->AddOption('Wiedervorlagen (min. Angabe: datum_faellig, kundennummer,mitarbeiternummer,betreff)','wiedervorlagen');
+    $field->AddOption('Notizen (min. Angabe: datum,kundennummer,mitarbeiternummer,betreff)','notizen');
+    $field->AddOption('Kontenrahmen (min. Angabe: sachkonto,beschriftung,art)','kontorahmen');
     $this->form->NewField($field);
 
     $field = new HTMLInput("importerstezeilenummer","text","","15","","","","","","","","0","","");

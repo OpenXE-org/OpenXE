@@ -1418,7 +1418,7 @@ class Importvorlage extends GenImportvorlage {
     $ersterdatensatz = 1;
     $zeitstempel = time();
 
-    $number_of_rows = count($tmp['cmd']);
+    $number_of_rows = empty($tmp['cmd'])?0:count($tmp['cmd']);
     $number_of_rows = $number_of_rows + 2;
 
     if($isCronjob) {
@@ -1553,6 +1553,13 @@ class Importvorlage extends GenImportvorlage {
         }
       }
 
+      // HERE START OF PROCESSING OF THE ROWS
+      // INSIDE FOR LOOP
+      // $i -> loop counter row number starting with 1
+      // $number_of_rows
+      // access data -> $tmp['column_name'][$i]
+      // $tmp['cmd'] -> create or update
+      // $tmp['checked'] -> 0 or 1
 
       switch($ziel)
       {
@@ -5021,7 +5028,61 @@ class Importvorlage extends GenImportvorlage {
             }
           }
           break;
-        }
+          case 'kontorahmen':
+
+            // Create a row dataset (without checked and cmd)
+            $update_sql = "";
+            $row = array();
+            $comma = "";
+            foreach ($tmp as $key => $value) {
+                if ($key != 'cmd' && $key != 'checked') {
+                    $row[$key] = $value[$i];
+                    $comma = ", ";
+                }
+            }
+         
+            if (empty($row['sachkonto'])) {
+                break;
+            }
+
+
+            $art_array = array(
+                '1' => 'Aufwendungen',
+                '2' => 'Erlöse',
+                '3' => 'Geldtransit',
+                '9' => 'Saldo'
+            );
+
+            $row['art'] = array_search($row['art'], $art_array);
+            $row['projekt'] = $this->app->erp->ReplaceProjekt(true,$row['projekt'],true); // Parameters: Target db?, value, from form?
+
+            $sql = "SELECT * FROM kontorahmen WHERE sachkonto = '".$row['sachkonto']."'";
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (!empty($result)) {
+
+                $comma = "";
+                foreach ($row as $key => $value) {
+                    $update_sql .= $comma."`".$key."` = '".$value."'";   
+                    $comma = ", ";
+                }
+
+                $sql = "UPDATE kontorahmen SET ".$update_sql." WHERE `sachkonto` = '".$row['sachkonto']."'";
+                $result = $this->app->DB->Update($sql);
+            } else {
+                $sql = "INSERT INTO kontorahmen (".
+                        implode(", ",array_keys($row)).
+                        ") VALUES ('".
+                        implode("', '",array_values($row)).
+                        "')";
+                $result = $this->app->DB->Update($sql);
+            }
+
+          break;
+        } 
+
+        // HERE END OF PROCESSING THE ROWS switch($ziel);
+
         if($isCronjob) {
           $this->app->DB->Update(
             sprintf(
