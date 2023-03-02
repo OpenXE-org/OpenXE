@@ -30,13 +30,13 @@ class PLACEHOLDER_MODULECLASSNAME {
         switch ($name) {
             case "PLACEHOLDER_LIST":
                 $allowed['PLACEHOLDER_LIST'] = array('list');
-                $heading = array('','',PLACEHOLDER_COLUMNS, 'Men&uuml;');
+                $heading = array('','',PLACEHOLDER_HEADERS, 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array(PLACEHOLDER_SQL_COLUMNS);
+                $findcols = array('PLACEHOLDER_ID_COLUMN','PLACEHOLDER_ID_COLUMN',PLACEHOLDER_SQL_COLUMNS);
                 $searchsql = array(PLACEHOLDER_SQL_COLUMNS);
 
                 $defaultorder = 1;

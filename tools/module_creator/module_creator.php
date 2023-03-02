@@ -17,6 +17,8 @@
  * PLACEHOLDER_GET_INPUT
  * PLACEHOLDER_SET_INPUT
  * PLACEHOLDER_COLUMNS
+ * PLACEHOLDER_ID_COLUMN
+ * PLACEHOLDER_HEADERS
  * PLACEHOLDER_SET_TPL
  */
 
@@ -164,6 +166,7 @@ if ($argc >= 2) {
 // Create php file
 
     $list_of_columns = implode(', ', $columns);
+    $list_of_columns_headers_in_quotes =  "'" . implode('\', \'', array_map('ucfirst',$columns)) . "'";
     $list_of_columns_in_quotes = "'" . implode('\', \'', $columns) . "'";
     $sql_list_of_columns = implode(', ', $sql_columns);
     $sql_list_of_columns_in_quotes = "'" . implode('\', \'', $sql_columns) . "'";
@@ -194,6 +197,8 @@ if ($argc >= 2) {
     $php_file_contents = str_replace('PLACEHOLDER_GET_INPUT', $get_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SET_INPUT', $set_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_COLUMNS', $list_of_columns_in_quotes, $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_ID_COLUMN', $table_short_name.".id", $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_HEADERS', $list_of_columns_headers_in_quotes, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SQL_COLUMNS', $sql_list_of_columns_in_quotes, $php_file_contents);
 
     $php_file = fopen($target_php_folder . $php_file_name, "w");
