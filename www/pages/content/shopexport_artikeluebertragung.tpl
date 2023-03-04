@@ -40,8 +40,8 @@
 				<fieldset>
 					<legend>{|Aktionen|}</legend>
 					
-						<input type="submit" class="btnBlueNew" value="{|Lagerzahlcache zur&uuml;cksetzen|}" name="delcache"><br>
-						<input type="submit" class="btnBlueNew" value="{|Lagerzahlcache für Shopartikel mit Menge 0 zur&uuml;cksetzen|}" name="delzerostockcache"><br>
+						<input type="submit" class="btnBlueNew" value="{|Lagerzahlencache zur&uuml;cksetzen|}" name="delcache"><br>
+						<input type="submit" class="btnBlueNew" value="{|Lagerzahlencache für Shopartikel mit Menge 0 zur&uuml;cksetzen|}" name="delzerostockcache"><br>
 						<input type="submit" class="btnBlueNew" value="{|Artikelcache zur&uuml;cksetzen|}" name="delarticlecache"><br>
 						<input type="submit" class="btnBlueNew" value="{|Alle Artikel laden|}" name="alle" onclick="if(!confirm('{|Wollen Sie wirklich alle Artikel an den Shop übertragen? Eventuell werden hier auch Artikeltexte, Preise, Bilder, Eigenschaften, Kategorien, etc. übertragen und überschrieben. Bitte prüfen Sie das Verhalten vorher an einigen Artikel. Bitte nehmen Sie in jedemfall vorab eine Sicherung im Shop vor.|}')) return false;"><br>
   					<input type="submit" class="btnBlueNew" value="{|Alle ge&auml;nderten Artikel laden|}" name="allchanged" onclick="if(!confirm('{|Wollen Sie wirklich alle Artikel an den Shop übertragen? Eventuell werden hier auch Artikeltexte, Preise, Bilder, Eigenschaften, Kategorien, etc. übertragen und überschrieben. Bitte prüfen Sie das Verhalten vorher an einigen Artikel. Bitte nehmen Sie in jedemfall vorab eine Sicherung im Shop vor.|}')) return false;"><br>
