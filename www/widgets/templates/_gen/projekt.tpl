@@ -348,14 +348,11 @@
 
  <div class="row">
    <div class="row-height">
-     <div class="col-xs-12 col-md-6 col-md-height">
+     <div class="col-xs-12 col-md-4 col-md-height">
        <div class="inside inside-full-height">
          <fieldset>
-           <legend>{|Finanzbuchhaltung Export Kontenrahmen|}</legend>
+           <legend>{|Finanzbuchhaltung Export Erl&ouml;se|}</legend>
            <table border="0" width="100%">
-             <tr>
-               <td width="300"></td><td>Erl&ouml;se</td>
-             </tr>
              <tr>
                <td width="300">Inland (normal):</td><td>[STEUER_ERLOESE_INLAND_NORMAL][MSGSTEUER_ERLOESE_INLAND_NORMAL]</td>
              </tr>
@@ -380,13 +377,11 @@
          </fieldset>
        </div>
      </div>
-     <div class="col-xs-12 col-md-6 col-md-height">
+     <div class="col-xs-12 col-md-4 col-md-height">
        <div class="inside inside-full-height">
          <fieldset>
+           <legend>{|Finanzbuchhaltung Export Aufwendungen|}</legend>
            <table>
-             <tr>
-               <td width="300"></td><td>Aufwendungen</td>
-             </tr>
              <tr>
                <td width="300">Inland (normal):</td><td>[STEUER_AUFWENDUNG_INLAND_NORMAL][MSGSTEUER_AUFWENDUNG_INLAND_NORMAL]</td>
              </tr>
@@ -407,6 +402,27 @@
              </tr>
              <tr>
                <td width="300">Import:</td><td>[STEUER_AUFWENDUNG_INLAND_IMPORT][MSGSTEUER_AUFWENDUNG_INLAND_IMPORT]</td>
+             </tr>
+           </table>
+         </fieldset>
+       </div>
+    </div>
+    <div class="col-xs-12 col-md-4 col-md-height">
+       <div class="inside inside-full-height">
+         <fieldset>
+           <legend>{|Finanzbuchhaltung Export Einstellungen|}</legend>
+           <table>
+             <tr>
+               <td width="300">Berater:</td><td>[BUCHHALTUNG_BERATER]</td>
+             </tr>
+             <tr>
+               <td width="300">Mandant:</td><td>[BUCHHALTUNG_MANDANT]</td>
+             </tr>
+             <tr>
+               <td width="300">Wirtschaftsjahr Beginn (MMDD):</td><td>[BUCHHALTUNG_WJ_BEGINN]</td>
+             </tr>
+             <tr>
+               <td width="300">Sachkontenl&auml;nge (4-8):</td><td>[BUCHHALTUNG_SACHKONTENLAENGE]</td>
              </tr>
            </table>
          </fieldset>

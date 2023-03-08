@@ -1059,6 +1059,30 @@
 							<!--<tr>
 								<td width="300">Export nach Positionen</td><td colspan="3"><input type="checkbox" name="steuer_positionen_export" value="1" [STEUER_POSITIONEN_EXPORT]"></td>
 							</tr>-->
+							<tr>
+                                <td width="300">Berater:</td>
+                                <td>
+                                    <input type="text" name="buchhaltung_berater" size="10" value="[BUCHHALTUNG_BERATER]">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="300">Mandant:</td>
+                                <td>
+                                    <input type="text" name="buchhaltung_mandant" size="10" value="[BUCHHALTUNG_MANDANT]">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="300">Wirtschaftsjahr Beginn (MMDD):</td>
+                                <td>
+                                    <input type="text" name="buchhaltung_wj_beginn" id="buchhaltung_wj_beginn" size="10" value="[BUCHHALTUNG_WJ_BEGINN]">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="300">Sachkontenl&auml;nge (4-8):</td>
+                                <td>
+                                    <input type="text" name="buchhaltung_sachkontenlaenge" size="10" value="[BUCHHALTUNG_SACHKONTENLAENGE]">
+                                </td>
+                            </tr>
 						</table>
 					</fieldset>
 				</div>

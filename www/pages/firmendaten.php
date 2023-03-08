@@ -1022,53 +1022,44 @@ class Firmendaten  {
           'arbeitsnachweis_header','arbeitsnachweis_footer','provisionsgutschrift_header','provisionsgutschrift_footer','proformarechnung_header','proformarechnung_footer','eu_lieferung_vermerk','export_lieferung_vermerk'
           ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2','bcc3'
           ,'firmenfarbe','name','strasse','plz','ort','steuernummer','projekt','steuer_positionen_export','tabsnavigationfarbe','tabsnavigationfarbeschrift'
+          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge"
         );
 
         if(isset($sql2a)){
-          unset($sql2a);
-        }
-/*
+            unset($sql2a);
+        }   
+
         foreach($toupdate as $v) {
-          $sql2a[] = $v ." = '".$data[$v]."' ";
-        }
-        $sql2 = "UPDATE firmendaten SET ".implode(',',$sql2a)." WHERE firma = '$id' LIMIT 1";
-        
-        unset($sql2a);
-        $this->app->DB->Update($sql2);
-*/
-
-//        if($this->app->DB->error()) {
-
-          foreach($toupdate as $v) {
-
-		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$v'");
-		if ($check) {
-	            $this->app->DB->Update("UPDATE firmendaten SET ".$v." = '".($data[$v])."'"." WHERE firma = '$id' LIMIT 1");
-		}
-          }
-
-//        }
-        
-        if(isset($firmendaten_werte_spalten)) {
-          foreach($toupdate as $key) {
-            if(isset($firmendaten_werte_spalten[$key]) && $firmendaten_werte_spalten[$key]['wert'] != $data[$key]) {
-              $this->app->DB->Update("UPDATE firmendaten_werte SET wert = '".$data[$key]."' WHERE id = '".$firmendaten_werte_spalten[$key]['id']."' LIMIT 1");
-              unset($firmendaten_werte_spalten[$key]);
-              if(!empty($doubletes[$key])) {
-                $this->app->DB->Delete(
-                  sprintf(
-                    "DELETE FROM firmendaten_werte WHERE id <> %d AND name != '%s' AND id IN (%s)",
-                    $firmendaten_werte_spalten[$key]['id'], $this->app->DB->real_escape_string($key),
-                    implode(', ', $doubletes[$key])
-                  )
-                );
-                unset($doubletes[$key]);
-              }
-            }
-          }
+    		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$v'");
+    		if ($check) {
+  	            $this->app->DB->Update("UPDATE firmendaten SET ".$v." = '".($data[$v])."'"." WHERE firma = '$id' LIMIT 1");
+    		}
         }
         
-        
+        if (isset($firmendaten_werte_spalten)) {
+            foreach($toupdate as $key) {
+                if(isset($firmendaten_werte_spalten[$key])) {
+                    if ($firmendaten_werte_spalten[$key]['wert'] != $data[$key]) {
+                        $this->app->DB->Update("UPDATE firmendaten_werte SET wert = '".$data[$key]."' WHERE id = '".$firmendaten_werte_spalten[$key]['id']."' LIMIT 1");
+                        unset($firmendaten_werte_spalten[$key]);
+                        if(!empty($doubletes[$key])) {
+                            $this->app->DB->Delete(
+                              sprintf(
+                                "DELETE FROM firmendaten_werte WHERE id <> %d AND name != '%s' AND id IN (%s)",
+                                $firmendaten_werte_spalten[$key]['id'], $this->app->DB->real_escape_string($key),
+                                implode(', ', $doubletes[$key])
+                              )
+                            );
+                            unset($doubletes[$key]);
+                        }
+                    }
+                } else {
+                    // Create new value in firmendaten_werte
+                    $sql = "INSERT INTO firmendaten_werte (name, wert) VALUES('$key', '".$data[$key]."')";
+                    $this->app->DB->Update($sql);
+                }
+            } 
+        }               
         
         for($i = 0; $i <= 3; $i++) {
           for($j = 0; $j <= 5; $j++) {
@@ -1076,23 +1067,12 @@ class Firmendaten  {
           }
         }        
         
-/*        foreach($toupdate2 as $k => $v) {
-          $sql2a[] = $k ." = '".$v."' ";
-        }
-        $sql2 = "UPDATE firmendaten SET ".implode(',',$sql2a)." WHERE firma = '$id' LIMIT 1";
-        unset($sql2a);
-        $this->app->DB->Update($sql2);
-
-*/
-
-//        if($this->app->DB->error()) {
-          foreach($toupdate2 as $k => $v) {
-		$check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$k'");
-		if ($check) {
-	            $this->app->DB->Update("UPDATE firmendaten SET ".$k." = '".$v."'"." WHERE firma = '$id' LIMIT 1");
-		}
-          }
-//        }
+        foreach($toupdate2 as $k => $v) {
+		    $check = $this->app->DB->SELECT("SHOW COLUMNS FROM firmendaten WHERE Field = '$k'");
+		    if ($check) {
+                $this->app->DB->Update("UPDATE firmendaten SET ".$k." = '".$v."'"." WHERE firma = '$id' LIMIT 1");
+		    }
+        }     
         
         if(isset($firmendaten_werte_spalten)) {
           foreach($toupdate2 as $key => $v) {
@@ -1404,8 +1384,11 @@ class Firmendaten  {
           if(!isset($data[0][$v['name']])){
             $data[0][$v['name']] = $v['wert'];
           }
+
+          // Fill all fields
+          $this->app->Tpl->Set(strtoupper($v['name']), $v['wert']);    
         }
-      }
+      }      
 
       //Brief Absender
       $this->app->Tpl->Set('ABSENDER' , $data[0]['absender']);    
@@ -2085,8 +2068,8 @@ class Firmendaten  {
     $this->app->Tpl->Set('PLZ' , $data['plz']);    
     $this->app->Tpl->Set('ORT' , $data['ort']);    
     $this->app->Tpl->Set('STEUERNUMMER' , $data['steuernummer']);
-  }
 
+  }
   /**
    * @return array
    */
@@ -2271,6 +2254,12 @@ class Firmendaten  {
     $data['produktionsverhalten'] = $this->app->Secure->POST["produktionsverhalten"];
 
     $data['sprachebevorzugen'] = ($this->app->Secure->POST["sprachebevorzugen"]);
+
+    // Buchhaltung export datev
+    $data['buchhaltung_berater'] = ($this->app->Secure->POST["buchhaltung_berater"]);
+    $data['buchhaltung_mandant'] = ($this->app->Secure->POST["buchhaltung_mandant"]);
+    $data['buchhaltung_wj_beginn'] = ($this->app->Secure->POST["buchhaltung_wj_beginn"]);
+    $data['buchhaltung_sachkontenlaenge'] = ($this->app->Secure->POST["buchhaltung_sachkontenlaenge"]);
 
     return $data;
   }
@@ -3116,7 +3105,6 @@ class Firmendaten  {
     $table = $this->tmpl->fetch('document_settings.tpl');
 
     $this->app->YUI->AutoComplete('document_project', 'projektname', 1);
-
 
     $this->app->Tpl->Add('TAB1', $table);
     //$this->app->Tpl->Set('TAB1', $ret);

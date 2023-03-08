@@ -77688,7 +77688,52 @@
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
+                },
+                {
+                    "Field": "buchhaltung_berater",
+                    "Type": "varchar(64)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "buchhaltung_mandant",
+                    "Type": "varchar(64)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "buchhaltung_wj_beginn",
+                    "Type": "varchar(4)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "'0101'",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },               
+                {
+                    "Field": "buchhaltung_sachkontenlaenge",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "4",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
                 }
+
             ],
             "keys": [
                 {

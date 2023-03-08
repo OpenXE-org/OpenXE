@@ -509,6 +509,18 @@ class WidgetGenprojekt
     $field = new HTMLInput("steuer_aufwendung_inland_import","text","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("buchhaltung_berater","text","","10","","","","","","","","0","","");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("buchhaltung_mandant","text","","10","","","","","","","","0","","");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("buchhaltung_wj_beginn","text","","10","","","","","","","","0","","");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("buchhaltung_sachkontenlaenge","text","","10","","","","","","","","0","","");
+    $this->form->NewField($field);
+
 
     $field = new HTMLSelect("kasse_lagerprozess",0,"kasse_lagerprozess","","","0");
     $field->AddOption('{|Keine Lagerbuchung erzeugen|}','kein');
