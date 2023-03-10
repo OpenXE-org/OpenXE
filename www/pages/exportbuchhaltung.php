@@ -19,6 +19,26 @@
 ?>
 <?php
 
+class ConsistencyException extends Exception {
+
+    /* 
+        contains the result data as array(string 'belegnr', float 'betrag_gesamt', float 'betrag_summe'))     
+    */
+
+    private $_data = array();
+
+    public function __construct($message, $data) 
+    {
+        $this->_data = $data;
+        parent::__construct($message);
+    }
+
+    public function getData()
+    {
+        return $this->_data;
+    }
+}
+
 class Exportbuchhaltung
 {
     /** @var Application $app */
@@ -130,12 +150,30 @@ class Exportbuchhaltung
 
             if ($dataok) {
                 $filename = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
-                $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename);
-                header("Content-Disposition: attachment; filename=" . $filename);
-                header("Pragma: no-cache");
-                header("Expires: 0");
-                echo($csv);
-                $this->app->ExitXentral();
+                try {
+                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename);                   
+                    header("Content-Disposition: attachment; filename=" . $filename);
+                    header("Pragma: no-cache");
+                    header("Expires: 0");
+                    echo($csv);
+                    $this->app->ExitXentral();
+                }             
+                catch (ConsistencyException $e) {
+                    $msg = "<div class=error>Inkonsistente Daten (".$e->getMessage()."): <br>";
+
+                    $data = $e->getData();
+                
+                    $count = 0;
+                    foreach($data as $item) {
+                        $msg .= $item['typ']." ".$item['belegnr']." (Kopf ".$this->app->erp->ReplaceMengeBetrag(false,$item['betrag_gesamt'],false)." Positionen ".$this->app->erp->ReplaceMengeBetrag(false,$item['betrag_summe'],false).")<br>";
+                        $count++;
+                        if ($count == 10) {
+                            $msg .= "...";
+                            break;
+                        }
+                    }
+                    $msg .= "</div>";
+                }
             }
         } 
         //---------- DOWNLOAD HERE
@@ -161,6 +199,7 @@ class Exportbuchhaltung
 
     /*
     * Create DATEV Buchhungsstapel
+    * @throws ConsistencyException with string (list of items) if consistency check fails 
     */      
     function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv') : string {            
 
@@ -400,6 +439,7 @@ class Exportbuchhaltung
                 'field_auftrag' => 'b.auftrag',
                 'field_kontonummer' => 'a.kundennummer_buchhaltung',
                 'field_kundennummer' => 'b.kundennummer',
+                'field_betrag_gesamt' => 'b.soll',
                 'field_betrag' => 'p.umsatz_brutto_gesamt',
                 'field_gegenkonto' => '\'\'',
                 'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\',\'storniert\')',
@@ -417,6 +457,7 @@ class Exportbuchhaltung
                 'field_auftrag' => '\'\'',
                 'field_kontonummer' => 'a.kundennummer_buchhaltung',
                 'field_kundennummer' => 'b.kundennummer',
+                'field_betrag_gesamt' => 'b.soll',
                 'field_betrag' => 'p.umsatz_brutto_gesamt',
                 'field_gegenkonto' => '\'\'',
                 'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\')',
@@ -434,6 +475,7 @@ class Exportbuchhaltung
                 'field_auftrag' => 'b.auftrag',
                 'field_kontonummer' => 'a.lieferantennummer_buchhaltung',
                 'field_kundennummer' => 'a.lieferantennummer',
+                'field_betrag_gesamt' => 'b.betrag',
                 'field_betrag' => 'p.betrag',
                 'field_gegenkonto' => 'gegenkonto',
                 'condition_where' => '',
@@ -447,7 +489,7 @@ class Exportbuchhaltung
             if (!$typ['do']) {
                 continue;
             }
-
+         
             $sql = "SELECT  
                 ".$typ['field_belegnr']." as belegnr,
                 ".$typ['field_auftrag']." as auftrag,
@@ -456,6 +498,7 @@ class Exportbuchhaltung
                 b.ustid,
                 b.".$typ['field_date']." as datum,
                 p.id as pos_id,
+                ".$typ['field_betrag_gesamt']." as betrag_gesamt,
                 ".$typ['field_betrag']." as betrag,
                 ".$typ['field_gegenkonto']." as gegenkonto,
                 p.waehrung as pos_waehrung
@@ -470,10 +513,30 @@ class Exportbuchhaltung
                     WHERE 
                 b.".$typ['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typ['condition_where'];                          
 
-//            echo($sql);
+           // Check consistency of positions  
 
+            $sql_check = "SELECT *
+            FROM
+                (
+                SELECT                    
+                    belegnr,
+                    betrag_gesamt,
+                    ROUND(SUM(betrag),2) AS betrag_summe
+                FROM
+            (".$sql.") posten
+            GROUP BY
+                belegnr
+            ) summen
+            WHERE betrag_gesamt <> betrag_summe";          
+ 
+            $result = $this->app->DB->SelectArr($sql_check);
+            if (!empty($result)) {
+                $e = new ConsistencyException(ucfirst($typ['typ']),$result);
+                throw $e;
+            }            
+
+            // Query position data
             $arr = $this->app->DB->Query($sql);  
-
             while ($row = $this->app->DB->Fetch_Assoc($arr)) {                    
 
 //                    print_r($row);
