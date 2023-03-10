@@ -471,7 +471,7 @@ class Exportbuchhaltung
                 'kennzeichen_negativ' => 'S',
                 'field_belegnr' => 'b.rechnung',
                 'field_name' => 'a.name',
-                'field_date' => 'eingangsdatum',
+                'field_date' => 'rechnungsdatum',
                 'field_auftrag' => 'b.auftrag',
                 'field_kontonummer' => 'a.lieferantennummer_buchhaltung',
                 'field_kundennummer' => 'a.lieferantennummer',
@@ -503,9 +503,9 @@ class Exportbuchhaltung
                 ".$typ['field_gegenkonto']." as gegenkonto,
                 p.waehrung as pos_waehrung
             FROM 
+                ".$typ['typ']." b                 
+                    LEFT JOIN 
                 ".$typ['subtable']." p 
-                    INNER JOIN 
-                ".$typ['typ']." b 
                     ON 
                 b.id = p.".$typ['typ']." 
                     INNER JOIN 
@@ -514,11 +514,11 @@ class Exportbuchhaltung
                 b.".$typ['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typ['condition_where'];                          
 
            // Check consistency of positions  
-
+            
             $sql_check = "SELECT *
             FROM
                 (
-                SELECT                    
+                SELECT
                     belegnr,
                     betrag_gesamt,
                     ROUND(SUM(betrag),2) AS betrag_summe
@@ -527,8 +527,8 @@ class Exportbuchhaltung
             GROUP BY
                 belegnr
             ) summen
-            WHERE betrag_gesamt <> betrag_summe";          
- 
+            WHERE betrag_gesamt <> betrag_summe OR betrag_summe IS NULL";   
+
             $result = $this->app->DB->SelectArr($sql_check);
             if (!empty($result)) {
                 $e = new ConsistencyException(ucfirst($typ['typ']),$result);
