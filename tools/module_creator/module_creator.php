@@ -111,6 +111,7 @@ if ($argc >= 2) {
     $columns = array();
     $sql_columns = array();
     $edit_form = "";
+    $tab_pos = "                                "; // Tab position
 
     /* Iterate through the result set */
     echo "FIELD\t\t\t\tType\t\tNull\tKey\tDefault\tExtra\n";
@@ -152,7 +153,16 @@ if ($argc >= 2) {
             //       <tr><td>{|Bezeichnung|}:*</td><td><input type="text" id="bezeichnung" name="bezeichnung" value="[BEZEICHNUNG]" size="40"></td></tr>
 
             if ($row['Field'] != 'id') {
-                $edit_form = $edit_form . '<tr><td>{|' . ucfirst($row['Field']) . '|}:</td><td><input type="text" name="' . $row['Field'].'" id="'.$row['Field'].'" value="[' . strtoupper($row['Field']) . ']" size="20"></td></tr>' . "\n";
+                $edit_form = $edit_form.
+                               '<tr>
+                                        <td>
+                                            {|' . ucfirst($row['Field']) . '|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="' . $row['Field'].'" id="'.$row['Field'].'" value="[' . strtoupper($row['Field']) . ']" size="20">
+                                        </td>
+                                    </tr>
+                                    ';
              }
              echo("\n");
         }
