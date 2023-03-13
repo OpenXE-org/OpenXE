@@ -34,7 +34,7 @@ if(empty($app->remote)) {
     $app->remote = new Remote($app);
   }
 }
-$app->erp->LogFile("Starte Synchronisation");
+$app->erp->LogFile("Lagerzahlen-Synchronisation Start");
 
 //$app->DB->Update("UPDATE artikel SET cache_lagerplatzinhaltmenge='999'");
 
@@ -53,6 +53,9 @@ $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
 
   $shops = $app->DB->SelectArr('SELECT * FROM `shopexport` WHERE `aktiv` = 1');
   if(empty($shops)) {
+
+    $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: Keine aktiven Shops");
+
     return;
   }
   $shopByIds = [];
@@ -97,6 +100,9 @@ $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
   );
 
   if(empty($lagerartikel)) {
+
+    $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: Keine fälligen Artikel");
+
     return;
   }
 
@@ -110,7 +116,7 @@ $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
   }
 
   $clagerartikel = $lagerartikel?count($lagerartikel):0;
-  $app->erp->LogFile('Artikel Gesamt fuer Synchronisation: '.$clagerartikel);
+  $app->erp->LogFile('Lagerzahlen-Synchronisation, Artikel gesamt: '.$clagerartikel);
   foreach($lagerartikel as $ij => $articleId) {
     $app->DB->Update(
       "UPDATE `prozessstarter` 
@@ -172,9 +178,10 @@ $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
       }
     }
     catch (Exception $exception) {
-      $app->erp->LogFile($app->DB->real_escape_string($exception->getMessage()));
+      $app->erp->LogFile("Lagerzahlen-Synchronisation Exception:".$app->DB->real_escape_string($exception->getMessage()));
     }
   }
 
-  $app->erp->LogFile('Ende Synchronisation');
+  $app->erp->LogFile("Lagerzahlen-Synchronisation Ende");
+
 

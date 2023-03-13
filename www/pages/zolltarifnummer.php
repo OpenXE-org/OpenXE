@@ -6,7 +6,7 @@
 
 use Xentral\Components\Database\Exception\QueryFailureException;
 
-class PLACEHOLDER_MODULECLASSNAME {
+class Zolltarifnummer {
 
     function __construct($app, $intern = false) {
         $this->app = $app;
@@ -14,10 +14,10 @@ class PLACEHOLDER_MODULECLASSNAME {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "PLACEHOLDER_LIST");        
-        $this->app->ActionHandler("create", "PLACEHOLDER_EDIT"); // This automatically adds a "New" button
-        $this->app->ActionHandler("edit", "PLACEHOLDER_EDIT");
-        $this->app->ActionHandler("delete", "PLACEHOLDER_DELETE");
+        $this->app->ActionHandler("list", "zolltarifnummer_list");        
+        $this->app->ActionHandler("create", "zolltarifnummer_edit"); // This automatically adds a "New" button
+        $this->app->ActionHandler("edit", "zolltarifnummer_edit");
+        $this->app->ActionHandler("delete", "zolltarifnummer_delete");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -28,28 +28,28 @@ class PLACEHOLDER_MODULECLASSNAME {
 
     static function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
-            case "PLACEHOLDER_LIST":
-                $allowed['PLACEHOLDER_LIST'] = array('list');
-                $heading = array('','',PLACEHOLDER_HEADERS, 'Men&uuml;');
-                $width = array('1%','1%','10%'); // Fill out manually later
+            case "zolltarifnummer_list":
+                $allowed['zolltarifnummer_list'] = array('list');
+                $heading = array('','','Nummer', 'Beschreibung', 'Interne Bemerkung', 'Men&uuml;');
+                $width = array('1%','1%','30%','30%','30%','1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('PLACEHOLDER_ID_COLUMN','PLACEHOLDER_ID_COLUMN',PLACEHOLDER_SQL_COLUMNS);
-                $searchsql = array(PLACEHOLDER_SQL_COLUMNS);
+                $findcols = array('z.id','z.id','z.nummer', 'z.beschreibung', 'z.internebemerkung');
+                $searchsql = array('z.nummer', 'z.beschreibung', 'z.internebemerkung');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		$dropnbox = "PLACEHOLDER_DROPNBOX";
+		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',z.id,'\" />') AS `auswahl`";
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=PLACEHOLDER_MODULENAME&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=PLACEHOLDER_MODULENAME&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=zolltarifnummer&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=zolltarifnummer&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
-                $sql = "PLACEHOLDER_SQL_LIST";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS z.id, $dropnbox, z.nummer, z.beschreibung, z.internebemerkung, z.id FROM zolltarifnummer z";
 
                 $where = "1";
-                $count = "SELECT count(DISTINCT id) FROM PLACEHOLDER_MODULENAME WHERE $where";
+                $count = "SELECT count(DISTINCT id) FROM zolltarifnummer WHERE $where";
 //                $groupby = "";
 
                 break;
@@ -65,31 +65,31 @@ class PLACEHOLDER_MODULECLASSNAME {
         return $erg;
     }
     
-    function PLACEHOLDER_LIST() {
-        $this->app->erp->MenuEintrag("index.php?module=PLACEHOLDER_MODULENAME&action=list", "&Uuml;bersicht");
-        $this->app->erp->MenuEintrag("index.php?module=PLACEHOLDER_MODULENAME&action=create", "Neu anlegen");
+    function zolltarifnummer_list() {
+        $this->app->erp->MenuEintrag("index.php?module=zolltarifnummer&action=list", "&Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=zolltarifnummer&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
-        $this->app->YUI->TableSearch('TAB1', 'PLACEHOLDER_LIST', "show", "", "", basename(__FILE__), __CLASS__);
-        $this->app->Tpl->Parse('PAGE', "PLACEHOLDER_MODULENAME_list.tpl");
+        $this->app->YUI->TableSearch('TAB1', 'zolltarifnummer_list', "show", "", "", basename(__FILE__), __CLASS__);
+        $this->app->Tpl->Parse('PAGE', "zolltarifnummer_list.tpl");
     }    
 
-    public function PLACEHOLDER_DELETE() {
+    public function zolltarifnummer_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
         
-        $this->app->DB->Delete("DELETE FROM `PLACEHOLDER_MODULENAME` WHERE `id` = '{$id}'");        
+        $this->app->DB->Delete("DELETE FROM `zolltarifnummer` WHERE `id` = '{$id}'");        
         $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
 
-        $this->PLACEHOLDER_LIST();
+        $this->zolltarifnummer_list();
     } 
 
     /*
-     * Edit PLACEHOLDER_MODULENAME item
+     * Edit zolltarifnummer item
      * If id is empty, create a new one
      */
         
-    function PLACEHOLDER_EDIT() {
+    function zolltarifnummer_edit() {
         $id = $this->app->Secure->GetGET('id');
         
         // Check if other users are editing this id
@@ -100,8 +100,8 @@ class PLACEHOLDER_MODULECLASSNAME {
               
         $this->app->Tpl->Set('ID', $id);
 
-        $this->app->erp->MenuEintrag("index.php?module=PLACEHOLDER_MODULENAME&action=edit&id=$id", "Details");
-        $this->app->erp->MenuEintrag("index.php?module=PLACEHOLDER_MODULENAME&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=zolltarifnummer&action=edit&id=$id", "Details");
+        $this->app->erp->MenuEintrag("index.php?module=zolltarifnummer&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
@@ -136,7 +136,7 @@ class PLACEHOLDER_MODULECLASSNAME {
 //            echo($values."<br>");
 //            echo($update."<br>");
 
-            $sql = "INSERT INTO PLACEHOLDER_MODULENAME (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+            $sql = "INSERT INTO zolltarifnummer (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
 
 //            echo($sql);
 
@@ -144,7 +144,7 @@ class PLACEHOLDER_MODULECLASSNAME {
 
             if ($id == 'NULL') {
                 $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=PLACEHOLDER_MODULENAME&action=list&msg=$msg");
+                header("Location: index.php?module=zolltarifnummer&action=list&msg=$msg");
             } else {
                 $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
             }
@@ -152,8 +152,8 @@ class PLACEHOLDER_MODULECLASSNAME {
 
     
         // Load values again from database
-	$dropnbox = "PLACEHOLDER_DROPNBOX";
-        $result = $this->app->DB->SelectArr("PLACEHOLDER_SQL_LIST"." WHERE id=$id");
+	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',z.id,'\" />') AS `auswahl`";
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS z.id, $dropnbox, z.nummer, z.beschreibung, z.internebemerkung, z.id FROM zolltarifnummer z"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
@@ -169,7 +169,7 @@ class PLACEHOLDER_MODULECLASSNAME {
          */
 
 //        $this->SetInput($input);              
-        $this->app->Tpl->Parse('PAGE', "PLACEHOLDER_MODULENAME_edit.tpl");
+        $this->app->Tpl->Parse('PAGE', "zolltarifnummer_edit.tpl");
     }
 
     /**
@@ -179,7 +179,10 @@ class PLACEHOLDER_MODULECLASSNAME {
         $input = array();
         //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
         
-        PLACEHOLDER_GET_INPUT
+        $input['nummer'] = $this->app->Secure->GetPOST('nummer');
+	$input['beschreibung'] = $this->app->Secure->GetPOST('beschreibung');
+	$input['internebemerkung'] = $this->app->Secure->GetPOST('internebemerkung');
+	
 
         return $input;
     }
@@ -190,7 +193,10 @@ class PLACEHOLDER_MODULECLASSNAME {
     function SetInput($input) {
         // $this->app->Tpl->Set('EMAIL', $input['email']);        
         
-        PLACEHOLDER_SET_INPUT
+        $this->app->Tpl->Set('NUMMER', $input['nummer']);
+	$this->app->Tpl->Set('BESCHREIBUNG', $input['beschreibung']);
+	$this->app->Tpl->Set('INTERNEBEMERKUNG', $input['internebemerkung']);
+	
     }
 
 }

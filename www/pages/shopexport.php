@@ -52,6 +52,8 @@ class Shopexport
     $this->app->ActionHandler("dateien","ShopexportDateien");
     $this->app->ActionHandler("live","ShopexportLive");
 
+    $this->app->ActionHandler('artikellist', 'ShopexportArtikelList');
+
     $this->app->DefaultActionHandler("list");
     $this->app->ActionHandlerListen($app);
   }
@@ -260,6 +262,7 @@ class Shopexport
 
     $this->app->erp->MenuEintrag("index.php?module=onlineshops&action=edit&id=$id",'Details');
     //$this->app->erp->MenuEintrag("index.php?module=shopexport&action=export&id=$id","Export");
+    $this->app->erp->MenuEintrag('index.php?module=onlineshops&action=artikellist&id='.$id,'Artikelliste');
     $this->app->erp->MenuEintrag("index.php?module=shopexport&action=artikeluebertragung&id=$id","Artikel &Uuml;bertragung");
     if($this->app->DB->Select("SELECT modulename FROM shopexport WHERE id = '$id'") === 'shopimporter_shopware'){
       //Soll nur in Shopware angezeigt werden, da nur in Shopware unterstüzt
@@ -925,6 +928,13 @@ class Shopexport
     $this->app->YUI->AutoComplete('kategorie','artikelkategorien');
     $this->app->YUI->TableSearch('TAB1','shopexport_artikeluebertragung');
     $this->app->Tpl->Parse('PAGE','shopexport_artikeluebertragung.tpl');
+  }
+
+  public function ShopexportArtikelList()
+  {
+    $this->ShopexportMenu();
+    $this->app->YUI->TableSearch('TAB1','shopexport_artikellist', "show", "", "", basename(__FILE__), __CLASS__);
+    $this->app->Tpl->Parse('PAGE', "shopexport_artikellist.tpl");
   }
 
   public function ShopexportAdressuebertragung()

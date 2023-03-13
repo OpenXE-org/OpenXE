@@ -7868,10 +7868,10 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         
         // headings
 
-        $heading = array('', '', 'Angebot', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Status', 'Men&uuml;');
+        $heading = array('', '', 'Angebot', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Status','Bearbeiter', 'Men&uuml;');
         $width = array('1%', '1%', '1%', '10%', '10%', '40%', '5%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
-        $findcols = array('open', 'a.belegnr', 'a.belegnr', 'a.datum', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme', 'a.status', 'id');
-        $searchsql = array('DATE_FORMAT(a.datum,\'%d.%m.%Y\')', 'a.anfrage','a.belegnr', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.status', "FORMAT(a.gesamtsumme,2{$extended_mysql55})", 'a.status', 'adr.freifeld1','a.internebezeichnung');
+        $findcols = array('open', 'a.belegnr', 'a.belegnr', 'a.datum', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme', 'a.status','a.bearbeiter', 'id');
+        $searchsql = array('DATE_FORMAT(a.datum,\'%d.%m.%Y\')', 'a.anfrage','a.belegnr', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.status', "FORMAT(a.gesamtsumme,2{$extended_mysql55})", 'a.status','a.bearbeiter', 'adr.freifeld1','a.internebezeichnung');
         $defaultorder = 12; //Optional wenn andere Reihenfolge gewuenscht
 
         $defaultorderdesc = 1;
@@ -7904,7 +7904,7 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
           ."<td>"
           ."<a href=\"#\" class=\"label-manager\" data-label-column-number=\"5\" data-label-reference-id=\"%value%\" data-label-reference-table=\"angebot\"><span class=\"label-manager-icon\"></span></a>"
           ."</td></tr></table>";
-        $menucol = 11;
+        $menucol = 12;
 
         $parameter = $this->app->User->GetParameter('table_filter_angebot');
         $parameter = base64_decode($parameter);
@@ -7925,6 +7925,7 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
           a.zahlungsweise as zahlungsweise,  
           FORMAT(a.gesamtsumme,2{$extended_mysql55}) as betrag, 
           UPPER(a.status) as status, 
+          a.bearbeiter,
           a.id
         ";
 

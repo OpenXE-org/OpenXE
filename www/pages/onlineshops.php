@@ -147,6 +147,48 @@ class Onlineshops extends GenShopexport {
         $where = " s.shopid = '$id' AND g.aktiv = 1";
         $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"#\" onclick=kundengruppenEdit(%value%)>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;" . "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=onlineshops&action=kundengruppendelete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;</td></tr></table>";
         break;
+        case 'shopexport_artikellist':
+
+            $id = $app->Secure->GetGET('id');
+            $allowed['onlineshops'] = array('artikellist');
+            $heading = array('',  '',   'Artikel-Nr.','Artikel','Aktiv','Lagersync','Einstellungen aus Artikel','Letzte Artikel&uuml;bertragung','Letzter Lagersync','Lagercache','Men&uuml;');
+            $width = array(  '1%','1%', '5%',         '40%',    '1%',   '1%',       '1%',                       '7%',                            '7%',               '1%',        '1%');
+            $findcols = array('a.id','a.id','a.nummer','a.name_de','aos.aktiv','a.autolagerlampe','aos.ausartikel','last_article_transfer','aos.last_storage_transfer','a.cache_lagerplatzinhaltmenge');
+            $searchsql = array('a.nummer','a.name_de');
+
+            $defaultorder = 1; //Optional wenn andere Reihenfolge gewuenscht
+            $defaultorderdesc = 0;
+
+    		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`";
+
+            $sql = "
+SELECT SQL_CALC_FOUND_ROWS
+    a.id,".
+    $dropnbox.",
+    a.nummer,
+    a.name_de,
+    aos.aktiv,
+    a.autolagerlampe,
+    aos.ausartikel,".
+    $app->erp->FormatDateTime('aos.last_article_transfer').",".
+    $app->erp->FormatDateTime('aos.last_storage_transfer').",
+    if(a.cache_lagerplatzinhaltmenge = -999,'',a.cache_lagerplatzinhaltmenge) cache,
+    a.id
+FROM
+    artikel a
+INNER JOIN artikel_onlineshops aos ON
+    a.id = aos.artikel
+INNER JOIN shopexport s ON
+    s.id = aos.shop
+            ";
+            $where = " s.id = '$id'";
+
+            $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=artikel&action=edit&id=%value%#tabs-4\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a></td></tr></table>";
+//            $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"#\" onclick=kundengruppenEdit(%value%)>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;" . "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=onlineshops&action=kundengruppendelete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;</td></tr></table>";
+
+            $orderby = null;
+
+        break;
     }
     
     $erg = [];
@@ -215,6 +257,8 @@ class Onlineshops extends GenShopexport {
     $this->app->ActionHandler('getapi', 'ShopexportGetApi');
     $this->app->ActionHandler('itemlink', 'ShopexportItemlink');
     $this->app->ActionHandler('orderlink', 'ShopexportOrderlink');
+
+    $this->app->ActionHandler('artikellist', 'ShopexportArtikelList');
 
     $this->app->erp->Headlines('Shopexport');
     $this->app->ActionHandlerListen($app);
@@ -2790,6 +2834,46 @@ class Onlineshops extends GenShopexport {
     parent::ShopexportList();
   }
 
+  public function ShopexportArtikelList()
+  {
+
+    // Copied from shopexport (dirty)
+    $id = (int)$this->app->Secure->GetGET('id');
+    $delcache = $this->app->Secure->GetPOST('delcache');
+    $delcacheselected = $this->app->Secure->GetPOST('delcacheselected');
+
+    // Process multi action
+    $where = "1";
+    $auswahl = $this->app->Secure->GetPOST('auswahl');
+    $selectedIds = [];
+    if(!empty($auswahl)) {
+      foreach($auswahl as $selectedId) {
+        $selectedId = (int)$selectedId;
+        if($selectedId > 0) {
+          $selectedIds[] = $selectedId;
+        }
+      }          
+      $where = "a.id IN (".implode(",",$selectedIds).")";
+    }
+
+    if(!empty($delcache) || !empty($delcacheselected)) {
+      $anz = 0;
+      if($id > 0) {
+        $this->app->DB->Update("UPDATE artikel a 
+        LEFT JOIN (SELECT artikel FROM artikel_onlineshops WHERE shop = '$id' AND aktiv = 1 GROUP BY artikel) oa ON a.id = oa.artikel
+        SET a.cache_lagerplatzinhaltmenge = -999 WHERE (a.shop = '$id' OR a.shop2 = '$id' OR a.shop3 = '$id' OR NOT ISNULL(oa.artikel)) AND a.geloescht = 0 AND ($where)");
+        $anz = $this->app->DB->affected_rows();
+        $this->app->erp->LogFile("Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
+        $this->app->Tpl->Add('MESSAGE','<div class="info">Lagerzahlencache zurückgesetzt für '.$anz.' Artikel, shopid: '.$id.'</div>');
+      }
+    }
+
+    $this->ShopexportMenu();
+    $this->app->YUI->TableSearch('TAB1','shopexport_artikellist', "show", "", "", basename(__FILE__), __CLASS__);
+    $this->app->Tpl->Parse('PAGE', "shopexport_artikellist.tpl");
+  }
+
+
   /**
    * @param array $importerCapabilities
    * @param array $featureKeys
@@ -2942,6 +3026,7 @@ class Onlineshops extends GenShopexport {
       //$this->app->Tpl->Add('KURZUEBERSCHRIFT2',$name);
       $this->app->erp->MenuEintrag('index.php?module=onlineshops&action=edit&id='.$id,'Details');
       //$this->app->erp->MenuEintrag("index.php?module=shopexport&action=export&id=$id","Export");
+      $this->app->erp->MenuEintrag('index.php?module=onlineshops&action=artikellist&id='.$id,'Artikelliste');
       $this->app->erp->MenuEintrag('index.php?module=shopexport&action=artikeluebertragung&id='.$id,'Artikel &Uuml;bertragung');
       if($this->app->DB->Select("SELECT modulename FROM shopexport WHERE id = '$id'") === 'shopimporter_shopware'){
         //Soll nur in Shopware angezeigt werden, da nur in Shopware unterstüzt

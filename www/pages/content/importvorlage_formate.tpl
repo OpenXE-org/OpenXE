@@ -6,6 +6,7 @@
 		<li><a href="#tabs-3">{|Zeiterfassung|}</a></li>
 		<li><a href="#tabs-4">{|Wiedervorlagen|}</a></li>
 		<li><a href="#tabs-5">{|Notizen|}</a></li>
+		<li><a href="#tabs-6">{|Kontorahmen|}</a></li>
 	</ul>
 
 	<div id="tabs-1">
@@ -502,5 +503,52 @@
 				</div>
 			</div>
 		</div>
+	</div>
+    <div id="tabs-6">
+	    <div class="row">
+		    <div class="col-xs-12 col-sm-1 col-sm-height">
+			    <div class="inside inside-full-height">
+				    <fieldset><legend>{|Kontorahmen|}</legend>
+					    <table class="mkTable">
+						    <tr>
+							    <th>Variable</th>
+							    <th>Beschreibung</th>
+							    <th>Kommentar</th>
+						    </tr>
+						    <tr>
+							    <td>sachkonto</td>
+							    <td>Sachkontonummer</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>beschriftung</td>
+							    <td>Sachkontobeschriftung</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>art</td>
+							    <td>Art des Kontos</td>
+							    <td>'Aufwendungen', 'Erl&ouml;se', 'Geldtransit' oder 'Saldo'</td>
+						    </tr>
+						    <tr>
+							    <td>bemerkung</td>
+							    <td>Bemerkung zum Konto</td>
+							    <td>optional</td>
+						    </tr>
+						    <tr>
+							    <td>projekt</td>
+							    <td>Projekt-Kennung</td>
+							    <td>optional</td>
+						    </tr>
+						    <tr>
+							    <td>ausblenden</td>
+							    <td>Soll das Konto ausgeblendet werden?</td>
+							    <td>0 oder 1</td>
+						    </tr>
+					    </table>
+				    </fieldset>
+			    </div>
+		    </div>
+	    </div>
 	</div>
 </div>

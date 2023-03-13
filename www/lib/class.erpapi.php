@@ -36859,7 +36859,19 @@ function Firmendaten($field,$projekt="")
           break;
         }
 
-        $this->GetArtikelSteuer($artikel, $ust_befreit, $aufwendung,$tmpsteuersatz, $tmpsteuertext, $erloes, $posRow['umsatzsteuer'],null, $projekt);
+        $this->GetArtikelSteuer($artikel, $ust_befreit, $aufwendung, $tmpsteuersatz, $tmpsteuertext, $erloes, $posRow['umsatzsteuer'], null, $projekt);
+
+        $this->getErloesFirmendaten($artikel, $ust_befreit, $aufwendung, $tmpsteuersatzFD, $tmpsteuertextFD, $tmperloesFD, $posRow['umsatzsteuer'], null, $projekt);
+
+        if (!$tmpsteuersatz) {
+            $tmpsteuersatz = $tmpsteuersatzFD;
+        }
+        if (!$tmpsteuertext) {
+            $tmpsteuertext = $tmpsteuertextFD;
+        }
+        if (!$erloes) {
+            $erloes = $tmperloesFD;
+        }
       }
       
       function PortoBerechnen($adresse,$gesamtsumme,$portoartikel, &$realpreis = false)

@@ -17,6 +17,8 @@
  * PLACEHOLDER_GET_INPUT
  * PLACEHOLDER_SET_INPUT
  * PLACEHOLDER_COLUMNS
+ * PLACEHOLDER_ID_COLUMN
+ * PLACEHOLDER_HEADERS
  * PLACEHOLDER_SET_TPL
  */
 
@@ -109,6 +111,7 @@ if ($argc >= 2) {
     $columns = array();
     $sql_columns = array();
     $edit_form = "";
+    $tab_pos = "                                "; // Tab position
 
     /* Iterate through the result set */
     echo "FIELD\t\t\t\tType\t\tNull\tKey\tDefault\tExtra\n";
@@ -150,7 +153,16 @@ if ($argc >= 2) {
             //       <tr><td>{|Bezeichnung|}:*</td><td><input type="text" id="bezeichnung" name="bezeichnung" value="[BEZEICHNUNG]" size="40"></td></tr>
 
             if ($row['Field'] != 'id') {
-                $edit_form = $edit_form . '<tr><td>{|' . ucfirst($row['Field']) . '|}:</td><td><input type="text" name="' . $row['Field'].'" id="'.$row['Field'].'" value="[' . strtoupper($row['Field']) . ']" size="20"></td></tr>' . "\n";
+                $edit_form = $edit_form.
+                               '<tr>
+                                        <td>
+                                            {|' . ucfirst($row['Field']) . '|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="' . $row['Field'].'" id="'.$row['Field'].'" value="[' . strtoupper($row['Field']) . ']" size="20">
+                                        </td>
+                                    </tr>
+                                    ';
              }
              echo("\n");
         }
@@ -164,6 +176,7 @@ if ($argc >= 2) {
 // Create php file
 
     $list_of_columns = implode(', ', $columns);
+    $list_of_columns_headers_in_quotes =  "'" . implode('\', \'', array_map('ucfirst',$columns)) . "'";
     $list_of_columns_in_quotes = "'" . implode('\', \'', $columns) . "'";
     $sql_list_of_columns = implode(', ', $sql_columns);
     $sql_list_of_columns_in_quotes = "'" . implode('\', \'', $sql_columns) . "'";
@@ -194,6 +207,8 @@ if ($argc >= 2) {
     $php_file_contents = str_replace('PLACEHOLDER_GET_INPUT', $get_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SET_INPUT', $set_input, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_COLUMNS', $list_of_columns_in_quotes, $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_ID_COLUMN', $table_short_name.".id", $php_file_contents);
+    $php_file_contents = str_replace('PLACEHOLDER_HEADERS', $list_of_columns_headers_in_quotes, $php_file_contents);
     $php_file_contents = str_replace('PLACEHOLDER_SQL_COLUMNS', $sql_list_of_columns_in_quotes, $php_file_contents);
 
     $php_file = fopen($target_php_folder . $php_file_name, "w");
