@@ -1,5 +1,12 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
+/*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
@@ -2620,7 +2627,7 @@ class Appstore {
     ,'shopimporter_presta'=>array('Bezeichnung'=>'Presta',
         'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_presta',
         'Icon'=>'Icons_dunkel_1.gif',
-        'Versionen'=>'ENT','install'=>true, 'beta' => false,'kategorie'=>'{|Shop Schnittstelle|}')
+        'Versionen'=>'ALL','install'=>true, 'beta' => false,'kategorie'=>'{|Shop Schnittstelle|}')
     ,'shopimporter_shopify'=>array(
         'Bezeichnung'=>'Shopify API Advanced',
         'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_shopify',

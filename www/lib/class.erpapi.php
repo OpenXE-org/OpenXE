@@ -29243,11 +29243,23 @@ function Firmendaten($field,$projekt="")
 
         $process_lock = $this->app->erp->ProzessLock("erpapi_getnextnummer");
 
-        $eigenernummernkreis = 0;
+        $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$projekt' LIMIT 1");
+        $belegnr = '';
         if($eigenernummernkreis=='1')
         {
+          $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',
+              'bestellung', 'gutschrift', 'kundennummer', 'lieferantennummer', 'mitarbeiternummer', 'waren',
+              'produktion', 'sonstiges', 'anfrage', 'artikelnummer', 'kalkulation', 'preisanfrage', 'proformarechnung',
+              'retoure', 'verbindlichkeit', 'goodspostingdocument', 'receiptdocument'];
 
-        } else {
+          $dbfield = "next_$type";
+          $belegnr = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
+          if (!empty($belegnr)) {
+            $newbelegnr = $this->CalcNextNummer($belegnr);
+            $this->app->DB->Update("UPDATE projekt SET $dbfield='$newbelegnr' WHERE id='$projekt' LIMIT 1");
+          }
+        }
+        if (empty($belegnr)) {
           // naechste
           switch($type)
           {
