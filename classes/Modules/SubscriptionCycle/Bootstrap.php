@@ -1,10 +1,17 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 
 declare(strict_types=1);
 
 namespace Xentral\Modules\SubscriptionCycle;
 
 use Aboabrechnung;
+use Sabre\CalDAV\Subscriptions\Subscription;
 use Xentral\Components\SchemaCreator\Collection\SchemaCollection;
 use Xentral\Components\SchemaCreator\Schema\TableSchema;
 use Xentral\Components\SchemaCreator\Type;
@@ -35,6 +42,7 @@ final class Bootstrap
             'SubscriptionCycleJobService'    => 'onInitSubscriptionCycleJobService',
             'SubscriptionCycleFullTask'      => 'onInitSubscriptionCycleFullTask',
             'TaskMutexService'               => 'onInitTaskMutexService',
+            'SubscriptionModule'             => 'onInitSubscriptionModule'
         ];
     }
 
@@ -60,20 +68,12 @@ final class Bootstrap
      */
     public static function onInitSubscriptionCycleManualJobTask(ContainerInterface $container
     ): SubscriptionCycleManualJobTask {
-        $legacyApp = $container->get('LegacyApplication');
-
-        $subscriptionCycleModule = $legacyApp->loadModule('rechnungslauf');
-        $subscriptionModule = new Aboabrechnung($legacyApp);
-        $subscriptionModule->cronjob = true;
-
         return new SubscriptionCycleManualJobTask(
-            $legacyApp,
+            $container->get('LegacyApplication'),
             $container->get('Database'),
             $container->get('TaskMutexService'),
             $container->get('SubscriptionCycleJobService'),
-            $subscriptionCycleModule,
-            $subscriptionModule,
-            !empty($legacyApp->erp->GetKonfiguration('rechnungslauf_gruppen'))
+            $container->get('SubscriptionModule')
         );
     }
 
@@ -210,22 +210,10 @@ final class Bootstrap
         );
     }
 
-    /**
-     * @param SchemaCollection $collection
-     *
-     * @return void
-     */
-    public static function registerTableSchemas(SchemaCollection $collection): void
-    {
-        $subscriptionCycleJob = new TableSchema('subscription_cycle_job');
-        $subscriptionCycleJob->addColumn(Type\Integer::asAutoIncrement('id'));
-        $subscriptionCycleJob->addColumn(new Type\Integer('address_id'));
-        $subscriptionCycleJob->addColumn(new Type\Varchar('document_type', 32));
-        $subscriptionCycleJob->addColumn(new Type\Varchar('job_type', 32));
-        $subscriptionCycleJob->addColumn(new Type\Integer('printer_id'));
-        $subscriptionCycleJob->addColumn(new Type\Timestamp('created_at', 'CURRENT_TIMESTAMP'));
-        $subscriptionCycleJob->addIndex(new Index\Primary(['id']));
-        $subscriptionCycleJob->addIndex(new Index\Index(['address_id']));
-        $collection->add($subscriptionCycleJob);
+    public static function onInitSubscriptionModule(ContainerInterface $container): SubscriptionModule {
+      return new SubscriptionModule(
+          $container->get('LegacyApplication'),
+          $container->get('Database')
+      );
     }
 }
