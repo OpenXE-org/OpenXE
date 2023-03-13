@@ -1804,7 +1804,7 @@ class Rechnung extends GenRechnung
       {
         $gutschriften = '';
         for($agi=0;$agi<$cgutschriften;$agi++)
-          $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi][id]."\" target=\"_blank\">".$alle_gutschriften[$agi][belegnr]."</a> ";
+          $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi]['id']."\" target=\"_blank\">".$alle_gutschriften[$agi]['belegnr']."</a> ";
         $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
       }
 
