@@ -39,7 +39,7 @@
 </div>
 
 <div style="background-color:white">
-<h2 class="greyh2">{|Zahlungseingang|}</h2>
+<h2 class="greyh2">{|Zahlungen|}</h2>
 <div style="padding:10px">
   [ZAHLUNGEN]
 </div>
@@ -58,12 +58,6 @@
 </div>
 </div>
 <div style="background-color:white">
-<h2 class="greyh2">Deckungsbeitrag</h2>
-<div style="padding:10px">
-
-<div class="info">Dieses Modul ist erst ab Version Professional verfügbar</div>
-
-</div>
 </div>
 
 </div>

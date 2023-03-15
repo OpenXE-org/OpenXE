@@ -650,6 +650,7 @@ class Gutschrift extends GenGutschrift
 
 
   /**
+   * Build the html output for minidetail containing the payments
    * @param bool $return
    *
    * @return string
@@ -658,102 +659,35 @@ class Gutschrift extends GenGutschrift
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $gutschriftArr = $this->app->DB->SelectArr(
-      "SELECT DATE_FORMAT(datum,'%d.%m.%Y') as datum, belegnr, soll, waehrung, rechnungid 
-      FROM gutschrift WHERE id='$id' LIMIT 1"
-    );
-    $waehrung = empty($gutschriftArr)?'EUR':$gutschriftArr[0]['waehrung'];
-    if(!$waehrung) {
-      $waehrung = 'EUR';
+    $zahlungen = $this->app->erp->GetZahlungen($id,'gutschrift');
+
+//    print_r($zahlungen);
+
+    $result = "";
+
+    foreach ($zahlungen as $zahlung) {
+        $result .= "
+                    <tr>
+                        <td>
+                            ".$zahlung['datum']."
+                        </td>
+                        <td>
+                            <a href=\"index.php?module=".$zahlung['doc_type']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                                ".ucfirst($zahlung['doc_type'])." 
+                                ".$zahlung['doc_belegnr']."
+                            </a>
+                        </td>
+                        <td>
+                            ".$zahlung['konto']."
+                        </td>
+                        <td>
+                            <a href=\"index.php?module=konto&action=auszug&id=".$zahlung['kontoauszuege']."\">
+                                ".$zahlung['betrag']." ".$zahlung['waehrung']."
+                            </a>
+                        </td>
+                    </tr>";
     }
-
-    $rechnungid = empty($gutschriftArr)?0: $gutschriftArr[0]['rechnungid'];
-
-    $auftragid = $rechnungid <= 0?0:$this->app->DB->Select(
-      sprintf(
-        'SELECT `auftragid` FROM `rechnung` WHERE `id` = %d LIMIT 1',
-        $rechnungid
-      )
-    );
-    $eingang ="<tr><td colspan=\"3\"><b>Zahlungen</b></td></tr>";
-
-
-    $eingang .="<tr><td class=auftrag_cell>".$gutschriftArr[0]['datum']
-      ."</td><td class=auftrag_cell>GS ".$gutschriftArr[0]['belegnr']
-      ."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($gutschriftArr[0]['soll'])
-      ." $waehrung</td></tr>";
-
-    $eingangArr = $this->app->DB->SelectArr(
-      "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%d.%m.%Y') as datum, k.id as kontoauszuege, 
-       ke.betrag as betrag, k.id as zeile,k.waehrung 
-      FROM kontoauszuege_zahlungseingang ke 
-      LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
-      LEFT JOIN konten ko ON k.konto=ko.id 
-      WHERE (ke.objekt='gutschrift' AND ke.parameter='$id') 
-         OR (ke.objekt='auftrag' AND ke.parameter='$auftragid' AND ke.parameter>0)
-        OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0)"
-    );
-    $ceingangArr = empty($eingangArr)?0:(!empty($eingangArr)?count($eingangArr):0);
-
-    for($i=0;$i<$ceingangArr;$i++) {
-      $waehrung = 'EUR';
-      if($eingangArr[$i]['waehrung']) {
-        $waehrung = $eingangArr[$i]['waehrung'];
-      }
-      $eingang .="<tr><td class=auftrag_cell>".$eingangArr[$i]['datum']
-        ."</td><td class=auftrag_cell>".$eingangArr[$i]['konto']
-        ."&nbsp;(<a href=\"index.php?module=zahlungseingang&action=editzeile&id="
-        .$eingangArr[$i]['zeile']."\">zur Buchung</a>)</td><td class=auftrag_cell align=right>"
-        .$this->app->erp->EUR($eingangArr[$i]['betrag'])
-        ." $waehrung</td></tr>";
-    }
-    // gutschriften zu dieser rechnung anzeigen
-/*
-    $gutschriften = $this->app->DB->SelectArr("SELECT belegnr, DATE_FORMAT(datum,'%d.%m.%Y') as datum,soll FROM gutschrift WHERE rechnungid='$id'");
-
-    for($i=0;$i<(!empty($gutschriften)?count($gutschriften):0);$i++)
-      $eingang .="<tr><td class=auftrag_cell>".$gutschriften[$i]['datum']."</td><td class=auftrag_cell>GS ".$gutschriften[$i]['belegnr']."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($gutschriften[$i]['soll'])." EUR</td></tr>";
-
-*/
-
-    $ausgang = '';
-    $ausgangArr = $this->app->DB->SelectArr(
-      "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%d.%m.%Y') as datum, ke.betrag as betrag, 
-       k.id as zeile,k.waehrung 
-      FROM kontoauszuege_zahlungsausgang ke 
-      LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
-      LEFT JOIN konten ko ON k.konto=ko.id 
-      WHERE (ke.objekt='gutschrift' AND ke.parameter='$id') 
-         OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0) 
-        OR (ke.objekt='auftrag' AND ke.parameter='$auftragid'  AND ke.parameter>0)"
-    );
-    $cAusgangArr = empty($ausgangArr)?0:(!empty($ausgangArr)?count($ausgangArr):0);
-    for($i=0;$i<$cAusgangArr;$i++) {
-      $waehrung = 'EUR';
-      if($ausgangArr[$i]['waehrung']) {
-        $waehrung = $ausgangArr[$i]['waehrung'];
-      }
-      $ausgang .="<tr><td class=auftrag_cell>".$ausgangArr[$i]['datum']."</td><td class=auftrag_cell>"
-        .$ausgangArr[$i]['konto']."&nbsp;(<a href=\"index.php?module=zahlungseingang&action=editzeile&id="
-        .$ausgangArr[$i]['zeile']."\">zur Buchung</a>)</td><td class=auftrag_cell align=right>"
-        .$this->app->erp->EUR($ausgangArr[$i]['betrag'])
-        ." $waehrung</td></tr>";
-    }
-
-    $saldo = $this->app->erp->EUR($this->GutschriftSaldo($id));
-
-    if($saldo < 0) {
-      $saldo = "<b style=\"color:red\">$saldo</b>";
-    }
-    $waehrung = $this->app->DB->Select("SELECT waehrung FROM gutschrift WHERE id = '$id' LIMIT 1");
-    if(!$waehrung) {
-      $waehrung = 'EUR';
-    }
-    $ausgang .="<tr><td class=auftrag_cell></td><td class=auftrag_cell align=right>Saldo</td><td class=auftrag_cell align=right>$saldo $waehrung</td></tr>";
-
-    if($return) {
-      return "<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$eingang." ".$ausgang."</table>";
-    }
+    return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
   }
 
 
@@ -1251,25 +1185,12 @@ class Gutschrift extends GenGutschrift
       //      $this->app->erp->CommonReadonly();
     }
 
-    if($schreibschutz=="1")
-      $this->app->erp->CommonReadonly();
+    if($schreibschutz=="1") {
+        $this->app->erp->CommonReadonly();
+    }
 
     $rechnungid = $this->app->DB->Select("SELECT rechnungid FROM gutschrift WHERE id='$id' LIMIT 1");
     $rechnungid = $this->app->DB->Select("SELECT id FROM rechnung WHERE id='$rechnungid' AND belegnr!='' LIMIT 1");
-    $alle_gutschriften = $this->app->DB->SelectArr("SELECT id,belegnr FROM gutschrift WHERE rechnungid='$rechnungid' AND rechnungid>0");
-
-	if (!is_null($alle_gutschriften)) {
-	    if((!empty($alle_gutschriften)?count($alle_gutschriften):0) > 1)
-	    {
-	      for($agi=0;$agi<(!empty($alle_gutschriften)?count($alle_gutschriften):0);$agi++)
-	        $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi][id]."\" target=\"_blank\">".$alle_gutschriften[$agi][belegnr]."</a> ";
-	      $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
-	    }
-	}
-
-
-    //    if($status=="versendet")
-    //      $this->app->Tpl->Set(MESSAGE,"<div class=\"error\">Diese Gutschrift wurde bereits versendet und darf daher nicht mehr bearbeitet werden!</div>");
 
     if($status=="")
       $this->app->DB->Update("UPDATE gutschrift SET status='angelegt' WHERE id='$id' LIMIT 1");

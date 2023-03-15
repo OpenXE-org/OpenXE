@@ -3182,6 +3182,11 @@ class Auftrag extends GenAuftrag
       );
     }
 
+     $this->app->Tpl->Add(
+        'ZAHLUNGEN',
+        $this->AuftragZahlung(true)
+     );
+
     // schaue ob es eine GS zu diesem Auftrag gibt
     // schaue ob es eine GS zu diesem Auftrag gibt
     //$gutschriftid = $this->app->DB->Select("SELECT id FROM gutschrift WHERE rechnungid='$rechnungid' LIMIT 1");
@@ -3409,7 +3414,45 @@ class Auftrag extends GenAuftrag
       <tr><td><b>Lieferadresse:</b><br><br>$lieferadresse</td></tr></table>";
   }
 
+  /* Build the html output for minidetail containing the payments
+   * @param bool $return
+   *
+   * @return string
+   */
+  function AuftragZahlung($return=false)
+  {
+    $id = $this->app->Secure->GetGET('id');
 
+    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag');
+
+//    print_r($zahlungen);
+
+    $result = "";
+
+    foreach ($zahlungen as $zahlung) {
+        $result .= "
+                    <tr>
+                        <td>
+                            ".$zahlung['datum']."
+                        </td>
+                        <td>
+                            <a href=\"index.php?module=".$zahlung['doc_type']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                                ".ucfirst($zahlung['doc_type'])." 
+                                ".$zahlung['doc_belegnr']."
+                            </a>
+                        </td>
+                        <td>
+                            ".$zahlung['konto']."
+                        </td>
+                        <td>
+                            <a href=\"index.php?module=konto&action=auszug&id=".$zahlung['kontoauszuege']."\">
+                                ".$zahlung['betrag']." ".$zahlung['waehrung']."
+                            </a>
+                        </td>
+                    </tr>";
+    }
+    return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
+  }
 
   function AuftragZahlungsmail()
   {

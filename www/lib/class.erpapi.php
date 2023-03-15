@@ -36016,6 +36016,142 @@ function Firmendaten($field,$projekt="")
         }
       }
       
+        /*
+        * Retrieve the associated documents regarding payments
+        * Gutschrift -> Rechnung -> Auftrag OR Verbindlichkeit
+        * Results array of ids, types, belegnr
+        */
+        public function GetZahlungenAssociatedDocuments(int $id, string $type) : array {
+
+            $assocs = array(
+                array(
+                    'type' => 'auftrag',
+                    'below' => 'rechnung',
+                ),
+                array(
+                    'above' => 'auftrag',
+                    'type' => 'rechnung',
+                    'below' => 'gutschrift'
+                ),
+                array(
+                    'above' => 'rechnung',
+                    'type' => 'gutschrift'
+                ),
+                array(
+                    'type' => 'verbindlichkeit'
+                )
+            );
+
+
+            if ($id <= 0) {
+                throw new exception('no id provided');
+            }
+
+            if (!in_array($type, array('rechnung','gutschrift','auftrag','verbindlichkeit'))) {
+                throw new exception('invalid type '.$type);
+            }            
+
+            $id = $this->app->Secure->GetGET('id');
+
+            // Go to highest level         
+            $above = $assocs[array_search($type,array_column($assocs,'type'))]['above'];
+            while ($above) {
+                $sql = "SELECT ".$above."id as id FROM ".$type." WHERE id = ".$id;          
+                $above_id = $this->app->DB->SelectArr($sql)[0];
+                if (!empty($above)) {
+                    $type = $above;
+                    $id = $above_id['id'];
+                }
+                $above = $assocs[array_search($type,array_column($assocs,'type'))]['above'];
+            }
+
+            // Cascade down and retrieve all documents
+            $result_documents = array();
+            $ids = array($id);
+            $ref = 'id';
+            do {
+                $sql = "SELECT id, '".$type."' AS type, belegnr FROM ".$type." WHERE ".$ref." IN (".implode(",",$ids).")";
+                $result = $this->app->DB->SelectArr($sql);
+                if (!empty($result)) {
+                    $result_documents = array_merge($result_documents, $result);
+                    $ids = array_column($result,'id');
+                    $ref = $type."id";
+                    $type = $assocs[array_search($type,array_column($assocs,'type'))]['below'];
+                } else {
+                    break;
+                }
+            } while ($type); 
+
+            return($result_documents);               
+        }
+
+        /*
+        * Calculate the payments of a document (rechnung, gutschrift, auftrag, verbindlichkeit)
+        * Results array of payments with information
+        * Gutschrift -> Rechnungid, Rechnung -> Auftragid
+        */
+        public function GetZahlungen(int $id, string $type) : array {
+
+            $documents = $this->GetZahlungenAssociatedDocuments($id, $type);
+
+            if (empty($documents)) {
+                return(array());
+            }
+
+//            print_r($documents);
+
+            $zahlungen = array();
+            
+            $tables = array(
+                array(
+                    'minus' => '',
+                    'table' => 'kontoauszuege_zahlungseingang',
+                ),
+                array (
+                    'minus' => '-',
+                    'table' => 'kontoauszuege_zahlungsausgang'
+                )
+            );
+
+            foreach ($documents as $document) {
+
+                foreach ($tables as $table) {
+
+                    $sql = "
+                        SELECT                            
+                            '".$document['type']."' as `doc_type`,
+                            '".$document['id']."' as `doc_id`,
+                            '".$document['belegnr']."' as `doc_belegnr`,
+                            ko.bezeichnung AS konto,
+                            DATE_FORMAT(ke.datum, '%d.%m.%Y') AS datum,
+                            k.id AS kontoauszuege,
+                            ".$table['minus']."ke.betrag AS betrag,
+                            k.id AS zeile,
+                            k.waehrung
+                        FROM
+                        ".$table['table']." ke
+                        LEFT JOIN kontoauszuege k ON
+                            ke.kontoauszuege = k.id
+                        LEFT JOIN konten ko ON
+                            k.konto = ko.id
+                        WHERE
+                            ke.objekt = '".$document['type']."' AND ke.parameter = '".$document['id']."'
+                    ";
+
+                    $result = $this->app->DB->SelectArr($sql);
+
+                    if (!empty($result)) {
+                        $zahlungen = array_merge($zahlungen,$result);
+                    }
+                }
+            }
+            return($zahlungen);
+        }
+
+        /*
+        * Calculate the payment saldo of a document
+        */
+
       public function ANABREGSNeuberechnen($id,$art,$force=false)
       {
         if($id <= 0 || empty($art))

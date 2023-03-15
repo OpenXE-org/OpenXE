@@ -1583,6 +1583,9 @@ class Rechnung extends GenRechnung
       $this->app->erp->RechnungNeuberechnen($id);
     }
 
+    // ALWAYS
+    $this->app->erp->RechnungNeuberechnen($id);
+
     if($cmd === 'dadown')
     {
       $erg['status'] = 0;
@@ -1767,8 +1770,10 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('VORKASSE','');
     }
 
+//    $saldo=$this->app->DB->Select("SELECT ist-skonto_gegeben FROM rechnung WHERE id='$id'");
 
-    $saldo=$this->app->DB->Select("SELECT ist-skonto_gegeben FROM rechnung WHERE id='$id'");
+    $saldo = $this->app->erp->EUR($this->RechnungSaldo($id));
+
     $this->app->Tpl->Set('LIVEIST',"$saldo");
 
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden('rechnung','schreibschutz'))
@@ -1789,10 +1794,13 @@ class Rechnung extends GenRechnung
       $this->app->erp->RemoveReadonly('mahnwesenfestsetzen');
       $this->app->erp->RemoveReadonly('mahnwesen');
       $this->app->erp->RemoveReadonly('bezahlt_am');
+/*
+        'ist' should not be edited manually
+
       $this->app->erp->RemoveReadonly('ist');
 
       if($this->app->erp->Firmendaten('mahnwesenmitkontoabgleich')!='1' || $this->app->DB->Select("SELECT mahnwesenfestsetzen FROM rechnung WHERE id='$id' LIMIT 1")==1)  
-        $this->app->erp->RemoveReadonly('ist');
+        $this->app->erp->RemoveReadonly('ist');*/
 
       //$auftrag= $this->app->DB->Select("SELECT auftrag FROM rechnung WHERE id='$id' LIMIT 1");
 
@@ -1805,7 +1813,7 @@ class Rechnung extends GenRechnung
       {
         $gutschriften = '';
         for($agi=0;$agi<$cgutschriften;$agi++)
-          $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi][id]."\" target=\"_blank\">".$alle_gutschriften[$agi][belegnr]."</a> ";
+          $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi]['id']."\" target=\"_blank\">".$alle_gutschriften[$agi]['belegnr']."</a> ";
         $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
       }
 
@@ -1963,6 +1971,7 @@ class Rechnung extends GenRechnung
         ' &uuml;berein <input type="submit" name="resetextsoll" value="Festgeschriebene Summe zur&uuml;cksetzen" /></div></form>'
       );
     }
+       
     parent::RechnungEdit();
     if($id > 0 && $this->app->DB->Select(
       sprintf(
@@ -2715,104 +2724,45 @@ class Rechnung extends GenRechnung
   }
 
 
+    /**
+   * Build the html output for minidetail containing the payments
+   * @param bool $return
+   *
+   * @return string
+   */
   function RechnungZahlung($return=false)
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $rechnungArr = $this->app->DB->SelectArr(
-      "SELECT DATE_FORMAT(datum,'%d.%m.%Y') as datum, belegnr, soll, waehrung, rechnungid 
-      FROM rechnung WHERE id='$id' LIMIT 1"
-    );
-    $waehrung = empty($rechnungArr)?'EUR':$rechnungArr[0]['waehrung'];
-    if(!$waehrung) {
-      $waehrung = 'EUR';
+    $zahlungen = $this->app->erp->GetZahlungen($id,'rechnung');
+
+//    print_r($zahlungen);
+
+    $result = "";
+
+    foreach ($zahlungen as $zahlung) {
+        $result .= "
+                    <tr>
+                        <td>
+                            ".$zahlung['datum']."
+                        </td>
+                        <td>
+                            <a href=\"index.php?module=".$zahlung['doc_type']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                                ".ucfirst($zahlung['doc_type'])." 
+                                ".$zahlung['doc_belegnr']."
+                            </a>
+                        </td>
+                        <td>
+                            ".$zahlung['konto']."
+                        </td>
+                        <td>
+                            <a href=\"index.php?module=konto&action=auszug&id=".$zahlung['kontoauszuege']."\">
+                                ".$zahlung['betrag']." ".$zahlung['waehrung']."
+                            </a>
+                        </td>
+                    </tr>";
     }
-
-    $rechnungid = empty($rechnungArr)?0: $rechnungArr[0]['rechnungid'];
-
-    $auftragid = $rechnungid <= 0?0:$this->app->DB->Select(
-      sprintf(
-        'SELECT `auftragid` FROM `rechnung` WHERE `id` = %d LIMIT 1',
-        $rechnungid
-      )
-    );
-    $eingang ="<tr><td colspan=\"3\"><b>Zahlungen</b></td></tr>";
-
-
-    $eingang .="<tr><td class=auftrag_cell>".$rechnungArr[0]['datum']
-      ."</td><td class=auftrag_cell>RG ".$rechnungArr[0]['belegnr']
-      ."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($rechnungArr[0]['soll'])
-      ." $waehrung</td></tr>";
-
-    $eingangArr = $this->app->DB->SelectArr(
-      "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%d.%m.%Y') as datum, k.id as kontoauszuege, 
-       ke.betrag as betrag, k.id as zeile,k.waehrung 
-      FROM kontoauszuege_zahlungseingang ke 
-      LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
-      LEFT JOIN konten ko ON k.konto=ko.id 
-      WHERE (ke.objekt='rechnung' AND ke.parameter='$id') 
-         OR (ke.objekt='auftrag' AND ke.parameter='$auftragid' AND ke.parameter>0)
-        OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0)"
-    );
-    $ceingangArr = empty($eingangArr)?0:(!empty($eingangArr)?count($eingangArr):0);
-
-    for($i=0;$i<$ceingangArr;$i++) {
-      $waehrung = 'EUR';
-      if($eingangArr[$i]['waehrung']) {
-        $waehrung = $eingangArr[$i]['waehrung'];
-      }
-      $eingang .="<tr><td class=auftrag_cell>".$eingangArr[$i]['datum']
-        ."</td><td class=auftrag_cell>".$eingangArr[$i]['konto']
-        ."&nbsp;(<a href=\"index.php?module=zahlungseingang&action=editzeile&id="
-        .$eingangArr[$i]['zeile']."\">zur Buchung</a>)</td><td class=auftrag_cell align=right>"
-        .$this->app->erp->EUR($eingangArr[$i]['betrag'])
-        ." $waehrung</td></tr>";
-    }
-    // rechnungen zu dieser rechnung anzeigen
-
-    $rechnungen = $this->app->DB->SelectArr("SELECT belegnr, DATE_FORMAT(datum,'%d.%m.%Y') as datum,soll FROM rechnung WHERE rechnungid='$id'");
-
-    for($i=0;$i<(!empty($rechnungen)?count($rechnungen):0);$i++)
-      $eingang .="<tr><td class=auftrag_cell>".$rechnungen[$i]['datum']."</td><td class=auftrag_cell>GS ".$rechnungen[$i]['belegnr']."</td><td class=auftrag_cell align=right>".$this->app->erp->EUR($rechnungen[$i]['soll'])." EUR</td></tr>";
-
-    $ausgang = '';
-    $ausgangArr = $this->app->DB->SelectArr(
-      "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%d.%m.%Y') as datum, ke.betrag as betrag, 
-       k.id as zeile,k.waehrung 
-      FROM kontoauszuege_zahlungsausgang ke 
-      LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
-      LEFT JOIN konten ko ON k.konto=ko.id 
-      WHERE (ke.objekt='rechnung' AND ke.parameter='$id') 
-         OR (ke.objekt='rechnung' AND ke.parameter='$rechnungid'  AND ke.parameter>0) 
-        OR (ke.objekt='auftrag' AND ke.parameter='$auftragid'  AND ke.parameter>0)"
-    );
-    $cAusgangArr = empty($ausgangArr)?0:(!empty($ausgangArr)?count($ausgangArr):0);
-    for($i=0;$i<$cAusgangArr;$i++) {
-      $waehrung = 'EUR';
-      if($ausgangArr[$i]['waehrung']) {
-        $waehrung = $ausgangArr[$i]['waehrung'];
-      }
-      $ausgang .="<tr><td class=auftrag_cell>".$ausgangArr[$i]['datum']."</td><td class=auftrag_cell>"
-        .$ausgangArr[$i]['konto']."&nbsp;(<a href=\"index.php?module=zahlungseingang&action=editzeile&id="
-        .$ausgangArr[$i]['zeile']."\">zur Buchung</a>)</td><td class=auftrag_cell align=right>"
-        .$this->app->erp->EUR($ausgangArr[$i]['betrag'])
-        ." $waehrung</td></tr>";
-    }
-
-    $saldo = $this->app->erp->EUR($this->RechnungSaldo($id));
-
-    if($saldo < 0) {
-      $saldo = "<b style=\"color:red\">$saldo</b>";
-    }
-    $waehrung = $this->app->DB->Select("SELECT waehrung FROM rechnung WHERE id = '$id' LIMIT 1");
-    if(!$waehrung) {
-      $waehrung = 'EUR';
-    }
-    $ausgang .="<tr><td class=auftrag_cell></td><td class=auftrag_cell align=right>Saldo</td><td class=auftrag_cell align=right>$saldo $waehrung</td></tr>";
-
-    if($return) {
-      return "<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$eingang." ".$ausgang."</table>";
-    }
+    return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
   }
 
 public function RechnungSaldo($id)
@@ -2823,7 +2773,7 @@ public function RechnungSaldo($id)
 
     $rechnungid = $this->app->DB->Select(
       sprintf(
-        'SELECT `rechnungid` FROM `rechnung` WHERE `id`= %d LIMIT 1',
+        'SELECT `id` FROM `rechnung` WHERE `id`= %d LIMIT 1',
         $id
       )
     );

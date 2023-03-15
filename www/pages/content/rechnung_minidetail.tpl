@@ -44,7 +44,7 @@
 </div>
 
 <div style="background-color:white">
-<h2 class="greyh2">Zahlungseingang</h2>
+<h2 class="greyh2">Zahlungen</h2>
 <div style="padding:10px">
   [ZAHLUNGEN]
 </div>
