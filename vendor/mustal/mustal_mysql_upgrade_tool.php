@@ -134,6 +134,7 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
                 $composed_key = array();
                 $composed_key['Key_name'] = $key['Key_name'];
                 $composed_key['Index_type'] = $key['Index_type'];
+                $composed_key['Non_unique'] = ($key['Non_unique'] == 1)?'UNIQUE':'';
                 $composed_key['columns'][] = $key['Column_name'];
                 $composed_keys[] = $composed_key;
             } else {
@@ -330,19 +331,19 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                     // Compare the properties of the sql_indexs
                     if ($check_column_definitions) {
                         $found_sql_index = $found_table['keys'][$sql_index_key];
+
                         foreach ($sql_index as $key => $value) {                            
                             if ($found_sql_index[$key] != $value) {
-
-//                                if ($key != 'permissions') {                                
-                                    $compare_difference = array();
-                                    $compare_difference['type'] = "Key definition";
-                                    $compare_difference['table'] = $database_table['name'];
-                                    $compare_difference['key'] = $sql_index['Key_name'];
-                                    $compare_difference['property'] = $key;
-                                    $compare_difference[$nominal_name] = implode(',',$value);
-                                    $compare_difference[$actual_name] = implode(',',$found_sql_index[$key]);
-                                    $compare_differences[] = $compare_difference;
-//                                }
+                                $compare_difference = array();
+                                $compare_difference['type'] = "Key definition";
+                                $compare_difference['table'] = $database_table['name'];
+                                $compare_difference['key'] = $sql_index['Key_name'];
+                                $compare_difference['property'] = $key;
+/*                                    $compare_difference[$nominal_name] = implode(',',$value);
+                                $compare_difference[$actual_name] = implode(',',$found_sql_index[$key]);*/
+                                $compare_difference[$nominal_name] = $value;
+                                $compare_difference[$actual_name] = $found_sql_index[$key];
+                                $compare_differences[] = $compare_difference;
                             }
                         }
                         unset($value);                          
@@ -568,7 +569,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                                         $index_type = "";
                                     }
 
-                                    $keystring = $index_type." KEY `".$key['Key_name']."` ";
+                                    $keystring = $index_type." ".$key['Non_unique']." KEY `".$key['Key_name']."` ";
                                 }
                                 $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                             }
@@ -652,7 +653,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
 
-                        $sql = "ALTER TABLE `$table_name` ADD KEY `".$key_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` ADD ".$key['Non_unique']." KEY `".$key_name."` "; 
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
@@ -682,7 +683,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;"; 
                         $upgrade_sql[] = $sql;
 
-                        $sql = "ALTER TABLE `$table_name` ADD KEY `".$key_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` ADD ".$key['Non_unique']." KEY `".$key_name."` "; 
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
