@@ -659,7 +659,7 @@ class Gutschrift extends GenGutschrift
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $zahlungen = $this->app->erp->GetZahlungen($id,'gutschrift');
+    $zahlungen = $this->app->erp->GetZahlungen($id,'gutschrift',true);
 
 //    print_r($zahlungen);
 
@@ -687,6 +687,30 @@ class Gutschrift extends GenGutschrift
                         </td>
                     </tr>";
     }
+
+    $sum = array_sum(array_column($zahlungen,'betrag'))." ".$zahlung['waehrung'];
+
+    if ($sum != 0) {
+        $result .= "
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <b>
+                                Summe:
+                            </b>
+                        </td>
+                        <td>
+                            <b>
+                                ".$sum."
+                            </b>
+                        </td>
+                    </tr>
+                    ";
+    }
+
     return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
   }
 

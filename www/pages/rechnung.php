@@ -1770,11 +1770,12 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('VORKASSE','');
     }
 
-//    $saldo=$this->app->DB->Select("SELECT ist-skonto_gegeben FROM rechnung WHERE id='$id'");
+    $ist = $this->app->erp->EUR($this->app->erp->GetZahlung($id,'rechnung'));
+    $this->app->Tpl->Set('ISTDB',$ist);
 
-    $saldo = $this->app->erp->EUR($this->RechnungSaldo($id));
+    $istgs = $this->app->erp->EUR($this->app->erp->GetZahlung($id,'rechnung',true,'rechnung'));
+    $this->app->Tpl->Set('ISTGS',$istgs);
 
-    $this->app->Tpl->Set('LIVEIST',"$saldo");
 
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden('rechnung','schreibschutz'))
     {
@@ -2086,7 +2087,16 @@ class Rechnung extends GenRechnung
 
   public function RechnungList()
   {
+
     $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''");
+
+    // First refresh all open items
+    $openids = $this->app->DB->SelectArr("SELECT id from rechnung WHERE zahlungsstatus = 'offen'");
+
+    foreach ($openids as $openid) {
+        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'rechnung');
+        $this->app->DB->Update("UPDATE rechnung SET ist = soll-".$saldo." WHERE id=".$openid['id']);
+    }
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
     {
@@ -2734,7 +2744,7 @@ class Rechnung extends GenRechnung
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $zahlungen = $this->app->erp->GetZahlungen($id,'rechnung');
+    $zahlungen = $this->app->erp->GetZahlungen($id,'rechnung',true);
 
 //    print_r($zahlungen);
 
@@ -2760,85 +2770,34 @@ class Rechnung extends GenRechnung
                                 ".$zahlung['betrag']." ".$zahlung['waehrung']."
                             </a>
                         </td>
-                    </tr>";
+                    </tr>
+                    ";
     }
+
+    $sum = array_sum(array_column($zahlungen,'betrag'))." ".$zahlung['waehrung'];
+
+    if ($sum != 0) {
+        $result .= "
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <b>
+                                Summe:
+                            </b>
+                        </td>
+                        <td>
+                            <b>
+                                ".$sum."
+                            </b>
+                        </td>
+                    </tr>
+                    ";
+    }
+
     return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
-  }
-
-public function RechnungSaldo($id)
-  {
-    if($id <= 0) {
-      return 0;
-    }
-
-    $rechnungid = $this->app->DB->Select(
-      sprintf(
-        'SELECT `id` FROM `rechnung` WHERE `id`= %d LIMIT 1',
-        $id
-      )
-    );
-    $auftragid = $rechnungid <= 0?0:$this->app->DB->Select(
-      sprintf(
-        'SELECT `auftragid` FROM `rechnung` WHERE `id`=%d LIMIT 1',
-        $rechnungid
-      )
-    );
-
-    $eingangArr = $this->app->DB->SelectArr(
-      sprintf(
-        "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%%d.%%m.%%Y') as datum, k.id as kontoauszuege, ke.betrag as betrag 
-        FROM `kontoauszuege_zahlungseingang` AS `ke`
-        LEFT JOIN `kontoauszuege` AS `k` ON ke.kontoauszuege=k.id 
-        LEFT JOIN `konten` AS `ko` ON k.konto=ko.id 
-        WHERE (ke.objekt='rechnung' AND ke.parameter=%d) 
-          OR (ke.objekt='auftrag' AND ke.parameter=%d AND ke.parameter>0)
-          OR (ke.objekt='rechnung' AND ke.parameter=%d  AND ke.parameter>0)",
-        $id, $auftragid, $rechnungid
-      )
-    );
-    $einnahmen = 0;
-    if(!empty($eingangArr)) {
-      foreach($eingangArr AS $eingangRow) {
-        $einnahmen += $eingangRow['betrag'];
-      }
-    }
-
-    //$rechnungen = $this->app->DB->SelectArr("SELECT belegnr, DATE_FORMAT(datum,'%d.%m.%Y') as datum,soll FROM rechnung WHERE rechnungid='$id' "); // alt
-    $rechnungen = $this->app->DB->SelectArr(
-      sprintf(
-        "SELECT ro.belegnr, DATE_FORMAT(ro.datum,'%%d.%%m.%%Y') as datum, ro.soll 
-        FROM `rechnung` AS `ro` 
-        WHERE ro.`id` = %d ",
-        $id
-      )
-    );
-
-    if(!empty($rechnungen)) {
-      foreach($rechnungen as $rechnungRow) {
-        $einnahmen += $rechnungRow['soll'];
-      }
-    }
-
-    $ausgangArr = $this->app->DB->SelectArr(
-      sprintf(
-        "SELECT ko.bezeichnung as konto, DATE_FORMAT(ke.datum,'%%d.%%m') as datum, ke.betrag as betrag 
-        FROM kontoauszuege_zahlungsausgang ke
-        LEFT JOIN kontoauszuege k ON ke.kontoauszuege=k.id 
-        LEFT JOIN konten ko ON k.konto=ko.id 
-        WHERE (ke.objekt='rechnung' AND ke.parameter=%d) 
-           OR (ke.objekt='rechnung' AND ke.parameter=%d  AND ke.parameter>0)
-           OR (ke.objekt='auftrag' AND ke.parameter=%d AND ke.parameter>0)",
-        $id, $rechnungid, $auftragid
-      )
-    );
-    $ausgaben = 0;
-    if(!empty($ausgangArr)){
-      foreach($ausgangArr as $ausgangRow) {
-        $ausgaben += $ausgangRow['betrg'];
-      }
-    }
-
-    return $einnahmen - $ausgaben;
   }
 
 

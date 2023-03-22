@@ -7088,6 +7088,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Arbeitsnachweis','arbeitsnachweis','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Gutschrift / '.$this->Firmendaten("bezeichnungstornorechnung"),'gutschrift','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Proformarechnung','proformarechnung','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Kontoausz&uuml;ge','kontoauszuege','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abolauf','rechnungslauf','rechnungslauf');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Mahnwesen','mahnwesen','list');
 
@@ -36021,7 +36022,7 @@ function Firmendaten($field,$projekt="")
         * Gutschrift -> Rechnung -> Auftrag OR Verbindlichkeit
         * Results array of ids, types, belegnr
         */
-        public function GetZahlungenAssociatedDocuments(int $id, string $type) : array {
+        public function GetZahlungenAssociatedDocuments(int $id, string $type, string $lastlevel = 'auftrag') : array {
 
             $assocs = array(
                 array(
@@ -36056,6 +36057,11 @@ function Firmendaten($field,$projekt="")
             // Go to highest level         
             $above = $assocs[array_search($type,array_column($assocs,'type'))]['above'];
             while ($above) {
+
+                if ($type == $lastlevel) {
+                    break;
+                }
+
                 $sql = "SELECT ".$above."id as id FROM ".$type." WHERE id = ".$id;          
                 $above_id = $this->app->DB->SelectArr($sql)[0];
                 if (!empty($above)) {
@@ -36090,15 +36096,17 @@ function Firmendaten($field,$projekt="")
         * Results array of payments with information
         * Gutschrift -> Rechnungid, Rechnung -> Auftragid
         */
-        public function GetZahlungen(int $id, string $type) : array {
+        public function GetZahlungen(int $id, string $type, bool $cascade = false, string $lastlevel = 'auftrag') : array {
 
-            $documents = $this->GetZahlungenAssociatedDocuments($id, $type);
+            if ($cascade) {
+                $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $lastlevel);
+            } else {
+                $documents = array(array('id' => $id, 'type' => $type));
+            }
 
             if (empty($documents)) {
                 return(array());
             }
-
-//            print_r($documents);
 
             $zahlungen = array();
             
@@ -36148,9 +36156,44 @@ function Firmendaten($field,$projekt="")
             return($zahlungen);
         }
 
+        public function GetZahlung(int $id, string $type, bool $cascade = false, string $lastlevel = 'auftrag') {
+            $zahlungen = $this->GetZahlungen($id, $type, $cascade);
+            if (empty($zahlungen)) {
+                $zahlbetrag = 0; 
+            } else {
+                $zahlbetrag = array_sum(array_column($zahlungen,'betrag'));
+            }
+            return($zahlbetrag);
+        }
+
         /*
         * Calculate the payment saldo of a document
+        * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
         */
+        public function GetSaldoDokument($id, $type, string $lastlevel = 'auftrag') {
+
+            $zahlbetrag = $this->GetZahlung($id, $type, false);
+
+            $sollspalten = array(
+                'auftrag' => 'gesamtsumme',
+                'rechnung' => 'soll',
+                'gutschrift' => 'soll',
+                'verbindlichkeit' => 'betrag'
+            );
+
+            $sql = "SELECT ".$sollspalten[$type]." as sollbetrag FROM ".$type." WHERE id =".$id;
+
+//            echo($sql);
+
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (!empty($result)) {
+                $sollbetrag = $result[0]['sollbetrag'];
+            } else {
+                $sollbetrag = 0;
+            }
+            return($sollbetrag-$zahlbetrag);
+        }
 
       public function ANABREGSNeuberechnen($id,$art,$force=false)
       {

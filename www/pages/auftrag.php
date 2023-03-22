@@ -3423,7 +3423,7 @@ class Auftrag extends GenAuftrag
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag');
+    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag',true);
 
 //    print_r($zahlungen);
 
@@ -3451,6 +3451,17 @@ class Auftrag extends GenAuftrag
                         </td>
                     </tr>";
     }
+
+    $saldo = $this->app->erp->GetSaldoDokument($id,'auftrag');
+
+    $result .= "
+                    <tr>
+                        <td>
+                            ".$saldo."
+                        </td>
+                    </tr>
+               ";  
+
     return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
   }
 
