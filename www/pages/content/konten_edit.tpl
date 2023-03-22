@@ -19,6 +19,14 @@
 								<table width="100%">
 									<tr>
 										<td width="150">
+                                            {|Kurzbezeichnung|}:
+                                        </td>
+										<td>		    								
+                                            <input type="text" name="kurzbezeichnung" id="kurzbezeichnung" size="40" rule="notempty" msg="Pflichfeld!" tabindex="2" value="[KURZBEZEICHNUNG]" required><i>{|Muss eindeutig sein.|}</i>
+                                        </td>
+									</tr>
+									<tr>
+										<td width="150">
                                             {|Bezeichnung|}:
                                         </td>
 										<td>		    								

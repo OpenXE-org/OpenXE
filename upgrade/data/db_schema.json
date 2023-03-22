@@ -50206,12 +50206,12 @@
                     "Comment": ""
                 },
                 {
-                    "Field": "vorauswahlvorschlag",
-                    "Type": "int(11)",
+                    "Field": "importdatum",
+                    "Type": "datetime",
                     "Collation": null,
                     "Null": "NO",
                     "Key": "",
-                    "Default": "0",
+                    "Default": "",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
