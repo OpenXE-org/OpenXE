@@ -153,14 +153,14 @@ abstract class Versanddienstleister
         lp.zollwaehrung
       FROM lieferschein_position lp
       JOIN artikel a on lp.artikel = a.id
-      LEFT JOIN auftrag_position ap on lp.auftrag_position_id = ap.id
-      LEFT JOIN rechnung_position rp on ap.id = rp.auftrag_position_id
-      LEFT JOIN rechnung r on rp.rechnung = r.id
+      LEFT OUTER JOIN auftrag_position ap on lp.auftrag_position_id = ap.id
+      LEFT OUTER JOIN rechnung_position rp on ap.id = rp.auftrag_position_id
+      LEFT OUTER JOIN rechnung r on rp.rechnung = r.id
       WHERE lp.lieferschein = $lieferscheinId
       AND a.lagerartikel = 1
       AND r.status != 'storniert'
       ORDER BY lp.sort";
-    $ret['positions'] = $this->app->DB->SelectArr($sql);
+    $ret['positions'] = $this->app->DB->SelectArr($sql) ?? [];
 
     if ($sid === "lieferschein") {
       $standardkg = $this->app->erp->VersandartMindestgewicht($lieferscheinId);
