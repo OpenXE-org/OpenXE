@@ -28104,31 +28104,15 @@ function Firmendaten($field,$projekt="")
       $modul = "";
 
       $tmp = array(
-           'DHL'=>'DHL','DPD'=>'DPD',
-           'express_dpd'=>'Express DPD',
-           'export_dpd'=>'Export DPD',
-           'gls'=>'GLS',
            'keinversand'=>'Kein Versand',
            'selbstabholer'=>'Selbstabholer',
-           'versandunternehmen'=>'Sonstige',
            'spedition'=>'Spedition',
-           'Go'=>'GO!',
-           'post'=>'Post'
        );
       foreach($tmp as $key=>$value)
       {
-        if($key == 'DHL'){$modul='intraship';}
-        if($key == 'DPD'){$modul='dpdapi';}
-        if($key == 'express_dpd'){$modul='';}
-        if($key == 'export_dpd'){$modul='';}
-        if($key == 'gls'){$modul='glsapi';}
         if($key == 'keinversand'){$modul='';}
         if($key == 'selbstabholer'){$modul='selbstabholer';}
-        if($key == 'versandunternehmen'){$modul='';}
         if($key == 'spedition'){$modul='';}
-        if($key == 'Go'){$modul='';}
-        if($key == 'post'){$modul='post';}
-
 
         $this->app->DB->Insert("INSERT INTO versandarten (id,type,bezeichnung,aktiv,modul) VALUES ('','$key','$value','1','$modul')");
       }
