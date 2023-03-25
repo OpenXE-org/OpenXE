@@ -6081,11 +6081,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
 
         $heading = array('', '', 'Gutschrift', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt',
-          'Zahlweise', 'Betrag (brutto)', 'bezahlt','RE-Nr.', 'Status','Monitor' ,'Men&uuml;'
+          'Zahlweise', 'Betrag (brutto)', 'Zahlstatus','Differenz','RE-Nr.', 'Status','Monitor' ,'Men&uuml;'
         );
 
-        $width = array('1%', '1%', '10%', '10%', '10%', '25%', '5%', '1%', '1%', '1%', '1%', '1%','5%', '1%','1%', '1%');
-        $findcols = array('open', 'r.belegnr', 'r.belegnr', 'r.datum', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung', 'r.zahlungsweise', 'r.soll','re.belegnr', 'r.zahlungsstatus', 'r.status', 'pt.payement_status' ,'id');
+        $width = array('1%', '1%', '10%', '10%', '10%', '25%', '5%', '1%', '1%', '1%', '1%', '1%', '1%','5%', '1%','1%', '1%');
+        $findcols = array('open', 'r.belegnr', 'r.belegnr', 'r.datum', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung', 'r.zahlungsweise', 'r.soll','re.belegnr', 'r.zahlungsstatus','differenz', 'r.status', 'pt.payement_status' ,'id');
         $searchsql = array('DATE_FORMAT(r.datum,\'%d.%m.%Y\')', 'r.belegnr', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung','re.belegnr', 'r.status', "FORMAT(r.soll,2{$extended_mysql55})", 'adr.freifeld1', 'r.ihrebestellnummer','r.internebezeichnung','au.internet');
         $defaultorder = 13; //Optional wenn andere Reihenfolge gewuenscht
 
@@ -6127,7 +6127,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "</table>";
 
 
-        $menucol = 14;
+        $menucol = 15;
 
         $parameter = $this->app->User->GetParameter('table_filter_gutschrift');
         $parameter = base64_decode($parameter);
@@ -6139,7 +6139,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
               DATE_FORMAT(r.datum,'%d.%m.%Y') as vom, adr.kundennummer as kundennummer,
           CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),'')) as kunde,
               r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,  
-              FORMAT(r.soll,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, re.belegnr as rechnung, UPPER(r.status) as status,
+              FORMAT(r.soll,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, r.soll-r.ist as differenz, re.belegnr as rechnung, UPPER(r.status) as status,
              ".$this->IconsSQLReturnOrder()."  ,r.id
           FROM  gutschrift r 
           LEFT JOIN rechnung re ON re.id=r.rechnungid 
@@ -6564,8 +6564,8 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                 r.zahlungsweise as zahlungsweise,
                 FORMAT(r.soll,2{$extended_mysql55} ) as soll,
                 ifnull(r.waehrung,'EUR'),
-                if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus) as zahlung, 
-                if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0,FORMAT(r.ist-r.soll+r.skonto_gegeben,2{$extended_mysql55}),FORMAT((r.soll-r.ist+r.skonto_gegeben)*-1,2{$extended_mysql55})) as fehlt,
+                if(r.soll-r.ist=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus) as zahlung, 
+                if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})) as fehlt,
                 if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status,
                 ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')." 
                 r.id

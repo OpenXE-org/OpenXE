@@ -1,39 +1,3 @@
-<script type="text/javascript">
-   jQuery(document).ready(function() {
-     mahnwesenfest();
-   });
-   
-   function skonto()
-   {
-//     var ist = $('#ist').val();
-     var ist = document.getElementById('istdb').innerText;  
-     ist = ist.replace(',', '.');
-     $('#skonto_gegeben').val(($('#soll_tmp').val() - ist).toFixed(2));
-   }
-   
-   function mahnwesenfest(cmd)
-   {
-     var inp = 'in'+'put';
-     var sel = 'sel'+'ect';
-     jQuery('table.tablemahnwesenfestsetzen').find(inp).prop('disabled', true);        
-     jQuery('table.tablemahnwesenfestsetzen').find(sel).prop('disabled', true);
-     jQuery('table.tablemahnwesenfestsetzen').find(sel).css('background', '#ececec');
-     jQuery('table.tablemahnwesenfestsetzen').find(inp).css('background', '#ececec');
-     jQuery('table.tablemahnwesenfestsetzen').find(inp).first().prop('disabled', false);
-     if(document.getElementById('mahnwesenfestsetzen').checked)
-     {
-       jQuery('table.tablemahnwesenfestsetzen').find(inp).prop('disabled', false);
-       jQuery('table.tablemahnwesenfestsetzen').find(sel).prop('disabled', false);
-       jQuery('table.tablemahnwesenfestsetzen').find(inp).css('background', '#fff');
-       jQuery('table.tablemahnwesenfestsetzen').find(sel).css('background', '#fff');
-   //          $('.ist').show();
-   //          $('.istberechnet').hide();
-     } else {
-   //          $('.ist').hide();
-   //          $('.istberechnet').show();
-     }
-   }
-</script>
 [SAVEPAGEREALLY]
 <!-- gehort zu tabview -->
 <div id="tabs">
@@ -141,17 +105,10 @@
                      [MAHNWESENIF]
                      <fieldset>
                         <legend>{|Zahlungsstatus|}</legend>
-                        <table class="tablemahnwesenfestsetzen">
-                           <tr>
-                              <td colspan="2">Alle Einstellungen manuell festsetzen:&nbsp;[MAHNWESENFESTSETZEN][MSGMAHNWESENFESTSETZEN]&nbsp;</td>
-                           </tr>
-                           <tr>
-                              <td></td>
-                              <td><br></td>
-                           </tr>
+                        <table class="tablemahnwesenfestsetzen">                           
                            <tr>
                               <td width="200">{|Zahlungsstatus|}:</td>
-                              <td width="70%">[ZAHLUNGSSTATUS][MSGZAHLUNGSSTATUS] Bezahlt am: [BEZAHLT_AM][MSGBEZAHLT_AM]
+                              <td width="70%">[ZAHLUNGSSTATUS][MSGZAHLUNGSSTATUS]
                               </td>
                            </tr>
                            <tr>
@@ -168,38 +125,12 @@
                                     </tr>
                                     <tr>
                                        <td>
-                                          {|IST|}:
+                                          {|OFFEN|}:
                                        </td>
                                        <td id="istdb">
                                           [ISTDB]
                                        </td>
-                                    </tr>
-                                    <tr>
-                                       <td>
-                                          {|Gutschriften|}:
-                                       </td>
-                                       <td id="istgs">
-                                          [ISTGS]
-                                       </td>
-                                    </tr>
-                                    <!--
-                                       <tr class="ist">
-                                           <td>
-                                               {|IST|}:
-                                           </td>
-                                               <td>
-                                               [IST][MSGIST]&nbsp;<i>(manuelle Eingabe)</i>
-                                           </td>
-                                       </tr>
-                                       -->
-                                    <tr>
-                                       <td>
-                                          {|Skonto gegeben|}:
-                                       </td>
-                                       <td>
-                                          [SKONTO_GEGEBEN][MSGSKONTO_GEGEBEN]&nbsp;<img src="./themes/new/images/add.png" onclick=skonto() title="Skonto berechnen">&nbsp;<i>(als Geldbetrag)</i>
-                                       </td>
-                                    </tr>
+                                    </tr>                                  
                                  </table>
                               </td>
                            </tr>

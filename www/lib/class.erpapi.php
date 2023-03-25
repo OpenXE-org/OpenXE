@@ -36093,9 +36093,10 @@ function Firmendaten($field,$projekt="")
 
         /*
         * Calculate the payments of a document (rechnung, gutschrift, auftrag, verbindlichkeit)
-        * Results array of payments with information
+        * Results array of payments (datum, doc_type, doc_id, doc_belegnr, betrag, waehrung)
         * Gutschrift -> Rechnungid, Rechnung -> Auftragid
         */
+
         public function GetZahlungen(int $id, string $type, bool $cascade = false, string $lastlevel = 'auftrag') : array {
 
             if ($cascade) {
@@ -36108,91 +36109,91 @@ function Firmendaten($field,$projekt="")
                 return(array());
             }
 
-            $zahlungen = array();
-            
-            $tables = array(
-                array(
-                    'minus' => '',
-                    'table' => 'kontoauszuege_zahlungseingang',
-                ),
-                array (
-                    'minus' => '-',
-                    'table' => 'kontoauszuege_zahlungsausgang'
-                )
-            );
+            $ids = array();
 
             foreach ($documents as $document) {
-
-                foreach ($tables as $table) {
-
-                    $sql = "
-                        SELECT                            
-                            '".$document['type']."' as `doc_type`,
-                            '".$document['id']."' as `doc_id`,
-                            '".$document['belegnr']."' as `doc_belegnr`,
-                            ko.bezeichnung AS konto,
-                            DATE_FORMAT(ke.datum, '%d.%m.%Y') AS datum,
-                            k.id AS kontoauszuege,
-                            ".$table['minus']."ke.betrag AS betrag,
-                            k.id AS zeile,
-                            k.waehrung
-                        FROM
-                        ".$table['table']." ke
-                        LEFT JOIN kontoauszuege k ON
-                            ke.kontoauszuege = k.id
-                        LEFT JOIN konten ko ON
-                            k.konto = ko.id
-                        WHERE
-                            ke.objekt = '".$document['type']."' AND ke.parameter = '".$document['id']."'
-                    ";
-
-                    $result = $this->app->DB->SelectArr($sql);
-
-                    if (!empty($result)) {
-                        $zahlungen = array_merge($zahlungen,$result);
-                    }
-                }
+                $ids[] = $document['type'].$document['id'];
             }
-            return($zahlungen);
-        }
 
-        public function GetZahlung(int $id, string $type, bool $cascade = false, string $lastlevel = 'auftrag') {
-            $zahlungen = $this->GetZahlungen($id, $type, $cascade);
-            if (empty($zahlungen)) {
-                $zahlbetrag = 0; 
-            } else {
-                $zahlbetrag = array_sum(array_column($zahlungen,'betrag'));
-            }
-            return($zahlbetrag);
+            $sql = "
+                SELECT
+                    typ,
+                    id,
+                    ".$this->app->erp->FormatDate('datum')." as datum,
+                    doc_typ,
+                    doc_id,
+                    doc_belegnr,
+                    ".$this->app->erp->FormatMenge('betrag',2)." as betrag,
+                    waehrung
+                FROM
+                    fibu_buchungen_alle
+                WHERE
+                    CONCAT(typ,id) IN ('".implode("','",$ids)."')
+                ORDER BY 
+                    (SELECT datum) ASC
+                ";            
+
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (empty($result)) {
+                return(array());
+            } 
+            return($result);
         }
 
         /*
-        * Calculate the payment saldo of a document
+        * Calculate the payment saldo information of a document
         * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
+        * returns array(array(betrag, waehrung)) one line per waehrung
         */
-        public function GetSaldoDokument($id, $type, string $lastlevel = 'auftrag') {
+        public function GetSaldenDokument($id, $type, string $lastlevel = 'auftrag') : array {
 
-            $zahlbetrag = $this->GetZahlung($id, $type, false);
-
-            $sollspalten = array(
-                'auftrag' => 'gesamtsumme',
-                'rechnung' => 'soll',
-                'gutschrift' => 'soll',
-                'verbindlichkeit' => 'betrag'
-            );
-
-            $sql = "SELECT ".$sollspalten[$type]." as sollbetrag FROM ".$type." WHERE id =".$id;
-
-//            echo($sql);
+            $sql = "
+                SELECT
+                    ".$this->app->erp->FormatMenge('SUM(betrag)',2)." as betrag,
+                    waehrung
+                FROM
+                    fibu_buchungen_alle
+                WHERE
+                    typ = '".$type."' AND id = ".$id."
+                GROUP BY
+                    waehrung";            
 
             $result = $this->app->DB->SelectArr($sql);
 
             if (!empty($result)) {
-                $sollbetrag = $result[0]['sollbetrag'];
-            } else {
-                $sollbetrag = 0;
+                return($result);
+            } 
+            return(array());
+        }
+
+
+        /*
+        * Calculate the payment amount of a document
+        * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
+        * returns array(array(betrag, waehrung)) or empty array
+        */
+        public function GetSaldoDokument($id, $type) : array {
+
+            $sql = "
+                SELECT
+                    SUM(betrag) as betrag,
+                    waehrung
+                FROM
+                    fibu_buchungen_alle
+                WHERE
+                    typ = '".$type."' AND id = ".$id."
+                GROUP BY
+                    waehrung";            
+
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (!empty($result)) {
+                if (count($result) == 1) {
+                    return($result[0]);
+                }         
             }
-            return($sollbetrag-$zahlbetrag);
+            return(array());            
         }
 
       public function ANABREGSNeuberechnen($id,$art,$force=false)

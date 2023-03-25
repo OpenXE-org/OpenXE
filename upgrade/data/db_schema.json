@@ -77689,13 +77689,13 @@
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
                 },
-                {
+                  {
                     "Field": "buchhaltung_berater",
                     "Type": "varchar(64)",
-                    "Collation": null,
+                    "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
                     "Key": "",
-                    "Default": "",
+                    "Default": null,
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
@@ -77703,10 +77703,10 @@
                 {
                     "Field": "buchhaltung_mandant",
                     "Type": "varchar(64)",
-                    "Collation": null,
+                    "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
                     "Key": "",
-                    "Default": "",
+                    "Default": null,
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
@@ -77714,14 +77714,14 @@
                 {
                     "Field": "buchhaltung_wj_beginn",
                     "Type": "varchar(4)",
-                    "Collation": null,
+                    "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
                     "Key": "",
                     "Default": "'0101'",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
-                },               
+                },
                 {
                     "Field": "buchhaltung_sachkontenlaenge",
                     "Type": "int(1)",
@@ -77733,7 +77733,6 @@
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
                 }
-
             ],
             "keys": [
                 {
@@ -114359,6 +114358,11 @@
             "name": "belegeregs",
             "type": "VIEW",
             "Create": "CREATE VIEW `belegeregs` AS select `rechnung`.`id` AS `id`,`rechnung`.`adresse` AS `adresse`,`rechnung`.`datum` AS `datum`,`rechnung`.`belegnr` AS `belegnr`,`rechnung`.`status` AS `status`,`rechnung`.`land` AS `land`,'rechnung' AS `typ`,`rechnung`.`umsatz_netto` AS `umsatz_netto`,`rechnung`.`erloes_netto` AS `erloes_netto`,`rechnung`.`deckungsbeitrag` AS `deckungsbeitrag`,`rechnung`.`provision_summe` AS `provision_summe`,`rechnung`.`vertriebid` AS `vertriebid`,`rechnung`.`gruppe` AS `gruppe`,`rechnung`.`projekt` AS `projekt` from `rechnung` union all select `gutschrift`.`id` AS `id`,`gutschrift`.`adresse` AS `adresse`,`gutschrift`.`datum` AS `datum`,`gutschrift`.`belegnr` AS `belegnr`,`gutschrift`.`status` AS `status`,`gutschrift`.`land` AS `land`,'gutschrift' AS `typ`,`gutschrift`.`umsatz_netto` * -1 AS `umsatz_netto*-1`,`gutschrift`.`erloes_netto` * -1 AS `erloes_netto*-1`,`gutschrift`.`deckungsbeitrag` * -1 AS `deckungsbeitrag*-1`,`gutschrift`.`provision_summe` * -1 AS `provision_summe*-1`,`gutschrift`.`vertriebid` AS `vertriebid`,`gutschrift`.`gruppe` AS `gruppe`,`gutschrift`.`projekt` AS `projekt` from `gutschrift`"
+        },
+       {
+            "name": "fibu_buchungen_alle",
+            "type": "VIEW",
+            "Create": "CREATE VIEW `fibu_buchungen_alle` AS select `fb`.`buchungsart` AS `buchungsart`,`fb`.`typ` AS `typ`,`fb`.`id` AS `id`,if(`bl`.`datum` <> '',`bl`.`datum`,`fb`.`datum`) AS `datum`,`fb`.`gegen_typ` AS `doc_typ`,`fb`.`gegen_id` AS `doc_id`,`bl`.`belegnr` AS `doc_belegnr`,`fb`.`soll` AS `betrag`,`fb`.`waehrung` AS `waehrung` from ((select 'umsatz' collate utf8mb4_general_ci AS `buchungsart`,'rechnung' collate utf8mb4_general_ci AS `typ`,`rechnung`.`id` AS `id`,`rechnung`.`soll` AS `soll`,`rechnung`.`waehrung` AS `waehrung`,'rechnung' collate utf8mb4_general_ci AS `gegen_typ`,`rechnung`.`id` AS `gegen_id`,`rechnung`.`datum` AS `datum` from `rechnung` where `rechnung`.`belegnr` <> '' union select 'umsatz' AS `umsatz`,'gutschrift' collate utf8mb4_general_ci AS `'gutschrift' COLLATE utf8mb4_general_ci`,`gutschrift`.`id` AS `id`,-`gutschrift`.`soll` AS `- ``openxe``.``gutschrift``.``soll```,`gutschrift`.`waehrung` AS `waehrung`,'gutschrift' collate utf8mb4_general_ci AS `gutschrift`,`gutschrift`.`id` AS `id`,`gutschrift`.`datum` AS `datum` from `gutschrift` where `gutschrift`.`belegnr` <> '' union select 'abbuchung' collate utf8mb4_general_ci AS `abbuchung`,'gutschrift' collate utf8mb4_general_ci AS `rechnung`,`gutschrift`.`id` AS `id`,`gutschrift`.`soll` AS `- ``openxe``.``gutschrift``.``soll```,`gutschrift`.`waehrung` AS `waehrung`,'rechnung' collate utf8mb4_general_ci AS `gutschrift`,`gutschrift`.`rechnungid` AS `rechnungid`,`gutschrift`.`datum` AS `datum` from `gutschrift` where `gutschrift`.`rechnungid` > 0 and `gutschrift`.`belegnr` <> '' union select 'abbuchung' collate utf8mb4_general_ci AS `abbuchung`,'rechnung' collate utf8mb4_general_ci AS `rechnung`,`gutschrift`.`rechnungid` AS `rechnungid`,-`gutschrift`.`soll` AS `- ``openxe``.``gutschrift``.``soll```,`gutschrift`.`waehrung` AS `waehrung`,'gutschrift' collate utf8mb4_general_ci AS `gutschrift`,`gutschrift`.`id` AS `id`,`gutschrift`.`datum` AS `datum` from `gutschrift` where `gutschrift`.`rechnungid` > 0 and `gutschrift`.`belegnr` <> '' union select 'aufwand' collate utf8mb4_general_ci AS `aufwand`,'verbindlichkeit' collate utf8mb4_general_ci AS `verbindlichkeit`,`verbindlichkeit`.`id` AS `id`,-`verbindlichkeit`.`betrag` AS `- ``openxe``.``verbindlichkeit``.``betrag```,`verbindlichkeit`.`waehrung` AS `waehrung`,'verbindlichkeit' collate utf8mb4_general_ci AS `verbindlichkeit`,`verbindlichkeit`.`id` AS `id`,`verbindlichkeit`.`rechnungsdatum` AS `rechnungsdatum` from `verbindlichkeit` where `verbindlichkeit`.`belegnr` <> '' union select 'abbuchung' collate utf8mb4_general_ci AS `abbuchung`,`fibu_buchungen`.`von_typ` AS `von_typ`,`fibu_buchungen`.`von_id` AS `von_id`,-`fibu_buchungen`.`betrag` AS `- ``openxe``.``fibu_buchungen``.``betrag```,`fibu_buchungen`.`waehrung` AS `waehrung`,`fibu_buchungen`.`nach_typ` AS `nach_typ`,`fibu_buchungen`.`nach_id` AS `nach_id`,`fibu_buchungen`.`zeit` AS `zeit` from `fibu_buchungen` union select 'zubuchung' collate utf8mb4_general_ci AS `zubuchung`,`fibu_buchungen`.`nach_typ` AS `nach_typ`,`fibu_buchungen`.`nach_id` AS `nach_id`,`fibu_buchungen`.`betrag` AS `betrag`,`fibu_buchungen`.`waehrung` AS `waehrung`,`fibu_buchungen`.`von_typ` AS `von_typ`,`fibu_buchungen`.`von_id` AS `von_id`,`fibu_buchungen`.`zeit` AS `zeit` from `fibu_buchungen`) `fb` left join (select `rechnung`.`datum` AS `datum`,'rechnung' collate utf8mb4_general_ci AS `typ`,`rechnung`.`id` AS `id`,`rechnung`.`belegnr` AS `belegnr` from `rechnung` where `rechnung`.`belegnr` <> '' union select `gutschrift`.`datum` AS `datum`,'gutschrift' collate utf8mb4_general_ci AS `gutschrift`,`gutschrift`.`id` AS `id`,`gutschrift`.`belegnr` AS `belegnr` from `gutschrift` where `gutschrift`.`belegnr` <> '' union select `verbindlichkeit`.`rechnungsdatum` AS `rechnungsdatum`,'verbindlichkeit' collate utf8mb4_general_ci AS `verbindlichkeit`,`verbindlichkeit`.`id` AS `id`,`verbindlichkeit`.`belegnr` AS `belegnr` from `verbindlichkeit` where `verbindlichkeit`.`belegnr` <> '' union select `kontoauszuege`.`buchung` AS `buchung`,'kontoauszuege' collate utf8mb4_general_ci AS `kontoauszuege`,`kontoauszuege`.`id` AS `id`,`kontoauszuege`.`buchungstext` AS `buchungstext` from `kontoauszuege` union select '','kontorahmen' collate utf8mb4_general_ci AS `'kontorahmen' COLLATE utf8mb4_general_ci`,`kontorahmen`.`id` AS `id`,`kontorahmen`.`beschriftung` AS `beschriftung` from `kontorahmen`) `bl` on(`fb`.`gegen_typ` = `bl`.`typ` and `fb`.`gegen_id` = `bl`.`id`))"
         }
     ]
 }

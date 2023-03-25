@@ -130,7 +130,6 @@ class WidgetRechnung extends WidgetGenRechnung
 
     $status = $this->app->erp->GetStatusRechnung();
 
-
     $zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, type FROM zahlungsweisen WHERE verhalten = 'rechnung'");
 
 	if (!is_null($zahlungsweisenmodule)) {

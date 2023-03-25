@@ -887,30 +887,8 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('ANGEBOTFARBE',"grey");
       $this->app->Tpl->Set('ANGEBOTTEXT',"Das Angebot wird bearbeitet und wurde noch nicht freigegeben und abgesendet!");
     }
-
-    
-//    $this->app->Tpl->Set('ZAHLUNGEN',"<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>Erst ab Version Enterprise verf&uuml;gbar</table>");
+  
     $this->app->Tpl->Set('ZAHLUNGEN',$this->RechnungZahlung(true));
-
-	if (!is_null($gutschrift)) {
-
-	    if((!empty($gutschrift)?count($gutschrift):0) > 0)
-	      $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"info\">Zu dieser Rechnung existiert eine Gutschrift!</div>");
-	    else {
-
-	      if($auftragArr[0]['zahlungsstatus']!="bezahlt")
-	        $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"warning\">Diese Rechnung ist noch nicht komplett bezahlt!</div>");
-	      else
-	      {
-	        if(!empty($auftragArr[0]['bezahlt_am']) && $auftragArr[0]['bezahlt_am'] != '0000-00-00')
-	        {
-	          $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"success\">Diese Rechnung wurde am ".$this->app->String->Convert($auftragArr[0]['bezahlt_am'],"%1-%2-%3","%3.%2.%1")." bezahlt.</div>");
-	        }else{
-	          $this->app->Tpl->Add('ZAHLUNGEN',"<div class=\"success\">Diese Rechnung ist bezahlt.</div>");
-	        }
-	      }
-	    }
-	}
 
     $this->app->Tpl->Set('RECHNUNGADRESSE',$this->Rechnungsadresse($auftragArr[0]['id']));
 
@@ -1770,12 +1748,8 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('VORKASSE','');
     }
 
-    $ist = $this->app->erp->EUR($this->app->erp->GetZahlung($id,'rechnung'));
+    $ist = $this->app->erp->EUR($this->app->erp->GetSaldoDokument($id,'rechnung')['betrag']);
     $this->app->Tpl->Set('ISTDB',$ist);
-
-    $istgs = $this->app->erp->EUR($this->app->erp->GetZahlung($id,'rechnung',true,'rechnung'));
-    $this->app->Tpl->Set('ISTGS',$istgs);
-
 
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden('rechnung','schreibschutz'))
     {
@@ -1822,8 +1796,10 @@ class Rechnung extends GenRechnung
     }
 
     $speichern = $this->app->Secure->GetPOST('speichern');
+
     if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','mahnwesen'))
     {
+
       $mahnwesen_datum = $this->app->Secure->GetPOST('mahnwesen_datum');
       $bezahlt_am = $this->app->Secure->GetPOST('bezahlt_am');
       $mahnwesen_gesperrt = $this->app->Secure->GetPOST('mahnwesen_gesperrt');
@@ -1849,16 +1825,15 @@ class Rechnung extends GenRechnung
       $alte_mahnstufe = $this->app->DB->Select("SELECT mahnwesen FROM rechnung WHERE id='$id' LIMIT 1");
       if($alte_mahnstufe!=$mahnwesen) $versendet=0; else $versendet=1;
 
-      if($mahnwesenfestsetzen=='1')
-      {
+/*      if($mahnwesenfestsetzen=='1')
+      {*/
         $this->app->DB->Update("UPDATE rechnung SET mahnwesen_internebemerkung='$mahnwesen_internebemerkung',zahlungsstatus='$zahlungsstatus',versendet_mahnwesen='$versendet',
           mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum', mahnwesenfestsetzen='$mahnwesenfestsetzen',internebemerkung='$internebemerkung',
           mahnwesen='$mahnwesen',ist='$ist',skonto_gegeben='$skonto_gegeben',bezahlt_am='$bezahlt_am' WHERE id='$id' LIMIT 1");
-      } else {
+/*      } else {
         $this->app->DB->Update("UPDATE rechnung SET mahnwesen='$mahnwesen', mahnwesenfestsetzen='$mahnwesenfestsetzen', mahnwesen_internebemerkung='$mahnwesen_internebemerkung', mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum' WHERE id='$id' LIMIT 1");
-      }
+      }*/
     }
-
 
     if($status=='')
       $this->app->DB->Update("UPDATE rechnung SET status='angelegt' WHERE id='$id' LIMIT 1");
@@ -2091,11 +2066,20 @@ class Rechnung extends GenRechnung
     $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''");
 
     // First refresh all open items
-    $openids = $this->app->DB->SelectArr("SELECT id from rechnung WHERE zahlungsstatus = 'offen'");
+    $openids = $this->app->DB->SelectArr("SELECT id, waehrung from rechnung WHERE zahlungsstatus = 'offen'");
 
     foreach ($openids as $openid) {
         $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'rechnung');
-        $this->app->DB->Update("UPDATE rechnung SET ist = soll-".$saldo." WHERE id=".$openid['id']);
+
+        if (!empty($saldo)) {
+            if ($saldo['waehrung'] == $openid['waehrung']) {
+                $sql = "UPDATE rechnung SET ist = ".$saldo['betrag']."+soll WHERE id=".$openid['id'];
+                $this->app->DB->Update($sql);
+            } 
+        }
+        else {
+            $this->app->DB->Update("UPDATE rechnung SET ist = null");
+        }
     }
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
@@ -2744,61 +2728,36 @@ class Rechnung extends GenRechnung
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $zahlungen = $this->app->erp->GetZahlungen($id,'rechnung',true);
+    $zahlungen = $this->app->erp->GetZahlungen($id,'rechnung'); 
+    if (!empty($zahlungen)) {
+        $et = new EasyTable($this->app);
 
-//    print_r($zahlungen);
+        $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
 
-    $result = "";
+        foreach ($zahlungen as $zahlung) {
+            $row = array(
+                $zahlung['datum'],
+                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                    ".ucfirst($zahlung['doc_typ'])." 
+                    ".$zahlung['doc_belegnr']."
+                </a>",
+                $zahlung['betrag'],
+                $zahlung['waehrung']
+            );
+            $et->AddRow($row);
+        }
 
-    foreach ($zahlungen as $zahlung) {
-        $result .= "
-                    <tr>
-                        <td>
-                            ".$zahlung['datum']."
-                        </td>
-                        <td>
-                            <a href=\"index.php?module=".$zahlung['doc_type']."&action=edit&id=".$zahlung['doc_id']."\">                            
-                                ".ucfirst($zahlung['doc_type'])." 
-                                ".$zahlung['doc_belegnr']."
-                            </a>
-                        </td>
-                        <td>
-                            ".$zahlung['konto']."
-                        </td>
-                        <td>
-                            <a href=\"index.php?module=konto&action=auszug&id=".$zahlung['kontoauszuege']."\">
-                                ".$zahlung['betrag']." ".$zahlung['waehrung']."
-                            </a>
-                        </td>
-                    </tr>
-                    ";
+        $salden = $this->app->erp->GetSaldenDokument($id,'rechnung');
+        foreach ($salden as $saldo) {   
+            $row = array(
+                '',
+                '<b>Saldo</b>',
+                "<b>".$saldo['betrag']."</b>",
+                "<b>".$saldo['waehrung']."</b>"
+            );
+            $et->AddRow($row);
+        }
+        return($et->DisplayNew('return',""));           
     }
-
-    $sum = array_sum(array_column($zahlungen,'betrag'))." ".$zahlung['waehrung'];
-
-    if ($sum != 0) {
-        $result .= "
-                    <tr>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                            <b>
-                                Summe:
-                            </b>
-                        </td>
-                        <td>
-                            <b>
-                                ".$sum."
-                            </b>
-                        </td>
-                    </tr>
-                    ";
-    }
-
-    return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
   }
-
-
 }
