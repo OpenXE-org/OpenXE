@@ -241,13 +241,14 @@ class Versandarten {
       $form['paketmarke_drucker'] = $daten['paketmarke_drucker'];
     }
 
-    $obj->RenderAdditionalSettings('MODULESETTINGS', $form);
+    if (!empty($obj)) {
+        $obj->RenderAdditionalSettings('MODULESETTINGS', $form);
+        $this->app->Tpl->addSelect('EXPORT_DRUCKER', 'export_drucker', 'export_drucker',
+            $this->getPrinterByModule($obj, false), $form['export_drucker']);
 
-    $this->app->Tpl->addSelect('EXPORT_DRUCKER', 'export_drucker', 'export_drucker',
-        $this->getPrinterByModule($obj, false), $form['export_drucker']);
-
-    $this->app->Tpl->addSelect('PAKETMARKE_DRUCKER', 'paketmarke_drucker', 'paketmarke_drucker',
-        $this->getPrinterByModule($obj), $form['paketmarke_drucker']);
+        $this->app->Tpl->addSelect('PAKETMARKE_DRUCKER', 'paketmarke_drucker', 'paketmarke_drucker',
+            $this->getPrinterByModule($obj), $form['paketmarke_drucker']);
+    }
 
     $this->app->YUI->HideFormular('versandmail', array('0'=>'versandbetreff','1'=>'dummy'));
     $this->app->Tpl->addSelect('SELVERSANDMAIL', 'versandmail', 'versandmail', [
