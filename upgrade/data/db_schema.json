@@ -98705,7 +98705,7 @@
                     "Default": "",
                     "Extra": "auto_increment",
                     "Privileges": "select,insert,update,references",
-                    "Commant": ""
+                    "Comment": ""
                 },
                 {
                     "Field": "address_id",
@@ -98716,7 +98716,7 @@
                     "Default": "",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
-                    "Commant": ""
+                    "Comment": ""
                 },
                 {
                     "Field": "document_type",
@@ -98727,7 +98727,7 @@
                     "Default": "",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
-                    "Commant": ""
+                    "Comment": ""
                 },
                 {
                     "Field": "job_type",
@@ -98738,7 +98738,7 @@
                     "Default": "",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
-                    "Commant": ""
+                    "Comment": ""
                 },
                 {
                     "Field": "printer_id",
@@ -98749,7 +98749,7 @@
                     "Default": "",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
-                    "Commant": ""
+                    "Comment": ""
                 },
                 {
                     "Field": "created_at",
@@ -98760,7 +98760,7 @@
                     "Default": "current_timestamp()",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
-                    "Commant": ""
+                    "Comment": ""
                 }
             ],
             "keys": [
