@@ -66,7 +66,6 @@ function xentral_autoloader($class) {
     'ICS'=>__DIR__.'/www/plugins/class.ics.php',
     'USTID'=>__DIR__.'/www/lib/class.ustid.php',
     'phpprint'=>__DIR__.'/www/plugins/php-print.php',
-    'DHLBusinessShipment'=>__DIR__.'/www/lib/class.intraship.php',
     'Navigation'=>__DIR__.'/www/lib/class.navigation_edit.php',
     'GoShipment'=>__DIR__.'/www/lib/class.go.php',
     'UPSShipment'=>__DIR__.'/www/lib/class.ups.php',

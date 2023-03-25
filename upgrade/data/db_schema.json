@@ -98693,6 +98693,92 @@
             ]
         },
         {
+            "name": "subscription_cycle_job",
+            "type": "BASE TABLE",
+            "columns": [
+                {
+                    "Field": "id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": "",
+                    "Extra": "auto_increment",
+                    "Privileges": "select,insert,update,references",
+                    "Commant": ""
+                },
+                {
+                    "Field": "address_id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "MUL",
+                    "Default": "",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Commant": ""
+                },
+                {
+                    "Field": "document_type",
+                    "Type": "varchar(32)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Commant": ""
+                },
+                {
+                    "Field": "job_type",
+                    "Type": "varchar(32)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Commant": ""
+                },
+                {
+                    "Field": "printer_id",
+                    "Type": "int(11)",
+                    "Collation": "",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Commant": ""
+                },
+                {
+                    "Field": "created_at",
+                    "Type": "timestamp",
+                    "Collation": "",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Commant": ""
+                }
+            ],
+            "keys": [
+                {
+                    "Key_name": "PRIMARY",
+                    "columns": [
+                        "id"
+                    ]
+                },
+                {
+                    "Key_name": "address",
+                    "columns": [
+                        "address_id"
+                    ]
+                }
+            ]
+        },
+        {
             "name": "supersearch_index_group",
             "type": "BASE TABLE",
             "columns": [

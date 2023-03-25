@@ -1,5 +1,12 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
+/*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
@@ -734,8 +741,12 @@ class Remote
               if($v['path'] != '' && $v['content'] != '')
               {
                 $path_parts = pathinfo($v['path']);
-                $fileid = $this->app->erp->CreateDatei($path_parts['basename'], 'Shopbild', '', '', base64_decode($v['content']), 'Cronjob');
+                $tmpfilename = tempnam($this->app->erp->GetTMP(), 'img');
+                file_put_contents($tmpfilename, base64_decode($v['content']));
+                $fileid = $this->app->erp->CreateDatei($path_parts['basename'], 'Shopbild', '', '', $tmpfilename, 'Cronjob');
                 $this->app->erp->AddDateiStichwort($fileid, 'Shopbild', 'artikel', $articleid);
+                if (@is_file($tmpfilename))
+                  unlink($tmpfilename);
               }
             }
           }elseif($dateien[0]['subjekt'] === 'shopbild'){
@@ -766,12 +777,16 @@ class Remote
               if($v['path'] != '' && $v['content'] != '')
               {
                 $path_parts = pathinfo($v['path']);
-                $fileid = $this->app->erp->CreateDatei($path_parts['basename'], 'Shopbild', '', '', base64_decode($v['content']), 'Cronjob');
+                $tmpfilename = tempnam($this->app->erp->GetTMP(), 'img');
+                file_put_contents($tmpfilename, base64_decode($v['content']));
+                $fileid = $this->app->erp->CreateDatei($path_parts['basename'], 'Shopbild', '', '', $tmpfilename, 'Cronjob');
                 if(isset($v['id']))
                 {
                   $this->ShopexportMappingSet($id, 'datei', $fileid, $v['id'], $articleid);
                 }
                 $this->app->erp->AddDateiStichwort($fileid, 'Shopbild', 'artikel', $articleid);
+                if (@is_file($tmpfilename))
+                  unlink($tmpfilename);
               }
             }
           }

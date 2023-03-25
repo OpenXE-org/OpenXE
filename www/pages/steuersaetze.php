@@ -1,5 +1,12 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
+/*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
@@ -154,7 +161,7 @@ class Steuersaetze {
     $ret = [];
     $taxes = $this->app->DB->SelectArr(
       sprintf(
-        "SELECT DISTINCT `satz` 
+        "SELECT DISTINCT `type`, `satz` 
         FROM `steuersaetze` 
         WHERE `aktiv` = 1 
           AND (`country_code` = '%s' OR (`bezeichnung` = '%s' AND `country_code` = ''))",
@@ -163,7 +170,7 @@ class Steuersaetze {
     );
     if(!empty($taxes)) {
       foreach($taxes as $rates) {
-        $ret[] = $rates['satz'];
+        $ret[$rates['type']] = $rates['satz'];
       }
     }
 
