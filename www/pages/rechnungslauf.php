@@ -35,8 +35,8 @@ class Rechnungslauf {
                 $width = ['1%', '1%', '10%', '20%', '10%', '10%', '10%', '10%', '10%', '10%', '1%'];
 
                 $findcols = [
-                    '',
-                    '',
+                    'adr.kundennummer',
+                    'adr.kundennummer',
                     'adr.kundennummer',
                     'adr.name',
                     'adr.anschreiben',
@@ -209,7 +209,7 @@ class Rechnungslauf {
         $this->app->ActionHandlerInit($this);
 
         // ab hier alle Action Handler definieren die das Modul hat
-        $this->app->ActionHandler('rechnungslauf', 'ActionList');
+        $this->app->ActionHandler('list', 'ActionList');
         $this->app->ActionHandler('abos', 'ActionAbos');
         $this->app->ActionHandler('minidetail', 'ActionMinidetail');
 
@@ -218,7 +218,7 @@ class Rechnungslauf {
 
     public function MenuList() {
         $this->app->erp->Headlines("Abolauf");
-        $this->app->erp->MenuEintrag("index.php?module=rechnungslauf&action=rechnungslauf", "&Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=rechnungslauf&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=rechnungslauf&action=abos", "gebuchte Abos");
         $this->app->erp->MenuEintrag("index.php?module=rechnungslauf&action=einstellungen", "Einstellungen");
     }
