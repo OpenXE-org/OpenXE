@@ -49,6 +49,7 @@ class image {
 
             $manipulator = new ImageManipulator($str);
             $type = mime_content_type($path);
+            
             $manipulator->resample($newwidth, $newheight, true, $upscale);
 
             /*
@@ -200,7 +201,7 @@ class ImageManipulator
     public function resample($width, $height, $constrainProportions = true, $upscale = false, $keepformat = false)
     {
       if (!is_resource($this->image)) {
-        throw new RuntimeException('No image set');
+//        throw new RuntimeException('No image set');    
       }
       if($keepformat)
       {
@@ -340,9 +341,9 @@ class ImageManipulator
      */
     protected function _replace($res)
     {
-        if (!is_resource($res)) {
+      /*  if (!is_resource($res)) {
             throw new UnexpectedValueException('Invalid resource');
-        }
+        }*/
         if (is_resource($this->image)) {
             imagedestroy($this->image);
         }
