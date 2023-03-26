@@ -1797,12 +1797,19 @@ class Briefpapier extends SuperFPDF {
 
   public function setStyleData($styleData){
     $this->styleData = $styleData;
-  }
+  }  
 
   private function getStyleElement($key){
-    if(isset($this->styleData[$key]) && !empty($this->styleData[$key])) return $this->styleData[$key];
-
-    return $this->app->erp->Firmendaten($key);
+    $result = null;
+    if(isset($this->styleData[$key]) && !empty($this->styleData[$key])) {
+        $result = $this->styleData[$key];
+    } else {
+        $result = $this->app->erp->Firmendaten($key);
+    }
+    if (empty($result)) {
+        $result = 0;
+    }    
+    return($result);
   }
 
   public function renderDocument() {
