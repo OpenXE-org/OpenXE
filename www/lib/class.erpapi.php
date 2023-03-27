@@ -7095,7 +7095,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Arbeitsnachweis','arbeitsnachweis','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Gutschrift / '.$this->Firmendaten("bezeichnungstornorechnung"),'gutschrift','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Proformarechnung','proformarechnung','list');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Abolauf','rechnungslauf','rechnungslauf');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Abolauf','rechnungslauf','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Mahnwesen','mahnwesen','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Dokumenten Scanner','docscan','list');

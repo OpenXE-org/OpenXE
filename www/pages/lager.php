@@ -451,7 +451,7 @@ class Lager extends GenLager {
                 FROM
                     einkaufspreise minek
                 WHERE
-                    einkaufspreise.artikel = minek.artikel AND DATE(
+                    einkaufspreise.geloescht != 1 AND einkaufspreise.artikel = minek.artikel AND DATE(
                     REPLACE
                         (
                             COALESCE(gueltig_bis, '9999-12-31'),
@@ -482,7 +482,17 @@ class Lager extends GenLager {
                         )
                 ) >= DATE('".$datum."')
             )
-            )
+            ) AND DATE(
+                REPLACE
+                    (
+                        COALESCE(
+                            einkaufspreise.gueltig_bis,
+                            '9999-12-31'
+                        ),
+                        '0000-00-00',
+                        '9999-12-31'
+                    )
+            ) >= DATE('".$datum."')
             GROUP BY
                 artikel,
                 waehrung
