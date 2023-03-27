@@ -10,7 +10,7 @@
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
-* Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
+* Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
 * This file is licensed under the Embedded Projects General Public License *Version 3.1. 
 *
@@ -190,12 +190,14 @@ class Versandarten {
       ))
         $error[] = 'Typ ist bereits für eine andere Versandart vergeben';
 
-      foreach ($obj->AdditionalSettings() as $k => $v) {
-        $form[$k] = $this->app->Secure->GetPOST($k);
-      }
-      $error = array_merge($error, $obj->ValidateSettings($form));
-      foreach ($obj->AdditionalSettings() as $k => $v) {
-        $json[$k] = $form[$k];
+      if ($obj !== null) {
+        foreach ($obj->AdditionalSettings() as $k => $v) {
+          $form[$k] = $this->app->Secure->GetPOST($k);
+        }
+        $error = array_merge($error, $obj->ValidateSettings($form));
+        foreach ($obj->AdditionalSettings() as $k => $v) {
+          $json[$k] = $form[$k];
+        }
       }
       $json = json_encode($json ?? null);
 
@@ -241,14 +243,13 @@ class Versandarten {
       $form['paketmarke_drucker'] = $daten['paketmarke_drucker'];
     }
 
-    if (!empty($obj)) {
-        $obj->RenderAdditionalSettings('MODULESETTINGS', $form);
-        $this->app->Tpl->addSelect('EXPORT_DRUCKER', 'export_drucker', 'export_drucker',
-            $this->getPrinterByModule($obj, false), $form['export_drucker']);
+    $obj?->RenderAdditionalSettings('MODULESETTINGS', $form);
 
-        $this->app->Tpl->addSelect('PAKETMARKE_DRUCKER', 'paketmarke_drucker', 'paketmarke_drucker',
-            $this->getPrinterByModule($obj), $form['paketmarke_drucker']);
-    }
+    $this->app->Tpl->addSelect('EXPORT_DRUCKER', 'export_drucker', 'export_drucker',
+        $this->getPrinterByModule($obj, false), $form['export_drucker']);
+
+    $this->app->Tpl->addSelect('PAKETMARKE_DRUCKER', 'paketmarke_drucker', 'paketmarke_drucker',
+        $this->getPrinterByModule($obj), $form['paketmarke_drucker']);
 
     $this->app->YUI->HideFormular('versandmail', array('0'=>'versandbetreff','1'=>'dummy'));
     $this->app->Tpl->addSelect('SELVERSANDMAIL', 'versandmail', 'versandmail', [
@@ -267,7 +268,7 @@ class Versandarten {
         'geschaeftsbrief_vorlage', $geschaeftsbrief_vorlagen, $daten['geschaeftsbrief_vorlage']);
 
     $this->app->Tpl->addSelect('SELMODUL', 'modul', 'modul',
-        $this->VersandartenSelModul(), $form['modul']);
+        $this->VersandartenSelModul(true), $form['modul']);
     $this->app->Tpl->Set('BEZEICHNUNG', $form['bezeichnung']);
     $this->app->Tpl->Set('TYPE', $form['type']);
     $this->app->Tpl->Set('PROJEKT', $form['projekt']);
@@ -279,11 +280,11 @@ class Versandarten {
     $this->app->Tpl->Parse('PAGE', 'versandarten_edit.tpl');
   }
 
-  protected function getPrinterByModule(Versanddienstleister $obj, bool $includeLabelPrinter = true): array
+  protected function getPrinterByModule(?Versanddienstleister $obj, bool $includeLabelPrinter = true): array
   {
     $printer = $this->app->erp->GetDrucker();
 
-    if ($includeLabelPrinter && $obj->isEtikettenDrucker()) {
+    if ($includeLabelPrinter && $obj?->isEtikettenDrucker()) {
       $labelPrinter = $this->app->erp->GetEtikettendrucker();
       $printer = array_merge($printer ?? [], $labelPrinter ?? []);
     }
@@ -712,7 +713,7 @@ class Versandarten {
       return $this->HandleSaveAssistantAjaxAction();
     }
 
-    $modulelist = $this->VersandartenSelModul();
+    $modulelist = $this->VersandartenSelModul(true);
     $auswahlmodul = $this->app->Secure->GetGET('auswahl');
 
     if($auswahlmodul && isset($modulelist[$auswahlmodul])) {
@@ -758,7 +759,7 @@ class Versandarten {
    * @param string $module
    * @param int    $moduleId
    *
-   * @return mixed|null
+   * @return ?Versanddienstleister
    */
   public function loadModule(string $module, int $moduleId = 0) : ?Versanddienstleister
   {
@@ -790,9 +791,12 @@ class Versandarten {
    * Retrieve all Versandarten from lib/versandarten/
    * @return array
    */
-  function VersandartenSelModul() : array
+  function VersandartenSelModul(bool $addEmpty = false) : array
   {
     $result = [];
+    if ($addEmpty)
+      $result[''] = '';
+
     $pfad = dirname(__DIR__).'/lib/versandarten';
     if(!is_dir($pfad))
       return $result;
@@ -822,6 +826,8 @@ class Versandarten {
         continue;
 
       $obj = $this->loadModule($modul);
+      if ($obj === null)
+        continue;
       $result[$modul] = $obj->name ?? ucfirst($modul);
       unset($obj);
     }
