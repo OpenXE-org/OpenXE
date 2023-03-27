@@ -268,7 +268,7 @@ class Versandarten {
         'geschaeftsbrief_vorlage', $geschaeftsbrief_vorlagen, $daten['geschaeftsbrief_vorlage']);
 
     $this->app->Tpl->addSelect('SELMODUL', 'modul', 'modul',
-        $this->VersandartenSelModul(), $form['modul']);
+        $this->VersandartenSelModul(true), $form['modul']);
     $this->app->Tpl->Set('BEZEICHNUNG', $form['bezeichnung']);
     $this->app->Tpl->Set('TYPE', $form['type']);
     $this->app->Tpl->Set('PROJEKT', $form['projekt']);
@@ -713,7 +713,7 @@ class Versandarten {
       return $this->HandleSaveAssistantAjaxAction();
     }
 
-    $modulelist = $this->VersandartenSelModul();
+    $modulelist = $this->VersandartenSelModul(true);
     $auswahlmodul = $this->app->Secure->GetGET('auswahl');
 
     if($auswahlmodul && isset($modulelist[$auswahlmodul])) {
@@ -791,9 +791,12 @@ class Versandarten {
    * Retrieve all Versandarten from lib/versandarten/
    * @return array
    */
-  function VersandartenSelModul() : array
+  function VersandartenSelModul(bool $addEmpty = false) : array
   {
     $result = [];
+    if ($addEmpty)
+      $result[''] = '';
+
     $pfad = dirname(__DIR__).'/lib/versandarten';
     if(!is_dir($pfad))
       return $result;
