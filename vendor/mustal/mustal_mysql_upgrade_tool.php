@@ -469,9 +469,9 @@ function mustal_column_sql_create_property_definition(string $property, string $
 // Replaces different variants of the same function mustal_to allow comparison
 function mustal_sql_replace_reserved_functions(array &$column, array $replacers) {
 
-    $result = strtolower($column['Default']);
+    $result = $column['Default'];
     foreach ($replacers as $replace) {
-        if ($result == $replace[0]) {
+        if (strtolower($column['Default']) == $replace[0]) {
             $result = $replace[1];
         } 
     }
