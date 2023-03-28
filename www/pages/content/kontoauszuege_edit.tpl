@@ -17,7 +17,7 @@
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|Kontoausz&uuml;g Eintrag|}</legend>
+                                <legend>{|Kontoauszug Eintrag|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr>
                                         <td>

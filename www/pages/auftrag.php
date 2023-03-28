@@ -3423,46 +3423,37 @@ class Auftrag extends GenAuftrag
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag',true);
+    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag',true); 
+    if (!empty($zahlungen)) {
+        $et = new EasyTable($this->app);
 
-//    print_r($zahlungen);
+        $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
 
-    $result = "";
+        foreach ($zahlungen as $zahlung) {
+            $row = array(
+                $zahlung['datum'],
+                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                    ".ucfirst($zahlung['doc_typ'])." 
+                    ".$zahlung['doc_belegnr']."
+                </a>",
+                $zahlung['betrag'],
+                $zahlung['waehrung']
+            );
+            $et->AddRow($row);
+        }
 
-    foreach ($zahlungen as $zahlung) {
-        $result .= "
-                    <tr>
-                        <td>
-                            ".$zahlung['datum']."
-                        </td>
-                        <td>
-                            <a href=\"index.php?module=".$zahlung['doc_type']."&action=edit&id=".$zahlung['doc_id']."\">                            
-                                ".ucfirst($zahlung['doc_type'])." 
-                                ".$zahlung['doc_belegnr']."
-                            </a>
-                        </td>
-                        <td>
-                            ".$zahlung['konto']."
-                        </td>
-                        <td>
-                            <a href=\"index.php?module=konto&action=auszug&id=".$zahlung['kontoauszuege']."\">
-                                ".$zahlung['betrag']." ".$zahlung['waehrung']."
-                            </a>
-                        </td>
-                    </tr>";
+        $salden = $this->app->erp->GetSaldenDokument($id,'auftrag',true);
+        foreach ($salden as $saldo) {   
+            $row = array(
+                '',
+                '<b>Saldo</b>',
+                "<b>".$saldo['betrag']."</b>",
+                "<b>".$saldo['waehrung']."</b>"
+            );
+            $et->AddRow($row);
+        }
+        return($et->DisplayNew('return',""));           
     }
-
-    $saldo = $this->app->erp->GetSaldoDokument($id,'auftrag');
-
-    $result .= "
-                    <tr>
-                        <td>
-                            ".$saldo."
-                        </td>
-                    </tr>
-               ";  
-
-    return("<table width=100% border=0 class=auftrag_cell cellpadding=0 cellspacing=0>".$result."</table>");  
   }
 
   function AuftragZahlungsmail()

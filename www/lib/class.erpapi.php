@@ -1510,6 +1510,11 @@ public function NavigationHooks(&$menu)
 //    return "replace(trim($spalte)+0,'.',',')";
   }
 
+  function FormatUCfirst($spalte)
+  {
+    return ('CONCAT(UCASE(LEFT('.$spalte.', 1)),SUBSTRING('.$spalte.', 2))');
+  }
+
   static function add_alias(string $text, $alias = false) {
     if (empty($alias)) {
         return($text);
@@ -7089,6 +7094,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Gutschrift / '.$this->Firmendaten("bezeichnungstornorechnung"),'gutschrift','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Proformarechnung','proformarechnung','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Kontoausz&uuml;ge','kontoauszuege','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Buchungen','fibu_buchungen','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abolauf','rechnungslauf','rechnungslauf');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Mahnwesen','mahnwesen','list');
 
@@ -36097,10 +36103,10 @@ function Firmendaten($field,$projekt="")
         * Gutschrift -> Rechnungid, Rechnung -> Auftragid
         */
 
-        public function GetZahlungen(int $id, string $type, bool $cascade = false, string $lastlevel = 'auftrag') : array {
+        public function GetZahlungen(int $id, string $type, string $cascadelevel = '') : array {
 
-            if ($cascade) {
-                $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $lastlevel);
+            if ($cascadelevel != '') {
+                $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $cascadelevel);
             } else {
                 $documents = array(array('id' => $id, 'type' => $type));
             }
@@ -36146,7 +36152,23 @@ function Firmendaten($field,$projekt="")
         * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
         * returns array(array(betrag, waehrung)) one line per waehrung
         */
-        public function GetSaldenDokument($id, $type, string $lastlevel = 'auftrag') : array {
+        public function GetSaldenDokument($id, $type, string $cascadelevel = '') : array {
+
+            if ($cascadelevel != '') {
+                $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $cascadelevel);
+            } else {
+                $documents = array(array('id' => $id, 'type' => $type));
+            }
+
+            if (empty($documents)) {
+                return(array());
+            }
+
+            $ids = array();
+
+            foreach ($documents as $document) {
+                $ids[] = $document['type'].$document['id'];
+            }
 
             $sql = "
                 SELECT
@@ -36155,7 +36177,7 @@ function Firmendaten($field,$projekt="")
                 FROM
                     fibu_buchungen_alle
                 WHERE
-                    typ = '".$type."' AND id = ".$id."
+                    CONCAT(typ,id) IN ('".implode("','",$ids)."')
                 GROUP BY
                     waehrung";            
 

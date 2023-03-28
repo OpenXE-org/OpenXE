@@ -5148,8 +5148,6 @@ class Importvorlage extends GenImportvorlage {
                                 implode("', '",array_values($row)).
                                 "')";
 
-                        $msg .= $sql;
-
                         $result = $this->app->DB->Update($sql);
                     }
                 } else {
