@@ -2640,6 +2640,24 @@ public function NavigationHooks(&$menu)
     return "if(" . $fieldstroke . ",CONCAT('<s>'," . $field . ",'</s>')," . $field . ")";
   }
 
+    // @refactor DbHelper Komponente
+    // creates a CONCAT sql statement with strings or sql expressions
+    // Use like this: ConcatSQL('<a href=index.php?id=',['sql'] => 'id','>','click here</a>');
+    function ConcatSQL(array $fields) {
+        $result = "CONCAT(";
+        $comma = "";    
+        foreach ($fields as $field) {
+            if (gettype($field) == 'array') {
+                $result .= $comma.$field['sql'];
+            } else {
+                $result .= $comma."'".$field."'";
+            }
+            $comma = ",";
+        }
+        $result .= ")";
+        return($result);
+    }
+
   // @refactor Formater Komponente
   function Dateinamen($text) {
     $text = $this->UmlauteEntfernen($text);

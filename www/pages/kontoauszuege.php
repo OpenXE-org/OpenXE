@@ -14,7 +14,8 @@ class Kontoauszuege {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "kontoauszuege_list");        
+        $this->app->ActionHandler("list", "kontoauszuege_konto_list");        
+        $this->app->ActionHandler("listentries", "kontoauszuege_list");        
         $this->app->ActionHandler("create", "kontoauszuege_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "kontoauszuege_edit");
         $this->app->ActionHandler("delete", "kontoauszuege_delete");
@@ -26,46 +27,111 @@ class Kontoauszuege {
         /* Fill out manually later */
     }
 
-    static function TableSearch(&$app, $name, $erlaubtevars) {
+    function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
+            case "kontoauszuege_konto_list":
+
+                $allowed['konten_list'] = array('list');
+                $heading = array('Bezeichnung', 'Kurzbezeichnung', 'Typ', 'Kontostand', 'Saldo','Men&uuml;');
+//                $width = array('1%','1%','10%'); // Fill out manually later
+
+                // columns that are aligned right (numbers etc)
+                // $alignright = array(4,5,6,7,8); 
+
+                $findcols = array('k.bezeichnung', 'k.kurzbezeichnung', 'k.type', 'k.kontostand','saldo', 'k.id');
+                $searchsql = array('k.bezeichnung', 'k.kurzbezeichnung', 'k.datevkonto', 'k.blz', 'k.konto', 'k.swift', 'k.iban', 'k.inhaber', 'k.firma','p.abkuerzung');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+//                $sumcol = array(5);
+
+		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',k.id,'\" />') AS `auswahl`";
+
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=kontoauszuege&action=listentries&kid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a></td></tr></table>";                            
+
+                $saldolink = array (
+                    '<a href=\"index.php?module=kontoauszuege&action=listentries&onlysaldo=1&kid=',
+                    ['sql' => 'k.id'],
+                    '">',
+                    ['sql' => $this->app->erp->FormatMenge('SUM(COALESCE(fb.betrag,0))',2)],
+                    '</a>'
+                );
+
+                $sql = "SELECT    
+                            k.id,
+                            k.bezeichnung,
+                            k.kurzbezeichnung,
+                            ".$this->app->erp->FormatUCfirst('k.type').",
+                            ".$this->app->erp->FormatMenge('SUM(COALESCE(ka.soll,0))',2)." AS kontostand,
+                            ".$this->app->erp->ConcatSQL($saldolink)." AS saldo,
+                            k.id
+                        FROM
+                            konten k
+                        LEFT JOIN kontoauszuege ka ON
+                            k.id = ka.konto
+                        LEFT JOIN fibu_buchungen_alle fb ON
+                            fb.id = ka.id AND fb.typ = 'kontoauszuege'";
+
+                $where = " k.aktiv = 1 AND ka.importfehler IS NULL ";
+
+                // Toggle filters
+                $app->Tpl->Add('JQUERYREADY', "$('#archiv').click( function() { fnFilterColumn1( 0 ); } );");
+
+                for ($r = 1;$r <= 1;$r++) {
+                $app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+
+                $more_data1 = $app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= "  OR k.aktiv <> 1";
+                } else {
+                }
+
+//                echo($sql);
+
+//                $count = "SELECT count(DISTINCT id) FROM konten k WHERE $where";
+                $groupby = " GROUP BY k.id";
+
+                break;
             case "kontoauszuege_list":
                 $allowed['kontoauszuege_list'] = array('list');
-                $heading = array('','',   'Importdatum', 'Konto', 'Datum', 'Betrag', 'Waehrung', 'Buchungstext','Interne Bemerkung', 'Men&uuml;');
-                $width = array('1%','1%', '1%',          '10%',   '1%',    '1%',     '1%',       '20%',         '20%',               '1%'); // Fill out manually later
+
+                $kontoid = $this->app->User->getParameter('kontoauszuege_konto_id');
+                $onlysaldo = $this->app->User->getParameter('kontoauszuege_only_saldo');
+
+                $heading = array('','',   'Importdatum', 'Konto', 'Datum', 'Betrag', 'Waehrung', 'Buchungstext','Interne Bemerkung', 'Saldo', 'Men&uuml;');
+                $width = array('1%','1%', '1%',          '10%',   '1%',    '1%',     '1%',       '20%',         '20%',               '1%',    '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 $alignright = array(6); 
 
-                $findcols = array('k.id','k.id','k.konto', 'k.importdatum', 'k.buchung', 'k.soll', 'k.waehrung', 'k.buchungstext','k.internebemerkung');
-                $searchsql = array('k.konto', 'k.buchung', 'k.soll', 'k.buchungstext','k.internebemerkung');
+                $sumcol = array(10);
+
+                $findcols = array('q.id','q.id','q.konto', 'q.importdatum', 'q.buchung', 'q.soll', 'q.waehrung', 'q.buchungstext','q.internebemerkung','q.saldo');
+                $searchsql = array('q.konto', 'q.buchung', 'q.soll', 'q.buchungstext','q.internebemerkung');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
 		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',k.id,'\" />') AS `auswahl`";
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=kontoauszuege&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=kontoauszuege&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
-
-                $sql = "SELECT SQL_CALC_FOUND_ROWS k.id,
-                            $dropnbox,
-                            ".$app->erp->FormatDateTimeShort('k.importdatum').",                            
-                            (SELECT kurzbezeichnung FROM konten WHERE konten.id = k.konto),
-                            ".$app->erp->FormatDate('k.buchung').",                            
-                            IF(
-                                k.importfehler,
-                                CONCAT(
-                                    '<del>',
-                                    ".$app->erp->FormatMenge('k.soll',2).",
-                                    '</del>'
-                                ),
-                                ".$app->erp->FormatMenge('k.soll',2)."),
-                            k.waehrung,
-                            k.buchungstext,
-                            k.internebemerkung,
-                            k.id 
-                        FROM kontoauszuege k";
-
-                $where = "1";
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=kontoauszuege&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=kontoauszuege&action=delete&kid=".$kontoid."&onlysaldo=".$onlysaldo."&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
                 // Toggle filters
                 $app->Tpl->Add('JQUERYREADY', "$('#importfehler').click( function() { fnFilterColumn1( 0 ); } );");
@@ -91,14 +157,48 @@ class Kontoauszuege {
 
                 $more_data1 = $app->Secure->GetGET("more_data1");
                 if ($more_data1 == 1) {
-                   $where .= "";
+                   $subwhere .= "";
                 } else {
-                   $where .= " AND k.importfehler IS NULL ";
+                   $subwhere .= " AND k.importfehler IS NULL ";
                 }
                 // END Toggle filters
 
-                $count = "SELECT count(DISTINCT id) FROM kontoauszuege k WHERE $where";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM ( SELECT 
+                            k.id,
+                            $dropnbox,
+                            ".$app->erp->FormatDateTimeShort('k.importdatum').",                            
+                            (SELECT kurzbezeichnung FROM konten WHERE konten.id = k.konto),
+                            ".$app->erp->FormatDate('k.buchung').",                            
+                            IF(
+                                k.importfehler,
+                                CONCAT(
+                                    '<del>',
+                                    ".$app->erp->FormatMenge('SUM(k.soll)',2).",
+                                    '</del>'
+                                ),
+                                ".$app->erp->FormatMenge('SUM(k.soll)',2)."),
+                            k.waehrung,
+                            k.buchungstext,
+                            k.internebemerkung,
+                            ".$app->erp->FormatMenge('SUM(fb.betrag)',2)." AS saldo,
+                            k.id as menuid,
+                            SUM(fb.betrag) AS saldonum
+                        FROM kontoauszuege k
+                        LEFT JOIN fibu_buchungen_alle fb ON
+                            fb.id = k.id AND fb.typ = 'kontoauszuege'
+                        WHERE k.konto = ".$kontoid.$subwhere."
+                        GROUP BY k.id ) AS q
+                        ";
+
+                $where = "1";
+                if ($onlysaldo) {
+                    $where .= " AND saldonum != 0";
+                }
+
+//                $count = "SELECT count(DISTINCT id) FROM kontoauszuege k WHERE $where";
 //                $groupby = "";
+
+//                echo($sql." WHERE ".$where." ".$groupby);
 
                 break;
         }
@@ -113,6 +213,18 @@ class Kontoauszuege {
         return $erg;
     }
     
+    function kontoauszuege_konto_list() {       
+
+        $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=list", "&Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=create", "Neu anlegen");
+
+        $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
+
+        $this->app->YUI->TableSearch('TAB1', 'kontoauszuege_konto_list', "show", "", "", basename(__FILE__), __CLASS__);
+        $this->app->Tpl->Parse('PAGE', "kontoauszuege_konto_list.tpl");
+    }    
+
+
     function kontoauszuege_list() {
 
         // Process multi action
@@ -138,6 +250,15 @@ class Kontoauszuege {
         $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
+
+        $kontoid = $this->app->Secure->GetGET('kid');
+        $this->app->User->SetParameter('kontoauszuege_konto_id', $kontoid);   
+        $onlysaldo = $this->app->Secure->GetGET('onlysaldo');
+        $this->app->User->SetParameter('kontoauszuege_only_saldo', $onlysaldo);   
+
+        if ($onlysaldo) {
+            $this->app->Tpl->Set('INFO','Nicht zugeordnete Posten');
+        }
 
         $this->app->YUI->TableSearch('TAB1', 'kontoauszuege_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "kontoauszuege_list.tpl");
