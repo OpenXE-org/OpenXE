@@ -706,9 +706,12 @@ class Firmendaten  {
         $n2 = 'adressefreifeld'.$i.'spalte';
         $v1 = $this->app->Secure->GetPOST($n1);
         $v2 = $this->app->Secure->GetPOST($n2);
-        $this->app->DB->Update("UPDATE firmendaten SET 
+        /*$this->app->DB->Update("UPDATE firmendaten SET 
           $n1 = '".$v1."', $n2  = '".$v2."'
-          WHERE firma='$id' LIMIT 1");
+          WHERE firma='$id' LIMIT 1");*/
+
+        $this->app->erp->FirmendatenSet($n1,$v1);
+        $this->app->erp->FirmendatenSet($n2,$v2);
 
         if(isset($firmendaten_werte_spalten)) {
           if(isset($firmendaten_werte_spalten[$n1]) && $firmendaten_werte_spalten[$n1]['wert'] != $v1) {
@@ -746,9 +749,12 @@ class Firmendaten  {
         $n2 = 'projektfreifeld'.$i.'spalte';
         $v1 = $this->app->Secure->GetPOST($n1);
         $v2 = $this->app->Secure->GetPOST($n2);
-        $this->app->DB->Update("UPDATE firmendaten SET 
+/*        $this->app->DB->Update("UPDATE firmendaten SET 
           $n1 = '".$v1."', $n2  = '".$v2."'
-          WHERE firma='$id' LIMIT 1");
+          WHERE firma='$id' LIMIT 1"); */
+
+        $this->app->erp->FirmendatenSet($n1,$v1);
+        $this->app->erp->FirmendatenSet($n2,$v2);
 
         if(isset($firmendaten_werte_spalten)) {
           if(isset($firmendaten_werte_spalten[$n1]) && $firmendaten_werte_spalten[$n1]['wert'] != $v1) {
@@ -783,6 +789,8 @@ class Firmendaten  {
       }
       
       $toupdate = null;
+
+/*
       for($in = 1; $in <= 40; $in++) {
         $toupdate[] = 'freifeld'.$in;
       }
@@ -800,7 +808,20 @@ class Firmendaten  {
       }
       $sql2 = "UPDATE firmendaten SET ".implode(',',$sql2a)." WHERE firma = '$id' LIMIT 1";
       unset($sql2a);
-      $this->app->DB->Update($sql2);
+      $this->app->DB->Update($sql2);*/
+
+        for($in = 1; $in <= 40; $in++) {
+            $field = 'freifeld'.$in;
+            $this->app->erp->FirmendatenSet($field,$this->app->Secure->GetPOST($field));
+        }
+        for($in = 1; $in <= 20; $in++) {
+            $field = 'projektfreifeld'.$in;
+            $this->app->erp->FirmendatenSet($field,$this->app->Secure->GetPOST($field));
+            $field = 'adressefreifeld'.$in;
+            $this->app->erp->FirmendatenSet($field,$this->app->Secure->GetPOST($field));
+        }
+
+
       if($this->app->DB->error()) {
         foreach($toupdate as $v) {
           $data[$v] = $this->app->Secure->GetPOST($v);
