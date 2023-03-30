@@ -409,8 +409,11 @@ abstract class Versanddienstleister
     $products = array_combine(array_column($products, 'Id'), $products);
     $address['product'] = $products[0]->Id ?? '';
 
+    $countries = $this->app->DB->SelectArr("SELECT iso, bezeichnung_de name, eu FROM laender ORDER BY bezeichnung_de");
+    $countries = array_combine(array_column($countries, 'iso'), $countries);
+
     $json['form'] = $address;
-    $json['countries'] = $this->app->erp->GetSelectLaenderliste();
+    $json['countries'] = $countries;
     $json['products'] = $products;
     $json['customs_shipment_types'] = [
         CustomsInfo::CUSTOMS_TYPE_GIFT => 'Geschenk',

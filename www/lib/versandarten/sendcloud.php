@@ -105,19 +105,21 @@ class Versandart_sendcloud extends Versanddienstleister
     $parcel->EMail = $json->email;
     $parcel->Telephone = $json->phone;
     $parcel->CountryState = $json->state;
-    $parcel->CustomsInvoiceNr = $json->invoice_number;
-    $parcel->CustomsShipmentType = $json->shipment_type;
     $parcel->TotalInsuredValue = $json->total_insured_value;
     $parcel->OrderNumber = $json->order_number;
-    foreach ($json->positions as $pos) {
-      $item = new ParcelItem();
-      $item->HsCode = $pos->zolltarifnummer;
-      $item->Description = $pos->bezeichnung;
-      $item->Quantity = $pos->menge;
-      $item->OriginCountry = $pos->herkunftsland;
-      $item->Price = $pos->zolleinzelwert;
-      $item->Weight = $pos->zolleinzelgewicht * 1000;
-      $parcel->ParcelItems[] = $item;
+    if (!empty($json->shipment_type)) {
+      $parcel->CustomsInvoiceNr = $json->invoice_number;
+      $parcel->CustomsShipmentType = $json->shipment_type;
+      foreach ($json->positions as $pos) {
+        $item = new ParcelItem();
+        $item->HsCode = $pos->zolltarifnummer ?? '';
+        $item->Description = $pos->bezeichnung;
+        $item->Quantity = $pos->menge;
+        $item->OriginCountry = $pos->herkunftsland ?? '';
+        $item->Price = $pos->zolleinzelwert;
+        $item->Weight = $pos->zolleinzelgewicht * 1000;
+        $parcel->ParcelItems[] = $item;
+      }
     }
     $parcel->Weight = floatval($json->weight) * 1000;
     $ret = new CreateShipmentResult();
@@ -154,6 +156,8 @@ class Versandart_sendcloud extends Versanddienstleister
       $p = new Product();
       $p->Id = $item->Id;
       $p->Name = $item->Name;
+      $p->WeightMin = $item->MinWeight / 1000;
+      $p->WeightMax = $item->MaxWeight / 1000;
       $result[] = $p;
     }
     return $result;
