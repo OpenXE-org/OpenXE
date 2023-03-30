@@ -79,7 +79,7 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
 
     // Get db_def and views
-    $sql = "SHOW TABLE STATUS"; 
+    $sql = "SHOW TABLE STATUS WHERE engine IS NOT NULL"; 
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
@@ -112,7 +112,7 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
             } 
 
             if (empty($column['Collation']) && mustal_is_string_type($column['Type'])) {
-                $column['Collation'] = $table['collation']."TABLE";                
+                $column['Collation'] = $table['collation'];                
             }
 
             $columns[] = $column; // Add column to list of columns
@@ -168,9 +168,16 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
 
     foreach ($views as &$view) {    
         $sql = "SHOW CREATE VIEW ".$view['name'];
-        $query_result = mysqli_query($mysqli, $sql);
+
+        try {
+            $query_result = mysqli_query($mysqli, $sql);
+        }
+        catch (exception $e) {
+            $query_result = false; // VIEW is erroneous
+        }
         if (!$query_result) {
-            return(array());
+            $view['Create'] = '';
+            continue;    
         }
         $viewdef = mysqli_fetch_assoc($query_result);
         
@@ -761,7 +768,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 function mustal_is_string_type(string $type) {
     $mustal_string_types = array('varchar','char','text','tinytext','mediumtext','longtext');
     foreach($mustal_string_types as $string_type) {
-        if (stripos($string_type,$type) === 0) {
+        if (stripos($type,$string_type) === 0) {
             return(true);
         }
     }   
