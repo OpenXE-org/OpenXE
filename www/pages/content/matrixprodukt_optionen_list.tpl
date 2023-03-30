@@ -1,12 +1,14 @@
-<!-- gehort zu tabview -->
-
+<!--
+SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+SPDX-License-Identifier: LicenseRef-EGPL-3.1
+-->
 <div id="tabs">
   <ul>
     <li><a href="#tabs-1">[TABTEXT]</a></li>
   </ul>
 <!-- erstes tab -->
   <div id="tabs-1">
-
     <div class="row">
     <div class="row-height">
     <div class="col-xs-12 col-md-10 col-md-height">
@@ -19,7 +21,7 @@
     <div class="inside inside-full-height">
       <fieldset>
         <legend>{|Aktionen|}</legend>
-        <input type="button" class="btnGreenNew" name="neueoption" value="&#10010; Neuer Eintrag" onclick="MatrixproduktOptionenEdit(0);">
+        <input type="button" class="btnGreenNew" name="neueoption" data-action="optionEdit" data-option-id="0" value="&#10010; Neuer Eintrag" onclick="MatrixproduktOptionenEdit(0);">
         <input type="button" class="btnGreenNew" name="neueuebersetzung" value="&#10010; Neue &Uuml;bersetzung" onclick="MatrixproduktOptionenUebersetzungEdit(0);">
       </fieldset>
     </div>
@@ -32,37 +34,7 @@
 </div>
 <!-- ende tab view schließen -->
 
-<div id="editMatrixproduktOptionen" style="display:none;" title="Bearbeiten"> 
-  <form action="" method="post" name="eprooform" >
-    <input type="hidden" id="matrixprodukt_optionen_id">
-    <input type="hidden" name = "matrixprodukt_eintragid" id="matrixprodukt_eintragid" value="[ID]">
-    <fieldset>
-      <legend>{|Einstellungen|}</legend>
-      <table>
-        <tr>
-          <td width="100">{|Name|}:</td>
-          <td><input type="text" size="40" name="matrixprodukt_optionen_name" id="matrixprodukt_optionen_name"></td>
-        </tr>
-        <tr>
-          <td width="100">{|Anhang an Artikelnummer|}:</td>
-          <td><input type="text" size="40" name="matrixprodukt_optionen_articlenumber_suffix" id="matrixprodukt_optionen_articlenumber_suffix"></td>
-        </tr>
-        <tr[STYLEEXT]>
-          <td>{|Name Extern|}:</td>
-          <td><input type="text" size="40" name="matrixprodukt_optionen_name_ext" id="matrixprodukt_optionen_name_ext"></td>
-        </tr>
-        <tr>
-          <td>{|Sortierung|}:</td>
-          <td><input type="text" size="8" name="matrixprodukt_optionen_sortierung" id="matrixprodukt_optionen_sortierung"></td>
-        </tr>
-        <tr>
-          <td>{|Aktiv|}:</td>
-          <td><input type="checkbox" name="matrixprodukt_optionen_aktiv" id="matrixprodukt_optionen_aktiv" value="1"></td>
-        </tr>
-      </table>
-    </fieldset>
-  </form>
-</div>
+<div id="vueapp"></div>
 
 <div id="editMatrixproduktOptionenUebersetzung" style="display:none;" title="Bearbeiten">
   <form action="" method="post" name="eprooform">
@@ -119,33 +91,7 @@
 </div>
 
 <script type="text/javascript">
-
 $(document).ready(function() {
-  $('#matrixprodukt_optionen_name').focus();
- 
-  $("#editMatrixproduktOptionen").dialog({
-    modal: true,
-    bgiframe: true,
-    closeOnEscape:false,
-    minWidth:500,
-    maxHeight:800,
-    autoOpen: false,
-    buttons: {
-      ABBRECHEN: function() {
-        MatrixproduktOptionenReset();
-        $(this).dialog('close');
-      },
-      SPEICHERN: function() {
-        MatrixproduktOptionenEditSave();
-      }
-    }
-  });
-
-  $("#editMatrixproduktOptionen").dialog({
-    close: function( event, ui ) {MatrixproduktOptionenReset();}
-  });
-
-
   $("#editMatrixproduktOptionenUebersetzung").dialog({
     modal: true,
     bgiframe: true,
@@ -282,117 +228,5 @@ function MatrixproduktOptionenUebersetzungDelete(id) {
 
   return false;
 }
-
-
-function MatrixproduktOptionenReset(){
-  $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_id').val('');
-  $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_name').val('');
-  $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_name_ext').val('');
-  $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_articlenumber_suffix').val('');
-  $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_sortierung').val('');
-  $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_aktiv').prop("checked", true);
-}
-
-function MatrixproduktOptionenEditSave() {
-
-  $.ajax({
-    url: 'index.php?module=matrixprodukt&action=optionenlist&cmd=optionensave',
-    data: {
-      //Alle Felder die fürs editieren vorhanden sind
-      optionenid: $('#matrixprodukt_optionen_id').val(),
-      matrixproduktid: $('#matrixprodukt_eintragid').val(),
-      optionenname: $('#matrixprodukt_optionen_name').val(),
-      optionenarticlenumber_suffix: $('#matrixprodukt_optionen_articlenumber_suffix').val(),
-      optionenname_ext: $('#matrixprodukt_optionen_name_ext').val(),
-      optionensortierung: $('#matrixprodukt_optionen_sortierung').val(),
-      optionenaktiv: $('#matrixprodukt_optionen_aktiv').prop("checked")?1:0
-            
-    },
-    method: 'post',
-    dataType: 'json',
-    beforeSend: function() {
-      App.loading.open();
-    },
-    success: function(data) {
-      App.loading.close();
-      if (data.status == 1) {
-        MatrixproduktOptionenReset();
-        updateLiveTableOptionen();
-        $("#editMatrixproduktOptionen").dialog('close');
-      } else {
-        alert(data.statusText);
-      }
-    }
-  });
-}
-
-function MatrixproduktOptionenEdit(id) {
-
-  if(id > 0)
-  { 
-    $.ajax({
-      url: 'index.php?module=matrixprodukt&action=optionenlist&cmd=optionenedit',
-      data: {
-        id: id
-      },
-      method: 'post',
-      dataType: 'json',
-      beforeSend: function() {
-        App.loading.open();
-      },
-      success: function(data) {
-        $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_id').val(data.opt_id);
-        $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_name').val(data.opt_name);
-        $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_articlenumber_suffix').val(data.opt_articlenumber_suffix);
-        $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_name_ext').val(data.opt_name_ext);
-        $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_sortierung').val(data.opt_sortierung);
-        $('#editMatrixproduktOptionen').find('#matrixprodukt_optionen_aktiv').prop("checked",data.opt_aktiv==1?true:false);                  
-        
-        App.loading.close();
-        $("#editMatrixproduktOptionen").dialog('open');
-      }
-    });
-  } else {
-    MatrixproduktOptionenReset(); 
-    $("#editMatrixproduktOptionen").dialog('open');
-  }
-}
-
-function updateLiveTableOptionen(i) {
-  var oTableL = $('#matrixprodukt_eigenschaftenoptionen').dataTable();
-  var tmp = $('.dataTables_filter input[type=search]').val();
-  oTableL.fnFilter('%');
-  //oTableL.fnFilter('');
-  oTableL.fnFilter(tmp);  
-}
-
-function MatrixproduktOptionenDelete(id) {
-  var conf = confirm('Wirklich löschen?');
-  if (conf) {
-    $.ajax({
-      url: 'index.php?module=matrixprodukt&action=optionenlist&cmd=optionendelete',
-      data: {
-        id: id
-      },
-      method: 'post',
-      dataType: 'json',
-      beforeSend: function() {
-        App.loading.open();
-      },
-      success: function(data) {
-        if(data.status == 1){
-          updateLiveTableOptionen();
-        }else{
-          alert(data.statusText);
-        }
-        App.loading.close();
-      }
-    });
-  }
-
-  return false;
-}
-
-
 </script>
 

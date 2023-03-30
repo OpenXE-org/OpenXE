@@ -1,5 +1,8 @@
-<!-- gehort zu tabview -->
-
+<!--
+SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+SPDX-License-Identifier: LicenseRef-EGPL-3.1
+-->
 <div id="tabs">
   <ul>
     <li><a href="#tabs-1">[TABTEXT]</a></li>
@@ -29,33 +32,7 @@
 </div>
 <!-- ende tab view schließen -->
 
-
-<div id="editMatrixprodukt" style="display:none;" title="Bearbeiten"> 
-  <form action="" method="post" name="eprooform">
-	  <input type="hidden" id="matrixprodukt_id">
-    <fieldset>
-	  	<legend>{|Einstellungen|}</legend>
-			<table>
-				<tr>
-			  	<td width="100">{|Name|}:</td>
-					<td><input type="text" size="40" name="matrixprodukt_name" id="matrixprodukt_name"></td>
-				</tr>
-				<tr[STYLEEXT]>
-					<td>{|Name Extern|}:</td>
-				  <td><input type="text" size="40" name="matrixprodukt_name_ext" id="matrixprodukt_name_ext"></td>
-				</tr>
-		 		<tr>
-		 			<td>{|Projekt|}:</td>
-		 			<td><input type="text" size="40" name="matrixprodukt_projekt" id="matrixprodukt_projekt"></td>
-		 		</tr>
-		 		<tr>
-		 			<td>{|Aktiv|}:</td>
-		 			<td><input type="checkbox" name="matrixprodukt_aktiv" id="matrixprodukt_aktiv" value="1"></td>
-		 		</tr>
-		 	</table>
-		</fieldset>
-  </form>
-</div>
+<div id="vueapp"></div>
 
 <div id="editMatrixproduktUebersetzung" style="display:none;" title="Bearbeiten">
   <form action="" method="post" name="eprooform">
@@ -115,56 +92,6 @@
 </div>
 
 <script type="text/javascript">
-
-$(document).ready(function() {
-  $('#matrixprodukt_name').focus();
-
-  $("#editMatrixprodukt").dialog({
-    modal: true,
-    bgiframe: true,
-    closeOnEscape:false,
-    minWidth:500,
-    maxHeight:800,
-    autoOpen: false,
-    buttons: {
-      ABBRECHEN: function() {
-        MatrixproduktReset();
-        $(this).dialog('close');
-      },
-      SPEICHERN: function() {
-        MatrixproduktEditSave();
-      }
-    }
-  });
-
-  $("#editMatrixprodukt").dialog({
-    close: function( event, ui ) {MatrixproduktReset();}
-  });
-
-  $("#editMatrixproduktUebersetzung").dialog({
-    modal: true,
-    bgiframe: true,
-    closeOnEscape:false,
-    minWidth:500,
-    maxHeight:800,
-    autoOpen: false,
-    buttons: {
-      ABBRECHEN: function() {
-        MatrixproduktUebersetzungReset();
-        $(this).dialog('close');
-      },
-      SPEICHERN: function() {
-        MatrixproduktUebersetzungEditSave();
-      }
-    }
-  });
-
-  $("#editMatrixproduktUebersetzung").dialog({
-    close: function( event, ui ) {MatrixproduktUebersetzungReset();}
-  });
-
-});
-
 function MatrixproduktUebersetzungReset(){
   $('#editMatrixproduktUebersetzung').find('#matrixprodukt_uebersetzung_id').val('');
   $('#editMatrixproduktUebersetzung').find('#matrixprodukt_sprache_von').val('');
@@ -277,111 +204,5 @@ function MatrixproduktUebersetzungDelete(id) {
 
   return false;
 }
-
-
-function MatrixproduktReset(){
-  $('#editMatrixprodukt').find('#matrixprodukt_id').val('');
-  $('#editMatrixprodukt').find('#matrixprodukt_name').val('');
-  $('#editMatrixprodukt').find('#matrixprodukt_name_ext').val('');
-  $('#editMatrixprodukt').find('#matrixprodukt_projekt').val('');
-  $('#editMatrixprodukt').find('#matrixprodukt_aktiv').prop("checked", true);
-}
-
-function MatrixproduktEditSave() {
-
-  $.ajax({
-    url: 'index.php?module=matrixprodukt&action=list&cmd=save',
-    data: {
-      //Alle Felder die fürs editieren vorhanden sind
-      id: $('#matrixprodukt_id').val(),
-      name: $('#matrixprodukt_name').val(),
-      name_ext: $('#matrixprodukt_name_ext').val(),
-      projekt: $('#matrixprodukt_projekt').val(),
-      aktiv: $('#matrixprodukt_aktiv').prop("checked")?1:0
-            
-    },
-    method: 'post',
-    dataType: 'json',
-    beforeSend: function() {
-      App.loading.open();
-    },
-    success: function(data) {
-      App.loading.close();
-      if (data.status == 1) {
-        MatrixproduktReset();
-        updateLiveTable();
-        $("#editMatrixprodukt").dialog('close');
-      } else {
-        alert(data.statusText);
-      }
-    }
-  });
-}
-
-function MatrixproduktEdit(id) {
-  if(id > 0)
-  { 
-    $.ajax({
-      url: 'index.php?module=matrixprodukt&action=list&cmd=edit',
-      data: {
-        id: id
-      },
-      method: 'post',
-      dataType: 'json',
-      beforeSend: function() {
-        App.loading.open();
-      },
-      success: function(data) {
-        $('#editMatrixprodukt').find('#matrixprodukt_id').val(data.id);
-        $('#editMatrixprodukt').find('#matrixprodukt_name').val(data.name);
-        $('#editMatrixprodukt').find('#matrixprodukt_name_ext').val(data.name_ext);
-        $('#editMatrixprodukt').find('#matrixprodukt_projekt').val(data.projekt);
-        $('#editMatrixprodukt').find('#matrixprodukt_aktiv').prop("checked",data.aktiv==1?true:false);                  
-        
-        App.loading.close();
-        $("#editMatrixprodukt").dialog('open');
-      }
-    });
-  } else {
-    MatrixproduktReset(); 
-    $("#editMatrixprodukt").dialog('open');
-  }
-}
-
-function updateLiveTable(i) {
-  var oTableL = $('#matrixprodukt_eigenschaftengruppen').dataTable();
-  var tmp = $('.dataTables_filter input[type=search]').val();
-  oTableL.fnFilter('%');
-  //oTableL.fnFilter('');
-  oTableL.fnFilter(tmp);  
-}
-
-function MatrixproduktDelete(id) {
-  var conf = confirm('Wirklich löschen?');
-  if (conf) {
-    $.ajax({
-      url: 'index.php?module=matrixprodukt&action=list&cmd=delete',
-      data: {
-        id: id
-      },
-      method: 'post',
-      dataType: 'json',
-      beforeSend: function() {
-        App.loading.open();
-      },
-      success: function(data) {
-        if(data.status == 1){
-          updateLiveTable();
-        }else{
-          alert(data.statusText);
-        }
-        App.loading.close();
-      }
-    });
-  }
-
-  return false;
-}
-
 </script>
 

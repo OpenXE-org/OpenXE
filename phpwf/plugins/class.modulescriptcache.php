@@ -1,4 +1,12 @@
 <?php
+
+/*
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
@@ -34,11 +42,18 @@ class ModuleScriptCache
   /** @var string $relativeCacheDir Relativer Pfad zum Cache-Ordner (ausgehend von www) */
   protected $relativeCacheDir;
 
+  protected $assetDir;
+
+  /** @var object $assetManifest Parsed manifest.json from vite */
+  protected $assetManifest;
+
   /** @var array $javascriptFiles Absolute Pfade zu Javascript-Dateien die gecached werden sollen */
   protected $javascriptFiles = [
     'head' => [],
     'body' => [],
   ];
+
+  protected $javascriptModules = [];
 
   /** @var array $stylesheetFiles Absolute Pfade zu Stylesheet-Dateien die gecached werden sollen */
   protected $stylesheetFiles = [];
@@ -48,6 +63,8 @@ class ModuleScriptCache
     $this->baseDir = dirname(dirname(__DIR__));
     $this->absoluteCacheDir = $this->baseDir . '/www/cache';
     $this->relativeCacheDir = './cache';
+    $this->assetDir = '/dist';
+    $this->assetManifest = json_decode(file_get_contents($this->baseDir. '/www' . $this->assetDir . '/manifest.json'));
 
     // Cache-Ordner anzulegen, falls nicht existent
     if (!is_dir($this->absoluteCacheDir)) {
@@ -74,6 +91,7 @@ class ModuleScriptCache
     // Javascript- und Stylesheet-Dateien sind als Eigenschaft im Modul definiert
     $javascript = $this->GetClassProperty($legacyModuleClassName, 'javascript');
     $stylesheet = $this->GetClassProperty($legacyModuleClassName, 'stylesheet');
+    $jsmodules = $this->GetClassProperty($legacyModuleClassName, 'jsmodules');
 
     // Falls nicht im Modul definiert > Defaults verwenden
     if (empty($javascript)) {
@@ -82,9 +100,13 @@ class ModuleScriptCache
     if (empty($stylesheet)) {
       $stylesheet = [$this->GetDefaultModuleStylesheetFile($newModuleName)];
     }
+    if (empty($jsmodules)) {
+      $jsmodules = $this->GetDefaultModuleJavascriptModules($newModuleName);
+    }
 
     $this->IncludeJavascriptFiles($newModuleName, $javascript);
     $this->IncludeStylesheetFiles($newModuleName, $stylesheet);
+    $this->IncludeJavascriptModules($newModuleName, $jsmodules);
   }
 
   /**
@@ -193,6 +215,20 @@ class ModuleScriptCache
     }
   }
 
+  public function IncludeJavascriptModules(string $moduleName, array $files) : void
+  {
+    foreach ($files as $file) {
+      $realPath = realpath($this->baseDir . '/' . $file);
+      if (!is_file($realPath))
+        continue;
+
+      if (isset($this->assetManifest->$file))
+        $this->javascriptModules[] = $this->assetManifest->$file;
+      else
+        $this->javascriptModules[] = $realPath;
+    }
+  }
+
   /**
    * @param string $cacheName Name unter dem die Cache-Datei zusammengefasst werden
    * @param array  $files     Array mit relativen Pfaden zur Xentral-Installation
@@ -255,6 +291,36 @@ class ModuleScriptCache
       }
     }
 
+    return $html;
+  }
+
+  public function GetJavascriptModulesHtmlTags() : string
+  {
+    if (empty($this->javascriptModules))
+      return '';
+
+    $html = '';
+    foreach ($this->javascriptModules as $module) {
+      if (is_object($module)) {
+        if (defined('VITE_DEV_SERVER')) {
+          $url = VITE_DEV_SERVER . $module->src;
+        } else {
+          $url = $this->assetDir . '/' . $module->file;
+          if (isset($module->css)) {
+            foreach ($module->css as $css)
+              $html .= sprintf('<link rel="stylesheet" type="text/css" href="%s" />', $this->assetDir.'/'.$css);
+              $html .= "\r\n";
+          }
+        }
+      } elseif (str_starts_with($module,$this->baseDir.'/www')) {
+        $url = substr($module, strlen($this->baseDir)+4);
+      }
+
+      if (isset($url))  {
+        $html .= sprintf('<script type="module" src="%s"></script>', $url);
+        $html .= "\r\n";
+      }
+    }
     return $html;
   }
 
@@ -387,6 +453,18 @@ class ModuleScriptCache
   protected function GetDefaultModuleJavascriptFile($moduleName)
   {
     return sprintf('./classes/Modules/%s/www/js/%s.js', $moduleName, strtolower($moduleName));
+  }
+
+  /**
+   * @param string $moduleName
+   * @return string relative path to default Javascript-Module-File
+   */
+  protected function GetDefaultModuleJavascriptModules(string $moduleName): array
+  {
+    return [
+        sprintf('classes/Modules/%s/www/js/entry.js', $moduleName),
+        sprintf('classes/Modules/%s/www/js/entry.jsx', $moduleName)
+    ];
   }
 
   /**
