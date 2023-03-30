@@ -79,20 +79,22 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
 
     // Get db_def and views
-    $sql = "SHOW FULL tables WHERE Table_type = 'BASE TABLE'"; 
+    $sql = "SHOW TABLE STATUS"; 
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
     } 
     while ($row = mysqli_fetch_assoc($query_result)) {
         $table = array();
-        $table['name'] = $row['Tables_in_'.$schema];
-        $table['type'] = $row['Table_type'];
+        $table['name'] = $row['Name'];
+        $table['collation'] = $row['Collation'];
+        $table['type'] = 'BASE TABLE';
         $tables[] = $table; // Add table to list of tables
     }
 
     // Get and add columns of the table
     foreach ($tables as &$table) {    
+
         $sql = "SHOW FULL COLUMNS FROM ".$table['name'];
         $query_result = mysqli_query($mysqli, $sql);
 
@@ -108,6 +110,10 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
                 mustal_sql_replace_reserved_functions($column,$replacers);
                 $column['Default'] = mustal_mysql_put_text_type_in_quotes($column['Type'],$column['Default']);
             } 
+
+            if (empty($column['Collation']) && mustal_is_string_type($column['Type'])) {
+                $column['Collation'] = $table['collation']."TABLE";                
+            }
 
             $columns[] = $column; // Add column to list of columns
         }
@@ -402,9 +408,11 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 // Generate SQL to create or modify column
 function mustal_column_sql_definition(string $table_name, array $column, array $reserved_words_without_quote) : string {    
 
+    $column_is_string_type = mustal_is_string_type($column['Type']);
+
     foreach($column as $key => &$value) {
         $value = (string) $value;
-        $value = mustal_column_sql_create_property_definition($key,$value,$reserved_words_without_quote);
+        $value = mustal_column_sql_create_property_definition($key,$value,$reserved_words_without_quote,$column_is_string_type);
     }
 
     // Default handling here
@@ -423,7 +431,7 @@ function mustal_column_sql_definition(string $table_name, array $column, array $
 }
 
 // Generate SQL to modify a single column property
-function mustal_column_sql_create_property_definition(string $property, string $property_value, array $reserved_words_without_quote) : string {
+function mustal_column_sql_create_property_definition(string $property, string $property_value, array $reserved_words_without_quote, $column_is_string_type) : string {
 
     switch ($property) {
         case 'Type':
@@ -454,8 +462,10 @@ function mustal_column_sql_create_property_definition(string $property, string $
             }
         break;
         case 'Collation':
-            if ($property_value != '')  {
+            if ($property_value != '' && $column_is_string_type)  {
                 $property_value = " COLLATE ".$property_value;
+            } else {
+                $property_value = "";
             }
         break;
         default: 
@@ -744,6 +754,17 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
         array_unshift($upgrade_sql,"SET SQL_MODE='ALLOW_INVALID_DATES';","SET SESSION innodb_strict_mode=OFF;");
     }
 
-
     return($result);
 }
+
+// Check if given type is a string, relevant for collation
+function mustal_is_string_type(string $type) {
+    $mustal_string_types = array('varchar','char','text','tinytext','mediumtext','longtext');
+    foreach($mustal_string_types as $string_type) {
+        if (stripos($string_type,$type) === 0) {
+            return(true);
+        }
+    }   
+    return(false);
+}
+
