@@ -107,7 +107,7 @@ class Versandart_sendcloud extends Versanddienstleister
     $parcel->CountryState = $json->state;
     $parcel->TotalInsuredValue = $json->total_insured_value;
     $parcel->OrderNumber = $json->order_number;
-    if (!empty($json->shipment_type)) {
+    if (!$this->app->erp->IstEU($json->country)) {
       $parcel->CustomsInvoiceNr = $json->invoice_number;
       $parcel->CustomsShipmentType = $json->shipment_type;
       foreach ($json->positions as $pos) {
