@@ -1,4 +1,12 @@
 <?php
+
+/*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
@@ -447,36 +455,24 @@ class Lieferschein extends GenLieferschein
 
   function LieferscheinPaketmarke()
   {
-    $id = $this->app->Secure->GetGET("id");
+    $id = (int)$this->app->Secure->GetGET("id");
 
-    $versandart = $this->app->DB->Select("SELECT versandart FROM lieferschein WHERE id='$id' LIMIT 1");
-    $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = '$id' LIMIT 1");
     $this->LieferscheinMenu();
     $this->app->Tpl->Set('TABTEXT',"Paketmarke");
 
-    $versandart = strtolower($versandart);
-    $versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND modul != '' AND type = '".$this->app->DB->real_escape_string($versandart)."' AND (projekt = '$projekt' || projekt = 0) ORDER BY projekt DESC LIMIT 1");
-    if($versandartenmodul && is_file(dirname(__DIR__).'/lib/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
-    {
-      $this->app->erp->Paketmarke('TAB1','lieferschein',"",$versandart);
-    }else{
-      if($versandart=="dpd")
-        $this->app->erp->PaketmarkeDPDEmbedded('TAB1',"lieferschein");
-      else if($versandart=="express_dpd")
-        $this->app->erp->PaketmarkeDPDEmbedded('TAB1',"lieferschein","express");
-      else if($versandart=="export_dpd")
-        $this->app->erp->PaketmarkeDPDEmbedded('TAB1',"lieferschein","export");
-      else if($versandart=="ups")
-        $this->app->erp->PaketmarkeUPSEmbedded('TAB1',"lieferschein");
-      else if($versandart=="fedex")
-        $this->app->erp->PaketmarkeFEDEXEmbedded('TAB1',"lieferschein");
-      else if($versandart=="go")
-        $this->app->erp->PaketmarkeGo('TAB1',"lieferschein");
-      else {
-        $this->app->erp->Paketmarke('TAB1','lieferschein',"","");
-      }
-        //$this->app->erp->PaketmarkeDHLEmbedded('TAB1',"lieferschein");
+    $result = $this->app->DB->SelectRow(
+        "SELECT v.id, v.modul
+        FROM lieferschein l
+        LEFT JOIN versandarten v ON (l.versandart=v.type AND v.projekt in (l.projekt, 0))
+        WHERE l.id=$id
+        AND v.aktiv = 1 AND v.ausprojekt = 0 AND v.modul != ''
+        ORDER BY v.projekt DESC LIMIT 1");
+    if (empty($result['modul']) || empty($result['id'])) {
+      $this->app->Tpl->addMessage('error', 'Bitte zuerst eine gültige Versandart auswählen', false, 'PAGE');
+      return;
     }
+    $versandmodul = $this->app->erp->LoadVersandModul($result['modul'], $result['id']);
+    $versandmodul->Paketmarke('TAB1', 'lieferschein', $id);
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
   

@@ -1,5 +1,12 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
+/*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
@@ -163,28 +170,17 @@ class TemplateParser {
 
   public function addMessage($class, $text, $html = false, $_var = 'MESSAGE')
   {
-    $ret = '';
-    switch($class)
-    {
-      case 'error':
-      case 'warning':
-      case 'info':
-
-        break;
-      default:
-        $class = 'info';
-      break;
-    }
+    if(!in_array($class, ['error', 'warning', 'info', 'success']))
+      $class = 'info';
     if(!$html)
     {
       $text = $this->htmlspecialchars($text);
     }
-    $ret .= '<div class="'.$class.'">'.$text.'</div>';
+    $ret = sprintf('<div class="%s">%s</div>', $class, $text);
     if($_var === 'return')
-    {
       return $ret;
-    }
-    return $this->app->Tpl->Add($_var, $ret);
+
+    $this->app->Tpl->Add($_var, $ret);
   }
 
   public function addSelect($_var, $id, $name, $options, $selected = '', $class = '')

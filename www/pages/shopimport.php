@@ -1,5 +1,12 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
+/*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
@@ -830,7 +837,7 @@ class Shopimport
         // denn fall das es kunde 1:1 schon gibt = alte Kundennummer verwenden kommt vor allem vor, wenn ein Kunde an einem Tag oefters bestellt hat
         //								$adresse = $this->app->erp->KundeAnlegen($typ,$name,$abteilung,
         //								$unterabteilung,$ansprechpartner,$adresszusatz,$strasse,$land,$plz,$ort,$email,$telefon,$telefax,$ustid,$partner,$projekt);
-        if(strlen($warenkorb['kundennummer'])!=''){
+        if(!empty($warenkorb['kundennummer'])){
           $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='{$warenkorb['kundennummer']}' $adresseprojekt AND geloescht!=1 LIMIT 1");
         }
 

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2022 Andreas Palm
+SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+
+SPDX-License-Identifier: LicenseRef-EGPL-3.1
+-->
 <!-- gehort zu tabview -->
 <div id="tabs">
     <ul>
@@ -12,17 +18,10 @@
         <fieldset class="moduleList">
             <legend>{|Auswahl|}</legend>
             <div id="searchdiv">
-                <label for="suche">{|Suche|}:</label> <input type="text" id="suche" />
+                <label for="suche">{|Suche|}:</label> <input type="text" id="createSearchInput" />
             </div>
             [MODULEINSTALLIERT]
         </fieldset>
-        [BEFOREMODULESTOBUY]
-        <fieldset class="moduleList">
-            <legend>{|Kaufschnittstellen|}</legend>
-            [MODULEVERFUEGBAR]
-            <br />
-        </fieldset>
-        [AFTERMODULESTOBUY]
         [TAB1NEXT]
     </div>
 

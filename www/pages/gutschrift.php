@@ -1206,6 +1206,21 @@ class Gutschrift extends GenGutschrift
     $rechnungid = $this->app->DB->Select("SELECT rechnungid FROM gutschrift WHERE id='$id' LIMIT 1");
     $rechnungid = $this->app->DB->Select("SELECT id FROM rechnung WHERE id='$rechnungid' AND belegnr!='' LIMIT 1");
 
+    $alle_gutschriften = $this->app->DB->SelectArr("SELECT id,belegnr FROM gutschrift WHERE rechnungid='$rechnungid' AND rechnungid>0");
+
+	if (!is_null($alle_gutschriften)) {
+	    if((!empty($alle_gutschriften)?count($alle_gutschriften):0) > 1)
+	    {
+	      for($agi=0;$agi<(!empty($alle_gutschriften)?count($alle_gutschriften):0);$agi++)
+	        $gutschriften .= "<a href=\"index.php?module=gutschrift&action=edit&id=".$alle_gutschriften[$agi]['id']."\" target=\"_blank\">".$alle_gutschriften[$agi]['belegnr']."</a> ";
+	      $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">F&uuml;r die angebene Rechnung gibt es schon folgende Gutschriften: $gutschriften</div>");
+	    }
+	}
+
+
+    //    if($status=="versendet")
+    //      $this->app->Tpl->Set(MESSAGE,"<div class=\"error\">Diese Gutschrift wurde bereits versendet und darf daher nicht mehr bearbeitet werden!</div>");
+
     if($status=="")
       $this->app->DB->Update("UPDATE gutschrift SET status='angelegt' WHERE id='$id' LIMIT 1");
     if($schreibschutz != '1'){
