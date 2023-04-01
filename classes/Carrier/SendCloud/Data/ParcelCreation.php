@@ -12,8 +12,9 @@ class ParcelCreation extends ParcelBase
 {
   public ?int $SenderAddressId = null;
 
-  public function toApiRequest(): array {
-    return [
+  public function toApiRequest(): array
+  {
+    $data = [
         'name' => $this->Name,
         'company_name' => $this->CompanyName,
         'address' => $this->Address,
@@ -32,16 +33,19 @@ class ParcelCreation extends ParcelBase
         'total_order_value' => number_format($this->TotalOrderValue, 2, '.', null),
         'country_state' => $this->CountryState,
         'sender_address' => $this->SenderAddressId,
-        'customs_invoice_nr' => $this->CustomsInvoiceNr,
-        'customs_shipment_type' => $this->CustomsShipmentType,
         'external_reference' => $this->ExternalReference,
         'total_insured_value' => $this->TotalInsuredValue ?? 0,
-        'parcel_items' => array_map(fn(ParcelItem $item)=>$item->toApiRequest(), $this->ParcelItems),
+        'parcel_items' => array_map(fn(ParcelItem $item) => $item->toApiRequest(), $this->ParcelItems),
         'is_return' => $this->IsReturn,
         'length' => $this->Length,
         'width' => $this->Width,
         'height' => $this->Height,
     ];
-  }
+    if ($this->CustomsInvoiceNr !== null)
+      $data['customs_invoice_nr'] = $this->CustomsInvoiceNr;
+    if ($this->CustomsShipmentType !== null)
+      $data['customs_shipment_type'] = $this->CustomsShipmentType;
 
+    return $data;
+  }
 }

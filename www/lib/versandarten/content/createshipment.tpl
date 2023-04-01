@@ -73,7 +73,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                         <td>{|Land|}:</td>
                         <td>
                             <select v-model="form.country" required>
-                                <option v-for="(value, key) in countries" :value="key">{{value}}</option>
+                                <option v-for="(value, key) in countries" :value="key">{{value.name}}</option>
                             </select>
                         </td>
                     </tr>
@@ -156,7 +156,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                         <td>{|Produkt|}:</td>
                         <td>
                             <select v-model="form.product" required>
-                                <option v-for="prod in products" :value="prod.Id">{{prod.Name}}</option>
+                                <option v-for="prod in products" :value="prod.Id" v-if="productAvailable(prod)">{{prod.Name}}</option>
                             </select>
                         </td>
                     </tr>
@@ -170,29 +170,33 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             <div class="col-md-12">
                 <h2>{|Bestellung|}</h2>
                 <table>
-                    <tr>
-                        <td>{|Bestellnummer|}:</td>
-                        <td><input type="text" size="36" v-model="form.order_number"></td>
-                    </tr>
-                    <tr>
-                        <td>{|Rechnungsnummer|}:</td>
-                        <td><input type="text" size="36" v-model="form.invoice_number"></td>
-                    </tr>
-                    <tr>
-                        <td>{|Sendungsart|}:</td>
-                        <td>
-                            <select v-model="form.shipment_type">
-                                <option v-for="(value, key) in customs_shipment_types" :value="key">{{value}}</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>{|Versicherungssumme|}:</td>
-                        <td><input type="text" size="10" v-model="form.total_insured_value"/></td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <td>{|Bestellnummer|}:</td>
+                            <td><input type="text" size="36" v-model="form.order_number"></td>
+                        </tr>
+                        <tr>
+                            <td>{|Versicherungssumme|}:</td>
+                            <td><input type="text" size="10" v-model="form.total_insured_value"/></td>
+                        </tr>
+                    </tbody>
+                    <tbody v-if="customsRequired()">
+                        <tr>
+                            <td>{|Rechnungsnummer|}:</td>
+                            <td><input type="text" size="36" v-model="form.invoice_number" required="required"></td>
+                        </tr>
+                        <tr>
+                            <td>{|Sendungsart|}:</td>
+                            <td>
+                                <select v-model="form.shipment_type">
+                                    <option v-for="(value, key) in customs_shipment_types" :value="key">{{value}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
-            <div class="col-md-12">
+            <div class="col-md-12" v-if="customsRequired()">
                 <table>
                     <tr>
                         <th>{|Bezeichnung|}</th>
@@ -269,10 +273,30 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             deletePosition: function (index) {
                 this.form.positions.splice(index, 1);
             },
+            productAvailable: function (product) {
+                if (product == undefined)
+                    return false;
+                if (product.WeightMin > this.form.weight || product.WeightMax < this.form.weight)
+                    return false;
+                return true;
+            },
             serviceAvailable: function (service) {
                 if (!this.products.hasOwnProperty(this.form.product))
                     return false;
                 return this.products[this.form.product].AvailableServices.indexOf(service) >= 0;
+            },
+            customsRequired: function () {
+                return this.countries[this.form.country].eu == '0';
+            }
+        },
+        beforeUpdate: function () {
+            if (!this.productAvailable(this.products[this.form.product])) {
+                for (prod in this.products) {
+                    if (!this.productAvailable(this.products[prod]))
+                        continue;
+                    this.form.product = prod;
+                    break;
+                }
             }
         }
     })
