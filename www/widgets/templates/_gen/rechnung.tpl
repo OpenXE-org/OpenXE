@@ -125,7 +125,7 @@
                                     </tr>
                                     <tr>
                                        <td>
-                                          {|OFFEN|}:
+                                          {|FEHLT|}:
                                        </td>
                                        <td id="istdb">
                                           [ISTDB]

@@ -1392,7 +1392,7 @@ class Gutschrift extends GenGutschrift
 
         if (!empty($saldo)) {
             if ($saldo['waehrung'] == $openid['waehrung']) {
-                $sql = "UPDATE gutschrift SET ist = '".$saldo['betrag']."'+soll WHERE id=".$openid['id'];
+                $sql = "UPDATE gutschrift SET ist = soll-'".$saldo['betrag']."' WHERE id=".$openid['id'];
                 $result = $this->app->DB->Update($sql);
             } 
         }

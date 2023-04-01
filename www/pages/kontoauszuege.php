@@ -15,7 +15,7 @@ class Kontoauszuege {
 
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "kontoauszuege_konto_list");        
-        $this->app->ActionHandler("listentries", "kontoauszuege_list");        
+        $this->app->ActionHandler("listentries", "kontoauszuege_list");
         $this->app->ActionHandler("create", "kontoauszuege_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "kontoauszuege_edit");
         $this->app->ActionHandler("delete", "kontoauszuege_delete");
@@ -51,8 +51,7 @@ class Kontoauszuege {
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=kontoauszuege&action=listentries&kid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a></td></tr></table>";                            
 
                 $saldolink = array (
-                    '<a href=\"index.php?module=kontoauszuege&action=listentries&onlysaldo=1&kid=',
-                    ['sql' => 'k.id'],
+                    '<a href=\"index.php?module=fibu_buchungen&action=zuordnen&typ=kontoauszuege',
                     '">',
                     ['sql' => $this->app->erp->FormatMenge('SUM(COALESCE(fb.betrag,0))',2)],
                     '</a>'
@@ -201,6 +200,48 @@ class Kontoauszuege {
 //                echo($sql." WHERE ".$where." ".$groupby);
 
                 break;
+            case "kontoauszuege_salden":
+                $allowed['kontoauszuege_list'] = array('list');
+
+                $kontoid = $this->app->User->getParameter('kontoauszuege_konto_id');
+                $onlysaldo = $this->app->User->getParameter('kontoauszuege_only_saldo');
+
+                $heading = array('','',   'Buchungstext', 'Betrag', 'Waehrung', 'Betrag zuordnen', 'Beleg', 'ID','Beleg-Nr.','', 'Men&uuml;');
+                $width = array('1%','1%', '20%',          '1%',     '1%',       '1%',              '1%',    '1%','1%',       '1%','1%'); 
+
+                // columns that are aligned right (numbers etc)
+                $alignright = array(6); 
+
+                $sumcol = array(10);
+
+                $findcols = array('q.id','q.id','q.konto', 'q.importdatum', 'q.buchung', 'q.soll', 'q.waehrung', 'q.buchungstext','q.internebemerkung','q.saldo');
+                $searchsql = array('q.konto', 'q.buchung', 'q.soll', 'q.buchungstext','q.internebemerkung');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',q.id,'\"',if(b.doc_belegnr IS NOT NULL,'checked',''),' />') AS `auswahl`";
+
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=kontoauszuege&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=kontoauszuege&action=delete&kid=".$kontoid."&onlysaldo=".$onlysaldo."&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";              
+
+
+                $sql = "SELECT 
+                            ".$this->app->erp->FormatUCfirst('typ')."
+                            SUM(betrag)
+                        FROM `fibu_buchungen_alle`                         
+                        ";
+
+                $where = "1";
+                if ($onlysaldo) {
+                    $where .= " AND q.saldonum != 0";
+                }
+
+//                $count = "SELECT count(DISTINCT id) FROM kontoauszuege k WHERE $where";
+                $groupby = "GROUP BY typ";
+
+//                echo($sql." WHERE ".$where." ".$groupby);
+
+                break;
         }
 
         $erg = false;
@@ -262,14 +303,21 @@ class Kontoauszuege {
 
         $this->app->YUI->TableSearch('TAB1', 'kontoauszuege_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "kontoauszuege_list.tpl");
+
     }    
 
     public function kontoauszuege_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
         
-        $this->app->DB->Delete("UPDATE `kontoauszuege` SET importfehler = 1 WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde als Importfehler markiert.</div>");        
-
+        $sql = "SELECT id FROM fibu_buchungen_alle WHERE CONCAT(doc_typ,doc_id) <> CONCAT('kontoauszuege','".$id."') AND typ = 'kontoauszuege' AND id = ".$id;
+        $result = $this->app->DB->SelectArr($sql);
+        
+        if (!empty($result)) {
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Es existieren Buchungen, Eintrag wurde nicht als Importfehler markiert!</div>");        
+        } else {
+            $this->app->DB->Delete("UPDATE `kontoauszuege` SET importfehler = 1 WHERE `id` = '{$id}'");        
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"warning\">Der Eintrag wurde als Importfehler markiert.</div>");        
+        }
         $this->kontoauszuege_list();
     } 
 

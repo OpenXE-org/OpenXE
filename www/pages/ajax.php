@@ -2072,6 +2072,20 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $newarr[] = $arr[$i]['name'];
         break;
 
+      case "fibu_objekte":
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(".$this->app->erp->FormatUCfirst('typ').",'-',id,'-',info) as objekt FROM fibu_objekte WHERE info LIKE '%$term%' LIMIT 20");
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['objekt'];
+        break;
+
+      case "fibu_belege":
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(".$this->app->erp->FormatUCfirst('typ').",'-',id,'-',info) as objekt FROM fibu_objekte WHERE info LIKE '%$term%' AND typ IN ('auftrag','rechnung','gutschrift','verbindlichkeit') LIMIT 20");
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['objekt'];
+        break;       
+
       case "vpeartikel":
         $arr = $this->app->DB->SelectArr("SELECT DISTINCT vpe FROM verkaufspreise WHERE geloescht=0 AND vpe LIKE '%$term%' ORDER by vpe");
         $carr = !empty($arr)?count($arr):0;

@@ -277,7 +277,7 @@ class Rechnung extends GenRechnung
    */
   public function removeManualPayed($invoiceId)
   {
-    if(empty($invoiceId) || !$this->app->DB->Select(sprintf('SELECT id FROM rechnung WHERE id = %d', $invoiceId))) {
+/*    if(empty($invoiceId) || !$this->app->DB->Select(sprintf('SELECT id FROM rechnung WHERE id = %d', $invoiceId))) {
       return false;
     }
     $this->app->erp->RechnungProtokoll($invoiceId,'Rechnung manuell als bezahlt entfernt');
@@ -288,7 +288,7 @@ class Rechnung extends GenRechnung
       WHERE id='$invoiceId'"
     );
 
-    return true;
+    return true;*/
   }
 
   public function RechnungManuellBezahltEntfernen()
@@ -2078,9 +2078,9 @@ class Rechnung extends GenRechnung
             } 
         }
         else {
-            $this->app->DB->Update("UPDATE rechnung SET ist = null");
+            $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$openid['id']);        
         }
-    }
+    }  
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
     {
@@ -2102,10 +2102,10 @@ class Rechnung extends GenRechnung
         switch($aktion)
         {
           case 'bezahlt':
-            $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='bezahlt', bezahlt_am = now(), ist=soll,mahnwesenfestsetzen='1',mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt markiert am ".date('d.m.Y')."')  WHERE id IN (".implode(', ',$auswahl).')');
+            $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='bezahlt', bezahlt_am = now(), mahnwesenfestsetzen='1',mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt markiert am ".date('d.m.Y')."')  WHERE id IN (".implode(', ',$auswahl).')');
           break;
           case 'offen':
-            $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen',bezahlt_am = NULL, ist='0',mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt entfernt am ".date('d.m.Y')."') WHERE id IN (".implode(', ',$auswahl).')');
+            $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen',bezahlt_am = NULL, mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt entfernt am ".date('d.m.Y')."') WHERE id IN (".implode(', ',$auswahl).')');
           break;
           case 'mail':
             $auswahl = $this->app->DB->SelectFirstCols(

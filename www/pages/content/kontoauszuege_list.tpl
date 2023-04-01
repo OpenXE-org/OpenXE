@@ -11,7 +11,8 @@
                 <table>
                     <legend>Stapelverarbeitung</legend>
                     <tr>
-                        <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;</td><td><input type="submit" class="btnBlue" name="ausfuehren" value="{|Importfehler|}" /></td>
+                        <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;</td>
+                        <td><input type="submit" class="btnBlue" name="ausfuehren" value="{|Importfehler|}" /></td>
                     </tr>
                 </table>
             </fieldset>

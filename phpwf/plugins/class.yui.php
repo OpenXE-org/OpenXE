@@ -6139,7 +6139,10 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
               DATE_FORMAT(r.datum,'%d.%m.%Y') as vom, adr.kundennummer as kundennummer,
           CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),'')) as kunde,
               r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,  
-              FORMAT(r.soll,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, r.soll-r.ist as differenz, re.belegnr as rechnung, UPPER(r.status) as status,
+              ".$this->app->erp->FormatMenge('r.soll',2)." as soll, 
+              r.zahlungsstatus as zahlung, 
+              ".$this->app->erp->FormatMenge('r.soll-r.ist',2)." as differenz,
+              re.belegnr as rechnung, UPPER(r.status) as status,
              ".$this->IconsSQLReturnOrder()."  ,r.id
           FROM  gutschrift r 
           LEFT JOIN rechnung re ON re.id=r.rechnungid 
