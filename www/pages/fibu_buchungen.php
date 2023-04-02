@@ -469,7 +469,10 @@ class Fibu_buchungen {
                     salden.saldo,
                     salden.objektlink,
                     salden.saldonum,
-                    salden.waehrung
+                    salden.waehrung,
+                    fo.typ as doc_typ,
+                    fo.id as doc_id,
+                    fo.info as doc_info
                 FROM
                     (
                     SELECT
@@ -484,12 +487,14 @@ class Fibu_buchungen {
                         `fibu_buchungen_alle` fb
                     INNER JOIN fibu_objekte fo ON
                         fb.typ = fo.typ AND fb.id = fo.id
-                    WHERE fb.typ <> 'kontorahmen' AND (fb.typ = '".$typ."' OR '".$typ."' = '')
+                    WHERE (fb.typ = '".$typ."' OR '".$typ."' = '')
                     GROUP BY
                         fb.typ,
                         fb.id,
                         fb.waehrung
                 ) salden
+                LEFT JOIN fibu_objekte fo ON
+                    salden.info LIKE CONCAT('%', fo.info, '%') AND salden.typ <> fo.typ                
                 WHERE
                     salden.saldonum <> 0
                 LIMIT 100      
@@ -512,7 +517,7 @@ class Fibu_buchungen {
             if (empty($item['doc_id'])) {
                 $object_identifier = '';
             } else {
-                $object_identifier = ucfirst($item['doc_typ'])."-".$item['doc_id']."-".$item['doc_belegnr'];
+                $object_identifier = ucfirst($item['doc_typ'])."-".$item['doc_id']."-".$item['doc_info'];
             }         
 
             $input_id = 'fibu_object_select_'.$item['id'];
@@ -536,7 +541,7 @@ class Fibu_buchungen {
                 ucfirst($item['typ']),
                 $item['objektlink'],
                 $item['saldo'],
-                '<input type="number" step="0.01" size="10" name="fibu_betrag[]" value="'.$item['saldo'].'" min="'.$min.'" max="'.$max.'"></input>'.$item['waehrung'],                    
+                '<input type="number" step="0.01" size="10" name="fibu_betrag[]" value="'.$item['saldonum'].'" min="'.$min.'" max="'.$max.'"></input>'.$item['waehrung'],                    
                 $object_select,
                 '<input type="text" name="fibu_typ[]" value="'.$item['typ'].'" hidden/>',
                 '<input type="text" name="fibu_id[]" value="'.$item['id'].'" hidden/>',
