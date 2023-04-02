@@ -140,8 +140,14 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
                 $composed_key = array();
                 $composed_key['Key_name'] = $key['Key_name'];
                 $composed_key['Index_type'] = $key['Index_type'];
-                $composed_key['Non_unique'] = ($key['Non_unique'] == 1)?'UNIQUE':'';
                 $composed_key['columns'][] = $key['Column_name'];
+
+                if ($key['Key_name'] != 'PRIMARY') {
+                    $composed_key['Non_unique'] = ($key['Non_unique'] == 1)?'':'UNIQUE';
+                } else {
+                   $composed_key['Non_unique'] = '';
+                }
+
                 $composed_keys[] = $composed_key;
             } else {
                 // Given key, add column
