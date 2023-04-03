@@ -95,7 +95,7 @@ class Fibu_buchungen {
                 $linkstart = '<table cellpadding=0 cellspacing=0><tr><td nowrap><a href="index.php?module=fibu_buchungen&action=edit&';
                 $linkend = '"><img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg" border=0></a></td></tr></table>';
 
-                $id = $app->Secure->GetGET('id');          
+                $id = $app->Secure->GetGET('id');     
 
                 $saldolink = array (
                     '<a href=\"index.php?module=fibu_buchungen&action=zuordnen&typ=',
@@ -120,7 +120,7 @@ class Fibu_buchungen {
                         fo.info,
                         SUM(betrag) AS saldonum
                     FROM
-                        `fibu_buchungen_alle` fb
+                        `fibu_buchungen_alle` fb                    
                     INNER JOIN fibu_objekte fo ON
                         fb.typ = fo.typ AND fb.id = fo.id
                     WHERE
@@ -136,7 +136,7 @@ class Fibu_buchungen {
                 $groupby = "GROUP BY typ";
                 $orderby = "ORDER BY typ";
 
-//                echo($sql." WHERE ".$where." ".$groupby);
+                //echo($sql." WHERE ".$where." ".$groupby);
 
             break;                         
 
@@ -463,6 +463,7 @@ class Fibu_buchungen {
                 ); 
 
         $sql = "SELECT
+                    salden.datum,
                     salden.typ,
                     salden.id,
                     salden.info,
@@ -476,6 +477,7 @@ class Fibu_buchungen {
                 FROM
                     (
                     SELECT
+                        ".$this->app->erp->FormatDate("fb.datum")." as datum,
                         fb.typ,
                         fb.id,
                         fo.info,
@@ -494,7 +496,7 @@ class Fibu_buchungen {
                         fb.waehrung
                 ) salden
                 LEFT JOIN fibu_objekte fo ON
-                    salden.info LIKE CONCAT('%', fo.info, '%') AND salden.typ <> fo.typ                
+                    salden.info LIKE CONCAT('%', fo.info, '%') AND salden.typ <> fo.typ AND fo.info <> ''              
                 WHERE
                     salden.saldonum <> 0
                 LIMIT 100      
@@ -508,7 +510,7 @@ class Fibu_buchungen {
 
         $et = new EasyTable($this->app);
 
-        $et->headings = array('Typ','Info','Betrag','Buchbetrag','Zuordnung');
+        $et->headings = array('Datum','Typ','Info','Betrag','Buchbetrag','Zuordnung');
 
         foreach ($items as $item) {
 
@@ -538,6 +540,7 @@ class Fibu_buchungen {
             }
 
             $row = array(
+                $item['datum'],
                 ucfirst($item['typ']),
                 $item['objektlink'],
                 $item['saldo'],

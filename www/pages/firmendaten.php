@@ -1043,7 +1043,7 @@ class Firmendaten  {
           'arbeitsnachweis_header','arbeitsnachweis_footer','provisionsgutschrift_header','provisionsgutschrift_footer','proformarechnung_header','proformarechnung_footer','eu_lieferung_vermerk','export_lieferung_vermerk'
           ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2','bcc3'
           ,'firmenfarbe','name','strasse','plz','ort','steuernummer','projekt','steuer_positionen_export','tabsnavigationfarbe','tabsnavigationfarbeschrift'
-          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge"
+          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge", "fibu_buchungen_startdatum"
         );
 
         if(isset($sql2a)){
@@ -1379,6 +1379,10 @@ class Firmendaten  {
     }
     $this->app->YUI->AutoComplete('steuersatz_normal','steuersatz',1);
     $this->app->YUI->AutoComplete('steuersatz_ermaessigt','steuersatz',1);
+
+
+    $this->app->YUI->DatePicker('fibu_buchungen_startdatum');
+
     $this->app->Tpl->Parse('PAGE','firmendaten.tpl');
   }
 
@@ -1842,6 +1846,11 @@ class Firmendaten  {
       if(!empty($data[0]['taxfromdoctypesettings'])) {
         $this->app->Tpl->Set('OPTIONTAXFROMDOCTYPESETTINGS', ' selected="selected" ');
       }
+
+        // Fibu
+        $this->app->Tpl->Set('FIBU_BUCHUNGEN_STARTDATUM', $this->app->erp->ReplaceDatum(false,$data[0]['fibu_buchungen_startdatum'],false));
+
+
     }
   }
 
@@ -2281,6 +2290,8 @@ class Firmendaten  {
     $data['buchhaltung_mandant'] = ($this->app->Secure->POST["buchhaltung_mandant"]);
     $data['buchhaltung_wj_beginn'] = ($this->app->Secure->POST["buchhaltung_wj_beginn"]);
     $data['buchhaltung_sachkontenlaenge'] = ($this->app->Secure->POST["buchhaltung_sachkontenlaenge"]);
+
+    $data['fibu_buchungen_startdatum'] = $this->app->erp->ReplaceDatum(true,$this->app->Secure->POST["fibu_buchungen_startdatum"],false);
 
     return $data;
   }
