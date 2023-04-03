@@ -499,6 +499,8 @@ class Fibu_buchungen {
                     salden.info LIKE CONCAT('%', fo.info, '%') AND salden.typ <> fo.typ AND fo.info <> ''              
                 WHERE
                     salden.saldonum <> 0
+                GROUP BY
+                    salden.typ,salden.id
                 LIMIT 100      
             ";
 
