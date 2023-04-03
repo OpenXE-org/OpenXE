@@ -6085,7 +6085,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         );
 
         $width = array('1%', '1%', '10%', '10%', '10%', '25%', '5%', '1%', '1%', '1%', '1%', '1%', '1%','5%', '1%','1%', '1%');
-        $findcols = array('open', 'r.belegnr', 'r.belegnr', 'r.datum', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung', 'r.zahlungsweise', 'r.soll','re.belegnr', 'r.zahlungsstatus','differenz', 'r.status', 'pt.payement_status' ,'id');
+        $findcols = array('open', 'r.belegnr', 'r.belegnr', 'r.datum', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung', 'r.zahlungsweise', 'r.soll', 'r.zahlungsstatus','r.soll-r.ist', 're.belegnr', 'r.status', 'id');
         $searchsql = array('DATE_FORMAT(r.datum,\'%d.%m.%Y\')', 'r.belegnr', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung','re.belegnr', 'r.status', "FORMAT(r.soll,2{$extended_mysql55})", 'adr.freifeld1', 'r.ihrebestellnummer','r.internebezeichnung','au.internet');
         $defaultorder = 13; //Optional wenn andere Reihenfolge gewuenscht
 
@@ -6134,16 +6134,24 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $parameter = json_decode($parameter, true);
 
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS r.id,'<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open, concat('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',r.id,'\" />')as auswahl,
-              r.belegnr,
-              DATE_FORMAT(r.datum,'%d.%m.%Y') as vom, adr.kundennummer as kundennummer,
-          CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),'')) as kunde,
-              r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,  
-              ".$this->app->erp->FormatMenge('r.soll',2)." as soll, 
-              r.zahlungsstatus as zahlung, 
-              ".$this->app->erp->FormatMenge('r.soll-r.ist',2)." as differenz,
-              re.belegnr as rechnung, UPPER(r.status) as status,
-             ".$this->IconsSQLReturnOrder()."  ,r.id
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                    r.id,
+                    '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open,
+                    concat('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',r.id,'\" />')as auswahl,
+                    r.belegnr,
+                    DATE_FORMAT(r.datum,'%d.%m.%Y') as vom,
+                    adr.kundennummer as kundennummer,
+                    CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),'')) as kunde,
+                    r.land as land, 
+                    p.abkuerzung as projekt, 
+                    r.zahlungsweise as zahlungsweise,  
+                    ".$this->app->erp->FormatMenge('r.soll',2)." as soll, 
+                    r.zahlungsstatus as zahlung, 
+                    ".$this->app->erp->FormatMenge('r.soll-r.ist',2)." as differenz,
+                    re.belegnr as rechnung, 
+                    UPPER(r.status) as status,
+                    ".$this->IconsSQLReturnOrder().",
+                    r.id
           FROM  gutschrift r 
           LEFT JOIN rechnung re ON re.id=r.rechnungid 
           LEFT JOIN projekt p ON p.id=r.projekt 

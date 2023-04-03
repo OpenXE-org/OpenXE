@@ -21,7 +21,8 @@
                    				<fieldset>				
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <legend>{|Aktionen|}</legend>                          
-                                    <tr><td><input type="submit" class="btnBlue" name="ausfuehren" value="{|BUCHEN|}" /></td></tr>
+                                    <td><button name="submit" value="neuberechnen" class="ui-button-icon" style="width:100%;">{|Buchungen neu berechnen|}</button></td></tr>
+                                    <td><button name="submit" value="BUCHEN" class="ui-button-icon" style="width:100%;">{|BUCHEN|}</button></td></tr>
                                 </table>
                             </fieldset>      				                            
                         </div>

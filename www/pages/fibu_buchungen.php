@@ -190,6 +190,22 @@ class Fibu_buchungen {
         }
         return $erg;
     }
+
+    function fibu_rebuild_tables() {
+        $sql = "DROP TABLE IF EXISTS `fibu_buchungen_alle`";
+        $this->app->DB->Update($sql);
+        $sql = "DROP VIEW IF EXISTS `fibu_buchungen_alle`";
+        $this->app->DB->Update($sql);
+        $sql = "CREATE TABLE `fibu_buchungen_alle` AS SELECT * FROM `fibu_buchungen_alle_view`";
+        $this->app->DB->Update($sql);
+
+        $sql = "DROP TABLE IF EXISTS `fibu_objekte`";
+        $this->app->DB->Update($sql);
+        $sql = "DROP VIEW IF EXISTS `fibu_objekte`";
+        $this->app->DB->Update($sql);
+        $sql = "CREATE TABLE `fibu_objekte` AS SELECT * FROM `fibu_objekte_view`";
+        $this->app->DB->Update($sql);
+    }
     
     function fibu_buchungen_list() {
         $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=list", "&Uuml;bersicht");
@@ -197,19 +213,7 @@ class Fibu_buchungen {
 
         $submit = $this->app->Secure->GetPOST('submit');
         if ($submit == 'neuberechnen') {
-            $sql = "DROP TABLE IF EXISTS `fibu_buchungen_alle`";
-            $this->app->DB->Update($sql);
-            $sql = "DROP VIEW IF EXISTS `fibu_buchungen_alle`";
-            $this->app->DB->Update($sql);
-            $sql = "CREATE TABLE `fibu_buchungen_alle` AS SELECT * FROM `fibu_buchungen_alle_view`";
-            $this->app->DB->Update($sql);
-
-            $sql = "DROP TABLE IF EXISTS `fibu_objekte`";
-            $this->app->DB->Update($sql);
-            $sql = "DROP VIEW IF EXISTS `fibu_objekte`";
-            $this->app->DB->Update($sql);
-            $sql = "CREATE TABLE `fibu_objekte` AS SELECT * FROM `fibu_objekte_view`";
-            $this->app->DB->Update($sql);
+            $this->fibu_rebuild_tables();
         }
 
         // For transfer to tablesearch    
@@ -429,7 +433,7 @@ class Fibu_buchungen {
 
         $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=list", "&Uuml;bersicht");
 
-        $submit = $this->app->Secure->GetPOST('ausfuehren');        
+        $submit = $this->app->Secure->GetPOST('submit');        
         $count_success = 0;
         if ($submit == 'BUCHEN') {
            
@@ -462,7 +466,8 @@ class Fibu_buchungen {
 
                         $count_success++;                    
                     }
-                 }
+                }
+                $this->fibu_rebuild_tables();
             }
             $msg .= "<div class=\"info\">".$count_success." Buchung".(($count_success===1)?'':'en')." durchgef&uuml;hrt.</div>";
         }
