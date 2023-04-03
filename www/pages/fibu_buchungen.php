@@ -195,6 +195,23 @@ class Fibu_buchungen {
         $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=list", "&Uuml;bersicht");
 //        $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=create", "Neu anlegen");
 
+        $submit = $this->app->Secure->GetPOST('submit');
+        if ($submit == 'neuberechnen') {
+            $sql = "DROP TABLE IF EXISTS `fibu_buchungen_alle`";
+            $this->app->DB->Update($sql);
+            $sql = "DROP VIEW IF EXISTS `fibu_buchungen_alle`";
+            $this->app->DB->Update($sql);
+            $sql = "CREATE TABLE `fibu_buchungen_alle` AS SELECT * FROM `fibu_buchungen_alle_view`";
+            $this->app->DB->Update($sql);
+
+            $sql = "DROP TABLE IF EXISTS `fibu_objekte`";
+            $this->app->DB->Update($sql);
+            $sql = "DROP VIEW IF EXISTS `fibu_objekte`";
+            $this->app->DB->Update($sql);
+            $sql = "CREATE TABLE `fibu_objekte` AS SELECT * FROM `fibu_objekte_view`";
+            $this->app->DB->Update($sql);
+        }
+
         // For transfer to tablesearch    
         $doc_typ = $this->app->Secure->GetGET('doc_typ');
         $doc_id = $this->app->Secure->GetGET('doc_id');
