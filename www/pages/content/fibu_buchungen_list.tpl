@@ -33,7 +33,7 @@
         [TAB1NEXT]
     </div>
     <div id="tabs-2">
-        <form action="" enctype="multipart/form-data" method="POST">   
+        <form action="#tabs-2" enctype="multipart/form-data" method="POST">   
             [MESSAGE]
             <div class="row">
             	<div class="row-height">

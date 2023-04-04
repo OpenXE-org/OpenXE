@@ -265,6 +265,20 @@ class Kontoauszuege {
         $this->app->Tpl->Parse('PAGE', "kontoauszuege_konto_list.tpl");
     }    
 
+    function kontoauszuege_mark_as_error(int $id) : ?string {
+        $sql = "SELECT id FROM fibu_buchungen_alle WHERE CONCAT(doc_typ,doc_id) <> CONCAT('kontoauszuege','".$id."') AND typ = 'kontoauszuege' AND id = ".$id;
+        $result = $this->app->DB->SelectArr($sql);
+        
+        if (!empty($result)) {
+            return("Es existieren Buchungen, Eintrag wurde nicht als Importfehler markiert!");        
+        } else {
+            $this->app->DB->Delete("UPDATE `kontoauszuege` SET importfehler = 1 WHERE `id` = '{$id}'");        
+            return("Der Eintrag wurde als Importfehler markiert.");        
+        }
+
+        return(null);
+
+    }
 
     function kontoauszuege_list() {
 
@@ -275,15 +289,28 @@ class Kontoauszuege {
             foreach($auswahl as $selectedId) {
                 $selectedId = (int)$selectedId;
                 if($selectedId > 0) {
-                  $selectedIds[] = $selectedId;
+                  $selectedIds[] = $selectedId;                  
                 }
             }          
 
             $submit = $this->app->Secure->GetPOST('ausfuehren');
 
             if ($submit == 'Importfehler') {
-               $sql = "UPDATE kontoauszuege SET importfehler = 1 WHERE id IN (".implode(",",$selectedIds).")";
-               $this->app->DB->Update($sql);
+
+                $message = "";
+
+                foreach ($selectedIds as $selectedId) {
+                    $result = $this->kontoauszuege_mark_as_error($selectedId);
+                    if ($result) {
+                        $message = $result;
+                    }
+                }
+
+                if ($message) {
+                    $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">".$message."</div>");
+                } else {
+                    $this->app->Tpl->Set('MESSAGE', "<div class=\"warning\">Eintr&auml;ge wurden als Importfehler markiert.</div>");        
+                }              
             }
         }
 
@@ -309,15 +336,14 @@ class Kontoauszuege {
     public function kontoauszuege_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
         
-        $sql = "SELECT id FROM fibu_buchungen_alle WHERE CONCAT(doc_typ,doc_id) <> CONCAT('kontoauszuege','".$id."') AND typ = 'kontoauszuege' AND id = ".$id;
-        $result = $this->app->DB->SelectArr($sql);
-        
-        if (!empty($result)) {
-            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Es existieren Buchungen, Eintrag wurde nicht als Importfehler markiert!</div>");        
+        $result = $this->kontoauszuege_mark_as_error($id);
+
+        if ($result) {
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">".$result."</div>");
         } else {
-            $this->app->DB->Delete("UPDATE `kontoauszuege` SET importfehler = 1 WHERE `id` = '{$id}'");        
             $this->app->Tpl->Set('MESSAGE', "<div class=\"warning\">Der Eintrag wurde als Importfehler markiert.</div>");        
         }
+        
         $this->kontoauszuege_list();
     } 
 

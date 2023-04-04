@@ -214,6 +214,9 @@ class Fibu_buchungen {
         $submit = $this->app->Secure->GetPOST('submit');
         if ($submit == 'neuberechnen') {
             $this->fibu_rebuild_tables();
+
+            $msg = "<div class=\"info\">Buchungen wurden neu berechnet.</div>";
+
         }
 
         // For transfer to tablesearch    
@@ -226,6 +229,10 @@ class Fibu_buchungen {
         $this->app->YUI->TableSearch('TAB1', 'fibu_buchungen_salden', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->YUI->TableSearch('TAB2', 'fibu_buchungen_list', "show", "", "", basename(__FILE__), __CLASS__);
 
+        if (!empty($msg)) {
+            $this->app->Tpl->Set('MESSAGE', $msg);
+        }
+
         $this->app->Tpl->Parse('PAGE', "fibu_buchungen_list.tpl");
     }    
 
@@ -233,7 +240,7 @@ class Fibu_buchungen {
         $id = (int) $this->app->Secure->GetGET('id');
         
 //        $this->app->DB->Delete("DELETE FROM `fibu_buchungen` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
+//        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
 
         $this->fibu_buchungen_list();
     } 
