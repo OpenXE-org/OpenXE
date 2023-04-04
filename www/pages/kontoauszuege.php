@@ -172,10 +172,10 @@ class Kontoauszuege {
                                 k.importfehler,
                                 CONCAT(
                                     '<del>',
-                                    ".$app->erp->FormatMenge('SUM(k.soll)',2).",
+                                    ".$app->erp->FormatMenge('(k.soll)',2).",
                                     '</del>'
                                 ),
-                                ".$app->erp->FormatMenge('SUM(k.soll)',2)."),
+                                ".$app->erp->FormatMenge('(k.soll)',2)."),
                             k.waehrung,
                             k.buchungstext,
                             k.internebemerkung,

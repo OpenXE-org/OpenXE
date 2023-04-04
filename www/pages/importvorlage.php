@@ -5124,6 +5124,8 @@ class Importvorlage extends GenImportvorlage {
                 }
                 unset($row['betrag2']);
 
+                $row['soll'] = $this->app->erp->ReplaceBetrag(true,$row['soll']);
+
                 $row['buchung'] = $this->app->erp->ReplaceDatum(true,$row['buchung'],false);
 
                 // Calculate hash
