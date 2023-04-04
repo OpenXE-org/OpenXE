@@ -579,6 +579,11 @@
 							    <td></td>
 						    </tr>
 						    <tr>
+							    <td>betrag2</td>
+							    <td>Betrag (wenn z.B. Soll / Haben getrennt)</td>
+							    <td></td>
+						    </tr>
+						    <tr>
 							    <td>waehrung</td>
 							    <td>W&auml;hrung</td>
 							    <td>Muss in den W&auml;hrungen vorhanden sein</td>

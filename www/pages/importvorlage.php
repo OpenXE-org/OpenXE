@@ -5081,7 +5081,7 @@ class Importvorlage extends GenImportvorlage {
           break;
           case 'kontoauszug':
 
-            $allowed_fields = array('konto','buchung','betrag','waehrung','buchungstext','buchungstext2','buchungstext3','buchungstext4');
+            $allowed_fields = array('konto','buchung','betrag','betrag2','waehrung','buchungstext','buchungstext2','buchungstext3','buchungstext4');
 
             $error = false;
 
@@ -5118,6 +5118,11 @@ class Importvorlage extends GenImportvorlage {
 
                 $row['soll'] = $row['betrag'];
                 unset($row['betrag']);
+
+                if (empty($row['soll'])) {
+                    $row['soll'] = $row['betrag2'];
+                }
+                unset($row['betrag2']);
 
                 $row['buchung'] = $this->app->erp->ReplaceDatum(true,$row['buchung'],false);
 
