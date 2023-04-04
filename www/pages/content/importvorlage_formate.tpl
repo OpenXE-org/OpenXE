@@ -565,7 +565,7 @@
 						    </tr>
 						    <tr>
 							    <td>konto</td>
-							    <td>Konto-ID</td>
+							    <td>Konto-Kurzbezeichnung</td>
 							    <td></td>
 						    </tr>
 						    <tr>

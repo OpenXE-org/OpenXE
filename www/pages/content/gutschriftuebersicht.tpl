@@ -45,8 +45,8 @@
 				<input type="checkbox" id="auswahlalle" onchange="alleauswaehlen();" />&nbsp;{|alle markieren|}&nbsp;
 				<select id="sel_aktion" name="sel_aktion">
 					<option value="">{|bitte w&auml;hlen|} ...</option>
-					<option value="erledigtam">{|als erledigt markieren|}</option>
-					<option value="offen">{|erledigt Markierung entfernen|}</option>
+                    [ALSBEZAHLTMARKIEREN]
+                    <option value="offen">{|als offen markieren|}</option>					
 					<option value="mail">{|per Mail versenden|}</option>
 					<option value="versendet">{|als versendet markieren|}</option>
 					<option value="pdf">{|Sammel-PDF|}</option>

@@ -1434,7 +1434,13 @@ class Gutschrift extends GenGutschrift
         $ids = array_unique($ids);
 
         switch($aktion) {
-          case 'erledigtam':
+          case 'bezahlt':
+            $this->app->DB->Update("UPDATE gutschrift SET zahlungsstatus='bezahlt' WHERE id IN (".implode(', ',$ids).')');
+          break;
+          case 'offen':
+            $this->app->DB->Update("UPDATE gutschrift SET zahlungsstatus='offen' WHERE id IN (".implode(', ',$ids).')');
+          break;
+/*          case 'erledigtam':
             if(!empty($ids)){
               $this->app->DB->Update(
                 sprintf(
@@ -1459,7 +1465,7 @@ class Gutschrift extends GenGutschrift
                 )
               );
             }
-          break;
+          break;*/
           case 'mail':
             $returnOrders = empty($ids)?[]:$this->app->DB->SelectArr(
               sprintf(
@@ -1740,6 +1746,10 @@ class Gutschrift extends GenGutschrift
     $this->app->YUI->TableSearch('TAB2','gutschriftenoffene');
     $this->app->YUI->TableSearch('TAB1','gutschriften');
     $this->app->YUI->TableSearch('TAB3','gutschrifteninbearbeitung');
+
+    if($this->app->erp->RechteVorhanden('rechnung', 'manuellbezahltmarkiert')){
+      $this->app->Tpl->Set('ALSBEZAHLTMARKIEREN', '<option value="bezahlt">{|als bezahlt markieren|}</option>');
+    }
 
     $this->app->Tpl->Set(
       'SELDRUCKER',
