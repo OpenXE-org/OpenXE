@@ -196,7 +196,7 @@ class Fibu_buchungen {
 
                 $linkstart = '<table cellpadding=0 cellspacing=0><tr><td nowrap><a href="index.php?module=fibu_buchungen&action=edit&';
                 $linkend = '"><img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg" border=0></a></td></tr></table>';
-
+             
                 $typ = $this->app->User->GetParameter('fibu_buchungen_doc_typ');
 
                 $objektlink = array (
@@ -233,6 +233,8 @@ class Fibu_buchungen {
                     ['sql' => $this->app->erp->FormatUCfirst('COALESCE(fo.typ,\'\')')],
                     ' ',
                     ['sql' => 'COALESCE(fo.info,\'\')'],
+                    ' ',
+                    ['sql' => "if (SUM(fbd.betrag) IS NULL,'',CONCAT('(Saldo ',".$this->app->erp->FormatMenge('SUM(fbd.betrag)',2).",')'))"],
                     '</a> ',
                     '<input type="text" name="vorschlaege[]" value="',
                     ['sql' => 'COALESCE(fo.typ,\'\')'],
@@ -264,9 +266,9 @@ class Fibu_buchungen {
                     ['sql' => 'salden.id'],
                 );
 
-                $sql = "SELECT 
-                            '' as dummy,
-                            '' as dummy2,                            
+                $sql = "SELECT
+                            '' AS dummy,
+                            '' AS dummy2,
                             auswahl,
                             datum,
                             objektlink,
@@ -274,53 +276,110 @@ class Fibu_buchungen {
                             waehrung,
                             wert,
                             vorschlag,
-                            doc
-                         FROM (SELECT
-                    '' as dummy,                    
-                    ".$this->app->erp->ConcatSQL($auswahl)." as auswahl,
-                    salden.datum,   
-                    salden.typ,
-                    salden.id,
-                    salden.info,
-                    salden.saldo,
-                    salden.objektlink,
-                    salden.saldonum,
-                    ".$this->app->erp->ConcatSQL($vorschlaege)." as vorschlag,
-                    ".$this->app->erp->ConcatSQL($werte)." as wert,
-                    ".$this->app->erp->ConcatSQL($waehrungen)." as waehrung,
-                    fo.typ as doc_typ,
-                    fo.id as doc_id,
-                    fo.info as doc_info,
-                     ".$this->app->erp->ConcatSQL($doc)." as doc
-                FROM
-                    (
-                    SELECT
-                        ".$this->app->erp->FormatDate("fb.datum")." as datum,
-                        fb.typ,
-                        fb.id,
-                        fo.info,
-                        ".$this->app->erp->ConcatSQL($objektlink)." AS objektlink,
-                        ".$this->app->erp->FormatMenge('SUM(COALESCE(fb.betrag,0))',2)."AS saldo,
-                        SUM(betrag) AS saldonum,
-                        fb.waehrung
-                    FROM
-                        `fibu_buchungen_alle` fb
-                    INNER JOIN fibu_objekte fo ON
-                        fb.typ = fo.typ AND fb.id = fo.id                        
-                    WHERE (fb.typ = '".$typ."' OR '".$typ."' = '')
-                    GROUP BY
-                        fb.typ,
-                        fb.id,
-                        fb.waehrung
-                ) salden
-                LEFT JOIN fibu_objekte fo ON
-                    salden.info LIKE CONCAT('%', fo.info, '%') 
-                        AND 
-                    salden.typ <> fo.typ AND fo.info <> ''              
-                WHERE salden.saldonum <> 0) as erg                
+                            doc,
+                            doc_id
+                        FROM
+                            (
+                            SELECT
+                                '' AS dummy,
+                                ".$this->app->erp->ConcatSQL($auswahl)." AS auswahl,
+                                salden.datum,
+                                salden.typ,
+                                salden.id,
+                                salden.info,
+                                salden.saldo,
+                                salden.objektlink,
+                                salden.saldonum,
+                                ".$this->app->erp->ConcatSQL($vorschlaege)." AS vorschlag,
+                                ".$this->app->erp->ConcatSQL($werte)." AS wert,
+                                ".$this->app->erp->ConcatSQL($waehrungen)." AS waehrung,
+                                fo.typ AS doc_typ,
+                                fo.id AS doc_id,
+                                fo.info AS doc_info,
+                                SUM(fbd.betrag) as doc_saldo,
+                                ".$this->app->erp->ConcatSQL($doc)." AS doc
+                            FROM
+                                (
+                                SELECT
+                                    ".$this->app->erp->FormatDate(" fb.datum ")." AS datum,
+                                    fb.typ,
+                                    fb.id,
+                                    fo.info,
+                                    ".$this->app->erp->ConcatSQL($objektlink)." AS objektlink,
+                                    ".$this->app->erp->FormatMenge('SUM(COALESCE(fb.betrag,0))',2)." AS saldo,
+                                    SUM(betrag) AS saldonum,
+                                    fb.waehrung
+                                FROM
+                                    `fibu_buchungen_alle` fb
+                                INNER JOIN fibu_objekte fo ON
+                                    fb.typ = fo.typ AND fb.id = fo.id
+                                WHERE
+                                    (
+                                        fb.typ = '".$typ."' OR '".$typ."' = ''
+                                    )
+                                GROUP BY
+                                    fb.typ,
+                                    fb.id,
+                                    fb.waehrung
+                            ) salden
+                        LEFT JOIN(
+                            SELECT
+                                fo.typ,
+                                fo.id,
+                                fo.info
+                            FROM
+                                fibu_objekte fo                            
+                            GROUP BY
+                                fo.typ,
+                                fo.id,
+                                fo.info
+                        ) AS fo
+                        ON
+                            salden.info LIKE CONCAT('%', fo.info, '%') AND salden.typ <> fo.typ AND fo.info <> ''
+                        LEFT JOIN
+                            fibu_buchungen_alle fbd
+                        ON
+                            fbd.typ = fo.typ AND fbd.id = fo.id
+                        WHERE
+                            salden.saldonum <> 0
+                        GROUP BY
+                            salden.typ,
+                            salden.id    
+                        ) AS erg  
                 ";
 
                 $where = "1";
+
+                // Toggle filters 
+                $this->app->Tpl->Add('JQUERYREADY', "$('#vorschlagfilter').click( function() { fnFilterColumn1( 0 ); } );");
+
+                for ($r = 1;$r <= 4;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= " AND doc_id IS NOT NULL"; 
+                } else {
+                }          
+                // END Toggle filters
+
+
 //                $count = "SELECT count(DISTINCT id) FROM fibu_buchungen_alle WHERE $where";
                 $groupby = "GROUP BY typ, id";
 

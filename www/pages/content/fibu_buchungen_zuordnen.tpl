@@ -2,7 +2,7 @@
     <ul>
         <li><a href="#tabs-1"><!--[TABTEXT]--></a></li>
     </ul>
-    <div id="tabs-1">
+    <div id="tabs-1">        
         [MESSAGE]
         [FORMHANDLEREVENT]
         <div class="row">
@@ -11,6 +11,20 @@
         			<div class="inside inside-full-height">	     
            				<fieldset>
                             <legend>{|Offene Einzelsalden|}</legend>                              
+                            <div class="filter-box filter-usersave">
+                               <div class="filter-block filter-inline">
+                                  <div class="filter-title">{|Filter|}</div>
+                                  <ul class="filter-list">
+                                     <li class="filter-item">
+                                        <label for="vorschlagfilter" class="switch">
+                                        <input type="checkbox" id="vorschlagfilter">
+                                        <span class="slider round"></span>
+                                        </label>
+                                        <label for="vorschlagfilter">{|Vorschl&auml;ge|}</label>
+                                     </li>                 
+                                  </ul>
+                               </div>
+                            </div>
                             <form action="" method="post" id="buchungenform">                      
                                 [TAB1]                            
                             </form> 
