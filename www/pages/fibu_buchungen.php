@@ -329,6 +329,7 @@ class Fibu_buchungen {
                                 fo.info
                             FROM
                                 fibu_objekte fo                            
+                            WHERE fo.is_beleg = 1
                             GROUP BY
                                 fo.typ,
                                 fo.id,
