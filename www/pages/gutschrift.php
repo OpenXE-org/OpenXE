@@ -1397,24 +1397,7 @@ class Gutschrift extends GenGutschrift
   {
     $this->app->Tpl->Set('UEBERSCHRIFT', 'Gutschriften');
 
-    $this->app->DB->Update("UPDATE gutschrift SET zahlungsstatus='offen' WHERE zahlungsstatus=''");
-
-    // First refresh all open items
-    $openids = $this->app->DB->SelectArr("SELECT id, waehrung from gutschrift WHERE zahlungsstatus != 'bezahlt'");
-
-    foreach ($openids as $openid) {
-        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'gutschrift');
-
-        if (!empty($saldo)) {
-            if ($saldo['waehrung'] == $openid['waehrung']) {
-                $sql = "UPDATE gutschrift SET ist = soll-'".$saldo['betrag']."' WHERE id=".$openid['id'];
-                $result = $this->app->DB->Update($sql);
-            } 
-        }
-        else {
-            $this->app->DB->Update("UPDATE gutschrift SET ist = null WHERE id=".$openid['id']);
-        }
-    }
+    $this->app->DB->Update("UPDATE gutschrift SET zahlungsstatus='offen' WHERE zahlungsstatus=''"); 
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('gutschrift', 'edit')) {
       $drucker = $this->app->Secure->GetPOST('seldrucker');
@@ -1657,6 +1640,28 @@ class Gutschrift extends GenGutschrift
           break;
         }
       }      
+    }
+
+   // refresh all open items
+    $openids = $this->app->DB->SelectArr("SELECT id, waehrung from gutschrift WHERE zahlungsstatus != 'bezahlt'");
+
+    foreach ($openids as $openid) {
+        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'gutschrift');
+
+        if (!empty($saldo)) {            
+            if ($saldo['waehrung'] == $openid['waehrung']) {
+                $sql = "UPDATE 
+                            gutschrift
+                        SET
+                            ist = ".$saldo['betrag']."+soll,
+                            zahlungsstatus = IF(".$saldo['betrag']." = 0,'bezahlt','offen')
+                        WHERE id=".$openid['id'];
+                $this->app->DB->Update($sql);
+            } 
+        }
+        else {
+            $this->app->DB->Update("UPDATE gutschrift SET ist = null WHERE id=".$openid['id']);
+        }
     }
 
     $backurl = $this->app->Secure->GetGET('backurl');

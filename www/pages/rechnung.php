@@ -2063,24 +2063,7 @@ class Rechnung extends GenRechnung
   public function RechnungList()
   {
 
-    $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''");
-
-    // First refresh all open items
-    $openids = $this->app->DB->SelectArr("SELECT id, waehrung from rechnung WHERE zahlungsstatus = 'offen'");
-
-    foreach ($openids as $openid) {
-        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'rechnung');
-
-        if (!empty($saldo)) {
-            if ($saldo['waehrung'] == $openid['waehrung']) {
-                $sql = "UPDATE rechnung SET ist = ".$saldo['betrag']."+soll WHERE id=".$openid['id'];
-                $this->app->DB->Update($sql);
-            } 
-        }
-        else {
-            $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$openid['id']);        
-        }
-    }  
+    $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''");    
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
     {
@@ -2262,6 +2245,28 @@ class Rechnung extends GenRechnung
       }      
     }
     
+    // refresh all open items
+    $openids = $this->app->DB->SelectArr("SELECT id, waehrung from rechnung WHERE zahlungsstatus = 'offen'");
+
+    foreach ($openids as $openid) {
+        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'rechnung');
+
+        if (!empty($saldo)) {
+            if ($saldo['waehrung'] == $openid['waehrung']) {
+                $sql = "UPDATE 
+                            rechnung
+                        SET
+                            ist = ".$saldo['betrag']."+soll,
+                            zahlungsstatus = IF(".$saldo['betrag']." = 0,'bezahlt','offen')
+                        WHERE id=".$openid['id'];
+                $this->app->DB->Update($sql);
+            } 
+        }
+        else {
+            $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$openid['id']);        
+        }
+    }  
+
     $this->app->Tpl->Set('UEBERSCHRIFT','Rechnungen');
 
     $backurl = $this->app->Secure->GetGET('backurl');
