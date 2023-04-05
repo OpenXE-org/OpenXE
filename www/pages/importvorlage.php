@@ -1030,7 +1030,7 @@ class Importvorlage extends GenImportvorlage {
 
       if (!move_uploaded_file($_FILES['userfile']['tmp_name'], $stueckliste_csv)) {
         //$importfilename = $_FILES['userfile']['name'];
-        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Datei konnte nicht ge&ouml;ffnet werden. Eventuell ist die Datei zu gro&szlig; oder die Schreibrechte stimmen nicht!</div>  ");
+        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Datei '".$stueckliste_csv."' konnte nicht ge&ouml;ffnet werden. Eventuell ist die Datei zu gro&szlig; oder die Schreibrechte stimmen nicht!</div>  ");
         $this->app->Location->execute("index.php?module=importvorlage&action=import&id=$id&msg=$msg");
       }
 
@@ -5145,7 +5145,7 @@ class Importvorlage extends GenImportvorlage {
                     $row['konto'] = $kontoid[0]['id'];
                     $row['importdatum'] = date("Y-m-d H:i:s");
 
-                    $sql = "SELECT pruefsumme FROM kontoauszuege WHERE pruefsumme='".$row['pruefsumme']."' AND konto ='".$row['konto']."'";           
+                    $sql = "SELECT pruefsumme FROM kontoauszuege WHERE pruefsumme='".$row['pruefsumme']."' AND konto ='".$row['konto']."' AND importfehler IS NULL";           
                     $result = $this->app->DB->SelectArr($sql);
 
                     if (!empty($result)) {
