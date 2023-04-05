@@ -183,10 +183,10 @@ class Fibu_buchungen {
             case 'fibu_buchungen_zuordnen':
 
                 $allowed['fibu_buchungen_zuordnung'] = array('list');
-                $heading = array('','','Datum', 'Info', 'Betrag', 'W&auml;hrung', 'Buchungsbetrag','Vorschlag', 'Men&uuml;');
+                $heading = array('','','Datum','Typ', 'Info', 'Betrag', 'W&auml;hrung', 'Buchungsbetrag','Vorschlag', 'Men&uuml;');
                 $width = array(  );
 
-                $findcols = array('','auswahl','datum','objektlink','saldo','waehrung','buchwert_input','vorschlag');
+                $findcols = array('','auswahl','datum','typ','objektlink','saldo','waehrung','buchwert_input','vorschlag');
                 $searchsql = array();
 
                 $defaultorder = 1;
@@ -209,6 +209,8 @@ class Fibu_buchungen {
                     '</a>'
                 );                           
 
+                $check_sql = "(fo.info <> '' AND salden.saldonum = -SUM(fbd.betrag))";
+
                 $auswahl = array (
                     '<input type=\"text\" name=\"ids[]\" value=\"',
                     ['sql' => 'salden.typ'],
@@ -220,7 +222,7 @@ class Fibu_buchungen {
                     '_',
                     ['sql' => 'salden.id'],
                     '"',
-                    ['sql' => "if(fo.info <> '','checked','')"],
+                    ['sql' => "if(".$check_sql.",'checked','')"],
                     ' />'
                 );              
 
@@ -234,7 +236,7 @@ class Fibu_buchungen {
                     ' ',
                     ['sql' => 'COALESCE(fo.info,\'\')'],
                     ' ',
-                    ['sql' => "if (SUM(fbd.betrag) IS NULL,'',CONCAT('(Saldo ',".$this->app->erp->FormatMenge('SUM(fbd.betrag)',2).",')'))"],
+                    ['sql' => "if (SUM(fbd.betrag) IS NULL,'',CONCAT('(Saldo ',".$this->app->erp->FormatMenge('SUM(fbd.betrag)',2).",', Diff. ',".$this->app->erp->FormatMenge('SUM(fbd.betrag)+saldonum',2).",')'))"],
                     '</a> ',
                     '<input type="text" name="vorschlaege[]" value="',
                     ['sql' => 'COALESCE(fo.typ,\'\')'],
@@ -271,13 +273,16 @@ class Fibu_buchungen {
                             '' AS dummy2,
                             auswahl,
                             datum,
+                            ".$this->app->erp->FormatUCfirst("typ").",
                             objektlink,
                             saldo,
                             waehrung,
                             wert,
                             vorschlag,
-                            doc,
-                            doc_id
+                            doc,                           
+                            doc_id,
+                            doc_saldo,
+                            checked
                         FROM
                             (
                             SELECT
@@ -297,7 +302,8 @@ class Fibu_buchungen {
                                 fo.id AS doc_id,
                                 fo.info AS doc_info,
                                 SUM(fbd.betrag) as doc_saldo,
-                                ".$this->app->erp->ConcatSQL($doc)." AS doc
+                                if(".$check_sql.",'1','0') AS checked,
+                                ".$this->app->erp->ConcatSQL($doc)." AS doc                              
                             FROM
                                 (
                                 SELECT
@@ -326,9 +332,14 @@ class Fibu_buchungen {
                             SELECT
                                 fo.typ,
                                 fo.id,
-                                fo.info
+                                fo.info,
+                                SUM(fob.betrag) as doc_saldo
                             FROM
-                                fibu_objekte fo                            
+                                fibu_objekte fo  
+                            INNER JOIN
+                                fibu_buchungen_alle fob
+                            ON
+                                fo.typ = fob.typ AND fo.id = fob.id                          
                             WHERE fo.is_beleg = 1
                             GROUP BY
                                 fo.typ,
@@ -345,7 +356,9 @@ class Fibu_buchungen {
                             salden.saldonum <> 0
                         GROUP BY
                             salden.typ,
-                            salden.id    
+                            salden.id,
+                            fo.typ,
+                            fo.id    
                         ) AS erg  
                 ";
 
@@ -353,6 +366,7 @@ class Fibu_buchungen {
 
                 // Toggle filters 
                 $this->app->Tpl->Add('JQUERYREADY', "$('#vorschlagfilter').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#checkedfilter').click( function() { fnFilterColumn2( 0 ); } );");
 
                 for ($r = 1;$r <= 4;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
@@ -378,11 +392,21 @@ class Fibu_buchungen {
                    $where .= " AND doc_id IS NOT NULL"; 
                 } else {
                 }          
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                   $where .= " AND checked = 1"; 
+                } else {
+                }                        
+
                 // END Toggle filters
 
 
 //                $count = "SELECT count(DISTINCT id) FROM fibu_buchungen_alle WHERE $where";
                 $groupby = "GROUP BY typ, id";
+
+//echo($sql." WHERE ".$where." ".$groupby);
+
 
             break;                  
         }

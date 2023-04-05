@@ -22,6 +22,13 @@
                                         </label>
                                         <label for="vorschlagfilter">{|Vorschl&auml;ge|}</label>
                                      </li>                 
+                                     <li class="filter-item">
+                                        <label for="checkedfilter" class="switch">
+                                        <input type="checkbox" id="checkedfilter">
+                                        <span class="slider round"></span>
+                                        </label>
+                                        <label for="checkedfilter">{|Betrag korrekt|}</label>
+                                     </li>                 
                                   </ul>
                                </div>
                             </div>
