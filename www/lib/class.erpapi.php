@@ -35920,7 +35920,7 @@ function Firmendaten($field,$projekt="")
 
         /*
         * Calculate the payments of a document (rechnung, gutschrift, auftrag, verbindlichkeit)
-        * Results array of payments (datum, doc_type, doc_id, doc_belegnr, betrag, waehrung)
+        * Results array of payments (datum, doc_type, doc_id, doc_inof, betrag, waehrung)
         * Gutschrift -> Rechnungid, Rechnung -> Auftragid
         */
 
@@ -35949,7 +35949,7 @@ function Firmendaten($field,$projekt="")
                     ".$this->app->erp->FormatDate('datum')." as datum,
                     doc_typ,
                     doc_id,
-                    doc_belegnr,
+                    doc_info,
                     ".$this->app->erp->FormatMenge('betrag',2)." as betrag,
                     waehrung
                 FROM

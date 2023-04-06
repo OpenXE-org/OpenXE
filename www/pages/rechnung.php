@@ -2744,7 +2744,7 @@ class Rechnung extends GenRechnung
                 $zahlung['datum'],
                 "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
                     ".ucfirst($zahlung['doc_typ'])." 
-                    ".$zahlung['doc_belegnr']."
+                    ".$zahlung['doc_info']."
                 </a>",
                 $zahlung['betrag'],
                 $zahlung['waehrung']

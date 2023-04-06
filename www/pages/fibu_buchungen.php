@@ -21,6 +21,7 @@ class Fibu_buchungen {
         $this->app->ActionHandler("assoc", "fibu_buchungen_assoc");
         //$this->app->ActionHandler("zuordnen", "fibu_buchungen_zuordnen");
         $this->app->ActionHandler("zuordnen", "fibu_buchungen_zuordnen_tablesearch");
+        $this->app->ActionHandler("einzelzuordnen", "fibu_buchungen_einzelzuordnen");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
 
@@ -46,8 +47,8 @@ class Fibu_buchungen {
                 $alignright = array(7); 
                 $sumcol= array(7);
 
-                $findcols = array('f.id','f.id','f.buchungsart', 'f.typ', 'f.datum', 'f.doc_typ', 'f.betrag', 'f.waehrung');
-                $searchsql = array('f.buchungsart', 'f.typ', 'f.datum', 'f.doc_typ', 'f.doc_belegnr');
+                $findcols = array('f.id','f.id','f.buchungsart', 'f.typ', 'f.datum', 'f.doc_info', 'f.betrag', 'f.waehrung');
+                $searchsql = array('f.buchungsart', 'f.typ', 'f.datum', 'f.doc_typ', 'f.doc_info');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -68,7 +69,7 @@ class Fibu_buchungen {
                     ".$app->erp->FormatUCfirst('f.buchungsart').",
                     ".$app->erp->FormatUCfirst('f.typ').",
                     ".$app->erp->FormatDate('f.datum').",
-                    CONCAT(".$app->erp->FormatUCfirst('f.doc_typ').",' ',f.doc_belegnr),
+                    CONCAT(".$app->erp->FormatUCfirst('f.doc_typ').",' ',f.doc_info),
                     ".$app->erp->FormatMenge('f.betrag',2).",
                     f.waehrung,
                     CONCAT(f.edit_module,'&id=',f.edit_id) 
@@ -147,7 +148,7 @@ class Fibu_buchungen {
                 $width = array(  '1%','1%','1%',  '20%',   '80%',   '1%', '1%',    '%1'   );
 
                 $findcols = array('f.id','f.id','f.typ');
-                $searchsql = array('f.buchungsart', 'f.typ', 'f.datum', 'f.doc_typ', 'f.doc_belegnr');
+                $searchsql = array('f.buchungsart', 'f.typ', 'f.datum', 'f.doc_typ', 'f.doc_info');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -408,7 +409,108 @@ class Fibu_buchungen {
 //echo($sql." WHERE ".$where." ".$groupby);
 
 
-            break;                  
+            break;    
+            case 'fibu_buchungen_einzelzuordnen':
+
+                $allowed['fibu_buchungen_einzelzuordnen'] = array('list');
+                $heading = array('','Datum','Typ', 'Info', '&Uuml;bergeordnet', 'Saldo','W&auml;hrung','Buchungsbetrag', 'Men&uuml;');
+                $width = array(  );
+
+                $findcols = array('auswahl','fo.datum','fo.typ','fo.info','fo.parent_info');
+                $searchsql = array('fo.typ','fo.info','fo.parent_info');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+
+//                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=fibu_buchungen&action=einzelzuordnen&doc=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a></td></tr></table>";
+
+                $linkstart = '<table cellpadding=0 cellspacing=0><tr><td nowrap><a href="index.php?module=fibu_buchungen&action=edit&';
+                $linkend = '"><img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg" border=0></a></td></tr></table>';
+             
+                $doc_typ = $this->app->User->GetParameter('fibu_buchungen_doc_typ');
+                $doc_id = $this->app->User->GetParameter('fibu_buchungen_doc_id');
+                $greater_0 = $this->app->User->GetParameter('fibu_buchungen_greater_0');
+
+                $auswahl = array (
+                    '<input type=\"text\" name=\"ids[]\" value=\"',
+                    ['sql' => 'fo.typ'],
+                    '_',
+                    ['sql' => 'fo.id'],
+                    '" hidden/>',                    
+                    '<input type=\"checkbox\" name=\"auswahl[]\" value="',
+                    ['sql' => 'fo.typ'],
+                    '_',
+                    ['sql' => 'fo.id'],
+                    '"',
+                    ' />'
+                );              
+
+                $objektlink = array (
+                    '<a href=\"index.php?action=edit&module=',
+                    ['sql' => 'fo.typ'],
+                    '&id=',
+                    ['sql' => 'fo.id'],
+                    '">',
+                    ['sql' => 'fo.info'],
+                    '</a>'
+                );       
+
+                $parentlink = array (
+                    '<a href=\"index.php?action=edit&module=',
+                    ['sql' => 'fo.parent_typ'],
+                    '&id=',
+                    ['sql' => 'fo.parent_id'],
+                    '">',
+                    ['sql' => 'fo.parent_info'],
+                    '</a>'
+                );                  
+
+                $werte = array (
+                    '<input type="number" step="0.01" name="werte[]" value="',
+                    ['sql' => 'COALESCE(-SUM(fba.betrag),0)'],
+                    '" min="',
+                    ['sql' => 'if(COALESCE(-SUM(fba.betrag),0) < 0,COALESCE(-SUM(fba.betrag),0),0)'],
+                    '" max="',
+                    ['sql' => 'if(COALESCE(-SUM(fba.betrag),0) < 0,0,COALESCE(-SUM(fba.betrag),0))'],
+                    '"/>'
+                );        
+
+                $sql = "SELECT 
+                            '',
+                            ".$this->app->erp->ConcatSQL($auswahl)." AS auswahl,
+                            ".$this->app->erp->FormatDate("fo.datum")." as datum,
+                            ".$this->app->erp->FormatUCfirst("fo.typ")." as typ,
+                            ".$this->app->erp->ConcatSQL($objektlink)." AS info,                        
+                            ".$this->app->erp->ConcatSQL($parentlink)." AS parent_info,                        
+                            SUM(fba.betrag) as saldonum,
+                            waehrung,
+                            ".$this->app->erp->ConcatSQL($werte)." AS werte
+                        FROM
+                            fibu_objekte fo
+                        LEFT JOIN
+                            fibu_buchungen_alle fba
+                        ON                         
+                            fba.typ = fo.typ AND fba.id = fo.id                  
+                ";
+
+                $where = "fo.typ <> '".$doc_typ."'";              
+
+//                $count = "SELECT count(DISTINCT id) FROM fibu_buchungen_alle WHERE $where";
+
+                if ($greater_0) {
+                    $having = "saldonum < 0";
+                }
+                else {
+                    $having = "saldonum > 0";
+                }
+
+                $groupby = "GROUP BY fo.id, fo.typ";
+
+//echo($sql." WHERE ".$where." ".$groupby);
+
+                $sumcol= array(6);
+
+            break;                            
         }
 
         $erg = false;
@@ -728,6 +830,107 @@ class Fibu_buchungen {
         }
 
         $this->app->Tpl->Parse('PAGE', "fibu_buchungen_zuordnen.tpl");
+    }
+
+    function fibu_buchungen_einzelzuordnen() {
+           $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=list", "&Uuml;bersicht");
+//        $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=create", "Neu anlegen");
+
+        $submit = $this->app->Secure->GetPOST('submit');
+        if ($submit == 'neuberechnen') {
+            $this->fibu_rebuild_tables();
+
+            $msg = "<div class=\"info\">Buchungen wurden neu berechnet.</div>";
+        }
+
+        // For transfer to tablesearch    
+        $von = $this->app->Secure->GetGET('doc');
+        $von = explode('_',$von);
+        $von_typ = strtolower($von[0]);
+        $von_id = (int) $von[1];
+        $this->app->User->SetParameter('fibu_buchungen_doc_typ', $von_typ);
+        $this->app->User->SetParameter('fibu_buchungen_doc_id', $von_id);
+
+        $sql = "SELECT doc_typ, doc_id, doc_info, waehrung, sum(betrag) as saldonum,".$this->app->erp->FormatMenge("sum(betrag)",2)." as saldo FROM fibu_buchungen_alle WHERE typ = '".$von_typ."' AND id = '".$von_id."'";
+        $von_row = $this->app->DB->SelectArr($sql)[0];
+        $von_info = $von_row['doc_info'];
+        $von_saldonum = $von_row['saldonum'];
+        $von_saldo = $von_row['saldo'];
+        $von_waehrung = $von_row['waehrung'];
+
+        $this->app->User->SetParameter('fibu_buchungen_greater_0', $von_saldonum > 0);
+
+        if ($submit == 'BUCHEN') {
+            // Process multi action
+            $count_success = 0;
+            $ids = $this->app->Secure->GetPOST('ids');
+            $werte = $this->app->Secure->GetPOST('werte');
+            $auswahl = $this->app->Secure->GetPOST('auswahl');
+     
+            if (!empty($auswahl)) {              
+                $gesamtnum = 0;
+                foreach ($ids as $id) {                   
+                    $key_ids = array_search($id,$ids);
+                    $key_auswahl = array_search($id,$auswahl);               
+
+                    if ($key_auswahl !== false) {
+                        $gesamtnum += $werte[$key_ids];
+                    }
+                }
+                $override = $this->app->Secure->GetPOST('override');
+                $diff = $gesamtnum-$von_saldonum;
+
+                if (
+                    ($von_saldonum < 0 && ($gesamtnum < $von_saldonum)) ||
+                    ($von_saldonum > 0 && ($gesamtnum > $von_saldonum))
+                ) {
+                    $msg .= "<div class=\"error\">Buchungssumme ".$this->app->erp->EUR($gesamtnum)." übersteigt Saldosumme ".$this->app->erp->EUR($von_saldonum).". (Abweichung ".$this->app->erp->EUR((float) $gesamtnum - (float) $von_saldonum).")</div>";
+                }
+                else if ($diff != 0 && !$override) {
+                    $msg .= "<div class=\"error\">Buchungssumme ".$this->app->erp->EUR($gesamtnum)." entspricht nicht Saldosumme ".$this->app->erp->EUR($von_saldonum).". (Abweichung ".$this->app->erp->EUR((float) $gesamtnum - (float) $von_saldonum).")</div>";
+                } else {
+                    foreach ($ids as $id) {                    
+                        $key_ids = array_search($id,$ids);
+                        $key_auswahl = array_search($id,$auswahl);                
+
+                        if ($key_auswahl !== false) {                    
+                            $doc = explode('_',$id);
+                            $doc_typ = strtolower($doc[0]);
+                            $doc_id = (int) $doc[1];                     
+
+                            $betrag = $werte[$key_ids];
+                
+                            if ($betrag != 0) {
+                                $sql = "INSERT INTO `fibu_buchungen` (`von_typ`, `von_id`, `nach_typ`, `nach_id`, `betrag`, `waehrung`, `benutzer`, `zeit`, `internebemerkung`) VALUES ('".$von_typ."','".$von_id."','".$doc_typ."', '".$doc_id."', '".-$betrag."', '".$von_waehrung."', '".$this->app->User->GetID()."','".          $input['zeit'] = date("Y-m-d H:i")."', '')";    
+                                $this->app->DB->Insert($sql);  
+                                $count_success++;                    
+                            }
+                        } 
+                    }
+                }
+                $msg .= "<div class=\"info\">".$count_success." Buchung".(($count_success===1)?'':'en')." durchgef&uuml;hrt.</div>";
+                $this->fibu_rebuild_tables();
+            }                 
+        }   
+
+        // Reload after booking
+        $sql = "SELECT doc_typ, doc_id, doc_info, waehrung, sum(betrag) as saldonum,".$this->app->erp->FormatMenge("sum(betrag)",2)." as saldo FROM fibu_buchungen_alle WHERE typ = '".$von_typ."' AND id = '".$von_id."'";
+        $von_row = $this->app->DB->SelectArr($sql)[0];
+        $von_info = $von_row['doc_info'];
+        $von_saldonum = $von_row['saldonum'];
+        $von_saldo = $von_row['saldo'];
+        $von_waehrung = $von_row['waehrung'];
+
+        $this->app->Tpl->Set('DOC_ZUORDNUNG', ucfirst($von_typ)." ".$von_info);
+        $this->app->Tpl->Set('DOC_SALDO',$von_saldo." ".$von_waehrung);
+
+        $this->app->YUI->TableSearch('TAB1', 'fibu_buchungen_einzelzuordnen', "show", "", "", basename(__FILE__), __CLASS__);
+
+        if (!empty($msg)) {
+            $this->app->Tpl->Set('MESSAGE', $msg);
+        }
+
+        $this->app->Tpl->Parse('PAGE', "fibu_buchungen_einzelzuordnen.tpl");
     }
 
     function fibu_buchungen_zuordnen() {       
