@@ -32,13 +32,13 @@ class Kontoauszuege {
             case "kontoauszuege_konto_list":
 
                 $allowed['konten_list'] = array('list');
-                $heading = array('Bezeichnung', 'Kurzbezeichnung', 'Typ', 'Kontostand', 'Saldo','Men&uuml;');
+                $heading = array('Bezeichnung', 'Kurzbezeichnung', 'Typ', 'Kontostand','Letzter Import', 'Men&uuml;');
 //                $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8); sdds
 
-                $findcols = array('k.bezeichnung', 'k.kurzbezeichnung', 'k.type', 'k.kontostand','saldo', 'k.id');
+                $findcols = array('k.bezeichnung', 'k.kurzbezeichnung', 'k.type', 'k.kontostand','ka.datum', 'k.id');
                 $searchsql = array('k.bezeichnung', 'k.kurzbezeichnung', 'k.datevkonto', 'k.blz', 'k.konto', 'k.swift', 'k.iban', 'k.inhaber', 'k.firma','p.abkuerzung');
 
                 $defaultorder = 1;
@@ -62,15 +62,13 @@ class Kontoauszuege {
                             k.bezeichnung,
                             k.kurzbezeichnung,
                             ".$this->app->erp->FormatUCfirst('k.type').",
-                            ".$this->app->erp->FormatMenge('SUM(COALESCE(ka.soll,0))',2)." AS kontostand,
-                            ".$this->app->erp->ConcatSQL($saldolink)." AS saldo,
+                            ".$this->app->erp->FormatMenge('SUM(COALESCE(ka.soll,0))+k.saldo_betrag',2)." AS kontostand,
+                            ".$this->app->erp->FormatDatetime("MIN(ka.importdatum)")." AS datum,
                             k.id
                         FROM
                             konten k
                         LEFT JOIN kontoauszuege ka ON
-                            k.id = ka.konto
-                        LEFT JOIN fibu_buchungen_alle fb ON
-                            fb.id = ka.id AND fb.typ = 'kontoauszuege'";
+                            k.id = ka.konto";                        
 
                 $where = " k.aktiv = 1 AND ka.importfehler IS NULL ";
 
@@ -122,8 +120,8 @@ class Kontoauszuege {
 
                 $sumcol = array(10);
 
-                $findcols = array('q.id','q.id','q.konto', 'q.importdatum', 'q.buchung', 'q.soll', 'q.waehrung', 'q.buchungstext','q.internebemerkung','q.saldo');
-                $searchsql = array('q.konto', 'q.buchung', 'q.soll', 'q.buchungstext','q.internebemerkung');
+                $findcols = array('q.id','q.id','q.kurzbezeichnung', 'q.importdatum', 'q.buchung', 'q.soll', 'q.waehrung', 'q.buchungstext','q.internebemerkung','q.saldo');
+                $searchsql = array('q.kurzbezeichnung', 'q.buchung', 'q.soll', 'q.buchungstext','q.internebemerkung');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -165,9 +163,9 @@ class Kontoauszuege {
                 $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM ( SELECT 
                             k.id,
                             $dropnbox,
-                            ".$app->erp->FormatDateTimeShort('k.importdatum').",                            
-                            (SELECT kurzbezeichnung FROM konten WHERE konten.id = k.konto),
-                            ".$app->erp->FormatDate('k.buchung').",                            
+                            ".$app->erp->FormatDateTimeShort('k.importdatum')." AS importdatum,                            
+                            (SELECT kurzbezeichnung FROM konten WHERE konten.id = k.konto) as kurzbezeichnung,
+                            ".$app->erp->FormatDate('k.buchung')." as buchung,                            
                             IF(
                                 k.importfehler,
                                 CONCAT(
