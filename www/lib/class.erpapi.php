@@ -35973,7 +35973,7 @@ function Firmendaten($field,$projekt="")
         * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
         * returns array(array(betrag, waehrung)) one line per waehrung
         */
-        public function GetSaldenDokument($id, $type, string $cascadelevel = '') : array {
+        public function GetSaldenDokument(int $id, string $type, string $cascadelevel = '') : array {
 
             if ($cascadelevel != '') {
                 $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $cascadelevel);
@@ -36014,9 +36014,9 @@ function Firmendaten($field,$projekt="")
         /*
         * Calculate the payment amount of a document
         * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
-        * returns array(array(betrag, waehrung)) or empty array
+        * returns array(betrag, waehrung) or empty array if multiple
         */
-        public function GetSaldoDokument($id, $type) : array {
+        public function GetSaldoDokument(int $id, string $type) : array {
 
             $sql = "
                 SELECT

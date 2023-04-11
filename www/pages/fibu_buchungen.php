@@ -766,7 +766,7 @@ class Fibu_buchungen {
         }
 
         if ($submit == 'BUCHEN') {
-           
+                   
             // Process multi action
             $ids = $this->app->Secure->GetPOST('ids');
             $werte = $this->app->Secure->GetPOST('werte');
@@ -774,11 +774,12 @@ class Fibu_buchungen {
             $auswahl = $this->app->Secure->GetPOST('auswahl');
             $vorschlaege = $this->app->Secure->GetPOST('vorschlaege');
             $sachkonto = $this->app->Secure->GetPOST('sachkonto');
+            $aktion = $this->app->Secure->GetPOST('sel_aktion');
 
-            $sachkontoid = null;
+            $account_id = null;
             if (!empty($sachkonto)) {
                 $sachkonto_kennung = explode(' ',$sachkonto)[0];
-                $sachkontoid = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];               
+                $account_id = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];               
             } 
      
             if (!empty($auswahl)) {
@@ -794,28 +795,51 @@ class Fibu_buchungen {
                         $von_id = (int) $von[1];
 
                         $betrag = $werte[$key_ids];
+    
                         $waehrung = $waehrungen[$key_ids];
 
-                        $doc_id = null;
+                        $datum = $this->app->DB->SelectArr("SELECT datum FROM fibu_buchungen_alle WHERE typ='".$von_typ."' AND id = '".$von_id."'")[0]['datum']; // Get relevant date of source doc
 
-                        if ($sachkontoid) {
-                            $doc_typ = 'kontorahmen';
-                            $doc_id = $sachkontoid;                        
-                        } else if ($vorschlaege[$key_ids] != '_') {                       
+                        $doc_id = null;                      
+                        if ($vorschlaege[$key_ids] != '_') {                       
                             $doc = $vorschlaege[$key_ids];
                             $doc = explode('_',$doc);
                             $doc_typ = strtolower($doc[0]);
                             $doc_id = (int) $doc[1];
                         } 
 
+                        switch ($aktion) {
+                            case 'vorschlag':
+                                if ($doc_id) {              
+                                    $sql = "INSERT INTO `fibu_buchungen` (`von_typ`, `von_id`, `nach_typ`, `nach_id`, `datum`, `betrag`, `waehrung`, `benutzer`, `zeit`, `internebemerkung`) VALUES ('".$von_typ."','".$von_id."','".$doc_typ."', '".$doc_id."', '".$datum."', '".-$betrag."', '".$waehrung."', '".$this->app->User->GetID()."','".$input['zeit'] = date("Y-m-d H:i")."', '')";
+//                                    echo($sql."\n");
+                                    $this->app->DB->Insert($sql);      
+                                }
+                            break;
+                            case 'sachkonto':
+                                $sql = "INSERT INTO `fibu_buchungen` (`von_typ`, `von_id`, `nach_typ`, `nach_id`, `datum`, `betrag`, `waehrung`, `benutzer`, `zeit`, `internebemerkung`) VALUES ('".$von_typ."','".$von_id."','kontorahmen', '".$account_id."', '".$datum."', '".-$betrag."', '".$waehrung."', '".$this->app->User->GetID()."','".$input['zeit'] = date("Y-m-d H:i")."', '')";
+//                                    echo($sql."\n");
+                                $this->app->DB->Insert($sql);  
+                            break;
+                            case 'vorschlag_diff_sachkonto':
+                                if ($doc_id) {              
+                                    $doc_saldo = $this->app->erp->GetSaldoDokument($doc_id, $doc_typ);                    
+                                    $sql = "INSERT INTO `fibu_buchungen` (`von_typ`, `von_id`, `nach_typ`, `nach_id`, `datum`, `betrag`, `waehrung`, `benutzer`, `zeit`, `internebemerkung`) VALUES ('".$von_typ."','".$von_id."','".$doc_typ."', '".$doc_id."', '".$datum."', '".-$betrag."', '".$waehrung."', '".$this->app->User->GetID()."','".$input['zeit'] = date("Y-m-d H:i")."', '')";
+//                                    echo($sql."\n");
+                                    $this->app->DB->Insert($sql);      
+                                }
 
-                        $datum = $this->app->DB->SelectArr("SELECT datum FROM fibu_buchungen_alle WHERE typ='".$von_typ."' AND id = '".$von_id."'")[0]['datum']; // Get relevant date of source doc
-
-                        if ($doc_id) {              
-                            $sql = "INSERT INTO `fibu_buchungen` (`von_typ`, `von_id`, `nach_typ`, `nach_id`, `datum`, `betrag`, `waehrung`, `benutzer`, `zeit`, `internebemerkung`) VALUES ('".$von_typ."','".$von_id."','".$doc_typ."', '".$doc_id."', '".$datum."', '".-$betrag."', '".$waehrung."', '".$this->app->User->GetID()."','".$input['zeit'] = date("Y-m-d H:i")."', '')";
-                            $this->app->DB->Insert($sql);  
-//                            echo($sql."\n");
-                        }
+                                // Retrieve counter doc saldo                                
+                                if (!empty($doc_saldo) && ($doc_saldo['waehrung'] == $waehrung) && ($account_id !== null)) {
+                                    $diff = $betrag+$doc_saldo['betrag'];
+                                    $sql = "INSERT INTO `fibu_buchungen` (`von_typ`, `von_id`, `nach_typ`, `nach_id`, `datum`, `betrag`, `waehrung`, `benutzer`, `zeit`, `internebemerkung`) VALUES ('".$doc_typ."','".$doc_id."','kontorahmen', '".$account_id."', '".$datum."', '".-$diff."', '".$waehrung."', '".$this->app->User->GetID()."','".$input['zeit'] = date("Y-m-d H:i")."', '')";
+//                                    echo($sql."\n");
+                                    $this->app->DB->Insert($sql);  
+                                } else {
+                                    $msg .= "<div class=\"warning\">Gegensaldo wurde nicht gebucht. ".count($doc_saldo)." ".$doc_saldo[0]['waehrung']."</div>";
+                                }
+                            break;
+                        }                 
                     } // auswahl
                 } // foreach
             } // auswahl

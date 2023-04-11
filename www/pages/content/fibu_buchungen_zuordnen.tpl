@@ -40,7 +40,16 @@
                             <table>
                                 <legend>Stapelverarbeitung</legend>
                                 <tr>
-                                    <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;</td>
+                                    <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
+                                        <select form="buchungenform" id="sel_aktion" name="sel_aktion">
+                                            <option value="">{|bitte w&auml;hlen|} ...</option>                                            
+                                            <option value="vorschlag">{|auf Vorschl&auml;ge buchen|}</option>
+                                            <option value="sachkonto">{|auf Sachkonto buchen|}</option>
+                                            <option value="vorschlag_diff_sachkonto">{|auf Vorschl&auml;ge buchen, Differenz auf Sachkonto|}</option>
+                                        </select>&nbsp;
+                                        <input type="text" form="buchungenform" id="sachkonto" name="sachkonto" value="">
+                                        <button name="submit" form="buchungenform" value="BUCHEN" class="ui-button-icon">{|BUCHEN|}</button>
+                                    </td>
                                 </tr>                             
                                 <tr>
                                    <form action="" method="post">                      
@@ -50,17 +59,7 @@
                                             </button>
                                         </td>                                
                                     </form> 
-                                </tr>                             
-                                <tr>
-                                    <td>
-                                        <input type="text" form="buchungenform" id="sachkonto" name="sachkonto" value="">
-                                    </td>
-                                </tr>                                    
-                                <tr>
-                                    <td>
-                                        <button name="submit" form="buchungenform" value="BUCHEN" class="ui-button-icon" style="width:100%;">{|Markierte BUCHEN|}</button>
-                                    </td>
-                                </tr>
+                                </tr>                                                         
                             </table>
                         </fieldset>  				
                     </div>
