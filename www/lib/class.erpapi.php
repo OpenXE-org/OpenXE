@@ -34525,7 +34525,7 @@ function Firmendaten($field,$projekt="")
         $this->CopyBelegZwischenpositionen('rechnung',$id,'gutschrift',$newid);
         $this->app->DB->Update("UPDATE gutschrift SET stornorechnung='$stornorechnung', ohne_briefpapier='".$ohnebriefpapier."' WHERE id='$newid,' LIMIT 1");
 
-        $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1',status='storniert',zahlungsstatus='bezahlt' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1',status='storniert' WHERE id='$id' LIMIT 1");
         $this->RechnungProtokoll($id, $grund);
         $this->SchnellFreigabe("gutschrift",$newid);
         return $newid;
@@ -35666,7 +35666,7 @@ function Firmendaten($field,$projekt="")
         $rechnungid = $this->app->DB->Select("SELECT rechnungid FROM gutschrift WHERE id='$id' LIMIT 1");
         if($rechnungid > 0 && $this->Firmendaten("mahnwesenmitkontoabgleich")=="1")
         {
-          $this->app->DB->Update("UPDATE rechnung SET ist=0, zahlungsstatus='offen' WHERE id='$rechnungid' AND mahnwesenfestsetzen!=1 LIMIT 1");
+          $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE id='$rechnungid' AND mahnwesenfestsetzen!=1 LIMIT 1");
           $this->RechnungNeuberechnen($rechnungid);
         }
       }

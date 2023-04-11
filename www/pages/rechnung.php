@@ -277,18 +277,18 @@ class Rechnung extends GenRechnung
    */
   public function removeManualPayed($invoiceId)
   {
-/*    if(empty($invoiceId) || !$this->app->DB->Select(sprintf('SELECT id FROM rechnung WHERE id = %d', $invoiceId))) {
+    if(empty($invoiceId) || !$this->app->DB->Select(sprintf('SELECT id FROM rechnung WHERE id = %d', $invoiceId))) {
       return false;
     }
     $this->app->erp->RechnungProtokoll($invoiceId,'Rechnung manuell als bezahlt entfernt');
     $this->app->DB->Update(
       "UPDATE rechnung 
-      SET zahlungsstatus='offen',bezahlt_am = NULL, ist='0',
+      SET zahlungsstatus='offen',bezahlt_am = NULL, 
       mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt entfernt am ".date('d.m.Y')."')
       WHERE id='$invoiceId'"
     );
 
-    return true;*/
+    return true;
   }
 
   public function RechnungManuellBezahltEntfernen()
@@ -305,7 +305,7 @@ class Rechnung extends GenRechnung
     $id = $this->app->Secure->GetGET('id');
     $this->app->erp->RechnungProtokoll($id,'Rechnung Stornierung rückgängig gemacht');
 
-    $this->app->DB->Update("UPDATE rechnung SET status='freigegeben',zahlungsstatus='offen',schreibschutz=0,bezahlt_am = NULL, ist='0',mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Rechnung Stornierung rückgängig gemacht ".date('d.m.Y')."') WHERE id='$id'");
+    $this->app->DB->Update("UPDATE rechnung SET status='freigegeben',zahlungsstatus='offen',schreibschutz=0,bezahlt_am = NULL, mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Rechnung Stornierung rückgängig gemacht ".date('d.m.Y')."') WHERE id='$id'");
 
     $this->app->Location->execute("index.php?module=rechnung&action=edit&id=$id");
   }
@@ -324,7 +324,7 @@ class Rechnung extends GenRechnung
 
     $this->app->DB->Update(
       "UPDATE rechnung 
-      SET zahlungsstatus='bezahlt',bezahlt_am = now(), ist=soll,mahnwesenfestsetzen='1',
+      SET zahlungsstatus='bezahlt',bezahlt_am = now(), mahnwesenfestsetzen='1',
       mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt markiert am ".date('d.m.Y')."') 
       WHERE id='$invoiceId'"
     );
@@ -1829,7 +1829,7 @@ class Rechnung extends GenRechnung
       {*/
         $this->app->DB->Update("UPDATE rechnung SET mahnwesen_internebemerkung='$mahnwesen_internebemerkung',zahlungsstatus='$zahlungsstatus',versendet_mahnwesen='$versendet',
           mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum', mahnwesenfestsetzen='$mahnwesenfestsetzen',internebemerkung='$internebemerkung',
-          mahnwesen='$mahnwesen',ist='$ist',skonto_gegeben='$skonto_gegeben',bezahlt_am='$bezahlt_am' WHERE id='$id' LIMIT 1");
+          mahnwesen='$mahnwesen',skonto_gegeben='$skonto_gegeben',bezahlt_am='$bezahlt_am' WHERE id='$id' LIMIT 1");
 /*      } else {
         $this->app->DB->Update("UPDATE rechnung SET mahnwesen='$mahnwesen', mahnwesenfestsetzen='$mahnwesenfestsetzen', mahnwesen_internebemerkung='$mahnwesen_internebemerkung', mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum' WHERE id='$id' LIMIT 1");
       }*/
