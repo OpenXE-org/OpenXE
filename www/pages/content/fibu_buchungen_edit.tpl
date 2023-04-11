@@ -45,7 +45,7 @@
                                             {|Betrag|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="betrag" id="betrag" value="[BETRAG]" size="20">
+                                            <input type="numeric" name="betrag" id="betrag" value="[BETRAG]" size="20">
                                         </td>
                                     </tr>
                                     <tr>
@@ -66,10 +66,10 @@
                                     </tr>
                                     <tr>
                                         <td>
-                                            {|Zeit|}:
+                                            {|Datum|}:
                                         </td>
                                         <td>
-                                            [ZEIT]
+                                            <input type="text" name="datum" id="datum" value="[DATUM]" size="20">    
                                         </td>
                                     </tr>
                                     <tr>

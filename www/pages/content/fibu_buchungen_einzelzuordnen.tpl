@@ -21,19 +21,31 @@
                                 [TAB1]                            
                             </form> 
                         </fieldset>    
-                        <fieldset>
+                        <fieldset>                           
                             <table>
                                 <legend>Stapelverarbeitung</legend>
-                                <tr>
-                                    <td><input type="checkbox" value="1" id="autoalle" />&nbsp;Alle markieren&nbsp;</td>                                    
-                                </tr>
                                 <tr>                            
                                     <td><input type="checkbox" value="1" name="override" form="buchungenform" />&nbsp;Mit Abweichung buchen&nbsp;</td>
                                 </tr>
-                                <form action="" method="post">                      
-                                    <td><button name="submit" value="neuberechnen" class="ui-button-icon" style="width:100%;">{|Buchungen neu berechnen|}</button></td></tr>                                       
-                                </form> 
-                                <td><button name="submit" form = "buchungenform" value="BUCHEN" class="ui-button-icon" style="width:100%;">{|Markierte BUCHEN|}</button></td></tr>
+                                <tr>
+                                    <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
+                                        <select form="buchungenform" id="sel_aktion" name="sel_aktion">
+                                            <option value="buchen">{|auf Ausgew&auml;hlte buchen|}</option>
+                                            <option value="buchen_diff_sachkonto">{|auf Ausgew&auml;hlte buchen, Gegenbeleg auf Sachkonto ausgleichen|}</option>
+                                        </select>&nbsp;
+                                        <input type="text" form="buchungenform" id="sachkonto" name="sachkonto" value="">
+                                        <button name="submit" form="buchungenform" value="BUCHEN" class="ui-button-icon">{|BUCHEN|}</button>
+                                    </td>
+                                </tr>                             
+                                <tr>
+                                   <form action="" method="post">                      
+                                        <td>
+                                            <button name="submit" value="neuberechnen" class="ui-button-icon" style="width:100%;">
+                                                {|Buchungen neu berechnen|}
+                                            </button>
+                                        </td>                                
+                                    </form> 
+                                </tr>                                                         
                             </table>
                         </fieldset>  				
                     </div>

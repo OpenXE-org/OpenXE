@@ -42,10 +42,9 @@
                                 <tr>
                                     <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
                                         <select form="buchungenform" id="sel_aktion" name="sel_aktion">
-                                            <option value="">{|bitte w&auml;hlen|} ...</option>                                            
                                             <option value="vorschlag">{|auf Vorschl&auml;ge buchen|}</option>
+                                            <option value="vorschlag_diff_sachkonto">{|auf Vorschl&auml;ge buchen, Gegenbeleg auf Sachkonto ausgleichen|}</option>
                                             <option value="sachkonto">{|auf Sachkonto buchen|}</option>
-                                            <option value="vorschlag_diff_sachkonto">{|auf Vorschl&auml;ge buchen, Differenz auf Sachkonto|}</option>
                                         </select>&nbsp;
                                         <input type="text" form="buchungenform" id="sachkonto" name="sachkonto" value="">
                                         <button name="submit" form="buchungenform" value="BUCHEN" class="ui-button-icon">{|BUCHEN|}</button>
