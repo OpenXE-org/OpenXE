@@ -12698,6 +12698,10 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
   //TODO zahlungsweisemodul
   $zahlungsweise = strtolower($zahlungsweise);
 
+/*
+
+    OLD CODE REPLACED BY FUNCTION IN auftrag.php / fibu_buchungen
+
   if($zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, verhalten FROM zahlungsweisen WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
    (projekt = '$projekt' OR projekt = 0) ORDER BY projekt = '$projekt' DESC LIMIT 1
   "))
@@ -12725,6 +12729,9 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='0' WHERE id='$auftrag' LIMIT 1");
     }
   }
+
+*/
+
   //nachnahme gebuehr check!!!!
   //$nachnahme = $this->app->DB->Select("SELECT id FROM auftrag_position WHERE auftrag='$auftrag' AND nummer='200001' LIMIT 1");
   $nachnahme = $this->app->DB->Select("SELECT COUNT(ap.id) FROM auftrag_position ap, artikel a WHERE ap.auftrag='$auftrag' AND ap.artikel=a.id AND a.porto=1 AND ap.preis >= 0

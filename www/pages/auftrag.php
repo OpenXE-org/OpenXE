@@ -6711,6 +6711,29 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
   public function AuftragList()
   {
+
+     // refresh all open items
+    $openids = $this->app->DB->SelectArr("SELECT id, gesamtsumme, waehrung from auftrag WHERE status <> 'abgeschlossen'");
+
+    foreach ($openids as $openid) {
+        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'auftrag');
+        if (!empty($saldo)) {
+            if ($saldo['waehrung'] == $openid['waehrung'] && $saldo['betrag'] >= $openid['gesamtsumme']) {
+                $sql = "UPDATE 
+                            auftrag
+                        SET
+                            vorkasse_ok = 1
+                        WHERE id=".$openid['id'];
+                $this->app->DB->Update($sql);
+                continue;
+            } 
+        }
+        else {
+            $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok = 0 WHERE id=".$openid['id']);        
+        }
+    }  
+
+
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('auftrag', 'edit'))
     {
       $drucker = $this->app->Secure->GetPOST('seldrucker');

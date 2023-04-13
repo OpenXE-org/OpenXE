@@ -335,7 +335,7 @@ class Fibu_buchungen {
                                 SUM(fob.betrag) as doc_saldo
                             FROM
                                 fibu_objekte fo  
-                            INNER JOIN
+                            LEFT JOIN
                                 fibu_buchungen_alle fob
                             ON
                                 fo.typ = fob.typ AND fo.id = fob.id                          
