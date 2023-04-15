@@ -197,7 +197,7 @@ class Fibu_buchungen {
                 $linkend = '"><img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg" border=0></a></td></tr></table>';
              
                 $typ = $this->app->User->GetParameter('fibu_buchungen_doc_typ');
-
+          
                 $objektlink = array (
                     '<a href=\"index.php?action=edit&module=',
                     ['sql' => 'fb.typ'],
@@ -429,10 +429,20 @@ class Fibu_buchungen {
              
                 $doc_typ = $this->app->User->GetParameter('fibu_buchungen_doc_typ');
                 $doc_id = $this->app->User->GetParameter('fibu_buchungen_doc_id');
-                $abschlag = $this->app->User->GetParameter('fibu_buchungen_abschlag');
-
+                $abschlag = $this->app->User->GetParameter('fibu_buchungen_abschlag');   
                 if (!is_numeric($abschlag)) {
                     $abschlag = 0;
+                }
+                    
+                $multifilter = $this->app->User->GetParameter('fibu_buchungen_multifilter');                  
+
+                if (!empty($multifilter)) {
+                    $multifilter = $this->app->DB->real_escape_string($multifilter);
+                    $multifilter = str_replace(',',' ',$multifilter);
+                    $multifilter = str_replace(';',' ',$multifilter);
+                    $multifilter = str_replace('\r',' ',$multifilter);
+                    $multifilter = str_replace('\n',' ',$multifilter);
+                    $multifilter_array = explode(' ',$multifilter." ");
                 }
     
                 $auswahl = array (
@@ -500,7 +510,11 @@ class Fibu_buchungen {
                             fba.typ = fo.typ AND fba.id = fo.id                  
                 ";
 
-                $where = "fo.typ <> '".$doc_typ."'";              
+                $where = "fo.typ <> '".$doc_typ."'";
+
+                if (!empty($multifilter_array)) {
+                    $where .= " AND fo.info IN ('".implode("','",$multifilter_array)."')";      
+                }        
 
 //                $count = "SELECT count(DISTINCT id) FROM fibu_buchungen_alle WHERE $where";
 
@@ -918,6 +932,8 @@ class Fibu_buchungen {
         $sachkonto = $this->app->Secure->GetPOST('sachkonto');
         $abschlag = $this->app->Secure->GetPOST('abschlag');
         $this->app->User->SetParameter('fibu_buchungen_abschlag', $abschlag);
+        $multifilter = $this->app->Secure->GetPOST('multifilter');
+        $this->app->User->SetParameter('fibu_buchungen_multifilter', $multifilter);
 
         $account_id = null;
         if (!empty($sachkonto)) {
@@ -1030,6 +1046,8 @@ class Fibu_buchungen {
         $this->app->Tpl->Set('DOC_ZUORDNUNG', ucfirst($von_typ)." ".$info);
         $this->app->Tpl->Set('DOC_SALDO',$saldo." ".$waehrung);
         $this->app->Tpl->Set('ABSCHLAG',$abschlag);
+
+        $this->app->Tpl->Set('MULTIFILTER',str_replace(array('\r\n', '\r', '\n'), ", ", $multifilter));
 
         $this->app->erp->Headlines('Buchhaltung','Einzelzuordnung '.strtoupper($von_typ));
 
