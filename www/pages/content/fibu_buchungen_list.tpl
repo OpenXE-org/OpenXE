@@ -4,7 +4,7 @@
             <li><a href="#tabs-2">Buchungen</a></li>
     </ul>
     <div id="tabs-1">
-        <legend>Salden m&uuml;ssen &uuml;ber Gegenbuchungen ausgeglichen werden.</legend>
+        <legend>Salden&uuml;bersicht. Salden m&uuml;ssen &uuml;ber Gegenbuchungen ausgeglichen werden.<br><br></legend>
         <form action="" enctype="multipart/form-data" method="POST">   
             [MESSAGE]
             <div class="row">
@@ -12,7 +12,6 @@
             		<div class="col-xs-12 col-md-10 col-md-height">
             			<div class="inside inside-full-height">	     
                				<fieldset>
-                                <legend>{|Offene Einzelsalden|}</legend>                              
                                 [TAB1]                            
                             </fieldset>      				
                         </div>

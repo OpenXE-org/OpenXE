@@ -10,7 +10,7 @@
         		<div class="col-xs-12 col-md-12 col-md-height">
         			<div class="inside inside-full-height">	     
            				<fieldset>
-                            <legend>{|Einzelsalden|}</legend>                              
+                            <legend>{|Einzelsalden zuordnen und auf Gegenbelege oder Sachkonto verbuchen.|}</legend>                              
                             <div class="filter-box filter-usersave">
                                <div class="filter-block filter-inline">
                                   <div class="filter-title">{|Filter|}</div>
@@ -42,10 +42,10 @@
                                 <tr>
                                     <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
                                         <select form="buchungenform" id="sel_aktion" name="sel_aktion">
-                                            <option value="vorschlag">{|auf Vorschl&auml;ge buchen|}</option>
-                                            <option value="vorschlag_diff_sachkonto">{|auf Vorschl&auml;ge buchen, Gegenbeleg auf Sachkonto ausgleichen|}</option>
+                                            <option value="vorschlag">{|auf Vorschlag buchen|}</option>
+                                            <option value="vorschlag_diff_sachkonto">{|auf Vorschlag buchen, Gegenbeleg auf Sachkonto ausgleichen|}</option>
                                             <option value="sachkonto">{|auf Sachkonto buchen|}</option>
-                                        </select>&nbsp;
+                                        </select>&nbsp;Sachkonto:
                                         <input type="text" form="buchungenform" id="sachkonto" name="sachkonto" value="">
                                         <button name="submit" form="buchungenform" value="BUCHEN" class="ui-button-icon">{|BUCHEN|}</button>
                                     </td>
