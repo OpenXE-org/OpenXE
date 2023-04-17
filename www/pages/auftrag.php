@@ -848,7 +848,7 @@ class Auftrag extends GenAuftrag
                 FROM auftrag auf
                 INNER JOIN auftrag_position ON auf.id = auftrag_position.auftrag
                 INNER JOIN artikel ON auftrag_position.artikel = artikel.id  
-		WHERE auf.status <> 'abgeschlossen' AND auf.belegnr <> ''
+		WHERE auf.status NOT IN ('abgeschlossen','storniert') AND auf.belegnr <> ''
                 ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
                 ) a";
 
