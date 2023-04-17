@@ -309,6 +309,7 @@ final class MailMessageData implements MailMessageInterface, JsonSerializable
         }
         $dateTime = date_create($date->getValue());
         if ($dateTime === false) {
+            throw new InvalidArgumentException('Invalid date: '.$date->getValue());
             return null;
         }
 
