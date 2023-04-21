@@ -36046,6 +36046,18 @@ function Firmendaten($field,$projekt="")
             return(array());            
         }
 
+        /*
+        * Create a fibu buchung
+        * using module fibu_buchungen
+        */
+        public function fibu_buchungen_buchen(string $von_typ, int $von_id, string $nach_typ, int $nach_id, $betrag, string $waehrung, $datum, string $internebemerkung) {
+            $fibu_buchungen = $this->app->loadModule('fibu_buchungen', false);
+            if($fibu_buchungen !== null && method_exists($fibu_buchungen, 'fibu_buchungen_buchen')) {
+              return $fibu_buchungen->fibu_buchungen_buchen($von_typ, $von_id, $nach_typ, $nach_id, $betrag, $waehrung, $datum, $internebemerkung);
+            }          
+        }
+
+
       public function ANABREGSNeuberechnen($id,$art,$force=false)
       {
         if($id <= 0 || empty($art))

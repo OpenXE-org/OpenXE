@@ -712,17 +712,32 @@ class Gutschrift extends GenGutschrift
     $showDefault = true;
     $this->app->Tpl->Set('TABTEXT','Freigabe');
     $this->app->erp->GutschriftNeuberechnen($id);
-
     $this->app->erp->CheckVertrieb($id,'gutschrift');
     $this->app->erp->CheckBearbeiter($id,'gutschrift');
     $doctype = 'gutschrift';
+
+    $sql = "SELECT belegnr, rechnungid FROM gutschrift WHERE id='$id' LIMIT 1";
+    $result = $this->app->DB->SelectArr($sql);
+    $belegnr = $result[0]['belegnr'];
+    $rechnungid = $result[0]['rechnungid'];
+    $name = $this->app->DB->Select("SELECT a.name FROM gutschrift b LEFT JOIN adresse a ON a.id=b.adresse WHERE b.id='$id' LIMIT 1");
+    $summe = $this->app->DB->Select("SELECT soll FROM gutschrift WHERE id='$id' LIMIT 1");
+    $waehrung = $this->app->DB->Select("SELECT waehrung FROM gutschrift_position WHERE gutschrift='$id' LIMIT 1");
+
     if(empty($intern)){
       $this->app->erp->RunHook('beleg_freigabe', 4, $doctype, $id, $allowedFrm, $showDefault);
     }
-    if($allowedFrm && $freigabe==$id) {
-      $belegnr = $this->app->DB->Select("SELECT belegnr FROM gutschrift WHERE id='$id' LIMIT 1");
+    if($allowedFrm && $freigabe==$id) {        
+
       if($belegnr=='') {
         $this->app->erp->BelegFreigabe('gutschrift',$id);
+
+        // Create fibu_buchung
+        $gegen_rechnung = $this->app->Secure->GetGET('gegen_rechnung');
+        if ($gegen_rechnung && $rechnungid > 0) {
+            $this->app->erp->fibu_buchungen_buchen('gutschrift', $id, 'rechnung', $rechnungid, -$summe, $waehrung, date("Y-m-d"), 'Verrechnung');
+        }
+
         if($intern) {
           return 1;
         }
@@ -735,15 +750,17 @@ class Gutschrift extends GenGutschrift
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Gutschrift war bereits freigegeben!</div>");
       $this->app->Location->execute("index.php?module=gutschrift&action=edit&id=$id&msg=$msg");
     }
-    if($showDefault){
-      $name = $this->app->DB->Select("SELECT a.name FROM gutschrift b LEFT JOIN adresse a ON a.id=b.adresse WHERE b.id='$id' LIMIT 1");
-      $summe = $this->app->DB->Select("SELECT soll FROM gutschrift WHERE id='$id' LIMIT 1");
-      $waehrung = $this->app->DB->Select("SELECT waehrung FROM gutschrift_position
-        WHERE gutschrift='$id' LIMIT 1");
-
+    if($showDefault){    
+     if ($rechnungid > 0) {
+           $input_html = "<input type=\"button\" value=\"Freigabe ohne Rechnung\" onclick=\"window.location.href='index.php?module=gutschrift&action=freigabe&id=$id&freigabe=$id&gegen_rechnung=0'\">"
+                            ."<input type=\"button\" value=\"Freigabe gegen Rechnung\" onclick=\"window.location.href='index.php?module=gutschrift&action=freigabe&id=$id&freigabe=$id&gegen_rechnung=1'\">";          
+     } else {
+        $input_html = "<input type=\"button\" value=\"Freigabe Rechnung\" onclick=\"window.location.href='index.php?module=gutschrift&action=freigabe&id=$id&freigabe=$id'\">";
+     }
       $this->app->Tpl->Set('TAB1', "<div class=\"info\">Soll die Gutschrift an <b>$name</b> im Wert von <b>$summe $waehrung</b> 
-        jetzt freigegeben werden? <input type=\"button\" value=\"Freigabe\" onclick=\"window.location.href='index.php?module=gutschrift&action=freigabe&id=$id&freigabe=$id'\">
-        </div>");
+        jetzt freigegeben werden? ".
+            $input_html.
+        "</div>");
     }
     $this->GutschriftMenu();
     $this->app->Tpl->Parse('PAGE','tabview.tpl');
