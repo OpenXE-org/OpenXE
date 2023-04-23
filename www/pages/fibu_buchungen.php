@@ -557,10 +557,16 @@ class Fibu_buchungen {
         $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=list", "&Uuml;bersicht");
 //        $this->app->erp->MenuEintrag("index.php?module=fibu_buchungen&action=create", "Neu anlegen");
 
+        $startdatum = $this->app->erp->Firmendaten('fibu_buchungen_startdatum');
+
+        if (empty($startdatum)) {
+            $msg .= '<div class="error">Startdatum <a href="index.php?module=firmendaten&action=edit#tabs-8">("Buchungen erzeugen ab Datum")</a> in den Firmendaten nicht gesetzt.</div>';
+        }
+
         $submit = $this->app->Secure->GetPOST('submit');
         if ($submit == 'neuberechnen') {
             $this->fibu_rebuild_tables();
-            $msg = "<div class=\"info\">Buchungen wurden neu berechnet.</div>";
+            $msg .= "<div class=\"info\">Buchungen wurden neu berechnet.</div>";
         }
 
         // For transfer to tablesearch    
