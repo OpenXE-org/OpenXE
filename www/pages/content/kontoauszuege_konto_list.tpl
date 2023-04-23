@@ -5,7 +5,7 @@
     <div id="tabs-1">
         <form action="#tabs-1" id="frmauto" name="frmauto" method="post">            
             [MESSAGE]
-            <legend>Salden m&uuml;ssen &uuml;ber Gegenbuchungen ausgeglichen werden.</legend>
+            <legend>Kontoausz&uuml;ge bitte &uuml;ber Importzentrale importieren.</legend>
             [TAB1]
         </form>
     </div>

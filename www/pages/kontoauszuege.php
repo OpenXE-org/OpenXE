@@ -16,7 +16,7 @@ class Kontoauszuege {
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "kontoauszuege_konto_list");        
         $this->app->ActionHandler("listentries", "kontoauszuege_list");
-        $this->app->ActionHandler("create", "kontoauszuege_edit"); // This automatically adds a "New" button
+//        $this->app->ActionHandler("create", "kontoauszuege_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "kontoauszuege_edit");
         $this->app->ActionHandler("delete", "kontoauszuege_delete");
         $this->app->DefaultActionHandler("list");
@@ -255,7 +255,7 @@ class Kontoauszuege {
     function kontoauszuege_konto_list() {       
 
         $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=list", "&Uuml;bersicht");
-        $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=create", "Neu anlegen");
+//        $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
@@ -313,7 +313,7 @@ class Kontoauszuege {
         }
 
         $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=list", "&Uuml;bersicht");
-        $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=create", "Neu anlegen");
+//        $this->app->erp->MenuEintrag("index.php?module=kontoauszuege&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
@@ -367,10 +367,10 @@ class Kontoauszuege {
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
                 
-        if (empty($id)) {
+/*        if (empty($id)) {
             // New item
             $id = 'NULL';
-        } 
+        } */
 
         if ($submit != '')
         {
