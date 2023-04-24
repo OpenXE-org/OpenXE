@@ -586,11 +586,11 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                                     $keystring = "PRIMARY KEY ";
                                 } else {
 
-                                    if(array_key_exists('Index_type', $key)) {
-                                        $index_type = $key['Index_type'];
-                                    } else {
+                               //     if(array_key_exists('Index_type', $key)) {
+                               //         $index_type = $key['Index_type'];
+                               //     } else {
                                         $index_type = "";
-                                    }
+                               //     }
 
                                     $keystring = $index_type." ".$key['Non_unique']." KEY `".$key['Key_name']."` ";
                                 }
