@@ -61,7 +61,7 @@
 <div class="col-xs-12 col-sm-6 col-sm-height">
 <div class="inside inside-full-height">
 
-
+<!--
 <fieldset><legend>{|Forderung|}</legend>
 <table width="100%" height="240">
   <tr><td width="200">{|erledigt am|}:</td><td>[MANUELL_VORABBEZAHLT][MSGMANUELL_VORABBEZAHLT]&nbsp;</td></tr>
@@ -70,6 +70,41 @@
   <tr><td></td><td>[HINWEISAVIS]</td></tr>
 </table>
 </fieldset>
+-->
+
+ <fieldset>
+                        <legend>{|Zahlungsstatus|}</legend>
+                        <table class="tablemahnwesenfestsetzen">                           
+                           <tr>
+                              <td width="200">{|Zahlungsstatus|}:</td>
+                              <td width="70%">[ZAHLUNGSSTATUS][MSGZAHLUNGSSTATUS]
+                              </td>
+                           </tr>
+                           <tr>
+                              <td></td>
+                              <td colspan="1">
+                                 <table>
+                                    <tr>
+                                       <td>
+                                          {|SOLL|}:
+                                       </td>
+                                       <td>
+                                          [SOLL]
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td>
+                                          {|FEHLT|}:
+                                       </td>
+                                       <td id="istdb">
+                                          [ISTDB]
+                                       </td>
+                                    </tr>                                  
+                                 </table>
+                              </td>
+                           </tr>
+                        </table>                    
+                     </fieldset>
 
 </div>
 </div>

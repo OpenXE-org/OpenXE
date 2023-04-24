@@ -8,7 +8,7 @@
   <!--<td width="25%"><a href="index.php?module=shopexport&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_20.gif" border="0" width="30%"></a></td>-->
 </tr>
 <tr align="center">
-    <td><a href="index.php?module=importvorlage&action=list">{|Stammdaten|} <br>{|Import|}</a></td>
+    <td><a href="index.php?module=importvorlage&action=list">{|Daten|} <br>{|Import|}</a></td>
   <td><a href="index.php?module=exportvorlage&action=list">{|Stammdaten|} <br>{|Export|}</a></td>
   <!--<td><a href="index.php?module=adresse_import&action=list">{|Intranet|}</a></td>-->
   <td><a href="index.php?module=shopimport&action=list">{|Import|}<br>({|Online-Shop|})</a></td>
@@ -17,7 +17,7 @@
     <tr><td colspan="99">&nbsp;</td></tr>
     <tr align="center">
         <td width="25%"><a href="index.php?module=exportbelegepositionen&action=export"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_1.gif" border="0" width="30%"></a></td>
-        <td width="25%"><a href="index.php?module=exportbuchhaltung&action=export"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_1.gif" border="0" width="30%"></a></td>
+        <td width="25%"><a href="index.php?module=exportbuchhaltung&action=export"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_19.gif" border="0" width="30%"></a></td>
         <td width="25%">[BELEGEIMPORTSTART]<a href="index.php?module=belegeimport&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_1.gif" border="0" width="30%"></a>[BELEGEIMPORTEND]</td>
         <!--<td width="25%"><a href="index.php?module=shopexport&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_20.gif" border="0" width="30%"></a></td>-->
     </tr>

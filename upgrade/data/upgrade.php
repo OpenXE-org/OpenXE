@@ -415,6 +415,10 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                     $counter++;
                     echo_out("\rUpgrade step $counter of $number_of_statements... ");
 
+                    if ($verbose) {
+                        echo_out("\n".$sql."\n");
+                    }
+
                     $query_result = mysqli_query($mysqli, $sql);
                     if (!$query_result) {        
                         $error = " not ok: ". mysqli_error($mysqli);            

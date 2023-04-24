@@ -177,6 +177,13 @@ class WidgetGengutschrift
     $field->AddOption('PayPal','paypal');
     $this->form->NewField($field);
 
+    $field = new HTMLSelect("zahlungsstatus",0,"zahlungsstatus","","","0");
+    $field->AddOption('offen','offen');
+    $field->AddOption('bezahlt','bezahlt');
+//    $field->AddOption('forderungsverlust','forderungsverlust');
+//    $field->AddOption('abgebucht (bei Lastschrift)','abgebucht');
+    $this->form->NewField($field);
+
     $field = new HTMLInput("lieferbedingung","text","","30","","","","","","","","0","","");
     $this->form->NewField($field);
 

@@ -1101,6 +1101,23 @@
 		</div>
 	</div>
 
+    <div class="row">
+		<div class="row-height">
+			<div class="col-xs-12 col-md-6 col-md-height">
+				<div class="inside inside-full-height">
+					<fieldset>
+						<legend>{|Finanzbuchhaltung Einstellungen|}</legend>
+						<table width="100%">
+							<tr>
+								<td width="300">Buchungen erzeugen ab Datum:</td><td colspan="3"><input type="text" id= "fibu_buchungen_startdatum" name="fibu_buchungen_startdatum" size="10" value="[FIBU_BUCHUNGEN_STARTDATUM]"></td>
+							</tr>							
+						</table>
+					</fieldset>
+				</div>
+			</div>			
+		</div>
+	</div>
+
 	<!--
 	<fieldset><legend>Finanzbuchhaltung Export Kontenrahmen - Weitere Kostenarten</legend>
 	<table>

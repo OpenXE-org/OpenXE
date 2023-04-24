@@ -511,7 +511,10 @@ class TicketImportHelper
                     continue;
                 }
             } catch (Throwable $e) {
-                $this->logger->error('Error during email import '.$messageNumber, ['message' => substr(print_r($message,true),0,1000)]);
+
+                $exception_message = $e->getMessage();
+
+                $this->logger->error('Error during email import '.$messageNumber, ['exc-message' => $exception_message ,'message2' => substr(print_r($message,true),0,1000)]);
                 continue;
             }
         }
@@ -573,14 +576,17 @@ class TicketImportHelper
         $this->logger->debug('Text (converted)',['plain' => $action, 'html' => $action_html]);
 
         // Import database emailbackup
-        $date = $message->getDate();
-        if (is_null($date)) { // This should not be happening -> Todo check getDate function
-            $this->logger->debug('Null date',['subject' => $message->getSubject(), $message->getHeader('date')->getValue()]);            
-            return(false);
-        } else {
-            $timestamp = $date->getTimestamp();
-            $frommd5 = md5($from . $subject . $timestamp);
+        try {
+            $date = $message->getDate();
         }
+        catch (exception $e) {
+            $this->logger->debug('Invalid date',['exc-message' => $e->getMessage(),'subject' => $message->getSubject(), $message->getHeader('date')->getValue()]);            
+            return(false);
+        }
+
+        $timestamp = $date->getTimestamp();
+        $frommd5 = md5($from . $subject . $timestamp);
+   
         $empfang = $date->format('Y-m-d H:i:s');
         $sql = "SELECT COUNT(id) 
                         FROM `emailbackup_mails` 

@@ -1517,6 +1517,11 @@ public function NavigationHooks(&$menu)
 //    return "replace(trim($spalte)+0,'.',',')";
   }
 
+  function FormatUCfirst($spalte)
+  {
+    return ('CONCAT(UCASE(LEFT('.$spalte.', 1)),SUBSTRING('.$spalte.', 2))');
+  }
+
   static function add_alias(string $text, $alias = false) {
     if (empty($alias)) {
         return($text);
@@ -2641,6 +2646,24 @@ public function NavigationHooks(&$menu)
   function Stroke($fieldstroke, $field) {
     return "if(" . $fieldstroke . ",CONCAT('<s>'," . $field . ",'</s>')," . $field . ")";
   }
+
+    // @refactor DbHelper Komponente
+    // creates a CONCAT sql statement with strings or sql expressions
+    // Use like this: ConcatSQL('<a href=index.php?id=',['sql'] => 'id','>','click here</a>');
+    function ConcatSQL(array $fields) {
+        $result = "CONCAT(";
+        $comma = "";    
+        foreach ($fields as $field) {
+            if (gettype($field) == 'array') {
+                $result .= $comma.$field['sql'];
+            } else {
+                $result .= $comma."'".$field."'";
+            }
+            $comma = ",";
+        }
+        $result .= ")";
+        return($result);
+    }
 
   // @refactor Formater Komponente
   function Dateinamen($text) {
@@ -7095,6 +7118,8 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Arbeitsnachweis','arbeitsnachweis','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Gutschrift / '.$this->Firmendaten("bezeichnungstornorechnung"),'gutschrift','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Proformarechnung','proformarechnung','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Kontoausz&uuml;ge','kontoauszuege','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Buchungen','fibu_buchungen','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abolauf','rechnungslauf','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Mahnwesen','mahnwesen','list');
 
@@ -12673,6 +12698,10 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
   //TODO zahlungsweisemodul
   $zahlungsweise = strtolower($zahlungsweise);
 
+/*
+
+    OLD CODE REPLACED BY FUNCTION IN auftrag.php / fibu_buchungen
+
   if($zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, verhalten FROM zahlungsweisen WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
    (projekt = '$projekt' OR projekt = 0) ORDER BY projekt = '$projekt' DESC LIMIT 1
   "))
@@ -12700,6 +12729,9 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='0' WHERE id='$auftrag' LIMIT 1");
     }
   }
+
+*/
+
   //nachnahme gebuehr check!!!!
   //$nachnahme = $this->app->DB->Select("SELECT id FROM auftrag_position WHERE auftrag='$auftrag' AND nummer='200001' LIMIT 1");
   $nachnahme = $this->app->DB->Select("SELECT COUNT(ap.id) FROM auftrag_position ap, artikel a WHERE ap.auftrag='$auftrag' AND ap.artikel=a.id AND a.porto=1 AND ap.preis >= 0
@@ -22193,8 +22225,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $this->app->DB->Delete("DELETE lager_charge FROM lager_charge INNER JOIN lager_platz ON lager_platz.id=lager_charge.lager_platz
             WHERE lager_platz.verbrauchslager='1' AND lager_platz.id = '$regal'");
 
-        $this->app->DB->Delete("DELETE lager_seriennummer FROM lager_seriennummer
-            INNER JOIN lager_platz ON lager_platz.id=lager_seriennummer.lager_platz
+        $this->app->DB->Delete("DELETE FROM lager_seriennummern
+            INNER JOIN lager_platz ON lager_platz.id=lager_seriennummern.lager_platz
             WHERE lager_platz.verbrauchslager='1' AND lager_platz.id = '$regal'");
 
       $this->app->DB->Delete("DELETE lager_mindesthaltbarkeitsdatum FROM lager_mindesthaltbarkeitsdatum
@@ -22212,8 +22244,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $this->app->DB->Delete("DELETE lager_charge FROM lager_charge INNER JOIN lager_platz ON lager_platz.id=lager_charge.lager_platz
             WHERE lager_platz.verbrauchslager='1'");
 
-        $this->app->DB->Delete("DELETE lager_seriennummer FROM lager_seriennummer
-            INNER JOIN lager_platz ON lager_platz.id=lager_seriennummer.lager_platz
+        $this->app->DB->Delete("DELETE FROM lager_seriennummern
+            INNER JOIN lager_platz ON lager_platz.id=lager_seriennummern.lager_platz
             WHERE lager_platz.verbrauchslager='1'");
 
         $this->app->DB->Delete("DELETE lager_mindesthaltbarkeitsdatum FROM lager_mindesthaltbarkeitsdatum
@@ -34500,7 +34532,7 @@ function Firmendaten($field,$projekt="")
         $this->CopyBelegZwischenpositionen('rechnung',$id,'gutschrift',$newid);
         $this->app->DB->Update("UPDATE gutschrift SET stornorechnung='$stornorechnung', ohne_briefpapier='".$ohnebriefpapier."' WHERE id='$newid,' LIMIT 1");
 
-        $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1',status='storniert',zahlungsstatus='bezahlt' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1',status='storniert' WHERE id='$id' LIMIT 1");
         $this->RechnungProtokoll($id, $grund);
         $this->SchnellFreigabe("gutschrift",$newid);
         return $newid;
@@ -35641,7 +35673,7 @@ function Firmendaten($field,$projekt="")
         $rechnungid = $this->app->DB->Select("SELECT rechnungid FROM gutschrift WHERE id='$id' LIMIT 1");
         if($rechnungid > 0 && $this->Firmendaten("mahnwesenmitkontoabgleich")=="1")
         {
-          $this->app->DB->Update("UPDATE rechnung SET ist=0, zahlungsstatus='offen' WHERE id='$rechnungid' AND mahnwesenfestsetzen!=1 LIMIT 1");
+          $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE id='$rechnungid' AND mahnwesenfestsetzen!=1 LIMIT 1");
           $this->RechnungNeuberechnen($rechnungid);
         }
       }
@@ -35819,6 +35851,213 @@ function Firmendaten($field,$projekt="")
         }
       }
       
+        /*
+        * Retrieve the associated documents regarding payments
+        * Gutschrift -> Rechnung -> Auftrag OR Verbindlichkeit
+        * Results array of ids, types, belegnr
+        */
+        public function GetZahlungenAssociatedDocuments(int $id, string $type, string $lastlevel = 'auftrag') : array {
+
+            $assocs = array(
+                array(
+                    'type' => 'auftrag',
+                    'below' => 'rechnung',
+                ),
+                array(
+                    'above' => 'auftrag',
+                    'type' => 'rechnung',
+                    'below' => 'gutschrift'
+                ),
+                array(
+                    'above' => 'rechnung',
+                    'type' => 'gutschrift'
+                ),
+                array(
+                    'type' => 'verbindlichkeit'
+                )
+            );
+
+
+            if ($id <= 0) {
+                throw new exception('no id provided');
+            }
+
+            if (!in_array($type, array('rechnung','gutschrift','auftrag','verbindlichkeit'))) {
+                throw new exception('invalid type '.$type);
+            }            
+
+            $id = $this->app->Secure->GetGET('id');
+
+            // Go to highest level         
+            $above = $assocs[array_search($type,array_column($assocs,'type'))]['above'];
+            while ($above) {
+
+                if ($type == $lastlevel) {
+                    break;
+                }
+
+                $sql = "SELECT ".$above."id as id FROM ".$type." WHERE id = ".$id;          
+                $above_id = $this->app->DB->SelectArr($sql)[0];
+                if (!empty($above)) {
+                    $type = $above;
+                    $id = $above_id['id'];
+                }
+                $above = $assocs[array_search($type,array_column($assocs,'type'))]['above'];
+            }
+
+            // Cascade down and retrieve all documents
+            $result_documents = array();
+            $ids = array($id);
+            $ref = 'id';
+            do {
+                $sql = "SELECT id, '".$type."' AS type, belegnr FROM ".$type." WHERE ".$ref." IN (".implode(",",$ids).")";
+                $result = $this->app->DB->SelectArr($sql);
+                if (!empty($result)) {
+                    $result_documents = array_merge($result_documents, $result);
+                    $ids = array_column($result,'id');
+                    $ref = $type."id";
+                    $type = $assocs[array_search($type,array_column($assocs,'type'))]['below'];
+                } else {
+                    break;
+                }
+            } while ($type); 
+
+            return($result_documents);               
+        }
+
+        /*
+        * Calculate the payments of a document (rechnung, gutschrift, auftrag, verbindlichkeit)
+        * Results array of payments (datum, doc_type, doc_id, doc_inof, betrag, waehrung)
+        * Gutschrift -> Rechnungid, Rechnung -> Auftragid
+        */
+
+        public function GetZahlungen(int $id, string $type, string $cascadelevel = '') : array {
+
+            if ($cascadelevel != '') {
+                $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $cascadelevel);
+            } else {
+                $documents = array(array('id' => $id, 'type' => $type));
+            }
+
+            if (empty($documents)) {
+                return(array());
+            }
+
+            $ids = array();
+
+            foreach ($documents as $document) {
+                $ids[] = $document['type'].$document['id'];
+            }
+
+            $sql = "
+                SELECT
+                    typ,
+                    id,
+                    ".$this->app->erp->FormatDate('datum')." as datum,
+                    doc_typ,
+                    doc_id,
+                    doc_info,
+                    ".$this->app->erp->FormatMenge('betrag',2)." as betrag,
+                    waehrung
+                FROM
+                    fibu_buchungen_alle
+                WHERE
+                    CONCAT(typ,id) IN ('".implode("','",$ids)."')
+                ORDER BY 
+                    (SELECT datum) ASC
+                ";            
+
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (empty($result)) {
+                return(array());
+            } 
+            return($result);
+        }
+
+        /*
+        * Calculate the payment saldo information of a document
+        * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
+        * returns array(array(betrag, waehrung)) one line per waehrung
+        */
+        public function GetSaldenDokument(int $id, string $type, string $cascadelevel = '') : array {
+
+            if ($cascadelevel != '') {
+                $documents = $this->GetZahlungenAssociatedDocuments($id, $type, $cascadelevel);
+            } else {
+                $documents = array(array('id' => $id, 'type' => $type));
+            }
+
+            if (empty($documents)) {
+                return(array());
+            }
+
+            $ids = array();
+
+            foreach ($documents as $document) {
+                $ids[] = $document['type'].$document['id'];
+            }
+
+            $sql = "
+                SELECT
+                    ".$this->app->erp->FormatMenge('SUM(betrag)',2)." as betrag,
+                    waehrung
+                FROM
+                    fibu_buchungen_alle
+                WHERE
+                    CONCAT(typ,id) IN ('".implode("','",$ids)."')
+                GROUP BY
+                    waehrung";            
+
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (!empty($result)) {
+                return($result);
+            } 
+            return(array());
+        }
+
+
+        /*
+        * Calculate the payment amount of a document
+        * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
+        * returns array(betrag, waehrung) or empty array if multiple
+        */
+        public function GetSaldoDokument(int $id, string $type) : array {
+
+            $sql = "
+                SELECT
+                    SUM(betrag) as betrag,
+                    waehrung
+                FROM
+                    fibu_buchungen_alle
+                WHERE
+                    typ = '".$type."' AND id = ".$id."
+                GROUP BY
+                    waehrung";            
+
+            $result = $this->app->DB->SelectArr($sql);
+
+            if (!empty($result)) {
+                if (count($result) == 1) {
+                    return($result[0]);
+                }         
+            }
+            return(array());            
+        }
+
+        /*
+        * Create a fibu buchung
+        * using module fibu_buchungen
+        */
+        public function fibu_buchungen_buchen(string $von_typ, int $von_id, string $nach_typ, int $nach_id, $betrag, string $waehrung, $datum, string $internebemerkung) {
+            $fibu_buchungen = $this->app->loadModule('fibu_buchungen', false);
+            if($fibu_buchungen !== null && method_exists($fibu_buchungen, 'fibu_buchungen_buchen')) {
+              return $fibu_buchungen->fibu_buchungen_buchen($von_typ, $von_id, $nach_typ, $nach_id, $betrag, $waehrung, $datum, $internebemerkung);
+            }          
+        }
+
+
       public function ANABREGSNeuberechnen($id,$art,$force=false)
       {
         if($id <= 0 || empty($art))

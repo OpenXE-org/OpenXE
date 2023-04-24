@@ -79,20 +79,22 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
 
     // Get db_def and views
-    $sql = "SHOW FULL tables WHERE Table_type = 'BASE TABLE'"; 
+    $sql = "SHOW TABLE STATUS WHERE engine IS NOT NULL"; 
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
     } 
     while ($row = mysqli_fetch_assoc($query_result)) {
         $table = array();
-        $table['name'] = $row['Tables_in_'.$schema];
-        $table['type'] = $row['Table_type'];
+        $table['name'] = $row['Name'];
+        $table['collation'] = $row['Collation'];
+        $table['type'] = 'BASE TABLE';
         $tables[] = $table; // Add table to list of tables
     }
 
     // Get and add columns of the table
     foreach ($tables as &$table) {    
+
         $sql = "SHOW FULL COLUMNS FROM ".$table['name'];
         $query_result = mysqli_query($mysqli, $sql);
 
@@ -108,6 +110,10 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
                 mustal_sql_replace_reserved_functions($column,$replacers);
                 $column['Default'] = mustal_mysql_put_text_type_in_quotes($column['Type'],$column['Default']);
             } 
+
+            if (empty($column['Collation']) && mustal_is_string_type($column['Type'])) {
+                $column['Collation'] = $table['collation'];                
+            }
 
             $columns[] = $column; // Add column to list of columns
         }
@@ -135,6 +141,13 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
                 $composed_key['Key_name'] = $key['Key_name'];
                 $composed_key['Index_type'] = $key['Index_type'];
                 $composed_key['columns'][] = $key['Column_name'];
+
+                if ($key['Key_name'] != 'PRIMARY') {
+                    $composed_key['Non_unique'] = ($key['Non_unique'] == 1)?'':'UNIQUE';
+                } else {
+                   $composed_key['Non_unique'] = '';
+                }
+
                 $composed_keys[] = $composed_key;
             } else {
                 // Given key, add column
@@ -161,9 +174,16 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
 
     foreach ($views as &$view) {    
         $sql = "SHOW CREATE VIEW ".$view['name'];
-        $query_result = mysqli_query($mysqli, $sql);
+
+        try {
+            $query_result = mysqli_query($mysqli, $sql);
+        }
+        catch (exception $e) {
+            $query_result = false; // VIEW is erroneous
+        }
         if (!$query_result) {
-            return(array());
+            $view['Create'] = '';
+            continue;    
         }
         $viewdef = mysqli_fetch_assoc($query_result);
         
@@ -330,19 +350,19 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                     // Compare the properties of the sql_indexs
                     if ($check_column_definitions) {
                         $found_sql_index = $found_table['keys'][$sql_index_key];
+
                         foreach ($sql_index as $key => $value) {                            
                             if ($found_sql_index[$key] != $value) {
-
-//                                if ($key != 'permissions') {                                
-                                    $compare_difference = array();
-                                    $compare_difference['type'] = "Key definition";
-                                    $compare_difference['table'] = $database_table['name'];
-                                    $compare_difference['key'] = $sql_index['Key_name'];
-                                    $compare_difference['property'] = $key;
-                                    $compare_difference[$nominal_name] = implode(',',$value);
-                                    $compare_difference[$actual_name] = implode(',',$found_sql_index[$key]);
-                                    $compare_differences[] = $compare_difference;
-//                                }
+                                $compare_difference = array();
+                                $compare_difference['type'] = "Key definition";
+                                $compare_difference['table'] = $database_table['name'];
+                                $compare_difference['key'] = $sql_index['Key_name'];
+                                $compare_difference['property'] = $key;
+/*                                    $compare_difference[$nominal_name] = implode(',',$value);
+                                $compare_difference[$actual_name] = implode(',',$found_sql_index[$key]);*/
+                                $compare_difference[$nominal_name] = $value;
+                                $compare_difference[$actual_name] = $found_sql_index[$key];
+                                $compare_differences[] = $compare_difference;
                             }
                         }
                         unset($value);                          
@@ -401,9 +421,11 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 // Generate SQL to create or modify column
 function mustal_column_sql_definition(string $table_name, array $column, array $reserved_words_without_quote) : string {    
 
+    $column_is_string_type = mustal_is_string_type($column['Type']);
+
     foreach($column as $key => &$value) {
         $value = (string) $value;
-        $value = mustal_column_sql_create_property_definition($key,$value,$reserved_words_without_quote);
+        $value = mustal_column_sql_create_property_definition($key,$value,$reserved_words_without_quote,$column_is_string_type);
     }
 
     // Default handling here
@@ -422,7 +444,7 @@ function mustal_column_sql_definition(string $table_name, array $column, array $
 }
 
 // Generate SQL to modify a single column property
-function mustal_column_sql_create_property_definition(string $property, string $property_value, array $reserved_words_without_quote) : string {
+function mustal_column_sql_create_property_definition(string $property, string $property_value, array $reserved_words_without_quote, $column_is_string_type) : string {
 
     switch ($property) {
         case 'Type':
@@ -453,8 +475,10 @@ function mustal_column_sql_create_property_definition(string $property, string $
             }
         break;
         case 'Collation':
-            if ($property_value != '')  {
+            if ($property_value != '' && $column_is_string_type)  {
                 $property_value = " COLLATE ".$property_value;
+            } else {
+                $property_value = "";
             }
         break;
         default: 
@@ -468,9 +492,9 @@ function mustal_column_sql_create_property_definition(string $property, string $
 // Replaces different variants of the same function mustal_to allow comparison
 function mustal_sql_replace_reserved_functions(array &$column, array $replacers) {
 
-    $result = strtolower($column['Default']);
+    $result = $column['Default'];
     foreach ($replacers as $replace) {
-        if ($result == $replace[0]) {
+        if (strtolower($column['Default']) == $replace[0]) {
             $result = $replace[1];
         } 
     }
@@ -568,7 +592,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                                         $index_type = "";
                                     }
 
-                                    $keystring = $index_type." KEY `".$key['Key_name']."` ";
+                                    $keystring = $index_type." ".$key['Non_unique']." KEY `".$key['Key_name']."` ";
                                 }
                                 $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                             }
@@ -652,7 +676,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
 
-                        $sql = "ALTER TABLE `$table_name` ADD KEY `".$key_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` ADD ".$key['Non_unique']." KEY `".$key_name."` "; 
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
@@ -682,7 +706,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;"; 
                         $upgrade_sql[] = $sql;
 
-                        $sql = "ALTER TABLE `$table_name` ADD KEY `".$key_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` ADD ".$key['Non_unique']." KEY `".$key_name."` "; 
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
@@ -743,6 +767,17 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
         array_unshift($upgrade_sql,"SET SQL_MODE='ALLOW_INVALID_DATES';","SET SESSION innodb_strict_mode=OFF;");
     }
 
-
     return($result);
 }
+
+// Check if given type is a string, relevant for collation
+function mustal_is_string_type(string $type) {
+    $mustal_string_types = array('varchar','char','text','tinytext','mediumtext','longtext');
+    foreach($mustal_string_types as $string_type) {
+        if (stripos($type,$string_type) === 0) {
+            return(true);
+        }
+    }   
+    return(false);
+}
+

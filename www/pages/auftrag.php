@@ -848,7 +848,7 @@ class Auftrag extends GenAuftrag
                 FROM auftrag auf
                 INNER JOIN auftrag_position ON auf.id = auftrag_position.auftrag
                 INNER JOIN artikel ON auftrag_position.artikel = artikel.id  
-		WHERE auf.status <> 'abgeschlossen' AND auf.belegnr <> ''
+		WHERE auf.status NOT IN ('abgeschlossen','storniert') AND auf.belegnr <> ''
                 ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
                 ) a";
 
@@ -3182,6 +3182,11 @@ class Auftrag extends GenAuftrag
       );
     }
 
+     $this->app->Tpl->Add(
+        'ZAHLUNGEN',
+        $this->AuftragZahlung(true)
+     );
+
     // schaue ob es eine GS zu diesem Auftrag gibt
     // schaue ob es eine GS zu diesem Auftrag gibt
     //$gutschriftid = $this->app->DB->Select("SELECT id FROM gutschrift WHERE rechnungid='$rechnungid' LIMIT 1");
@@ -3409,7 +3414,47 @@ class Auftrag extends GenAuftrag
       <tr><td><b>Lieferadresse:</b><br><br>$lieferadresse</td></tr></table>";
   }
 
+  /* Build the html output for minidetail containing the payments
+   * @param bool $return
+   *
+   * @return string
+   */
+  function AuftragZahlung($return=false)
+  {
+    $id = $this->app->Secure->GetGET('id');
 
+    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag',true); 
+    if (!empty($zahlungen)) {
+        $et = new EasyTable($this->app);
+
+        $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
+
+        foreach ($zahlungen as $zahlung) {
+            $row = array(
+                $zahlung['datum'],
+                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                    ".ucfirst($zahlung['doc_typ'])." 
+                    ".$zahlung['doc_info']."
+                </a>",
+                $zahlung['betrag'],
+                $zahlung['waehrung']
+            );
+            $et->AddRow($row);
+        }
+
+        $salden = $this->app->erp->GetSaldenDokument($id,'auftrag',true);
+        foreach ($salden as $saldo) {   
+            $row = array(
+                '',
+                '<b>Saldo</b>',
+                "<b>".$saldo['betrag']."</b>",
+                "<b>".$saldo['waehrung']."</b>"
+            );
+            $et->AddRow($row);
+        }
+        return($et->DisplayNew('return',""));           
+    }
+  }
 
   function AuftragZahlungsmail()
   {
@@ -6666,6 +6711,29 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
   public function AuftragList()
   {
+
+     // refresh all open items
+    $openids = $this->app->DB->SelectArr("SELECT id, gesamtsumme, waehrung from auftrag WHERE status <> 'abgeschlossen'");
+
+    foreach ($openids as $openid) {
+        $saldo = $this->app->erp->GetSaldoDokument($openid['id'],'auftrag');
+        if (!empty($saldo)) {
+            if ($saldo['waehrung'] == $openid['waehrung'] && $saldo['betrag'] >= $openid['gesamtsumme']) {
+                $sql = "UPDATE 
+                            auftrag
+                        SET
+                            vorkasse_ok = 1
+                        WHERE id=".$openid['id'];
+                $this->app->DB->Update($sql);
+                continue;
+            } 
+        }
+        else {
+            $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok = 0 WHERE id=".$openid['id']);        
+        }
+    }  
+
+
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('auftrag', 'edit'))
     {
       $drucker = $this->app->Secure->GetPOST('seldrucker');
