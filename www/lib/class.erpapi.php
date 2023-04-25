@@ -12683,9 +12683,8 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       //$this->app->DB->Update("UPDATE auftrag_position ap, artikel a SET ap.preis='0' WHERE ap.auftrag='$auftrag' AND a.id=ap.artikel AND a.porto='1'");
     }
 
-
-  //Vorkasse Check
-  //ist genug geld da? zusammenzaehlen der kontoauszuege_zahlungseingang
+  // Vorkasse Check    
+  $auftrag_ist_vorkasse = false;
   $summe_eingang = 0;
   $auftrag_gesamtsumme = 0;
   $zahlungsweise = '';
@@ -12694,43 +12693,36 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     $auftrag_gesamtsumme = $auftragarr['gesamtsumme'];// $this->app->DB->Select("SELECT gesamtsumme FROM auftrag WHERE id='$auftrag' LIMIT 1");
     $zahlungsweise = $auftragarr['zahlungsweise'];// $this->app->DB->Select("SELECT zahlungsweise FROM auftrag WHERE id='$auftrag' LIMIT 1");
     $vorabbezahltmarkieren = $auftragarr['vorabbezahltmarkieren'];// $this->app->DB->Select("SELECT vorabbezahltmarkieren FROM auftrag WHERE id='$auftrag' LIMIT 1");
+    $waehrung = $auftragarr['waehrung'];
   }
-  //TODO zahlungsweisemodul
   $zahlungsweise = strtolower($zahlungsweise);
 
-/*
+    // Check behaviour
+    $zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, verhalten FROM zahlungsweisen WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND (projekt = '$projekt' OR projekt = 0) ORDER BY projekt = '$projekt' DESC LIMIT 1");
+    if (!empty($zahlungsweisenmodule))   {
+        if ($zahlungsweisenmodule[0]['verhalten'] == 'vorkasse') {
+            $auftrag_ist_vorkasse = true;
+        }
+    } else if ($zahlungsweise == 'vorkasse') {
+        $auftrag_ist_vorkasse = true;    
+    }
 
-    OLD CODE REPLACED BY FUNCTION IN auftrag.php / fibu_buchungen
+   // Check fibu_buchungen saldo
+    $saldo = $this->app->erp->GetSaldoDokument($auftrag,'auftrag');
+    if (!empty($saldo)) {
+        if ($saldo['waehrung'] == $waehrung && $saldo['betrag'] >= $auftrag_gesamtsumme) {
+            $saldo_ok = true;
+        } 
+    }  
 
-  if($zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, verhalten FROM zahlungsweisen WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
-   (projekt = '$projekt' OR projekt = 0) ORDER BY projekt = '$projekt' DESC LIMIT 1
-  "))
-  {
-    if( ( $zahlungsweisenmodule[0]['verhalten'] == 'vorkasse' && (($summe_eingang + $toleranz>=$auftrag_gesamtsumme) || $vorabbezahltmarkieren)) || ($zahlungsweisenmodule[0]['verhalten'] == 'lastschrift') || ($zahlungsweisenmodule[0]['verhalten'] == '') || ($zahlungsweisenmodule[0]['verhalten'] == 'rechnung') )
-    {
-      $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='1' WHERE id='$auftrag' LIMIT 1");
-    }elseif($summe_eingang > 0)
-    {
-      $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='2' WHERE id='$auftrag' LIMIT 1");
-    }else{
-      $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='0' WHERE id='$auftrag' LIMIT 1");
+    // Decide condition
+    if ($auftrag_ist_vorkasse && !$saldo_ok && !$vorabbezahltmarkieren) {
+        $vorkasse_ok = '0';
+    } else {
+        $vorkasse_ok = '1';
     }
-  }else{
-    if($summe_eingang+$toleranz>=$auftrag_gesamtsumme || ($zahlungsweise=="rechnung" || $zahlungsweise=="amazon" || $zahlungsweise=="amazon_bestellung" || $zahlungsweise=="secupay"
-          || $zahlungsweise=="nachnahme" || $zahlungsweise=="einzugsermaechtigung" || $zahlungsweise=="lastschrift" || $zahlungsweise=="bar") || $auftrag_gesamtsumme==0 || $vorabbezahltmarkieren=="1")
-    {
-      //TODO ok bei amazon und amazon_bestellung nur wenn transaktionsnummer vorhanden?
-      $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='1' WHERE id='$auftrag' LIMIT 1");
-    }
-    else if ($summe_eingang > 0) {
-      $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='2' WHERE id='$auftrag' LIMIT 1");
-    }
-    else {
-      $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='0' WHERE id='$auftrag' LIMIT 1");
-    }
-  }
 
-*/
+    $this->app->DB->Update("UPDATE auftrag SET vorkasse_ok='$vorkasse_ok' WHERE id='$auftrag'");
 
   //nachnahme gebuehr check!!!!
   //$nachnahme = $this->app->DB->Select("SELECT id FROM auftrag_position WHERE auftrag='$auftrag' AND nummer='200001' LIMIT 1");
