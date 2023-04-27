@@ -22725,24 +22725,19 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
             WHERE `artikel` = {$lagerartikel[$ij]['id']} AND `shop` = {$shop}"
           );
         }
-      }
-
-        $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8));
-
-        $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
-        $this->app->DB->Update(
-          "UPDATE `artikel` SET `cache_lagerplatzinhaltmenge` = '{$cacheQuantity}'
-          WHERE `id`= '{$lagerartikel[$ij]['id']}' LIMIT 1"
-        );
+      }     
 
         $extnummer = null;
         $anzges = 0;
         $anzfehler = 0;
+
+        $result = null; // 1 on success
+
         if(!empty($extnummer) && is_array($extnummer)) {
           foreach($extnummer as $nummer) {
             $anzges++;
             try {
-              $this->app->remote->RemoteSendArticleList($shop, array($lagerartikel[$ij]['id']), array($nummer['nummer']), true);
+                $result = $this->app->remote->RemoteSendArticleList($shop, array($lagerartikel[$ij]['id']), array($nummer['nummer']), true);
             }
             catch(Exception $e) {
               $this->app->erp->LogFile($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.$nummer['nummer'].' '.$e->getMessage()));
@@ -22753,7 +22748,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         else{
           $anzges++;
           try {
-            $this->app->remote->RemoteSendArticleList($shop,array($lagerartikel[$ij]['id']),!empty($extnummer)? array($extnummer):'',true);
+              $result = $this->app->remote->RemoteSendArticleList($shop,array($lagerartikel[$ij]['id']),!empty($extnummer)? array($extnummer):'',true);
           }
           catch(Exception $e) {
             $this->app->erp->LogFile($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.(!empty($extnummer)? array($extnummer):$lagerartikel[$ij]['nummer']).' '.$e->getMessage()));
@@ -22765,6 +22760,19 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         if($print_echo) {
           echo '*** UPDATE ' . $lagerartikel[$ij]['nummer'] . ' ' . $lagerartikel[$ij]['name_de'] . ' Lagernd: ' . ($verkaufbare_menge) . ' Korrekturwert: ' . round($verkaufbare_menge_korrektur - $verkaufbare_menge, 7) . "\r\n";
         }
+
+
+       $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.gettype($result).' '.$result);
+
+        if ($result == 1) {
+            $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
+            $this->app->DB->Update(
+              "UPDATE `artikel` SET `cache_lagerplatzinhaltmenge` = '{$cacheQuantity}'
+              WHERE `id`= '{$lagerartikel[$ij]['id']}' LIMIT 1"
+            );
+        }
+
+
     }
 
     $this->app->DB->Update(

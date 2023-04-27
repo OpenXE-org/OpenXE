@@ -125,9 +125,9 @@ $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
     );
     try {
       if($anzargs > 2){
-        $message .= $app->erp->LagerSync($articleId, true, $shopByIds);
+        $message .= $app->erp->LagerSync($articleId, false, $shopByIds); // 2nd parameter is print_echo -> prints via echo to logfile (big print_r)
       }else{
-        $message .= $app->erp->LagerSync($articleId, true);
+        $message .= $app->erp->LagerSync($articleId, false);
       }
     }
     catch (Exception $exception) {
