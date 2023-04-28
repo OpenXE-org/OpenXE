@@ -80,6 +80,7 @@ class WidgetGenimportvorlage
     $field->AddOption('Notizen (min. Angabe: datum,kundennummer,mitarbeiternummer,betreff)','notizen');
     $field->AddOption('Kontenrahmen (min. Angabe: sachkonto,beschriftung,art)','kontorahmen');
     $field->AddOption('Kontoauszug','kontoauszug');
+    $field->AddOption('St&uuml;ckliste','stueckliste');
     $this->form->NewField($field);
 
     $field = new HTMLInput("importerstezeilenummer","text","","15","","","","","","","","0","","");

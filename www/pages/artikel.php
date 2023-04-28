@@ -6090,7 +6090,7 @@ class Artikel extends GenArtikel {
 
     $stueck = $this->app->erp->ArtikelAnzahlLagerStueckliste($id);
 
-    $this->ArtikelStuecklisteImport('TAB3');
+//    $this->ArtikelStuecklisteImport('TAB3');
     $url = 'index.php?module=artikel&action=stueckliste&cmd=getbaum&id='.$id;
     $this->app->Tpl->Set('URL',$url);
     $this->app->Tpl->Add('TAB1',"<center>");
@@ -6255,8 +6255,8 @@ class Artikel extends GenArtikel {
   {
     $id = $this->app->Secure->GetGET('id');
     if($id > 0){
-      $result = $this->app->DB->SelectArr("SELECT a.nummer, a.name_de, a.hersteller,a.herstellernummer,  REPLACE(TRIM(s.menge)+0,'.',',') as menge, s.referenz, s.place, s.layer, s.wert, s.bauform, s.zachse,s.xpos, s.ypos, s.art FROM stueckliste s 
-      LEFT JOIN artikel a ON a.id=s.artikel WHERE s.stuecklistevonartikel='$id'");
+      $sql = "SELECT avon.nummer as stuecklistevon, a.nummer, a.name_de, a.hersteller,a.herstellernummer,  REPLACE(TRIM(s.menge)+0,'.',',') as menge, s.referenz, s.place, s.layer, s.wert, s.bauform, s.zachse,s.xpos, s.ypos, s.art FROM stueckliste s LEFT JOIN artikel a ON a.id=s.artikel LEFT JOIN artikel avon ON avon.id=s.stuecklistevonartikel WHERE s.stuecklistevonartikel='$id'";
+      $result = $this->app->DB->SelectArr($sql);
     }
     header('Content-type: text/csv');
     header('Content-Disposition: attachment; filename=file.csv');

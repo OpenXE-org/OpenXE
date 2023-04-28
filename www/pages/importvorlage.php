@@ -5084,7 +5084,6 @@ class Importvorlage extends GenImportvorlage {
             $allowed_fields = array('konto','buchung','betrag','betrag2','waehrung','buchungstext','buchungstext2','buchungstext3','buchungstext4');
 
             $error = false;
-
             // Create a row dataset (without checked and cmd)
             $update_sql = "";
             $row = array();
@@ -5165,6 +5164,60 @@ class Importvorlage extends GenImportvorlage {
             }
 
           break;
+          case 'stueckliste':
+
+            $allowed_fields = array('stuecklistevonartikel','artikel','menge','art','referenz','layer','wert','bauform','xpos','ypos','zachse','place');
+
+            // Create a row dataset (without checked and cmd)
+            $row = array();
+            $error_text = "";
+
+            $error = $this->create_row_set($tmp, $i, $allowed_fields, $row, $error_text);
+
+            if ($error !== false) {
+                $sql = "SELECT id FROM artikel WHERE stueckliste = 1 AND nummer = '".$row['stuecklistevonartikel']."'";
+                $von_id = $this->app->DB->SelectArr($sql);
+                if (empty($von_id)) {    
+                    $msg .= "Fehlerhafter 'Stueckliste von'-Artikel \"".$row['stuecklistevonartikel']."\"<br>";
+                    break;
+                }
+                $row['stuecklistevonartikel'] = $von_id[0]['id'];
+
+                $sql = "SELECT id FROM artikel WHERE nummer = '".$row['artikel']."'";
+                $artikel_id = $this->app->DB->SelectArr($sql);
+                if (empty($artikel_id)) {
+                    $msg .= "Fehlerhafter Artikel \"".$row['artikel']."\"<br>";
+                    break;
+                }
+                $row['artikel'] = $artikel_id[0]['id'];
+
+                if(empty($row['menge'])) {
+                    $row['menge'] = 1;
+                }
+                if(empty($row['art'])) {
+                    $row['art'] = 'et';
+                }
+
+                if(empty($row['place']) || $row['place'] == 'DNP') {
+                    $row['place'] = 'DNP';
+                } else {
+                    $row['place'] = 'DP';
+                }
+
+                $sql = "INSERT INTO stueckliste (".
+                                implode(", ",array_keys($row)).
+                                ") VALUES ('".
+                                implode("', '",array_values($row)).
+                                "')";
+
+                $result = $this->app->DB->Update($sql);
+
+            } else if(!$first_checked) {
+                $first_checked = true;
+                $msg .= $error_text;
+            }
+
+            break;
         } 
 
         // HERE END OF PROCESSING THE ROWS switch($ziel);
@@ -6252,5 +6305,28 @@ class Importvorlage extends GenImportvorlage {
 
     return $normalizedDate;
   }
+
+/*
+*   Create a cleaned row set
+*   Return true if ok, else see error_message 
+*/
+   private function create_row_set(array $tmp, $pos, array $allowed_fields, array &$result_row, string &$error_message) : bool {
+        $result_ok = true;
+        $result_row = array();
+        $error_message = "";
+        foreach ($tmp as $key => $value) {
+            if ($key != 'cmd' && $key != 'checked') {
+                if (in_array($key,$allowed_fields)) {
+                    $result_row[$key] = $value[$pos];
+                } else {
+                    $error_message .= "Feld nicht korrekt: ".$key.".<br>";            
+                    $result_ok = false;
+                } 
+            }
+        }
+        return($result_ok);
+  }
+
+
 }
 

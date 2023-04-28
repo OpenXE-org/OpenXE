@@ -8,6 +8,7 @@
 		<li><a href="#tabs-5">{|Notizen|}</a></li>
 		<li><a href="#tabs-6">{|Kontenrahmen|}</a></li>
 		<li><a href="#tabs-7">{|Kontoauszug|}</a></li>
+		<li><a href="#tabs-8">{|St&uuml;ckliste|}</a></li>
 	</ul>
 
 	<div id="tabs-1">
@@ -612,6 +613,83 @@
 				    </fieldset>
 			    </div>
 		    </div>
-	    </div>
+	    </div>    
 	</div>
+    <div id="tabs-8">
+	    <div class="row">
+		    <div class="col-xs-12 col-sm-1 col-sm-height">
+			    <div class="inside inside-full-height">
+				    <fieldset><legend>{|St&uuml;ckliste|}</legend>
+					    <table class="mkTable">
+						    <tr>
+							    <th>Variable</th>
+							    <th>Beschreibung</th>
+							    <th>Kommentar</th>
+						    </tr>
+						    <tr>
+							    <td>stuecklistevonartikel</td>
+							    <td>Hauptartikel (muss eine St&uuml;ckliste sein)</td>
+							    <td>Artikelnummer</td>
+						    </tr>
+						    <tr>
+							    <td>artikel</td>
+							    <td></td>
+							    <td>Artikelnummer</td>
+						    </tr>						    
+						    <tr>
+							    <td>menge</td>
+							    <td>Zahl</td>
+							    <td></td>
+						    </tr>
+                            <tr>
+							    <td>referenz</td>
+							    <td>Text</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+                            <tr>
+							    <td>place</td>
+							    <td>Leer oder 'DNP' = Nicht platzieren</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+						    <tr>
+							    <td>layer</td>
+							    <td>"top" oder "bottom"</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+						    <tr>
+							    <td>wert</td>
+							    <td>Text</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+						    <tr>
+							    <td>bauform</td>
+							    <td>Text</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+						    <tr>
+							    <td>zachse</td>
+							    <td>Zahl</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>                           						   
+						    <tr>
+							    <td>xpos</td>
+							    <td>Zahl</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+						    <tr>
+							    <td>ypos</td>
+							    <td>Zahl</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>                           
+						    <tr>
+							    <td>art</td>
+							    <td>Einkaufsteil "et",Informationsteil "it" oder Beistellung "bt"</td>
+							    <td>Alternativposition?</td>
+						    </tr>
+					    </table>
+				    </fieldset>
+			    </div>
+		    </div>
+	    </div>
+    </div>
 </div>

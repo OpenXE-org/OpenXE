@@ -5,7 +5,7 @@
     <ul>
         <li><a href="#tabs-1">&Uuml;bersicht</a></li>
         <li><a href="#tabs-2">neue Position anlegen</a></li>
-        <li><a href="#tabs-3">St&uuml;ckliste importieren</a></li>
+<!--  DEPRECATED moved to importvorlage       <li><a href="#tabs-3">St&uuml;ckliste importieren</a></li> -->
     </ul>
 
 <!-- erstes tab -->
