@@ -492,6 +492,8 @@ final class ReportService
             $testResult['messagetype'] = 'error';
             $testResult['message'] = sprintf("QUERY FAILED:\n%s", $e->getMessage());
 
+            $testResult['message'] .= "\n\r".$compiled;
+
             return $testResult;
         }
 
@@ -500,6 +502,9 @@ final class ReportService
         if(count($rows) < 101){
             $message = sprintf('Query successful: %s datasets found', count($rows));
         }
+
+        $message .= "\n\r".print_r($rows[0],true);
+
         $testResult = [
             'messagetype' => 'success',
             'message'     => $message,

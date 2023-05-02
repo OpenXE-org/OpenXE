@@ -1113,10 +1113,10 @@ class Report
     {
         $filterCategory = $this->request->getPost('filter_category', '');
         $filterTerm = $this->request->getPost('filter_term', '');
-        $filterOnlyOwn = $this->request->post->getBool('filter_own', false);
+        $filterexcludeReadOnly = $this->request->post->getBool('filter_own', false);
         $filterOnlyFavorites = $this->request->post->getBool('filter_favorites', false);
         try {
-            $html= $this->getTileView($filterCategory, $filterTerm, $filterOnlyOwn, $filterOnlyFavorites);
+            $html= $this->getTileView($filterCategory, $filterTerm, !$filterexcludeReadOnly, $filterOnlyFavorites);
             $response = new JsonResponse(['success' => true, 'html' => $html]);
         } catch (Exception $e) {
             $response = new Response($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -1176,14 +1176,14 @@ class Report
      *
      * @return string tiles html
      */
-    protected function getTileView($category = '', $searchTerm = '', $onlyOwn = false, $onlyFavs = false)
+    protected function getTileView($category = '', $searchTerm = '', $excludeReadOnly = true, $onlyFavs = false)
     {
         try {
             $reportList = $this->gateway->getReportList(
                 $category,
                 $searchTerm,
                 $this->app->User->GetID(),
-                $onlyOwn,
+                $excludeReadOnly,
                 $onlyFavs
                 );
         } catch (Exception $e) {

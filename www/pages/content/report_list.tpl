@@ -26,7 +26,7 @@
 															<input type="checkbox" id="report-list-filter-own">
 															<span class="slider round"></span>
 														</label>
-														<label for="report-list-filter-own">{|Nur eigene|}</label>
+														<label for="report-list-filter-own">{|Inkl. Vorlagen|}</label>
 													</li>
 													<li class="filter-item">
 														<label for="report-list-filter-favorites" class="switch">
