@@ -480,6 +480,22 @@ class Ticket {
         $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
         $input['zeit'] = date('Y-m-d H:i:s', time());
 
+        $tags = explode(',',$input['tags']);
+        // Replace multiple '!' and '?'
+        foreach ($tags as &$tag) {
+            $pos = strpos($tag, '?');
+            if ($pos !== false) {
+                $tag = substr($tag,0,$pos+1) . str_replace('?','',substr($tag,$pos+1));
+            }
+            $tag = preg_replace("/([?!])\\1+/", "$1", $tag);
+        }        
+        $input['tags'] = implode(',',$tags);
+
+        $input['tags'] = str_replace(' ?','?',$input['tags']);
+        $input['tags'] = str_replace(' !','!',$input['tags']);
+        $input['tags'] = str_replace('?!','?',$input['tags']);
+        $input['tags'] = str_replace('!?','?',$input['tags']);
+
         $columns = "id, ";
         $values = "$id, ";
         $update = ""; 
