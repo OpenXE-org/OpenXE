@@ -1355,12 +1355,12 @@ class YUI {
             if($check[0]['sort'] < $check2[0]['sort'])
             {
               $maxsort = $check[0]['sort'];
-              $zuverschiebendezwischenpositionen = '';
+              $zuverschiebendezwischenpositionen = array(0);
               $kinderartikel = $this->app->DB->SelectArr("SELECT id,sort FROM ".$module."_position WHERE explodiert_parent ='".$check[0]['id']."' ORDER BY sort ASC");
               if((empty($kinderartikel)?0:count($kinderartikel))){
                 $maxsortkind = $this->app->DB->Select("SELECT max(sort) FROM ".$module."_position WHERE explodiert_parent ='".$check[0]['id']."'");
                 $zuverschiebendezwischenpositionentmp = $this->app->DB->SelectArr("SELECT ID FROM beleg_zwischenpositionen WHERE doctype='$module' AND doctypeid='$id' AND pos >='$maxsort' AND pos <= '$maxsortkind'");
-                $zuverschiebendezwischenpositionen = array();
+                $zuverschiebendezwischenpositionen = array(0);
                 if(is_array($zuverschiebendezwischenpositionentmp)){
                   foreach ($zuverschiebendezwischenpositionentmp as $key => $value) {
                     $zuverschiebendezwischenpositionen[] = $value['ID'];
