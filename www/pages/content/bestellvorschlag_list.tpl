@@ -1,4 +1,7 @@
 <div id="tabs">
+    <ul>
+        <li><a href="#tabs-1">Allgemein</a></li>
+    </ul>
     <div id="tabs-1">
         [MESSAGE]        
         <form action="" method="post">   
@@ -11,11 +14,11 @@
                                     <legend>{|Einstellungen|}</legend>     
 
                                         <td>{|Absatz ber&uuml;cksichtigen (Monate)|}:</td>
-                                        <td><input type="number" min="0" name="monate_absatz" id="monate_absatz" value="[MONATE_ABSATZ]" size="20""></td>
+                                        <td><input type="number" min="0" name="monate_absatz" id="monate_absatz" value="[MONATE_ABSATZ]" size="20"></td>
                                     </tr>
                                     <tr>
                                         <td>{|Vorausplanen (Monate)|}:</td>
-                                        <td><input type="number" min="0" name="monate_voraus" id="monate_voraus" value="[MONATE_VORAUS]" size="20""></td>
+                                        <td><input type="number" min="0" name="monate_voraus" id="monate_voraus" value="[MONATE_VORAUS]" size="20"></td>
                                     </tr>
                                 </table>
                             </fieldset>
