@@ -999,7 +999,7 @@ $lagerartikel = "";
                         LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
                         where paketannahme = $id GROUP BY bestellung_position, paketdistribution.artikel) as p";*/
 
-               $sql = "SELECT p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
+               $sql = "SELECT SQL_CALC_FOUND_ROWS p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
                         (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, ".$this->app->erp->FormatMenge("paketdistribution.menge")." as menge, paketdistribution.bemerkung 
                         FROM paketdistribution 
                         INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
@@ -1008,7 +1008,7 @@ $lagerartikel = "";
                         where paketannahme = $id) as p";
 
                 $where = "";
-                $count = "SELECT count(DISTINCT artikel) FROM paketdistribution p WHERE paketannahme = $id";
+                $count = "SELECT count(DISTINCT id) FROM paketdistribution p WHERE paketannahme = $id";
 //                $groupby = "";
 
         break;
@@ -1032,11 +1032,14 @@ $lagerartikel = "";
 //                $groupby = "";
 */
                 $allowed['paketannahme_list'] = array('list');
-                $heading = array('Paket-Nr.','Datum','Status','Name', 'Kunde', 'Lieferant','Bestellung','LS-Nr.','RE-Nr.', 'Bearbeiter','Bemerkung', 'Men&uuml;');
-                $width = array('5%','10%','10%','10%','10%','10%','10%','10%','10%','10%'); // Fill out manually later
+                $heading = array('','Paket-Nr.','Datum','Status','Name', 'Kunde', 'Lieferant','Bestellung','LS-Nr.','RE-Nr.', 'Bearbeiter','Bemerkung', 'Men&uuml;');
+                $width = array('1%','5%','10%','10%','10%','10%','10%','10%','10%','10%','10%'); // Fill out manually later
+
+					$drop = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`";                                         
 
                 $findcols = array(
                     'paketannahme.id', 
+                    'paketannahme.id',
                     'paketannahme.datum', 
                     'paketannahme.status',
                     'adresse.name', 
@@ -1068,7 +1071,8 @@ $lagerartikel = "";
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=distriinhalt&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;</td></tr></table>";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
-                    paketannahme.id, 
+                    paketannahme.id,
+                    ".$drop.", 
                     paketannahme.id, 
                     DATE_FORMAT(paketannahme.datum, '%d.%m.%Y %H:%i'), 
                     paketannahme.status,
@@ -1106,6 +1110,8 @@ $lagerartikel = "";
                     paketannahme.bemerkung, 
                     paketannahme.id ";
 
+                $moreinfo = true; // Allow drop down details
+                $menucol = 1; // For moredata
 
                 break;
     }
@@ -1720,7 +1726,9 @@ $lagerartikel = "";
     $lsnr = $this->app->Secure->GetPOST('lsnr');
     $renr = $this->app->Secure->GetPOST('renr');
     $bemerkung = $this->app->Secure->GetPOST('bemerkung');
-
+    
+    $bemerkung = str_replace(array('\r\n', '\r', '\n'), "\n", $bemerkung);    
+    
     // Load from DB
     if (($lsnr == '' && $renr == '' && $bemerkung == '') && $id != '') {
       $fields = $this->app->DB->SelectArr(
@@ -1836,15 +1844,18 @@ $lagerartikel = "";
         }
         $this->app->Location->execute("index.php?module=wareneingang&action=distrietiketten&id=$id&$col=$pos&menge=$menge&seriennummer=".$seriennummer);
       }
-    }
-
-
-    $adresse= $this->app->DB->Select(
-      sprintf(
-        'SELECT `adresse` FROM `paketannahme` WHERE `id` = %d LIMIT 1',
+    }     
+	
+	$sql =sprintf(
+        'SELECT `adresse`,%s FROM `paketannahme` WHERE `id` = %d LIMIT 1',        
+        $this->app->erp->FormatDate('datum','datum'),
         $id
-      )
-    );
+      );
+       	
+	$paketannahme = $this->app->DB->SelectArr($sql)[0];     
+    
+    $adresse = $paketannahme['adresse'];
+    $datum = $paketannahme['datum'];
 
     $addressRow = empty($adresse)?null: $this->app->DB->SelectRow(
       sprintf(
@@ -1896,7 +1907,7 @@ $lagerartikel = "";
 
 
     if (!empty($addressRow['name'])) {
-         $this->app->Tpl->Set('LEGENDE',"Paket <b>Nr.$id</b> erfassen f&uuml;r Adresse '".$addressRow['name']."':");
+         $this->app->Tpl->Set('LEGENDE',"Paket <b>Nr.$id</b> vom $datum erfassen f&uuml;r Adresse '".$addressRow['name']."':");
     }
 
     $this->app->Tpl->Add('TAB1_SECOND',"<br><h1>Paketinhalt (eingebucht):</h1><br>");  
