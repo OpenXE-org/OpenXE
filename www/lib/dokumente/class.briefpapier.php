@@ -4030,7 +4030,11 @@ class Briefpapier extends SuperFPDF {
           }
 
           $this->SetX($x+$abstand_links);
-          $this->Cell_typed($descWidth,4,$this->WriteHTML($html));
+          
+          $text = $this->WriteHTML($html);
+          $text = empty($text)?"":$text;
+          
+          $this->Cell_typed($descWidth,4,);
           $this->SetX($x+$abstand_links+$descWidth);
           //$this->SetX($x);
 
