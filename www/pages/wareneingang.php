@@ -1977,9 +1977,19 @@ $lagerartikel = "";
       $this->app->ExitXentral();
     }
     $table = new EasyTable($this->app);    
-    $table->Query("SELECT a.nummer, a.name_de as artikel, trim(lb.menge)+0 as menge FROM lager_bewegung lb
+    /*$table->Query("SELECT a.nummer, a.name_de as artikel, trim(lb.menge)+0 as menge FROM lager_bewegung lb
         LEFT JOIN artikel a ON lb.artikel=a.id
         WHERE lb.paketannahme='$id' ORDER by a.nummer");
+        */	        
+        /* See tablesearch... */
+          $table->Query("SELECT SQL_CALC_FOUND_ROWS p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
+                        (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, ".$this->app->erp->FormatMenge("paketdistribution.menge")." as menge, paketdistribution.bemerkung 
+                        FROM paketdistribution 
+                        INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
+                        LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
+                        LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
+                        where paketannahme = $id) as p");          
+        
     $this->app->Tpl->Set('MD5', md5(microtime(true)));
     $this->app->Tpl->Set('ID', $id);
     $arr = $this->app->DB->SelectRow("SELECT * FROM paketannahme WHERE id = '$id' LIMIT 1");
@@ -1993,7 +2003,7 @@ $lagerartikel = "";
       $this->app->Tpl->Set('RENR', $arr['renr']);
       $this->app->Tpl->Set('LSNR', $arr['lsnr']);
     }
-    $table->DisplayNew('ARTIKEL','Menge','noAction');
+    $table->DisplayNew('ARTIKEL','Bemerkung','noAction');
     $this->app->Tpl->Output('wareneingang_minidetail.tpl');
     $this->app->ExitXentral();
   }
