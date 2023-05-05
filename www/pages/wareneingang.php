@@ -1032,8 +1032,8 @@ $lagerartikel = "";
 //                $groupby = "";
 */
                 $allowed['paketannahme_list'] = array('list');
-                $heading = array('Paket-Nr.','Datum','Status','Name', 'Kunde', 'Lieferant','LS-Nr.','RE-Nr.', 'Bearbeiter','Bemerkung', 'Men&uuml;');
-                $width = array('5%','10%','10%','10%','10%','10%','10%','10%','10%'); // Fill out manually later
+                $heading = array('Paket-Nr.','Datum','Status','Name', 'Kunde', 'Lieferant','Bestellung','LS-Nr.','RE-Nr.', 'Bearbeiter','Bemerkung', 'Men&uuml;');
+                $width = array('5%','10%','10%','10%','10%','10%','10%','10%','10%','10%'); // Fill out manually later
 
                 $findcols = array(
                     'paketannahme.id', 
@@ -1041,7 +1041,8 @@ $lagerartikel = "";
                     'paketannahme.status',
                     'adresse.name', 
                     'adresse.kundennummer', 
-                    'adresse.lieferantennummer', 
+                    'adresse.lieferantennummer',
+                    'bestellung.belegnr', 
                     'paketannahme.lsnr', 
                     'paketannahme.renr', 
                     'paketannahme.bearbeiter', 
@@ -1055,6 +1056,7 @@ $lagerartikel = "";
                     'adresse.name', 
                     'adresse.kundennummer', 
                     'adresse.lieferantennummer', 
+                    'bestellung.belegnr',
                     'paketannahme.lsnr', 
                     'paketannahme.renr', 
                     'paketannahme.bearbeiter', 
@@ -1072,7 +1074,8 @@ $lagerartikel = "";
                     paketannahme.status,
                     adresse.name, 
                     adresse.kundennummer, 
-                    adresse.lieferantennummer, 
+                    adresse.lieferantennummer,
+                    GROUP_CONCAT(bestellung.belegnr), 
                     paketannahme.lsnr, 
                     paketannahme.renr, 
                     paketannahme.bearbeiter, 
@@ -1080,13 +1083,28 @@ $lagerartikel = "";
                     paketannahme.id 
                     FROM paketannahme 
                     INNER JOIN adresse 
-                    ON paketannahme.adresse = adresse.id";
+                    ON paketannahme.adresse = adresse.id
+                    LEFT JOIN paketdistribution
+                    ON paketannahme.id = paketdistribution.paketannahme
+                    LEFT JOIN bestellung_position
+                    ON paketdistribution.bestellung_position = bestellung_position.id
+                    LEFT JOIN bestellung
+                    ON bestellung.id = bestellung_position.bestellung";
 
                 $where = "1";
                 $count = "SELECT count(paketannahme.id) FROM paketannahme 
                     INNER JOIN adresse 
                     ON paketannahme.adresse = adresse.id";
-//                $groupby = "";
+                $groupby = "GROUP BY paketannahme.id, 
+                    paketannahme.id,                                          
+                    adresse.name, 
+                    adresse.kundennummer, 
+                    adresse.lieferantennummer,                     
+                    paketannahme.lsnr, 
+                    paketannahme.renr, 
+                    paketannahme.bearbeiter, 
+                    paketannahme.bemerkung, 
+                    paketannahme.id ";
 
 
                 break;
