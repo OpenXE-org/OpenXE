@@ -1079,7 +1079,7 @@ $lagerartikel = "";
                     adresse.name, 
                     adresse.kundennummer, 
                     adresse.lieferantennummer,
-                    GROUP_CONCAT(bestellung.belegnr), 
+                    GROUP_CONCAT(DISTINCT bestellung.belegnr), 
                     paketannahme.lsnr, 
                     paketannahme.renr, 
                     paketannahme.bearbeiter, 
@@ -1096,19 +1096,11 @@ $lagerartikel = "";
                     ON bestellung.id = bestellung_position.bestellung";
 
                 $where = "1";
+                
                 $count = "SELECT count(paketannahme.id) FROM paketannahme 
                     INNER JOIN adresse 
                     ON paketannahme.adresse = adresse.id";
-                $groupby = "GROUP BY paketannahme.id, 
-                    paketannahme.id,                                          
-                    adresse.name, 
-                    adresse.kundennummer, 
-                    adresse.lieferantennummer,                     
-                    paketannahme.lsnr, 
-                    paketannahme.renr, 
-                    paketannahme.bearbeiter, 
-                    paketannahme.bemerkung, 
-                    paketannahme.id ";
+                $groupby = "GROUP BY paketannahme.id";
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
@@ -1985,7 +1977,7 @@ $lagerartikel = "";
       $this->app->ExitXentral();
     }
     $table = new EasyTable($this->app);    
-    $table->Query("SELECT a.nummer, LEFT(a.name_de,30) as artikel, trim(lb.menge)+0 as menge FROM lager_bewegung lb
+    $table->Query("SELECT a.nummer, a.name_de as artikel, trim(lb.menge)+0 as menge FROM lager_bewegung lb
         LEFT JOIN artikel a ON lb.artikel=a.id
         WHERE lb.paketannahme='$id' ORDER by a.nummer");
     $this->app->Tpl->Set('MD5', md5(microtime(true)));
