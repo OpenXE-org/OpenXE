@@ -7062,7 +7062,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $more_data7 = $this->app->Secure->GetGET("more_data7");
         
         // SQL statement
-        $sql = "SELECT 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
               b.id,'<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
               CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',b.id,'\" />') AS `auswahl`,    
               IF(b.status='storniert',CONCAT(b.belegnr),b.belegnr) AS `belegnr`, 

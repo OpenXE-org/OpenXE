@@ -776,6 +776,7 @@ class Bestellung extends GenBestellung
       $tmp3->DisplayNew('PDFARCHIV','Men&uuml;',"noAction");
     }
 
+/*
     $wareneingangsbelege = $this->app->DB->SelectFirstCols("SELECT 
         CONCAT('<a href=\"index.php?module=receiptdocument&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Wareneingangsbeleg storniert\"><s>','>'),if(r.document_number='0' OR document_number='','ENTWURF',r.document_number),if(r.status='storniert','</s>',''),'</a>&nbsp;<a href=\"index.php?module=receiptdocument&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Wareneingangsbeleg PDF\" border=\"0\"></a>&nbsp;
           <a href=\"index.php?module=receiptdocument&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Wareneingangsbeleg bearbeiten\" border=\"0\"></a>') as wareneingangsbeleg
@@ -783,6 +784,30 @@ class Bestellung extends GenBestellung
 
     if(!empty($wareneingangsbelege)){
       $this->app->Tpl->Add('WARENEINGANGSBELEG', implode('<br />', $wareneingangsbelege));
+    }
+    else{
+      $this->app->Tpl->Set('WARENEINGANGSBELEG', '-');
+    }
+  */
+  
+    $sql = "SELECT
+    CONCAT('<a href =\"index.php?module=wareneingang&action=distriinhalt&id=',pa.id,'\">',pa.id,'</a>') as wareneingang
+FROM
+    paketannahme pa
+INNER JOIN paketdistribution pd ON
+    pd.paketannahme = pa.id
+INNER JOIN bestellung_position bp ON
+    pd.bestellung_position = bp.id
+INNER JOIN bestellung b ON
+    b.id = bp.bestellung
+WHERE
+    b.id = $id
+GROUP BY
+    pa.id";    			
+//	 echo($sql);        
+	 $wareneingangsbelege = $this->app->DB->SelectArr($sql);     
+    if(!empty($wareneingangsbelege)){
+      $this->app->Tpl->Add('WARENEINGANGSBELEG', implode('<br />', array_column($wareneingangsbelege , 'wareneingang' )));
     }
     else{
       $this->app->Tpl->Set('WARENEINGANGSBELEG', '-');
