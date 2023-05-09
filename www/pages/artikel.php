@@ -907,14 +907,14 @@ class Artikel extends GenArtikel {
         $defaultorder = 7;
 
         // headings
-        $heading = array('Artikel', 'Nummer','Menge', 'Einheit', 'Lager', 'Reserviert', 'Men&uuml;');
-        $width = array('50%', '10%', '5%', '5%','5%', '5%', '9%');
-        $findcols = array('a.name_de', 'a.nummer', 's.menge','a.einheit',
+        $heading = array('Artikel', 'Nummer','Referenz','Menge', 'Einheit', 'Lager', 'Reserviert', 'Men&uuml;');
+        $width = array('50%', '10%', '5%', '5%', '5%','5%', '5%', '9%');
+        $findcols = array('a.name_de', 'a.nummer','s.referenz', 's.menge','a.einheit',
           'lag.menge', 'CASE WHEN (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=a.id)  > 0
                 THEN (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=a.id)
                 ELSE 0
                 END','id');
-        $searchsql = array('a.name_de', 'a.nummer','a.einheit', 's.menge','s.art',"CONCAT(IF(s.art='' OR s.art='et','Einkaufsteil',''),IF(s.art='it','Informationsteil/Dienstleistung',''),IF(s.art='bt','Beistellung',''))");
+        $searchsql = array('a.name_de', 'a.nummer','s.referenz','a.einheit', 's.menge','s.art',"CONCAT(IF(s.art='' OR s.art='et','Einkaufsteil',''),IF(s.art='it','Informationsteil/Dienstleistung',''),IF(s.art='bt','Beistellung',''))");
 
         $menu = "<table cellpadding=0 cellspacing=0>";
           $menu .= "<tr>";
@@ -932,20 +932,19 @@ class Artikel extends GenArtikel {
 
         $alignright = array(3,5,6);
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS s.id,  
-          CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.name_de,'</a>&nbsp;',
-          IF(s.art='it','<br><i style=color:#999>- Informationsteil/Dienstleistung</i>',''),IF(s.art='bt','<br><i style=color:#999>- Beistellung</i>',''), COALESCE((SELECT GROUP_CONCAT('<br><i style=color:#999>- ', art.nummer, ' ', art.name_de, ' (', alt.reason, ')', '</i>' SEPARATOR '') FROM parts_list_alternative AS alt INNER JOIN artikel AS art ON art.id = alt.alternative_article_id WHERE alt.parts_list_id = s.id), '')) as artikel,
-              CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.nummer,'</a>') as nummer,
-              ".$this->app->erp->FormatMenge('s.menge').' as menge, a.einheit,
-
-                '.$this->app->erp->FormatMenge('ifnull(lag.menge,0)').'  as lager, 
-
-              CASE WHEN (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=a.id)  > 0 
-                THEN (SELECT '.$this->app->erp->FormatMenge('SUM(lr.menge)')." FROM lager_reserviert lr WHERE lr.artikel=a.id)  
-                ELSE 0
-                END as reserviert, 
-
-              s.id as menu
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                    s.id,  
+                    CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.name_de,'</a>&nbsp;',
+                    IF(s.art='it','<br><i style=color:#999>- Informationsteil/Dienstleistung</i>',''),IF(s.art='bt','<br><i style=color:#999>- Beistellung</i>',''), COALESCE((SELECT GROUP_CONCAT('<br><i style=color:#999>- ', art.nummer, ' ', art.name_de, ' (', alt.reason, ')', '</i>' SEPARATOR '') FROM parts_list_alternative AS alt INNER JOIN artikel AS art ON art.id = alt.alternative_article_id WHERE alt.parts_list_id = s.id), '')) as artikel,
+                    CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.nummer,'</a>') as nummer,
+                    s.referenz,
+                    ".$this->app->erp->FormatMenge('s.menge').' as menge, a.einheit,
+                    '.$this->app->erp->FormatMenge('ifnull(lag.menge,0)').'  as lager, 
+                    CASE WHEN (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=a.id)  > 0 
+                        THEN (SELECT '.$this->app->erp->FormatMenge('SUM(lr.menge)')." FROM lager_reserviert lr WHERE lr.artikel=a.id)  
+                        ELSE 0
+        	        END as reserviert, 
+                    s.id as menu
                 FROM stueckliste s 
                 INNER JOIN artikel a ON s.artikel=a.id 
                 LEFT JOIN (SELECT sum(lpi.menge) as menge ,lpi.artikel
