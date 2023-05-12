@@ -976,7 +976,9 @@ class Fibu_buchungen {
                     }
                 }
                 $override = $this->app->Secure->GetPOST('override');
-                $diff = $gesamtnum-$von_saldonum;
+                $diff = round($gesamtnum-$von_saldonum,2);
+                $gesamtnum = round($von_saldonum,2);
+                $von_saldonum = round($von_saldonum,2);                                
 
                 if (
                     ($von_saldonum < 0 && ($gesamtnum < $von_saldonum)) ||
