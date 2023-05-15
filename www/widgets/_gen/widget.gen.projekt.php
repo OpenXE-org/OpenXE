@@ -464,6 +464,7 @@ class WidgetGenprojekt
     $field = new HTMLSelect("preisberechnung",0,"preisberechnung","","","0");
     $field->AddOption('{|Runden nach addieren (Standard)|}','0');
     $field->AddOption('{|gerundete Positionen und Steuern addieren|}','1');
+    $field->AddOption('{|inkl. Steuer gerundete Positionen addieren|}','2');
     $field->AddOption('{|gerundete Einzelpreise in Positionen und Steuern addieren|}','3');
     $this->form->NewField($field);
 
