@@ -77,6 +77,14 @@ class Exportbuchhaltung
         $rgchecked = $this->app->Secure->GetPOST("rechnung");
         $gschecked = $this->app->Secure->GetPOST("gutschrift");
         $vbchecked = $this->app->Secure->GetPOST("verbindlichkeit");
+        $diffignore = $this->app->Secure->GetPOST("diffignore");
+		$sachkonto = $this->app->Secure->GetPOST('sachkonto');
+			
+		$account_id = null;
+		if (!empty($sachkonto)) {
+		    $sachkonto_kennung = explode(' ',$sachkonto)[0];
+            $account_id = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];               
+		} 
 
         $msg = "";
 
@@ -151,7 +159,7 @@ class Exportbuchhaltung
             if ($dataok) {
                 $filename = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
                 try {
-                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename);                   
+                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename, $diffignore, $sachkonto_kennung);                   
                     header("Content-Disposition: attachment; filename=" . $filename);
                     header("Pragma: no-cache");
                     header("Expires: 0");
@@ -183,25 +191,28 @@ class Exportbuchhaltung
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->YUI->DatePicker("von");
         $this->app->YUI->DatePicker("bis");
+        $this->app->YUI->AutoComplete('sachkonto', 'sachkonto');
 
         $this->app->Tpl->SET('MESSAGE', $msg);
 
         $this->app->Tpl->SET('RGCHECKED',$rgchecked?'checked':'');
         $this->app->Tpl->SET('GSCHECKED',$gschecked?'checked':'');
         $this->app->Tpl->SET('VBCHECKED',$vbchecked?'checked':'');
+        $this->app->Tpl->SET('DIFFIGNORE',$diffignore?'checked':'');
 
         $this->app->Tpl->SET('VON', $von_form);     
         $this->app->Tpl->SET('BIS', $bis_form);     
-        $this->app->Tpl->SET('PROJEKT', $projektkuerzel);          
+        $this->app->Tpl->SET('PROJEKT', $projektkuerzel);         
+        $this->app->Tpl->SET('SACHKONTO', $sachkonto);        
   
         $this->app->Tpl->Parse('PAGE', "exportbuchhaltung_export.tpl");
     }
 
     /*
     * Create DATEV Buchhungsstapel
-    * @throws ConsistencyException with string (list of items) if consistency check fails 
+    * @throws ConsistencyException with string (list of items) if consistency check fails and no sachkonto for differences is given 
     */      
-    function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv') : string {            
+    function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences) : string {            
 
         $datev_header_definition = array (
             '1' => 'Kennzeichen',
@@ -499,7 +510,8 @@ class Exportbuchhaltung
                 b.".$typ['field_date']." as datum,
                 p.id as pos_id,
                 ".$typ['field_betrag_gesamt']." as betrag_gesamt,
-                ".$typ['field_betrag']." as betrag,
+                b.waehrung,
+                ROUND(".$typ['field_betrag'].",2) as betrag,
                 ".$typ['field_gegenkonto']." as gegenkonto,
                 p.waehrung as pos_waehrung
             FROM 
@@ -513,33 +525,71 @@ class Exportbuchhaltung
                     WHERE 
                 b.".$typ['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typ['condition_where'];                          
 
-           // Check consistency of positions  
-            
-            $sql_check = "SELECT *
-            FROM
-                (
-                SELECT
-                    belegnr,
-                    betrag_gesamt,
-                    ROUND(SUM(betrag),2) AS betrag_summe
+            // Check consistency of positions  
+            if (!$diffignore) {
+                $sql_check = "SELECT *
                 FROM
-            (".$sql.") posten
-            GROUP BY
-                belegnr
-            ) summen
-            WHERE betrag_gesamt <> betrag_summe OR betrag_summe IS NULL";   
-
-            $result = $this->app->DB->SelectArr($sql_check);
-            if (!empty($result)) {
-                $e = new ConsistencyException(ucfirst($typ['typ']),$result);
-                throw $e;
-            }            
-
+                    (
+                    SELECT
+                        belegnr,
+                        betrag_gesamt,
+                        ROUND(SUM(betrag),2) AS betrag_summe,
+                        waehrung,
+                        kundennummer,
+                        ustid,
+                        auftrag
+                    FROM
+                (".$sql.") posten
+                GROUP BY
+                    belegnr
+                ) summen
+                WHERE betrag_gesamt <> betrag_summe OR betrag_summe IS NULL";   
+    
+                $result = $this->app->DB->SelectArr($sql_check);
+                if (!empty($result)) {   
+        
+                    if (!$sachkonto_differences) {                                
+                        $e = new ConsistencyException(ucfirst($typ['typ']),$result);
+                        throw $e;
+        		    } else {
+                        // Create differences entries                                                                              
+                        foreach ($result as $row) {
+                            
+                            $posid = $row['pos_id'];
+                            $tmpsteuersatz = 0;
+                            $tmpsteuertext = '';
+                            $erloes = '';
+                            $result = array();
+                            $this->app->erp->GetSteuerPosition($typ['typ'], $posid, $tmpsteuersatz, $tmpsteuertext, $erloes);                                 
+                            
+                            $data = array();                            
+                                                               
+                            $difference = $row['betrag_gesamt']-$row['betrag_summe'];                                                       
+                                                                      
+                            $data['Umsatz'] = number_format(abs($difference), 2, ',', ''); // obligatory
+                            $data['EU-Steuersatz (Bestimmung)'] = 0;
+                            $data['WKZ Umsatz'] = $row['waehrung'];
+                            $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
+                            $data['Konto'] = $row['kundennummer'];
+                            $data['Soll-/Haben-Kennzeichen'] = ($difference < 0)?'S':'H'; // obligatory   
+                                                        
+                            $data['Gegenkonto (ohne BU-Schlüssel)'] = $sachkonto_differences; // obligatory                    
+                                                    
+                            $data['Belegdatum'] = date_format(date_create($row['datum']),"dm"); // obligatory                        
+                            $data['Buchungstext'] = "Differenz";
+                            $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $row['ustid'];
+                            $data['Auftragsnummer'] = $row['auftrag'];               		        
+                		    $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
+                        }                                                       
+        		    }                                
+                }
+            }      // diffignore       
+        
             // Query position data
             $arr = $this->app->DB->Query($sql);  
             while ($row = $this->app->DB->Fetch_Assoc($arr)) {                    
 
-//                    print_r($row);
+                    //print_r($row);
 
                 $posid = $row['pos_id'];
                 $tmpsteuersatz = 0;
@@ -572,17 +622,10 @@ class Exportbuchhaltung
                 $data['Belegdatum'] = date_format(date_create($row['datum']),"dm"); // obligatory
                 $data['Buchungstext'] = mb_strimwidth($row['name'],0,60);
                 $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $row['ustid'];
-                $data['Auftragsnummer'] = $row['auftrag'];
-
-                $comma = "";
-                foreach ($datev_buchungsstapel_definition as $key => $value) {
-                    if (!isset($data[$value])) {
-                        $data[$value] = '';
-                    }                     
-                    $csv .= $comma.'"'.$data[$value].'"';
-                    $comma = ";";
-                }
-                $csv .= "\r\n";
+                
+                $data['Auftragsnummer'] = ($row['auftrag']!=0)?$row['auftrag']:'';
+                
+                $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
             }
         }    
 
@@ -590,7 +633,22 @@ class Exportbuchhaltung
 
         $csv = mb_convert_encoding($csv, "ISO-8859-1", "UTF-8");
         return($csv);
-    }   
+    } 
+    
+    function create_line($definition, $data) : string {    
+        $csv = "";
+        $comma = "";        
+        foreach ($definition as $key => $value) {
+            if (!isset($data[$value])) {
+                $data[$value] = '';
+            }                     
+            $csv .= $comma.'"'.$data[$value].'"';
+            $comma = ";";
+        }
+        $csv .= "\r\n";            
+        return($csv);                
+    }
+      
 }
 
 /*

@@ -39,6 +39,14 @@
                                     <td>Projekt:</td>
                                     <td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" /></td>
                                 </tr>
+                                <tr>
+                                    <td>Differenzen (Kopf/Positionen) ignorieren:</td>
+                                    <td><input type="checkbox" name="diffignore" value="1" [DIFFIGNORE] /></td>
+                                </tr>
+                                <tr>
+                                    <td>Konto f&uuml;r Differenzen:</td>
+                                    <td><input type="text" name="sachkonto" id="sachkonto" value="[SACHKONTO]" /></td>
+                                </tr>
                             </table>                            
                         </fieldset>
                     </div>
