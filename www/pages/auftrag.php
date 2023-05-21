@@ -7313,6 +7313,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $this->app->DB->Update($sql);                                                        
                         }                    
 
+                        $this->app->erp->AuftragProtokoll($id,"Teilauftrag $belegnr_neu erstellt");
+                        $this->app->erp->PDFArchivieren('auftrag', $id, true);
+
                         header('Location: index.php?module=auftrag&action=edit&id='.$id_neu);
 
                     }
