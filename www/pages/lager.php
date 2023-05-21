@@ -649,6 +649,7 @@ class Lager extends GenLager {
 
         $width[] = '10%';
         $width[] = '10%';
+        $width[] = '10%';
         $width[] = '1%';
 
         $findcols[] = 'a.id';
@@ -667,7 +668,6 @@ class Lager extends GenLager {
           $sql .= "lp.kurzbezeichnung,p.abkuerzung,
 
             ".$app->erp->FormatMenge("ifnull(lpi.menge,0)")." as fmenge ,
-            ".$app->erp->FormatMenge("IFNULL(mengemhd, ifnull(mengecharge,0))")." as fmengecharge , 
             ".$app->erp->FormatMenge("IFNULL(lpi2.gmenge,0) - IFNULL(r.reserviert,0)")." as verkaufbare, 
             ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert,
             a.id ";
@@ -705,7 +705,6 @@ class Lager extends GenLager {
         }else{
           $sql .= "lp.kurzbezeichnung,p.abkuerzung,
             ".$app->erp->FormatMenge("ifnull(lpi.menge,0)")." as fmenge ,
-            '' as mengecharge, 
             ".$app->erp->FormatMenge("IFNULL(lpi2.gmenge,0) - IFNULL(r.reserviert,0)")." as verkaufbare, ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert, a.id ";
 
           $sql .= "
@@ -725,7 +724,7 @@ class Lager extends GenLager {
         if($more_data1) {
           $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, a.nummer,a.name_de,";
         
-          $sql .= "'-',p.abkuerzung,'0' as menge,'0' as mengecharge, '0' as verkaufbare, ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert, a.id 
+          $sql .= "'-',p.abkuerzung,'0' as menge, '0' as verkaufbare, ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert, a.id 
           FROM artikel AS `a` 
           LEFT JOIN (SELECT lpi.artikel, lp.kurzbezeichnung FROM `lager_platz_inhalt` AS `lpi` LEFT JOIN `lager_platz` AS `lp` ON lp.id=lpi.lager_platz GROUP BY lpi.artikel) AS `lp` ON lp.artikel=a.id
           LEFT JOIN (SELECT lr.artikel, SUM(lr.menge) AS `reserviert` FROM `lager_reserviert` AS `lr` GROUP BY lr.artikel) r ON r.artikel=a.id 
