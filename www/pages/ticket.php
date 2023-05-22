@@ -407,6 +407,12 @@ class Ticket {
         }
 
         if ($insecure) {
+            // Adjust cid images
+            $attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$mid);
+            foreach($attachments as $attachment) {
+                $filename = $this->app->erp->GetDateiName($attachment);
+                $messages[0]['text'] = str_replace($filename,'index.php?module=dateien&action=send&id='.$attachment,$messages[0]['text']);
+            }
             $this->app->Tpl->Set("TEXT",$messages[0]['text']);
         } else {
 
