@@ -26574,6 +26574,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
             $to_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresse' AND geloescht=0 LIMIT 1");
           }
         }
+
+        $to_name = str_replace(",","",$to_name); // , is not allowed in names, because mailsend will interpret it as a list
+
         // wenn emailadresse from email from user name von benutzer sonst firmenname
         if($drucker==$this->app->User->GetEmail())
           $from_name = $this->app->User->GetName();
@@ -27150,7 +27153,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $to_name_csv .= $item;
         }
       } else if (!empty($to_name)) {
-        foreach (explode(',',str_replace(" ","",$to_name)) as $item)  {
+        foreach (explode(',',$to_name) as $item)  {
           $to_name_array[] = $item;
           $to_name_csv .= $item;
         }
