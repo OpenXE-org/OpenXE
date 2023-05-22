@@ -2696,7 +2696,14 @@ public function NavigationHooks(&$menu)
 
   public function AnzahlOffeneTickets($eigene=true)
   {
-    $sql = "SELECT COUNT(t.id) FROM ticket t WHERE t.status = 'neu' AND ((t.warteschlange = '') OR (t.warteschlange IN (SELECT w.label FROM warteschlangen w WHERE w.adresse = '".$this->app->User->GetAdresse()."')))";
+
+    if ($eigene) {
+        $sql = "SELECT COUNT(t.id) FROM ticket t WHERE t.status = 'neu' AND (t.warteschlange IN (SELECT w.label FROM warteschlangen w WHERE w.adresse = '".$this->app->User->GetAdresse()."'))";
+    } else
+    {
+       $sql = "SELECT COUNT(t.id) FROM ticket t WHERE t.status = 'neu' AND (t.warteschlange = '')";
+    }
+    
     return (int)$this->app->DB->Select($sql);
   }
 

@@ -440,12 +440,15 @@ class erpooSystem extends Application
         );
       }
 
-
       // Creates user specific items
+
+      $offene_tickets = $this->erp->AnzahlOffeneTickets(false);
+      $offene_tickets_user = $this->erp->AnzahlOffeneTickets(true);
+   
       $possibleUserItems = [
           'Tickets' => [
               'link' => 'index.php?module=ticket&action=list',
-              'counter' => $this->erp->AnzahlOffeneTickets()
+              'counter' => ($offene_tickets+$offene_tickets_user > 0)?$offene_tickets_user."/".$offene_tickets:""
           ],
           'Aufgaben' => [
               'link' => 'index.php?module=aufgaben&action=list',
