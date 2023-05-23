@@ -128,7 +128,7 @@ final class ImapMailClient implements MailClientInterface
             $message = $this->imap->getMessage($msgNumber);
         } catch (Exception $e) {
             throw new MessageNotFoundException(
-                sprintf('Message number %s not found.', $msgNumber)
+                sprintf("Message number %s could not be fetched.\n\r%s", $msgNumber,print_r($e,true))
             );
         }
 
