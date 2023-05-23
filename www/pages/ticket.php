@@ -313,6 +313,10 @@ class Ticket {
             // Clear this first
             $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
 
+            if (empty($message['betreff'])) {
+                $message['betreff'] = "...";
+            }
+
             // Xentral 20 compatibility
             if ($message['textausgang'] != '') {
               // Sent message 
