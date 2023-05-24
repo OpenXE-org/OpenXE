@@ -1271,6 +1271,10 @@ Allow from all
     Order Allow,Deny
     Allow from all
 </Files>
+<Files robots.txt>
+    Order Allow,Deny
+    Allow from all
+</Files>
 # end
 ');
     
