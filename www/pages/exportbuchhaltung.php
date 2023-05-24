@@ -532,6 +532,7 @@ class Exportbuchhaltung
                     (
                     SELECT
                         belegnr,
+                        datum,
                         betrag_gesamt,
                         ROUND(SUM(betrag),2) AS betrag_summe,
                         waehrung,
