@@ -1454,7 +1454,9 @@ class YUI {
       $intern = false;
       $cmd = $this->app->Secure->GetGET('cmd');
     }
-    
+
+    $priceCol = 'b.preis';
+
     if($cmd === 'getpreise') {
       $ret = null;
       //$scol = $this->app->Secure->GetPOST('scol');
@@ -1472,7 +1474,6 @@ class YUI {
         $projekt = $moduleArr['projekt'];//$this->app->DB->Select("SELECT projekt FROM $module WHERE id = '$id' LIMIT 1");
         $adresse = $moduleArr['adresse'];//$this->app->DB->Select("SELECT adresse FROM $module WHERE id = '$id' LIMIT 1");
         $funktion = ucfirst($module).'MitUmsatzeuer';
-        $priceCol = 'b.preis';
         $join = '';
         $anrede = 'firma';
         if(!$this->app->erp->AnzeigeBelegNettoAdresse($anrede, $module, $projekt, $adresse, $id)
