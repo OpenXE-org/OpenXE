@@ -122,7 +122,8 @@ class Artikelbaum
   
   public function ArtikelbaumList()
   {
-    $this->app->erp->MenuEintrag('index.php?module=artikelbaum&action=list','&Uuml;bersicht');
+    $this->app->erp->MenuEintrag('index.php?module=artikelkategorien&action=list','Artikelkategorien');
+    $this->app->erp->MenuEintrag('index.php?module=artikelbaum&action=list','Artikelbaum');
     $id = $this->app->Secure->GetGET('id');
     $url = 'index.php?module=artikelbaum&action=baumajax&id='.$id;
     $this->app->Tpl->Set('URL',$url);
