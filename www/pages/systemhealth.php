@@ -133,7 +133,6 @@ class Systemhealth {
     $cmd = $this->app->Secure->GetGET('cmd');
     if($cmd === 'reset') {
       $id = $this->app->Secure->GetPOST('id');
-
       try {
         $this->service->resetStatus($id);
         $status = 1;
@@ -141,6 +140,7 @@ class Systemhealth {
       catch(Exception $e) {
         $status = 0;
       }
+      $this->fillEntries();
       header('Content-Type: application/json');
       echo json_encode(['status' => $status]);
       $this->app->ExitXentral();
@@ -461,9 +461,9 @@ class Systemhealth {
   public function fillEntries()
   {
     $phpVersion = substr(PHP_VERSION,0,3);
-    if($phpVersion < 7.2) {
+    if($phpVersion < 8) {
       $status = 'warning';
-      $phpVersion = 'Ab Xentral 20.2 benötigen Sie mind. PHP 7.2 (aktuell '.$phpVersion
+      $phpVersion = 'OpenXE benötigt mind. PHP 8 (aktuell '.$phpVersion
         .'). <a href="https://xentral.com/akademie-faq/systemvoraussetzungen-hd-ich-erhalte-den-hinweis-die-fehlermeldung-ab-xentral-20-1-benotigen-sie-min-php-7-2-aktuell-was-ist-zu-tun" target="_blank">Hilfe</a>';
     }
     else {
@@ -483,7 +483,10 @@ class Systemhealth {
       }
       elseif($dbType === 'mariadb') {
         $status = 'warning';
-        if($dbVersion >= 10.2) {
+
+        $dbVersionArr = explode('.',$dbVersion);
+
+        if($dbVersionArr[0] >= 10 && !($dbVersionArr[1] < 2)) {
           $status = 'ok';
         }
         $mysqlVersion = 'MariaDB '.$dbVersion;
@@ -503,7 +506,7 @@ class Systemhealth {
     //@todo select version() >=  10.2 mariadb + update.php prüfung
     $this->changeStatus('database', 'db_version', $status, $mysqlVersion);
     if($status === 'warning') {
-      $mysqlVersion = 'Ab Xentral 20.2 benötigen Sie mind. MySQL 5.7 / MariaDb 10.2 (aktuell '.$mysqlVersion
+      $mysqlVersion = 'OpenXE benötigt mind. MySQL 5.7 / MariaDb 10.2 (aktuell '.$mysqlVersion
         .'). <a href="https://xentral.com/akademie-faq/systemvoraussetzungen-hd-ich-erhalte-den-hinweis-die-fehlermeldung-ab-xentral-20-1-benotigen-sie-min-mysql-5-7-aktuell-was-muss-ich-tun" target="_blank">Hilfe</a>';
     }
     $this->changeStatus('database', 'db_version_min', $status, $mysqlVersion);
