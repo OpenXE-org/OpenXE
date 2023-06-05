@@ -23,13 +23,13 @@
   [STECHUHRDEVICE]
   <div class="field-row">
     [MULTIDB]
-    <div class="field">
+<!--    <div class="field">
       <select id="language" name="language">
         <option value="">- Sprache wählen -</option>
         <option [OPTIONLANGUAGEGERMAN] value="german">Deutsch</option>
         <option [OPTIONLANGUAGEENGLISH] value="englisch">English</option>
       </select>
-    </div>
+    </div> -->
   </div>
   <div class="btn-wrapper field-row">
     <div class="field">
