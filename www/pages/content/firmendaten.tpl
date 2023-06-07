@@ -1109,7 +1109,10 @@
 						<legend>{|Finanzbuchhaltung Einstellungen|}</legend>
 						<table width="100%">
 							<tr>
-								<td width="300">Buchungen erzeugen ab Datum:</td><td colspan="3"><input type="text" id= "fibu_buchungen_startdatum" name="fibu_buchungen_startdatum" size="10" value="[FIBU_BUCHUNGEN_STARTDATUM]"></td>
+								<td width="300">Buchungen erzeugen ab Datum:</td><td colspan="3"><input type="text" id= "fibu_buchungen_startdatum" name="fibu_buchungen_startdatum" size="10" value="[FIBU_BUCHUNGEN_STARTDATUM]"><i>F&uuml;r die Nutzung mit dem Modul Buchhaltung-Buchungen (Zahlungseingang, Zahlungsstatus, Mahnwesen)</i></td>
+							</tr>	
+                            <tr>
+								<td width="300">Konto f&uuml;r Rechnung-Skontobuchungen:</td><td colspan="3"><input type="text" id= "rechnung_skonto_kontorahmen" name="rechnung_skonto_kontorahmen" size="10" value="[RECHNUNG_SKONTO_KONTORAHMEN]"><i>Auf dieses Sachkonto werden Skontobuchungen mithilfe der Funktion "Zahlungsstatus berechnen" im Rechnungsmodul gebucht</i></td>
 							</tr>							
 						</table>
 					</fieldset>

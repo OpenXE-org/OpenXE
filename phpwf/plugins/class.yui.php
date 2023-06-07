@@ -6576,7 +6576,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                 r.zahlungsweise as zahlungsweise,
                 FORMAT(r.soll,2{$extended_mysql55} ) as soll,
                 ifnull(r.waehrung,'EUR'),
-                if(r.soll-r.ist=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus) as zahlung, 
+                r.zahlungsstatus as zahlung, 
                 if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})) as fehlt,
                 if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status,
                 ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')." 

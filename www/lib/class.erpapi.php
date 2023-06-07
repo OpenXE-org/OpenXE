@@ -13780,6 +13780,19 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
   }
 
+    function ReplaceKontorahmen($db,$value,$fromform = null) {
+        $value = $this->app->DB->real_escape_string($value);
+
+        if ($db) {
+            $sachkonto = explode(' ',$value)[0];
+            $kontoid = $this->app->DB->Select("SELECT id FROM kontorahmen WHERE sachkonto = '$sachkonto' LIMIT 1");
+            return($kontoid);
+        } else {
+            $sachkonto = $this->app->DB->Select("SELECT CONCAT(sachkonto,' ',beschriftung) FROM kontorahmen WHERE id = '$value' LIMIT 1");
+            return($sachkonto);
+        }
+    }
+
   // @refactor FormHelper Komponente
   function ReplaceLieferant($db,$value,$fromform)
   {
@@ -36033,7 +36046,7 @@ function Firmendaten($field,$projekt="")
         * Auftrag: gesamtsumme, rechnung: soll, gutschrift: soll verbindlichkeit: betrag
         * returns array(betrag, waehrung) or empty array if multiple
         */
-        public function GetSaldoDokument(int $id, string $type) : array {
+        public function GetSaldoDokument(int $id, string $type, string $buchungsart = '', string $datum_bis = '') : array {
 
             $sql = "
                 SELECT
@@ -36042,10 +36055,15 @@ function Firmendaten($field,$projekt="")
                 FROM
                     fibu_buchungen_alle
                 WHERE
-                    typ = '".$type."' AND id = ".$id."
+                    typ = '".$type."' 
+                        AND 
+                    id = ".$id." 
+                        AND 
+                    (buchungsart = '".$buchungsart."' OR '".$buchungsart."' = '')
+                        AND
+                    (datum <=  '".$datum_bis."' OR '".$datum_bis."' = '')                   
                 GROUP BY
                     waehrung";            
-
             $result = $this->app->DB->SelectArr($sql);
 
             if (!empty($result)) {
@@ -36067,6 +36085,16 @@ function Firmendaten($field,$projekt="")
             }          
         }
 
+        /*
+        * Refresh fibu buchung_alle tables
+        * using module fibu_buchungen
+        */
+        public function fibu_rebuild_tables() {
+            $fibu_buchungen = $this->app->loadModule('fibu_buchungen', false);
+            if($fibu_buchungen !== null && method_exists($fibu_buchungen, 'fibu_buchungen_buchen')) {
+              return $fibu_buchungen->fibu_rebuild_tables();
+            }          
+        }
 
       public function ANABREGSNeuberechnen($id,$art,$force=false)
       {

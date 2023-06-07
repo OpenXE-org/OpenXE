@@ -39,8 +39,12 @@
           <label for="rechnungenstorniert">{|Storniert|}</label>
         </li>
       </ul>
-    </div>
+      <form method="post" action="#">
+        <input type="submit" class="btnBlue" name="zahlungsstatus_berechnen" value="{|Zahlungsstatus berechnen|}" />
+      </form>              
+    </div>    
   </div>
+
 
 [MESSAGE]
 <form method="post" action="#">

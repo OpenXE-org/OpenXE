@@ -1043,7 +1043,7 @@ class Firmendaten  {
           'arbeitsnachweis_header','arbeitsnachweis_footer','provisionsgutschrift_header','provisionsgutschrift_footer','proformarechnung_header','proformarechnung_footer','eu_lieferung_vermerk','export_lieferung_vermerk'
           ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2','bcc3'
           ,'firmenfarbe','name','strasse','plz','ort','steuernummer','projekt','steuer_positionen_export','tabsnavigationfarbe','tabsnavigationfarbeschrift'
-          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge", "fibu_buchungen_startdatum"
+          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge", "fibu_buchungen_startdatum", "rechnung_skonto_kontorahmen"
         );
 
         if(isset($sql2a)){
@@ -1380,8 +1380,9 @@ class Firmendaten  {
     $this->app->YUI->AutoComplete('steuersatz_normal','steuersatz',1);
     $this->app->YUI->AutoComplete('steuersatz_ermaessigt','steuersatz',1);
 
-
     $this->app->YUI->DatePicker('fibu_buchungen_startdatum');
+
+    $this->app->YUI->AutoComplete('rechnung_skonto_kontorahmen', 'sachkonto');
 
     $this->app->Tpl->Parse('PAGE','firmendaten.tpl');
   }
@@ -1849,6 +1850,7 @@ class Firmendaten  {
 
         // Fibu
         $this->app->Tpl->Set('FIBU_BUCHUNGEN_STARTDATUM', $this->app->erp->ReplaceDatum(false,$data[0]['fibu_buchungen_startdatum'],false));
+        $this->app->Tpl->Set('RECHNUNG_SKONTO_KONTORAHMEN', $this->app->erp->ReplaceKontorahmen(false,$data[0]['rechnung_skonto_kontorahmen']));
 
 
     }
@@ -2292,7 +2294,8 @@ class Firmendaten  {
     $data['buchhaltung_sachkontenlaenge'] = ($this->app->Secure->POST["buchhaltung_sachkontenlaenge"]);
 
     $data['fibu_buchungen_startdatum'] = $this->app->erp->ReplaceDatum(true,$this->app->Secure->POST["fibu_buchungen_startdatum"],false);
-
+    $data['rechnung_skonto_kontorahmen'] = $this->app->erp->ReplaceKontorahmen(true,$this->app->Secure->POST["rechnung_skonto_kontorahmen"]);
+    
     return $data;
   }
 
