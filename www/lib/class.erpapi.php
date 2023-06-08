@@ -36096,6 +36096,18 @@ function Firmendaten($field,$projekt="")
             }          
         }
 
+         /*
+        * Recalculate payment status and skonto
+        * using module rechnung
+        */
+        public function rechnung_zahlstatus_berechnen() {
+            $rechnung = $this->app->loadModule('rechnung', false);
+            if($rechnung !== null && method_exists($rechnung, 'rechnung_zahlstatus_berechnen')) {
+              return $rechnung->rechnung_zahlstatus_berechnen();
+            }          
+        }
+
+
       public function ANABREGSNeuberechnen($id,$art,$force=false)
       {
         if($id <= 0 || empty($art))

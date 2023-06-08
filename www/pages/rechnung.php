@@ -1816,7 +1816,7 @@ class Rechnung extends GenRechnung
 
       if($bezahlt_am=='--')$bezahlt_am='0000-00-00';
       $alte_mahnstufe = $this->app->DB->Select("SELECT mahnwesen FROM rechnung WHERE id='$id' LIMIT 1");
-      if($alte_mahnstufe!=$mahnwesen) $versendet=0; else $versendet=1;
+      if($alte_mahnstufe!=$mahnwesen) $versendet=0; 
 
 /*      if($mahnwesenfestsetzen=='1')
       {*/
@@ -2239,68 +2239,7 @@ class Rechnung extends GenRechnung
     } // ende ausfuehren
 
     if($this->app->Secure->GetPOST('zahlungsstatus_berechnen') && $this->app->erp->RechteVorhanden('rechnung', 'edit')) {
-
-        // START RECALCULATE
-        $this->app->erp->fibu_rebuild_tables();
-        $offene_rechnungen = $this->app->DB->SelectArr("  SELECT 
-                                                    id, 
-                                                    soll, 
-                                                    waehrung, 
-                                                    datum, 
-                                                    zahlungszieltage, 
-                                                    DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as zieldatum,       
-                                                    CURRENT_DATE > DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as faellig,     
-                                                    zahlungszielskonto, 
-                                                    TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll,
-                                                    zahlungszieltageskonto, 
-                                                    DATE_ADD(datum, INTERVAL zahlungszieltageskonto DAY) as zieldatumskonto
-                                                FROM
-                                                    rechnung 
-                                                WHERE 
-                                                    belegnr <> ''
-                                                ");
-
-        foreach ($offene_rechnungen as $offene_rechnung) {
-            $saldo = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung');
-            if (!empty($saldo)) {
-                if ($saldo['waehrung'] == $offene_rechnung['waehrung']) {
-                    $offene_rechnung['ist'] = $offene_rechnung['soll']+$saldo['betrag'];              
-                    // Check for skonto
-                    $skontorelevante_zahlungen = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung','zubuchung',$offene_rechnung['zieldatumskonto'])['betrag'];
-                    $zielkonforme_zahlungen = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung','zubuchung',$offene_rechnung['zieldatum'])['betrag'];
-                    // Check overall value
-                    if ($saldo['betrag'] == 0) {
-                        // ok -> will be marked as paid
-                    } else if ($skontorelevante_zahlungen >= $offene_rechnung['skontosoll']) {
-                        // Skonto ok -> book difference
-                        $sachkonto = $this->app->erp->Firmendaten('rechnung_skonto_kontorahmen');
-                        if (!empty($sachkonto)) {                                         
-                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,-$saldo['betrag'],$offene_rechnung['waehrung'],'CURRENT_DATE','');
-                            $offene_rechnung['ist'] = $offene_rechnung['soll'];
-                        } else {
-                        }
-                    } else if ($offene_rechnung['faellig']) {
-                        // Overdue
-                    } else {
-                        // Not due
-                    }
-                    // Update rechnung
-                    $sql = "UPDATE 
-                                rechnung
-                            SET
-                                ist = ".$saldo['betrag']."+soll,
-                                zahlungsstatus = IF(".$saldo['betrag']." = 0,'bezahlt','offen')
-                            WHERE id=".$offene_rechnung['id'];
-                    $this->app->DB->Update($sql);
-                } 
-            }
-            else {
-                $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$offene_rechnung['id']);        
-            }
-        }  
-        $this->app->erp->fibu_rebuild_tables();
-        // END RECALCULATE
-
+        $this->rechnung_zahlstatus_berechnen();   
     }
 
     $this->app->Tpl->Set('UEBERSCHRIFT','Rechnungen');
@@ -2801,5 +2740,71 @@ class Rechnung extends GenRechnung
     }
   }
 
+    /*
+    *   Recalculate the payments status with skonto
+    */
+
+    function rechnung_zahlstatus_berechnen() {
+        // START RECALCULATE
+        $this->app->erp->fibu_rebuild_tables();
+        $offene_rechnungen = $this->app->DB->SelectArr("  SELECT 
+                                                    id, 
+                                                    soll, 
+                                                    waehrung, 
+                                                    datum, 
+                                                    zahlungszieltage, 
+                                                    DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as zieldatum,       
+                                                    CURRENT_DATE > DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as faellig,     
+                                                    zahlungszielskonto, 
+                                                    TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll,
+                                                    zahlungszieltageskonto, 
+                                                    DATE_ADD(datum, INTERVAL zahlungszieltageskonto DAY) as zieldatumskonto
+                                                FROM
+                                                    rechnung 
+                                                WHERE 
+                                                    belegnr <> ''
+                                                ");
+
+        foreach ($offene_rechnungen as $offene_rechnung) {
+            $saldo = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung');
+            if (!empty($saldo)) {
+                if ($saldo['waehrung'] == $offene_rechnung['waehrung']) {
+                    $offene_rechnung['ist'] = $offene_rechnung['soll']+$saldo['betrag'];              
+                    // Check for skonto
+                    $skontorelevante_zahlungen = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung','zubuchung',$offene_rechnung['zieldatumskonto'])['betrag'];
+                    $zielkonforme_zahlungen = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung','zubuchung',$offene_rechnung['zieldatum'])['betrag'];
+                    // Check overall value
+                    if ($saldo['betrag'] == 0) {
+                        // ok -> will be marked as paid
+                    } else if ($skontorelevante_zahlungen >= $offene_rechnung['skontosoll']) {
+                        // Skonto ok -> book difference
+                        $sachkonto = $this->app->erp->Firmendaten('rechnung_skonto_kontorahmen');
+                        if (!empty($sachkonto)) {                                         
+                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,-$saldo['betrag'],$offene_rechnung['waehrung'],'CURRENT_DATE','');
+                            $offene_rechnung['ist'] = $offene_rechnung['soll'];
+                        } else {
+                        }
+                    } else if ($offene_rechnung['faellig']) {
+                        // Overdue
+                    } else {
+                        // Not due
+                    }
+                    // Update rechnung
+                    $sql = "UPDATE 
+                                rechnung
+                            SET
+                                ist = ".$saldo['betrag']."+soll,
+                                zahlungsstatus = IF(".$saldo['betrag']." = 0,'bezahlt','offen')
+                            WHERE id=".$offene_rechnung['id'];
+                    $this->app->DB->Update($sql);
+                } 
+            }
+            else {
+                $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$offene_rechnung['id']);        
+            }
+        }  
+        $this->app->erp->fibu_rebuild_tables();
+        // END RECALCULATE       
+    }
 
 }
