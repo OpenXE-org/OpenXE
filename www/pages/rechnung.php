@@ -644,7 +644,11 @@ class Rechnung extends GenRechnung
     if($auftragArr[0]['mahnwesen']=='') {
       $auftragArr[0]['mahnwesen']='-';
     }
+
     $this->app->Tpl->Set('MAHNWESEN',$auftragArr[0]['mahnwesen']);
+
+    $this->app->Tpl->Set('MAHNWESEN','XXX');
+
     if($auftragArr[0]['mahnwesen_datum']=='0000-00-00') {
       $auftragArr[0]['mahnwesen_datum']='-';
     }
@@ -889,7 +893,7 @@ class Rechnung extends GenRechnung
     $tmp->Query("SELECT zeit,bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' ORDER by zeit DESC",0,"");
     $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
 
-
+/*
     $query = $this->app->DB->SelectArr("SELECT zeit,bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' ORDER by zeit");
     if($query)
     {
@@ -905,12 +909,12 @@ class Rechnung extends GenRechnung
       {
         
         $tmp2 = new EasyTable($this->app);
-        $tmp2->Query("SELECT concat('<a href=\"index.php?module=mahnwesen&action=mahnpdf&id=',rechnung,'&datum=',DATE_FORMAT(zeit,'%d.%m.%Y'),'&mahnwesen=',LOWER(LEFT(grund,LOCATE(' ',grund))),'\"><img src=\"themes/{$this->app->Conf->WFconf[defaulttheme]}/images/pdf.svg\" border=\"0\"></a>') as PDF, Date(zeit) as Datum, bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' AND zeit >= '".$zeit."' ORDER by zeit DESC");
+        $tmp2->Query("SELECT concat('<a href=\"index.php?module=mahnwesen&action=mahnpdf&id=',rechnung,'&datum=',DATE_FORMAT(zeit,'%d.%m.%Y'),'&mahnwesen=',LOWER(LEFT(grund,LOCATE(' ',grund))),'\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>') as PDF, Date(zeit) as Datum, bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' AND zeit >= '".$zeit."' ORDER by zeit DESC");
         $tmp2->DisplayNew('MAHNPROTOKOLL',"Protokoll","noAction");        
       }
       
 
-    }
+    }*/
 
     if(class_exists('RechnungPDFCustom'))
     {
@@ -1940,7 +1944,7 @@ class Rechnung extends GenRechnung
         ' &uuml;berein <input type="submit" name="resetextsoll" value="Festgeschriebene Summe zur&uuml;cksetzen" /></div></form>'
       );
     }
-       
+      
     parent::RechnungEdit();
     if($id > 0 && $this->app->DB->Select(
       sprintf(
@@ -2780,7 +2784,7 @@ class Rechnung extends GenRechnung
                         // Skonto ok -> book difference
                         $sachkonto = $this->app->erp->Firmendaten('rechnung_skonto_kontorahmen');
                         if (!empty($sachkonto)) {                                         
-                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,-$saldo['betrag'],$offene_rechnung['waehrung'],'CURRENT_DATE','');
+                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,-$saldo['betrag'],$offene_rechnung['waehrung'],date('Y-m-d'),'');
                             $offene_rechnung['ist'] = $offene_rechnung['soll'];
                         } else {
                         }

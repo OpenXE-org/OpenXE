@@ -68,13 +68,13 @@
   <td width="25%" style="position:relative"><a href="index.php?module=versandarten&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_16.gif" border="0" width="30%"></a></td>
   <td width="25%" style="position:relative"><a href="index.php?module=zahlungsweisen&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_16.gif" border="0" width="30%"></a></td>
   <td width="25%" style="position:relative"><a [LIEFERBEDINGUNGENLINK]><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_16.gif" border="0" width="30%"></a>[GREYLIEFERBEDINGUNGEN]</td>
-  <td width="25%"></td>
+  <td width="25%" style="position:relative"><a href="index.php?module=mahnwesen&action=einstellungen"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_11.gif" border="0" width="30%"></a></td>
 </tr>
 <tr align="center">  
   <td><a href="index.php?module=versandarten&action=list">{|Versandarten|}</a></td>
   <td><a href="index.php?module=zahlungsweisen&action=list">{|Zahlungsweisen|}</a></td>
   <td><a [LIEFERBEDINGUNGENLINK]>{|Lieferbedingungen|}</a></td>
-  <td></td>
+  <td><a href="index.php?module=mahnwesen&action=einstellungen">{|Mahnwesen|}</a></td>
 </tr>
 
 </table>

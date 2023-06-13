@@ -43,9 +43,9 @@ class RechnungPDF extends BriefpapierCustom {
     parent::__construct($this->app,$projekt,$styleData);
   }
 
-  public function GetRechnung($id,$als="",$doppeltmp=0, $_datum = null)
+  public function GetRechnung($id, $titel_abw="",$doppeltmp=0, $_datum = null, $text_abw = '')
   {
-    $this->parameter = $als;
+
     if($this->app->erp->Firmendaten("steuerspalteausblenden")=="1")
     { 
       // pruefe ob es mehr als ein steuersatz gibt // wenn ja dann darf man sie nicht ausblenden
@@ -124,10 +124,10 @@ class RechnungPDF extends BriefpapierCustom {
 
     $lieferschein = $this->app->DB->Select("SELECT belegnr FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
 
-    if(empty($als) || $als === 'doppel') {
+   /* if(empty($als) || $als === 'doppel') {
       $rechnungsnummeranzeigen = false;
     }
-    elseif(!empty($belegnr)){
+    else*/if(!empty($belegnr)){
       $rechnungsnummeranzeigen = true;
     }
     $projektabkuerzung = $this->app->DB->Select(sprintf('SELECT abkuerzung FROM projekt WHERE id = %d', $projekt));
@@ -172,7 +172,7 @@ class RechnungPDF extends BriefpapierCustom {
     $zahlungsweisetext = $this->app->erp->Zahlungsweisetext("rechnung",$id);
 
     
-    if($doppel==1) $als = "doppel";
+//    if($doppel==1) $als = "doppel";
 
     if($belegnr=="" || $belegnr=="0") $belegnr = "- ".$this->app->erp->Beschriftung("dokument_entwurf");
     else {
@@ -181,7 +181,7 @@ class RechnungPDF extends BriefpapierCustom {
     }
 
     $posanzeigen = true;    
-    if($als=="zahlungserinnerung")
+/*    if($als=="zahlungserinnerung")
     {
       $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_zahlungserinnerung")." ".(is_null($_datum)?$mahnwesen_datum:$_datum);
       if($this->app->erp->GetKonfiguration("mahnwesen_ze_pos") === '0')$posanzeigen = false;
@@ -207,14 +207,12 @@ class RechnungPDF extends BriefpapierCustom {
       if($this->app->erp->GetKonfiguration("mahnwesen_inkasso_pos") === '0')$posanzeigen = false;
     }
     else
-    {
+    {*/
       if($rechnungersatz)
         $this->doctypeOrig=($this->app->erp->Beschriftung("bezeichnungrechnungersatz")?$this->app->erp->Beschriftung("bezeichnungrechnungersatz"):$this->app->erp->Beschriftung("dokument_rechnung"))." $belegnr";
       else
         $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_rechnung")." $belegnr";
-    }
-
-
+//    }
 
     $this->zusatzfooter = " (RE$belegnr)";
 
@@ -407,12 +405,12 @@ class RechnungPDF extends BriefpapierCustom {
 
 
 
-    if($als!="" && $als!="doppel")
+/*    if($als!="" && $als!="doppel")
     {
       $body = $this->app->erp->MahnwesenBody($id,$als,$_datum);
       $footer =$this->app->erp->ParseUserVars("rechnung",$id, $this->app->erp->Beschriftung("rechnung_footer"));
     }
-    else {
+    else {*/
       $body = $this->app->erp->Beschriftung("rechnung_header");
       if($bodyzusatz!="") $body=$body."\r\n".$bodyzusatz;
       $body = $this->app->erp->ParseUserVars("rechnung",$id,$body);
@@ -442,6 +440,14 @@ class RechnungPDF extends BriefpapierCustom {
         $footer = $versandinfo."$freitext"."\r\n".$this->app->erp->ParseUserVars("rechnung",$id,$this->app->erp->Beschriftung("rechnung_footer").
           "\r\n$steuer\r\n$zahlungsweisetext").$systemfreitext;
       }
+//    }
+
+    if ($titel_abw != '') {
+        $this->doctypeOrig = $titel_abw;
+    }
+
+    if ($text_abw != '') {            
+        $body = $text_abw;
     }
 
     $this->setTextDetails(array(
@@ -686,10 +692,10 @@ class RechnungPDF extends BriefpapierCustom {
     $tmp_name = str_replace(' ','',trim($this->recipient['enterprise']));
     $tmp_name = str_replace('.','',$tmp_name);
 
-    if($als=="" || $als=="doppel")
-      $this->filename = $datum2."_RE".$belegnr.".pdf";
+    if($titel_abw != "")
+      $this->filename = $datum2."_RE".$belegnr."_INFO.pdf";
     else
-      $this->filename = $datum2."_MA".$belegnr.".pdf";
+      $this->filename = $datum2."_RE".$belegnr.".pdf";
 
     $this->setBarcode($belegnr);
   }

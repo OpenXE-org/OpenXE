@@ -5426,6 +5426,18 @@ title: 'Abschicken',
     return $ret;
   }
 
+    /*
+    * Replace {VARS} with texts given in array
+    * Input array(key => value)
+    */
+    function ParseVars(array $mapping, $text) { 
+        foreach ($mapping as $key => $value) {
+            $text = str_replace('{'.strtoupper($key).'}',$value,$text);
+        }
+        return $text;
+    }
+
+
   // @refactor Document Komponente
   function CheckBearbeiter($id,$module)
   {
@@ -14546,156 +14558,6 @@ function get_emails ($str)
   foreach($output[0] as $email) array_push ($emails, trim(strtolower($email)));
   if ((!empty($emails)?count($emails):0) >= 1) return $emails;
   else return false;
-}
-
-
-// @refactor Mahnwesen Modul
-function MahnwesenBody($id,$als,$_datum=null,$sprache='')
-{
-  if($id > 0)
-  {
-    $rechnungarr = $this->app->DB->SelectRow("SELECT r.*,DATE_FORMAT(datum,'%d.%m.%Y') as datum_de,DATE_FORMAT(mahnwesen_datum,'%d.%m.%Y') as mahnwesen_datum_de,r.mahnwesen_datum  
-    FROM rechnung AS r WHERE r.id=$id LIMIT 1");
-  }
-  if(empty($rechnungarr))
-  {
-    return '';
-  }
-
-  $adresse = $rechnungarr['adresse'];
-  if($sprache==''){
-    $sprache = $rechnungarr['sprache'];
-  }
-  if($sprache==''){
-    $sprache = $this->app->DB->Select("SELECT sprache FROM adresse WHERE id='$adresse' LIMIT 1");
-  }
-  // OfferNo, customerId, OfferDate
-
-  $kundennummer = $rechnungarr['kundennummer'];
-  $projekt = $rechnungarr['projekt'];
-  $auftrag= $rechnungarr['auftrag'];
-  $buchhaltung= $rechnungarr['buchhaltung'];
-  $lieferschein = $rechnungarr['lieferschein'];
-  $lieferscheinid = $lieferschein;
-  if($lieferscheinid){
-    $lieferschein = $this->app->DB->Select("SELECT belegnr FROM lieferschein WHERE id='$lieferschein' LIMIT 1");
-  }else{
-    $lieferschein = '';
-  }
-  $bestellbestaetigung = $rechnungarr['kundennummer'];
-  $datum = $rechnungarr['datum_de'];
-  $datum_sql = $rechnungarr['datum'];
-  $belegnr = $rechnungarr['belegnr'];
-  $doppel = $rechnungarr['doppel'];
-  $freitext = $rechnungarr['freitext'];
-  $ustid = $rechnungarr['ustid'];
-  $soll = $rechnungarr['soll'];
-  $ist = $rechnungarr['ist'];
-  $land = $rechnungarr['land'];
-  $mahnwesen_datum = $rechnungarr['mahnwesen_datum'];
-  $mahnwesen_datum_deutsch = $rechnungarr['mahnwesen_datum_de'];
-  $zahlungsweise = $rechnungarr['zahlungsweise'];
-  $zahlungsstatus = $rechnungarr['zahlungsstatus'];
-  $zahlungszieltage = $rechnungarr['zahlungszieltage'];
-  $zahlungszieltageskonto = $rechnungarr['zahlungszieltageskonto'];
-  $zahlungszielskonto = $rechnungarr['zahlungszielskonto'];
-  $waehrung = $rechnungarr['waehrung'];
-
-  $zahlungdatum = $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD(datum, INTERVAL $zahlungszieltage DAY),'%d.%m.%Y') FROM rechnung WHERE id='$id' LIMIT 1");
-
-  if($_datum!=null)
-  {
-    $mahnwesen_datum = $this->app->String->Convert($_datum,'%1.%2.%3','%3-%2-%1');
-    $mahnwesen_datum_deutsch = $_datum;
-  }
-
-  $zahlungsweise = strtolower($zahlungsweise);
-
-  if($als=='zahlungserinnerung')
-  {
-    $body = $this->GetGeschaeftsBriefText("MahnwesenZahlungserinnerung",$sprache,$projekt,"rechnung",$id);
-    $tage = $this->GetKonfiguration('mahnwesen_m1_tage');
-  }
-  else if($als=='mahnung1')
-  {
-    $body = $this->GetGeschaeftsBriefText("MahnwesenMahnung1",$sprache,$projekt,"rechnung",$id);
-    $mahngebuehr = $this->GetKonfiguration('mahnwesen_m1_gebuehr');
-    $tage = $this->GetKonfiguration('mahnwesen_m2_tage');
-  }
-  else if($als=='mahnung2')
-  {
-    $body = $this->GetGeschaeftsBriefText("MahnwesenMahnung2",$sprache,$projekt,"rechnung",$id);
-    $tage = $this->GetKonfiguration('mahnwesen_m3_tage');
-    $mahngebuehr = $this->GetKonfiguration('mahnwesen_m2_gebuehr');
-  }
-  else if($als=='mahnung3')
-  {
-    $body = $this->GetGeschaeftsBriefText("MahnwesenMahnung3",$sprache,$projekt,"rechnung",$id);
-    $tage = $this->GetKonfiguration('mahnwesen_ik_tage');
-    $mahngebuehr = $this->GetKonfiguration('mahnwesen_m3_gebuehr');
-  }
-  else if($als=='inkasso')
-  {
-    $body = $this->GetGeschaeftsBriefText("MahnwesenInkasso",$sprache,$projekt,"rechnung",$id);
-    //$tage = $this->GetKonfiguration("mahnwesen_ik_tage");
-    $tage = 3; //eigentlich vorbei
-    $mahngebuehr = $this->GetKonfiguration('mahnwesen_ik_gebuehr');
-  }
-  else
-  {
-    $body = $this->app->erp->Beschriftung("dokument_anschreiben");
-  }
-
-  if($tage <=0) $tage = 0;
-
-  $datummahnung= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$mahnwesen_datum', INTERVAL $tage DAY),'%d.%m.%Y')");
-  $datumrechnungzahlungsziel= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$datum_sql', INTERVAL $zahlungszieltage DAY),'%d.%m.%Y')");
-
-  $tage_ze = $zahlungszieltage + $this->GetKonfiguration('mahnwesen_m1_tage');
-  $datumzahlungserinnerung= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$datum_sql', INTERVAL $tage_ze DAY),'%d.%m.%Y')");
-
-  // checkstamp $this->CheckStamp("jhdskKUHsiusakiakuhsd"); // errechnet aus laufzeit und kundenid // wenn es nicht drinnen ist darf es nicht gehen
-
-  if($mahngebuehr=='' || !is_numeric($mahngebuehr))
-    $mahngebuehr = 0;
-
-  //$offen= '11,23';
-  $body = str_replace('{RECHNUNG}',$belegnr,$body);
-  $body = str_replace('{BELEGNR}',$belegnr,$body);
-  $body = str_replace('{DATUMRECHNUNG}',$datum,$body);
-  $body = str_replace('{TAGE}',$tage,$body);
-  $body = str_replace('{OFFEN}',$this->formatMoney($soll - $ist,$waehrung),$body);
-  $body = str_replace('{SOLL}',$this->formatMoney($soll,$waehrung),$body);
-  $body = str_replace('{SUMME}',$this->formatMoney($soll - $ist + $mahngebuehr,$waehrung),$body);
-  $body = str_replace('{IST}',$this->formatMoney($ist,$waehrung),$body);
-  $body = str_replace('{DATUM}',$datummahnung,$body);
-  $body = str_replace('{MAHNGEBUEHR}',$this->formatMoney($mahngebuehr,$waehrung),$body);
-  $body = str_replace('{OFFENMITMAHNGEBUEHR}',$this->formatMoney($mahngebuehr + $soll - $ist,$waehrung),$body);
-  $body = str_replace('{MAHNDATUM}',$mahnwesen_datum_deutsch,$body);
-
-
-  // Im Protokoll suchen Datum von Zahlungserinnerung, Mahnung 1, Mahnung 2, Mahnung 3
-
-  $mahnung1 = $this->app->DB->Select("SELECT DATE_FORMAT(zeit,'%d.%m.%Y') FROM rechnung_protokoll WHERE rechnung='$id'
-      AND grund LIKE 'Mahnung1 versendet%' ORDER by Zeit DESC LIMIT 1");
-
-  $mahnung2 = $this->app->DB->Select("SELECT DATE_FORMAT(zeit,'%d.%m.%Y') FROM rechnung_protokoll WHERE rechnung='$id'
-      AND grund LIKE 'Mahnung2 versendet%' ORDER by Zeit DESC LIMIT 1");
-
-  $mahnung3 = $this->app->DB->Select("SELECT DATE_FORMAT(zeit,'%d.%m.%Y') FROM rechnung_protokoll WHERE rechnung='$id'
-      AND grund LIKE 'Mahnung3 versendet%' ORDER by Zeit DESC LIMIT 1");
-
-  $body = str_replace('{DATUMMAHNUNG1}',$mahnung1,$body);
-  $body = str_replace('{DATUMMAHNUNG2}',$mahnung2,$body);
-  $body = str_replace('{DATUMMAHNUNG3}',$mahnung3,$body);
-
-  $body = str_replace('{DATUMZAHLUNGSERINNERUNGFAELLIG}',$datumzahlungserinnerung,$body);
-  $body = str_replace('{DATUMZAHLUNGSERINNERUNG}',$datumzahlungserinnerung,$body);
-  $body = str_replace('{DATUMRECHNUNGZAHLUNGSZIEL}',$datumrechnungzahlungsziel,$body);
-
-  $body = $this->ParseUserVars('rechnung',$id,$body);
-
-  return $body;
 }
 
 /**@deprecated */

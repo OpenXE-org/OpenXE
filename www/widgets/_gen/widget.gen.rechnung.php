@@ -133,12 +133,19 @@ class WidgetGenrechnung
 
     $field = new HTMLSelect("mahnwesen",0,"mahnwesen","","","0");
     $field->AddOption('','');
-    $field->AddOption('Zahlungserinnerung','zahlungserinnerung');
+/*    $field->AddOption('Zahlungserinnerung','zahlungserinnerung');
     $field->AddOption('Mahnung 1','mahnung1');
     $field->AddOption('Mahnung 2','mahnung2');
     $field->AddOption('Mahnung 3','mahnung3');
     $field->AddOption('Inkasso','inkasso');
-    $field->AddOption('Forderungsverlust','forderungsverlust');
+    $field->AddOption('Forderungsverlust','forderungsverlust');*/
+
+    $mahnstufen = $this->app->DB->SelectArr("Select name,id FROM mahnwesen ORDER BY tage DESC");
+
+    foreach ($mahnstufen as $mahnstufe) {
+        $field->AddOption($mahnstufe['name'],$mahnstufe['id']);
+    }
+
     $this->form->NewField($field);
 
     $field = new HTMLInput("mahnwesen_datum","text","","10","","","","","","","","0","","");
