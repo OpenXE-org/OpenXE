@@ -33,7 +33,7 @@
 		</tr>
 		<tr>
 			<td>Bearbeiter:</td>
-			<td colspan="3"><input type="text" name="von" id="von" value="[SENDER]" style="width: 370px;"></td>
+			<td colspan="3"><input type="text" name="von" id="von" value="[BEARBEITER]" style="width: 370px;"></td>
 		</tr>
 		<tr>
 			<td width="100">{|Projekt|}:</td>

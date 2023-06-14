@@ -231,62 +231,7 @@ class Mahnwesen {
                 }
             }
 
-        }
-
-        if($this->app->Secure->GetPOST('mahnen') && $this->app->erp->RechteVorhanden('rechnung', 'edit')) {
-         
-            // Process multi action
-            $auswahl = $this->app->Secure->GetPOST('auswahl');
-            $selectedIds = [];
-            if(!empty($auswahl)) {
-                foreach($auswahl as $selectedId) {
-                    $selectedId = (int)$selectedId;
-                    if($selectedId > 0) {
-                      $selectedIds[] = $selectedId;
-                    }   
-                }          
-
-                $mails = 0;
-                $drucke = 0;
-
-                foreach ($selectedIds as $rechnung_id) {
-
-                    $mahnung = $this->MahnwesenMessage($rechnung_id);
-
-                    if ($mahnung['druck']) {
-                        $drucker = $this->app->Secure->GetPOST('seldrucker');
-                        if($drucker > 0) {
-                            $this->app->erp->BriefpapierHintergrundDisable($drucker);
-                        } else {
-                            $msg .= "<div class=\"error\">Kein Drucker gew&auml;hlt.</div>";                  
-                            break;
-                        }                    
-                        if(class_exists('RechnungPDFCustom')) {
-                            $Brief = new RechnungPDFCustom($this->app,$projekt);
-                        }
-                        else {
-                            $Brief = new RechnungPDF($this->app,$projekt);
-                        }
-                        $Brief->GetRechnung($rechnung_id,$mahnung['betreff'],0,null,$mahnung['body']);
-                        $tmpfile = $Brief->displayTMP();
-                        $this->app->printer->Drucken($drucker,$tmpfile);
-                        unlink($tmpfile);
-                        $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung gedruckt');
-                        $drucke++;
-                    }           
-
-                    if ($mahnung['mail']) {
-                        $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung versendet');
-                        $mails++;
-                    }
-
-                    $sql = "UPDATE rechnung set mahnwesen_datum = CURRENT_DATE, versendet_mahnwesen  = 1";
-                    $this->app->DB->Update($sql);
-
-                }
-                $msg .= "<div class=\"success\">$mails E-Mails versendet, $drucke Dokumente gedruckt.</div>";                  
-            }  
-        }   
+        }      
 
         if($this->app->Secure->GetPOST('sel_aktion') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
         {
@@ -316,6 +261,49 @@ class Mahnwesen {
               case 'mahnung_reset':   
                 $sql = "UPDATE rechnung SET mahnwesen='', versendet_mahnwesen ='', mahnwesen_datum = '0000-00-00' WHERE id IN (".Implode(', ',$auswahl).')';
                 $this->app->DB->Update($sql);
+              break;
+              case 'mahnen':
+
+                $mails = 0;
+                $drucke = 0;
+                foreach ($auswahl as $rechnung_id) {
+                    $mahnung = $this->MahnwesenMessage($rechnung_id);
+                    if (empty($mahnung)) {
+                        continue;
+                    }
+                    if ($mahnung['druck']) {
+                        $drucker = $this->app->Secure->GetPOST('seldrucker');
+                        if($drucker > 0) {
+                            $this->app->erp->BriefpapierHintergrundDisable($drucker);
+                        } else {
+                            $msg .= "<div class=\"error\">Kein Drucker gew&auml;hlt.</div>";                  
+                            break;
+                        }                    
+                        if(class_exists('RechnungPDFCustom')) {
+                            $Brief = new RechnungPDFCustom($this->app,$projekt);
+                        }
+                        else {
+                            $Brief = new RechnungPDF($this->app,$projekt);
+                        }
+                        $Brief->GetRechnung($rechnung_id,$mahnung['betreff'],0,null,$mahnung['body']);
+                        $tmpfile = $Brief->displayTMP();
+                        $this->app->printer->Drucken($drucker,$tmpfile);                                       
+                        $this->MahnungCRM($mahnung['rechnung'], $mahnung['betreff'], $mahnung['body'],$tmpfile,$Brief->filename);                    
+                        unlink($tmpfile);
+                        $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung gedruckt');               
+                        $drucke++;
+                    }           
+
+                    if ($mahnung['mail']) {
+                        $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung versendet');
+                        $mails++;
+                    }
+
+                    $sql = "UPDATE rechnung set mahnwesen_datum = CURRENT_DATE, versendet_mahnwesen  = 1";
+                    $this->app->DB->Update($sql);
+
+                }
+                $msg .= "<div class=\"success\">$mails E-Mails versendet, $drucke Dokumente gedruckt.</div>";                              
               break;
             }
           }      
@@ -472,7 +460,7 @@ class Mahnwesen {
 
     /*
     * Constuct the Mahnwesen message according to GeschäftsbriefVorlage
-    * Returns Array (string betreff, string body, boolean mail, boolean druck)
+    * Returns Array (string betreff, string body, boolean mail, boolean druck, array rechnung)
     */
     function MahnwesenMessage($rechnung_id) {
 
@@ -654,9 +642,38 @@ class Mahnwesen {
                 'body' => $body,
                 'mail' => $rechnungarr['mahn_mail'] != 0,
                 'druck' => $rechnungarr['mahn_druck'] != 0,
-                'empfaenger' => $rechnungarr['email']
+                'adresse' => $rechnungarr['adresse'],
+                'empfaenger' => $rechnungarr['email'],
+                'projekt' => $rechnungarr['projekt'],
+                'rechnung' => $rechnungarr
             ));
   
     }
+
+    /*
+    * Create CRM entry for mahnung
+    */
+    function MahnungCRM(array $rechnung, $betreff, $text, $file, $filename) {
+        $data = array();
+        $data['typ'] = 'brief';
+        $data['projekt'] = $rechnung['projekt'];
+        $data['datum'] = date('Y-m-d');
+        $data['uhrzeit'] = date('Y-m-d H:i:s');
+        $data['user'] = $rechnung['adresse'];
+        $data['an'] = $rechnung['name'];
+        $data['adresse'] = $rechnung['strasse'];            
+        $data['plz'] = $rechnung['plz'];            
+        $data['ort'] = $rechnung['ort'];            
+        $data['betreff'] = $betreff;
+        $data['content'] = $text;
+        $data['sent'] = 1;
+
+        
+/*        $data['email'] = $this->app->Secure->GetPOST('email');
+        $data['printer'] = $this->app->Secure->GetPOST('printer');*/
+
+        $crm_id = $this->app->erp->DokumentCreate($data,$this->app->User->GetAdresse());
+        $this->app->erp->CreateDateiWithStichwort($filename,$mahnung['betreff'],"","",$file,$this->app->User->GetName() ,'anhang','dokument',$crm_id);        
+    }       
 
 }

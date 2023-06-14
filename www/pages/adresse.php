@@ -6417,7 +6417,7 @@ function AdresseVerein()
             if(bearbeiter!="",bearbeiter,a2.name) as bearbeiter,
             CONCAT(UCASE(LEFT(d.typ, 1)), SUBSTRING(d.typ, 2)) as art,
             CONCAT(IF(d.sent = 1, "JA", "NEIN"),"<a data-type=dokumente data-id=", d.id, "></a>") as gesendet,
-            "" as pdf,
+            concat("<a href=\"index.php?module=dateien&action=send&id=",(SELECT datei FROM datei_stichwoerter WHERE subjekt="anhang" AND objekt="dokument" AND parameter = d.id LIMIT 1),"\"><img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/pdf.svg></a>") as pdf,
             concat("1","-",d.id) as did,
             d.content as suchtext,
             d.internebezeichnung

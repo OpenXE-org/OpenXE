@@ -3,9 +3,7 @@
             <li><a href="#tabs-1">[TABTEXT1]</a></li>
     </ul>
     <div id="tabs-1">
-
-        <form method="post" action="#">
-
+        <form method="post" action="#">        
             <div class="filter-box filter-usersave">
                 <div class="filter-block filter-inline">
                   <div class="filter-title">{|Filter|}</div>
@@ -33,9 +31,10 @@
                     </li>               
                   </ul>
                   <input type="submit" class="btnBlue" name="mahnstufe_berechnen" value="{|Mahnstufe berechnen|}" />
-                  <input type="submit" class="btnBlue" name="mahnen" value="{|Mahnung durchf&uuml;hren|}" title="Alle markierten mit neuer Mahnstufe mahnen" />
                 </div>    
-              </div>     
+            </div>                 
+        </form>
+        <form method="post" action="#">
             [MESSAGE]
             [TAB1]
             [TAB1NEXT]
@@ -47,13 +46,13 @@
                     [ALSBEZAHLTMARKIEREN]
                     <option value="offen">{|als offen markieren|}</option>
                     <option value="mahnung_reset">{|Mahnstatus zur&uuml;cksetzen|}</option>
-                <!--    <option value="mahnen">{|Mahnung durchf&uuml;hren|}</option>
-                    <option value="email">{|Mahnung durchf&uuml;hren (nur E-Mail)|}</option>
+                    <option value="mahnen">{|Mahnung durchf&uuml;hren|}</option>
+                <!--    <option value="email">{|Mahnung durchf&uuml;hren (nur E-Mail)|}</option>
                     <option value="email">{|Mahnung durchf&uuml;hren (nur Drucken)|}</option> -->
                 </select>&nbsp;{|Drucker|}: <select name="seldrucker">[SELDRUCKER]</select>&nbsp;<input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />
             </fieldset>   
-        </div> 
-    </form>
+        </form>
+    </div> 
 </div>
 
 <script>

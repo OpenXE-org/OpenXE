@@ -17983,7 +17983,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
         created = NOW(),
         uhrzeit = "' . $data['uhrzeit'] . '",
         projekt = "' . $data['projekt'] . '",
-        bearbeiter = "' . $data['bearbeiter'] . '"
+        bearbeiter = "' . $data['bearbeiter'] . '",
+        sent = "' . $data['sent'] . '"
           ');
 
     return $this->app->DB->GetInsertID();
