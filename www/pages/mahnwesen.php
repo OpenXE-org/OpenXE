@@ -33,16 +33,19 @@ class Mahnwesen {
                 $extended_mysql55 = ",'de_DE'";
 
                 $allowed['mahnwesen_list'] = array('list');
-                $heading = array('', '', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'W&auml;hrung', 'Zahlstatus', 'Differenz', 'Status','F&auml;llig am','Tage','Mahnstufe','Gemahnt','Mahn-Datum','Sperre','Interne Bemerkung','Men&uuml;');
-                $width = array('1%','1%','01%',      '01%', '01%',    '05%',   '01%',  '01%',     '01%',     '01%',             '01%',          '01%',        '01%',       '01%',   '01%',           '01%', '01%',      '01%',    '01%',       '01%',   '20%',              '1%'); // Fill out manually later
+                $heading = array('', '', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'W&auml;hrung', 'Zahlstatus', 'Differenz', 'Status','F&auml;llig am','Tage','Mahnstufe','Brief','E-Mail','Gemahnt','Mahn-Datum','Sperre','Interne Bemerkung','Men&uuml;');
+                $width = array('1%','1%','01%',      '01%', '01%',    '05%',   '01%',  '01%',     '01%',     '01%',             '01%',          '01%',        '01%',       '01%',   '01%',           '01%', '01%',      '01%',    '01%', '01%',    '01%',      '01%',   '20%',              '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
                 $faellig_datum = $app->erp->FormatDateShort("DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)");
                 $faellig_tage = "if(DATEDIFF(CURRENT_DATE,DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)) > 0,DATEDIFF(CURRENT_DATE,DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)),'')";
+                $mahn_druck = "if(m.druck,'Ja','')";
+                $mahn_mail = "if(m.mail,'Ja','')";
+                $mahn_versendet = "if(r.versendet_mahnwesen,'Ja','')";
 
-                $findcols = array('r.id','r.id','r.belegnr', $app->erp->FormatDateShort('r.datum'), 'r.kundennummer','r.name', 'r.land','p.abkuerzung','r.zahlungsweise','r.soll','r.waehrung','r.zahlungsstatus','r.soll','r.status',$faellig_datum,$faellig_tage,'r.name');
+                $findcols = array('r.id','r.id','r.belegnr', $app->erp->FormatDateShort('r.datum'), 'r.kundennummer','r.name', 'r.land','p.abkuerzung','r.zahlungsweise','r.soll','r.waehrung','r.zahlungsstatus','r.soll','r.status',$faellig_datum,$faellig_tage,'m.name',$mahn_druck,$mahn_mail,$mahn_versendet,'mahnwesen_datum');
                 $searchsql = array('belegnr', 'kunde', 'datum');
 
                 $defaultorder = 1;
@@ -70,8 +73,10 @@ class Mahnwesen {
                     ".$faellig_datum." as faellig_datum,
                     ".$faellig_tage." as faellig_tage,
                     m.name,
-                    if(r.versendet_mahnwesen,'Ja','') as versendet_mahnwesen,
-                    if(mahnwesen_datum <> '0000-00-00',".$app->erp->FormatDateShort('mahnwesen_datum').",'') as mahnwesen_datum,
+                    ".$mahn_druck.",
+                    ".$mahn_mail.",
+                    ".$mahn_versendet.",
+                    if(mahnwesen_datum <> '0000-00-00',".$app->erp->FormatDateShort('mahnwesen_datum').",''),
                     if(r.mahnwesen_gesperrt,'Ja',''),
                     REPLACE(r.mahnwesen_internebemerkung,'\r\n','<br> '),
                     r.id
@@ -268,7 +273,13 @@ class Mahnwesen {
                 $drucke = 0;
                 foreach ($auswahl as $rechnung_id) {
                     $mahnung = $this->MahnwesenMessage($rechnung_id);
+
+                    // Check first
                     if (empty($mahnung)) {
+                        continue;
+                    }
+                    if ($mahnung['mail'] && empty($mahnung['rechnung']['email'])) {
+                        $msg .= "<div class=\"error\">Keine E-Mail-Adresse hinterlegt bei Rechnung ".$mahnung['rechnung']['belegnr'].".</div>";                  
                         continue;
                     }
                     if ($mahnung['druck']) {
@@ -278,26 +289,52 @@ class Mahnwesen {
                         } else {
                             $msg .= "<div class=\"error\">Kein Drucker gew&auml;hlt.</div>";                  
                             break;
-                        }                    
-                        if(class_exists('RechnungPDFCustom')) {
-                            $Brief = new RechnungPDFCustom($this->app,$projekt);
-                        }
-                        else {
-                            $Brief = new RechnungPDF($this->app,$projekt);
-                        }
-                        $Brief->GetRechnung($rechnung_id,$mahnung['betreff'],0,null,$mahnung['body']);
-                        $tmpfile = $Brief->displayTMP();
-                        $this->app->printer->Drucken($drucker,$tmpfile);                                       
-                        $this->MahnungCRM($mahnung['rechnung'], $mahnung['betreff'], $mahnung['body'],$tmpfile,$Brief->filename);                    
-                        unlink($tmpfile);
+                        }                                           
+                    }
+
+                    // Create PDF
+                    if(class_exists('RechnungPDFCustom')) {
+                        $Brief = new RechnungPDFCustom($this->app,$projekt);
+                    }
+                    else {
+                        $Brief = new RechnungPDF($this->app,$projekt);
+                    }
+                    $Brief->GetRechnung($rechnung_id,$mahnung['betreff'],0,null,$mahnung['body']);
+                    $tmpfile = $Brief->displayTMP();
+
+                    $fileid = $this->app->erp->CreateDatei($Brief->filename,$mahnung['betreff'],"","",$tmpfile,$this->app->User->GetName());
+            
+                    if ($mahnung['druck']) {
+                        $this->app->printer->Drucken($drucker,$tmpfile);           
+                        $this->MahnungCRM('brief',$mahnung['rechnung'], $mahnung['betreff'], $mahnung['body'],$fileid,$Brief->filename);                    
                         $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung gedruckt');               
                         $drucke++;
                     }           
 
                     if ($mahnung['mail']) {
+                         $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
+                         $senderAddress = $this->app->erp->GetFirmaMail();
+                         //   function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
+                          $this->app->erp->MailSend(
+                              $senderAddress,
+                              $senderName,
+                              $mahnung['rechnung']['email'],
+                              $mahnung['rechnung']['email'],
+                              htmlentities($mahnung['betreff']),
+                              htmlentities($mahnung['body']),
+                              [$tmpfile],
+                              $mahnung['rechnung']['projekt'],
+                              true,
+                              $cc,
+                              '',
+                              true
+                          );
+                        $this->MahnungCRM('email',$mahnung['rechnung'], $mahnung['betreff'], $mahnung['body'],$fileid,$Brief->filename);                    
                         $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung versendet');
                         $mails++;
                     }
+
+                    unlink($tmpfile);
 
                     $sql = "UPDATE rechnung set mahnwesen_datum = CURRENT_DATE, versendet_mahnwesen  = 1";
                     $this->app->DB->Update($sql);
@@ -652,10 +689,12 @@ class Mahnwesen {
 
     /*
     * Create CRM entry for mahnung
+    * typ = brief, email
     */
-    function MahnungCRM(array $rechnung, $betreff, $text, $file, $filename) {
+    function MahnungCRM(string $typ, array $rechnung, $betreff, $text, $fileid, $filename) {
+          
         $data = array();
-        $data['typ'] = 'brief';
+        $data['typ'] = $typ;
         $data['projekt'] = $rechnung['projekt'];
         $data['datum'] = date('Y-m-d');
         $data['uhrzeit'] = date('Y-m-d H:i:s');
@@ -666,14 +705,12 @@ class Mahnwesen {
         $data['ort'] = $rechnung['ort'];            
         $data['betreff'] = $betreff;
         $data['content'] = $text;
+        $data['email_an'] = $rechnung['email'];
         $data['sent'] = 1;
 
-        
-/*        $data['email'] = $this->app->Secure->GetPOST('email');
-        $data['printer'] = $this->app->Secure->GetPOST('printer');*/
-
         $crm_id = $this->app->erp->DokumentCreate($data,$this->app->User->GetAdresse());
-        $this->app->erp->CreateDateiWithStichwort($filename,$mahnung['betreff'],"","",$file,$this->app->User->GetName() ,'anhang','dokument',$crm_id);        
+        $this->app->erp->AddDateiStichwort($fileid,'anhang','dokument',$crm_id);
+
     }       
 
 }
