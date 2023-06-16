@@ -17,14 +17,14 @@
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|<!--Legend for this form area goes here>-->Mahnwesen-Einstellungen|}</legend><i>Info like this.</i>
+                                <legend>{|<!--Legend for this form area goes here>-->Mahnwesen-Einstellungen|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr>
                                         <td>
                                             {|Name|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="name" id="name" value="[NAME]" size="20">
+                                            <input type="text" name="name" id="name" value="[NAME]" size="20"><i>Entspricht "Typ" in der Gesch&auml;ftsbrief-Vorlage</i>
                                         </td>
                                     </tr>
                                     <tr>

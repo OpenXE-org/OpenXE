@@ -139,7 +139,7 @@ class Mahnwesen {
                     // $alignright = array(4,5,6,7,8); 
 
                     $findcols = array('m.id', 'm.tage','m.name', 'm.gebuehr', 'm.mail','m.druck');
-                    $searchsql = array('m.stufe','m.name','m.tage', 'm.gebuehr', 'm.versandmethode');
+                    $searchsql = array('m.name','m.tage', 'm.gebuehr', 'm.versandmethode');
 
                     $defaultorder = 1;
                     $defaultorderdesc = 1;
@@ -447,7 +447,7 @@ class Mahnwesen {
     
         // Load values again from database
     	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',m.id,'\" />') AS `auswahl`";
-        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS m.id, $dropnbox, m.stufe, m.name, m.tage, m.gebuehr, m.mail, m.druck, m.id FROM mahnwesen m"." WHERE id=$id");
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS m.id, $dropnbox, m.name, m.tage, m.gebuehr, m.mail, m.druck, m.id FROM mahnwesen m"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
@@ -474,7 +474,6 @@ class Mahnwesen {
     public function GetInput(): array {
         $input = array();
         $input['name'] = $this->app->Secure->GetPOST('name');
-        $input['stufe'] = $this->app->Secure->GetPOST('stufe');
     	$input['tage'] = $this->app->Secure->GetPOST('tage');
     	$input['gebuehr'] = $this->app->Secure->GetPOST('gebuehr');
     	$input['mail'] = $this->app->Secure->GetPOST('mail')?'1':'0';
@@ -487,7 +486,6 @@ class Mahnwesen {
      */
     function SetInput($input) {
         $this->app->Tpl->Set('NAME', $input['name']);
-        $this->app->Tpl->Set('STUFE', $input['stufe']);
     	$this->app->Tpl->Set('TAGE', $input['tage']);
 	    $this->app->Tpl->Set('GEBUEHR', $input['gebuehr']);
     	$this->app->Tpl->Set('MAIL', $input['mail']);
