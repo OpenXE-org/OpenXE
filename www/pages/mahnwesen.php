@@ -18,6 +18,7 @@ class Mahnwesen {
         $this->app->ActionHandler("create", "mahnwesen_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "mahnwesen_edit");        
         $this->app->ActionHandler("einstellungen", "mahnwesen_einstellungen");
+        $this->app->ActionHandler("delete", "mahnwesen_delete");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -382,7 +383,7 @@ class Mahnwesen {
         $this->app->DB->Delete("DELETE FROM `mahnwesen` WHERE `id` = '{$id}'");        
         $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
 
-        $this->mahnwesen_list();
+        $this->mahnwesen_einstellungen();
     } 
 
     /*
