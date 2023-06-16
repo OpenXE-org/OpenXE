@@ -2766,7 +2766,7 @@ class Rechnung extends GenRechnung
                                                 FROM
                                                     rechnung 
                                                 WHERE 
-                                                    belegnr <> ''
+                                                    belegnr <> '' AND zahlungsstatus = 'offen'
                                                 ");
 
         foreach ($offene_rechnungen as $offene_rechnung) {
