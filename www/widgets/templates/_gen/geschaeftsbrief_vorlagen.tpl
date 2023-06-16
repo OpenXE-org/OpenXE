@@ -30,6 +30,7 @@
 <li>ZahlungDiff <i>Variablen: {AUFTRAG}, {DATUM}, {GESAMT}, {REST}</i> </li>
 <li>Stornierung <i>Variablen: {AUFTRAG}, {DATUM}</i></li>
 <li>ZahlungMiss <i>Variablen: {AUFTRAG}, {DATUM}, {GESAMT}, {REST}</i></li>
+<li>Mahnung <i>Variablen: {BELEGNR}, {DATUM}, {OFFEN}, {MAHNGEBUEHR}, {HEUTE}</i></li>
 <li>Versand <i>Variablen: {VERSAND}, {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}</i></li>
 <li>VersandMailDokumente <i>Variablen: {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}</i></li>
 <li>Selbstabholer</li>

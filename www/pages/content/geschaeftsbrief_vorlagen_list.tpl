@@ -15,7 +15,7 @@
 <tr>
   <td><input type="checkbox" id="angeboteoffen">&nbsp;Fehlende Artikel</td>
   <td><input type="checkbox" id="angeboteoffen">&nbsp;Artikel im Zulauf</td>
-  <td><input type="checkbox" id="angeboteheute">&nbsp;Gersperrte Artikel</td>
+  <td><input type="checkbox" id="angeboteheute">&nbsp;Gesperrte Artikel</td>
   <td>Artikelgruppen: <select><option>alle</option><option>Waren 700000</option></select></td>
 </tr></table>
 </center>
@@ -121,6 +121,7 @@
                 <li>{|ZahlungDiff|} <i>{|Variablen|}: {AUFTRAG}, {DATUM}, {GESAMT}, {REST}, {ANSCHREIBEN}, {INTERNET}</i></li>
                 <li>{|Stornierung|} <i>{|Variablen|}: {AUFTRAG}, {DATUM}, {INTERNET}</i></li>
                 <li>{|ZahlungMiss|} <i>{|Variablen|}: {AUFTRAG}, {DATUM}, {GESAMT}, {REST}, {ANSCHREIBEN}, {INTERNET}</i></li>
+                <li>Mahnung <i>Variablen: {BELEGNR}, {DATUM}, {OFFEN}, {MAHNGEBUEHR}, {HEUTE}</i></li>
                 <li>{|Versand|} <i>{|Variablen|}: {VERSAND}, {VERSANDTYPE}, {VERSANDBEZEICHNUNG}, {TRACKINGNUMMER}, {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}, {LIEFERADRESSE}, {LIEFERADRESSELANG}</i></li>
                 <li>{|VersandMailDokumente|} <i>{|Variablen|}: {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}</i></li>
                 <li>{|Erweiterte Freigabe|} <i>{|Variablen|}: {REQUESTER}, {LINK}, {LINKFREIGABEUEBERSICHT}, {DOCTYPE}, {DOCTYPE_ID}</i></li>

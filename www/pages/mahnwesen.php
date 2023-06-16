@@ -39,14 +39,14 @@ class Mahnwesen {
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $faellig_datum = $app->erp->FormatDateShort("DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)");
-                $faellig_tage = "if(DATEDIFF(CURRENT_DATE,DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)) > 0,DATEDIFF(CURRENT_DATE,DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)),'')";
+                $faellig_datum = "DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)";
+                $faellig_tage = "DATEDIFF(CURRENT_DATE,DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY))";
                 $mahn_druck = "if(m.druck,'Ja','')";
                 $mahn_mail = "if(m.mail,'Ja','')";
                 $mahn_versendet = "if(r.versendet_mahnwesen,'Ja','')";
 
-                $findcols = array('r.id','r.id','r.belegnr', $app->erp->FormatDateShort('r.datum'), 'r.kundennummer','r.name', 'r.land','p.abkuerzung','r.zahlungsweise','r.soll','r.waehrung','r.zahlungsstatus','r.soll','r.status',$faellig_datum,$faellig_tage,'m.name',$mahn_druck,$mahn_mail,$mahn_versendet,'mahnwesen_datum');
-                $searchsql = array('belegnr', 'kunde', 'datum');
+                $findcols = array('r.id','r.id','r.belegnr', 'r.datum', 'r.kundennummer','r.name', 'r.land','p.abkuerzung','r.zahlungsweise','r.soll','r.waehrung','r.zahlungsstatus','r.soll','r.status',$faellig_datum,$faellig_tage,'m.name',$mahn_druck,$mahn_mail,$mahn_versendet,'mahnwesen_datum');
+                $searchsql = array('r.belegnr', 'r.name', $faellig_datum, 'r.kundennummer');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -70,8 +70,8 @@ class Mahnwesen {
                     r.zahlungsstatus as zahlung, 
                     if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})) as fehlt,
                     if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status,
-                    ".$faellig_datum." as faellig_datum,
-                    ".$faellig_tage." as faellig_tage,
+                    ".$app->erp->FormatDateShort($faellig_datum)." as faellig_datum,
+                    if(".$faellig_tage.">0,".$faellig_tage.",'') as faellig_tage,
                     m.name,
                     ".$mahn_druck.",
                     ".$mahn_mail.",
@@ -264,7 +264,7 @@ class Mahnwesen {
                 $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen',bezahlt_am = NULL, mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt entfernt am ".date('d.m.Y')."') WHERE id IN (".implode(', ',$auswahl).')');
               break;
               case 'mahnung_reset':   
-                $sql = "UPDATE rechnung SET mahnwesen='', versendet_mahnwesen ='', mahnwesen_datum = '0000-00-00' WHERE id IN (".Implode(', ',$auswahl).')';
+                $sql = "UPDATE rechnung SET mahnwesen='', versendet_mahnwesen ='', mahnwesen_datum = '0000-00-00' WHERE id IN (".implode(', ',$auswahl).')';
                 $this->app->DB->Update($sql);
               break;
               case 'mahnen':
@@ -315,7 +315,7 @@ class Mahnwesen {
                          $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
                          $senderAddress = $this->app->erp->GetFirmaMail();
                          //   function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
-                          $this->app->erp->MailSend(
+                         $result = $this->app->erp->MailSend(
                               $senderAddress,
                               $senderName,
                               $mahnung['rechnung']['email'],
@@ -329,6 +329,12 @@ class Mahnwesen {
                               '',
                               true
                           );
+
+                        if ($result = 0) {
+                            $msg .= "<div class=\"error\">Fehler beim E-Mail-Versand bei Rechnung ".$mahnung['rechnung']['belegnr'].".</div>";                  
+                            continue;
+                        }
+
                         $this->MahnungCRM('email',$mahnung['rechnung'], $mahnung['betreff'], $mahnung['body'],$fileid,$Brief->filename);                    
                         $this->app->erp->RechnungProtokoll($rechnung_id,'Mahnung versendet');
                         $mails++;
@@ -336,7 +342,7 @@ class Mahnwesen {
 
                     unlink($tmpfile);
 
-                    $sql = "UPDATE rechnung set mahnwesen_datum = CURRENT_DATE, versendet_mahnwesen  = 1";
+                    $sql = "UPDATE rechnung set mahnwesen_datum = CURRENT_DATE, versendet_mahnwesen = 1 WHERE id IN (".implode(', ',$auswahl).')';
                     $this->app->DB->Update($sql);
 
                 }
