@@ -286,5 +286,6 @@ $(document).ready(function() {
 <script type="text/javascript" src="./js/filter.js"></script>
 <script type="text/javascript" src="./js/confirm-popup.js"></script>
 <script type="text/javascript" src="./js/ajax_end.js?v=8"></script>
+<script type="text/javascript" src="./js/scrollfix.js"></script>
 </body>
 </html>
