@@ -843,8 +843,8 @@ class TicketImportHelper
             $this->mailAccount->isAutoresponseEnabled()
             && $this->mailAccount->getAutoresponseText() !== ''
             && (
-                $this->erpApi->AutoresponderBlacklist($from) !== 1
-                || $this->mailAccount->isAutoresponseLimitEnabled() === false
+//                $this->erpApi->AutoresponderBlacklist($from) !== 1 ||
+                 $this->mailAccount->isAutoresponseLimitEnabled() === false
             )
         ) {
 
