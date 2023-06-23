@@ -335,7 +335,7 @@ class TicketImportHelper
         $queue_id = $this->mailAccount->getTicketQueueId();
         
         if (!empty($queue_id)) {
-          $queue_label = $this->db->Select("SELECT label FROM warteschlangen WHERE id = ".$queue_id." LIMIT 1");
+          $queue_label = $this->db->Select("SELECT label FROM warteschlangen WHERE label = '".$queue_id."' LIMIT 1");
         }
  
         $insertTicket = "INSERT INTO `ticket` (
