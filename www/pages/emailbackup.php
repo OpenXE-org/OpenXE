@@ -112,6 +112,10 @@ $width = array('10%'); // Fill out manually later
             // Write to database
             
             // Add checks here
+            $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
+            $input['ticketprojekt'] = $this->app->erp->ReplaceProjekt(true,$input['ticketprojekt'],true); // Parameters: Target db?, value, from form?
+            $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+            $input['ticketqueue'] = explode(" ",$input['ticketqueue'])[0]; // Just the label
 
             $columns = "id, ";
             $values = "$id, ";
@@ -168,6 +172,17 @@ $width = array('10%'); // Fill out manually later
         $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
          */
 
+        $this->app->YUI->CkEditor("signatur","internal", null, 'JQUERY');
+        $this->app->YUI->CkEditor("autoresponderbetreff","internal", null, 'JQUERY');
+        $this->app->YUI->CkEditor("autorespondertext","internal", null, 'JQUERY');
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$result[0]['projekt'],false)); // Parameters: Target db?, value, from form?
+        $this->app->Tpl->Set('TICKETPROJEKT',$this->app->erp->ReplaceProjekt(false,$result[0]['ticketprojekt'],false)); // Parameters: Target db?, value, from form?
+        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$result[0]['adresse'],false)); // Convert ID to form display
+        $this->app->YUI->AutoComplete("projekt","projektname",1);
+        $this->app->YUI->AutoComplete("ticketprojekt","projektname",1);
+        $this->app->YUI->AutoComplete("adresse","adresse");
+        $this->app->YUI->AutoComplete("ticketqueue","warteschlangename");
+        $this->app->YUI->AutoComplete("ticketprojekt","projektname",1);
         $this->app->Tpl->Parse('PAGE', "emailbackup_edit.tpl");  
     }
 

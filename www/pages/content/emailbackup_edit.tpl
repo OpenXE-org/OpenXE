@@ -100,8 +100,8 @@
                             <legend>{|Ticketsystem|}</legend>
                             <table width="100%" border="0" class="mkTableFormular">
 <tr><td>{|ticket|}:</td><td><input type="text" name="ticket" value="[TICKET]" size="40"></td></tr>
-<tr><td>{|ticketprojekt|}:</td><td><input type="text" name="ticketprojekt" value="[TICKETPROJEKT]" size="40"></td></tr>
-<tr><td>{|ticketqueue|}:</td><td><input type="text" name="ticketqueue" value="[TICKETQUEUE]" size="40"></td></tr>
+<tr><td>{|ticketprojekt|}:</td><td><input type="text" id="ticketprojekt" name="ticketprojekt" value="[TICKETPROJEKT]" size="40"></td></tr>
+<tr><td>{|ticketqueue|}:</td><td><input type="text" id="ticketqueue" name="ticketqueue" value="[TICKETQUEUE]" size="40"></td></tr>
 <tr><td>{|abdatum|}:</td><td><input type="text" name="abdatum" value="[ABDATUM]" size="40"></td></tr>
 <tr><td>{|ticketloeschen|}:</td><td><input type="text" name="ticketloeschen" value="[TICKETLOESCHEN]" size="40"></td></tr>
 <tr><td>{|ticketabgeschlossen|}:</td><td><input type="text" name="ticketabgeschlossen" value="[TICKETABGESCHLOSSEN]" size="40"></td></tr>
@@ -121,16 +121,16 @@
                             <table width="100%" border="0" class="mkTableFormular">
 <tr><td>{|autosresponder_blacklist|}:</td><td><input type="text" name="autosresponder_blacklist" value="[AUTOSRESPONDER_BLACKLIST]" size="40"></td></tr>
 <tr><td>{|eigenesignatur|}:</td><td><input type="text" name="eigenesignatur" value="[EIGENESIGNATUR]" size="40"></td></tr>
-<tr><td>{|signatur|}:</td><td><input type="text" name="signatur" value="[SIGNATUR]" size="40"></td></tr>
-<tr><td>{|adresse|}:</td><td><input type="text" name="adresse" value="[ADRESSE]" size="40"></td></tr>
+<tr><td>{|signatur|}:</td><td><textarea id="signatur" name="signatur" rows="6" style="width:100%;">[SIGNATUR]</textarea></td></tr>
+<tr><td>{|adresse|}:</td><td><input type="text" id="adresse" name="adresse" value="[ADRESSE]" size="40"></td></tr>
 <tr><td>{|firma|}:</td><td><input type="text" name="firma" value="[FIRMA]" size="40"></td></tr>
 <tr><td>{|geloescht|}:</td><td><input type="text" name="geloescht" value="[GELOESCHT]" size="40"></td></tr>
 <tr><td>{|mutex|}:</td><td><input type="text" name="mutex" value="[MUTEX]" size="40"></td></tr>
 <tr><td>{|autoresponder|}:</td><td><input type="text" name="autoresponder" value="[AUTORESPONDER]" size="40"></td></tr>
 <tr><td>{|geschaeftsbriefvorlage|}:</td><td><input type="text" name="geschaeftsbriefvorlage" value="[GESCHAEFTSBRIEFVORLAGE]" size="40"></td></tr>
-<tr><td>{|autoresponderbetreff|}:</td><td><input type="text" name="autoresponderbetreff" value="[AUTORESPONDERBETREFF]" size="40"></td></tr>
-<tr><td>{|autorespondertext|}:</td><td><input type="text" name="autorespondertext" value="[AUTORESPONDERTEXT]" size="40"></td></tr>
-<tr><td>{|projekt|}:</td><td><input type="text" name="projekt" value="[PROJEKT]" size="40"></td></tr>
+<tr><td>{|autoresponderbetreff|}:</td><td><textarea id="autoresponderbetreff" name="autoresponderbetreff" rows="6" style="width:100%;">[AUTORESPONDERBETREFF]</textarea></td></tr>
+<tr><td>{|autorespondertext|}:</td><td><textarea id="autorespondertext" name="autorespondertext" rows="6" style="width:100%;">[AUTORESPONDERTEXT]</textarea></td></tr>
+<tr><td>{|projekt|}:</td><td><input type="text" id="projekt" name="projekt" value="[PROJEKT]" size="40"></td></tr>
                         </table>
                       </fieldset>            
                     </div>
