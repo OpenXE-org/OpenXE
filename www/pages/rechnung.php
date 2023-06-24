@@ -635,7 +635,7 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('PROJEKT', $projekt);
     }
 
-    $this->app->Tpl->Set('ZAHLWEISE',$auftragArr[0]['zahlungsweise']);
+    $this->app->Tpl->Set('ZAHLWEISE',ucfirst($auftragArr[0]['zahlungsweise']));
     $this->app->Tpl->Set('STATUS',($auftragArr[0]['status'] === 'storniert' && $auftragArr[0]['teilstorno'] == 1?'teilstorniert':$auftragArr[0]['status']));
     $this->app->Tpl->Set('IHREBESTELLNUMMER',$auftragArr[0]['ihrebestellnummer']);
 
@@ -645,9 +645,8 @@ class Rechnung extends GenRechnung
       $auftragArr[0]['mahnwesen']='-';
     }
 
-    $this->app->Tpl->Set('MAHNWESEN',$auftragArr[0]['mahnwesen']);
-
-    $this->app->Tpl->Set('MAHNWESEN','XXX');
+    $mahnwesen_name = $this->app->DB->SelectArr("SELECT name FROM mahnwesen WHERE id='".$auftragArr[0]['mahnwesen']."' LIMIT 1")[0]['name'];
+    $this->app->Tpl->Set('MAHNWESEN',$mahnwesen_name);
 
     if($auftragArr[0]['mahnwesen_datum']=='0000-00-00') {
       $auftragArr[0]['mahnwesen_datum']='-';
