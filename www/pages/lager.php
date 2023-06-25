@@ -2554,7 +2554,7 @@ class Lager extends GenLager {
 
       $name_de = $this->app->DB->Select("SELECT name_de FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
       $einheit = $this->app->DB->Select("SELECT einheit FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
-      $seriennummer = $this->app->DB->Select("SELECT seriennummer FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
+      $seriennummer = $this->app->DB->Select("SELECT seriennummern FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
       if($seriennummer === 'keine') {
         $seriennummer = '';
       }
