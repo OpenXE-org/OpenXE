@@ -6007,6 +6007,13 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
       }
 
+      // Check for override in adresse      
+      $sql = "SELECT rechnung_anzahlpapier FROM adresse WHERE id =".$adresse; 
+      $rechnung_anzahlpapier = $this->app->DB->SelectArr($sql);
+      if (!empty($rechnung_anzahlpapier)) {
+          $autodruckrechnungstufe1menge = $rechnung_anzahlpapier[0]['rechnung_anzahlpapier'];
+      }
+
       if($exportdruckrechnungstufe1)
       {
         if(!empty($projektarr))
@@ -6020,9 +6027,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $exportdruckrechnungstufe1 = $this->app->erp->Export($exportland);
       }
 
-
-
-    
       if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0)
       {
         $this->app->DB->Update("UPDATE rechnung SET status='versendet', versendet='1',schreibschutz='1' WHERE id='$rechnung' LIMIT 1");
