@@ -1148,7 +1148,7 @@ class Kalender {
 
         // Force user if empty  
         if ($data[0]['adresseintern'] == 0) {
-          $data[0]['adresseintern'] = $this->app->User->GetID();
+          $data[0]['adresseintern'] = $this->app->User->GetAdresse();
         }
 
         $data[0]['adresseintern'] = $this->app->DB->Select("SELECT CONCAT(a.id,' ',a.name) FROM adresse a WHERE a.id='" . $data[0]['adresseintern'] . "' AND a.geloescht=0 LIMIT 1");
