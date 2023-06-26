@@ -6008,9 +6008,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       }
 
       // Check for override in adresse      
-      $sql = "SELECT rechnung_anzahlpapier FROM adresse WHERE id =".$adresse; 
+      $sql = "SELECT rechnung_anzahlpapier, rechnung_anzahlpapier_abweichend FROM adresse WHERE id =".$adresse; 
       $rechnung_anzahlpapier = $this->app->DB->SelectArr($sql);
-      if (!empty($rechnung_anzahlpapier)) {
+      if ($rechnung_anzahlpapier[0]['rechnung_anzahlpapier_abweichend']) {          
           $autodruckrechnungstufe1menge = $rechnung_anzahlpapier[0]['rechnung_anzahlpapier'];
       }
 

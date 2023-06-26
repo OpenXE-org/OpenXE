@@ -412,6 +412,9 @@ class WidgetGenadresse
     $field = new HTMLCheckbox("rechnung_papier","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("rechnung_anzahlpapier_abweichend","","","1","0","0");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("rechnung_anzahlpapier","text","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 

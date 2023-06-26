@@ -496,7 +496,7 @@ $(document).ready(function(){
 <fieldset><legend>{|Allgemeine Versandoptionen|}</legend> 
  <table width="100%" class="mkTableFormular">
 <tr><td width="210">{|Immer Papier Rechnung|}:</td><td>[RECHNUNG_PAPIER][MSGRECHNUNG_PAPIER]&nbsp;<i>Bei automatischen Versand wird immer eine Rechnung per Papier versendet (auch wenn eine E-Mail vorhanden ist)</i></td></tr>
-<tr><td width="210">{|Anzahl Ausdrucke Rechnung|}:</td><td>[RECHNUNG_ANZAHLPAPIER][MSGRECHNUNG_ANZAHLPAPIER]&nbsp;<i>Anzahl der Ausdrucke beim Versand</i></td></tr>
+<tr><td width="210">{|Anzahl Ausdrucke Rechnung abweichend|}:</td><td>[RECHNUNG_ANZAHLPAPIER_ABWEICHEND]&nbsp;[RECHNUNG_ANZAHLPAPIER][MSGRECHNUNG_ANZAHLPAPIER]&nbsp;<i>Anzahl der Ausdrucke beim Versand</i></td></tr>
 <!--<tr><td width="210">{|Immer E-Mail Rechnung|}:</td><td>[RECHNUNG_PERMAIL][MSGRECHNUNG_PERMAIL]&nbsp;</i></td></tr>-->
 </table>
 </fieldset>
