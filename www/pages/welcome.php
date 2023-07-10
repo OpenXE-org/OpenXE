@@ -3034,18 +3034,12 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       }
     }
 */
-    $subHeadline = 'Es kann nun losgehen.';
-    if($isAdminAdmin && !empty(erpAPI::Ioncube_Property('isdevelopmentversion'))) {
-      $subHeadline = 'Es handelt sich hier um eine Development-Version. 
-      Diese ist nicht für den produktiven Einsatz gedacht.';
-    }
 
-    /** @var SystemTemplates $systemTemplates */
-    $showExampleImport = !empty(erpAPI::Ioncube_Property('testlizenz'))
-      && !empty(erpAPI::Ioncube_Property('iscloud'))
-    && $this->app->erp->RechteVorhanden('systemtemplate', 'list')
-    && ($systemTemplates = $this->app->loadModule('systemtemplates')) !== null
-      && $systemTemplates->canInstallExampleData(false);
+    if($isAdminAdmin) {
+        $subHeadline = 'Bitte nach der Installation das <a href="index.php?module=upgrade" target="_blank">Datenbank-Upgrade</a> durchführen.';
+    } else {
+        $subHeadline = 'Es kann nun losgehen.';
+    }
 
     $lastPage = [
       'type' => 'defaultPage',
@@ -3061,9 +3055,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     ];
     if($showExampleImport) {
       $lastPage['subHeadline'] .= '<br /><a href="index.php?module=systemtemplates&action=list">Beispieldaten einspielen</a>';
-    }
-    if($isAdminAdmin && $this->app->erp->ModulVorhanden('learningdashboard')){
-      $lastPage['ctaButtons']['link'] = 'index.php?module=learningdashboard&action=list';
     }
 
     $pages[] = $lastPage;

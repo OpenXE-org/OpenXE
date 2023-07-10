@@ -82,6 +82,8 @@
 <br><br>
 <center>
 <a href=\"$weburllink\">Anmelden mit Benutzer: <i>admin</i> und Passwort: <i>admin</i></a>
+<br><br>
+Bitte nach der Installation das <a href=\"".$weburllink."index.php?module=upgrade\" target=\"_blank\">Datenbank-Upgrade</a> durchführen.</a>
 </center>
 ");
 	}else{
