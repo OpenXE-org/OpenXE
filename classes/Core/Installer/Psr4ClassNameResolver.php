@@ -35,7 +35,7 @@ final class Psr4ClassNameResolver
     {
         // Normalize inputs
         $prefix = trim($prefix, '\\') . '\\';
-        $baseDir = rtrim($baseDir, '/') . '/';
+        $baseDir = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR;
 
         $this->prefixes[$prefix] = $baseDir;
     }
