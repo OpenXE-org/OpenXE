@@ -30,10 +30,10 @@ $factoryServiceMap = @include $serviceCacheFile;
 
 if (!is_file($serviceCacheFile)) {
 
-    // Installer ausführen wenn ServiceMap nicht vorhanden ist
+    // Installer ausführen, wenn ServiceMap nicht vorhanden ist
     $resolver = new Psr4ClassNameResolver();
     $resolver->addNamespace('Xentral\\', __DIR__);
-    $resolver->excludeFile(__DIR__ . '/bootstrap.php');
+    $resolver->excludeFile(__DIR__ . DIRECTORY_SEPARATOR . 'bootstrap.php');
 
     $generator = new ClassMapGenerator($resolver, __DIR__);
     $installer = new Installer($generator, $resolver);
