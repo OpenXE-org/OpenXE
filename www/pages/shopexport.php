@@ -610,7 +610,7 @@ class Shopexport
         'SELECT `id` 
         FROM `shopexport` 
         WHERE `aktiv` = 1 AND `autosendarticle` = 1 AND `artikelexport` = 1
-        AND (`autosendarticle_last` IS NULL OR DATE_ADD(`autosendarticle_last` INTERVAL %d MINUTE) <= NOW())',
+        AND (`autosendarticle_last` IS NULL OR DATE_ADD(`autosendarticle_last`, INTERVAL %d MINUTE) <= NOW())',
         $minutes
       )
     );
