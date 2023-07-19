@@ -256,6 +256,10 @@ class Logfile {
     if(is_array($meldung)) {
       $meldung = $this->app->DB->real_escape_string(print_r($meldung, true));
     }
+    
+    // Quick fix
+    $dump = $this->app->DB->real_escape_string(print_r($dump, true));
+    
     $this->app->DB->Insert(
       sprintf(
         "INSERT INTO logfile (module,action,meldung,dump,datum,bearbeiter,funktionsname)
