@@ -396,7 +396,7 @@ class Shopimporter_Shopify extends ShopimporterBase
         $this->adapter->call("products/".$result['data']['product']['id']."/metafields.json", 'POST', array('metafield' => [
           'key' => 'sync_status',
           'value' => 1,
-          'value_type' => 'integer',
+          'type' => 'number_integer',
           'namespace' => 'xentral',
         ]));
         if($result['data']['product']['id'] == $nummer) {
@@ -429,7 +429,7 @@ class Shopimporter_Shopify extends ShopimporterBase
                 $this->adapter->call("variants/".$resultv['variant']['id']."/metafields.json", 'POST', array('metafield' => [
                   'key' => 'sync_status',
                   'value' => 1,
-                  'value_type' => 'integer',
+                  'type' => 'number_integer',
                   'namespace' => 'xentral',
                 ]));
                 $data['nummer'] = $resultv['data']['variant']['sku'];
@@ -690,7 +690,7 @@ class Shopimporter_Shopify extends ShopimporterBase
           $inventoryitemid = $resultv['data']['variant']['inventory_item_id'];
           $resulti = $this->adapter->call("inventory_levels.json?inventory_item_ids=$inventoryitemid&location_ids=$locationid");
           $vorhanden = $resulti['data']['inventory_levels'][0]['available'];
-          $adjust = $lageranzahl - $vorhanden;
+          $adjust = floatval($lageranzahl) - floatval($vorhanden);
           if($adjust != 0){
             $data = array("location_id" => $locationid,
                           "inventory_item_id"=> $inventoryitemid,
@@ -1015,12 +1015,12 @@ class Shopimporter_Shopify extends ShopimporterBase
           $dataproduct['product']['variants'][0]['metafields'] = array(array(
             "key" => "harmonized_system_code",
             "value"=> $zolltarifnummer,
-            "value_type"=> "string",
+            "type"=> "text",
             "namespace"=> "global"),
             [
               'key' => 'sync_status',
               'value' => 1,
-              'value_type' => 'integer',
+              'type' => 'number_integer',
               'namespace' => 'xentral',
             ]);
           if($pseudopreis != ''){
@@ -1185,12 +1185,12 @@ class Shopimporter_Shopify extends ShopimporterBase
           $veigenschaften[] = array(
             "key" => "harmonized_system_code",
             "value"=> $value['zolltarifnummer'],
-            "value_type"=> "string",
+            "type"=> "text",
             "namespace"=> "global");
           $veigenschaften[] = [
             'key' => 'sync_status',
             'value' => 1,
-            'value_type' => 'integer',
+            'type' => 'number_integer',
             'namespace' => 'xentral',
           ];
 
@@ -3334,7 +3334,7 @@ class Shopimporter_Shopify extends ShopimporterBase
     $this->adapter->call('orders/' . $auftrag . '/metafields.json', 'POST', array('metafield' => [
       'key' => 'sync_status',
       'value' => 1,
-      'value_type' => 'integer',
+      'type' => 'number_integer',
       'namespace' => 'xentral',
     ]));
     return 'ok';
@@ -3367,7 +3367,7 @@ class Shopimporter_Shopify extends ShopimporterBase
       $this->adapter->call('orders/' . $auftrag . '/metafields.json', 'POST', array('metafield' => [
         'key' => 'sync_status',
         'value' => 3,
-        'value_type' => 'integer',
+        'type' => 'number_integer',
         'namespace' => 'xentral',
       ]));
     }
@@ -3420,7 +3420,7 @@ class Shopimporter_Shopify extends ShopimporterBase
       $this->adapter->call('orders/' . $auftrag . '/metafields.json', 'POST', array('metafield' => [
         'key' => 'sync_status',
         'value' => 2,
-        'value_type' => 'integer',
+        'type' => 'number_integer',
         'namespace' => 'xentral',
       ]));
     }else{
