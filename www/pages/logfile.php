@@ -254,11 +254,14 @@ class Logfile {
       }
     }
     if(is_array($meldung)) {
-      $meldung = $this->app->DB->real_escape_string(print_r($meldung, true));
+      $meldung = print_r($meldung, true);
     }
     
-    // Quick fix
-    $dump = $this->app->DB->real_escape_string(print_r($dump, true));
+    $module = $this->app->DB->real_escape_string($module);
+    $action = $this->app->DB->real_escape_string($action);
+    $meldung = $this->app->DB->real_escape_string($meldung);
+    $dump = $this->app->DB->real_escape_string($dump);
+    $functionname = $this->app->DB->real_escape_string($functionname);
     
     $this->app->DB->Insert(
       sprintf(
