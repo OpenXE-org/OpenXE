@@ -253,15 +253,12 @@ class Logfile {
         }
       }
     }
-    if(is_array($meldung)) {
-      $meldung = print_r($meldung, true);
-    }
     
-    $module = $this->app->DB->real_escape_string($module);
-    $action = $this->app->DB->real_escape_string($action);
-    $meldung = $this->app->DB->real_escape_string($meldung);
-    $dump = $this->app->DB->real_escape_string($dump);
-    $functionname = $this->app->DB->real_escape_string($functionname);
+    $module = $this->app->DB->real_escape_string(is_scalar($module) ? strval($module) : print_r($module, true));
+    $action = $this->app->DB->real_escape_string(is_scalar($action) ? strval($action) : print_r($action, true));
+    $meldung = $this->app->DB->real_escape_string(is_scalar($meldung) ? strval($meldung) : print_r($meldung, true));
+    $dump = $this->app->DB->real_escape_string(is_scalar($dump) ? strval($dump) : print_r($dump, true));
+    $functionname = $this->app->DB->real_escape_string(is_scalar($functionname) ? strval($functionname) : print_r($functionname, true));
     
     $this->app->DB->Insert(
       sprintf(
