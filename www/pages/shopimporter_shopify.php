@@ -690,7 +690,7 @@ class Shopimporter_Shopify extends ShopimporterBase
           $inventoryitemid = $resultv['data']['variant']['inventory_item_id'];
           $resulti = $this->adapter->call("inventory_levels.json?inventory_item_ids=$inventoryitemid&location_ids=$locationid");
           $vorhanden = $resulti['data']['inventory_levels'][0]['available'];
-          $adjust = floatval($lageranzahl) - floatval($vorhanden);;
+          $adjust = floatval($lageranzahl) - floatval($vorhanden);
           if($adjust != 0){
             $data = array("location_id" => $locationid,
                           "inventory_item_id"=> $inventoryitemid,
