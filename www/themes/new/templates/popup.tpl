@@ -195,7 +195,7 @@ background-color:red;
 /*
 function fillArtikel(id,menge)
 {   
-     if(menge < 1)
+     if(menge <= 0)
       menge=1;
      strSource = "./index.php";
      strData = "module=artikel&action=ajaxwerte&id="+id+"&smodule=[MODULE]&sid=[KID]&menge="+menge;
@@ -209,7 +209,7 @@ function fillArtikel(id,menge)
 
 function fillArtikel(id,menge)
 {   
-     if(menge < 1)
+     if(menge <= 0)
       menge=1;
 
 		var tmp = id.split(' ');
@@ -250,7 +250,7 @@ function fillArtikel(id,menge)
 
 function fillArtikelBestellung(id,menge)
 {   
-     if(menge < 1)
+     if(menge <= 0)
       menge=1;
 
     	var vpe = 1;
@@ -297,7 +297,7 @@ function fillArtikelBestellung(id,menge)
 
 function fillArtikelProduktion(id,menge)
 {   
-    if(menge < 1)
+    if(menge <= 0)
       menge=1;
 
 		var tmp = id.split(' ');
@@ -325,7 +325,7 @@ function fillArtikelLieferschein(id,menge)
 		id = tmp[0];
 		//wenn ab Menge dabei steht
 
-     if(menge < 1)
+     if(menge <= 0)
       menge=1;
      strSource = "./index.php";
 
@@ -343,7 +343,7 @@ function fillArtikelLieferschein(id,menge)
 
 function fillArtikelInventur(id,menge)
 {   
-    if(menge < 1)
+    if(menge <= 0)
     	menge=1;
 		
 		var tmp = id.split(' ');
