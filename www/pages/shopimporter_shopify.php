@@ -230,10 +230,14 @@ class Shopimporter_Shopify extends ShopimporterBase
     if(isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetName')){
       $this->bearbeiter = $this->app->DB->real_escape_string($this->app->User->GetName());
     }
+
     $einstellungen = $this->app->DB->Select("SELECT einstellungen_json FROM shopexport WHERE id = '$shopid' LIMIT 1");
-    if($einstellungen){
+    if(!empty($einstellungen)){
       $einstellungen = json_decode($einstellungen,true);
+    } else {
+        return;
     }
+
     $this->ShopifyURL=trim($einstellungen['felder']['ShopifyURL']);
     if(stripos($this->ShopifyURL,'http') === false){
       $this->ShopifyURL = 'https://'.$this->ShopifyURL;
