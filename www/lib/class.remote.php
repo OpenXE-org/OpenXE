@@ -559,7 +559,7 @@ class Remote
       $steuersatz_normal = 19;
     }
     $crossellingInstalled = $this->app->erp->ModulVorhanden('crossselling');
-    foreach($reta as $k => $ret) 
+    foreach($reta as $k => $ret)
     {
       if(isset($ret['stueckliste'])){
         $stuecklistenmechanik = $ret['stueckliste'];
@@ -633,6 +633,9 @@ class Remote
         $arr['name_de'] = $ret['name'];
         $arr['uebersicht_de'] = isset($ret['uebersicht_de'])?$ret['uebersicht_de']:'';
         $arr['kurztext_de'] = isset($ret['kurztext_de'])?$ret['kurztext_de']:'';
+        $arr['name_en'] = $ret['name_en'];
+        $arr['uebersicht_en'] = isset($ret['uebersicht_en'])?$ret['uebersicht_en']:'';
+        $arr['kurztext_en'] = isset($ret['kurztext_en'])?$ret['kurztext_en']:'';
         //$arr['anabregs_text'] = isset($ret['uebersicht_de'])?$ret['uebersicht_de']:'';
         if(isset($ret['ean']) && $ret['ean'] != '')
         {
