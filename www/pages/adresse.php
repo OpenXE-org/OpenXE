@@ -2054,7 +2054,7 @@ $table_kontakte = '';
 $ckontakte = !empty($kontakte)?count($kontakte):0;
 for($i=0;$i<$ckontakte;$i++)
 {
-  $tabindex = $tabindex+i;
+  $tabindex = $tabindex+$i;
   $table_kontakte .= "<tr><td>".$kontakte[$i]['bezeichnung'].":&nbsp;
     </td><td><input type=text name=\"adresse_kontakte[".$kontakte[$i]['id']."]\" value=\"".$kontakte[$i]['kontakt']."\" size=\"30\" tabindex=\"$tabindex\">&nbsp;<a href=\"#\" onclick=\"if(!confirm('".$kontakte[$i]['bezeichnung']." wirklich entfernen?'))    return false; else window.location.href='index.php?module=adresse&action=delkontakt&id=".$id."&lid=".$kontakte[$i]['id']."';\">x</a></td></tr>";
 }
