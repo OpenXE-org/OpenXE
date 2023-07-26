@@ -333,21 +333,41 @@ class Shopimporter_Presta extends ShopimporterBase
     if (empty($nummer))
       return;
 
-    $searchresult = $this->prestaRequest('GET', 'products?filter[reference]='.$nummer);
-    if (empty($searchresult)) {
+    $productsresult = $this->prestaRequest('GET', 'products?filter[reference]='.$nummer);
+    $combinationsresult = $this->prestaRequest('GET', 'combinations?filter[reference]='.$nummer);
+    $numberOfCombinations = count($combinationsresult->combinations->combination);
+    $numberOfProducts = count($productsresult->products->product);
+    $numberOfResults = $numberOfProducts + $numberOfCombinations;
+    if ($numberOfResults > 1) {
+      $this->Log('Got multiple results from Shop', $this->data);
+      return;
+    }
+    elseif ($numberOfResults < 1) {
       $this->Log('No product found in Shop', $this->data);
       return;
     }
-    if (count($searchresult->products->product) > 1) {
-      $this->Log('Got multiple results from Shop', $this->data);
-    }
 
-    $productid = $searchresult->products->product->attributes()->id;
-    $product = $this->prestaRequest('GET', "products/$productid");
+    $isCombination = $numberOfCombinations > 0;
+    if ($isCombination) {
+      $combinationId = intval($combinationsresult->combinations->combination->attributes()->id);
+      $combination = $this->prestaRequest('GET', "combinations/$combinationId");
+      $productId = intval($combination->combination->id_product);
+    } else {
+      $productId = intval($productsresult->products->product->attributes()->id);
+    }
+    $product = $this->prestaRequest('GET', "products/$productId");
     $res = [];
-    $res['nummer'] = strval($product->product->reference);
-    $res['shoparticleid'] = intval($productid);
-    $res['artikelnummerausshop'] = strval($product->product->reference);
+    if ($isCombination) {
+      $res['nummer'] = strval($combination->combination->reference);
+      $res['artikelnummerausshop'] = strval($combination->combination->reference);
+      $res['ean'] = strval($combination->combination->ean13);
+      $res['preis_netto'] = floatval($product->product->price) + floatval($combination->combination->price);
+    } else {
+      $res['nummer'] = strval($product->product->reference);
+      $res['artikelnummerausshop'] = strval($product->product->reference);
+      $res['ean'] = strval($product->product->ean13);
+      $res['preis_netto'] = floatval($product->product->price);
+    }
     $names = $this->toMultilangArray($product->product->name->language);
     $descriptions = $this->toMultilangArray($product->product->description->language);
     $shortdescriptions = $this->toMultilangArray($product->product->description_short->language);
@@ -357,13 +377,11 @@ class Shopimporter_Presta extends ShopimporterBase
     $res['uebersicht_en'] = $descriptions['en'];
     $res['kurztext_de'] = strip_tags($shortdescriptions['de']);
     $res['kurztext_en'] = strip_tags($shortdescriptions['en']);
-    $res['preis_netto'] = strval($product->product->price);
     $res['hersteller'] = strval($product->product->manufacturer_name);
-    $res['ean'] = strval($product->product->ean13);
 
     $images = [];
     foreach ($product->product->associations->images->image as $img) {
-      $endpoint = "images/products/$productid/$img->id";
+      $endpoint = "images/products/$productId/$img->id";
       $imgdata = $this->prestaRequest('GET', $endpoint, '', true);
       $images[] = [
           'content' => base64_encode($imgdata),
