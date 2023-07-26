@@ -371,6 +371,9 @@ class Shopimporter_Presta extends ShopimporterBase
     $names = $this->toMultilangArray($product->product->name->language);
     $descriptions = $this->toMultilangArray($product->product->description->language);
     $shortdescriptions = $this->toMultilangArray($product->product->description_short->language);
+    $metadescriptions = $this->toMultilangArray($product->product->meta_description->language);
+    $metakeywords = $this->toMultilangArray($product->product->meta_keywords->language);
+    $metatitles = $this->toMultilangArray($product->product->meta_title->language);
     $res['name'] = $names['de'];
     $res['name_en'] = $names['en'];
     $res['uebersicht_de'] = $descriptions['de'];
@@ -378,6 +381,12 @@ class Shopimporter_Presta extends ShopimporterBase
     $res['kurztext_de'] = strip_tags($shortdescriptions['de']);
     $res['kurztext_en'] = strip_tags($shortdescriptions['en']);
     $res['hersteller'] = strval($product->product->manufacturer_name);
+    $res['metakeywords_de'] = $metakeywords['de'];
+    $res['metakeywords_en'] = $metakeywords['en'];
+    $res['metatitle_de'] = $metatitles['de'];
+    $res['metatitle_en'] = $metatitles['en'];
+    $res['metadescription_de'] = $metadescriptions['de'];
+    $res['metadescription_en'] = $metadescriptions['en'];
 
     $images = [];
     foreach ($product->product->associations->images->image as $img) {
