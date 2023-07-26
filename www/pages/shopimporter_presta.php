@@ -355,8 +355,8 @@ class Shopimporter_Presta extends ShopimporterBase
     $res['name_en'] = $names['en'];
     $res['uebersicht_de'] = $descriptions['de'];
     $res['uebersicht_en'] = $descriptions['en'];
-    $res['kurztext_de'] = $shortdescriptions['de'];
-    $res['kurztext_en'] = $shortdescriptions['en'];
+    $res['kurztext_de'] = strip_tags($shortdescriptions['de']);
+    $res['kurztext_en'] = strip_tags($shortdescriptions['en']);
     $res['preis_netto'] = strval($product->product->price);
     $res['hersteller'] = strval($product->product->manufacturer_name);
     $res['ean'] = strval($product->product->ean13);
