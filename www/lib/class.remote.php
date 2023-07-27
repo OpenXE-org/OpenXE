@@ -559,7 +559,7 @@ class Remote
       $steuersatz_normal = 19;
     }
     $crossellingInstalled = $this->app->erp->ModulVorhanden('crossselling');
-    foreach($reta as $k => $ret) 
+    foreach($reta as $k => $ret)
     {
       if(isset($ret['stueckliste'])){
         $stuecklistenmechanik = $ret['stueckliste'];
@@ -631,8 +631,17 @@ class Remote
         }
         $arr['projekt'] = $shopexportArr['projekt'];
         $arr['name_de'] = $ret['name'];
-        $arr['uebersicht_de'] = isset($ret['uebersicht_de'])?$ret['uebersicht_de']:'';
-        $arr['kurztext_de'] = isset($ret['kurztext_de'])?$ret['kurztext_de']:'';
+        $arr['uebersicht_de'] = $ret['uebersicht_de'] ?? '';
+        $arr['kurztext_de'] = $ret['kurztext_de'] ?? '';
+        $arr['name_en'] = $ret['name_en'];
+        $arr['uebersicht_en'] = $ret['uebersicht_en'] ?? '';
+        $arr['kurztext_en'] = $ret['kurztext_en'] ?? '';
+        $arr['metakeywords_de'] = $ret['metakeywords_de'] ?? '';
+        $arr['metakeywords_en'] = $ret['metakeywords_en'] ?? '';
+        $arr['metatitle_de'] = $ret['metatitle_de'] ?? '';
+        $arr['metatitle_en'] = $ret['metatitle_en'] ?? '';
+        $arr['metadescription_de'] = $ret['metadescription_de'] ?? '';
+        $arr['metadescription_en'] = $ret['metadescription_en'] ?? '';
         //$arr['anabregs_text'] = isset($ret['uebersicht_de'])?$ret['uebersicht_de']:'';
         if(isset($ret['ean']) && $ret['ean'] != '')
         {
