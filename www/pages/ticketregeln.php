@@ -98,67 +98,121 @@ class Ticketregeln {
         if (empty($id)) {
             // New item
             $id = 'NULL';
+
+            // Check for ticketid
+            $ticketid = $this->app->Secure->GetPOST('ticketid');
+            if (!empty($ticketid)) {
+                $sql =  "
+                    SELECT 
+                        n.id,
+                        n.betreff,
+                        n.bearbeiter,
+                        n.verfasser,
+                        n.mail,
+                        t.quelle,
+                        t.warteschlange,
+                        ".$this->app->erp->FormatDateTimeShort('n.zeit','zeit').",
+                        ".$this->app->erp->FormatDateTimeShort('n.zeitausgang','zeitausgang').",
+                        n.versendet,
+                        n.text,
+                        n.textausgang,
+                        n.verfasser_replyto,
+                        n.mail_replyto,
+                        n.mail_cc,
+                        (SELECT GROUP_CONCAT(value SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'cc') as mail_cc_recipients,
+                        (SELECT GROUP_CONCAT(value SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = n.id AND th.type = 'to') as mail_recipients
+                    FROM ticket_nachricht n INNER JOIN ticket t ON t.schluessel = n.ticket 
+                    WHERE t.id = ".$ticketid." ORDER BY n.zeit DESC LIMIT 1";
+
+                $last_message = $this->app->DB->SelectArr($sql)[0];
+
+                $input['empfaenger_email'] = $last_message['mail_recipients'];
+                $input['sender_email'] = $last_message['mail'];
+                $input['name'] = $last_message['verfasser'];
+                $input['betreff'] = $last_message['betreff'];
+                $input['warteschlange'] = $last_message['warteschlange'];
+
+                $from_ticket = true;
+
+                $result = array(
+                    'empfaenger_email' => $last_message['mail_recipients'],
+                    'sender_email' => $last_message['mail'],
+                    'name' => $last_message['verfasser'],
+                    'betreff' => $last_message['betreff'],
+                    'warteschlange' => $last_message['warteschlange'],
+                    'aktiv' => 1
+                );
+
+            }
+
         } 
 
-        if ($submit != '')
-        {
+        if (!$from_ticket) {
 
-            // Write to database
-            
-            // Add checks here
-            $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
+            if ($submit != '')
+            {
 
-            $columns = "id, ";
-            $values = "$id, ";
-            $update = "";
-    
-            $fix = "";
+                // Write to database
+                
+                // Add checks here
+                $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
 
-            foreach ($input as $key => $value) {
-                $columns = $columns.$fix.$key;
-                $values = $values.$fix."'".$value."'";
-                $update = $update.$fix.$key." = '$value'";
+                $columns = "id, ";
+                $values = "$id, ";
+                $update = "";
+        
+                $fix = "";
 
-                $fix = ", ";
+                foreach ($input as $key => $value) {
+                    $columns = $columns.$fix.$key;
+                    $values = $values.$fix."'".$value."'";
+                    $update = $update.$fix.$key." = '$value'";
+
+                    $fix = ", ";
+                }
+
+    //            echo($columns."<br>");
+    //            echo($values."<br>");
+    //            echo($update."<br>");
+
+                $sql = "INSERT INTO ticket_regeln (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+
+    //            echo($sql);
+
+                $this->app->DB->Update($sql);
+
+                if ($id == 'NULL') {
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
+                    header("Location: index.php?module=ticketregeln&action=list&msg=$msg");
+//                    $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");                
+//                    $id = $this->app->DB->GetInsertID();
+                } else {
+                    $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                }
             }
 
-//            echo($columns."<br>");
-//            echo($values."<br>");
-//            echo($update."<br>");
+        
+            // Load values again from database
+            $result = $this->app->DB->SelectArr("SELECT t.id, t.empfaenger_email, t.sender_email, t.name, t.betreff, t.spam, t.persoenlich, t.prio, t.dsgvo, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.aktiv, t.id FROM ticket_regeln t LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id")[0];
+        } 
+       
 
-            $sql = "INSERT INTO ticket_regeln (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-
-//            echo($sql);
-
-            $this->app->DB->Update($sql);
-
-            if ($id == 'NULL') {
-                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=ticketregeln&action=list&msg=$msg");
-            } else {
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
-            }
-        }
-
-    
-        // Load values again from database
-        $result = $this->app->DB->SelectArr("SELECT t.id, t.empfaenger_email, t.sender_email, t.name, t.betreff, t.spam, t.persoenlich, t.prio, t.dsgvo, t.warteschlange, t.aktiv, t.id FROM ticket_regeln t"." WHERE id=$id");
-
-        foreach ($result[0] as $key => $value) {
+        foreach ($result as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
              
         /*
          * Add displayed items later
          * 
-
-        $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
-        $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
          */
 
-        $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
+      	$this->app->Tpl->Set('PRIO', $result['prio']==1?"checked":"");
+      	$this->app->Tpl->Set('SPAM', $result['spam']==1?"checked":"");
+      	$this->app->Tpl->Set('PERSOENLICH', $result['persoenlich']==1?"checked":"");
+      	$this->app->Tpl->Set('DSGVO', $result['dsgvo']==1?"checked":"");
+      	$this->app->Tpl->Set('AKTIV', $result['aktiv']==1?"checked":"");
 
+        $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
 
 //        $this->SetInput($input);              
         $this->app->Tpl->Parse('PAGE', "ticketregeln_edit.tpl");
