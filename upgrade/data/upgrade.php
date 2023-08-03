@@ -365,6 +365,9 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             foreach ($compare_differences as $compare_difference) {
                 $comma = "";
                 foreach ($compare_difference as $key => $value) {
+                    if (is_array($value)) {
+                        $value = implode(',',$value);
+                    }
                     echo_out($comma."$key => [$value]");
                     $comma = ", ";
                 }

@@ -67,6 +67,7 @@ $mustal_replacers = [
     ['on update current_timestamp','on update current_timestamp()']
 ];
 
+
 // Load all db_def from a DB connection into a db_def array
 function mustal_load_tables_from_db(string $host, string $schema, string $user, string $passwd, array $replacers) : array {
 
@@ -358,8 +359,6 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                                 $compare_difference['table'] = $database_table['name'];
                                 $compare_difference['key'] = $sql_index['Key_name'];
                                 $compare_difference['property'] = $key;
-/*                                    $compare_difference[$nominal_name] = implode(',',$value);
-                                $compare_difference[$actual_name] = implode(',',$found_sql_index[$key]);*/
                                 $compare_difference[$nominal_name] = $value;
                                 $compare_difference[$actual_name] = $found_sql_index[$key];
                                 $compare_differences[] = $compare_difference;
@@ -585,14 +584,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                                 if ($key['Key_name'] == 'PRIMARY') {
                                     $keystring = "PRIMARY KEY ";
                                 } else {
-
-                               //     if(array_key_exists('Index_type', $key)) {
-                               //         $index_type = $key['Index_type'];
-                               //     } else {
-                                        $index_type = "";
-                               //     }
-
-                                    $keystring = $index_type." ".$key['Non_unique']." KEY `".$key['Key_name']."` ";
+                                    $keystring = mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
                                 }
                                 $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                             }
@@ -675,10 +667,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
-
-                        $sql = "ALTER TABLE `$table_name` ADD ".$key['Non_unique']." KEY `".$key_name."` "; 
-                        $sql .= "(`".implode("`,`",$key['columns'])."`)";
-                        $sql .= ";";
+                        $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` "."(`".implode("`,`",$key['columns'])."`)",$key['Index_type']).";";
                         $upgrade_sql[] = $sql;
                     }
                     else {
@@ -706,7 +695,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                         $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;"; 
                         $upgrade_sql[] = $sql;
 
-                        $sql = "ALTER TABLE `$table_name` ADD ".$key['Non_unique']." KEY `".$key_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
@@ -779,5 +768,22 @@ function mustal_is_string_type(string $type) {
         }
     }   
     return(false);
+}
+
+// create correct index type syntax
+function mustal_key_type(string $key_definition_string, string $key_type) {
+
+    // Key types with using syntax
+    $mustal_key_types_using_mapping = [
+        'BTREE', 
+        'HASH'
+    ];
+
+    if (in_array($key_type,$mustal_key_types_using_mapping)) {
+        return ($key_definition_string." USING ".$key_type);
+    } else {
+        return ($key_type." ".$key_definition_string);
+    }
+
 }
 
