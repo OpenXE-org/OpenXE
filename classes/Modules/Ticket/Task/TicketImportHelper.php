@@ -408,9 +408,6 @@ class TicketImportHelper
             $this->logger->error('Failed to insert ticket message into db', ['exception' => $e]);
         }
 
-
-        $this->applyTicketRules($messageId);
-
         return($result);
     }
 
@@ -440,7 +437,7 @@ class TicketImportHelper
 
         foreach ($ruleArray as $rule) {
 
-            $this->logger->debug('ticket rule applies',['rule_id' => $rule['id']]);
+            $this->logger->debug('ticket rule applies',['rule_id' => $rule['id'],'rule' => print_r($rule,true)]);
 
 /*
             $update = $this->db->update();
@@ -461,12 +458,16 @@ class TicketImportHelper
             $this->db->perform($sql, ['ticket_id' => $ticketId]);
 */
 
-            if ($rule['is_spam'] === 1) {
-              $sql = "UPDATE `ticket_nachricht` SET `status` = \'spam\' WHERE `id` = '".$ticketMessageId."'";
-              $this->db->Update($sql);
+            if ($rule['is_spam'] == 1) {
+                $status = 'spam';
+            } else {
+                $status = 'neu';
             }
 
-            $sql = "UPDATE `ticket` SET `dsgvo` = '".$rule['is_gdpr_relevant']."', `privat` = '".$rule['is_private']."', `prio` = '".$rule['priority']."', `warteschlange` = '".$rule['queue_id']."' WHERE `id` = '".$ticketId."'";
+            $sql = "UPDATE `ticket` SET `dsgvo` = '".$rule['is_gdpr_relevant']."', `privat` = '".$rule['is_private']."', `prio` = '".$rule['priority']."', `warteschlange` = '".$rule['queue_id']."', `status` = '".$status."' WHERE `id` = '".$ticketId."'";
+
+            $this->logger->debug('ticket rule sql',['sql' => $sql]);
+
             $this->db->Update($sql);
         }
     }
@@ -698,6 +699,12 @@ class TicketImportHelper
             $fromname,
             $from
         );
+
+        // Only for new tickets: apply filter rules        
+        if (!$ticketexists) {        
+            $this->applyTicketRules($ticketnachricht);
+        }
+
 
         if ($ticketnachricht > 0 && $emailbackup_mails_id > 0) {
             $this->db->Update(
