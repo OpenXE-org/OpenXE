@@ -1424,7 +1424,7 @@ class DB{
     if(empty($TableName) || empty($IDFieldName) || empty($IDToDuplicate)) {
       return null;
     }
-
+/*
     $sql = "SELECT * FROM $TableName WHERE $IDFieldName = $IDToDuplicate";
     $result = @mysqli_query($this->connection,$sql);
     if(empty($result)) {
@@ -1442,6 +1442,23 @@ class DB{
       }
       $sql .= $RowKeys[$i] . " = '" . $this->real_escape_string($RowValues[$i]) . "'";
     }
+
+    @mysqli_query($this->connection,$sql);
+*/
+
+    $sql = "INSERT INTO ".$TableName." SELECT ";
+    $fields = $this->GetColAssocArray($TableName);
+    $comma = "";
+    foreach ($fields as $field => $value) {
+        if ($field != $IDFieldName) {
+            $sql .= $comma."`".$field."`";
+        } else {
+            $sql .= "NULL";
+        }            
+        $comma = ", ";
+    }
+    $sql .= " FROM ".$TableName." WHERE id = ".$IDToDuplicate;
+
     @mysqli_query($this->connection,$sql);
 
     $id = $this->GetInsertID();
