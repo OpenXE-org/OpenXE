@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xentral\Components\MailClient\Data;
 
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use JsonSerializable;
 use Throwable;
@@ -307,11 +308,13 @@ final class MailMessageData implements MailMessageInterface, JsonSerializable
         if ($date === null) {
             return null;
         }
-        $dateTime = date_create($date->getValue());
+/*        $dateTime = date_create($date->getValue());
         if ($dateTime === false) {
             throw new InvalidArgumentException('Invalid date: '.$date->getValue());
             return null;
-        }
+        }*/
+
+        $dateTime = new DateTimeImmutable($date->getValue());
 
         return $dateTime;
     }
