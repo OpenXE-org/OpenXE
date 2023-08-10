@@ -938,8 +938,8 @@ class Artikel extends GenArtikel {
                     IF(s.art='it','<br><i style=color:#999>- Informationsteil/Dienstleistung</i>',''),IF(s.art='bt','<br><i style=color:#999>- Beistellung</i>',''), COALESCE((SELECT GROUP_CONCAT('<br><i style=color:#999>- ', art.nummer, ' ', art.name_de, ' (', alt.reason, ')', '</i>' SEPARATOR '') FROM parts_list_alternative AS alt INNER JOIN artikel AS art ON art.id = alt.alternative_article_id WHERE alt.parts_list_id = s.id), '')) as artikel,
                     CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.nummer,'</a>') as nummer,
                     s.referenz,
-                    ".$this->app->erp->FormatMenge('s.menge').' as menge, a.einheit,
-                    '.$this->app->erp->FormatMenge('ifnull(lag.menge,0)').'  as lager, 
+                    trim(s.menge)+0 as menge, a.einheit,
+                    ".$this->app->erp->FormatMenge('ifnull(lag.menge,0)').'  as lager, 
                     CASE WHEN (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=a.id)  > 0 
                         THEN (SELECT '.$this->app->erp->FormatMenge('SUM(lr.menge)')." FROM lager_reserviert lr WHERE lr.artikel=a.id)  
                         ELSE 0
@@ -6321,7 +6321,7 @@ class Artikel extends GenArtikel {
 
       $id = (int)$this->app->Secure->GetPOST('id');
         
-      $data = $this->app->DB->SelectRow('SELECT s.id, s.artikel, '.$this->app->erp->FormatMenge("s.menge")." as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
+      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, trim(s.menge)+0 as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
       
         if($data){
           if($data['artikel'] == 0){
