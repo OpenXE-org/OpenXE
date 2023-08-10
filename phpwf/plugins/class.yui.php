@@ -1542,7 +1542,7 @@ class YUI {
       if(!empty($positionsIds)) {
         $positions = $this->app->DB->SelectArr(
           sprintf(
-            "SELECT b.id, %s AS `preis`, round(b.menge) as menge  
+            "SELECT b.id, %s AS `preis`, trim(b.menge)+0 as menge
             FROM `%s` AS `b` 
             %s 
             WHERE b.`%s` = %d AND b.id IN (%s)",
@@ -2581,7 +2581,7 @@ class YUI {
 
 
 
-               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, round(b.menge) as menge, ".$this->FormatPreis($preiscell)." as preis,b.waehrung, ".$this->FormatPreis('b.rabatt')." as rabatt, ";
+               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge, ".$this->FormatPreis($preiscell)." as preis,b.waehrung, ".$this->FormatPreis('b.rabatt')." as rabatt, ";
         
                
         $sql .= "b.id as id
@@ -2601,7 +2601,7 @@ class YUI {
             as Artikel,
 
 
-               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, round(b.menge) as menge, if(b.geliefert, ".$this->app->erp->FormatMenge('b.geliefert')." ,'-') as geliefert, b.id as id
+               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge, if(b.geliefert, ".$this->app->erp->FormatMenge('b.geliefert')." ,'-') as geliefert, b.id as id
                  FROM $table b
                  LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
                  WHERE b.$module='$id'";
@@ -2656,7 +2656,7 @@ class YUI {
 
 
                p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, 
-               round(b.menge) as menge, 
+               trim(b.menge)+0 as menge,
                if(b.geliefert, ".$this->app->erp->FormatMenge('b.geliefert')." ,'-') as geliefert,
                if(b.menge_eingang, ".$this->app->erp->FormatMenge('b.menge_eingang')." ,'-') as `Eingang`,
                if(b.menge_gutschrift, ".$this->app->erp->FormatMenge('b.menge_gutschrift')." ,'-') as `Menge Gutschrift`,
@@ -2678,7 +2678,7 @@ class YUI {
             as Artikel,
 
 
-               p.abkuerzung as projekt, b.nummer as nummer, round(b.menge) as menge, 
+               p.abkuerzung as projekt, b.nummer as nummer, trim(b.menge)+0 as menge,
                ".$this->FormatPreis(' b.preis')." as preis,
 
                b.id as id
@@ -2695,7 +2695,7 @@ class YUI {
             as Artikel,
 
 
-               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(b.lieferdatum,'%d.%m.%Y') as lieferdatum, round(b.menge) as menge,
+               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(b.lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge,
 
                b.id as id
                  FROM $table b
@@ -2717,7 +2717,7 @@ class YUI {
           if(CHAR_LENGTH(b.bezeichnunglieferant)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(CONCAT(b.bezeichnunglieferant,' *'),1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),CONCAT(b.bezeichnunglieferant,' *')),
             if(CHAR_LENGTH(b.bezeichnunglieferant)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(b.bezeichnunglieferant,1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),b.bezeichnunglieferant)))
               as Artikel,
-                 p.abkuerzung as projekt,  a.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, round(b.menge) as menge, ".$this->FormatPreis(' b.preis')."  as preis, b.waehrung, b.id as id
+                 p.abkuerzung as projekt,  a.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge, ".$this->FormatPreis(' b.preis')."  as preis, b.waehrung, b.id as id
                    FROM $table b
                    LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
                    WHERE b.$module='$id'";
