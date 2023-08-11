@@ -97,7 +97,11 @@
                     <td>{|Sprache|}:</td>
                     <td><select name="sprachebevorzugen" id="sprachebevorzugen">[SPRACHEBEVORZUGEN]</select></td>
                   </tr>
-                  <tr>
+					<tr>
+						<td>{|Sprache und Region|}:</td>
+						<td><input type="text" name="locale" id="locale" value="[LOCALE]" size="40" disabled="disabled"></td>
+					</tr>
+					<tr>
                     <td>{|Eigene Kalenderfarbe|}:</td>
                     <td><input type="text" name="defaultcolor" id="defaultcolor" value="[DEFAULTCOLOR]" size="80"></td>
                     <td></td>
