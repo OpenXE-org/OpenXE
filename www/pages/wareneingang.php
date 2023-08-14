@@ -1742,6 +1742,9 @@ $lagerartikel = "";
           renr='".$renr."',
           bemerkung='".$bemerkung."'
            WHERE id='$id' LIMIT 1");
+
+        $bemerkung = stripslashes($bemerkung);
+
     }
 
     $this->app->Tpl->Set('LSNR', $lsnr);
