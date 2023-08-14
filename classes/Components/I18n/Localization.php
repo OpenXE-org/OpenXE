@@ -123,7 +123,6 @@ final class Localization implements LocalizationInterface
         
         // Set the default locale
         Locale::setDefault($locale);
-        
 //        error_log(self::class . ": {$locale}");
     }
     
@@ -202,5 +201,37 @@ final class Localization implements LocalizationInterface
         return $this->locale[Iso3166\Key::DEFAULT];
     }
     
+    
+    
+    /**
+     * Return a new localization object using the given adresse array as source for language and region.
+     *
+     * @param array $adresse
+     *
+     * @return $this
+     */
+    public function withAdresse(array $adresse): self
+    {
+        $localization = clone $this;
+        
+        // Find language from address array or keep current language
+        if (!$lang = Bootstrap::findLanguage($adresse['sprache'])) {
+            $lang = Bootstrap::findLanguage($this->getLanguage());
+        }
+        if ($lang) {
+            $localization->setLanguage($lang[Iso639\Key::ALPHA_3]);
+        }
+        
+        // Find region from address or keep current region
+        if (!$region = Bootstrap::findRegion($adresse['land'])) {
+            $parsedLocale = Locale::parseLocale($this->getLocale());
+            $region = Bootstrap::findRegion($parsedLocale['region']);
+        }
+        if ($lang && $region) {
+            $localization->setLocale("{$lang[Iso639\Key::ALPHA_2]}_{$region[Iso3166\Key::ALPHA_2]}");
+        }
+        
+        return $localization;
+    }
     
 }

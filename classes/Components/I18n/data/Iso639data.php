@@ -151,5 +151,8 @@ return [
         'NAME_fra' => 'romanche',
         'NAME_deu' => 'Rätoromanisch',
     ],
-
+    'dut' => ['639-2' => 'dut', '639-1' => 'nl', 'NAME_eng' => 'Dutch', 'NAME_fra' => 'néerlandais', 'NAME_deu' => 'Niederländisch', 'NAME_deu_alt' => 'Holländisch'],
+    'swe' => ['639-2' => 'swe', '639-1' => 'sv', 'NAME_eng' => 'Swedish', 'NAME_fra' => 'suédois', 'NAME_deu' => 'Schwedisch'],
+    'dan' => ['639-2' => 'dan', '639-1' => 'da', 'NAME_eng' => 'Danish', 'NAME_fra' => 'danois', 'NAME_deu' => 'Dänisch'],
+    'nor' => ['639-2' => 'nor', '639-1' => 'no', 'NAME_eng' => 'Norwegian', 'NAME_fra' => 'norvégien', 'NAME_deu' => 'Norwegisch'],
 ];

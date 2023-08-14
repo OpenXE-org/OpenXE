@@ -24,6 +24,66 @@ final class Bootstrap
     
     
     /**
+     * Replaces umlauts with their 2 character representation.
+     *
+     * @param string $string
+     *
+     * @return array|string|string[]
+     */
+    public static function replaceUmlauts(string $string)
+    {
+        $search = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'];
+        $replace = ['ae', 'oe', 'ue', 'Ae', 'Oe', 'Ue', 'ss'];
+        return str_replace($search, $replace, $string);
+    }
+    
+    
+    
+    /**
+     * Find the language information from the given string.
+     *
+     * @param string $lang
+     *
+     * @return array|null
+     */
+    public static function findLanguage(string $lang): ?array
+    {
+        $subject = strtolower($lang);
+        foreach ((new Iso639()) as $key => $val) {
+            if (array_filter($val, function ($str) use ($subject) {
+                return $str && ((strtolower($str) == $subject) || (self::replaceUmlauts(strtolower($str)) == $subject));
+            })) {
+                return $val;
+            }
+        }
+        return null;
+    }
+    
+    
+    
+    /**
+     * Find the region information from the given string.
+     *
+     * @param string $region
+     *
+     * @return array|null
+     */
+    public static function findRegion(string $region): ?array
+    {
+        $subject = strtolower($region);
+        foreach ((new Iso3166()) as $key => $val) {
+            if (array_filter($val, function ($str) use ($subject) {
+                return $str && ((strtolower($str) == $subject) || (self::replaceUmlauts(strtolower($str)) == $subject));
+            })) {
+                return $val;
+            }
+        }
+        return null;
+    }
+    
+    
+    
+    /**
      * This is the factory for the Localization object.
      *
      * @param ServiceContainer $container
@@ -51,36 +111,14 @@ final class Bootstrap
                 ['id' => $user->GetAdresse()]
             );
             
-            
             // Get language from user account and normalize to 3-letter-code and 2-letter-code
-            $userSprache = strtolower($user->GetSprache());
-            $userLang2 = null;
-            $userLang3 = null;
-            foreach ((new Iso639(new Iso639\Filter\CentralEurope())) as $key => $val) {
-                if (array_filter($val, function ($str) use ($userSprache) {
-                    return $str && (strtolower($str) == $userSprache);
-                })) {
-                    $userLang2 = $val[Iso639\Key::ALPHA_2];
-                    $userLang3 = $val[Iso639\Key::ALPHA_3];
-                }
+            if ($lang = self::findLanguage($user->GetSprache())) {
+                $usersettings['language'] = $lang[Iso639\Key::ALPHA_3];
             }
-            if ($userLang3) {
-                $usersettings['language'] = $userLang3;
-            }
-            
             
             // Get region from user account and normalize to 2-letter-code
-            $userLand = strtolower($userAddress['land'] ?? '');
-            $userRegion = null;
-            foreach ((new Iso3166(new Iso3166\Filter\CentralEurope())) as $key => $val) {
-                if (array_filter($val, function ($str) use ($userLand) {
-                    return $str && (strtolower($str) == $userLand);
-                })) {
-                    $userRegion = $val[Iso3166\Key::ALPHA_2];
-                }
-            }
-            if ($userLang2 && $userRegion) {
-                $usersettings['locale'] = "{$userLang2}_{$userRegion}";
+            if ($lang && ($region = self::findRegion($userAddress['land']))) {
+                $usersettings['locale'] = "{$lang[Iso639\Key::ALPHA_2]}_{$region[Iso3166\Key::ALPHA_2]}";
             }
         }
         
