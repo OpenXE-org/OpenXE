@@ -1,6 +1,7 @@
 <?php
-// ISO639 list
-// 2020-02-26T16:05:00+01:00
+/*
+ * Data extracted from https://www.iso.org/iso-639-language-codes.html
+ */
 return [
     
     'aar' => [

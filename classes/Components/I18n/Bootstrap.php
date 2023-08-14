@@ -1,4 +1,8 @@
 <?php
+/**
+ * SPDX-FileCopyrightText: 2023 Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 declare(strict_types=1);
 
@@ -9,6 +13,12 @@ use Xentral\Components\Http\Request;
 use Xentral\Components\Http\Session\Session;
 use Xentral\Core\DependencyInjection\ServiceContainer;
 
+/**
+ * Factory for localization object.
+ *
+ * @see Localization
+ * @author   Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
+ */
 final class Bootstrap
 {
     /**

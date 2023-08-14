@@ -1,6 +1,7 @@
 <?php
-// ISO3166 list
-// 2018-06-28T17:59:40+02:00
+/*
+ * Data extracted from https://www.iso.org/iso-3166-country-codes.html
+ */
 return [
     'ABW' => [
         'A3' => 'ABW',

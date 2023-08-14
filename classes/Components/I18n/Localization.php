@@ -1,4 +1,8 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2023 Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 declare(strict_types=1);
 
@@ -10,6 +14,11 @@ use Xentral\Components\Http\Session\Session;
 use Xentral\Components\I18n\Exception\LanguageNotInitializedException;
 use Xentral\Components\I18n\Exception\UnsupportedLocaleStringException;
 
+/**
+ * Provides a central service for localization.
+ *
+ * @author   Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
+ */
 final class Localization implements LocalizationInterface
 {
     private array $config;
