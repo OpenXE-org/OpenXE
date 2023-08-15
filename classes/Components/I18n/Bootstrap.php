@@ -111,6 +111,19 @@ final class Bootstrap
         /** @var Database $db */
         $db = $container->get('Database');
         
+        $config=[];
+        $firmaLang=null;
+        $firmaRegion=null;
+        // Get language from system settings and normalize to 3-letter-code and 2-letter-code
+        if ($firmaLang = self::findLanguage($app->erp->Firmendaten('preferredLanguage'))) {
+            $config[Localization::LANGUAGE_DEFAULT] = $firmaLang[Iso639\Key::ALPHA_3];
+        }
+        
+        // Get region from system settings and normalize to 2-letter-code
+        if ($firmaLang && ($firmaRegion = self::findRegion($app->erp->Firmendaten('land')))) {
+            $config[Localization::LOCALE_DEFAULT] = "{$firmaLang[Iso639\Key::ALPHA_2]}_{$firmaRegion[Iso3166\Key::ALPHA_2]}";
+        }
+        
         
         // Get User
         $usersettings = [];
@@ -122,17 +135,17 @@ final class Bootstrap
             );
             
             // Get language from user account and normalize to 3-letter-code and 2-letter-code
-            if ($lang = self::findLanguage($user->GetSprache())) {
-                $usersettings['language'] = $lang[Iso639\Key::ALPHA_3];
+            if ($userLang = self::findLanguage($user->GetSprache())) {
+                $usersettings['language'] = $userLang[Iso639\Key::ALPHA_3];
             }
             
             // Get region from user account and normalize to 2-letter-code
-            if ($lang && ($region = self::findRegion($userAddress['land']))) {
-                $usersettings['locale'] = "{$lang[Iso639\Key::ALPHA_2]}_{$region[Iso3166\Key::ALPHA_2]}";
+            if ($userLang && ($userRegion = self::findRegion($userAddress['land']))) {
+                $usersettings['locale'] = "{$userLang[Iso639\Key::ALPHA_2]}_{$userRegion[Iso3166\Key::ALPHA_2]}";
             }
         }
         
         // Create Localization object
-        return new Localization($request, $session, $usersettings);
+        return new Localization($request, $session, $usersettings, $config);
     }
 }

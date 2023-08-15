@@ -35,12 +35,12 @@ final class Localization implements LocalizationInterface
     
     
     
-    public function __construct(?Request $request, ?Session $session, array $usersettings = [])
+    public function __construct(?Request $request, ?Session $session, array $usersettings = [], array $config = [])
     {
         $this->request = $request;
         $this->session = $session;
         $this->usersettings = $usersettings;
-        $this->config = [];
+        $this->config = $config;
         $this->process();
     }
     
@@ -55,8 +55,6 @@ final class Localization implements LocalizationInterface
         $langAttrName = $this->config[Localization::LANGUAGE_ATTRIBUTE_NAME] ?? 'language';
         
         $segmentName = 'i18n';
-//        $session = $this->session;
-//        $request = $this->request;
         
         // Get the locale from the session, if available
         if ($this->session && ($locale = $this->session->getValue($segmentName, $localeAttrName))) {
