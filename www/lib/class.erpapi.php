@@ -26040,7 +26040,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $this->app->Tpl->Set('DRUCKER', $this->GetSelectDrucker($selected));
       }
       $this->app->Tpl->Set('FAX',$this->GetSelectFax());
-      $this->app->Tpl->Set('EMAILEMPFAENGER',$this->GetSelectEmail());
+      $this->app->Tpl->Set('EMAILEMPFAENGER',$this->GetSelectEmail($this->Firmendaten("email")));
       $projektabkuerzung = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id='$projekt'");
       $this->app->Tpl->Set('PROJEKT',$projektabkuerzung);
       //$this->app->Tpl->Set(PROJEKT,$this->GetProjektSelect($projekt));
