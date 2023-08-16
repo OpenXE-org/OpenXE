@@ -115,12 +115,12 @@ final class Bootstrap
         $firmaLang=null;
         $firmaRegion=null;
         // Get language from system settings and normalize to 3-letter-code and 2-letter-code
-        if ($firmaLang = self::findLanguage($app->erp->Firmendaten('preferredLanguage'))) {
+        if ($firmaLang = self::findLanguage(strval($app->erp->Firmendaten('preferredLanguage')))) {
             $config[Localization::LANGUAGE_DEFAULT] = $firmaLang[Iso639\Key::ALPHA_3];
         }
         
         // Get region from system settings and normalize to 2-letter-code
-        if ($firmaLang && ($firmaRegion = self::findRegion($app->erp->Firmendaten('land')))) {
+        if ($firmaLang && ($firmaRegion = self::findRegion(strval($app->erp->Firmendaten('land'))))) {
             $config[Localization::LOCALE_DEFAULT] = "{$firmaLang[Iso639\Key::ALPHA_2]}_{$firmaRegion[Iso3166\Key::ALPHA_2]}";
         }
         
@@ -135,12 +135,12 @@ final class Bootstrap
             );
             
             // Get language from user account and normalize to 3-letter-code and 2-letter-code
-            if ($userLang = self::findLanguage($user->GetSprache())) {
+            if ($userLang = self::findLanguage(strval($user->GetSprache()))) {
                 $usersettings['language'] = $userLang[Iso639\Key::ALPHA_3];
             }
             
             // Get region from user account and normalize to 2-letter-code
-            if ($userLang && ($userRegion = self::findRegion($userAddress['land']))) {
+            if ($userLang && ($userRegion = self::findRegion(strval($userAddress['land'] ?? '')))) {
                 $usersettings['locale'] = "{$userLang[Iso639\Key::ALPHA_2]}_{$userRegion[Iso3166\Key::ALPHA_2]}";
             }
         }
