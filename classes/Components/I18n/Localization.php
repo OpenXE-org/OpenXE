@@ -222,7 +222,7 @@ final class Localization implements LocalizationInterface
         $localization = clone $this;
         
         // Find language from address array or keep current language
-        if (!$lang = Bootstrap::findLanguage($adresse['sprache'])) {
+        if (!$lang = Bootstrap::findLanguage($adresse['sprache'] ?? '')) {
             $lang = Bootstrap::findLanguage($this->getLanguage());
         }
         if ($lang) {
@@ -230,7 +230,7 @@ final class Localization implements LocalizationInterface
         }
         
         // Find region from address or keep current region
-        if (!$region = Bootstrap::findRegion($adresse['land'])) {
+        if (!$region = Bootstrap::findRegion($adresse['land'] ?? '')) {
             $parsedLocale = Locale::parseLocale($this->getLocale());
             $region = Bootstrap::findRegion($parsedLocale['region']);
         }
