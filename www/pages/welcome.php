@@ -1711,6 +1711,13 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     $this->app->Tpl->Set('STARTSEITE', $settings['startseite']);
     $this->app->Tpl->Set('DEFAULTCOLOR', $settings['defaultcolor']);
     $this->app->Tpl->Set('SPRACHEBEVORZUGEN', $this->languageSelectOptions($settings['sprachebevorzugen']));
+    
+    /** @var \Xentral\Components\I18n\Localization $localization */
+    if($localization=$this->app->Container->get('Localization')) {
+        $this->app->Tpl->Set('LOCALE', $localization->getLocale());
+    } else {
+        $this->app->Tpl->Set('LOCALE', 'Fehler!');
+    }
 
     if($settings['chat_popup']){
       $this->app->Tpl->Set('CHAT_POPUP', ' checked="checked" ');

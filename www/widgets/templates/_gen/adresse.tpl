@@ -149,11 +149,12 @@ $(document).ready(function(){
         <tr valign="top"><td>{|Liefersperre Grund|}:</td><td>[LIEFERSPERREGRUND][MSGLIEFERSPERREGRUND]</td></tr>
         <tr><td colspan="2"><br></td></tr>	
         <tr><td>{|Sprache f&uuml;r Belege|}:</td><td>[SPRACHE][MSGSPRACHE]</td></tr>
+        <tr><td>{|Sprache und Region|}:</td><td>[LOCALE][MSGLOCALE]</td></tr>
 
         <tr><td>{|Kundenfreigabe|}:</td><td>[KUNDENFREIGABE][MSGKUNDENFREIGABE]            </td></tr>
         <tr><td colspan="2"><br></td></tr>	
-       	<tr><td>{|Folgebest&auml;tigungsperre|}:</td><td>[FOLGEBESTAETIGUNGSPERRE][MSGFOLGEBESTAETIGUNGSPERRE]</td></tr>
-	<tr><td>{|Trackingmailsperre|}:</td><td>[TRACKINGSPERRE][MSGTRACKINGSPERRE]</td></tr>
+        <tr><td>{|Folgebest&auml;tigungsperre|}:</td><td>[FOLGEBESTAETIGUNGSPERRE][MSGFOLGEBESTAETIGUNGSPERRE]</td></tr>
+        <tr><td>{|Trackingmailsperre|}:</td><td>[TRACKINGSPERRE][MSGTRACKINGSPERRE]</td></tr>
         <tr><td>{|Marketingsperre|}:</td><td>[MARKETINGSPERRE][MSGMARKETINGSPERRE]</td></tr>
         <tr><td>{|Lead|}:</td><td>[LEAD][MSGLEAD]</td></tr>
     

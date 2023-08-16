@@ -1,4 +1,7 @@
 <?php
+
+use Xentral\Components\Database\Database;
+
 include ("_gen/widget.gen.adresse.php");
 
 class WidgetAdresse extends WidgetGenAdresse 
@@ -284,7 +287,20 @@ class WidgetAdresse extends WidgetGenAdresse
     $field = new HTMLSelect("sprache",0,"sprache",false,false,"1");
     $field->AddOptionsSimpleArray($sprachenOptions);
     $this->form->NewField($field);
-
+    
+    /** @var \Xentral\Components\I18n\Localization $localization */
+    $localization=$this->app->Container->get('Localization');
+    /** @var Database $db */
+    $db = $this->app->Container->get('Database');
+    $adresse = $db->fetchRow(
+          $db->select()->cols(['*'])->from('adresse')->where('id=:id'),
+          ['id' => $id]
+    );
+    $localization=$localization->withAdresse($adresse);
+    $field = new HTMLInput("locale","text",$localization->getLocale(), size: '10', disabled: 'disabled');
+    $this->form->NewField($field);
+    
+    
     $field = new HTMLInput("vorname","hidden","");
     $this->form->NewField($field);
 
