@@ -12,6 +12,7 @@ use Locale;
 use Xentral\Components\Http\Request;
 use Xentral\Components\Http\Session\Session;
 use Xentral\Components\I18n\Exception\LanguageNotInitializedException;
+use Xentral\Components\I18n\Exception\LocaleNotSetException;
 use Xentral\Components\I18n\Exception\UnsupportedLocaleStringException;
 
 /**
@@ -31,7 +32,7 @@ final class Localization implements LocalizationInterface
     
     private array $language = [];
     
-    private array $locale = [];
+    private string|null $locale;
     
     
     
@@ -49,39 +50,48 @@ final class Localization implements LocalizationInterface
     public function process()
     {
         // Hardcoded defaults if config is not available
-        $localeDefault = $this->config[Localization::LOCALE_DEFAULT] ?? 'de_DE';
+//        $localeDefault = $this->config[Localization::LOCALE_DEFAULT] ?? 'de_DE';
         $localeAttrName = $this->config[Localization::LOCALE_ATTRIBUTE_NAME] ?? 'locale';
         $langDefault = $this->config[Localization::LANGUAGE_DEFAULT] ?? 'deu';
         $langAttrName = $this->config[Localization::LANGUAGE_ATTRIBUTE_NAME] ?? 'language';
         
         $segmentName = 'i18n';
         
+        $this->setLocale((string)$this->config[Localization::LOCALE_DEFAULT], 'de_DE');
+        
         // Get the locale from the session, if available
-        if ($this->session && ($locale = $this->session->getValue($segmentName, $localeAttrName))) {
+        if ($this->session) {
+            $this->setLocale((string)$this->session->getValue($segmentName, $localeAttrName, ''), $this->getLocale());
         } else {
             // Get locale from request, fallback to the user's browser preference
             if ($this->request) {
-                $locale = $this->request->attributes->get(
-                    $localeAttrName,
-                    Locale::acceptFromHttp(
-                        $this->request->getHeader('Accept-Language', $localeDefault)
-                    ) ?? $localeDefault
-                );
+                try {
+                    $this->setLocale((string)$this->request->attributes->get($localeAttrName, ''));
+                } catch (UnsupportedLocaleStringException $e) {
+                    $this->setLocale(
+                        (string)
+                        Locale::acceptFromHttp(
+                            $this->request->getHeader('Accept-Language', '')
+                        )
+                        ,
+                        $this->getLocale()
+                    );
+                }
             } else {
-                $locale = Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? $localeDefault);
+                $this->setLocale((string)Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''), $this->getLocale());
             }
         }
         // Get locale from user
         // This overrides all previous attempts to find a locale
         if (array_key_exists('locale', $this->usersettings)) {
-            $locale = $this->usersettings['locale'];
+            $this->setLocale((string)$this->usersettings['locale'], $this->getLocale());
         }
         // Get locale from query string
         // This overrides all previous attempts to find a locale
         if ($this->request) {
-            $locale = $this->request->getParam($localeAttrName, $locale ?? $localeDefault);
+            $this->setLocale((string)$this->request->getParam($localeAttrName), $this->getLocale());
         } else {
-            $locale = $_GET[$localeAttrName] ?? $locale ?? $localeDefault;
+            $this->setLocale((string)$_GET[$localeAttrName], $this->getLocale());
         }
         
         
@@ -90,9 +100,9 @@ final class Localization implements LocalizationInterface
         } else {
             // Get language from request, fallback to the current locale
             if ($this->request) {
-                $language = $this->request->attributes->get($langAttrName, Locale::getPrimaryLanguage($locale));
+                $language = $this->request->attributes->get($langAttrName, Locale::getPrimaryLanguage($this->getLocale()));
             } else {
-                $language = Locale::getPrimaryLanguage($locale);
+                $language = Locale::getPrimaryLanguage($this->getLocale());
             }
         }
         // Get language from user
@@ -114,22 +124,22 @@ final class Localization implements LocalizationInterface
         
         // Store the locale and language to the LocalizationInterface
         $this->setLanguage($language);
-        $this->setLocale($locale);
+//        $this->setLocale($locale);
         
         // Store the locale and language to the session
         if ($this->session) {
-            $this->session->setValue($segmentName, $localeAttrName, $locale);
-            $this->session->setValue($segmentName, $langAttrName, $language);
+            $this->session->setValue($segmentName, $localeAttrName, $this->getLocale());
+            $this->session->setValue($segmentName, $langAttrName, $this->getLanguage());
         }
         
         // Store the locale and language as a request attribute
         if ($this->request) {
-            $this->request->attributes->set($localeAttrName, $locale);
-            $this->request->attributes->set($langAttrName, $language);
+            $this->request->attributes->set($localeAttrName, $this->getLocale());
+            $this->request->attributes->set($langAttrName, $this->getLanguage());
         }
         
         // Set the default locale
-        Locale::setDefault($locale);
+        Locale::setDefault($this->getLocale());
 //        error_log(self::class . ": {$locale}");
     }
     
@@ -179,19 +189,38 @@ final class Localization implements LocalizationInterface
     /**
      * Set the locale.
      *
-     * @param string $locale
+     * @param string      $locale
+     * @param string|null $fallbackLocale
      */
-    public function setLocale(string $locale)
+    public function setLocale(string $locale, string|null $fallbackLocale = null): void
     {
+        // Check if locale is already set
+        try {
+            if ($locale == $this->getLocale()) {
+                return;
+            }
+        } catch (LocaleNotSetException $e) {
+        };
+        
+        // Parse and re-compose locale to make sure, it is sane
         $parsedLocale = Locale::parseLocale($locale);
-        $locale = Locale::composeLocale([
-                                            'language' => $parsedLocale['language'],
-                                            'region' => $parsedLocale['region'],
-                                        ]);
+        $composedLocale = Locale::composeLocale([
+                                                    'language' => $parsedLocale['language'],
+                                                    'region' => $parsedLocale['region'],
+                                                ]);
         
-        if(!$locale) throw new UnsupportedLocaleStringException("The given locale string '{$locale}' is not supported");
+        // If sanity check fails, set fallbackLocale if present
+        // throw exception otherwise
+        if (!$composedLocale) {
+            if ($fallbackLocale === null) {
+                throw new UnsupportedLocaleStringException("The given locale string '{$locale}' is not supported");
+            } else {
+                $this->setLocale($fallbackLocale);
+                return;
+            }
+        }
         
-        $this->locale[Iso3166\Key::DEFAULT] = $locale;
+        $this->locale = $composedLocale;
     }
     
     
@@ -199,13 +228,14 @@ final class Localization implements LocalizationInterface
     /**
      * Return the locale string as defined by $key.
      *
-     * @param string|null $key A constant from Iso3166\Key
-     *
      * @return string
      */
-    public function getLocale(string $key = null): string
+    public function getLocale(): string
     {
-        return $this->locale[Iso3166\Key::DEFAULT];
+        if (!isset($this->locale)) {
+            throw new LocaleNotSetException();
+        }
+        return $this->locale;
     }
     
     
