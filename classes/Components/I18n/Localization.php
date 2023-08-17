@@ -42,6 +42,11 @@ final class Localization implements LocalizationInterface
         $this->session = $session;
         $this->usersettings = $usersettings;
         $this->config = $config;
+        
+        // Set config if no default is given
+        $this->config[Localization::LOCALE_DEFAULT]=$this->config[Localization::LOCALE_DEFAULT] ?? 'de_DE';
+        $this->config[Localization::LANGUAGE_DEFAULT]=$this->config[Localization::LANGUAGE_DEFAULT] ?? 'deu';
+        
         $this->process();
     }
     
@@ -57,11 +62,11 @@ final class Localization implements LocalizationInterface
         
         $segmentName = 'i18n';
         
-        $this->setLocale((string)$this->config[Localization::LOCALE_DEFAULT], 'de_DE');
+        $this->setLocale((string)$this->config[Localization::LOCALE_DEFAULT]);
         
         // Get the locale from the session, if available
-        if ($this->session) {
-            $this->setLocale((string)$this->session->getValue($segmentName, $localeAttrName, ''), $this->getLocale());
+        if ($this->session && ($sessionLocale = $this->session->getValue($segmentName, $localeAttrName))) {
+            $this->setLocale((string)$sessionLocale, $this->getLocale());
         } else {
             // Get locale from request, fallback to the user's browser preference
             if ($this->request) {
@@ -124,7 +129,6 @@ final class Localization implements LocalizationInterface
         
         // Store the locale and language to the LocalizationInterface
         $this->setLanguage($language);
-//        $this->setLocale($locale);
         
         // Store the locale and language to the session
         if ($this->session) {
@@ -194,20 +198,24 @@ final class Localization implements LocalizationInterface
      */
     public function setLocale(string $locale, string|null $fallbackLocale = null): void
     {
-        // Check if locale is already set
-        try {
-            if ($locale == $this->getLocale()) {
-                return;
-            }
-        } catch (LocaleNotSetException $e) {
-        };
-        
-        // Parse and re-compose locale to make sure, it is sane
-        $parsedLocale = Locale::parseLocale($locale);
-        $composedLocale = Locale::composeLocale([
-                                                    'language' => $parsedLocale['language'],
-                                                    'region' => $parsedLocale['region'],
-                                                ]);
+        if(!empty($locale)) {
+            // Check if locale is already set
+            try {
+                if ($locale == $this->getLocale()) {
+                    return;
+                }
+            } catch (LocaleNotSetException $e) {
+            };
+            
+            // Parse and re-compose locale to make sure, it is sane
+            $parsedLocale = Locale::parseLocale($locale);
+            $composedLocale = Locale::composeLocale([
+                                                        'language' => $parsedLocale['language'],
+                                                        'region' => $parsedLocale['region'],
+                                                    ]);
+        } else {
+            $composedLocale=null;
+        }
         
         // If sanity check fails, set fallbackLocale if present
         // throw exception otherwise

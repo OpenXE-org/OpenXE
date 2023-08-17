@@ -61,7 +61,7 @@ final class Bootstrap
         $subject = strtolower($lang);
         foreach ((new Iso639()) as $key => $val) {
             if (array_filter($val, function ($str) use ($subject) {
-                return $str && ((strtolower($str) == $subject) || (self::replaceUmlauts(strtolower($str)) == $subject));
+                return $str && ((strtolower($str) == $subject) || (strtolower(self::replaceUmlauts($str)) == $subject));
             })) {
                 return $val;
             }
@@ -83,7 +83,7 @@ final class Bootstrap
         $subject = strtolower($region);
         foreach ((new Iso3166()) as $key => $val) {
             if (array_filter($val, function ($str) use ($subject) {
-                return $str && ((strtolower($str) == $subject) || (self::replaceUmlauts(strtolower($str)) == $subject));
+                return $str && ((strtolower($str) == $subject) || (strtolower(self::replaceUmlauts($str)) == $subject));
             })) {
                 return $val;
             }
@@ -112,8 +112,6 @@ final class Bootstrap
         $db = $container->get('Database');
         
         $config=[];
-        $firmaLang=null;
-        $firmaRegion=null;
         // Get language from system settings and normalize to 3-letter-code and 2-letter-code
         if ($firmaLang = self::findLanguage(strval($app->erp->Firmendaten('preferredLanguage')))) {
             $config[Localization::LANGUAGE_DEFAULT] = $firmaLang[Iso639\Key::ALPHA_3];
@@ -140,7 +138,7 @@ final class Bootstrap
             }
             
             // Get region from user account and normalize to 2-letter-code
-            if ($userLang && ($userRegion = self::findRegion(strval($userAddress['land'] ?? '')))) {
+            if ($userLang && ($userRegion = self::findRegion(strval($userAddress['land'])))) {
                 $usersettings['locale'] = "{$userLang[Iso639\Key::ALPHA_2]}_{$userRegion[Iso3166\Key::ALPHA_2]}";
             }
         }
