@@ -13,6 +13,9 @@
 */
 ?>
 <?php
+
+use Xentral\Components\Database\Database;
+
 class Firmendaten  {
   /** @var Application */
   var $app;
@@ -2543,50 +2546,92 @@ class Firmendaten  {
       }
     }
   }
-
+  
+  
+  
   /**
-   * Sprache in firmendaten_werte und user->sprachebevorzugen speichern
-   * @param $language
+   * Sprache in firmendaten_werte speichern, wenn sie geändert wurde.
+   * Falls der Wert in der Tabelle noch nicht existiert, wird er angelegt.
+   *
+   * @param string $newLanguage Sprache (wird in ISO 639 Alpha-3 Code umgewandelt)
    */
-  private function savePreferredLanguage($language){
-
-/* THIS NEEDS TO BE REIMPLEMENTED
-    $lang = $this->app->erp->Firmendaten('preferredLanguage');
-    if($lang != $language){
-      $this->app->erp->FirmendatenSet('preferredLanguage',$language);
-      $this->app->DB->Update("UPDATE `user` SET sprachebevorzugen = '".$language."'");
+  private function savePreferredLanguage(string $newLanguage): void
+  {
+    $newLanguage = \Xentral\Components\I18n\Bootstrap::findLanguage(
+      $newLanguage
+    )[Xentral\Components\I18n\Iso639\Key::DEFAULT] ?? $this->getPreferredLanguage();
+    
+    if ($newLanguage != ($oldLanguage = $this->app->erp->Firmendaten('preferredLanguage'))) {
+      if ($oldLanguage) {
+        $this->app->erp->FirmendatenSet('preferredLanguage', $newLanguage);
+      } else {
+        // Workaround, weil \erpAPI::AddNeuenFirmendatenWert() nicht funktioniert
+        /** @var Database $db */
+        $db = $this->app->Container->get('Database');
+        $insert= $db->insert()->into('firmendaten_werte')->cols(
+          [
+            'name' => 'preferredLanguage',
+            'typ' => 'varchar',
+            'typ1' => '64',
+            'typ2' => '',
+            'wert' => $newLanguage,
+            'default_value' => $this->getPreferredLanguage(),
+            'default_null' => 0,
+            'darf_null' => 0,
+          ]
+        );
+        $db->perform($insert->getStatement(), $insert->getBindValues());
+        /*
+        $this->app->erp->AddNeuenFirmendatenWert(
+          'preferredLanguage',
+          'varchar',
+          '64',
+          '',
+          $newLanguage,
+          $this->getPreferredLanguage(),
+          0,
+          0
+        );
+        */
+      }
     }
-*/
   }
-
+  
+  
+  
   /**
-   * Bevorzugte Sprache aus firmendaten_werte
-   * @return string Sprache
+   * Bevorzugte Sprache aus firmendaten_werte zurückgeben.
+   * Wenn die Sprache nicht gesetzt ist, die Default-Sprache zurückgeben.
+   *
+   * @return string Sprache als ISO 639 Alpha-3 Code
    */
-  private function getPreferredLanguage(){
-
-    $lang = $this->app->erp->Firmendaten('preferredLanguage');
-    if(!empty($lang)) {
-      return $lang;
-    }
-
-//    $this->app->erp->AddNeuenFirmendatenWert('preferredLanguage','varchar','64','','deutsch','deutsch',0,0);
-    return 'deutsch';
+  private function getPreferredLanguage(): string
+  {
+    /** @var \Xentral\Components\I18n\Localization $localization */
+    $localization = $this->app->Container->get('Localization');
+    return \Xentral\Components\I18n\Bootstrap::findLanguage(
+      $this->app->erp->Firmendaten('preferredLanguage') ?? $localization->getLanguage()
+    )[Xentral\Components\I18n\Iso639\Key::DEFAULT];
   }
-
+  
+  
+  
   /**
-   * Liefert einen String aus HTML-Optionen zurück
-   * @param string $select Wert aus der Datenbank
+   * Liefert einen String aus HTML-Optionen zurück.
+   *
+   * @param string $select Gewählter Wert
+   *
    * @return string
    */
-  private function languageSelectOptions($select='deutsch'){
-
+  private function languageSelectOptions(string $select)
+  {
+    $select=\Xentral\Components\I18n\Bootstrap::findLanguage($select)[Xentral\Components\I18n\Iso639\Key::DEFAULT];
     $out = '';
-    $sprachen = $this->getLanguages();
-
-    foreach($sprachen as $sprache) {
-      $selected = (($select==$sprache) ? 'selected' : '');
-      $out .= "<option value=\"$sprache\" $selected>$sprache</option>";
+    foreach ($this->getLanguages() as $sprache) {
+      if($language=\Xentral\Components\I18n\Bootstrap::findLanguage($sprache)) {
+        $selected = (($select == $language[Xentral\Components\I18n\Iso639\Key::DEFAULT]) ? ' selected="selected"' : '');
+        $out .= "<option value=\"{$language[Xentral\Components\I18n\Iso639\Key::DEFAULT]}\"{$selected}>{$language[Xentral\Components\I18n\Iso639\Key::NAME_deu]}</option>";
+      }
     }
     return $out;
   }
