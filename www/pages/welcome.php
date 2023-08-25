@@ -2819,7 +2819,19 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     header('Location: '.$_SERVER['HTTP_REFERER']);
     exit;
   }
-
+  
+  
+  
+  /**
+   * Diese Funktion holt die Sprache von den Firmendaten, falls keine Sprache in $fromPost übergeben wurde.
+   * Sie wurde nur verwendet, um eine Vorgabe im sprachebevorzugen-SELECT beim Benutzer zu erzeugen.
+   * Das wird jetzt anders gelöst.
+   *
+   * @param $fromPost
+   *
+   * @return array|mixed|string|null
+   * @deprecated Nicht mehr benötigt
+   */
   private function getCurrentDefaultLanguage($fromPost){
 
     if(empty($fromPost)){
@@ -2831,29 +2843,43 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     }
     return $fromPost;
   }
-
+  
+  
+  
   /**
-   * Liefert einen String aus HTML-Optionen zurück
-   * @param string $fromPost
+   * Liefert einen String aus HTML-Select-Optionen zurück für die Sprachauswahl beim Benutzer.
+   *
+   * @param string|null $userPreferredLanguage Gewählte Sprache von den Usereinstellungen
+   *
    * @return string
    */
-  private function languageSelectOptions($fromPost=''){
-
-    $select = $this->getCurrentDefaultLanguage($fromPost);
-
-    $out = "";
-    $sprachen = $this->getLanguages();
-
-    foreach($sprachen as $sprache) {
-      $selected = (($select==$sprache) ? 'selected' : '');
-      $out .= "<option value=\"$sprache\" $selected>$sprache</option>";
+  private function languageSelectOptions(string|null $userPreferredLanguage='') {
+    $select=\Xentral\Components\I18n\Bootstrap::findLanguage(strval($userPreferredLanguage))[Xentral\Components\I18n\Iso639\Key::DEFAULT];
+    if(empty($select)) {
+      /** @var \Xentral\Components\I18n\Localization $localization */
+      $localization=$this->app->Container->get('Localization');
+      $select=$localization->getLanguage();
+    }
+    $out = '';
+    foreach ($this->getLanguages() as $sprache) {
+      if($language=\Xentral\Components\I18n\Bootstrap::findLanguage($sprache)) {
+        $selected = (($select == $language[Xentral\Components\I18n\Iso639\Key::DEFAULT]) ? ' selected="selected"' : '');
+        $out .= "<option value=\"{$language[Xentral\Components\I18n\Iso639\Key::DEFAULT]}\"{$selected}>{$language[Xentral\Components\I18n\Iso639\Key::NAME_deu]}</option>";
+      }
     }
     return $out;
+    
   }
-
+  
+  
+  
   /**
-   * Liefert einen Array aus Strings zurück. Immer mindestens 'deutsch' enthalten
+   * Liefert einen Array aus Strings zurück. Immer mindestens 'deutsch' enthalten.
+   *
    * @return array
+   * @todo Sollte eventuell zusammengelegt oder in den Übersetzer verschoben werden.
+   * @see  \Firmendaten::getLanguages()
+   * @deprecated
    */
   private function getLanguages(){
 

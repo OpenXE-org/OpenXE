@@ -474,9 +474,12 @@ class User
 
     return $this->cache[$cacheKey]['name'];
   }
-
+  
+  
+  
   /**
    * @return array
+   * @deprecated Eine Liste der verfügbaren Sprachen sollte IMHO zentral im Übersetzer generiert werden.
    */
   public function GetSprachen()
   {
@@ -505,15 +508,20 @@ class User
 
     return $defaultLanguages;
   }
-
+  
+  
+  
   /**
-   * @return string
+   * Die vom User gewählte Sprache zurückgeben.
+   * Null, falls die Sprache nicht erkannt wird.
+   *
+   * @return string|null
    */
-  public function GetSprache()
+  public function GetSprache(): string|null
   {
-    $sprachen = $this->GetSprachen();
-
-    return reset($sprachen);
+    return \Xentral\Components\I18n\Bootstrap::findLanguage(
+      strval($this->GetField('sprachebevorzugen'))
+    )[Xentral\Components\I18n\Iso639\Key::DEFAULT];
   }
 
   /**

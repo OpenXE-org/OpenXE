@@ -12131,14 +12131,14 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     $this->app->Tpl->Add($target, $html);
   }
 
-  /**@deprected**/
+  /**@deprecated**/
   function HelpIcon()
   {
     $module = $this->app->Secure->GetGET("module");
     $action = $this->app->Secure->GetGET("action");
   }
 
-  /**@deprected**/
+  /**@deprecated**/
   function PrinterIcon()
   {
  //       $this->app->Tpl->Add('TABSPRINT',"&nbsp;<a style=\"color:white;font-size:9pt\" href=\"#\" onclick=\"wawisionPrint();\"><img src=\"./themes/new/images/icons_druck.png\" height=\"18\"></a>");
@@ -13856,7 +13856,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
   }
 
-  /**@depreacated */
+  /**@deprecated */
   function CheckSamePage()
   {
     $id = $this->app->Secure->GetGET("id");
@@ -13868,7 +13868,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
   }
 
   /**
-   * @depreacated
+   * @deprecated
    * @refactor Artikel Modul
    */
   function SeitenSperrAuswahl($ueberschrift,$meldung)
@@ -13911,7 +13911,7 @@ $( this ).dialog( "close" );
         ');
     }
 
-/**@depreacated */
+/**@deprecated */
 function SeitenSperrInfo($meldung)
 {
   $this->app->Tpl->Set('SPERRMELDUNG',  '$("a#inline").fancybox({
@@ -27759,7 +27759,7 @@ function Firmendaten($field,$projekt="")
     return $ret;
   }
 
-  /** @depracated */
+  /** @deprecated */
   function GetPrioTicketSelect($prio)
   {
     $prios = array('4'=>'niedrig','3'=>'normal','2'=>'hoch');

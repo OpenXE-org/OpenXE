@@ -2635,10 +2635,16 @@ class Firmendaten  {
     }
     return $out;
   }
-
+  
+  
+  
   /**
-   * Liefert einen Array aus Strings zurück. Immer mindestens 'deutsch' enthalten
+   * Liefert einen Array aus Strings zurück. Immer mindestens 'deutsch' enthalten.
+   *
    * @return array
+   * @todo Sollte eventuell zusammengelegt oder in den Übersetzer verschoben werden.
+   * @see  \Firmendaten::getLanguages()
+   * @deprecated
    */
   private function getLanguages(){
 
