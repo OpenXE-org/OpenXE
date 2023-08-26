@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * SPDX-FileCopyrightText: 2023 Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -16,7 +16,7 @@ use Xentral\Core\DependencyInjection\ServiceContainer;
 /**
  * Factory for localization object.
  *
- * @see Localization
+ * @see      Localization
  * @author   Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
  */
 final class Bootstrap
@@ -28,6 +28,7 @@ final class Bootstrap
     {
         return [
             'Localization' => 'onInitLocalization',
+            'FormatterService' => 'onInitFormatterService',
         ];
     }
     
@@ -111,7 +112,9 @@ final class Bootstrap
         /** @var Database $db */
         $db = $container->get('Database');
         
-        $config=[];
+        $config = [];
+        $firmaLang = null;
+        $firmaRegion = null;
         // Get language from system settings and normalize to 3-letter-code and 2-letter-code
         if ($firmaLang = self::findLanguage(strval($app->erp->Firmendaten('preferredLanguage')))) {
             $config[Localization::LANGUAGE_DEFAULT] = $firmaLang[Iso639\Key::ALPHA_3];
@@ -146,4 +149,14 @@ final class Bootstrap
         // Create Localization object
         return new Localization($request, $session, $usersettings, $config);
     }
+    
+    
+    
+    public static function onInitFormatterService(ServiceContainer $container): FormatterService
+    {
+        $localization = $container->get('Localization');
+        $locale = $localization->getLocale();
+        return new FormatterService($locale);
+    }
+    
 }
