@@ -8,8 +8,11 @@ declare(strict_types=1);
 
 namespace Xentral\Components\I18n;
 
+use Xentral\Components\I18n\Formatter\CurrencyFormatter;
 use Xentral\Components\I18n\Formatter\FloatFormatter;
 use Xentral\Components\I18n\Formatter\FormatterInterface;
+use Xentral\Components\I18n\Formatter\FormatterMode;
+use Xentral\Components\I18n\Formatter\IntegerFormatter;
 
 /**
  * This service creates formatters for localized input and output.
@@ -79,5 +82,170 @@ class FormatterService
         return $formatter;
     }
     
+    
+    
+    /**
+     * Replace callback function for \FormActionHandler.
+     * Parses and Formats an integer and allows an empty string.
+     *
+     * @param int   $toDatabase
+     * @param mixed $value
+     * @param       $fromForm
+     *
+     * @return mixed|string
+     * @see \FormActionHandler
+     */
+    public function replaceIntegerOrEmpty(int $toDatabase, mixed $value, $fromForm)
+    {
+        $formatter = new IntegerFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        
+        
+        if (!is_numeric($value) || $fromForm) {
+            $formatter->parseUserInput(strval($value));
+        } else {
+            $formatter->setPhpVal($value);
+        }
+        
+        
+        if ($toDatabase) {
+            return $formatter->getPhpVal();
+        } else {
+            return $formatter->formatForUser();
+        }
+    }
+    
+    
+    
+    /**
+     * Replace callback function for \FormActionHandler.
+     * Parses and Formats a float and allows an empty string.
+     * Output shows decimals, if present.
+     *
+     * @param int   $toDatabase
+     * @param mixed $value
+     * @param       $fromForm
+     *
+     * @return mixed|string
+     * @see \FormActionHandler
+     */
+    public function replaceDecimalOrEmpty(int $toDatabase, mixed $value, $fromForm)
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        
+        
+        if (!is_numeric($value) || $fromForm) {
+            $formatter->parseUserInput(strval($value));
+        } else {
+            $formatter->setPhpVal(floatval($value));
+        }
+        
+        
+        if ($toDatabase) {
+            return $formatter->getPhpVal();
+        } else {
+            return $formatter->formatForUser();
+        }
+    }
+    
+    
+    
+    /**
+     * Replace callback function for \FormActionHandler.
+     * Parses and Formats a float and allows an empty string.
+     * Output always shows at least 7 decimal.
+     *
+     * @param int   $toDatabase
+     * @param mixed $value
+     * @param       $fromForm
+     *
+     * @return mixed|string
+     * @see \FormActionHandler
+     */
+    public function replaceDecimalGeoOrEmpty(int $toDatabase, mixed $value, $fromForm)
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        $formatter->setMinDigits(7);
+        
+        
+        if (!is_numeric($value) || $fromForm) {
+            $formatter->parseUserInput(strval($value));
+        } else {
+            $formatter->setPhpVal(floatval($value));
+        }
+        
+        
+        if ($toDatabase) {
+            return $formatter->getPhpVal();
+        } else {
+            return $formatter->formatForUser();
+        }
+    }
+    
+    
+    
+    /**
+     * Replace callback function for \FormActionHandler.
+     * Parses and Formats a float and allows an empty string.
+     * Output always shows at least 1 decimal.
+     *
+     * @param int   $toDatabase
+     * @param mixed $value
+     * @param       $fromForm
+     *
+     * @return mixed|string
+     * @see \FormActionHandler
+     */
+    public function replaceDecimalPercentOrEmpty(int $toDatabase, mixed $value, $fromForm)
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        $formatter->setMinDigits(1);
+        
+        
+        if (!is_numeric($value) || $fromForm) {
+            $formatter->parseUserInput(strval($value));
+        } else {
+            $formatter->setPhpVal(floatval($value));
+        }
+        
+        
+        if ($toDatabase) {
+            return $formatter->getPhpVal();
+        } else {
+            return $formatter->formatForUser();
+        }
+    }
+    
+    
+    
+    /**
+     * Replace callback function for \FormActionHandler.
+     * Parses and Formats a float and allows an empty string.
+     *
+     * @param int   $toDatabase
+     * @param mixed $value
+     * @param       $fromForm
+     *
+     * @return mixed|string
+     * @see \FormActionHandler
+     */
+    public function replaceCurrencyOrEmpty(int $toDatabase, mixed $value, $fromForm)
+    {
+        $formatter = (new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY));
+        $formatter->setMinDigits(2);
+        
+        
+        if (!is_numeric($value) || $fromForm) {
+            $formatter->parseUserInput(strval($value));
+        } else {
+            $formatter->setPhpVal(floatval($value));
+        }
+        
+        
+        if ($toDatabase) {
+            return $formatter->getPhpVal();
+        } else {
+            return $formatter->formatForUser();
+        }
+    }
     
 }

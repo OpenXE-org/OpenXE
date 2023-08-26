@@ -28,17 +28,21 @@ class WidgetAdresse extends WidgetGenAdresse
     $this->form->ReplaceFunction("mandatsreferenzdatum",$this,"ReplaceDatum");
     $this->form->ReplaceFunction("liefersperredatum",$this,"ReplaceDatum");
 
-    $this->form->ReplaceFunction("arbeitszeitprowoche",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("zahlungszielskonto",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("zahlungszielskontolieferant",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("provision",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("portofreiab",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("portofreiablieferant",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("kreditlimit",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("kreditlimiteinmalig",$this,"ReplaceBetrag");
+    $this->form->ReplaceFunction("arbeitszeitprowoche", $this->formatterService, "replaceDecimalOrEmpty");
+    $this->form->ReplaceFunction("zahlungszieltage", $this->formatterService, "replaceIntegerOrEmpty");
+    $this->form->ReplaceFunction("zahlungszieltagelieferant", $this->formatterService, "replaceIntegerOrEmpty");
+    $this->form->ReplaceFunction("zahlungszieltageskonto", $this->formatterService, "replaceDecimalOrEmpty");
+    $this->form->ReplaceFunction("zahlungszieltageskontolieferant", $this->formatterService, "replaceDecimalOrEmpty");
+    $this->form->ReplaceFunction("zahlungszielskonto", $this->formatterService, "replaceDecimalPercentOrEmpty");
+    $this->form->ReplaceFunction("zahlungszielskontolieferant", $this->formatterService, "replaceDecimalPercentOrEmpty");
+    $this->form->ReplaceFunction("provision", $this->formatterService, "replaceDecimalPercentOrEmpty");
+    $this->form->ReplaceFunction("portofreiab", $this->formatterService, "replaceCurrencyOrEmpty");
+    $this->form->ReplaceFunction("portofreiablieferant", $this->formatterService, "replaceCurrencyOrEmpty");
+    $this->form->ReplaceFunction("kreditlimit", $this->formatterService, "replaceCurrencyOrEmpty");
+    $this->form->ReplaceFunction("kreditlimiteinmalig", $this->formatterService, "replaceCurrencyOrEmpty");
 
-    $this->form->ReplaceFunction("lat",$this,"ReplaceBetrag");
-    $this->form->ReplaceFunction("lng",$this,"ReplaceBetrag");
+    $this->form->ReplaceFunction("lat", $this->formatterService, "replaceDecimalGeoOrEmpty");
+    $this->form->ReplaceFunction("lng", $this->formatterService, "replaceDecimalGeoOrEmpty");
     $this->form->ReplaceFunction("name",$this,"ReplaceTrim");
 
     $this->app->YUI->CkEditor("sonstiges","internal");
