@@ -1252,7 +1252,7 @@ Options -Indexes
 # Deny access to all *.php
 Order deny,allow
 Allow from all
-<FilesMatch "\.(css|jpg|jpeg|gif|png|svg|js|ico|css.map|js.map)$">
+<FilesMatch "\.(css|jpg|jpeg|gif|png|svg|js|ico|woff2|css.map|js.map)$">
     Order Allow,Deny
     Allow from all
 </FilesMatch>
