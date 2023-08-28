@@ -1452,30 +1452,24 @@ public function NavigationHooks(&$menu)
     if(is_null($stellen))return "if(trim(round( $spalte *100))+0 <> trim($spalte*100)+0, format($spalte,  length( trim($spalte)+0)-length(round($spalte))-1 ".($punkt?"":" ,'de_DE'")."),format($spalte,2".($punkt?"":" ,'de_DE'")."))";
     return "format($spalte,$stellen".($punkt?"":" ,'de_DE'").")";
   }
-
+  
+  
+  
   /**
-   * @deprecated
+   * Wandelt eine Formatierte Zahl in das Format für die Datenbank um.
    *
    * @param $value
    *
    * @return mixed
+   * @deprecated
+   *
    */
   function FromFormatZahlToDB($value)
   {
-    $poskomma = strrpos($value, ',');
-    $pospunkt = strrpos($value, '.');
-    if($poskomma === false) {
-      return $value;
-    }
-    if($pospunkt === false) {
-      return str_replace(',','.', $value);
-    }
-
-    if($poskomma > $pospunkt) {
-      return str_replace(['.', ','], ['', '.'], $value);
-    }
-
-    return str_replace(',','', $value);
+    /** @var \Xentral\Components\I18n\FormatterService $fs */
+    $fs = $this->app->Container->get('FormatterService');
+    $number = $fs->floatFromUserInput(strval($value));
+    return $number->getPhpVal();
   }
 
   // @refactor Formater Komponente
@@ -1508,13 +1502,28 @@ public function NavigationHooks(&$menu)
     }
     return $prefix.'.'.'belegnr';
   }
-
-  // @refactor DbHelper Komponente
+  
+  
+  
+  /**
+   * Erstelle die lokalisierten Formatierungsanweisungen für das SQL-Query.
+   * Wird and folgenden Stellen benutzt:
+   * -\Artikel::TableSearch()
+   *
+   * @param $spalte
+   * @param $decimals
+   *
+   * @return mixed
+   * @deprecated Es wäre besser, die Formatierung in PHP zu machen
+   *
+   */
+  
   function FormatMenge($spalte, $decimals = 0)
   {
-    return ('FORMAT('.$spalte.','.$decimals.',\'de_DE\')');
-
-//    return "replace(trim($spalte)+0,'.',',')";
+    /** @var \Xentral\Components\I18n\FormatterService $fn */
+    $fs = $this->app->Container->get('FormatterService');
+    $number = $fs->factory(\Xentral\Components\I18n\Formatter\FloatFormatter::class);
+    return $number->setMinDigits($decimals)->formatForUserWithSqlStatement($spalte);
   }
 
   function FormatUCfirst($spalte)
@@ -12131,14 +12140,14 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     $this->app->Tpl->Add($target, $html);
   }
 
-  /**@deprecated**/
+  /**@deprected**/
   function HelpIcon()
   {
     $module = $this->app->Secure->GetGET("module");
     $action = $this->app->Secure->GetGET("action");
   }
 
-  /**@deprecated**/
+  /**@deprected**/
   function PrinterIcon()
   {
  //       $this->app->Tpl->Add('TABSPRINT',"&nbsp;<a style=\"color:white;font-size:9pt\" href=\"#\" onclick=\"wawisionPrint();\"><img src=\"./themes/new/images/icons_druck.png\" height=\"18\"></a>");
@@ -12769,12 +12778,21 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       return $obj->LieferscheinCheck($lieferschein);
     }
   }
-
-
-  // @refactor Formater Komponente
+  
+  
+  
+  /**
+   * Formatiert den $betrag als Währungs-Ausgabe-String.
+   *
+   * @param $betrag
+   *
+   * @return string
+   */
   public function EUR($betrag)
   {
-    return number_format($betrag,2,',','.');
+    /** @var \Xentral\Components\I18n\FormatterService $fs */
+    $fs = $this->app->Container->get('FormatterService');
+    return $fs->formatPreis($betrag);
   }
 
   // @refactor Adresse Modul
@@ -12795,36 +12813,30 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
 
     return $kreditlimit >= ($rechnungen+$auftraege);
   }
-
-  // @refactor FormHelper Komponente
-  public function ReplaceBetrag($db,$value,$fromform = null)
+  
+  
+  
+  /**
+   * Formatiert bzw. parst einen Geldbetrag für die Ausgabe im Formular oder die Speicherung in der DB.
+   *
+   * @param $db Richtung (true=Speichern in DB, false=Ausgabe im Formular)
+   * @param $value
+   * @param $fromform
+   *
+   * @return float|mixed|string
+   */
+  public function ReplaceBetrag($db, $value, $fromform = null)
   {
+    /** @var \Xentral\Components\I18n\FormatterService $fs */
+    $fs = $this->app->Container->get('FormatterService');
+    
     // wenn ziel datenbank
-    if($db)
-    {
-      // wenn . und , vorhanden dann entferne punkt
-      $pos_punkt = strrpos($value, '.');
-      $pos_komma = strrpos($value, ',');
-      if(($pos_punkt !== false) && ($pos_komma !== false)){
-        if($pos_punkt < $pos_komma){
-          $value = str_replace('.', '', $value);
-        }else{
-          $value = str_replace(',', '', $value);
-        }
-      }
-      return str_replace(',','.',$value);
+    if ($db) {
+      return $fs->parsePreis($value);
     }
+    
     // wenn ziel formular
-
-	if ($value != "") {
-	    //return $abkuerzung;
- 
-	    if($value == round((float) $value, 2)) {
-	      return number_format((float)$value,2,',','');
-	    }
-	}
-
-    return rtrim(str_replace('.',',',$value),'0');
+    return $fs->formatPreis($value);
   }
 
   // @refactor FormHelper Komponente
@@ -13052,83 +13064,63 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
     return $value;
   }
-
-  // @refactor FormHelper Komponente
-  function ReplaceMenge($db,$value,$fromform)
+  
+  
+  
+  /**
+   * Formatiert bzw. parst eine Menge für die Ausgabe im Formular oder die Speicherung in der DB.
+   *
+   * @param $db Richtung (true=Speichern in DB, false=Ausgabe im Formular)
+   * @param $value
+   * @param $fromform
+   *
+   * @return float|mixed|string
+   */
+  function ReplaceMenge($db, $value, $fromform)
   {
-    $tcheck = str_replace(',','.',$value);
-    if($tcheck < 0) {
-      return 1;
-    }
-
-
-    $dbformat = 0;
-    if(strpos($value,'.') > 0) {
-      $dbformat = 1;
-    }
-
+    /** @var \Xentral\Components\I18n\FormatterService $fs */
+    $fs = $this->app->Container->get('FormatterService');
+    
     // wenn ziel datenbank
-    if($db)
-    {
-      if($dbformat) {
-        return $value;
-      }
-
-      if($value!=''){
-        return str_replace(',', '.', $value);
-      }
-
-      return '';
+    if ($db) {
+      return $fs->parseMenge($value);
     }
+    
     // wenn ziel formular
-    if(strpos($value,'.') !== false)
-    {
-      $value = rtrim(rtrim($value,'0'),'.');
-      if($value[0] === '.') {
-        $value = '0'.$value;
-      }
-    }
-    if($dbformat) {
-      if($value!='') {
-        return str_replace('.',',',$value);
-      }
-      return '';
-    }
-
-    return $value;
+    return $fs->formatMenge($value);
   }
-
-  // @refactor FormHelper Komponente
-  function ReplaceDecimal($db,$value,$fromform)
+  
+  
+  
+  /**
+   * Formatiert bzw. parst eine Zahl für die Ausgabe im Formular oder die Speicherung in der DB.
+   *
+   * @param $db Richtung (true=Speichern in DB, false=Ausgabe im Formular)
+   * @param $value
+   * @param $fromform
+   *
+   * @return array|mixed|string|string[]
+   */
+  function ReplaceDecimal($db, $value, $fromform)
   {
-    //value muss hier vom format ueberprueft werden
-    $dbformat = 0;
-    if(strpos($value,'.') > 0) {
-      $dbformat = 1;
-    }
-
+    /** @var \Xentral\Components\I18n\FormatterService $fs */
+    $fs = $this->app->Container->get('FormatterService');
+    
     // wenn ziel datenbank
-    if($db)
-    {
-      if($dbformat) {
-        return $value;
-      }
-
-      if($value!=''){
-        return str_replace(',', '.', $value);
-      }
-      return '';
+    if ($db) {
+      $floatFormatter = $fs->floatFromUserInput(strval($value));
+      return $floatFormatter->getPhpVal();
     }
+    
     // wenn ziel formular
-
-    if($dbformat) {
-      if($value!='') {
-        return $value;
-      }
-      return '';
+    if (is_numeric($value)) {
+      $floatFormatter = $fs->floatFromPhpVal(floatval($value));
+      return $floatFormatter->formatForUser();
     }
-
-    return $value;
+    
+    // Soweit sollte es gar nicht kommen
+    // TODO: soll hier eine Exception geworfen werden?
+    return null;
   }
 
 
@@ -13856,7 +13848,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
   }
 
-  /**@deprecated */
+  /**@depreacated */
   function CheckSamePage()
   {
     $id = $this->app->Secure->GetGET("id");
@@ -13868,7 +13860,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
   }
 
   /**
-   * @deprecated
+   * @depreacated
    * @refactor Artikel Modul
    */
   function SeitenSperrAuswahl($ueberschrift,$meldung)
@@ -13911,7 +13903,7 @@ $( this ).dialog( "close" );
         ');
     }
 
-/**@deprecated */
+/**@depreacated */
 function SeitenSperrInfo($meldung)
 {
   $this->app->Tpl->Set('SPERRMELDUNG',  '$("a#inline").fancybox({
@@ -24944,7 +24936,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
     $ansprechpartner = str_replace('&lt;','<',$ansprechpartner);
     $ansprechpartner = str_replace('&gt;','>',$ansprechpartner);
-    list($name, $email) = explode('<', trim($ansprechpartner,'>'));
+    [$name, $email] = explode('<', trim($ansprechpartner,'>'));
 
     $betreff = str_replace('\"','"',$betreff);
     $betreff = str_replace("\'","'",$betreff);
@@ -27759,7 +27751,7 @@ function Firmendaten($field,$projekt="")
     return $ret;
   }
 
-  /** @deprecated */
+  /** @depracated */
   function GetPrioTicketSelect($prio)
   {
     $prios = array('4'=>'niedrig','3'=>'normal','2'=>'hoch');

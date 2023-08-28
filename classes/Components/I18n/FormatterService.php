@@ -41,13 +41,14 @@ class FormatterService
      * Factory for FormatterInterface objects. There will be a FormatterInterface object for every data type
      * necessary.
      *
-     * @param string $type
+     * @param string        $type
+     * @param FormatterMode $strictness
      *
      * @return FormatterInterface
      */
-    public function factory(string $type): FormatterInterface
+    public function factory(string $type, FormatterMode $strictness = FormatterMode::MODE_STRICT): FormatterInterface
     {
-        return new $type($this->locale);
+        return new $type($this->locale, $strictness);
     }
     
     
@@ -55,13 +56,14 @@ class FormatterService
     /**
      * Shortcut function for creating a FloatFormatter and parsing a user input.
      *
-     * @param string $input
+     * @param string        $input
+     * @param FormatterMode $strictness
      *
      * @return FloatFormatter
      */
-    public function floatFromUserInput(string $input): FloatFormatter
+    public function floatFromUserInput(string $input, FormatterMode $strictness=FormatterMode::MODE_NULL): FloatFormatter
     {
-        $formatter = new FloatFormatter($this->locale);
+        $formatter = new FloatFormatter($this->locale, $strictness);
         $formatter->parseUserInput($input);
         return $formatter;
     }
@@ -71,13 +73,14 @@ class FormatterService
     /**
      * Shortcut function for creating a FloatFormatter and setting a PHP value.
      *
-     * @param float $input
+     * @param string|float|null $input
+     * @param FormatterMode     $strictness
      *
      * @return FloatFormatter
      */
-    public function floatFromPhpVal(float $input): FloatFormatter
+    public function floatFromPhpVal(string|null|float $input, FormatterMode $strictness=FormatterMode::MODE_NULL): FloatFormatter
     {
-        $formatter = $this->factory(FloatFormatter::class);
+        $formatter = $this->factory(FloatFormatter::class, $strictness);
         $formatter->setPhpVal($input);
         return $formatter;
     }
@@ -246,6 +249,71 @@ class FormatterService
         } else {
             return $formatter->formatForUser();
         }
+    }
+    
+    
+    
+    /**
+     * Format a quantity value for output.
+     *
+     * @param mixed $menge
+     *
+     * @return string
+     */
+    public function formatMenge(mixed $menge): string
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        $formatter->setPhpVal(floatval($menge));
+        return $formatter->formatForUser();
+    }
+    
+    
+    
+    /**
+     * Parse a quantity from a form and parse for database input.
+     *
+     * @param mixed $string
+     *
+     * @return string|float|null
+     */
+    public function parseMenge(mixed $string): string|null|float
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        $formatter->parseUserInput(strval($string));
+        return $formatter->getPhpVal();
+    }
+    
+    
+    /**
+     * Format a price value for output.
+     *
+     * @param mixed $menge
+     *
+     * @return string
+     */
+    public function formatPreis(mixed $menge): string
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        $formatter->setMinDigits(2);
+        $formatter->setPhpVal(floatval($menge));
+        return $formatter->formatForUser();
+    }
+    
+    
+    
+    /**
+     * Parse a price from a form and parse for database input.
+     *
+     * @param mixed $string
+     *
+     * @return string|float|null
+     */
+    public function parsePreis(mixed $string): string|null|float
+    {
+        $formatter = new FloatFormatter($this->locale, FormatterMode::MODE_EMPTY);
+        $formatter->setMinDigits(2);
+        $formatter->parseUserInput(strval($string));
+        return $formatter->getPhpVal();
     }
     
 }
