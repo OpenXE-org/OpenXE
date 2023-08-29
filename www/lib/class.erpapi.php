@@ -1445,12 +1445,38 @@ public function NavigationHooks(&$menu)
   {
     return 'concat('.$spalte.",' ".$this->GetGewichtbezeichnung()."')";
   }
-
-  // @refactor DbHelper Komponente
+  
+  
+  
+  /**
+   * Erstelle die lokalisierten Formatierungsanweisungen für das SQL-Query.
+   *
+   * @deprecated Es wäre besser, die Formatierung in PHP zu machen
+   */
   function FormatPreis($spalte, $stellen = null, $punkt = false)
   {
-    if(is_null($stellen))return "if(trim(round( $spalte *100))+0 <> trim($spalte*100)+0, format($spalte,  length( trim($spalte)+0)-length(round($spalte))-1 ".($punkt?"":" ,'de_DE'")."),format($spalte,2".($punkt?"":" ,'de_DE'")."))";
-    return "format($spalte,$stellen".($punkt?"":" ,'de_DE'").")";
+    if (is_null($stellen)) {
+      return "if(trim(round( $spalte *100))+0 <> trim($spalte*100)+0, format($spalte,  length( trim($spalte)+0)-length(round($spalte))-1 " . ($punkt ? "" : " ,'de_DE'") . "),format($spalte,2" . ($punkt ? "" : " ,'de_DE'") . "))";
+    }
+    return "format($spalte,$stellen" . ($punkt ? "" : " ,'de_DE'") . ")";
+    // Wenn die Zahlen umformatiert werden, funktioniert in den Tabellen die in Javascript implementierte Summierung nicht mehr!
+    /** @var \Xentral\Components\I18n\FormatterService $fs */
+    $fs = $this->app->Container->get('FormatterService');
+    $currencyFormatter = new \Xentral\Components\I18n\Formatter\CurrencyFormatter(
+      $punkt ? 'en_US' : $fs->getLocale(),
+      \Xentral\Components\I18n\Formatter\FormatterMode::MODE_NULL
+    );
+    if ($punkt) {
+      $currencyFormatter->hideGrouping();
+    }
+    $currencyFormatter->hideCurrency();
+    if ($stellen !== null) {
+      $currencyFormatter->setMinDigits($stellen);
+    }
+    return $currencyFormatter->formatForUserWithSqlStatement($spalte);
+
+//    if(is_null($stellen))return "if(trim(round( $spalte *100))+0 <> trim($spalte*100)+0, format($spalte,  length( trim($spalte)+0)-length(round($spalte))-1 ".($punkt?"":" ,'de_DE'")."),format($spalte,2".($punkt?"":" ,'de_DE'")."))";
+//    return "format($spalte,$stellen".($punkt?"":" ,'de_DE'").")";
   }
   
   
@@ -1517,7 +1543,6 @@ public function NavigationHooks(&$menu)
    * @deprecated Es wäre besser, die Formatierung in PHP zu machen
    *
    */
-  
   function FormatMenge($spalte, $decimals = 0)
   {
     /** @var \Xentral\Components\I18n\FormatterService $fn */

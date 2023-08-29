@@ -100,6 +100,27 @@ class CurrencyFormatter extends FloatFormatter
     
     
     
+    /**
+     * Return a string that can be used in an SQL query to format the value for presentation to a User.
+     * Should return the same string as if it was formatted by FormatterInterface::formatForUser(), but directly from
+     * the database.
+     * This function does not need a native PHP value, but a table column is needed.
+     *
+     * @TODO This function is not complete. It does not add a currency symbol.
+     *
+     * @param string $col
+     *
+     * @return string
+     * @deprecated
+     *
+     */
+    public function formatForUserWithSqlStatement(string $col): string
+    {
+        return parent::formatForUserWithSqlStatement($col);
+    }
+    
+    
+    
     protected function parse(string $input, ?\NumberFormatter $numberFormatter = null): false|float|int
     {
         if (!$this->showCcy) {

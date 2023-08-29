@@ -120,7 +120,13 @@ class FloatFormatter extends AbstractFormatter implements FormatterInterface
     {
         $min_decimals = $this->getNumberFormatter()->getAttribute(\NumberFormatter::MIN_FRACTION_DIGITS);
         $max_decimals = $this->getNumberFormatter()->getAttribute(\NumberFormatter::MAX_FRACTION_DIGITS);
-        return ("FORMAT({$col},LEAST('{$max_decimals}',GREATEST('{$min_decimals}',LENGTH(TRIM(TRAILING '0' FROM SUBSTRING_INDEX(CAST({$col} AS CHAR),'.',-1))))),'{$this->getLocale()}')");
+        
+        $sql = "FORMAT({$col},LEAST('{$max_decimals}',GREATEST('{$min_decimals}',LENGTH(TRIM(TRAILING '0' FROM SUBSTRING_INDEX(CAST({$col} AS CHAR),'.',-1))))),'{$this->getLocale()}')";
+        
+        if (!$this->getNumberFormatter()->getAttribute(\NumberFormatter::GROUPING_USED)) {
+            $sql = "REPLACE({$sql}, '{$this->getNumberFormatter()->getSymbol(\NumberFormatter::GROUPING_SEPARATOR_SYMBOL)}', '')";
+        }
+        return $sql;
     }
     
     
@@ -210,6 +216,46 @@ class FloatFormatter extends AbstractFormatter implements FormatterInterface
     public function setMaxSignificantDigits(int $digits): self
     {
         $this->getNumberFormatter()->setAttribute(\NumberFormatter::MAX_SIGNIFICANT_DIGITS, $digits);
+        return $this;
+    }
+    
+    
+    
+    /**
+     * Return the locale defined decimal symbol.
+     *
+     * @return string
+     */
+    public function getDecimalSymbol(): string
+    {
+        return $this->getNumberFormatter()->getSymbol(\NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
+    }
+    
+    
+    
+    /**
+     * Overwrite the locale defined decimal symbol.
+     *
+     * @param string $symbol
+     *
+     * @return $this
+     */
+    public function setDecimalSymbol(string $symbol): self
+    {
+        $this->getNumberFormatter()->setSymbol(\NumberFormatter::DECIMAL_SEPARATOR_SYMBOL, $symbol);
+        return $this;
+    }
+    
+    
+    
+    /**
+     * Disable grouping (thousands).
+     *
+     * @return $this
+     */
+    public function hideGrouping(): self
+    {
+        $this->getNumberFormatter()->setAttribute(\NumberFormatter::GROUPING_USED, 0);
         return $this;
     }
     

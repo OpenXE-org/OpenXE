@@ -38,6 +38,18 @@ class FormatterService
     
     
     /**
+     * Return the currently set locale.
+     *
+     * @return string
+     */
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+    
+    
+    
+    /**
      * Factory for FormatterInterface objects. There will be a FormatterInterface object for every data type
      * necessary.
      *
@@ -61,8 +73,10 @@ class FormatterService
      *
      * @return FloatFormatter
      */
-    public function floatFromUserInput(string $input, FormatterMode $strictness=FormatterMode::MODE_NULL): FloatFormatter
-    {
+    public function floatFromUserInput(
+        string $input,
+        FormatterMode $strictness = FormatterMode::MODE_NULL
+    ): FloatFormatter {
         $formatter = new FloatFormatter($this->locale, $strictness);
         $formatter->parseUserInput($input);
         return $formatter;
@@ -78,8 +92,10 @@ class FormatterService
      *
      * @return FloatFormatter
      */
-    public function floatFromPhpVal(string|null|float $input, FormatterMode $strictness=FormatterMode::MODE_NULL): FloatFormatter
-    {
+    public function floatFromPhpVal(
+        string|null|float $input,
+        FormatterMode $strictness = FormatterMode::MODE_NULL
+    ): FloatFormatter {
         $formatter = $this->factory(FloatFormatter::class, $strictness);
         $formatter->setPhpVal($input);
         return $formatter;
@@ -282,6 +298,7 @@ class FormatterService
         $formatter->parseUserInput(strval($string));
         return $formatter->getPhpVal();
     }
+    
     
     
     /**
