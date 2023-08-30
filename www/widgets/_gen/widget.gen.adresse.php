@@ -20,10 +20,12 @@ class WidgetGenadresse
   private $app;            //application object  
   public $form;            //store form object  
   protected $parsetarget;    //target for content
-
+  protected \Xentral\Components\I18n\FormatterService $formatterService;
+  
   public function __construct($app,$parsetarget)
   {
     $this->app = $app;
+    $this->formatterService = $this->app->Container->get('FormatterService');
     $this->parsetarget = $parsetarget;
     $this->Form();
   }

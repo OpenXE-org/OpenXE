@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * SPDX-FileCopyrightText: 2023 Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -16,7 +16,7 @@ use Xentral\Core\DependencyInjection\ServiceContainer;
 /**
  * Factory for localization object.
  *
- * @see Localization
+ * @see      Localization
  * @author   Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
  */
 final class Bootstrap
@@ -28,6 +28,7 @@ final class Bootstrap
     {
         return [
             'Localization' => 'onInitLocalization',
+            'FormatterService' => 'onInitFormatterService',
         ];
     }
     
@@ -61,7 +62,7 @@ final class Bootstrap
         $subject = strtolower($lang);
         foreach ((new Iso639()) as $key => $val) {
             if (array_filter($val, function ($str) use ($subject) {
-                return $str && ((strtolower($str) == $subject) || (self::replaceUmlauts(strtolower($str)) == $subject));
+                return $str && ((strtolower($str) == $subject) || (strtolower(self::replaceUmlauts($str)) == $subject));
             })) {
                 return $val;
             }
@@ -83,7 +84,7 @@ final class Bootstrap
         $subject = strtolower($region);
         foreach ((new Iso3166()) as $key => $val) {
             if (array_filter($val, function ($str) use ($subject) {
-                return $str && ((strtolower($str) == $subject) || (self::replaceUmlauts(strtolower($str)) == $subject));
+                return $str && ((strtolower($str) == $subject) || (strtolower(self::replaceUmlauts($str)) == $subject));
             })) {
                 return $val;
             }
@@ -111,16 +112,16 @@ final class Bootstrap
         /** @var Database $db */
         $db = $container->get('Database');
         
-        $config=[];
-        $firmaLang=null;
-        $firmaRegion=null;
+        $config = [];
+        $firmaLang = null;
+        $firmaRegion = null;
         // Get language from system settings and normalize to 3-letter-code and 2-letter-code
-        if ($firmaLang = self::findLanguage($app->erp->Firmendaten('preferredLanguage'))) {
+        if ($firmaLang = self::findLanguage(strval($app->erp->Firmendaten('preferredLanguage')))) {
             $config[Localization::LANGUAGE_DEFAULT] = $firmaLang[Iso639\Key::ALPHA_3];
         }
         
         // Get region from system settings and normalize to 2-letter-code
-        if ($firmaLang && ($firmaRegion = self::findRegion($app->erp->Firmendaten('land')))) {
+        if ($firmaLang && ($firmaRegion = self::findRegion(strval($app->erp->Firmendaten('land'))))) {
             $config[Localization::LOCALE_DEFAULT] = "{$firmaLang[Iso639\Key::ALPHA_2]}_{$firmaRegion[Iso3166\Key::ALPHA_2]}";
         }
         
@@ -135,12 +136,12 @@ final class Bootstrap
             );
             
             // Get language from user account and normalize to 3-letter-code and 2-letter-code
-            if ($userLang = self::findLanguage($user->GetSprache())) {
+            if ($userLang = self::findLanguage(strval($user->GetSprache()))) {
                 $usersettings['language'] = $userLang[Iso639\Key::ALPHA_3];
             }
             
             // Get region from user account and normalize to 2-letter-code
-            if ($userLang && ($userRegion = self::findRegion($userAddress['land']))) {
+            if ($userLang && ($userRegion = self::findRegion(strval($userAddress['land'])))) {
                 $usersettings['locale'] = "{$userLang[Iso639\Key::ALPHA_2]}_{$userRegion[Iso3166\Key::ALPHA_2]}";
             }
         }
@@ -148,4 +149,14 @@ final class Bootstrap
         // Create Localization object
         return new Localization($request, $session, $usersettings, $config);
     }
+    
+    
+    
+    public static function onInitFormatterService(ServiceContainer $container): FormatterService
+    {
+        $localization = $container->get('Localization');
+        $locale = $localization->getLocale();
+        return new FormatterService($locale);
+    }
+    
 }

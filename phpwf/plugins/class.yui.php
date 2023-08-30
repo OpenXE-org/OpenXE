@@ -449,12 +449,6 @@ class YUI {
         break;
         case 2: // Betrag
           $value = $this->app->erp->FromFormatZahlToDB($value);
-          if(strpos($value,','))
-          {
-            $value = str_replace(",", ".",str_replace('.','', $value));
-          }else{           
-            $value = str_replace(",", ".", $value);
-          }
           $this->app->DB->Update("UPDATE $table SET betrag='$value' WHERE id='$id' LIMIT 1");
           $result = $this->app->DB->Select("SELECT ".$this->FormatPreis('betrag')." FROM $table WHERE id='$id' LIMIT 1");
         break;
@@ -476,19 +470,12 @@ class YUI {
 
         case 2: // Menge
           $value = $this->app->erp->FromFormatZahlToDB($value);
-          $value = str_replace(",", ".", $value);
           $this->app->DB->Update("UPDATE $table SET menge='$value' WHERE id='$id' LIMIT 1");
           $result = $this->app->DB->Select("SELECT ".$this->app->erp->FormatMenge("menge")." FROM $table WHERE id='$id' LIMIT 1");
         break;
        
         case 3: // Betrag
           $value = $this->app->erp->FromFormatZahlToDB($value);
-          if(strpos($value,','))
-          {
-            $value = str_replace(",", ".",str_replace('.','', $value));
-          }else{           
-            $value = str_replace(",", ".", $value);
-          }
           $this->app->DB->Update("UPDATE $table SET betrag='$value' WHERE id='$id' LIMIT 1");
           $result = $this->app->DB->Select("SELECT ".$this->FormatPreis('betrag')." FROM $table WHERE id='$id' LIMIT 1");
         break;
@@ -519,12 +506,6 @@ class YUI {
         break;
         case 4: // preis
           $value = $this->app->erp->FromFormatZahlToDB($value);
-          if(strpos($value,','))
-          {
-            $value = str_replace(",", ".",str_replace('.','', $value));
-          }else{           
-            $value = str_replace(",", ".", $value);
-          }
           $this->app->DB->Update("UPDATE $table SET preis='$value' WHERE id='$id' LIMIT 1");
           $result = $this->app->DB->Select("SELECT ".$this->FormatPreis('preis')." FROM $table WHERE id='$id' LIMIT 1");
         break;
@@ -544,7 +525,6 @@ class YUI {
         break;
         case 4: // Menge
           $value = $this->app->erp->FromFormatZahlToDB($value);
-          $value = str_replace(',', '.', $value);
           if($value < 0 ) {
             $value=1;
           }
@@ -650,12 +630,6 @@ class YUI {
                 break;
         case 5: //preis
           $value = $this->app->erp->FromFormatZahlToDB($value);
-          if(strpos($value,','))
-          {
-            $value = str_replace(",", ".",str_replace('.','', $value));
-          }else{           
-            $value = str_replace(",", ".", $value);
-          }
           $join = "";
           $preiscell = 'b.preis';
           if($module == 'auftrag' || $module == 'rechnung' || $module == 'gutschrift' || $module == 'angebot' || $module == 'proformarechnung')
@@ -718,12 +692,6 @@ class YUI {
           if($module == 'auftrag' || $module == 'rechnung' || $module == 'angebot' || $module == 'gutschrift' || $module == 'proformarechnung')
           {
             $value = $this->app->erp->FromFormatZahlToDB($value);
-            if(strpos($value,','))
-            {
-              $value = str_replace(",", ".",str_replace('.','', $value));
-            }else{           
-              $value = str_replace(",", ".", $value);
-            }
             if($value == '')$value = '0';
             $this->app->DB->Update("UPDATE $table SET rabatt='$value',keinrabatterlaubt=1 WHERE id='$id' LIMIT 1");
             $result = $this->app->DB->Select("SELECT ".$this->FormatPreis('rabatt')." FROM $table WHERE id='$id' LIMIT 1");
@@ -741,13 +709,6 @@ class YUI {
           if($module == 'auftrag' || $module == 'rechnung' || $module == 'angebot' || $module == 'gutschrift' )
           {
             $value = $this->app->erp->FromFormatZahlToDB($value);
-            if(strpos($value,','))
-            {
-              $value = str_replace(",", ".",str_replace('.','', $value));
-            }else{           
-              $value = str_replace(",", ".", $value);
-            }
-            if($value == '')$value = '0';
             $this->app->DB->Update("UPDATE $table SET einkaufspreis='$value' WHERE id='$id' LIMIT 1");
             $result = $this->app->DB->Select("SELECT ".$this->FormatPreis('einkaufspreis')." FROM $table WHERE id='$id' LIMIT 1");
           }
@@ -1552,30 +1513,22 @@ class YUI {
             $module, $id, implode(', ', array_unique($positionsIds))
           )
         );
-
+        
+          /** @var \Xentral\Components\I18n\FormatterService $fs */
+          $fs=$this->app->Container->get('FormatterService');
+          
         if(!empty($positions)) {
           foreach($positions as $position)  {
             $positionId = $position['id'];
             if(isset($idToPrice[$positionId])
               && $position['preis'] != $idToPrice[$positionId]
             ) {
-              $price = rtrim(number_format($position['preis'], 8, ',', '.'), '0');
-              $priceSplit = explode(',', $price);
-              if(strlen($priceSplit[(empty($priceSplit)?0:count($priceSplit))-1]) < 2) {
-                $price .= str_repeat('0',2-strlen($priceSplit[(empty($priceSplit)?0:count($priceSplit))-1]));
-              }
-              $ret[] = ['elid' => $arr[$positionId]['price_id'], 'value' => $price];
+              $ret[] = ['elid' => $arr[$positionId]['price_id'], 'value' => $fs->formatPreis($position['preis'])];
             }
             if(isset($idToQuantity[$positionId])
               && $position['menge'] != $idToQuantity[$positionId]
             ) {
-              $quantity = rtrim(number_format($position['menge'], 8, ',', ''), '0');
-              $quantitySplit = explode(',', $quantity);
-              if(isset($quantitySplit[1]) && $quantitySplit[1] === '') {
-                $quantity = $quantitySplit[0];
-              }
-
-              $ret[] = ['elid'=> $arr[$positionId]['quantity_id'], 'value' => $quantity];
+              $ret[] = ['elid'=> $arr[$positionId]['quantity_id'], 'value' => $fs->formatMenge($position['menge'])];
             }
           }
         }
@@ -1781,9 +1734,7 @@ class YUI {
       $preis = $this->app->Secure->GetPOST("preis");
       $preis = $this->app->erp->FromFormatZahlToDB($preis);
       $menge = $this->app->Secure->GetPOST("menge");
-      //$menge = str_replace(',', '.', $menge);
       $menge= $this->app->erp->FromFormatZahlToDB($menge);
-
       if($menge < 0) $menge = 1;
 
       $ort = $this->app->Secure->GetPOST("ort");
@@ -1791,8 +1742,7 @@ class YUI {
       $lieferdatum = $this->app->String->Convert($lieferdatum, "%1.%2.%3", "%3-%2-%1");
       $datum = $this->app->Secure->GetPOST("datum");
       $datum = $this->app->String->Convert($datum, "%1.%2.%3", "%3-%2-%1");
-      $rabatt = $this->app->Secure->GetPOST("rabatt");
-      $rabatt = str_replace(',', '.', $rabatt);
+      $rabatt = $this->app->erp->FromFormatZahlToDB($this->app->Secure->GetPOST("rabatt"));
       if($rabatt > 0 || $rabatt=="0") $keinrabatterlaubt=1; else $keinrabatterlaubt=0;
       
       if ($lieferdatum == "") $lieferdatum = "00.00.0000";
@@ -1970,8 +1920,7 @@ class YUI {
           $artikel = $this->app->Secure->GetPOST("artikel");
           $stueckliste = $this->app->Secure->GetPOST("stueckliste");
           $beschreibung = $this->app->Secure->GetPOST("beschreibung");
-          $betrag = $this->app->Secure->GetPOST("betrag");
-          $betrag = str_replace(',', '.', $betrag);
+          $betrag = $this->app->erp->FromFormatZahlToDB($this->app->Secure->GetPOST("betrag"));
           $kalkulationart = $this->app->Secure->GetPOST("kalkulationart");
 
           //$projekt = $this->app->DB->Select("SELECT projekt FROM kalkulation WHERE mitarbeiternummer='$adresse' LIMIT 1");
@@ -2004,8 +1953,7 @@ class YUI {
 
         if ($module == "reisekosten") {
           $bezeichnung = $this->app->Secure->GetPOST("bezeichnung");
-          $betrag = $this->app->Secure->GetPOST("betrag");
-          $betrag = str_replace(',', '.', $betrag);
+          $betrag = $this->app->erp->FromFormatZahlToDB($this->app->Secure->GetPOST("betrag"));
           $reisekostenart = $this->app->Secure->GetPOST("reisekostenart");
           $abrechnen = $this->app->Secure->GetPOST("abrechnen");
           $keineust = $this->app->Secure->GetPOST("keineust");
@@ -2023,8 +1971,7 @@ class YUI {
         } else 
         if ($module == "inventur" && $artikel_id > 0) {
           $bezeichnung = $this->app->Secure->GetPOST("artikel");
-          $preis = $this->app->Secure->GetPOST("preis");
-          $preis = str_replace(',', '.', $preis);
+          $preis = $this->app->erp->FromFormatZahlToDB($this->app->Secure->GetPOST("preis"));
           $nummer = $this->app->Secure->GetPOST("nummer");
 
           /*adresse = $this->app->Secure->GetPOST("adresse");
@@ -2046,8 +1993,7 @@ class YUI {
 
           /*
              $bezeichnung = $this->app->Secure->GetPOST("artikel");
-             $preis = $this->app->Secure->GetPOST("preis");
-             $preis = str_replace(',','.',$preis);
+             $preis = $this->app->erp->FromFormatZahlToDB($this->app->Secure->GetPOST("preis"));
              $nummer = $this->app->Secure->GetPOST("nummer");
           */
 

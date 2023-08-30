@@ -22,6 +22,7 @@ include '_gen/artikel.php';
 class Artikel extends GenArtikel {
   /** @var Application $app */
   var $app;
+  protected \Xentral\Components\I18n\FormatterService $formatterService;
   const MODULE_NAME = 'Article';
 
   public function TableSearch($app, $name, $erlaubtevars)
@@ -938,10 +939,10 @@ class Artikel extends GenArtikel {
                     IF(s.art='it','<br><i style=color:#999>- Informationsteil/Dienstleistung</i>',''),IF(s.art='bt','<br><i style=color:#999>- Beistellung</i>',''), COALESCE((SELECT GROUP_CONCAT('<br><i style=color:#999>- ', art.nummer, ' ', art.name_de, ' (', alt.reason, ')', '</i>' SEPARATOR '') FROM parts_list_alternative AS alt INNER JOIN artikel AS art ON art.id = alt.alternative_article_id WHERE alt.parts_list_id = s.id), '')) as artikel,
                     CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.nummer,'</a>') as nummer,
                     s.referenz,
-                    trim(s.menge)+0 as menge, a.einheit,
-                    ".$this->app->erp->FormatMenge('ifnull(lag.menge,0)').'  as lager, 
+                    {$this->app->erp->FormatMenge('s.menge')} as menge, a.einheit,
+                    {$this->app->erp->FormatMenge('ifnull(lag.menge,0)')}  as lager,
                     CASE WHEN (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=a.id)  > 0 
-                        THEN (SELECT '.$this->app->erp->FormatMenge('SUM(lr.menge)')." FROM lager_reserviert lr WHERE lr.artikel=a.id)  
+                        THEN (SELECT {$this->app->erp->FormatMenge('SUM(lr.menge)')} FROM lager_reserviert lr WHERE lr.artikel=a.id)
                         ELSE 0
         	        END as reserviert, 
                     s.id as menu
@@ -952,7 +953,7 @@ class Artikel extends GenArtikel {
                   INNER JOIN (
                     SELECT artikel 
                     FROM stueckliste 
-                    WHERE stuecklistevonartikel='$id' GROUP BY artikel
+                    WHERE stuecklistevonartikel='{$id}' GROUP BY artikel
                   ) AS s2 ON lpi.artikel = s2.artikel
                   INNER JOIN lager_platz AS lp ON lpi.lager_platz = lp.id AND ifnull(lp.sperrlager,0) = 0
                   GROUP BY lpi.artikel) AS lag ON a.id = lag.artikel  
@@ -1871,6 +1872,9 @@ class Artikel extends GenArtikel {
   public function __construct($app, $intern = false) {
     //parent::GenArtikel($app);
     $this->app=$app;
+    
+    $this->formatterService = $this->app->Container->get('FormatterService');
+    
     if($intern){
       return;
     }
@@ -6003,7 +6007,8 @@ class Artikel extends GenArtikel {
           $name = 'node'.$k;
           $$name = new stdClass();
           $$name->id = $v['id'];
-          $$name->label = ' '.$v['menge'].' x <a target="_blank" href="index.php?module=artikel&action=edit&id='.$v['artikel'].'">'.$v['nummer'].' '.(strlen($v['name_de']) < 30?$v['name_de']:(mb_substr($v['name_de'],0,27).'...')).'</a>';
+          $$name->label = " {$this->formatterService->formatMenge($v['menge'])} x "
+            . '<a target="_blank" href="index.php?module=artikel&action=edit&id='.$v['artikel'].'">'.$v['nummer'].' '.(strlen($v['name_de']) < 30?$v['name_de']:(mb_substr($v['name_de'],0,27).'...')).'</a>';
           $$name->checkbox = false;
           $$name->inode = false;
           $$name->radio = false;
@@ -6035,7 +6040,8 @@ class Artikel extends GenArtikel {
             $name = 'node'.$k;
             $$name = new stdClass();
             $$name->id = $v['id'];
-            $$name->label = ' '.$v['menge'].' x <a target="_blank" href="index.php?module=artikel&action=edit&id='.$v['artikel'].'">'.$v['nummer'].' '.(strlen($v['name_de']) < 30?$v['name_de']:(mb_substr($v['name_de'],0,27).'...')).'</a>';
+            $$name->label = " {$this->formatterService->formatMenge($v['menge'])} x "
+              . '<a target="_blank" href="index.php?module=artikel&action=edit&id='.$v['artikel'].'">'.$v['nummer'].' '.(strlen($v['name_de']) < 30?$v['name_de']:(mb_substr($v['name_de'],0,27).'...')).'</a>';
             $$name->checkbox = false;
             $$name->inode = false;
             $$name->radio = false;
@@ -6321,7 +6327,7 @@ class Artikel extends GenArtikel {
 
       $id = (int)$this->app->Secure->GetPOST('id');
         
-      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, trim(s.menge)+0 as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
+      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, s.menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos FROM stueckliste s WHERE s.id = '{$id}' LIMIT 1");
       
         if($data){
           if($data['artikel'] == 0){
@@ -6349,7 +6355,8 @@ class Artikel extends GenArtikel {
               }
             }
           }*/
-
+          
+          $data['menge'] = $this->formatterService->formatMenge($data['menge']);
 
         }else{
           $data['id'] = 0;
@@ -6378,7 +6385,7 @@ class Artikel extends GenArtikel {
       $id = (int)$this->app->Secure->GetPOST('eid');
       $startikelid = (int)$this->app->Secure->GetPOST('estartikelid');
       $artikel = trim($this->app->Secure->GetPOST('eartikel'));
-      $menge = str_replace(',','.',trim($this->app->Secure->GetPOST('emenge')));
+      $menge = $this->formatterService->parseMenge($this->app->Secure->GetPOST('emenge'));
       $art = trim($this->app->Secure->GetPOST('eart'));
       //$alternative = trim($this->app->Secure->GetPOST('ealternative'));
       $referenz = trim($this->app->Secure->GetPOST('ereferenz'));

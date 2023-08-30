@@ -75,7 +75,7 @@ class FiskalyTransferService
      * @throws Exception
      * @return Transaction
      *
-     * @depracated
+     * @deprecated
      */
     public function createTransactionFromSingleJournal(
         int $cashierId,
@@ -270,7 +270,7 @@ class FiskalyTransferService
      * @throws Exception
      * @return Transaction
      *
-     * @depracated
+     * @deprecated
      */
     public function transferPosSession($posSession): Transaction
     {

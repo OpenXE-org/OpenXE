@@ -45,18 +45,17 @@ interface LocalizationInterface
     /**
      * Set the locale.
      *
-     * @param string $locale
+     * @param string      $locale
+     * @param string|null $fallbackLocale
      */
-    public function setLocale(string $locale);
+    public function setLocale(string $locale, string|null $fallbackLocale=null);
     
     
     
     /**
      * Return the locale string as defined by $key.
      *
-     * @param string|null $key A constant from Iso3166\Key
-     *
      * @return string
      */
-    public function getLocale(string $key = null): string;
+    public function getLocale(): string;
 }
