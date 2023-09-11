@@ -401,7 +401,8 @@ class Managementboard
     /** @var Rechnungslauf $obj */
     $obj = $this->app->erp->LoadModul('rechnungslauf');
     if($obj){
-      $w[24] = $obj->RechnungslaufRechnungslauf(true);
+      // $w[24] = $obj->RechnungslaufRechnungslauf(true); // This does not exist, presumably old xentral function
+      $w[24] = 0;    
     }
     else {
       $w[24] = 0;
