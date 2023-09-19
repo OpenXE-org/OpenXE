@@ -23,6 +23,7 @@ class Shopimporter_Presta extends ShopimporterBase
   // TODO
   private $langidToIso = [3 => 'de', 1 => 'en'];
   private $taxationByDestinationCountry;
+  private $orderSearchLimit;
 
 
   public function __construct($app, $intern = false)
