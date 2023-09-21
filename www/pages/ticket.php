@@ -68,7 +68,7 @@ class Ticket {
                 $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`,
                               CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',t.id,'\" />') AS `auswahl`";
 
-                $priobetreff = "if(t.prio!=1,t.betreff,CONCAT('<b><font color=red>',t.betreff,'</font></b>'))";
+                $priobetreff = "if(t.prio!=1,REGEXP_REPLACE(t.betreff, '<[^>]*>+', ''),CONCAT('<b><font color=red>',REGEXP_REPLACE(t.betreff, '<[^>]*>+', ''),'</font></b>'))"; //+ #20230916 XSS
 
                 $anzahlnachrichten = "(SELECT COUNT(n.id) FROM ticket_nachricht n WHERE n.ticket = t.schluessel)";
 
@@ -309,6 +309,8 @@ class Ticket {
 
         // Add Messages now
         foreach ($messages as $message) {
+
+            $message['betreff'] = strip_tags($message['betreff']); //+ #20230916 XSS
 
             // Clear this first
             $this->app->Tpl->Set('NACHRICHT_ANHANG',"");         
@@ -622,6 +624,8 @@ class Ticket {
 
         $ticket_from_db = $this->app->DB->SelectArr($sql)[0];
 
+        $ticket_from_db['betreff'] = htmlentities(strip_tags($ticket_from_db['betreff'])); //+ #20230916 XSS
+
         foreach ($ticket_from_db as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
@@ -733,10 +737,10 @@ class Ticket {
                 
                 if (!empty($recv_messages)) {
                     if (!str_starts_with(strtoupper($recv_messages[0]['betreff']),"RE:")) {
-                        $betreff = "RE: ".$recv_messages[0]['betreff'];
+                        $betreff = "RE: ".strip_tags($recv_messages[0]['betreff']); //+ #20230916 XSS
                     }
                     else {
-                        $betreff = $recv_messages[0]['betreff'];
+                        $betreff = strip_tags($recv_messages[0]['betreff']); //+ #20230916 XSS
                     }
 
                     $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='to'";
