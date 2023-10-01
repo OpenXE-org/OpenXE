@@ -117,6 +117,9 @@ class Wareneingang {
 
                 $input_for_menge = "CONCAT(
                         '<input type = \"number\" min=\"0\"',
+                        ' value=\"',
+                        COALESCE((SELECT TRIM(SUM(menge))+0 FROM paketdistribution WHERE vorlaeufig = 1 AND bestellung_position = bp.id),''),
+                        '\"',
                         ' name=\"menge_',
                         bp.id,
                         '\" value=\"',
@@ -213,7 +216,7 @@ class Wareneingang {
                 INNER JOIN bestellung b ON bp.bestellung=b.id
                 $rdJoin
                 INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel 
-                LEFT JOIN projekt p ON b.projekt=p.id ";
+                LEFT JOIN projekt p ON b.projekt=p.id";
                 if ($wareneingangauftragzubestellung) {
                     $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, art.nummer, b.belegnr as `Bestellung`, 
                   $colBeschreibung as beschreibung,                                      
@@ -963,47 +966,21 @@ class Wareneingang {
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-
-                /* $sql = "SELECT p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
-                  (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, ".$this->app->erp->FormatMenge("sum(paketdistribution.menge)")." as menge, paketdistribution.bemerkung
-                  FROM paketdistribution
-                  INNER JOIN artikel ON artikel.id = paketdistribution.artikel
-                  LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
-                  LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
-                  where paketannahme = $id GROUP BY bestellung_position, paketdistribution.artikel) as p"; */
-
+              
                 $sql = "SELECT SQL_CALC_FOUND_ROWS p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
                         (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, " . $this->app->erp->FormatMenge("paketdistribution.menge") . " as menge, paketdistribution.bemerkung 
                         FROM paketdistribution 
                         INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
                         LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
                         LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
-                        where paketannahme = $id) as p";
+                        where paketannahme = $id AND vorlaeufig IS NULL) as p";
 
                 $where = "";
-                $count = "SELECT count(DISTINCT id) FROM paketdistribution p WHERE paketannahme = $id";
+                $count = "SELECT count(DISTINCT id) FROM paketdistribution p WHERE paketannahme = $id AND vorlaeufig IS NULL";
 //                $groupby = "";
 
                 break;
-            case "paketannahme_list":
-                /*                $allowed['paketdistribution_list'] = array('list');
-                  $heading = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position', 'Men&uuml;');
-                  $width = array('10%'); // Fill out manually later
-
-                  $findcols = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position');
-                  $searchsql = array('bearbeiter', 'zeit', 'paketannahme', 'adresse', 'artikel', 'menge', 'vpe', 'etiketten', 'bemerkung', 'bestellung_position', 'logdatei', 'retoure_position');
-
-                  $defaultorder = 1;
-                  $defaultorderdesc = 0;
-
-                  $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=paketdistribution&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.png\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=paketdistribution&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
-
-                  $sql = "SELECT id, bearbeiter, zeit, paketannahme, adresse, artikel, menge, vpe, etiketten, bemerkung, bestellung_position, logdatei, retoure_position, id FROM paketdistribution";
-
-                  $where = "1";
-                  $count = "SELECT count(DISTINCT id) FROM paketdistribution WHERE $where";
-                  //                $groupby = "";
-                 */
+            case "paketannahme_list":              
                 $allowed['paketannahme_list'] = array('list');
                 $heading = array('', 'Paket-Nr.', 'Datum', 'Status', 'Name', 'Kunde', 'Lieferant', 'Bestellung', 'LS-Nr.', 'RE-Nr.', 'Bearbeiter', 'Bemerkung', 'Men&uuml;');
                 $width = array('1%', '5%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%'); // Fill out manually later
@@ -1648,7 +1625,7 @@ class Wareneingang {
     }
 
     public function WareneingangPaketDistriInhalt() {
-        $this->WareneingangPaketMenu();
+        $this->WareneingangPaketMenu();        
 
         $id = $this->app->Secure->GetGET('id');
         $cmd = $this->app->Secure->GetGET('cmd');
@@ -1792,13 +1769,78 @@ class Wareneingang {
                                         '$bemerkung', 
                                         '$bestellposition'
                                     )";
-                            $this->app->DB->Insert($sql);                            
+                            $this->app->DB->Insert($sql);      
+
+                            // Remove existing preliminary value
+                            $sql = "DELETE FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1";
+                            $this->app->DB->Delete($sql);
+                      
                         }
                     }
                 }
 
                 break;
             case 'speichern':
+                $menge_input = $this->app->Secure->GetPOSTArray();
+                $mengen = array();
+                
+                $msg = "";
+
+                foreach ($menge_input as $key => $menge) {
+                    if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
+                        $bestellposition = substr($key,'6');
+                        if ($menge > 0) {
+
+                            // Gather info bestellung
+                            $bparr = $this->app->DB->SelectRow("SELECT * FROM bestellung INNER JOIN bestellung_position ON bestellung_position.bestellung = bestellung.id INNER JOIN artikel ON bestellung_position.artikel = artikel.id WHERE bestellung_position.id='$bestellposition' LIMIT 1");
+                            $artikel = $bparr['artikel'];                            
+                            $artikel_nr = $bparr['nummer'];
+                            $projekt = $bparr['projekt'];
+                            $bestellung_belegnr = $bparr['belegnr'];
+                            $vpe = $bparr['vpe'];
+                            $menge_bestellung = $bparr['menge'];
+                           
+                            // Check existing preliminary value
+                            $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1 LIMIT 1";
+                            $preliminary = $this->app->DB->Select($sql);
+
+                            if (empty($preliminary)) {
+                                $sql = "INSERT INTO paketdistribution(
+                                            id,
+                                            bearbeiter,
+                                            zeit,
+                                            paketannahme,
+                                            adresse,
+                                            artikel,
+                                            menge,
+                                            vpe,
+                                            etiketten,
+                                            bemerkung,
+                                            bestellung_position,
+                                            vorlaeufig
+                                        )
+                                        VALUES(
+                                            '',
+                                            '" . $this->app->User->GetName() . "',
+                                            NOW(), 
+                                            '$id', 
+                                            '', 
+                                            '$artikel', 
+                                            '$menge', 
+                                            '$vpe', 
+                                            '', 
+                                            '$bemerkung', 
+                                            '$bestellposition',
+                                            1
+                                        )";
+                                $this->app->DB->Insert($sql);                            
+                            } else {
+                                $sql = "UPDATE paketdistribution SET menge = ".$menge." WHERE id = ".$preliminary;
+                                $this->app->DB->Insert($sql);          
+                            }
+                        }
+                    }
+                }
                 break;
             case 'abschliessen':
                 break;
@@ -1899,11 +1941,11 @@ class Wareneingang {
 
         if ($isSupplier) {
             //$this->app->Tpl->Set('TAB1TEXT','<li><a href="#tabs-1">Bestellungen</a></li>');
-            $this->app->Tpl->Set('TAB1TEXT', 'Bestellungen');
+            //$this->app->Tpl->Set('TAB1TEXT', 'Bestellungen');
             //$this->app->Tpl->Set('TAB1START','<div id=\"tabs-1\">');
             //$this->app->Tpl->Set('TAB1ENDE','</div>');
 
-            $this->app->Tpl->Add('TAB1', "<br><h1>Offene Artikel aus Bestellungen bei $name:</h1><br>");
+            $this->app->Tpl->Add('TAB1', "<h1>Offene Artikel aus Bestellungen bei $name:</h1>");
             $this->app->YUI->TableSearch('TAB1', 'wareneingang_lieferant', 'show', '', '', basename(__FILE__), __CLASS__);
         } else {
             $this->app->Tpl->Set('ISLIEFERANTSTART', '<!--');
@@ -1931,7 +1973,7 @@ class Wareneingang {
             $this->app->Tpl->Set('LEGENDE', "Paket <b>Nr.$id</b> vom $datum erfassen f&uuml;r Adresse '" . $addressRow['name'] . "':");
         }
 
-        $this->app->Tpl->Add('TAB1_SECOND', "<br><h1>Paketinhalt (eingebucht):</h1><br>");
+        $this->app->Tpl->Add('TAB1_SECOND', "<h1>Paketinhalt (eingebucht):</h1>");
         $this->app->YUI->TableSearch('TAB1_SECOND', 'paketdistribution_list', "show", "", "", basename(__FILE__), __CLASS__);
 
         $this->app->erp->RunHook('wareneingang_distriinhalt', 1, $id);
@@ -2011,7 +2053,7 @@ class Wareneingang {
                         INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
                         LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
                         LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
-                        where paketannahme = $id) as p");
+                        where paketannahme = $id AND vorlaeufig IS NULL) as p");
 
         $this->app->Tpl->Set('MD5', md5(microtime(true)));
         $this->app->Tpl->Set('ID', $id);
