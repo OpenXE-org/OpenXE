@@ -1,7 +1,11 @@
+<!--
 <table id="table[MD5]">
-<tr><td>{|Lieferschein|}:</td><td><input type="checkbox" onchange="lsclick[MD5]();" id="beiback_lieferschein[MD5]" disabled value="1" [BEIPACK_LIEFERSCHEIN] /></td><td><span id="lsnr[MD5]">[LSNR]</span></td><td><input type="button" value="{|Belege &auml;ndern|}" style="cursor:hand;" onclick="editclick[MD5]();" /></td></tr>
+<tr><td>{|Lieferschein|}:</td><td><input type="checkbox" onchange="lsclick[MD5]();" id="beiback_lieferschein[MD5]" disabled value="1" [BEIPACK_LIEFERSCHEIN] /></td><td><span id="lsnr[MD5]">[LSNR]</span></td>
+<td><input type="button" value="{|Belege &auml;ndern|}" style="cursor:hand;" onclick="editclick[MD5]();" /></td>
+</tr>
 <tr><td>{|Rechnung|}:</td><td><input type="checkbox" onchange="reclick[MD5]();" id="beiback_rechnung[MD5]" disabled value="1" [BEIPACK_RECHNUNG] /></td><td><span id="renr[MD5]">[RENR]</span></td><td></td></tr>
 </table>
+-->
 
 <table width="100%">
 <tr><td width="100%">[ARTIKEL]</td></tr>

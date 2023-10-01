@@ -1843,6 +1843,12 @@ class Wareneingang {
                 }
                 break;
             case 'abschliessen':
+                // Save header and finish
+                $sql = "UPDATE paketannahme SET status='abgeschlossen' WHERE id='$id'";
+                $this->app->DB->Update($sql);
+
+                $this->app->erp->RunHook('wareneinang_paketannahme_abschliessen', 1, $id);
+                $this->app->Location->execute('index.php?module=wareneingang&action=list');
                 break;
         }
 
@@ -2001,31 +2007,7 @@ class Wareneingang {
         $this->app->Tpl->Set('MESSAGE1',$msg);
 
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
-
-        $returnordergeprueft = $this->app->Secure->GetPOST('returnordergeprueft');
-        $abschliessen = $this->app->Secure->GetPOST('abschliessen');
-        if ($abschliessen != '' || $returnordergeprueft != '') {
-            // paketannahme auf abgeschlossen setzten
-
-            $returnOrderId = empty($returnordergeprueft) ? null : $this->app->DB->Select(
-                            sprintf(
-                                    'SELECT return_order_id FROM receiptdocument WHERE parcel_receipt_id = %d',
-                                    $id
-                            )
-            );
-
-            // Save header and finish
-            $this->app->DB->Update(
-                    "UPDATE paketannahme SET 
-          status='abgeschlossen', 
-          lsnr='" . $lsnr . "',
-          renr='" . $renr . "',
-          bemerkung='" . $bemerkung . "'
-           WHERE id='$id' LIMIT 1");
-
-            $this->app->erp->RunHook('wareneinang_paketannahme_abschliessen', 1, $id);
-            $this->app->Location->execute('index.php?module=wareneingang&action=list');
-        }
+       
     }
 
     // END WareneingangPaketDistriInhalt
