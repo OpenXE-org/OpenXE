@@ -12108,9 +12108,6 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
     </tr>
     </tfoot>
     </table></div>
-    <br>
-    <br>
-    <br>
     ');
     
         if((empty($disableautosavefilter)) && $this->anzusersaves < 2) {
