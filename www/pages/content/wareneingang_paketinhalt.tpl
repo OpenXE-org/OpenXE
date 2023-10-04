@@ -48,14 +48,12 @@
                         </td></tr>
                         [AFTERMANUELLERFASSEN]
                         [ISLIEFERANTSTART]
-<!--
                         <tr><td>               
                             <button name="submit" class="ui-button-icon" style="width:100%;" value="fuellen">{|Aus Bestellungen f&uuml;llen|}</button>
                         </td></tr>
                         <tr><td>               
                             <button name="submit" class="ui-button-icon" style="width:100%;" value="leeren">{|Leeren|}</button>
                         </td></tr>
--->
                         [ISLIEFERANTENDE]                
                         <tr><td>               
                             <button name="submit" class="ui-button-icon" style="width:100%;" value="speichern">{|Speichern|}</button>

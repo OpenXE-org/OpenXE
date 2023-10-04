@@ -1691,8 +1691,56 @@ class Wareneingang {
 
         switch ($submit) {
             case 'fuellen':
+                // Get bestellung_position from form
+                $form_input = $this->app->Secure->GetPOSTArray();
+                foreach ($form_input as $key => $menge) {
+                    if ((strpos($key,'menge_') === 0)) {
+                        $bestellposition = substr($key,'6');
+                        // Remove existing preliminary value
+                        $sql = "DELETE FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1";
+                        $this->app->DB->Delete($sql);
+
+                        // Write paketdistribution                            
+                        $sql = "INSERT INTO paketdistribution(
+                                            id,
+                                            bearbeiter,
+                                            zeit,
+                                            paketannahme,
+                                            adresse,
+                                            artikel,
+                                            menge,
+                                            vpe,
+                                            etiketten,
+                                            bemerkung,
+                                            bestellung_position,
+                                            vorlaeufig
+                                        )
+                                        VALUES(
+                                            '',
+                                            '" . $this->app->User->GetName() . "',
+                                            NOW(), 
+                                            '$id', 
+                                            '', 
+                                            '$artikel', 
+                                            (SELECT menge-geliefert FROM bestellung_position WHERE id = ".$bestellposition."), 
+                                            '$vpe', 
+                                            '', 
+                                            '$bemerkung', 
+                                            '$bestellposition',
+                                            1
+                                        )";
+
+                            $this->app->DB->Insert($sql);      
+
+                    }
+                }
+                
+
                 break;
             case 'leeren':
+                // Remove existing preliminary value
+                $sql = "DELETE FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
+                $this->app->DB->Delete($sql);
                 break;
             case 'manuellerfassen':
                 $this->app->Location->execute('index.php?module=wareneingang&action=manuellerfassen&id=' . $id);
@@ -1788,9 +1836,9 @@ class Wareneingang {
 
                 foreach ($menge_input as $key => $menge) {
                     if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
-                        $bestellposition = substr($key,'6');
-                        if ($menge > 0) {
+                        $bestellposition = substr($key,'6');                            
 
+                        if ($menge >= 0) { // Allow 0 for reset of saved value
                             // Gather info bestellung
                             $bparr = $this->app->DB->SelectRow("SELECT * FROM bestellung INNER JOIN bestellung_position ON bestellung_position.bestellung = bestellung.id INNER JOIN artikel ON bestellung_position.artikel = artikel.id WHERE bestellung_position.id='$bestellposition' LIMIT 1");
                             $artikel = $bparr['artikel'];                            
