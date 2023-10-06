@@ -25,7 +25,7 @@
                   <tr><td>{|Rechnung-Nr.|}:</td><td><input type=text size="40" name="renr" value=[RENR]></td></tr>
                   <tr><td>{|Bemerkung|}:</td><td><textarea rows="5" cols="40" name="bemerkung">[BEMERKUNG]</textarea></td></tr>
                   [ISLIEFERANTSTART]
-                  <tr><td>{|Ziellager|}:</td><td><input type=text size="40" name="ziellager" id="ziellager" value=[LAGER]></td></tr>
+                  <tr><td>{|Ziellager|}:</td><td><input type=text size="40" name="ziellager" id="ziellager" value=[LAGER]><br><i>Wenn nicht angegeben, wird das Standardlager des Artikels bebucht.</i></td></tr>
                   [ISLIEFERANTENDE]                
                 </table>
               </fieldset>

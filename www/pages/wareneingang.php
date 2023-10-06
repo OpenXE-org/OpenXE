@@ -232,8 +232,12 @@ class Wareneingang {
                   LEFT JOIN projekt p ON b.projekt=p.id ";
                 }
 
-                $where = " b.adresse='$adresse' AND b.belegnr != '' 
-              AND bp.geliefert < bp.menge AND (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0)  AND (b.status='versendet' OR b.status='freigegeben') " . $this->app->erp->ProjektRechte();
+                $where = " 
+                    b.adresse='$adresse' AND
+                    b.belegnr != '' AND bp.geliefert < bp.menge AND 
+                    (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0) AND 
+                    (b.status='versendet' OR b.status='freigegeben')
+                    " . $this->app->erp->ProjektRechte();
 
                 // gesamt anzahl
                 $count = "
@@ -1755,6 +1759,9 @@ class Wareneingang {
                 $msg = "";
 
                 foreach ($menge_input as $key => $menge) {
+
+                    $bemerkung = "";
+
                     if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
                         $bestellposition = substr($key,'6');
                         if ($menge > 0) {
@@ -1768,22 +1775,24 @@ class Wareneingang {
                             $vpe = $bparr['vpe'];
                             $menge_bestellung = $bparr['menge'];
 
-                            // Get Lager_platz
-                            if (empty($ziellager_from_form)) {
-                                $lager = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='" . $artikel . "' LIMIT 1");
-                                if (empty($lager)) {
-                                    $msg .= '<div class="error">Kein Ziellagerplatz gefunden für Artikel: '.$artikel_nr.'</div>';   
-                                    continue;
+                            if ($bparr['lagerartikel']) {
+                                // Get Lager_platz
+                                if (empty($ziellager_from_form)) {
+                                    $lager = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='" . $artikel . "' LIMIT 1");
+                                    if (empty($lager)) {
+                                        $msg .= '<div class="error">Kein Ziellagerplatz gefunden für Artikel: '.$artikel_nr.'</div>';   
+                                        continue;
+                                    }
                                 }
-                            }
-                            else {
-                                $lager = $ziellager_from_form;
-                            }
+                                else {
+                                    $lager = $ziellager_from_form;
+                                }
 
-                            // Put stock
-                            $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id, Bestellung $bestellung_belegnr", '', $id);
-                            $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
-                            $bemerkung = $lagerplatz_name;
+                                // Put stock
+                                $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id, Bestellung $bestellung_belegnr", '', $id);
+                                $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
+                                $bemerkung = $lagerplatz_name;
+                            } 
 
                             // Increase bestellung_position geliefert_menge
                             $geliefert = $this->app->DB->Select("SELECT ifnull(geliefert,0) FROM bestellung_position WHERE id='$bestellposition' LIMIT 1");                    

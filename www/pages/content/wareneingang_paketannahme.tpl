@@ -12,10 +12,10 @@
         <div class="row-height">
           <div class="col-xs-12 col-md-8 col-md-height">
             <div class="inside inside-full-height">
-
               <div class="filter-box filter-usersave">
-                <div class="filter-block filter-inline">
+                 <div class="filter-block filter-inline">
                   <fieldset>
+                     <legend>{|Neuen Wareneingang erzeugen|}</legend>
                     <div class="filter-title">{|Filter|}</div>
                     <ul class="filter-list">
                       <li class="filter-item">
