@@ -2725,7 +2725,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             foreach ($internalPropertyGroupValues as $internalPropertyGroupValue => $valueNotNeeded) {
-                if (!array_key_exists($internalPropertyGroupValue, $internalGroupPropertiesToShopwareId[$propertyGroupName])) {
+                if (!array_key_exists($internalPropertyGroupValue, $internalGroupPropertiesToShopwareId[$propertyGroupName] ?? [])) {
                     $newOptionData = [
                         'name' => (string)$internalPropertyGroupValue
                     ];
@@ -2798,6 +2798,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $isCloseOut = true;
             }
 
+            if ($variant['umsatzsteuer'] == 'normal' && !empty($this->normalTaxId))
+              $taxId = $this->normalTaxId;
+            else if ($variant['umsatzsteuer'] == 'ermäßigt' && !empty($this->reducedTaxId))
+              $taxId = $this->reducedTaxId;
+            else
+              $taxId = $this->getTaxIdByRate($variant['steuersatz']);
+
             $variantProductData = [
                 'active' => $active,
                 'isCloseout' => $isCloseOut,
@@ -2820,7 +2827,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 ],
                 'stock' => (int)$stock,
                 'ean' => null,
-                'taxId' => $this->getTaxIdByRate($variant['steuersatz']),
+                'taxId' => $taxId,
             ];
             if(!empty($weight)){
                 $variantProductData['weight'] = $weight;
@@ -2837,7 +2844,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             foreach ($internalVariantMatrixData as $expression) {
                 if (!in_array(
                     $internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']],
-                    $existingCombinationsByNumber[$productNumber]['options'],
+                    $existingCombinationsByNumber[$productNumber]['options'] ?? [],
                     false)) {
                     $renewVariant = true;
                 } else {
