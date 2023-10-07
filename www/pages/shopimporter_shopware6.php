@@ -944,7 +944,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
             if (!empty($this->normalTaxId) && $article['umsatzsteuer'] == 'normal')
               $taxId = $this->normalTaxId;
-            else if (!empty($this->reducedTaxId) && $article['umsatzsteuer'] == 'ermäßigt')
+            else if (!empty($this->reducedTaxId) && $article['umsatzsteuer'] == 'ermaessigt')
               $taxId = $this->reducedTaxId;
             else
               $taxId = $this->getTaxIdByRate($taxRate);
@@ -2800,7 +2800,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
             if ($variant['umsatzsteuer'] == 'normal' && !empty($this->normalTaxId))
               $taxId = $this->normalTaxId;
-            else if ($variant['umsatzsteuer'] == 'ermäßigt' && !empty($this->reducedTaxId))
+            else if ($variant['umsatzsteuer'] == 'ermaessigt' && !empty($this->reducedTaxId))
               $taxId = $this->reducedTaxId;
             else
               $taxId = $this->getTaxIdByRate($variant['steuersatz']);
