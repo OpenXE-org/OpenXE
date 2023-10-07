@@ -40,6 +40,7 @@
                     [DISTRIINHALTBUTTONS]
                     [BEFOREFRM]
                     [AFTERFRM]         
+                    <button name="submit" class="ui-button-icon" style="width:100%;" value="speichern" hidden="true"></button>
                     <table width="100%" border="0" class="mkTableFormular">
                         <legend>{|Aktionen|}</legend>                        
                         [BEFOREMANUELLERFASSEN]            
