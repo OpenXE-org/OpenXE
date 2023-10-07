@@ -205,7 +205,7 @@ class Wareneingang {
                                    )";
                 }
                 // SQL statement
-                $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',art.id,'\">',art.nummer,'</a>'), b.belegnr as `Bestellung`, 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',art.id,'\" tabindex=\"-1\">',art.nummer,'</a>'), b.belegnr as `Bestellung`, 
                 $colBeschreibung as beschreibung,
                 if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum, p.abkuerzung as projekt, 
                 " . $this->app->erp->FormatMenge('bp.menge') . ", " . $this->app->erp->FormatMenge('bp.geliefert') . ", 
