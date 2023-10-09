@@ -1372,8 +1372,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function mediaToExport($internalArticleData, $articleIdShopware)
     {
-        $mediaToAdd = [
-        ];
+        $mediaToAdd = [];
 
         if (empty($internalArticleData['Dateien'])) {
             return $mediaToAdd;
@@ -1846,7 +1845,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     protected function createPropertyOption($propertyGroupId, $propertyOptionName): ?string
     {
         $propertyOptionData = [
-            'id' => '',
             'name' => $propertyOptionName
         ];
         $createdPropertyOption = $this->shopwareRequest(
@@ -1901,13 +1899,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             if (empty($countryIsoToPropertyTranslation['DE'])) {
                 continue;
             }
-            $propertyGroupId = '';
-            if (array_key_exists($propertyDefaultName, $this->knownPropertyGroupIds)) {
-                $propertyGroupId = $this->knownPropertyGroupIds[$propertyDefaultName];
-            }
-            if (empty($propertyGroupId)) {
-                $propertyGroupId = $this->getPropertyGroupId($propertyDefaultName);
-            }
+            $propertyGroupId = $this->getPropertyGroupId($propertyDefaultName);
             if (empty($propertyGroupId)) {
                 $propertyGroupId = $this->createPropertyGroup($propertyDefaultName);
             }
@@ -2684,15 +2676,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (empty($article['matrix_varianten']) || empty($articleIdShopware)) {
             return false;
         }
+        $headerInformation = ['sw-language-id: ' . $languageId];
         $internalGroupPropertiesToShopwareId = [];
         foreach ($article['matrix_varianten']['gruppen'] as $propertyGroupName => $internalPropertyGroupValues) {
-            $propertyGroupId = '';
-            if (array_key_exists($propertyGroupName, $this->knownPropertyGroupIds)) {
-                $propertyGroupId = $this->knownPropertyGroupIds[$propertyGroupName];
-            }
-            if (empty($propertyGroupId)) {
-                $propertyGroupId = $this->getPropertyGroupId($propertyGroupName);
-            }
+            $propertyGroupId = $this->getPropertyGroupId($propertyGroupName);
             if (empty($propertyGroupId)) {
                 $propertyGroupId = $this->createPropertyGroup($propertyGroupName);
             }
@@ -2713,8 +2700,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 }
             }
 
-            $languageId = $this->getLanguageIdByCountryIso('DE');
-            $headerInformation = ['sw-language-id: ' . $languageId];
             $shopwarePropertyGroupOptions = $this->shopwareRequest(
                 'GET',
                 'property-group/' . $propertyGroupId . '/options?limit=100',
