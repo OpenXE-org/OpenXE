@@ -2972,14 +2972,21 @@ class Shopimporter_Shopware6 extends ShopimporterBase
    * @return PriceData[]
    */
     protected function getPricesFromArray($priceArray): array{
-      return array_map(static function($price){
-        return new PriceData(
-          (int)$price['ab_menge'],
-          (float)$price['preis'],
-          (float)$price['bruttopreis'],
-          $price['waehrung'],
-          $price['gruppeextern'] ?? '') ;
-      },$priceArray);
+        $c = count($priceArray);
+        $result = [];
+        for ($i = 0; $i < $c; $i++) {
+            $end = null;
+            if ($i+1 < $c && ($priceArray[$i+1]['gruppeextern'] ?? '') == ($priceArray[$i]['gruppeextern'] ?? ''))
+                $end = (int)$priceArray[$i+1]['ab_menge'] - 1;
+            $result[] = new PriceData(
+                (int)$priceArray[$i]['ab_menge'],
+                (float)$priceArray[$i]['preis'],
+                (float)$priceArray[$i]['bruttopreis'],
+                $priceArray[$i]['waehrung'],
+                $priceArray[$i]['gruppeextern'] ?? '',
+                $end);
+        }
+        return $result;
     }
 
     /**

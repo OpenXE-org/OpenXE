@@ -8,6 +8,8 @@ class PriceData
 {
     /** @var int */
     protected $startingQuantity;
+    /** @var int|null */
+    protected $endingQuantity;
     /** @var float */
     protected $net;
     /** @var float */
@@ -26,13 +28,14 @@ class PriceData
      * @param $currency
      * @param $groupName
      */
-    public function __construct(int $startingQuantity, float $net, float $gross, string $currency, string $groupName)
+    public function __construct(int $startingQuantity, float $net, float $gross, string $currency, string $groupName, int $endingQuantity = null)
     {
         $this->startingQuantity = $startingQuantity;
         $this->net = $net;
         $this->gross = $gross;
         $this->currency = $currency;
         $this->groupName = $groupName;
+        $this->endingQuantity = $endingQuantity;
     }
 
     /**
@@ -91,6 +94,25 @@ class PriceData
     public function setStartingQuantity(int $startingQuantity): PriceData
     {
         $this->startingQuantity = $startingQuantity;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getEndingQuantity(): int|null
+    {
+        return $this->endingQuantity;
+    }
+
+    /**
+     * @param int $endingQuantity
+     * @return PriceData
+     */
+    public function setEndingQuantity(int $endingQuantity): PriceData
+    {
+        $this->endingQuantity = $endingQuantity;
 
         return $this;
     }
