@@ -42,7 +42,10 @@ class PLACEHOLDER_MODULECLASSNAME {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		$dropnbox = "PLACEHOLDER_DROPNBOX";
+        		$dropnbox = "PLACEHOLDER_DROPNBOX";
+
+//                $moreinfo = true; // Allow drop down details
+//                $menucol = 11; // Set id col for moredata/menu
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=PLACEHOLDER_MODULENAME&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=PLACEHOLDER_MODULENAME&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
@@ -118,6 +121,8 @@ class PLACEHOLDER_MODULECLASSNAME {
             
             // Add checks here
 
+    //        $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
+
             $columns = "id, ";
             $values = "$id, ";
             $update = "";
@@ -166,6 +171,9 @@ class PLACEHOLDER_MODULECLASSNAME {
         $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
         $this->app->Tpl->Add('EMAIL', $email);
         $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
+
+        $this->app->YUI->AutoComplete("artikel", "artikelnummer");
+
          */
 
 //        $this->SetInput($input);              

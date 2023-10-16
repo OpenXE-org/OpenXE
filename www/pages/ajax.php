@@ -1597,11 +1597,14 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         if($artikel_freitext1_suche)
         {
           $felder[] = 'art.freifeld1';
+        } else {
+            $artikel_freitext1_suche = 'true';
         }
-        $subwhere = $this->AjaxFilterWhere($termorig,$felder);
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(art.nummer,' ',art.name_de) as name FROM artikel art
+        $subwhere = $this->AjaxFilterWhere($termorig,$felder);       
+        $sql = "SELECT CONCAT(art.nummer,' ',art.name_de) as name FROM artikel art
         INNER JOIN $doctype"."_position ap ON ap.artikel = art.id AND $doctype = '$doctypeid'
-        WHERE art.geloescht=0 AND  ($artikel_freitext1_suche) AND art.geloescht=0 AND art.intern_gesperrt!=1 LIMIT 20");
+        WHERE art.geloescht=0 AND  ($artikel_freitext1_suche) AND art.geloescht=0 AND art.intern_gesperrt!=1 LIMIT 20";
+        $arr = $this->app->DB->SelectArr($sql);
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++) {
           $newarr[] = $arr[$i]['name'];
@@ -2479,7 +2482,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer = '".$kunde[0]."' AND kundennummer <> '' LIMIT 1");
         }
         $beleg = str_replace('kunden','',$filtername);
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',if(belegnr <> '',belegnr,'ENTWURF'),' ',kundennummer,' ',name) as name FROM $beleg WHERE (belegnr LIKE '%$term%' OR name LIKE '%$term%' OR kundennummer LIKE '$%term%') AND (status = 'angelegt' OR status = 'freigegeben') 
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(belegnr,' ',kundennummer,' ',name) as name FROM $beleg WHERE (belegnr <> '') AND (belegnr LIKE '%$term%' OR name LIKE '%$term%' OR kundennummer LIKE '$%term%') AND (status = 'angelegt' OR status = 'freigegeben') 
         ".($adresse?" AND adresse = '$adresse' ":'')."   ".$this->app->erp->ProjektRechte('projekt')."
         ORDER by belegnr LIMIT 20");
         $carr = !empty($arr)?count($arr):0;

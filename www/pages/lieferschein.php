@@ -960,6 +960,7 @@ class Lieferschein extends GenLieferschein
 
     $this->app->Tpl->Set('VERSANDART',$auftragArr[0]['versandart']);
 
+/*
     $tracking = $this->app->DB->SelectArr("SELECT
        if(v.tracking_link IS NOT NULL AND v.tracking_link != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"', v.tracking_link, '\">', v.tracking, '</a>'),
          if(versandunternehmen = 'dhlexpress' AND l.land = 'DE' AND v.tracking != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=', v.tracking, '\" target=\"_blank\">', v.tracking, '</a>'),
@@ -1018,7 +1019,30 @@ class Lieferschein extends GenLieferschein
 	if (!is_null($tmp)) {
 	    $this->app->Tpl->Set('TRACKING',implode(', ',$tmp));
 	}
+*/
 
+    $sql = "SELECT SQL_CALC_FOUND_ROWS                   
+                v.tracking as tracking,
+                v.tracking_link
+            FROM 
+                versandpakete v
+            LEFT JOIN
+                versandpaket_lieferschein_position vlp ON v.id = vlp.versandpaket
+            LEFT JOIN
+                lieferschein_position lp ON lp.id = vlp.lieferschein_position
+            LEFT JOIN
+                lieferschein l ON lp.lieferschein = l.id
+            WHERE l.id = ".$id." OR v.lieferschein_ohne_pos = ".$id."
+            GROUP BY 
+               v.tracking
+            ";
+    $tracking = $this->app->DB->SelectArr($sql);
+    $tracking_list = array();
+    foreach ($tracking as $single_tracking) {
+        $tracking_list[] = '<a href="'.$single_tracking['tracking_link'].'">'.$single_tracking['tracking'].'</a>';
+    }
+
+    $this->app->Tpl->Set('TRACKING',implode(', ',$tracking_list));
 
     $returnOrders = (array)$this->app->DB->SelectArr(
       sprintf(

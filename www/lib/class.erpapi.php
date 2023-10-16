@@ -13233,7 +13233,6 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     //value muss hier vom format ueberprueft werden
     $dbformat = 0;
     if(!$fromform) {
-      $dbformat = 1;
       $id = $value;
       if($id > 0){
         $abkuerzung = $this->app->DB->Select("SELECT belegnr as name FROM $table WHERE id='$id' LIMIT 1");
@@ -13241,13 +13240,16 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
         $abkuerzung = '';
       }
     } else {
-      $dbformat = 0;
       $abkuerzung = $value;
       $tmp = explode(' ', trim($value));
       $tmp = reset($tmp);
-      //$id =  $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='$rest' AND geloescht=0 LIMIT 1");
       $id =  $this->app->DB->Select("SELECT id FROM $table WHERE belegnr='$tmp' AND belegnr!='' LIMIT 1");
-      if($id <=0) $id=0;
+      if ($id <=0) {
+        $id=0;
+        $abkuerzung = '';
+      } else {
+        $abkuerzung = $tmp;
+      }
     }
 
     // wenn ziel datenbank

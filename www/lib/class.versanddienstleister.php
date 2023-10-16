@@ -378,11 +378,41 @@ abstract class Versanddienstleister
       if ($json->submit == 'print') {
         $result = $this->CreateShipment($json, $address);
         if ($result->Success) {
-          $sql = "INSERT INTO versand 
-          (adresse, lieferschein, versandunternehmen, gewicht, tracking, tracking_link, anzahlpakete) 
-          VALUES 
-          ({$address['addressId']}, {$address['lieferscheinId']}, '$this->type',
-           '$json->weight', '$result->TrackingNumber', '$result->TrackingUrl', 1)";
+/*          $sql = "INSERT INTO versand 
+                  (
+                    adresse,
+                    lieferschein,
+                    versandunternehmen,
+                    gewicht,
+                    tracking,
+                    tracking_link,
+                    anzahlpakete
+                  ) 
+                  VALUES 
+                  (
+                    {$address['addressId']},
+                    {$address['lieferscheinId']},
+                    '$this->type',
+                    '$json->weight',
+                    '$result->TrackingNumber',
+                    '$result->TrackingUrl',
+                    1
+                )";*/
+          $sql = "INSERT INTO versandpakete 
+                  (
+                    lieferschein_ohne_pos,
+                    gewicht,
+                    tracking,
+                    tracking_link
+                  ) 
+                  VALUES 
+                  (
+                    {$address['lieferscheinId']},
+                    '$json->weight',
+                    '$result->TrackingNumber',
+                    '$result->TrackingUrl'
+                )";
+
           $this->app->DB->Insert($sql);
 
           $filename = $this->app->erp->GetTMP() . join('_', [$this->type, 'Label', $result->TrackingNumber]) . '.pdf';
