@@ -14637,6 +14637,38 @@ function PaketmarkeGewichtForm($anzahl, $standardkg, $mindestgewicht = 0)
   }
 }
 
+//@refactor versanddiestleister Modul
+function VersandartMindestgewicht($id=0)
+{
+  $gewicht = $this->LieferscheinNettoGewicht($id);
+  $versandart =""; $projekt=0; $intraship_weightinkg=0;
+  $gewicht /= $this->GewichtzuKgFaktor();
+
+if($id > 0)
+{
+  $versandart = $this->app->DB->Select("SELECT versandart FROM lieferschein WHERE id='$id' LIMIT 1");
+  $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id='$id' LIMIT 1");
+  $intraship_weightinkg = $this->app->DB->Select("SELECT intraship_weightinkg FROM projekt WHERE id='$projekt' LIMIT 1");
+  $versandart = strtolower($versandart);
+
+  $modul = $this->app->DB->SelectArr("SELECT id, modul FROM `versandarten` WHERE aktiv = 1 AND ausprojekt = 0 AND modul <> '' AND type = '".$this->app->DB->real_escape_string($versandart)."' AND geloescht = 0 AND (projekt = 0 OR projekt = '$projekt') ORDER by projekt = '$projekt' DESC LIMIT 1");
+  if($modul && @is_file(dirname(__FILE__).'/versandarten/'.$modul[0]['modul'].'.php'))
+  {
+    $obj = $this->LoadVersandModul($modul[0]['modul'], $modul[0]['id']);
+    if($obj){
+      if(method_exists($obj, 'VersandartMindestgewicht'))
+        $mindestgewicht = $obj->VersandartMindestgewicht();
+      return $mindestgewicht > $gewicht ? $mindestgewicht : $gewicht;
+    }
+  }
+}
+
+  if(($versandart=="dhl" || $versandart=="versandunternehmen") && $intraship_weightinkg > 0 && $gewicht <=0) return $intraship_weightinkg;
+  else if ($gewicht > 0) return $gewicht;
+  else return 2;
+}
+
+
 //@refactor ApplicationCore
 function LoadVersandModul(string $modul, int $id): Versanddienstleister
 {
