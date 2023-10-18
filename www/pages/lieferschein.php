@@ -1021,7 +1021,8 @@ class Lieferschein extends GenLieferschein
 	}
 */
 
-    $sql = "SELECT SQL_CALC_FOUND_ROWS                   
+    $sql = "SELECT SQL_CALC_FOUND_ROWS
+                v.id,                   
                 v.tracking as tracking,
                 v.tracking_link
             FROM 
@@ -1034,15 +1035,16 @@ class Lieferschein extends GenLieferschein
                 lieferschein l ON lp.lieferschein = l.id
             WHERE l.id = ".$id." OR v.lieferschein_ohne_pos = ".$id."
             GROUP BY 
-               v.tracking
+               v.id
             ";
     $tracking = $this->app->DB->SelectArr($sql);
     $tracking_list = array();
     foreach ($tracking as $single_tracking) {
-        $tracking_list[] = '<a href="'.$single_tracking['tracking_link'].'">'.$single_tracking['tracking'].'</a>';
+        $tracking_list[] =  '<a href="index.php?module=versandpakete&action=edit&id='.$single_tracking['id'].'">Paket Nr.'.$single_tracking['id'].'</a>'.
+                            ' ('.'<a href="'.$single_tracking['tracking_link'].'">'.$single_tracking['tracking'].'</a>'.')';
     }
 
-    $this->app->Tpl->Set('TRACKING',implode(', ',$tracking_list));
+    $this->app->Tpl->Set('TRACKING',implode('<br>',$tracking_list));
 
     $returnOrders = (array)$this->app->DB->SelectArr(
       sprintf(

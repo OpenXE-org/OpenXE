@@ -22,7 +22,7 @@
 <tr><td class="auftraginfo_cell">Projekt:</td><td class="auftraginfo_cell">[PROJEKT]</td><td class="auftraginfo_cell">Angebotssumme:</td><td class="auftraginfo_cell">[GESAMTSUMME]</td></tr>
 <tr><td class="auftraginfo_cell">Auftrag:</td><td class="auftraginfo_cell">[AUFTRAG]</td><td class="auftraginfo_cell">Versteuerung:</td><td class="auftraginfo_cell">[STEUER]</td></tr>
 <tr><td class="auftraginfo_cell">Rechnung:</td><td class="auftraginfo_cell">[RECHNUNG]</td><td class="auftraginfo_cell">Gewicht (netto):</td><td class="auftraginfo_cell">[GEWICHT]</td></tr>
-<tr><td class="auftraginfo_cell">Tracking:</td><td class="auftraginfo_cell">[TRACKING]</td><td class="auftraginfo_cell">Versandart:</td><td class="auftraginfo_cell">[VERSANDART]</td></tr>
+<tr><td class="auftraginfo_cell">Pakete:</td><td class="auftraginfo_cell">[TRACKING]</td><td class="auftraginfo_cell">Versandart:</td><td class="auftraginfo_cell">[VERSANDART]</td></tr>
 <tr><td class="auftraginfo_cell">Retoure:</td><td class="auftraginfo_cell">[RETOURE]</td><td class="auftraginfo_cell"></td><td class="auftraginfo_cell"></td></tr>
 </table>
 

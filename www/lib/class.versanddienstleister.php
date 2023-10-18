@@ -75,7 +75,8 @@ abstract class Versanddienstleister
       $ret['lieferscheinId'] = $lieferscheinId;
 
       $addressfields = ['name', 'adresszusatz', 'abteilung', 'ansprechpartner', 'unterabteilung', 'ort', 'plz',
-          'strasse', 'land'];
+          'strasse', 'land'];       
+
       $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
 
       $ret['name'] = empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : trim($docArr['ansprechpartner']);
@@ -403,14 +404,18 @@ abstract class Versanddienstleister
                     lieferschein_ohne_pos,
                     gewicht,
                     tracking,
-                    tracking_link
+                    tracking_link,
+                    status,
+                    versandart
                   ) 
                   VALUES 
                   (
                     {$address['lieferscheinId']},
                     '$json->weight',
                     '$result->TrackingNumber',
-                    '$result->TrackingUrl'
+                    '$result->TrackingUrl',
+                    'versendet',
+                    '$this->type'
                 )";
 
           $this->app->DB->Insert($sql);

@@ -28,7 +28,15 @@
                                         <td>
                                             <input type="text" name="" id="" value="[VERSENDER]" size="40" disabled>
                                         </td>
-                                    </tr>     
+                                    </tr>    
+                                    <tr>
+                                        <td>
+                                            {|Versandart|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="" id="" value="[VERSANDART]" size="40" disabled>
+                                        </td>
+                                    </tr>    
                                     <tr>
                                         <td>
                                             {|Tracking|}:
@@ -42,7 +50,7 @@
                                             {|Gewicht Kg|}:
                                         </td>
                                         <td>
-                                            <input type="number" name="gewicht" id="gewicht" min="1" value="[GEWICHT]" size="40">
+                                            <input type="number" name="gewicht" id="gewicht" min="1" value="[GEWICHT]" size="40" [LIEFERSCHEIN_GEWICHT_DISABLED]>
                                         </td>
                                     </tr>
                                     <tr>
@@ -71,7 +79,21 @@
                                         </td>
                                     </tr>      
                                 </table>
-                            </fieldset>            
+                            </fieldset>
+                            <fieldset [LIEFERSCHEIN_OHNE_POS_HIDDEN]>
+                                <legend>{|Lieferschein|}</legend>
+                                <table width="100%" border="0" class="mkTableFormular"> 
+                                    <tr>
+                                        <td>
+                                            {|Lieferschein|}:
+                                        </td>
+                                        <td>
+                                            <input form="add" type="text" name="" id="" value="[LIEFERSCHEIN_OHNE_POS]" size="40" disabled>
+                                            <a href="index.php?module=lieferschein&action=edit&id=[LIEFERSCHEIN_OHNE_POS_ID]"><img src="themes/new/images/forward.svg" border="0" style="top:6px; position:relative"></a>
+                                        </td>
+                                    </tr>      
+                                </table>
+                            </fieldset>                       
                         </div>
                		</div>
                     <div class="col-xs-14 col-md-2 col-md-height">
@@ -82,6 +104,7 @@
                                     <tr><td><button form="save" name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button></td></tr>
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_hinzufuegen" class="ui-button-icon" style="width:100%;">Artikel hinzuf&uuml;gen</button></td></tr>
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_komplett_hinzufuegen" class="ui-button-icon" style="width:100%;">Kompletten Lieferschein hinzuf&uuml;gen</button></td></tr>
+                                    <tr [PAKETMARKE_HIDDEN]><td><button form="paketmarke" name="submit" value="paketmarke" class="ui-button-icon" style="width:100%;">Parketmarke drucken und absenden</button></td></tr>
                                 </table>
                             </fieldset>            
                         </div>
@@ -90,6 +113,8 @@
             </div>          
         </form>
         <form id="add" action="index.php?module=versandpakete&action=add&id=[ID]" method="post">
+        </form>
+        <form id="paketmarke" action="index.php?module=versandpakete&action=paketmarke&id=[ID]" method="post">
         </form>
         <div class="row" [LIEFERSCHEIN_POS_HIDDEN]>
         	<div class="row-height">

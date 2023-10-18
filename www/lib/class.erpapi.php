@@ -22896,9 +22896,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     return $this->GetSelectDokumentKunde("arbeitsnachweis",$adresse,$select);
   }
 
-
-
-
   function GetSelectAnsprechpartner($adresse, $selected="")
   {
     $first = $this->app->DB->Select("SELECT CONCAT(ansprechpartner,' &lt;',email,'&gt;') FROM adresse WHERE id='$adresse' AND geloescht=0 LIMIT 1");
@@ -22915,7 +22912,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $tpl .="<option value=\"".$others[$i]['id']."\" $mark>{$others[$i]['name']}</option>";
     }
     return $tpl;
-  }
+  }   
 
   function GetVorgaenger($projekt,$disableid="")
   {

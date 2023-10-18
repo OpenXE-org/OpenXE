@@ -3614,6 +3614,79 @@ class YUI {
             '</td></tr></table>')";
     }
 
+    function IconsSQL_versandpaket() {
+/*
+    status:
+        neu -> 
+   
+    Lagergo
+    lagergo_stop
+    lagerstop
+
+    Schein
+    summe_go
+    summe_stop
+
+    Auto
+    liefersperrego
+    liefersperrestop
+
+    marke
+    portogo
+    portostop
+
+    produktion_usn_gut
+    storno*/
+    
+
+        $lieferschein_kein = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_stop.png\" title=\"Kein Lieferschein\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_ohne_pos = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_go.png\" title=\"Lieferschein ohne Positionen\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_voll = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" title=\"Lieferschein vollst&auml;ndig\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_teil = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo_stop.png\" title=\"Lieferschein teilweise\" border=\"0\" style=\"margin-right:1px\">";
+
+        $versendet = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrego.png\" title=\"Versendet\" border=\"0\" style=\"margin-right:1px\">";
+        $versendet_nicht = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrestop.png\" title=\"Nicht versendet\" border=\"0\" style=\"margin-right:1px\">";
+
+        $paketmarke = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/portogo.png\" style=\"margin-right:1px\" title=\"Paketmarke\" border=\"0\">";
+        $paketmarke_keine = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/portostop.png\" style=\"margin-right:1px\" title=\"Keine Paketmarke\" border=\"0\">";
+
+        $ausgeliefert = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/grey.png\" style=\"margin-right:1px\" title=\"Ausgeliefert\" border=\"0\">";
+        $ausgeliefert_nicht = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_eingelagert.png\" style=\"margin-right:1px\" title=\"Nicht ausgeliefert\" border=\"0\">";
+
+        $storno = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/storno.png\" style=\"margin-right:1px\" title=\"Storniert\" border=\"0\">";
+
+        for ($z = 0;$z < 4;$z++) {
+            $abgeschlossen .= $ausgeliefert; 
+            $storniert .= $storno; 
+        }
+
+        return "CONCAT('<table><tr><td nowrap>',
+            CASE 
+                WHEN v.status = 'abgeschlossen' THEN '$abgeschlossen'
+                WHEN v.status = 'storniert' THEN '$storniert'
+            ELSE CONCAT(                                
+                CASE 
+                    WHEN lieferschein_ohne_pos <> '' THEN '$lieferschein_ohne_pos'
+                    WHEN lieferschein <> '' THEN '$lieferschein_voll'
+                ELSE 
+                    '$lieferschein_kein'
+                END,
+                CASE 
+                    WHEN tracking <> '' THEN '$paketmarke'
+                ELSE 
+                    '$paketmarke_keine'
+                END,
+                CASE 
+                    WHEN v.status = 'versendet' THEN '$versendet'
+                ELSE 
+                    '$versendet_nicht'
+                END,
+                '$ausgeliefert_nicht'
+            )
+            END,
+            '</td></tr></table>')";
+    }
+
   function TablePositionSearch($parsetarget, $name, $callback = "show", $gener) {
 
     $id = $this->app->Secure->GetGET("id");
