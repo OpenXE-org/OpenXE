@@ -516,7 +516,7 @@ class Versandpakete {
                 $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
             break;            
             case 'absenden':
-                $sql = "UPDATE versandpakete SET status = 'versendet' WHERE id = ".$id;
+                $sql = "UPDATE versandpakete SET status = 'versendet', versender = '".$this->app->User->GetName()."' WHERE id = ".$id;
                 $this->app->DB->Update($sql);
             break;
             case 'abschliessen':
