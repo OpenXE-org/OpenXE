@@ -11,7 +11,10 @@
             		<div class="col-xs-14 col-md-6 col-md-height">
             			<div class="inside inside-full-height">
             				<fieldset>
-                                <legend>{|Versandpaket <b>Nr. [ID]</b> vom [DATUM] f&uuml;r Adresse '[ADRESSE]'|}</legend>
+                                <legend>
+                                    {|<b>Versandpaket Nr. [ID]</b> vom [DATUM]<span [NO_ADDRESS_HIDDEN]> f&uuml;r Adresse '[ADRESSE]'|}</span>
+                                </legend>
+                                [ICONS]
                                 <table width="100%" border="0" class="mkTableFormular">                                   
                                     <tr>
                                         <td>
@@ -42,7 +45,13 @@
                                             {|Tracking|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="" id="" value="[TRACKING]" size="40" disabled><a href="[TRACKING_LINK]"><img src="themes/new/images/forward.svg" border="0" style="top:6px; position:relative"></a>
+                                            <input type="text" name="" id="" value="[TRACKING]" size="40" disabled>
+                                            <a href="[PAKETMARKE_LINK]" [PAKETMARKE_HIDDEN]>
+                                                <img src="themes/new/images/portogo.png" border="0" style="top:6px; position:relative">
+                                            </a>
+                                            <a href="[TRACKING_LINK]" [PAKETMARKE_HIDDEN]>
+                                                <img src="themes/new/images/forward.svg" border="0" style="top:6px; position:relative">
+                                            </a>
                                         </td>
                                     </tr>
                                     <tr>
@@ -67,33 +76,28 @@
                		</div>
                     <div class="col-xs-14 col-md-6 col-md-height">
             			<div class="inside inside-full-height">
-                            <fieldset [LIEFERSCHEIN_ADD_POS_HIDDEN]>
-                                <legend>{|Artikel aus Lieferschein hinzuf&uuml;gen|}</legend>
-                                <table width="100%" border="0" class="mkTableFormular"> 
-                                    <tr>
-                                        <td>
-                                            {|Lieferschein|}:
-                                        </td>
-                                        <td>
-                                            <input form="add" type="text" name="lieferschein" id="lieferschein" value="[LIEFERSCHEIN]" autofocus style="width:99%;">
-                                        </td>
-                                    </tr>      
-                                </table>
-                            </fieldset>
-                            <fieldset [LIEFERSCHEIN_OHNE_POS_HIDDEN]>
+                            <fieldset >
                                 <legend>{|Lieferschein|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular"> 
-                                    <tr>
+                                    <tr [LIEFERSCHEIN_OHNE_POS_HIDDEN]>
                                         <td>
-                                            {|Lieferschein|}:
+                                            {|Lieferschein ohne Positionen|}:
                                         </td>
                                         <td>
                                             <input form="add" type="text" name="" id="" value="[LIEFERSCHEIN_OHNE_POS]" size="40" disabled>
                                             <a href="index.php?module=lieferschein&action=edit&id=[LIEFERSCHEIN_OHNE_POS_ID]"><img src="themes/new/images/forward.svg" border="0" style="top:6px; position:relative"></a>
                                         </td>
                                     </tr>      
+                                    <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]>
+                                        <td>
+                                            {|Lieferschein|}:
+                                        </td>
+                                        <td>
+                                            <input form="add" type="text" name="lieferschein" id="lieferschein" value="[LIEFERSCHEIN]" autofocus size="40">
+                                        </td>
+                                    </tr>      
                                 </table>
-                            </fieldset>                       
+                            </fieldset>                                             
                         </div>
                		</div>
                     <div class="col-xs-14 col-md-2 col-md-height">
@@ -104,7 +108,9 @@
                                     <tr><td><button form="save" name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button></td></tr>
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_hinzufuegen" class="ui-button-icon" style="width:100%;">Artikel hinzuf&uuml;gen</button></td></tr>
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_komplett_hinzufuegen" class="ui-button-icon" style="width:100%;">Kompletten Lieferschein hinzuf&uuml;gen</button></td></tr>
-                                    <tr [PAKETMARKE_HIDDEN]><td><button form="paketmarke" name="submit" value="paketmarke" class="ui-button-icon" style="width:100%;">Parketmarke drucken und absenden</button></td></tr>
+                                    <tr [PAKETMARKE_ADD_HIDDEN]><td><button form="paketmarke" name="submit" value="paketmarke" class="ui-button-icon" style="width:100%;">Paketmarke drucken</button></td></tr>
+                                    <tr [ABSENDEN_HIDDEN]><td><button name="submit" value="absenden" class="ui-button-icon" style="width:100%;">Absenden</button></td></tr>
+                                    <tr [ABSCHLIESSEN_HIDDEN]><td><button name="submit" value="abschliessen" class="ui-button-icon" style="width:100%;">Abschlie&szlig;en</button></td></tr>
                                 </table>
                             </fieldset>            
                         </div>

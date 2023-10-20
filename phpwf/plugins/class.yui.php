@@ -3650,8 +3650,8 @@ class YUI {
         $paketmarke = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/portogo.png\" style=\"margin-right:1px\" title=\"Paketmarke\" border=\"0\">";
         $paketmarke_keine = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/portostop.png\" style=\"margin-right:1px\" title=\"Keine Paketmarke\" border=\"0\">";
 
-        $ausgeliefert = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/grey.png\" style=\"margin-right:1px\" title=\"Ausgeliefert\" border=\"0\">";
-        $ausgeliefert_nicht = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_eingelagert.png\" style=\"margin-right:1px\" title=\"Nicht ausgeliefert\" border=\"0\">";
+        $ausgeliefert = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delivery_ok.png\" style=\"margin-right:1px\" title=\"Ausgeliefert\" border=\"0\">";
+        $ausgeliefert_nicht = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delivery.png\" style=\"margin-right:1px\" title=\"Nicht ausgeliefert\" border=\"0\">";
 
         $storno = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/storno.png\" style=\"margin-right:1px\" title=\"Storniert\" border=\"0\">";
 
@@ -3662,12 +3662,12 @@ class YUI {
 
         return "CONCAT('<table><tr><td nowrap>',
             CASE 
-                WHEN v.status = 'abgeschlossen' THEN '$abgeschlossen'
-                WHEN v.status = 'storniert' THEN '$storniert'
+                WHEN status = 'storniert' THEN '$storniert'
             ELSE CONCAT(                                
                 CASE 
                     WHEN lieferschein_ohne_pos <> '' THEN '$lieferschein_ohne_pos'
-                    WHEN lieferschein <> '' THEN '$lieferschein_voll'
+                    WHEN lieferscheine <> '' AND vmenge = lmenge THEN '$lieferschein_voll'
+                    WHEN lieferscheine <> '' THEN '$lieferschein_teil'
                 ELSE 
                     '$lieferschein_kein'
                 END,
@@ -3677,11 +3677,16 @@ class YUI {
                     '$paketmarke_keine'
                 END,
                 CASE 
-                    WHEN v.status = 'versendet' THEN '$versendet'
+                    WHEN status = 'versendet' THEN '$versendet'
+                    WHEN status = 'abgeschlossen' THEN '$versendet'
                 ELSE 
                     '$versendet_nicht'
                 END,
-                '$ausgeliefert_nicht'
+                CASE 
+                    WHEN status = 'abgeschlossen' THEN '$ausgeliefert'
+                ELSE 
+                    '$ausgeliefert_nicht'
+                END
             )
             END,
             '</td></tr></table>')";
