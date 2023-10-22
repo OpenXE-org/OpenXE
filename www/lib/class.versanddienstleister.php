@@ -451,7 +451,12 @@ abstract class Versanddienstleister
     $address['product'] = $products[0]->Id ?? '';
 
     $countries = $this->app->DB->SelectArr("SELECT iso, bezeichnung_de name, eu FROM laender ORDER BY bezeichnung_de");
-    $countries = array_combine(array_column($countries, 'iso'), $countries);
+    if(!empty($countries)) {
+        $countries = array_combine(array_column($countries, 'iso'), $countries);    
+    } else {
+        $countries = Array();        
+        $this->app->Tpl->addMessage('error', 'L&auml;nderliste ist leer. Siehe Einstellungen -> L&auml;nderliste.', false, 'PAGE');
+    }  
 
     $json['form'] = $address;
     $json['countries'] = $countries;
