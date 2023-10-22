@@ -2482,7 +2482,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer = '".$kunde[0]."' AND kundennummer <> '' LIMIT 1");
         }
         $beleg = str_replace('kunden','',$filtername);
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(belegnr,' ',kundennummer,' ',name) as name FROM $beleg WHERE (belegnr <> '') AND (belegnr LIKE '%$term%' OR name LIKE '%$term%' OR kundennummer LIKE '$%term%') AND (status = 'angelegt' OR status = 'freigegeben') 
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(belegnr,' ',kundennummer,' ',name) as name FROM $beleg WHERE (belegnr <> '') AND (belegnr LIKE '%$term%' OR name LIKE '%$term%' OR kundennummer LIKE '$%term%') AND (status IN ('angelegt','freigegeben','versendet')) 
         ".($adresse?" AND adresse = '$adresse' ":'')."   ".$this->app->erp->ProjektRechte('projekt')."
         ORDER by belegnr LIMIT 20");
         $carr = !empty($arr)?count($arr):0;
