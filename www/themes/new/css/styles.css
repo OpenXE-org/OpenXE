@@ -2961,7 +2961,6 @@ div.error > input[type=submit] {
 }
 
 .info,
-.success,
 .error2 {
     background-color: var(--info);
     color: var(--info-color);
@@ -2975,6 +2974,14 @@ div.error > input[type=submit] {
     background-image: url('../images/warning.png');
     background-size: 30px 30px;
 }
+
+.success {
+    background-color: var(--success);
+    color: var(--info-color);
+    background-image: url('../images/info.png');
+    background-size: 30px 30px;
+}
+
 
 .pull-right {
   float: right !important;
@@ -3040,7 +3047,7 @@ div.error > input[type=submit] {
 #header div.headererror > input {
     padding: 5px;
     margin: 3px;
-    background-color: var(--info);
+    background-color: var(--success);
     color: var(--info-color);
 }
 

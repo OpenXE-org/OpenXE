@@ -3642,7 +3642,7 @@ class YUI {
         $lieferschein_kein = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_stop.png\" title=\"Kein Lieferschein\" border=\"0\" style=\"margin-right:1px\">";
         $lieferschein_ohne_pos = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_go.png\" title=\"Lieferschein ohne Positionen\" border=\"0\" style=\"margin-right:1px\">";
         $lieferschein_voll = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" title=\"Lieferschein vollst&auml;ndig\" border=\"0\" style=\"margin-right:1px\">";
-        $lieferschein_teil = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo_stop.png\" title=\"Lieferschein teilweise\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_teil = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo_teil.png\" title=\"Lieferschein teilweise\" border=\"0\" style=\"margin-right:1px\">";
 
         $versendet = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrego.png\" title=\"Versendet\" border=\"0\" style=\"margin-right:1px\">";
         $versendet_nicht = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrestop.png\" title=\"Nicht versendet\" border=\"0\" style=\"margin-right:1px\">";
@@ -3693,10 +3693,10 @@ class YUI {
     }
     function IconsSQL_lieferung() {
 
-        $lieferschein_kein = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_stop.png\" title=\"Kein Lieferschein\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_kein = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagerstop.png\" title=\"Keine Artikel\" border=\"0\" style=\"margin-right:1px\">";
         $lieferschein_ohne_pos = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_go.png\" title=\"Lieferschein ohne Positionen\" border=\"0\" style=\"margin-right:1px\">";
-        $lieferschein_voll = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" title=\"Lieferschein vollst&auml;ndig\" border=\"0\" style=\"margin-right:1px\">";
-        $lieferschein_teil = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo_stop.png\" title=\"Lieferschein teilweise\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_voll = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" title=\"Artikel vollst&auml;ndig\" border=\"0\" style=\"margin-right:1px\">";
+        $lieferschein_teil = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo_stop.png\" title=\"Artikel teilweise\" border=\"0\" style=\"margin-right:1px\">";
 
         $versendet = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrego.png\" title=\"Versendet\" border=\"0\" style=\"margin-right:1px\">";
         $versendet_nicht = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrestop.png\" title=\"Nicht versendet\" border=\"0\" style=\"margin-right:1px\">";

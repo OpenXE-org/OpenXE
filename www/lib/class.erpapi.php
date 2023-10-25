@@ -7110,7 +7110,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][++$menu]['first'] = array('Logistik','lager','list');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Wareneingang','wareneingang','list');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Lieferschein','lieferschein','list');
-    $navarray['menu']['admin'][$menu]['sec'][]  = array('Versand','versandpakete','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Versand','versandpakete','lieferungen');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Lagerverwaltung','lager','list');
     if($this->ModulVorhanden('lagermobil')) {
       $navarray['menu']['admin'][$menu]['sec'][]   = array('Mobile Lagerverwaltung','lagermobil','list');

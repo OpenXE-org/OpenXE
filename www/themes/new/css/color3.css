@@ -64,5 +64,6 @@
     --error: #F05A5C;
     --error-color: #fff;
     --important: #68D4D0;
-    --success: #92EFB4;
+/*    --success: #92EFB4;*/
+    --success: #2DCA73;
 }
