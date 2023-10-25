@@ -604,17 +604,18 @@ class Versandpakete {
 
         $info = $this->app->DB->SelectArr($sql);
 
-        $this->app->Tpl->Set('BELEGNR', $info[0]['belegnr']);
+        if (!empty($info)) {
+            $this->app->Tpl->Set('BELEGNR', $info[0]['belegnr']);
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $info[0]['name']." Lieferung ".$info[0]['belegnr']);
 
-        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $info[0]['name']." Lieferung ".$info[0]['belegnr']);
-
-        if ($this->versandpakete_check_completion($info[0]['versandpaket'])) {
-            $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
+            if ($this->versandpakete_check_completion($info[0]['versandpaket'])) {
+                $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
+            }
+            else {
+                $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
+            }
         }
-        else {
-            $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
-        }
-
+   
         $this->app->YUI->TableSearch('TAB1', 'lieferung_versandpakete_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "versandpakete_lieferung.tpl");
     }    
