@@ -168,11 +168,11 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             </div>
             <div class="clearfix"></div>
             <div class="col-md-12">
-                <h2>{|Bestellung|}</h2>
+                <h2>{|Sonstiges|}</h2>
                 <table>
                     <tbody>
                         <tr>
-                            <td>{|Bestellnummer|}:</td>
+                            <td>{|Referenzen|}:</td>
                             <td><input type="text" size="36" v-model="form.order_number"></td>
                         </tr>
                         <tr>
