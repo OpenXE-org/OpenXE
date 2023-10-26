@@ -59,7 +59,7 @@
                                             {|Gewicht Kg|}:
                                         </td>
                                         <td>
-                                            <input type="number" name="gewicht" id="gewicht" min="1" value="[GEWICHT]" size="40" [LIEFERSCHEIN_GEWICHT_DISABLED]>
+                                            <input type="number" name="" id="" value="[GEWICHT]" size="40" disabled>
                                         </td>
                                     </tr>
                                     <tr>
@@ -90,7 +90,7 @@
                                     </tr>      
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]>
                                         <td>
-                                            {|Lieferschein|}:
+                                            {|Artikel von Lieferschein hinzuf&uuml;gen|}:
                                         </td>
                                         <td>
                                             <input form="add" type="text" name="lieferschein" id="lieferschein" value="[LIEFERSCHEIN]" autofocus size="40">
@@ -107,7 +107,7 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr><td><button form="save" name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button></td></tr>
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_hinzufuegen" class="ui-button-icon" style="width:100%;">Artikel hinzuf&uuml;gen</button></td></tr>
-                                    <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_komplett_hinzufuegen" class="ui-button-icon" style="width:100%;">Kompletten Lieferschein hinzuf&uuml;gen</button></td></tr>
+                                    <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_komplett_hinzufuegen" class="ui-button-icon" style="width:100%;">Alle Artikel hinzuf&uuml;gen</button></td></tr>
                                     <tr [PAKETMARKE_ADD_HIDDEN]><td><button form="paketmarke" name="submit" value="paketmarke" class="ui-button-icon" style="width:100%;">Paketmarke drucken</button></td></tr>
                                     <tr [ABSENDEN_HIDDEN]><td><button name="submit" value="absenden" class="ui-button-icon" style="width:100%;">Absenden</button></td></tr>
                                     <tr [ABSCHLIESSEN_HIDDEN]><td><button name="submit" value="abschliessen" class="ui-button-icon" style="width:100%;">Abschlie&szlig;en</button></td></tr>

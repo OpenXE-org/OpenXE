@@ -1603,7 +1603,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);       
         $sql = "SELECT CONCAT(art.nummer,' ',art.name_de) as name FROM artikel art
         INNER JOIN $doctype"."_position ap ON ap.artikel = art.id AND $doctype = '$doctypeid'
-        WHERE art.geloescht=0 AND  ($artikel_freitext1_suche) AND art.geloescht=0 AND art.intern_gesperrt!=1 LIMIT 20";
+        WHERE 
+            art.geloescht=0 AND ($artikel_freitext1_suche) AND art.geloescht=0 AND art.intern_gesperrt!=1 AND 
+            (name_de LIKE '%$term%' OR art.nummer LIKE '%$term%') 
+        LIMIT 20";
         $arr = $this->app->DB->SelectArr($sql);
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++) {

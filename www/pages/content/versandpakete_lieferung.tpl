@@ -19,7 +19,7 @@
         	<div class="row-height">
         		<div class="col-xs-12 col-md-12 col-md-height">
         			<div class="inside inside-full-height">
-                        <form action="index.php?module=versandpakete&action=stapelverarbeitung" id="frmauto" name="frmauto" method="post">
+                        <form action="index.php?module=versandpakete&action=stapelverarbeitung&from=lieferung&id=[FROMID]" id="frmauto" name="frmauto" method="post">
                             [TAB1]
                             <fieldset>
                                 <table>

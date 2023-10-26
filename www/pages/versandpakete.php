@@ -71,6 +71,7 @@ class Versandpakete {
                 $lieferschein_filter = $app->User->GetParameter('versandpakete_lieferschein_filter');
                 if ($lieferschein_filter) {
                     $lieferschein_filter_where = "WHERE lieferschein = ".$lieferschein_filter;
+                    $lieferung_link = "&lieferung=".$lieferschein_filter;
                 }
             // break omitted intentionally
             case "versandpakete_list":
@@ -97,8 +98,7 @@ class Versandpakete {
                 $menu_link = array(
                     '<a href="index.php?module=versandpakete&action=edit&id=',
                     ['sql' => 'id'],
-                    '&lieferung=',
-                    $lieferschein_filter,
+                    $lieferung_link,
                     '">',
                     "<img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>",
                     '</a>',
@@ -177,7 +177,7 @@ class Versandpakete {
                         id,
                         ".$dropnbox.",                       
                         id id2, 
-                        ".$app->erp->FormatDateShort("datum").",
+                        ".$app->erp->FormatDateTimeShort("datum").",
                         name,
                         lieferscheine,
                         versandart,
@@ -345,7 +345,7 @@ class Versandpakete {
                             ".$app->erp->FormatMenge("lmenge").",
                             ".$app->erp->FormatMenge("vmenge").",
                             ".$app->YUI->IconsSQL_lieferung().",  
-                            CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" border=\"0\"></a>'),
+                            if(vmenge=0,'',CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>')),
                             id,
                             alle_abgeschlossen
                         FROM (
@@ -477,7 +477,7 @@ class Versandpakete {
                 $lieferschein_id = $app->User->GetParameter('versandpakete_lieferschein');
 
                 $allowed['versandpakete_lieferschein_paket_list'] = array('list');
-                $heading = array('Pos', 'Artikel', 'Artikel-Nr.','Menge Lieferschein', 'Menge in Versandpaketen', 'Paket-Nr.');
+                $heading = array('Pos', 'Artikel', 'Artikel-Nr.','Menge Lieferschein', 'Menge in Versandpaketen', 'Paket-Nr.','');
                 $width = array('10%','10%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -567,19 +567,25 @@ class Versandpakete {
               $selectedIds[] = $selectedId;
             }
           }          
-
-          $status = $this->app->Secure->GetPOST('status');
-          
+          $status = $this->app->Secure->GetPOST('status');          
           $sql = "UPDATE versandpakete SET status = '".$status."'";
           $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
           $this->app->DB->Update($sql);
         }     
-        $this->versandpakete_list();
+
+        $from = $this->app->Secure->GetGET('from');        
+        if ($from == "lieferung") {
+            $this->versandpakete_lieferung();
+        }
+        else {
+            $this->versandpakete_list();
+        }
     }
 
     function versandpakete_lieferungen() {
         $this->versandpakete_menu();
         $this->app->YUI->TableSearch('TAB1', 'versandpakete_lieferscheine', "show", "", "", basename(__FILE__), __CLASS__);
+        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Lieferungen');
         $this->app->Tpl->Parse('PAGE', "versandpakete_lieferungen.tpl");
     }    
 
@@ -587,6 +593,7 @@ class Versandpakete {
         $lieferschein_filter = (int) $this->app->Secure->GetGET('id');        
         $this->versandpakete_menu();
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=add&lieferschein=".$lieferschein_filter, "Neu anlegen");
+        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferung&id=".$lieferschein_filter, "Details");        
         $this->app->User->SetParameter('versandpakete_lieferschein_filter',$lieferschein_filter);
         $this->versandpakete_status_select();
 
@@ -616,6 +623,8 @@ class Versandpakete {
             }
         }
    
+        $this->app->Tpl->Set('FROMID', $lieferschein_filter);
+
         $this->app->YUI->TableSearch('TAB1', 'lieferung_versandpakete_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "versandpakete_lieferung.tpl");
     }    
@@ -652,7 +661,9 @@ class Versandpakete {
         if ($lieferung) {
             $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferung&id=".$lieferung, "Zur&uuml;ck");        
         }
+
         $this->versandpakete_menu();
+        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");        
 
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('versandpakete',$id))
@@ -825,8 +836,10 @@ class Versandpakete {
     }
 
     function versandpakete_add() {     
-        $this->versandpakete_menu();
         $id = $this->app->Secure->GetGET('id');
+        $this->versandpakete_menu();
+        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");        
+        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Artikel hinzuf&uuml;gen');
         if (empty($id)) { 
             $lieferschein = $this->app->Secure->GetGET('lieferschein'); 
             if (empty($lieferschein)) {               
@@ -838,6 +851,7 @@ class Versandpakete {
                 $sql = "INSERT INTO versandpakete (status, versender) VALUES ('neu','".$this->app->User->GetName()."')";
                 $this->app->DB->Insert($sql);
                 $id = $this->app->DB->GetInsertId();  
+                $this->app->Tpl->addMessage('success', 'Versandpaket Paket Nr. '.$id.' wurde erstellt.', false, 'MESSAGE');
             }
         } else { // $id not empty
             $lieferschein_input = $this->app->Secure->GetPOST('lieferschein');
