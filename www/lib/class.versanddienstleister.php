@@ -128,7 +128,7 @@ abstract class Versanddienstleister
       if (!empty($docArr['ihrebestellnummer'])) {
         $orderNumberParts[] = $docArr['ihrebestellnummer'];
       }
-      $orderNumberParts[] = $docArr['belegnr'];
+      $orderNumberParts[] = ucfirst($sid)." ".$docArr['belegnr'];
       $ret['order_number'] = implode(' / ', $orderNumberParts);
     }
 
