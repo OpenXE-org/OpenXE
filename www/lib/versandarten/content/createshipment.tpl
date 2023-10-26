@@ -137,7 +137,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                 <h2>{|Paket|}</h2>
                 <table>
                     <tr>
-                        <td>{|Gewicht (in kg)|}:</td>
+                        <td>{|Gewicht (in kg)</b>|}:</td>
                         <td><input type="text" v-model.number="form.weight"></td>
                     </tr>
                     <tr>
@@ -157,7 +157,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                         <td>
                             <select v-model="form.product" required>
                                 <option v-for="prod in products" :value="prod.Id" v-if="productAvailable(prod)">{{prod.Name}}</option>
-                            </select>
+                            </select><i>F&uuml;r Produktwahl Gewicht eingeben!</i>
                         </td>
                     </tr>
                     <tr v-if="serviceAvailable('premium')">
