@@ -287,72 +287,14 @@ class Versandpakete {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',id,'\" />') AS `auswahl`";
                 $menucol = 1;             
                 $moreinfoaction = "lieferschein";
                 $moreinfo = true; // Allow drop down details        
                 $aligncenter = [5,6,7,8,9,10];
 
-                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
+                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";                
 
-                $sql_lieferschein_position = "
-                            SELECT
-                                l.id,
-                                l.belegnr,
-                                l.name,
-                                lp.menge lmenge,
-                                SUM(vlp.menge) vmenge,
-                                BIT_OR(COALESCE(v.status,0) IN ('versendet')) AS eins_versendet,
-                                BIT_AND(COALESCE(v.status,0) IN ('versendet')) AS alle_versendet,
-                                BIT_OR(COALESCE(v.status,0) IN ('abgeschlossen')) AS eins_abgeschlossen,
-                                BIT_AND(COALESCE(v.status,0) IN ('abgeschlossen')) AS alle_abgeschlossen
-                            FROM
-                                lieferschein l
-                            INNER JOIN lieferschein_position lp ON lp.lieferschein = l.id
-                            INNER JOIN artikel a ON lp.artikel = a.id
-                            LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
-                            LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
-                            WHERE
-                                l.belegnr <> '' AND 
-                                (v.status <> 'storniert' OR v.status IS NULL) AND
-                                a.lagerartikel
-                            GROUP BY lp.id
-                ";
-
-                $sql_lieferschein = "
-                    SELECT 
-                        id,
-                        belegnr,
-                        name,
-                        SUM(lmenge) lmenge,
-                        SUM(COALESCE(vmenge,0)) vmenge,
-                        eins_versendet,
-                        alle_versendet,
-                        eins_abgeschlossen,
-                        alle_abgeschlossen
-                    FROM (
-                        ".$sql_lieferschein_position."
-                    ) lp
-                    GROUP BY id
-                ";
-
-                $sql = "                        
-                        SELECT SQL_CALC_FOUND_ROWS
-                            id,
-                            ".$dropnbox.",
-                            CONCAT('<a href=\"index.php?module=lieferschein&action=edit&id=',id,'\">',belegnr,'</a>'),
-                            name,
-                            ".$app->erp->FormatMenge("lmenge").",
-                            ".$app->erp->FormatMenge("vmenge").",
-                            ".$app->YUI->IconsSQL_lieferung().",  
-                            if(vmenge=0,'',CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>')),
-                            id,
-                            alle_abgeschlossen
-                        FROM (
-                            ".$sql_lieferschein."
-                        ) l                        
-                       ";
-
+                $sql = Versandpakete::versandpakete_lieferstatus_sql($app);
                 $where = "";
 
                 // Toggle filters
@@ -1185,6 +1127,71 @@ class Versandpakete {
 	$this->app->Tpl->Set('BEMERKUNG', $input['bemerkung']);
 	$this->app->Tpl->Set('STATUS', $input['status']);
 	
+    }
+
+    static function versandpakete_lieferstatus_sql($app) {
+
+      $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',id,'\" />') AS `auswahl`";
+
+      $sql_lieferschein_position = "
+                            SELECT
+                                l.id,
+                                l.belegnr,
+                                l.name,
+                                lp.menge lmenge,
+                                SUM(vlp.menge) vmenge,
+                                BIT_OR(COALESCE(v.status,0) IN ('versendet')) AS eins_versendet,
+                                BIT_AND(COALESCE(v.status,0) IN ('versendet')) AS alle_versendet,
+                                BIT_OR(COALESCE(v.status,0) IN ('abgeschlossen')) AS eins_abgeschlossen,
+                                BIT_AND(COALESCE(v.status,0) IN ('abgeschlossen')) AS alle_abgeschlossen
+                            FROM
+                                lieferschein l
+                            INNER JOIN lieferschein_position lp ON lp.lieferschein = l.id
+                            INNER JOIN artikel a ON lp.artikel = a.id
+                            LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
+                            LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
+                            WHERE
+                                l.versand_status <> 0 AND
+                                l.belegnr <> '' AND 
+                                (v.status <> 'storniert' OR v.status IS NULL) AND
+                                a.lagerartikel
+                            GROUP BY lp.id
+                ";
+
+                $sql_lieferschein = "
+                    SELECT 
+                        id,
+                        belegnr,
+                        name,
+                        SUM(lmenge) lmenge,
+                        SUM(COALESCE(vmenge,0)) vmenge,
+                        eins_versendet,
+                        alle_versendet,
+                        eins_abgeschlossen,
+                        alle_abgeschlossen
+                    FROM (
+                        ".$sql_lieferschein_position."
+                    ) lp
+                    GROUP BY id
+                ";
+
+                $sql = "                        
+                        SELECT SQL_CALC_FOUND_ROWS
+                            id,
+                            ".$dropnbox.",
+                            CONCAT('<a href=\"index.php?module=lieferschein&action=edit&id=',id,'\">',belegnr,'</a>'),
+                            name,
+                            ".$app->erp->FormatMenge("lmenge").",
+                            ".$app->erp->FormatMenge("vmenge").",
+                            ".$app->YUI->IconsSQL_lieferung().",  
+                            if(vmenge=0,'',CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>')),
+                            id,
+                            alle_abgeschlossen
+                        FROM (
+                            ".$sql_lieferschein."
+                        ) l                        
+                       ";
+        return($sql);
     }
 
 }

@@ -5694,8 +5694,13 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
 
         $this->app->DB->Update("UPDATE lieferschein SET 
-            belegnr='$ls_belegnr', status='freigegeben', versand='".$this->app->User->GetDescription()."' 
-            WHERE id='$lieferschein' LIMIT 1");
+                                    belegnr='$ls_belegnr',  
+                                    status='freigegeben',
+                                    versand='".$this->app->User->GetDescription()."',
+                                    versand_status = 1
+                                WHERE id='$lieferschein' LIMIT 1");
+
+        // Versand_status: 1 = process in versandpakete, 2 = finished, 3 = finished manually
 
         $this->app->erp->LieferscheinProtokoll($lieferschein, 'Lieferschein freigegeben');
 
@@ -6342,7 +6347,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=list','&Uuml;bersicht');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=create','Neuen Auftrag anlegen');
     $this->app->erp->MenuEintrag('index.php?module=auftrag&action=offene','Offene Positionen');
-    $this->app->erp->MenuEintrag('index.php?module=auftrag&action=versandzentrum','Versandzentrum');
+    $this->app->erp->MenuEintrag('index.php?module=auftrag&action=versandzentrum','Versand&uuml;bergabe');
 
     if(strlen($backurl)>5){
       $this->app->erp->MenuEintrag("$backurl", 'Zur&uuml;ck zur &Uuml;bersicht');
@@ -6387,7 +6392,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->AuftraguebersichtMenu();
     $targetMessage = 'AUTOVERSANDBERECHNEN';
 
-    $this->app->Tpl->Add('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand.</div>');
+    $this->app->Tpl->Add('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand. <a class="button" href="index.php?module=versandpakete&action=lieferungen">Zum Versand</a></div>');
 
     $autoshipmentEnabled = true;
     $this->app->erp->RunHook('OrderAutoShipment', 2, $targetMessage, $autoshipmentEnabled);

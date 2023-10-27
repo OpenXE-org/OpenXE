@@ -5817,12 +5817,8 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
           }
         }
         // Fester filter
-        $more_data6 = $this->app->Secure->GetGET("more_data6");
-        $more_data7 = $this->app->Secure->GetGET("more_data7");
-        $more_data8 = $this->app->Secure->GetGET("more_data8");
-        
         $more_data4 = $this->app->Secure->GetGET("more_data4");
-
+/*
         $versandjoin = "";
         if(isset($parameter['offenversandzentrum'])  && !empty($parameter['offenversandzentrum']))
         {
@@ -5856,8 +5852,8 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         }
         
         if($versandjoin)$sql .= $versandjoin;
-        
-        
+        */
+       
         if($more_data4 || (isset($parameter['ohnerechnung']) && !empty($parameter['ohnerechnung']))) {
 
             $paramsArray[] = " l.status !='storniert' ";
@@ -5932,6 +5928,21 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         if ($more_data3 == 1) $subwhere[] = " l.lieferantenretoure=1 ";
 
         // ENDE EXTRA more
+        $more_data6 = $this->app->Secure->GetGET("more_data6");
+        $more_data7 = $this->app->Secure->GetGET("more_data7"); 
+        $more_data8 = $this->app->Secure->GetGET("more_data8"); 
+        
+        if ($more_data6) {            
+            $subwhere[] = "l.versand_status = 3";
+        }
+        if ($more_data7) {
+            $subwhere[] = "l.versand_status = 1";
+        }
+        if ($more_data8) {
+            $subwhere[] = "l.versand_status IN (2,3)";
+        }
+
+
         for ($j = 0;$j < (empty($subwhere)?0:count($subwhere));$j++) $tmp.= " AND " . $subwhere[$j];
         $where = " l.id!='' AND l.status!='angelegt' $tmp " . $this->app->erp->ProjektRechte('p.id', true, 'l.vertriebid');
 
