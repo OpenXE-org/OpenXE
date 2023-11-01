@@ -23,6 +23,9 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             [MODULEINSTALLIERT]
         </fieldset>
         [TAB1NEXT]
+        <form id="neu" action="index.php?module=versandarten&action=neusonstige" method="post">
+            <button name="submit" value="neusonstige" class="ui-button-icon">Versandart ohne Modul anlegen</button>
+        </form>
     </div>
 
 <!-- tab view schließen -->
