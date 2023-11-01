@@ -169,8 +169,8 @@ class Versandarten {
     if($submit != '') { // handle form submit
       $form = $this->GetInput();
       $obj = $this->loadModule($form['modul'], $id);
-      if ($obj === null)
-        $error[] = sprintf('Versandart "%s" existiert nicht.', $form['selmodul']);
+/*      if ($obj === null)
+        $error[] = sprintf('Versandart "%s" existiert nicht.', $form['selmodul']); */
 
       if(trim($form['bezeichnung']) == '')
         $error[] = 'Bitte eine Bezeichnung angeben!';
