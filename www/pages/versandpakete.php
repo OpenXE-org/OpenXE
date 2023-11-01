@@ -540,15 +540,10 @@ class Versandpakete {
         $this->versandpakete_status_select();
 
         $sql = "SELECT 
-                    versandpaket,
                     belegnr,
                     l.name
                 FROM 
-                    versandpaket_lieferschein_position vlp 
-                INNER JOIN 
-                    lieferschein_position lp ON lp.id = vlp.lieferschein_position
-                INNER JOIN
-                    lieferschein l ON l.id = lp.lieferschein 
+                    lieferschein l
                 WHERE l.id = ".$lieferschein_filter." LIMIT 1";
 
         $info = $this->app->DB->SelectArr($sql);
@@ -557,10 +552,11 @@ class Versandpakete {
             $this->app->Tpl->Set('BELEGNR', $info[0]['belegnr']);
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $info[0]['name']." Lieferung ".$info[0]['belegnr']);
 
-            if ($this->versandpakete_check_completion($info[0]['versandpaket'])) {
+            $complete = $this->versandpakete_check_completion($lieferschein_filter, null);
+            if ($complete === true) {
                 $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
             }
-            else {
+            else if ($complete === false) {
                 $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
             }
         }
@@ -640,10 +636,9 @@ class Versandpakete {
 
                 $sql = "SELECT status FROM versandpakete WHERE id = ".$id;
                 $input['status'] = $this->app->DB->SelectArr($sql)[0]['status'];
-
                 if ($input['status'] != 'neu') {
                     $input = Array('bemerkung' => $input['bemerkung']);
-                }
+                } 
 
                 $columns = "id, ";
                 $values = "$id, ";
@@ -672,7 +667,7 @@ class Versandpakete {
          
         // Load values again from database
 	    $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',v.id,'\" />') AS `auswahl`";
-        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS v.id, $dropnbox, ".$this->app->erp->FormatDate('datum')." as datum, v.versand, v.versandart, v.nr, v.tracking, v.tracking_link, v.versender, v.gewicht, v.bemerkung, v.status, v.id FROM versandpakete v"." WHERE id=$id");
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS v.id, $dropnbox, ".$this->app->erp->FormatDate('datum')." as datum, v.versand, v.versandart, v.nr, v.tracking, v.tracking_link, v.versender, v.gewicht, v.bemerkung, v.status, v.id FROM versandpakete v"." WHERE id=$id");        
 
         foreach ($result[0] as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
@@ -733,7 +728,7 @@ class Versandpakete {
         } else {
              $this->app->Tpl->Set('PAKETMARKE_HIDDEN', 'hidden');
              $this->app->Tpl->Set('ABSENDEN_HIDDEN', 'hidden');
-        }
+        }        
 
         $file_attachments = $this->app->erp->GetDateiSubjektObjekt('paketmarke','versandpaket',$id);         
         if (!empty($file_attachments)) {
@@ -766,10 +761,11 @@ class Versandpakete {
         $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Set('ICONS', $icons[0]['icons']);
 
-        if ($this->versandpakete_check_completion($id)) {
+        $complete = $this->versandpakete_check_completion(null, $id);
+        if ($complete === true) {
             $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
         }
-        else {
+        else if ($complete === false) {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
 
@@ -931,10 +927,11 @@ class Versandpakete {
         $this->app->User->SetParameter('versandpakete_lieferschein', $lieferschein);
         $this->app->User->SetParameter('versandpakete_versandpaket', $id);
 
-        if ($this->versandpakete_check_completion($id)) {
+        $complete = $this->versandpakete_check_completion($lieferschein,null);
+        if ($complete === true) {
             $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
         }
-        else {
+        else if ($complete === false) {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
 
@@ -944,14 +941,24 @@ class Versandpakete {
         $this->app->Tpl->Parse('PAGE', "versandpakete_add.tpl");
     }
 
-    function versandpakete_check_completion($id) : bool {
-        $sql_lieferschein = "
-            SELECT DISTINCT
-                lieferschein
-            FROM
-                versandpaket_lieferschein_position vlp
-            INNER JOIN lieferschein_position lp ON vlp.lieferschein_position = lp.id
-            WHERE versandpaket = ".$id;
+    // null if versandpaket not associated with lieferschein
+    function versandpakete_check_completion($lieferung, $versandpaket) : ?bool {
+
+        if (!empty($lieferung)) {
+            $sql_where_lieferung = " AND l.id = ".$lieferung;
+        } else {   
+            $sql_join_lieferschein = "
+                INNER JOIN (
+                    SELECT DISTINCT
+                        lieferschein
+                    FROM
+                        versandpaket_lieferschein_position vlp
+                    INNER JOIN lieferschein_position lp ON vlp.lieferschein_position = lp.id
+                    WHERE versandpaket = ".$versandpaket."
+                ) lieferschein_filter
+                ON lieferschein_filter.lieferschein = lp.lieferschein
+            ";
+        }
        
         $sql_lieferschein_mengen = "
             SELECT 
@@ -964,11 +971,10 @@ class Versandpakete {
                 artikel a ON a.id = lp.artikel
             INNER JOIN
                 lieferschein l on l.id = lp.lieferschein
-            INNER JOIN
-                (".$sql_lieferschein.") lieferschein_filter
-            ON lieferschein_filter.lieferschein = lp.lieferschein
+            ".$sql_join_lieferschein."
             WHERE 
                 a.lagerartikel
+            ".$sql_where_lieferung."
             GROUP BY 
                 lp.id
         ";
@@ -1015,9 +1021,12 @@ class Versandpakete {
         if (!empty($completion)) {
             if ($completion[0]['lmenge'] == $completion[0]['vmenge']) {
                 return(true);
-            }       
+            } else {
+                return(false);
+            }      
+        } else {
+            return(null);
         }
-        return(false);
     }    
 
     function versandpakete_minidetail() {
@@ -1109,24 +1118,8 @@ class Versandpakete {
     public function GetInput(): array {
         $input = array();
     	$input['gewicht'] = $this->app->Secure->GetPOST('gewicht');
-    	$input['bemerkung'] = $this->app->Secure->GetPOST('bemerkung');     	
+    	$input['bemerkung'] = $this->app->Secure->GetPOST('bemerkung');
         return $input;
-    }
-
-    /*
-     * Set all fields in the page corresponding to $input
-     */
-    function SetInput($input) {
-        // $this->app->Tpl->Set('EMAIL', $input['email']);        
-        
-        $this->app->Tpl->Set('VERSAND', $input['versand']);
-	$this->app->Tpl->Set('NR', $input['nr']);
-	$this->app->Tpl->Set('TRACKING', $input['tracking']);
-	$this->app->Tpl->Set('VERSENDER', $input['versender']);
-	$this->app->Tpl->Set('GEWICHT', $input['gewicht']);
-	$this->app->Tpl->Set('BEMERKUNG', $input['bemerkung']);
-	$this->app->Tpl->Set('STATUS', $input['status']);
-	
     }
 
     static function versandpakete_lieferstatus_sql($app) {
