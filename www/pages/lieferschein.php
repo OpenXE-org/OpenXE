@@ -2285,6 +2285,18 @@ class Lieferschein extends GenLieferschein
               }
             }
           break;
+          case 'versanduebergabe':
+            if(!empty($selectedIds)) {
+              $this->app->DB->Update(
+                sprintf(
+                  "UPDATE `lieferschein` 
+                  SET `versand_status` = 1
+                  WHERE `id` IN (%s) AND `versand_status` = 0",
+                  implode(',' , $selectedIds)
+                )
+              );
+            }
+          break;
         }
       }      
     }

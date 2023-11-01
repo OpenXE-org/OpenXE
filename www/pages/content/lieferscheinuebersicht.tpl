@@ -29,6 +29,7 @@
 <option value="offen">{|als offen markieren|}</option>
 <option value="versendet">{|als versendet markieren|}</option>
 <option value="storniert">{|als storniert markieren|}</option>
+<option value="versanduebergabe">{|in Versand geben|}</option>
 <option value="pdf">{|Sammel-PDF|}</option>
 <option value="drucken">{|drucken|}</option>
 </select>&nbsp;{|Drucker|}: <select name="seldrucker">[SELDRUCKER]</select>&nbsp;<input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />
