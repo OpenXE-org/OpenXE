@@ -70,13 +70,13 @@ class Versandpakete {
             case "lieferung_versandpakete_list":
                 $lieferschein_filter = $app->User->GetParameter('versandpakete_lieferschein_filter');
                 if ($lieferschein_filter) {
-                    $lieferschein_filter_where = "WHERE lieferschein = ".$lieferschein_filter;
+                    $lieferschein_filter_where = "WHERE lieferschein = ".$lieferschein_filter." OR lieferschein_ohne_pos = ".$lieferschein_filter;
                     $lieferung_link = "&lieferung=".$lieferschein_filter;
                 }
             // break omitted intentionally
             case "versandpakete_list":
                 $allowed['versandpakete_list'] = array('list');
-                $heading = array('',  '',  'Paket-Nr.','Datum','Adresse', 'Lieferschein', 'Versandart', 'Tracking', 'Menge auf Lieferscheinen', 'Menge', 'Gewicht','Versender', 'Bemerkung', 'Status', 'Monitor', 'Men&uuml;', '');
+                $heading = array('',  '',  'Paket-Nr.','Datum','Adresse', 'Lieferung', 'Versandart', 'Tracking', 'Menge auf Lieferscheinen', 'Menge', 'Gewicht','Versender', 'Bemerkung', 'Status', 'Monitor', 'Men&uuml;', '');
                 $width = array(  '1%','1%','1%',       '1%',   '10%',     '1%',           '2%',         '2%',       '1%',                       '1%',    '1%',     '2%',        '10%',       '1%',     '1%',      '1%',        '1%');
 
                 // columns that are aligned right (numbers etc)
@@ -115,8 +115,16 @@ class Versandpakete {
                     '</a>'     
                 );
 
-                $lieferschein_ohne_pos_link = array(
-                    '<a href="index.php?module=lieferschein&action=edit&id=',
+                $lieferung_link = array(
+                    '<a href="index.php?module=versandpakete&action=lieferung&id=',
+                    ['sql' => 'l.id'],
+                    '">',
+                    ['sql' => 'l.belegnr'],
+                    '</a>'     
+                );
+
+                $lieferung_ohne_pos_link = array(
+                    '<a href="index.php?module=versandpakete&action=lieferung&id=',
                     ['sql' => 'lop.id'],
                     '">',
                     ['sql' => 'lop.belegnr'],
@@ -197,7 +205,7 @@ class Versandpakete {
                             v.id,
                             v.datum,
                             if(lop.id IS NOT NULL,lop.name,l.name) AS name,
-                            if(lop.id IS NOT NULL,".$app->erp->ConcatSQL($lieferschein_ohne_pos_link).", GROUP_CONCAT(".$app->erp->ConcatSQL($lieferschein_link)." SEPARATOR ', ')) AS lieferscheine,
+                            if(lop.id IS NOT NULL,".$app->erp->ConcatSQL($lieferung_ohne_pos_link).", GROUP_CONCAT(".$app->erp->ConcatSQL($lieferung_link)." SEPARATOR ', ')) AS lieferscheine,
                             v.versandart,
                             tracking,
                             tracking_link,
@@ -275,7 +283,7 @@ class Versandpakete {
 
                 $allowed['versandpakete_lieferscheine'] = array('lieferscheine');
                 
-                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Monitor','Pakete','Paket erstellen');
+                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Monitor','Pakete','Paket hinzuf&uuml;gen');
                 $width = array(  '1%','1%',     '10%',          '10%',    '10%',  '10%',                    '1%',     '1%',    '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -556,7 +564,7 @@ class Versandpakete {
             if ($complete === true) {
                 $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
             }
-            else if ($complete === false) {
+            else {
                 $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
             }
         }
@@ -583,7 +591,7 @@ class Versandpakete {
         $sql = "DELETE vlp FROM `versandpaket_lieferschein_position` vlp INNER JOIN versandpakete v ON vlp.versandpaket = v.id WHERE vlp.`id` = '{$pos}' AND v.status = 'neu'";
 
         $this->app->DB->Delete($sql);        
-        header("Location: index.php?module=versandpakete&action=edit&id=".$id);
+        $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id);
     } 
 
     /*
@@ -620,7 +628,7 @@ class Versandpakete {
             $sql = "INSERT INTO versandpakete (status, versender) VALUES ('neu','".$this->app->User->GetName()."')";
             $this->app->DB->Insert($sql);
             $id = $this->app->DB->GetInsertId();                
-            header("Location: index.php?module=versandpakete&action=edit&id=".$id);
+            $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id);
         } 
 
         // Check versandart
@@ -635,10 +643,14 @@ class Versandpakete {
                 // Add checks here
 
                 $sql = "SELECT status FROM versandpakete WHERE id = ".$id;
-                $input['status'] = $this->app->DB->SelectArr($sql)[0]['status'];
-                if ($input['status'] != 'neu') {
+                $input['status'] = $this->app->DB->SelectArr($sql)[0]['status']; // Status is not changeable
+                if ($input['status'] != 'neu') { 
                     $input = Array('bemerkung' => $input['bemerkung']);
                 } 
+                if (!empty($paket_db['tracking'])) { // Tracking is not changeable
+                    unset($input['tracking']);
+                    unset($input['tracking_link']);
+                }
 
                 $columns = "id, ";
                 $values = "$id, ";
@@ -690,29 +702,33 @@ class Versandpakete {
         }
         $sql = "SELECT 
                     lieferschein_ohne_pos,
-                    belegnr,
-                    lieferschein_position,
+                    l.belegnr,
+                    lop.belegnr lieferschein_ohne_pos_belegnr,
+                    GROUP_CONCAT(lieferschein_position) lieferschein_position,
                     l.versandart
                 FROM versandpakete v 
                 LEFT JOIN lieferschein l ON v.lieferschein_ohne_pos = l.id 
                 LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id 
-                WHERE v.id = ".$id;
+                LEFT JOIN lieferschein lop ON lop.id = v.lieferschein_ohne_pos
+                WHERE v.id = ".$id."
+                GROUP BY v.id
+                ";
         $lieferschein_check = $this->app->DB->SelectArr($sql);  
-     
+
         if (empty($lieferschein_check[0]['lieferschein_position']) && empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {
             $this->app->Tpl->Set('NO_ADDRESS_HIDDEN', 'hidden');                            
             $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');  
         }
         if (empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {
             $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS_HIDDEN', 'hidden');                
-        } else {
-            $this->app->Tpl->Set('LIEFERSCHEIN_ADD_POS_HIDDEN', 'hidden');
         }
-        if (empty($lieferschein_check[0]['lieferschein_position'])) {         
-            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS', $lieferschein_check[0]['belegnr']);      
+        if (!empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {         
+            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS', $lieferschein_check[0]['lieferschein_ohne_pos_belegnr']);      
             $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS_ID', $lieferschein_check[0]['lieferschein_ohne_pos']); 
-            $this->app->Tpl->Set('LIEFERSCHEIN_POS_HIDDEN', 'hidden');      
         } 
+        if (empty($lieferschein_check[0]['lieferschein_position'])) {
+            $this->app->Tpl->Set('LIEFERSCHEIN_POS_HIDDEN', 'hidden');      
+        }
         if ($result[0]['status'] != 'neu') {
             $this->app->Tpl->Set('LIEFERSCHEIN_ADD_POS_HIDDEN', 'hidden');
             $this->app->Tpl->Set('LIEFERSCHEIN_GEWICHT_DISABLED', 'disabled');
@@ -725,9 +741,18 @@ class Versandpakete {
         }
         if (!empty($result[0]['tracking'])) {
              $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
-        } else {
-             $this->app->Tpl->Set('PAKETMARKE_HIDDEN', 'hidden');
+        } else {         
              $this->app->Tpl->Set('ABSENDEN_HIDDEN', 'hidden');
+        }
+        if (empty($result[0]['tracking_link'])) {        
+             $this->app->Tpl->Set('TRACKING_LINK_HIDDEN', 'hidden');
+        }
+
+        $versandart = $this->app->DB->SelectRow("SELECT va.id, va.modul FROM versandpakete vp INNER JOIN versandarten va ON vp.versandart = va.type WHERE vp.id = ".$id." LIMIT 1");
+        if (empty($versandart['modul']) || empty($versandart['id'])) {
+            $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
+        } else {
+            $this->app->Tpl->Set('TRACKING_DISABLED', 'disabled');
         }        
 
         $file_attachments = $this->app->erp->GetDateiSubjektObjekt('paketmarke','versandpaket',$id);         
@@ -735,6 +760,8 @@ class Versandpakete {
           foreach ($file_attachments as $file_attachment) {
               $this->app->Tpl->Add('PAKETMARKE_LINK', "index.php?module=dateien&action=send&id=".$file_attachment);
           }
+        } else {
+            $this->app->Tpl->Set('PAKETMARKE_HIDDEN', 'hidden');
         }
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS
@@ -775,6 +802,8 @@ class Versandpakete {
 
     function versandpakete_add() {     
         $id = $this->app->Secure->GetGET('id');
+        $input = $this->GetInput();
+
         $this->versandpakete_menu();
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");        
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Artikel hinzuf&uuml;gen');
@@ -782,22 +811,56 @@ class Versandpakete {
             $lieferschein = $this->app->Secure->GetGET('lieferschein'); 
             if (empty($lieferschein)) {               
                 $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
-                header("Location: index.php?module=versandpakete&action=list&msg=$msg");
+                $this->app->Location->execute("Location: index.php?module=versandpakete&action=list&msg=$msg");
             } else {
                 $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein, false); // Parameters: Target db?, value, from form?
-                /* Create new paket and add the given lieferschein */       
-                $sql = "INSERT INTO versandpakete (status, versender) VALUES ('neu','".$this->app->User->GetName()."')";
-                $this->app->DB->Insert($sql);
-                $id = $this->app->DB->GetInsertId();  
-                $this->app->Tpl->addMessage('success', 'Versandpaket Paket Nr. '.$id.' wurde erstellt.', false, 'MESSAGE');
+
+                // Check if there is an unused paket waiting... 
+                $sql = "SELECT 
+                            v.id,
+                            lieferschein_ohne_pos,
+                            l.id AS lieferschein_mit_pos
+                        FROM
+                            versandpakete v 
+                        LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
+                        LEFT JOIN lieferschein_position lp ON vlp.lieferschein_position = lp.id
+                        LEFT JOIN lieferschein l on l.id = lp.lieferschein
+                        WHERE
+                            v.status = 'neu' AND
+                            l.id IS NULL AND
+                            v.lieferschein_ohne_pos = ".$lieferschein."
+                            LIMIT 1
+                ";
+                $waiting_paket = $this->app->DB->SelectArr($sql);
+
+                if (!empty($waiting_paket)) {
+                    // Use existing
+                    echo("use old");
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$waiting_paket[0]['id']." wurde zugeordnet.</div>");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&id=".$waiting_paket[0]['id']."&lieferschein=".$lieferschein."&msg=$msg");                    
+                }
+                else {
+                    // Create new paket and add the given lieferschein
+                    echo("nake new");       
+                    $sql = "INSERT INTO versandpakete (status, lieferschein_ohne_pos, versender) VALUES ('neu',".$lieferschein.",'".$this->app->User->GetName()."')";
+                    $this->app->DB->Insert($sql);
+                    $id = $this->app->DB->GetInsertId();  
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$id." wurde erstellt.</div>");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&id=".$id."&lieferschein=".$lieferschein."&msg=$msg");
+                }
             }
         } else { // $id not empty
-            $lieferschein_input = $this->app->Secure->GetPOST('lieferschein');
-            $lieferschein = $this->app->erp->ReplaceLieferschein(true, $lieferschein_input, true); // Parameters: Target db?, value, from form?    
-            $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein_input, true); // Parameters: Target db?, value, from form?
-            if (empty($lieferschein_input)) {            
-                $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
-                header("Location: index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
+            $lieferschein_post = $this->app->Secure->GetPOST('lieferschein');
+            $lieferschein = $this->app->erp->ReplaceLieferschein(true, $lieferschein_post, true); // Parameters: Target db?, value, from form?           
+            $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein_post, true); // Parameters: Target db?, value, from form?
+            if (empty($lieferschein)) {     
+                $lieferschein = $this->app->Secure->GetGET('lieferschein');          
+                if (empty($lieferschein)) {     
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
+                }    
+                $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein, false); // Parameters: Target db?, value, from form?
+                $input['lieferschein'] = $lieferschein;
             }
         }      
         
@@ -809,10 +872,8 @@ class Versandpakete {
 
     	$artikel_input = $this->app->Secure->GetPOST('artikel');
         $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?   
-
     	$menge = $this->app->Secure->GetPOST('menge');             
         $this->app->Tpl->Set('ID', $id);      
-        $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');                   
    
         // Check Status
@@ -820,10 +881,7 @@ class Versandpakete {
         $result = $this->app->DB->SelectArr($sql);
         if ($result[0]['status'] != 'neu') {
             return;
-        }
-        if (!empty($result[0]['lieferschein_ohne_pos'])) {
-            return;
-        }
+        }      
 
         switch ($submit) {
             case 'hinzufuegen':    
@@ -912,7 +970,7 @@ class Versandpakete {
 
                 if ($buchmenge_gesamt > 0) {
                     $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Lieferschein hinzugef&uuml;gt.</div>");
-                    header("Location: index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
                 }
             break;
         }                 
@@ -931,7 +989,7 @@ class Versandpakete {
         if ($complete === true) {
             $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
         }
-        else if ($complete === false) {
+        else {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
 
@@ -1100,14 +1158,13 @@ class Versandpakete {
 
         $this->app->Tpl->Set('TABTEXT',"Paketmarke");
 
-        $result = $this->app->DB->SelectRow("SELECT va.id, va.modul FROM versandpakete vp INNER JOIN versandarten va ON vp.versandart = va.type LIMIT 1");
-
-        if (empty($result['modul']) || empty($result['id'])) {
+        $versandart = $this->app->DB->SelectRow("SELECT va.id, va.modul FROM versandpakete vp INNER JOIN versandarten va ON vp.versandart = va.type WHERE vp.id = ".$id." LIMIT 1");
+        if (empty($versandart['modul']) || empty($versandart['id'])) {
             $this->app->Tpl->addMessage('error', 'Bitte zuerst eine gültige Versandart auswählen', false, 'PAGE');
             return;
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
-        $versandmodul = $this->app->erp->LoadVersandModul($result['modul'], $result['id']);
+        $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
         $versandmodul->Paketmarke('TAB1', 'lieferschein', $lieferschein['lieferschein'], $id);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
@@ -1119,6 +1176,7 @@ class Versandpakete {
         $input = array();
     	$input['gewicht'] = $this->app->Secure->GetPOST('gewicht');
     	$input['bemerkung'] = $this->app->Secure->GetPOST('bemerkung');
+    	$input['tracking'] = $this->app->Secure->GetPOST('tracking');
         return $input;
     }
 
@@ -1133,6 +1191,7 @@ class Versandpakete {
                                 l.name,
                                 lp.menge lmenge,
                                 SUM(vlp.menge) vmenge,
+                                GROUP_CONCAT(vop.id) vop,
                                 BIT_OR(COALESCE(v.status,0) IN ('versendet')) AS eins_versendet,
                                 BIT_AND(COALESCE(v.status,0) IN ('versendet')) AS alle_versendet,
                                 BIT_OR(COALESCE(v.status,0) IN ('abgeschlossen')) AS eins_abgeschlossen,
@@ -1143,6 +1202,7 @@ class Versandpakete {
                             INNER JOIN artikel a ON lp.artikel = a.id
                             LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                             LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
+                            LEFT JOIN versandpakete vop ON vop.lieferschein_ohne_pos = l.id                            
                             WHERE
                                 l.versand_status <> 0 AND
                                 l.belegnr <> '' AND 
@@ -1161,7 +1221,8 @@ class Versandpakete {
                         eins_versendet,
                         alle_versendet,
                         eins_abgeschlossen,
-                        alle_abgeschlossen
+                        alle_abgeschlossen,
+                        vop
                     FROM (
                         ".$sql_lieferschein_position."
                     ) lp
@@ -1177,7 +1238,7 @@ class Versandpakete {
                             ".$app->erp->FormatMenge("lmenge").",
                             ".$app->erp->FormatMenge("vmenge").",
                             ".$app->YUI->IconsSQL_lieferung().",  
-                            if(vmenge=0,'',CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>')),
+                            if(vmenge > 0 OR vop IS NOT NULL,CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>'),''),
                             id,
                             alle_abgeschlossen
                         FROM (

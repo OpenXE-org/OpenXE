@@ -45,12 +45,12 @@
                                             {|Tracking|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="" id="" value="[TRACKING]" size="40" disabled>
+                                            <input type="text" name="tracking" id="tracking" value="[TRACKING]" size="40" [TRACKING_DISABLED]>
                                             <a href="[PAKETMARKE_LINK]" [PAKETMARKE_HIDDEN]>
-                                                <img src="themes/new/images/portogo.png" border="0" style="top:6px; position:relative">
+                                                <img src="themes/new/images/portogo.png" border="0" title="Zur Paketmarke" style="top:6px; position:relative">
                                             </a>
-                                            <a href="[TRACKING_LINK]" [PAKETMARKE_HIDDEN]>
-                                                <img src="themes/new/images/forward.svg" border="0" style="top:6px; position:relative">
+                                            <a href="[TRACKING_LINK]" [TRACKING_LINK_HIDDEN]>
+                                                <img src="themes/new/images/forward.svg" border="0" title="Zum Tracking" style="top:6px; position:relative">
                                             </a>
                                         </td>
                                     </tr>
@@ -81,16 +81,16 @@
                                 <table width="100%" border="0" class="mkTableFormular"> 
                                     <tr [LIEFERSCHEIN_OHNE_POS_HIDDEN]>
                                         <td>
-                                            {|Lieferschein ohne Positionen|}:
+                                            {|Zugeordnet|}:
                                         </td>
                                         <td>
                                             <input form="add" type="text" name="" id="" value="[LIEFERSCHEIN_OHNE_POS]" size="40" disabled>
-                                            <a href="index.php?module=lieferschein&action=edit&id=[LIEFERSCHEIN_OHNE_POS_ID]"><img src="themes/new/images/forward.svg" border="0" style="top:6px; position:relative"></a>
+                                            <a href="index.php?module=lieferschein&action=edit&id=[LIEFERSCHEIN_OHNE_POS_ID]"><img src="themes/new/images/forward.svg" title="Zum Lieferschein" border="0" style="top:6px; position:relative"></a>
                                         </td>
                                     </tr>      
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]>
                                         <td>
-                                            {|Artikel von Lieferschein hinzuf&uuml;gen|}:
+                                            {|Lieferschein für Artikel hinzuf&uuml;gen|}:
                                         </td>
                                         <td>
                                             <input form="add" type="text" name="lieferschein" id="lieferschein" value="[LIEFERSCHEIN]" autofocus size="40">

@@ -3665,8 +3665,8 @@ class YUI {
                 WHEN status = 'storniert' THEN '$storniert'
             ELSE CONCAT(                                
                 CASE 
-                    WHEN lieferschein_ohne_pos <> '' THEN '$lieferschein_ohne_pos'
                     WHEN lieferscheine <> '' AND vmenge = lmenge THEN '$lieferschein_voll'
+                    WHEN lieferscheine <> '' AND vmenge IS NULL THEN '$lieferschein_ohne_pos'
                     WHEN lieferscheine <> '' THEN '$lieferschein_teil'
                 ELSE 
                     '$lieferschein_kein'
