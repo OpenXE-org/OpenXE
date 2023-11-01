@@ -37,7 +37,7 @@
 <tr><td class="auftraginfo_cell">{|Bestellung|}:</td><td class="auftraginfo_cell" >[BESTELLUNG]</td><td class="auftraginfo_cell">{|Eigene Umsatzsteuer ID|}:</td><td class="auftraginfo_cell">[DELIVERYTHRESHOLDVATID]</td></tr>
 <tr><td class="auftraginfo_cell">{|Retoure|}:</td><td class="auftraginfo_cell" >[RETOURE]</td><td class="auftraginfo_cell"></td><td class="auftraginfo_cell"></td></tr>
 <tr><td class="auftraginfo_cell">{|Preisanfrage|}:</td><td class="auftraginfo_cell" >[PREISANFRAGE]</td><td class="auftraginfo_cell"></td><td class="auftraginfo_cell"></td></tr>
-<tr><td class="auftraginfo_cell">{|Tracking|}:</td><td class="auftraginfo_cell" >[TRACKING]</td><td class="auftraginfo_cell"></td><td class="auftraginfo_cell"></td></tr>
+<tr><td class="auftraginfo_cell">{|Pakete|}:</td><td class="auftraginfo_cell" >[TRACKING]</td><td class="auftraginfo_cell"></td><td class="auftraginfo_cell"></td></tr>
 </table>
 
 <table width="100%">

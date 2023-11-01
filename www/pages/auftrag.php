@@ -2270,7 +2270,7 @@ class Auftrag extends GenAuftrag
       }
       $this->app->Tpl->Set('PREISANFRAGE', implode('<br />', $priceRequestsHtml));
     }
-
+/*
     $tmpVersand = !$hasDeliveryNotes?[]: $this->app->DB->SelectFirstCols(
       "SELECT if(v.versendet_am!='0000-00-00', 
         CONCAT(DATE_FORMAT( v.versendet_am,'%d.%m.%Y'),' ',v.versandunternehmen),
@@ -2353,6 +2353,39 @@ class Auftrag extends GenAuftrag
     else {
       $this->app->Tpl->Set('TRACKING',$tmpVersand);
     }
+*/
+
+
+      $sql = "SELECT SQL_CALC_FOUND_ROWS
+                v.id,                   
+                v.tracking as tracking,
+                v.tracking_link
+            FROM 
+                versandpakete v
+            LEFT JOIN
+                versandpaket_lieferschein_position vlp ON v.id = vlp.versandpaket
+            LEFT JOIN
+                lieferschein_position lp ON lp.id = vlp.lieferschein_position
+            LEFT JOIN
+                lieferschein l ON lp.lieferschein = l.id
+            LEFT JOIN
+                lieferschein lop ON lop.id = v.lieferschein_ohne_pos 
+            WHERE 
+                l.auftragid = ".$id." OR lop.auftragid = ".$id."
+            GROUP BY 
+               v.id
+            ";
+    $tracking = $this->app->DB->SelectArr($sql);
+
+    $tracking_list = array();
+    foreach ($tracking as $single_tracking) {
+        $tracking_list[] =  '<a href="index.php?module=versandpakete&action=edit&id='.$single_tracking['id'].'">Paket Nr.'.$single_tracking['id'].'</a>'.
+                            ' ('.'<a href="'.$single_tracking['tracking_link'].'">'.$single_tracking['tracking'].'</a>'.')';
+    }
+
+    $this->app->Tpl->Set('TRACKING',implode('<br>',$tracking_list));
+
+
 
 
     $icons = $this->app->YUI->IconsSQL();
