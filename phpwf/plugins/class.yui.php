@@ -3666,7 +3666,7 @@ class YUI {
             ELSE CONCAT(                                
                 CASE 
                     WHEN lieferscheine <> '' AND vmenge = lmenge THEN '$lieferschein_voll'
-                    WHEN lieferscheine <> '' AND vmenge IS NULL THEN '$lieferschein_ohne_pos'
+                    WHEN lieferschein_ohne_pos <> '' AND vmenge IS NULL THEN '$lieferschein_ohne_pos'
                     WHEN lieferscheine <> '' THEN '$lieferschein_teil'
                 ELSE 
                     '$lieferschein_kein'

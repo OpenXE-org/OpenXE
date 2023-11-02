@@ -4779,11 +4779,36 @@ title: 'Abschicken',
       $clieferscheine = !empty($lieferscheine)?count($lieferscheine):0;
       for($li=0;$li<$clieferscheine;$li++)
       {
-        $tracking = $this->app->DB->SelectArr("SELECT tracking FROM versand WHERE lieferschein='".$lieferscheine[$li]['id']."' AND lieferschein > 0 AND tracking!=''");
+    /*    $tracking = $this->app->DB->SelectArr("SELECT tracking FROM versand WHERE lieferschein='".$lieferscheine[$li]['id']."' AND lieferschein > 0 AND tracking!=''");
         $ctracking = !empty($tracking)?count($tracking):0;
         for($i=0;$i<$ctracking;$i++) {
           $tmptracking[] = $tracking[$i]['tracking'];
         }
+*/
+
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
+                v.id,                   
+                v.tracking as tracking,
+                v.tracking_link
+            FROM 
+                versandpakete v
+            LEFT JOIN
+                versandpaket_lieferschein_position vlp ON v.id = vlp.versandpaket
+            LEFT JOIN
+                lieferschein_position lp ON lp.id = vlp.lieferschein_position
+            LEFT JOIN
+                lieferschein l ON lp.lieferschein = l.id
+            WHERE l.id = ".$lieferscheine[$li]['id']." OR v.lieferschein_ohne_pos = ".$lieferscheine[$li]['id']."
+            GROUP BY 
+               v.id
+            ";
+        $tracking = $this->app->DB->SelectArr($sql);
+        $tracking_list = array();
+        foreach ($tracking as $single_tracking) {
+            $tmptracking[] = $single_tracking['tracking'];
+            $tracking_list[] =  '<a href="'.$single_tracking['tracking_link'].'">'.$single_tracking['tracking'].'</a>';
+        }
+
 /*
         $nve = $this->app->DB->SelectArr("SELECT nve FROM spedition_packstuecke WHERE lieferschein='".$lieferscheine[$li]['id']."' AND nve!='' AND status!='storniert'");
         $cnve = !empty($nve)?count($nve):0;
@@ -4791,7 +4816,11 @@ title: 'Abschicken',
           $tmpnve[] = $nve[$i]['nve'];
         }*/
       }
+
+    
+
       $text = str_replace('{TRACKINGNUMMER}',!empty($tmptracking)?implode(", ",$tmptracking):'',$text);
+      $text = str_replace('{TRACKINGLINK}',!empty($tracking_list)?implode(", ",$tracking_list):'',$text);
       $text = str_replace('{NVE}',!empty($tmpnve)?implode(", ",$tmpnve):'',$text);
     }
 

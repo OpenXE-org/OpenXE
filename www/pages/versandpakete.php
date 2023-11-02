@@ -559,6 +559,7 @@ class Versandpakete {
 
         if (!empty($info)) {
             $this->app->Tpl->Set('BELEGNR', $info[0]['belegnr']);
+            $this->app->Tpl->Set('BELEGID', $lieferschein_filter);
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $info[0]['name']." Lieferung ".$info[0]['belegnr']);
 
             $complete = $this->versandpakete_check_completion($lieferschein_filter, null);
@@ -633,10 +634,8 @@ class Versandpakete {
         } 
 
         // Check versandart
-        if (empty($input['versandart'])) {
-            $sql = "UPDATE versandpakete SET versandart = (SELECT versandart FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE versandpaket = ".$id." LIMIT 1)";
-            $this->app->DB->Update($sql);
-        }
+        $sql = "UPDATE versandpakete SET versandart = (SELECT versandart FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versandpaket = ".$id." LIMIT 1) WHERE id = ".$id;
+        $this->app->DB->Update($sql);
 
         switch ($submit) {
             case 'speichern':
@@ -734,6 +733,8 @@ class Versandpakete {
             $this->app->Tpl->Set('LIEFERSCHEIN_ADD_POS_HIDDEN', 'hidden');
             $this->app->Tpl->Set('LIEFERSCHEIN_GEWICHT_DISABLED', 'disabled');
             $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
+            $this->app->Tpl->Set('TRACKING_DISABLED', 'disabled');
+            $this->app->Tpl->Set('TRACKING_LINK_EDIT_HIDDEN', 'hidden');   
         }
         if ($result[0]['status'] != 'versendet') {
             $this->app->Tpl->Set('ABSCHLIESSEN_HIDDEN', 'hidden');
@@ -754,6 +755,7 @@ class Versandpakete {
             $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
         } else {
             $this->app->Tpl->Set('TRACKING_DISABLED', 'disabled');
+            $this->app->Tpl->Set('TRACKING_LINK_EDIT_HIDDEN', 'hidden');    
         }        
 
         $file_attachments = $this->app->erp->GetDateiSubjektObjekt('paketmarke','versandpaket',$id);         
@@ -786,6 +788,7 @@ class Versandpakete {
                             GROUP BY v.id
                         ) temp                        
                         ";
+
         $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Set('ICONS', $icons[0]['icons']);
 
@@ -1185,6 +1188,7 @@ class Versandpakete {
     	$input['gewicht'] = $this->app->Secure->GetPOST('gewicht');
     	$input['bemerkung'] = $this->app->Secure->GetPOST('bemerkung');
     	$input['tracking'] = $this->app->Secure->GetPOST('tracking');
+    	$input['tracking_link'] = $this->app->Secure->GetPOST('tracking_link');
         return $input;
     }
 

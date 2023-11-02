@@ -54,6 +54,14 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    <tr [TRACKING_LINK_EDIT_HIDDEN]>
+                                        <td>
+                                            {|Tracking link|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="tracking_link" id="tracking_link" value="[TRACKING_LINK]" size="40" [TRACKING_DISABLED]>                                           
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td>
                                             {|Gewicht Kg|}:

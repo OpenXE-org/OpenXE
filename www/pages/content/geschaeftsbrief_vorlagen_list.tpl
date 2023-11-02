@@ -122,7 +122,7 @@
                 <li>{|Stornierung|} <i>{|Variablen|}: {AUFTRAG}, {DATUM}, {INTERNET}</i></li>
                 <li>{|ZahlungMiss|} <i>{|Variablen|}: {AUFTRAG}, {DATUM}, {GESAMT}, {REST}, {ANSCHREIBEN}, {INTERNET}</i></li>
                 <li>Mahnung <i>Variablen: {BELEGNR}, {DATUM}, {OFFEN}, {MAHNGEBUEHR}, {HEUTE}</i></li>
-                <li>{|Versand|} <i>{|Variablen|}: {VERSAND}, {VERSANDTYPE}, {VERSANDBEZEICHNUNG}, {TRACKINGNUMMER}, {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}, {LIEFERADRESSE}, {LIEFERADRESSELANG}</i></li>
+                <li>{|Versand|} <i>{|Variablen|}: {VERSAND}, {VERSANDTYPE}, {VERSANDBEZEICHNUNG}, {TRACKINGNUMMER}, {TRACKINGLINK}, {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}, {LIEFERADRESSE}, {LIEFERADRESSELANG}</i></li>
                 <li>{|VersandMailDokumente|} <i>{|Variablen|}: {NAME}, {ANSCHREIBEN}, {BELEGNR}, {IHREBESTELLNUMMER}, {INTERNET}, {AUFTRAGDATUM}</i></li>
                 <li>{|Erweiterte Freigabe|} <i>{|Variablen|}: {REQUESTER}, {LINK}, {LINKFREIGABEUEBERSICHT}, {DOCTYPE}, {DOCTYPE_ID}</i></li>
                 <li>{|Selbstabholer|}</li>

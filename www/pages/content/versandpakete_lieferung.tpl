@@ -8,7 +8,7 @@
         		<div class="col-xs-12 col-md-12 col-md-height">
         			<div class="inside inside-full-height">
         				<fieldset>
-                            <legend>{|<b>Lieferung <font color="blue">[BELEGNR]</font></b>|}</legend>                              
+                            <legend>{|<b>Lieferung zu <font color="blue"><a href="index.php?module=lieferschein&action=edit&id=[BELEGID]">Lieferschein [BELEGNR]</a></font></b>|}</legend>                              
                         </fieldset>            
                     </div>
            		</div>
