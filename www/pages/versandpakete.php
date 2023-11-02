@@ -303,6 +303,7 @@ class Versandpakete {
                 $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";                
 
                 $sql = Versandpakete::versandpakete_lieferstatus_sql($app);
+
                 $where = "";
 
                 // Toggle filters
@@ -815,6 +816,15 @@ class Versandpakete {
             } else {
                 $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein, false); // Parameters: Target db?, value, from form?
 
+                if (empty($lieferschein_belegnr)) {
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Lieferschein ist nicht freigegeben.</div>");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=list&msg=$msg");  
+                }
+
+                // Flag lieferschein for versand
+                $sql = "UPDATE lieferschein SET versand_status = 1 WHERE id = ".$lieferschein." AND versand_status = 0";
+                $this->app->DB->Update($sql);
+
                 // Check if there is an unused paket waiting... 
                 $sql = "SELECT 
                             v.id,
@@ -835,13 +845,11 @@ class Versandpakete {
 
                 if (!empty($waiting_paket)) {
                     // Use existing
-                    echo("use old");
                     $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$waiting_paket[0]['id']." wurde zugeordnet.</div>");
                     $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&id=".$waiting_paket[0]['id']."&lieferschein=".$lieferschein."&msg=$msg");                    
                 }
                 else {
                     // Create new paket and add the given lieferschein
-                    echo("nake new");       
                     $sql = "INSERT INTO versandpakete (status, lieferschein_ohne_pos, versender) VALUES ('neu',".$lieferschein.",'".$this->app->User->GetName()."')";
                     $this->app->DB->Insert($sql);
                     $id = $this->app->DB->GetInsertId();  
@@ -1199,15 +1207,13 @@ class Versandpakete {
                             FROM
                                 lieferschein l
                             INNER JOIN lieferschein_position lp ON lp.lieferschein = l.id
-                            INNER JOIN artikel a ON lp.artikel = a.id
                             LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                             LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
                             LEFT JOIN versandpakete vop ON vop.lieferschein_ohne_pos = l.id                            
                             WHERE
                                 l.versand_status <> 0 AND
                                 l.belegnr <> '' AND 
-                                (v.status <> 'storniert' OR v.status IS NULL) AND
-                                a.lagerartikel
+                                (v.status <> 'storniert' OR v.status IS NULL)
                             GROUP BY lp.id
                 ";
 

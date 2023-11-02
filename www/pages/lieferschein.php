@@ -468,7 +468,8 @@ class Lieferschein extends GenLieferschein
         AND v.aktiv = 1 AND v.ausprojekt = 0 AND v.modul != ''
         ORDER BY v.projekt DESC LIMIT 1");
     if (empty($result['modul']) || empty($result['id'])) {
-      $this->app->Tpl->addMessage('error', 'Bitte zuerst eine gültige Versandart auswählen', false, 'PAGE');
+//      $this->app->Tpl->addMessage('error', 'Bitte zuerst eine gültige Versandart auswählen', false, 'PAGE');
+        $this->app->Location->execute("index.php?module=versandpakete&action=add&lieferschein=".$id);
       return;
     }
     $versandmodul = $this->app->erp->LoadVersandModul($result['modul'], $result['id']);
