@@ -426,10 +426,12 @@
         }
       }elseif(is_object($xml))
       {
+        $xml = (array) $xml;
         if(count($xml) > 0)
         {
           foreach($xml as $k => $v)
           {
+            $v = (array) $v;
             if(count($v) > 0)
             {
               if($lvl < 10)
