@@ -2727,6 +2727,8 @@ class Projekt extends GenProjekt {
 
           if($oldProjectId > 0){
             $this->createAdditionalInputForCopyProjects($oldProjectId,$check);
+            $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Das Projekt wurde erfolgreich kopiert.</div>");
+            $this->app->Location->execute("index.php?module=projekt&action=uebersicht&id=$check&msg=$msg");
             return;
           }
           $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Das Projekt wurde erfolgreich angelegt.</div>");
@@ -2848,7 +2850,7 @@ class Projekt extends GenProjekt {
    * @param int $copyProjectId
    * @return bool
    */
-  public function createAdditionalInputForCopyProjects(int $oldProjectId, int $copyProjectId): bool
+  public function createAdditionalInputForCopyProjects(int $oldProjectId, int $copyProjectId) 
   {
     $hasAdditionalInput = false;
     $this->app->Tpl->Set('TOID',$copyProjectId);
