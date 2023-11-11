@@ -609,7 +609,7 @@ class Exportbuchhaltung
                     $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen_negativ']; // obligatory        
                 }
 
-                $data['EU-Steuersatz (Bestimmung)'] = number_format($$tmpsteuersatz, 2, ',', '');
+                $data['EU-Steuersatz (Bestimmung)'] = number_format($tmpsteuersatz, 2, ',', '');
                 $data['WKZ Umsatz'] = $row['pos_waehrung'];
                 $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
                 $data['Konto'] = $row['kundennummer']; // obligatory
