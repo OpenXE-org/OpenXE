@@ -222,34 +222,47 @@ $( document ).ready(function() {
 				</table>
         </td>
         <td width="30%" [STYLERECHTS]>
-          <table width="100%"><tr><td align="right"><input type="submit" value="Speichern" ></td></tr></table>
-          <div id="positionaccordion">
-            [ANZEIGEEINKAUFLAGER]
-
-            <h3>{|Steuer|}</h3>
-            <div class="table-responsive">
-            <table>
-            <tbody>
-            [VORSTEUER]
-            <tr><td>{|Kostenstelle|}:</td><td>[KOSTENSTELLE][MSGKOSTENSTELLE]</td></tr>
-            <tr><td>{|Erl&ouml;se|}:</td><td>[ERLOESE][MSGERLOESE]</td></tr>
-            <tr><td>{|festschreiben|}:</td><td>[ERLOESEFESTSCHREIBEN][MSGERLOESEFESTSCHREIBEN]</td></tr>
-            [NACHSTEUER]
-            </tbody>
-            </table>
+            <table width="100%"><tr><td align="right"><input type="submit" value="Speichern" ></td></tr></table>
+            <div id="positionaccordion"> [ANZEIGEEINKAUFLAGER]
+                <h3>{|Steuer|}</h3>
+                <div class="table-responsive">
+                    <table>
+	                    <tbody> [VORSTEUER]
+		                    <tr>
+			                    <td>{|Kostenstelle|}:</td>
+			                    <td>[KOSTENSTELLE][MSGKOSTENSTELLE]</td>
+		                    </tr>
+		                    <tr>
+			                    <td>{|Erl&ouml;se|}:</td>
+			                    <td>[ERLOESE][MSGERLOESE]</td>
+		                    </tr>
+		                    <tr>
+			                    <td>{|festschreiben|}:</td>
+			                    <td>[ERLOESEFESTSCHREIBEN][MSGERLOESEFESTSCHREIBEN]</td>
+		                    </tr> [NACHSTEUER] </tbody>
+                    </table>
+                </div>
+                <h3>{|Einkaufspreis f&uuml;r Deckungsbeitrag|}</h3>
+                <div class="table-responsive">
+                    <table>
+	                    <tbody>
+		                    <tr>
+			                    <td>[EINKAUFSPREIS][MSGEINKAUFSPREIS]</td>
+		                    </tr>
+	                    </tbody>
+                    </table>
+                </div>
+                <h3>{|Bemerkung|}</h3>
+                <div class="table-responsive">
+                    <table>
+	                    <tbody>
+		                    <tr>
+			                    <td> [BEMERKUNG][MSGBEMERKUNG] </td>
+		                    </tr>
+	                    </tbody>
+                    </table>
+                </div>
             </div>
-
-            <h3>{|Bemerkung|}</h3>
-            <div class="table-responsive">
-            <table>
-            <tbody>
-            <tr><td>
-            [BEMERKUNG][MSGBEMERKUNG]
-            </td></tr>
-            </tbody>
-            </table>
-            </div>
-          </div>
         </td>
       </tr>
     </tbody>

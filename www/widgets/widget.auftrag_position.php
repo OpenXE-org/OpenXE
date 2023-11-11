@@ -43,6 +43,7 @@ class WidgetAuftrag_position extends WidgetGenAuftrag_position
     $this->app->YUI->DatePicker("lieferdatum");
     $this->form->ReplaceFunction("lieferdatum",$this,"ReplaceDatum");
     $this->form->ReplaceFunction("preis",$this,"ReplaceMengeBetrag");
+    $this->form->ReplaceFunction("einkaufspreis",$this,"ReplaceMengeBetrag");
     $this->form->ReplaceFunction("steuersatz",$this,"ReplaceSteuersatz");
     $this->form->ReplaceFunction("menge",$this,"ReplaceMenge");
     $this->form->ReplaceFunction("grundrabatt",$this,"ReplaceDecimal");

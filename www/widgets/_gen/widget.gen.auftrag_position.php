@@ -288,7 +288,6 @@ class WidgetGenauftrag_position
     $field = new HTMLInput("mlmdirektpraemie","text","","50","","","","","","","","0","","");
     $this->form->NewField($field);
 
-
     $field = new HTMLInput("kostenstelle","text","","15","","","","","","","","0","","");
     $this->form->NewField($field);
 
@@ -297,6 +296,11 @@ class WidgetGenauftrag_position
 
     $field = new HTMLCheckbox("erloesefestschreiben","","","1","0","0");
     $this->form->NewField($field);
+
+    if ($this->app->erp->RechteVorhanden('auftrag','einkaufspreise')) {
+        $field = new HTMLInput("einkaufspreis","text","","50","","","","","","","","0","","");
+        $this->form->NewField($field);
+    }
 
     $field = new HTMLTextarea("bemerkung",3,40,"","","","","0");   
     $this->form->NewField($field);

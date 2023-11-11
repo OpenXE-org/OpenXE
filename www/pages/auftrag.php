@@ -1990,8 +1990,30 @@ class Auftrag extends GenAuftrag
       $gebuchtezeit = str_replace(".", ",", round($gebuchtezeit,2));
     }
     $summebrutto = $this->app->DB->Select("SELECT gesamtsumme FROM auftrag WHERE id='$id' LIMIT 1");
-    $this->app->Tpl->Set('DECKUNGSBEITRAG',0);
-    $this->app->Tpl->Set('DBPROZENT',0);
+
+    $sql = "
+            SELECT
+                umsatz_netto_gesamt,
+                artikel,
+                menge
+            FROM
+                `auftrag_position`
+            WHERE
+                `auftrag` = ".$id."
+        ";
+
+    $positionen = $this->app->DB->SelectArr($sql);
+    $umsatz_gesamt = 0;
+    $db_gesamt = 0;    
+    foreach ($positionen as $position) {
+        $ek = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);
+        $db = $position['umsatz_netto_gesamt']-($ek*$position['menge']);
+        $db_gesamt += $db;
+        $umsatz_gesamt = $position['umsatz_netto_gesamt'];
+    }
+
+    $this->app->Tpl->Set('DECKUNGSBEITRAG',$db_gesamt);
+    $this->app->Tpl->Set('DBPROZENT',$umsatz_gesamt==0?"-":(round($db_gesamt/$umsatz_gesamt*100)."%"));
     $this->app->Tpl->Set('GEBUCHTEZEIT',0);
 
     if($auftragArr[0]['ust_befreit']==0){
@@ -4947,6 +4969,9 @@ class Auftrag extends GenAuftrag
       $this->app->erp->LieferadresseButton($adresse);
       $this->app->erp->AnsprechpartnerAlsLieferadresseButton($adresse);
       $this->app->erp->AdresseAlsLieferadresseButton($adresse);
+    
+     $this->app->erp->BerechneDeckungsbeitrag($id,'auftrag');
+
     }
 
     if($nummer!='') {

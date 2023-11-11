@@ -2578,11 +2578,19 @@ class YUI {
                 if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(b.bezeichnung,1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),b.bezeichnung))
             ) $erweiterte_ansicht)
             as Artikel,
+            p.abkuerzung as projekt,
+            b.nummer as nummer,
+            DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum,
+            trim(b.menge)+0 as menge,
+            ".$this->FormatPreis($preiscell)." as preis,
+            b.waehrung,
+            ".$this->FormatPreis('b.rabatt')." as rabatt,";
 
-
-
-               p.abkuerzung as projekt, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge, ".$this->FormatPreis($preiscell)." as preis,b.waehrung, ".$this->FormatPreis('b.rabatt')." as rabatt, ";
-        
+            if ($this->app->erp->RechteVorhanden('auftrag','einkaufspreise')) {
+                $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
+                        CONCAT(ROUND(deckungsbeitrag*100),'%') AS DB,
+                        ";
+            }             
                
         $sql .= "b.id as id
                  FROM $table b
@@ -14718,7 +14726,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift" || $module == "proformarechnung") {
         
         if ($schreibschutz != 1) {
-          $addrow = array('<form action="" method="post" id="myform">', '[ARTIKELSTART]<input type="text" size="30" name="artikel" id="artikel" onblur="window.setTimeout(\'selectafterblur()\',200);">[ARTIKELENDE]', '<input type="text" name="projekt" id="projekt" size="10" readonly onclick="checkhere()" >', '<input type="text" name="nummer" id="nummer" size="7">', '<input type="text" size="8" name="lieferdatum" id="lieferdatum">', '<input type="text" name="menge" id="menge" size="5" onblur="window.setTimeout(\'selectafterblurmenge()\',200); document.getElementById(\'preis\').style.background =\'none\';">', '<input type="text" name="preis" id="preis" size="10" onclick="checkhere();">', '<input type="text" name="waehrung" id="waehrung" size="10" onclick="checkhere();">' ,'<input type="text" name="rabatt" id="rabatt" size="7">');
+          $addrow = array('<form action="" method="post" id="myform">', '[ARTIKELSTART]<input type="text" size="30" name="artikel" id="artikel" onblur="window.setTimeout(\'selectafterblur()\',200);">[ARTIKELENDE]', '<input type="text" name="projekt" id="projekt" size="10" readonly onclick="checkhere()" >', '<input type="text" name="nummer" id="nummer" size="7">', '<input type="text" size="8" name="lieferdatum" id="lieferdatum">', '<input type="text" name="menge" id="menge" size="5" onblur="window.setTimeout(\'selectafterblurmenge()\',200); document.getElementById(\'preis\').style.background =\'none\';">', '<input type="text" name="preis" id="preis" size="10" onclick="checkhere();">', '<input type="text" name="waehrung" id="waehrung" size="10" onclick="checkhere();">' ,'<input type="text" name="rabatt" id="rabatt" size="7">','','');
           $addrow[] = '<input type="submit" value="einf&uuml;gen" name="ajaxbuchen">
             <script type="text/javascript">
             document.onkeydown = function(evt) {
@@ -14881,9 +14889,11 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
         }
         $table->headings[6] = 'Preis';
         $mengencol = 5;
-        if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift") $table->headings[7] = 'W&auml;hrung';
-        if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift") $table->headings[8] = 'Rabatt';
-        if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift") $rabattcol = 8;
+        if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift") {
+            $table->headings[7] = 'W&auml;hrung';
+            $table->headings[8] = 'Rabatt';
+            $rabattcol = 8; 
+        }       
       }
       $__arr = array($summencol, $mengencol, $rabattcol, $ecol, $dcol,$zwischensumme);
       $this->app->erp->RunHook('yui_sortlistadd_draw', 2,$table,$__arr);

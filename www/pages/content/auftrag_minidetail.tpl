@@ -118,12 +118,13 @@
 </div>
 <div style="background-color:white">
 <h2 class="greyh2">{|Deckungsbeitrag|}</h2>
-<div style="padding:10px">
-
-<div class="info">{|Dieses Modul ist erst ab Version Professional verfügbar|}</div>
-
-
-</div>
+<table width="100%">
+<tbody><tr><td>Deckungsbeitrag (netto) in EUR</td><td>DB (netto) in %</td></tr>
+<tr>
+  <td class="greybox" width="50%">[DECKUNGSBEITRAG]</td>
+  <td class="greybox" width="50%">[DBPROZENT]</td>
+</tr>
+</tbody></table>
 </div>
 [INTERNEBEMERKUNGEDIT]
 
