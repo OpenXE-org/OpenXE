@@ -1995,7 +1995,8 @@ class Auftrag extends GenAuftrag
             SELECT
                 umsatz_netto_gesamt,
                 artikel,
-                menge
+                menge,
+                einkaufspreis
             FROM
                 `auftrag_position`
             WHERE
@@ -2003,13 +2004,16 @@ class Auftrag extends GenAuftrag
         ";
 
     $positionen = $this->app->DB->SelectArr($sql);
+
     $umsatz_gesamt = 0;
     $db_gesamt = 0;    
     foreach ($positionen as $position) {
-        $ek = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);
-        $db = $position['umsatz_netto_gesamt']-($ek*$position['menge']);
+        if (empty($position['einkaufspreis'])) {
+            $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);            
+        }
+        $db = $position['umsatz_netto_gesamt']-($position['einkaufspreis']*$position['menge']);
         $db_gesamt += $db;
-        $umsatz_gesamt = $position['umsatz_netto_gesamt'];
+        $umsatz_gesamt += $position['umsatz_netto_gesamt'];
     }
 
     $this->app->Tpl->Set('DECKUNGSBEITRAG',$db_gesamt);
@@ -4969,9 +4973,10 @@ class Auftrag extends GenAuftrag
       $this->app->erp->LieferadresseButton($adresse);
       $this->app->erp->AnsprechpartnerAlsLieferadresseButton($adresse);
       $this->app->erp->AdresseAlsLieferadresseButton($adresse);
-    
-     $this->app->erp->BerechneDeckungsbeitrag($id,'auftrag');
+    }
 
+    if ($schreibschutz != 1 AND $status != 'abgeschlossen') {
+        $this->app->erp->BerechneDeckungsbeitrag($id,'auftrag');
     }
 
     if($nummer!='') {
