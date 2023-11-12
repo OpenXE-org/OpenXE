@@ -2016,8 +2016,16 @@ class Auftrag extends GenAuftrag
         $umsatz_gesamt += $position['umsatz_netto_gesamt'];
     }
 
-    $this->app->Tpl->Set('DECKUNGSBEITRAG',$db_gesamt);
-    $this->app->Tpl->Set('DBPROZENT',$umsatz_gesamt==0?"-":(round($db_gesamt/$umsatz_gesamt*100)."%"));
+    $this->app->Tpl->Set('DECKUNGSBEITRAG',$this->app->erp->number_format_variable($db_gesamt,2));
+    $this->app->Tpl->Set(   'DBPROZENT',
+                            $umsatz_gesamt==0?
+                            "-":
+                            $this->app->erp->number_format_variable(
+                                round(
+                                    $db_gesamt/$umsatz_gesamt*100,2
+                                )                                
+                            )."%"
+                        );
     $this->app->Tpl->Set('GEBUCHTEZEIT',0);
 
     if($auftragArr[0]['ust_befreit']==0){
