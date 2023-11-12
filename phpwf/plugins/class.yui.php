@@ -2588,7 +2588,7 @@ class YUI {
 
             if ($this->app->erp->RechteVorhanden('auftrag','einkaufspreise')) {
                 $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
-                        CONCAT(ROUND(deckungsbeitrag*100),'%') AS DB,
+                        CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
                         ";
             }             
                
