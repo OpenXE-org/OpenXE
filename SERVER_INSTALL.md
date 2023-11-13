@@ -54,14 +54,11 @@ memory_limit = 256M
 ## Install additional zip
 `sudo apt-get install zip`
 
-## Install mysql client
-`sudo apt-get install mysql-client`
-
 ## Install database server
 `sudo apt-get install mariadb-server`
 
 ## Configure database server
-`sudo mysql_secure_installation`
+`sudo mariadb-secure-installation`
 ```
 NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
       SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
