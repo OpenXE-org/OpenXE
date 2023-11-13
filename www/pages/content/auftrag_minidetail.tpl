@@ -48,19 +48,14 @@
   <td style="" width="50%">[VERSANDTEXT]</td>
 [RMAENDIF]
 </tr>
-
 </table>
-
 <div style="background-color:white">
 <div style="padding:10px">
   [RECHNUNGLIEFERADRESSE]
 </div>
 </div>
-
-
 </div>
 <div style="float:left; width:50%">
-
 <div style="overflow:auto;max-height:550px;">
 <div style="background-color:white;">
 <h2 class="greyh2">Artikel</h2>
@@ -69,64 +64,55 @@
 <i style="color:#999">* Die linke Zahl zeigt die für den Kunden reservierten Einheiten und die rechte Zahl die global reservierte Anzahl.</i>
 </div>
 </div>
-
 [MINIDETAILNACHARTIKEL]
-<!--    
-<div style="background-color:white;">
-<h2 class="greyh2">Lieferkette</h2>
-<div style="padding:10px">
-<table class="mkTable">
-<tr><th>Art</th><th>Beleg</th><th>Datum</th><th>Lieferant</th><th>Status</th></tr>
-<tr><td>Bestellung</td><td>ENTWURF</td><td></td><td>In-Circuit<br>200 x 777777 SMT USBprog 1)</td><td>-</td></tr>
-<tr><td>Anlieferung</td><td>200000</td><td></td><td>In-Circuit<br>200 x 777777 ATMEGA32</td><td>offen</td></tr>
-<tr><td>Bestellung</td><td>100023</td><td></td><td>Instanet<br>200 x USBprog 5.0 Spezial Elektor<br>200 x 777777 Flashen + Montieren</td><td>offen</td></tr>
-<tr><td>Anlieferung</td><td>200002</td><td></td><td>Instanet<br>200 x 777777 SMT USBprog 1)<br>200 x 122222 Gehäuse</td><td>offen</td></tr>
-</table>
+<div style="background-color:white" [DBHIDDEN]>
+    <h2 class="greyh2">{|Deckungsbeitrag (netto)|}</h2>
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td>Umsatz EUR</td>
+                <td>Kosten EUR</td>
+                <td>Deckungsbeitrag EUR</td>
+                <td>DB %</td>
+            </tr>
+            <tr>
+              <td class="greybox" width="25%">[NETTOGESAMT]</td>
+              <td class="greybox" width="25%">[KOSTEN]</td>
+              <td class="greybox" width="25%">[DECKUNGSBEITRAG]</td>
+              <td class="greybox" width="25%">[DBPROZENT]</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
-</div>
--->
-
 <div style="background-color:white">
 <h2 class="greyh2">{|Zahlungen|}</h2>
 <div style="padding:10px">
   [ZAHLUNGEN]
 </div>
 </div>
-
 <div style="background-color:white">
 <h2 class="greyh2">{|Protokoll|}</h2>
 <div style="padding:10px;">
   [PROTOKOLL]
 </div>
 </div>
-
 [VORPRODUKTIONPROTOKOLL]
 [PRODUKTIONPROTOKOLL]
 [NACHPRODUKTIONPROTOKOLL]
-
+<!--
 <div style="background-color:white">
-<h2 class="greyh2">{|RMA Prozess|}</h2>
-<div style="padding:10px">
-  [RMA]
+    <h2 class="greyh2">{|RMA Prozess|}</h2>
+    <div style="padding:10px">
+      [RMA]
+    </div>
 </div>
-</div>
+-->
 <div style="background-color:white">
 <h2 class="greyh2">{|PDF-Archiv|}</h2>
 <div style="padding:10px;overflow:auto;">
   [PDFARCHIV]
 </div>
 </div>
-<div style="background-color:white">
-<h2 class="greyh2">{|Deckungsbeitrag|}</h2>
-<table width="100%">
-<tbody><tr><td>Deckungsbeitrag (netto) in EUR</td><td>DB (netto) in %</td></tr>
-<tr>
-  <td class="greybox" width="50%">[DECKUNGSBEITRAG]</td>
-  <td class="greybox" width="50%">[DBPROZENT]</td>
-</tr>
-</tbody></table>
-</div>
 [INTERNEBEMERKUNGEDIT]
-
 </div>
 </div>

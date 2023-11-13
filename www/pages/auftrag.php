@@ -1991,41 +1991,51 @@ class Auftrag extends GenAuftrag
     }
     $summebrutto = $this->app->DB->Select("SELECT gesamtsumme FROM auftrag WHERE id='$id' LIMIT 1");
 
-    $sql = "
-            SELECT
-                umsatz_netto_gesamt,
-                artikel,
-                menge,
-                einkaufspreis
-            FROM
-                `auftrag_position`
-            WHERE
-                `auftrag` = ".$id."
-        ";
+    // Deckungsbeitrag
+    if (!$this->app->erp->RechteVorhanden('auftrag','einkaufspreise')) {
+        $this->app->Tpl->Set('DBHIDDEN','hidden');
+    } else {
+        $sql = "
+                SELECT
+                    umsatz_netto_gesamt,
+                    artikel,
+                    menge,
+                    einkaufspreis
+                FROM
+                    `auftrag_position`
+                WHERE
+                    `auftrag` = ".$id."
+            ";
 
-    $positionen = $this->app->DB->SelectArr($sql);
+        $positionen = $this->app->DB->SelectArr($sql);
 
-    $umsatz_gesamt = 0;
-    $db_gesamt = 0;    
-    foreach ($positionen as $position) {
-        if (empty($position['einkaufspreis'])) {
-            $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);            
+        $umsatz_gesamt = 0;
+        $kosten_gesamt = 0;
+        $db_gesamt = 0;    
+        foreach ($positionen as $position) {
+            if (empty($position['einkaufspreis'])) {
+                $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);            
+            }
+            $kosten = ($position['einkaufspreis']*$position['menge']);
+            $db_gesamt += $position['umsatz_netto_gesamt']-$kosten;
+            $kosten_gesamt += $kosten;
+            $umsatz_gesamt += $position['umsatz_netto_gesamt'];
         }
-        $db = $position['umsatz_netto_gesamt']-($position['einkaufspreis']*$position['menge']);
-        $db_gesamt += $db;
-        $umsatz_gesamt += $position['umsatz_netto_gesamt'];
-    }
 
-    $this->app->Tpl->Set('DECKUNGSBEITRAG',$this->app->erp->number_format_variable($db_gesamt,2));
-    $this->app->Tpl->Set(   'DBPROZENT',
-                            $umsatz_gesamt==0?
-                            "-":
-                            $this->app->erp->number_format_variable(
-                                round(
-                                    $db_gesamt/$umsatz_gesamt*100,2
-                                )                                
-                            )."%"
-                        );
+        $this->app->Tpl->Set('NETTOGESAMT',$this->app->erp->number_format_variable($umsatz_gesamt,2));
+        $this->app->Tpl->Set('KOSTEN',$this->app->erp->number_format_variable($kosten_gesamt,2));
+        $this->app->Tpl->Set('DECKUNGSBEITRAG',$this->app->erp->number_format_variable($db_gesamt,2));
+        $this->app->Tpl->Set(   'DBPROZENT',
+                                $umsatz_gesamt==0?
+                                "-":
+                                $this->app->erp->number_format_variable(
+                                    round(
+                                        $db_gesamt/$umsatz_gesamt*100,2
+                                    )                                
+                                )."%"
+                            );
+    }
+   
     $this->app->Tpl->Set('GEBUCHTEZEIT',0);
 
     if($auftragArr[0]['ust_befreit']==0){

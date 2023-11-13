@@ -3663,9 +3663,8 @@ a.ui-tabs-anchor:hover {
 
 .greybox {
     background-color: lightgrey;
-    color: white;
     padding: 10px;
-    font-size: 1.8em;
+    font-size: 1.2em;
     text-align: right;
 }
 
