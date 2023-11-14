@@ -2014,7 +2014,7 @@ class Auftrag extends GenAuftrag
         $db_gesamt = 0;    
         foreach ($positionen as $position) {
             if (empty($position['einkaufspreis'])) {
-                $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);            
+                $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);
             }
             $kosten = ($position['einkaufspreis']*$position['menge']);
             $db_gesamt += $position['umsatz_netto_gesamt']-$kosten;

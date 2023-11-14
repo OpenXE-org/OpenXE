@@ -12496,7 +12496,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
     $this->AuftragExplodieren($auftrag);
 
-    //$this->BerechneDeckungsbeitrag($auftrag,"auftrag");
+    $this->BerechneDeckungsbeitrag($auftrag,"auftrag");
     $auftragarr = $this->app->DB->SelectRow("SELECT projekt,internet FROM auftrag WHERE id = '$auftrag' LIMIT 1");
     if(empty($auftragarr))
     {
@@ -29350,7 +29350,7 @@ function Firmendaten($field,$projekt="")
           {
             foreach($ohneeks as $ek)
             {
-              if($ek['ekwaehrung']=='')
+              if($ek['einkaufspreis'] == 0)
               {
                 $originalwaehrung = $ek['waehrung'];
                 $originalpreis = $ek['preis'];
