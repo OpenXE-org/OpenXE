@@ -23,6 +23,7 @@ class Ticket {
         $this->app->ActionHandler("text_ausgang", "ticket_text_ausgang"); // Output text for iframe display
         $this->app->ActionHandler("statusfix", "ticket_statusfix"); // Xentral 20 compatibility set all ticket status to latest ticket_nachricht status
         $this->app->ActionHandler("datefix", "ticket_datefix"); // Xentral 20 compatibility set all ticket dates to latest ticket_nachricht date
+        $this->app->ActionHandler("dateien", "ticket_dateien"); 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -302,6 +303,27 @@ class Ticket {
                   $attachtext.
                   "<br>");
           }
+        }
+    }
+
+    function add_attachments_header_html($ticket_id, $templatepos) {
+        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('%','ticket_header',$ticket_id);       
+
+        if (!empty($file_attachments)) {     
+          $this->app->Tpl->Add($templatepos,"<tr><td>{|Anh&auml;nge|}:</td><td><div class=\"ticket_attachments\">");
+          foreach ($file_attachments as $file_attachment) {
+
+              $this->app->Tpl->Add($templatepos,                    
+                  "<a href=\"index.php?module=dateien&action=send&id=".$file_attachment.
+                  "\">".
+                  htmlentities($this->app->erp->GetDateiName($file_attachment)).
+                  " (".
+                  $this->app->erp->GetDateiSize($file_attachment).
+                  ")".  
+                  "</a>".       
+                  "<br>");
+          }
+          $this->app->Tpl->Add($templatepos,"</div></td></tr>");
         }
     }
 
@@ -590,6 +612,19 @@ class Ticket {
         $this->app->Tpl->Parse('PAGE', "ticket_create.tpl");
     }
 
+
+    function ticket_menu($id) {
+        $this->app->erp->MenuEintrag("index.php?module=ticket&action=edit&id=$id", "Details");
+        $this->app->erp->MenuEintrag("index.php?module=ticket&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
+        $anzahldateien = $this->app->erp->AnzahlDateien("ticket_header",$id);
+        if ($anzahldateien > 0) {
+            $anzahldateien = " (".$anzahldateien.")"; 
+        } else {
+            $anzahldateien="";
+        }
+        $this->app->erp->MenuEintrag("index.php?module=ticket&action=dateien&id=$id", "Dateien".$anzahldateien);
+    }
+
     function ticket_edit() {
         $id = $this->app->Secure->GetGET('id');
 
@@ -597,10 +632,10 @@ class Ticket {
             return;
         }
              
+        $this->ticket_menu($id);
+
         $this->app->Tpl->Set('ID', $id);
 
-        $this->app->erp->MenuEintrag("index.php?module=ticket&action=edit&id=$id", "Details");
-        $this->app->erp->MenuEintrag("index.php?module=ticket&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $cmd = $this->app->Secure->GetGET('cmd');
         $input = $this->GetInput();
@@ -901,9 +936,17 @@ class Ticket {
         } 
 
         $this->add_messages_tpl($messages, false);
-
+        $this->add_attachments_header_html($id,'TICKET_ANHANG');
         $this->app->Tpl->Set('MESSAGE', $msg);
         $this->app->Tpl->Parse('PAGE', "ticket_edit.tpl");
+    }
+
+    function ticket_dateien()
+    {
+        $id = $this->app->Secure->GetGET("id");
+        $this->ticket_menu($id);
+        $this->app->Tpl->Add('UEBERSCHRIFT'," (Dateien)");
+        $this->app->YUI->DateiUpload('PAGE',"ticket_header",$id);
     }
 
   /**

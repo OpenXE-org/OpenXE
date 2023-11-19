@@ -350,9 +350,9 @@ class Ajax {
       $id = $this->app->Secure->GetPOST('id');
       $objekt = $this->app->Secure->GetPOST('typ');
       $parameter = $this->app->Secure->GetPOST('parameter');
-      if($objekt === 'adresse'){
-        $objekt = 'Adressen';
-      }
+
+      $module = strtolower($objekt);
+      $objekt = $this->app->YUI->dateien_module_objekt_map($objekt);   
 
       $data = $this->app->DB->SelectRow(
         "SELECT d.*, s.subjekt 
@@ -362,12 +362,6 @@ class Ajax {
         WHERE s.objekt LIKE '$objekt' AND s.parameter='$parameter' AND d.geloescht=0 AND d.id = '$id' 
         LIMIT 1"
       );
-
-
-      $module = strtolower($objekt);
-      if($module === 'adressen'){
-        $module = 'adresse';
-      }
 
       $typen = $this->app->erp->getDateiTypen($module);
       $found = false;
@@ -431,10 +425,10 @@ class Ajax {
       $titel = $this->app->Secure->GetPOST('titel');
       $beschreibung = $this->app->Secure->GetPOST('beschreibung');
       $subjekt = $this->app->Secure->GetPOST('subjekt');
-      if($objekt == 'adresse')
-      {
-        $objekt = 'Adressen';
-      }
+
+      $module = strtolower($objekt);
+      $objekt = $this->app->YUI->dateien_module_objekt_map($module);      
+
       $ersteller = $this->app->DB->real_escape_string($this->app->User->GetName());
       $datei = $this->app->DB->SelectArr("SELECT d.id, s.id as sid FROM datei d LEFT JOIN datei_stichwoerter s ON d.id=s.datei LEFT JOIN datei_version v ON v.datei=d.id WHERE s.objekt LIKE '$objekt' AND s.parameter='$parameter' AND d.geloescht=0 AND d.id = '$id' LIMIT 1");
       if($datei)
@@ -654,6 +648,9 @@ class Ajax {
     $cmd = trim($this->app->Secure->GetGET('cmd'));
     $id = (int)$this->app->Secure->GetGET('id');
 
+    $module = strtolower($cmd);
+    $cmd = $this->app->YUI->dateien_module_objekt_map($cmd);
+
     if(!empty($cmd) && $id
       && (!in_array($cmd, $cmds) || (in_array($cmd, $cmds) && $this->app->erp->RechteVorhanden($cmd,'dateien')))) {
       $datei = $this->app->DB->SelectRow(
@@ -661,7 +658,7 @@ class Ajax {
           "SELECT dv.id, ds.parameter, dv.dateiname 
           FROM datei_version AS dv 
           INNER JOIN datei_stichwoerter ds ON ds.datei = dv.datei 
-          WHERE dv.datei = %d AND (ds.objekt like '%s'".($cmd === 'adresse'?" OR ds.objekt like 'Adressen' ":'').") 
+          WHERE dv.datei = %d AND (ds.objekt like '%s') 
           ORDER BY  dv.datei DESC, dv.version DESC 
           LIMIT 1",
           $id, $cmd
@@ -694,7 +691,7 @@ class Ajax {
           $projekt = $this->app->DB->Select(
             sprintf(
               'SELECT `projekt` FROM `%s` WHERE `id` = %d LIMIT 1',
-              $cmd, $datei[0]['parameter']
+              $module, $datei[0]['parameter']
             )
           );
           if(!$this->app->erp->UserProjektRecht($projekt)) {

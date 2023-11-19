@@ -28,6 +28,15 @@ class YUI {
     $this->app = $app;
   }
 
+  function dateien_module_objekt_map($module) : string {
+    $dateien_module_objekt_map_array = array(
+        'adresse' => 'adressen',
+        'ticket'  => 'ticket_header' 
+    );
+
+    return (isset($dateien_module_objekt_map_array[$module]) ? $dateien_module_objekt_map_array[$module] : $module);
+  }
+
   function PasswordCheck($passwordFieldID, $repassFieldID, $accountNameFieldID, $submitButtonID, $extra = ''){
         $this->app->Tpl->Add('JQUERYREADY', "
                 function checkPassword(){
@@ -4074,6 +4083,7 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         $allowed['wiki'] = array('dateien');
         $allowed['geschaeftsbrief_vorlagen'] = array('dateien');
         $allowed['kasse'] = array('dateien');
+        $allowed['ticket'] = array('dateien');
 
         $id = $this->app->Secure->GetGET("id");
         $sid = $this->app->Secure->GetGET("sid");
@@ -4082,13 +4092,8 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         }
 
         parse_str(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_QUERY), $queries);
-        switch($queries['module'])
-        {
-          case "adresse": $objekt="adressen"; break;
-          default: $objekt=$queries['module'];
-        }
 
-        //if(!ctype_alpha($objekt))$objekt="";
+        $objekt = $this->dateien_module_objekt_map($queries['module']);
 
         if(!preg_match('/[A-Za-z_]/', $objekt)) {
           $objekt='';
@@ -14067,11 +14072,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
         $sid = (int)$this->app->Secure->GetPOST("sid");
         $sort = $this->app->DB->Select("SELECT sort FROM datei_stichwoerter WHERE id = '$sid' LIMIT 1");
         $id = (int)$this->app->Secure->GetGET("id");
-        switch($module)
-        {
-          case "adresse": $objekt="adressen"; break;
-          default: $objekt=$module;
-        }
+        $objekt = $this->dateien_module_objekt_map($module);
 
         if(!preg_match('/[A-Za-z_]/', $objekt))$objekt="";
         $parameter=$id;
@@ -14100,11 +14101,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
         $sid = (int)$this->app->Secure->GetPOST("sid");
         $sort = $this->app->DB->Select("SELECT sort FROM datei_stichwoerter WHERE id = '$sid' LIMIT 1");
         $id = (int)$this->app->Secure->GetGET("id");
-        switch($module)
-        {
-          case "adresse": $objekt="adressen"; break;
-          default: $objekt=$module;
-        }
+        $objekt = $this->dateien_module_objekt_map($module);
 
         if(!preg_match('/[A-Za-z_]/', $objekt))$objekt="";
         $parameter=$id;
@@ -14203,7 +14200,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
           $this->app->Tpl->Add('MESSAGE','<div class="error">Keine Dateien ausgew&auml;hlt!</div>');
         }else{
           $objekt = $this->app->Secure->GetGET('module');
-          if($objekt == 'adresse')$objekt = 'adressen';          
+          $objekt = $this->dateien_module_objekt_map($objekt);
           $parameter = (int)$this->app->Secure->GetGET('id');
           $alledateien = $this->app->DB->SelectArr("SELECT  v.datei, v.id FROM 
               datei d INNER JOIN datei_stichwoerter s ON d.id=s.datei INNER JOIN datei_version v ON v.datei=d.id WHERE s.objekt LIKE '$objekt' AND s.parameter='$parameter' AND d.geloescht=0 ");         
@@ -14270,7 +14267,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
           $this->app->Tpl->Add('MESSAGE','<div class="error">Keine Dateien ausgew&auml;hlt!</div>');
         }else{
           $objekt = $this->app->Secure->GetGET('module');
-          if($objekt == 'adresse')$objekt = 'adressen';
+          $objekt = $this->dateien_module_objekt_map($objekt);
           $typmodul = $this->app->Secure->GetPOST('typ');
           if($objekt == 'dateien' && $typmodul == 'geschaeftsbrief_vorlagen'){
             $objekt = $typmodul;

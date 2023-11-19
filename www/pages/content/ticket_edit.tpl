@@ -25,6 +25,7 @@
                                     <tr><td>{|Adresse|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20"><a href="index.php?module=adresse&action=edit&id=[ADRESSE_ID]"><img src="./themes/new/images/forward.svg" border="0" style="top:6px; position:relative"></a></td></tr>
                                     <tr><td>{|Tags|}:</td><td><input type="text" name="tags" id="tags" value="[TAGS]" size="20"></td></tr>
                                     <tr><td>{|Letzte Aktion|}:</td><td>[ZEIT]</td></tr>
+                                    [TICKET_ANHANG]
                                 </table>
                             </fieldset> 
                         </div>
