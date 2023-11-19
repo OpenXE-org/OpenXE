@@ -49,6 +49,7 @@
                                     <legend>{|Aktionen|}</legend>
                                     <td><button name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button></td></tr>
                                     <td><button name="submit" value="neue_email" class="ui-button-icon" style="width:100%;">Neue E-Mail</button></td></tr>
+                                    <td><button name="submit" value="neue_email_alle" class="ui-button-icon" style="width:100%;">Neue E-Mail an alle</button></td></tr>
                                     <td><button name="submit" formaction="index.php?module=ticketregeln&action=create" value="regel" class="ui-button-icon" style="width:100%;">Ticketregel erstellen</button><input hidden type="text" name="ticketid" value="[ID]"></td></tr>
                                 </table>
                             </fieldset>

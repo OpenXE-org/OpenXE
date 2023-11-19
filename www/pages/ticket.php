@@ -721,7 +721,12 @@ class Ticket {
         $messages = $this->get_messages_of_ticket($id, 1, NULL);
         $recv_messages = $this->get_messages_of_ticket($id,"n.versendet != 1",NULL);
 
+        $an_alle = false;
+
         switch ($submit) {
+          case 'neue_email_alle':
+            $an_alle = true;
+            // break omitted
           case 'neue_email':
 
             $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
@@ -743,17 +748,18 @@ class Ticket {
                         $betreff = strip_tags($recv_messages[0]['betreff']); //+ #20230916 XSS
                     }
 
-                    $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='to'";
-
                     $to = $recv_messages[0]['mail'];
-                    $to_additional = $this->app->DB->Select($sql);
-
-                    if (!empty($to_additional)) {
-                      $to .= ", ".$to_additional;
-                    }
-
-                    $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='cc'";
-                    $cc = $this->app->DB->Select($sql);
+                    if ($an_alle) {
+                        $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='to'"; 
+                        $to_additional = $this->app->DB->Select($sql);
+                        if (!empty($to_additional)) {
+                          $to .= ", ".$to_additional;
+                        }
+                        $sql = "SELECT GROUP_CONCAT(DISTINCT `value` ORDER BY `value` SEPARATOR ', ') FROM ticket_header th WHERE th.ticket_nachricht = ".$recv_messages[0]['id']." AND `value` <> '".$senderAddress."' AND type='cc'";
+                        $cc = $this->app->DB->Select($sql);
+                    } else {
+                        $cc = null;
+                    }    
                 }
                 else {
                     $betreff = $ticket_from_db['betreff'];
