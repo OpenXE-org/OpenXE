@@ -30,18 +30,36 @@ class Ticketregeln {
         switch ($name) {
             case "ticketregeln_list":
                 $allowed['ticketregeln_list'] = array('list');
-                $heading = array('E-Mail Empf&auml;nger', 'E-Mail Verfasser', 'Verfasser Name', 'Betreff', 'Papierkorb', 'Pers&ouml;nlich', 'Prio', 'DSGVO', 'Verantw.', 'Aktiv', 'Men&uuml;');
+                $heading = array('E-Mail Empf&auml;nger', 'E-Mail Verfasser', 'Verfasser Name', 'Betreff', 'Papierkorb', 'Pers&ouml;nlich', 'Prio', 'DSGVO','Adresse', 'Verantw.', 'Aktiv', 'Men&uuml;');
                 $width = array('10%'); // Fill out manually later
 
-                $findcols = array('t.empfaenger_email', 't.sender_email', 't.name', 't.betreff', 't.spam', 't.persoenlich', 't.prio', 't.dsgvo', 't.warteschlange', 't.aktiv');
-                $searchsql = array('t.empfaenger_email', 't.sender_email', 't.name', 't.betreff', 't.spam', 't.persoenlich', 't.prio', 't.dsgvo', 't.warteschlange', 't.aktiv');
+                $findcols = array('t.empfaenger_email', 't.sender_email', 't.name', 't.betreff', 't.spam', 't.persoenlich', 't.prio', 't.dsgvo', 'a.name', 't.warteschlange', 't.aktiv');
+                $searchsql = array('t.empfaenger_email', 't.sender_email', 't.name', 't.betreff', 't.spam', 't.persoenlich', 't.prio', 't.dsgvo', 'a.name', 't.warteschlange', 't.aktiv');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticketregeln&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=ticketregeln&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
-                $sql = "SELECT SQL_CALC_FOUND_ROWS t.id, t.empfaenger_email, t.sender_email, t.name, t.betreff, t.spam, t.persoenlich, t.prio, t.dsgvo, w.warteschlange, t.aktiv, t.id FROM ticket_regeln t LEFT JOIN warteschlangen w ON t.warteschlange = w.label";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS t.id,
+                            t.empfaenger_email,
+                            t.sender_email,
+                            t.name,
+                            t.betreff,
+                            t.spam,
+                            t.persoenlich,
+                            t.prio,
+                            t.dsgvo,
+                            a.name,
+                            w.warteschlange,
+                            t.aktiv,
+                            t.id
+                        FROM 
+                            ticket_regeln t 
+                        LEFT JOIN warteschlangen w ON t.warteschlange = w.label
+                        LEFT JOIN adresse a ON t.adresse = a.id
+                            
+                ";
 
                 $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM ticket_regeln WHERE $where";
@@ -111,6 +129,7 @@ class Ticketregeln {
                         n.mail,
                         t.quelle,
                         t.warteschlange,
+                        t.adresse,
                         ".$this->app->erp->FormatDateTimeShort('n.zeit','zeit').",
                         ".$this->app->erp->FormatDateTimeShort('n.zeitausgang','zeitausgang').",
                         n.versendet,
@@ -130,6 +149,7 @@ class Ticketregeln {
                 $input['sender_email'] = $last_message['mail'];
                 $input['name'] = $last_message['verfasser'];
                 $input['betreff'] = $last_message['betreff'];
+                $input['adresse'] = $last_message['adresse'];
                 $input['warteschlange'] = $last_message['warteschlange'];
 
                 $from_ticket = true;
@@ -139,6 +159,7 @@ class Ticketregeln {
                     'sender_email' => $last_message['mail'],
                     'name' => $last_message['verfasser'],
                     'betreff' => $last_message['betreff'],
+                    'adresse' => $last_message['adresse'],
                     'warteschlange' => $last_message['warteschlange'],
                     'aktiv' => 1
                 );
@@ -156,6 +177,7 @@ class Ticketregeln {
                 
                 // Add checks here
                 $input['warteschlange'] = explode(" ",$input['warteschlange'])[0]; // Just the label
+                $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
 
                 $columns = "id, ";
                 $values = "$id, ";
@@ -193,7 +215,22 @@ class Ticketregeln {
 
         
             // Load values again from database
-            $result = $this->app->DB->SelectArr("SELECT t.id, t.empfaenger_email, t.sender_email, t.name, t.betreff, t.spam, t.persoenlich, t.prio, t.dsgvo, CONCAT(w.label,' ',w.warteschlange) as warteschlange, t.aktiv, t.id FROM ticket_regeln t LEFT JOIN warteschlangen w on t.warteschlange = w.label WHERE t.id=$id")[0];
+            $result = $this->app->DB->SelectArr("SELECT t.id,
+                                                    t.empfaenger_email,
+                                                    t.sender_email,
+                                                    t.name,
+                                                    t.betreff,
+                                                    t.spam,
+                                                    t.persoenlich,
+                                                    t.prio,
+                                                    t.dsgvo,
+                                                    t.adresse,
+                                                    CONCAT(w.label,' ',w.warteschlange) as warteschlange,
+                                                    t.aktiv,
+                                                    t.id 
+                                                FROM ticket_regeln t
+                                                LEFT JOIN warteschlangen w on t.warteschlange = w.label 
+                                                WHERE t.id=$id")[0];
         } 
        
 
@@ -206,12 +243,16 @@ class Ticketregeln {
          * 
          */
 
+        
+
       	$this->app->Tpl->Set('PRIO', $result['prio']==1?"checked":"");
       	$this->app->Tpl->Set('SPAM', $result['spam']==1?"checked":"");
       	$this->app->Tpl->Set('PERSOENLICH', $result['persoenlich']==1?"checked":"");
       	$this->app->Tpl->Set('DSGVO', $result['dsgvo']==1?"checked":"");
       	$this->app->Tpl->Set('AKTIV', $result['aktiv']==1?"checked":"");
 
+      	$this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$result['adresse'],false));
+        $this->app->YUI->AutoComplete("adresse","adresse");
         $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
 
 //        $this->SetInput($input);              
@@ -226,15 +267,16 @@ class Ticketregeln {
         //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
         
         $input['empfaenger_email'] = $this->app->Secure->GetPOST('empfaenger_email');
-	$input['sender_email'] = $this->app->Secure->GetPOST('sender_email');
-	$input['name'] = $this->app->Secure->GetPOST('name');
-	$input['betreff'] = $this->app->Secure->GetPOST('betreff');
-	$input['spam'] = $this->app->Secure->GetPOST('spam');
-	$input['persoenlich'] = $this->app->Secure->GetPOST('persoenlich');
-	$input['prio'] = $this->app->Secure->GetPOST('prio');
-	$input['dsgvo'] = $this->app->Secure->GetPOST('dsgvo');
-	$input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
-	$input['aktiv'] = $this->app->Secure->GetPOST('aktiv');
+	    $input['sender_email'] = $this->app->Secure->GetPOST('sender_email');
+	    $input['name'] = $this->app->Secure->GetPOST('name');
+	    $input['betreff'] = $this->app->Secure->GetPOST('betreff');
+	    $input['spam'] = $this->app->Secure->GetPOST('spam');
+	    $input['persoenlich'] = $this->app->Secure->GetPOST('persoenlich');
+	    $input['prio'] = $this->app->Secure->GetPOST('prio');
+	    $input['dsgvo'] = $this->app->Secure->GetPOST('dsgvo');
+	    $input['adresse'] = $this->app->Secure->GetPOST('adresse');
+	    $input['warteschlange'] = $this->app->Secure->GetPOST('warteschlange');
+	    $input['aktiv'] = $this->app->Secure->GetPOST('aktiv');
 	
 
         return $input;

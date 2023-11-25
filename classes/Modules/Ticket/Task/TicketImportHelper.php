@@ -285,6 +285,7 @@ class TicketImportHelper
             tr.dsgvo AS `is_gdpr_relevant`,
             tr.prio AS `priority`,
             tr.persoenlich AS `is_private`,
+            tr.adresse,
             tr.warteschlange AS `queue_id`
         FROM `ticket_regeln` AS `tr`
         WHERE
@@ -464,7 +465,7 @@ class TicketImportHelper
                 $status = 'neu';
             }
 
-            $sql = "UPDATE `ticket` SET `dsgvo` = '".$rule['is_gdpr_relevant']."', `privat` = '".$rule['is_private']."', `prio` = '".$rule['priority']."', `warteschlange` = '".$rule['queue_id']."', `status` = '".$status."' WHERE `id` = '".$ticketId."'";
+            $sql = "UPDATE `ticket` SET `dsgvo` = '".$rule['is_gdpr_relevant']."', `privat` = '".$rule['is_private']."', `prio` = '".$rule['priority']."',`adresse` = '".$rule['adresse']."', `warteschlange` = '".$rule['queue_id']."', `status` = '".$status."' WHERE `id` = '".$ticketId."'";
 
             $this->logger->debug('ticket rule sql',['sql' => $sql]);
 

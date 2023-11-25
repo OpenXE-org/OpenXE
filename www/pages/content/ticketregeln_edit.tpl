@@ -23,10 +23,12 @@
 <tr><td>{|E-Mail Verfasser|}:</td><td><input type="text" name="sender_email" value="[SENDER_EMAIL]" size="40"></td></tr>
 <tr><td>{|Verfasser Name|}:</td><td><input type="text" name="name" value="[NAME]" size="40"></td></tr>
 <tr><td>{|Betreff|}:</td><td><input type="text" name="betreff" value="[BETREFF]" size="40"></td></tr>
+<tr><td colspan="2"><hr style="border-style:solid; border-width:1px"></td></tr>
 <tr><td>{|Papierkorb|}:</td><td><input type="checkbox" name="spam" value="1" [SPAM] size="40"></td></tr>
 <tr><td>{|Pers&ouml;nlich|}:</td><td><input type="checkbox" name="persoenlich" value="1" [PERSOENLICH] size="40"></td></tr>
 <tr><td>{|Prio|}:</td><td><input type="checkbox" name="prio" value="1" [PRIO] size="40"></td></tr>
 <tr><td>{|DSGVO|}:</td><td><input type="checkbox" name="dsgvo" value="1" [DSGVO] size="40"></td></tr>
+<tr><td>{|Adresse|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="40"></td></tr>
 <tr><td>{|Verantwortliche Warteschlange|}:</td><td><input type="text" name="warteschlange" id="warteschlange" value="[WARTESCHLANGE]" size="40"></td></tr>
 <tr><td>{|Aktiv|}:</td><td><input type="checkbox" name="aktiv" value="1" [AKTIV] size="40"></td></tr>
 
