@@ -204,12 +204,11 @@ class Ticket {
 
                     $sql = "UPDATE ticket SET status = '".$status."', zeit = NOW()";
                     if ($warteschlange != '') {
-                    $sql .= ", warteschlange = '".explode(" ",$warteschlange)[0]."'";
+                        $sql .= ", warteschlange = '".explode(" ",$warteschlange)[0]."'";
                     }
 
                     $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
                     $this->app->DB->Update($sql);
-
                     $this->ticket_set_self_assigned_status($selectedIds);
                 break;
                 case 'spam_filter':
@@ -253,7 +252,7 @@ class Ticket {
                                             0,
                                             0,
                                             0,
-                                            0,
+                                            '',
                                             1
                                         )";
                                 $this->app->DB->Insert($sql);
