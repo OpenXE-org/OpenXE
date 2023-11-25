@@ -49,7 +49,19 @@
                     <tr><td>{|Status|}:</td><td><select name="status">[STATUS]</select></td></tr>
                      <tr><td>{|Verantwortlich|}:</td><td><input type="text" name="warteschlange" id="warteschlange" value="[WARTESCHLANGE]" size="20"></td></tr>
                     <tr>
-                        <td><input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;</td><td><input type="submit" class="btnBlue" name="ausfuehren" value="{|Zuordnen|}" /></td>
+                        <td>                            
+                            <input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
+                        </td>
+                        <td>
+                            <button name="submit" value="zuordnen" class="ui-button-icon" style="width:100%;">{|Zuordnen|}</button>
+                        </td>
+                    </tr>
+                    <tr [SPAM_HIDDEN]>
+                        <td>
+                        </td>
+                        <td>
+                            <button name="submit" value="spam_filter" class="ui-button-icon" title="Ticket auf Status 'Papierkorb' setzen und Absender-Adresse in Ticketregel eintragen" style="width:100%;">{|Spamregel erstellen|}</button>
+                        </td>
                     </tr>
                 </table>
 

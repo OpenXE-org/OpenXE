@@ -187,6 +187,7 @@ class Ticket {
   
         // Process multi action
         $auswahl = $this->app->Secure->GetPOST('auswahl');
+        $submit = $this->app->Secure->GetPOST('submit');
         $selectedIds = [];
         if(!empty($auswahl)) {
           foreach($auswahl as $selectedId) {
@@ -196,19 +197,72 @@ class Ticket {
             }
           }          
 
-          $status = $this->app->Secure->GetPOST('status');
-          $warteschlange = $this->app->Secure->GetPOST('warteschlange');
+            switch ($submit) {
+                case 'zuordnen':
+                    $status = $this->app->Secure->GetPOST('status');
+                    $warteschlange = $this->app->Secure->GetPOST('warteschlange');
 
-          $sql = "UPDATE ticket SET status = '".$status."', zeit = NOW()";
-          if ($warteschlange != '') {
-            $sql .= ", warteschlange = '".explode(" ",$warteschlange)[0]."'";
-          }
+                    $sql = "UPDATE ticket SET status = '".$status."', zeit = NOW()";
+                    if ($warteschlange != '') {
+                    $sql .= ", warteschlange = '".explode(" ",$warteschlange)[0]."'";
+                    }
 
-          $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
-          $this->app->DB->Update($sql);
+                    $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
+                    $this->app->DB->Update($sql);
 
-          $this->ticket_set_self_assigned_status($selectedIds);
+                    $this->ticket_set_self_assigned_status($selectedIds);
+                break;
+                case 'spam_filter':
+                    if($this->app->erp->RechteVorhanden('ticketregeln','create')) {
+                        $sql = "UPDATE ticket SET status = 'spam', zeit = NOW()";
+                        $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
+                        $this->app->DB->Update($sql);
 
+                        foreach ($selectedIds as $selectedId) {
+
+                            // Check existing
+                            $sql = "SELECT id FROM ticket_regeln WHERE
+                                        empfaenger_email = '' AND
+                                        sender_email = (SELECT mailadresse FROM ticket WHERE id = ".$selectedId." LIMIT 1) AND
+                                        name = '' AND
+                                        betreff = '' AND
+                                        spam = 1 AND
+                                        aktiv = 1
+                                    ";
+
+                            if (!$this->app->DB->Select($sql)) {
+                                $sql = "INSERT IGNORE INTO ticket_regeln (
+                                                        empfaenger_email,
+                                                        sender_email,
+                                                        name,
+                                                        betreff,
+                                                        spam,
+                                                        persoenlich,
+                                                        prio,
+                                                        dsgvo,
+                                                        adresse,
+                                                        warteschlange,
+                                                        aktiv
+                                        ) VALUES (
+                                            '',
+                                            (SELECT mailadresse FROM ticket WHERE id = ".$selectedId." LIMIT 1),
+                                            '',
+                                            '',
+                                            1,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        )";
+                                $this->app->DB->Insert($sql);
+                            }
+                        }
+
+                    }
+                break;
+            }    
         }
 
         // List
@@ -222,6 +276,10 @@ class Ticket {
 
         $this->app->Tpl->Set('STATUS', $this->app->erp->GetStatusTicketSelect('neu'));
         $this->app->YUI->AutoComplete("warteschlange","warteschlangename");
+
+        if(!$this->app->erp->RechteVorhanden('ticketregeln','create')) {
+            $this->app->Tpl->Set('SPAM_HIDDEN', 'hidden');
+        }
 
         $this->app->YUI->TableSearch('TAB1', 'ticket_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "ticket_list.tpl");
