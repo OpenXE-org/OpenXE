@@ -2676,7 +2676,7 @@ public function NavigationHooks(&$menu)
   // @refactor in Dateien Modul
   function AnzahlDateien($objekt,$id)
   {
-    return $this->app->DB->Select("SELECT COUNT(id) FROM datei_stichwoerter WHERE objekt='$objekt' AND parameter='$id'");
+    return $this->app->DB->Select("SELECT COUNT(ds.id) FROM datei_stichwoerter ds INNER JOIN datei d ON d.id = ds.datei WHERE ds.objekt='$objekt' AND ds.parameter='$id' AND d.geloescht <> 1");
   }
 
 
@@ -37298,7 +37298,7 @@ function Firmendaten($field,$projekt="")
 
       function GetDateiSubjektObjekt($subjekt,$objekt,$parameter)
       {
-        $dateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' GROUP by datei");
+        $dateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter INNER JOIN datei d on d.id = datei WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' AND d.geloescht <> 1 GROUP by datei");
         if(empty($dateien)) {
           return null;
         }
