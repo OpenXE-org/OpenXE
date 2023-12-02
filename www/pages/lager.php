@@ -174,31 +174,7 @@ class Lager extends GenLager {
         // fester filter
         $where = " l.geloescht=0 AND l.id!=0 AND l.lager='$id' ";
         $count = "SELECT COUNT(id) FROM lager_platz WHERE geloescht=0 AND lager='$id' ";
-        break;
-      case 'lagerletztebewegungen':
-        $allowed['lager'] = array('letztebewegungen');
-
-        // headings
-
-        // headings
-
-        $heading = array('Datum', 'Lager', 'Menge', 'Nummer', 'Artikel', 'Richtung', 'Referenz', 'Bearbeiter', 'Projekt', 'Men&uuml;');
-        $width = array('1%', '5%', '5%', '5%', '5%', '5%', '40%', '20%', '5%', '1%');
-        $findcols = array('zeit', 'lager', 'menge', 'nummer', 'name_de', 'Richtung', 'referenz', 'bearbeiter', 'projekt', 'id');
-        $searchsql = array('lpi.referenz', 'lpi.bearbeiter', 'p.abkuerzung', 'DATE_FORMAT(lpi.zeit,\'%d.%m.%Y\')', 'lp.kurzbezeichnung', 'a.name_de', 'a.nummer');
-        $defaultorder = 10; //Optional wenn andere Reihenfolge gewuenscht
-        $alignright = array(3);
-        $defaultorderdesc = 1;
-        $menu = "-";
-
-        $sql = "SELECT SQL_CALC_FOUND_ROWS lpi.id,
-                DATE_FORMAT(lpi.zeit,'%d.%m.%Y') as datum, lp.kurzbezeichnung as lager, trim(lpi.menge)+0 as menge, 
-                a.nummer, a.name_de, if(lpi.eingang,'Eingang','Ausgang') as Richtung, substring(lpi.referenz,1,60) as referenz, lpi.bearbeiter as bearbeiter, p.abkuerzung as projekt, 
-                lpi.id FROM lager_bewegung lpi LEFT JOIN lager_platz as lp ON lpi.lager_platz=lp.id LEFT JOIN projekt p ON lpi.projekt=p.id LEFT JOIN artikel a ON a.id=lpi.artikel";
-
-
-        $count = "SELECT COUNT(lpi.id) FROM lager_bewegung lpi LEFT JOIN lager_platz as lp ON lpi.lager_platz=lp.id LEFT JOIN projekt p ON lpi.projekt=p.id ";
-        break;
+        break;  
       case 'lagertabelle':
         $allowed['lager'] = array('list');
         $defaultCountry = $app->erp->Firmendaten('land');
@@ -832,7 +808,23 @@ class Lager extends GenLager {
 
         $datecols = array(6);
 
-        $sql = "SELECT SQL_CALC_FOUND_ROWS i.id, l.bezeichnung, lp.kurzbezeichnung as regal, a.nummer, a.name_de, IF(i.eingang, 'Eingang', 'Ausgang'), if(i.eingang, CONCAT('+', ' ', trim(i.menge)+0), CONCAT('-', ' ', trim(i.menge)+0)) as menge, DATE_FORMAT(i.zeit,'%d.%m.%Y') as datum, i.referenz, i.bearbeiter, p.abkuerzung AS projektbewegung, i.id FROM lager_bewegung i LEFT JOIN lager_platz lp ON lp.id=i.lager_platz LEFT JOIN lager l ON lp.lager = l.id LEFT JOIN artikel a ON i.artikel=a.id LEFT JOIN projekt p ON l.projekt = p.id";
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                    i.id,
+                    l.bezeichnung,
+                    lp.kurzbezeichnung as regal,
+                    a.nummer,
+                    a.name_de,
+                    IF(i.eingang,
+                    'Eingang',
+                    'Ausgang'),
+                    if(i.eingang,
+                    CONCAT('+',' ',trim(i.menge)+0),CONCAT('-',' ',trim(i.menge)+0)) as menge,
+                    ".$app->erp->FormatDateTimeShort('i.zeit')." as datum,
+                    i.referenz,
+                    i.bearbeiter,
+                    p.abkuerzung AS projektbewegung,
+                    i.id 
+                    FROM lager_bewegung i LEFT JOIN lager_platz lp ON lp.id=i.lager_platz LEFT JOIN lager l ON lp.lager = l.id LEFT JOIN artikel a ON i.artikel=a.id LEFT JOIN projekt p ON l.projekt = p.id";
    
                
         $lager = $app->User->GetParameter("lager_bewegungalle_lager");
@@ -1107,6 +1099,7 @@ class Lager extends GenLager {
     $this->app->ActionHandler("buchenzwischenlagerdelete", "LagerBuchenZwischenlagerDelete");
     $this->app->ActionHandler("bucheneinlagern", "LagerBuchenEinlagern");
     $this->app->ActionHandler("buchenauslagern", "LagerBuchenAuslagern");
+    $this->app->ActionHandler("umlagernlieferschein", "LagerBuchenUmlagernLieferschein");
     $this->app->ActionHandler("artikelentfernenreserviert", "LagerArtikelEntfernenReserviert");
     $this->app->ActionHandler("letztebewegungen", "LagerLetzteBewegungen");
     $this->app->ActionHandler("schnelleinlagern", "LagerSchnellEinlagern");
@@ -3156,12 +3149,50 @@ class Lager extends GenLager {
     $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
   }
 
+    function LagerBuchenUmlagernLieferschein() {
+        $this->LagerBuchenMenu();
+        $this->app->Tpl->AddMessage('info',"Gesamten Lagerplatz in einen neuen Lieferschein zur Umlagerung geben.");   
+        $this->app->YUI->AutoComplete("quelllager", "lagerplatz");    
+        $quelllager = $this->app->Secure->GetPOST('quelllager');
+
+        $submit = $this->app->Secure->GetPOST('submit');
+        if ($submit == 'lieferschein') {
+            $quellager_id = $this->app->erp->ReplaceLagerPlatz(true, $quelllager, true);
+            if (empty($quellager_id)) {
+                $this->app->Tpl->AddMessage('error',"Bitte Quelllager angeben.");
+            } else {
+                $sql = "SELECT artikel, SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$quellager_id AND menge > 0 GROUP BY artikel";   
+          	    $positionen = $this->app->DB->SelectArr($sql);
+
+                if (empty($positionen)) {
+                    $this->app->Tpl->AddMessage('error',"Lager ist leer.");
+                } else {
+                    $id = $this->app->erp->ImportCreateLieferschein(null);
+                    if (!empty($id)) {
+                        $this->app->erp->LieferscheinProtokoll($id,"Lieferschein aus Lager ".$quelllager." erstellt");
+                        $this->app->DB->Update("UPDATE lieferschein SET standardlager = '$quellager_id' WHERE id = '$id' LIMIT 1");
+
+                        foreach ($positionen as $position) {
+                            //  public function AddLieferscheinPositionArtikelID($lieferschein, $artikel,$menge,$bezeichnung,$beschreibung,$datum)
+                            $this->app->erp->AddLieferscheinPositionArtikelID($id, $position['artikel'],$position['menge'],null,null,null);
+                        }
+
+                        $this->app->Location->execute("index.php?module=lieferschein&action=edit&id=$id");
+                    } else {
+                        $this->app->Tpl->AddMessage('error',"Lieferschein konnte nicht erzeugt werden.");
+                    }
+                }                
+            }
+        }
+
+        $this->app->Tpl->Set('QUELLLAGER',$this->app->erp->ReplaceLagerPlatz(false, $quellager_id, false));
+        $this->app->Tpl->Parse('PAGE', 'lager_umlagern_lieferschein.tpl');
+    }
+
   function LagerLetzteBewegungen()
   {
     $this->LagerBuchenMenu();
-
-    $this->app->YUI->TableSearch('TAB1', 'lagerletztebewegungen','show','','',basename(__FILE__), __CLASS__);
-
+    $this->app->YUI->TableSearch('TAB1', 'lager_allebewegungenlist','show','','',basename(__FILE__), __CLASS__);
     $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
   } 
 
@@ -3171,6 +3202,7 @@ class Lager extends GenLager {
     $this->app->erp->Headlines('Lager');
     if($this->app->erp->Version()!=='stock') {
       $this->app->erp->MenuEintrag("index.php?module=lager&action=buchenauslagern&cmd=umlagern&id=$id", 'Umlagern');
+      $this->app->erp->MenuEintrag("index.php?module=lager&action=umlagernlieferschein&id=$id", 'Umlagern mit Lieferschein');
       $this->app->erp->MenuEintrag("index.php?module=lager&action=buchenauslagern&id=$id", 'Auslagern');
       $this->app->erp->MenuEintrag("index.php?module=lager&action=bucheneinlagern&id=$id", 'Einlagern');
       $this->app->erp->MenuEintrag("index.php?module=lager&action=buchenzwischenlager&id=$id", 'Zwischenlager');
