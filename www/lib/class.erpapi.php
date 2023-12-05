@@ -7157,7 +7157,7 @@ title: 'Abschicken',
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Lagermindestmengen','lagermindestmengen','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Artikelkontingente','artikelkontingente','list');
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Ein- und auslagern','lager','bucheneinlagern');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Ein- und auslagern','lager','letztebewegungen');
     $navarray['menu']['admin'][$menu]['sec'][]   = array('Zwischenlager','lager','buchenzwischenlager');
 
     $navarray['menu']['admin'][++$menu]['first']  = array('Buchhaltung','rechnung','list');
