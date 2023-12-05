@@ -15,6 +15,7 @@ class WidgetLieferschein extends WidgetGenlieferschein
   function ExtendsForm()
   {
     $id = $this->app->Secure->GetGET("id");
+
     if($this->app->Secure->GetPOST("speichern")!="")
     {
       $deliveryNote = $this->app->DB->SelectRow("SELECT `projekt`, `schreibschutz` FROM `lieferschein` WHERE `id` = {$id}");
@@ -36,6 +37,7 @@ class WidgetLieferschein extends WidgetGenlieferschein
         }
       }
     }
+
     if($this->app->Secure->GetGET("action")=="edit")
     {
       $this->app->Tpl->Add('FURTHERTABS','<li><a href="index.php?module=lieferschein&action=minidetail&id=[ID]&frame=true#tabs-4">Protokoll</a></li>');
@@ -49,7 +51,7 @@ class WidgetLieferschein extends WidgetGenlieferschein
     $this->app->YUI->AutoComplete("projekt","projektname",1);
     $this->app->YUI->AutoComplete("auftragid","auftrag",1);
     $this->app->YUI->AutoComplete("aktion","aktionscode",1);
-    $this->app->YUI->AutoComplete("standardlager","lager");
+    $this->app->YUI->AutoComplete("standardlager","lagerplatz");
 
     $this->app->YUI->AutoComplete("lieferbedingung","lieferbedingungen");
 
@@ -62,7 +64,7 @@ class WidgetLieferschein extends WidgetGenlieferschein
     $this->form->ReplaceFunction("adresse",$this,"ReplaceKunde");
     $this->form->ReplaceFunction("lieferant",$this,"ReplaceLieferant");
     $this->form->ReplaceFunction("auftragid",$this,"ReplaceAuftrag");
-    $this->form->ReplaceFunction("standardlager",$this,"ReplaceLager");
+    $this->form->ReplaceFunction("standardlager",$this,"ReplaceLagerPlatz");
 
     if($this->app->erp->ModulVorhanden('kommissionskonsignationslager'))
     {
