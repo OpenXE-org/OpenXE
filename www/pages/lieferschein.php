@@ -478,9 +478,13 @@ class Lieferschein extends GenLieferschein
         exit();
     }
 
-    if ($umgelagert) {
-        $this->app->Tpl->AddMessage('error',"Lieferschein wurde bereits umgelagert.");
+    $submit = $this->app->Secure->GetPOST('submit');
+    $erneut = $this->app->Secure->GetPOST('erneut');
+
+    if ($umgelagert && !$erneut) {
+        $this->app->Tpl->AddMessage('warning',"Lieferschein wurde bereits umgelagert.");
     } else {
+        $this->app->Tpl->Set('ERNEUT_UMLAGERN_HIDDEN','hidden');
         $submit = $this->app->Secure->GetPOST('submit');
         if ($submit == 'umlagern') {
 
@@ -544,6 +548,8 @@ class Lieferschein extends GenLieferschein
     $this->app->Tpl->Set('QUELLLAGER',$this->app->erp->ReplaceLagerPlatz(false, $quellager_id, false));
 
     $this->app->Tpl->Set('ZIELLAGER',$this->app->erp->ReplaceLagerPlatz(false, $ziellager_id, false));
+
+    $this->app->Tpl->Set('ERNEUT_CHECKED',$erneut?'checked':'');
 
     $this->app->Tpl->Parse('PAGE',"lieferschein_umlagern.tpl");    
   }

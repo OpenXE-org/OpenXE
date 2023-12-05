@@ -19,6 +19,7 @@
                                       <tr><td><b>{|Ziellager|}:</b></td><td><input type="text" id="ziellager" name="ziellager" value="[ZIELLAGER]"  size="27" style="width:200px"></td></tr>
                                     <tr>
                                         <td>
+                                            <p [ERNEUT_UMLAGERN_HIDDEN]><input type="checkbox" name="erneut" id="erneut" value="1" size="20" [ERNEUT_CHECKED]>{|Erneut umlagern|}</input></p>
                                         </td>
                                         <td>
                                             <button name="submit" value="umlagern" class="ui-button-icon" style="width:200px;">
