@@ -526,6 +526,7 @@ class Lieferschein extends GenLieferschein
                     $this->app->DB->Update($sql);
                     $this->app->erp->LieferscheinProtokoll($id,"Lieferschein umgelagert von ".$quelllager." nach ".$ziellager);
                     $this->app->Tpl->AddMessage('success','Erfolgreich umgelagert.');
+		    $erneut = null;
                 } else {                
                     $this->app->Tpl->AddMessage('error',"Mengen im Quelllager nicht ausreichend.");   
                     $tmp = new EasyTable($this->app);
