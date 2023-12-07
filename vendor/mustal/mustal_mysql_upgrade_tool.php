@@ -21,7 +21,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 Compare two database structures
 Returns a structured array containing information on all the differences.
 
-function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql) : int
+function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, bool $strict) : int
 Generate the SQL needed to upgrade the database to match the definition, based on a comparison.
 
 Data structure in Array and JSON
@@ -542,7 +542,7 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 // 11 Table type upgrade not supported
 // 12 Upgrade type not supported
 
-function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers) : array {
+function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers, bool $strict) : array {
 
     $result = array();
     $upgrade_sql = array();    
@@ -752,8 +752,10 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
     $upgrade_sql = array_unique($upgrade_sql);
 
     if (count($upgrade_sql) > 0) {
-
-        array_unshift($upgrade_sql,"SET SQL_MODE='ALLOW_INVALID_DATES';","SET SESSION innodb_strict_mode=OFF;");
+        array_unshift($upgrade_sql,"SET SQL_MODE='ALLOW_INVALID_DATES';");
+        if (!$strict) {
+            array_unshift($upgrade_sql,"SET SESSION innodb_strict_mode=OFF;");
+        }
     }
 
     return($result);

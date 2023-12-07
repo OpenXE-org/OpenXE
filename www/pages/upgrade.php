@@ -41,29 +41,71 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
 
-        //function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection, bool $origin) {  
-
         $directory = dirname(getcwd())."/upgrade";
 
         switch ($submit) {
             case 'check_upgrade':
                 $this->app->Tpl->Set('UPGRADE_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main($directory,$verbose,true,false,false,true,false,$force,false,false);
+                upgrade_main(   directory: $directory,
+                                verbose: $verbose,
+                                check_git: true,
+                                do_git: false,
+                                export_db: false,
+                                check_db: true,
+                                strict_db: false,
+                                do_db: false,
+                                force: $force,
+                                connection: false,
+                                origin: false
+                );
             break;
             case 'do_upgrade':
                 unlink($logfile);
-                upgrade_main($directory,$verbose,true,true,false,true,true,$force,false,false);  
+                upgrade_main(   directory: $directory,
+                                verbose: $verbose,
+                                check_git: true,
+                                do_git: true,
+                                export_db: false,
+                                check_db: true,
+                                strict_db: false,
+                                do_db: true,
+                                force: $force,
+                                connection: false,
+                                origin: false
+                );
             break;    
             case 'check_db':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main($directory,$db_verbose,false,false,false,true,false,$force,false,false);  
+                upgrade_main(   directory: $directory,
+                                verbose: $db_verbose,
+                                check_git: false,
+                                do_git: false,
+                                export_db: false,
+                                check_db: true,
+                                strict_db: false,
+                                do_db: false,
+                                force: $force,
+                                connection: false,
+                                origin: false
+                );
             break;    
             case 'do_db_upgrade':
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
                 unlink($logfile);
-                upgrade_main($directory,$db_verbose,false,false,false,true,true,$force,false,false);  
+                upgrade_main(   directory: $directory,
+                                verbose: $db_verbose,
+                                check_git: false,
+                                do_git: false,
+                                export_db: false,
+                                check_db: true,
+                                strict_db: false,
+                                do_db: true,
+                                force: $force,
+                                connection: false,
+                                origin: false
+                );
             break;    
             case 'refresh':
             break;

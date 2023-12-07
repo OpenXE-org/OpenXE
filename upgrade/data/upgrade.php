@@ -112,6 +112,12 @@ if (php_sapi_name() == "cli") {
           $check_db = true;
         } else {
         } 
+
+        if (in_array('-strict', $argv)) {
+          $strict_db = true;
+        } else {
+          $strict_db = false;
+        } 
         
         if (in_array('-do', $argv)) {
             if (!$check_git && !$check_db) {
@@ -127,7 +133,17 @@ if (php_sapi_name() == "cli") {
         }
 
         if ($check_git || $check_db || $do_git || $do_db) {
-            upgrade_main($directory,$verbose,$check_git,$do_git,$export_db,$check_db,$do_db,$force,$connection,$origin);
+            upgrade_main(   directory: $directory,
+                            verbose: $verbose,
+                            check_git: $check_git,
+                            do_git: $do_git,
+                            export_db: $export_db,
+                            check_db: $check_db,
+                            strict_db: $strict_db,
+                            do_db: $do_db,
+                            force: $force,
+                            connection: $connection,
+                            origin: $origin);
         } else {
             info();
         }
@@ -139,7 +155,7 @@ if (php_sapi_name() == "cli") {
 } 
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $do_db, bool $force, bool $connection, bool $origin) {  
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin) {  
   
     $mainfolder = dirname($directory);
     $datafolder = $directory."/data";
@@ -379,7 +395,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         echo_out("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
-        $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers);
+        $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers, $strict_db);
 
         if (!empty($result)) {
             abort(count($result)." errors.\n");
@@ -482,6 +498,7 @@ function info() {
     echo_out("\t-f: force override of existing files\n");
     echo_out("\t-o: update from origin instead of remote.json\n");
     echo_out("\t-connection use connection.json in data folder instead of user.inc.php\n");
+    echo_out("\t-strict: innodb_strict_mode=ON\n");
     echo_out("\t-clean: (not yet implemented) create the needed SQL to remove items from the database not in the JSON\n");
     echo_out("\n");
 }
