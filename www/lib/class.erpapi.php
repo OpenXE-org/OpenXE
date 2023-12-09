@@ -20668,7 +20668,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $this->app->DB->Delete("DELETE lager_charge FROM lager_charge INNER JOIN lager_platz ON lager_platz.id=lager_charge.lager_platz
             WHERE lager_platz.verbrauchslager='1' AND lager_platz.id = '$regal'");
 
-        $this->app->DB->Delete("DELETE FROM lager_seriennummern
+        $this->app->DB->Delete("DELETE lager_seriennummern FROM lager_seriennummern
             INNER JOIN lager_platz ON lager_platz.id=lager_seriennummern.lager_platz
             WHERE lager_platz.verbrauchslager='1' AND lager_platz.id = '$regal'");
 
@@ -20687,7 +20687,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $this->app->DB->Delete("DELETE lager_charge FROM lager_charge INNER JOIN lager_platz ON lager_platz.id=lager_charge.lager_platz
             WHERE lager_platz.verbrauchslager='1'");
 
-        $this->app->DB->Delete("DELETE FROM lager_seriennummern
+        $this->app->DB->Delete("DELETE lager_seriennummern FROM lager_seriennummern
             INNER JOIN lager_platz ON lager_platz.id=lager_seriennummern.lager_platz
             WHERE lager_platz.verbrauchslager='1'");
 
