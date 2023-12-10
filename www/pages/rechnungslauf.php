@@ -94,7 +94,7 @@ class Rechnungslauf {
                                 DATE_ADD(@start, INTERVAL (FLOOR(TIMESTAMPDIFF(DAY, @start, IF(aa.enddatum = '0000-00-00' OR aa.enddatum > '$scalcdate', '$scalcdate', aa.enddatum)) / 30)+1)*30 DAY )
                         END, '%d.%m.%Y') SEPARATOR '<br>') as end,
                     SUM((100-aa.rabatt)/100 * aa.preis * aa.menge * 
-                        (CASE
+                        (GREATEST(aa.zahlzyklus, CASE
                             WHEN aa.preisart = 'monat' THEN
                                 TIMESTAMPDIFF(MONTH, @start, @end)
                             WHEN aa.preisart = 'jahr' THEN
@@ -102,7 +102,7 @@ class Rechnungslauf {
                             WHEN aa.preisart = '30tage' THEN
                                 FLOOR(TIMESTAMPDIFF(DAY, @start, @end) / 30)
                             END
-                        )
+                        ))
                     ) as amount,
                     adr.id
                     FROM abrechnungsartikel aa
