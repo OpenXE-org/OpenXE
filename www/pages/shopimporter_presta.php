@@ -23,6 +23,7 @@ class Shopimporter_Presta extends ShopimporterBase
   // TODO
   private $langidToIso = [3 => 'de', 1 => 'en'];
   private $taxationByDestinationCountry;
+  private $orderSearchLimit;
 
 
   public function __construct($app, $intern = false)
@@ -284,17 +285,20 @@ class Shopimporter_Presta extends ShopimporterBase
 
       $cart['articlelist'] = [];
       foreach ($order->associations->order_rows->order_row as $order_row) {
-
-        $steuersatz = (strval($order_row->unit_price_tax_incl) / strval($order_row->unit_price_tax_excl)) - 1;
-        $steuersatz = round($steuersatz, 1);
-
-        $cart['articlelist'][] = [
+        $article = [
             'articleid' => strval($order_row->product_reference),
             'name' => strval($order_row->product_name),
             'quantity' => strval($order_row->product_quantity),
             'price_netto' => strval($order_row->unit_price_tax_excl),
-            'steuersatz' => $steuersatz
         ];
+
+        if ($order_row->unit_price_tax_excl > 0) {
+          $steuersatz = (strval($order_row->unit_price_tax_incl) / strval($order_row->unit_price_tax_excl)) - 1;
+          $steuersatz = round($steuersatz, 1);
+          $article['steuersatz'] = $steuersatz;
+        }
+
+        $cart['articlelist'][] = $article;
       }
 
       $fetchedOrders[] = [
@@ -381,12 +385,25 @@ class Shopimporter_Presta extends ShopimporterBase
     $res['kurztext_de'] = strip_tags($shortdescriptions['de']);
     $res['kurztext_en'] = strip_tags($shortdescriptions['en']);
     $res['hersteller'] = strval($product->product->manufacturer_name);
-    $res['metakeywords_de'] = $metakeywords['de'];
-    $res['metakeywords_en'] = $metakeywords['en'];
     $res['metatitle_de'] = $metatitles['de'];
     $res['metatitle_en'] = $metatitles['en'];
     $res['metadescription_de'] = $metadescriptions['de'];
     $res['metadescription_en'] = $metadescriptions['en'];
+
+    $tags = $product->product->associations->tags->tag;
+    $keywords = [];
+    foreach ($tags as $tag) {
+      $tagid = intval($tag->id);
+      $endpoint = "tags/{$tagid}";
+      $tagdata = $this->prestaRequest('GET', $endpoint);
+      $tagiso = $this->langidToIso[intval($tagdata->tag->id_lang)];
+      $tagvalue = strval($tagdata->tag->name);
+      if (!array_key_exists($tagiso, $keywords))
+        $keywords[$tagiso] = [];
+      $keywords[$tagiso][] = $tagvalue;
+    }
+    $res['metakeywords_de'] = join(',', $keywords['de'] ?? []);
+    $res['metakeywords_en'] = join(',', $keywords['en'] ?? []);
 
     $images = [];
     foreach ($product->product->associations->images->image as $img) {

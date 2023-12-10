@@ -31,14 +31,14 @@ class SubscriptionModule implements SubscriptionModuleInterface
         aa.id, 
         @start := GREATEST(aa.startdatum, aa.abgerechnetbis) as start,
         @end := IF(aa.enddatum = '0000-00-00' OR aa.enddatum > :calcdate, :calcdate, aa.enddatum) as end,
-        @cycles := CASE
+        @cycles := GREATEST(aa.zahlzyklus, CASE
             WHEN aa.preisart = 'monat' THEN
                 TIMESTAMPDIFF(MONTH, @start, @end)
             WHEN aa.preisart = 'jahr' THEN
                 TIMESTAMPDIFF(YEAR,  @start, @end)
             WHEN aa.preisart = '30tage' THEN
                 FLOOR(TIMESTAMPDIFF(DAY, @start, @end) / 30)
-        END+1 as cycles,
+        END+1) as cycles,
         CASE
             WHEN aa.preisart = 'monat' THEN
                 DATE_ADD(@start, INTERVAL @cycles MONTH)
