@@ -12,6 +12,7 @@ import AddGlobalToArticle from "./AddGlobalToArticle.vue";
 import GroupEdit from "./GroupEdit.vue";
 import OptionEdit from "./OptionEdit.vue";
 import Variant from "./Variant.vue";
+import Translation from "./Translation.vue";
 
 const model = ref(null);
 
@@ -42,6 +43,10 @@ document.getElementById('main').addEventListener('click', async (ev) => {
         url = 'index.php?module=matrixprodukt&action=artikel&cmd=variantdelete';
         await axios.post(url, {variantId: ds.variantId});
         break;
+      case 'translationDelete':
+        url = 'index.php?module=matrixprodukt&action=translation&cmd=delete';
+        await axios.post(url, {id: ds.id, type: ds.type});
+        break;
     }
     onSave();
     return;
@@ -66,5 +71,6 @@ function onClose() {
     <GroupEdit v-else-if="model.action === 'groupEdit'" v-bind="model" @close="onClose" @save="onSave" />
     <OptionEdit v-else-if="model.action === 'optionEdit'" v-bind="model" @close="onClose" @save="onSave" />
     <Variant v-else-if="model.action === 'variantEdit'" v-bind="model" @close="onClose" @save="onSave" />
+    <Translation v-else-if="model.action === 'translationEdit'" v-bind="model" @close="onClose" @save="onSave" />
   </template>
 </template>

@@ -303,7 +303,7 @@ class ModuleScriptCache
     foreach ($this->javascriptModules as $module) {
       if (is_object($module)) {
         if (defined('VITE_DEV_SERVER')) {
-          $url = VITE_DEV_SERVER . $module->src;
+          $url = 'http://' . VITE_DEV_SERVER . '/' . $module->src;
         } else {
           $url = $this->assetDir . '/' . $module->file;
           if (isset($module->css)) {

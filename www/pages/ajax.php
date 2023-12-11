@@ -1626,6 +1626,9 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $newarr[] = $arr[$i]['iso'];
         }
         break;
+      case "activelanguages":
+        $newarr = $this->app->DB->SelectArr('SELECT * FROM sprachen WHERE aktiv=1');
+        break;
       case "geschaeftsbrief_vorlagen":
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',subjekt,' (',sprache,')') as name FROM geschaeftsbrief_vorlagen");
         $carr = !empty($arr)?count($arr):0;

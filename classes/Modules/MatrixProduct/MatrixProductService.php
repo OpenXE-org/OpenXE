@@ -10,6 +10,7 @@ use Xentral\Components\Database\Database;
 use Xentral\Modules\Article\Gateway\ArticleGateway;
 use Xentral\Modules\MatrixProduct\Data\Option;
 use Xentral\Modules\MatrixProduct\Data\Group;
+use Xentral\Modules\MatrixProduct\Data\Translation;
 
 final class MatrixProductService
 {
@@ -165,6 +166,36 @@ final class MatrixProductService
 
   public function DeleteVariant(int $variantId) : void {
     $this->gateway->DeleteVariantById($variantId);
+  }
+  //endregion
+
+  //region Translations
+  public function GetGroupTranslation(int $id) : Translation {
+      return $this->gateway->GetGroupTranslationById($id);
+  }
+
+  public function GetOptionTranslation(int $id) : Translation {
+      return $this->gateway->GetOptionTranslationById($id);
+  }
+
+  public function SaveGroupTranslation(Translation $obj) : Translation {
+      if ($obj->id > 0)
+          return $this->gateway->UpdateGroupTranslation($obj);
+      return $this->gateway->InsertGroupTranslation($obj);
+  }
+
+  public function SaveOptionTranslation(Translation $obj) : Translation {
+      if ($obj->id > 0)
+          return $this->gateway->UpdateOptionTranslation($obj);
+      return $this->gateway->InsertOptionTranslation($obj);
+  }
+
+  public function DeleteGroupTranslation(int $id) : void {
+      $this->gateway->DeleteGroupTranslation($id);
+  }
+
+  public function DeleteOptionTranslation(int $id) : void {
+      $this->gateway->DeleteOptionTranslation($id);
   }
   //endregion
 }

@@ -330,6 +330,9 @@ class Player {
     $this->app->Tpl->Add('MODULEJAVASCRIPTHEAD', $this->app->ModuleScriptCache->GetJavascriptHtmlTags('head'));
     $this->app->Tpl->Add('MODULEJAVASCRIPTBODY', $this->app->ModuleScriptCache->GetJavascriptHtmlTags('body'));
     $this->app->Tpl->Set('JAVASCRIPTMODULES', $this->app->ModuleScriptCache->GetJavascriptModulesHtmlTags());
+    if (defined('VITE_DEV_SERVER')) {
+        $this->app->Tpl->Add('ADDITIONALCSPHEADER', VITE_DEV_SERVER.' ');
+    }
 
     $permission = true;
     if(isset($myApp) && method_exists($myApp,'CheckRights'))$permission = $myApp->CheckRights();

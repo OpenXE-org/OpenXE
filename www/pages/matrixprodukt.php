@@ -9,6 +9,7 @@ use Xentral\Components\Http\Request;
 use Xentral\Components\Http\Response;
 use Xentral\Modules\MatrixProduct\Data\Group;
 use Xentral\Modules\MatrixProduct\Data\Option;
+use Xentral\Modules\MatrixProduct\Data\Translation;
 use Xentral\Modules\MatrixProduct\MatrixProductService;
 
 class Matrixprodukt
@@ -34,12 +35,14 @@ class Matrixprodukt
         $this->app->ActionHandler("list", "ActionList");
         $this->app->ActionHandler("optionenlist", "ActionOptionList");
         $this->app->ActionHandler("artikel", "ActionArticle");
+        $this->app->ActionHandler("translation", "ActionTranslation");
         $this->app->ActionHandlerListen($app);
     }
 
     private function createMenu(): void
     {
         $this->app->erp->MenuEintrag("index.php?module=matrixprodukt&action=list", "&Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=matrixprodukt&action=translation", "&Uuml;bersetzungen");
     }
 
     public function Install()
@@ -156,6 +159,32 @@ class Matrixprodukt
 //                  FROM matrixprodukt_eigenschaftengruppen_artikel mga
                 //                LEFT OUTER JOIN matrixprodukt_eigenschaftenoptionen_artikel moa on moa.gruppe = mga.id WHERE $where";
                 break;
+            case "matrixproduct_group_translations":
+                $heading = array('Name', 'Name (extern)', 'Sprache', 'Übersetzung Name', 'Übersetzung Name (extern)', 'Men&uuml;');
+                $width = array('20%', '20%', '5%', '20%', '20%', '1%');
+                $findcols = array('mat.name_from', 'mat.name_external_from', 'mat.name_to', 'mat.name_external_to');
+                $searchsql = array('mat.name_from', 'mat.name_external_from');
+                $menu = "<table><tr><td nowrap>"
+                    . "<img class=\"vueAction\" data-action=\"translationEdit\" data-type=\"group\" data-id=\"%value%\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\">&nbsp;"
+                    . "<img class=\"vueAction\" data-action=\"translationDelete\" data-type=\"group\" data-id=\"%value%\" src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\">"
+                    . "</td></tr></table>";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS mat.id, mat.name_from, mat.name_external_from, mat.language_to, mat.name_to, mat.name_external_to, mat.id FROM matrix_article_translation mat";
+                $where = "1";
+                $count = "SELECT count(DISTINCT mat.id) FROM matrix_article_translation mat WHERE $where";
+                break;
+            case "matrixproduct_option_translations":
+                $heading = array('Name', 'Name (extern)', 'Sprache', 'Übersetzung Name', 'Übersetzung Name (extern)', 'Men&uuml;');
+                $width = array('20%', '20%', '5%', '20%', '20%', '1%');
+                $findcols = array('mat.name_from', 'mat.name_external_from', 'mat.name_to', 'mat.name_external_to');
+                $searchsql = array('mat.name_from', 'mat.name_external_from');
+                $menu = "<table><tr><td nowrap>"
+                    . "<img class=\"vueAction\" data-action=\"translationEdit\" data-type=\"option\" data-id=\"%value%\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\">&nbsp;"
+                    . "<img class=\"vueAction\" data-action=\"translationDelete\" data-type=\"option\" data-id=\"%value%\" src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\">"
+                    . "</td></tr></table>";
+                $sql = "SELECT SQL_CALC_FOUND_ROWS mat.id, mat.name_from, mat.name_external_from, mat.language_to, mat.name_to, mat.name_external_to, mat.id FROM matrix_article_options_translation mat";
+                $where = "1";
+                $count = "SELECT count(DISTINCT mat.id) FROM matrix_article_options_translation mat WHERE $where";
+                break;
         }
 
         $erg = false;
@@ -209,6 +238,8 @@ class Matrixprodukt
 
     public function ActionOptionList()
     {
+        $this->app->erp->MenuEintrag("index.php?module=matrixprodukt&action=optionenlist", "Optionen");
+
         $id = $this->request->get->getInt('id');
         $cmd = $this->app->Secure->GetGET('cmd');
         switch ($cmd) {
@@ -231,6 +262,8 @@ class Matrixprodukt
                 return JsonResponse::NoContent();
         }
 
+        $group = $this->service->GetGlobalGroupById($id);
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT1', $group->name);
         $this->app->Tpl->Set('TABSADD', '<input type="button" class="neubutton vueAction" value="NEU" data-action="optionEdit" data-group-id="' . $id . '">');
         $this->app->YUI->TableSearch('TAB1', 'matrixprodukt_options', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "matrixprodukt_optionen_list.tpl");
@@ -342,5 +375,38 @@ class Matrixprodukt
         }
         $this->app->YUI->TableSearch('TAB2', 'matrixprodukt_variants', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "matrixprodukt_article.tpl");
+    }
+
+    public function ActionTranslation() {
+        $cmd = $this->app->Secure->GetGET('cmd');
+        switch ($cmd) {
+            case "edit":
+                $id = $this->app->Secure->GetGET('id');
+                $isOption = $this->app->Secure->GetGET('type') === 'option';
+                $translation = $isOption ? $this->service->GetOptionTranslation($id) : $this->service->GetGroupTranslation($id);
+                return new JsonResponse($translation);
+            case "save":
+                $json = $this->request->getJson();
+                $isOption = $json->type === 'option';
+                $translation = new Translation($json->nameFrom, $json->languageTo, $json->nameTo, $json->id,
+                    $json->nameExternalFrom ?? '', $json->nameExternalTo ?? '');
+                if ($isOption)
+                    $this->service->SaveOptionTranslation($translation);
+                else
+                    $this->service->SaveGroupTranslation($translation);
+                return JsonResponse::NoContent();
+            case "delete":
+                $json = $this->request->getJson();
+                $isOption = $json->type === 'option';
+                if ($isOption)
+                    $this->service->DeleteOptionTranslation($json->id);
+                else
+                    $this->service->DeleteGroupTranslation($json->id);
+                return JsonResponse::NoContent();
+        }
+        $this->createMenu();
+        $this->app->YUI->TableSearch('TABGRP', 'matrixproduct_group_translations', "show", "", "", basename(__FILE__), __CLASS__);
+        $this->app->YUI->TableSearch('TABOPT', 'matrixproduct_option_translations', "show", "", "", basename(__FILE__), __CLASS__);
+        $this->app->Tpl->Parse('PAGE', "matrixprodukt_translation.tpl");
     }
 }

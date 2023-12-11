@@ -9,6 +9,7 @@ namespace Xentral\Modules\MatrixProduct;
 use Xentral\Components\Database\Database;
 use Xentral\Modules\MatrixProduct\Data\Group;
 use Xentral\Modules\MatrixProduct\Data\Option;
+use Xentral\Modules\MatrixProduct\Data\Translation;
 
 final class MatrixProductGateway
 {
@@ -274,5 +275,63 @@ final class MatrixProductGateway
     $sql = "DELETE FROM matrixprodukt_optionen_zu_artikel WHERE artikel = :id";
     $this->db->perform($sql, ['id' => $variantId]);
   }
+  //endregion
+
+  //region Translations
+  public function GetGroupTranslationById(int $id) : Translation {
+      $sql = "SELECT * FROM matrix_article_translation WHERE id = :id";
+      $row = $this->db->fetchRow($sql, ['id' => $id]);
+      return Translation::fromDbArray($row);
+  }
+
+  public function GetOptionTranslationById(int $id) : Translation {
+      $sql = "SELECT * FROM matrix_article_options_translation WHERE id = :id";
+      $row = $this->db->fetchRow($sql, ['id' => $id]);
+      return Translation::fromDbArray($row);
+  }
+
+  public function InsertGroupTranslation(Translation $obj) : Translation {
+      $sql = "INSERT INTO matrix_article_translation 
+              (language_from, language_to, name_from, name_to, name_external_from, name_external_to)
+              VALUES (:languageFrom, :languageTo, :nameFrom, :nameTo, :nameExternalFrom, :nameExternalTo)";
+      $this->db->perform($sql, (array)$obj);
+      $obj->id = $this->db->lastInsertId();
+      return $obj;
+  }
+
+    public function InsertOptionTranslation(Translation $obj) : Translation {
+        $sql = "INSERT INTO matrix_article_options_translation 
+              (language_from, language_to, name_from, name_to, name_external_from, name_external_to)
+              VALUES (:languageFrom, :languageTo, :nameFrom, :nameTo, :nameExternalFrom, :nameExternalTo)";
+        $this->db->perform($sql, (array)$obj);
+        $obj->id = $this->db->lastInsertId();
+        return $obj;
+    }
+
+    public function UpdateGroupTranslation(Translation $obj) : Translation {
+        $sql = "UPDATE matrix_article_translation SET language_from = :languageFrom, language_to = :languageTo, 
+                name_from = :nameFrom, name_to = :nameTo, name_external_from = :nameExternalFrom, 
+                name_external_to = :nameExternalTo WHERE id = :id";
+        $this->db->perform($sql, (array)$obj);
+        return $obj;
+    }
+
+    public function UpdateOptionTranslation(Translation $obj) : Translation {
+        $sql = "UPDATE matrix_article_options_translation SET language_from = :languageFrom, language_to = :languageTo, 
+                name_from = :nameFrom, name_to = :nameTo, name_external_from = :nameExternalFrom, 
+                name_external_to = :nameExternalTo WHERE id = :id";
+        $this->db->perform($sql, (array)$obj);
+        return $obj;
+    }
+
+    public function DeleteGroupTranslation(int $id) : void {
+      $sql = "DELETE FROM matrix_article_translation WHERE id = :id";
+      $this->db->perform($sql, ['id' => $id]);
+    }
+
+    public function DeleteOptionTranslation(int $id) : void {
+        $sql = "DELETE FROM matrix_article_options_translation WHERE id = :id";
+        $this->db->perform($sql, ['id' => $id]);
+    }
   //endregion
 }
