@@ -38,6 +38,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     public $propertyOption;
     public $shopwareDefaultSalesChannel;
     public $shopwareMediaFolder;
+    public $normalTaxId;
+    public $reducedTaxId;
     public $protocol;
 
     /** @var bool  */
@@ -586,6 +588,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $this->propertyOption = $einstellungen['felder']['shopwarePropertyOption'];
         $this->shopwareDefaultSalesChannel = $einstellungen['felder']['shopwareDefaultSalesChannel'];
         $this->shopwareMediaFolder = $einstellungen['felder']['shopwareMediaFolder'];
+        $this->normalTaxId = $einstellungen['felder']['normalTaxId'];
+        $this->reducedTaxId = $einstellungen['felder']['reducedTaxId'];
         $query = sprintf('SELECT `steuerfreilieferlandexport` FROM `shopexport`  WHERE `id` = %d', $this->shopid);
         $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
 
@@ -668,6 +672,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'bezeichnung' => '{|Media Folder für Artikelbilder|}:',
                         'size' => 40,
                         'default' => 'Product Media'
+                    ],
+                    'normalTaxId' => [
+                        'typ' => 'text',
+                        'bezeichnung' => '{|TaxId für Umsatzsteuer "normal"|}:',
+                        'size' => 40,
+                    ],
+                    'reducedTaxId' => [
+                        'typ' => 'text',
+                        'bezeichnung' => '{|TaxId für Umsatzsteuer "ermäßigt"|}:',
+                        'size' => 40,
                     ],
                     'statesToFetch' => [
                         'typ' => 'text',
@@ -927,7 +941,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $quantity = $this->getCorrectedStockFromAvailable($active, (int)$quantity, $articleInfo);
             $taxRate = (float)$article['steuersatz'];
 
-            $taxId = $this->getTaxIdByRate($taxRate);
+            if ($article['umsatzsteuer'] == 'normal' && !empty($this->normalTaxId))
+              $taxId = $this->normalTaxId;
+            elseif ($article['umsatzsteuer'] == 'ermäßigt' && !empty($this->reducedTaxId))
+              $taxId = $this->reducedTaxId;
+            else
+              $taxId = $this->getTaxIdByRate($taxRate);
 
             $mediaToAdd = $this->mediaToExport($article, $articleIdShopware);
 
