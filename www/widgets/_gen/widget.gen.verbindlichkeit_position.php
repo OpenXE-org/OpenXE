@@ -115,6 +115,9 @@ class WidgetGenverbindlichkeit_position
     $field = new HTMLInput("projekt","text","","50","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("sachkonto","text","","50","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("kostenstelle","text","","50","","","","","","","","0","","");
     $this->form->NewField($field);
 

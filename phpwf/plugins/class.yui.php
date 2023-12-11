@@ -2563,7 +2563,7 @@ class YUI {
           $anzeigebrutto = true;
         }
       }
-      
+
       $sortcol = ' b.sort ';
       $schreibschutz = !empty($docArr)?$docArr['schreibschutz']:$this->app->DB->Select("SELECT schreibschutz FROM $module WHERE id='$id'");
       if(!$schreibschutz)$sortcol = " concat('<input type=\"checkbox\" name=\"belegsort[]\" value=\"',b.id,'\" />',b.sort) as sort ";
@@ -2853,7 +2853,20 @@ class YUI {
                                 LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
                                 WHERE b.$module='$id'";
 
-      } else {
+      } 
+        else if ($module == "verbindlichkeit") // OpenXE
+        {
+          $sql = "SELECT $sortcol, if(b.beschreibung!='',
+          if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(CONCAT(b.bezeichnung,' *'),1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),CONCAT(b.bezeichnung,' *')),
+            if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(b.bezeichnung,1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),b.bezeichnung))
+              as Artikel,
+                 p.abkuerzung as projekt, a.nummer as nummer, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge, " . $this->FormatPreis($preiscell) . " as preis, CONCAT(k.sachkonto,' - ',k.beschriftung) AS sachkonto, b.id as id
+                   FROM $table b
+                   LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
+                   LEFT JOIN kontorahmen k ON k.id = b.sachkonto
+                   WHERE b.$module='$id'";
+        }
+        else {
         $sql = null;
         $this->app->erp->RunHook('yui_position_sql', 3, $table, $id, $sql);
         if($sql === null){

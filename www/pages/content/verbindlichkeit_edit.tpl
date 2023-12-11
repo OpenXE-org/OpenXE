@@ -1,13 +1,8 @@
 <div id="tabs">
     <ul>
-        <li><a href="#tabs-1"></a></li>
+        <li><a href="#tabs-1">Details</a></li>
+        <li><a href="#tabs-2">Positionen</a></li>
     </ul>
-    <!-- Example for multiple tabs
-    <ul hidden">
-        <li><a href="#tabs-1">First Tab</a></li>
-        <li><a href="#tabs-2">Second Tab</a></li>
-    </ul>
-    -->
     <div id="tabs-1">
         [MESSAGE]
         <form action="" method="post">   
@@ -184,5 +179,8 @@
             <input type="submit" name="submit" value="Speichern" style="float:right"/>
         </form>
     </div>    
+    <div id="tabs-2">
+        [POS]
+    </div>
 </div>
 

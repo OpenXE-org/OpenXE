@@ -17,9 +17,12 @@ class Verbindlichkeit {
         $this->app->ActionHandler("list", "verbindlichkeit_list");        
         $this->app->ActionHandler("create", "verbindlichkeit_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "verbindlichkeit_edit");
+        $this->app->ActionHandler("positionen", "verbindlichkeit_positionen");
         $this->app->ActionHandler("delete", "verbindlichkeit_delete");
         $this->app->ActionHandler("dateien", "verbindlichkeit_dateien");
         $this->app->ActionHandler("inlinepdf", "verbindlichkeit_inlinepdf");
+        $this->app->ActionHandler("positioneneditpopup", "verbindlichkeit_positioneneditpopup");
+
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -138,6 +141,8 @@ class Verbindlichkeit {
     function verbindlichkeit_edit() {
         $id = $this->app->Secure->GetGET('id');
         
+        $this->app->YUI->AARLGPositionen(true); // create iframe with positionen action
+
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('artikel',$id))
         {
@@ -330,4 +335,71 @@ class Verbindlichkeit {
         }  
         $this->app->ExitXentral();
     }
+
+    function verbindlichkeit_positionen() {
+        $this->app->YUI->AARLGPositionen(false); // Render positionen editable into iframe
+    }
+
+    function verbindlichkeit_positioneneditpopup() {        
+        $cmd = $this->app->Secure->GetGET('cmd');
+        if($cmd === 'getopenaccordions')
+        {
+          $accordions = $this->app->Secure->GetPOST('accordions');
+          $accordions = explode('*|*',$accordions);
+          foreach($accordions as $k => $v)
+          {
+            if(empty($v))
+            {
+              unset($accordions[$k]);
+            }else{
+              $accordions[$k] = 'verbindlichkeit_accordion'.$v;
+            }
+          }
+          $ret = [];
+          if(!empty($accordions))
+          {
+            $accordions = $this->app->User->GetParameter($accordions);
+            if(!empty($accordions))
+            {
+              foreach($accordions as $v)
+              {
+                if(!empty($v['value']))
+                {
+                  $ret['accordions'][] = str_replace('verbindlichkeit_accordion','',$v['name']);
+                }
+              }
+            }
+          }
+          echo json_encode($ret);
+          $this->app->ExitXentral();
+        }
+        if($cmd === 'setaccordion')
+        {
+          $name = $this->app->Secure->GetPOST('name');
+          $active = $this->app->Secure->GetPOST('active');
+          $this->app->User->SetParameter('verbindlichkeit_accordion'.$name, $active);
+          echo json_encode(array('success'=>1));
+          $this->app->ExitXentral();
+        }
+        $id = $this->app->Secure->GetGET('id');
+        $fmodul = $this->app->Secure->GetGET('fmodul');
+        $artikel= $this->app->DB->Select("SELECT artikel FROM verbindlichkeit_position WHERE id='$id' LIMIT 1");
+
+        // nach page inhalt des dialogs ausgeben
+        $filename = 'widgets/widget.auftag_position_custom.php';
+        if(is_file($filename)) 
+        {
+          include_once $filename;
+          $widget = new WidgetVerbindlichkeit_positionCustom($this->app,'PAGE');
+        } else {
+          $widget = new WidgetVerbindlichkeit_position($this->app,'PAGE');
+        }
+
+        $sid= $this->app->DB->Select("SELECT verbindlichkeit FROM verbindlichkeit_position WHERE id='$id' LIMIT 1");
+        $widget->form->SpecialActionAfterExecute('close_refresh',
+            "index.php?module=verbindlichkeit&action=positionen&id=$sid&fmodul=$fmodul");
+        $widget->Edit();
+        $this->app->BuildNavigation=false;
+    }
+
 }
