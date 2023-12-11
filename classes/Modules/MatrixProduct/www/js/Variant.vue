@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Andreas Palm
+
+SPDX-License-Identifier: LicenseRef-EGPL-3.1
+-->
+
 <script setup>
 import AutoComplete from "@res/vue/AutoComplete.vue";
 import Button from "primevue/button";

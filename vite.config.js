@@ -24,7 +24,6 @@ export default {
     mode: 'development',
     resolve: {
         alias: {
-            '@theme': path.resolve(__dirname, 'www/themes/new/js'),
             '@res': path.resolve(__dirname, 'resources')
         }
     }
