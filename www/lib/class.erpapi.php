@@ -35375,6 +35375,7 @@ function Firmendaten($field,$projekt="")
         {
           case 'bestellung':
           case 'anfrage':
+          case 'verbindlichkeit':
             $aufwendung = true;
           break;
         }

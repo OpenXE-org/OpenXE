@@ -2855,16 +2855,60 @@ class YUI {
 
       } 
         else if ($module == "verbindlichkeit") // OpenXE
-        {
-          $sql = "SELECT $sortcol, if(b.beschreibung!='',
-          if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(CONCAT(b.bezeichnung,' *'),1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),CONCAT(b.bezeichnung,' *')),
-            if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(b.bezeichnung,1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),b.bezeichnung))
-              as Artikel,
-                 p.abkuerzung as projekt, a.nummer as nummer, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge, " . $this->FormatPreis($preiscell) . " as preis, CONCAT(k.sachkonto,' - ',k.beschriftung) AS sachkonto, b.id as id
-                   FROM $table b
-                   LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
-                   LEFT JOIN kontorahmen k ON k.id = b.sachkonto
-                   WHERE b.$module='$id'";
+        {     
+            $sql = "
+                SELECT
+                    $sortcol,
+                    IF(
+                        b.beschreibung != '',
+                        IF(
+                            CHAR_LENGTH(b.bezeichnung) > " . $this->app->erp->MaxArtikelbezeichnung() . ",
+                            CONCAT(
+                                SUBSTR(
+                                    CONCAT(b.bezeichnung, ' *'),
+                                    1,
+                                    " . $this->app->erp->MaxArtikelbezeichnung() . "
+                                ),
+                                '...'
+                            ),
+                            CONCAT(b.bezeichnung, ' *')
+                        ),
+                        IF(
+                            CHAR_LENGTH(b.bezeichnung) > " . $this->app->erp->MaxArtikelbezeichnung() . ",
+                            CONCAT(
+                                SUBSTR(
+                                    b.bezeichnung,
+                                    1,
+                                    " . $this->app->erp->MaxArtikelbezeichnung() . "
+                                ),
+                                '...'
+                            ),
+                            b.bezeichnung
+                        )
+                    ) AS Artikel,
+                    p.abkuerzung AS projekt,
+                    a.nummer,
+                    ".$this->app->erp->FormatDate('lieferdatum')." AS lieferdatum,
+                    TRIM(b.menge) +0 AS menge,
+                    " . $this->FormatPreis($preiscell) . " AS preis,
+                    " . $this->FormatPreis($preiscell."*menge") . " AS Betrag,
+                    CONCAT(
+                        k.sachkonto,
+                        ' - ',
+                        k.beschriftung
+                    ) AS sachkonto,
+                    b.id AS id
+                FROM
+                    $table b
+                LEFT JOIN artikel a ON
+                    a.id = b.artikel
+                LEFT JOIN projekt p ON
+                    b.projekt = p.id
+                LEFT JOIN kontorahmen k ON
+                    k.id = b.sachkonto
+                WHERE
+                    b.$module = '$id'
+            ";
         }
         else {
         $sql = null;
@@ -14874,8 +14918,6 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
         $table->headings[3] = 'Betrag';
         $table->headings[4] = 'Abr. bei Kd';
         $table->headings[5] = 'sonst. MwSt'; // kann man auch umbenennen in Keine
-
-
 
         $table->headings[6] = 'MwSt';
         $table->headings[7] = 'Kommentar';

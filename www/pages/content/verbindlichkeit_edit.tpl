@@ -9,16 +9,19 @@
             [FORMHANDLEREVENT]
             <div class="row">
 	        	<div class="row-height">
-	        		<div class="col-xs-12 col-md-8 col-md-height">
+	        		<div class="col-xs-12 col-md-6 col-md-height">
 	        			<div class="inside inside-full-height">
                             <div class="row">
 	                        	<div class="row-height">
 	                        		<div class="col-xs-12 col-md-8 col-md-height">
 	                        			<div class="inside inside-full-height">
-	                        				<fieldset>
+	                        				<fieldset style="float: left;">
                                                 <legend>{|<b>Verbindlichkeit <font color="blue">[BELEGNR]</font></b> Lf-Nr. <a href="index.php?module=adresse&action=edit&id=[ADRESSE_ID]">[LIEFERANTENNUMMER]|}</a></legend>                              
-                                                [STATUSICONS]
-                                            </fieldset>            
+                                                [STATUSICONS]    
+                                            </fieldset>      
+	                        				<fieldset style="float: right;">
+                                                <input type="submit" name="submit" value="Speichern"/>      
+                                            </fieldset>
                                         </div>
                                		</div>                                    
                                	</div>	
@@ -27,14 +30,22 @@
 	                        	<div class="row-height">
 	                        		<div class="col-xs-12 col-md-8 col-md-height">
 	                        			<div class="inside inside-full-height">
-	                        				<fieldset>
+	                        				<fieldset>                                    
                                                 <table width="100%" border="0" class="mkTableFormular">       
+                                                    <tr>
+                                                        <td>
+                                                            {|Status|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" value="[STATUS]" size="20" disabled>
+                                                        </td>
+                                                    </tr>
                                                     <tr>
                                                         <td>
                                                             {|Adresse|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20">
+                                                            <input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20" [SAVEDISABLED]>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -42,7 +53,7 @@
                                                             {|Rechnung|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="rechnung" id="rechnung" value="[RECHNUNG]" size="20">
+                                                            <input type="text" name="rechnung" id="rechnung" value="[RECHNUNG]" size="20" [SAVEDISABLED]>
                                                         </td>
                                                     </tr>     
                                                     <tr>
@@ -50,26 +61,82 @@
                                                             {|Rechnungsdatum|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="rechnungsdatum" id="rechnungsdatum" value="[RECHNUNGSDATUM]" size="20">
+                                                            <input type="text" name="rechnungsdatum" id="rechnungsdatum" value="[RECHNUNGSDATUM]" size="20" [SAVEDISABLED]>
                                                         </td>
                                                     </tr>  
+                                                    <tr>
+                                                        <td>
+                                                            {|Eingangsdatum|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" name="eingangsdatum" id="eingangsdatum" value="[EINGANGSDATUM]" size="20" [SAVEDISABLED]>
+                                                        </td>
+                                                    </tr>   
                                                     <tr>
                                                         <td>
                                                             {|Betrag|}:
                                                         </td>
                                                         <td>
-                                                            <input type="number" name="betrag" id="betrag" value="[BETRAG]" size="20">
-                                                            <select name="waehrung">[WAEHRUNG]</select>
+                                                            <input type="number" name="betragbrutto" id="betragbrutto" value="[BETRAGBRUTTO]" size="20" [BETRAGDISABLED] [SAVEDISABLED]>
+                                                            <select name="waehrung" [SAVEDISABLED]>[WAEHRUNG]</select>
                                                         </td>
-                                                    </tr>                                                                                                                                        
+                                                    </tr>      
+                                                    <tr>
+                                                        <td>
+                                                            {|Betrag netto|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" name="betragnetto" id="betragnetto" value="[BETRAGNETTO]" size="20" disabled [SAVEDISABLED]>
+                                                        </td>
+                                                    </tr>                                                                                                                                              
                                                     <tr>
                                                         <td>
                                                             {|Zahlbarbis|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="zahlbarbis" id="zahlbarbis" value="[ZAHLBARBIS]" size="20">
+                                                            <input type="text" name="zahlbarbis" id="zahlbarbis" value="[ZAHLBARBIS]" size="20" [SAVEDISABLED]>
+                                                        </td>
+                                                    </tr>                                               
+                                                    <tr>
+                                                        <td>
+                                                            {|Skonto %|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" name="skonto" id="skonto" value="[SKONTO]" size="20" [SAVEDISABLED]>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                        <td>
+                                                            {|Skontobis|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" name="skontobis" id="skontobis" value="[SKONTOBIS]" size="20" [SAVEDISABLED]>
+                                                        </td>
+                                                    </tr>                                                                                                                                                                                                                                            
+                                                    <tr>
+                                                        <td>
+                                                            {|Waren-/Leistungsprüfung (Einkauf)|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="checkbox" id="freigabe" value="1" [FREIGABECHECKED] size="20" [SAVEDISABLED] disabled>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            {|Rechnungseingangsprüfung (Buchhaltung)|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="checkbox" id="rechnungsfreigabe" value="1" [RECHNUNGSFREIGABECHECKED] size="20" [SAVEDISABLED] disabled>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            {|Bezahlt|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="checkbox" id="bezahlt" value="1" [BEZAHLTCHECKED] size="20" [SAVEDISABLED] disabled>
+                                                        </td>
+                                                    </tr>          
                                                     <tr>
                                                         <td>
                                                             {|Projekt|}:
@@ -80,82 +147,18 @@
                                                     </tr>
                                                     <tr>
                                                         <td>
-                                                            {|Eingangsdatum|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="eingangsdatum" id="eingangsdatum" value="[EINGANGSDATUM]" size="20">
-                                                        </td>
-                                                    </tr>   
-                                                    <tr>
-                                                        <td>
-                                                            {|Zahlungsweise|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="zahlungsweise" id="zahlungsweise" value="[ZAHLUNGSWEISE]" size="20">
-                                                        </td>
-                                                    </tr>                                             
-                                                    <tr>
-                                                        <td>
-                                                            {|Skonto|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="skonto" id="skonto" value="[SKONTO]" size="20">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Skontobis|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="skontobis" id="skontobis" value="[SKONTOBIS]" size="20">
-                                                        </td>
-                                                    </tr>                                                                                                                                                                                                                                            
-                                                    <tr>
-                                                        <td>
                                                             {|Kostenstelle|}:
                                                         </td>
                                                         <td>
                                                             <input type="text" name="kostenstelle" id="kostenstelle" value="[KOSTENSTELLE]" size="20">
                                                         </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Sachkonto|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="sachkonto" id="sachkonto" value="[SACHKONTO]" size="20">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Waren-/Leistungsprüfung (Einkauf)|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="freigabe" id="freigabe" value="[FREIGABE]" size="20">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Rechnungseingangsprüfung (Buchhaltung)|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="rechnungsfreigabe" id="rechnungsfreigabe" value="[RECHNUNGSFREIGABE]" size="20">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Bezahlt|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="bezahlt" id="bezahlt" value="[BEZAHLT]" size="20">
-                                                        </td>
-                                                    </tr>          
+                                                    </tr>                                                 
                                                     <tr>
                                                         <td>
                                                             {|Internebemerkung|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="internebemerkung" id="internebemerkung" value="[INTERNEBEMERKUNG]" size="20">
+                                                            <textarea name="internebemerkung" id="internebemerkung" rows="6" style="width:100%;">[INTERNEBEMERKUNG]</textarea>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -166,7 +169,7 @@
                             </div>
                         </div>
                		</div>
-                    <div class="col-xs-12 col-md-4 col-md-height">
+                    <div class="col-xs-12 col-md-6 col-md-height">
                         <div class="inside inside-full-height">
                             <fieldset>
                                 <legend>{|Vorschau|}</legend>
@@ -176,7 +179,6 @@
                     </div>
                	</div>	
             </div>           
-            <input type="submit" name="submit" value="Speichern" style="float:right"/>
         </form>
     </div>    
     <div id="tabs-2">

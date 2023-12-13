@@ -85,10 +85,7 @@ class WidgetGenverbindlichkeit_position
     $this->form->NewField($field);
     $this->form->AddMandatory("menge","notempty","Pflichtfeld!","MSGMENGE");
 
-    $field = new HTMLInput("preis","text","","50","","","","","","","","0","","");
-    $this->form->NewField($field);
-
-    $field = new HTMLInput("waehrung","text","","15","","","","","","","","0","","");
+    $field = new HTMLInput("preis","text","","40","","","","","","","","0","","");
     $this->form->NewField($field);
 
     $field = new HTMLSelect("umsatzsteuer",0,"umsatzsteuer","","","0");

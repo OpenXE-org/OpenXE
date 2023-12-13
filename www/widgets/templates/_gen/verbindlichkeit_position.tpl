@@ -36,8 +36,8 @@ $('#anderersteuersatz').click(function() {        if (!$(this).is(':checked')) {
                         <tr><td nowrap>{|Artikel-Nr|}:</td><td>[NUMMER][MSGNUMMER]</td></tr>
                         <tr><td>{|Beschreibung|}:</td><td>[BESCHREIBUNG][MSGBESCHREIBUNG]</td></tr>
                         <tr><td>{|Menge|}:</td><td>[MENGE][MSGMENGE]</td></tr>
-                        <tr><td>{|Preis|}:</td><td>[PREIS][MSGPREIS]</td></tr>
-                        <tr><td>{|W&auml;hrung|}:</td><td>[WAEHRUNG][MSGWAEHRUNG]&nbsp;[WAEHRUNGSBUTTON]</td></tr>
+                        <tr><td>{|Preis|}:</td><td>[PREIS][MSGPREIS][WAEHRUNG]</td></tr>
+<!--                        <tr><td>{|W&auml;hrung|}:</td><td>[WAEHRUNG][MSGWAEHRUNG]&nbsp;[WAEHRUNGSBUTTON]</td></tr>-->
                         <tr><td>{|Steuersatz|}:</td><td>[UMSATZSTEUER][MSGUMSATZSTEUER]&nbsp;
                             [ANDERERSTEUERSATZ][MSGANDERERSTEUERSATZ]&nbsp;individuellen Steuersatz verwenden
                         </td></tr>

@@ -1,7 +1,8 @@
 <?php
 
 /*
- * Copyright (c) 2022 OpenXE project
+ * Copyright (c) 2023 OpenXE project
+ * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
@@ -22,6 +23,7 @@ class Verbindlichkeit {
         $this->app->ActionHandler("dateien", "verbindlichkeit_dateien");
         $this->app->ActionHandler("inlinepdf", "verbindlichkeit_inlinepdf");
         $this->app->ActionHandler("positioneneditpopup", "verbindlichkeit_positioneneditpopup");
+        $this->app->ActionHandler("freigabe", "verbindlichkeit_freigabe");
 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -35,7 +37,7 @@ class Verbindlichkeit {
         switch ($name) {
             case "verbindlichkeit_list":
                 $allowed['verbindlichkeit_list'] = array('list');
-                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung', 'Ziel','Skontoziel','Skonto','Monitor', 'Men&uuml;');
+                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -54,6 +56,7 @@ class Verbindlichkeit {
                     'v.zahlbarbis',
                     'v.skontobis',
                     'v.skonto',
+                    'v.status',
                     'v.status_beleg',
                     'v.id'
                 );
@@ -91,6 +94,7 @@ class Verbindlichkeit {
                             ".$app->erp->FormatDate("v.zahlbarbis").",
                             IF(v.skonto <> 0,".$app->erp->FormatDate("v.skontobis").",''),                             
                             IF(v.skonto <> 0,CONCAT(".$app->erp->FormatMenge('v.skonto',0).",'%'),''), 
+                            v.status,
                             ".$app->YUI->IconsSQLVerbindlichkeit().",
                             v.id FROM verbindlichkeit v
                         LEFT JOIN adresse a ON v.adresse = a.id
@@ -159,17 +163,30 @@ class Verbindlichkeit {
         if (empty($id)) {
             // New item
             $id = 'NULL';
+            $input['status'] = 'angelegt';
         } 
 
         if ($submit != '')
         {
 
-            // Write to database
-            
+            // Write to database            
             // Add checks here
+            $status = $this->app->DB->Select("SELECT status FROM verbindlichkeit WHERE id =".$id);
 
-    //        $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
-            $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+            if ($status != 'angelegt' && $id != 'NULL') {
+                $internebemerkung = $input['internebemerkung'];
+                unset($input);
+                $input['internebemerkung'] = $internebemerkung;
+            } else {
+                $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+                $input['rechnungsdatum'] = $this->app->erp->ReplaceDatum(true,$input['rechnungsdatum'],true); // Parameters: Target db?, value, from form?
+                $input['eingangsdatum'] = $this->app->erp->ReplaceDatum(true,$input['eingangsdatum'],true); // Parameters: Target db?, value, from form?
+                $input['skontobis'] = $this->app->erp->ReplaceDatum(true,$input['skontobis'],true); // Parameters: Target db?, value, from form?
+                $input['zahlbarbis'] = $this->app->erp->ReplaceDatum(true,$input['zahlbarbis'],true); // Parameters: Target db?, value, from form?
+                $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
+                $input['kostenstelle'] = $this->app->erp->ReplaceKostenstelle(true,$input['kostenstelle'],true);
+                $input['sachkonto'] = $this->app->erp->ReplaceKontorahmen(true,$input['sachkonto'],true);
+            }
 
             $columns = "id, ";
             $values = "$id, ";
@@ -196,8 +213,9 @@ class Verbindlichkeit {
             $this->app->DB->Update($sql);
 
             if ($id == 'NULL') {
+                $id = $this->app->DB->GetInsertID();
                 $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=verbindlichkeit&action=list&msg=$msg");
+                header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg");
             } else {
                 $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
             }
@@ -216,6 +234,49 @@ class Verbindlichkeit {
             $verbindlichkeit_from_db = $result[0];
         }
 
+        // Summarize positions
+
+        $sql = "SELECT * FROM verbindlichkeit_position WHERE verbindlichkeit = ".$id;
+        $positionen = $this->app->DB->SelectArr($sql);
+
+        if (!empty($positionen)) {
+            $betrag_netto = 0;
+            $betrag_brutto = 0;
+            $steuer_normal = 0;
+            $steuer_ermaessigt = 0;
+
+            /* 
+                Normal: umsatzsteuer leer, steuersatz = leer
+                Ermäßigt: umsatzsteuer ermaessigt, steuersatz = -1
+                Befreit: umsatzsteuer befreit, steursatz = -1
+                Individuell: umsatzsteuer leer, steuersatz = wert
+            */
+
+            foreach ($positionen as $position) {
+
+                $tmpsteuersatz = null;
+                $tmpsteuertext = null;
+                $erloes = null;
+
+    //                  function GetSteuerPosition($typ, $posid,&$tmpsteuersatz = null, &$tmpsteuertext = null, &$erloes = null)
+
+                $this->app->erp->GetSteuerPosition("verbindlichkeit",$position['id'],$tmpsteuersatz,$tmpsteuertext,$erloes);
+
+                $position['steuersatz_berechnet'] = $tmpsteuersatz;
+                $position['steuertext_berechnet'] = $tmpsteuertext;
+                $position['steuererloes_berechnet'] = $erloes;
+
+                $betrag_netto += ($position['menge']*$position['preis']);
+                $betrag_brutto += ($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100));
+
+            }
+
+            $this->app->Tpl->Set('BETRAGNETTO', $betrag_netto);
+            $this->app->Tpl->Set('BETRAGBRUTTO', round($betrag_brutto,2));
+
+            $this->app->Tpl->Set('BETRAGDISABLED', 'disabled');
+
+        }
             
         /*
          * Add displayed items later
@@ -228,6 +289,23 @@ class Verbindlichkeit {
 
          */
 
+        if ($verbindlichkeit_from_db['status'] != 'angelegt' && $id != 'NULL') {
+            $this->app->Tpl->Set('SAVEDISABLED','disabled');
+        }
+
+      	$this->app->Tpl->Set('FREIGABECHECKED', $verbindlichkeit_from_db['freigabe']==1?"checked":"");
+      	$this->app->Tpl->Set('RECHNUNGSFREIGABECHECKED', $verbindlichkeit_from_db['rechnungsfreigabe']==1?"checked":"");
+      	$this->app->Tpl->Set('BEZAHLTCHECKED', $verbindlichkeit_from_db['bezahlt']==1?"checked":"");
+
+        $this->app->Tpl->Set('RECHNUNGSDATUM',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['rechnungsdatum'],false));
+        $this->app->YUI->DatePicker("rechnungsdatum");
+        $this->app->Tpl->Set('EINGANGSDATUM',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['eingangsdatum'],false));
+        $this->app->YUI->DatePicker("eingangsdatum");
+        $this->app->Tpl->Set('SKONTOBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['skontobis'],false));
+        $this->app->YUI->DatePicker("skontobis");
+        $this->app->Tpl->Set('ZAHLBARBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['zahlbarbis'],false));
+        $this->app->YUI->DatePicker("zahlbarbis");
+
         $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $verbindlichkeit_from_db['adresse_name']." ".$verbindlichkeit_from_db['rechnung']);
 
     	$sql = "SELECT " . $this->app->YUI->IconsSQLVerbindlichkeit() . " AS `icons` FROM verbindlichkeit v WHERE id=$id";
@@ -235,6 +313,12 @@ class Verbindlichkeit {
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
 
         $this->app->YUI->AutoComplete("adresse", "adresse");     
+        $this->app->YUI->AutoComplete("projekt", "projektname", 1);
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$verbindlichkeit_from_db['projekt'],false));
+        $this->app->YUI->AutoComplete("kostenstelle", "kostenstelle", 1);
+        $this->app->Tpl->Set('KOSTENSTELLE',$this->app->erp->ReplaceKostenstelle(false,$verbindlichkeit_from_db['kostenstelle'],false));
+        $this->app->YUI->AutoComplete("sachkonto","sachkonto_aufwendungen",1);
+        $this->app->Tpl->Set('SACHKONTO',$this->app->erp->ReplaceKontorahmen(false,$verbindlichkeit_from_db['sachkonto'],false));
 
         $waehrungenselect = $this->app->erp->GetSelect($this->app->erp->GetWaehrung(), $verbindlichkeit_from_db['waehrung']);
         $this->app->Tpl->Set('WAEHRUNG', $waehrungenselect);
@@ -243,11 +327,17 @@ class Verbindlichkeit {
 
         $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$verbindlichkeit_from_db['adresse'],false)); // Convert ID to form display
 
-        $file = urlencode("../../../../index.php?module=verbindlichkeit&action=inlinepdf&id=$id");        
-        $iframe = "<iframe width=\"100%\" height=\"100%\" style=\"height:calc(100vh - 110px)\" src=\"./js/production/generic/web/viewer.html?file=$file\"></iframe>";
-        $this->app->Tpl->Set('INLINEPDF', $iframe);
+        $anzahldateien = $this->app->erp->AnzahlDateien("verbindlichkeit",$id);
+        if ($anzahldateien > 0) {
+            $file = urlencode("../../../../index.php?module=verbindlichkeit&action=inlinepdf&id=$id");        
+            $iframe = "<iframe width=\"100%\" height=\"100%\" style=\"height:calc(100vh - 110px)\" src=\"./js/production/generic/web/viewer.html?file=$file\"></iframe>";
+            $this->app->Tpl->Set('INLINEPDF', $iframe);
+        } else {
+            $this->app->Tpl->Set('INLINEPDF', 'Keine Dateien vorhanden.');
+        }
 
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_edit.tpl");
+
     }
 
     /**
@@ -263,12 +353,12 @@ class Verbindlichkeit {
 	    $input['skonto'] = $this->app->Secure->GetPOST('skonto');
 	    $input['skontobis'] = $this->app->Secure->GetPOST('skontobis');
 	    $input['projekt'] = $this->app->Secure->GetPOST('projekt');
-	    $input['bezahlt'] = $this->app->Secure->GetPOST('bezahlt');
+	    $input['bezahlt'] = $this->app->Secure->GetPOST('bezahlt')?'1':'0';;
 	    $input['zahlungsweise'] = $this->app->Secure->GetPOST('zahlungsweise');
 	    $input['eingangsdatum'] = $this->app->Secure->GetPOST('eingangsdatum');
 	    $input['rechnungsdatum'] = $this->app->Secure->GetPOST('rechnungsdatum');
-	    $input['freigabe'] = $this->app->Secure->GetPOST('freigabe');
-	    $input['rechnungsfreigabe'] = $this->app->Secure->GetPOST('rechnungsfreigabe');
+	    $input['freigabe'] = $this->app->Secure->GetPOST('freigabe')?'1':'0';
+	    $input['rechnungsfreigabe'] = $this->app->Secure->GetPOST('rechnungsfreigabe')?'1':'0';
 	    $input['kostenstelle'] = $this->app->Secure->GetPOST('kostenstelle');
 	    $input['sachkonto'] = $this->app->Secure->GetPOST('sachkonto');
 	    $input['internebemerkung'] = $this->app->Secure->GetPOST('internebemerkung');
@@ -283,9 +373,25 @@ class Verbindlichkeit {
         } else {
             $anzahldateien="";
         }
+
+        if ($id != 'NULL') {
+            $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=dateien&id=$id", "Dateien".$anzahldateien);
+        }
+
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=edit&id=$id", "Details");
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
-        $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=dateien&id=$id", "Dateien".$anzahldateien);
+
+        $invoiceArr = $this->app->DB->SelectRow("SELECT v.belegnr, a.name, v.status FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id WHERE v.id='$id' LIMIT 1");
+        $belegnr = $invoiceArr['belegnr'];
+        $name = $invoiceArr['name'];
+        if($belegnr=='0' || $belegnr=='') {
+            $belegnr ='(Entwurf)';
+        }
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"$name Rechnung $belegnr");
+        $status = $invoiceArr['status'];
+        if ($status==='angelegt') {
+            $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=freigabe&id=$id",'Freigabe');
+        }       
     }
 
     function verbindlichkeit_dateien()
@@ -401,5 +507,13 @@ class Verbindlichkeit {
         $widget->Edit();
         $this->app->BuildNavigation=false;
     }
+
+    function verbindlichkeit_freigabe()
+    {      
+        $id = $this->app->Secure->GetGET('id');
+        $this->app->erp->BelegFreigabe('verbindlichkeit',$id);
+        $this->verbindlichkeit_edit();
+    }
+
 
 }
