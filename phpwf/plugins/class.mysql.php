@@ -1230,7 +1230,7 @@ class DB{
     $sql = "UPDATE `$tablename` SET ";
     foreach($ArrCols as $key=>$value) {
       if($key!=$pkname && (isset($ziel[$key]) || !$zielspalten)) {
-        $sqla[] = $key." = '".($escape?$this->real_escape_string($value):$value)."' ";
+        $sqla[] = "`".$key."` = '".($escape?$this->real_escape_string($value):$value)."' ";
       }
     }
     if(!empty($sqla)) {
