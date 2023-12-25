@@ -24,6 +24,9 @@ class Verbindlichkeit {
         $this->app->ActionHandler("inlinepdf", "verbindlichkeit_inlinepdf");
         $this->app->ActionHandler("positioneneditpopup", "verbindlichkeit_positioneneditpopup");
         $this->app->ActionHandler("freigabe", "verbindlichkeit_freigabe");
+        $this->app->ActionHandler("freigabeeinkauf", "verbindlichkeit_freigabeeinkauf");
+        $this->app->ActionHandler("freigabebuchhaltung", "verbindlichkeit_freigabebuchhaltung");
+        $this->app->ActionHandler("freigabebezahlt", "verbindlichkeit_freigabebezahlt");     
 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -33,7 +36,7 @@ class Verbindlichkeit {
         /* Fill out manually later */
     }
 
-    static function TableSearch(&$app, $name, $erlaubtevars) {
+    function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
             case "verbindlichkeit_list":
                 $allowed['verbindlichkeit_list'] = array('list');
@@ -105,6 +108,52 @@ class Verbindlichkeit {
                 $count = "SELECT count(DISTINCT id) FROM verbindlichkeit WHERE $where";
 //                $groupby = "";
 
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn3( 0 ); } );");
+
+                for ($r = 1;$r <= 3;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= " AND v.freigabe <> '1'";
+                } else {
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                   $where .= " AND v.rechnungsfreigabe <> '1'";
+                }
+                else {
+                }                
+
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                   $where .= " AND v.bezahlt <> '1'";            
+                }
+                else {                  
+                }                             
+                // END Toggle filters
+
+
                 break;
         }
 
@@ -119,12 +168,55 @@ class Verbindlichkeit {
     }
     
     function verbindlichkeit_list() {
+
+        // Process multi action
+        $submit = $this->app->Secure->GetPOST('ausfuehren');
+        if (!empty($submit)) {
+            $auswahl = $this->app->Secure->GetPOST('auswahl');
+            $aktion = $this->app->Secure->GetPOST('sel_aktion');
+
+            $selectedIds = [];
+            if(!empty($auswahl)) {
+                foreach($auswahl as $selectedId) {
+                    $selectedId = (int)$selectedId;
+                    if($selectedId > 0) {
+                        $selectedIds[] = $selectedId;
+                    }
+                }          
+
+                switch ($aktion) {
+                    case 'freigabeeinkauf':
+                      echo("freigabeeinkauf");
+                    break;
+                    case 'freigabebuchhaltung':
+                      echo("freigabebuchhaltung");
+                    break;
+                    case 'bezahlt':
+                      echo("bezahlt");
+                    break;
+                }    
+            }
+        }
+
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
         $this->app->YUI->TableSearch('TAB1', 'verbindlichkeit_list', "show", "", "", basename(__FILE__), __CLASS__);
+
+        if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabeeinkauf')){
+            $this->app->Tpl->Set('MANUELLFREIGABEEINKAUF', '<option value="freigabeeinkauf">{|freigeben (Einkauf)|}</option>');
+        }
+
+        if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabebuchhaltung')){
+            $this->app->Tpl->Set('MANUELLFREIGABEBUCHHALTUNG', '<option value="freigabebuchhaltung">{|freigeben (Buchhaltung)|}</option>');
+        }
+
+        if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabebezahlt')){
+            $this->app->Tpl->Set('ALSBEZAHLTMARKIEREN', '<option value="bezahlt">{|als bezahlt markieren|}</option>');
+        }
+
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_list.tpl");
     }    
 
@@ -175,17 +267,24 @@ class Verbindlichkeit {
 
             if ($status != 'angelegt' && $id != 'NULL') {
                 $internebemerkung = $input['internebemerkung'];
+                $projekt = $input['projekt'];
+                $kostenstelle = $input['kostenstelle'];
                 unset($input);
                 $input['internebemerkung'] = $internebemerkung;
+                $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$projekt,true);
+                $input['kostenstelle'] = $this->app->erp->ReplaceKostenstelle(true,$kostenstelle,true);
             } else {
-                $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+                $input['adresse'] = $this->app->erp->ReplaceLieferantennummer(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
                 $input['rechnungsdatum'] = $this->app->erp->ReplaceDatum(true,$input['rechnungsdatum'],true); // Parameters: Target db?, value, from form?
                 $input['eingangsdatum'] = $this->app->erp->ReplaceDatum(true,$input['eingangsdatum'],true); // Parameters: Target db?, value, from form?
                 $input['skontobis'] = $this->app->erp->ReplaceDatum(true,$input['skontobis'],true); // Parameters: Target db?, value, from form?
                 $input['zahlbarbis'] = $this->app->erp->ReplaceDatum(true,$input['zahlbarbis'],true); // Parameters: Target db?, value, from form?
                 $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
                 $input['kostenstelle'] = $this->app->erp->ReplaceKostenstelle(true,$input['kostenstelle'],true);
-                $input['sachkonto'] = $this->app->erp->ReplaceKontorahmen(true,$input['sachkonto'],true);
+
+                if(empty($input['projekt']) && !empty($input['adresse'])) {
+                    $input['projekt'] = $this->app->erp->GetCreateProjekt($input['adresse']);                
+                }
             }
 
             $columns = "id, ";
@@ -272,7 +371,7 @@ class Verbindlichkeit {
             }
 
             $this->app->Tpl->Set('BETRAGNETTO', $betrag_netto);
-            $this->app->Tpl->Set('BETRAGBRUTTO', round($betrag_brutto,2));
+            $this->app->Tpl->Set('BETRAGBRUTTOPOS', round($betrag_brutto,2));
 
             $this->app->Tpl->Set('BETRAGDISABLED', 'disabled');
 
@@ -293,7 +392,14 @@ class Verbindlichkeit {
             $this->app->Tpl->Set('SAVEDISABLED','disabled');
         }
 
-      	$this->app->Tpl->Set('FREIGABECHECKED', $verbindlichkeit_from_db['freigabe']==1?"checked":"");
+        if ($verbindlichkeit_from_db['status'] == 'angelegt' || $verbindlichkeit_from_db['rechnungsfreigabe']) {
+            $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden');
+        }                    
+        if ($verbindlichkeit_from_db['status'] == 'angelegt' || $verbindlichkeit_from_db['bezahlt'] == '1') {
+            $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden');
+        }                    
+
+      	$this->app->Tpl->Set('WARENEINGANGCHECKED', $verbindlichkeit_from_db['freigabe']==1?"checked":"");
       	$this->app->Tpl->Set('RECHNUNGSFREIGABECHECKED', $verbindlichkeit_from_db['rechnungsfreigabe']==1?"checked":"");
       	$this->app->Tpl->Set('BEZAHLTCHECKED', $verbindlichkeit_from_db['bezahlt']==1?"checked":"");
 
@@ -306,26 +412,29 @@ class Verbindlichkeit {
         $this->app->Tpl->Set('ZAHLBARBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['zahlbarbis'],false));
         $this->app->YUI->DatePicker("zahlbarbis");
 
-        $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $verbindlichkeit_from_db['adresse_name']." ".$verbindlichkeit_from_db['rechnung']);
-
     	$sql = "SELECT " . $this->app->YUI->IconsSQLVerbindlichkeit() . " AS `icons` FROM verbindlichkeit v WHERE id=$id";
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
 
-        $this->app->YUI->AutoComplete("adresse", "adresse");     
+        $this->app->YUI->AutoComplete("adresse", "lieferant");     
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$verbindlichkeit_from_db['projekt'],false));
         $this->app->YUI->AutoComplete("kostenstelle", "kostenstelle", 1);
         $this->app->Tpl->Set('KOSTENSTELLE',$this->app->erp->ReplaceKostenstelle(false,$verbindlichkeit_from_db['kostenstelle'],false));
-        $this->app->YUI->AutoComplete("sachkonto","sachkonto_aufwendungen",1);
-        $this->app->Tpl->Set('SACHKONTO',$this->app->erp->ReplaceKontorahmen(false,$verbindlichkeit_from_db['sachkonto'],false));
 
         $waehrungenselect = $this->app->erp->GetSelect($this->app->erp->GetWaehrung(), $verbindlichkeit_from_db['waehrung']);
         $this->app->Tpl->Set('WAEHRUNG', $waehrungenselect);
 
         $this->app->Tpl->Set('ADRESSE_ID', $verbindlichkeit_from_db['adresse']);
 
-        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$verbindlichkeit_from_db['adresse'],false)); // Convert ID to form display
+        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceLieferantennummer(false,$verbindlichkeit_from_db['adresse'],false)); // Convert ID to form display
+
+        if (empty($verbindlichkeit_from_db['adresse'])) {
+          $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden'); 
+          $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden'); 
+        }
+
+        $this->app->YUI->CkEditor("internebemerkung");
 
         $anzahldateien = $this->app->erp->AnzahlDateien("verbindlichkeit",$id);
         if ($anzahldateien > 0) {
@@ -360,12 +469,14 @@ class Verbindlichkeit {
 	    $input['freigabe'] = $this->app->Secure->GetPOST('freigabe')?'1':'0';
 	    $input['rechnungsfreigabe'] = $this->app->Secure->GetPOST('rechnungsfreigabe')?'1':'0';
 	    $input['kostenstelle'] = $this->app->Secure->GetPOST('kostenstelle');
-	    $input['sachkonto'] = $this->app->Secure->GetPOST('sachkonto');
 	    $input['internebemerkung'] = $this->app->Secure->GetPOST('internebemerkung');
         return $input;
     }
 
     function verbindlichkeit_menu($id) {       
+
+        $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=edit&id=$id", "Details");
+        $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
 
         $anzahldateien = $this->app->erp->AnzahlDateien("verbindlichkeit",$id);
         if ($anzahldateien > 0) {
@@ -378,16 +489,13 @@ class Verbindlichkeit {
             $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=dateien&id=$id", "Dateien".$anzahldateien);
         }
 
-        $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=edit&id=$id", "Details");
-        $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
-
         $invoiceArr = $this->app->DB->SelectRow("SELECT v.belegnr, a.name, v.status FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id WHERE v.id='$id' LIMIT 1");
         $belegnr = $invoiceArr['belegnr'];
         $name = $invoiceArr['name'];
         if($belegnr=='0' || $belegnr=='') {
             $belegnr ='(Entwurf)';
         }
-        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"$name Rechnung $belegnr");
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"$name Verbindlichkeit $belegnr");
         $status = $invoiceArr['status'];
         if ($status==='angelegt') {
             $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=freigabe&id=$id",'Freigabe');
@@ -515,5 +623,38 @@ class Verbindlichkeit {
         $this->verbindlichkeit_edit();
     }
 
+    function verbindlichkeit_freigabeeinkauf($id)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $sql = "UPDATE verbindlichkeit SET freigabe = 1 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Einkauf)");
+        $this->verbindlichkeit_edit();
+    }
+
+
+    function verbindlichkeit_freigabebuchhaltung($id)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Buchhaltung)");
+        $this->verbindlichkeit_edit();
+    }
+
+    function verbindlichkeit_freigabebezahlt($id)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $sql = "UPDATE verbindlichkeit SET bezahlt = 1 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit als bezahlt markiert");
+        $this->verbindlichkeit_edit();
+    }
 
 }

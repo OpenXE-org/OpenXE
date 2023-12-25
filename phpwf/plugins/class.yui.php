@@ -3606,24 +3606,11 @@ class YUI {
 
     $stop_betragbezahlt = "<img alt=\"Zahlung fehlt\" src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassestop.png\" style=\"margin-right:1px\" title=\"Zahlung fehlt\" border=\"0\">";
     $gostop_betragbezahlt = "<img alt=\"teilweise bezahlt\" src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassegostop.png\" style=\"margin-right:1px\" title=\"teilweise bezahlt\" border=\"0\">";
-    $go_betragbezahlt = "<img alt=\"nicht bezahlt\"  src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassego.png\" style=\"margin-right:1px\" title=\"komplett bezahlt\" border=\"0\">";
+    $go_betragbezahlt = "<img alt=\"nicht bezahlt\"  src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassego.png\" style=\"margin-right:1px\" title=\"bezahlt\" border=\"0\">";
     return "CONCAT('<table><tr><td nowrap>',
     if(v.freigabe,'$go_ware','$stop_ware'),
     if(v.rechnungsfreigabe,'$go_summe','$stop_summe'),
-    IF( v.betragbezahlt = 0 OR (v.betrag > 0 AND v.betragbezahlt < 0),'$stop_betragbezahlt',
-      IF(v.betrag > 0 AND (v.betragbezahlt + v.skonto_erhalten) >= v.betrag, '$go_betragbezahlt',
-        IF(v.betrag - v.betragbezahlt <= v.betrag-((v.betrag/100.0)*v.skonto),
-          '$gostop_betragbezahlt',
-          '$go_betragbezahlt'
-        )
-      )
-    ),     
-    if((
-    (SELECT COUNT(ka.id) 
-    FROM kontoauszuege_zahlungsausgang ka WHERE ka.parameter=v.id AND ka.objekt='verbindlichkeit') + 
-    (SELECT COUNT(ke.id) FROM kontoauszuege_zahlungseingang ke WHERE ke.parameter=v.id AND ke.objekt='verbindlichkeit')) > 0,
-    '$go_zahlung','$stop_zahlung'
-    ),
+    if(v.bezahlt,'$go_betragbezahlt','$stop_betragbezahlt'),
     '</td></tr></table>')";
   }
   

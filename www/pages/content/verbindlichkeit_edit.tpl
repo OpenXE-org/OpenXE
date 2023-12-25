@@ -45,7 +45,7 @@
                                                             {|Adresse|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20" [SAVEDISABLED]>
+                                                            <input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20" [SAVEDISABLED] required>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -74,16 +74,24 @@
                                                     </tr>   
                                                     <tr>
                                                         <td>
-                                                            {|Betrag|}:
+                                                            {|Betrag brutto|}:
                                                         </td>
                                                         <td>
-                                                            <input type="number" name="betragbrutto" id="betragbrutto" value="[BETRAGBRUTTO]" size="20" [BETRAGDISABLED] [SAVEDISABLED]>
+                                                            <input type="number" name="betrag" id="betrag" value="[BETRAG]" size="20" [SAVEDISABLED]>
                                                             <select name="waehrung" [SAVEDISABLED]>[WAEHRUNG]</select>
                                                         </td>
-                                                    </tr>      
+                                                    </tr>
                                                     <tr>
                                                         <td>
-                                                            {|Betrag netto|}:
+                                                            {|Betrag Positionen brutto|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled>
+                                                        </td>
+                                                    </tr>          
+                                                    <tr>
+                                                        <td>
+                                                            {|Betrag Positionen netto|}:
                                                         </td>
                                                         <td>
                                                             <input type="number" name="betragnetto" id="betragnetto" value="[BETRAGNETTO]" size="20" disabled [SAVEDISABLED]>
@@ -118,7 +126,7 @@
                                                             {|Waren-/Leistungsprüfung (Einkauf)|}:
                                                         </td>
                                                         <td>
-                                                            <input type="checkbox" id="freigabe" value="1" [FREIGABECHECKED] size="20" [SAVEDISABLED] disabled>
+                                                            <input type="checkbox" id="wareneingang" value="1" [WARENEINGANGCHECKED] size="20" disabled><i>Wird gesetzt wenn Wareneingangspositionen vollständig</i>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -126,7 +134,8 @@
                                                             {|Rechnungseingangsprüfung (Buchhaltung)|}:
                                                         </td>
                                                         <td>
-                                                            <input type="checkbox" id="rechnungsfreigabe" value="1" [RECHNUNGSFREIGABECHECKED] size="20" [SAVEDISABLED] disabled>
+                                                            <input type="checkbox" id="rechnungsfreigabe" [RECHNUNGSFREIGABECHECKED] size="20" disabled>
+                                                            <a href="index.php?module=verbindlichkeit&action=freigabebuchhaltung&id=[ID]" title="freigeben" [FREIGABEBUCHHALTUNGHIDDEN]><img src="themes/new/images/forward.svg" border="0"></a>                                                                                                                
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -134,9 +143,10 @@
                                                             {|Bezahlt|}:
                                                         </td>
                                                         <td>
-                                                            <input type="checkbox" id="bezahlt" value="1" [BEZAHLTCHECKED] size="20" [SAVEDISABLED] disabled>
+                                                            <input type="checkbox" id="zahlungsstatus" [BEZAHLTCHECKED] size="20" disabled>
+                                                            <a href="index.php?module=verbindlichkeit&action=freigabebezahlt&id=[ID]" title="auf  &apos;bezahlt&apos; setzen" [FREIGABEBEZAHLTHIDDEN]><img src="themes/new/images/forward.svg" border="0"></a>                                                                                                                
                                                         </td>
-                                                    </tr>          
+                                                    </tr>                                                                         
                                                     <tr>
                                                         <td>
                                                             {|Projekt|}:
