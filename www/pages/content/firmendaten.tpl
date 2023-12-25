@@ -1412,6 +1412,7 @@
 							<tr><td width="300">[BEZEICHNUNGANGEBOTERSATZ] als Standard:</td><td><input type="checkbox"  name="angebotersatz_standard" [ANGEBOTERSATZ_STANDARD]></td></tr>
 							<tr><td width="300">Beschriftung Abweichend Auftrag:</td><td><input type="text" name="bezeichnungauftragersatz" data-lang="bezeichnungauftragersatz" value="[BEZEICHNUNGAUFTRAGERSATZ]">&nbsp;<i>Beschriftung im Auftrag</i></td></tr>
 							<tr><td width="300">Beschriftung Abweichend Rechnung:</td><td><input type="text" name="bezeichnungrechnungersatz" data-lang="bezeichnungrechnungersatz" value="[BEZEICHNUNGRECHNUNGERSATZ]">&nbsp;<i>Beschriftung in Rechnung</i></td></tr>
+							<tr><td width="300">[BEZEICHNUNGRECHNUNGERSATZ] als Standard:</td><td><input type="checkbox"  name="rechnungersatz_standard" [RECHNUNGERSATZ_STANDARD]></td></tr>
 							<tr><td width="300">Beschriftung Abweichend Gutschrift:</td><td><input type="text" name="bezeichnungstornorechnung" data-lang="bezeichnungstornorechnung" value="[BEZEICHNUNGSTORNORECHNUNG]">&nbsp;<i>laut 06/2013 §14  UStG</i></td></tr>
 							<tr><td width="300">[BEZEICHNUNGSTORNORECHNUNG] als Standard:</td><td><input type="checkbox"  name="stornorechnung_standard" [STORNORECHNUNG_STANDARD]></td></tr>
 							<tr><td width="300">Beschriftung Abweichend Lieferschein:</td><td><input type="text" name="bezeichnunglieferscheinersatz" data-lang="bezeichnunglieferscheinersatz" value="[BEZEICHNUNGLIEFERSCHEINERSATZ]">&nbsp;<i>Beschriftung in Lieferschein</i></td></tr>
