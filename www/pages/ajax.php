@@ -2448,6 +2448,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);
 
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(nummer,' ',beschreibung) as name FROM kostenstellen WHERE $subwhere ORDER by nummer");
+
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++)
           $newarr[] = $arr[$i]['name'];

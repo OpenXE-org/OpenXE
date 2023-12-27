@@ -1,7 +1,8 @@
 <div id="tabs">
     <ul>
         <li><a href="#tabs-1">Details</a></li>
-        <li><a href="#tabs-2">Positionen</a></li>
+<!--        <li><a href="#tabs-2">Positionen</a></li> -->
+        <li><a href="#tabs-3">Protokoll</a></li>
     </ul>
     <div id="tabs-1">
         [MESSAGE]
@@ -50,10 +51,10 @@
                                                     </tr>
                                                     <tr>
                                                         <td>
-                                                            {|Rechnung|}:
+                                                            {|Rechnungs-Nr.|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="rechnung" id="rechnung" value="[RECHNUNG]" size="20" [SAVEDISABLED]>
+                                                            <input type="text" name="rechnung" id="rechnung" value="[RECHNUNG]" size="20" [SAVEDISABLED] required>
                                                         </td>
                                                     </tr>     
                                                     <tr>
@@ -78,10 +79,10 @@
                                                         </td>
                                                         <td>
                                                             <input type="number" name="betrag" id="betrag" value="[BETRAG]" size="20" [SAVEDISABLED]>
-                                                            <select name="waehrung" [SAVEDISABLED]>[WAEHRUNG]</select>
+                                                            <select name="waehrung" [SAVEDISABLED]>[WAEHRUNGSELECT]</select>
                                                         </td>
                                                     </tr>
-                                                    <tr>
+                                                    <tr hidden>
                                                         <td>
                                                             {|Betrag Positionen brutto|}:
                                                         </td>
@@ -89,7 +90,7 @@
                                                             <input type="number" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled>
                                                         </td>
                                                     </tr>          
-                                                    <tr>
+                                                    <tr hidden>
                                                         <td>
                                                             {|Betrag Positionen netto|}:
                                                         </td>
@@ -126,7 +127,9 @@
                                                             {|Waren-/Leistungsprüfung (Einkauf)|}:
                                                         </td>
                                                         <td>
-                                                            <input type="checkbox" id="wareneingang" value="1" [WARENEINGANGCHECKED] size="20" disabled><i>Wird gesetzt wenn Wareneingangspositionen vollständig</i>
+                                                            <input type="checkbox" id="wareneingang" value="1" [WARENEINGANGCHECKED] size="20" disabled>
+                                                            <a href="index.php?module=verbindlichkeit&action=freigabeeinkauf&id=[ID]" title="freigeben" [FREIGABEEINKAUFHIDDEN]><img src="themes/new/images/forward.svg" border="0" class="textfeld_icon"></a>                                                                                                                
+                                                            <a href="index.php?module=verbindlichkeit&action=ruecksetzeneinkauf&id=[ID]" title="r&uuml;cksetzen" [RUECKSETZENEINKAUFHIDDEN]><img src="themes/new/images/delete.svg" border="0" class="textfeld_icon"></a>                                                                                                                
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -135,7 +138,8 @@
                                                         </td>
                                                         <td>
                                                             <input type="checkbox" id="rechnungsfreigabe" [RECHNUNGSFREIGABECHECKED] size="20" disabled>
-                                                            <a href="index.php?module=verbindlichkeit&action=freigabebuchhaltung&id=[ID]" title="freigeben" [FREIGABEBUCHHALTUNGHIDDEN]><img src="themes/new/images/forward.svg" border="0"></a>                                                                                                                
+                                                            <a href="index.php?module=verbindlichkeit&action=freigabebuchhaltung&id=[ID]" title="freigeben" [FREIGABEBUCHHALTUNGHIDDEN]><img src="themes/new/images/forward.svg" border="0" class="textfeld_icon"></a>                                                                                                                
+                                                            <a href="index.php?module=verbindlichkeit&action=ruecksetzenbuchhaltung&id=[ID]" title="r&uuml;cksetzen"  [RUECKSETZENBUCHHALTUNGHIDDEN]><img src="themes/new/images/delete.svg" border="0" class="textfeld_icon"></a>                                                                                                                
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -144,7 +148,8 @@
                                                         </td>
                                                         <td>
                                                             <input type="checkbox" id="zahlungsstatus" [BEZAHLTCHECKED] size="20" disabled>
-                                                            <a href="index.php?module=verbindlichkeit&action=freigabebezahlt&id=[ID]" title="auf  &apos;bezahlt&apos; setzen" [FREIGABEBEZAHLTHIDDEN]><img src="themes/new/images/forward.svg" border="0"></a>                                                                                                                
+                                                            <a href="index.php?module=verbindlichkeit&action=freigabebezahlt&id=[ID]" title="auf  &apos;bezahlt&apos; setzen" [FREIGABEBEZAHLTHIDDEN]><img src="themes/new/images/forward.svg" border="0" class="textfeld_icon"></a>
+                                                            <a href="index.php?module=verbindlichkeit&action=ruecksetzenbezahlt&id=[ID]" title="r&uuml;cksetzen"  [RUECKSETZENBEZAHLTHIDDEN]><img src="themes/new/images/delete.svg" border="0" class="textfeld_icon"></a>                                                                                                                                                                                                                                
                                                         </td>
                                                     </tr>                                                                         
                                                     <tr>
@@ -191,8 +196,13 @@
             </div>           
         </form>
     </div>    
+<!--
     <div id="tabs-2">
         [POS]
+    </div>
+-->
+    <div id="tabs-3">
+        [MINIDETAIL]
     </div>
 </div>
 

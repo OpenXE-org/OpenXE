@@ -24,9 +24,14 @@ class Verbindlichkeit {
         $this->app->ActionHandler("inlinepdf", "verbindlichkeit_inlinepdf");
         $this->app->ActionHandler("positioneneditpopup", "verbindlichkeit_positioneneditpopup");
         $this->app->ActionHandler("freigabe", "verbindlichkeit_freigabe");
+        $this->app->ActionHandler("schreibschutz", "verbindlichkeit_schreibschutz");
         $this->app->ActionHandler("freigabeeinkauf", "verbindlichkeit_freigabeeinkauf");
         $this->app->ActionHandler("freigabebuchhaltung", "verbindlichkeit_freigabebuchhaltung");
         $this->app->ActionHandler("freigabebezahlt", "verbindlichkeit_freigabebezahlt");     
+        $this->app->ActionHandler("ruecksetzeneinkauf", "verbindlichkeit_ruecksetzeneinkauf");
+        $this->app->ActionHandler("ruecksetzenbuchhaltung", "verbindlichkeit_ruecksetzenbuchhaltung");
+        $this->app->ActionHandler("ruecksetzenbezahlt", "verbindlichkeit_ruecksetzenbezahlt");     
+        $this->app->ActionHandler("minidetail", "verbindlichkeit_minidetail");
 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -153,6 +158,22 @@ class Verbindlichkeit {
                 }                             
                 // END Toggle filters
 
+                $this->app->YUI->DatePicker('zahlbarbis');
+                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 4,'zahlbarbis');
+                if (!empty($filterzahlbarbis)) {
+                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
+                }
+
+                $this->app->YUI->DatePicker('skontobis');
+                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 5,'skontobis');
+                if (!empty($filterskontobis)) {
+                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND v.skontobis <= '".$filterskontobis."'";
+                }
+
+                $moreinfo = true; // Allow drop down details
+                $menucol = 1; // For moredata
 
                 break;
         }
@@ -186,13 +207,19 @@ class Verbindlichkeit {
 
                 switch ($aktion) {
                     case 'freigabeeinkauf':
-                      echo("freigabeeinkauf");
+                        foreach ($selectedIds as $id) {
+                            $this->verbindlichkeit_freigabeeinkauf($id);
+                        }
                     break;
                     case 'freigabebuchhaltung':
-                      echo("freigabebuchhaltung");
+                        foreach ($selectedIds as $id) {
+                            $this->verbindlichkeit_freigabebuchhaltung($id);
+                        }
                     break;
                     case 'bezahlt':
-                      echo("bezahlt");
+                        foreach ($selectedIds as $id) {
+                            $this->verbindlichkeit_freigabebezahlt($id);
+                        }
                     break;
                 }    
             }
@@ -205,6 +232,10 @@ class Verbindlichkeit {
 
         $this->app->YUI->TableSearch('TAB1', 'verbindlichkeit_list', "show", "", "", basename(__FILE__), __CLASS__);
 
+/*
+
+        Prepared for later use...
+
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabeeinkauf')){
             $this->app->Tpl->Set('MANUELLFREIGABEEINKAUF', '<option value="freigabeeinkauf">{|freigeben (Einkauf)|}</option>');
         }
@@ -216,6 +247,9 @@ class Verbindlichkeit {
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabebezahlt')){
             $this->app->Tpl->Set('ALSBEZAHLTMARKIEREN', '<option value="bezahlt">{|als bezahlt markieren|}</option>');
         }
+*/
+        $this->app->User->SetParameter('table_verbindlichkeit_list_zahlbarbis', '');
+        $this->app->User->SetParameter('table_verbindlichkeit_list_skontobis', '');
 
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_list.tpl");
     }    
@@ -223,8 +257,8 @@ class Verbindlichkeit {
     public function verbindlichkeit_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
         
-        $this->app->DB->Delete("DELETE FROM `verbindlichkeit` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
+        $this->app->DB->Delete("UPDATE `verbindlichkeit` SET status='storniert' WHERE `id` = '{$id}'");        
+        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde storniert.</div>");        
 
         $this->verbindlichkeit_list();
     } 
@@ -263,16 +297,16 @@ class Verbindlichkeit {
 
             // Write to database            
             // Add checks here
-            $status = $this->app->DB->Select("SELECT status FROM verbindlichkeit WHERE id =".$id);
+            $schreibschutz = $this->app->DB->Select("SELECT schreibschutz FROM verbindlichkeit WHERE id =".$id);
 
-            if ($status != 'angelegt' && $id != 'NULL') {
+            if ($schreibschutz) {
                 $internebemerkung = $input['internebemerkung'];
                 $projekt = $input['projekt'];
                 $kostenstelle = $input['kostenstelle'];
                 unset($input);
                 $input['internebemerkung'] = $internebemerkung;
                 $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$projekt,true);
-                $input['kostenstelle'] = $this->app->erp->ReplaceKostenstelle(true,$kostenstelle,true);
+                $input['kostenstelle'] = $this->app->DB->Select("SELECT id FROM kostenstellen WHERE nummer = '".$kostenstelle."'");
             } else {
                 $input['adresse'] = $this->app->erp->ReplaceLieferantennummer(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
                 $input['rechnungsdatum'] = $this->app->erp->ReplaceDatum(true,$input['rechnungsdatum'],true); // Parameters: Target db?, value, from form?
@@ -280,8 +314,7 @@ class Verbindlichkeit {
                 $input['skontobis'] = $this->app->erp->ReplaceDatum(true,$input['skontobis'],true); // Parameters: Target db?, value, from form?
                 $input['zahlbarbis'] = $this->app->erp->ReplaceDatum(true,$input['zahlbarbis'],true); // Parameters: Target db?, value, from form?
                 $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
-                $input['kostenstelle'] = $this->app->erp->ReplaceKostenstelle(true,$input['kostenstelle'],true);
-
+                $input['kostenstelle'] = $this->app->DB->Select("SELECT id FROM kostenstellen WHERE nummer = '".$input['kostenstelle']."'");
                 if(empty($input['projekt']) && !empty($input['adresse'])) {
                     $input['projekt'] = $this->app->erp->GetCreateProjekt($input['adresse']);                
                 }
@@ -388,15 +421,31 @@ class Verbindlichkeit {
 
          */
 
-        if ($verbindlichkeit_from_db['status'] != 'angelegt' && $id != 'NULL') {
+        if ($verbindlichkeit_from_db['schreibschutz']) {
             $this->app->Tpl->Set('SAVEDISABLED','disabled');
+            $this->app->Tpl->Set('MESSAGE',"<div class=\"warning\">Diese Verbindlichkeit ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diese Verbindlichkeit wirklich entfernt werden?')) return false;else window.location.href='index.php?module=verbindlichkeit&action=schreibschutz&id=$id';\"></div>");
         }
 
-        if ($verbindlichkeit_from_db['status'] == 'angelegt' || $verbindlichkeit_from_db['rechnungsfreigabe']) {
+        if (empty($verbindlichkeit_from_db['adresse'] || $verbindlichkeit_from_db['status'] == 'angelegt')) {
+            $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden');           
+            $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden'); 
+            $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden'); 
+        }
+
+        if ($verbindlichkeit_from_db['freigabe']) {
+            $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden');
+        } else {
+            $this->app->Tpl->Set('RUECKSETZENEINKAUFHIDDEN','hidden');
+        }                 
+        if ($verbindlichkeit_from_db['rechnungsfreigabe']) {
             $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden');
+        } else {
+            $this->app->Tpl->Set('RUECKSETZENBUCHHALTUNGHIDDEN','hidden');
         }                    
-        if ($verbindlichkeit_from_db['status'] == 'angelegt' || $verbindlichkeit_from_db['bezahlt'] == '1') {
+        if ($verbindlichkeit_from_db['bezahlt'] == '1') {
             $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden');
+        } else {
+            $this->app->Tpl->Set('RUECKSETZENBEZAHLTHIDDEN','hidden');
         }                    
 
       	$this->app->Tpl->Set('WARENEINGANGCHECKED', $verbindlichkeit_from_db['freigabe']==1?"checked":"");
@@ -420,19 +469,14 @@ class Verbindlichkeit {
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$verbindlichkeit_from_db['projekt'],false));
         $this->app->YUI->AutoComplete("kostenstelle", "kostenstelle", 1);
-        $this->app->Tpl->Set('KOSTENSTELLE',$this->app->erp->ReplaceKostenstelle(false,$verbindlichkeit_from_db['kostenstelle'],false));
+        $this->app->Tpl->Set('KOSTENSTELLE',$this->app->DB->SELECT("SELECT nummer FROM kostenstellen WHERE id = '".$verbindlichkeit_from_db['kostenstelle']."'"));
 
         $waehrungenselect = $this->app->erp->GetSelect($this->app->erp->GetWaehrung(), $verbindlichkeit_from_db['waehrung']);
-        $this->app->Tpl->Set('WAEHRUNG', $waehrungenselect);
+        $this->app->Tpl->Set('WAEHRUNGSELECT', $waehrungenselect);
 
         $this->app->Tpl->Set('ADRESSE_ID', $verbindlichkeit_from_db['adresse']);
 
-        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceLieferantennummer(false,$verbindlichkeit_from_db['adresse'],false)); // Convert ID to form display
-
-        if (empty($verbindlichkeit_from_db['adresse'])) {
-          $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden'); 
-          $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden'); 
-        }
+        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceLieferantennummer(false,$verbindlichkeit_from_db['adresse'],false)); // Convert ID to form display     
 
         $this->app->YUI->CkEditor("internebemerkung");
 
@@ -445,6 +489,7 @@ class Verbindlichkeit {
             $this->app->Tpl->Set('INLINEPDF', 'Keine Dateien vorhanden.');
         }
 
+        $this->verbindlichkeit_minidetail('MINIDETAIL',false);
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_edit.tpl");
 
     }
@@ -489,15 +534,15 @@ class Verbindlichkeit {
             $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=dateien&id=$id", "Dateien".$anzahldateien);
         }
 
-        $invoiceArr = $this->app->DB->SelectRow("SELECT v.belegnr, a.name, v.status FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id WHERE v.id='$id' LIMIT 1");
+        $invoiceArr = $this->app->DB->SelectRow("SELECT v.belegnr, a.name, v.status, schreibschutz FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id WHERE v.id='$id' LIMIT 1");
         $belegnr = $invoiceArr['belegnr'];
         $name = $invoiceArr['name'];
         if($belegnr=='0' || $belegnr=='') {
             $belegnr ='(Entwurf)';
         }
         $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"$name Verbindlichkeit $belegnr");
-        $status = $invoiceArr['status'];
-        if ($status==='angelegt') {
+
+        if ($invoiceArr['status'] === 'angelegt' || $invoiceArr['schreibschutz'] != 1) {
             $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=freigabe&id=$id",'Freigabe');
         }       
     }
@@ -620,41 +665,193 @@ class Verbindlichkeit {
     {      
         $id = $this->app->Secure->GetGET('id');
         $this->app->erp->BelegFreigabe('verbindlichkeit',$id);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben");
+        $this->app->DB->Update("UPDATE verbindlichkeit SET schreibschutz = 1 WHERE id = ".$id);
         $this->verbindlichkeit_edit();
     }
 
-    function verbindlichkeit_freigabeeinkauf($id)
+    function verbindlichkeit_freigabeeinkauf($id = null)
     {      
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
         }
         $sql = "UPDATE verbindlichkeit SET freigabe = 1 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Einkauf)");
-        $this->verbindlichkeit_edit();
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }
     }
 
-
-    function verbindlichkeit_freigabebuchhaltung($id)
+    function verbindlichkeit_freigabebuchhaltung($id = null)
     {      
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
         }
         $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Buchhaltung)");
-        $this->verbindlichkeit_edit();
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }
     }
 
-    function verbindlichkeit_freigabebezahlt($id)
+    function verbindlichkeit_freigabebezahlt($id = null)
     {      
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
         }
         $sql = "UPDATE verbindlichkeit SET bezahlt = 1 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit als bezahlt markiert");
-        $this->verbindlichkeit_edit();
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }        
+    }  
+
+  function verbindlichkeit_ruecksetzeneinkauf($id = null)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
+        }
+        $sql = "UPDATE verbindlichkeit SET freigabe = 0 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }
     }
+
+    function verbindlichkeit_ruecksetzenbuchhaltung($id = null)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
+        }
+        $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 0 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit r&uuml;ckgesetzt (Buchhaltung)");
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }
+    }
+
+    function verbindlichkeit_ruecksetzenbezahlt($id = null)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
+        }
+        $sql = "UPDATE verbindlichkeit SET bezahlt = 0 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit bezahlt r&uuml;ckgesetzt");
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }        
+    }  
+
+    function verbindlichkeit_schreibschutz($id = null)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
+        }
+        $sql = "UPDATE verbindlichkeit SET schreibschutz = 0 WHERE id=".$id;
+        $this->app->DB->Update($sql);
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit Schreibschutz entfernt");
+        if ($gotoedit) {
+            $this->verbindlichkeit_edit();
+        }        
+    }  
+
+    public function verbindlichkeit_minidetail($parsetarget='',$menu=true) {
+
+        $id = $this->app->Secure->GetGET('id');  
+
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS 
+                                                v.id,
+                                                v.belegnr,
+                                                v.status_beleg,
+                                                v.schreibschutz,
+                                                v.rechnung,
+                                                ".$this->app->erp->FormatDate('v.zahlbarbis', 'zahlbarbis').",
+                                                v.betrag,
+                                                v.umsatzsteuer,
+                                                v.ustid,
+                                                v.summenormal,
+                                                v.summeermaessigt,
+                                                v.summesatz3,
+                                                v.summesatz4,
+                                                v.steuersatzname3,
+                                                v.steuersatzname4,
+                                                v.skonto,
+                                                ".$this->app->erp->FormatDate('v.skontobis', 'skontobis').",
+                                                v.skontofestsetzen,
+                                                v.freigabe,
+                                                v.freigabemitarbeiter,
+                                                v.bestellung,
+                                                p.abkuerzung AS projekt,
+                                                v.teilprojekt,
+                                                v.auftrag,
+                                                v.status,
+                                                v.bezahlt,
+                                                v.kontoauszuege,
+                                                v.firma,
+                                                v.logdatei,
+                                                v.waehrung,
+                                                v.zahlungsweise,
+                                                ".$this->app->erp->FormatDate('v.eingangsdatum', 'eingangsdatum').",
+                                                ".$this->app->erp->FormatDate('v.rechnungsdatum', 'rechnungsdatum').",
+                                                v.rechnungsfreigabe,
+                                                k.nummer as kostenstelle,
+                                                v.beschreibung,
+                                                v.sachkonto,
+                                                v.art,
+                                                v.verwendungszweck,
+                                                v.dta_datei,
+                                                v.frachtkosten,
+                                                v.internebemerkung,
+                                                v.ustnormal,
+                                                v.ustermaessigt,
+                                                v.uststuer3,
+                                                v.uststuer4,
+                                                v.betragbezahlt,
+                                                v.bezahltam,
+                                                v.klaerfall,
+                                                v.klaergrund,
+                                                v.skonto_erhalten,
+                                                v.kurs,
+                                                v.sprache,
+                                                v.id,
+                                                CONCAT(a.lieferantennummer,' ',a.name) AS adresse
+                                                FROM verbindlichkeit v 
+                                                LEFT JOIN adresse a ON a.id = v.adresse
+                                                LEFT JOIN projekt p ON a.projekt = p.id
+                                                LEFT JOIN kostenstellen k ON v.kostenstelle = k.id
+                                                WHERE v.id='$id'");        
+
+        foreach ($result[0] as $key => $value) {
+            $this->app->Tpl->Set(strtoupper($key), $value);   
+        }
+
+        if (!empty($result[0])) {
+            $verbindlichkeit_from_db = $result[0];
+        }
+
+        $tmp = new EasyTable($this->app);
+        $tmp->Query("SELECT zeit,bearbeiter,grund FROM verbindlichkeit_protokoll WHERE verbindlichkeit='$id' ORDER by zeit DESC",0,"");
+        $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
+
+        if($parsetarget=='')
+        {
+            $this->app->Tpl->Output('verbindlichkeit_minidetail.tpl');
+            $this->app->ExitXentral();
+        }
+        $this->app->Tpl->Parse($parsetarget,'verbindlichkeit_minidetail.tpl');
+  }
 
 }

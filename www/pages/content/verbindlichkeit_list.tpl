@@ -30,6 +30,14 @@
                   </label>
                   <label for="nichtbezahlt">{|Nicht bezahlt|}</label>
                 </li>
+                <li class="filter-item">
+                    <label for="zahlbarbis">{|Zahlbar bis|}:</label>
+                    <input type="text" name="zahlbarbis" id="zahlbarbis" size="10">
+                </li>
+                <li class="filter-item">
+                    <label for="skontobis">{|Skonto bis|}:</label>
+                    <input type="text" name="skontobis" id="skontobis" size="10">
+                </li>
               </ul>
               <form method="post" action="#">
                 <input type="submit" class="btnBlue" name="status_berechnen" value="{|Status berechnen|}" />
