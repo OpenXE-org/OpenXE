@@ -2563,7 +2563,7 @@ class YUI {
           $anzeigebrutto = true;
         }
       }
-      
+
       $sortcol = ' b.sort ';
       $schreibschutz = !empty($docArr)?$docArr['schreibschutz']:$this->app->DB->Select("SELECT schreibschutz FROM $module WHERE id='$id'");
       if(!$schreibschutz)$sortcol = " concat('<input type=\"checkbox\" name=\"belegsort[]\" value=\"',b.id,'\" />',b.sort) as sort ";
@@ -2853,7 +2853,64 @@ class YUI {
                                 LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
                                 WHERE b.$module='$id'";
 
-      } else {
+      } 
+        else if ($module == "verbindlichkeit") // OpenXE
+        {     
+            $sql = "
+                SELECT
+                    $sortcol,
+                    IF(
+                        b.beschreibung != '',
+                        IF(
+                            CHAR_LENGTH(b.bezeichnung) > " . $this->app->erp->MaxArtikelbezeichnung() . ",
+                            CONCAT(
+                                SUBSTR(
+                                    CONCAT(b.bezeichnung, ' *'),
+                                    1,
+                                    " . $this->app->erp->MaxArtikelbezeichnung() . "
+                                ),
+                                '...'
+                            ),
+                            CONCAT(b.bezeichnung, ' *')
+                        ),
+                        IF(
+                            CHAR_LENGTH(b.bezeichnung) > " . $this->app->erp->MaxArtikelbezeichnung() . ",
+                            CONCAT(
+                                SUBSTR(
+                                    b.bezeichnung,
+                                    1,
+                                    " . $this->app->erp->MaxArtikelbezeichnung() . "
+                                ),
+                                '...'
+                            ),
+                            b.bezeichnung
+                        )
+                    ) AS Artikel,
+                    p.abkuerzung AS projekt,
+                    a.nummer,
+                    ".$this->app->erp->FormatDate('lieferdatum')." AS lieferdatum,
+                    TRIM(b.menge) +0 AS menge,
+                    " . $this->FormatPreis($preiscell) . " AS preis,
+                    " . $this->FormatPreis($preiscell."*menge") . " AS Betrag,
+                    CONCAT(
+                        k.sachkonto,
+                        ' - ',
+                        k.beschriftung
+                    ) AS sachkonto,
+                    b.id AS id
+                FROM
+                    $table b
+                LEFT JOIN artikel a ON
+                    a.id = b.artikel
+                LEFT JOIN projekt p ON
+                    b.projekt = p.id
+                LEFT JOIN kontorahmen k ON
+                    k.id = b.sachkonto
+                WHERE
+                    b.$module = '$id'
+            ";
+        }
+        else {
         $sql = null;
         $this->app->erp->RunHook('yui_position_sql', 3, $table, $id, $sql);
         if($sql === null){
@@ -3549,24 +3606,11 @@ class YUI {
 
     $stop_betragbezahlt = "<img alt=\"Zahlung fehlt\" src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassestop.png\" style=\"margin-right:1px\" title=\"Zahlung fehlt\" border=\"0\">";
     $gostop_betragbezahlt = "<img alt=\"teilweise bezahlt\" src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassegostop.png\" style=\"margin-right:1px\" title=\"teilweise bezahlt\" border=\"0\">";
-    $go_betragbezahlt = "<img alt=\"nicht bezahlt\"  src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassego.png\" style=\"margin-right:1px\" title=\"komplett bezahlt\" border=\"0\">";
+    $go_betragbezahlt = "<img alt=\"nicht bezahlt\"  src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassego.png\" style=\"margin-right:1px\" title=\"bezahlt\" border=\"0\">";
     return "CONCAT('<table><tr><td nowrap>',
     if(v.freigabe,'$go_ware','$stop_ware'),
     if(v.rechnungsfreigabe,'$go_summe','$stop_summe'),
-    IF( v.betragbezahlt = 0 OR (v.betrag > 0 AND v.betragbezahlt < 0),'$stop_betragbezahlt',
-      IF(v.betrag > 0 AND (v.betragbezahlt + v.skonto_erhalten) >= v.betrag, '$go_betragbezahlt',
-        IF(v.betrag - v.betragbezahlt <= v.betrag-((v.betrag/100.0)*v.skonto),
-          '$gostop_betragbezahlt',
-          '$go_betragbezahlt'
-        )
-      )
-    ),     
-    if((
-    (SELECT COUNT(ka.id) 
-    FROM kontoauszuege_zahlungsausgang ka WHERE ka.parameter=v.id AND ka.objekt='verbindlichkeit') + 
-    (SELECT COUNT(ke.id) FROM kontoauszuege_zahlungseingang ke WHERE ke.parameter=v.id AND ke.objekt='verbindlichkeit')) > 0,
-    '$go_zahlung','$stop_zahlung'
-    ),
+    if(v.bezahlt,'$go_betragbezahlt','$stop_betragbezahlt'),
     '</td></tr></table>')";
   }
   
@@ -14861,8 +14905,6 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
         $table->headings[3] = 'Betrag';
         $table->headings[4] = 'Abr. bei Kd';
         $table->headings[5] = 'sonst. MwSt'; // kann man auch umbenennen in Keine
-
-
 
         $table->headings[6] = 'MwSt';
         $table->headings[7] = 'Kommentar';
