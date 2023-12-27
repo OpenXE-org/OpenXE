@@ -78,7 +78,7 @@
                                                             {|Betrag brutto|}:
                                                         </td>
                                                         <td>
-                                                            <input type="number" name="betrag" id="betrag" value="[BETRAG]" size="20" [SAVEDISABLED]>
+                                                            <input type="number" step="0.01" name="betrag" id="betrag" value="[BETRAG]" size="20" [SAVEDISABLED]>
                                                             <select name="waehrung" [SAVEDISABLED]>[WAEHRUNGSELECT]</select>
                                                         </td>
                                                     </tr>
@@ -87,7 +87,7 @@
                                                             {|Betrag Positionen brutto|}:
                                                         </td>
                                                         <td>
-                                                            <input type="number" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled>
+                                                            <input type="number" step="0.01" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled>
                                                         </td>
                                                     </tr>          
                                                     <tr hidden>
@@ -95,7 +95,7 @@
                                                             {|Betrag Positionen netto|}:
                                                         </td>
                                                         <td>
-                                                            <input type="number" name="betragnetto" id="betragnetto" value="[BETRAGNETTO]" size="20" disabled [SAVEDISABLED]>
+                                                            <input type="number" step="0.01" name="betragnetto" id="betragnetto" value="[BETRAGNETTO]" size="20" disabled [SAVEDISABLED]>
                                                         </td>
                                                     </tr>                                                                                                                                              
                                                     <tr>

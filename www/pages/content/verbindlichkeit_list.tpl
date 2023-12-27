@@ -39,7 +39,7 @@
                     <input type="text" name="skontobis" id="skontobis" size="10">
                 </li>
               </ul>
-              <form method="post" action="#">
+              <form method="post" action="#" hidden>
                 <input type="submit" class="btnBlue" name="status_berechnen" value="{|Status berechnen|}" />
               </form>              
             </div>    
