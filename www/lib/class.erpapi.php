@@ -26850,7 +26850,9 @@ function Firmendaten($field,$projekt="")
           $tmp[$extra[$i]['type']] = $extra[$i]['bezeichnung'];
         }
         if($zahlungsweise && empty($tmp[$zahlungsweise]))$tmp[$zahlungsweise] = ucfirst($zahlungsweise);
-        asort($tmp);
+        if (!empty($tmp)) {
+            asort($tmp);
+        }
         return $tmp;
         //              return array('rechnung'=>'Rechnung','vorkasse'=>'Vorkasse','nachnahme'=>'Nachnahme','kreditkarte'=>'Kreditkarte','einzugsermaechtigung'=>'Einzugsermaechtigung','bar'=>'Bar','paypal'=>'PayPal','lastschrift'=>'Lastschrift');
       }
