@@ -714,6 +714,9 @@ $(document).ready(function(){
 <div class="inside inside-full-height">
 <fieldset><legend>{|Finanzbuchhaltung|}</legend>
 <table width="100%" class="mkTableFormular">
+             <tr>
+			   <td width="300">Sachkonto f&uuml;r Verbindlichkeiten-Vorkontierung:</td><td colspan="3">[SACHKONTO]</td>
+             </tr>
 <tr><td width="210">{|Reisekosten|}:</td><td>[VERRECHNUNGSKONTOREISEKOSTEN][MSGVERRECHNUNGSKONTOREISEKOSTEN]&nbsp;<i>Verrechnungskonto</i></td>
 <td>&nbsp;</td>
 <td></td><td></td></tr>
