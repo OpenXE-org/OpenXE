@@ -38,6 +38,7 @@ class ObjGenVerbindlichkeit_Position
   private  $preis;
   private  $menge;
   private  $kostenstelle;
+  private  $sachkonto;
 
   public $app;            //application object 
 
@@ -76,12 +77,13 @@ $result = $result[0];
     $this->preis=$result['preis'];
     $this->menge=$result['menge'];
     $this->kostenstelle=$result['kostenstelle'];
+    $this->sachkonto=$result['sachkonto'];
   }
 
   public function Create()
   {
     $sql = "INSERT INTO `verbindlichkeit_position` (`id`,`verbindlichkeit`,`sort`,`artikel`,`projekt`,`bestellung`,`nummer`,`bestellnummer`,`waehrung`,`einheit`,`vpe`,`bezeichnung`,`umsatzsteuer`,`status`,`beschreibung`,`lieferdatum`,`steuersatz`,`steuertext`,`preis`,`menge`,`kostenstelle`)
-      VALUES(NULL,'{$this->verbindlichkeit}','{$this->sort}','{$this->artikel}','{$this->projekt}','{$this->bestellung}','{$this->nummer}','{$this->bestellnummer}','{$this->waehrung}','{$this->einheit}','{$this->vpe}','{$this->bezeichnung}','{$this->umsatzsteuer}','{$this->status}','{$this->beschreibung}','{$this->lieferdatum}','{$this->steuersatz}','{$this->steuertext}','{$this->preis}','{$this->menge}','{$this->kostenstelle}')"; 
+      VALUES(NULL,'{$this->verbindlichkeit}','{$this->sort}','{$this->artikel}','{$this->projekt}','{$this->bestellung}','{$this->nummer}','{$this->bestellnummer}','{$this->waehrung}','{$this->einheit}','{$this->vpe}','{$this->bezeichnung}','{$this->umsatzsteuer}','{$this->status}','{$this->beschreibung}','{$this->lieferdatum}','{$this->steuersatz}','{$this->steuertext}','{$this->preis}','{$this->menge}','{$this->kostenstelle}','{$this->sachkonto}')"; 
 
     $this->app->DB->Insert($sql);
     $this->id = $this->app->DB->GetInsertID();
@@ -113,7 +115,8 @@ $result = $result[0];
       `steuertext`='{$this->steuertext}',
       `preis`='{$this->preis}',
       `menge`='{$this->menge}',
-      `kostenstelle`='{$this->kostenstelle}'
+      `kostenstelle`='{$this->kostenstelle}',
+      `sachkonto`='{$this->sachkonto}'
       WHERE (`id`='{$this->id}')";
 
     $this->app->DB->Update($sql);
@@ -152,6 +155,7 @@ $result = $result[0];
     $this->preis='';
     $this->menge='';
     $this->kostenstelle='';
+    $this->sachkonto='';
   }
 
   public function Copy()
@@ -234,5 +238,7 @@ $result = $result[0];
   public function GetMenge() { return $this->menge; }
   public function SetKostenstelle($value) { $this->kostenstelle=$value; }
   public function GetKostenstelle() { return $this->kostenstelle; }
+  public function SetSachkonto($value) { $this->sachkonto=$value; }
+  public function GetSachkonto() { return $this->sachkonto; }
 
 }

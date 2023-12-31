@@ -849,7 +849,87 @@
 [DISABLECLOSESHOP]
 
 <div id="tabs-5">
-
+<div class="row">
+   <div class="row-height">
+     <div class="col-xs-12 col-md-4 col-md-height">
+       <div class="inside inside-full-height">
+         <fieldset>
+           <legend>{|Finanzbuchhaltung Export Erl&ouml;se|}</legend>
+           <table border="0" width="100%">
+             <tr>
+               <td width="300">Inland (normal):</td><td>[STEUER_ERLOESE_INLAND_NORMAL][MSGSTEUER_ERLOESE_INLAND_NORMAL]</td>
+             </tr>
+             <tr>
+               <td width="300">Inland (erm&auml;&szlig;igt):</td><td>[STEUER_ERLOESE_INLAND_ERMAESSIGT][MSGSTEUER_ERLOESE_INLAND_ERMAESSIGT]</td>
+             <tr>
+               <td width="300">Inland (steuerfrei):</td><td>[STEUER_ERLOESE_INLAND_NICHTSTEUERBAR][MSGSTEUER_ERLOESE_INLAND_NICHTSTEUERBAR]</td>
+             </tr>
+             <tr>
+               <td width="300">Innergemeinschaftlich EU:</td><td>[STEUER_ERLOESE_INLAND_INNERGEMEINSCHAFTLICH][MSGSTEUER_ERLOESE_INLAND_INNERGEMEINSCHAFTLICH]</td>
+             </tr>
+             <tr>
+               <td width="300">EU (normal):</td><td>[STEUER_ERLOESE_INLAND_EUNORMAL][MSGSTEUER_ERLOESE_INLAND_EUNORMAL]</td>
+             </tr>
+             <tr>
+               <td width="300">EU (erm&auml;&szlig;igt):</td><td>[STEUER_ERLOESE_INLAND_EUERMAESSIGT][MSGSTEUER_ERLOESE_INLAND_EUERMAESSIGT]</td>
+             </tr>
+             <tr>
+               <td width="300">Export:</td><td>[STEUER_ERLOESE_INLAND_EXPORT][MSGSTEUER_ERLOESE_INLAND_EXPORT]</td>
+             </tr>
+           </table>
+         </fieldset>
+       </div>
+     </div>
+     <div class="col-xs-12 col-md-4 col-md-height">
+       <div class="inside inside-full-height">
+         <fieldset>
+           <legend>{|Finanzbuchhaltung Export Aufwendungen|}</legend>
+           <table>
+             <tr>
+               <td width="300">Inland (normal):</td><td>[STEUER_AUFWENDUNG_INLAND_NORMAL][MSGSTEUER_AUFWENDUNG_INLAND_NORMAL]</td>
+             </tr>
+             <tr>
+               <td width="300">Inland (erm&auml;&szlig;igt):</td><td>[STEUER_AUFWENDUNG_INLAND_ERMAESSIGT][MSGSTEUER_AUFWENDUNG_INLAND_ERMAESSIGT]</td>
+             </tr>
+             <tr>
+               <td width="300">Inland (steuefrei):</td><td>[STEUER_AUFWENDUNG_INLAND_NICHTSTEUERBAR][MSGSTEUER_AUFWENDUNG_INLAND_NICHTSTEUERBAR]</td>
+             </tr>
+             <tr>
+               <td width="300">Innergemeinschaftlich EU:</td><td>[STEUER_AUFWENDUNG_INLAND_INNERGEMEINSCHAFTLICH][MSGSTEUER_AUFWENDUNG_INLAND_INNERGEMEINSCHAFTLICH]</td>
+             </tr>
+             <tr>
+               <td width="300">EU (normal):</td><td>[STEUER_AUFWENDUNG_INLAND_EUNORMAL][MSGSTEUER_AUFWENDUNG_INLAND_EUNORMAL]</td>
+             </tr>
+             <tr>
+              <td width="300">EU (erm&auml;&szlig;igt):</td><td>[STEUER_AUFWENDUNG_INLAND_EUERMAESSIGT][MSGSTEUER_AUFWENDUNG_INLAND_EUERMAESSIGT]</td>
+             </tr>
+             <tr>
+               <td width="300">Import:</td><td>[STEUER_AUFWENDUNG_INLAND_IMPORT][MSGSTEUER_AUFWENDUNG_INLAND_IMPORT]</td>
+             </tr>
+           </table>
+         </fieldset>
+       </div>
+    </div>
+    <div class="col-xs-12 col-md-4 col-md-height">
+       <div class="inside inside-full-height">
+         <fieldset>
+           <legend>{|Einstellungen|}</legend>
+           <table>
+             <tr>
+			   <td width="300">Sachkonto f&uuml;r Verbindlichkeiten-Vorkontierung:</td><td colspan="3">[SACHKONTO]</td>
+             </tr>
+             <tr>
+               <td width="300">Kostenstelle:</td><td>[KOSTENSTELLE]</td>
+             </tr>
+           </table>
+         </fieldset>
+       </div>
+     </div>
+   </div>
+ </div>
+ <br />
+ <input type="submit" name="speichern" value="Speichern" onclick="this.form.action += '#tabs-5';" style="float:right"/>
+</div>
 </div>
 
 <script>

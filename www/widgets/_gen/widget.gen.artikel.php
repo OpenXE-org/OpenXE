@@ -665,6 +665,9 @@ class WidgetGenartikel
     $field = new HTMLInput("steuergruppe","text","","30","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("sachkonto","text","","30","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("kostenstelle","text","","30","","","","","","","","0","","");
     $this->form->NewField($field);
 
