@@ -2198,7 +2198,7 @@ class Wareneingang {
         $this->app->Tpl->Set('ID', $id);
         $weiterleitung = '';
         if ($cmd === 'manuell') {
-            $this->app->DB->Update("UPDATE artikel SET lagerartikel='1' WHERE id='$pos' AND juststueckliste!=1 LIMIT 1");
+//            $this->app->DB->Update("UPDATE artikel SET lagerartikel='1' WHERE id='$pos' AND juststueckliste!=1 LIMIT 1");
             $artikel = $pos;
             $this->app->Tpl->Set('ANZAHLAENDERN', "<input type=\"button\" value=\"&auml;ndern\" onclick=\"var menge =  prompt('Neue Menge:',$menge); if(menge > 0) window.location.href=document.URL + '&menge=' + menge;\">");
             //$this->app->Tpl->Set('SHOWANZAHLSTART','<!--'); //BENE war auskommentiert
