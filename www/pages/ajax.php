@@ -2489,7 +2489,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$lieferant[0]."' AND lieferantennummer <> '' LIMIT 1");
         }
         $beleg = str_replace('lieferanten','',$filtername);
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',if(belegnr <> '',belegnr,'ENTWURF'),' ',lieferantennummer,' ',name) as name FROM $beleg WHERE (belegnr LIKE '%$term%' OR name LIKE '%$term%' OR lieferantennummer LIKE '$%term%') AND (status = 'angelegt' OR status = 'freigegeben') 
+        $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',if(belegnr <> '',belegnr,'ENTWURF'),' ',lieferantennummer,' ',name) as name FROM $beleg WHERE (belegnr <> '') AND (belegnr LIKE '%$term%' OR name LIKE '%$term%' OR lieferantennummer LIKE '$%term%') AND (status = 'angelegt' OR status = 'freigegeben') 
         ".($adresse?" AND adresse = '$adresse' ":'')."  ".$this->app->erp->ProjektRechte('projekt')."
         ORDER by belegnr LIMIT 20" );
         $carr = !empty($arr)?count($arr):0;

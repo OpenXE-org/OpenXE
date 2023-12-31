@@ -1,7 +1,7 @@
 <div id="tabs">
     <ul>
         <li><a href="#tabs-1">Details</a></li>
-<!--        <li><a href="#tabs-2">Positionen</a></li> -->
+        <li><a href="#tabs-2">Positionen</a></li>
         <li><a href="#tabs-3">Protokoll</a></li>
     </ul>
     <div id="tabs-1">
@@ -21,7 +21,7 @@
                                                 [STATUSICONS]    
                                             </fieldset>      
 	                        				<fieldset style="float: right;">
-                                                <input type="submit" name="submit" value="Speichern"/>      
+                                                <button [AKTION_SPEICHERN_DISABLED] name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button>
                                             </fieldset>
                                         </div>
                                		</div>                                    
@@ -82,7 +82,7 @@
                                                             <select name="waehrung" [SAVEDISABLED]>[WAEHRUNGSELECT]</select>
                                                         </td>
                                                     </tr>
-                                                    <tr hidden>
+                                                    <tr>
                                                         <td>
                                                             {|Betrag Positionen brutto|}:
                                                         </td>
@@ -90,7 +90,7 @@
                                                             <input type="number" step="0.01" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled>
                                                         </td>
                                                     </tr>          
-                                                    <tr hidden>
+                                                    <tr>
                                                         <td>
                                                             {|Betrag Positionen netto|}:
                                                         </td>
@@ -124,12 +124,21 @@
                                                     </tr>                                                                                                                                                                                                                                            
                                                     <tr>
                                                         <td>
+                                                            {|Bestellung|}:
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" name="bestellung" id="bestellung" value="[BESTELLUNG]" size="20" [SAVEDISABLED]>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
                                                             {|Waren-/Leistungsprüfung (Einkauf)|}:
                                                         </td>
                                                         <td>
                                                             <input type="checkbox" id="wareneingang" value="1" [WARENEINGANGCHECKED] size="20" disabled>
                                                             <a href="index.php?module=verbindlichkeit&action=freigabeeinkauf&id=[ID]" title="freigeben" [FREIGABEEINKAUFHIDDEN]><img src="themes/new/images/forward.svg" border="0" class="textfeld_icon"></a>                                                                                                                
-                                                            <a href="index.php?module=verbindlichkeit&action=ruecksetzeneinkauf&id=[ID]" title="r&uuml;cksetzen" [RUECKSETZENEINKAUFHIDDEN]><img src="themes/new/images/delete.svg" border="0" class="textfeld_icon"></a>                                                                                                                
+                                                            <a href="index.php?module=verbindlichkeit&action=ruecksetzeneinkauf&id=[ID]" title="r&uuml;cksetzen" [RUECKSETZENEINKAUFHIDDEN]><img src="themes/new/images/delete.svg" border="0" class="textfeld_icon"></a>
+                                                            <i [EINKAUFINFOHIDDEN]>Wird automatisch gesetzt wenn Positionen vollst&auml;ndig</a>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -196,11 +205,9 @@
             </div>           
         </form>
     </div>    
-<!--
     <div id="tabs-2">
-        [POS]
+        [POSITIONENTAB]        
     </div>
--->
     <div id="tabs-3">
         [MINIDETAIL]
     </div>
