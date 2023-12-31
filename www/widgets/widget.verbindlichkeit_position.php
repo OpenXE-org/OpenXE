@@ -24,6 +24,7 @@ class WidgetVerbindlichkeit_position extends WidgetGenVerbindlichkeit_position
 
     $this->app->YUI->AutoComplete("projekt","projektname",1);
     $this->app->YUI->AutoComplete("kostenstelle","kostenstelle",1);
+    $this->app->YUI->AutoComplete("sachkonto","sachkonto_aufwendungen",1);
 
     $this->app->YUI->AutoComplete("artikel","artikelnummer");
     //$this->app->YUI->AutoComplete(AUTO,"artikel",array('nummer','name_de','warengruppe'),"nummer");
@@ -36,6 +37,7 @@ class WidgetVerbindlichkeit_position extends WidgetGenVerbindlichkeit_position
     $this->form->ReplaceFunction("menge",$this,"ReplaceMenge");
     //$this->form->ReplaceFunction("geliefert",$this,"ReplaceMenge");
     $this->form->ReplaceFunction("projekt",$this,"ReplaceProjekt");
+    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceSachkonto");
 
     if($this->app->erp->Firmendaten("briefhtml")=="1")
     {
@@ -77,6 +79,11 @@ class WidgetVerbindlichkeit_position extends WidgetGenVerbindlichkeit_position
   function ReplaceProjekt($db,$value,$fromform)
   {
     return $this->app->erp->ReplaceProjekt($db,$value,$fromform);
+  }
+
+  function ReplaceSachkonto($db,$value,$fromform)
+  {
+    return $this->app->erp->ReplaceKontorahmen($db,$value,$fromform);
   }
 
   function ReplaceSteuersatz($db,$value,$fromform)

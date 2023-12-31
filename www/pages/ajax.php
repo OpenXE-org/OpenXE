@@ -674,6 +674,7 @@ class Ajax {
         echo $str;
         exit;
       }
+
       if(!empty($datei['parameter'])) {
         if($cmd === 'projekt') {
           if(!$this->app->erp->UserProjektRecht($datei['parameter'])) {
@@ -707,8 +708,7 @@ class Ajax {
           }
         }
       }
-      //Rechte prüfen
-      
+      //Rechte prüfen     
       $userdata = isset($this->app->Conf->WFuserdata)
         ?$this->app->Conf->WFuserdata
         :(str_replace('index.php', '', $_SERVER['SCRIPT_FILENAME']).'../userdata');
@@ -746,34 +746,17 @@ class Ajax {
               exit;
             break;
             case 'application/pdf':
-              $str = file_get_contents(dirname(__DIR__) . '/themes/new/images/pdf.svg');
+              $str = file_get_contents(dirname(__DIR__) . '/themes/new/images/pdf.png');
               header('Content-type: image/png');
               echo $str;
               exit;
             break;
-            default:
-              $str = file_get_contents(dirname(__DIR__) . '/themes/new/images/pdf.svg');
-              if(substr(strtolower($datei['dateiname']),-4) === '.gif'){
-                header('Content-type: image/gif');
-                echo $str;
-                exit; 
-              }
-              if(substr(strtolower($datei['dateiname']),-4) === '.png'){
-                header('Content-type: image/png');
-                echo $str;
-                exit; 
-              }
-              if(substr(strtolower($datei['dateiname']),-4) === '.jpg'
-                || substr(strtolower($datei['dateiname']),-4) === 'jpeg'){
-                header('Content-type: image/jpg');
-                echo $str;
-                exit;                 
-              }
+            default:             
             break;
           }
         }
       }
-      
+     
       if(file_exists($cachefolder.'/'.$datei['id'].'_100_100')) {
         $type = is_file($path.'/'.$datei['id'])? false : mime_content_type($path.'/'.$datei['id']);
         if($type === false) {
@@ -2379,7 +2362,14 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         for($i = 0; $i < $carr; $i++)
           $newarr[] = $arr[$i]['name'];
         break;
+      case "sachkonto_aufwendungen":
+         $arr = $this->app->DB->SelectArr("SELECT CONCAT(sachkonto,' ',beschriftung) as name FROM kontorahmen 
+            WHERE art = 1 AND (beschriftung LIKE '%$term%' OR sachkonto LIKE '%$term%' OR sachkonto LIKE '%$term2%' OR sachkonto LIKE '%$term3%' OR beschriftung LIKE '%$term2%' OR beschriftung LIKE '%$term3%') AND ausblenden!=1 $andprojekt ORDER by sachkonto");
 
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['name'];
+        break;
       case "lieferbedingungen":
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(lieferbedingungen) as name FROM lieferbedingungen
             WHERE (lieferbedingungen LIKE '%$term%' OR lieferbedingungen LIKE '%$term2%' OR lieferbedingungen LIKE '%$term3%') ORDER by lieferbedingungen");
@@ -2458,6 +2448,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);
 
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(nummer,' ',beschreibung) as name FROM kostenstellen WHERE $subwhere ORDER by nummer");
+
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++)
           $newarr[] = $arr[$i]['name'];
