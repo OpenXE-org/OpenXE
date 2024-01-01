@@ -30,7 +30,7 @@
                         <table width="100%" border="0" class="mkTableFormular">
                             <legend>{|Aktionen|}</legend>
                             <tr>
-                                <td><button [AKTION_SPEICHERN_DISABLED] name="submit" value="positionen_hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button></td>
+                                <td><button [SAVEDISABLED] name="submit" value="positionen_hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button></td>
                             </tr>
                         </table>
                     </fieldset>
@@ -59,13 +59,13 @@
                                 <td>Sachkonto:&nbsp;<input type="text" id="positionen_sachkonto" name="positionen_sachkonto" value=""></td>
                             </tr>
                             <tr>
-                                <td><button name="submit" value="positionen_sachkonto_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
+                                <td><button [SAVEDISABLED] name="submit" value="positionen_sachkonto_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
                             <tr>
                                 <td>Steuersatz:&nbsp;<input type="text" id="positionen_steuersatz" name="positionen_steuersatz" value=""></td>
                             </tr>
                             <tr>
-                                <td><button name="submit" value="positionen_steuersatz_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
+                                <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
                         </table>
                     </fieldset>

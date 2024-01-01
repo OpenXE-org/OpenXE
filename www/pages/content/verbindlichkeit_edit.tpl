@@ -21,7 +21,7 @@
                                                 [STATUSICONS]    
                                             </fieldset>      
 	                        				<fieldset style="float: right;">
-                                                <button [AKTION_SPEICHERN_DISABLED] name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button>
+                                                <button name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button>
                                             </fieldset>
                                         </div>
                                		</div>                                    

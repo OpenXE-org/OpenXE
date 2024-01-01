@@ -194,7 +194,7 @@ class Verbindlichkeit {
                 $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Menge','Menge offen','Eingabe','Preis','');
                 $width = array(  '1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '2%',   '1%',         '1%',     '1%',   '1%');  
 
-                $findcols = array('id','belegnr');
+                $findcols = array('pa','auswahl','belegnr','lsnr','renr','artikelnummer','name_de','menge','offen_menge','offen_menge','preis','pa');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array(8,9,11);
@@ -288,13 +288,13 @@ class Verbindlichkeit {
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS * FROM (
                         SELECT 
-                            pa.id pa,
-                            ".$this->app->erp->ConcatSQL($paketlink).",
+                            pa.id pa_id,
+                            ".$this->app->erp->ConcatSQL($paketlink)." pa,
                             ".$this->app->erp->ConcatSQL($auswahl)." AS auswahl,
                             if(b.belegnr LIKE '%".$bestellnummer."%',CONCAT('<b>',b.belegnr,'</b>'),b.belegnr) AS belegnr,
                             pa.lsnr,
                             if(pa.renr LIKE '%".$rechnung."%',CONCAT('<b>',pa.renr,'</b>'),pa.renr) AS renr,
-                            ".$this->app->erp->ConcatSQL($artikellink).",
+                            ".$this->app->erp->ConcatSQL($artikellink)." AS artikelnummer,
                             art.name_de,
                             pd.menge,
                             IF(
@@ -303,7 +303,7 @@ class Verbindlichkeit {
                                 0
                             ) offen_menge,
                             ".$this->app->erp->ConcatSQL($werte).",
-                            ".$this->app->erp->ConcatSQL($preise)."
+                            ".$this->app->erp->ConcatSQL($preise)." AS preis
                         FROM
                             paketannahme pa
                         INNER JOIN paketdistribution pd ON
@@ -340,13 +340,13 @@ class Verbindlichkeit {
                 $allowed['verbindlichkeit_positionen'] = array('list');              
 
                 $id = $app->Secure->GetGET('id');
-                $freigabe = $app->DB->Select("SELECT freigabe FROM verbindlichkeit WHERE id = ".$id);
+                $freigabe = $app->DB->Select("SELECT freigabe FROM verbindlichkeit WHERE id = '".$id."'");
 
 //                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz','Sachkonto','Men&uuml;','');
                 $heading = array('',  'Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz abw.','Sachkonto abw.');
                 $width = array(  '1%','1%',       '1%' ,        '2%',         '2%',         '16%',    '1%',   '1%',   '1%',        '3%',       '1%',       '1%');       
 
-                $findcols = array('id','id');
+                $findcols = array('vp.id','pd.paketannahme','pd.id','b.belegnr','art.nummer','art.name_de','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id','1');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array(6,7,8,9);                
@@ -369,11 +369,19 @@ class Verbindlichkeit {
               
         	    $box = "CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',vp.id,'\" />') AS `auswahl`";
 
+               $paketlink = array (
+                    '<a href="index.php?module=wareneingang&action=distriinhalt&id=',
+                    ['sql' => 'pd.paketannahme'],
+                    '">',                    
+                    ['sql' => 'pd.paketannahme'],
+                    '</a>'
+                );
+
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS                          
                         vp.id,
                         $box,
-                        pd.paketannahme,
+                        ".$this->app->erp->ConcatSQL($paketlink)." pa,
                         pd.id paket_position,
                         b.belegnr,
                         art.nummer,
@@ -800,6 +808,11 @@ class Verbindlichkeit {
                 $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="success">Positionen vollst&auml;ndig</div>');            
             } else {
                 $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="warning">Positionen nicht vollst&auml;ndig. Bruttobetrag '.$verbindlichkeit_from_db['betrag'].', Summe Positionen (brutto) '.round($betrag_brutto,2).', Summe Positionen (netto) '.round($betrag_netto,2).'</div>');            
+
+                if ($verbindlichkeit_from_db['freigabe']) {
+                    $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 0 WHERE id = ".$id);
+                }
+
             }
 
             $this->app->Tpl->Set('BETRAGDISABLED', 'disabled');
@@ -834,10 +847,16 @@ class Verbindlichkeit {
             $this->app->Tpl->Set('POSITIONHINZUFUEGENHIDDEN','hidden');
         } else {
             $this->app->Tpl->Set('RUECKSETZENEINKAUFHIDDEN','hidden');
+            $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden');
+        }
+
+        if (!empty($positionen)) {
+            $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden');
         }
                 
         if ($verbindlichkeit_from_db['rechnungsfreigabe']) {
             $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden');
+            $this->app->Tpl->Set('RUECKSETZENEINKAUFHIDDEN','hidden');
         } else {
             $this->app->Tpl->Set('RUECKSETZENBUCHHALTUNGHIDDEN','hidden');
         }                    
@@ -1037,7 +1056,7 @@ class Verbindlichkeit {
             $id = $this->app->Secure->GetGET('id');
             $gotoedit = true;
         }
-        $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE id=".$id;
+        $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE freigabe = 1 AND id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Buchhaltung)");
         if ($gotoedit) {
