@@ -60,7 +60,7 @@
                         <td>
                         </td>
                         <td>
-                            <button name="submit" value="spam_filter" class="ui-button-icon" title="Ticket auf Status 'Papierkorb' setzen und Absender-Adresse in Ticketregel eintragen" style="width:100%;">{|Spamregel erstellen|}</button>
+                            <button name="submit" value="spam_filter" class="ui-button-icon" title="Ticket auf Status 'Papierkorb' setzen und Absender-Adresse in Ticketregel eintragen" style="width:100%;" onclick="if(confirm('Wirklich Ticketregel erstellen?'))document.getElementById('form-id').submit(); else return false;">{|Spamregel erstellen|}</button>
                         </td>
                     </tr>
                 </table>
