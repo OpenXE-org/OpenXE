@@ -87,7 +87,7 @@
                                                             {|Betrag Positionen brutto|}:
                                                         </td>
                                                         <td>
-                                                            <input type="number" step="0.01" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled>
+                                                            <input type="number" step="0.01" name="betragbruttopos" id="betragbruttopos" value="[BETRAGBRUTTOPOS]" size="20" disabled><img class="wawitooltipicon" src="themes/new/images/tooltip_grau.png" title="Rundungsdifferenz [RUNDUNGSDIFFERENZ] wurde automatisch ber&uuml;cksichtigt" [RUNDUNGSDIFFERENZICONHIDDEN]>
                                                         </td>
                                                     </tr>          
                                                     <tr>

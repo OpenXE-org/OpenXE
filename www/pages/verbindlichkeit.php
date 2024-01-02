@@ -594,7 +594,7 @@ class Verbindlichkeit {
 
                 $sql = "INSERT INTO verbindlichkeit (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
 
-    //            echo($sql);
+//               echo($sql);
 
                 $this->app->DB->Update($sql);
 
@@ -766,6 +766,7 @@ class Verbindlichkeit {
         if (!empty($positionen)) {
             $betrag_netto = 0;
             $betrag_brutto = 0;
+            $betrag_brutto_pos_summe = 0;
             $steuer_normal = 0;
             $steuer_ermaessigt = 0;
 
@@ -792,13 +793,30 @@ class Verbindlichkeit {
            
                 $betrag_netto += ($position['menge']*$position['preis']);
                 $betrag_brutto += ($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100));
+                $betrag_brutto_pos_summe += round(($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100)),2);
 
             }
       
             $this->app->Tpl->Set('BETRAGNETTO', $betrag_netto);
             $this->app->Tpl->Set('BETRAGBRUTTOPOS', round($betrag_brutto,2));
 
-            if ($verbindlichkeit_from_db['betrag'] == round($betrag_brutto,2)) {            
+            if ($verbindlichkeit_from_db['betrag'] == round($betrag_brutto,2)) {
+                $pos_ok = true;    
+            }
+            else if (round($verbindlichkeit_from_db['betrag'],2) == round($betrag_brutto_pos_summe,2)) {
+                $pos_ok = true;                       
+                if (round($betrag_brutto,2) != round($betrag_brutto_pos_summe,2)) {
+                    $rundungsdifferenz = round(round($betrag_brutto,2) - $betrag_brutto_pos_summe,2);
+                }   
+            }                                    
+
+            if (empty($rundungsdifferenz)) {
+                $this->app->Tpl->Set('RUNDUNGSDIFFERENZICONHIDDEN', 'hidden');            
+            } else {
+                $this->app->Tpl->Set('RUNDUNGSDIFFERENZ', $rundungsdifferenz);            
+            }
+
+            if ($pos_ok) {            
                 if (!$verbindlichkeit_from_db['freigabe'] && !$einkauf_automatik_aus) {
                     $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 1 WHERE id = ".$id);
                     $verbindlichkeit_from_db['freigabe'] = 1;
@@ -808,17 +826,15 @@ class Verbindlichkeit {
                 $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="success">Positionen vollst&auml;ndig</div>');            
             } else {
                 $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="warning">Positionen nicht vollst&auml;ndig. Bruttobetrag '.$verbindlichkeit_from_db['betrag'].', Summe Positionen (brutto) '.round($betrag_brutto,2).', Summe Positionen (netto) '.round($betrag_netto,2).'</div>');            
-
                 if ($verbindlichkeit_from_db['freigabe']) {
                     $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 0 WHERE id = ".$id);
+                    $verbindlichkeit_from_db['freigabe'] = 0;
+                    $this->app->YUI->Message('warning',"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");        
                 }
-
             }
-
             $this->app->Tpl->Set('BETRAGDISABLED', 'disabled');
-
         }
-            
+           
         /*
          * Add displayed items later
          * 
@@ -943,8 +959,6 @@ class Verbindlichkeit {
 	    $input['eingangsdatum'] = $this->app->Secure->GetPOST('eingangsdatum');
 	    $input['rechnungsdatum'] = $this->app->Secure->GetPOST('rechnungsdatum');
         $input['bestellung'] = $this->app->Secure->GetPOST('bestellung');
-	    $input['freigabe'] = $this->app->Secure->GetPOST('freigabe')?'1':'0';
-	    $input['rechnungsfreigabe'] = $this->app->Secure->GetPOST('rechnungsfreigabe')?'1':'0';
 	    $input['kostenstelle'] = $this->app->Secure->GetPOST('kostenstelle');
 	    $input['internebemerkung'] = $this->app->Secure->GetPOST('internebemerkung');
         return $input;
