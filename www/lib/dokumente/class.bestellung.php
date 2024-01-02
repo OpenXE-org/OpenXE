@@ -302,7 +302,7 @@ class BestellungPDF extends BriefpapierCustom {
       }
 
       if($this->bestellungohnepreis) {
-        $value['preis'] = '-';
+        $value['preis'] = null;
       }
   
       if($value['waehrung']!='' && $value['waehrung']!=$this->waehrung){
