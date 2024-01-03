@@ -61,10 +61,10 @@
                             <tr>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_sachkonto_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
-                            <tr>
+                            <tr [FREIGABEEINKAUFHIDDEN]>
                                 <td>Steuersatz:&nbsp;<input type="text" id="positionen_steuersatz" name="positionen_steuersatz" value=""></td>
                             </tr>
-                            <tr>
+                            <tr [FREIGABEEINKAUFHIDDEN]>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
                         </table>

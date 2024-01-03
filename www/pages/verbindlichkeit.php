@@ -655,8 +655,8 @@ class Verbindlichkeit {
             break;
             case 'positionen_steuersatz_speichern':           
 
-                $rechnungsfreigabe = $this->app->DB->Select("SELECT rechnungsfreigabe FROM verbindlichkeit WHERE id =".$id);
-                if ($rechnungsfreigabe) {
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
+                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
                     break;
                 }
                 // Process multi action
