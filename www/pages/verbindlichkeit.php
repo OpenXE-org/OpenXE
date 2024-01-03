@@ -25,7 +25,6 @@ class Verbindlichkeit {
         $this->app->ActionHandler("inlinepdf", "verbindlichkeit_inlinepdf");
         $this->app->ActionHandler("positioneneditpopup", "verbindlichkeit_positioneneditpopup");
         $this->app->ActionHandler("freigabe", "verbindlichkeit_freigabe");
-        $this->app->ActionHandler("schreibschutz", "verbindlichkeit_schreibschutz");
         $this->app->ActionHandler("freigabeeinkauf", "verbindlichkeit_freigabeeinkauf");
         $this->app->ActionHandler("freigabebuchhaltung", "verbindlichkeit_freigabebuchhaltung");
         $this->app->ActionHandler("freigabebezahlt", "verbindlichkeit_freigabebezahlt");     
@@ -532,14 +531,18 @@ class Verbindlichkeit {
             $input['status'] = 'angelegt';
         } 
 
+        if (!empty($submit)) {
+            $einkauf_automatik_aus = false;
+        }
+
         switch($submit)
         {
             case 'speichern':
                    // Write to database            
                 // Add checks here
-                $schreibschutz = $this->app->DB->Select("SELECT schreibschutz FROM verbindlichkeit WHERE id =".$id);
 
-                if ($schreibschutz) {
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
+                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
                     $internebemerkung = $input['internebemerkung'];
                     $projekt = $input['projekt'];
                     $kostenstelle = $input['kostenstelle'];
@@ -555,7 +558,7 @@ class Verbindlichkeit {
                     $input['zahlbarbis'] = $this->app->erp->ReplaceDatum(true,$input['zahlbarbis'],true); // Parameters: Target db?, value, from form?
                     $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
                     $input['kostenstelle'] = $this->app->DB->Select("SELECT id FROM kostenstellen WHERE nummer = '".$input['kostenstelle']."'");
-                    $input['projekt'] = $this->app->erp->ReplaceBestellung(true,$input['bestellung'],true);
+                    $input['bestellung'] = $this->app->erp->ReplaceBestellung(true,$input['bestellung'],true);
                     if(empty($input['projekt']) && !empty($input['adresse'])) {
                         $input['projekt'] = $this->app->erp->GetCreateProjekt($input['adresse']);                
                     }
@@ -608,8 +611,8 @@ class Verbindlichkeit {
             break;
             case 'positionen_hinzufuegen':
 
-                $freigabeeinkauf = $this->app->DB->Select("SELECT freigabe FROM verbindlichkeit WHERE id =".$id);
-                if ($freigabeeinkauf) {
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
+                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
                     break;
                 }
 
@@ -625,6 +628,40 @@ class Verbindlichkeit {
 
                     if ($menge <= 0) {
                         continue;
+                    }
+
+                    // Check available number
+                    $sql = "
+                        SELECT   
+                            IF(
+                                pd.menge > COALESCE(vp.menge,0),
+                                pd.menge - COALESCE(vp.menge,0),
+                                0
+                            ) offen_menge
+                        FROM                        
+                            paketdistribution pd
+                        LEFT JOIN(
+                            SELECT
+                                paketdistribution,
+                                SUM(menge) AS menge
+                            FROM
+                                verbindlichkeit_position vp
+                            GROUP BY
+                                paketdistribution
+                        ) vp
+                        ON
+                            vp.paketdistribution = pd.id           
+                        WHERE pd.id = ".$paketdistribution."
+                        ";
+                    $offen_menge = $this->app->DB->Select($sql);
+
+                    if ($offen_menge == 0) {
+                        echo("Abort ".$paketdistribution." ".gettype($offen_menge));
+                        continue;
+                    }
+
+                    if ($menge > $offen_menge) {
+                        $menge = $offen_menge;
                     }
 
                     $preis = $preise[$key];
@@ -759,7 +796,6 @@ class Verbindlichkeit {
         }
 
         // Summarize positions
-
         $sql = "SELECT * FROM verbindlichkeit_position WHERE verbindlichkeit = ".$id;
         $positionen = $this->app->DB->SelectArr($sql);
 
@@ -776,7 +812,6 @@ class Verbindlichkeit {
                 Befreit: umsatzsteuer befreit, steursatz = -1
                 Individuell: umsatzsteuer leer, steuersatz = wert
             */
-
             foreach ($positionen as $position) {
 
                 $tmpsteuersatz = null;
@@ -818,21 +853,22 @@ class Verbindlichkeit {
 
             if ($pos_ok) {            
                 if (!$verbindlichkeit_from_db['freigabe'] && !$einkauf_automatik_aus) {
-                    $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 1 WHERE id = ".$id);
-                    $verbindlichkeit_from_db['freigabe'] = 1;
-                    $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit automatisch freigegeben (Einkauf)");
-                    $this->app->YUI->Message('success',"Verbindlichkeit automatisch freigegeben (Einkauf)");
+                    if ($this->verbindlichkeit_freigabeeinkauf($id,"Verbindlichkeit automatisch freigegeben (Einkauf)")) {
+                        $this->app->YUI->Message('success',"Verbindlichkeit automatisch freigegeben (Einkauf)");
+                        $verbindlichkeit_from_db['freigabe'] = 1;
+                    } else {
+                        $this->app->YUI->Message('warning','Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen');            
+                    }
                 } 
                 $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="success">Positionen vollst&auml;ndig</div>');            
             } else {
-                $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="warning">Positionen nicht vollst&auml;ndig. Bruttobetrag '.$verbindlichkeit_from_db['betrag'].', Summe Positionen (brutto) '.round($betrag_brutto,2).', Summe Positionen (netto) '.round($betrag_netto,2).'</div>');            
+                $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="warning">Positionen nicht vollst&auml;ndig. Bruttobetrag '.$verbindlichkeit_from_db['betrag'].', Summe Positionen (brutto) '.round($betrag_brutto,2).', Differenz '.round(round($betrag_brutto,2)-$verbindlichkeit_from_db['betrag'],2).'</div>');            
                 if ($verbindlichkeit_from_db['freigabe']) {
                     $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 0 WHERE id = ".$id);
                     $verbindlichkeit_from_db['freigabe'] = 0;
                     $this->app->YUI->Message('warning',"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");        
                 }
             }
-            $this->app->Tpl->Set('BETRAGDISABLED', 'disabled');
         }
            
         /*
@@ -846,11 +882,6 @@ class Verbindlichkeit {
 
          */
 
-        if ($verbindlichkeit_from_db['rechnungsfreigabe']) {
-            $this->app->Tpl->Set('SAVEDISABLED','disabled');
-            $this->app->Tpl->Set('MESSAGE',"<div class=\"warning\">Diese Verbindlichkeit ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diese Verbindlichkeit wirklich entfernt werden?')) return false;else window.location.href='index.php?module=verbindlichkeit&action=ruecksetzenbuchhaltung&id=$id';\"></div>");
-        }
-
         if (empty($verbindlichkeit_from_db['adresse'] || $verbindlichkeit_from_db['status'] == 'angelegt')) {
             $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden');           
             $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden'); 
@@ -860,6 +891,7 @@ class Verbindlichkeit {
         if ($verbindlichkeit_from_db['freigabe']) {
             $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden');
             $this->app->Tpl->Set('EINKAUFINFOHIDDEN','hidden');
+            $this->app->Tpl->Set('SAVEDISABLED','disabled');
             $this->app->Tpl->Set('POSITIONHINZUFUEGENHIDDEN','hidden');
         } else {
             $this->app->Tpl->Set('RUECKSETZENEINKAUFHIDDEN','hidden');
@@ -954,7 +986,6 @@ class Verbindlichkeit {
 	    $input['skonto'] = $this->app->Secure->GetPOST('skonto');
 	    $input['skontobis'] = $this->app->Secure->GetPOST('skontobis');
 	    $input['projekt'] = $this->app->Secure->GetPOST('projekt');
-	    $input['bezahlt'] = $this->app->Secure->GetPOST('bezahlt')?'1':'0';;
 	    $input['zahlungsweise'] = $this->app->Secure->GetPOST('zahlungsweise');
 	    $input['eingangsdatum'] = $this->app->Secure->GetPOST('eingangsdatum');
 	    $input['rechnungsdatum'] = $this->app->Secure->GetPOST('rechnungsdatum');
@@ -1046,22 +1077,50 @@ class Verbindlichkeit {
         $id = $this->app->Secure->GetGET('id');
         $this->app->erp->BelegFreigabe('verbindlichkeit',$id);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben");
-        $this->app->DB->Update("UPDATE verbindlichkeit SET schreibschutz = 1 WHERE id = ".$id);
+//        $this->app->DB->Update("UPDATE verbindlichkeit SET schreibschutz = 1 WHERE id = ".$id);
         $this->verbindlichkeit_edit();
     }
 
-    function verbindlichkeit_freigabeeinkauf($id = null)
+    function verbindlichkeit_freigabeeinkauf($id = null, $text = null)
     {      
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
             $gotoedit = true;
         }
-        $sql = "UPDATE verbindlichkeit SET freigabe = 1, schreibschutz = 1 WHERE id=".$id;
+
+        // Check wareneingang status            
+
+        $sql = "SELECT 
+                    pa.id 
+                FROM verbindlichkeit_position vp 
+                INNER JOIN paketdistribution pd ON pd.id = vp.paketdistribution
+                INNER JOIN paketannahme pa ON pa.id = pd.paketannahme                        
+                WHERE
+                    verbindlichkeit='$id' 
+                AND
+                    pa.status != 'abgeschlossen'
+                
+                ";
+
+        $check = $this->app->DB->SelectArr($sql); 
+
+        if (!empty($check)) {
+            return(false);
+        }
+
+        $sql = "UPDATE verbindlichkeit SET freigabe = 1 WHERE id=".$id;
         $this->app->DB->Update($sql);
-        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Einkauf)");
+
+        if (!$text) {
+            $text = "Verbindlichkeit freigegeben (Einkauf)";
+        }
+        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,$text);
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
         }
+        else {
+            return(true);
+        }        
     }
 
     function verbindlichkeit_freigabebuchhaltung($id = null)
@@ -1070,9 +1129,31 @@ class Verbindlichkeit {
             $id = $this->app->Secure->GetGET('id');
             $gotoedit = true;
         }
-        $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE freigabe = 1 AND id=".$id;
-        $this->app->DB->Update($sql);
-        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Buchhaltung)");
+
+        // Check accounting
+        $sql = "
+            SELECT 
+                    vp.id                                
+                    FROM verbindlichkeit_position vp 
+                    INNER JOIN artikel art ON art.id = vp.artikel 
+                    LEFT JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit
+                    LEFT JOIN adresse adr ON adr.id = v.adresse           
+                    LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen
+                    LEFT JOIN kontorahmen skart ON skart.id = art.kontorahmen
+                    LEFT JOIN kontorahmen skadr ON skadr.id = adr.kontorahmen
+                    WHERE verbindlichkeit='$id'
+                    AND COALESCE(skv.id,0) = 0 AND COALESCE(skart.id,0) = 0 AND COALESCE(skadr.id,0) = 0
+        ";
+        $check = $this->app->DB->SelectArr($sql); 
+
+        if (!empty($check)) {
+            $this->app->YUI->Message('error','Kontierung unvollst&auml;ndig');            
+        } else {           
+            $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE freigabe = 1 AND id=".$id;
+            $this->app->DB->Update($sql);
+            $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Buchhaltung)");            
+        }
+
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
         }
@@ -1098,7 +1179,7 @@ class Verbindlichkeit {
             $id = $this->app->Secure->GetGET('id');
             $gotoedit = true;
         }
-        $sql = "UPDATE verbindlichkeit SET freigabe = 0, schreibschutz = 0 WHERE id=".$id;
+        $sql = "UPDATE verbindlichkeit SET freigabe = 0 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");
         if ($gotoedit) {
@@ -1134,7 +1215,7 @@ class Verbindlichkeit {
         }        
     }  
 
-    function verbindlichkeit_schreibschutz($id = null)
+/*    function verbindlichkeit_schreibschutz($id = null)
     {      
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
@@ -1146,7 +1227,7 @@ class Verbindlichkeit {
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
         }        
-    }  
+    }  */
 
     public function verbindlichkeit_minidetail($parsetarget='',$menu=true) {
 
@@ -1228,10 +1309,10 @@ class Verbindlichkeit {
                                                     vp.menge,
                                                     vp.preis,
                                                     vp.steuersatz,
-                                                    if (skv.sachkonto <> 0,
+                                                    if (skv.id <> 0,
                                                         CONCAT(skv.sachkonto,' ',skv.beschriftung),
                                                         (
-                                                            if (skart.sachkonto <> 0,
+                                                            if (skart.id <> 0,
                                                                 CONCAT(skart.sachkonto,' ',skart.beschriftung, ' (Artikel)'),
                                                                 CONCAT(skadr.sachkonto,' ',skadr.beschriftung, ' (Adresse)')
                                                             )

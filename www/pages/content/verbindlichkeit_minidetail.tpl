@@ -8,7 +8,7 @@
     color: #636363;border: 1px solid #fff;padding: 0px; margin:0px;
     }
 </style>
-<div style="float:left; width:49%; padding-right:1%;">   
+<div style="float:left; width:39%; padding-right:1%;">   
     <table width="100%" border="0">
         <tr valign="top">
             <td width="150">Lieferant:</td>
@@ -53,7 +53,7 @@
         </tr>
     </table>
 </div>
-<div style="float:left; width:50%">
+<div style="float:left; width:60%">
     <div style="background-color:white">
         <h2 class="greyh2">Artikel</h2>
         <div style="padding:10px">

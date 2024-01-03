@@ -55,16 +55,16 @@
                             <tr>
                                 <td><input type="checkbox" id="auswahlalle" onchange="alleauswaehlen();" />&nbsp;{|alle markieren|}</td>
                             </tr>
-                            <tr>
+                            <tr [SACHKONTOHIDDEN]>
                                 <td>Sachkonto:&nbsp;<input type="text" id="positionen_sachkonto" name="positionen_sachkonto" value=""></td>
                             </tr>
-                            <tr>
-                                <td><button [SAVEDISABLED] name="submit" value="positionen_sachkonto_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
+                            <tr [SACHKONTOHIDDEN]>
+                                <td><button name="submit" value="positionen_sachkonto_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
-                            <tr [FREIGABEEINKAUFHIDDEN]>
+                            <tr [POSITIONHINZUFUEGENHIDDEN]>
                                 <td>Steuersatz:&nbsp;<input type="text" id="positionen_steuersatz" name="positionen_steuersatz" value=""></td>
                             </tr>
-                            <tr [FREIGABEEINKAUFHIDDEN]>
+                            <tr [POSITIONHINZUFUEGENHIDDEN]>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
                         </table>
