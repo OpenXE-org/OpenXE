@@ -67,6 +67,9 @@
                             <tr [POSITIONHINZUFUEGENHIDDEN]>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
                             </tr>
+                            <tr [POSITIONHINZUFUEGENHIDDEN]>
+                                <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_zu_netto" class="ui-button-icon" style="width:100%;">Brutto zu Netto</button></td>
+                            </tr>
                         </table>
                     </fieldset>
                 </div>

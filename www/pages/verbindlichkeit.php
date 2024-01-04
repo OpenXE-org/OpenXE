@@ -723,6 +723,31 @@ class Verbindlichkeit {
                 $sql = "update verbindlichkeit_position SET steuersatz = ".$steuersatz." WHERE id IN (".implode(',',$ids).")";
                 $this->app->DB->Update($sql);
             break;
+            case 'positionen_steuersatz_zu_netto':           
+
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
+                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
+                    break;
+                }
+                // Process multi action
+                $ids = $this->app->Secure->GetPOST('auswahl');
+                if (!is_array($ids)) {
+                    break;
+                }
+
+                foreach ($ids as $posid) {
+                    $tmpsteuersatz = null;
+                    $tmpsteuertext = null;
+                    $erloes = null;
+                    $this->app->erp->GetSteuerPosition("verbindlichkeit",$posid,$tmpsteuersatz,$tmpsteuertext,$erloes);
+
+                    $faktor = 1+($tmpsteuersatz/100);
+
+                    $sql = "UPDATE verbindlichkeit_position SET preis = preis / ".$faktor." WHERE id = $posid";   
+                    $this->app->DB->Update($sql);
+                }    
+
+            break;
         }
 
     
@@ -847,7 +872,7 @@ class Verbindlichkeit {
 
             }
       
-            $this->app->Tpl->Set('BETRAGNETTO', $betrag_netto);
+            $this->app->Tpl->Set('BETRAGNETTO', round($betrag_netto,2));
             $this->app->Tpl->Set('BETRAGBRUTTOPOS', round($betrag_brutto,2));
 
             if ($verbindlichkeit_from_db['betrag'] == round($betrag_brutto,2)) {
@@ -868,7 +893,7 @@ class Verbindlichkeit {
 
             if ($pos_ok) {            
                 if (!$verbindlichkeit_from_db['freigabe'] && !$einkauf_automatik_aus) {
-                    if ($this->verbindlichkeit_freigabeeinkauf($id,"Verbindlichkeit automatisch freigegeben (Einkauf)")) {
+                    if ($this->verbindlichkeit_freigabeeinkauf($id,"Verbindlichkeit automatisch freigegeben (Einkauf)") === true) {
                         $this->app->YUI->Message('success',"Verbindlichkeit automatisch freigegeben (Einkauf)");
                         $verbindlichkeit_from_db['freigabe'] = 1;
                     } else {
@@ -1193,10 +1218,11 @@ class Verbindlichkeit {
                             verbindlichkeit='$id'
                         AND     
                         (
-                            COALESCE(skv.id,0) = 0 OR COALESCE(skart.id,0) = 0 OR COALESCE(skadr.id,0) = 0
+                            COALESCE(skv.id,0) = 0 AND COALESCE(skart.id,0) = 0 AND COALESCE(skadr.id,0) = 0
                         )
             ";
-            if (empty($check)) {            
+
+            if (!empty($check)) {            
                 if ($gotoedit) {
                     $this->app->YUI->Message('warning','Kontierung unvollst&auml;ndig');            
                     $error = true;
