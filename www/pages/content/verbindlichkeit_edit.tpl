@@ -1,7 +1,7 @@
 <div id="tabs">
     <ul>
         <li><a href="#tabs-1">Verbindlichkeit</a></li>
-        <li><a href="#tabs-2">Positionen</a></li>
+        <li [POSITIONENHIDDEN]><a href="#tabs-2">Positionen</a></li>
         <li><a href="#tabs-3">Protokoll</a></li>
     </ul>
     <div id="tabs-1">

@@ -429,7 +429,7 @@ class Verbindlichkeit {
         if (!empty($submit)) {
             $auswahl = $this->app->Secure->GetPOST('auswahl');
             $aktion = $this->app->Secure->GetPOST('sel_aktion');
-
+         
             $selectedIds = [];
             if(!empty($auswahl)) {
                 foreach($auswahl as $selectedId) {
@@ -442,21 +442,30 @@ class Verbindlichkeit {
                 switch ($aktion) {
                     case 'freigabeeinkauf':
                         foreach ($selectedIds as $id) {
-                            $this->verbindlichkeit_freigabeeinkauf($id);
+                            $result = $this->verbindlichkeit_freigabeeinkauf($id);
+                            if ($result !== true) {
+                                $this->app->YUI->Message('warning',$result);
+                            }
                         }
                     break;
                     case 'freigabebuchhaltung':
-                        foreach ($selectedIds as $id) {
-                            $this->verbindlichkeit_freigabebuchhaltung($id);
+                        foreach ($selectedIds as $id) {                            
+                            $result = $this->verbindlichkeit_freigabebuchhaltung($id);
+                            if ($result !== true) {
+                                $this->app->YUI->Message('warning',$result);
+                            }
                         }
                     break;
                     case 'bezahlt':
                         foreach ($selectedIds as $id) {
-                            $this->verbindlichkeit_freigabebezahlt($id);
+                            $result = $this->verbindlichkeit_freigabebezahlt($id);
+                            if ($result !== true) {
+                               $this->app->YUI->Message('warning',$result);
+                            }
                         }
                     break;
                 }    
-            }
+            }         
         }
 
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=list", "&Uuml;bersicht");
@@ -466,9 +475,6 @@ class Verbindlichkeit {
 
         $this->app->YUI->TableSearch('TAB1', 'verbindlichkeit_list', "show", "", "", basename(__FILE__), __CLASS__);
 
-/*
-
-        Prepared for later use...
 
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabeeinkauf')){
             $this->app->Tpl->Set('MANUELLFREIGABEEINKAUF', '<option value="freigabeeinkauf">{|freigeben (Einkauf)|}</option>');
@@ -481,7 +487,7 @@ class Verbindlichkeit {
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabebezahlt')){
             $this->app->Tpl->Set('ALSBEZAHLTMARKIEREN', '<option value="bezahlt">{|als bezahlt markieren|}</option>');
         }
-*/
+
         $this->app->User->SetParameter('table_verbindlichkeit_list_zahlbarbis', '');
         $this->app->User->SetParameter('table_verbindlichkeit_list_skontobis', '');
 
@@ -564,15 +570,24 @@ class Verbindlichkeit {
                     }
 
                     if (!empty($input['adresse'])) {
-                        $steuertyp = $this->app->DB->Select("SELECT ust_befreit FROM adresse WHERE id = ".$input['adresse']);
+                        $adressdaten = $this->app->DB->SelectRow("
+                            SELECT 
+                                zahlungszieltagelieferant,
+                                zahlungszieltageskontolieferant,
+                                zahlungszielskontolieferant,
+                                ust_befreit
+                            FROM adresse WHERE id = ".$input['adresse']
+                        );
 
-                        if ($steuertyp > 0) {
-                            $input['steuersatz_normal'] = '0';
-                            $input['steuersatz_ermaessigt'] = '0';
-                        } else {
-                            $input['steuersatz_normal'] = $this->app->erp->Firmendaten("steuersatz_normal");
-                            $input['steuersatz_ermaessigt'] = $this->app->erp->Firmendaten("steuersatz_ermaessigt");
+                        
+                        if ($input['zahlbarbis'] == '0000-00-00' && $input['rechnungsdatum'] != '0000-00-00' && !empty($adressdaten['zahlungszieltagelieferant'])) {
+                            $input['zahlbarbis'] = date('Y-m-d',strtotime($input['rechnungsdatum']." + ".$adressdaten['zahlungszieltagelieferant']." days"));
                         }
+                        if ($input['skontobis'] == '0000-00-00' && $input['rechnungsdatum'] != '0000-00-00' && !empty($adressdaten['zahlungszieltageskontolieferant'])) {
+                            $input['skontobis'] = date('Y-m-d',strtotime($input['rechnungsdatum']." + ".$adressdaten['zahlungszieltageskontolieferant']." days"));
+                            $input['skonto'] = $adressdaten['zahlungszielskontolieferant'];
+                        }
+
                     }
 
                 }              
@@ -882,10 +897,13 @@ class Verbindlichkeit {
 
          */
 
-        if (empty($verbindlichkeit_from_db['adresse'] || $verbindlichkeit_from_db['status'] == 'angelegt')) {
-            $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden');           
+        $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden'); // prevent manual setting          
+
+        if (empty($verbindlichkeit_from_db['adresse']) || $verbindlichkeit_from_db['status'] == 'angelegt') {
             $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden'); 
             $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden'); 
+            $this->app->Tpl->Set('POSITIONHINZUFUEGENHIDDEN','hidden');
+            $this->app->Tpl->Set('POSITIONENHIDDEN','hidden');
         }
 
         if ($verbindlichkeit_from_db['freigabe']) {
@@ -1081,6 +1099,7 @@ class Verbindlichkeit {
         $this->verbindlichkeit_edit();
     }
 
+    // Returns true or error message
     function verbindlichkeit_freigabeeinkauf($id = null, $text = null)
     {      
         if (empty($id)) {
@@ -1088,8 +1107,18 @@ class Verbindlichkeit {
             $gotoedit = true;
         }
 
-        // Check wareneingang status            
+        $error = false;
 
+        if (!$this->verbindlichkeit_is_freigegeben($id)) {                   
+            if ($gotoedit) {
+                $this->app->YUI->Message('warning','Verbindlichkeit nicht freigebeben');                    
+                $error = true;
+            } else {
+                return('Verbindlichkeit nicht freigebeben '.$this->verbindlichkeit_get_belegnr($id));
+            }            
+        }      
+
+        // Check wareneingang status            
         $sql = "SELECT 
                     pa.id 
                 FROM verbindlichkeit_position vp 
@@ -1098,23 +1127,26 @@ class Verbindlichkeit {
                 WHERE
                     verbindlichkeit='$id' 
                 AND
-                    pa.status != 'abgeschlossen'
-                
+                    pa.status = 'abgeschlossen'                
                 ";
 
         $check = $this->app->DB->SelectArr($sql); 
 
-        if (!empty($check)) {
-            return(false);
-        }
+        if (empty($check)) {
+            if ($gotoedit) {
+                $this->app->YUI->Message('warning','Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen');                    
+            } else {
+                return('Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen '.$this->verbindlichkeit_get_belegnr($id));
+            }            
+        } else {
+            $sql = "UPDATE verbindlichkeit SET freigabe = 1 WHERE id=".$id;
+            $this->app->DB->Update($sql);
 
-        $sql = "UPDATE verbindlichkeit SET freigabe = 1 WHERE id=".$id;
-        $this->app->DB->Update($sql);
-
-        if (!$text) {
-            $text = "Verbindlichkeit freigegeben (Einkauf)";
+            if (!$text) {
+                $text = "Verbindlichkeit freigegeben (Einkauf)";
+            }
+            $this->app->erp->BelegProtokoll("verbindlichkeit",$id,$text);
         }
-        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,$text);
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
         }
@@ -1128,27 +1160,53 @@ class Verbindlichkeit {
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
             $gotoedit = true;
+        }        
+
+        $error = false;
+
+        if (!$this->verbindlichkeit_is_freigegeben($id)) {                   
+            if ($gotoedit) {
+                $this->app->YUI->Message('warning','Verbindlichkeit nicht freigebeben');
+                $error = true;
+            } else {
+                return('Verbindlichkeit nicht freigebeben '.$this->verbindlichkeit_get_belegnr($id));
+            }            
         }
 
-        // Check accounting
-        $sql = "
-            SELECT 
-                    vp.id                                
-                    FROM verbindlichkeit_position vp 
-                    INNER JOIN artikel art ON art.id = vp.artikel 
-                    LEFT JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit
-                    LEFT JOIN adresse adr ON adr.id = v.adresse           
-                    LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen
-                    LEFT JOIN kontorahmen skart ON skart.id = art.kontorahmen
-                    LEFT JOIN kontorahmen skadr ON skadr.id = adr.kontorahmen
-                    WHERE verbindlichkeit='$id'
-                    AND COALESCE(skv.id,0) = 0 AND COALESCE(skart.id,0) = 0 AND COALESCE(skadr.id,0) = 0
-        ";
-        $check = $this->app->DB->SelectArr($sql); 
-
-        if (!empty($check)) {
-            $this->app->YUI->Message('error','Kontierung unvollst&auml;ndig');            
-        } else {           
+        if (!$error) {
+            // Check accounting
+            $sql = "
+                SELECT 
+                        vp.id,
+                        v.belegnr,                     
+                        skv.id skv_id,
+                        skart.id skart_id,
+                        skadr.id skadr_id
+                        FROM verbindlichkeit_position vp 
+                        INNER JOIN artikel art ON art.id = vp.artikel 
+                        LEFT JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit
+                        LEFT JOIN adresse adr ON adr.id = v.adresse           
+                        LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen
+                        LEFT JOIN kontorahmen skart ON skart.id = art.kontorahmen
+                        LEFT JOIN kontorahmen skadr ON skadr.id = adr.kontorahmen
+                        WHERE 
+                            verbindlichkeit='$id'
+                        AND     
+                        (
+                            COALESCE(skv.id,0) = 0 OR COALESCE(skart.id,0) = 0 OR COALESCE(skadr.id,0) = 0
+                        )
+            ";
+            if (empty($check)) {            
+                if ($gotoedit) {
+                    $this->app->YUI->Message('warning','Kontierung unvollst&auml;ndig');            
+                    $error = true;
+                } else {
+                    return('Kontierung unvollst&auml;ndig '.$this->verbindlichkeit_get_belegnr($id));
+                }
+            }
+        }
+           
+        if (!$error) {           
             $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 1 WHERE freigabe = 1 AND id=".$id;
             $this->app->DB->Update($sql);
             $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben (Buchhaltung)");            
@@ -1156,6 +1214,8 @@ class Verbindlichkeit {
 
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
+        } else {
+            return(true);
         }
     }
 
@@ -1165,12 +1225,24 @@ class Verbindlichkeit {
             $id = $this->app->Secure->GetGET('id');
             $gotoedit = true;
         }
-        $sql = "UPDATE verbindlichkeit SET bezahlt = 1 WHERE id=".$id;
-        $this->app->DB->Update($sql);
-        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit als bezahlt markiert");
-        if ($gotoedit) {
-            $this->verbindlichkeit_edit();
-        }        
+
+        if (!$this->verbindlichkeit_is_freigegeben($id)) {                   
+            if ($gotoedit) {
+                $this->app->YUI->Message('warning','Verbindlichkeit nicht freigebeben');                    
+                $error = true;
+            } else {
+                return('Verbindlichkeit nicht freigebeben '.$this->verbindlichkeit_get_belegnr($id));
+            }            
+        }
+    
+        if (!$error) {
+            $sql = "UPDATE verbindlichkeit SET bezahlt = 1 WHERE id=".$id;
+            $this->app->DB->Update($sql);
+            $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit als bezahlt markiert");
+            if ($gotoedit) {
+                $this->verbindlichkeit_edit();
+            }        
+        }
     }  
 
   function verbindlichkeit_ruecksetzeneinkauf($id = null)
@@ -1393,5 +1465,29 @@ class Verbindlichkeit {
         }
         $this->app->Tpl->Parse($parsetarget,'verbindlichkeit_minidetail.tpl');
   }
+
+    function verbindlichkeit_is_freigegeben($id) {
+        $sql = "SELECT 
+                    belegnr 
+                FROM 
+                    verbindlichkeit
+                WHERE
+                    id='$id' 
+                AND
+                    status IN ('freigegeben')                
+                ";
+
+        $check = $this->app->DB->SelectArr($sql); 
+        if (empty($check)) {
+            return(false);
+        } else 
+        {
+            return(true);
+        }
+    }
+
+    function verbindlichkeit_get_belegnr($id) {
+        return($this->app->DB->Select("SELECT belegnr FROM verbindlichkeit WHERE id =".$id));
+    }
 
 }
