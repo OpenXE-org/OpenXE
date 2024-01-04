@@ -21,6 +21,8 @@
               <fieldset>
                 <legend>{|[LEGENDE]|}</legend>
                 <table>
+                  <tr><td>{|Status|}:</td><td><input type=text size="40" value="[STATUS]" disabled></td></tr>
+                  <tr [ABGESCHLOSSENHIDDEN]><td></td><td><i>Abgeschlossen am [DATUM_ABGESCHLOSSEN] durch [BEARBEITER_ABGESCHLOSSEN]</i></td></tr>                                    
                   <tr><td>{|Lieferschein-Nr.|}:</td><td><input type=text size="40" name="lsnr" value=[LSNR]></td></tr>
                   <tr><td>{|Rechnung-Nr.|}:</td><td><input type=text size="40" name="renr" value=[RENR]></td></tr>
                   <tr><td>{|Bemerkung|}:</td><td><textarea rows="5" cols="40" name="bemerkung">[BEMERKUNG]</textarea></td></tr>
@@ -64,7 +66,7 @@
                             <button name="submit" class="ui-button-icon" style="width:100%;" value="buchen">{|Buchen|}</button>
                         </td></tr>
                         [ISLIEFERANTENDE]                
-                        <tr><td>               
+                        <tr [ABSCHLIESSENHIDDEN]><td>               
                             <button name="submit" class="ui-button-icon" style="width:100%;" value="abschliessen">{|Abschlie&szlig;en|}</button>            
                         </td></tr>
                     </table>
