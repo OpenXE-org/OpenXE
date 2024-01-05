@@ -101,7 +101,7 @@ class PLACEHOLDER_MODULECLASSNAME {
         $id = $this->app->Secure->GetGET('id');
         
         // Check if other users are editing this id
-        if($this->app->erp->DisableModul('artikel',$id))
+        if($this->app->erp->DisableModul('PLACEHOLDER_MODULENAME',$id))
         {
           return;
         }   
