@@ -213,17 +213,8 @@ class Verbindlichkeit {
                 $auswahl = array (
                     '<input type=\"text\" name=\"ids[]\" value=\"',                   
                     ['sql' => 'pd.id'],
-                    '" hidden/>',                    
-                    ['sql' => 'pd.id'],
-                    '<input type="text" name="artikel[]" value="',
-                    ['sql' => 'art.id'],
-                    '"/ hidden>',
-                    '<input type="text" name="umsatzsteuern[]" value="',
-                    ['sql' => 'art.umsatzsteuer'],
-                    '"/ hidden>',
-                    '<input type="text" name="kontorahmen[]" value="',
-                    ['sql' => 'if (skart.id <> 0,skart.id,skadr.id)'],
-                    '"/ hidden>'
+                    '" hidden/>',
+                    ['sql' => 'pd.id']
                 );              
 
                 $werte = array (
@@ -309,7 +300,7 @@ class Verbindlichkeit {
                             ) offen_menge,
                             ".$this->app->erp->ConcatSQL($werte).",
                             ".$this->app->erp->ConcatSQL($preise)." AS preis,
-                            art.umsatzsteuer,
+                            if(art.umsatzsteuer = '',art.steuersatz,art.umsatzsteuer),
                             if (skart.id <> 0,
                                 CONCAT(skart.sachkonto,' ',skart.beschriftung),
                                 CONCAT(skadr.sachkonto,' ',skadr.beschriftung)                               
@@ -648,9 +639,6 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
                 $ids = $this->app->Secure->GetPOST('ids');
                 $werte = $this->app->Secure->GetPOST('werte');
                 $preise = $this->app->Secure->GetPOST('preise');
-                $artikel = $this->app->Secure->GetPOST('artikel');                                                                
-                $umsatzsteuern = $this->app->Secure->GetPOST('umsatzsteuern');                                                                
-                $kontorahmen = $this->app->Secure->GetPOST('kontorahmen');                                                                
 
                 $bruttoeingabe = $this->app->Secure->GetPOST('bruttoeingabe');                                                                
 
@@ -695,18 +683,42 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
                     }
 
                     $preis = $preise[$key];
-                    $einartikel = $artikel[$key];
-                    $umsatzsteuer = $umsatzsteuern[$key];
-                    $einkontorahmen = $kontorahmen[$key];
+                    $sql = "SELECT 
+                                a.id,
+                                a.umsatzsteuer,
+                                a.steuersatz,
+                                COALESCE(if (skart.id <> 0,skart.id,skadr.id),0) AS kontorahmen
+                            FROM 
+                                paketdistribution pd 
+                            INNER JOIN
+                                paketannahme pa ON pa.id = pd.paketannahme
+                            INNER JOIN 
+                                artikel a ON a.id = pd.artikel
+                            INNER JOIN 
+                                adresse adr ON pa.adresse = adr.id
+                            LEFT JOIN 
+                                kontorahmen skart ON skart.id = a.kontorahmen
+                            LEFT JOIN 
+                                kontorahmen skadr ON skadr.id = adr.kontorahmen           
+                            WHERE pd.id =".$paketdistribution;
 
-                    $steuersatz = $this->get_steuersatz($umsatzsteuer,$id);
+                    $artikel = $this->app->DB->SelectRow($sql);
+                        
+                    $einartikel = $artikel['id'];
+                    $umsatzsteuer = $artikel['umsatzsteuer'];
+                    $kontorahmen = $artikel['kontorahmen'];
+
+                    if(empty($umsatzsteuer)) {
+                        $steuersatz = $artikel['steuersatz'];
+                    } else {
+                        $steuersatz = $this->get_steuersatz($umsatzsteuer,$id);
+                    }
 
                     if ($bruttoeingabe) {
                         $preis = $preis / (1+($steuersatz/100));
                     }    
 
-                    $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $einkontorahmen)";
-
+                    $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
                     $this->app->DB->Insert($sql);
 
                 }
@@ -1609,7 +1621,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
         $adresse = $this->app->DB->Select("SELECT adresse FROM verbindlichkeit WHERE id=".$verbindlichkeit);
         $umsatzsteuer_lieferant = $this->app->DB->Select("SELECT umsatzsteuer_lieferant FROM adresse WHERE id=".$adresse); /* inland, eu-lieferung, import*/
 
-        if (in_array($umsatzsteuer_lieferant,array('import','eu-lieferung'))) {
+        if (in_array($umsatzsteuer_lieferant,array('import','eulieferung'))) {
             return(0);
         }
         
@@ -1637,7 +1649,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
                 }               
             break;
             default:   
-                return(-1);
+                return(0);
             break;
         }
 
