@@ -21,6 +21,7 @@ class Verbindlichkeit {
         $this->app->ActionHandler("positionen", "verbindlichkeit_positionen");
         $this->app->ActionHandler("delete", "verbindlichkeit_delete");
         $this->app->ActionHandler("deletepos", "verbindlichkeit_deletepos");
+        $this->app->ActionHandler("editpos", "verbindlichkeit_editpos");
         $this->app->ActionHandler("dateien", "verbindlichkeit_dateien");
         $this->app->ActionHandler("inlinepdf", "verbindlichkeit_inlinepdf");
         $this->app->ActionHandler("positioneneditpopup", "verbindlichkeit_positioneneditpopup");
@@ -45,7 +46,7 @@ class Verbindlichkeit {
         switch ($name) {
             case "verbindlichkeit_list":
                 $allowed['verbindlichkeit_list'] = array('list');
-                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
+                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -61,6 +62,7 @@ class Verbindlichkeit {
                     'v.rechnungsdatum',
                     'v.betrag',
                     'v.waehrung',
+                    'v.bezahlt',
                     'v.zahlbarbis',
                     'v.skontobis',
                     'v.skonto',
@@ -99,6 +101,7 @@ class Verbindlichkeit {
                             ".$app->erp->FormatDate("v.rechnungsdatum").",
                             ".$app->erp->FormatMenge('v.betrag',2).",
                             v.waehrung,
+                            if(v.bezahlt,'bezahlt','offen'),
                             ".$app->erp->FormatDate("v.zahlbarbis").",
                             IF(v.skonto <> 0,".$app->erp->FormatDate("v.skontobis").",''),                             
                             IF(v.skonto <> 0,CONCAT(".$app->erp->FormatMenge('v.skonto',0).",'%'),''), 
@@ -190,10 +193,10 @@ class Verbindlichkeit {
                 $bestellnummer = $verbindlichkeit['belegnr'];
                 $rechnung = $verbindlichkeit['rechnung'];
            
-                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Menge','Menge offen','Eingabe','Preis','');
-                $width = array(  '1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '2%',   '1%',         '1%',     '1%',   '1%');  
+                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Menge','Menge offen','Eingabe','Preis','Steuer','Sachkonto','');
+                $width = array(  '1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '2%',   '1%',         '1%',     '1%',   '1%',    '1%',       '1%');  
 
-                $findcols = array('pa','auswahl','belegnr','lsnr','renr','artikelnummer','name_de','menge','offen_menge','offen_menge','preis','pa');
+                $findcols = array('pa','auswahl','belegnr','lsnr','renr','artikelnummer','name_de','menge','offen_menge','offen_menge','preis','umsatzsteuer','pa');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array(8,9,11);
@@ -215,9 +218,12 @@ class Verbindlichkeit {
                     '<input type="text" name="artikel[]" value="',
                     ['sql' => 'art.id'],
                     '"/ hidden>',
-                    '<input type="text" name="umsatzsteuer[]" value="',
+                    '<input type="text" name="umsatzsteuern[]" value="',
                     ['sql' => 'art.umsatzsteuer'],
-                    '"/ hidden>'               
+                    '"/ hidden>',
+                    '<input type="text" name="kontorahmen[]" value="',
+                    ['sql' => 'if (skart.id <> 0,skart.id,skadr.id)'],
+                    '"/ hidden>'
                 );              
 
                 $werte = array (
@@ -235,7 +241,7 @@ class Verbindlichkeit {
                     '" min="0"',                    
                     '"/>'
                 );         
-                        
+                       
                 $artikellink = array (
                     '<a href="index.php?module=artikel&action=edit&id=',
                     ['sql' => 'art.id'],
@@ -302,7 +308,12 @@ class Verbindlichkeit {
                                 0
                             ) offen_menge,
                             ".$this->app->erp->ConcatSQL($werte).",
-                            ".$this->app->erp->ConcatSQL($preise)." AS preis
+                            ".$this->app->erp->ConcatSQL($preise)." AS preis,
+                            art.umsatzsteuer,
+                            if (skart.id <> 0,
+                                CONCAT(skart.sachkonto,' ',skart.beschriftung),
+                                CONCAT(skadr.sachkonto,' ',skadr.beschriftung)                               
+                            ) AS sachkonto
                         FROM
                             paketannahme pa
                         INNER JOIN paketdistribution pd ON
@@ -325,7 +336,11 @@ class Verbindlichkeit {
                                 paketdistribution
                         ) vp
                         ON
-                            vp.paketdistribution = pd.id           
+                            vp.paketdistribution = pd.id   
+                        LEFT JOIN 
+                            kontorahmen skart ON skart.id = art.kontorahmen
+                        LEFT JOIN 
+                            kontorahmen skadr ON skadr.id = adr.kontorahmen        
                         WHERE pa.adresse = ".$lieferant." AND pd.vorlaeufig IS NULL".$innerwhere."
                     ) temp
                         ";
@@ -340,12 +355,12 @@ class Verbindlichkeit {
 
                 $id = $app->Secure->GetGET('id');
                 $freigabe = $app->DB->Select("SELECT freigabe FROM verbindlichkeit WHERE id = '".$id."'");
+                $rechnungsfreigabe = $app->DB->Select("SELECT rechnungsfreigabe FROM verbindlichkeit WHERE id = '".$id."'");
 
-//                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz','Sachkonto','Men&uuml;','');
-                $heading = array('',  'Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz abw.','Sachkonto abw.');
+                $heading = array('',  'Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz','Sachkonto');
                 $width = array(  '1%','1%',       '1%' ,        '2%',         '2%',         '16%',    '1%',   '1%',   '1%',        '3%',       '1%',       '1%');       
 
-                $findcols = array('vp.id','pd.paketannahme','pd.id','b.belegnr','art.nummer','art.name_de','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id','1');
+                $findcols = array('vp.id','pd.paketannahme','pd.id','b.belegnr','art.nummer','art.name_de','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array(6,7,8,9);                
@@ -353,15 +368,12 @@ class Verbindlichkeit {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;     
 
-                if (empty($freigabe)) {                                   
-                    $deletepos = array (
-                        '<a href="#" onclick=DeleteDialog("index.php?module=verbindlichkeit&action=deletepos&id=',
-                        ['sql' => 'vp.id'],
-                        '")>',
-                        '<img src=\"themes/'.$app->Conf->WFconf['defaulttheme'].'/images/delete.svg\" border=\"0\"></a>'                    
-                    );
-                    $heading[] = 'Men&uuml;';
-                } else {
+                if (empty($freigabe)) {                                                 
+                    $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?module=verbindlichkeit&action=editpos&id=$id&posid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=verbindlichkeit&action=deletepos&id=$id&posid=%value%\");>"."<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>"."</td></tr></table>";
+                } if (empty($rechnungsfreigabe)) {
+$menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?module=verbindlichkeit&action=editpos&id=$id&posid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>"."</td></tr></table>";
+                }
+                else {
                     $deletepos = array('');
                 }
                 $heading[] = '';                      
@@ -389,7 +401,7 @@ class Verbindlichkeit {
                         vp.preis,
                         vp.steuersatz,
                         CONCAT(skv.sachkonto,' ',skv.beschriftung),
-                        ".$this->app->erp->ConcatSQL($deletepos)."
+                        vp.id
                     FROM
                         verbindlichkeit_position vp
                     INNER JOIN verbindlichkeit v ON
@@ -504,10 +516,11 @@ class Verbindlichkeit {
     } 
 
     public function verbindlichkeit_deletepos() {
-        $id = (int) $this->app->Secure->GetGET('id');      
-        $verbindlichkeit = $this->app->DB->Select("SELECT verbindlichkeit FROM verbindlichkeit_position WHERE id ='{$id}'");
-        $this->app->DB->Delete("DELETE vp FROM verbindlichkeit_position vp INNER JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit WHERE vp.id = '{$id}' AND v.freigabe <> 1");        
-        header("Location: index.php?module=verbindlichkeit&action=edit&id=$verbindlichkeit#tabs-2");
+        $posid = (int) $this->app->Secure->GetGET('posid');
+        $id = (int) $this->app->Secure->GetGET('id');            
+        $verbindlichkeit = $this->app->DB->Select("SELECT verbindlichkeit FROM verbindlichkeit_position WHERE id ='{$posid}'");
+        $this->app->DB->Delete("DELETE vp FROM verbindlichkeit_position vp INNER JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit WHERE vp.id = '{$posid}' AND v.freigabe <> 1");        
+        header("Location: index.php?module=verbindlichkeit&action=edit&id=$id#tabs-2");
     } 
 
     /*
@@ -519,7 +532,7 @@ class Verbindlichkeit {
         $id = $this->app->Secure->GetGET('id');
         
         // Check if other users are editing this id
-        if($this->app->erp->DisableModul('artikel',$id))
+        if($this->app->erp->DisableModul('verbindlichkeit',$id))
         {
           return;
         }   
@@ -635,8 +648,11 @@ class Verbindlichkeit {
                 $ids = $this->app->Secure->GetPOST('ids');
                 $werte = $this->app->Secure->GetPOST('werte');
                 $preise = $this->app->Secure->GetPOST('preise');
-                $umsatzsteuern = $this->app->Secure->GetPOST('umsatzsteuer');                                                                
                 $artikel = $this->app->Secure->GetPOST('artikel');                                                                
+                $umsatzsteuern = $this->app->Secure->GetPOST('umsatzsteuern');                                                                
+                $kontorahmen = $this->app->Secure->GetPOST('kontorahmen');                                                                
+
+                $bruttoeingabe = $this->app->Secure->GetPOST('bruttoeingabe');                                                                
 
                 foreach ($ids as $key => $paketdistribution) {
                     $menge = $werte[$key];
@@ -671,7 +687,6 @@ class Verbindlichkeit {
                     $offen_menge = $this->app->DB->Select($sql);
 
                     if ($offen_menge == 0) {
-                        echo("Abort ".$paketdistribution." ".gettype($offen_menge));
                         continue;
                     }
 
@@ -680,32 +695,23 @@ class Verbindlichkeit {
                     }
 
                     $preis = $preise[$key];
+                    $einartikel = $artikel[$key];
                     $umsatzsteuer = $umsatzsteuern[$key];
-                    $ein_artikel = $artikel[$key];
+                    $einkontorahmen = $kontorahmen[$key];
 
-                    $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, umsatzsteuer, artikel) VALUES ($id, $paketdistribution, $menge, $preis, '$umsatzsteuer', $ein_artikel)";
+                    $steuersatz = $this->get_steuersatz($umsatzsteuer,$id);
+
+                    if ($bruttoeingabe) {
+                        $preis = $preis / (1+($steuersatz/100));
+                    }    
+
+                    $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $einkontorahmen)";
 
                     $this->app->DB->Insert($sql);
 
                 }
-            break;
-            case 'positionen_sachkonto_speichern':           
-
-                $rechnungsfreigabe = $this->app->DB->Select("SELECT rechnungsfreigabe FROM verbindlichkeit WHERE id =".$id);
-                if ($rechnungsfreigabe) {
-                    break;
-                } 
-                // Process multi action
-                $ids = $this->app->Secure->GetPOST('auswahl');
-                if (!is_array($ids)) {
-                    break;
-                }
-                $sachkonto = $this->app->Secure->GetPOST('positionen_sachkonto');
-                $kontorahmen = $this->app->erp->ReplaceKontorahmen(true,$sachkonto,false);
-                $sql = "update verbindlichkeit_position SET kontorahmen = '".$kontorahmen."' WHERE id IN (".implode(',',$ids).")";
-                $this->app->DB->Update($sql);
-            break;
-            case 'positionen_steuersatz_speichern':           
+            break;    
+            case 'positionen_entfernen':           
 
                 $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
                 if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
@@ -716,13 +722,9 @@ class Verbindlichkeit {
                 if (!is_array($ids)) {
                     break;
                 }
-                $steuersatz = $this->app->Secure->GetPOST('positionen_steuersatz');                
-                if (!is_numeric($steuersatz)) {
-                    $steuersatz = 'NULL';
-                }
-                $sql = "update verbindlichkeit_position SET steuersatz = ".$steuersatz." WHERE id IN (".implode(',',$ids).")";
-                $this->app->DB->Update($sql);
-            break;
+                $this->app->DB->Delete("DELETE vp FROM verbindlichkeit_position vp INNER JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit WHERE vp.id IN (".implode(',',$ids).") AND v.freigabe <> 1");        
+
+            break;       
             case 'positionen_steuersatz_zu_netto':           
 
                 $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
@@ -1016,6 +1018,98 @@ class Verbindlichkeit {
 
     }
 
+   function verbindlichkeit_editpos() {
+        $id = $this->app->Secure->GetGET('id');
+        $posid = $this->app->Secure->GetGET('posid');             
+              
+        $this->app->Tpl->Set('ID', $id);
+        $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=edit&id=$id#tabs-2", "Zur&uuml;ck");
+
+        $sachkonto = $this->app->Secure->GetPOST('sachkonto');
+        $menge = $this->app->Secure->GetPOST('menge');        
+        $preis = $this->app->Secure->GetPOST('preis');        
+        $steuersatz = $this->app->Secure->GetPOST('steuersatz');                
+
+        $kontorahmen = $this->app->erp->ReplaceKontorahmen(true,$sachkonto,false);
+        if ($menge < 0) {
+            $menge = 0;
+        }
+        if ($preis < 0) {
+            $preis = 0;
+        }
+        if ($steuersatz < 0) {
+            $steuersatz = 0;
+        }
+        $submit = $this->app->Secure->GetPOST('submit');    
+
+        $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];       
+        if ($freigabe['rechnungsfreigabe'] && $freigabe['freigabe']) {
+            $this->app->Tpl->Set('SAVEDISABLED','disabled');
+            $this->app->Tpl->Set('SACHKONTOSAVEDISABLED','disabled');      
+        } else if ($freigabe['freigabe']) {
+            $this->app->Tpl->Set('SAVEDISABLED','disabled');   
+            if ($submit != '')
+            {                
+                $sql = "
+                    UPDATE verbindlichkeit_position SET              
+                        kontorahmen = '$kontorahmen'
+                    WHERE id = ".$posid."                
+                ";
+                $this->app->DB->Update($sql);
+                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg#tabs-2");
+            }
+        } else {
+            if ($submit != '')
+            {                
+                $sql = "
+                    UPDATE verbindlichkeit_position SET 
+                        menge = '$menge',
+                        preis = '$preis',
+                        steuersatz = '$steuersatz',
+                        kontorahmen = '$kontorahmen'
+                    WHERE id = ".$posid."                
+                ";
+                $this->app->DB->Update($sql);
+
+                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg#tabs-2");
+            }
+        }
+   
+        // Load values again from database
+	    $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',v.id,'\" />') AS `auswahl`";
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS v.id, $dropnbox, v.steuersatz, v.preis, v.menge, v.kontorahmen, v.id FROM verbindlichkeit_position v"." WHERE id=$posid");        
+
+        foreach ($result[0] as $key => $value) {
+            $this->app->Tpl->Set(strtoupper($key), $value);   
+        }
+
+        if (!empty($result)) {
+            $verbindlichkeit_position_from_db = $result[0];
+        } else {
+            return;
+        }
+             
+        /*
+         * Add displayed items later
+         * 
+
+        $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
+        $this->app->Tpl->Add('EMAIL', $email);
+        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
+
+        $this->app->YUI->AutoComplete("artikel", "artikelnummer");
+
+         */
+
+        $this->app->YUI->AutoComplete("sachkonto", "sachkonto", 1);
+        $this->app->Tpl->Set('SACHKONTO', $this->app->erp->ReplaceKontorahmen(false,$verbindlichkeit_position_from_db['kontorahmen'],false));
+
+        $this->app->Tpl->Parse('PAGE', "verbindlichkeit_position_edit.tpl");
+    }
+
+
     /**
      * Get all paramters from html form and save into $input
      */
@@ -1203,24 +1297,15 @@ class Verbindlichkeit {
             $sql = "
                 SELECT 
                         vp.id,
-                        v.belegnr,                     
-                        skv.id skv_id,
-                        skart.id skart_id,
-                        skadr.id skadr_id
+                        v.belegnr                     
                         FROM verbindlichkeit_position vp 
-                        INNER JOIN artikel art ON art.id = vp.artikel 
                         LEFT JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit
-                        LEFT JOIN adresse adr ON adr.id = v.adresse           
-                        LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen
-                        LEFT JOIN kontorahmen skart ON skart.id = art.kontorahmen
-                        LEFT JOIN kontorahmen skadr ON skadr.id = adr.kontorahmen
                         WHERE 
                             verbindlichkeit='$id'
-                        AND     
-                        (
-                            COALESCE(skv.id,0) = 0 AND COALESCE(skart.id,0) = 0 AND COALESCE(skadr.id,0) = 0
-                        )
+                        AND vp.kontorahmen = 0
             ";
+
+            $check = $this->app->DB->SelectArr($sql); 
 
             if (!empty($check)) {            
                 if ($gotoedit) {
@@ -1407,23 +1492,13 @@ class Verbindlichkeit {
                                                     vp.menge,
                                                     vp.preis,
                                                     vp.steuersatz,
-                                                    if (skv.id <> 0,
-                                                        CONCAT(skv.sachkonto,' ',skv.beschriftung),
-                                                        (
-                                                            if (skart.id <> 0,
-                                                                CONCAT(skart.sachkonto,' ',skart.beschriftung, ' (Artikel)'),
-                                                                CONCAT(skadr.sachkonto,' ',skadr.beschriftung, ' (Adresse)')
-                                                            )
-                                                        )
-                                                    ) AS sachkonto,
+                                                    CONCAT(skv.sachkonto,' ',skv.beschriftung) AS sachkonto,
                                                     '' 
                                                     FROM verbindlichkeit_position vp 
                                                     INNER JOIN artikel art ON art.id = vp.artikel 
                                                     LEFT JOIN verbindlichkeit v ON v.id = vp.verbindlichkeit
                                                     LEFT JOIN adresse adr ON adr.id = v.adresse           
                                                     LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen
-                                                    LEFT JOIN kontorahmen skart ON skart.id = art.kontorahmen
-                                                    LEFT JOIN kontorahmen skadr ON skadr.id = adr.kontorahmen
                                                     WHERE verbindlichkeit='$id'
                                                     ORDER by vp.sort ASC");
 
@@ -1514,6 +1589,58 @@ class Verbindlichkeit {
 
     function verbindlichkeit_get_belegnr($id) {
         return($this->app->DB->Select("SELECT belegnr FROM verbindlichkeit WHERE id =".$id));
+    }
+
+    /* Calculate steuersatz
+        Get from 
+        Check address first, if foreign, then steuersatz = 0
+        if not foreign there are three cases: befreit = 0, ermaessigt, normal
+        if not befreit, get from projekt or firmendaten
+    */
+    function get_steuersatz($umsatzsteuer, $verbindlichkeit) {
+        if (is_numeric($umsatzsteuer)) {
+            return($umsatzsteuer);
+        }
+
+        if ($umsatzsteuer == 'befreit') {
+            return(0);
+        }
+        
+        $adresse = $this->app->DB->Select("SELECT adresse FROM verbindlichkeit WHERE id=".$verbindlichkeit);
+        $umsatzsteuer_lieferant = $this->app->DB->Select("SELECT umsatzsteuer_lieferant FROM adresse WHERE id=".$adresse); /* inland, eu-lieferung, import*/
+
+        if (in_array($umsatzsteuer_lieferant,array('import','eu-lieferung'))) {
+            return(0);
+        }
+        
+        $projekt = $this->app->DB->Select("SELECT projekt FROM verbindlichkeit WHERE id=".$verbindlichkeit);
+        $steuersatz_projekt = $this->app->DB->SelectRow("SELECT steuersatz_normal, steuersatz_ermaessigt FROM projekt WHERE id ='".$projekt."'");
+        $steuersatz_normal_projekt = $steuersatz_projekt['steuer_normal'];
+        $steuersatz_ermaessigt_projekt = $steuersatz_projekt['steuer_ermaessigt'];
+           
+        $steuersatz_normal = $this->app->erp->Firmendaten('steuersatz_normal');
+        $steuersatz_ermaessigt = $this->app->erp->Firmendaten('steuersatz_ermaessigt');
+
+        switch($umsatzsteuer) {
+            case 'normal':
+                if (!empty($steuersatz_normal_projekt)) {
+                    return($steuersatz_normal_projekt);
+                } else {
+                    return($steuersatz_normal);
+                }               
+            break;
+            case 'ermaessigt':
+                if (!empty($steuersatz_ermaessigt_projekt)) {
+                    return($steuersatz_ermaessigt_projekt);
+                } else {
+                    return($steuersatz_ermaessigt);
+                }               
+            break;
+            default:   
+                return(-1);
+            break;
+        }
+
     }
 
 }

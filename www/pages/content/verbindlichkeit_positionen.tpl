@@ -30,6 +30,9 @@
                         <table width="100%" border="0" class="mkTableFormular">
                             <legend>{|Aktionen|}</legend>
                             <tr>
+                                <td><input type="checkbox" name="bruttoeingabe" value="1" />Bruttopreise eingeben</td>
+                            </tr>      
+                            <tr>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button></td>
                             </tr>
                         </table>
@@ -52,23 +55,11 @@
                     <fieldset>
                         <table width="100%" border="0" class="mkTableFormular">
                             <legend>{|Aktionen|}</legend>
-                            <tr>
+                            <tr [POSITIONHINZUFUEGENHIDDEN]>
                                 <td><input type="checkbox" id="auswahlalle" onchange="alleauswaehlen();" />&nbsp;{|alle markieren|}</td>
-                            </tr>
-                            <tr [SACHKONTOHIDDEN]>
-                                <td>Sachkonto:&nbsp;<input type="text" id="positionen_sachkonto" name="positionen_sachkonto" value=""></td>
-                            </tr>
-                            <tr [SACHKONTOHIDDEN]>
-                                <td><button name="submit" value="positionen_sachkonto_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
-                            </tr>
+                            </tr>                          
                             <tr [POSITIONHINZUFUEGENHIDDEN]>
-                                <td>Steuersatz:&nbsp;<input type="text" id="positionen_steuersatz" name="positionen_steuersatz" value=""></td>
-                            </tr>
-                            <tr [POSITIONHINZUFUEGENHIDDEN]>
-                                <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_speichern" class="ui-button-icon" style="width:100%;">Anpassen</button></td>
-                            </tr>
-                            <tr [POSITIONHINZUFUEGENHIDDEN]>
-                                <td><button [SAVEDISABLED] name="submit" value="positionen_steuersatz_zu_netto" class="ui-button-icon" style="width:100%;">Brutto zu Netto</button></td>
+                                <td><button [SAVEDISABLED] name="submit" value="positionen_entfernen" class="ui-button-icon" style="width:100%;">Entfernen</button></td>
                             </tr>
                         </table>
                     </fieldset>
