@@ -22,7 +22,7 @@
 </td></tr>
 <tr valign="top"><td><br></td><td align="center"></td></tr>
 [DISPLAY_WARENEINGANG_RMA_HOOK1]
-<tr valign="top"><td><br></td><td align="center"><input type="submit" name="submit" value="Speichern" />&nbsp;<input type="button" onclick="window.location.href='index.php?module=wareneingang&action=distriinhalt&id=[ID]'"      value="Abbrechen" /></td></tr>
+<tr valign="top"><td><br></td><td align="center"><input type="submit" name="submit" value="Buchen" />&nbsp;<input type="button" onclick="window.location.href='index.php?module=wareneingang&action=distriinhalt&id=[ID]'"      value="Abbrechen" /></td></tr>
 </td></tr> 
 </table>
 
