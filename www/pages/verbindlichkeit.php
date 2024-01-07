@@ -55,7 +55,7 @@ class Verbindlichkeit {
                 $findcols = array(
                     'v.id',
                     'v.id',
-                    'v.id',
+                    'v.belegnr',
                     'a.name',
                     'a.lieferantennummer',                  
                     'v.rechnung',
@@ -708,7 +708,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
                     $umsatzsteuer = $artikel['umsatzsteuer'];
                     $kontorahmen = $artikel['kontorahmen'];
 
-                    if(empty($umsatzsteuer)) {
+                    if(empty($umsatzsteuer) && is_numeric($artikel['steuersatz'])) {
                         $steuersatz = $artikel['steuersatz'];
                     } else {
                         $steuersatz = $this->get_steuersatz($umsatzsteuer,$id);
@@ -717,7 +717,6 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
                     if ($bruttoeingabe) {
                         $preis = $preis / (1+($steuersatz/100));
                     }    
-
                     $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
                     $this->app->DB->Insert($sql);
 
