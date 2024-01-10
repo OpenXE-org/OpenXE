@@ -3596,10 +3596,14 @@ class YUI {
   
   function IconsSQLVerbindlichkeit() {
 
-    $go_ware = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_go.png\" style=\"margin-right:1px\" title=\"Wareneingangspr&uuml;fung OK\" border=\"0\">";
-    $stop_ware = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_stop.png\" style=\"margin-right:1px\" title=\"Wareneingangspr&uuml;fung fehlt\" border=\"0\">";
-    $go_summe = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_go.png\" style=\"margin-right:1px\" title=\"Rechnungseingangspr&uuml;fung OK\" border=\"0\">";
-    $stop_summe = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_stop.png\" style=\"margin-right:1px\" title=\"Rechnungseingangspr&uuml;fung fehlt\" border=\"0\">";
+    $go_ware = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" style=\"margin-right:1px\" title=\"Wareneingangspr&uuml;fung OK\" border=\"0\">";
+    $stop_ware = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagerstop.png\" style=\"margin-right:1px\" title=\"Wareneingangspr&uuml;fung fehlt\" border=\"0\">";
+    
+    $go_pdf = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_go.png\" style=\"margin-right:1px\" title=\"Anhang OK\" border=\"0\">";
+    $stop_pdf = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/summe_stop.png\" style=\"margin-right:1px\" title=\"Anhang fehlt\" border=\"0\">";
+        
+    $go_summe = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/check_go.png\" style=\"margin-right:1px\" title=\"Rechnungseingangspr&uuml;fung OK\" border=\"0\">";
+    $stop_summe = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/check_stop.png\" style=\"margin-right:1px\" title=\"Rechnungseingangspr&uuml;fung fehlt\" border=\"0\">";
 
     $go_zahlung = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/bank_go.svg\" style=\"margin-right:1px\" title=\"Kontoverkn&uuml;pfung OK\" border=\"0\">";
     $stop_zahlung = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/bank_stop.svg\" style=\"margin-right:1px\" title=\"Kontoverkn&uuml;pfung fehlt\" border=\"0\">";
@@ -3608,6 +3612,7 @@ class YUI {
     $gostop_betragbezahlt = "<img alt=\"teilweise bezahlt\" src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassegostop.png\" style=\"margin-right:1px\" title=\"teilweise bezahlt\" border=\"0\">";
     $go_betragbezahlt = "<img alt=\"nicht bezahlt\"  src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/vorkassego.png\" style=\"margin-right:1px\" title=\"bezahlt\" border=\"0\">";
     return "CONCAT('<table><tr><td nowrap>',
+    if(datei_anzahl > 0,'$go_pdf','$stop_pdf'),
     if(v.freigabe,'$go_ware','$stop_ware'),
     if(v.rechnungsfreigabe,'$go_summe','$stop_summe'),
     if(v.bezahlt,'$go_betragbezahlt','$stop_betragbezahlt'),

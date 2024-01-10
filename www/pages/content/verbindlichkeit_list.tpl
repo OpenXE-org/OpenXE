@@ -10,12 +10,19 @@
               <div class="filter-title">{|Filter|}</div>
               <ul class="filter-list">
                 <li class="filter-item">
+                  <label for="anhang" class="switch">
+                    <input type="checkbox" id="anhang">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="anhang">{|Anhang fehlt|}</label>
+                </li>
+                 <li class="filter-item">
                   <label for="wareneingang" class="switch">
                     <input type="checkbox" id="wareneingang">
                     <span class="slider round"></span>
                   </label>
                   <label for="wareneingang">{|Wareingang/Leistungspr&uuml;fung fehlt|}</label>
-                </li>            
+                </li>                        
                 <li class="filter-item">
                   <label for="rechnungsfreigabe" class="switch">
                     <input type="checkbox" id="rechnungsfreigabe">
@@ -29,6 +36,13 @@
                     <span class="slider round"></span>
                   </label>
                   <label for="nichtbezahlt">{|Nicht bezahlt|}</label>
+                </li>
+                <li class="filter-item">
+                  <label for="stornierte" class="switch">
+                    <input type="checkbox" id="stornierte">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="stornierte">{|Inkl. stornierte|}</label>
                 </li>
                 <li class="filter-item">
                     <label for="zahlbarbis">{|Zahlbar bis|}:</label>

@@ -109,19 +109,22 @@ class Verbindlichkeit {
                             ".$app->YUI->IconsSQLVerbindlichkeit().",
                             v.id FROM verbindlichkeit v
                         LEFT JOIN adresse a ON v.adresse = a.id
-
-";
-
+                        LEFT JOIN (
+                            SELECT ds.parameter, COUNT(ds.objekt) datei_anzahl FROM datei_stichwoerter ds INNER JOIN datei d ON d.id = ds.datei WHERE ds.objekt='verbindlichkeit' AND d.geloescht <> 1 GROUP BY ds.parameter
+                        ) d ON d.parameter = v.id
+                        ";
                 $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM verbindlichkeit WHERE $where";
 //                $groupby = "";
 
                 // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn1( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn2( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn3( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
 
-                for ($r = 1;$r <= 3;$r++) {
+                for ($r = 1;$r <= 8;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
                                          function fnFilterColumn' . $r . ' ( i )
                                          {
@@ -139,37 +142,50 @@ class Verbindlichkeit {
                                          ');
                 }
 
-
                 $more_data1 = $this->app->Secure->GetGET("more_data1");
                 if ($more_data1 == 1) {
-                   $where .= " AND v.freigabe <> '1'";
+                   $where .= " AND datei_anzahl IS NULL";                 
                 } else {
                 }
 
                 $more_data2 = $this->app->Secure->GetGET("more_data2");
                 if ($more_data2 == 1) {
-                   $where .= " AND v.rechnungsfreigabe <> '1'";
+                   $where .= " AND v.freigabe <> '1'";
                 }
                 else {
                 }                
 
                 $more_data3 = $this->app->Secure->GetGET("more_data3");
                 if ($more_data3 == 1) {
-                   $where .= " AND v.bezahlt <> '1'";            
+                   $where .= " AND v.rechnungsfreigabe <> '1'";
+                }
+                else {                  
+                }                    
+                
+                $more_data4 = $this->app->Secure->GetGET("more_data4");
+                if ($more_data4 == 1) {
+                   $where .= " AND v.bezahlt <> 1";            
                 }
                 else {                  
                 }                             
+
+                $more_data5 = $this->app->Secure->GetGET("more_data5");
+                if ($more_data5 == 1) {
+                }
+                else {                  
+                   $where .= " AND v.status <> 'storniert'";            
+                }                                     
                 // END Toggle filters
 
                 $this->app->YUI->DatePicker('zahlbarbis');
-                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 4,'zahlbarbis');
+                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 6,'zahlbarbis');
                 if (!empty($filterzahlbarbis)) {
                     $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
                     $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
                 }
 
                 $this->app->YUI->DatePicker('skontobis');
-                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 5,'skontobis');
+                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 7,'skontobis');
                 if (!empty($filterskontobis)) {
                     $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
                     $where .= " AND v.skontobis <= '".$filterskontobis."'";
@@ -983,7 +999,13 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
         $this->app->Tpl->Set('ZAHLBARBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['zahlbarbis'],false));
         $this->app->YUI->DatePicker("zahlbarbis");
 
-    	$sql = "SELECT " . $this->app->YUI->IconsSQLVerbindlichkeit() . " AS `icons` FROM verbindlichkeit v WHERE id=$id";
+    	$sql = "SELECT 
+    	            ".$this->app->YUI->IconsSQLVerbindlichkeit() . " AS `icons` 
+	                FROM verbindlichkeit v 
+    	            LEFT JOIN (
+                        SELECT ds.parameter, COUNT(ds.objekt) datei_anzahl FROM datei_stichwoerter ds INNER JOIN datei d ON d.id = ds.datei WHERE ds.objekt='verbindlichkeit' AND d.geloescht <> 1 GROUP BY ds.parameter
+                    ) d ON d.parameter = v.id
+                    WHERE id=$id";
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
 
