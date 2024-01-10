@@ -1363,7 +1363,9 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
             $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit als bezahlt markiert");
             if ($gotoedit) {
                 $this->verbindlichkeit_edit();
-            }        
+            } else {
+                return(true);
+            }       
         }
     }  
 
