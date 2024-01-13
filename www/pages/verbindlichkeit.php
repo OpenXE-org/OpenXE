@@ -123,6 +123,7 @@ class Verbindlichkeit {
                 $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
                 $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
                 $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
 
                 for ($r = 1;$r <= 8;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
@@ -174,22 +175,29 @@ class Verbindlichkeit {
                 }
                 else {                  
                    $where .= " AND v.status <> 'storniert'";            
-                }                                     
-                // END Toggle filters
+                }    
 
+                $more_data6 = $this->app->Secure->GetGET("more_data6");
+                if ($more_data6 == 1) {
+                }
+                else {                  
+                    $where .= " AND v.status <> 'abgeschlossen'";            
+                }                                                                                         
+                
                 $this->app->YUI->DatePicker('zahlbarbis');
-                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 6,'zahlbarbis');
+                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
                 if (!empty($filterzahlbarbis)) {
                     $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
                     $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
                 }
 
                 $this->app->YUI->DatePicker('skontobis');
-                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 7,'skontobis');
+                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
                 if (!empty($filterskontobis)) {
                     $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
                     $where .= " AND v.skontobis <= '".$filterskontobis."'";
                 }
+                // END Toggle filters
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
@@ -444,47 +452,59 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
     function verbindlichkeit_list() {
 
         // Process multi action
-        $submit = $this->app->Secure->GetPOST('ausfuehren');
-        if (!empty($submit)) {
-            $auswahl = $this->app->Secure->GetPOST('auswahl');
-            $aktion = $this->app->Secure->GetPOST('sel_aktion');
-         
-            $selectedIds = [];
-            if(!empty($auswahl)) {
-                foreach($auswahl as $selectedId) {
-                    $selectedId = (int)$selectedId;
-                    if($selectedId > 0) {
-                        $selectedIds[] = $selectedId;
-                    }
-                }          
+        $submit = $this->app->Secure->GetPOST('submit');
+        switch($submit) {
+            case 'status_berechnen':
+            
+                $sql = "SELECT id FROM verbindlichkeit WHERE status <> 'abgeschlossen' AND status <> 'storniert'";
+                $ids = $this->app->DB->SelectArr($sql);
+            
+                foreach ($ids as $verbindlichkeit) {
+                    $this->verbindlichkeit_abschliessen($verbindlichkeit['id']);
+                }
+                                                      
+            break;
+            case 'ausfuehren':
+                $auswahl = $this->app->Secure->GetPOST('auswahl');
+                $aktion = $this->app->Secure->GetPOST('sel_aktion');
+             
+                $selectedIds = [];
+                if(!empty($auswahl)) {
+                    foreach($auswahl as $selectedId) {
+                        $selectedId = (int)$selectedId;
+                        if($selectedId > 0) {
+                            $selectedIds[] = $selectedId;
+                        }
+                    }          
 
-                switch ($aktion) {
-                    case 'freigabeeinkauf':
-                        foreach ($selectedIds as $id) {
-                            $result = $this->verbindlichkeit_freigabeeinkauf($id);
-                            if ($result !== true) {
-                                $this->app->YUI->Message('warning',$result);
+                    switch ($aktion) {
+                        case 'freigabeeinkauf':
+                            foreach ($selectedIds as $id) {
+                                $result = $this->verbindlichkeit_freigabeeinkauf($id);
+                                if ($result !== true) {
+                                    $this->app->YUI->Message('warning',$result);
+                                }
                             }
-                        }
-                    break;
-                    case 'freigabebuchhaltung':
-                        foreach ($selectedIds as $id) {                            
-                            $result = $this->verbindlichkeit_freigabebuchhaltung($id);
-                            if ($result !== true) {
-                                $this->app->YUI->Message('warning',$result);
+                        break;
+                        case 'freigabebuchhaltung':
+                            foreach ($selectedIds as $id) {                            
+                                $result = $this->verbindlichkeit_freigabebuchhaltung($id);
+                                if ($result !== true) {
+                                    $this->app->YUI->Message('warning',$result);
+                                }
                             }
-                        }
-                    break;
-                    case 'bezahlt':
-                        foreach ($selectedIds as $id) {
-                            $result = $this->verbindlichkeit_freigabebezahlt($id);
-                            if ($result !== true) {
-                               $this->app->YUI->Message('warning',$result);
+                        break;
+                        case 'bezahlt':
+                            foreach ($selectedIds as $id) {
+                                $result = $this->verbindlichkeit_freigabebezahlt($id);
+                                if ($result !== true) {
+                                   $this->app->YUI->Message('warning',$result);
+                                }
                             }
-                        }
-                    break;
-                }    
-            }         
+                        break;
+                    }    
+                }         
+            break;           
         }
 
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=list", "&Uuml;bersicht");
@@ -864,82 +884,50 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
             $verbindlichkeit_from_db = $result[0];
         }
 
-        // Summarize positions
-        $sql = "SELECT * FROM verbindlichkeit_position WHERE verbindlichkeit = ".$id;
-        $positionen = $this->app->DB->SelectArr($sql);
-
-        if (!empty($positionen)) {
-            $betrag_netto = 0;
-            $betrag_brutto = 0;
-            $betrag_brutto_pos_summe = 0;
-            $steuer_normal = 0;
-            $steuer_ermaessigt = 0;
-
-            /* 
-                Normal: umsatzsteuer leer, steuersatz = leer
-                Ermäßigt: umsatzsteuer ermaessigt, steuersatz = -1
-                Befreit: umsatzsteuer befreit, steursatz = -1
-                Individuell: umsatzsteuer leer, steuersatz = wert
-            */
-            foreach ($positionen as $position) {
-
-                $tmpsteuersatz = null;
-                $tmpsteuertext = null;
-                $erloes = null;
-
-    //                  function GetSteuerPosition($typ, $posid,&$tmpsteuersatz = null, &$tmpsteuertext = null, &$erloes = null)
-
-                $this->app->erp->GetSteuerPosition("verbindlichkeit",$position['id'],$tmpsteuersatz,$tmpsteuertext,$erloes);
-
-                $position['steuersatz_berechnet'] = $tmpsteuersatz;
-                $position['steuertext_berechnet'] = $tmpsteuertext;
-                $position['steuererloes_berechnet'] = $erloes;
-           
-                $betrag_netto += ($position['menge']*$position['preis']);
-                $betrag_brutto += ($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100));
-                $betrag_brutto_pos_summe += round(($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100)),2);
-
-            }
-      
-            $this->app->Tpl->Set('BETRAGNETTO', round($betrag_netto,2));
-            $this->app->Tpl->Set('BETRAGBRUTTOPOS', round($betrag_brutto,2));
-
-            if ($verbindlichkeit_from_db['betrag'] == round($betrag_brutto,2)) {
-                $pos_ok = true;    
-            }
-            else if (round($verbindlichkeit_from_db['betrag'],2) == round($betrag_brutto_pos_summe,2)) {
-                $pos_ok = true;                       
-                if (round($betrag_brutto,2) != round($betrag_brutto_pos_summe,2)) {
-                    $rundungsdifferenz = round(round($betrag_brutto,2) - $betrag_brutto_pos_summe,2);
-                }   
-            }                                    
-
-            if (empty($rundungsdifferenz)) {
-                $this->app->Tpl->Set('RUNDUNGSDIFFERENZICONHIDDEN', 'hidden');            
-            } else {
-                $this->app->Tpl->Set('RUNDUNGSDIFFERENZ', $rundungsdifferenz);            
-            }
-
-            if ($pos_ok) {            
-                if (!$verbindlichkeit_from_db['freigabe'] && !$einkauf_automatik_aus) {
-                    if ($this->verbindlichkeit_freigabeeinkauf($id,"Verbindlichkeit automatisch freigegeben (Einkauf)") === true) {
-                        $this->app->YUI->Message('success',"Verbindlichkeit automatisch freigegeben (Einkauf)");
-                        $verbindlichkeit_from_db['freigabe'] = 1;
-                    } else {
-                        $this->app->YUI->Message('warning','Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen');            
-                    }
-                } 
-                $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="success">Positionen vollst&auml;ndig</div>');            
-            } else {
-                $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="warning">Positionen nicht vollst&auml;ndig. Bruttobetrag '.$verbindlichkeit_from_db['betrag'].', Summe Positionen (brutto) '.round($betrag_brutto,2).', Differenz '.round(round($betrag_brutto,2)-$verbindlichkeit_from_db['betrag'],2).'</div>');            
-                if ($verbindlichkeit_from_db['freigabe']) {
-                    $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 0 WHERE id = ".$id);
-                    $verbindlichkeit_from_db['freigabe'] = 0;
-                    $this->app->YUI->Message('warning',"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");        
-                }
-            }
+        // Check  positions        
+        $pos_check = $this->check_positions($verbindlichkeit_from_db['id'],$verbindlichkeit_from_db['betrag']);                         
+                      
+        $this->app->Tpl->Set('BETRAGNETTO', $pos_check['betrag_netto']);
+        $this->app->Tpl->Set('BETRAGBRUTTOPOS', $pos_check['betrag_brutto']);
+            
+        if (empty($pos_check['rundungsdifferenz'])) {
+            $this->app->Tpl->Set('RUNDUNGSDIFFERENZICONHIDDEN', 'hidden');            
+        } else {
+            $this->app->Tpl->Set('RUNDUNGSDIFFERENZ', $pos_check['rundungsdifferenz']);            
         }
-           
+
+        if ($pos_check['pos_ok']) {            
+            if (!$verbindlichkeit_from_db['freigabe'] && !$einkauf_automatik_aus) {
+                if ($this->verbindlichkeit_freigabeeinkauf($id,"Verbindlichkeit automatisch freigegeben (Einkauf)") === true) {
+                    $this->app->YUI->Message('success',"Verbindlichkeit automatisch freigegeben (Einkauf)");
+                    $verbindlichkeit_from_db['freigabe'] = 1;
+                } else {
+                    $this->app->YUI->Message('warning','Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen');            
+                }
+            } 
+            $this->app->Tpl->Set('POSITIONENMESSAGE', '<div class="success">Positionen vollst&auml;ndig</div>');                                    
+            
+            if ($verbindlichkeit_from_db['status'] != 'abgeschlossen' && $verbindlichkeit_from_db['status'] != 'storniert') {
+                $this->verbindlichkeit_abschliessen($id);            
+            }            
+            
+        } else {
+            $this->app->Tpl->Set('
+                                    POSITIONENMESSAGE', '<div class="warning">Positionen nicht vollst&auml;ndig. Bruttobetrag '.
+                                    $verbindlichkeit_from_db['betrag'].
+                                    ', Summe Positionen (brutto) '.
+                                    $pos_check['betrag_brutto'].
+                                    ', Differenz '.
+                                    round($pos_check['betrag_brutto']-$verbindlichkeit_from_db['betrag'],2).
+                                    '</div>'
+                                );            
+            if ($verbindlichkeit_from_db['freigabe']) {
+                $this->app->DB->Update("UPDATE verbindlichkeit SET freigabe = 0 WHERE id = ".$id);
+                $verbindlichkeit_from_db['freigabe'] = 0;
+                $this->app->YUI->Message('warning',"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");        
+            }
+        }                    
+       
         /*
          * Add displayed items later
          * 
@@ -1209,8 +1197,6 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
 
         if (!empty($file_attachments)) {
 
-//            print_r($file_attachments);
-
             // Try to merge all PDFs
             $file_paths = array();
             foreach ($file_attachments as $file_attachment) {
@@ -1247,7 +1233,6 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
         $id = $this->app->Secure->GetGET('id');
         $this->app->erp->BelegFreigabe('verbindlichkeit',$id);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit freigegeben");
-//        $this->app->DB->Update("UPDATE verbindlichkeit SET schreibschutz = 1 WHERE id = ".$id);
         $this->verbindlichkeit_edit();
     }
 
@@ -1307,6 +1292,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
         }        
     }
 
+    // Returns true or error message
     function verbindlichkeit_freigabebuchhaltung($id = null)
     {      
         if (empty($id)) {
@@ -1363,6 +1349,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
         }
     }
 
+    // Returns true or error message
     function verbindlichkeit_freigabebezahlt($id = null)
     {      
         if (empty($id)) {
@@ -1390,8 +1377,37 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
             }       
         }
     }  
+    
+    function verbindlichkeit_abschliessen($id = null)
+    {      
+        if (empty($id)) {
+            $id = $this->app->Secure->GetGET('id');
+            $gotoedit = true;
+        }
+        
+        $sql = "SELECT freigabe, rechnungsfreigabe, bezahlt, betrag FROM verbindlichkeit WHERE id =".$id;             
+        $verbindlichkeit = $this->app->DB->SelectRow($sql);
+           
+        if ($verbindlichkeit['freigabe'] != 1) {
+            $einkauf_check = $this->check_positions($id,$verbindlichkeit['betrag']);
+            if ($einkauf_check['pos_ok']) {
+                $this->verbindlichkeit_freigabeeinkauf($id);
+                $verbindlichkeit['freigabe'] = 1;
+            }
+        }
+               
+        $anzahldateien = $this->app->erp->AnzahlDateien("verbindlichkeit",$id);                    
+        if (!empty($anzahldateien) && $verbindlichkeit['freigabe'] && $verbindlichkeit['rechnungsfreigabe'] && $verbindlichkeit['bezahlt']) {
+            $sql = "UPDATE verbindlichkeit SET status = 'abgeschlossen' WHERE id=".$id;
+            $this->app->DB->Update($sql);
+            $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit abgeschlossen");            
+            if ($gotoedit) {
+                $this->verbindlichkeit_edit();
+            }        
+        }                        
+    }  
 
-  function verbindlichkeit_ruecksetzeneinkauf($id = null)
+    function verbindlichkeit_ruecksetzeneinkauf($id = null)
     {      
         if (empty($id)) {
             $id = $this->app->Secure->GetGET('id');
@@ -1432,7 +1448,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
             $this->verbindlichkeit_edit();
         }        
     }  
-
+        
 /*    function verbindlichkeit_schreibschutz($id = null)
     {      
         if (empty($id)) {
@@ -1677,5 +1693,71 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
         }
 
     }
+    
+    // Check positions and return status and values
+    function check_positions($id, $bruttobetrag_verbindlichkeit) : array {
 
+        $result = array(
+            "pos_ok" => false,
+            "betrag_netto" => 0,
+            "betrag_brutto" => 0,
+            "rundungsdifferenz" => 0,
+            "bruttobetrag_verbindlichkeit" => $bruttobetrag_verbindlichkeit
+        );        
+
+        if (empty($id)) {
+            return($result);
+        }
+
+        // Summarize positions
+        $sql = "SELECT * FROM verbindlichkeit_position WHERE verbindlichkeit = ".$id;
+        $positionen = $this->app->DB->SelectArr($sql);        
+
+        if (!empty($positionen)) {
+            $betrag_netto = 0;
+            $betrag_brutto = 0;
+            $betrag_brutto_pos_summe = 0;
+            $steuer_normal = 0;
+            $steuer_ermaessigt = 0;
+
+            /* 
+                Normal: umsatzsteuer leer, steuersatz = leer
+                Ermäßigt: umsatzsteuer ermaessigt, steuersatz = -1
+                Befreit: umsatzsteuer befreit, steursatz = -1
+                Individuell: umsatzsteuer leer, steuersatz = wert
+            */
+            foreach ($positionen as $position) {
+
+                $tmpsteuersatz = null;
+                $tmpsteuertext = null;
+                $erloes = null;
+
+                $this->app->erp->GetSteuerPosition("verbindlichkeit",$position['id'],$tmpsteuersatz,$tmpsteuertext,$erloes);
+
+                $position['steuersatz_berechnet'] = $tmpsteuersatz;
+                $position['steuertext_berechnet'] = $tmpsteuertext;
+                $position['steuererloes_berechnet'] = $erloes;
+           
+                $betrag_netto += ($position['menge']*$position['preis']);
+                $betrag_brutto += ($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100));
+                $betrag_brutto_pos_summe += round(($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100)),2);
+
+            }
+      
+            $result['betrag_netto'] = round($betrag_netto,2);
+            $result['betrag_brutto'] = round($betrag_brutto,2);
+      
+            if ($bruttobetrag_verbindlichkeit == round($betrag_brutto,2)) {
+                $result['pos_ok'] = true;    
+            }
+            else if (round($bruttobetrag_verbindlichkeit,2) == round($betrag_brutto_pos_summe,2)) {
+                $result['pos_ok'] = true;    
+                if (round($bruttobetrag_verbindlichkeit,2) != round($betrag_brutto_pos_summe,2)) {
+                    $result['rundungsdifferenz'] = round(round($betrag_brutto,2) - $betrag_brutto_pos_summe,2);
+                }   
+            }                                    
+        }       
+             
+        return($result);
+    }
 }

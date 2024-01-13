@@ -45,6 +45,13 @@
                   <label for="stornierte">{|Inkl. stornierte|}</label>
                 </li>
                 <li class="filter-item">
+                  <label for="abgeschlossen" class="switch">
+                    <input type="checkbox" id="abgeschlossen">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="abgeschlossen">{|Inkl. abgeschlossene|}</label>
+                </li>
+                <li class="filter-item">
                     <label for="zahlbarbis">{|Zahlbar bis|}:</label>
                     <input type="text" name="zahlbarbis" id="zahlbarbis" size="10">
                 </li>
@@ -53,8 +60,8 @@
                     <input type="text" name="skontobis" id="skontobis" size="10">
                 </li>
               </ul>
-              <form method="post" action="#" hidden>
-                <input type="submit" class="btnBlue" name="status_berechnen" value="{|Status berechnen|}" />
+              <form method="post" action="#">
+                <button name="submit" value="status_berechnen" class="ui-button-icon">{|Status auffrischen|}</button>
               </form>              
             </div>    
           </div>
@@ -69,7 +76,7 @@
                     [MANUELLFREIGABEBUCHHALTUNG]
                     [ALSBEZAHLTMARKIEREN]
                 </select>
-                &nbsp;<input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />
+                <button name="submit" value="ausfuehren" class="ui-button-icon">{|Ausf&uuml;hren|}</button>
             </fieldset>
         </form>
         [TAB1NEXT]
