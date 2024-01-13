@@ -217,13 +217,13 @@ class Verbindlichkeit {
                 $bestellnummer = $verbindlichkeit['belegnr'];
                 $rechnung = $verbindlichkeit['rechnung'];
            
-                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Menge','Menge offen','Eingabe','Preis','Steuer','Sachkonto','');
-                $width = array(  '1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '2%',   '1%',         '1%',     '1%',   '1%',    '1%',       '1%');  
+                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Bemerkung','Menge','Menge offen','Eingabe','Preis','Steuer','Sachkonto','');
+                $width = array(  '1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '20%',       '2%',   '1%',         '1%',     '1%',   '1%',    '1%',       '1%');  
 
-                $findcols = array('pa','auswahl','belegnr','lsnr','renr','artikelnummer','name_de','menge','offen_menge','offen_menge','preis','umsatzsteuer','pa');
+                $findcols = array('pa','auswahl','belegnr','lsnr','renr','artikelnummer','name_de','bemerkung','menge','offen_menge','offen_menge','preis','steuer','sachkonto','pa');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
-                $alignright = array(8,9,11);
+                $alignright = array(9,10);
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;            
@@ -316,6 +316,7 @@ class Verbindlichkeit {
                             if(pa.renr LIKE '%".$rechnung."%',CONCAT('<b>',pa.renr,'</b>'),pa.renr) AS renr,
                             ".$this->app->erp->ConcatSQL($artikellink)." AS artikelnummer,
                             art.name_de,
+                            pd.bemerkung,
                             pd.menge,
                             IF(
                                 pd.menge > COALESCE(vp.menge,0),
@@ -324,7 +325,7 @@ class Verbindlichkeit {
                             ) offen_menge,
                             ".$this->app->erp->ConcatSQL($werte).",
                             ".$this->app->erp->ConcatSQL($preise)." AS preis,
-                            if(art.umsatzsteuer = '',art.steuersatz,art.umsatzsteuer),
+                            if(art.umsatzsteuer = '',art.steuersatz,art.umsatzsteuer) steuer,
                             if (skart.id <> 0,
                                 CONCAT(skart.sachkonto,' ',skart.beschriftung),
                                 CONCAT(skadr.sachkonto,' ',skadr.beschriftung)                               
@@ -372,21 +373,21 @@ class Verbindlichkeit {
                 $freigabe = $app->DB->Select("SELECT freigabe FROM verbindlichkeit WHERE id = '".$id."'");
                 $rechnungsfreigabe = $app->DB->Select("SELECT rechnungsfreigabe FROM verbindlichkeit WHERE id = '".$id."'");
 
-                $heading = array('',  'Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz','Sachkonto');
-                $width = array(  '1%','1%',       '1%' ,        '2%',         '2%',         '16%',    '1%',   '1%',   '1%',        '3%',       '1%',       '1%');       
+                $heading = array('',  'Paket-Nr.','Paket-Pos.', 'Bestellung', 'Artikel-Nr.','Artikel','Bemerkung','Menge','Preis','Steuersatz','Sachkonto');
+                $width = array(  '1%','1%',       '1%' ,        '2%',         '2%',         '20%',    '20%',   '1%',   '1%',        '3%',       '1%',       '1%');       
 
-                $findcols = array('vp.id','pd.paketannahme','pd.id','b.belegnr','art.nummer','art.name_de','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id');
+                $findcols = array('vp.id','pd.paketannahme','pd.id','b.belegnr','art.nummer','art.name_de','pd.bemerkung','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
-                $alignright = array(6,7,8,9);                
+                $alignright = array(8,9,10);                
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;     
 
                 if (empty($freigabe)) {                                                 
                     $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?module=verbindlichkeit&action=editpos&id=$id&posid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=verbindlichkeit&action=deletepos&id=$id&posid=%value%\");>"."<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>"."</td></tr></table>";
-                } if (empty($rechnungsfreigabe)) {
-$menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?module=verbindlichkeit&action=editpos&id=$id&posid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>"."</td></tr></table>";
+                } else if (empty($rechnungsfreigabe)) {
+                    $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?module=verbindlichkeit&action=editpos&id=$id&posid=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>"."</td></tr></table>";
                 }
                 else {
                     $deletepos = array('');
@@ -412,6 +413,7 @@ $menu="<table cellpadding=0 cellspacing=0><tr><td nowrap>"."<a href=\"index.php?
                         b.belegnr,
                         art.nummer,
                         art.name_de,
+                        pd.bemerkung,
                         vp.menge,
                         vp.preis,
                         vp.steuersatz,
