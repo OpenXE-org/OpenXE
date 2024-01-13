@@ -799,6 +799,25 @@ class Verbindlichkeit {
                 }    
 
             break;
+            case 'positionen_kontorahmen_setzen':                                
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
+                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
+                    break;
+                }
+                // Process multi action
+                $ids = $this->app->Secure->GetPOST('auswahl');
+                if (!is_array($ids)) {
+                    break;
+                }
+
+                $positionen_sachkonto = $this->app->Secure->GetPOST('positionen_sachkonto');
+                $positionen_kontorahmen = $this->app->erp->ReplaceKontorahmen(true,$positionen_sachkonto,false);
+
+                foreach ($ids as $posid) {                    
+                    $sql = "UPDATE verbindlichkeit_position SET kontorahmen = '".$positionen_kontorahmen."'";                       
+                    $this->app->DB->Update($sql);
+                }    
+            break;
         }
 
     

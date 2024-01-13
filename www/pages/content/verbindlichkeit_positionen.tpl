@@ -61,6 +61,12 @@
                             <tr [POSITIONHINZUFUEGENHIDDEN]>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_entfernen" class="ui-button-icon" style="width:100%;">Entfernen</button></td>
                             </tr>
+                            <tr [POSITIONHINZUFUEGENHIDDEN]>
+                                <td><input type="text" name="positionen_sachkonto" id="positionen_sachkonto" value="" size="20"></td>
+                            </tr>
+                            <tr [POSITIONHINZUFUEGENHIDDEN]>
+                                <td><button [SAVEDISABLED] name="submit" value="positionen_kontorahmen_setzen" class="ui-button-icon" style="width:100%;">Sachkonto setzen</button></td>
+                            </tr>
                         </table>
                     </fieldset>
                 </div>
