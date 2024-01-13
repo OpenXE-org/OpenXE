@@ -34839,7 +34839,7 @@ function Firmendaten($field,$projekt="")
           $projekt = $orderRow['projekt'];
           $differenztage = $this->Projektdaten($projekt,'differenz_auslieferung_tage');
           if($differenztage<0 || empty($differenztage)) {
-            $differenztage=2;
+            $differenztage=0;
           }
           $lieferdatum = $orderRow['lieferdatum'];
           $land = $orderRow['land'];
