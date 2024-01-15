@@ -306,6 +306,16 @@ class Wareneingang {
                 ";
                               
                 $where = "geloescht <> 1";
+
+                $multifilter = $this->app->YUI->TableSearchFilter($name, 8,'multifilter');
+                if (!empty($multifilter)) {
+                    $multifilter_array = explode(' ',$multifilter);
+                    $where .= " AND (1=0";
+                    foreach($multifilter_array as $keyword) {
+                        $where .= " OR name_de LIKE '%".$keyword."%'";
+                    }
+                    $where .= ")";
+                }
                 $count = "";
          
             break;

@@ -98,6 +98,16 @@
 									[ISNOTLIEFERANTSTART]
                                     <tr [HINZUFUEGENHIDDEN]>
 										<td>
+                                            {|Multifilter|}:
+                                        </td>
+                                    </tr>
+                                    <tr [HINZUFUEGENHIDDEN]>
+										<td>
+                                            <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">
+										</td>
+									</tr>   
+                                    <tr [HINZUFUEGENHIDDEN]>
+										<td>
 											<button name="submit" class="ui-button-icon" style="width:100%;" value="manuell_hinzufuegen">{|Hinzuf&uuml;gen|}</button>
 										</td>
 									</tr>   
@@ -170,6 +180,16 @@
 							    <button name="submit" class="ui-button-icon" style="width:100%;" value="speichern" hidden="true"></button>
 							    <table width="100%" border="0" class="mkTableFormular">
 								    <legend>{|Aktionen|}</legend>
+                                    <tr [HINZUFUEGENHIDDEN]>
+										<td>
+                                            {|Multifilter|}:
+                                        </td>
+                                    </tr>
+                                    <tr [HINZUFUEGENHIDDEN]>
+										<td>
+                                            <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">
+										</td>
+									</tr>   
 								    <tr [HINZUFUEGENHIDDEN]>
 									    <td>
 										    <button name="submit" class="ui-button-icon" style="width:100%;" value="manuell_hinzufuegen">{|Hinzuf&uuml;gen|}</button>
