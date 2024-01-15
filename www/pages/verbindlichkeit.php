@@ -814,7 +814,7 @@ class Verbindlichkeit {
                 $positionen_kontorahmen = $this->app->erp->ReplaceKontorahmen(true,$positionen_sachkonto,false);
 
                 foreach ($ids as $posid) {                    
-                    $sql = "UPDATE verbindlichkeit_position SET kontorahmen = '".$positionen_kontorahmen."'";                       
+                    $sql = "UPDATE verbindlichkeit_position SET kontorahmen = '".$positionen_kontorahmen."' WHERE id =".$posid;                       
                     $this->app->DB->Update($sql);
                 }    
             break;
