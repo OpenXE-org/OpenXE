@@ -124,8 +124,7 @@ class Wareneingang {
                         bp.menge-bp.geliefert-COALESCE((SELECT TRIM(SUM(menge))+0 FROM paketdistribution WHERE vorlaeufig = 1 AND bestellung_position = bp.id),0),
                         0
                     )
-                ";
-                
+                ";               
 
                 $input_for_menge = "CONCAT(
                         '<input type = \"number\" min=\"0\"',
@@ -166,7 +165,7 @@ class Wareneingang {
                                    IF(b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL, CONCAT('<br>AB Nummer Lieferant: ',b.bestellungbestaetigtabnummer), ''),
                                    IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
                                    )",
-                        "if(bp.lieferdatum,bp.lieferdatum,'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"), 'bp.id');
+                        "if(bp.lieferdatum,bp.lieferdatum,'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"), 'bp.id','bp.id');
                     $searchsql = array('bp.bestellnummer', 'art.nummer', 'b.belegnr', "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant, '<i style=color:#999>',
                                    IF(b.internebemerkung != '' AND b.internebemerkung IS NOT NULL, CONCAT('<br>Interne Bemerkung: ',b.internebemerkung),''),
                                    IF(b.internebezeichnung != '' AND b.internebezeichnung IS NOT NULL, CONCAT('<br>Interne Bezeichnung: ',b.internebezeichnung), ''),
@@ -257,6 +256,60 @@ class Wareneingang {
                 $moreinfo = false;
                 $this->app->erp->RunHook('warneingang_tablesearch_wareneingang_lieferant', 4, $id, $sql, $where, $count);
                 break;
+            
+            case 'wareneingang_manuell':
+                $allowed['paketdistribution_list'] = array('list');
+         
+                $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Bemerkung','');
+                $width = array(  '5%',          '30%',          '5%',    '15%',      '1%');
+
+                $findcols = array('nummer','name_de','id','id');
+                $searchsql = array('');
+
+                $alignright = array('5');
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+                
+                $auswahl = array (
+                    '<input type=\"text\" name=\"manuell_artikel_ids[]\" value=\"',                   
+                    ['sql' => 'a.id'],
+                    '" hidden/>',
+                    ['sql' => 'a.nummer']
+                );              
+                
+                $input_for_menge = array(
+                    '<input type = \"number\" min=\"0\"',
+                    ' value=\"',                    
+                    '\"',
+                    ' name=\"manuell_mengen[]\"',
+                    ' style=\"text-align:right; width:100%\">',
+                    '</input>'
+                );      
+
+                $input_for_bemerkung = array(
+                    '<input type = \"text\"',                    
+                    ' name=\"manuell_bemerkungen[]\"',
+                    ' style=\"text-align:right; width:100%\">',
+                    '</input>'
+                );      
+
+                $sql = "
+                    SELECT SQL_CALC_FOUND_ROWS                       
+                        id,
+                        ".$this->app->erp->ConcatSQL($auswahl).",
+                        name_de,
+                        ".$this->app->erp->ConcatSQL($input_for_menge).",
+                        ".$this->app->erp->ConcatSQL($input_for_bemerkung)."
+                        ''
+                    FROM
+                        artikel a
+                ";
+                              
+                $where = "geloescht <> 1";
+                $count = "";
+         
+            break;
+
             case 'paketannahme_retoure':
                 $allowed['wareneingang'] = array('distriinhalt');
                 $adresse = $this->app->DB->Select("SELECT adresse FROM paketannahme WHERE id='$id' LIMIT 1");
@@ -977,17 +1030,19 @@ class Wareneingang {
                 $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Menge', 'Bemerkung','Bearbeiter', '','','');
                 $width = array(  '5%',                 '5%',          '5%',         '30%',          '5%',    '15%',       '5%',       '1%','1%','1%');
 
-                $findcols = array('p.nummer', 'p.bestellbezug', 'p.name', 'p.menge', 'p.bemerkung','p.bearbeiter');
+                $findcols = array('p.lieferantnummer','p.nummer', 'p.bestellbezug', 'p.name', 'p.menge', 'p.bemerkung','p.bearbeiter','p.nummer','p.nummer','p.nummer');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array('5');
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-                $icon_nicht_eingelagert = "<img src=\"./themes/new/images/nicht_eingelagert.png\" title=\"nicht eingebucht\" style=\"margin-right:1px\" border=\"0\">";
-                $icon_eingelagert = "<img src=\"./themes/new/images/eingelagert.png\" title=\"eingebucht\" style=\"margin-right:1px\" border=\"0\">";
-                $icon_kein_lagerplatz = "<img src=\"./themes/new/images/lagerplatzstop.png\" title=\"kein Standardlager angegeben\" style=\"margin-right:1px\" border=\"0\">";
-                $icon_lagerplatz = "<img src=\"./themes/new/images/lagerplatzgo.png\" title=\"Lager ok\" style=\"margin-right:1px\" border=\"0\">";               
+                $icon_nicht_eingelagert = "<img src=\"./themes/new/images/nicht_eingelagert.png\" title=\"Position ist nicht eingebucht\" style=\"margin-right:1px\" border=\"0\">";
+                $icon_eingelagert = "<img src=\"./themes/new/images/eingelagert.png\" title=\"Position ist eingebucht\" style=\"margin-right:1px\" border=\"0\">";
+                $icon_kein_lagerplatz = "<img src=\"./themes/new/images/lagerplatzstop.png\" title=\"Der Artikel hat kein Standardlager\" style=\"margin-right:1px\" border=\"0\">";
+                $icon_lagerplatz = "<img src=\"./themes/new/images/lagerplatzgo.png\" title=\"Standardlager ok\" style=\"margin-right:1px\" border=\"0\">";
+                $icon_lagerplatz_eingelagert = "<img src=\"./themes/new/images/lagerplatzgo.png\" title=\"Eingelagert\" style=\"margin-right:1px\" border=\"0\">";
+                $icon_kein_lagerartikel = "<img src=\"./themes/new/images/lagerplatz_grau.png\" title=\"Kein Lagerartikel\" style=\"margin-right:1px\" border=\"0\">";                              
               
                 $deletelink = array(
                     "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=deletepos&id=",
@@ -1024,13 +1079,22 @@ class Wareneingang {
                                             paketdistribution.vorlaeufig,
                                             CONCAT(
                                                 '$icon_nicht_eingelagert',
-                                                if (
-                                                    artikel.lager_platz = 0,
-                                                    '$icon_kein_lagerplatz',
-                                                    '$icon_lagerplatz'
+                                                if (artikel.lagerartikel,
+                                                    if (
+                                                        artikel.lager_platz = 0,
+                                                        '$icon_kein_lagerplatz',
+                                                        '$icon_lagerplatz'
+                                                    ),   
+                                                    '$icon_kein_lagerartikel'
                                                 )
                                             ),
-                                            '$icon_eingelagert'
+                                            CONCAT(                                                
+                                                '$icon_eingelagert',                                                
+                                                if (artikel.lagerartikel,
+                                                    '$icon_lagerplatz_eingelagert',
+                                                    '$icon_kein_lagerartikel'
+                                                )
+                                            )
                                         ),                                        
                                         '</td></tr></table>' 
                                     )
@@ -1115,9 +1179,38 @@ class Wareneingang {
 
                 $where = "1";
 
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn1( 0 ); } );");                
+
+                for ($r = 1;$r <= 1;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                } else {
+                   $where .= " AND paketannahme.status <> 'abgeschlossen'";                 
+                }
+
+                // END Toggle filters
+
                 $count = "SELECT count(paketannahme.id) FROM paketannahme 
                     INNER JOIN adresse 
-                    ON paketannahme.adresse = adresse.id";
+                    ON paketannahme.adresse = adresse.id WHERE ".$where;
                 $groupby = "GROUP BY paketannahme.id";
 
                 $moreinfo = true; // Allow drop down details
@@ -1969,36 +2062,91 @@ class Wareneingang {
                     }
                 }
                 break;
+            case 'manuell_hinzufuegen':
+
+                $manuell_artikel_ids = $this->app->Secure->GetPOST('manuell_artikel_ids');
+                $manuell_mengen = $this->app->Secure->GetPOST('manuell_mengen');
+                $manuell_bemerkungen = $this->app->Secure->GetPOST('manuell_bemerkungen');
+              
+                foreach ($manuell_artikel_ids as $key => $artikel) {
+                    $menge = $manuell_mengen[$key];
+                    $bemerkung = $manuell_bemerkungen[$key];
+                    if ($menge <= 0) {
+                        continue;
+                    }
+
+                    $sql = "INSERT INTO paketdistribution(
+                                id,
+                                bearbeiter,
+                                zeit,
+                                paketannahme,
+                                adresse,
+                                artikel,
+                                menge,
+                                vpe,
+                                etiketten,
+                                bemerkung,
+                                bestellung_position,
+                                vorlaeufig
+                            )
+                            VALUES(
+                                '',
+                                '" . $this->app->User->GetName() . "',
+                                NOW(), 
+                                '$id', 
+                                '', 
+                                '$artikel', 
+                                '$menge', 
+                                '1', 
+                                '', 
+                                '".$this->app->DB->real_escape_string($bemerkung)."', 
+                                '',
+                                1
+                            )";
+                    $this->app->DB->Insert($sql);                       
+                }
+                break;
             case 'vorlaeufige_buchen':            
             	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form? 
                 $sql = "SELECT * FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
                 $positionen = $this->app->DB->SelectArr($sql);               
                 foreach ($positionen as $position) {
                     $bemerkung = "";                    
+                    $artikel = $position['artikel'];
                     $menge = $position['menge'];
                     $bestellposition = $position['bestellung_position'];                   
                     if ($menge > 0) {
-                        // Gather info bestellung
-                        $bparr = $this->app->DB->SelectRow("
-                            SELECT 
-                                * 
-                            FROM 
-                                bestellung 
-                            INNER JOIN 
-                                bestellung_position ON bestellung_position.bestellung = bestellung.id
-                            INNER JOIN 
-                                artikel ON bestellung_position.artikel = artikel.id 
-                            WHERE 
-                                bestellung_position.id='$bestellposition' 
-                            LIMIT 1
-                        ");
-                        $artikel = $bparr['artikel'];                            
-                        $artikel_nr = $bparr['nummer'];
-                        $projekt = $bparr['projekt'];
-                        $bestellung_belegnr = $bparr['belegnr'];
-                        $vpe = $bparr['vpe'];
-                        $menge_bestellung = $bparr['menge'];
-                        if ($bparr['lagerartikel']) {
+
+                        if (!empty($bestellposition)) {
+                            // Gather info bestellung
+                            $bparr = $this->app->DB->SelectRow("
+                                SELECT 
+                                    * 
+                                FROM 
+                                    bestellung 
+                                INNER JOIN 
+                                    bestellung_position ON bestellung_position.bestellung = bestellung.id
+                                INNER JOIN 
+                                    artikel ON bestellung_position.artikel = artikel.id 
+                                WHERE 
+                                    bestellung_position.id='$bestellposition' 
+                                LIMIT 1
+                            ");                            
+                            $artikel = $bparr['artikel'];                            
+                            $artikel_nr = $bparr['nummer'];
+                            $projekt = $bparr['projekt'];
+                            $bestellung_belegnr = $bparr['belegnr'];
+                            $vpe = $bparr['vpe'];
+                            $menge_bestellung = $bparr['menge'];
+                            $lagerartikel = $bparr['lagerartikel'];
+                            $info_bestellung = ", Bestellung $bestellung_belegnr";
+                        } else {
+                            $artikelarr = $this->app->DB->SelectRow("SELECT nummer, lagerartikel FROM artikel WHERE id =".$position['artikel']);
+                            $lagerartikel = $artikelarr['lagerartikel'];
+                            $artikel_nr = $artikelarr['nummer'];
+                        }
+                        
+                        if ($lagerartikel) {
                             // Get Lager_platz
                             if (empty($ziellager_from_form)) {
                                 $lager = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='" . $artikel . "' LIMIT 1");
@@ -2012,10 +2160,13 @@ class Wareneingang {
                             }
 
                             // Put stock
-                            $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id, Bestellung $bestellung_belegnr", '', $id);
+                            $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id".$info_bestellung, '', $id);
                             $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
-                            $bemerkung = $lagerplatz_name;
-                        } 
+                            $bemerkung = trim($position['bemerkung']." ".$lagerplatz_name);
+                        } else {
+                            $bemerkung = $position['bemerkung'];
+                        }
+
                         // Increase bestellung_position geliefert_menge
                         $geliefert = $this->app->DB->Select("SELECT ifnull(geliefert,0) FROM bestellung_position WHERE id='$bestellposition' LIMIT 1");                    
                         $geliefert += $menge;
@@ -2167,12 +2318,17 @@ class Wareneingang {
             //$this->app->Tpl->Set('TAB1TEXT', 'Bestellungen');
             //$this->app->Tpl->Set('TAB1START','<div id=\"tabs-1\">');
             //$this->app->Tpl->Set('TAB1ENDE','</div>');
-
+            $this->app->Tpl->Set('ISNOTLIEFERANTSTART', '<!--');
+            $this->app->Tpl->Set('ISNOTLIEFERANTENDE', '-->');       
+            $this->app->Tpl->Set('TAB1TEXT', 'Artikel aus Bestellungen');
+            $this->app->Tpl->Set('TAB2TEXT', 'Artikel manuell');                        
             $this->app->Tpl->Add('TAB1', "<legend>Offene Artikel aus Bestellungen bei $name:</legend>");
             $this->app->YUI->TableSearch('TAB1', 'wareneingang_lieferant', 'show', '', '', basename(__FILE__), __CLASS__);
+            $this->app->YUI->TableSearch('TAB2', 'wareneingang_manuell', "show", "", "", basename(__FILE__), __CLASS__);
         } else {
             $this->app->Tpl->Set('ISLIEFERANTSTART', '<!--');
-            $this->app->Tpl->Set('ISLIEFERANTENDE', '-->');
+            $this->app->Tpl->Set('ISLIEFERANTENDE', '-->');       
+            $this->app->YUI->TableSearch('TAB1', 'wareneingang_manuell', "show", "", "", basename(__FILE__), __CLASS__);
 /*            $this->app->Tpl->Set('TAB1START', '');
             $this->app->Tpl->Set('TAB1ENDE', '');*/
             // $this->app->Tpl->Set('BEFORETAB1', '<!--');
