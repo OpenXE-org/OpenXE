@@ -126,19 +126,30 @@ class Wareneingang {
                     )
                 ";               
 
-                $input_for_menge = "CONCAT(
-                        '<input type = \"number\" min=\"0\"',
-                        ' value=\"',
-                        $vorschlag,
-                        '\"',
-                        ' name=\"menge_',
-                        bp.id,
-                        '\" value=\"',
-                        '\" style=\"text-align:right; width:100%\">',
-                        '</input>'
-                        )";               
+                $auswahl = array (
+                    '<input type=\"text\" name=\"bestellposition_ids[]\" value=\"',                   
+                    ['sql' => 'bp.id'],
+                    '" hidden/>',
+                    ['sql' => 'bp.bestellnummer']
+                );              
+                
+                $input_for_menge = array(
+                    '<input type = \"number\" min=\"0\"',
+                    ' value=\"',                    
+                    '\"',
+                    ' name=\"mengen[]\"',
+                    ' style=\"text-align:right; width:100%\">',
+                    '</input>'
+                );      
 
-                if ($wareneingangauftragzubestellung) {            
+                $input_for_bemerkung = array(
+                    '<input type = \"text\"',                    
+                    ' name=\"bemerkungen[]\"',
+                    ' style=\"text-align:right; width:100%\">',
+                    '</input>'
+                );                    
+
+              /*  if ($wareneingangauftragzubestellung) {            
                     $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Auftrag', 'Menge', 'Eingabe', '');
                     $width = array('5%', '5%', '5%', '30%', '5%', '5%', '5%', '5%', '5%', '5%', '5%', '5%', '5%');
                     $findcols = array('bp.bestellnummer', 'art.nummer', 'b.belegnr',
@@ -155,23 +166,147 @@ class Wareneingang {
                                    IF(b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL, CONCAT('<br>AB Nummer Lieferant: ',b.bestellungbestaetigtabnummer), ''),
                                    IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
                                    )", "if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', "if((SELECT COUNT(auf2.id) FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ) > 0,(SELECT auf2.belegnr FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ORDER BY belegnr LIMIT 1),'-' )");
-                } else {
-                    $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Eingabe', 'Aktion');
-                    $width = array('5%', '5%', '5%', '30%', '5%', '5%', '5%', '5%', '5%', '5%', '5%');
-                    $findcols = array('bp.bestellnummer', 'art.nummer', 'b.belegnr',
-                        "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant, 
-                                   IF(b.internebemerkung != '' AND b.internebemerkung IS NOT NULL, CONCAT('<br>Interne Bemerkung: ',b.internebemerkung),''),
-                                   IF(b.internebezeichnung != '' AND b.internebezeichnung IS NOT NULL, CONCAT('<br>Interne Bezeichnung: ',b.internebezeichnung), ''),
-                                   IF(b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL, CONCAT('<br>AB Nummer Lieferant: ',b.bestellungbestaetigtabnummer), ''),
-                                   IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
-                                   )",
-                        "if(bp.lieferdatum,bp.lieferdatum,'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"), 'bp.id','bp.id');
-                    $searchsql = array('bp.bestellnummer', 'art.nummer', 'b.belegnr', "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant, '<i style=color:#999>',
-                                   IF(b.internebemerkung != '' AND b.internebemerkung IS NOT NULL, CONCAT('<br>Interne Bemerkung: ',b.internebemerkung),''),
-                                   IF(b.internebezeichnung != '' AND b.internebezeichnung IS NOT NULL, CONCAT('<br>Interne Bezeichnung: ',b.internebezeichnung), ''),
-                                   IF(b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL, CONCAT('<br>AB Nummer Lieferant: ',b.bestellungbestaetigtabnummer), ''),
-                                   IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
-                                   ,'</i>')", "if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"), 'art.ean', 'art.herstellernummer');
+                } else */ {
+                    $heading = array('Lieferant-Art.-Nr.',
+                        'Art.-Nummer',
+                        'Bestellung',
+                        'Beschreibung',
+                        'Lieferdatum',
+                        'Projekt',
+                        'Menge',
+                        'Geliefert',
+                        'Offen',
+                        'Eingabe',
+                        'Bemerkung',
+                        ''
+                    );
+                    $width = array(
+                        '1%',
+                        '1%',
+                        '1%',
+                        '25%',
+                        '1%',
+                        '1%',
+                        '1%',
+                        '1%',
+                        '1%',
+                        '1%',
+                        '10%',
+                        '1%'
+                    );
+                    $findcols = array(
+                        'bp.bestellnummer',
+                        'art.nummer',
+                        'b.belegnr',
+                        "CONCAT(
+                            art.name_de,
+                            '<br>Bei Lieferant: ',
+                            bp.bezeichnunglieferant,
+                            IF(
+                                b.internebemerkung != '' AND b.internebemerkung IS NOT NULL,
+                                CONCAT(
+                                    '<br>Interne Bemerkung: ',
+                                    b.internebemerkung
+                                ),
+                                ''
+                            ),
+                            IF(
+                                b.internebezeichnung != '' AND b.internebezeichnung IS NOT NULL,
+                                CONCAT(
+                                    '<br>Interne Bezeichnung: ',
+                                    b.internebezeichnung
+                                ),
+                                ''
+                            ),
+                            IF(
+                                b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL,
+                                CONCAT(
+                                    '<br>AB Nummer Lieferant: ',
+                                    b.bestellungbestaetigtabnummer
+                                ),
+                                ''
+                            ),
+                            IF(
+                                b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00',
+                                CONCAT(
+                                    '<br>Best. Lieferdatum: ',
+                                    DATE_FORMAT(
+                                        b.bestaetigteslieferdatum,
+                                        '%d.%m.%Y'
+                                    )
+                                ),
+                                ''
+                            )
+                        )",
+                        "if(
+                            bp.lieferdatum,
+                            bp.lieferdatum,
+                            'sofort'
+                        )", 'p.abkuerzung',
+                        'bp.menge',
+                        'bp.geliefert',
+                        $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"),
+                        'bp.id',
+                        'bp.id',
+                        'bp.id'
+                    );
+                    $searchsql = array('bp.bestellnummer',
+                        'art.nummer',
+                        'b.belegnr',
+                        "CONCAT(
+                            art.name_de,
+                            '<br>Bei Lieferant: ',
+                            bp.bezeichnunglieferant,
+                            '<i style=color:#999>',
+                            IF(
+                                b.internebemerkung != '' AND b.internebemerkung IS NOT NULL,
+                                CONCAT(
+                                    '<br>Interne Bemerkung: ',
+                                    b.internebemerkung
+                                ),
+                                ''
+                            ),
+                            IF(
+                                b.internebezeichnung != '' AND b.internebezeichnung IS NOT NULL,
+                                CONCAT(
+                                    '<br>Interne Bezeichnung: ',
+                                    b.internebezeichnung
+                                ),
+                                ''
+                            ),
+                            IF(
+                                b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL,
+                                CONCAT(
+                                    '<br>AB Nummer Lieferant: ',
+                                    b.bestellungbestaetigtabnummer
+                                ),
+                                ''
+                            ),
+                            IF(
+                                b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00',
+                                CONCAT(
+                                    '<br>Best. Lieferdatum: ',
+                                    DATE_FORMAT(
+                                        b.bestaetigteslieferdatum,
+                                        '%d.%m.%Y'
+                                    )
+                                ),
+                                ''
+                            ),
+                            '</i>'
+                        )",
+                        "IF(
+                            bp.lieferdatum,
+                            DATE_FORMAT(bp.lieferdatum, '%d.%m.%Y'),
+                            'sofort'
+                        )",
+                        'p.abkuerzung',
+                        'bp.menge',
+                        'bp.geliefert',
+                        $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"),
+                        'art.ean',
+                        'art.herstellernummer'
+                    );
                 }
 
                 $alignright = array(7, 8, 9);
@@ -216,19 +351,29 @@ class Wareneingang {
                                    )";
                 }
                 // SQL statement
-                $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',art.id,'\" tabindex=\"-1\">',art.nummer,'</a>'), b.belegnr as `Bestellung`, 
-                $colBeschreibung as beschreibung,
-                if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum, p.abkuerzung as projekt, 
-                " . $this->app->erp->FormatMenge('bp.menge') . ", " . $this->app->erp->FormatMenge('bp.geliefert') . ", 
-                " . $this->app->erp->FormatMenge('bp.menge -  bp.geliefert') . " as offen, 
-                ".$input_for_menge.",
-                bp.id 
-                FROM bestellung_position bp
-                INNER JOIN bestellung b ON bp.bestellung=b.id
-                $rdJoin
-                INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel 
-                LEFT JOIN projekt p ON b.projekt=p.id";
-                if ($wareneingangauftragzubestellung) {
+                $sql = "
+                    SELECT SQL_CALC_FOUND_ROWS 
+                        bp.id,
+                        ".$this->app->erp->ConcatSQL($auswahl).",
+                        CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',art.id,'\" tabindex=\"-1\">',art.nummer,'</a>'),
+                        b.belegnr as `Bestellung`, 
+                        $colBeschreibung as beschreibung,
+                        if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum,
+                        p.abkuerzung as projekt, 
+                        ".$this->app->erp->FormatMenge('bp.menge').",
+                        ".$this->app->erp->FormatMenge('bp.geliefert').", 
+                        ".$this->app->erp->FormatMenge('bp.menge-bp.geliefert')." as offen, 
+                        ".$this->app->erp->ConcatSQL($input_for_menge).",
+                        ".$this->app->erp->ConcatSQL($input_for_bemerkung).",
+                        bp.id 
+                    FROM bestellung_position bp
+                    INNER JOIN bestellung b ON bp.bestellung=b.id
+                    $rdJoin
+                    INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel 
+                    LEFT JOIN projekt p ON b.projekt=p.id
+                ";
+
+   /*             if ($wareneingangauftragzubestellung) {
                     $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, art.nummer, b.belegnr as `Bestellung`, 
                   $colBeschreibung as beschreibung,                                      
                   if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum, p.abkuerzung as projekt, 
@@ -241,7 +386,7 @@ class Wareneingang {
                   $rdJoin
                   INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel 
                   LEFT JOIN projekt p ON b.projekt=p.id ";
-                }
+                }*/
 
                 $where = " 
                     b.adresse='$adresse' AND
@@ -2007,68 +2152,72 @@ class Wareneingang {
 
                 break;
             case 'hinzufuegen':
-                $menge_input = $this->app->Secure->GetPOSTArray();
-                $mengen = array();
-                
+
+                $bestellposition_ids = $this->app->Secure->GetPOST('bestellposition_ids');
+                $mengen = $this->app->Secure->GetPOST('mengen');
+                $bemerkungen = $this->app->Secure->GetPOST('bemerkungen');             
+               
                 $msg = "";
 
-                foreach ($menge_input as $key => $menge) {
-                    if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
-                        $bestellposition = substr($key,'6');                            
+                foreach ($bestellposition_ids as $key => $bestellposition) {
+                    $menge = $mengen[$key];
+                    $bemerkung = $bemerkungen[$key];
 
-                        if ($menge > 0) { 
-                            // Gather info bestellung
-                            $bparr = $this->app->DB->SelectRow("SELECT bp.artikel, a.nummer, b.projekt, b.belegnr, bp.vpe, bp.menge FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE bp.id='$bestellposition' LIMIT 1");
-                            $artikel = $bparr['artikel'];                            
-                            $artikel_nr = $bparr['nummer'];
-                            $projekt = $bparr['projekt'];
-                            $bestellung_belegnr = $bparr['belegnr'];
-                            $vpe = $bparr['vpe'];
-                            $menge_bestellung = $bparr['menge'];
-                           
-                            // Check existing preliminary value
-                            $sql = "SELECT id, menge FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1 LIMIT 1";
-                            $preliminary = $this->app->DB->SelectRow($sql);
+                    if ($menge <= 0) {
+                        continue;
+                    }
 
-                            if (empty($preliminary)) {
-                                $sql = "INSERT INTO paketdistribution(
-                                            id,
-                                            bearbeiter,
-                                            zeit,
-                                            paketannahme,
-                                            adresse,
-                                            artikel,
-                                            menge,
-                                            vpe,
-                                            etiketten,
-                                            bemerkung,
-                                            bestellung_position,
-                                            vorlaeufig
-                                        )
-                                        VALUES(
-                                            '',
-                                            '" . $this->app->User->GetName() . "',
-                                            NOW(), 
-                                            '$id', 
-                                            '', 
-                                            '$artikel', 
-                                            '$menge', 
-                                            '$vpe', 
-                                            '', 
-                                            '', 
-                                            '$bestellposition',
-                                            1
-                                        )";
-                                $this->app->DB->Insert($sql);                            
-                            } else {
-                                $menge = $menge + $preliminary['menge'];
-                                if ($menge > $bparr['menge']-$bparr['geliefert']) {
-                                    $menge = $bparr['menge']-$bparr['geliefert'];
-                                }                           
-                                $sql = "UPDATE paketdistribution SET menge = ".$menge." WHERE id = ".$preliminary['id'];
-                                $this->app->DB->Insert($sql);          
-                            }
-                        }
+                    // Gather info bestellung
+                    $bparr = $this->app->DB->SelectRow("SELECT bp.artikel, a.nummer, b.projekt, b.belegnr, bp.vpe, bp.menge FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE bp.id='$bestellposition' LIMIT 1");
+                    $artikel = $bparr['artikel'];                            
+                    $artikel_nr = $bparr['nummer'];
+                    $projekt = $bparr['projekt'];
+                    $bestellung_belegnr = $bparr['belegnr'];
+                    $vpe = $bparr['vpe'];
+                    $menge_bestellung = $bparr['menge'];
+                   
+                    // Check existing preliminary value
+                    $sql = "SELECT id, menge FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1 LIMIT 1";
+                    $preliminary = $this->app->DB->SelectRow($sql);
+
+                    if (empty($preliminary)) {
+                        $sql = "INSERT INTO paketdistribution(
+                                    id,
+                                    bearbeiter,
+                                    zeit,
+                                    paketannahme,
+                                    adresse,
+                                    artikel,
+                                    menge,
+                                    vpe,
+                                    etiketten,
+                                    bemerkung,
+                                    bestellung_position,
+                                    vorlaeufig
+                                )
+                                VALUES(
+                                    '',
+                                    '" . $this->app->User->GetName() . "',
+                                    NOW(), 
+                                    '$id', 
+                                    '', 
+                                    '$artikel', 
+                                    '$menge', 
+                                    '$vpe', 
+                                    '', 
+                                    '".$this->app->DB->real_escape_string($bemerkung)."', 
+                                    '$bestellposition',
+                                    1
+                                )";
+                        $this->app->DB->Insert($sql);                            
+                    } else {
+                        $menge = $menge + $preliminary['menge'];
+                        if ($menge > $bparr['menge']-$bparr['geliefert']) {
+                            $menge = $bparr['menge']-$bparr['geliefert'];
+                        }                           
+
+                        $sql = "UPDATE paketdistribution SET menge = ".$menge.", bemerkung = '".$this->app->DB->real_escape_string($bemerkung)."' WHERE id = ".$preliminary['id'];
+                        $this->app->DB->Insert($sql);          
                     }
                 }
                 break;

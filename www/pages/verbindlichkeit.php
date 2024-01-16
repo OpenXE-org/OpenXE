@@ -252,7 +252,7 @@ class Verbindlichkeit {
 
                 $preise = array (
                     '<input type="number" name="preise[]" step="0.00001" value="',
-                    ['sql' => $this->app->erp->FormatMenge("COALESCE(bp.preis,0)",2)],
+                    ['sql' => $this->app->erp->FormatMenge("COALESCE(bp.preis,0)",5)],
                     '" min="0"',                    
                     '"/>'
                 );         
