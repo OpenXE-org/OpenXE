@@ -30,8 +30,11 @@
                         <table width="100%" border="0" class="mkTableFormular">
                             <legend>{|Aktionen|}</legend>
                             <tr>
+                                <td><input type="checkbox" id="auswahlallewareneingaenge" onchange="allewareneingaengeauswaehlen();" />{|alle markieren|}</td>
+                            </tr>                          
+                            <tr>
                                 <td><input type="checkbox" name="bruttoeingabe" value="1" />Bruttopreise eingeben</td>
-                            </tr>      
+                            </tr>                                  
                             <tr>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button></td>
                             </tr>
@@ -55,17 +58,17 @@
                     <fieldset>
                         <table width="100%" border="0" class="mkTableFormular">
                             <legend>{|Aktionen|}</legend>
-                            <tr [POSITIONHINZUFUEGENHIDDEN]>
-                                <td><input type="checkbox" id="auswahlalle" onchange="alleauswaehlen();" />&nbsp;{|alle markieren|}</td>
+                            <tr [SACHKONTOCHANGEHIDDEN]>
+                                <td><input type="checkbox" id="auswahlalle" onchange="alleauswaehlen();" />{|alle markieren|}</td>
                             </tr>                          
                             <tr [POSITIONHINZUFUEGENHIDDEN]>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_entfernen" class="ui-button-icon" style="width:100%;">Entfernen</button></td>
                             </tr>
-                            <tr [POSITIONHINZUFUEGENHIDDEN]>
+                            <tr [SACHKONTOCHANGEHIDDEN]>
                                 <td><input type="text" name="positionen_sachkonto" id="positionen_sachkonto" value="" size="20"></td>
                             </tr>
-                            <tr [POSITIONHINZUFUEGENHIDDEN]>
-                                <td><button [SAVEDISABLED] name="submit" value="positionen_kontorahmen_setzen" class="ui-button-icon" style="width:100%;">Sachkonto setzen</button></td>
+                            <tr [SACHKONTOCHANGEHIDDEN]>
+                                <td><button name="submit" value="positionen_kontorahmen_setzen" class="ui-button-icon" style="width:100%;">Sachkonto setzen</button></td>
                             </tr>
                         </table>
                     </fieldset>
@@ -75,6 +78,11 @@
     </div>
 </form>
 <script>
+    function allewareneingaengeauswaehlen()
+    {
+      var wert = $('#auswahlallewareneingaenge').prop('checked');
+      $('#verbindlichkeit_paketdistribution_list').find(':checkbox').prop('checked',wert);
+    }
     function alleauswaehlen()
     {
       var wert = $('#auswahlalle').prop('checked');

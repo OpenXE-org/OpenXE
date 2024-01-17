@@ -217,10 +217,10 @@ class Verbindlichkeit {
                 $bestellnummer = $verbindlichkeit['belegnr'];
                 $rechnung = $verbindlichkeit['rechnung'];
            
-                $heading = array('Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Bemerkung','Menge','Menge offen','Eingabe','Preis','Steuer','Sachkonto','');
-                $width = array(  '1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '20%',       '2%',   '1%',         '1%',     '1%',   '1%',    '1%',       '1%');  
+                $heading = array('',  'Paket-Nr.','Paket-Pos.', 'Bestellung', 'Lieferschein', 'Rechnung', 'Artikel-Nr.','Artikel','Bemerkung','Menge','Menge offen','Eingabe','Preis','Steuer','Sachkonto','');
+                $width = array(  '1%','1%',        '1%',        '5%',         '5%',           '5%',       '5%',         '20%',    '20%',       '2%',   '1%',         '1%',     '1%',   '1%',    '1%',       '1%');  
 
-                $findcols = array('pa','auswahl','belegnr','lsnr','renr','artikelnummer','name_de','bemerkung','menge','offen_menge','offen_menge','preis','steuer','sachkonto','pa');
+                $findcols = array('id','pa','id','belegnr','lsnr','renr','artikelnummer','name_de','bemerkung','menge','offen_menge','offen_menge','preis','steuer','sachkonto','pa');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array(9,10);
@@ -235,10 +235,9 @@ class Verbindlichkeit {
                         ))+0";
 
                 $auswahl = array (
-                    '<input type=\"text\" name=\"ids[]\" value=\"',                   
+                    '<input type=\"checkbox\" name=\"ids[]\" value=\"',                   
                     ['sql' => 'pd.id'],
-                    '" hidden/>',
-                    ['sql' => 'pd.id']
+                    '"/>'
                 );              
 
                 $werte = array (
@@ -272,7 +271,7 @@ class Verbindlichkeit {
                     ['sql' => 'pa.id'],
                     '</a>'
                 );
-        
+                      
                 $where = "offen_menge > 0";
 
                 // Toggle filters
@@ -298,19 +297,18 @@ class Verbindlichkeit {
 
                 $more_data1 = $this->app->Secure->GetGET("more_data1");
                 if ($more_data1 == 1) {
-                    $innerwhere .= " AND (b.belegnr LIKE '%".$bestellnummer."%' OR pa.renr LIKE '%".$rechnung."%')";
+                    $innerwhere .= " AND ((b.belegnr LIKE '%".$bestellnummer."%' AND '".$bestellnummer."' <> '') OR (pa.renr LIKE '%".$rechnung."%' AND pa.renr <> ''))";
                 } else {
                 }               
-                // END Toggle filters
-
-                
+                // END Toggle filters              
 
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS * FROM (
                         SELECT 
                             pa.id pa_id,
-                            ".$this->app->erp->ConcatSQL($paketlink)." pa,
                             ".$this->app->erp->ConcatSQL($auswahl)." AS auswahl,
+                            ".$this->app->erp->ConcatSQL($paketlink)." pa,
+                            pd.id,
                             if(b.belegnr LIKE '%".$bestellnummer."%',CONCAT('<b>',b.belegnr,'</b>'),b.belegnr) AS belegnr,
                             pa.lsnr,
                             if(pa.renr LIKE '%".$rechnung."%',CONCAT('<b>',pa.renr,'</b>'),pa.renr) AS renr,
@@ -801,7 +799,7 @@ class Verbindlichkeit {
             break;
             case 'positionen_kontorahmen_setzen':                                
                 $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];
-                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
+                if ($freigabe['rechnungsfreigabe']) {
                     break;
                 }
                 // Process multi action
@@ -986,6 +984,7 @@ class Verbindlichkeit {
         if ($verbindlichkeit_from_db['rechnungsfreigabe']) {
             $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden');
             $this->app->Tpl->Set('RUECKSETZENEINKAUFHIDDEN','hidden');
+            $this->app->Tpl->Set('SACHKONTOCHANGEHIDDEN','hidden'); 
         } else {
             $this->app->Tpl->Set('RUECKSETZENBUCHHALTUNGHIDDEN','hidden');
         }                    
@@ -1087,7 +1086,7 @@ class Verbindlichkeit {
         $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM verbindlichkeit WHERE id =".$id)[0];       
         if ($freigabe['rechnungsfreigabe'] && $freigabe['freigabe']) {
             $this->app->Tpl->Set('SAVEDISABLED','disabled');
-            $this->app->Tpl->Set('SACHKONTOSAVEDISABLED','disabled');      
+            $this->app->Tpl->Set('SACHKONTOSAVEDISABLED','disabled');
         } else if ($freigabe['freigabe']) {
             $this->app->Tpl->Set('SAVEDISABLED','disabled');   
             if ($submit != '')

@@ -100,7 +100,7 @@
                                                     </tr>                                                                                                                                              
                                                     <tr>
                                                         <td>
-                                                            {|Zahlbarbis|}:
+                                                            {|Zahlbar bis|}:
                                                         </td>
                                                         <td>
                                                             <input type="text" name="zahlbarbis" id="zahlbarbis" value="[ZAHLBARBIS]" size="20" [SAVEDISABLED]>
@@ -116,7 +116,7 @@
                                                     </tr>
                                                     <tr>
                                                         <td>
-                                                            {|Skontobis|}:
+                                                            {|Skonto bis|}:
                                                         </td>
                                                         <td>
                                                             <input type="text" name="skontobis" id="skontobis" value="[SKONTOBIS]" size="20" [SAVEDISABLED]>
