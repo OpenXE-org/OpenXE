@@ -25,17 +25,17 @@
 				                    <tr [ABGESCHLOSSENHIDDEN]>
 					                    <td></td>
 					                    <td><i>Abgeschlossen am [DATUM_ABGESCHLOSSEN] durch [BEARBEITER_ABGESCHLOSSEN]</i></td>
-				                    </tr>
+				                    </tr>				                 
 				                    <tr>
 					                    <td>{|Lieferschein-Nr.|}:</td>
 					                    <td>
-						                    <input type=text size="40" name="lsnr" value=[LSNR]>
+						                    <input type=text size="40" name="lsnr" value="[LSNR]">
 					                    </td>
 				                    </tr>
 				                    <tr>
 					                    <td>{|Rechnung-Nr.|}:</td>
 					                    <td>
-						                    <input type=text size="40" name="renr" value=[RENR]>
+						                    <input type=text size="40" name="renr" value="[RENR]">
 					                    </td>
 				                    </tr>
                                 </table>
@@ -79,6 +79,20 @@
                 <div class="row-height">
                     <div class="col-xs-12 col-md-10 col-md-height">
                         <div class="inside-white inside-full-height">
+                            <div class="filter-box filter-usersave" style="float:right;">
+                                <div class="filter-block filter-inline">
+                                  <div class="filter-title">{|Filter|}</div>
+                                  <ul class="filter-list">
+                                    <li class="filter-item">
+                                      <label for="ausfuellen" class="switch">
+                                        <input type="checkbox" id="ausfuellen">
+                                        <span class="slider round"></span>
+                                      </label>
+                                      <label for="ausfuellen">{|Aus&uuml;llen|}</label>
+                                    </li>
+                                  </ul>
+                                </div>    
+                            </div>
                             [TAB1]
                         </div>
                     </div>
@@ -182,7 +196,7 @@
 								    <legend>{|Aktionen|}</legend>
                                     <tr [HINZUFUEGENHIDDEN]>
 										<td>
-                                            {|Multifilter|}:
+                                            {|Multifilter|}:&nbsp;<img src="./themes/new/images/tooltip_grau.png" border="0" style="position: relative; left: 1px; top: 3px; z-index: 8;" class="wawitooltipicon" title="Auswahl mehrerer Artikel &uuml;ber Name oder Nummer">
                                         </td>
                                     </tr>
                                     <tr [HINZUFUEGENHIDDEN]>

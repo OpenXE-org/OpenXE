@@ -118,6 +118,35 @@ class Wareneingang {
                 $adresse = $this->app->DB->Select("SELECT adresse FROM paketannahme WHERE id='$id' LIMIT 1");
                 $wareneingangauftragzubestellung = $this->app->erp->Firmendaten('wareneingangauftragzubestellung');
 
+               // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#ausfuellen').click( function() { fnFilterColumn1( 0 ); } );");                
+
+                for ($r = 1;$r <= 1;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                    $ausfuellen = 'trim(bp.menge -  bp.geliefert)+0';
+                } else {            
+                    $ausfuellen = "''";       
+                }
+                // END Toggle filters
+
                 $vorschlag = "
                     if(
                         bp.menge-bp.geliefert-COALESCE((SELECT TRIM(SUM(menge))+0 FROM paketdistribution WHERE vorlaeufig = 1 AND bestellung_position = bp.id),0) > 0,
@@ -125,6 +154,14 @@ class Wareneingang {
                         0
                     )
                 ";               
+
+                $artikel_link = array(
+                   '<a href=\"index.php?module=artikel&action=edit&id=',
+                   ['sql' => 'art.id'],
+                   '\" tabindex=\"-1\">',
+                   ['sql' => 'art.nummer'],
+                   '</a>',
+                );
 
                 $auswahl = array (
                     '<input type=\"text\" name=\"bestellposition_ids[]\" value=\"',                   
@@ -136,6 +173,7 @@ class Wareneingang {
                 $input_for_menge = array(
                     '<input type = \"number\" min=\"0\"',
                     ' value=\"',                    
+                    ['sql' => $ausfuellen],
                     '\"',
                     ' name=\"mengen[]\"',
                     ' style=\"text-align:right; width:100%\">',
@@ -167,10 +205,11 @@ class Wareneingang {
                                    IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
                                    )", "if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', "if((SELECT COUNT(auf2.id) FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ) > 0,(SELECT auf2.belegnr FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ORDER BY belegnr LIMIT 1),'-' )");
                 } else */ {
-                    $heading = array('Lieferant-Art.-Nr.',
+                    $heading = array(                        
                         'Art.-Nummer',
-                        'Bestellung',
                         'Beschreibung',
+                        'Bestellung',
+                        'Lieferant-Art.-Nr.',
                         'Lieferdatum',
                         'Projekt',
                         'Menge',
@@ -182,9 +221,9 @@ class Wareneingang {
                     );
                     $width = array(
                         '1%',
-                        '1%',
-                        '1%',
                         '25%',
+                        '1%',
+                        '1%',
                         '1%',
                         '1%',
                         '1%',
@@ -195,9 +234,7 @@ class Wareneingang {
                         '1%'
                     );
                     $findcols = array(
-                        'bp.bestellnummer',
                         'art.nummer',
-                        'b.belegnr',
                         "CONCAT(
                             art.name_de,
                             '<br>Bei Lieferant: ',
@@ -238,11 +275,14 @@ class Wareneingang {
                                 ''
                             )
                         )",
+                        'b.belegnr',
+                        'bp.bestellnummer',
                         "if(
                             bp.lieferdatum,
                             bp.lieferdatum,
                             'sofort'
-                        )", 'p.abkuerzung',
+                        )", 
+                        'p.abkuerzung',
                         'bp.menge',
                         'bp.geliefert',
                         $this->app->erp->FormatMenge("bp.menge -  bp.geliefert"),
@@ -354,10 +394,10 @@ class Wareneingang {
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS 
                         bp.id,
-                        ".$this->app->erp->ConcatSQL($auswahl).",
-                        CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',art.id,'\" tabindex=\"-1\">',art.nummer,'</a>'),
-                        b.belegnr as `Bestellung`, 
+                        ".$this->app->erp->ConcatSQL($artikel_link).",
                         $colBeschreibung as beschreibung,
+                        b.belegnr as `Bestellung`, 
+                        ".$this->app->erp->ConcatSQL($auswahl).",
                         if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum,
                         p.abkuerzung as projekt, 
                         ".$this->app->erp->FormatMenge('bp.menge').",
@@ -458,6 +498,7 @@ class Wareneingang {
                     $where .= " AND (1=0";
                     foreach($multifilter_array as $keyword) {
                         $where .= " OR name_de LIKE '%".$keyword."%'";
+                        $where .= " OR nummer LIKE '%".$keyword."%'";
                     }
                     $where .= ")";
                 }
@@ -1182,10 +1223,10 @@ class Wareneingang {
                  */
 
 
-                $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Menge', 'Bemerkung','Bearbeiter', '','','');
-                $width = array(  '5%',                 '5%',          '5%',         '30%',          '5%',    '15%',       '5%',       '1%','1%','1%');
+                $heading = array('Pos.', 'Art.-Nummer', 'Beschreibung', 'Bestellung', 'Lieferant-Art.-Nr.', 'Menge','Standardlager', 'Bemerkung','Bearbeiter', '','','');
+                $width = array(  '1%',   '5%',          '30%',          '5%',         '5%',                 '5%',   '5%',            '15%',       '5%',        '1%','1%','1%');
 
-                $findcols = array('p.lieferantnummer','p.nummer', 'p.bestellbezug', 'p.name', 'p.menge', 'p.bemerkung','p.bearbeiter','p.nummer','p.nummer','p.nummer');
+                $findcols = array('p.pos', 'p.artikel', 'p.name', 'p.bestellbezug', 'p.lieferantnummer', 'p.menge', 'lagerplatz_bezeichnung', 'p.bemerkung','p.bearbeiter','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array('5');
@@ -1204,28 +1245,42 @@ class Wareneingang {
                     ['sql' => 'paketannahme'],
                     '&posid=',
                     ['sql' => 'paketdistribution.id'],
-                    "\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>&nbsp;</td></tr></table>"
+                    "\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>&nbsp;</td></tr></table>"            
                 );                                
+                
+                $artikel_link = array(
+                   '<a href=\"index.php?module=artikel&action=edit&id=',
+                   ['sql' => 'artikel.id'],
+                   '\" tabindex=\"-1\">',
+                   ['sql' => 'artikel.nummer'],
+                   '</a>',
+                );
+
               
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
-                            p.nummer,
-                            p.lieferantnummer,
-                            p.nummer,
-                            p.bestellbezug,
+                            p.pos,
+                            p.pos,
+                            p.artikel,
                             p.name,
+                            p.bestellbezug,
+                            p.lieferantnummer,                            
                             p.menge,
+                            p.lagerplatz_bezeichnung,
                             p.bemerkung,
                             p.bearbeiter,
                             p.icon,
-                            p.menu
+                            p.menu,
+                            p.vorlaeufig
                         FROM
                             (
                                 SELECT 
+                                    paketdistribution.id as pos,
                                     bestellung.belegnr as bestellbezug,
                                     bestellung_position.bestellnummer as lieferantnummer,
-                                    artikel.nummer as nummer,
+                                    ".$this->app->erp->ConcatSQL($artikel_link)." as artikel,
                                     artikel.name_de as name,
                                     " . $this->app->erp->FormatMenge("paketdistribution.menge") . " as menge,
+                                    if (paketdistribution.vorlaeufig,lager_platz.kurzbezeichnung,'') AS lagerplatz_bezeichnung,
                                     paketdistribution.bemerkung,
                                     paketdistribution.bearbeiter,
                                     CONCAT(
@@ -1254,9 +1309,11 @@ class Wareneingang {
                                         '</td></tr></table>' 
                                     )
                                     AS icon,
-                                    if (paketdistribution.vorlaeufig,".$this->app->erp->ConcatSQL($deletelink).",'') as menu                                    
+                                    if (paketdistribution.vorlaeufig,".$this->app->erp->ConcatSQL($deletelink).",'') as menu,
+                                    paketdistribution.vorlaeufig                                    
                                 FROM paketdistribution                                 
                                 LEFT JOIN artikel ON artikel.id = paketdistribution.artikel                     
+                                LEFT JOIN lager_platz ON lager_platz.id = artikel.lager_platz
                                 LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
                                 LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
                                 WHERE paketannahme = $id 
@@ -1953,6 +2010,8 @@ class Wareneingang {
 
         $bemerkung = str_replace(array('\r\n', '\r', '\n'), "\n", $bemerkung);
 
+        $this->app->User->SetParameter('table_wareneingang_lieferant_ausfuellen', '');
+
         // Load from DB
         if (($lsnr == '' && $renr == '' && $bemerkung == '') && $id != '') {
             $fields = $this->app->DB->SelectArr(
@@ -1967,13 +2026,14 @@ class Wareneingang {
         } else {
 
             // Save header
-            $this->app->DB->Update(
-                    "UPDATE paketannahme SET 
-          lsnr='" . $lsnr . "',
-          renr='" . $renr . "',
-          bemerkung='" . $bemerkung . "'
-           WHERE id='$id' LIMIT 1");
-
+            $sql = "
+            UPDATE paketannahme SET 
+                lsnr='" . $lsnr . "',
+                renr='" . $renr . "',
+                bemerkung='" . $bemerkung . "'
+                WHERE id='$id' LIMIT 1
+            ";
+            $this->app->DB->Update($sql);               
             $bemerkung = stripslashes($bemerkung);
         }
 
@@ -2444,16 +2504,7 @@ class Wareneingang {
         $datum = $paketannahme['datum'];
         $datum_abgeschlossen = $paketannahme['datum_abgeschlossen'];
         $bearbeiter_abgeschlossen = $paketannahme['bearbeiter_abgeschlossen'];
-
-        $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
-        $vorlaeufige = $this->app->DB->SelectArr($sql);
-        if (!empty($vorlaeufige)) {
-            $this->app->YUI->Message('warning','Nicht eingebuchte Positionen vorhanden');
-            $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
-        } else {
-            $this->app->Tpl->Set('BUCHENHIDDEN','hidden');
-        }
-
+   
         $addressRow = empty($adresse) ? null : $this->app->DB->SelectRow(
                         sprintf(
                                 'SELECT `name`,`kundennummer`,`lieferantennummer` 
@@ -2549,8 +2600,21 @@ class Wareneingang {
                 $this->app->Tpl->Set('ABGESCHLOSSENHIDDEN','hidden');
             }
         } else {
-            $this->app->Tpl->Set('ABGESCHLOSSENHIDDEN','hidden');
+            $this->app->Tpl->Set('ABGESCHLOSSENHIDDEN','hidden');            
         }
+    
+        $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
+        $vorlaeufige = $this->app->DB->SelectArr($sql);
+        if (!empty($vorlaeufige)) {
+            $this->app->YUI->Message('warning','Nicht eingebuchte Positionen vorhanden');
+            $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
+        } else {
+            $this->app->Tpl->Set('BUCHENHIDDEN','hidden');            
+            if ($status != 'abgeschlossen') {
+                $this->app->YUI->Message('warning','Wareneingang noch nicht abgeschlossen');
+            }            
+        }
+
 
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
        
