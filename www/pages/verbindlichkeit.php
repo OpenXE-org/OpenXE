@@ -1232,7 +1232,7 @@ class Verbindlichkeit {
                 header('Content-Disposition: attachment;filename='.md5(microtime(true)).'.pdf');
                 readfile($mergeOutputPath);
                 $this->app->ExitXentral();
-            } catch (\Xentral\Components\Pdf\Exception\PdfComponentExceptionInterface $exception) {
+            } catch (Exception $exception) {
                 // Just the first PDF
                 foreach ($file_attachments as $file_attachment) {
                     if ($this->app->erp->GetDateiEndung($file_attachment) == 'pdf') {
