@@ -109,6 +109,7 @@ class Report
         $this->app->ActionHandler('transfer', 'ReportTransfer');
         $this->app->ActionHandler('share', 'HandleActionShare');
         $this->app->ActionHandler('export', 'ReportExport');
+        $this->app->ActionHandler('databaseview', 'DataBaseView');
 
         $this->app->ActionHandlerListen($app);
         $this->app->erp->Headlines('Berichte');
@@ -526,7 +527,28 @@ class Report
                            IF(c.sum = 1, 'Ja', 'Nein') as `sum`, c.sequence, c.id 
                         FROM `report_column` AS `c`";
                 break;
+                case 'databaseview':
 
+                    $selectedtable = $this->app->User->GetParameter('report_databaseview_selectedtable');
+                
+                    $selectedcolumns = $this->app->User->GetParameter('report_databaseview_selectedcolumns');
+                    
+                    if (!empty($selectedcolumns)) {
+                        $columns = explode(',',$selectedcolumns);
+                    } else {
+                        $sql = "SHOW COLUMNS FROM `".$selectedtable."`";                    
+                        $columns = array_column($this->app->DB->SelectArr($sql),'Field');                    
+                        $columns = array_slice($columns,0,10);
+                    }
+
+                    $heading = $columns;
+                    $findcols = $columns;
+                    $searchsql = $columns;
+                  
+
+                    $sql = "SELECT `".$columns[0]."`, `".implode("`,`",$columns)."` from `".$selectedtable."`";  
+
+                break;
         }
 
         $erg = [];
@@ -3098,7 +3120,7 @@ class Report
             'Zur&uuml;ck zur &Uuml;bersicht'
         );
 
-        if ($action === 'list') {
+        if ($action === 'list' or $action == 'databaseview') {
             $this->app->erp->MenuEintrag('index.php?module=report&action=list', '&Uuml;bersicht');
         } else {
             $this->app->erp->MenuEintrag(
@@ -3118,6 +3140,7 @@ class Report
                 'Übertragung'
             );
         }
+        $this->app->erp->MenuEintrag('index.php?module=report&action=databaseview', 'Datenbankansicht');
     }
 
     /**
@@ -3187,4 +3210,61 @@ class Report
             }
         }
     }
+
+    function DataBaseView() {
+        $this->createMenu();
+        $this->template->Set('KURZUEBERSCHRIFT', 'Datenbank');
+
+        $sql = "SHOW TABLES";
+        $tables = $this->app->DB->SelectArr($sql);
+        $table_easytable = new EasyTable($this->app);
+        $table_easytable->headings = array('Tabelle');
+        foreach ($tables as $table) {
+            $table = reset($table);
+            $row = array(
+                '<a href="index.php?module=report&action=databaseview&table='.$table.'#tabs-2">'.$table.'</a>'
+            );
+            $table_easytable->AddRow($row);
+        }        
+        $table_easytable->DisplayNew('TAB1');
+
+        $selectedtable = $this->app->Secure->GetGet('table');
+        if (!empty($selectedtable)) {
+
+            $this->app->User->SetParameter('report_databaseview_selectedtable',$selectedtable);
+            $selectedcolumns = $this->app->Secure->GetPost('auswahl');
+
+            $sql = "SHOW COLUMNS FROM `".$selectedtable."`";
+            $columns = $this->app->DB->SelectArr($sql);
+            $column_easytable = new EasyTable($this->app);
+            $column_easytable->headings = array_merge(['Auswahl'],array_keys(reset($columns)));
+            foreach ($columns as $column) {
+                $checked = '';
+                if (!empty($selectedcolumns)) {
+                    if (in_array($column['Field'],$selectedcolumns)) {
+                        $checked = 'checked';                        
+                    }
+                }
+
+                $row = array();
+                $row[] = '<input type="checkbox" name="auswahl[]" '.$checked.' value="'.$column['Field'].'">';                
+                $row = array_merge($row,$column);
+                $column_easytable->AddRow($row);
+            }        
+            $column_easytable->DisplayNew('TAB2');
+            $this->app->Tpl->Set('TABLENAME',ucfirst($selectedtable));
+
+            if (!empty($selectedcolumns)) {
+                $this->app->User->SetParameter('report_databaseview_selectedcolumns',implode(',',$selectedcolumns));
+            }
+
+            $this->app->YUI->TableSearch('TAB3', 'databaseview', 'show', '', '', basename(__FILE__), __CLASS__);
+
+        } else {
+            $this->app->YUI->Message('warning','Tabelle w&auml;hlen');
+        }
+
+        $this->template->Parse('PAGE', 'report_databaseview.tpl');
+    }
+
 }
