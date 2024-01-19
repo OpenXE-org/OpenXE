@@ -53,9 +53,19 @@
 		<div class="row" id="report_list_main">
 			<div class="row-height">
 				<div class="col-xs-12 col-sm-10 col-sm-height">
-                    <legend>
+                    <legend style="float:left">
                         Tabelle&nbsp;[TABLENAME]
                     </legend>
+                    <form method="post" action="#tabs-3">
+                        <fieldset style="float: right;">
+                            <input type="text" name="table" value="[TABLENAME]" hidden></input>
+                             <table width="100%" border="0" class="mkTableFormular">
+                                <tr>
+                                    <td><button name="submit" value="erzeugen" class="ui-button-icon" style="width:100%;float:right;">Bericht erzeugen</button></td>
+                                </tr>                                                          
+                            </table>
+                        </fieldset>
+                    </form>
 					<div>
 					    [TAB3]  
 					</div>

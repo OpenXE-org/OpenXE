@@ -542,6 +542,7 @@ class Report
                     }
 
                     $heading = $columns;
+                    $heading[] = '';
                     $findcols = $columns;
                     $searchsql = $columns;
                   
@@ -3232,7 +3233,8 @@ class Report
         if (!empty($selectedtable)) {
 
             $this->app->User->SetParameter('report_databaseview_selectedtable',$selectedtable);
-            $selectedcolumns = $this->app->Secure->GetPost('auswahl');
+            $submit = $this->app->Secure->GetPost('submit');
+            $selectedcolumns = $this->app->Secure->GetPost('auswahl');         
 
             $sql = "SHOW COLUMNS FROM `".$selectedtable."`";
             $columns = $this->app->DB->SelectArr($sql);
@@ -3245,7 +3247,6 @@ class Report
                         $checked = 'checked';                        
                     }
                 }
-
                 $row = array();
                 $row[] = '<input type="checkbox" name="auswahl[]" '.$checked.' value="'.$column['Field'].'">';                
                 $row = array_merge($row,$column);
@@ -3254,12 +3255,42 @@ class Report
             $column_easytable->DisplayNew('TAB2');
             $this->app->Tpl->Set('TABLENAME',ucfirst($selectedtable));
 
-            if (!empty($selectedcolumns)) {
-                $this->app->User->SetParameter('report_databaseview_selectedcolumns',implode(',',$selectedcolumns));
-            }
-
-            $this->app->YUI->TableSearch('TAB3', 'databaseview', 'show', '', '', basename(__FILE__), __CLASS__);
-
+            switch($submit) {
+                case 'vorschau':
+                    if (!empty($selectedcolumns)) {
+                        $this->app->User->SetParameter('report_databaseview_selectedcolumns',implode(',',$selectedcolumns));
+                    } else {
+                        $this->app->YUI->Message('warning','Spalten w&auml;hlen');
+                    } 
+                    $this->app->YUI->TableSearch('TAB3', 'databaseview', 'show', '', '', basename(__FILE__), __CLASS__);
+                break;
+                case 'erzeugen':                
+                    $selectedcolumns = $this->app->User->GetParameter('report_databaseview_selectedcolumns');                
+                    $columns = explode(',',$selectedcolumns);
+                    $sql = "SELECT `".implode("`,`",$columns)."` from `".$selectedtable."`";  
+                    $name = $this->service->generateIncrementedReportName(ucfirst($selectedtable));
+                    $userId = $this->app->User->GetID();
+                    $report = ReportData::fromFormData(['name' => $name, 'sql_query' => $sql, 'description' => 'Erzeugt aus Datenbankansicht Tabelle '.ucfirst($selectedtable)]);
+                    $newId = $this->service->saveReport($report);
+                    if ($newId > 0) {
+                        $this->service->saveReportUserArray([
+                            'report_id' => $newId,
+                            'user_id' => $userId,
+                            'name' => $this->app->User->GetName(),
+                            'chart_enabled' => 0,
+                            'file_enabled' => 0,
+                            'menu_enabled' => 0,
+                            'tab_enabled' => 0,
+                        ]);
+                        $report = $this->gateway->getReportById($newId);
+                        $newReport = $this->service->autoCreateColumns($report);
+                        $newId = $this->service->saveReport($newReport);
+                        header('Location: index.php?module=report&action=edit&id='.$newId);
+                    } else {
+                        $this->app->YUI->Message('error','Bericht konnte nicht erzeugt werden');
+                    }
+                break;
+            }            
         } else {
             $this->app->YUI->Message('warning','Tabelle w&auml;hlen');
         }
