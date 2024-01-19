@@ -140,20 +140,13 @@ class Wareneingang {
                 }
 
                 $more_data1 = $this->app->Secure->GetGET("more_data1");
+                $maximalmenge = 'trim(bp.menge -  bp.geliefert)+0';
                 if ($more_data1 == 1) {
-                    $ausfuellen = 'trim(bp.menge -  bp.geliefert)+0';
+                    $ausfuellen = $maximalmenge;
                 } else {            
                     $ausfuellen = "''";       
                 }
                 // END Toggle filters
-
-                $vorschlag = "
-                    if(
-                        bp.menge-bp.geliefert-COALESCE((SELECT TRIM(SUM(menge))+0 FROM paketdistribution WHERE vorlaeufig = 1 AND bestellung_position = bp.id),0) > 0,
-                        bp.menge-bp.geliefert-COALESCE((SELECT TRIM(SUM(menge))+0 FROM paketdistribution WHERE vorlaeufig = 1 AND bestellung_position = bp.id),0),
-                        0
-                    )
-                ";               
 
                 $artikel_link = array(
                    '<a href=\"index.php?module=artikel&action=edit&id=',
@@ -172,6 +165,9 @@ class Wareneingang {
                 
                 $input_for_menge = array(
                     '<input type = \"number\" min=\"0\"',
+                    ' max=\"',                    
+                    ['sql' => $maximalmenge],
+                    '\""',
                     ' value=\"',                    
                     ['sql' => $ausfuellen],
                     '\"',
@@ -2228,7 +2224,7 @@ class Wareneingang {
                     }
 
                     // Gather info bestellung
-                    $bparr = $this->app->DB->SelectRow("SELECT bp.artikel, a.nummer, b.projekt, b.belegnr, bp.vpe, bp.menge FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE bp.id='$bestellposition' LIMIT 1");
+                    $bparr = $this->app->DB->SelectRow("SELECT bp.artikel, a.nummer, b.projekt, b.belegnr, bp.vpe, bp.menge, bp.geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE bp.id='$bestellposition' LIMIT 1");
                     $artikel = $bparr['artikel'];                            
                     $artikel_nr = $bparr['nummer'];
                     $projekt = $bparr['projekt'];
@@ -2239,6 +2235,12 @@ class Wareneingang {
                     // Check existing preliminary value
                     $sql = "SELECT id, menge FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1 LIMIT 1";
                     $preliminary = $this->app->DB->SelectRow($sql);
+
+                    $menge = $menge + $preliminary['menge'];
+                    if ($menge > $bparr['menge']-$bparr['geliefert']) {
+                        $menge = $bparr['menge']-$bparr['geliefert'];
+                        $this->app->YUI->Message('warning','Mengen wurden angepasst');
+                    }      
 
                     if (empty($preliminary)) {
                         $sql = "INSERT INTO paketdistribution(
@@ -2270,12 +2272,7 @@ class Wareneingang {
                                     1
                                 )";
                         $this->app->DB->Insert($sql);                            
-                    } else {
-                        $menge = $menge + $preliminary['menge'];
-                        if ($menge > $bparr['menge']-$bparr['geliefert']) {
-                            $menge = $bparr['menge']-$bparr['geliefert'];
-                        }                           
-
+                    } else {                                            
                         $sql = "UPDATE paketdistribution SET menge = ".$menge.", bemerkung = '".$this->app->DB->real_escape_string($bemerkung)."' WHERE id = ".$preliminary['id'];
                         $this->app->DB->Insert($sql);          
                     }
@@ -2350,7 +2347,13 @@ class Wareneingang {
                                 WHERE 
                                     bestellung_position.id='$bestellposition' 
                                 LIMIT 1
-                            ");                            
+                            ");        
+
+                            if ($menge > $bparr['menge']-$bparr['geliefert']) {
+                                $this->app->YUI->Message('error','Mengen ung&uuml;ltig');
+                                break;
+                            }      
+                    
                             $artikel = $bparr['artikel'];                            
                             $artikel_nr = $bparr['nummer'];
                             $projekt = $bparr['projekt'];
@@ -2606,16 +2609,14 @@ class Wareneingang {
         $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
         $vorlaeufige = $this->app->DB->SelectArr($sql);
         if (!empty($vorlaeufige)) {
-            $this->app->YUI->Message('warning','Nicht eingebuchte Positionen vorhanden');
+            $this->app->YUI->Message('info','Nicht eingebuchte Positionen vorhanden');
             $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
         } else {
             $this->app->Tpl->Set('BUCHENHIDDEN','hidden');            
             if ($status != 'abgeschlossen') {
-                $this->app->YUI->Message('warning','Wareneingang noch nicht abgeschlossen');
+                $this->app->YUI->Message('info','Wareneingang noch nicht abgeschlossen');
             }            
         }
-
-
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
        
     }
