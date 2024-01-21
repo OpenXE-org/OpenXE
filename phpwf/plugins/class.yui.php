@@ -736,9 +736,10 @@ class YUI {
             if($value == '')$value = '0';
             $this->app->DB->Update("UPDATE $table SET rabatt='$value',keinrabatterlaubt=1 WHERE id='$id' LIMIT 1");
             $result = $this->app->DB->Select("SELECT ".$this->FormatPreis('rabatt')." FROM $table WHERE id='$id' LIMIT 1");
-            $sort = $this->app->DB->Select("SELECT sort FROM $table WHERE id='$id' LIMIT 1");
-            $parent = $this->app->DB->Select("SELECT $module FROM $table WHERE id='$id' LIMIT 1");
-            if($parent && $sort == 1)$this->app->DB->Update("UPDATE $module SET rabatt = '$value',keinrabatterlaubt=1 WHERE id = '$parent' LIMIT 1");
+
+            //$sort = $this->app->DB->Select("SELECT sort FROM $table WHERE id='$id' LIMIT 1");
+            //$parent = $this->app->DB->Select("SELECT $module FROM $table WHERE id='$id' LIMIT 1");
+            //if($parent && $sort == 1)$this->app->DB->Update("UPDATE $module SET rabatt = '$value',keinrabatterlaubt=1 WHERE id = '$parent' LIMIT 1");
             if(in_array($module, array('auftrag','rechnung','gutschrift')))
             {
               $tmptable_value = $this->app->DB->Select("SELECT $module FROM $table WHERE id = '$id' LIMIT 1");
