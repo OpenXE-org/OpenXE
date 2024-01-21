@@ -2,3 +2,4 @@ conf/user.inc.php
 conf/user_defined.php
 userdata
 www/cache/
+www/themes/new/css/custom.css
