@@ -2381,7 +2381,7 @@ class Rechnung extends GenRechnung
               '".$this->app->erp->ZahlungsZielTage($projekt)."',
               '".$this->app->erp->ZahlungsZielTageSkonto($projekt)."',
               '".$this->app->erp->ZahlungsZielSkonto($projekt)."',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid',$abweichendebezeichnung)");
+              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
     } else {
       $this->app->DB->Insert("INSERT INTO rechnung (id,datum,bearbeiter,firma,belegnr,zahlungsweise,
           zahlungszieltage,

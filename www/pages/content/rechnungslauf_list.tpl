@@ -8,6 +8,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
         <li><a href="#tabs-2">Aufträge</a></li>
     </ul>
     <div id="tabs-1">
+        [MESSAGE]
         [MESSAGE_INVOICES]
         <form method="post" action="#">
             [TAB_INVOICES]
@@ -19,6 +20,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
         </form>
     </div>
     <div id="tabs-2">
+        [MESSAGE]
         [MESSAGE_ORDERS]
         <form method="post" action="#">
             [TAB_ORDERS]
