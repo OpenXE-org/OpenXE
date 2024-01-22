@@ -223,7 +223,7 @@ if ($task) {
       } catch (Exception $e) {
         $app->erp->LogFile(
           $app->DB->real_escape_string(
-            'Prozessstarter Fehler bei Aufruf des Moduls ' . $task[$task_index]['parameter'] . ': ' . $e->getMessage()
+            'Prozessstarter Fehler bei Aufruf des Moduls ' . $task[$task_index]['parameter'] . ': ' . $e->getMessage()." Trace: ".$e->GetTraceAsString()
           )
         );
       }
