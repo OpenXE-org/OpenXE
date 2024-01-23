@@ -2393,7 +2393,7 @@ class Rechnung extends GenRechnung
               '0',
               '0',
               '0',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid',$abweichendebezeichnung)");
+              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
     }
 
     $id = $this->app->DB->GetInsertID();
