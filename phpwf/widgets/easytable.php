@@ -388,7 +388,7 @@ class EasyTable {
             {
               $editcols = array(4,5,6,7);
             }else{
-              $einkaufspreiseerlaubt = false;
+              $einkaufspreiseerlaubt = true;
               if($einkaufspreiseerlaubt)
               {
                 $editcols =array(4,5,6,7,8,9);
