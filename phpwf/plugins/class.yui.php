@@ -2839,6 +2839,14 @@ class YUI {
                               
                               
                               ,b.waehrung, b.rabatt as rabatt,";          
+                              
+                              
+            if ($this->app->erp->RechteVorhanden('angebot','einkaufspreise')) {
+                $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
+                        CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
+                        ";
+            }          
+                              
         }else{
         $sql = "SELECT $sortcol, CONCAT($hersteller_ansicht if(b.beschreibung!='',
                        if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(CONCAT(b.bezeichnung,' *'),1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),CONCAT(b.bezeichnung,' *')),

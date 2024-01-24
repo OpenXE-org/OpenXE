@@ -45,7 +45,25 @@
 </div>
 </div>
 
-
+<div style="background-color:white" [DBHIDDEN]>
+    <h2 class="greyh2">{|Deckungsbeitrag (netto)|}</h2>
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td>Umsatz EUR</td>
+                <td>Kosten EUR</td>
+                <td>Deckungsbeitrag EUR</td>
+                <td>DB %</td>
+            </tr>
+            <tr>
+              <td class="greybox" width="25%">[NETTOGESAMT]</td>
+              <td class="greybox" width="25%">[KOSTEN]</td>
+              <td class="greybox" width="25%">[DECKUNGSBEITRAG]</td>
+              <td class="greybox" width="25%">[DBPROZENT]</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
 <div style="background-color:white">
 <h2 class="greyh2">Protokoll</h2>
@@ -59,12 +77,6 @@
   [PDFARCHIV]
 </div>
 </div>
-<div style="background-color:white">
-<h2 class="greyh2">Deckungsbeitrag</h2>
-<div style="padding:10px">
-<div class="info">Dieses Modul ist erst ab Version Professional verfügbar</div>
-</div>
 
-</div>
 </div>
 

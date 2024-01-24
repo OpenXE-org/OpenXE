@@ -35,6 +35,7 @@ class WidgetAngebot_position extends WidgetGenAngebot_position
     $this->app->YUI->AutoComplete("kostenstelle","kostenstelle",1);
     $this->app->YUI->AutoComplete("explodiert_parent","angebot_position",0,"&angebotposition=".$id."&angebot=".$this->app->DB->Select("SELECT angebot FROM angebot_position WHERE id = '$id' LIMIT 1"));
     $this->form->ReplaceFunction("preis",$this,"ReplaceMengeBetrag");
+    $this->form->ReplaceFunction("einkaufspreis",$this,"ReplaceMengeBetrag");
     $this->form->ReplaceFunction("steuersatz",$this,"ReplaceSteuersatz");
     $this->form->ReplaceFunction("menge",$this,"ReplaceMenge");
     $this->form->ReplaceFunction("grundrabatt",$this,"ReplaceDecimal");

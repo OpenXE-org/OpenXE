@@ -307,20 +307,51 @@ class Angebot extends GenAngebot
   {
     $id = $this->app->Secure->GetGET('id');
     
-    if(!$this->app->DB->Select("SELECT deckungsbeitragcalc FROM angebot WHERE  id='$id' LIMIT 1")) {
-      $this->app->erp->BerechneDeckungsbeitrag($id,'angebot');
+    // Deckungsbeitrag
+    if (!$this->app->erp->RechteVorhanden('angebot','einkaufspreise')) {
+        $this->app->Tpl->Set('DBHIDDEN','hidden');
+    } else {
+        $sql = "
+                SELECT
+                    umsatz_netto_gesamt,
+                    artikel,
+                    menge,
+                    einkaufspreis
+                FROM
+                    `angebot_position`
+                WHERE
+                    `angebot` = ".$id."
+            ";
+
+        $positionen = $this->app->DB->SelectArr($sql);
+
+        $umsatz_gesamt = 0;
+        $kosten_gesamt = 0;
+        $db_gesamt = 0;    
+        foreach ($positionen as $position) {
+            if (empty($position['einkaufspreis'])) {
+                $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);
+            }
+            $kosten = ($position['einkaufspreis']*$position['menge']);
+            $db_gesamt += $position['umsatz_netto_gesamt']-$kosten;
+            $kosten_gesamt += $kosten;
+            $umsatz_gesamt += $position['umsatz_netto_gesamt'];
+        }
+
+        $this->app->Tpl->Set('NETTOGESAMT',$this->app->erp->number_format_variable($umsatz_gesamt,2));
+        $this->app->Tpl->Set('KOSTEN',$this->app->erp->number_format_variable($kosten_gesamt,2));
+        $this->app->Tpl->Set('DECKUNGSBEITRAG',$this->app->erp->number_format_variable($db_gesamt,2));
+        $this->app->Tpl->Set(   'DBPROZENT',
+                                $umsatz_gesamt==0?
+                                "-":
+                                $this->app->erp->number_format_variable(
+                                    round(
+                                        $db_gesamt/$umsatz_gesamt*100,2
+                                    )                                
+                                )."%"
+                            );
     }
-    
-    $auftragArr = $this->app->DB->SelectArr("SELECT * FROM angebot WHERE id='$id' LIMIT 1");
-    $kundennummer = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE id='{$auftragArr[0]['adresse']}' LIMIT 1");
-    $projekt = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id='{$auftragArr[0]['projekt']}' LIMIT 1");
-    $kundenname = $this->app->DB->Select("SELECT name FROM adresse WHERE id='{$auftragArr[0]['adresse']}' LIMIT 1");
 
-
-    $this->app->Tpl->Set('KUNDE',"<a href=\"index.php?module=adresse&action=edit&id=".$auftragArr[0]['adresse']."\" target=\"_blank\">".$kundennummer."</a> ".$kundenname);
-    //$this->app->Tpl->Set('KUNDE',$kundennummer." ".$kundenname);
-    $this->app->Tpl->Set('DECKUNGSBEITRAG',0);
-    $this->app->Tpl->Set('DBPROZENT',0);    
 
     if($this->app->erp->RechteVorhanden('projekt','dashboard')){
       $this->app->Tpl->Set('PROJEKT', "<a href=\"index.php?module=projekt&action=dashboard&id=" . $auftragArr[0]['projekt'] . "\" target=\"_blank\">$projekt</a>");
@@ -1693,6 +1724,11 @@ class Angebot extends GenAngebot
       $this->app->erp->LieferadresseButton($adresse);
       $this->app->erp->AnsprechpartnerAlsLieferadresseButton($adresse);
       $this->app->erp->AdresseAlsLieferadresseButton($adresse);
+    }
+    
+    
+    if ($schreibschutz != 1 AND $status != 'abgeschlossen') {
+        $this->app->erp->BerechneDeckungsbeitrag($id,'angebot');
     }
 
     if($nummer!="")
