@@ -1699,7 +1699,6 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
               FROM `beleg_chargesnmhd` s 
               INNER JOIN lieferschein_position lp ON s.doctype = 'lieferschein' AND s.pos = lp.id AND s.type = 'sn' AND s.wert <> ''
               INNER JOIN lieferschein l ON lp.lieferschein = l.id AND l.status <> 'storniert'
-              WHERE l.id NOT IN (SELECT lieferscheinid FROM retoure LIMIT 1)
               GROUP BY s.wert, lp.artikel 
               )
               UNION ALL (
@@ -1708,7 +1707,7 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
               SELECT lp.artikel, s.seriennummer as wert , count(s.id) as anzahl, max(l.id) as lieferschein, max(l.belegnr) as belegnr
               FROM `seriennummern` s 
               INNER JOIN lieferschein_position lp ON s.lieferscheinpos = lp.id 
-              INNER JOIN lieferschein l ON lp.lieferschein = l.id WHERE s.seriennummer <> '' AND l.id NOT IN (SELECT lieferscheinid FROM retoure LIMIT 1)
+              INNER JOIN lieferschein l ON lp.lieferschein = l.id WHERE s.seriennummer <> ''
               GROUP BY s.seriennummer, lp.artikel 
 
 

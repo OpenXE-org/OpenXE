@@ -2676,7 +2676,7 @@ public function NavigationHooks(&$menu)
   // @refactor in Dateien Modul
   function AnzahlDateien($objekt,$id)
   {
-    return $this->app->DB->Select("SELECT COUNT(id) FROM datei_stichwoerter WHERE objekt='$objekt' AND parameter='$id'");
+    return $this->app->DB->Select("SELECT COUNT(ds.id) FROM datei_stichwoerter ds INNER JOIN datei d ON d.id = ds.datei WHERE ds.objekt='$objekt' AND ds.parameter='$id' AND d.geloescht <> 1");
   }
 
 
@@ -8605,6 +8605,7 @@ function StandardFirmendatenWerte()
   $this->AddNeuenFirmendatenWert( 'bezeichnungproformarechnungersatz', 'varchar', '64', '', 'Lieferschein mit Preis', 'Lieferschein mit Preis', 0, 0);
   $this->AddNeuenFirmendatenWert( 'bezeichnungauftragersatz', 'varchar', '64', '', 'Proformarechnung', 'Proformarechnung', 0, 0);
   $this->AddNeuenFirmendatenWert( 'bezeichnungrechnungersatz', 'varchar', '64', '', 'Quittung', 'Quittung', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'rechnungersatz_standard', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'bezeichnunglieferscheinersatz', 'varchar', '64', '', 'Alternative Beschriftung', 'Alternative Beschriftung', 0, 0);
   $this->AddNeuenFirmendatenWert( 'bezeichnungbestellungersatz', 'varchar', '64', '', 'Alternative Beschriftung', 'Alternative Beschriftung', 0, 0);
   $this->AddNeuenFirmendatenWert( 'footer_zentriert', 'int', '1', '', '0', '0', 0, 0);
@@ -26850,7 +26851,9 @@ function Firmendaten($field,$projekt="")
           $tmp[$extra[$i]['type']] = $extra[$i]['bezeichnung'];
         }
         if($zahlungsweise && empty($tmp[$zahlungsweise]))$tmp[$zahlungsweise] = ucfirst($zahlungsweise);
-        asort($tmp);
+        if (!empty($tmp)) {
+            asort($tmp);
+        }
         return $tmp;
         //              return array('rechnung'=>'Rechnung','vorkasse'=>'Vorkasse','nachnahme'=>'Nachnahme','kreditkarte'=>'Kreditkarte','einzugsermaechtigung'=>'Einzugsermaechtigung','bar'=>'Bar','paypal'=>'PayPal','lastschrift'=>'Lastschrift');
       }
@@ -27033,7 +27036,7 @@ function Firmendaten($field,$projekt="")
             'zahlung_amazon_bestellung','zahlung_billsafe','zahlung_sofortueberweisung','zahlung_secupay','zahlung_eckarte','zeiterfassung_schliessen','zeiterfassung_pflicht',
             'zahlung_kreditkarte','zahlung_nachnahme','zahlung_ratenzahlung','knickfalz','begrenzen_artikeltabelle','begrenzen_adressetabelle','begrenzen_belege','schnellsuche','schnellsuchecount','versandmail_zwischenspeichern','keinhauptmenurahmen','bordertabnav','steuerfrei_inland_ausblenden','auftragexplodieren_unterstuecklisten',
             'standardaufloesung','immerbruttorechnungen','immernettorechnungen','bestellvorschlaggroessernull','erweiterte_positionsansicht','schnellanlegen','kleinunternehmer','steuerspalteausblenden','api_enable','api_importwarteschlange','warnung_doppelte_nummern','warnung_doppelte_seriennummern','wareneingang_zwischenlager','bestellungohnepreis','zahlung_lastschrift_konditionen','porto_berechnen','breite_artikelbeschreibung','deviceenable','auftrag_eantab','bestellungmitartikeltext','bestellungeigeneartikelnummer','bestellunglangeartikelnummern','steuer_standardkonto_aufwendungen',
-            'iconset_dunkel','api_cleanutf8','mahnwesenmitkontoabgleich','briefhtml','absenderunterstrichen','seite_von_ausrichtung_relativ','wareneingang_gross','datatables_export_button_flash','viernachkommastellen_belege','stornorechnung_standard','angebotersatz_standard','geburtstagekalender','footer_zentriert','auftragmarkierenegsaldo','wareneingangauftragzubestellung','freifelderimdokument','zeiterfassung_anderemitarbeiter','zeiterfassung_beschreibungssperre','zeiterfassung_ort','zeiterfassung_kommentar','zeiterfassung_erweitert','footer_reihenfolge_angebot_aktivieren','footer_reihenfolge_auftrag_aktivieren','footer_reihenfolge_rechnung_aktivieren','footer_reihenfolge_gutschrift_aktivieren','footer_reihenfolge_lieferschein_aktivieren','footer_reihenfolge_bestellung_aktivieren','position_quantity_change_price_update',
+            'iconset_dunkel','api_cleanutf8','mahnwesenmitkontoabgleich','briefhtml','absenderunterstrichen','seite_von_ausrichtung_relativ','wareneingang_gross','datatables_export_button_flash','viernachkommastellen_belege','stornorechnung_standard','angebotersatz_standard','rechnungersatz_standard','geburtstagekalender','footer_zentriert','auftragmarkierenegsaldo','wareneingangauftragzubestellung','freifelderimdokument','zeiterfassung_anderemitarbeiter','zeiterfassung_beschreibungssperre','zeiterfassung_ort','zeiterfassung_kommentar','zeiterfassung_erweitert','footer_reihenfolge_angebot_aktivieren','footer_reihenfolge_auftrag_aktivieren','footer_reihenfolge_rechnung_aktivieren','footer_reihenfolge_gutschrift_aktivieren','footer_reihenfolge_lieferschein_aktivieren','footer_reihenfolge_bestellung_aktivieren','position_quantity_change_price_update',
           'beleg_pos_ean','beleg_pos_charge','beleg_pos_mhd','beleg_pos_sn','beleg_pos_zolltarifnummer',
             'schnellanlegen_ohnefreigabe','langeartikelnummern','noauth','belege_subpositionen',
             'belege_subpositionenstuecklisten','briefpapier_ohnedoppelstrich','bearbeiteremailimdokument',
@@ -34837,7 +34840,7 @@ function Firmendaten($field,$projekt="")
           $projekt = $orderRow['projekt'];
           $differenztage = $this->Projektdaten($projekt,'differenz_auslieferung_tage');
           if($differenztage<0 || empty($differenztage)) {
-            $differenztage=2;
+            $differenztage=0;
           }
           $lieferdatum = $orderRow['lieferdatum'];
           $land = $orderRow['land'];
@@ -35375,6 +35378,7 @@ function Firmendaten($field,$projekt="")
         {
           case 'bestellung':
           case 'anfrage':
+          case 'verbindlichkeit':
             $aufwendung = true;
           break;
         }
@@ -37298,7 +37302,7 @@ function Firmendaten($field,$projekt="")
 
       function GetDateiSubjektObjekt($subjekt,$objekt,$parameter)
       {
-        $dateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' GROUP by datei");
+        $dateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter INNER JOIN datei d on d.id = datei WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' AND d.geloescht <> 1 GROUP by datei");
         if(empty($dateien)) {
           return null;
         }

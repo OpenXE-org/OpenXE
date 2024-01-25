@@ -116,6 +116,7 @@ $width = array('10%'); // Fill out manually later
             $input['ticketprojekt'] = $this->app->erp->ReplaceProjekt(true,$input['ticketprojekt'],true); // Parameters: Target db?, value, from form?
             $input['adresse'] = $this->app->erp->ReplaceAdresse(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
             $input['ticketqueue'] = explode(" ",$input['ticketqueue'])[0]; // Just the label
+            $input['abdatum'] = $this->app->erp->ReplaceDatum(true,$input['abdatum'],true);
 
             $columns = "id, ";
             $values = "$id, ";
@@ -146,7 +147,6 @@ $width = array('10%'); // Fill out manually later
             else {
               $sql = "INSERT INTO emailbackup (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
               $this->app->DB->Update($sql);
-
               if ($id == 'NULL') {
                   $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
                   header("Location: index.php?module=emailbackup&action=list&msg=$msg");
@@ -159,31 +159,69 @@ $width = array('10%'); // Fill out manually later
         // Load values again from database
         $result = $this->app->DB->SelectArr("SELECT id, angezeigtername, internebeschreibung, benutzername, passwort, server, smtp, ticket, imap_sentfolder_aktiv, imap_sentfolder, imap_port, imap_type, autoresponder, geschaeftsbriefvorlage, autoresponderbetreff, autorespondertext, projekt, emailbackup, adresse, firma, loeschtage, geloescht, ticketloeschen, ticketabgeschlossen, ticketqueue, ticketprojekt, ticketemaileingehend, smtp_extra, smtp_ssl, smtp_port, smtp_frommail, smtp_fromname, client_alias, smtp_authtype, smtp_authparam, smtp_loglevel, autosresponder_blacklist, eigenesignatur, signatur, mutex, abdatum, email, id FROM emailbackup"." WHERE id=$id");
 
-        foreach ($result[0] as $key => $value) {
+        if (!empty($result)) {
+            $emailbackup = $result[0];
+        } else {
+            return;
+        }
+
+        foreach ($emailbackup as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
-             
-        /*
-         * Add displayed items later
-         * 
 
-        $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
-        $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
-         */
+        // Checkboxes
+        $this->app->Tpl->Set('SMTP_EXTRA', $emailbackup['smtp_extra']?'checked':'');
+        $this->app->Tpl->Set('SMTP_LOGLEVEL', $emailbackup['smtp_loglevel']?'checked':'');    
+        $this->app->Tpl->Set('IMAP_SENTFOLDER_AKTIV', $emailbackup['imap_sentfolder_aktiv']?'checked':'');
+        $this->app->Tpl->Set('EMAILBACKUP', $emailbackup['emailbackup']?'checked':'');
+        $this->app->Tpl->Set('TICKET', $emailbackup['ticket']?'checked':'');
+        $this->app->Tpl->Set('TICKETLOESCHEN', $emailbackup['ticketloeschen']?'checked':'');
+        $this->app->Tpl->Set('TICKETABGESCHLOSSEN', $emailbackup['ticketabgeschlossen']?'checked':'');
+        $this->app->Tpl->Set('TICKETEMAILEINGEHEND', $emailbackup['ticketemaileingehend']?'checked':'');
+        $this->app->Tpl->Set('EIGENESIGNATUR', $emailbackup['eigenesignatur']?'checked':'');
+        $this->app->Tpl->Set('AUTORESPONDER', $emailbackup['autoresponder']?'checked':'');
+        $this->app->Tpl->Set('AUTOSRESPONDER_BLACKLIST', $emailbackup['autosresponder_blacklist']?'checked':'');
 
         $this->app->YUI->CkEditor("signatur","internal", null, 'JQUERY');
         $this->app->YUI->CkEditor("autoresponderbetreff","internal", null, 'JQUERY');
         $this->app->YUI->CkEditor("autorespondertext","internal", null, 'JQUERY');
-        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$result[0]['projekt'],false)); // Parameters: Target db?, value, from form?
-        $this->app->Tpl->Set('TICKETPROJEKT',$this->app->erp->ReplaceProjekt(false,$result[0]['ticketprojekt'],false)); // Parameters: Target db?, value, from form?
-        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$result[0]['adresse'],false)); // Convert ID to form display
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$emailbackup['projekt'],false)); // Parameters: Target db?, value, from form?
+        $this->app->Tpl->Set('TICKETPROJEKT',$this->app->erp->ReplaceProjekt(false,$emailbackup['ticketprojekt'],false)); // Parameters: Target db?, value, from form?
+        $this->app->Tpl->Set('ADRESSE', $this->app->erp->ReplaceAdresse(false,$emailbackup['adresse'],false)); // Convert ID to form display
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("ticketprojekt","projektname",1);
         $this->app->YUI->AutoComplete("adresse","adresse");
         $this->app->YUI->AutoComplete("ticketqueue","warteschlangename");
         $this->app->YUI->AutoComplete("ticketprojekt","projektname",1);
-        $this->app->Tpl->Parse('PAGE', "emailbackup_edit.tpl");  
+            
+        $this->app->YUI->DatePicker("abdatum");            
+        $this->app->Tpl->Set('ABDATUM',$this->app->erp->ReplaceDatum(false,$emailbackup['abdatum'],false));            
+      
+        $smtp_ssl_select = Array( 
+            '0' => 'Keine',
+            '1' => 'TLS',
+            '2' => 'SSL'
+        );       
+        $smtp_ssl_select = $this->app->erp->GetSelectAsso($smtp_ssl_select,$emailbackup['smtp_ssl']);
+        $this->app->Tpl->Set('SMTP_SSL_SELECT',$smtp_ssl_select);             
+        
+        $smtp_authtype_select = Array( 
+            '' => 'Kein',
+            'smtp' => 'SMTP',
+            'oauth_google' => 'Oauth Google'    
+        );       
+        $smtp_authtype_select = $this->app->erp->GetSelectAsso($smtp_authtype_select,$emailbackup['smtp_authtype']);
+        $this->app->Tpl->Set('SMTP_AUTHTYPE_SELECT',$smtp_authtype_select);   
+        
+        $imap_type_select = Array( 
+            '1' => 'Standard',
+            '3' => 'SSL',
+            '5' => 'Oauth'    
+        );       
+        $imap_type_select = $this->app->erp->GetSelectAsso($imap_type_select,$emailbackup['imap_type']);
+        $this->app->Tpl->Set('IMAP_TYPE_SELECT',$imap_type_select);          
+               
+        $this->app->Tpl->Parse('PAGE', "emailbackup_edit.tpl");          
     }
 
     /**
@@ -194,47 +232,46 @@ $width = array('10%'); // Fill out manually later
         //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
         
         $input['angezeigtername'] = $this->app->Secure->GetPOST('angezeigtername');
-	$input['internebeschreibung'] = $this->app->Secure->GetPOST('internebeschreibung');
-	$input['benutzername'] = $this->app->Secure->GetPOST('benutzername');
-	$input['passwort'] = $this->app->Secure->GetPOST('passwort');
-	$input['server'] = $this->app->Secure->GetPOST('server');
-	$input['smtp'] = $this->app->Secure->GetPOST('smtp');
-	$input['ticket'] = $this->app->Secure->GetPOST('ticket');
-	$input['imap_sentfolder_aktiv'] = $this->app->Secure->GetPOST('imap_sentfolder_aktiv');
-	$input['imap_sentfolder'] = $this->app->Secure->GetPOST('imap_sentfolder');
-	$input['imap_port'] = $this->app->Secure->GetPOST('imap_port');
-	$input['imap_type'] = $this->app->Secure->GetPOST('imap_type');
-	$input['autoresponder'] = $this->app->Secure->GetPOST('autoresponder');
-	$input['geschaeftsbriefvorlage'] = $this->app->Secure->GetPOST('geschaeftsbriefvorlage');
-	$input['autoresponderbetreff'] = $this->app->Secure->GetPOST('autoresponderbetreff');
-	$input['autorespondertext'] = $this->app->Secure->GetPOST('autorespondertext');
-	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
-	$input['emailbackup'] = $this->app->Secure->GetPOST('emailbackup');
-	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
-	$input['firma'] = $this->app->Secure->GetPOST('firma');
-	$input['loeschtage'] = $this->app->Secure->GetPOST('loeschtage');
-	$input['geloescht'] = $this->app->Secure->GetPOST('geloescht');
-	$input['ticketloeschen'] = $this->app->Secure->GetPOST('ticketloeschen');
-	$input['ticketabgeschlossen'] = $this->app->Secure->GetPOST('ticketabgeschlossen');
-	$input['ticketqueue'] = $this->app->Secure->GetPOST('ticketqueue');
-	$input['ticketprojekt'] = $this->app->Secure->GetPOST('ticketprojekt');
-	$input['ticketemaileingehend'] = $this->app->Secure->GetPOST('ticketemaileingehend');
-	$input['smtp_extra'] = $this->app->Secure->GetPOST('smtp_extra');
-	$input['smtp_ssl'] = $this->app->Secure->GetPOST('smtp_ssl');
-	$input['smtp_port'] = $this->app->Secure->GetPOST('smtp_port');
-	$input['smtp_frommail'] = $this->app->Secure->GetPOST('email'); // use only these
-	$input['smtp_fromname'] = $this->app->Secure->GetPOST('angezeigtername'); // use only these
-	$input['client_alias'] = $this->app->Secure->GetPOST('client_alias');
-	$input['smtp_authtype'] = $this->app->Secure->GetPOST('smtp_authtype');
-	$input['smtp_authparam'] = $this->app->Secure->GetPOST('smtp_authparam');
-	$input['smtp_loglevel'] = $this->app->Secure->GetPOST('smtp_loglevel');
-	$input['autosresponder_blacklist'] = $this->app->Secure->GetPOST('autosresponder_blacklist');
-	$input['eigenesignatur'] = $this->app->Secure->GetPOST('eigenesignatur');
-	$input['signatur'] = $this->app->Secure->GetPOST('signatur');
-	$input['mutex'] = $this->app->Secure->GetPOST('mutex');
-	$input['abdatum'] = $this->app->Secure->GetPOST('abdatum');
-	$input['email'] = $this->app->Secure->GetPOST('email');
-	
+	    $input['internebeschreibung'] = $this->app->Secure->GetPOST('internebeschreibung');
+	    $input['benutzername'] = $this->app->Secure->GetPOST('benutzername');
+	    $input['passwort'] = $this->app->Secure->GetPOST('passwort');
+	    $input['server'] = $this->app->Secure->GetPOST('server');
+	    $input['smtp'] = $this->app->Secure->GetPOST('smtp');
+	    $input['ticket'] = $this->app->Secure->GetPOST('ticket');
+	    $input['imap_sentfolder_aktiv'] = $this->app->Secure->GetPOST('imap_sentfolder_aktiv');
+	    $input['imap_sentfolder'] = $this->app->Secure->GetPOST('imap_sentfolder');
+	    $input['imap_port'] = $this->app->Secure->GetPOST('imap_port');
+	    $input['imap_type'] = $this->app->Secure->GetPOST('imap_type');
+	    $input['autoresponder'] = $this->app->Secure->GetPOST('autoresponder');
+	    $input['geschaeftsbriefvorlage'] = $this->app->Secure->GetPOST('geschaeftsbriefvorlage');
+	    $input['autoresponderbetreff'] = $this->app->Secure->GetPOST('autoresponderbetreff');
+	    $input['autorespondertext'] = $this->app->Secure->GetPOST('autorespondertext');
+	    $input['projekt'] = $this->app->Secure->GetPOST('projekt');
+	    $input['emailbackup'] = $this->app->Secure->GetPOST('emailbackup');
+	    $input['adresse'] = $this->app->Secure->GetPOST('adresse');
+	    $input['firma'] = $this->app->Secure->GetPOST('firma');
+	    $input['loeschtage'] = $this->app->Secure->GetPOST('loeschtage');
+	    $input['geloescht'] = $this->app->Secure->GetPOST('geloescht');
+	    $input['ticketloeschen'] = $this->app->Secure->GetPOST('ticketloeschen');
+	    $input['ticketabgeschlossen'] = $this->app->Secure->GetPOST('ticketabgeschlossen');
+	    $input['ticketqueue'] = $this->app->Secure->GetPOST('ticketqueue');
+	    $input['ticketprojekt'] = $this->app->Secure->GetPOST('ticketprojekt');
+	    $input['ticketemaileingehend'] = $this->app->Secure->GetPOST('ticketemaileingehend');
+	    $input['smtp_extra'] = $this->app->Secure->GetPOST('smtp_extra');
+	    $input['smtp_ssl'] = $this->app->Secure->GetPOST('smtp_ssl');
+	    $input['smtp_port'] = $this->app->Secure->GetPOST('smtp_port');
+	    $input['smtp_frommail'] = $this->app->Secure->GetPOST('email'); // use only these
+	    $input['smtp_fromname'] = $this->app->Secure->GetPOST('angezeigtername'); // use only these
+	    $input['client_alias'] = $this->app->Secure->GetPOST('client_alias');
+	    $input['smtp_authtype'] = $this->app->Secure->GetPOST('smtp_authtype');
+	    $input['smtp_authparam'] = $this->app->Secure->GetPOST('smtp_authparam');
+	    $input['smtp_loglevel'] = $this->app->Secure->GetPOST('smtp_loglevel');
+	    $input['autosresponder_blacklist'] = $this->app->Secure->GetPOST('autosresponder_blacklist');
+	    $input['eigenesignatur'] = $this->app->Secure->GetPOST('eigenesignatur');
+	    $input['signatur'] = $this->app->Secure->GetPOST('signatur');
+	    $input['mutex'] = $this->app->Secure->GetPOST('mutex');
+	    $input['abdatum'] = $this->app->Secure->GetPOST('abdatum');
+	    $input['email'] = $this->app->Secure->GetPOST('email');
 
         return $input;
     }
@@ -245,45 +282,7 @@ $width = array('10%'); // Fill out manually later
     function SetInput($input) {
         // $this->app->Tpl->Set('EMAIL', $input['email']);        
         
-        $this->app->Tpl->Set('ANGEZEIGTERNAME', $input['angezeigtername']);
-	$this->app->Tpl->Set('INTERNEBESCHREIBUNG', $input['internebeschreibung']);
-	$this->app->Tpl->Set('BENUTZERNAME', $input['benutzername']);
-	$this->app->Tpl->Set('PASSWORT', $input['passwort']);
-	$this->app->Tpl->Set('SERVER', $input['server']);
-	$this->app->Tpl->Set('SMTP', $input['smtp']);
-	$this->app->Tpl->Set('TICKET', $input['ticket']);
-	$this->app->Tpl->Set('IMAP_SENTFOLDER_AKTIV', $input['imap_sentfolder_aktiv']);
-	$this->app->Tpl->Set('IMAP_SENTFOLDER', $input['imap_sentfolder']);
-	$this->app->Tpl->Set('IMAP_PORT', $input['imap_port']);
-	$this->app->Tpl->Set('IMAP_TYPE', $input['imap_type']);
-	$this->app->Tpl->Set('AUTORESPONDER', $input['autoresponder']);
-	$this->app->Tpl->Set('GESCHAEFTSBRIEFVORLAGE', $input['geschaeftsbriefvorlage']);
-	$this->app->Tpl->Set('AUTORESPONDERBETREFF', $input['autoresponderbetreff']);
-	$this->app->Tpl->Set('AUTORESPONDERTEXT', $input['autorespondertext']);
-	$this->app->Tpl->Set('PROJEKT', $input['projekt']);
-	$this->app->Tpl->Set('EMAILBACKUP', $input['emailbackup']);
-	$this->app->Tpl->Set('ADRESSE', $input['adresse']);
-	$this->app->Tpl->Set('FIRMA', $input['firma']);
-	$this->app->Tpl->Set('LOESCHTAGE', $input['loeschtage']);
-	$this->app->Tpl->Set('GELOESCHT', $input['geloescht']);
-	$this->app->Tpl->Set('TICKETLOESCHEN', $input['ticketloeschen']);
-	$this->app->Tpl->Set('TICKETABGESCHLOSSEN', $input['ticketabgeschlossen']);
-	$this->app->Tpl->Set('TICKETQUEUE', $input['ticketqueue']);
-	$this->app->Tpl->Set('TICKETPROJEKT', $input['ticketprojekt']);
-	$this->app->Tpl->Set('TICKETEMAILEINGEHEND', $input['ticketemaileingehend']);
-	$this->app->Tpl->Set('SMTP_EXTRA', $input['smtp_extra']);
-	$this->app->Tpl->Set('SMTP_SSL', $input['smtp_ssl']);
-	$this->app->Tpl->Set('SMTP_PORT', $input['smtp_port']);
-	$this->app->Tpl->Set('CLIENT_ALIAS', $input['client_alias']);
-	$this->app->Tpl->Set('SMTP_AUTHTYPE', $input['smtp_authtype']);
-	$this->app->Tpl->Set('SMTP_AUTHPARAM', $input['smtp_authparam']);
-	$this->app->Tpl->Set('SMTP_LOGLEVEL', $input['smtp_loglevel']);
-	$this->app->Tpl->Set('AUTOSRESPONDER_BLACKLIST', $input['autosresponder_blacklist']);
-	$this->app->Tpl->Set('EIGENESIGNATUR', $input['eigenesignatur']);
-	$this->app->Tpl->Set('SIGNATUR', $input['signatur']);
-	$this->app->Tpl->Set('MUTEX', $input['mutex']);
-	$this->app->Tpl->Set('ABDATUM', $input['abdatum']);
-	$this->app->Tpl->Set('EMAIL', $input['email']);
+  
 	
     }
 

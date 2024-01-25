@@ -802,7 +802,7 @@ if (!function_exists('getallheaders')) {
       return $permissions;
     }
 
-    private function fillApiPermissions()
+    function fillApiPermissions()
     {
       foreach ($this->getGroupedPermissions() as $group => $permissions){
         foreach ($permissions as $permission){

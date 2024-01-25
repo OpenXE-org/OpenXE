@@ -248,6 +248,17 @@ class Rechnungslauf {
           $this->app->Tpl->addMessage('info', 'Die Aufträge werden nun im Hintergrund erstellt', false, 'MESSAGE_ORDERS');
         }
       }
+
+        $cronjobActive = $this->app->DB->Select(
+            "SELECT ps.id 
+            FROM `prozessstarter` AS `ps` 
+            WHERE ps.aktiv = 1 and (ps.parameter = 'rechnungslauf_manual') 
+            LIMIT 1"
+        );
+        if(!$cronjobActive) {
+            $this->app->Tpl->addMessage('warning', 'Der Prozessstarter \'rechnungslauf_manual\' ist nicht aktiv');
+        }
+
       $this->app->Tpl->Parse('PAGE', 'rechnungslauf_list.tpl');
     }
 

@@ -38,6 +38,7 @@ class WidgetArtikel extends WidgetGenArtikel
     $this->app->YUI->AutoComplete("zolltarifnummer","zolltarifnummer",1);
     $this->app->YUI->AutoComplete("bestandalternativartikel","artikelnummer");
     $this->app->YUI->AutoComplete("steuergruppe","steuergruppe");
+    $this->app->YUI->AutoComplete("sachkonto","sachkonto",1);
     $this->app->YUI->AutoComplete("kostenstelle","kostenstelle",1);
     $this->app->YUI->AutoComplete("steuersatz","steuersatz",1);
     $this->app->YUI->AutoComplete("preproduced_partlist","lagerartikelnummer");
@@ -68,6 +69,7 @@ class WidgetArtikel extends WidgetGenArtikel
     $this->form->ReplaceFunction("nummer",$this,"ReplaceTrim");
     $this->form->ReplaceFunction("ean",$this,"ReplaceTrim");
     $this->form->ReplaceFunction("name_de",$this,"ReplaceTrim");
+    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");    
     $this->form->ReplaceFunction("steuersatz",$this,"ReplaceSteuersatz");
     $this->app->Tpl->Set('GEWICHTBEZEICHNUNG', $this->app->erp->GetGewichtbezeichnung());
     
@@ -641,6 +643,11 @@ class WidgetArtikel extends WidgetGenArtikel
   function ReplaceArtikel($db,$value,$fromform)
   {
     return $this->app->erp->ReplaceArtikel($db,$value,$fromform);
+  }
+
+  function ReplaceKontorahmen($db,$value,$fromform)
+  {
+    return $this->app->erp->ReplaceKontorahmen($db,$value,$fromform);
   }
   
   function ReplaceSteuersatz($db,$value,$fromform)

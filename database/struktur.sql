@@ -16729,7 +16729,9 @@ INSERT INTO `firmendaten_werte` (`id`, `name`, `typ`, `typ1`, `typ2`, `wert`, `d
 (386, 'cleaner_shopimport_tage', 'int', '11', '', '90', '90', 0, 0),
 (387, 'cleaner_adapterbox', 'tinyint', '1', '', '1', '1', 0, 0),
 (388, 'cleaner_adapterbox_tage', 'int', '11', '', '90', '90', 0, 0),
-(389, 'bcc3', 'varchar', '128', '', '', '', 0, 0)
+(389, 'bcc3', 'varchar', '128', '', '', '', 0, 0),
+(390, 'rechnungersatz_standard', 'int', '1', '', '0', '0', 0, 0)
+
 ;
 
 INSERT INTO `geschaeftsbrief_vorlagen` (`id`, `sprache`, `betreff`, `text`, `subjekt`, `projekt`, `firma`) VALUES
@@ -16748,6 +16750,24 @@ INSERT INTO `geschaeftsbrief_vorlagen` (`id`, `sprache`, `betreff`, `text`, `sub
 (15, 'deutsch', 'Betriebsurlaub vom 09.08 bis 24.08.2010', 'Liebe Kunden,<br><br>wir sind vom 09.08.2010 bis zum 24.08.2010 im Betriebsurlaub.<br>Ihre Anfragen werden deshalb erst wieder nach diesem Zeitraum bearbeitet.<br><br>Ihre Bestellungen werden in dieser Zeit statt täglich wöchentlich versendet.*<br><br>Wir wünschen Ihnen eine schöne Ferienzeit und bedanken uns für Ihr Verständnis.<br><br>Das {FIRMA} Team<br><br><br><br>*sofern sich die Ware bei uns im Lager befindet.', 'Betriebsurlaub', 0, 1),
 (16, 'deutsch', 'Zusammenstellung Ihrer Bestellung', '{ANSCHREIBEN},<br><br>soeben wurde Ihr Bestellung zusammengestellt. Sie können Ihre Ware jetzt abholen. Sind Sie bereits bei uns gewesen, so sehen Sie diese E-Mail bitte als gegenstandslos an.<br><br>{VERSAND}<br><br>Ihr {FIRMA} Team<br>', 'Selbstabholer', 0, 1),
 (17, 'deutsch', 'Ihre Gutschrift {BELEGNR} von {FIRMA}', '{ANSCHREIBEN},<br><br>anbei finden Sie Ihre Gutschrift. Gerne stehen wir Ihnen weiterhin zur Verfügung.<br><br>Ihre Gutschrift ist im PDF-Format erstellt worden. Um sich die Gutschrift ansehen zu können, klicken Sie auf den Anhang und es öffnet sich automatisch der Acrobat Reader. Sollten Sie keinen Acrobat Reader besitzen, haben wir für Sie den Link zum kostenlosen Download von Adobe Acrobat Reader mit angegeben. Er führt Sie automatisch auf die Downloadseite von Adobe. So können Sie sich Ihre Gutschrift auch für Ihre Unterlagen ausdrucken.<br><br>http://www.adobe.com/products/acrobat/readstep2.html<br><br>{IF}{INTERNET}{THEN}Internet-Bestellnr.: {INTERNET}{ELSE}{ENDIF}', 'Gutschrift', 1, 1);
+
+
+/* OpenXE 2024-01-24 für datatablelabel */
+INSERT INTO `hook` (`name`, `aktiv`, `parametercount`, `alias`, `description`) VALUES
+('eproosystem_ende', 1, 0, '', ''),
+('parseuservars', 1, 0, '', ''),
+('dokumentsend_ende', 1, 0, '', ''),
+('auftrag_versand_ende', 1, 0, '', ''),
+('transfer_document_incoming', 1, 0, '', '')
+;
+
+INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `hook`, `module`, `module_parameter`) VALUES
+(0, 'DataTableLabelsInclude', 1, 3, (SELECT id FROM hook WHERE name = 'eproosystem_ende'), 'Datatablelabels', 0),
+(0, 'DatatablelabelsParseUserVars', 1, 2, (SELECT id FROM hook WHERE name = 'parseuservars'), 'Datatablelabels', 0),
+(0, 'DataTableLabelsDokumentSendHook', 1, 1, (SELECT id FROM hook WHERE name = 'dokumentsend_ende'), 'Datatablelabels', 0),
+(0, 'DatatablelabelsOrderSent', 1, 1, (SELECT id FROM hook WHERE name = 'auftrag_versand_ende'), 'Datatablelabels', 0),
+(0, 'DatatablelabelsTransferDocumentIncomming', 1, 1, (SELECT id FROM hook WHERE name = 'transfer_document_incoming'), 'Datatablelabels', 0);
+/* OpenXE 2024-01-24 für datatablelabel */
 
 INSERT INTO `hook_menu` (`id`, `module`, `aktiv`) VALUES
 (1, 'artikel', 1),

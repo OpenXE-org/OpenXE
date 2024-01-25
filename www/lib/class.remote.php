@@ -1586,14 +1586,20 @@ class Remote
           $data[$i]['crosssellingartikel'] = [];
         }
 
-        $gegenseitigzugewiesen = $this->app->DB->SelectArr("SELECT a.id, a.nummer, ak.bezeichnung as kategorie, a.name_de, a.name_en, ca.art, ca.gegenseitigzuweisen, af.nummer AS fremdnummer
+       
+        $sql = 
+        
+        "SELECT a.id, a.nummer, ak.bezeichnung as kategorie, a.name_de, a.name_en, ca.art, ca.gegenseitigzuweisen, af.nummer AS fremdnummer
             FROM crossselling_artikel ca 
             JOIN artikel a ON ca.artikel = a.id 
             LEFT JOIN artikelkategorien ak ON CONCAT(ak.id,'_kat') = a.typ 
             LEFT JOIN (SELECT af.id,af.nummer,af.artikel,af.shopid FROM artikelnummer_fremdnummern af JOIN (SELECT artikel, MAX(shopid) AS maxid FROM artikelnummer_fremdnummern WHERE aktiv=1 AND (shopid=0 OR shopid=2) GROUP BY artikel) x ON x.artikel = af.artikel AND af.shopid=x.maxid WHERE af.aktiv = 1) af ON af.artikel = a.id            
+            LEFT JOIN (SELECT nummer,artikel FROM artikelnummer_fremdnummern WHERE shopid=0 OR shopid='$id' ORDER BY shopid DESC LIMIT 1 ) af2 ON af2.artikel = a.id
             WHERE ca.crosssellingartikel='" . $tmp->GetId() . "' AND ca.gegenseitigzuweisen=1 AND (ca.shop='$id' OR ca.shop='0') 
-            LEFT JOIN (SELECT nummer,artikel FROM artikelnummer_fremdnummern WHERE shopid=0 OR shopid='$id' ORDER BY shopid DESC LIMIT 1 ) af ON af.artikel = a.id
-            GROUP BY ca.artikel, ca.art");
+            GROUP BY ca.artikel, ca.art";
+
+        $gegenseitigzugewiesen = $this->app->DB->SelectArr($sql);
+
         if (!empty($gegenseitigzugewiesen)) {
           foreach ($gegenseitigzugewiesen as $gegenseitigzugewiesenercrosssellingartikel) {
             $data[$i]['crosssellingartikel'][] = $gegenseitigzugewiesenercrosssellingartikel;

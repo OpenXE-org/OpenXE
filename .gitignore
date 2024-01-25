@@ -3,3 +3,4 @@ conf/user_defined.php
 userdata
 www/cache/
 node_modules/
+www/themes/new/css/custom.css

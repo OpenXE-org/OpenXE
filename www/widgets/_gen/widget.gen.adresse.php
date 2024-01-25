@@ -583,6 +583,9 @@ class WidgetGenadresse
     $field = new HTMLCheckbox("geburtstagskarte","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("sachkonto","text","","30","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLSelect("verrechnungskontoreisekosten",0,"verrechnungskontoreisekosten","","","0");
     $this->form->NewField($field);
 

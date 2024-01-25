@@ -2362,6 +2362,7 @@ class Rechnung extends GenRechnung
 
     $belegmax = '';
     $ohnebriefpapier = $this->app->erp->Firmendaten('rechnung_ohnebriefpapier');
+    $abweichendebezeichnung = $this->app->erp->Firmendaten('rechnungersatz_standard');
 
     $usereditid = 0;
     if(isset($this->app->User) && $this->app->User && method_exists($this->app->User,'GetID')){
@@ -2375,24 +2376,24 @@ class Rechnung extends GenRechnung
           zahlungszieltageskonto,
           zahlungszielskonto,
           lieferdatum,
-          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid)
+          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid,abweichendebezeichnung)
             VALUES ('',NOW(),'','".$this->app->User->GetFirma()."','$belegmax','".$this->app->erp->StandardZahlungsweise($projekt)."',
               '".$this->app->erp->ZahlungsZielTage($projekt)."',
               '".$this->app->erp->ZahlungsZielTageSkonto($projekt)."',
               '".$this->app->erp->ZahlungsZielSkonto($projekt)."',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid')");
+              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
     } else {
       $this->app->DB->Insert("INSERT INTO rechnung (id,datum,bearbeiter,firma,belegnr,zahlungsweise,
           zahlungszieltage,
           zahlungszieltageskonto,
           zahlungszielskonto,
           lieferdatum,
-          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid)
+          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid,abweichendebezeichnung)
             VALUES ('',NOW(),'','".$this->app->User->GetFirma()."','$belegmax','".$this->app->erp->StandardZahlungsweise($projekt)."',
               '0',
               '0',
               '0',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid')");
+              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
     }
 
     $id = $this->app->DB->GetInsertID();
@@ -2518,9 +2519,6 @@ class Rechnung extends GenRechnung
         $this->app->Secure->POST[$value] = str_replace("'", '&apos;',$arr[0][$value]);
         $uparr[$value] = str_replace("'", '&apos;',$arr[0][$value]);
       }
-
-      //$this->app->Secure->POST[$value] = $arr[0][$value];
-      //$uparr[$value] = $arr[0][$value];
     }
 
     $uparr['adresse'] = $adresse;
@@ -2529,6 +2527,10 @@ class Rechnung extends GenRechnung
 
     if($this->app->erp->Firmendaten('rechnung_ohnebriefpapier')=='1'){
       $uparr['ohne_briefpapier'] = '1';
+    }
+
+    if($this->app->erp->Firmendaten('rechnungersatz_standard')=='1'){
+      $uparr['abweichendebezeichnung']=1;
     }
 
     $this->app->DB->UpdateArr('rechnung',$id,'id',$uparr,true);

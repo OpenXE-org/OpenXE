@@ -34,6 +34,9 @@ class WidgetAdresse extends WidgetGenAdresse
     $this->form->ReplaceFunction("kreditlimit",$this,"ReplaceBetrag");
     $this->form->ReplaceFunction("kreditlimiteinmalig",$this,"ReplaceBetrag");
 
+    $this->app->YUI->AutoComplete("sachkonto","sachkonto",1);
+    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");    
+
     $this->form->ReplaceFunction("lat",$this,"ReplaceBetrag");
     $this->form->ReplaceFunction("lng",$this,"ReplaceBetrag");
     $this->form->ReplaceFunction("name",$this,"ReplaceTrim");
@@ -471,6 +474,11 @@ class WidgetAdresse extends WidgetGenAdresse
   public function ReplaceTrim($db,$value,$fromform)
   {
     return trim($value);
+  }
+
+  function ReplaceKontorahmen($db,$value,$fromform)
+  {
+    return $this->app->erp->ReplaceKontorahmen($db,$value,$fromform);
   }
 
   /**
