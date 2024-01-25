@@ -447,7 +447,8 @@ class Exportbuchhaltung
                 'field_belegnr' => 'b.belegnr',
                 'field_name' => 'b.name',
                 'field_date' => 'datum',
-                'field_auftrag' => 'b.auftrag',
+                'field_auftrag' => 'MAKE_SET(3,b.auftrag,(SELECT auftrag.internet FROM auftrag WHERE auftrag.id = auftragid))',
+                'field_zahlweise' => 'CONCAT(UCASE(LEFT(b.zahlungsweise, 1)),SUBSTRING(b.zahlungsweise, 2))',
                 'field_kontonummer' => 'a.kundennummer_buchhaltung',
                 'field_kundennummer' => 'b.kundennummer',
                 'field_betrag_gesamt' => 'b.soll',
@@ -466,6 +467,7 @@ class Exportbuchhaltung
                 'field_name' => 'b.name',
                 'field_date' => 'datum',
                 'field_auftrag' => '\'\'',
+                'field_zahlweise' => '\'\'',
                 'field_kontonummer' => 'a.kundennummer_buchhaltung',
                 'field_kundennummer' => 'b.kundennummer',
                 'field_betrag_gesamt' => 'b.soll',
@@ -484,6 +486,7 @@ class Exportbuchhaltung
                 'field_name' => 'a.name',
                 'field_date' => 'rechnungsdatum',
                 'field_auftrag' => 'b.auftrag',
+                'field_zahlweise' => '\'\'',
                 'field_kontonummer' => 'a.lieferantennummer_buchhaltung',
                 'field_kundennummer' => 'a.lieferantennummer',
                 'field_betrag_gesamt' => 'b.betrag',
@@ -494,7 +497,7 @@ class Exportbuchhaltung
                 'do' => $verbindlichkeit
             )
         );
-
+        
         foreach ($typen as $typ) {                     
 
             if (!$typ['do']) {
@@ -504,6 +507,7 @@ class Exportbuchhaltung
             $sql = "SELECT  
                 ".$typ['field_belegnr']." as belegnr,
                 ".$typ['field_auftrag']." as auftrag,
+                ".$typ['field_zahlweise']." as zahlweise,
                 if(".$typ['field_kontonummer']." <> '',".$typ['field_kontonummer'].",".$typ['field_kundennummer'].") as kundennummer,
                 ".$typ['field_name']." as name,
                 b.ustid,
@@ -579,7 +583,8 @@ class Exportbuchhaltung
                             $data['Belegdatum'] = date_format(date_create($row['datum']),"dm"); // obligatory                        
                             $data['Buchungstext'] = "Differenz";
                             $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $row['ustid'];
-                            $data['Auftragsnummer'] = $row['auftrag'];               		        
+                            $data['Auftragsnummer'] = $row['auftrag'];
+                            $data['Zahlweise'] = $row['zahlweise'];
                 		    $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
                         }                                                       
         		    }                                
@@ -625,6 +630,7 @@ class Exportbuchhaltung
                 $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $row['ustid'];
                 
                 $data['Auftragsnummer'] = ($row['auftrag']!=0)?$row['auftrag']:'';
+                $data['Zahlweise'] = $row['zahlweise'];
                 
                 $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
             }
