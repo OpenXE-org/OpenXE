@@ -2847,21 +2847,28 @@ class YUI {
                         ";
             }          
                               
-        }else{
+        } else {
         $sql = "SELECT $sortcol, CONCAT($hersteller_ansicht if(b.beschreibung!='',
                        if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(CONCAT(b.bezeichnung,' *'),1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),CONCAT(b.bezeichnung,' *')),
                          if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(b.bezeichnung,1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),b.bezeichnung)) $erweiterte_ansicht)
                            as Artikel,
-                              p.abkuerzung as projekt, a.nummer as nummer, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge,  ".$this->FormatPreis($preiscell)." as preis
-                              
-                              
-                              ,b.waehrung, b.rabatt as rabatt,";
+                        p.abkuerzung as projekt,
+                        a.nummer as nummer,
+                        b.nummer as nummer,
+                        DATE_FORMAT(lieferdatum,
+                        '%d.%m.%Y') as lieferdatum,
+                        trim(b.menge)+0 as menge,
+                        ".$this->FormatPreis($preiscell)." as preis,
+                        b.waehrung,
+                        b.rabatt as rabatt,
+                        '' AS Einkaufspreis,
+                        '' AS DB,
+                        ";
         }
-                            $sql .=  "b.id as id
-                                FROM $table b
-                                LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
-                                WHERE b.$module='$id'";
-
+        $sql .=  "b.id as id
+            FROM $table b
+            LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
+            WHERE b.$module='$id'";
       } 
         else if ($module == "verbindlichkeit") // OpenXE
         {     
