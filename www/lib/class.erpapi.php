@@ -25530,31 +25530,31 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       {
         $signaturtext = $this->Signatur($from);
         if($this->isHTML($signaturtext))
-          $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".$signaturtext;
+          $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
         else
-          $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
+          $body = str_replace('\r\n',"\n",$text)."<br>".nl2br($signaturtext);
       }else{
         if($projekt > 0 && $this->Projektdaten($projekt,"absendesignatur")!=""){
           $signaturtext = $this->Projektdaten($projekt,"absendesignatur");
           if($this->isHTML($signaturtext))
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$signaturtext;
+            $body = str_replace('\r\n',"\n",$text)."<br><br>".$signaturtext;
           else
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
+            $body = str_replace('\r\n',"\n",$text)."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
         }else{
           if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 0){
             $signaturtext = $this->Signatur($from);
             if($this->isHTML($signaturtext))
               $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
             else
-              $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
+              $body = str_replace('\r\n',"\n",$text)."<br>".nl2br($signaturtext);
           }else{
-            $body = utf8_decode(str_replace('\r\n',"\n",$text));
+            $body = str_replace('\r\n',"\n",$text);
           }
         }
 
       }
     } else {
-      $body = utf8_decode(str_replace('\r\n',"\n",$text));
+      $body = str_replace('\r\n',"\n",$text);
     }
 
     {
