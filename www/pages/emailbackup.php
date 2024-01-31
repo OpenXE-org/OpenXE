@@ -296,7 +296,7 @@ $width = array('10%'); // Fill out manually later
         array($result[0]['email']),
         array($result[0]['angezeigtername']),
         'OpenXE ERP: Testmail',
-        utf8_encode('Dies ist eine Testmail für Account "'.$result[0]['email'].'".'),
+        'Dies ist eine Testmail für Account "'.$result[0]['email'].'".',
         '',0,false,'','',
         true
       )
