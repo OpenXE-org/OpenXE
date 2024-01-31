@@ -161,10 +161,7 @@ $width = array('10%'); // Fill out manually later
 
         if (!empty($result)) {
             $emailbackup = $result[0];
-        } else {
-            return;
-        }
-
+        } 
         foreach ($emailbackup as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   
         }
@@ -296,8 +293,8 @@ $width = array('10%'); // Fill out manually later
       $this->app->erp->MailSend(
         $result[0]['email'],
         $result[0]['angezeigtername'],
-        $result[0]['email'],
-        $result[0]['angezeigtername'],
+        array($result[0]['email']),
+        array($result[0]['angezeigtername']),
         'OpenXE ERP: Testmail',
         utf8_encode('Dies ist eine Testmail für Account "'.$result[0]['email'].'".'),
         '',0,false,'','',
