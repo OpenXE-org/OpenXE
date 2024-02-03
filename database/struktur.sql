@@ -16769,6 +16769,26 @@ INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `ho
 (0, 'DatatablelabelsTransferDocumentIncomming', 1, 1, (SELECT id FROM hook WHERE name = 'transfer_document_incoming'), 'Datatablelabels', 0);
 /* OpenXE 2024-01-24 für datatablelabel */
 
+/* OpenXE 2024-02-03 für belegvorlagen */
+INSERT INTO `hook` (`name`, `aktiv`, `parametercount`, `alias`, `description`) VALUES
+('BelegPositionenButtons', 1, 3, '', ''),
+('AARLGPositionen_cmds_end', 1, 1, '', ''),
+('ajax_filter_hook1', 1, 1, '', '');
+
+INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `hook`, `module`, `module_parameter`) VALUES
+(0, 'BelegevorlagenAARLGPositionen_cmds_end', 1, 2, (SELECT id FROM hook WHERE name = 'AARLGPositionen_cmds_end' LIMIT 1), 'belegevorlagen', 0),
+(0, 'Belegevorlagenajax_filter_hook1', 1, 2, (SELECT id FROM hook WHERE name = 'ajax_filter_hook1' LIMIT 1), 'belegevorlagen', 0),
+(0, 'BelegevorlagenBelegPositionenButtons', 1, 2, (SELECT id FROM hook WHERE name = 'BelegPositionenButtons' LIMIT 1), 'belegevorlagen', 0)
+;
+/* OpenXE 2024-02-03 für belegvorlagen */
+
+/*
+BelegPositionenButtons
+
+Id,Hook_action,Function,Aktiv,Position,Hook,Module,Module_parameter
+20,0,BelegevorlagenBelegPositionenButtons,1,2,16,belegevorlagen,0
+*/
+
 INSERT INTO `hook_menu` (`id`, `module`, `aktiv`) VALUES
 (1, 'artikel', 1),
 (2, 'provisionenartikel', 1),
