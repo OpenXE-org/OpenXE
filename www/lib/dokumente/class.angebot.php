@@ -498,8 +498,10 @@ class AngebotPDF extends BriefpapierCustom {
             "rabatt"=>$value['rabatt'],
             "steuertext"=>$value['steuertext']));
       if($positionenkaufmaenischrunden == 3){
-        $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
-      }else{
+        if (!$value['nicht_einrechnen']) {        
+            $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
+        }
+      }else if (!$value['nicht_einrechnen']) {
         $netto_gesamt = $value['menge'] * ($value['preis'] - ($value['preis'] / 100 * $value['rabatt']));
       }
       if($positionenkaufmaenischrunden)

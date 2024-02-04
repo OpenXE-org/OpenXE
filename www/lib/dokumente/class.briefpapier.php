@@ -658,7 +658,7 @@ class Briefpapier extends SuperFPDF {
 
   public function addItem($rdata){
     // add rabatt
-    if($rdata['price']!='-'){
+    if($rdata['price']!='-' && is_numeric($rdata['price'])){
       if($rdata['rabatt'] == 100){
         $rdata['tprice'] = round($rdata['amount'] * ((double)$rdata['price'] - (double)($rdata['price'] / 100.00 * (double)$rdata['rabatt'])), 13);
       }else{
