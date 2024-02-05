@@ -172,6 +172,11 @@
 											<button name="submit" class="ui-button-icon" style="width:100%;" value="abschliessen">{|Abschlie&szlig;en|}</button>
 										</td>
 									</tr>
+									<tr [ABGESCHLOSSENHIDDEN]>
+										<td>
+									    	<button name="submit" class="ui-button-icon" style="width:100%;" value="oeffnen" form="oeffnen">{|&Ouml;ffnen|}</button>                
+										</td>
+									</tr>
 								</table>
 							</fieldset>
 						</div>
@@ -218,6 +223,9 @@
         </div> [AFTERTAB2]
 	</form> 
 </div>
+<form action="index.php?module=wareneingang&action=oeffnen" id="oeffnen" method="POST">
+    <input name="id" value="[ID]" hidden></input> 
+</form>
 <script type="text/javascript">
 $(document).ready(function() {
 	$("#tabs").tabs("option", "active", [TABINDEX]);

@@ -1474,6 +1474,7 @@ class Wareneingang {
         $this->app->ActionHandler("settings", "WareneingangSettings");
 
         $this->app->ActionHandler("deletepos", "WareneingangPositionLoeschen");
+        $this->app->ActionHandler("oeffnen", "WareneingangOeffnen");
 
         $this->app->DefaultActionHandler("list");
         $this->app->erp->Headlines('Wareneingang');
@@ -1596,6 +1597,15 @@ class Wareneingang {
             $this->app->DB->Delete("DELETE FROM paketannahme WHERE id='$id' LIMIT 1");
         }
         $this->app->Location->execute('Location: index.php?module=wareneingang&action=distribution');
+    }
+
+    public function WareneingangOeffnen() {
+        $id = $this->app->Secure->GetPOST('id');
+
+        if ($id > 0 && is_numeric($id)) {
+            $this->app->DB->Delete("UPDATE paketannahme set status = 'angelegt' WHERE id='$id' LIMIT 1");
+        }
+        $this->app->Location->execute('Location: index.php?module=wareneingang&action=distriinhalt&id='.$id);
     }
 
     public function WareneingangMenu() {
