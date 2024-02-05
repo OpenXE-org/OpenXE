@@ -446,6 +446,7 @@ class Firmendaten  {
       'artikelnummer',
       'preisanfrage',
       'verbindlichkeit',
+      'lieferantengutschrift',
       'receiptdocument',
     ];
     if(in_array($cmd, $allowedNumbers)) {
@@ -1703,6 +1704,7 @@ class Firmendaten  {
       $this->app->Tpl->Set('NEXT_ANFRAGE' , $data[0]['next_anfrage']);
       $this->app->Tpl->Set('NEXT_PREISANFRAGE' , $data[0]['next_preisanfrage']);
       $this->app->Tpl->Set('NEXT_VERBINDLICHKEIT', $data[0]['next_verbindlichkeit']);
+      $this->app->Tpl->Set('NEXT_LIEFERANTENGUTSCHRIFT', $data[0]['next_lieferantengutschrift']);
       $this->app->Tpl->Set('NEXT_RECEIPTDOCUMENT', $data[0]['next_receiptdocument']);
 
       //Briefpapier Hintergrund
@@ -2060,6 +2062,7 @@ class Firmendaten  {
     $this->app->Tpl->Set('NEXT_ANFRAGE' , ($data['next_anfrage']));    
     $this->app->Tpl->Set('NEXT_PREISANFRAGE' , ($data['next_preisanfrage']));
     $this->app->Tpl->Set('NEXT_VERBINDLICHKEIT', ($data['next_verbindlichkeit']));
+    $this->app->Tpl->Set('NEXT_LIEFERANTENGUTSCHRIFT', ($data['next_lieferantengutschrift']));
     $this->app->Tpl->Set('NEXT_RECEIPTDOCUMENT', ($data['next_receiptdocument']));
 
     //Briefpapier Hintergrund
@@ -2283,6 +2286,7 @@ class Firmendaten  {
     $data['next_anfrage'] = ($this->app->Secure->POST["next_anfrage"]);
     $data['next_preisanfrage'] = ($this->app->Secure->POST["next_preisanfrage"]);
     $data['next_verbindlichkeit'] = ($this->app->Secure->POST["next_verbindlichkeit"]);
+    $data['next_lieferantengutschrift'] = ($this->app->Secure->POST["next_lieferantengutschrift"]);
     $data['produktionsverhalten'] = $this->app->Secure->POST["produktionsverhalten"];
 
     $data['sprachebevorzugen'] = ($this->app->Secure->POST["sprachebevorzugen"]);

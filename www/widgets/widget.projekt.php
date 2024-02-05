@@ -235,6 +235,9 @@ class WidgetProjekt extends WidgetGenProjekt
     $field = new HTMLInput("next_verbindlichkeit","text","",40);
     $field->readonly="readonly";
     $this->form->NewField($field);
+    $field = new HTMLInput("next_lieferantengutschrift","text","",40);
+    $field->readonly="readonly";
+    $this->form->NewField($field);
     $field = new HTMLInput("next_kundennummer","text","",40);
     $field->readonly="readonly";
     $this->form->NewField($field);    

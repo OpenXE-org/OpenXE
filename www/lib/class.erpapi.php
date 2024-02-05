@@ -7191,6 +7191,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Lohnabrechnung','lohnabrechnung','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Verbindlichkeiten','verbindlichkeit','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Lieferantengutschriften','lieferantengutschrift','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Kassenbuch','kasse','list');
 
@@ -8620,6 +8621,7 @@ function StandardFirmendatenWerte()
   $this->AddNeuenFirmendatenWert( 'next_proformarechnung', 'varchar', '128', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'next_serviceauftrag', 'varchar', '128', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'next_verbindlichkeit', 'varchar', '128', '', '', '', 1, 1);
+  $this->AddNeuenFirmendatenWert( 'next_lieferantengutschrift', 'varchar', '128', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'zahlung_auftrag_sofort_de', 'text', '', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'zahlung_auftrag_de', 'text', '', '', '', '', 1, 1);
 
@@ -27720,7 +27722,7 @@ function Firmendaten($field,$projekt="")
           $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',
               'bestellung', 'gutschrift', 'kundennummer', 'lieferantennummer', 'mitarbeiternummer', 'waren',
               'produktion', 'sonstiges', 'anfrage', 'artikelnummer', 'kalkulation', 'preisanfrage', 'proformarechnung',
-              'retoure', 'verbindlichkeit', 'goodspostingdocument', 'receiptdocument'];
+              'retoure', 'verbindlichkeit','lieferantengutschrift', 'goodspostingdocument', 'receiptdocument'];
 
           $dbfield = "next_$type";
           $belegnr = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
@@ -27844,6 +27846,11 @@ function Firmendaten($field,$projekt="")
             case "verbindlichkeit":
               $belegnr = $this->Firmendaten("next_verbindlichkeit");
               if($belegnr == "0" || $belegnr=="") $belegnr = 10000;
+              $newbelegnr = $this->CalcNextNummer($belegnr);
+              break;
+            case "lieferantengutschrift":
+              $belegnr = $this->Firmendaten("next_lieferantengutschrift");
+              if($belegnr == "0" || $belegnr=="") $belegnr = 20000;
               $newbelegnr = $this->CalcNextNummer($belegnr);
               break;
             case 'receiptdocument':

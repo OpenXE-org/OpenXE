@@ -776,6 +776,10 @@
 								<input type="button" onclick="next_number('verbindlichkeit','[NEXT_VERBINDLICHKEIT]');" value="bearbeiten"></td>
 							</tr>
 							<tr>
+								<td>Nächste Lieferantengutschriftnummer:</td><td><input type="text" name="next_lieferantengutschrift" readonly value="[NEXT_LIEFERANTENGUTSCHRIFT]" size="40">
+								<input type="button" onclick="next_number('lieferantengutschrift','[NEXT_LIEFERANTENGUTSCHRIFT]');" value="bearbeiten"></td>
+							</tr>
+							<tr>
 								<td>N&auml;chste Kundennummer:</td><td><input type="text" name="next_kundennummer"  readonly value="[NEXT_KUNDENNUMMER]" size="40">
 								<input type="button" onclick="next_number('kundennummer','[NEXT_KUNDENNUMMER]');" value="bearbeiten"></td>
 							</tr>
