@@ -508,22 +508,19 @@ class AngebotPDF extends BriefpapierCustom {
       {
         $netto_gesamt = round($netto_gesamt, 2);
       }
-      if($value['optional']!="1"){
+      if(!isset($summen[$value['steuersatz']])) {            
+        $summen[$value['steuersatz']] = 0;
+      }
+      if($value['optional']!="1"){        
         if($value['explodiert_parent'] == 0 || !$berechnen_aus_teile)
         {
-          $summe = $summe + $netto_gesamt;
-          if(!isset($summen[$value['steuersatz']]))$summen[$value['steuersatz']] = 0;
           $summen[$value['steuersatz']] += ($netto_gesamt/100)*$value['steuersatz'];
+          $summe = $summe + $netto_gesamt;         
           $gesamtsteuern +=($netto_gesamt/100)*$value['steuersatz'];
-        }
-        /*
-        if($value['umsatzsteuer']=="" || $value['umsatzsteuer']=="normal")
-        {
-          $summeV = $summeV + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzNormal(false,$id,"angebot"));
-        }
-        else {
-          $summeR = $summeR + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzErmaessigt(false,$id,"angebot"));
-        }*/
+        }      
+      } else {
+        $summe_netto_optional += $netto_gesamt;
+        $steuern_optional +=($netto_gesamt/100)*$value['steuersatz'];
       }
     }
     
@@ -545,7 +542,7 @@ class AngebotPDF extends BriefpapierCustom {
 
     if($this->app->erp->AngebotMitUmsatzeuer($id))
     {
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0,"optional"=>$summe_netto_optional+$steuern_optional,"optional_netto"=>$summe_netto_optional));
       //$this->setTotals(array("totalArticles"=>$summe,"totalTaxV"=>$summeV,"totalTaxR"=>$summeR,"total"=>$summe+$summeV+$summeR));
     } else {
       $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe));
