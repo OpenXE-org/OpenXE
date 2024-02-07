@@ -81,7 +81,7 @@
     function allewareneingaengeauswaehlen()
     {
       var wert = $('#auswahlallewareneingaenge').prop('checked');
-      $('#lieferantengutschrift_paketdistribution_list').find(':checkbox').prop('checked',wert);
+      $('#verbindlichkeit_positionen').find(':checkbox').prop('checked',wert);
     }
     function alleauswaehlen()
     {

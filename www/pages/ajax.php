@@ -3832,10 +3832,13 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $term = str_replace(',','',$term);
         }
 
+        $adresse = (int)$this->app->Secure->GetGET('adresse');
+        if (!empty($adresse)) {
+            $subwhere .= " AND a.id = ".$adresse;
+        }
+
         $sql =
-          "SELECT CONCAT(v.id,
-          IF(IFNULL(v.belegnr, '') <> '' AND v.belegnr!=v.id,
-          CONCAT(' Nr. ',v.belegnr),''),
+          "SELECT CONCAT(v.belegnr,
           ' Betrag: ',".$this->app->erp->FormatPreis('v.betrag',2).",
           if(v.skonto <> 0,CONCAT(' mit Skonto ',v.skonto,'% ',
           ".$this->app->erp->FormatPreis("v.betrag-((v.betrag/100.0)*v.skonto)",2)."),''),' ',
@@ -3848,7 +3851,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           a.name,' (Lieferant ',a.lieferantennummer,if(a.lieferantennummer_buchhaltung!='' AND a.lieferantennummer <> a.lieferantennummer_buchhaltung,CONCAT(' ',a.lieferantennummer_buchhaltung),''),') RE ',v.rechnung,' Rechnungsdatum ',DATE_FORMAT(v.rechnungsdatum,'%d.%m.%Y')) as bezeichnung 
           FROM verbindlichkeit AS v 
           LEFT JOIN adresse AS a ON a.id=v.adresse 
-        WHERE ($subwhere) AND bezahlt!=1 AND status!='storniert' 
+        WHERE ($subwhere) AND bezahlt!=1 AND status!='storniert' AND belegnr <> '' 
         ORDER by v.id DESC"; //AND v.status!='bezahlt' // heute wieder raus
 
         $arr = $this->app->DB->SelectArr($sql);

@@ -13248,6 +13248,11 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     return $this->ReplaceANABRELSGSBE("rechnung",$db,$value,$fromform);
   }
 
+  function ReplaceVerbindlichkeit($db,$value,$fromform)
+  {
+    return $this->ReplaceANABRELSGSBE("verbindlichkeit",$db,$value,$fromform);
+  }
+
   function ReplaceRetoure($db,$value,$fromform)
   {
     return $this->ReplaceANABRELSGSBE('retoure',$db,$value,$fromform);

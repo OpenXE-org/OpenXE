@@ -211,10 +211,10 @@ class lieferantengutschrift {
                 $freigabe = $app->DB->Select("SELECT freigabe FROM lieferantengutschrift WHERE id = '".$id."'");
                 $rechnungsfreigabe = $app->DB->Select("SELECT rechnungsfreigabe FROM lieferantengutschrift WHERE id = '".$id."'");
 
-                $heading = array('',  'Artikel-Nr.','Artikel','Bemerkung','Menge','Preis','Steuersatz','Sachkonto');
-                $width = array(  '1%', '20%',    '20%',   '1%',   '1%',        '3%',       '1%',       '1%');       
+                $heading = array(''  ,'Verbindlichkeit', 'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz','Sachkonto');
+                $width = array(  '1%','1%',              '20%',        '20%',    '1%',        '1%',        '3%',       '1%',       '1%');       
 
-                $findcols = array('vp.id','art.nummer','art.name_de','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id');
+                $findcols = array('lgp.id','v.belegnr','art.nummer','art.name_de','lgp.menge','lgp.preis','lgp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'lgp.id');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array(8,9,10);                
@@ -232,31 +232,139 @@ class lieferantengutschrift {
                 }
                 $heading[] = '';                      
               
+        	    $box = "CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',lgp.id,'\" />') AS `auswahl`";
+
+                $verbindlichkeitlink = array (
+                    '<a href="index.php?module=verbindlichkeit&action=edit&id=',
+                    ['sql' => 'v.id'],
+                    '">',                    
+                    ['sql' => 'v.belegnr'],
+                    '</a>'
+                );    
+
+                $artikellink = array (
+                    '<a href="index.php?module=artikel&action=edit&id=',
+                    ['sql' => 'art.id'],
+                    '">',                    
+                    ['sql' => 'art.nummer'],
+                    '</a>'
+                );        
+
+                $sql = "
+                    SELECT SQL_CALC_FOUND_ROWS                          
+                        lgp.id,
+                        $box,
+                        ".$this->app->erp->ConcatSQL($verbindlichkeitlink).",
+                        ".$this->app->erp->ConcatSQL($artikellink).",
+                        art.name_de,
+                        lgp.menge,
+                        lgp.preis,
+                        lgp.steuersatz,
+                        CONCAT(skv.sachkonto,' ',skv.beschriftung),
+                        lgp.id
+                    FROM
+                        lieferantengutschrift_position lgp
+                    INNER JOIN lieferantengutschrift lg ON
+                        lg.id = lgp.lieferantengutschrift
+                    LEFT JOIN verbindlichkeit_position vp ON
+                        vp.id = lgp.verbindlichkeit_position
+                    LEFT JOIN verbindlichkeit v ON
+                        vp.verbindlichkeit = v.id
+                    INNER JOIN artikel art ON
+                        art.id = lgp.artikel
+                    INNER JOIN adresse adr ON
+                        adr.id = lg.adresse
+                    LEFT JOIN kontorahmen skv ON skv.id = lgp.kontorahmen                    
+                ";
+
+                $where = "lgp.lieferantengutschrift = ".$id;
+
+                $count = "";
+
+                break;
+            case 'verbindlichkeit_positionen':
+    
+                $allowed['verbindlichkeit_positionen'] = array('list');              
+
+                $id = $app->Secure->GetGET('id');
+    
+                //$verbindlichkeit = $app->DB->Select("SELECT verbindlichkeit FROM lieferantengutschrift WHERE id = '".$id."'");            
+
+                $heading = array('',  'Verbindlichkeit',  'Artikel-Nr.','Artikel','Menge','Preis','Steuersatz','Sachkonto', '');
+                $width = array(  '1%','2%',               '2%',         '20%',    '1%',   '1%',        '3%',       '1%',       '1%');       
+
+                $findcols = array('vp.id','v.belegnr','art.nummer','art.name_de','vp.menge','vp.preis','vp.steuersatz',"CONCAT(skv.sachkonto,' ',skv.beschriftung)",'vp.id');
+                $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
+
+                $alignright = array(8,9,10);                
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;        
+
+                $offen_menge = "TRIM(IF(
+                            pd.menge > COALESCE(vp.menge,0),
+                            pd.menge - COALESCE(vp.menge,0),
+                            0
+                        ))+0";
+
+                $auswahl = array (
+                    '<input type=\"checkbox\" name=\"ids[]\" value=\"',                   
+                    ['sql' => 'pd.id'],
+                    '"/>'
+                );              
+
+                $werte = array (
+                    '<input type="number" name="werte[]" value="',
+                    ['sql' => $offen_menge],
+                    '" min="0"',
+                    '" max="',
+                    ['sql' => $offen_menge],
+                    '"/>'
+                );       
+
+                $preise = array (
+                    '<input type="number" name="preise[]" step="0.00001" value="',
+                    ['sql' => $this->app->erp->FormatMenge("COALESCE(bp.preis,0)",5)],
+                    '" min="0"',                    
+                    '"/>'
+                );         
+                       
+                $artikellink = array (
+                    '<a href="index.php?module=artikel&action=edit&id=',
+                    ['sql' => 'art.id'],
+                    '">',                    
+                    ['sql' => 'art.nummer'],
+                    '</a>'
+                );                        
+              
         	    $box = "CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',vp.id,'\" />') AS `auswahl`";
 
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS                          
                         vp.id,
-                        $box,
-                        art.nummer,
+                        ".$this->app->erp->ConcatSQL($auswahl).",
+                        v.belegnr,
+                        ".$this->app->erp->ConcatSQL($artikellink).",
                         art.name_de,
-                        vp.menge,
+                        ".$this->app->erp->ConcatSQL($werte).",
                         vp.preis,
                         vp.steuersatz,
                         CONCAT(skv.sachkonto,' ',skv.beschriftung),
                         vp.id
                     FROM
-                        lieferantengutschrift_position vp
-                    INNER JOIN lieferantengutschrift v ON
-                        v.id = vp.lieferantengutschrift
+                        verbindlichkeit_position vp
+                    INNER JOIN verbindlichkeit v ON
+                        v.id = vp.verbindlichkeit
+                    INNER JOIN paketdistribution pd ON
+                        pd.id = vp.paketdistribution
                     INNER JOIN artikel art ON
-                        art.id = vp.artikel
+                        art.id = pd.artikel
                     INNER JOIN adresse adr ON
                         adr.id = v.adresse
                     LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen                    
                 ";
 
-                $where = "vp.lieferantengutschrift = ".$id;
+                $where = "v.adresse = (SELECT adresse FROM lieferantengutschrift WHERE id = ".$id.") AND v.status = 'freigegeben'";
 
                 $count = "";
 
@@ -474,7 +582,8 @@ class lieferantengutschrift {
                    // Write to database            
                 // Add checks here
 
-                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM lieferantengutschrift WHERE id =".$id)[0];
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe, adresse, belegnr FROM lieferantengutschrift WHERE id =".$id)[0];             
+
                 if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
                     $internebemerkung = $input['internebemerkung'];
                     $projekt = $input['projekt'];
@@ -484,7 +593,13 @@ class lieferantengutschrift {
                     $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$projekt,true);
                     $input['kostenstelle'] = $this->app->DB->Select("SELECT id FROM kostenstellen WHERE nummer = '".$kostenstelle."'");
                 } else {
-                    $input['adresse'] = $this->app->erp->ReplaceLieferantennummer(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+                 
+                    if ($freigabe['belegnr']) {
+                        unset($input['adresse']);               
+                    } else {
+                        $input['adresse'] = $this->app->erp->ReplaceLieferantennummer(true,$input['adresse'],true); // Parameters: Target db?, value, from form?
+                    }
+
                     $input['rechnungsdatum'] = $this->app->erp->ReplaceDatum(true,$input['rechnungsdatum'],true); // Parameters: Target db?, value, from form?
                     $input['eingangsdatum'] = $this->app->erp->ReplaceDatum(true,$input['eingangsdatum'],true); // Parameters: Target db?, value, from form?
                     $input['skontobis'] = $this->app->erp->ReplaceDatum(true,$input['skontobis'],true); // Parameters: Target db?, value, from form?
@@ -513,9 +628,7 @@ class lieferantengutschrift {
                             $input['skontobis'] = date('Y-m-d',strtotime($input['rechnungsdatum']." + ".$adressdaten['zahlungszieltageskontolieferant']." days"));
                             $input['skonto'] = $adressdaten['zahlungszielskontolieferant'];
                         }
-
                     }
-
                 }              
 
                 $columns = "id, ";
@@ -564,7 +677,7 @@ class lieferantengutschrift {
 
                 $bruttoeingabe = $this->app->Secure->GetPOST('bruttoeingabe');                                                                
 
-                foreach ($ids as $key => $paketdistribution) {
+                foreach ($ids as $key => $verbindlichkeit_position) {
                     $menge = $werte[$key];
 
                     if ($menge <= 0) {
@@ -575,24 +688,24 @@ class lieferantengutschrift {
                     $sql = "
                         SELECT   
                             IF(
-                                pd.menge > COALESCE(vp.menge,0),
-                                pd.menge - COALESCE(vp.menge,0),
+                                vp.menge > COALESCE(lgp.menge,0),
+                                vp.menge - COALESCE(lgp.menge,0),
                                 0
                             ) offen_menge
                         FROM                        
-                            paketdistribution pd
+                            verbindlichkeit_position vp
                         LEFT JOIN(
                             SELECT
-                                paketdistribution,
+                                verbindlichkeit_position,
                                 SUM(menge) AS menge
                             FROM
-                                lieferantengutschrift_position vp
+                                lieferantengutschrift_position lgp
                             GROUP BY
-                                paketdistribution
-                        ) vp
+                                verbindlichkeit_position
+                        ) lgp
                         ON
-                            vp.paketdistribution = pd.id           
-                        WHERE pd.id = ".$paketdistribution."
+                            vp.id = lgp.verbindlichkeit_position           
+                        WHERE vp.id = ".$verbindlichkeit_position."
                         ";
                     $offen_menge = $this->app->DB->Select($sql);
 
@@ -604,31 +717,32 @@ class lieferantengutschrift {
                         $menge = $offen_menge;
                     }
 
-                    $preis = $preise[$key];
                     $sql = "SELECT 
                                 a.id,
                                 a.umsatzsteuer,
                                 a.steuersatz,
-                                COALESCE(if (skart.id <> 0,skart.id,skadr.id),0) AS kontorahmen
+                                COALESCE(if (skart.id <> 0,skart.id,skadr.id),0) AS kontorahmen,
+                                vp.preis
                             FROM 
-                                paketdistribution pd 
+                                verbindlichkeit_position vp 
                             INNER JOIN
-                                paketannahme pa ON pa.id = pd.paketannahme
+                                verbindlichkeit v ON v.id = vp.verbindlichkeit
                             INNER JOIN 
-                                artikel a ON a.id = pd.artikel
+                                artikel a ON a.id = vp.artikel
                             INNER JOIN 
-                                adresse adr ON pa.adresse = adr.id
+                                adresse adr ON v.adresse = adr.id
                             LEFT JOIN 
                                 kontorahmen skart ON skart.id = a.kontorahmen
                             LEFT JOIN 
                                 kontorahmen skadr ON skadr.id = adr.kontorahmen           
-                            WHERE pd.id =".$paketdistribution;
+                            WHERE vp.id =".$verbindlichkeit_position;
 
                     $artikel = $this->app->DB->SelectRow($sql);
                         
                     $einartikel = $artikel['id'];
                     $umsatzsteuer = $artikel['umsatzsteuer'];
-                    $kontorahmen = $artikel['kontorahmen'];
+                    $kontorahmen = $artikel['kontorahmen'];                    
+                    $preis = $artikel['preis'];                    
 
                     if(empty($umsatzsteuer) && is_numeric($artikel['steuersatz'])) {
                         $steuersatz = $artikel['steuersatz'];
@@ -639,9 +753,8 @@ class lieferantengutschrift {
                     if ($bruttoeingabe) {
                         $preis = $preis / (1+($steuersatz/100));
                     }    
-                    $sql = "INSERT INTO lieferantengutschrift_position (lieferantengutschrift,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
+                    $sql = "INSERT INTO lieferantengutschrift_position (lieferantengutschrift,verbindlichkeit_position, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $verbindlichkeit_position, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
                     $this->app->DB->Insert($sql);
-
                 }
             break;    
             case 'positionen_entfernen':           
@@ -734,7 +847,8 @@ class lieferantengutschrift {
                                                      v.beschreibung,
                                                      v.sachkonto,
                                                      v.internebemerkung,
-                                                     a.lieferantennummer,
+                                                     v.verbindlichkeit,
+                                                     a.lieferantennummer,                                                        
                                                      a.name AS adresse_name FROM lieferantengutschrift v LEFT JOIN adresse a ON a.id = v.adresse"." WHERE v.id=$id");
 
         foreach ($result[0] as $key => $value) {
@@ -802,6 +916,13 @@ class lieferantengutschrift {
 
         $this->app->Tpl->Set('FREIGABEEINKAUFHIDDEN','hidden'); // prevent manual setting          
 
+        if (!empty($lieferantengutschrift_from_db['belegnr'])) {
+            $this->app->Tpl->Set('ADRESSESAVEDISABLED','disabled');
+        } else {
+            $this->app->YUI->AutoComplete("adresse", "lieferant");
+            $this->app->YUI->AutoComplete("verbindlichkeit", "verbindlichkeit",false,"&adresse=".$lieferantengutschrift_from_db['adresse']); 
+        }
+
         if (empty($lieferantengutschrift_from_db['adresse']) || $lieferantengutschrift_from_db['status'] == 'angelegt') {
             $this->app->Tpl->Set('FREIGABEBUCHHALTUNGHIDDEN','hidden'); 
             $this->app->Tpl->Set('FREIGABEBEZAHLTHIDDEN','hidden'); 
@@ -859,7 +980,8 @@ class lieferantengutschrift {
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
 
-        $this->app->YUI->AutoComplete("adresse", "lieferant");     
+        $this->app->Tpl->Set('VERBINDLICHKEIT',$this->app->erp->ReplaceVerbindlichkeit(false,$lieferantengutschrift_from_db['verbindlichkeit'],false));
+         
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$lieferantengutschrift_from_db['projekt'],false));
         $this->app->YUI->AutoComplete("kostenstelle", "kostenstelle", 1);
@@ -887,8 +1009,14 @@ class lieferantengutschrift {
         }
         
         if (empty($lieferantengutschrift_from_db['freigabe'])) {
-            $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'artikel_manuell', "show", "", "", basename(__FILE__), __CLASS__);
-        }
+
+            if (empty($lieferantengutschrift_from_db['verbindlichkeit'])) {
+                $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'artikel_manuell', "show", "", "", basename(__FILE__), __CLASS__);
+            }
+            else {
+                $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
+            }
+        } 
         
         // -- POSITIONEN
         $this->app->YUI->AutoComplete("positionen_sachkonto", "sachkonto", 1);
@@ -1114,37 +1242,16 @@ class lieferantengutschrift {
             } else {
                 return('lieferantengutschrift nicht freigebeben '.$this->lieferantengutschrift_get_belegnr($id));
             }            
-        }      
+        }           
+       
+        $sql = "UPDATE lieferantengutschrift SET freigabe = 1 WHERE id=".$id;
+        $this->app->DB->Update($sql);
 
-        // Check wareneingang status            
-        $sql = "SELECT 
-                    pa.id 
-                FROM lieferantengutschrift_position vp 
-                INNER JOIN paketdistribution pd ON pd.id = vp.paketdistribution
-                INNER JOIN paketannahme pa ON pa.id = pd.paketannahme                        
-                WHERE
-                    lieferantengutschrift='$id' 
-                AND
-                    pa.status = 'abgeschlossen'                
-                ";
-
-        $check = $this->app->DB->SelectArr($sql); 
-
-        if (empty($check)) {
-            if ($gotoedit) {
-                $this->app->YUI->Message('warning','Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen');                    
-            } else {
-                return('Waren-/Leistungspr&uuml;fung (Einkauf) nicht abgeschlossen '.$this->lieferantengutschrift_get_belegnr($id));
-            }            
-        } else {
-            $sql = "UPDATE lieferantengutschrift SET freigabe = 1 WHERE id=".$id;
-            $this->app->DB->Update($sql);
-
-            if (!$text) {
-                $text = "lieferantengutschrift freigegeben (Einkauf)";
-            }
-            $this->app->erp->BelegProtokoll("lieferantengutschrift",$id,$text);
+        if (!$text) {
+            $text = "lieferantengutschrift freigegeben (Einkauf)";
         }
+        $this->app->erp->BelegProtokoll("lieferantengutschrift",$id,$text);
+
         if ($gotoedit) {
             $this->lieferantengutschrift_edit();
         }

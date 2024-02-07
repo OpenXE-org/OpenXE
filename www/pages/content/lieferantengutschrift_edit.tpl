@@ -46,7 +46,7 @@
                                                             {|Adresse|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20" [SAVEDISABLED] required>
+                                                            <input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20" [ADRESSESAVEDISABLED] required>
                                                         </td>
                                                     </tr>
                                                     <tr>
