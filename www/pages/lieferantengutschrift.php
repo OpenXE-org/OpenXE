@@ -375,7 +375,7 @@ class lieferantengutschrift {
                 $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Preis','Steuer','Sachkonto','');
                 $width = array(  '5%',          '30%',          '5%',    '5%',   '1%',    '1%',       '1%');
 
-                $findcols = array('nummer','name_de','id','id');
+                $findcols = array('nummer','name_de','','','umsatzsteuer',"CONCAT(skart.sachkonto,' ',skart.beschriftung)",'id');
                 $searchsql = array('');
 
                 $alignright = array('5');
