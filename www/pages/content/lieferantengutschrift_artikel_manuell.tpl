@@ -34,6 +34,9 @@
                                     {|Multifilter|}:&nbsp;<img src="./themes/new/images/tooltip_grau.png" border="0" style="position: relative; left: 1px; top: 3px; z-index: 8;" class="wawitooltipicon" title="Auswahl mehrerer Artikel &uuml;ber Name oder Nummer">
                                 </td>
                             </tr>
+                            <tr>
+                                <td><input type="checkbox" name="bruttoeingabe" value="1" />Bruttopreise eingeben</td>
+                            </tr>                                  
                             <tr [HINZUFUEGENHIDDEN]>
 								<td>
                                     <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">

@@ -33,9 +33,6 @@
                                 <td><input type="checkbox" id="auswahlallewareneingaenge" onchange="allewareneingaengeauswaehlen();" />{|alle markieren|}</td>
                             </tr>                          
                             <tr>
-                                <td><input type="checkbox" name="bruttoeingabe" value="1" />Bruttopreise eingeben</td>
-                            </tr>                                  
-                            <tr>
                                 <td><button [SAVEDISABLED] name="submit" value="positionen_hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button></td>
                             </tr>
                         </table>

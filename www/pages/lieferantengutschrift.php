@@ -685,8 +685,6 @@ class lieferantengutschrift {
                 $werte = $this->app->Secure->GetPOST('werte');
                 $preise = $this->app->Secure->GetPOST('preise');
 
-                $bruttoeingabe = $this->app->Secure->GetPOST('bruttoeingabe');                                                                
-
                 foreach ($ids as $key => $verbindlichkeit_position) {
                     $menge = $werte[$key];
 
@@ -759,10 +757,7 @@ class lieferantengutschrift {
                     } else {
                         $steuersatz = $this->get_steuersatz($umsatzsteuer,$id);
                     }
-
-                    if ($bruttoeingabe) {
-                        $preis = $preis / (1+($steuersatz/100));
-                    }    
+                   
                     $sql = "INSERT INTO lieferantengutschrift_position (lieferantengutschrift,verbindlichkeit_position, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $verbindlichkeit_position, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
                     $this->app->DB->Insert($sql);
                 }
