@@ -26081,7 +26081,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       }
     }
 	else {
-	    $this->app->DB->Update("UPDATE firmendaten SET " . $field . "='$value' WHERE id='" . $firmendatenid . "'");
+	
+	    $column_exists = $this->app->DB->Select("SHOW COLUMNS FROM firmendaten WHERE field = '".$field."'");
+	
+	    if ($column_exists) {
+    	    $this->app->DB->Update("UPDATE firmendaten SET " . $field . "='$value' WHERE id='" . $firmendatenid . "'");
+	    } else {
+            $this->AddNeuenFirmendatenWert($field, $typ, $typ1, $typ2, $value, $default_value, $default_null, $darf_null);
+	    }	    		   
 	}
     $db = $this->app->Conf->WFdbname;
     if(!empty($this->firmendaten[$db])) {
