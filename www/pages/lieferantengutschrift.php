@@ -281,7 +281,7 @@ class lieferantengutschrift {
 
                 $count = "";
 
-                break;
+                break;           
             case 'verbindlichkeit_positionen':
     
                 $allowed['verbindlichkeit_positionen'] = array('list');              
@@ -317,7 +317,7 @@ class lieferantengutschrift {
                     '<input type="number" name="werte[]" value="',
                     ['sql' => $offen_menge],
                     '" min="0"',
-                    '" max="',
+                    ' max="',
                     ['sql' => $offen_menge],
                     '"/>'
                 );       
@@ -326,7 +326,7 @@ class lieferantengutschrift {
                     '<input type="number" name="preise[]" step="0.00001" value="',
                     ['sql' => $this->app->erp->FormatMenge("COALESCE(bp.preis,0)",5)],
                     '" min="0"',                    
-                    '"/>'
+                    '/>'
                 );         
                        
                 $artikellink = array (
@@ -372,8 +372,8 @@ class lieferantengutschrift {
             case 'artikel_manuell':
                 $allowed['paketdistribution_list'] = array('list');
          
-                $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Bemerkung','');
-                $width = array(  '5%',          '30%',          '5%',    '15%',      '1%');
+                $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Preis','Steuer','Sachkonto','');
+                $width = array(  '5%',          '30%',          '5%',    '5%',   '1%',    '1%',       '1%');
 
                 $findcols = array('nummer','name_de','id','id');
                 $searchsql = array('');
@@ -405,19 +405,29 @@ class lieferantengutschrift {
                     '</input>'
                 );      
 
+                $preise = array (
+                    '<input type="number" name="preise[]" step="0.00001" value="',
+                    '" min="0"',                    
+                    ' style=\"text-align:right; width:100%\">'                    
+                );   
+
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS                       
-                        id,
+                        a.id,
                         ".$this->app->erp->ConcatSQL($auswahl).",
                         name_de,
                         ".$this->app->erp->ConcatSQL($input_for_menge).",
-                        ".$this->app->erp->ConcatSQL($input_for_bemerkung)."
-                        ''
+                        ".$this->app->erp->ConcatSQL($preise)."
+                        '',
+                        a.umsatzsteuer,                        
+                        CONCAT(skart.sachkonto,' ',skart.beschriftung)
                     FROM
                         artikel a
-                ";
+                    LEFT JOIN 
+                        kontorahmen skart ON skart.id = a.kontorahmen";
+
                               
-                $where = "geloescht <> 1";
+                $where = " (geloescht <> 1)";
 
                 $multifilter = $this->app->YUI->TableSearchFilter($name, 8,'multifilter');
                 if (!empty($multifilter)) {
@@ -756,7 +766,67 @@ class lieferantengutschrift {
                     $sql = "INSERT INTO lieferantengutschrift_position (lieferantengutschrift,verbindlichkeit_position, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $verbindlichkeit_position, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
                     $this->app->DB->Insert($sql);
                 }
-            break;    
+            break;
+            case 'artikel_manuell_hinzufuegen':
+
+                $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM lieferantengutschrift WHERE id =".$id)[0];
+                if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
+                    break;
+                }
+
+               // Process multi action
+                $ids = $this->app->Secure->GetPOST('manuell_artikel_ids');
+                $werte = $this->app->Secure->GetPOST('manuell_mengen');
+                $preise = $this->app->Secure->GetPOST('preise');
+
+                $bruttoeingabe = $this->app->Secure->GetPOST('bruttoeingabe');                                                                
+
+                foreach ($ids as $key => $artikelid) {
+                    $menge = $werte[$key];
+
+                    if ($menge <= 0) {
+                        continue;
+                    }
+
+                    $preis = $preise[$key];
+                    if ($preis <= 0) {
+                        $preis = 0;
+                    }
+
+                   $sql = "SELECT 
+                                a.id,
+                                a.umsatzsteuer,
+                                a.steuersatz,
+                                COALESCE(skart.id,0) AS kontorahmen
+                            FROM
+                                artikel a
+                            LEFT JOIN 
+                                kontorahmen skart ON skart.id = a.kontorahmen
+                            WHERE a.id =".$artikelid;
+
+                    $artikel = $this->app->DB->SelectRow($sql);
+                    $einartikel = $artikel['id'];
+                    $umsatzsteuer = $artikel['umsatzsteuer'];
+                    if (empty($artikel['kontorahmen'])) {
+                        $kontorahmen = $this->app->DB->Select("SELECT a.kontorahmen FROM adresse a INNER JOIN lieferantengutschrift lg ON lg.adresse = a.id WHERE lg.id = ".$id);
+                    } else {
+                        $kontorahmen = $artikel['kontorahmen'];                    
+                    }
+
+                    if(empty($umsatzsteuer) && is_numeric($artikel['steuersatz'])) {
+                        $steuersatz = $artikel['steuersatz'];
+                    } else {
+                        $steuersatz = $this->get_steuersatz($umsatzsteuer,$id);
+                    }
+
+                    if ($bruttoeingabe) {
+                        $preis = $preis / (1+($steuersatz/100));
+                    }    
+                    $sql = "INSERT INTO lieferantengutschrift_position (lieferantengutschrift,verbindlichkeit_position, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, 0, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
+
+                    $this->app->DB->Insert($sql);
+                }
+            break;        
             case 'positionen_entfernen':           
 
                 $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe FROM lieferantengutschrift WHERE id =".$id)[0];
@@ -847,7 +917,6 @@ class lieferantengutschrift {
                                                      v.beschreibung,
                                                      v.sachkonto,
                                                      v.internebemerkung,
-                                                     v.verbindlichkeit,
                                                      a.lieferantennummer,                                                        
                                                      a.name AS adresse_name FROM lieferantengutschrift v LEFT JOIN adresse a ON a.id = v.adresse"." WHERE v.id=$id");
 
@@ -1007,22 +1076,22 @@ class lieferantengutschrift {
         } else {
             $this->app->Tpl->Set('INLINEPDF', 'Keine Dateien vorhanden.');
         }
-        
-        if (empty($lieferantengutschrift_from_db['freigabe'])) {
-
-            if (empty($lieferantengutschrift_from_db['verbindlichkeit'])) {
-                $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'artikel_manuell', "show", "", "", basename(__FILE__), __CLASS__);
-            }
-            else {
-                $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
-            }
-        } 
-        
+               
         // -- POSITIONEN
+        if (empty($lieferantengutschrift_from_db['freigabe'])) {
+            $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
+        } 
         $this->app->YUI->AutoComplete("positionen_sachkonto", "sachkonto", 1);
         $this->app->YUI->TableSearch('POSITIONEN', 'lieferantengutschrift_positionen', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('POSITIONENTAB', "lieferantengutschrift_positionen.tpl");
         // -- POSITIONEN
+
+        // -- POSITIONEN manuell
+        if (empty($lieferantengutschrift_from_db['freigabe'])) {
+                $this->app->YUI->TableSearch('ARTIKELMANUELL', 'artikel_manuell', "show", "", "", basename(__FILE__), __CLASS__);
+        }         
+        $this->app->Tpl->Parse('POSITIONENMANUELLTAB', "lieferantengutschrift_artikel_manuell.tpl");
+        // -- POSITIONEN manuell
 
         $this->lieferantengutschrift_minidetail('MINIDETAIL',false);
         $this->app->Tpl->Parse('PAGE', "lieferantengutschrift_edit.tpl");

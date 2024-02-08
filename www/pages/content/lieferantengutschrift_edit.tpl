@@ -2,6 +2,7 @@
     <ul>
         <li><a href="#tabs-1">Lieferantengutschrift</a></li>
         <li [POSITIONENHIDDEN]><a href="#tabs-2">Positionen</a></li>
+        <li [POSITIONENHIDDEN]><a href="#tabs-4">Artikel manuell</a></li>
         <li><a href="#tabs-3">Protokoll</a></li>
     </ul>
     <div id="tabs-1">
@@ -207,6 +208,9 @@
     </div>    
     <div id="tabs-2">
         [POSITIONENTAB]        
+    </div>
+    <div id="tabs-4">
+        [POSITIONENMANUELLTAB]        
     </div>
     <div id="tabs-3">
         [MINIDETAIL]
