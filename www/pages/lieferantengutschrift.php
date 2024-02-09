@@ -301,12 +301,6 @@ class lieferantengutschrift {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;        
 
-                $offen_menge = "TRIM(IF(
-                            pd.menge > COALESCE(vp.menge,0),
-                            pd.menge - COALESCE(vp.menge,0),
-                            0
-                        ))+0";
-
                 $auswahl = array (
                     '<input type=\"checkbox\" name=\"ids[]\" value=\"',                   
                     ['sql' => 'pd.id'],
@@ -314,12 +308,14 @@ class lieferantengutschrift {
                 );              
 
                 $werte = array (
-                    '<input type="number" name="werte[]" value="',
-                    ['sql' => $offen_menge],
-                    '" min="0"',
-                    ' max="',
-                    ['sql' => $offen_menge],
-                    '"/>'
+                    '<input type="number" name="werte[]" min="0"',
+                    'max = "',
+                    ['sql' => 'vp.menge'],
+                    '" ',
+                    'value = "',
+                    ['sql' => 'vp.menge'],
+                    '" ',
+                    '/>'
                 );       
 
                 $preise = array (
