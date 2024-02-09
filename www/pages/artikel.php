@@ -1800,21 +1800,34 @@ class Artikel extends GenArtikel {
         // SQL statement
 
         if (!empty($this->app->Conf->WFdbType) && $this->app->Conf->WFdbType == 'postgre') {
-          $sql = 'SELECT s.id, a.name_de as artikel,a.nummer as nummer, trim(s.menge)+0 as menge, 
-                CASE WHEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id) > 0
-                THEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id)
-                ELSE 0
-                END  as lager, s.artikel as menu
+          $sql = 'SELECT 
+                    s.id,
+                    a.name_de as artikel,
+                    a.nummer as nummer, 
+                    trim(SUM(s.menge))+0 as menge, 
+                    CASE 
+                        WHEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id) > 0
+                        THEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id)
+                        ELSE 0
+                    END as lager,
+                    s.artikel as menu
                 FROM stueckliste s LEFT JOIN artikel a ON s.artikel=a.id ';
         } else {
-          $sql = 'SELECT SQL_CALC_FOUND_ROWS s.id, a.name_de as artikel,a.nummer as nummer, trim(s.menge)+0 as menge,
-                s.stuecklistevonartikel
-                  as menu
-                  FROM stueckliste s LEFT JOIN artikel a ON s.stuecklistevonartikel=a.id ';
+          $sql = '  SELECT SQL_CALC_FOUND_ROWS
+                        s.id,
+                        a.name_de as artikel,
+                        a.nummer as nummer,
+                        trim(SUM(s.menge))+0 as menge,
+                        s.stuecklistevonartikel AS menu
+                    FROM 
+                        stueckliste s 
+                    LEFT JOIN artikel a ON s.stuecklistevonartikel=a.id ';
         }
 
         // Fester filter
         $where = "s.artikel='$id' ";
+
+        $groupby = " GROUP BY a.id";
 
         // gesamt anzahl
         $count = "SELECT COUNT(s.id) FROM stueckliste s WHERE s.stuecklistevonartikel='$id' ";
