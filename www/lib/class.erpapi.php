@@ -10519,15 +10519,19 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
           }
         }
 
-        if($variables['datum']=="") $variables['datum']=date('d.m.Y');
+        if (is_array($variables)) {        
+            if($variables['datum']=="") {
+                 $variables['datum']=date('d.m.Y');
+            }
 
-        if(!empty($variables))
-        {
-          foreach($variables as $key=>$value)
-          {
-            $value = $this->UmlauteEntfernen($value);
-            $xml = str_replace("{".strtoupper($key)."}",$value,$xml);
-          }
+            if(!empty($variables))
+            {
+              foreach($variables as $key=>$value)
+              {
+                $value = $this->UmlauteEntfernen($value);
+                $xml = str_replace("{".strtoupper($key)."}",$value,$xml);
+              }
+            }
         }
 
         // y to z wenn Kein PDF -> also nur bei EPL Drucker - 09.06.2019 BS heute auf 0 gestellt bei deutschen adapterboxen eventuell
