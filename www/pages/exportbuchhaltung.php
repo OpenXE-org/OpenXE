@@ -457,7 +457,6 @@ class Exportbuchhaltung
                 'field_kundennummer' => 'b.kundennummer',
                 'field_betrag_gesamt' => 'b.soll',
                 'field_betrag' => 'p.umsatz_brutto_gesamt',
-                'field_gegenkonto' => '\'\'',
                 'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\',\'storniert\')',
                 'Buchungstyp' => 'SR',
                 'do' => $rechnung
@@ -476,7 +475,6 @@ class Exportbuchhaltung
                 'field_kundennummer' => 'b.kundennummer',
                 'field_betrag_gesamt' => 'b.soll',
                 'field_betrag' => 'p.umsatz_brutto_gesamt',
-                'field_gegenkonto' => '\'\'',
                 'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\')',
                 'Buchungstyp' => '',
                 'do' => $gutschrift
@@ -526,7 +524,15 @@ class Exportbuchhaltung
             if (!$typ['do']) {
                 continue;
             }
-         
+
+            
+            if (!empty($typ['field_gegenkonto'])) {
+                $sql_gegenkonto = $typ['field_gegenkonto'];
+            } else 
+            {
+                $sql_gegenkonto = "NULL";
+            }
+                    
             $sql = "SELECT  
                 ".$typ['typ']." id,
                 ".$typ['field_belegnr']." as belegnr,
@@ -540,7 +546,7 @@ class Exportbuchhaltung
                 ".$typ['field_betrag_gesamt']." as betrag_gesamt,
                 b.waehrung,
                 ROUND(".$typ['field_betrag'].",2) as betrag,
-                ".$typ['field_gegenkonto']." as gegenkonto,
+                ".$sql_gegenkonto." as gegenkonto,
                 b.waehrung as pos_waehrung
             FROM 
                 ".$typ['typ']." b                 
