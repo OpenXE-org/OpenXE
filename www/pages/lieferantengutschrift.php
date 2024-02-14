@@ -303,17 +303,17 @@ class lieferantengutschrift {
 
                 $auswahl = array (
                     '<input type=\"checkbox\" name=\"ids[]\" value=\"',                   
-                    ['sql' => 'pd.id'],
+                    ['sql' => 'vp.id'],
                     '"/>'
                 );              
 
                 $werte = array (
                     '<input type="number" name="werte[]" min="0"',
                     'max = "',
-                    ['sql' => 'vp.menge'],
+                    ['sql' => 'if(vp.menge > COALESCE(lgp.menge,0),vp.menge-COALESCE(lgp.menge,0),0)'],
                     '" ',
                     'value = "',
-                    ['sql' => 'vp.menge'],
+                    ['sql' => 'if(vp.menge > COALESCE(lgp.menge,0),vp.menge-COALESCE(lgp.menge,0),0)'],
                     '" ',
                     '/>'
                 );       
@@ -358,9 +358,20 @@ class lieferantengutschrift {
                     INNER JOIN adresse adr ON
                         adr.id = v.adresse
                     LEFT JOIN kontorahmen skv ON skv.id = vp.kontorahmen                    
+                    LEFT JOIN (
+                        SELECT 
+                            verbindlichkeit_position,
+                            SUM(menge) AS menge
+                        FROM 
+                            lieferantengutschrift_position lgp                         
+                        INNER JOIN
+                            lieferantengutschrift lg ON lg.id = lgp.lieferantengutschrift
+                        WHERE 
+                            lg.status <> 'storniert' AND verbindlichkeit_position <> 0 and verbindlichkeit_position IS NOT NULL
+                    ) lgp ON lgp.verbindlichkeit_position = vp.id
                 ";
 
-                $where = "v.adresse = (SELECT adresse FROM lieferantengutschrift WHERE id = ".$id.") AND v.status = 'freigegeben'";
+                $where = "v.adresse = (SELECT adresse FROM lieferantengutschrift WHERE id = ".$id.") AND v.status IN ('freigegeben','abgeschlossen')";
 
                 $count = "";
 
@@ -713,13 +724,17 @@ class lieferantengutschrift {
                         ";
                     $offen_menge = $this->app->DB->Select($sql);
 
-                    if ($offen_menge == 0) {
+                    if ($offen_menge === 0) {
                         continue;
-                    }
+                    } 
 
-                    if ($menge > $offen_menge) {
+                    if ($menge > $offen_menge && !empty($offen_menge)) {
                         $menge = $offen_menge;
                     }
+                    
+                    if ($menge == 0) {
+                        continue;
+                    } 
 
                     $sql = "SELECT 
                                 a.id,
@@ -1297,10 +1312,10 @@ class lieferantengutschrift {
 
         if (!$this->lieferantengutschrift_is_freigegeben($id)) {                   
             if ($gotoedit) {
-                $this->app->YUI->Message('warning','lieferantengutschrift nicht freigebeben');                    
+                $this->app->YUI->Message('warning','lieferantengutschrift nicht freigegeben');                    
                 $error = true;
             } else {
-                return('lieferantengutschrift nicht freigebeben '.$this->lieferantengutschrift_get_belegnr($id));
+                return('lieferantengutschrift nicht freigegeben '.$this->lieferantengutschrift_get_belegnr($id));
             }            
         }           
        
@@ -1332,10 +1347,10 @@ class lieferantengutschrift {
 
         if (!$this->lieferantengutschrift_is_freigegeben($id)) {                   
             if ($gotoedit) {
-                $this->app->YUI->Message('warning','lieferantengutschrift nicht freigebeben');
+                $this->app->YUI->Message('warning','lieferantengutschrift nicht freigegeben');
                 $error = true;
             } else {
-                return('lieferantengutschrift nicht freigebeben '.$this->lieferantengutschrift_get_belegnr($id));
+                return('lieferantengutschrift nicht freigegeben '.$this->lieferantengutschrift_get_belegnr($id));
             }            
         }
 
@@ -1387,10 +1402,10 @@ class lieferantengutschrift {
 
         if (!$this->lieferantengutschrift_is_freigegeben($id)) {                   
             if ($gotoedit) {
-                $this->app->YUI->Message('warning','lieferantengutschrift nicht freigebeben');                    
+                $this->app->YUI->Message('warning','lieferantengutschrift nicht freigegeben');                    
                 $error = true;
             } else {
-                return('lieferantengutschrift nicht freigebeben '.$this->lieferantengutschrift_get_belegnr($id));
+                return('lieferantengutschrift nicht freigegeben '.$this->lieferantengutschrift_get_belegnr($id));
             }            
         }
     
@@ -1626,7 +1641,7 @@ class lieferantengutschrift {
                 WHERE
                     id='$id' 
                 AND
-                    status IN ('freigegeben')                
+                    status IN ('freigegeben','abgeschlossen')                
                 ";
 
         $check = $this->app->DB->SelectArr($sql); 
