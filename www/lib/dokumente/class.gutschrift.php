@@ -43,8 +43,13 @@ class GutschriftPDF extends BriefpapierCustom {
     { 
       // pruefe ob es mehr als ein steuersatz gibt // wenn ja dann darf man sie nicht ausblenden
       $check = $this->app->erp->SteuerAusBeleg($this->doctype,$id);
-      if(!empty($check)?count($check):0>1)$this->ust_spalteausblende=false;  
-      else $this->ust_spalteausblende=true;
+      $this->ust_spalteausblende=false;  
+
+        if(!empty($check)) {
+          if (count($check) == 1) {    
+            $this->ust_spalteausblende=true;      
+          }
+        }
     }
 
     $briefpapier_bearbeiter_ausblenden = $this->app->erp->Firmendaten('briefpapier_bearbeiter_ausblenden');

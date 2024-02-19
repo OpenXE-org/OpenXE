@@ -658,7 +658,7 @@ class Briefpapier extends SuperFPDF {
 
   public function addItem($rdata){
     // add rabatt
-    if($rdata['price']!='-'){
+    if($rdata['price']!='-' && is_numeric($rdata['price'])){
       if($rdata['rabatt'] == 100){
         $rdata['tprice'] = round($rdata['amount'] * ((double)$rdata['price'] - (double)($rdata['price'] / 100.00 * (double)$rdata['rabatt'])), 13);
       }else{
@@ -1775,7 +1775,12 @@ class Briefpapier extends SuperFPDF {
     $total=$totalFullTax=$totalReducedTax=0;
     $citems = !empty($this->items)?count($this->items):0;
     for($i=0;$i<$citems;$i++) {
-      $total += $this->items[$i]['tprice'];
+      if (!$this->items[$i]['optional']) {
+          $total += $this->items[$i]['tprice'];        
+      } else {
+          $totalOptional += $this->items[$i]['tprice'];        
+      }
+
       if($this->items[$i]['tax']=="USTV") {
         $totalFullTax+= $this->items[$i]['tprice']*USTV;
       }
@@ -1783,7 +1788,7 @@ class Briefpapier extends SuperFPDF {
         $totalReducedTax+= $this->items[$i]['tprice']*USTR;
       }
     }
-    return array($total,$totalFullTax,$totalReducedTax);
+    return array($total,$totalFullTax,$totalReducedTax,$totalOptional);
   }
 
   function GetFont()
@@ -2498,7 +2503,6 @@ class Briefpapier extends SuperFPDF {
   }
 
   public function renderItems() {
-
     $this->app->erp->RunHook('briefpapier_renderitems',1, $this);
     //		if($this->bestellungohnepreis) $this->doctype="lieferschein";
     $posWidth     = $this->getStyleElement("breite_position");
@@ -2942,7 +2946,6 @@ class Briefpapier extends SuperFPDF {
           if($this->doctype!=='zahlungsavis')
           {
             if($item['tax']!=='hidden'){
-
               if($anzeigeBelegNettoAdrese){
                 //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
                 //&& $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
@@ -3068,16 +3071,18 @@ class Briefpapier extends SuperFPDF {
               //   && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
               {
                 if(!$inventurohnepreis){
-                  $this->Cell_typed($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['tprice']),0,0,'R');
+//                  $this->Cell_typed($priceWidth,$cellhoehe,$item['ohnepreis']?'':$this->formatMoney((double)$item['tprice']),0,0,'R');
+                    $price_displayed = $item['ohnepreis']?'':$this->formatMoney((double)$item['tprice']);
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+//                  $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+                    $price_displayed = $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']);
                 }
               }
 
-              $this->Cell_typed($rabattWidth,$cellhoehe,"",0,0,'R');
+             // $this->Cell_typed($rabattWidth,$cellhoehe,"",0,0,'R');
             }
           }
         }
@@ -3093,7 +3098,7 @@ class Briefpapier extends SuperFPDF {
               $this->Cell_typed($priceWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['price'] * $item['tmptax']), 0, 0, 'R');
             }
           }
-        }
+        }                        
         //$this->Cell_typed($sumWidth,$cellhoehe,$this->formatMoney($item['tprice']).' '.$item['currency'],0,0,'R');
         if($this->rabatt=='1')
         {
@@ -3107,12 +3112,14 @@ class Briefpapier extends SuperFPDF {
                 //if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
                 //   && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
                 if(!$inventurohnepreis){
-                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
+//                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
+                  $price_displayed = $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']);
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+//                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+                  $price_displayed = $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']);
                 }
               }
             }
@@ -3121,16 +3128,27 @@ class Briefpapier extends SuperFPDF {
                 // if(($this->anrede=="firma" || $this->app->erp->AnzeigeBelegNetto($this->anrede,$projekt) || $this->doctype=="bestellung" || $this->getStyleElement("immernettorechnungen",$projekt)=="1")
                 //   && $this->getStyleElement("immerbruttorechnungen",$projekt)!="1")
                 if(!$inventurohnepreis){
-                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
+//                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']), 0, 0, 'R');
+                  $price_displayed = $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice']);
                 }
               }
               else{
                 if(!$inventurohnepreis){
-                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+//                  $this->Cell_typed($sumWidth, $cellhoehe, $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']), 0, 0, 'R');
+                  $price_displayed = $item['ohnepreis'] ? '' : $this->formatMoney((double)$item['tprice'] * $item['tmptax']);
                 }
               }
             }
           }
+        }
+
+        // OpenXE add price here
+        if (!empty($price_displayed)) {
+            if ($item['optional']) {
+                $this->Cell_typed($sumWidth, $cellhoehe, "(".$price_displayed.")", 0, 0, 'R');
+            } else {
+                $this->Cell_typed($sumWidth, $cellhoehe, $price_displayed, 0, 0, 'R');
+            }
         }
 
       }
@@ -4279,7 +4297,7 @@ class Briefpapier extends SuperFPDF {
           $this->Cell_typed(40,3,'',0,0,'R');
         }
         $this->Ln();
-      }
+      }               
       $this->SetY($this->GetY()+2);
       //$this->Line(110, $this->GetY(), 190,$this->GetY());
     }
@@ -4320,6 +4338,16 @@ class Briefpapier extends SuperFPDF {
       $this->Line($differenz_wegen_abstand+5, $this->GetY(), 210-$this->getStyleElement('abstand_seitenrandrechts'),$this->GetY());
       $this->Line($differenz_wegen_abstand+5, $this->GetY()+1, 210-$this->getStyleElement('abstand_seitenrandrechts'),$this->GetY()+1);
     }
+    
+    if(isset($this->totals['optional'])) {
+        $this->SetFont($this->GetFont(),'',$this->getStyleElement('schriftgroesse_gesamt'));
+        $this->Ln(2);
+        $this->Cell_typed($differenz_wegen_abstand,1,'',0);       
+        $this->Cell_typed(30,5,"(".$this->app->erp->Beschriftung('dokument_gesamt_optional'),0,0,'L');
+        $this->Cell_typed(40,5,$this->formatMoney(round($this->totals['optional'],2), 2).' '.$this->waehrung.")",0,0,'R');
+        $this->Ln();
+    }
+
 
     $this->SetY($this->GetY()+10);
   }
