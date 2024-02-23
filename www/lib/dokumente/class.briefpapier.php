@@ -4339,7 +4339,7 @@ class Briefpapier extends SuperFPDF {
       $this->Line($differenz_wegen_abstand+5, $this->GetY()+1, 210-$this->getStyleElement('abstand_seitenrandrechts'),$this->GetY()+1);
     }
     
-    if(isset($this->totals['optional'])) {
+    if(!empty($this->totals['optional'])) {
         $this->SetFont($this->GetFont(),'',$this->getStyleElement('schriftgroesse_gesamt'));
         $this->Ln(2);
         $this->Cell_typed($differenz_wegen_abstand,1,'',0);       
