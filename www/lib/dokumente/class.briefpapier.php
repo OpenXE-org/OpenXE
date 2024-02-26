@@ -2030,7 +2030,10 @@ class Briefpapier extends SuperFPDF {
       $freitext1inhalt = $this->app->erp->Beschriftung("freitext1inhalt");
       if($freitext1inhalt=="") $freitext1inhalt = $this->getStyleElement('freitext1inhalt');
 
-      $freitext1inhalt = $this->app->erp->ParseUserVars($this->table,$this->id,$freitext1inhalt);
+      if (!empty($this->table)) {
+          $freitext1inhalt = $this->app->erp->ParseUserVars($this->table,$this->id,$freitext1inhalt);
+      }
+           
       $freitext1inhalt = $this->app->erp->ReadyForPDF($freitext1inhalt);
       $freitext1schriftgroesse = $this->getStyleElement('freitext1schriftgroesse');
       $freitext1y = $this->getStyleElement('freitext1y');
@@ -2049,7 +2052,10 @@ class Briefpapier extends SuperFPDF {
       $freitext2inhalt = $this->app->erp->Beschriftung("freitext2inhalt");
       if($freitext2inhalt=="") $freitext1inhalt = $this->getStyleElement('freitext2inhalt');
 
-      $freitext2inhalt = $this->app->erp->ParseUserVars($this->table,$this->id,$freitext2inhalt);
+      if (!empty($this->table)) {
+          $freitext2inhalt = $this->app->erp->ParseUserVars($this->table,$this->id,$freitext2inhalt);
+      }
+    
       $freitext2inhalt = $this->app->erp->ReadyForPDF($freitext2inhalt);
       $freitext2schriftgroesse = $this->getStyleElement('freitext2schriftgroesse');
       $freitext2y = $this->getStyleElement('freitext2y');
