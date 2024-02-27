@@ -1812,7 +1812,7 @@ class Briefpapier extends SuperFPDF {
         $result = $this->app->erp->Firmendaten($key);
     }
     if (empty($result)) {
-        $result = 0;
+        $result = null;
     }    
     return($result);
   }
@@ -2027,13 +2027,15 @@ class Briefpapier extends SuperFPDF {
     //FREITEXT1
     $freitext1aktiv = $this->getStyleElement('freitext1aktiv');
     if($freitext1aktiv){
+
       $freitext1inhalt = $this->app->erp->Beschriftung("freitext1inhalt");
+
       if($freitext1inhalt=="") $freitext1inhalt = $this->getStyleElement('freitext1inhalt');
 
       if (!empty($this->table)) {
           $freitext1inhalt = $this->app->erp->ParseUserVars($this->table,$this->id,$freitext1inhalt);
       }
-           
+         
       $freitext1inhalt = $this->app->erp->ReadyForPDF($freitext1inhalt);
       $freitext1schriftgroesse = $this->getStyleElement('freitext1schriftgroesse');
       $freitext1y = $this->getStyleElement('freitext1y');
