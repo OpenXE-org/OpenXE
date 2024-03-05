@@ -37563,7 +37563,7 @@ function Firmendaten($field,$projekt="")
            WHERE ds.objekt LIKE 'Artikel' AND 
             ds.parameter = '%d' AND 
              (ds.subjekt LIKE 'Shopbild' OR ds.subjekt LIKE 'Druckbild' OR ds.subjekt LIKE 'Bild') 
-           ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC
+           ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC, ds.sort
            LIMIT 1",
            $artikel)
         );
