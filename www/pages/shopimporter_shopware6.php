@@ -3349,6 +3349,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $productPriceType => $lineItem['attributes']['price']['unitPrice'],
                     'steuersatz' => $lineItem['attributes']['price']['calculatedTaxes'][0]['taxRate'],
                 ];
+                $this->parseBogxData($lineItem, $product);
                 $cart['articlelist'][] = $product;
             }
 
@@ -3816,5 +3817,43 @@ class Shopimporter_Shopware6 extends ShopimporterBase
       }
 
       $this->updateArticleCacheToSync($articleIds);
+    }
+
+    protected function parseBogxData(array $lineItem, array &$product) : void
+    {
+        if (!isset($lineItem['attributes']['payload']['bogxProductConfigurator']))
+            return;
+
+        $bogxdata = $lineItem['attributes']['payload']['bogxProductConfigurator'];
+        file_put_contents("/var/www/bogx", print_r($bogxdata, true));
+        $textlines = [];
+
+        if (isset($bogxdata['ordercode']))
+            $textlines[] = "Order-Code: ${bogxdata['ordercode']}";
+        else
+            $textlines[] = "Produkt-Nr: ${bogxdata['articleordernumber']}";
+
+        foreach ($bogxdata['optionsGroups'] as $bogxposition)  {
+            $dt = $bogxposition['datatype'];
+            if (is_array($bogxposition['valueID']) && is_array($bogxposition['title']))
+            {
+                foreach ($bogxposition['valueID'] as $valueID) {
+                    $bogxTitle = $bogxposition['title'][$valueID];
+                    if ($dt == 'checkbox_quantity')
+                        $bogxTitle = $bogxposition['label'][$valueID]." ".$bogxTitle;
+                    $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
+                }
+            }
+            else
+            {
+                if (is_array($bogxposition['title']))
+                    $bogxTitle = join(' ', $bogxposition['title']);
+                else
+                    $bogxTitle = $bogxposition['title'];
+                $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
+            }
+        }
+
+        $product['options'] .= join("\n", $textlines);
     }
 }
