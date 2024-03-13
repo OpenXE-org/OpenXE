@@ -25593,6 +25593,8 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $recipients = [];
 
       $to_csv = "";
+      $to_array = array();
+      $to_name_array = array();
       $to_name_csv = "";
 
       // Prepare names and addresses
