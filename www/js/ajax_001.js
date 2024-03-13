@@ -1387,7 +1387,7 @@ function processData( xmlHttp, intID )
       if(typeof mySplitResult[2] != 'undefined')parent.document.getElementById('lieferunterabteilung'+commandpostfix).value=trim(mySplitResult[2]);
       //parent.document.getElementById('lieferland').options[parent.document.getElementById('lieferland').selectedIndex].value=trim(mySplitResult[3]);
       //if(typeof mySplitResult[3] != 'undefined')Select_Value_Set('eprooform.lieferland'+commandpostfix,trim(mySplitResult[3]));
-      if(typeof mySplitResult[3] != 'undefined')SelectCountry('#lieferland',trim(mySplitResult[3]));
+//      if(typeof mySplitResult[3] != 'undefined')SelectCountry('#lieferland',trim(mySplitResult[3]));
       if(typeof mySplitResult[4] != 'undefined')parent.document.getElementById('lieferstrasse'+commandpostfix).value=trim(mySplitResult[4]);
       if(typeof mySplitResult[5] != 'undefined')parent.document.getElementById('lieferort'+commandpostfix).value=trim(mySplitResult[5]);
       if(typeof mySplitResult[6] != 'undefined')parent.document.getElementById('lieferplz'+commandpostfix).value=trim(mySplitResult[6]);
@@ -1397,6 +1397,9 @@ function processData( xmlHttp, intID )
       if(typeof mySplitResult[10] != 'undefined')parent.document.getElementById('ansprechpartnerid'+commandpostfix).value=trim(mySplitResult[10]);
       if(typeof mySplitResult[15] != 'undefined')parent.document.getElementById('liefergln'+commandpostfix).value=trim(mySplitResult[15]);
       if(typeof mySplitResult[11] != 'undefined')parent.document.getElementById('lieferemail'+commandpostfix).value=trim(mySplitResult[11]);
+
+      if(typeof mySplitResult[3] != 'undefined')SelectCountry('#lieferland',trim(mySplitResult[3])); // moved due to JS error
+
       window.parent.abweichend2();
       //			parent.document.getElementById('lieferansprechpartner').value=trim(mySplitResult[0]);
       break;
