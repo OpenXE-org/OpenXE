@@ -3825,16 +3825,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             return;
 
         $bogxdata = $lineItem['attributes']['payload']['bogxProductConfigurator'];
-        file_put_contents("/var/www/bogx", print_r($bogxdata, true));
+        file_put_contents("/var/www/bogx", print_r($lineItem['attributes'], true));
         $textlines = [];
 
         if (isset($bogxdata['ordercode']))
             $textlines[] = "Order-Code: ${bogxdata['ordercode']}";
-        else
-            $textlines[] = "Produkt-Nr: ${bogxdata['articleordernumber']}";
 
         foreach ($bogxdata['optionsGroups'] as $bogxposition)  {
             $dt = $bogxposition['datatype'];
+            if ($dt == 'quantity_total')
+                continue;
             if (is_array($bogxposition['valueID']) && is_array($bogxposition['title']))
             {
                 foreach ($bogxposition['valueID'] as $valueID) {
@@ -3854,6 +3854,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
         }
 
+        if (!empty($bogxdata['shippingtime'])) {
+            $textlines[] = $bogxdata['shippingtime'];
+        }
+
         $product['options'] .= join("\n", $textlines);
+        $product['price'] = $bogxdata['unitySurcharge'];
+        $product['price_netto'] = $bogxdata['unitySurchargeNetto'];
+        $product['quantity'] = $bogxdata['totalQuantity'];
     }
 }
