@@ -479,7 +479,7 @@ class Artikel extends GenArtikel {
         $joins .= $joineig;
 
 
-        $menu = "<a href=\"#\" class=\"articlematrix-quickadd\" data-id=\"%value%\" data-insert-url=\"index.php?module=artikel&action=profisuche&id=%value%&cmd=$cmd&sid=$id&insert=true&fmodul=$fmodul\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
+//        $menu = "<a href=\"#\" class=\"articlematrix-quickadd\" data-id=\"%value%\" data-insert-url=\"index.php?module=artikel&action=profisuche&id=%value%&cmd=$cmd&sid=$id&insert=true&fmodul=$fmodul\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, 
             CONCAT('<input type=\"checkbox\" name=\"auswahl[', v.id, ']\" class=\"articlematrix-checkbox\" id=\"articlematrix-checkbox-', v.id, '\" data-id=\"', v.id, '\">') AS auswahlbox,
