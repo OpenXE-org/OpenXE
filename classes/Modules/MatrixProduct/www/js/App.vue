@@ -60,6 +60,10 @@ function onSave() {
   onClose();
 }
 
+function onGroupSave() {
+  location.reload();
+}
+
 function onClose() {
   model.value = null;
 }
@@ -67,8 +71,8 @@ function onClose() {
 
 <template>
   <template v-if="model">
-    <AddGlobalToArticle v-if="model.action === 'addGlobalToArticle'" v-bind="model" @close="onClose" @save="onSave" />
-    <GroupEdit v-else-if="model.action === 'groupEdit'" v-bind="model" @close="onClose" @save="onSave" />
+    <AddGlobalToArticle v-if="model.action === 'addGlobalToArticle'" v-bind="model" @close="onClose" @save="onGroupSave" />
+    <GroupEdit v-else-if="model.action === 'groupEdit'" v-bind="model" @close="onClose" @save="onGroupSave" />
     <OptionEdit v-else-if="model.action === 'optionEdit'" v-bind="model" @close="onClose" @save="onSave" />
     <Variant v-else-if="model.action === 'variantEdit'" v-bind="model" @close="onClose" @save="onSave" />
     <Translation v-else-if="model.action === 'translationEdit'" v-bind="model" @close="onClose" @save="onSave" />

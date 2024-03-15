@@ -127,6 +127,8 @@ final class MatrixProductGateway
   }
 
   public function GetArticleOptionIdsByGroupIds(int|array $groupIds) : array {
+      if (empty($groupIds))
+          return [];
       $sql = "SELECT id FROM matrixprodukt_eigenschaftenoptionen WHERE gruppe IN (:ids)";
       return $this->db->fetchCol($sql, ['ids' => $groupIds]);
   }
@@ -267,6 +269,8 @@ final class MatrixProductGateway
 
   public function GetVariantIdsByOptions(int|array $optionIds) : array
   {
+    if (empty($optionIds))
+        return [];
     $sql = "SELECT artikel FROM matrixprodukt_optionen_zu_artikel WHERE option_id IN (:ids)";
     return $this->db->fetchCol($sql, ['ids' => $optionIds]);
   }
