@@ -304,7 +304,8 @@ class Mahnwesen {
                     $tmpfile = $Brief->displayTMP();
 
                     $fileid = $this->app->erp->CreateDatei($Brief->filename,$mahnung['betreff'],"","",$tmpfile,$this->app->User->GetName());
-            
+                    $this->app->erp->AddDateiStichwort($fileid,'mahnung','rechnung',$rechnung_id);            
+
                     if ($mahnung['druck']) {
                         $this->app->printer->Drucken($drucker,$tmpfile);           
                         $this->MahnungCRM('brief',$mahnung['rechnung'], $mahnung['betreff'], $mahnung['body'],$fileid,$Brief->filename);                    
