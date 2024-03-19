@@ -239,6 +239,9 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
     const createshipmentapp = new Vue({
         el: '#createshipmentapp',
         data: [JSON],
+        mounted() {
+	    this.autoselectproduct();
+        },
         computed: {
             total_value() {
                 let sum = 0;
@@ -287,17 +290,20 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             },
             customsRequired: function () {
                 return this.countries[this.form.country].eu == '0';
+            },
+            autoselectproduct: function () {
+	            if (!this.productAvailable(this.products[this.form.product])) {
+	                for (prod in this.products) {
+	                    if (!this.productAvailable(this.products[prod]))
+	                        continue;
+	                    this.form.product = prod;
+	                    break;
+	                }
+	            }
             }
         },
         beforeUpdate: function () {
-            if (!this.productAvailable(this.products[this.form.product])) {
-                for (prod in this.products) {
-                    if (!this.productAvailable(this.products[prod]))
-                        continue;
-                    this.form.product = prod;
-                    break;
-                }
-            }
+            this.autoselectproduct();
         }
     })
 </script>
