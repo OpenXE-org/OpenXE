@@ -634,23 +634,28 @@ class Verkaufszahlen {
     $summe30_gs = $this->app->DB->Select("SELECT SUM(ap.preis*ap.menge*(IF(ap.rabatt > 0, (100-ap.rabatt)/100, 1))) FROM gutschrift_position ap INNER JOIN gutschrift a ON ap.gutschrift=a.id 
         WHERE a.datum > date_add(NOW(), interval -30 day) AND (a.status!='storniert' and a.status!='angelegt') ".$this->app->erp->ProjektRechte('a.projekt')."");
 
-    $summemenge = count($this->app->DB->SelectArr("SELECT 
+    $summemenge = $this->app->DB->SelectArr("SELECT 
           COUNT(a.datum) FROM auftrag_position ap INNER JOIN auftrag a ON ap.auftrag=a.id WHERE (a.status!='storniert' and a.status!='angelegt') ".$this->app->erp->ProjektRechte('a.projekt')."
-          GROUP by a.datum, a.projekt "));
+          GROUP by a.datum, a.projekt ");
 
-    if($summemenge < 30)
-    {
-      $summe_gutschriften = $summe_gs;
-      $summe_auftrag = $summe;
-      $durchschnitt = ($summe-$summe_gs) / $summemenge; 
-      $summe= number_format(($summe-$summe_gs),2);
-      $tage = $summemenge;
-    } else {
-      $summe_gutschriften = $summe30_gs;
-      $summe_auftrag = $summe30;
-      $durchschnitt = ($summe30-$summe30_gs) / 30;  // wenn mehr als 30 tage
-      $summe= number_format(($summe30-$summe30_gs),2);
-      $tage = 30;
+    if (!empty($summemenge)) {
+
+        $summemenge = count($summemenge);
+
+        if($summemenge < 30)
+        {
+          $summe_gutschriften = $summe_gs;
+          $summe_auftrag = $summe;
+          $durchschnitt = ($summe-$summe_gs) / $summemenge; 
+          $summe= number_format(($summe-$summe_gs),2);
+          $tage = $summemenge;
+        } else {
+          $summe_gutschriften = $summe30_gs;
+          $summe_auftrag = $summe30;
+          $durchschnitt = ($summe30-$summe30_gs) / 30;  // wenn mehr als 30 tage
+          $summe= number_format(($summe30-$summe30_gs),2);
+          $tage = 30;
+        }
     }
 
     $summe_gutschriften = number_format($summe_gutschriften,2);
@@ -669,7 +674,7 @@ class Verkaufszahlen {
 "SELECT 
         DATE_FORMAT(a.datum,'%d.%m.%Y') as datum,p.abkuerzung as projekt, ".$this->app->erp->FormatPreis("SUM(ap.preis*ap.menge*(IF(ap.rabatt > 0, (100-ap.rabatt)/100, 1)))")." as Auftragseingang, COUNT(ap.id) as positionen, 
         CONCAT('<a href=\"index.php?module=verkaufszahlen&action=details&frame=false&id=',DATE_FORMAT(a.datum,'%Y-%m-%d'),'-',a.projekt,'\" onclick=\"makeRequest(this); return false;\">Details</a>') as id FROM auftrag_position ap INNER JOIN auftrag a ON ap.auftrag=a.id 
-        LEFT JOIN projekt p ON p.id=a.projekt WHERE a.status!='storniert' ".$this->app->erp->ProjektRechte('a.projekt')." GROUP by a.datum DESC, a.projekt LIMIT 14";
+        LEFT JOIN projekt p ON p.id=a.projekt WHERE a.status!='storniert' ".$this->app->erp->ProjektRechte('a.projekt')." GROUP by a.datum, a.projekt ORDER by a.datum DESC LIMIT 14";
 
 	$table->Query($tmp);
 
