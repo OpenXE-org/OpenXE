@@ -1,0 +1,6 @@
+database
+node_modules
+www/cache
+www/dist
+userdata
+!userdata/wiki
