@@ -43,7 +43,7 @@ class ParcelCreation extends ParcelBase
         'country' => substr($this->Country, 0, DEFAULT_LENGTH),
         'shipment' => ['id' => $this->ShippingMethodId],
         'weight' => number_format($this->Weight / 1000, 3, '.', null),
-        'order_number' => substr($this->OrderNumber, 0, 50),
+        'order_number' => substr($this->OrderNumber, 0, 35),
         'total_order_value_currency' => $this->TotalOrderValueCurrency,
         'total_order_value' => number_format($this->TotalOrderValue, 2, '.', null),
         'country_state' => substr($this->CountryState, 0, DEFAULT_LENGTH),
