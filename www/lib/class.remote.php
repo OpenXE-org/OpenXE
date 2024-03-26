@@ -1892,7 +1892,7 @@ class Remote
                 'altersfreigabe' => $eigenschaft['altersfreigabe'], 'ean' => $eigenschaft['ean'],
                 'lag' => $matrixStock,
                 'pseudolager' => $matrixPseudoStorage, 'pseudopreis' => $eigenschaft['pseudopreis'],
-                'restmenge' => $eigenschaft['restmenge'], 'steuersatz' => ($steuer - 1) * 100,
+                'restmenge' => $eigenschaft['restmenge'], 'steuersatz' => ($steuer - 1) * 100, 'umsatzsteuer' => $eigenschaft['umsatzsteuer'],
                 'bruttopreis' => $eigenschaft['preis'] * $steuer, 'inaktiv' => $eigenschaft['inaktiv'],
                 'name_de' => $eigenschaft['name_de'], 'name_en' => $eigenschaft['name_en'],
                 'uebersicht_de' => $eigenschaft['uebersicht_de'], 'uebersicht_en' => $eigenschaft['uebersicht_en']);
