@@ -21,7 +21,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 Compare two database structures
 Returns a structured array containing information on all the differences.
 
-function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, bool $strict) : int
+function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers, bool $strict, bool $drop_keys) : array
 Generate the SQL needed to upgrade the database to match the definition, based on a comparison.
 
 Data structure in Array and JSON
@@ -542,10 +542,21 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 // 11 Table type upgrade not supported
 // 12 Upgrade type not supported
 
-function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers, bool $strict) : array {
+function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers, bool $strict, bool $drop_keys) : array {
 
     $result = array();
     $upgrade_sql = array();    
+
+    if ($drop_keys) {
+        foreach ($db_def['tables'] as $table_id => $table) {
+            foreach ($table['keys'] as $key_id => $key) {
+                if ($key['Key_name'] != 'PRIMARY') {
+                    $upgrade_sql[] = "ALTER TABLE `".$table['name']. "` DROP KEY `".$key['Key_name']."`;";
+                    unset($db_def['tables'][$table_id]['keys'][$key_id]);
+                }
+            }
+        }
+    }
 
     $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
 
@@ -749,7 +760,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
         }
     }
 
-    $upgrade_sql = array_unique($upgrade_sql);
+    $upgrade_sql = array_unique($upgrade_sql);  
 
     if (count($upgrade_sql) > 0) {
         array_unshift($upgrade_sql,"SET SQL_MODE='ALLOW_INVALID_DATES';");
