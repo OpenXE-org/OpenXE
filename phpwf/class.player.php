@@ -1,4 +1,12 @@
 <?php
+
+/*
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
@@ -317,9 +325,14 @@ class Player {
 
     $moduleClassName = strtoupper($module[0]) . substr($module, 1);
     $this->app->ModuleScriptCache->IncludeModule($moduleClassName);
+    $this->app->ModuleScriptCache->IncludeJavascriptModules('_theme_', ['www/themes/new/js/main.js']);
     $this->app->Tpl->Add('MODULESTYLESHEET', $this->app->ModuleScriptCache->GetStylesheetHtmlTags());
     $this->app->Tpl->Add('MODULEJAVASCRIPTHEAD', $this->app->ModuleScriptCache->GetJavascriptHtmlTags('head'));
     $this->app->Tpl->Add('MODULEJAVASCRIPTBODY', $this->app->ModuleScriptCache->GetJavascriptHtmlTags('body'));
+    $this->app->Tpl->Set('JAVASCRIPTMODULES', $this->app->ModuleScriptCache->GetJavascriptModulesHtmlTags());
+    if (defined('VITE_DEV_SERVER')) {
+        $this->app->Tpl->Add('ADDITIONALCSPHEADER', VITE_DEV_SERVER.' ');
+    }
 
     $permission = true;
     if(isset($myApp) && method_exists($myApp,'CheckRights'))$permission = $myApp->CheckRights();
@@ -412,7 +425,7 @@ class Player {
           else{
 
             $this->app->Tpl->Set('VUEJS', 'vue.min.js');
-              $this->app->erp->RunHook('before_final_parse_page');
+            $this->app->erp->RunHook('before_final_parse_page');
             echo $this->app->Tpl->FinalParse('page.tpl');
           }
         }

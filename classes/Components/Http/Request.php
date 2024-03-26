@@ -1,4 +1,9 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
 
 namespace Xentral\Components\Http;
 
@@ -486,6 +491,16 @@ class Request
         }
 
         return !empty($this->content) ? $this->content : '';
+    }
+
+    /**
+     * Return a JSON request body as php object
+     *
+     * @return object
+     */
+    public function getJson() : object
+    {
+        return json_decode($this->getContent());
     }
 
     /**

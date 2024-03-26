@@ -1,4 +1,10 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
 
 namespace Xentral\Components\Http;
 
@@ -9,8 +15,8 @@ class JsonResponse extends Response
 {
     /**
      * @param array|JsonSerializable $data
-     * @param int                    $statusCode
-     * @param array                  $headers
+     * @param int $statusCode
+     * @param array $headers
      */
     public function __construct($data = [], $statusCode = self::HTTP_OK, array $headers = [])
     {
@@ -28,5 +34,20 @@ class JsonResponse extends Response
         $headers['Content-Type'] = 'application/json; charset=utf8';
 
         parent::__construct($content, $statusCode, $headers);
+    }
+
+    public static function NoContent(array $headers = []): JsonResponse
+    {
+        return new JsonResponse([], Response::HTTP_NO_CONTENT, $headers);
+    }
+
+    public static function BadRequest(array|JsonSerializable $data = [], array $headers = []): JsonResponse
+    {
+        return new JsonResponse($data, Response::HTTP_BAD_REQUEST, $headers);
+    }
+
+    public static function NotFound(array|JsonSerializable $data = [], array $headers = []): JsonResponse
+    {
+        return new JsonResponse($data, Response::HTTP_NOT_FOUND, $headers);
     }
 }
