@@ -79,7 +79,7 @@ class SendCloudApi
    */
   public function CreateParcel(ParcelCreation $parcel): ParcelResponse|string|null
   {
-    $uri = self::PROD_BASE_URI . '/parcels';
+    $uri = self::PROD_BASE_URI . '/parcels?errors=verbose-carrier';
     $response = $this->sendRequest($uri, null, true, ['parcel' => $parcel->toApiRequest()], [200,400]);
     switch ($response['code']) {
       case 200:
@@ -91,8 +91,8 @@ class SendCloudApi
           }
         break;
       case 400:
-        if (isset($response->error))
-          return $response->error->message;
+        if (isset($response['body']->error))
+          return $response['body']->error->message;
         break;
     }
     throw SendcloudApiException::fromResponse($response);

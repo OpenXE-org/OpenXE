@@ -8,6 +8,9 @@
 
 namespace Xentral\Carrier\SendCloud\Data;
 
+/**
+ * Documents object for a parcel
+ */
 class Document
 {
   public const TYPE_LABEL = 'label';

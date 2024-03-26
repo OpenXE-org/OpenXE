@@ -229,7 +229,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                 </table>
             </div>
             <div>
-                <input class="btnGreen" type="submit" value="{|Paketmarke drucken|}" name="drucken">&nbsp;
+                <input class="btnGreen" type="submit" value="{|Paketmarke drucken|}" name="drucken" :disabled="submitting">&nbsp;
                 <!--<input type="button" value="{|Andere Versandart auswählen|}" name="anders">&nbsp;-->
             </div>
         </div>
@@ -261,12 +261,14 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
         methods: {
             submit: function () {
                 let app = this;
+                app.submitting = true;
                 let xhr = new XMLHttpRequest();
                 xhr.open('POST', location.href, true);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onload = function () {
                     let json = JSON.parse(this.response);
                     app.messages = json.messages;
+                    app.submitting = false;
                 }
                 xhr.send(JSON.stringify($.extend({submit:'print'}, this.form)));
             },
