@@ -244,6 +244,9 @@ class WidgetGenshopexport
     $field = new HTMLCheckbox("autosendarticle","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("texteuebertragen","","","1","0","0");
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("shopbilderuebertragen","","","1","0","0");
     $this->form->NewField($field);
 
