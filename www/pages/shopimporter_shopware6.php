@@ -1054,6 +1054,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'deliveryTimeId' => $deliveryTimeId
             ];
 
+            if (!$article['texteuebertragen']) {
+                unset($data['description']);
+            }
+
             $data = array_merge($data, $systemFieldsToAdd);
             if(empty($data['customFields'])
               || empty($data['customFields']['wawision_shopimporter_syncstate'])){
@@ -1077,7 +1081,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     sprintf('product/%s?_response=true', $articleIdShopware), $data, $headerInformation);
             }
 
-            if(!empty($articleIdShopware)){
+            if(!empty($articleIdShopware) && $article['texteuebertragen']) {
                 $this->exportTranslationsForArticle($article, $articleIdShopware);
             }
 
