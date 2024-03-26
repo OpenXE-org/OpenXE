@@ -71,6 +71,9 @@ $mustal_replacers = [
 // Load all db_def from a DB connection into a db_def array
 function mustal_load_tables_from_db(string $host, string $schema, string $user, string $passwd, array $replacers) : array {
 
+    $tables = array();
+    $views = array();
+
     // First get the contents of the database table structure
     $mysqli = mysqli_connect($host, $user, $passwd, $schema);
 
