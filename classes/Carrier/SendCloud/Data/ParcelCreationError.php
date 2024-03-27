@@ -8,6 +8,9 @@
 
 namespace Xentral\Carrier\SendCloud\Data;
 
+/**
+ * Error returned during parcel creation
+ */
 class ParcelCreationError
 {
   public int $Code;

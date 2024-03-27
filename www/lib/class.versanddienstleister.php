@@ -469,6 +469,7 @@ abstract class Versanddienstleister
         CustomsInfo::CUSTOMS_TYPE_RETURN => 'Rücksendung'
     ];
     $json['messages'] = [];
+    $json['submitting'] = false;
     $json['form']['services'] = [
         Product::SERVICE_PREMIUM => false
     ];
