@@ -2798,8 +2798,8 @@ class Artikel extends GenArtikel {
         if(isset($result[$nameofcolumn])) {
           if(
             ($result[$nameofcolumn]!='' && !is_array($result[$nameofcolumn]))
-            || $nameofcolumn==='lieferzeitmanuell' || $nameofcolumn==='pseudopreis'
-          ){
+         //   || $nameofcolumn==='lieferzeitmanuell' || $nameofcolumn==='pseudopreis'
+          ){           
             $this->app->DB->Update(
               "UPDATE artikel 
               SET " . $nameofcolumn . "='" . $this->app->DB->real_escape_string($result[$nameofcolumn]) . "' 
