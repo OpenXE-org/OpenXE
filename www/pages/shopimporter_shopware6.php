@@ -3825,7 +3825,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             return;
 
         $bogxdata = $lineItem['attributes']['payload']['bogxProductConfigurator'];
-        file_put_contents("/var/www/bogx", print_r($lineItem['attributes'], true));
         $textlines = [];
 
         if (isset($bogxdata['ordercode']))
