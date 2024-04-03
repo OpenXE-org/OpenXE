@@ -14,7 +14,7 @@ class Shopimporter_Presta extends ShopimporterBase
   private $app;
   private $intern;
   private $shopid;
-  private $data;
+  var $data;
   private $protocol;
   private $apiKey;
   private $shopUrl;
