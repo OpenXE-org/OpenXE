@@ -1558,7 +1558,6 @@ class Artikel extends GenArtikel {
             $sql .= $joinartikelbaum;
             $groupby = ' GROUP BY a.id ';
           }
-
         }
 
         if ($paramsArray) {
@@ -1587,7 +1586,6 @@ class Artikel extends GenArtikel {
         $extrawhere .= " AND (aba.kategorie = '$artikelkategorie' OR a.typ = '".$artikelkategorie."_kat') ";
         $fastcount .= $joinartikelbaum;
       }
-
 
       if($this->app->erp->Firmendaten('artikel_artikelnummer_suche') == '1'){
 
@@ -7081,6 +7079,8 @@ class Artikel extends GenArtikel {
     $this->app->YUI->AutoComplete('projekt', 'projektname', 1);
     $this->app->YUI->AutoComplete('lieferantname', 'lieferant', 1);
     $this->app->YUI->AutoComplete('hersteller', 'hersteller');
+
+    $this->app->YUI->AutoComplete('typ', 'artikelkategorienfull');
 
     $freifeld1bezeichnung = $this->app->erp->Firmendaten('freifeld1');
     if($freifeld1bezeichnung == ''){
