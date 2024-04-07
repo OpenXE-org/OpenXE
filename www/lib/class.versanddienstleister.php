@@ -57,12 +57,6 @@ abstract class Versanddienstleister
       if ($rechnungId <= 0)
         $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
     }
-    if ($sid === 'versand') {
-      $versandId = $id;
-      $lieferscheinId = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$versandId' LIMIT 1");
-      $rechnungId = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$versandId' LIMIT 1");
-      $sid = 'lieferschein';
-    }
 
     if ($auftragId <= 0 && $rechnungId > 0)
       $auftragId = $this->app->DB->Select("SELECT auftragid FROM rechnung WHERE id=$rechnungId LIMIT 1");
