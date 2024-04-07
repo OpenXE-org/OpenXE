@@ -15,6 +15,8 @@
 <?php
 
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 use Xentral\Modules\Shopware6\Client\Shopware6Client;
 use Xentral\Modules\Shopware6\Data\PriceData;
 
@@ -3408,9 +3410,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     public function ImportUpdateAuftrag()
     {
-        $tmp = $this->CatchRemoteCommand('data');
-        $auftrag = $tmp['auftrag'];
-        $tracking = $tmp['tracking'];
+        /** @var OrderStatusUpdateRequest $data */
+        $data = $this->CatchRemoteCommand('data');
+        if ($data->orderStatus !== OrderStatus::Completed)
+            return;
+
+        $auftrag = $data->shopOrderId;
 
         $this->shopwareRequest('POST', '_action/order/'.$auftrag.'/state/complete');
 
@@ -3421,17 +3426,17 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $this->shopwareRequest('POST', '_action/order_delivery/'.$deliveryId.'/state/ship');
 
             $deliveryData = [
-                'trackingCodes' => [$tracking]
+                'trackingCodes' => [$data->getTrackingNumberList()]
             ];
             $this->shopwareRequest('PATCH', 'order-delivery/'.$deliveryId,$deliveryData);
         }
 
         $this->sendInvoce($auftrag);
-        $this->addCustomFieldToOrder((string)$auftrag);
-        if(empty($tmp['orderId'])) {
+        $this->addCustomFieldToOrder($auftrag);
+        if(empty($data->orderId)) {
             return;
         }
-        $this->updateStorageForOrderIntId((int)$tmp['orderId']);
+        $this->updateStorageForOrderIntId($data->orderId);
     }
 
     public function ImportStorniereAuftrag()
