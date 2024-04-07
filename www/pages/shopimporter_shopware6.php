@@ -3374,6 +3374,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $productPriceType => $lineItem['attributes']['price']['unitPrice'],
                     'steuersatz' => $lineItem['attributes']['price']['calculatedTaxes'][0]['taxRate'],
                 ];
+                $this->parseBogxData($lineItem, $product);
                 $cart['articlelist'][] = $product;
             }
 
@@ -3844,5 +3845,49 @@ class Shopimporter_Shopware6 extends ShopimporterBase
       }
 
       $this->updateArticleCacheToSync($articleIds);
+    }
+
+    protected function parseBogxData(array $lineItem, array &$product) : void
+    {
+        if (!isset($lineItem['attributes']['payload']['bogxProductConfigurator']))
+            return;
+
+        $bogxdata = $lineItem['attributes']['payload']['bogxProductConfigurator'];
+        $textlines = [];
+
+        if (isset($bogxdata['ordercode']))
+            $textlines[] = "Order-Code: ${bogxdata['ordercode']}";
+
+        foreach ($bogxdata['optionsGroups'] as $bogxposition)  {
+            $dt = $bogxposition['datatype'];
+            if ($dt == 'quantity_total')
+                continue;
+            if (is_array($bogxposition['valueID']) && is_array($bogxposition['title']))
+            {
+                foreach ($bogxposition['valueID'] as $valueID) {
+                    $bogxTitle = $bogxposition['title'][$valueID];
+                    if ($dt == 'checkbox_quantity')
+                        $bogxTitle = $bogxposition['label'][$valueID]." ".$bogxTitle;
+                    $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
+                }
+            }
+            else
+            {
+                if (is_array($bogxposition['title']))
+                    $bogxTitle = join(' ', $bogxposition['title']);
+                else
+                    $bogxTitle = $bogxposition['title'];
+                $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
+            }
+        }
+
+        if (!empty($bogxdata['shippingtime'])) {
+            $textlines[] = $bogxdata['shippingtime'];
+        }
+
+        $product['options'] .= join("\n", $textlines);
+        $product['price'] = $bogxdata['unitySurcharge'];
+        $product['price_netto'] = $bogxdata['unitySurchargeNetto'];
+        $product['quantity'] = $bogxdata['totalQuantity'];
     }
 }
