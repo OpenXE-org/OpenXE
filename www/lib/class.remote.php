@@ -1890,7 +1890,6 @@ class Remote
             if(is_numeric($matrixPseudoStorage) && $matrixPseudoStorage < 0) {
               $matrixPseudoStorage = 0;
             }
-            $matrixStock = (float)$this->app->erp->ArtikelAnzahlVerkaufbar($eigenschaft['artikel'], 0, $projektlager, $id, $lagergrundlage);
             if($matrixStock < 0) {
               $matrixStock = 0;
             }

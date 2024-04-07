@@ -1,4 +1,12 @@
 <?php
+
+/*
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
@@ -7331,6 +7339,10 @@ class Artikel extends GenArtikel {
 
         if($this->app->erp->Version()!=='stock' && $rabatt!='1'){
           $this->app->erp->MenuEintrag('index.php?module=artikel&action=eigenschaften&id='.$id, 'Eigenschaften');
+        }
+
+        if ($tmp[0]['matrixprodukt']==1) {
+          $this->app->erp->MenuEintrag("index.php?module=matrixprodukt&action=artikel&id=$id", 'Matrixprodukt');
         }
 
         if($rabatt!='1'){
