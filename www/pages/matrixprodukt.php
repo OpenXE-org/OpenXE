@@ -135,7 +135,7 @@ class Matrixprodukt
                 }
                 $heading[] = 'Men&uuml;';
                 $width[] = '1%';
-                $findcols = array_merge($nameColumns, ['nummer']);
+                $findcols = array_merge($nameColumns, ['nummer', 'id']);
                 $searchsql = $nameColumns;
                 $menu = "<table><tr><td nowrap>"
                     . "<img class=\"vueAction\" data-action=\"variantEdit\" data-variant-id=\"%value%\" data-article-id=\"$id\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\">&nbsp;"
@@ -150,10 +150,11 @@ class Matrixprodukt
                 $artsql = "SELECT a.id, a.nummer, group_concat(mota.option_id order by mota.option_id separator ',') idlist
                    FROM matrixprodukt_optionen_zu_artikel mota
                    JOIN artikel a ON mota.artikel = a.id WHERE a.variante_von = $id group by mota.artikel";
-                $sqlNameCols = join(',', $nameColumns);
-                $sql = "SELECT SQL_CALC_FOUND_ROWS art.id, art.nummer, $sqlNameCols, art.id
-                FROM ($artsql) art
-                LEFT OUTER JOIN ($optsql) opts ON opts.idlist = art.idlist";
+                $sqlNameCols = join(',', array_merge(['art.id', 'art.nummer'], $nameColumns, ['art.id']));
+                $sql = "SELECT SQL_CALC_FOUND_ROWS $sqlNameCols
+                FROM ($artsql) art ";
+                if (!empty($optsqlIdCols))
+                    $sql .= " LEFT OUTER JOIN ($optsql) opts ON opts.idlist = art.idlist";
                 $where = "1";
                 //$count = "SELECT count(DISTINCT moa.id)
 //                  FROM matrixprodukt_eigenschaftengruppen_artikel mga
@@ -362,18 +363,23 @@ class Matrixprodukt
                 return new JsonResponse($result);
         }
 
+        $articleId = $this->app->Secure->GetGET('id');
         $groupId = $this->app->Secure->GetGET('sid');
         if (empty($groupId)) {
             $this->app->YUI->TableSearch('TAB1', 'matrixprodukt_article_groups', "show", "", "", basename(__FILE__), __CLASS__);
             $this->app->Tpl->Set('ADDEDITFUNCTION', 'groupEdit');
         } else {
-            $articleId = $this->app->Secure->GetGET('id');
             $this->app->erp->MenuEintrag("index.php?module=matrixprodukt&action=artikel&id=$articleId", 'Zur&uuml;ck zur Gruppen&uuml;bersicht');
             $this->app->YUI->TableSearch('TAB1', 'matrixprodukt_article_options', "show", "", "", basename(__FILE__), __CLASS__);
             $this->app->Tpl->Set('SID', $groupId);
             $this->app->Tpl->Set('ADDEDITFUNCTION', 'optionEdit');
         }
-        $this->app->YUI->TableSearch('TAB2', 'matrixprodukt_variants', "show", "", "", basename(__FILE__), __CLASS__);
+        if ($this->service->GetArticleGroupsByArticleId($articleId)) {
+            $this->app->YUI->TableSearch('TAB2', 'matrixprodukt_variants', "show", "", "", basename(__FILE__), __CLASS__);
+        } else {
+            $this->app->Tpl->Set('TAB2HIDEACTIONS', 'style="display: none;"');
+            $this->app->Tpl->Set('MESSAGE2', "<div class=\"error\">Es sind noch keine Gruppen angelegt!</div>");
+        }
         $this->app->Tpl->Parse('PAGE', "matrixprodukt_article.tpl");
     }
 
