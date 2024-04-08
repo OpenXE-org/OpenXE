@@ -305,15 +305,15 @@ class ModuleScriptCache
         if (defined('VITE_DEV_SERVER')) {
           $url = 'http://' . VITE_DEV_SERVER . '/' . $module->src;
         } else {
-          $url = $this->assetDir . '/' . $module->file;
+          $url = '.'.$this->assetDir . '/' . $module->file;
           if (isset($module->css)) {
             foreach ($module->css as $css)
-              $html .= sprintf('<link rel="stylesheet" type="text/css" href="%s" />', $this->assetDir.'/'.$css);
+              $html .= sprintf('<link rel="stylesheet" type="text/css" href="%s" />', '.'.$this->assetDir.'/'.$css);
               $html .= "\r\n";
           }
         }
       } elseif (str_starts_with($module,$this->baseDir.'/www')) {
-        $url = substr($module, strlen($this->baseDir)+4);
+        $url = '.'.substr($module, strlen($this->baseDir)+4);
       }
 
       if (isset($url))  {
