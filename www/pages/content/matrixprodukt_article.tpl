@@ -35,11 +35,11 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             <div class="row-height">
                 <div class="col-xs-12 col-md-10 col-md-height">
                     <div class="inside-white inside-full-height">
-                        [MESSAGE]
+                        [MESSAGE2]
                         [TAB2]
                     </div>
                 </div>
-                <div class="col-xs-12 col-md-2 col-md-height">
+                <div class="col-xs-12 col-md-2 col-md-height" [TAB2HIDEACTIONS]>
                     <div class="inside inside-full-height">
                         <fieldset>
                             <legend>{|Aktionen|}</legend>
