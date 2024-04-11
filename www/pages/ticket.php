@@ -504,8 +504,21 @@ class Ticket {
             $secure_text = strip_tags($messages[0]['text'],$secure_html_tags);
 
             if (strlen($secure_text) != strlen($messages[0]['text'])) {
-//                $secure_text = "<p style=\"all: initial;border-bottom-color:black;border-bottom-style:solid;border-bottom-width:1px;display:block;font-size:small;\">Einige Elemente wurden durch OpenXE blockiert.</p>".$secure_text;
-                $secure_text = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/icon-invisible.svg\" alt=\"Einige Elemente wurden durch OpenXE blockiert.\" title=\"Einige Elemente wurden durch OpenXE blockiert.\" border=\"0\" style=\"all: initial;display:block;float:right;font-size:small;\">".$secure_text;
+            
+                $blink_style_tag = "
+                <style>
+                @keyframes animation_blink {
+                    0% { opacity: 1; }
+                    25% { opacity: 1; }
+                    26% { opacity: 0; }
+                    75% { opacity: 0; }
+                    76% { opacity: 1; }
+                    100% { opacity: 1; }        
+                }
+                </style>                
+                ";                
+                $blink_css = "animation-name:animation_blink;animation-timing-function:linear;animation-duration:2s;animation-iteration-count:5;";                                                  
+                $secure_text = $blink_style_tag."<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/icon-invisible.svg\" alt=\"Einige Elemente wurden durch OpenXE blockiert.\" title=\"Einige Elemente wurden durch OpenXE blockiert.\" border=\"0\" style=\"all: initial;display:block;float:right;font-size:small;".$blink_css."\">".$secure_text;
             }
             $this->app->Tpl->Set("TEXT",$secure_text);
         }
