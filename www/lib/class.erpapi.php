@@ -37013,11 +37013,35 @@ function Firmendaten($field,$projekt="")
 
         if(!$without_log)
         {
-          $this->app->DB->Insert("INSERT INTO datei (id,titel,beschreibung,nummer,firma) VALUES
-              ('','$titel','$beschreibung','$nummer','".$this->app->User->GetFirma()."')");
+          $this->app->DB->Insert("INSERT INTO datei (
+                id,
+                titel,
+                beschreibung,
+                nummer,
+                firma
+            ) VALUES (
+                '',
+                '".$this->app->DB->real_escape_string($titel)."',
+                '".$this->app->DB->real_escape_string($beschreibung)."',
+                '".$this->app->DB->real_escape_string($nummer)."',
+                '".$this->app->User->GetFirma()."'
+            )"
+          );
         } else {
-          $this->app->DB->InsertWithoutLog("INSERT INTO datei (id,titel,beschreibung,nummer,firma) VALUES
-              ('','$titel','$beschreibung','$nummer',1)");
+          $this->app->DB->InsertWithoutLog("INSERT INTO datei (
+                id,
+                titel,
+                beschreibung,
+                nummer,
+                firma
+            ) VALUES (
+                '',
+                '".$this->app->DB->real_escape_string($titel)."',
+                '".$this->app->DB->real_escape_string($beschreibung)."',
+                '".$this->app->DB->real_escape_string($nummer)."',
+                1
+            )
+          ");
         }
 
         $fileid = $this->app->DB->GetInsertID();
