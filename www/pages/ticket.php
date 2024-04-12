@@ -476,7 +476,12 @@ class Ticket {
             '<table>',
             '<tr>',
             '<td>',
-            '<style>'
+            '<style>',
+            '<ol>',
+            '<ul>',
+            '<li>',
+            '<dd>',
+            '<dt>'
         );
 
         $mid = $this->app->Secure->GetGET('mid');
