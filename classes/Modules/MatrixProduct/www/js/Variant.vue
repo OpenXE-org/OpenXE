@@ -11,6 +11,7 @@ import Dialog from "primevue/dialog";
 import Dropdown from "primevue/dropdown";
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import {AlertErrorHandler} from "@res/js/ajaxErrorHandler";
 
 const props = defineProps({
   articleId: String,
@@ -28,7 +29,7 @@ onMounted(async () => {
 
 async function save() {
   await axios.post('index.php?module=matrixprodukt&action=artikel&cmd=variantsave', {...props, ...model.value})
-      .catch(error => alert(error.response.data))
+      .catch(AlertErrorHandler)
       .then(() => {emit('save')});
 }
 
