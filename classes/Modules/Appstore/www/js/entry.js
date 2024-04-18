@@ -1,3 +1,4 @@
+import '../css/appstore.css';
 $(document).ready(function () {
     $('body').addClass('module-appstore');
 
@@ -60,18 +61,6 @@ $(document).ready(function () {
         }
     }
 
-    // Testversion anfragen
-    $('.testversion').on('click', function (e) {
-        e.preventDefault();
-        var hash = $(this).data('hash');
-
-        if (typeof hash == 'undefined') {
-            var $modulediv = $(this).parents('div.module').first();
-            hash = typeof $modulediv[0].id != 'undefined' ? $modulediv[0].id : $modulediv.id;
-        }
-        getanfrage(hash);
-    });
-
     // Suchen beim Tippen im Suchfeld
     appstore.search.on('keyup', function () {
         appstore.activePhrase = $(this).val()
@@ -123,45 +112,6 @@ $(document).ready(function () {
             }, 300);
         });
     });
-
-    $('#anfragepopup').dialog(
-        {
-            modal: true,
-            autoOpen: false,
-            minWidth: 940,
-            title: 'Testmodul anfragen',
-            buttons: {
-                'Testmodul anfragen': function () {
-                    if (!confirmAppTest(false)) {
-                        confirmAppTest(true);
-                    }
-                },
-                'Abbrechen': function () {
-                    $(this).dialog('close');
-                }
-            },
-            close: function (event, ui) {
-
-            }
-        }
-    );
-
-    $('#anfrageokpopup').dialog(
-        {
-            modal: true,
-            autoOpen: false,
-            minWidth: 940,
-            title: 'Testmodul anfragen',
-            buttons: {
-                OK: function () {
-                    $(this).dialog('close');
-                }
-            },
-            close: function (event, ui) {
-
-            }
-        }
-    );
 
     $('a.activate').on('click', function (e) {
         e.preventDefault();
@@ -234,45 +184,6 @@ $(document).ready(function () {
         });
     });
 });
-
-function confirmAppTest(showError) {
-    var ok = false;
-    $.ajax({
-        url: 'index.php?module=appstore&action=list',
-        type: 'POST',
-        dataType: 'json',
-        async: false,
-        data: {modulbestaetigen: $('#anfragemd5').val(), testen: 1},
-        success: function (data) {
-            if (typeof data.html != 'undefined' && data.html != '') {
-                $('#anfragepopup').dialog('close');
-                $('#anfragemd5').val('');
-                $('#anfrageokpopup').dialog('open');
-                $('#anfrageoknachricht').html(data.html);
-                ok = true;
-            } else {
-                if (showError) {
-                    $('#anfragepopup').dialog('close');
-                    $('#anfragemd5').val('');
-                    $('#anfrageokpopup').dialog('open');
-                    $('#anfrageoknachricht').html(
-                        '<div class="error">Es ist ein Fehler bei der Anfrage aufgetreten.</div>'
-                    );
-                }
-            }
-        },
-        beforeSend: function () {
-
-        }
-    });
-
-    return ok;
-}
-
-function getanfrage(anfragemd5) {
-    $('#anfragemd5').val(anfragemd5);
-    $('#anfragepopup').dialog('open');
-}
 
 /**
  *
