@@ -323,32 +323,10 @@ class erpooSystem extends Application
         }
       }
 
-      $isTestlizenz = !empty(erpAPI::Ioncube_Property('testlizenz'));
-      $isCloud = erpAPI::Ioncube_Property('iscloud');
-      $isDemo = $isTestlizenz && $isCloud;
       $activateDoubleClick = false;
       /** @var Dataprotection $dataProtectionModule */
       $dataProtectionModule = $this->loadModule('dataprotection');
 
-      if($isCloud
-        && $dataProtectionModule !== null
-        && $dataProtectionModule->isGoogleAnalyticsActive()
-      ){
-        $activateDoubleClick = true;
-        $this->Tpl->Add(
-          'SCRIPTJAVASCRIPT',
-          '<!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-1088253-14"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag(\'js\', new Date());
-        
-          gtag(\'config\', \'UA-1088253-14\');
-        </script>');
-
-        $this->Tpl->Add('ADDITIONALCSPHEADER', ' www.googletagmanager.com www.google-analytics.com ssl.google-analytics.com stats.g.doubleclick.net ');
-      }
       if($dataProtectionModule !== null && $dataProtectionModule->isHubspotActive()) {
         $activateDoubleClick = true;
         $this->Tpl->Add(
@@ -468,13 +446,6 @@ class erpooSystem extends Application
       ];*/
 
 
-      if(!empty(erpAPI::Ioncube_Property('testlizenz')) && $this->User->GetType() === 'admin'){
-          $possibleUserItems['Starte hier!'] = [
-              'link' => 'index.php?module=learningdashboard&action=list',
-              'type' => 'cta'
-          ];
-      }
-
       $userItems = '<div class="sidebar-list small-items separator-bottom">';
 
       foreach($possibleUserItems as $title => $data){
@@ -545,10 +516,7 @@ class erpooSystem extends Application
 
     /** @var Dataprotection $obj */
       $obj = $this->loadModule('dataprotection');
-      $showChat = method_exists('erpAPI','Ioncube_Property')
-      && !empty(erpAPI::Ioncube_Property('chatactive'))
-      && !empty(erpAPI::Ioncube_Property('chat'))
-      && $obj !== null
+      $showChat = $obj !== null
       && method_exists($obj, 'isZenDeskActive')
       && $obj->isZenDeskActive();
 
@@ -608,23 +576,8 @@ class erpooSystem extends Application
       $this->Tpl->Set('FIXEDITEMS',  $fixedItems);
       $this->Tpl->Set('XENTRALVERSION', $version);
       $this->Tpl->Set('SIDEBAR_CLASSES', $sidebarClasses);
-      $isDevelopmentVersion = method_exists('erpAPI','Ioncube_Property')
-        && !empty(erpAPI::Ioncube_Property('isdevelopmentversion'));
-      if($isDevelopmentVersion) {
-        $this->Tpl->Add(
-          'SIDEBARLOGO',
-          @file_get_contents(__DIR__ . '/themes/new/templates/sidebar_development_version_logo.svg')
-        );
-        $this->Tpl->Add(
-          'SIDEBARLOGO',
-          '<img class="development" src="themes/new/templates/development_version_logo.png" alt="logo" />'
-        );
-      }
-      else{
-//        $this->Tpl->Add('SIDEBARLOGO', @file_get_contents(__DIR__ . '/themes/new/templates/sidebar_logo.svg'));
-        $this->Tpl->Add('SIDEBARLOGO','<div class="sidebar_logo">'.@file_get_contents(__DIR__ . '/themes/new/templates/sidebar_logo.svg').'</div>');
-        $this->Tpl->Add('SIDEBARLOGO','<div class="sidebar_icon_logo">'.@file_get_contents(__DIR__ . '/themes/new/templates/sidebar_icon_logo.svg').'</div>');
-      }
+      $this->Tpl->Add('SIDEBARLOGO','<div class="sidebar_logo">'.@file_get_contents(__DIR__ . '/themes/new/templates/sidebar_logo.svg').'</div>');
+      $this->Tpl->Add('SIDEBARLOGO','<div class="sidebar_icon_logo">'.@file_get_contents(__DIR__ . '/themes/new/templates/sidebar_icon_logo.svg').'</div>');
 
       $this->Tpl->Parse('SIDEBAR', 'sidebar.tpl');
       $this->Tpl->Parse('PROFILE_MENU', 'profile_menu.tpl');
@@ -1342,41 +1295,6 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
           $this->erp->SetKonfigurationValue('eproosystem_skipcheckuserdata', '1');
         }
       }
-      if(!$this->erp->ServerOK()) {
-        $serverlist = $this->erp->GetIoncubeServerList();
-        if(method_exists($this->erp, 'setSystemHealth')) {
-          $this->erp->setSystemHealth(
-            'server',
-            'ioncube',
-            'error',
-            'Die Ioncube-Lizenz ist nur g&uuml;ltig f&uuml;r folgene'.
-            (count($serverlist) == 1?'n':'').' Server: '.implode(', ',$serverlist)
-          );
-        }
-      }
-      else {
-        $expDays = erpAPI::Ioncube_ExpireInDays();
-        $testLicence = erpAPI::Ioncube_Property('testlizenz');
-        if(!$testLicence && $expDays !== false && $expDays < 14) {
-          $this->erp->setSystemHealth(
-            'server',
-            'ioncube',
-            'error',
-            sprintf(
-              'Die Lizenz am %s aus.',
-              erpAPI::Ioncube_ExpireDate()
-            )
-          );
-        }
-        else{
-          $this->erp->setSystemHealth(
-            'server',
-            'ioncube',
-            'ok',
-            ''
-          );
-        }
-      }
       if ($this->ModuleScriptCache->IsCacheDirWritable() === false) {
         $this->erp->setSystemHealth(
           'server',
@@ -1821,21 +1739,6 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
     else {
       $this->Tpl->Set('VORCHATNACHRICHTENBOX','<!--');
       $this->Tpl->Set('NACHCHATNACHRICHTENBOX','-->');
-    }
-
-    if(!empty(erpAPI::Ioncube_Property('testlizenz'))){
-        $upgradeButton = '<li id="upgrade-licence"><a href="./index.php?module=appstore&action=buy">'.
-            '<svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M4.47287 12.0104C2.04566 9.80074 1.66708 6.11981 3.59372 3.46237C5.52036 0.804943 9.13654 0.0202146 11.9914 1.64005" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M2.21273 11.9649C1.39377 13.3996 1.11966 14.513 1.58214 14.9761C2.2843 15.6776 4.48124 14.6858 7.02522 12.6684" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M9.93719 12.1581L7.52014 9.74109L12.8923 4.3689C13.3305 3.93091 13.8797 3.62049 14.481 3.47095L15.863 3.12392C16.0571 3.07558 16.2623 3.1325 16.4037 3.27392C16.5451 3.41534 16.602 3.62054 16.5537 3.8146L16.208 5.19732C16.0578 5.7984 15.7469 6.34731 15.3087 6.78527L9.93719 12.1581Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M7.51976 9.7409L5.54021 9.08128C5.44619 9.05019 5.37505 8.97252 5.35233 8.87613C5.32961 8.77974 5.35857 8.67847 5.42881 8.60867L6.11882 7.91866C6.7306 7.30697 7.63548 7.09343 8.45619 7.36706L9.53644 7.72625L7.51976 9.7409Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M9.93713 12.1584L10.5968 14.1386C10.6278 14.2326 10.7055 14.3038 10.8019 14.3265C10.8983 14.3492 10.9996 14.3203 11.0694 14.25L11.7594 13.56C12.3711 12.9482 12.5846 12.0434 12.311 11.2226L11.9518 10.1424L9.93713 12.1584Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-'.
-            '<span>Upgrade</span></a></li>';
-
-        $this->Tpl->Set('UPGRADELICENCECTA', $upgradeButton);
     }
 
     if(!$this->erp->ModulVorhanden('aufgaben') || !$this->erp->RechteVorhanden('aufgaben','list')) {

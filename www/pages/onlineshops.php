@@ -1765,9 +1765,6 @@ INNER JOIN shopexport s ON
    */
   public function createInternShop($auswahlmodul)
   {
-    if($fehler = $this->app->erp->OnlineshopsLizenzFehler($auswahlmodul)) {
-      return ['success'=>false,'error'=>$fehler['Error']];
-    }
     $bezeichnung = ucfirst(str_replace('shopimporter_','',$auswahlmodul));
     $i = 1;
     while($this->app->DB->Select("SELECT id FROM shopexport WHERE bezeichnung = '$bezeichnung' LIMIT 1")) {

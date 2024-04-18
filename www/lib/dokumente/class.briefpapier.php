@@ -101,10 +101,7 @@ class Briefpapier extends SuperFPDF {
 
     $hintergrund = $this->getStyleElement('hintergrund');
 
-    if(!empty(erpAPI::Ioncube_Property('isdevelopmentversion'))) {
-      $this->setDevelopmentVersionBackground();
-    }
-    elseif($this->app->erp->BriefpapierHintergrunddisable)
+    if($this->app->erp->BriefpapierHintergrunddisable)
     {
     }
     else if($hintergrund=='logo')

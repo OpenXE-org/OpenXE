@@ -2244,41 +2244,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       $this->app->Tpl->Add('TAB1','OpenXE is free open source software under AGPL/EGPL license, based on <a href="https://xentral.com" target="_blank">Xentral®</a> by Xentral&nbsp;ERP&nbsp;Software&nbsp;GmbH.<br><br><div class="info"><img src="themes/new/images/Xentral_ERP_Logo-200.png"><br>Das Logo und der Link zur Homepage <a href="https://xentral.biz" target=\_blank\>https://xentral.biz</a> d&uuml;rfen nicht entfernt werden.</div><br>&copy; Copyright by OpenXE project & Xentral ERP Software GmbH Augsburg');
     }
 
-    if($this->app->erp->isIoncube() && method_exists($this->app->erp, 'IoncubeProperty'))
-    {
-      if(method_exists('erpAPI','Ioncube_Property'))
-      {
-        $hinweis = erpAPI::Ioncube_Property('versionshinweis');
-      }else{ 
-        $hinweis = $this->app->erp->IoncubeProperty('versionshinweis');
-      }
-      if($hinweis){$hinweis = ' ('.$hinweis.')';}else{$hinweis = '';}
-      if(method_exists('erpAPI', 'Ioncube_HasExpired'))
-      {
-        $hasexpired = erpAPI::Ioncube_HasExpired();
-      }else{
-        $hasexpired = $this->app->erp->IoncubeHasExpired();
-      }
-      if(method_exists('erpAPI', 'Ioncube_ExpireDate'))
-      {
-        $expiredate = erpAPI::Ioncube_ExpireDate();
-      }else{      
-        $expiredate = $this->app->erp->IoncubeExpireDate();
-      }
-      
-      if($hasexpired && is_dir(dirname(dirname(__DIR__)).'/www_oss') && is_dir(dirname(dirname(__DIR__)) . '/phpwf_oss') && is_dir(dirname(dirname(__DIR__)) . '/phpwf_oss/types')  && $this->app->User->GetType() == 'admin')
-      {
-        if(is_dir(dirname(dirname(__DIR__)).'/www_oss') && is_dir(dirname(dirname(__DIR__)) . '/phpwf_oss') && is_dir(dirname(dirname(__DIR__)) . '/phpwf_oss/types')  && $this->app->User->GetType() == 'admin')
-        {
-          $this->app->Tpl->Add('TAB1','<form method="post"><div class="info">
-            <input type="checkbox" value="1" name="restoreoss" /> {|Wieder auf Open-Source Version wechseln|}<br />
-            Hinweis: Bitte sichern Sie wenn Sie eigene Quelltexte in Xentral hinterlegt haben diese gesondert. Es werden alle fremden Quelltextdateien entfernt.<br />
-            <input type="submit" style="margin:5px;" value="{|Jetzt auf Open-Source Version wechseln|}" /><div style="clear:both;"></div>
-            </div></form>');
-        }
-      }
-    }
-
     $tmp = file_get_contents('../LICENSE');
 
     $phpmailer = file_get_contents('../www/plugins/phpmailer/LICENSE');
@@ -2287,109 +2252,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     $this->app->Tpl->Add('TAB1',nl2br($tmp));
 
     $this->app->Tpl->Add('TAB1','</td></tr>');
-
-    if($this->app->erp->isIoncube() && method_exists($this->app->erp, 'IoncubeProperty'))
-    {
-      $first = true;
-      if(method_exists('erpAPI','Ioncube_getMaxUser'))
-      {
-        $maxuser = erpAPI::Ioncube_getMaxUser();
-      }else{
-        $maxuser = $this->app->erp->IoncubegetMaxUser();
-      }
-      $maxlightuser = 0;
-      $maxlightuserrechte = 0;
-      $anzahllightuser = 0;
-
-      if(method_exists('erpAPI','Ioncube_getMaxLightusers') && method_exists('erpAPI','Ioncube_getMaxLightusersRights'))
-      {
-        $maxlightuser = erpAPI::Ioncube_getMaxLightusers();
-        $maxlightuserrechte = erpAPI::Ioncube_getMaxLightusersRights();
-      }
-      $mitarbeiterzeiterfassung = $this->app->erp->ModulVorhanden('mitarbeiterzeiterfassung')?$maxuser:0;
-
-      if($maxuser) {
-        $anzuser2 = 0;
-        if($maxlightuser > 0) {
-          $anzuser2 = (int)$this->app->DB->Select("SELECT count(DISTINCT u.id) FROM `user` u WHERE activ = 1 AND type = 'lightuser' ");
-          $anzahllightuser = $anzuser2;
-          $anzuser = (int)$this->app->DB->Select("SELECT count(id) FROM `user` WHERE activ = 1 AND not isnull(hwtoken) AND hwtoken <> 4") - $anzuser2;
-          $anzuserzeiterfassung = (int)$this->app->DB->Select("SELECT count(*) from user where activ = 1 AND hwtoken = 4 AND type != 'lightuser'");
-        }else{
-          $anzuser = (int)$this->app->DB->Select("SELECT count(*) from user where activ = 1 AND hwtoken <> 4 ");
-          $anzuserzeiterfassung = (int)$this->app->DB->Select("SELECT count(*) from user where activ = 1 AND hwtoken = 4");
-        }
-
-        $userred = $anzuser > $maxuser
-          || (
-            ($anzuser + $anzuserzeiterfassung + $anzuser2) >
-            $mitarbeiterzeiterfassung + $maxuser + $maxlightuser
-          )
-          || (($anzuser + $anzuserzeiterfassung) > $mitarbeiterzeiterfassung + $maxuser);
-
-
-        $this->app->Tpl->Add(
-          'TAB1',
-          '<tr><td><div' . ($userred ? ' style="color:red;" ' : '') . '>Benutzer ' .
-          ($anzuser + $anzahllightuser + $anzuserzeiterfassung) .
-          ($maxlightuser > 0 || $anzuserzeiterfassung > 0?' (davon ':'').
-          ($maxlightuser > 0 ?  $anzahllightuser . ' Light-User' : '') .
-          ($maxlightuser > 0 && $anzuserzeiterfassung > 0?', ':'').
-          ($anzuserzeiterfassung > 0 ? $anzuserzeiterfassung . ' Zeiterfassung-User' : '') .
-          ($maxlightuser > 0 || $anzuserzeiterfassung > 0?')':'').
-          ' von ' .
-          ($maxuser + $maxlightuser + $mitarbeiterzeiterfassung) .
-          ($maxlightuser > 0 || $mitarbeiterzeiterfassung > 0?' (davon ':'').
-          ($maxlightuser > 0 ? $maxlightuser . ' Light-User' : '') .
-          ($maxlightuser > 0 && $mitarbeiterzeiterfassung > 0?', ':'').
-          ($mitarbeiterzeiterfassung > 0 ? $mitarbeiterzeiterfassung . ' Zeiterfassung-User' : '') .
-          ($maxlightuser > 0 || $mitarbeiterzeiterfassung > 0?')':'').
-          '</div></td></tr>'
-        );
-      }
-
-      if(method_exists('erpAPI','Ioncube_Property'))
-      {
-        $hinweis = erpAPI::Ioncube_Property('versionshinweis');
-      }else{ 
-        $hinweis = $this->app->erp->IoncubeProperty('versionshinweis');
-      }
-      if($hinweis){
-        $hinweis = ' ('.$hinweis.')';
-      }else{
-        $hinweis = '';
-      }
-      if(method_exists('erpAPI', 'Ioncube_HasExpired'))
-      {
-        $hasexpired = erpAPI::Ioncube_HasExpired();
-      }else{
-        $hasexpired = $this->app->erp->IoncubeHasExpired();
-      }
-      if(method_exists('erpAPI', 'Ioncube_ExpireDate'))
-      {
-        $expiredate = erpAPI::Ioncube_ExpireDate();
-      }else{      
-        $expiredate = $this->app->erp->IoncubeExpireDate();
-      }
-      if(method_exists('erpAPI', 'Ioncube_BeforeExpire'))
-      {
-        $ioncubebeforeexpire = erpAPI::Ioncube_BeforeExpire();
-      }else{
-        $ioncubebeforeexpire = $this->app->erp->IoncubeBeforeExpire();
-      }
-      
-      if($hasexpired)
-      {
-        $first = false;
-        $this->app->Tpl->Add('TAB1','<tr><td><div style="color:red;">Ihre Lizenz ist am '.$expiredate.' abgelaufen'.$hinweis.'.</div></td></tr>');
-      } elseif($ioncubebeforeexpire) {
-        $first = false;
-        $this->app->Tpl->Add('TAB1','<tr><td><div style="color:red;">Ihre Lizenz l&auml;uft am '.$expiredate.' ab'.$hinweis.'.</div></td></tr>');
-      } elseif($expiredate) {
-        $first = false;
-        $this->app->Tpl->Add('TAB1','<tr><td><div>Die Lizenz l&auml;uft am '.$expiredate.' ab'.$hinweis.'.</div></td></tr>');
-      }
-    }
 
     if(method_exists($this->app->erp, 'VersionsInfos'))
     {
@@ -3117,8 +2979,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
   {
     $userNames = [];
     $members = [];
-    $needToPreventExampleImportFailure = !empty(erpAPI::Ioncube_Property('testlizenz'))
-      && !empty(erpAPI::Ioncube_Property('iscloud'));
     for($i = 0; $i < 5; $i++) {
       $userName = $this->app->Secure->GetPOST('teamMemberName'.($i > 0?(string)$i:''));
       if(empty($userName)) {
@@ -3160,9 +3020,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
         )
       );
       $addressId = (int)$this->app->DB->GetInsertID();
-      if($needToPreventExampleImportFailure) {
-        $addressId = $this->ChangeAddressIdIfCollideWithExampleData($addressId);
-      }
       $this->app->erp->AddRolleZuAdresse($addressId, 'Mitarbeiter', 'von', 'Projekt', $projectId);
       $vorlage =
         $this->app->DB->real_escape_string(
@@ -3185,9 +3042,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
         )
       );
       $newUserId = (int)$this->app->DB->GetInsertID();
-      if($needToPreventExampleImportFailure){
-        $newUserId = $this->ChangeUserIdIfCollideWithExampleData($newUserId);
-      }
       $this->app->erp->insertDefaultUserRights($newUserId);
       if($vorlage !== '') {
         $this->app->erp->AbgleichBenutzerVorlagen($newUserId);
