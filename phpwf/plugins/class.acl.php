@@ -850,8 +850,7 @@ class Acl
         // verbinden zum ldap server
         $ds = ldap_connect($this->app->erp->Firmendaten("ldap_host"));
         $suche = $this->app->erp->Firmendaten("ldap_searchbase");
-        $filter = $this->app->erp->Firmendaten("ldap_filter");
-        //$bind_name = str_replace('%user%',$username,$this->app->erp->Firmendaten("ldap_bindname"));
+        $filter = str_replace('{USER}',$username,$this->app->erp->Firmendaten("ldap_filter"));
         $bind_name = str_replace('{USER}',$username,$this->app->erp->Firmendaten("ldap_bindname"));
 
         if ($ds) {
