@@ -7,6 +7,7 @@
 use Xentral\Components\Http\JsonResponse;
 use Xentral\Components\Http\Request;
 use Xentral\Components\Http\Response;
+use Xentral\Modules\Article\Service\ArticleService;
 use Xentral\Modules\MatrixProduct\Data\Group;
 use Xentral\Modules\MatrixProduct\Data\Option;
 use Xentral\Modules\MatrixProduct\Data\Translation;
@@ -16,6 +17,7 @@ class Matrixprodukt
 {
     private ApplicationCore $app;
     private MatrixProductService $service;
+    private ArticleService $articleService;
     private Request $request;
 
     const MODULE_NAME = 'MatrixProduct';
@@ -30,6 +32,7 @@ class Matrixprodukt
             return;
         $this->service = $this->app->Container->get('MatrixProductService');
         $this->request = $this->app->Container->get('Request');
+        $this->articleService = $this->app->Container->get('ArticleService');
 
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "ActionList");
@@ -120,18 +123,13 @@ class Matrixprodukt
                 $heading[] = 'Artikel';
                 $width[] = '5%';
                 $nameColumns = [];
-                $optIdColumns = [];
-                $optNameColumns = [];
-                $optFrom = [];
-                $optWhere = [];
+                $joins = [];
                 foreach ($groups as $groupId => $groupName) {
                     $heading[] = $groupName;
                     $width[] = '5%';
-                    $nameColumns[] = "name_$groupId";
-                    $optIdColumns[] = "moa_$groupId.id";
-                    $optNameColumns[] = "moa_$groupId.name as name_$groupId";
-                    $optFrom[] = "matrixprodukt_eigenschaftenoptionen_artikel moa_$groupId";
-                    $optWhere[] = "moa_$groupId.artikel = $id AND moa_$groupId.gruppe = $groupId";
+                    $nameColumns[] = "MAX(moa_$groupId.name)";
+                    $joins[] = "LEFT JOIN matrixprodukt_eigenschaftenoptionen_artikel moa_$groupId 
+                                ON mota.option_id=moa_$groupId.id AND moa_$groupId.gruppe = $groupId";
                 }
                 $heading[] = 'Men&uuml;';
                 $width[] = '1%';
@@ -141,24 +139,15 @@ class Matrixprodukt
                     . "<img class=\"vueAction\" data-action=\"variantEdit\" data-variant-id=\"%value%\" data-article-id=\"$id\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\">&nbsp;"
                     . "<img class=\"vueAction\" data-action=\"variantDelete\" data-variant-id=\"%value%\" data-article-id=\"$id\" src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\">"
                     . "</td></tr></table>";
-                $optsqlIdCols = join(',', $optIdColumns);
-                $optsqlNameCols = join(',', $optNameColumns);
-                $optsqlFrom = join(' JOIN ', $optFrom);
-                $optsqlWhere = join(' AND ', $optWhere);
-                $optsql = "SELECT CONCAT_WS(',', $optsqlIdCols) idlist, $optsqlNameCols
-                   FROM $optsqlFrom WHERE $optsqlWhere";
-                $artsql = "SELECT a.id, a.nummer, group_concat(mota.option_id order by mota.option_id separator ',') idlist
-                   FROM matrixprodukt_optionen_zu_artikel mota
-                   JOIN artikel a ON mota.artikel = a.id WHERE a.variante_von = $id group by mota.artikel";
                 $sqlNameCols = join(',', array_merge(['art.id', 'art.nummer'], $nameColumns, ['art.id']));
-                $sql = "SELECT SQL_CALC_FOUND_ROWS $sqlNameCols
-                FROM ($artsql) art ";
-                if (!empty($optsqlIdCols))
-                    $sql .= " LEFT OUTER JOIN ($optsql) opts ON opts.idlist = art.idlist";
-                $where = "1";
-                //$count = "SELECT count(DISTINCT moa.id)
-//                  FROM matrixprodukt_eigenschaftengruppen_artikel mga
-                //                LEFT OUTER JOIN matrixprodukt_eigenschaftenoptionen_artikel moa on moa.gruppe = mga.id WHERE $where";
+                $joinSql = join("\n", $joins);
+                $sql = "SELECT SQL_CALC_FOUND_ROWS $sqlNameCols 
+                        FROM artikel art
+                        LEFT JOIN matrixprodukt_optionen_zu_artikel mota ON mota.artikel = art.id
+                        $joinSql";
+                $where = "art.variante_von = $id";
+                $groupby = "GROUP BY art.id";
+                $count = "SELECT count(*) FROM artikel art WHERE $where";
                 break;
             case "matrixproduct_group_translations":
                 $heading = array('Name', 'Name (extern)', 'Sprache', 'Übersetzung Name', 'Übersetzung Name (extern)', 'Men&uuml;');
@@ -357,10 +346,51 @@ class Matrixprodukt
                 $json = $this->request->getJson();
                 $this->service->DeleteVariant($json->variantId);
                 return JsonResponse::NoContent();
-            case "acarticles":
-                $query = $this->app->Secure->GetGET('query');
-                $result = $this->app->DB->SelectArr("SELECT id, nummer, name_de FROM artikel WHERE (nummer LIKE '%$query%' OR name_de LIKE '%$query%') AND geloescht = 0");
-                return new JsonResponse($result);
+            case "createMissing":
+                if ($this->request->getMethod() === 'GET') {
+                    $articleId = $this->request->get->getInt('articleId');
+                    $groups = $this->service->GetArticleGroupsByArticleId($articleId);
+                    $options = $this->service->GetArticleOptionsByArticleId($articleId);
+                    foreach ($groups as $group) {
+                        $result[$group->id] = [
+                            'name' => $group->name,
+                            'selected' => [],
+                            'required' => $group->required,
+                            'options' => []
+                        ];
+                    }
+                    foreach ($options as $option) {
+                        $result[$option->groupId]['options'][] = ['value' => $option->id, 'name' => $option->name];
+                        $result[$option->groupId]['selected'][] = $option->id;
+                    }
+                    return new JsonResponse(['groups' => $result ?? []]);
+                } else {
+                    $json = $this->request->getJson();
+                    $list = [[]];
+                    foreach ($json->groups as $group) {
+                        if (empty($group->selected))
+                            continue;
+                        $newList = [];
+                        foreach ($list as $old) {
+                            foreach ($group->selected as $option) {
+                                $newList[] = array_merge($old, [$option]);
+                            }
+                        }
+                        $list = $newList;
+                    }
+                    $oldnumber = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = $json->articleId");
+                    $created = [];
+                    foreach ($list as $optionSet) {
+                        $variantId = $this->service->GetVariantIdByOptionSet($optionSet);
+                        if ($variantId)
+                            continue;
+                        $number = $oldnumber.'_'.$this->service->GetSuffixStringForOptionSet($optionSet);
+                        $newId = $this->articleService->CopyArticle($json->articleId, true, true, true, true, true, true, true, $number);
+                        $this->service->SaveVariant($json->articleId, $newId, $optionSet);
+                        $created[] = $number;
+                    }
+                    return new JsonResponse($created);
+                }
         }
 
         $articleId = $this->app->Secure->GetGET('id');

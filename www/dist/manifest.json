@@ -1,13 +1,13 @@
 {
   "classes/Modules/MatrixProduct/www/js/entry.css": {
-    "file": "assets/entry-3dab8f30.css",
+    "file": "assets/entry-078d65ea.css",
     "src": "classes/Modules/MatrixProduct/www/js/entry.css"
   },
   "classes/Modules/MatrixProduct/www/js/entry.jsx": {
     "css": [
-      "assets/entry-3dab8f30.css"
+      "assets/entry-078d65ea.css"
     ],
-    "file": "assets/modules/MatrixProduct-8f254ff6.js",
+    "file": "assets/modules/MatrixProduct-2b98726c.js",
     "isEntry": true,
     "src": "classes/Modules/MatrixProduct/www/js/entry.jsx"
   }

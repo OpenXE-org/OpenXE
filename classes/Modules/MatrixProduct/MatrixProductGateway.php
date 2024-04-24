@@ -279,6 +279,15 @@ final class MatrixProductGateway
     $sql = "DELETE FROM matrixprodukt_optionen_zu_artikel WHERE artikel = :id";
     $this->db->perform($sql, ['id' => $variantId]);
   }
+
+  public function GetSuffixStringForOptionSet(array $optionIds) : string {
+      $sql = "SELECT GROUP_CONCAT(IFNULL(NULLIF(mao.articlenumber_suffix,''), mao.id) ORDER BY mag.sort, mag.id SEPARATOR '_')
+              FROM matrixprodukt_eigenschaftenoptionen_artikel mao
+              JOIN matrixprodukt_eigenschaftengruppen_artikel mag ON mao.gruppe = mag.id
+              WHERE mao.id IN (:idList)";
+      $res = $this->db->fetchValue($sql, ['idList' => $optionIds]);
+      return $res;
+  }
   //endregion
 
   //region Translations
