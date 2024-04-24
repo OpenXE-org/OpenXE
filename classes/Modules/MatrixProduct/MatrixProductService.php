@@ -144,6 +144,13 @@ final class MatrixProductService
   //endregion
 
   //region Variants
+  public function GetVariantIdByOptionSet(array $optionIds) : ?int {
+      return $this->gateway->GetVariantIdByOptions($optionIds);
+  }
+  public function GetSuffixStringForOptionSet(array $optionIds) : string
+  {
+      return $this->gateway->GetSuffixStringForOptionSet($optionIds);
+  }
   public function SaveVariant(int $articleId, int $variantId, array $optionIds, ?int $oldVariantId = null) : bool|string {
     if ($oldVariantId != null && $oldVariantId != $variantId) {
       $this->gateway->ReplaceVariant($oldVariantId, $variantId);
@@ -166,6 +173,7 @@ final class MatrixProductService
 
   public function DeleteVariant(int $variantId) : void {
     $this->gateway->DeleteVariantById($variantId);
+    $this->articleGateway->SetVariantStatus($variantId, null);
   }
   //endregion
 

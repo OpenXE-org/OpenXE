@@ -5,9 +5,11 @@
  */
 
 @import "autocomplete.css";
+@import "checkbox.css";
 @import "dialog.css";
 @import "dropdown.css";
 @import "listbox.css";
+@import "multiselect.css";
 
 .p-component-overlay {
     background-color: rgba(170,170,170,0.7);
@@ -24,6 +26,6 @@
 }
 
 .p-icon {
-    width: 1rem;
-    height: 1rem;
+    width: 1em;
+    height: 1em;
 }

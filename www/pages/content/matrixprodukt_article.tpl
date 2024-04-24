@@ -44,7 +44,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                         <fieldset>
                             <legend>{|Aktionen|}</legend>
                             <input type="button" class="btnGreenNew vueAction" data-action="variantEdit" data-article-id="[ID]" value="&#10010; Neue Variante">
-                            <!--<input type="button" class="btnGreenNew vueAction" data-action="createMissing" data-article-id="[ID]" value="&#10010; Erzeuge fehlende Varianten">-->
+                            <input type="button" class="btnGreenNew vueAction" data-action="createMissing" data-article-id="[ID]" value="&#10010; Erzeuge fehlende Varianten">
                         </fieldset>
                     </div>
                 </div>
