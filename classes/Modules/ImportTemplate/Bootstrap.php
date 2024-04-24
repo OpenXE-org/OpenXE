@@ -39,7 +39,7 @@ final class Bootstrap
      *
      * @return ImportTemplateService
      */
-    public function onInitImportTemplateService(ContainerInterface $container)
+    public static function onInitImportTemplateService(ContainerInterface $container)
     {
         return new ImportTemplateService(
             $container->get('Database')
@@ -51,7 +51,7 @@ final class Bootstrap
      *
      * @return ImportTemplateGateway
      */
-    public function onInitImportTemplateGateway(ContainerInterface $container)
+    public static function onInitImportTemplateGateway(ContainerInterface $container)
     {
         return new ImportTemplateGateway(
             $container->get('Database')

@@ -77,6 +77,7 @@ class Exportbuchhaltung
         $rgchecked = $this->app->Secure->GetPOST("rechnung");
         $gschecked = $this->app->Secure->GetPOST("gutschrift");
         $vbchecked = $this->app->Secure->GetPOST("verbindlichkeit");
+        $lgchecked = $this->app->Secure->GetPOST("lieferantengutschrift");
         $diffignore = $this->app->Secure->GetPOST("diffignore");
 		$sachkonto = $this->app->Secure->GetPOST('sachkonto');
 			
@@ -97,6 +98,7 @@ class Exportbuchhaltung
             $rgchecked = true;
             $gschecked = true;
             $vbchecked = true;
+            $lgchecked = true;
         }
         
         $missing_obligatory = array();
@@ -134,7 +136,8 @@ class Exportbuchhaltung
             if (
               !$rgchecked &&
               !$gschecked &&
-              !$vbchecked
+              !$vbchecked &&
+              !$lgchecked
             ) {
                 $msg = "<div class=error>Bitte mindestens eine Belegart auswählen.</div>";
                 $dataok = false;
@@ -159,7 +162,7 @@ class Exportbuchhaltung
             if ($dataok) {
                 $filename = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
                 try {
-                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename, $diffignore, $sachkonto_kennung);                   
+                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $lgchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename, $diffignore, $sachkonto_kennung);                   
                     header("Content-Disposition: attachment; filename=" . $filename);
                     header("Pragma: no-cache");
                     header("Expires: 0");
@@ -198,6 +201,7 @@ class Exportbuchhaltung
         $this->app->Tpl->SET('RGCHECKED',$rgchecked?'checked':'');
         $this->app->Tpl->SET('GSCHECKED',$gschecked?'checked':'');
         $this->app->Tpl->SET('VBCHECKED',$vbchecked?'checked':'');
+        $this->app->Tpl->SET('LGCHECKED',$lgchecked?'checked':'');
         $this->app->Tpl->SET('DIFFIGNORE',$diffignore?'checked':'');
 
         $this->app->Tpl->SET('VON', $von_form);     
@@ -212,7 +216,7 @@ class Exportbuchhaltung
     * Create DATEV Buchhungsstapel
     * @throws ConsistencyException with string (list of items) if consistency check fails and no sachkonto for differences is given 
     */      
-    function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences) : string {            
+    function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, bool $lieferantengutschrift, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences) : string {            
 
         $datev_header_definition = array (
             '1' => 'Kennzeichen',
@@ -447,12 +451,12 @@ class Exportbuchhaltung
                 'field_belegnr' => 'b.belegnr',
                 'field_name' => 'b.name',
                 'field_date' => 'datum',
-                'field_auftrag' => 'b.auftrag',
+                'field_auftrag' => 'MAKE_SET(3,b.auftrag,(SELECT auftrag.internet FROM auftrag WHERE auftrag.id = auftragid))',
+                'field_zahlweise' => 'CONCAT(UCASE(LEFT(b.zahlungsweise, 1)),SUBSTRING(b.zahlungsweise, 2))',
                 'field_kontonummer' => 'a.kundennummer_buchhaltung',
                 'field_kundennummer' => 'b.kundennummer',
                 'field_betrag_gesamt' => 'b.soll',
                 'field_betrag' => 'p.umsatz_brutto_gesamt',
-                'field_gegenkonto' => '\'\'',
                 'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\',\'storniert\')',
                 'Buchungstyp' => 'SR',
                 'do' => $rechnung
@@ -466,54 +470,84 @@ class Exportbuchhaltung
                 'field_name' => 'b.name',
                 'field_date' => 'datum',
                 'field_auftrag' => '\'\'',
+                'field_zahlweise' => '\'\'',
                 'field_kontonummer' => 'a.kundennummer_buchhaltung',
                 'field_kundennummer' => 'b.kundennummer',
                 'field_betrag_gesamt' => 'b.soll',
                 'field_betrag' => 'p.umsatz_brutto_gesamt',
-                'field_gegenkonto' => '\'\'',
                 'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\')',
                 'Buchungstyp' => '',
                 'do' => $gutschrift
             ),
             array(
                 'typ' => 'verbindlichkeit',
-                'subtable' => 'verbindlichkeit_kontierung',
+                'subtable' => 'verbindlichkeit_position',
                 'kennzeichen' => 'H',
                 'kennzeichen_negativ' => 'S',
                 'field_belegnr' => 'b.rechnung',
                 'field_name' => 'a.name',
                 'field_date' => 'rechnungsdatum',
                 'field_auftrag' => 'b.auftrag',
+                'field_zahlweise' => '\'\'',
                 'field_kontonummer' => 'a.lieferantennummer_buchhaltung',
                 'field_kundennummer' => 'a.lieferantennummer',
                 'field_betrag_gesamt' => 'b.betrag',
-                'field_betrag' => 'p.betrag',
-                'field_gegenkonto' => 'gegenkonto',
-                'condition_where' => '',
+                'field_betrag' => 'p.preis*p.menge*((100+p.steuersatz)/100)',
+                'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
+                'condition_where' => ' AND b.status IN (\'freigegeben\')',
                 'Buchungstyp' => '',
                 'do' => $verbindlichkeit
+            ),
+            array(
+                'typ' => 'lieferantengutschrift',
+                'subtable' => 'lieferantengutschrift_position',
+                'kennzeichen' => 'S',
+                'kennzeichen_negativ' => 'H',
+                'field_belegnr' => 'b.rechnung',
+                'field_name' => 'a.name',
+                'field_date' => 'rechnungsdatum',
+                'field_auftrag' => '\'\'',
+                'field_zahlweise' => '\'\'',
+                'field_kontonummer' => 'a.lieferantennummer_buchhaltung',
+                'field_kundennummer' => 'a.lieferantennummer',
+                'field_betrag_gesamt' => 'b.betrag',
+                'field_betrag' => 'p.preis*p.menge*((100+p.steuersatz)/100)',
+                'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
+                'condition_where' => ' AND b.status IN (\'freigegeben\')',
+                'Buchungstyp' => '',
+                'do' => $lieferantengutschrift
             )
         );
-
+        
         foreach ($typen as $typ) {                     
 
             if (!$typ['do']) {
                 continue;
             }
-         
+
+            
+            if (!empty($typ['field_gegenkonto'])) {
+                $sql_gegenkonto = $typ['field_gegenkonto'];
+            } else 
+            {
+                $sql_gegenkonto = "NULL";
+            }
+                    
             $sql = "SELECT  
+                ".$typ['typ']." id,
                 ".$typ['field_belegnr']." as belegnr,
                 ".$typ['field_auftrag']." as auftrag,
+                ".$typ['field_zahlweise']." as zahlweise,
                 if(".$typ['field_kontonummer']." <> '',".$typ['field_kontonummer'].",".$typ['field_kundennummer'].") as kundennummer,
                 ".$typ['field_name']." as name,
-                b.ustid,
+                a.ustid,
                 b.".$typ['field_date']." as datum,
                 p.id as pos_id,
                 ".$typ['field_betrag_gesamt']." as betrag_gesamt,
                 b.waehrung,
                 ROUND(".$typ['field_betrag'].",2) as betrag,
-                ".$typ['field_gegenkonto']." as gegenkonto,
-                p.waehrung as pos_waehrung
+                ".$sql_gegenkonto." as gegenkonto,
+                b.waehrung as pos_waehrung
             FROM 
                 ".$typ['typ']." b                 
                     LEFT JOIN 
@@ -531,6 +565,7 @@ class Exportbuchhaltung
                 FROM
                     (
                     SELECT
+                        id,
                         belegnr,
                         datum,
                         betrag_gesamt,
@@ -542,10 +577,10 @@ class Exportbuchhaltung
                     FROM
                 (".$sql.") posten
                 GROUP BY
-                    belegnr
+                    id
                 ) summen
                 WHERE betrag_gesamt <> betrag_summe OR betrag_summe IS NULL";   
-    
+                
                 $result = $this->app->DB->SelectArr($sql_check);
                 if (!empty($result)) {   
         
@@ -579,13 +614,14 @@ class Exportbuchhaltung
                             $data['Belegdatum'] = date_format(date_create($row['datum']),"dm"); // obligatory                        
                             $data['Buchungstext'] = "Differenz";
                             $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $row['ustid'];
-                            $data['Auftragsnummer'] = $row['auftrag'];               		        
+                            $data['Auftragsnummer'] = $row['auftrag'];
+                            $data['Zahlweise'] = $row['zahlweise'];
                 		    $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
                         }                                                       
         		    }                                
                 }
             }      // diffignore       
-        
+
             // Query position data
             $arr = $this->app->DB->Query($sql);  
             while ($row = $this->app->DB->Fetch_Assoc($arr)) {                    
@@ -614,7 +650,7 @@ class Exportbuchhaltung
                 $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
                 $data['Konto'] = $row['kundennummer']; // obligatory
                 
-                if ($typ['field_gegenkonto'] == 'gegenkonto') {
+                if (!empty($typ['field_gegenkonto'])) {
                     $data['Gegenkonto (ohne BU-Schlüssel)'] = $row['gegenkonto']; // obligatory                    
                 } else {
                     $data['Gegenkonto (ohne BU-Schlüssel)'] = $erloes; // obligatory
@@ -625,6 +661,7 @@ class Exportbuchhaltung
                 $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $row['ustid'];
                 
                 $data['Auftragsnummer'] = ($row['auftrag']!=0)?$row['auftrag']:'';
+                $data['Zahlweise'] = $row['zahlweise'];
                 
                 $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
             }

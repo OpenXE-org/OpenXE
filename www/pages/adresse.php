@@ -3387,7 +3387,7 @@ function AdresseLieferadresse()
 
   $this->app->Tpl->Set('ADRESSID',$id); 
 
-  $adresstypen = $this->app->DB->SelectArr("SELECT type, bezeichnung FROM adresse_typ WHERE aktiv = 1 AND geloescht = 0".$this->app->erp->ProjektRechte());
+  $adresstypen = $this->app->DB->SelectArr("SELECT type, bezeichnung FROM adresse_typ WHERE aktiv = 1 AND geloescht = 0");
 
   $laender = $this->app->erp->GetSelectLaenderliste();
 

@@ -129,6 +129,8 @@ final class Shopware6Client
                 ],
             ],
         ];
+        if ($priceData->getEndingQuantity() > 0)
+            $data['quantityEnd'] = $priceData->getEndingQuantity();
 
         return $this->request(
             'POST',

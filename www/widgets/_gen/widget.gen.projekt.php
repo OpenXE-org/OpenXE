@@ -400,6 +400,9 @@ class WidgetGenprojekt
     $field = new HTMLInput("next_verbindlichkeit","text","","40","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("next_lieferantengutschrift","text","","40","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("next_goodspostingdocument","text","","40","","","","","","","","0","","");
     $this->form->NewField($field);
 

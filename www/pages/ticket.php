@@ -716,7 +716,7 @@ class Ticket {
 
         $ticket_from_db = $this->app->DB->SelectArr($sql)[0];
 
-        $ticket_from_db['betreff'] = htmlentities(strip_tags($ticket_from_db['betreff'])); //+ #20230916 XSS
+        $ticket_from_db['betreff'] = strip_tags($ticket_from_db['betreff']);
 
         foreach ($ticket_from_db as $key => $value) {
             $this->app->Tpl->Set(strtoupper($key), $value);   

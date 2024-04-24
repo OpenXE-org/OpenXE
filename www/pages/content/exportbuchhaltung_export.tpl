@@ -28,6 +28,10 @@
                                     <td><input type="checkbox" name="verbindlichkeit" value="1" [VBCHECKED] /></td>
                                 </tr>
                                 <tr>
+                                    <td>{|Lieferantengutschriften:|}</td>
+                                    <td><input type="checkbox" name="lieferantengutschrift" value="1" [LGCHECKED] /></td>
+                                </tr>
+                                <tr>
                                     <td>Datum von:</td>
                                     <td><input type="text" name="von" id="von" value="[VON]" /></td>
                                 </tr>

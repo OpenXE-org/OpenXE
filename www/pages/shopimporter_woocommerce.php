@@ -14,6 +14,8 @@
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 
 class Shopimporter_Woocommerce extends ShopimporterBase
 {
@@ -442,47 +444,35 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    */
   public function ImportUpdateAuftrag()
   {
-    $tmp = $this->CatchRemoteCommand('data');
+    /** @var OrderStatusUpdateRequest $data */
+    $data = $this->CatchRemoteCommand('data');
+    if ($data->orderStatus !== OrderStatus::Completed)
+        return;
 
-    $orderId = $tmp['auftrag'];
-    $paymentOk = $tmp['zahlung'];
-    $shippingOk = $tmp['versand'];
-    $trackingCode = $tmp['tracking'];
-    $carrier = $tmp['versandart'];
-
-    if ($paymentOk === 'ok' || $paymentOk === '1'){
-      $paymentOk = true;
-    }
-
-    if ($shippingOk === 'ok' || $shippingOk === '1'){
-      $shippingOk = true;
-    }
+    $trackingCode = $data->shipments[0]?->trackingNumber;
 
     if (!empty($trackingCode)) {
-      $this->client->post('orders/'.$orderId.'/notes', [
+      $this->client->post('orders/'.$data->orderId.'/notes', [
         'note' => 'Tracking Code: ' . $trackingCode
       ]);
-      $this->WooCommerceLog("Tracking Code Rückmeldung für Auftrag: $orderId", $trackingCode);
+      $this->WooCommerceLog("Tracking Code Rückmeldung für Auftrag: $data->orderId", $trackingCode);
     }
 
-    if ($paymentOk && $shippingOk) {
-        $updateData = [
-            'status' => $this->statusCompleted,
-            'meta_data' => [
-                [
-                    'key' => 'tracking_code',
-                    'value' => $trackingCode
-                ],
-                [
-                    'key' => 'shipping_carrier',
-                    'value' => $carrier
-                ]
+    $updateData = [
+        'status' => $this->statusCompleted,
+        'meta_data' => [
+            [
+                'key' => 'tracking_code',
+                'value' => $data->shipments[0]?->trackingNumber
             ],
-        ];
-        $this->client->put('orders/'.$orderId, $updateData);
-        $this->WooCommerceLog("Statusrückmeldung 'completed' für Auftrag: $orderId",$this->statusCompleted );
-    }
-
+            [
+                'key' => 'shipping_carrier',
+                'value' => $data->shipments[0]?->shippingMethod
+            ]
+        ],
+    ];
+    $this->client->put('orders/'.$data->orderId, $updateData);
+    $this->WooCommerceLog("Statusrückmeldung 'completed' für Auftrag: $data->orderId", $this->statusCompleted );
 
     return 'ok';
   }

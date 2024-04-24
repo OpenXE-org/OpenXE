@@ -158,30 +158,15 @@ class Verkaufszahlen {
     }else{
       $this->app->Tpl->Set('BELEGTYP', 'Auftr&auml;ge');
     }
-    
+
+    $pkgsubwhere = "DATE(v.datum)=CURDATE()";
     if($subwherea)
     {
-      $pakete = $this->getPackages(
-        " v.versendet_am=DATE_FORMAT(NOW(),'%Y-%m-%d') 
-        AND l.projekt in (".implode(', ', $subwherea).") ".$this->app->erp->ProjektRechte('l.projekt')
-      );
-      $this->app->Tpl->Set(
-        'PAKETE',
-        $pakete
-        //$this->app->DB->Select("SELECT COUNT(v.id) FROM versand v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versendet_am=DATE_FORMAT(NOW(),'%Y-%m-%d') AND l.projekt in (".implode(', ', $subwherea).") ".$this->app->erp->ProjektRechte('l.projekt')."")
-      );
-    }else{
-      $pakete = $this->getPackages(
-        " v.versendet_am=DATE_FORMAT(NOW(),'%Y-%m-%d') 
-         ".$this->app->erp->ProjektRechte('l.projekt')
-      );
-      $this->app->Tpl->Set(
-        'PAKETE',
-        $pakete
-        //$this->app->DB->Select("SELECT COUNT(v.id) FROM versand INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versendet_am=DATE_FORMAT(NOW(),'%Y-%m-%d') ".$this->app->erp->ProjektRechte('l.projekt')."")
-      );
+        $projectIds = implode(',', $subwherea);
+        $pkgsubwhere .= " AND l.projekt in ($projectIds)";
     }
-    
+    $this->app->Tpl->Set('PAKETE', $this->getPackages($pkgsubwhere));
+
     if($daten['regs'])
     {
       if($subwherea)
@@ -226,29 +211,14 @@ class Verkaufszahlen {
     $this->app->Tpl->Parse('STATISTIKHEUTE','verkaufszahlen_statistik.tpl');
 
     //gestern
+    $pkgsubwhere = "DATE(v.datum)=CURDATE()-1";
     if($subwherea)
     {
-      $pakete = $this->getPackages(
-        " v.versendet_am=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 day),'%Y-%m-%d') 
-        AND l.projekt in (".implode(', ', $subwherea).") ".$this->app->erp->ProjektRechte('l.projekt')
-      );
-      $this->app->Tpl->Set(
-        'PAKETE',
-        $pakete
-        //$this->app->DB->Select("SELECT COUNT(v.id) FROM versand v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versendet_am=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 day),'%Y-%m-%d') AND l.projekt in (".implode(', ', $subwherea).") ".$this->app->erp->ProjektRechte('l.projekt')."")
-      );
-    }else{
-      $pakete = $this->getPackages(
-        " v.versendet_am=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 day),'%Y-%m-%d')
-        AND l.projekt in (".implode(', ', $subwherea).") ".$this->app->erp->ProjektRechte('l.projekt')
-      );
-      $this->app->Tpl->Set(
-        'PAKETE',
-        $pakete
-        //$this->app->DB->Select("SELECT COUNT(v.id) FROM versand v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versendet_am=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 day),'%Y-%m-%d') ".$this->app->erp->ProjektRechte('l.projekt')."")
-      );
+      $projectIds = implode(',', $subwherea);
+      $pkgsubwhere .= " AND l.projekt in ($projectIds)";
     }
-    
+    $this->app->Tpl->Set('PAKETE', $this->getPackages($pkgsubwhere));
+
     if($daten['regs'])
     {
       if($subwherea)
@@ -343,21 +313,19 @@ class Verkaufszahlen {
     return [(float)$einnahmen_auftrag, (float)$deckungsbeitrag, (float)$deckungsbeitragprozent];
   }
 
-  /**
-   * @param string $subwhere
-   * @param string $join
-   *
-   * @return int
-   */
-  public function getPackages($subwhere, $join = '')
+  public function getPackages(string $subwhere, string $join = '', bool $applyProjectRights = true) : int
   {
-    return (int)$this->app->DB->Select(
-      "SELECT COUNT(v.id) 
-      FROM versand v 
-      INNER JOIN lieferschein l ON v.lieferschein = l.id
-      $join
-      WHERE ".$subwhere
-    );
+      $sqlpackages = "
+          SELECT count(distinct v.id)
+          FROM versandpakete v
+          LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
+          LEFT JOIN lieferschein_position lp ON vlp.lieferschein_position = lp.id
+          INNER JOIN lieferschein l ON l.id IN (lp.lieferschein, v.lieferschein_ohne_pos)
+          $join
+          WHERE $subwhere ";
+      if ($applyProjectRights)
+          $sqlpackages .= $this->app->erp->ProjektRechte('l.projekt');
+      return $this->app->DB->Select($sqlpackages);
   }
 
   /**
@@ -634,23 +602,28 @@ class Verkaufszahlen {
     $summe30_gs = $this->app->DB->Select("SELECT SUM(ap.preis*ap.menge*(IF(ap.rabatt > 0, (100-ap.rabatt)/100, 1))) FROM gutschrift_position ap INNER JOIN gutschrift a ON ap.gutschrift=a.id 
         WHERE a.datum > date_add(NOW(), interval -30 day) AND (a.status!='storniert' and a.status!='angelegt') ".$this->app->erp->ProjektRechte('a.projekt')."");
 
-    $summemenge = count($this->app->DB->SelectArr("SELECT 
+    $summemenge = $this->app->DB->SelectArr("SELECT 
           COUNT(a.datum) FROM auftrag_position ap INNER JOIN auftrag a ON ap.auftrag=a.id WHERE (a.status!='storniert' and a.status!='angelegt') ".$this->app->erp->ProjektRechte('a.projekt')."
-          GROUP by a.datum, a.projekt "));
+          GROUP by a.datum, a.projekt ");
 
-    if($summemenge < 30)
-    {
-      $summe_gutschriften = $summe_gs;
-      $summe_auftrag = $summe;
-      $durchschnitt = ($summe-$summe_gs) / $summemenge; 
-      $summe= number_format(($summe-$summe_gs),2);
-      $tage = $summemenge;
-    } else {
-      $summe_gutschriften = $summe30_gs;
-      $summe_auftrag = $summe30;
-      $durchschnitt = ($summe30-$summe30_gs) / 30;  // wenn mehr als 30 tage
-      $summe= number_format(($summe30-$summe30_gs),2);
-      $tage = 30;
+    if (!empty($summemenge)) {
+
+        $summemenge = count($summemenge);
+
+        if($summemenge < 30)
+        {
+          $summe_gutschriften = $summe_gs;
+          $summe_auftrag = $summe;
+          $durchschnitt = ($summe-$summe_gs) / $summemenge; 
+          $summe= number_format(($summe-$summe_gs),2);
+          $tage = $summemenge;
+        } else {
+          $summe_gutschriften = $summe30_gs;
+          $summe_auftrag = $summe30;
+          $durchschnitt = ($summe30-$summe30_gs) / 30;  // wenn mehr als 30 tage
+          $summe= number_format(($summe30-$summe30_gs),2);
+          $tage = 30;
+        }
     }
 
     $summe_gutschriften = number_format($summe_gutschriften,2);
@@ -669,7 +642,7 @@ class Verkaufszahlen {
 "SELECT 
         DATE_FORMAT(a.datum,'%d.%m.%Y') as datum,p.abkuerzung as projekt, ".$this->app->erp->FormatPreis("SUM(ap.preis*ap.menge*(IF(ap.rabatt > 0, (100-ap.rabatt)/100, 1)))")." as Auftragseingang, COUNT(ap.id) as positionen, 
         CONCAT('<a href=\"index.php?module=verkaufszahlen&action=details&frame=false&id=',DATE_FORMAT(a.datum,'%Y-%m-%d'),'-',a.projekt,'\" onclick=\"makeRequest(this); return false;\">Details</a>') as id FROM auftrag_position ap INNER JOIN auftrag a ON ap.auftrag=a.id 
-        LEFT JOIN projekt p ON p.id=a.projekt WHERE a.status!='storniert' ".$this->app->erp->ProjektRechte('a.projekt')." GROUP by a.datum DESC, a.projekt LIMIT 14";
+        LEFT JOIN projekt p ON p.id=a.projekt WHERE a.status!='storniert' ".$this->app->erp->ProjektRechte('a.projekt')." GROUP by a.datum, a.projekt ORDER by a.datum DESC LIMIT 14";
 
 	$table->Query($tmp);
 
@@ -684,8 +657,7 @@ class Verkaufszahlen {
     }
 
     //heute
-
-    $this->app->Tpl->Set('PAKETE',$this->app->DB->Select("SELECT COUNT(v.id) FROM versand v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versendet_am=DATE_FORMAT(NOW(),'%Y-%m-%d') ".$this->app->erp->ProjektRechte('l.projekt').""));
+    $this->app->Tpl->Set('PAKETE',$this->getPackages("DATE(v.datum)=CURDATE()"));
     $data = $this->app->DB->SelectArr("SELECT ifnull(SUM(umsatz_netto),0) as umsatz_netto2,ifnull(SUM(erloes_netto),0) as erloes_netto2 FROM `auftrag` 
       WHERE datum=DATE_FORMAT(NOW(),'%Y-%m-%d') AND ( status='abgeschlossen' OR status='freigegeben') ".
       $this->app->erp->ProjektRechte('projekt').
@@ -711,7 +683,7 @@ class Verkaufszahlen {
 
     //gestern
 
-    $this->app->Tpl->Set('PAKETE',$this->app->DB->Select("SELECT COUNT(v.id) FROM versand v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versendet_am=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 day),'%Y-%m-%d') ".$this->app->erp->ProjektRechte('l.projekt').""));
+      $this->app->Tpl->Set('PAKETE',$this->getPackages("DATE(v.datum)=CURDATE()-1"));
 
     $data = $this->app->DB->SelectArr("SELECT 
         ifnull(SUM(umsatz_netto),0) as umsatz_netto2,ifnull(SUM(erloes_netto),0) as erloes_netto2 FROM `auftrag` 
@@ -767,11 +739,13 @@ class Verkaufszahlen {
   {
     switch(strtoupper($type)) {
       case 'TAGESUEBERSICHTPAKETE':
-        return $this->app->DB->SelectArrCache("SELECT DATE_FORMAT(v.versendet_am,'%d.%m.%Y') as datum,
-            count(v.id) as pakete 
-          from versand v 
-          INNER JOIN lieferschein l ON v.lieferschein = l.id 
-          WHERE 1 ".$this->app->erp->ProjektRechte('l.projekt').'  group by v.versendet_am',
+        return $this->app->DB->SelectArrCache("SELECT DATE_FORMAT(v.datum,'%d.%m.%Y') as datum,
+            count(distinct v.id) as pakete 
+          FROM versandpakete v
+          LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
+          LEFT JOIN lieferschein_position lp ON vlp.lieferschein_position = lp.id   
+          INNER JOIN lieferschein l ON l.id IN (lp.lieferschein, v.lieferschein_ohne_pos) 
+          WHERE 1 ".$this->app->erp->ProjektRechte('l.projekt').'  group by DATE(v.datum)',
           $seconds, 'verkaufszahlen'
         );
         break;

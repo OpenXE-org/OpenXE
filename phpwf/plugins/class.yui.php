@@ -2839,21 +2839,36 @@ class YUI {
                               
                               
                               ,b.waehrung, b.rabatt as rabatt,";          
-        }else{
+                              
+                              
+            if ($this->app->erp->RechteVorhanden('angebot','einkaufspreise')) {
+                $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
+                        CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
+                        ";
+            }          
+                              
+        } else {
         $sql = "SELECT $sortcol, CONCAT($hersteller_ansicht if(b.beschreibung!='',
                        if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(CONCAT(b.bezeichnung,' *'),1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),CONCAT(b.bezeichnung,' *')),
                          if(CHAR_LENGTH(b.bezeichnung)>" . $this->app->erp->MaxArtikelbezeichnung() . ",CONCAT(SUBSTR(b.bezeichnung,1," . $this->app->erp->MaxArtikelbezeichnung() . "),'...'),b.bezeichnung)) $erweiterte_ansicht)
                            as Artikel,
-                              p.abkuerzung as projekt, a.nummer as nummer, b.nummer as nummer, DATE_FORMAT(lieferdatum,'%d.%m.%Y') as lieferdatum, trim(b.menge)+0 as menge,  ".$this->FormatPreis($preiscell)." as preis
-                              
-                              
-                              ,b.waehrung, b.rabatt as rabatt,";
+                        p.abkuerzung as projekt,
+                        a.nummer as nummer,
+                        b.nummer as nummer,
+                        DATE_FORMAT(lieferdatum,
+                        '%d.%m.%Y') as lieferdatum,
+                        trim(b.menge)+0 as menge,
+                        ".$this->FormatPreis($preiscell)." as preis,
+                        b.waehrung,
+                        b.rabatt as rabatt,
+                        '' AS Einkaufspreis,
+                        '' AS DB,
+                        ";
         }
-                            $sql .=  "b.id as id
-                                FROM $table b
-                                LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
-                                WHERE b.$module='$id'";
-
+        $sql .=  "b.id as id
+            FROM $table b
+            LEFT JOIN artikel a ON a.id=b.artikel LEFT JOIN projekt p ON b.projekt=p.id
+            WHERE b.$module='$id'";
       } 
         else if ($module == "verbindlichkeit") // OpenXE
         {     
@@ -6766,7 +6781,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                 FORMAT(r.soll,2{$extended_mysql55} ) as soll,
                 ifnull(r.waehrung,'EUR'),
                 r.zahlungsstatus as zahlung, 
-                if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})) as fehlt,
+                if (
+                    r.zahlungsstatus <> 'bezahlt',
+                    if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})),
+                    '') 
+                as fehlt,
                 if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status,
                 ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')." 
                 r.id

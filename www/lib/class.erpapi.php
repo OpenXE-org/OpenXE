@@ -7191,6 +7191,7 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Lohnabrechnung','lohnabrechnung','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Verbindlichkeiten','verbindlichkeit','list');
+    $navarray['menu']['admin'][$menu]['sec'][]  = array('Lieferantengutschriften','lieferantengutschrift','list');
 
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Kassenbuch','kasse','list');
 
@@ -8620,6 +8621,7 @@ function StandardFirmendatenWerte()
   $this->AddNeuenFirmendatenWert( 'next_proformarechnung', 'varchar', '128', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'next_serviceauftrag', 'varchar', '128', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'next_verbindlichkeit', 'varchar', '128', '', '', '', 1, 1);
+  $this->AddNeuenFirmendatenWert( 'next_lieferantengutschrift', 'varchar', '128', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'zahlung_auftrag_sofort_de', 'text', '', '', '', '', 1, 1);
   $this->AddNeuenFirmendatenWert( 'zahlung_auftrag_de', 'text', '', '', '', '', 1, 1);
 
@@ -10517,15 +10519,19 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
           }
         }
 
-        if($variables['datum']=="") $variables['datum']=date('d.m.Y');
+        if (is_array($variables)) {        
+            if($variables['datum']=="") {
+                 $variables['datum']=date('d.m.Y');
+            }
 
-        if(!empty($variables))
-        {
-          foreach($variables as $key=>$value)
-          {
-            $value = $this->UmlauteEntfernen($value);
-            $xml = str_replace("{".strtoupper($key)."}",$value,$xml);
-          }
+            if(!empty($variables))
+            {
+              foreach($variables as $key=>$value)
+              {
+                $value = $this->UmlauteEntfernen($value);
+                $xml = str_replace("{".strtoupper($key)."}",$value,$xml);
+              }
+            }
         }
 
         // y to z wenn Kein PDF -> also nur bei EPL Drucker - 09.06.2019 BS heute auf 0 gestellt bei deutschen adapterboxen eventuell
@@ -13246,6 +13252,11 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     return $this->ReplaceANABRELSGSBE("rechnung",$db,$value,$fromform);
   }
 
+  function ReplaceVerbindlichkeit($db,$value,$fromform)
+  {
+    return $this->ReplaceANABRELSGSBE("verbindlichkeit",$db,$value,$fromform);
+  }
+
   function ReplaceRetoure($db,$value,$fromform)
   {
     return $this->ReplaceANABRELSGSBE('retoure',$db,$value,$fromform);
@@ -15875,127 +15886,6 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     }
     $this->app->Tpl->Set('ID',$id);
     $this->app->Tpl->Parse('PAGE','emptytab.tpl');
-  }
-
-  /**
-   * @param int $id
-   *
-   * @return string
-   *
-   */
-  public function GetTrackingRawLink($id)
-  {
-    return $this->GetTrackinglink($id, true);
-  }
-
-  /**
-   * @param int  $id
-   * @param bool $returnRaw
-   *
-   * @return string
-   */
-  public function GetTrackinglink($id, $returnRaw = false)
-  {
-    if($id > 0)
-    {
-      $versandarr = $this->app->DB->SelectRow("SELECT * FROM versand WHERE id='$id' LIMIT 1");
-    }
-    if(empty($versandarr))
-    {
-      return '';
-    }
-    $adresse = $versandarr['adresse'];
-    $lieferscheinid = $versandarr['lieferschein'];
-    if($lieferscheinid > 0){
-      $lieferscheinarr = $this->app->DB->SelectRow("SELECT auftragid,projekt FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
-    }
-    if(!empty($lieferscheinarr))
-    {
-      $auftrag = $lieferscheinarr['auftragid'];
-      $projekt = $lieferscheinarr['projekt'];
-    }else{
-      $auftrag = 0;
-      $projekt = 0;
-    }
-    $auftragarr = $this->app->DB->SelectRow("SELECT belegnr,internet,ihrebestellnummer,DATE_FORMAT(datum,'%d.%m.%Y') as datum_de FROM auftrag WHERE id='$auftrag' LIMIT 1");
-    if(!empty($auftragarr)){
-      $auftragbelegnr = $auftragarr['belegnr'];
-      $auftraginternet = $auftragarr['internet'];
-      $ihrebestellnummer = $auftragarr['ihrebestellnummer'];
-      $auftragdatum = $auftragarr['datum_de'];
-    }else{
-      $auftragbelegnr = '';
-      $auftraginternet = '';
-      $ihrebestellnummer = '';
-      $auftragdatum = '';
-    }
-
-    $tracking = $versandarr['tracking'];
-    $versandunternehmen = $versandarr['versandunternehmen'];
-
-    // FIX fuer selbstabholer Mail
-    $versandart = $versandarr['versandart'];
-    if($versandart=='selbstabholer') {
-      $versandunternehmen='selbstabholer';
-    }
-
-    if($versandunternehmen=='dhl' || $versandunternehmen=="dhlpremium" || $versandunternehmen=="intraship"){
-      $versandmodul = false;
-    }
-
-    $typ = $versandunternehmen;
-    if($typ === ''){
-      $typ = $versandart;
-    }
-    //$versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul FROM versanddienstleister WHERE aktiv = 1 AND modul = '".$this->app->DB->real_escape_string($typ)."' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-    $versandartenmodul = $this->app->DB->SelectArr("SELECT * FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND modul != '' AND type = '".$this->app->DB->real_escape_string($typ)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-    $standard = true;
-    if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
-    {
-      $obj = $this->LoadVersandModul($versandartenmodul[0]['modul'], $versandartenmodul[0]['id']);
-      if(!empty($obj) && method_exists($obj, 'Trackinglink'))
-      {
-        if($obj->Trackinglink($tracking, $notsend, $link, $rawlink))
-        {
-          if($returnRaw) {
-            return $rawlink;
-          }
-          return $link;
-        }
-      }
-    }elseif($versandartenmodul2 = $this->app->DB->SelectArr("SELECT * FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($typ)."' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1"))
-    {
-      $obj = $this->LoadVersandModul($versandartenmodul2[0]['modul'], $versandartenmodul2[0]['id']);
-      if(!empty($obj) && method_exists($obj, 'Trackinglink'))
-      {
-        if($obj->Trackinglink($tracking, $notsend, $link, $rawlink))
-        {
-          if($returnRaw) {
-            return $rawlink;
-          }
-          return $link;
-        }
-      }
-    }
-    if(!$versandmodul && $standard)
-    {
-      if($versandunternehmen=="dhl" || $versandunternehmen=="dhlpremium" || $versandunternehmen=="intraship")
-      {
-        return 'http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc='.$tracking;
-      }
-      else if ($versandunternehmen=="logoix")
-      {
-        return 'http://www.logoix.com/cgi-bin/tnt.pl?q='.$tracking;
-      }
-      else if ($versandunternehmen=="dpd")
-      {
-        return 'https://tracking.dpd.de/parcelstatus/?locale=de_DE&query='.$tracking;
-      }
-      else if ($versandunternehmen=="gls")
-      {
-        return 'https://www.gls-group.eu/276-I-PORTAL-WEB/content/GLS/DE03/DE/5004.htm?txtRefNo='.$tracking;
-      }
-    }
   }
 
   /**
@@ -25530,31 +25420,31 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       {
         $signaturtext = $this->Signatur($from);
         if($this->isHTML($signaturtext))
-          $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".$signaturtext;
+          $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
         else
-          $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
+          $body = str_replace('\r\n',"\n",$text)."<br>".nl2br($signaturtext);
       }else{
         if($projekt > 0 && $this->Projektdaten($projekt,"absendesignatur")!=""){
           $signaturtext = $this->Projektdaten($projekt,"absendesignatur");
           if($this->isHTML($signaturtext))
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$signaturtext;
+            $body = str_replace('\r\n',"\n",$text)."<br><br>".$signaturtext;
           else
-            $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
+            $body = str_replace('\r\n',"\n",$text)."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
         }else{
           if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 0){
             $signaturtext = $this->Signatur($from);
             if($this->isHTML($signaturtext))
               $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
             else
-              $body = utf8_decode(str_replace('\r\n',"\n",$text))."<br>".nl2br($signaturtext);
+              $body = str_replace('\r\n',"\n",$text)."<br>".nl2br($signaturtext);
           }else{
-            $body = utf8_decode(str_replace('\r\n',"\n",$text));
+            $body = str_replace('\r\n',"\n",$text);
           }
         }
 
       }
     } else {
-      $body = utf8_decode(str_replace('\r\n',"\n",$text));
+      $body = str_replace('\r\n',"\n",$text);
     }
 
     {
@@ -25582,6 +25472,8 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $recipients = [];
 
       $to_csv = "";
+      $to_array = array();
+      $to_name_array = array();
       $to_name_csv = "";
 
       // Prepare names and addresses
@@ -25799,6 +25691,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['dokument_artikelnummerkunde']['deutsch'] = "Ihre Artikelnummer";
     $uebersetzung['dokument_menge']['deutsch'] = "Menge";
     $uebersetzung['dokument_gesamt']['deutsch'] = "Gesamt";
+    $uebersetzung['dokument_gesamt_optional']['deutsch'] = "Gesamt optional";
     $uebersetzung['dokument_gesamt_total']['deutsch'] = "Gesamt";
     $uebersetzung['dokument_mwst']['deutsch'] = "MwSt.";
     $uebersetzung['dokument_zzglmwst']['deutsch'] = "zzgl. MwSt.";
@@ -25816,6 +25709,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['dokument_ursprungsregion']['deutsch'] = "Ursprungsregion";
     $uebersetzung['dokument_gewicht']['deutsch'] = "Gewicht";
     $uebersetzung['dokument_gesamtnetto']['deutsch'] = "Gesamt netto";
+    $uebersetzung['dokument_gesamtnetto_optional']['deutsch'] = "Gesamt netto optional";
     $uebersetzung['dokument_seite']['deutsch'] = "Seite";
     $uebersetzung['dokument_seitevon']['deutsch'] = "von";
     $uebersetzung['dokument_datum']['deutsch'] = "Datum";
@@ -26074,7 +25968,14 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       }
     }
 	else {
-	    $this->app->DB->Update("UPDATE firmendaten SET " . $field . "='$value' WHERE id='" . $firmendatenid . "'");
+	
+	    $column_exists = $this->app->DB->Select("SHOW COLUMNS FROM firmendaten WHERE field = '".$field."'");
+	
+	    if ($column_exists) {
+    	    $this->app->DB->Update("UPDATE firmendaten SET " . $field . "='$value' WHERE id='" . $firmendatenid . "'");
+	    } else {
+            $this->AddNeuenFirmendatenWert($field, $typ, $typ1, $typ2, $value, $default_value, $default_null, $darf_null);
+	    }	    		   
 	}
     $db = $this->app->Conf->WFdbname;
     if(!empty($this->firmendaten[$db])) {
@@ -27720,7 +27621,7 @@ function Firmendaten($field,$projekt="")
           $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',
               'bestellung', 'gutschrift', 'kundennummer', 'lieferantennummer', 'mitarbeiternummer', 'waren',
               'produktion', 'sonstiges', 'anfrage', 'artikelnummer', 'kalkulation', 'preisanfrage', 'proformarechnung',
-              'retoure', 'verbindlichkeit', 'goodspostingdocument', 'receiptdocument'];
+              'retoure', 'verbindlichkeit','lieferantengutschrift', 'goodspostingdocument', 'receiptdocument'];
 
           $dbfield = "next_$type";
           $belegnr = $this->app->DB->Select("SELECT $dbfield FROM projekt WHERE id='$projekt' LIMIT 1");
@@ -27844,6 +27745,11 @@ function Firmendaten($field,$projekt="")
             case "verbindlichkeit":
               $belegnr = $this->Firmendaten("next_verbindlichkeit");
               if($belegnr == "0" || $belegnr=="") $belegnr = 10000;
+              $newbelegnr = $this->CalcNextNummer($belegnr);
+              break;
+            case "lieferantengutschrift":
+              $belegnr = $this->Firmendaten("next_lieferantengutschrift");
+              if($belegnr == "0" || $belegnr=="") $belegnr = 20000;
               $newbelegnr = $this->CalcNextNummer($belegnr);
               break;
             case 'receiptdocument':
@@ -35373,6 +35279,7 @@ function Firmendaten($field,$projekt="")
         }
 
         $ust_befreit = $this->app->DB->Select("SELECT ust_befreit FROM $typ WHERE id = '$typid' LIMIT 1");
+        $ustid = $this->app->DB->Select("SELECT ustid FROM $typ WHERE id = '$typid' LIMIT 1");
         $aufwendung = false;
         switch($typ)
         {
@@ -35383,9 +35290,9 @@ function Firmendaten($field,$projekt="")
           break;
         }
 
-        $this->GetArtikelSteuer($artikel, $ust_befreit, $aufwendung, $tmpsteuersatz, $tmpsteuertext, $erloes, $posRow['umsatzsteuer'], null, $projekt);
+        $this->GetArtikelSteuer($artikel, $ust_befreit, $aufwendung, $tmpsteuersatz, $tmpsteuertext, $erloes, $posRow['umsatzsteuer'], $ustid, $projekt);
 
-        $this->getErloesFirmendaten($artikel, $ust_befreit, $aufwendung, $tmpsteuersatzFD, $tmpsteuertextFD, $tmperloesFD, $posRow['umsatzsteuer'], null, $projekt);
+        $this->getErloesFirmendaten($artikel, $ust_befreit, $aufwendung, $tmpsteuersatzFD, $tmpsteuertextFD, $tmperloesFD, $posRow['umsatzsteuer'], $ustid, $projekt);
 
         if (!$tmpsteuersatz) {
             $tmpsteuersatz = $tmpsteuersatzFD;
@@ -37538,7 +37445,7 @@ function Firmendaten($field,$projekt="")
            WHERE ds.objekt LIKE 'Artikel' AND 
             ds.parameter = '%d' AND 
              (ds.subjekt LIKE 'Shopbild' OR ds.subjekt LIKE 'Druckbild' OR ds.subjekt LIKE 'Bild') 
-           ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC
+           ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC, ds.sort
            LIMIT 1",
            $artikel)
         );

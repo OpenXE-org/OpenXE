@@ -488,7 +488,7 @@ class Artikel extends GenArtikel {
         $joins .= $joineig;
 
 
-        $menu = "<a href=\"#\" class=\"articlematrix-quickadd\" data-id=\"%value%\" data-insert-url=\"index.php?module=artikel&action=profisuche&id=%value%&cmd=$cmd&sid=$id&insert=true&fmodul=$fmodul\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
+//        $menu = "<a href=\"#\" class=\"articlematrix-quickadd\" data-id=\"%value%\" data-insert-url=\"index.php?module=artikel&action=profisuche&id=%value%&cmd=$cmd&sid=$id&insert=true&fmodul=$fmodul\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, 
             CONCAT('<input type=\"checkbox\" name=\"auswahl[', v.id, ']\" class=\"articlematrix-checkbox\" id=\"articlematrix-checkbox-', v.id, '\" data-id=\"', v.id, '\">') AS auswahlbox,
@@ -1567,7 +1567,6 @@ class Artikel extends GenArtikel {
             $sql .= $joinartikelbaum;
             $groupby = ' GROUP BY a.id ';
           }
-
         }
 
         if ($paramsArray) {
@@ -1596,7 +1595,6 @@ class Artikel extends GenArtikel {
         $extrawhere .= " AND (aba.kategorie = '$artikelkategorie' OR a.typ = '".$artikelkategorie."_kat') ";
         $fastcount .= $joinartikelbaum;
       }
-
 
       if($this->app->erp->Firmendaten('artikel_artikelnummer_suche') == '1'){
 
@@ -1809,21 +1807,34 @@ class Artikel extends GenArtikel {
         // SQL statement
 
         if (!empty($this->app->Conf->WFdbType) && $this->app->Conf->WFdbType == 'postgre') {
-          $sql = 'SELECT s.id, a.name_de as artikel,a.nummer as nummer, trim(s.menge)+0 as menge, 
-                CASE WHEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id) > 0
-                THEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id)
-                ELSE 0
-                END  as lager, s.artikel as menu
+          $sql = 'SELECT 
+                    s.id,
+                    a.name_de as artikel,
+                    a.nummer as nummer, 
+                    trim(SUM(s.menge))+0 as menge, 
+                    CASE 
+                        WHEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id) > 0
+                        THEN (SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id)
+                        ELSE 0
+                    END as lager,
+                    s.artikel as menu
                 FROM stueckliste s LEFT JOIN artikel a ON s.artikel=a.id ';
         } else {
-          $sql = 'SELECT SQL_CALC_FOUND_ROWS s.id, a.name_de as artikel,a.nummer as nummer, trim(s.menge)+0 as menge,
-                s.stuecklistevonartikel
-                  as menu
-                  FROM stueckliste s LEFT JOIN artikel a ON s.stuecklistevonartikel=a.id ';
+          $sql = '  SELECT SQL_CALC_FOUND_ROWS
+                        s.id,
+                        a.name_de as artikel,
+                        a.nummer as nummer,
+                        trim(SUM(s.menge))+0 as menge,
+                        s.stuecklistevonartikel AS menu
+                    FROM 
+                        stueckliste s 
+                    LEFT JOIN artikel a ON s.stuecklistevonartikel=a.id ';
         }
 
         // Fester filter
         $where = "s.artikel='$id' ";
+
+        $groupby = " GROUP BY a.id";
 
         // gesamt anzahl
         $count = "SELECT COUNT(s.id) FROM stueckliste s WHERE s.stuecklistevonartikel='$id' ";
@@ -2795,8 +2806,8 @@ class Artikel extends GenArtikel {
         if(isset($result[$nameofcolumn])) {
           if(
             ($result[$nameofcolumn]!='' && !is_array($result[$nameofcolumn]))
-            || $nameofcolumn==='lieferzeitmanuell' || $nameofcolumn==='pseudopreis'
-          ){
+         //   || $nameofcolumn==='lieferzeitmanuell' || $nameofcolumn==='pseudopreis'
+          ){           
             $this->app->DB->Update(
               "UPDATE artikel 
               SET " . $nameofcolumn . "='" . $this->app->DB->real_escape_string($result[$nameofcolumn]) . "' 
@@ -6932,6 +6943,8 @@ class Artikel extends GenArtikel {
     $this->app->YUI->AutoComplete('projekt', 'projektname', 1);
     $this->app->YUI->AutoComplete('lieferantname', 'lieferant', 1);
     $this->app->YUI->AutoComplete('hersteller', 'hersteller');
+
+    $this->app->YUI->AutoComplete('typ', 'artikelkategorienfull');
 
     $freifeld1bezeichnung = $this->app->erp->Firmendaten('freifeld1');
     if($freifeld1bezeichnung == ''){

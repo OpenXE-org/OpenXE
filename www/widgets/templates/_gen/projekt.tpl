@@ -292,6 +292,7 @@
              <tr><td>N&auml;chste Anfragenummer:</td><td>[NEXT_ANFRAGE][MSGNEXT_ANFRAGE]&nbsp;</td></tr>
              <tr><td>N&auml;chste Proformarechnungsnummer:</td><td>[NEXT_PROFORMARECHNUNG][MSGNEXT_PROFORMARECHNUNG]&nbsp;</td></tr>
              <tr><td>Nächste Verbindlichkeitsnummer:</td><td>[NEXT_VERBINDLICHKEIT][MSGNEXT_VERBINDLICHKEIT] </td></tr>
+             <tr><td>Nächste Lieferantengutschriftsnummer:</td><td>[NEXT_LIEFERANTENGUTSCHRIFT][MSGNEXT_LIEFERANTENGUTSCHRIFT] </td></tr>
              <tr><td>Nächste Warenbuchungsbelegnummer:</td><td>[NEXT_GOODSPOSTINGDOCUMENT][MSGNEXT_GOODSPOSTINGDOCUMENT] </td></tr>
              <tr><td>N&auml;chste Kundennummer:</td><td>[NEXT_KUNDENNUMMER][MSGNEXT_KUNDENNUMMER]&nbsp;</td></tr>
              <tr><td>N&auml;chste Lieferantenummer:</td><td>[NEXT_LIEFERANTENNUMMER][MSGNEXT_LIEFERANTENNUMMER]&nbsp;</td></tr>

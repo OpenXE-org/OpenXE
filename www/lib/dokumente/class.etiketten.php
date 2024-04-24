@@ -22,6 +22,7 @@ class EtikettenPDF extends SuperFPDF {
   function __construct($app,$projekt="") {
     $this->app=$app;
     $this->page_definded=false;
+    $this->images = array();
   }
 
   function SetXML($xml)

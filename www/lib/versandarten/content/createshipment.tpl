@@ -229,7 +229,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                 </table>
             </div>
             <div>
-                <input class="btnGreen" type="submit" value="{|Paketmarke drucken|}" name="drucken">&nbsp;
+                <input class="btnGreen" type="submit" value="{|Paketmarke drucken|}" name="drucken" :disabled="submitting">&nbsp;
                 <!--<input type="button" value="{|Andere Versandart auswählen|}" name="anders">&nbsp;-->
             </div>
         </div>
@@ -239,6 +239,9 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
     const createshipmentapp = new Vue({
         el: '#createshipmentapp',
         data: [JSON],
+        mounted() {
+	    this.autoselectproduct();
+        },
         computed: {
             total_value() {
                 let sum = 0;
@@ -258,12 +261,14 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
         methods: {
             submit: function () {
                 let app = this;
+                app.submitting = true;
                 let xhr = new XMLHttpRequest();
                 xhr.open('POST', location.href, true);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onload = function () {
                     let json = JSON.parse(this.response);
                     app.messages = json.messages;
+                    app.submitting = false;
                 }
                 xhr.send(JSON.stringify($.extend({submit:'print'}, this.form)));
             },
@@ -287,17 +292,20 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
             },
             customsRequired: function () {
                 return this.countries[this.form.country].eu == '0';
+            },
+            autoselectproduct: function () {
+	            if (!this.productAvailable(this.products[this.form.product])) {
+	                for (prod in this.products) {
+	                    if (!this.productAvailable(this.products[prod]))
+	                        continue;
+	                    this.form.product = prod;
+	                    break;
+	                }
+	            }
             }
         },
         beforeUpdate: function () {
-            if (!this.productAvailable(this.products[this.form.product])) {
-                for (prod in this.products) {
-                    if (!this.productAvailable(this.products[prod]))
-                        continue;
-                    this.form.product = prod;
-                    break;
-                }
-            }
+            this.autoselectproduct();
         }
     })
 </script>

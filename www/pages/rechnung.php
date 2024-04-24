@@ -462,11 +462,11 @@ class Rechnung extends GenRechnung
     $this->app->erp->RunHook('Rechnung_Aktion_option',3, $id, $status, $hookoption);
     $this->app->erp->RunHook('Rechnung_Aktion_case',3, $id, $status, $hookcase);
 
-
+/*
     //TODO das muss dann später in den Hook
     $RechnungzuVerbindlichkeitOption = "<option value=\"rechnungzuverbindlichkeit\">Rechnung zu Verbindlichkeit</option>";
     $RechnungzuVerbindlichkeitCase = "case 'rechnungzuverbindlichkeit': if(!confirm('Wirklich Verbindlichkeit anlegen?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=rechnungzuverbindlichkeit&action=create&id=%value%'; break;";
-
+*/
 
     if($this->app->erp->RechteVorhanden('zertifikatgenerator','list'))
     {

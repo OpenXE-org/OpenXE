@@ -244,16 +244,16 @@ class Verbindlichkeit {
                     '<input type="number" name="werte[]" value="',
                     ['sql' => $offen_menge],
                     '" min="0"',
-                    '" max="',
+                    ' max="',
                     ['sql' => $offen_menge],
                     '"/>'
                 );       
 
                 $preise = array (
                     '<input type="number" name="preise[]" step="0.00001" value="',
-                    ['sql' => $this->app->erp->FormatMenge("COALESCE(bp.preis,0)",5)],
+                    ['sql' => "TRIM(COALESCE(bp.preis,0))+0"],
                     '" min="0"',                    
-                    '"/>'
+                    '/>'
                 );         
                        
                 $artikellink = array (

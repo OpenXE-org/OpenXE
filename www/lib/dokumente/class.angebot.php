@@ -41,8 +41,15 @@ class AngebotPDF extends BriefpapierCustom {
     {
       // pruefe ob es mehr als ein steuersatz gibt // wenn ja dann darf man sie nicht ausblenden
       $check = $this->app->erp->SteuerAusBeleg($this->doctype,$id);
-      if(!empty($check)?count($check):0>1)$this->ust_spalteausblende=false;  
-      else $this->ust_spalteausblende=true;
+
+      $this->ust_spalteausblende=false;  
+
+      if(!empty($check)) {
+        if (count($check) == 1) {    
+          $this->ust_spalteausblende=true;      
+        }
+      }
+
     }
  
     $briefpapier_bearbeiter_ausblenden = $this->app->erp->Firmendaten('briefpapier_bearbeiter_ausblenden');
@@ -491,30 +498,29 @@ class AngebotPDF extends BriefpapierCustom {
             "rabatt"=>$value['rabatt'],
             "steuertext"=>$value['steuertext']));
       if($positionenkaufmaenischrunden == 3){
-        $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
-      }else{
+        if (!$value['nicht_einrechnen']) {        
+            $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
+        }
+      }else if (!$value['nicht_einrechnen']) {
         $netto_gesamt = $value['menge'] * ($value['preis'] - ($value['preis'] / 100 * $value['rabatt']));
       }
       if($positionenkaufmaenischrunden)
       {
         $netto_gesamt = round($netto_gesamt, 2);
       }
-      if($value['optional']!="1"){
+      if(!isset($summen[$value['steuersatz']])) {            
+        $summen[$value['steuersatz']] = 0;
+      }
+      if($value['optional']!="1"){        
         if($value['explodiert_parent'] == 0 || !$berechnen_aus_teile)
         {
-          $summe = $summe + $netto_gesamt;
-          if(!isset($summen[$value['steuersatz']]))$summen[$value['steuersatz']] = 0;
           $summen[$value['steuersatz']] += ($netto_gesamt/100)*$value['steuersatz'];
+          $summe = $summe + $netto_gesamt;         
           $gesamtsteuern +=($netto_gesamt/100)*$value['steuersatz'];
-        }
-        /*
-        if($value['umsatzsteuer']=="" || $value['umsatzsteuer']=="normal")
-        {
-          $summeV = $summeV + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzNormal(false,$id,"angebot"));
-        }
-        else {
-          $summeR = $summeR + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzErmaessigt(false,$id,"angebot"));
-        }*/
+        }      
+      } else {
+        $summe_netto_optional += $netto_gesamt;
+        $steuern_optional +=($netto_gesamt/100)*$value['steuersatz'];
       }
     }
     
@@ -536,7 +542,7 @@ class AngebotPDF extends BriefpapierCustom {
 
     if($this->app->erp->AngebotMitUmsatzeuer($id))
     {
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0,"optional"=>$summe_netto_optional+$steuern_optional,"optional_netto"=>$summe_netto_optional));
       //$this->setTotals(array("totalArticles"=>$summe,"totalTaxV"=>$summeV,"totalTaxR"=>$summeR,"total"=>$summe+$summeV+$summeR));
     } else {
       $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe));

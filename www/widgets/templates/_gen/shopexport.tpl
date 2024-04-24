@@ -209,9 +209,9 @@
                 <tr><td>{|Nachnahmegeb&uuml;hr als extra Position|}:</td><td>[ARTIKELNACHNAHME_EXTRAARTIKEL][MSGARTIKELNACHNAHME_EXTRAARTIKEL]</td></tr>
                 <tr><td>{|Nachnahmegeb&uuml;hr|}:</td><td>[ARTIKELNACHNAHMEAUTOSTART][ARTIKELNACHNAHME][MSGARTIKELNACHNAHME][ARTIKELNACHNAHMEAUTOEND]&nbsp;<i>{|Artikel-Nr. f&uuml;r die Nachnahme Geb&uuml;hr.|}</i></td></tr>
 
-                <tr><td><u>{|Auftragsstatus r&uuml;ckmelden|}:</u></td><td>[AUFTRAGABGLEICH][MSGAUFTRAGABGLEICH]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
+                <tr><td><u>{|Auftragsstatus r&uuml;ckmelden|}:</u></td><td>[AUFTRAGABGLEICH][MSGAUFTRAGABGLEICH]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
                 <tr><td><label for="sendonlywithtracking">{|Automatische Rückmeldung deaktivieren|}:</label></td><td>[SENDONLYWITHTRACKING][MSGSENDONLYWITHTRACKING]</td></tr>
-                <tr class="ab_nummerzeitraum ab_nummer"><td>{|Hole jeden Status|}:</td><td>[HOLEALLESTATI][MSGHOLEALLESTATI]&nbsp;<i>{|Es werden alle Auftr&auml;ge &uuml;bertragen von Shop auf Xentral unabh&auml;ngig vom Status.|}</i></td></tr>
+                <tr class="ab_nummerzeitraum ab_nummer"><td>{|Hole jeden Status|}:</td><td>[HOLEALLESTATI][MSGHOLEALLESTATI]&nbsp;<i>{|Es werden alle Auftr&auml;ge &uuml;bertragen von Shop auf OpenXE unabh&auml;ngig vom Status.|}</i></td></tr>
                 <tr><td><u>{|Freitext aus Shopschnittstelle|}:</u></td><td>
                 [FREITEXT][MSGFREITEXT]
                 </td></tr>
@@ -221,7 +221,7 @@
                 <tr><td>{|Angebote statt Auftr&auml;ge anlegen|}:</td><td>[ANGEBOTEANLEGEN][MSGANGEBOTEANLEGEN]</td></tr>
                 <tr><td>{|Autoversand bei Kommentar in Warenkorb deaktivieren|}:</td><td>[AUTOVERSANDBEIKOMMENTARDEAKTIVIEREN][MSGAUTOVERSANDBEIKOMMENTARDEAKTIVIEREN]</td></tr>
                 <tr><td><br><strong>{|ab hier importerspezifische Einstellungen|}:</strong><br><br></td></tr>
-                <tr><td>{|Stornierung r&uuml;ckmelden|}:</td><td>[STORNOABGLEICH][MSGSTORNOABGLEICH]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
+                <tr><td>{|Stornierung r&uuml;ckmelden|}:</td><td>[STORNOABGLEICH][MSGSTORNOABGLEICH]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
                 <tr><td>{|Besteuerung im Drittland abh&auml;ngig von Lieferadresse machen|}:</td><td>[STEUERFREILIEFERLANDEXPORT][MSGSTEUERFREILIEFERLANDEXPORT]</td></tr>
                 <tr><td>{|Gesamtbetrag festsetzen|}:</td><td>[GESAMTBETRAGFESTSETZEN][MSGGESAMTBETRAGFESTSETZEN]</td></tr>
                 <tr><td>{|Maximale Differenz zur berechneten Summe|}:</td><td>[GESAMTBETRAGFESTSETZENDIFFERENZ][MSGGESAMTBETRAGFESTSETZENDIFFERENZ]</td></tr>
@@ -240,8 +240,8 @@
               <tr><td>{|Artikelnummern aus Nummernkreis|}:</td><td>[ARTIKELNUMMERNUMMERKREIS][MSGARTIKELNUMMERNUMMERKREIS]</td></tr>
               <tr><td></td><td>[ARTIKELIMPORTEINZELN][MSGARTIKELIMPORTEINZELN]&nbsp;einzeln&nbsp;<!--<i>(Nur bei Artikeln mit Option: Artikel->Online-Shop Optionen->Online Shop Abgleich)</i>--></td></tr>
               <tr><td>{|Artikelnummern aus Shop|}:</td><td>[ARTIKELNUMMERUEBERNEHMEN][MSGARTIKELNUMMERUEBERNEHMEN]</td></tr>
-              <tr><td>{|Artikelbezeichnung aus Xentral|}:</td><td>[ARTIKELBEZEICHNUNGAUSWAWISION][MSGARTIKELBEZEICHNUNGAUSWAWISION]</td></tr>
-              <tr><td>{|Artikelbeschreibungen aus Xentral|}:</td><td>[ARTIKELBESCHREIBUNGAUSWAWISION][MSGARTIKELBESCHREIBUNGAUSWAWISION]</td></tr>
+              <tr><td>{|Artikelbezeichnung aus OpenXE|}:</td><td>[ARTIKELBEZEICHNUNGAUSWAWISION][MSGARTIKELBEZEICHNUNGAUSWAWISION]</td></tr>
+              <tr><td>{|Artikelbeschreibungen aus OpenXE|}:</td><td>[ARTIKELBESCHREIBUNGAUSWAWISION][MSGARTIKELBESCHREIBUNGAUSWAWISION]</td></tr>
               <tr><td>{|Artikelbeschreibungen aus Shop|}:</td><td>[ARTIKELBESCHREIBUNGENUEBERNEHMEN][MSGARTIKELBESCHREIBUNGENUEBERNEHMEN]</td></tr>
               <tr><td>{|St&uuml;cklisten erg&auml;nzen|}:</td><td>[STUECKLISTEERGAENZEN][MSGSTUECKLISTEERGAENZEN]</td></tr>
               <tr><td>{|Spezielle Steuers&auml;tze pro Positionen|}:</td><td>[POSITIONSTEUERSAETZEERLAUBEN][MSGPOSITIONSTEUERSAETZEERLAUBEN]</td></tr>
@@ -258,24 +258,25 @@
         <div class="inside inside-full-height">
           <fieldset><legend>{|Artikel Import / Export|}</legend>
             <table width="100%">
-              <tr><td width="300"><u>{|Lagerzahlen &Uuml;bertragung erlauben|}:</u></td><td>[LAGEREXPORT][MSGLAGEREXPORT]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
+              <tr><td width="300"><u>{|Lagerzahlen &Uuml;bertragung erlauben|}:</u></td><td>[LAGEREXPORT][MSGLAGEREXPORT]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
               <tr><td>{|Lager Grundlage|}:</u></td><td>[LAGERGRUNDLAGE][MSGLAGERGRUNDLAGE]</td></tr>
               <tr><td>{|Lagerkorrektur überschreiben|}:</td><td>[UEBERSCHREIBE_LAGERKORREKTURWERT][MSGUEBERSCHREIBE_LAGERKORREKTURWERT]</td></tr>
               <tr class="lagerkorrektur"><td>{|Lagerkorrektur|}:</td><td>[LAGERKORREKTURWERT][MSGLAGERKORREKTURWERT]</td></tr>
               [HOOK_STORAGE]
-              <tr><td><u>{|Artikel &Uuml;bertragung erlauben|}:</u></td><td>[ARTIKELEXPORT][MSGARTIKELEXPORT]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr><td>{|Alle geänderten Artikel automatisch übertragen|}:</td><td>[AUTOSENDARTICLE][MSGAUTOSENDARTICLE]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
+              <tr><td><u>{|Artikel &Uuml;bertragung erlauben|}:</u></td><td>[ARTIKELEXPORT][MSGARTIKELEXPORT]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Alle geänderten Artikel automatisch übertragen|}:</td><td>[AUTOSENDARTICLE][MSGAUTOSENDARTICLE]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
               <tr><td><br><strong>{|Ab hier importerspezifische Einstellungen|}:</strong><br><br></td></tr>
-              <tr><td>{|Bilder &uuml;bertragen|}:</td><td>[SHOPBILDERUEBERTRAGEN][MSGSHOPBILDERUEBERTRAGEN]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr><td>{|Eigenschaften &uuml;bertragen|}:</td><td>[EIGENSCHAFTENUEBERTRAGEN][MSGEIGENSCHAFTENUEBERTRAGEN]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr><td>{|Kategorien &uuml;bertragen|}:</td><td>[KATEGORIENUEBERTRAGEN][MSGKATEGORIENUEBERTRAGEN]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr><td>{|Varianten &uuml;bertragen|}:</td><td>[VARIANTENUEBERTRAGEN][MSGVARIANTENUEBERTRAGEN]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr><td>{|Crossselling &uuml;bertragen|}:</td><td>[CROSSSELLINGARTIKELUEBERTRAGEN][MSGCROSSSELLINGARTIKELUEBERTRAGEN]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr><td>{|Staffelpreise &uuml;bertragen|}:</td><td>[STAFFELPREISEUEBERTRAGEN][MSGSTAFFELPREISEUEBERTRAGEN]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
+              <tr><td>{|Texte &uuml;bertragen|}:</td><td>[TEXTEUEBERTRAGEN][MSGTEXTEUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Bilder &uuml;bertragen|}:</td><td>[SHOPBILDERUEBERTRAGEN][MSGSHOPBILDERUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Eigenschaften &uuml;bertragen|}:</td><td>[EIGENSCHAFTENUEBERTRAGEN][MSGEIGENSCHAFTENUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Kategorien &uuml;bertragen|}:</td><td>[KATEGORIENUEBERTRAGEN][MSGKATEGORIENUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Varianten &uuml;bertragen|}:</td><td>[VARIANTENUEBERTRAGEN][MSGVARIANTENUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Crossselling &uuml;bertragen|}:</td><td>[CROSSSELLINGARTIKELUEBERTRAGEN][MSGCROSSSELLINGARTIKELUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td>{|Staffelpreise &uuml;bertragen|}:</td><td>[STAFFELPREISEUEBERTRAGEN][MSGSTAFFELPREISEUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
               <tr><td>{|Gutscheine &uuml;bertragen|}:</td><td>[GUTSCHEINEUEBERTRAGEN][MSGGUTSCHEINEUEBERTRAGEN]&nbsp;<i>({|Via Prozessstarter|})</i></td></tr>
-              <tr [NURPREISESTYLE]><td>{|Artikeltext &Uuml;bertragung unterdr&uuml;cken|}:</td><td>[NURPREISE][MSGNURPREISE]&nbsp;<i>({|Von Xentral zu Shop|})</i></td></tr>
-              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelliste abholen nur neue Artikel anlegen|}:</td><td>[NURNEUEARTIKEL][MSGNURNEUEARTIKEL]&nbsp;<i>({|Von Shop zu Xentral|})</i></td></tr>
-              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelnummer beim Anlegen aus Shop &uuml;bernehmen|}:</td><td>[ARTIKELNUMMERBEIMANLEGENAUSSHOP][MSGARTIKELNUMMERBEIMANLEGENAUSSHOP]&nbsp;<i>({|Von Shop zu Xentral|})</i></td></tr>
+              <tr [NURPREISESTYLE]><td>{|Artikeltext &Uuml;bertragung unterdr&uuml;cken|}:</td><td>[NURPREISE][MSGNURPREISE]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelliste abholen nur neue Artikel anlegen|}:</td><td>[NURNEUEARTIKEL][MSGNURNEUEARTIKEL]&nbsp;<i>({|Von Shop zu OpenXE|})</i></td></tr>
+              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelnummer beim Anlegen aus Shop &uuml;bernehmen|}:</td><td>[ARTIKELNUMMERBEIMANLEGENAUSSHOP][MSGARTIKELNUMMERBEIMANLEGENAUSSHOP]&nbsp;<i>({|Von Shop zu OpenXE|})</i></td></tr>
 
             </table>
           </fieldset>
@@ -324,7 +325,7 @@
     <div class="row-height">
       <div class="col-xs-12 col-md-8 col-md-height">
         <div class="inside inside-full-height">
-          <fieldset><legend>Zugangsdaten f&uuml;r Xentral Import Plugin</legend>
+          <fieldset><legend>Zugangsdaten f&uuml;r OpenXE Import Plugin</legend>
             <table width="100%">
               <tr><td>{|URL|}:</td><td>[URL][MSGURL]&nbsp;<i>URL zur externen Importer</i></td><td></tr>
               <tr><td width="300">{|ImportKey|}:</td><td>[PASSWORT][MSGPASSWORT]&nbsp;<i>32 Zeichen langes Sicherheitspasswort</i></td><td></tr>
@@ -997,7 +998,7 @@ function kundengruppenEditSave() {
         url: 'index.php?module=onlineshops&action=kundengruppeneditsave',
         data: {
             id: $('#k_id').val(),
-            kundengruppexentral: $('#k_kundengruppe').val(),
+            kundengruppeOpenXE: $('#k_kundengruppe').val(),
             projekt: $('#k_projekt').val(),
             aktiv: c_aktiv,
             kundengruppeneukundenzuweisen: c_neukundenzuweisen,

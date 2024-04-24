@@ -581,9 +581,9 @@ class Auftrag extends GenAuftrag
 
      $allowed['auftraegeoffeneauto'] = array('list');
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
-        $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%');
-        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+        $width = array('1%','1%','1%', '10%', '10%', '10%', '27%', '5%', '5%','1%', '1%', '1%', '1%');
+        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -596,16 +596,17 @@ class Auftrag extends GenAuftrag
                 CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
                 IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
                 DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
-                lieferantkdrnummer,
-                name,
+                a.lieferantkdrnummer,
+                a.name,
                 DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
-                land,
-                zahlungsweise,
-                gesamtsumme,
+                a.land,
+                p.abkuerzung,
+                a.zahlungsweise,
+                a.gesamtsumme,
                 (" . $this->app->YUI->IconsSQL() . ")  AS icons,
                 a.id
                 FROM
-                auftrag a";
+                auftrag a LEFT JOIN projekt p ON a.projekt = p.id";
 
                 $where = "a.status = 'freigegeben' AND a.cronjobkommissionierung = 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1"; // liefertermin_ok special treatment
 
@@ -670,9 +671,9 @@ class Auftrag extends GenAuftrag
           // Show list for cronjob commissioning
           $allowed['auftraegeoffeneautowartend'] = array('list');
 
-          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
-          $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
-          $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+          $width = array('1%','1%','1%', '10%', '10%', '10%', '27%', '5%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
+          $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -685,16 +686,17 @@ class Auftrag extends GenAuftrag
                 CONCAT('<input type=\"checkbox\" name=\"auswahlcronjob[]\" value=\"',a.id,'\" />') AS `auswahl`,
                 IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
                 DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
-                lieferantkdrnummer,
-                name,
+                a.lieferantkdrnummer,
+                a.name,
                 DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
-                land,
-                zahlungsweise,
-                gesamtsumme,
+                a.land,
+                p.abkuerzung,
+                a.zahlungsweise,
+                a.gesamtsumme,
                 (" . $this->app->YUI->IconsSQL() . ")  AS icons,
                 a.id
                 FROM
-                auftrag a";
+                auftrag a LEFT JOIN projekt p ON a.projekt = p.id";
 
                 $status_where =  'a.cronjobkommissionierung > 0';
 

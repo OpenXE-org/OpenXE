@@ -310,6 +310,11 @@ class WidgetGenangebot_position
     $field = new HTMLCheckbox("erloesefestschreiben","","","1","0","0");
     $this->form->NewField($field);
 
+    if ($this->app->erp->RechteVorhanden('angebot','einkaufspreise')) {
+        $field = new HTMLInput("einkaufspreis","text","","50","","","","","","","","0","","");
+        $this->form->NewField($field);
+    }
+
     $field = new HTMLTextarea("bemerkung",3,40,"","","","","0");   
     $this->form->NewField($field);
 

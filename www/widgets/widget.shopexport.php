@@ -513,6 +513,10 @@ class WidgetShopexport extends WidgetGenShopexport
             {
               $this->app->Tpl->Add('MSGEIGENSCHAFTENUEBERTRAGEN','&nbsp;<b style="color:red;">wird von diesem Importer nicht unterst&uuml;tzt</b>&nbsp;');
             }
+            if(isset($json['erlaubtefunktionen']['texte']) && !$json['erlaubtefunktionen']['texte'])
+            {
+              $this->app->Tpl->Add('MSGTEXTEUEBERTRAGEN','&nbsp;<b style="color:red;">wird von diesem Importer nicht unterst&uuml;tzt</b>&nbsp;');
+            }
             if(isset($json['erlaubtefunktionen']['artikelbilder']) && !$json['erlaubtefunktionen']['artikelbilder'])
             {
               $this->app->Tpl->Add('MSGSHOPBILDERUEBERTRAGEN','&nbsp;<b style="color:red;">wird von diesem Importer nicht unterst&uuml;tzt</b>&nbsp;');
