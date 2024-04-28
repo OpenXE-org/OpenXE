@@ -13,6 +13,7 @@ import GroupEdit from "./GroupEdit.vue";
 import OptionEdit from "./OptionEdit.vue";
 import Variant from "./Variant.vue";
 import Translation from "./Translation.vue";
+import CreateMissing from "./CreateMissing.vue";
 
 const model = ref(null);
 
@@ -75,6 +76,7 @@ function onClose() {
     <GroupEdit v-else-if="model.action === 'groupEdit'" v-bind="model" @close="onClose" @save="onGroupSave" />
     <OptionEdit v-else-if="model.action === 'optionEdit'" v-bind="model" @close="onClose" @save="onSave" />
     <Variant v-else-if="model.action === 'variantEdit'" v-bind="model" @close="onClose" @save="onSave" />
+    <CreateMissing v-else-if="model.action === 'createMissing'" v-bind="model" @close="onClose" @save="onSave" />
     <Translation v-else-if="model.action === 'translationEdit'" v-bind="model" @close="onClose" @save="onSave" />
   </template>
 </template>

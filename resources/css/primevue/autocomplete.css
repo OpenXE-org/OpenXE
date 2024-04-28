@@ -92,3 +92,17 @@
     background: #ffffff;
     font-weight: 600;
 }
+input[type=text].p-autocomplete-dd-input {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+.p-autocomplete-dd .p-autocomplete-dropdown {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0px;
+    margin: 0;
+    padding: 3px;
+}
+.p-autocomplete-dd .p-autocomplete-dropdown svg {
+    width: 14px;
+    height: 14px;
+}

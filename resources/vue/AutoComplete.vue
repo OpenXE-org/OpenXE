@@ -8,6 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import {ref} from "vue";
 import AutoComplete from "primevue/autocomplete";
 import axios from "axios";
+import SearchIcon from "primevue/icons/search";
 
 const props = defineProps({
   ajaxFilter: String,
@@ -40,5 +41,10 @@ async function search(event) {
       @complete="search"
       dataKey="id"
       :forceSelection="forceSelection"
-  />
+      dropdown
+  >
+    <template #dropdownicon>
+      <SearchIcon />
+    </template>
+  </AutoComplete>
 </template>
