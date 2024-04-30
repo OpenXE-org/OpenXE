@@ -1193,7 +1193,7 @@ INNER JOIN shopexport s ON
       $task = $this->app->DB->SelectRow('SELECT * FROM onlineshops_tasks WHERE shop_id=\'' . $shopid . '\' AND command=\'' . $command . '\'');
       if(!empty($task['id'])){
         if($task['status'] !== 'running'){
-          $this->app->DB->Update('UPDATE onlineshop_tasks SET status=\'inactive\',counter=0 WHERE id=' . $task['id']);
+          $this->app->DB->Update('UPDATE onlineshops_tasks SET status=\'inactive\',counter=0 WHERE id=' . $task['id']);
         }
       }
       else{
