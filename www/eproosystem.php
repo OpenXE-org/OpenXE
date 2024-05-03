@@ -323,28 +323,6 @@ class erpooSystem extends Application
         }
       }
 
-      $activateDoubleClick = false;
-      /** @var Dataprotection $dataProtectionModule */
-      $dataProtectionModule = $this->loadModule('dataprotection');
-
-      if($dataProtectionModule !== null && $dataProtectionModule->isHubspotActive()) {
-        $activateDoubleClick = true;
-        $this->Tpl->Add(
-          'SCRIPTJAVASCRIPT',
-          '<script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/6748263.js"></script>'
-        );
-        $this->Tpl->Add(
-          'ADDITIONALCSPHEADER',
-          ' js.hs-scripts.com js.hscollectedforms.net js.hsleadflows.net js.hs-banner.com js.hs-analytics.net api.hubapi.com js.hsadspixel.net '
-        );
-        $this->Tpl->Add(
-          'ADDITIONALCSPHEADER',
-          'forms.hubspot.com forms.hsforms.com track.hubspot.com www.google.com www.google.de '
-        );
-      }
-      if($activateDoubleClick) {
-        $this->Tpl->Add('ADDITIONALCSPHEADER', ' googleads.g.doubleclick.net ' );
-      }
       $hooktpl = 'JSSCRIPTS';
       $this->erp->RunHook('eproosystem_ende', 1, $hooktpl);
     }
