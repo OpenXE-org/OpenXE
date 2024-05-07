@@ -605,7 +605,7 @@ class Exportbuchhaltung
                             $data['Umsatz'] = number_format(abs($difference), 2, ',', ''); // obligatory
                             $data['EU-Steuersatz (Bestimmung)'] = 0;
                             $data['WKZ Umsatz'] = $row['waehrung'];
-                            $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
+                            $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,36);
                             $data['Konto'] = $row['kundennummer'];
                             $data['Soll-/Haben-Kennzeichen'] = ($difference < 0)?'S':'H'; // obligatory   
                                                         
@@ -647,7 +647,7 @@ class Exportbuchhaltung
 
                 $data['EU-Steuersatz (Bestimmung)'] = number_format($tmpsteuersatz, 2, ',', '');
                 $data['WKZ Umsatz'] = $row['pos_waehrung'];
-                $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
+                $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,36);
                 $data['Konto'] = $row['kundennummer']; // obligatory
                 
                 if (!empty($typ['field_gegenkonto'])) {
