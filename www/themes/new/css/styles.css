@@ -878,11 +878,14 @@ ul.menu > li > a {
 }
 
 #main.fixed .menu-wrapper {
-    width: calc(100% - 72px);
+    width: calc(100% - var(--sidebar-not-collapsed-width));
     z-index: 950;
     position: fixed;
     top: 0;
     border-bottom: 3px solid #2DCA73;
+}
+#sidebar.collapsed + #main.fixed .menu-wrapper {
+    width: calc(100% - var(--sidebar-collapsed-width));
 }
 
 #main.fixed .menu-wrapper #current{
