@@ -1111,10 +1111,10 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
     }
 
       // userd edit ajax call
-/*    $poll = true;
+    $poll = true;
     if($poll) {
       $this->addPollJs($module, $action, $id);
-    }*/
+    }
 
     /** @var Ajax $ajax */
     $ajax = $this->loadModule('ajax');
