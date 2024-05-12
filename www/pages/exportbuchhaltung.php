@@ -637,12 +637,14 @@ class Exportbuchhaltung
 
                 $data = array();
 
-                if ($row['betrag'] >= 0) {
+                if ($row['betrag'] > 0) {
                     $data['Umsatz'] = number_format($row['betrag'], 2, ',', ''); // obligatory
                     $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen']; // obligatory
-                } else {
+                } else if ($row['betrag'] < 0) {
                     $data['Umsatz'] = number_format(-$row['betrag'], 2, ',', ''); // obligatory
                     $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen_negativ']; // obligatory        
+                } else {
+                    continue;
                 }
 
                 $data['EU-Steuersatz (Bestimmung)'] = number_format($tmpsteuersatz, 2, ',', '');
