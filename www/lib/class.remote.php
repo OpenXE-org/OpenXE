@@ -2775,6 +2775,7 @@ class Remote
       }
       return '';
     }
+
     if($shoptyp === 'intern')
     {
       if($modulename != '')
@@ -2788,15 +2789,16 @@ class Remote
               $obj->getKonfig($id, $data);
             }
             $method = 'Import'.$action;
+
             if(method_exists($obj,$method)) {
               try {
                 $ret = $obj->$method();
               }
               catch(Exception $e) {
                 if($isActionAuth) {
+                  return 'Fehler Auth: '.$e->getMessage();
+                }                 
                   return 'Fehler: '.$e->getMessage();
-                }
-                return '';
               }
 
               if(!empty($this->app->stringcleaner)){
@@ -2804,6 +2806,8 @@ class Remote
               }
               $this->parseReturn($ret, $id, $action);
               return $ret;
+            } else {
+                  return 'Fehler: Funktion nicht implementiert: '.$method;
             }
           }elseif($isActionAuth)
           {

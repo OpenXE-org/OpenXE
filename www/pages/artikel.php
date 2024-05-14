@@ -2867,6 +2867,7 @@ class Artikel extends GenArtikel {
     }
 
     $pageContents = $this->app->remote->RemoteSendArticleList($shop,$artikel,$extartikelnummer);
+
     $check = strpos($pageContents ,'error:');
     $msg = '';
     if(!empty($pageContents) && is_array($pageContents)) {

@@ -11,7 +11,6 @@ class Shopimporter_Mirakl extends ShopimporterBase
   private $app;
   private $intern;
   private $shopid;
-  private $data;
   private $protocol;
   private $apiKey;
   private $shopUrl;
@@ -19,6 +18,8 @@ class Shopimporter_Mirakl extends ShopimporterBase
   private $idsabholen;
   private $idbearbeitung;
   private $idabgeschlossen;
+
+  public $data;
 
   // TODO
   private $langidToIso = [3 => 'de', 1 => 'en'];
@@ -45,14 +46,14 @@ class Shopimporter_Mirakl extends ShopimporterBase
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Protokollierung im Logfile|}:'
             ],
-            'textekuerzen' => [
+/*            'textekuerzen' => [
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Texte bei Artikelexport auf Maximallänge kürzen|}:'
             ],
             'useKeyAsParameter' => [
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Shop Version ist mindestens 1.6.1.1|}:'
-            ],
+            ],*/
             'apikey' => [
                 'typ' => 'text',
                 'bezeichnung' => '{|API Key|}:',
@@ -65,9 +66,9 @@ class Shopimporter_Mirakl extends ShopimporterBase
             ],
             'shopidmirakl' => [
                 'typ' => 'text',
-                'bezeichnung' => '{|Shop ID des Shops|}:',
+                'bezeichnung' => '{|Shop ID des Shops (optional, int64)|}:',
                 'size' => 40,
-            ],
+            ],/*
             'steuergruppen' => [
                 'typ' => 'text',
                 'bezeichnung' => '{|Steuergruppenmapping|}:',
@@ -107,7 +108,7 @@ class Shopimporter_Mirakl extends ShopimporterBase
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Artikelpreis im Shop anzeigen|}:',
                 'col' => 2
-            ],
+            ],*/
         ]
     ];
   }
@@ -136,15 +137,44 @@ class Shopimporter_Mirakl extends ShopimporterBase
     $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
   }
 
+  private function miraklRequest(string $endpoint, string $postdata = null, bool $raw = false)
+  {
+    $ch = curl_init($this->shopUrl.$endpoint);
+    
+    $headers = array("Authorization: ".$this->apiKey);
+    
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($postdata)) {
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+      $headers[] = 'Content-Type: application/json';
+    }
+
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	
+    $response = curl_exec($ch);
+    if (curl_error($ch)) {
+      $this->error[] = curl_error($ch);
+    }
+    curl_close($ch);
+
+    if ($raw)
+      return $response;
+
+    return simplexml_load_string($response);
+  }
+
+
   public function ImportAuth() {
-    $ch = curl_init($this->shopUrl);
-    curl_setopt($ch, CURLOPT_USERNAME, $this->apiKey);
+    $ch = curl_init($this->shopUrl."version");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: ".$this->apiKey));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-    if ($code == 200)
-      return 'success';
-
+    $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);    
+    if ($code == 200) {
+      return 'success '.print_r($response,true);
+    }
     return $response;
   }
 
@@ -314,109 +344,180 @@ class Shopimporter_Mirakl extends ShopimporterBase
     return $fetchedOrders;
   }
 
+  /*
+  *   Fetches article list from the shop, puts them into table shopexport_getarticles, starts the prozessstarter getarticles which fetches details for each article via ImportGetArticle()
+  */
   public function ImportGetArticleList()
   {
     $result = [];
-    $response = $this->miraklRequest('GET', 'products?display=[reference]');
-    foreach ($response->products->product as $product) {
-      $result[] = $product->reference;
+    $response = $this->miraklRequest('offers', raw: true);
+
+    $result_array = json_decode($response);
+
+    foreach ($result_array->offers as $offer) {
+      $result[] = $offer->shop_sku;
     }
 
     array_unique($result);
     return $result;
   }
 
+  /*
+  *   Fetches article details from the shop
+  */
   public function ImportGetArticle()
   {
-    $nummer = $this->data['nummer'];
-    if (isset($this->data['nummerintern'])) {
-      $nummer = $this->data['nummerintern'];
-    }
-    $nummer = trim($nummer);
+    throw new Exception("Not implemented");
+  }
 
-    if (empty($nummer))
-      return;
+  /*
+  *  Send articles to shop
+  */
 
-    $productsresult = $this->miraklRequest('GET', 'products?filter[reference]='.$nummer);
-    $combinationsresult = $this->miraklRequest('GET', 'combinations?filter[reference]='.$nummer);
-    $numberOfCombinations = count($combinationsresult->combinations->combination);
-    $numberOfProducts = count($productsresult->products->product);
-    $numberOfResults = $numberOfProducts + $numberOfCombinations;
-    if ($numberOfResults > 1) {
-      $this->Log('Got multiple results from Shop', $this->data);
-      return;
-    }
-    elseif ($numberOfResults < 1) {
-      $this->Log('No product found in Shop', $this->data);
-      return;
-    }
+  public function ImportSendList()
+  {
+      $articleList = $this->CatchRemoteCommand('data');
+            
+      //print_r($articleList);
+      
+      /*
+      Array
+(
+    [0] => Array
+        (
+            [artikel] => 1
+            [artikelid] => 1
+            [nummer] => 700001
+            [inaktiv] => 
+            [name_de] => Schraube M10x20
+            [name_en] => 
+            [einheit] => 
+            [hersteller] => 
+            [herstellernummer] => 
+            [ean] => 
+            [artikelnummer_fremdnummern] => 
+            [kurztext_de] => 
+            [kurztext_en] => 
+            [anabregs_text] => 
+            [anabregs_text_en] => 
+            [beschreibung_de] => 
+            [beschreibung_en] => 
+            [uebersicht_de] => 
+            [uebersicht_en] => 
+            [herkunftsland] => DE
+            [texteuebertragen] => 1
+            [metadescription_de] => 
+            [metadescription_en] => 
+            [metakeywords_de] => 
+            [metakeywords_en] => 
+            [metatitle_de] => 
+            [metatitle_en] => 
+            [links_de] => 
+            [altersfreigabe] => 
+            [links_en] => 
+            [startseite_de] => 
+            [startseite_en] => 
+            [restmenge] => 0
+            [startseite] => 0
+            [standardbild] => 
+            [herstellerlink] => 
+            [lieferzeit] => 
+            [lieferzeitmanuell] => 
+            [gewicht] => 
+            [laenge] => 0.00
+            [breite] => 0.00
+            [hoehe] => 0.00
+            [wichtig] => 0
+            [porto] => 0
+            [gesperrt] => 0
+            [sperrgrund] => 
+            [gueltigbis] => 0000-00-00
+            [umsatzsteuer] => normal
+            [ausverkauft] => 0
+            [variante] => 0
+            [variante_von_id] => 0
+            [variantevon] => 
+            [pseudopreis] => 0.00
+            [keinrabatterlaubt] => 0
+            [einkaufspreis] => 0.12000000
+            [pseudolager] => 
+            [downloadartikel] => 0
+            [zolltarifnummer] => 
+            [typ] => 1_kat
+            [kategoriename] => Handelsware (100000)
+            [steuer_art_produkt] => 0
+            [steuer_art_produkt_download] => 0
+            [anzahl_bilder] => 0
+            [anzahl_lager] => 
+            [lagerkorrekturwert] => -0
+            [autolagerlampe] => 0
+            [crosssellingartikel] => Array
+                (
+                )
 
-    $isCombination = $numberOfCombinations > 0;
-    if ($isCombination) {
-      $combinationId = intval($combinationsresult->combinations->combination->attributes()->id);
-      $combination = $this->miraklRequest('GET', "combinations/$combinationId");
-      $productId = intval($combination->combination->id_product);
-    } else {
-      $productId = intval($productsresult->products->product->attributes()->id);
-    }
-    $product = $this->miraklRequest('GET', "products/$productId");
-    $res = [];
-    if ($isCombination) {
-      $res['nummer'] = strval($combination->combination->reference);
-      $res['artikelnummerausshop'] = strval($combination->combination->reference);
-      $res['ean'] = strval($combination->combination->ean13);
-      $res['preis_netto'] = floatval($product->product->price) + floatval($combination->combination->price);
-    } else {
-      $res['nummer'] = strval($product->product->reference);
-      $res['artikelnummerausshop'] = strval($product->product->reference);
-      $res['ean'] = strval($product->product->ean13);
-      $res['preis_netto'] = floatval($product->product->price);
-    }
-    $names = $this->toMultilangArray($product->product->name->language);
-    $descriptions = $this->toMultilangArray($product->product->description->language);
-    $shortdescriptions = $this->toMultilangArray($product->product->description_short->language);
-    $metadescriptions = $this->toMultilangArray($product->product->meta_description->language);
-    $metakeywords = $this->toMultilangArray($product->product->meta_keywords->language);
-    $metatitles = $this->toMultilangArray($product->product->meta_title->language);
-    $res['name'] = $names['de'];
-    $res['name_en'] = $names['en'];
-    $res['uebersicht_de'] = $descriptions['de'];
-    $res['uebersicht_en'] = $descriptions['en'];
-    $res['kurztext_de'] = strip_tags($shortdescriptions['de']);
-    $res['kurztext_en'] = strip_tags($shortdescriptions['en']);
-    $res['hersteller'] = strval($product->product->manufacturer_name);
-    $res['metatitle_de'] = $metatitles['de'];
-    $res['metatitle_en'] = $metatitles['en'];
-    $res['metadescription_de'] = $metadescriptions['de'];
-    $res['metadescription_en'] = $metadescriptions['en'];
+            [waehrung] => EUR
+            [preis] => 0.16000000
+            [steuersatz] => 19
+            [staffelpreise_standard] => Array
+                (
+                    [0] => Array
+                        (
+                            [ab_menge] => 1.0000
+                            [preis] => 0.16000000
+                            [bruttopreis] => 0.1904
+                            [waehrung] => EUR
+                        )
 
-    $tags = $product->product->associations->tags->tag;
-    $keywords = [];
-    foreach ($tags as $tag) {
-      $tagid = intval($tag->id);
-      $endpoint = "tags/{$tagid}";
-      $tagdata = $this->miraklRequest('GET', $endpoint);
-      $tagiso = $this->langidToIso[intval($tagdata->tag->id_lang)];
-      $tagvalue = strval($tagdata->tag->name);
-      if (!array_key_exists($tagiso, $keywords))
-        $keywords[$tagiso] = [];
-      $keywords[$tagiso][] = $tagvalue;
-    }
-    $res['metakeywords_de'] = join(',', $keywords['de'] ?? []);
-    $res['metakeywords_en'] = join(',', $keywords['en'] ?? []);
+                )
 
-    $images = [];
-    foreach ($product->product->associations->images->image as $img) {
-      $endpoint = "images/products/$productId/$img->id";
-      $imgdata = $this->miraklRequest('GET', $endpoint, '', true);
-      $images[] = [
-          'content' => base64_encode($imgdata),
-          'path' => "$img->id.jpg",
-          'id' => $img->id
-      ];
-    }
-    $res['bilder'] = $images;
-    return $res;
+            [staffelpreise] => Array
+                (
+                    [0] => Array
+                        (
+                            [ab_menge] => 1.0000
+                            [preis] => 0.16000000
+                            [bruttopreis] => 0.1904
+                            [waehrung] => EUR
+                        )
+
+                )
+
+            [bruttopreis] => 0.1904
+            [checksum] => 
+            [variantevorhanden] => 0
+        )
+
+)
+
+      */
+      
+      $offers_for_mirakl = array();
+      
+      foreach ($articleList as $article) {
+        $offers_for_mirakl[] = array(
+          'product_id_type' => 'sku', // ?!?!
+          'price' => $article['preis'],
+//          'pricing_unit' => $article['waehrung'],
+          'product_id' => $article['nummer'],
+          'shop_sku' => $article['nummer'],
+          'state_code' => '11', // ?!?!
+          'update_delete' => 'update' // update or delete
+        );
+      }                      
+      
+      $data_for_mirakl = array();
+      $data_for_mirakl['offers'] = $offers_for_mirakl;
+      
+      $json_for_mirakl = json_encode($data_for_mirakl);
+      
+      $result = [];
+      $response = $this->miraklRequest('offers', postdata: $json_for_mirakl, raw: true);
+
+      $result_array = json_decode($response);
+      
+      
+      print_r($result_array); // stdClass Object ( [import_id] => 69751 ) 
+      exit();
   }
 
   private function toMultilangArray($xmlnode) {
@@ -454,30 +555,5 @@ class Shopimporter_Mirakl extends ShopimporterBase
       $this->app->erp->Logfile($message, print_r($dump, true));
     }
   }
-
-  private function miraklRequest($method, $endpoint, $data = '', $raw = false)
-  {
-    $url = $this->shopUrl . $endpoint;
-    $url = str_replace('[', '%5b', $url);
-    $url = str_replace(']', '%5d', $url);
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    if (!empty($data)) {
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    }
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    curl_setopt($ch, CURLOPT_USERNAME, $this->apiKey);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    if (curl_error($ch)) {
-      $this->error[] = curl_error($ch);
-    }
-    curl_close($ch);
-
-    if ($raw)
-      return $response;
-
-    return simplexml_load_string($response);
-  }
+ 
 }
