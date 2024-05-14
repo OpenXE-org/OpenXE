@@ -45,14 +45,14 @@ class Shopimporter_Mirakl extends ShopimporterBase
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Protokollierung im Logfile|}:'
             ],
-            'textekuerzen' => [
+/*            'textekuerzen' => [
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Texte bei Artikelexport auf Maximallänge kürzen|}:'
             ],
             'useKeyAsParameter' => [
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Shop Version ist mindestens 1.6.1.1|}:'
-            ],
+            ],*/
             'apikey' => [
                 'typ' => 'text',
                 'bezeichnung' => '{|API Key|}:',
@@ -65,9 +65,9 @@ class Shopimporter_Mirakl extends ShopimporterBase
             ],
             'shopidmirakl' => [
                 'typ' => 'text',
-                'bezeichnung' => '{|Shop ID des Shops|}:',
+                'bezeichnung' => '{|Shop ID des Shops (optional, int64)|}:',
                 'size' => 40,
-            ],
+            ],/*
             'steuergruppen' => [
                 'typ' => 'text',
                 'bezeichnung' => '{|Steuergruppenmapping|}:',
@@ -107,7 +107,7 @@ class Shopimporter_Mirakl extends ShopimporterBase
                 'typ' => 'checkbox',
                 'bezeichnung' => '{|Artikelpreis im Shop anzeigen|}:',
                 'col' => 2
-            ],
+            ],*/
         ]
     ];
   }
@@ -136,15 +136,39 @@ class Shopimporter_Mirakl extends ShopimporterBase
     $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
   }
 
+  private function miraklRequest(string $endpoint, array $postdata = null, bool $raw = false)
+  {
+    $ch = curl_init($this->shopUrl.$endpoint);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: ".$this->apiKey));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($postdata)) {
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    }
+
+    $response = curl_exec($ch);
+    if (curl_error($ch)) {
+      $this->error[] = curl_error($ch);
+    }
+    curl_close($ch);
+
+    if ($raw)
+      return $response;
+
+    return simplexml_load_string($response);
+  }
+
+
   public function ImportAuth() {
-    $ch = curl_init($this->shopUrl);
-    curl_setopt($ch, CURLOPT_USERNAME, $this->apiKey);
+    $ch = curl_init($this->shopUrl."version");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: ".$this->apiKey));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-    if ($code == 200)
-      return 'success';
-
+    $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);    
+    if ($code == 200) {
+      return 'success '.print_r($response,true);
+    }
     return $response;
   }
 
@@ -317,7 +341,11 @@ class Shopimporter_Mirakl extends ShopimporterBase
   public function ImportGetArticleList()
   {
     $result = [];
-    $response = $this->miraklRequest('GET', 'products?display=[reference]');
+    $response = $this->miraklRequest('offers');
+
+    print_r($response);
+    exit();
+
     foreach ($response->products->product as $product) {
       $result[] = $product->reference;
     }
@@ -454,30 +482,5 @@ class Shopimporter_Mirakl extends ShopimporterBase
       $this->app->erp->Logfile($message, print_r($dump, true));
     }
   }
-
-  private function miraklRequest($method, $endpoint, $data = '', $raw = false)
-  {
-    $url = $this->shopUrl . $endpoint;
-    $url = str_replace('[', '%5b', $url);
-    $url = str_replace(']', '%5d', $url);
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    if (!empty($data)) {
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    }
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    curl_setopt($ch, CURLOPT_USERNAME, $this->apiKey);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    if (curl_error($ch)) {
-      $this->error[] = curl_error($ch);
-    }
-    curl_close($ch);
-
-    if ($raw)
-      return $response;
-
-    return simplexml_load_string($response);
-  }
+ 
 }
