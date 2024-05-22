@@ -76,7 +76,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'size' => 40,
                     'info' => 'optional, int64'
                 ],
-                'category_identifier_source' => [
+/*                'category_identifier_source' => [
                     'typ' => 'select',
                     'bezeichnung' => '{|Kategorie-Identifizierer|}:',
                     'size' => 40,
@@ -89,34 +89,15 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'size' => 40,
                     'info' => 'Wenn oben Freifeld oder Eigenschaft gew&auml;hlt wurde'
                 ],
-                'product_identifier_type' => [
-                    'typ' => 'text',
-                    'bezeichnung' => '{|Produkt-Identifizierertyp in Mirakl|}:',
-                    'size' => 40,
-                    'info' => 'Z.B. EAN'
-                ],
-                'product_identifier_source' => [
-                    'typ' => 'select',
-                    'bezeichnung' => '{|Produkt-Identifizierer|}:',
-                    'size' => 40,
-                    'optionen' => ['Artikelnummer' => '{|Artikelnummer|}', 'Herstellernummer' => '{|Herstellernummer|}', 'EAN' => '{|EAN|}', 'Freifeld' => 'Freifeld', 'Eigenschaft' => 'Eigenschaft'],
-                    'info' => 'Feld in OpenXE für die Zuordnung der Artikel zu den Katalogprodukten in Mirakl'
-                ],
-                'product_identifier_source_field' => [
-                    'typ' => 'text',
-                    'bezeichnung' => '{|Produkt-Identifizierer Freifeld oder Eigenschaft|}:',
-                    'size' => 40,
-                    'info' => 'Wenn oben Freifeld oder Eigenschaft gew&auml;hlt wurde'
-                ],
                 'product_field_map' => [
                     'typ' => 'textarea',
                     'bezeichnung' => '{|Zuordnung Produkt-Felder je Kategorie (JSON)|}:',
                     'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Mögliche Zuordnungen aus OpenXE sind: Artikelnummer, Artikelname, Einheit, Hersteller, Herstellernummer, EAN oder eine konkrete Artikeleigenschaft'
-                ],
+                ],*/
                 'offer_field_map' => [
                     'typ' => 'textarea',
                     'bezeichnung' => '{|Zuordnung Angebots-Felder je Kategorie (JSON)|}:',
-                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Mögliche Zuordnungen aus OpenXE sind: nummer, name_de, einheit, hersteller, herstellernummer, ean u.v.m. Freifelder: {"freifeld": "Freifeld1-40"}, Eigenschaften: {"eigenschaft": "Eigenschaftenname xyz"}, Fester Wert: {"wert": "xyz"}, Zusatzfelder zusätzlich mit der Eigenschaft "zusatzfeld": true versehen: z.B. {"freifeld": "Freifeld1", "zusatzfeld": true}'
+                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Zuordnung &uuml;ber "Mirakl-xyz": {"feld": "xyz"} oder kurz "Mirakl-xyz": "xyz" Mögliche Zuordnungen aus OpenXE sind: nummer, name_de, einheit, hersteller, herstellernummer, ean u.v.m. Freifelder wie im Reiter Freifelder mit Pr&auml;fix \'freifeld_\',  Eigenschaften: {"eigenschaft": "Eigenschaftenname xyz"}, Fester Wert: {"wert": "xyz"}, Zusatzfelder zusätzlich mit der Eigenschaft "zusatzfeld": true versehen: z.B. {"feld": "name_de", "zusatzfeld": true}'
                 ],
             /*
               'steuergruppen' => [
@@ -310,46 +291,58 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $additional_fields = array();
              
             // Required attributes
+
+            $required = [
+                'product_id_type',
+                'product_id',
+                'shop_sku',
+                'price'
+            ];
+
+            $missing = null;
+
+            foreach ($required as $key) {
+                if (!isset($this->offer_field_map[$key])) {
+                    $missing[] = $key;
+                }
+            }
+        
+            if ($missing) {
+                return(array('status' => false, 'message' => "Missing required field: ".implode(', ',$missing)));
+            }
+
             $offer_for_mirakl = array(
-                'product_id_type' => $this->product_identifier_type,
-                'product_id' => $article['nummer'], // TBD
-                'shop_sku' => $article['nummer'], // TBD
-                'price' => $article['preis'],
                 'state_code' => '11', // ?!?!
                 'update_delete' => null // Update delete flag. Could be empty (means "update"), "update" or "delete".
             );
                       
+//            print_r($this->offer_field_map);
+
             foreach ($this->offer_field_map as $offer_field => $offer_field_source) {
 
-                $offer_field_value = null;
-
-                print_r($this->offer_field_map);
-            
                 if (!is_array($offer_field_source)) {
-                    if (!isset($article[$offer_field_source])) {
-                         throw new Exception("Artikelfeld \"".$offer_field_source."\" nicht vorhanden.");
-                    }
-                    $offer_field_value = $article[$offer_field_source];
-                } else {                                               
+                    $offer_field_source = array('feld' => $offer_field_source);
+                }
 
-                    $is_additional_field = false;
+                $offer_field_value = null;           
+                $is_additional_field = false;
 
-                    foreach ($offer_field_source as $key => $value) {
-                        switch ($key) {
-                            case 'freifeld':
-                                // TBD
-                            break;
-                            case 'eigenschaft':
-                            // TBD
-                            break;
-                            case 'wert':
-                                $offer_field_value = $value;
-                            break;
-                            case 'zusatzfeld':
-                                $is_additional_field = $value;
-                            break;
-                        }                   
-                    }                                             
+                foreach ($offer_field_source as $key => $value) {
+                    switch ($key) {
+                        case 'feld': 
+                            $offer_field_value = $article[$value];
+                        break;
+                        case 'eigenschaft':
+                            $sql = "SELECT wert FROM artikeleigenschaften ae INNER JOIN artikeleigenschaftenwerte aew ON aew.artikeleigenschaften = ae.id WHERE aew.artikel = '".$article['artikelid']."' AND ae.name = '".$value."' LIMIT 1";
+                            $offer_field_value = $this->app->DB->Select($sql);
+                        break;
+                        case 'wert':
+                            $offer_field_value = $value;
+                        break;
+                        case 'zusatzfeld':
+                            $is_additional_field = $value;
+                        break;
+                    }                   
                 }                     
 
                 if ($is_additional_field) {
