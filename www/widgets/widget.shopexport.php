@@ -861,7 +861,7 @@ class WidgetShopexport extends WidgetGenShopexport
         switch($typ)
         {
           case 'textarea':
-            $aktcol .= '<textarea name="'.$name.'" id="'.$name.'">'.(!isset($json['felder'][$name])?'':htmlspecialchars($json['felder'][$name])).'</textarea>';
+            $aktcol .= '<textarea name="'.$name.'" id="'.$name.'">'.(!isset($json['felder'][$name])?'':htmlspecialchars($json['felder'][$name])).'</textarea>';                   
           break;
           case 'checkbox':
             $aktcol .= '<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.((isset($json['felder'][$name]) && $json['felder'][$name])?' checked="checked" ':'').' />';
@@ -912,7 +912,7 @@ class WidgetShopexport extends WidgetGenShopexport
           $aktcol .= '&nbsp;<input type="button" value="'.($val['vorschlag_label']!=''?$val['vorschlag_label']:$val['vorschlag']).'" onclick="$(\'#'.$name.'\').val(\''.$val['vorschlag'].'\');" '.(isset($val['minvorschlagsize']) && $val['minvorschlagsize']?' style="min-width:'.$val['minvorschlagsize'].'px;" ':'').' />';
         }
         if(isset($val['info']) && $val['info']){
-          $aktcol .= ' <i>'.$val['info'].'</i>';
+          $aktcol .= '<td> <i>'.$val['info'].'</i></td>';
         }
         if(isset($val['col']) && $val['col'] == 2)
         {
