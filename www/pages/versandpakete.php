@@ -1176,7 +1176,22 @@ class Versandpakete {
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
         $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
-        $versandmodul->Paketmarke('TAB1', 'lieferschein', $lieferschein['lieferschein'], $id);
+    
+        $sql = "
+            SELECT 
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE vlp.versandpaket = ".$id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);       
+        $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
 

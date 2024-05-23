@@ -162,13 +162,7 @@ abstract class Versanddienstleister
       AND r.status != 'storniert'
       ORDER BY lp.sort";
     $ret['positions'] = $this->app->DB->SelectArr($sql) ?? [];
-
-    if ($sid === "lieferschein") {
-      $standardkg = $this->app->erp->VersandartMindestgewicht($lieferscheinId);
-    } else {
-      $standardkg = $this->app->erp->VersandartMindestgewicht();
-    }
-    $ret['weight'] = $standardkg;
+  
     return $ret;
   }
 
@@ -370,9 +364,11 @@ abstract class Versanddienstleister
     return true;
   }
 
-  public function Paketmarke(string $target, string $docType, int $docId, $versandpaket = null): void
+  public function Paketmarke(string $target, string $docType, int $docId, $gewicht = 0, $versandpaket = null): void
   {
     $address = $this->GetAdressdaten($docId, $docType);
+    $address['weight'] = $gewicht;
+
     if (isset($_SERVER['CONTENT_TYPE']) && ($_SERVER['CONTENT_TYPE'] === 'application/json')) {
       $json = json_decode(file_get_contents('php://input'));
       $ret = [];
