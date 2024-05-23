@@ -30,7 +30,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     private $product_identifier_source;
     private $product_identifier_source_field;
     private $product_field_map;
-    private $offer_field_map;
+    private $field_map;
 
     public function __construct($app, $intern = false) {
         $this->app = $app;
@@ -94,7 +94,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'bezeichnung' => '{|Zuordnung Produkt-Felder je Kategorie (JSON)|}:',
                     'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Mögliche Zuordnungen aus OpenXE sind: Artikelnummer, Artikelname, Einheit, Hersteller, Herstellernummer, EAN oder eine konkrete Artikeleigenschaft'
                 ],*/
-                'offer_field_map' => [
+                'field_map' => [
                     'typ' => 'textarea',
                     'bezeichnung' => '{|Zuordnung Angebots-Felder je Kategorie (JSON)|}:',
                     'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Zuordnung &uuml;ber "Mirakl-xyz": {"feld": "xyz"} oder kurz "Mirakl-xyz": "xyz" Mögliche Zuordnungen aus OpenXE sind: nummer, name_de, einheit, hersteller, herstellernummer, ean u.v.m. Freifelder wie im Reiter Freifelder mit Pr&auml;fix \'freifeld_\',  Eigenschaften: {"eigenschaft": "Eigenschaftenname xyz"}, Fester Wert: {"wert": "xyz"}, Zusatzfelder zusätzlich mit der Eigenschaft "zusatzfeld": true versehen: z.B. {"feld": "name_de", "zusatzfeld": true}'
@@ -172,7 +172,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $this->product_identifier_source = $einstellungen['felder']['product_identifier_source'];
         $this->product_identifier_source_field = $einstellungen['felder']['product_identifier_source_field'];
         $this->product_field_map = json_decode($einstellungen['felder']['product_field_map'], true);
-        $this->offer_field_map = json_decode($einstellungen['felder']['offer_field_map'], true);        
+        $this->field_map = json_decode($einstellungen['felder']['field_map'], true);        
     }
 
     private function miraklRequest(string $endpoint, $postdata = null, array $getdata = null, string $content_type = null, bool $raw = false) {
@@ -266,12 +266,34 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     }
 
     /*
+    *   Gets a flexible mapped fieldvalue from feld, wert or eigenschaft
+    */
+    public function GetFieldValue($article, $field_map_entry) {    
+        foreach ($field_map_entry as $key => $value) {                   
+            switch ($key) {
+                case 'feld': 
+                    return($article[$value]);
+                break;
+                case 'eigenschaft':
+                    $sql = "SELECT wert FROM artikeleigenschaften ae INNER JOIN artikeleigenschaftenwerte aew ON aew.artikeleigenschaften = ae.id WHERE aew.artikel = '".$article['artikelid']."' AND ae.name = '".$value."' LIMIT 1";
+                    return($this->app->DB->Select($sql));
+                break;
+                case 'wert':
+                    return($value);
+                break;                
+            }                
+        }
+        return(null);
+    }
+
+    /*
      *  Send articles to shop
      */
 
     public function ImportSendList() {
+            
         $articleList = $this->CatchRemoteCommand('data');
-        
+               
         // First gather all articles as offers and send them
         // Wait for import to finish
         // Evaluate import
@@ -287,73 +309,64 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             /*
              * Export offer
              */
-
+            $processed = false;
             $additional_fields = array();
              
-            // Required attributes
-
-            $required = [
-                'product_id_type',
-                'product_id',
-                'shop_sku',
-                'price'
-            ];
-
-            $missing = null;
-
-            foreach ($required as $key) {
-                if (!isset($this->offer_field_map[$key])) {
-                    $missing[] = $key;
-                }
-            }
-        
-            if ($missing) {
-                return(array('status' => false, 'message' => "Missing required field: ".implode(', ',$missing)));
-            }
-
             $offer_for_mirakl = array(
                 'state_code' => '11', // ?!?!
                 'update_delete' => null // Update delete flag. Could be empty (means "update"), "update" or "delete".
             );
                       
-//            print_r($this->offer_field_map);
+            foreach ($this->field_map['angebotskonfiguration'] as $offer_field_entry) {
 
-            foreach ($this->offer_field_map as $offer_field => $offer_field_source) {
-
-                if (!is_array($offer_field_source)) {
-                    $offer_field_source = array('feld' => $offer_field_source);
+                $kategorie = $this->GetFieldValue($article, $this->field_map['katalogkonfiguration']['kategorie']);               
+                if ($offer_field_entry['kategorie'] != $kategorie && $offer_field_entry['kategorie'] != null) {
+                    continue;
+                };
+                                
+                // Check Required attributes
+                $required = [
+                    'product_id_type',
+                    'product_id',
+                    'shop_sku',
+                    'price'
+                ];
+                $missing = null;
+                foreach ($required as $key) {
+                    if (!isset($offer_field_entry['felder'][$key])) {
+                        $missing[] = $key;
+                    }
+                }       
+                if ($missing) {
+                    return(array('status' => false, 'message' => "Pflichtfelder fehlen in Angebotskonfiguration von Kategorie \"".$offer_field_entry['kategorie']."\": ".implode(', ',$missing)));
                 }
+                // Check Required attributes
+                
+                foreach ($offer_field_entry['felder'] as $offer_field => $offer_field_source) {
+                    if (!is_array($offer_field_source)) {
+                        $offer_field_source = array('feld' => $offer_field_source);
+                    }
+                    $offer_field_value = null;           
+                    $is_additional_field = false;
+                    $offer_field_value = $this->GetFieldValue($article, $offer_field_source);                
+                    if (in_array('zusatzfeld', $offer_field_source)) {
+                        $is_additional_field = true;
+                    }
+                    if ($is_additional_field) {
+                        $additional_field = array (
+                            "code" => $offer_field,
+                            "value" => $offer_field_value
+                        );
+                        $additional_fields[] = $additional_field;
+                    } else {
+                        $offer_for_mirakl[$offer_field] = $offer_field_value; 
+                    }                             
+                }                                
+                $processed = true;
+            }
 
-                $offer_field_value = null;           
-                $is_additional_field = false;
-
-                foreach ($offer_field_source as $key => $value) {
-                    switch ($key) {
-                        case 'feld': 
-                            $offer_field_value = $article[$value];
-                        break;
-                        case 'eigenschaft':
-                            $sql = "SELECT wert FROM artikeleigenschaften ae INNER JOIN artikeleigenschaftenwerte aew ON aew.artikeleigenschaften = ae.id WHERE aew.artikel = '".$article['artikelid']."' AND ae.name = '".$value."' LIMIT 1";
-                            $offer_field_value = $this->app->DB->Select($sql);
-                        break;
-                        case 'wert':
-                            $offer_field_value = $value;
-                        break;
-                        case 'zusatzfeld':
-                            $is_additional_field = $value;
-                        break;
-                    }                   
-                }                     
-
-                if ($is_additional_field) {
-                    $additional_field = array (
-                        "code" => $offer_field,
-                        "value" => $offer_field_value
-                    );
-                    $additional_fields[] = $additional_field;
-                } else {
-                    $offer_for_mirakl[$offer_field] = $offer_field_value; 
-                }                             
+            if (!$processed) {
+                return(array('status' => false, 'message' => "Angebotskonfiguration für Kategorie \"".$kategorie."\" nicht gefunden"));
             }
 
             if (!empty($additional_fields)) {
@@ -377,7 +390,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $result = json_decode($response);
 
         if (!isset($result->import_id)) {
-            return(array('status' => false, 'message' => "Offer import in Mirakl not accepted: ".print_r($response,true)));
+            return(array('status' => false, 'message' => "Angebotsimport in Mirakl abgelehnt: ".print_r($response,true)));
         } 
         
         $import_id = $result->import_id;
@@ -398,7 +411,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
         
         if ($status == 'FAILED') {
-            return(array('status' => false, 'message' => "Offer import in Mirakl failed: ".print_r($response,true)));
+            return(array('status' => false, 'message' => "Angebotsimport in Mirakl fehlgeschlagen: ".print_r($response,true)));
         }
         
         if ($result->lines_in_error == 0) {
@@ -408,7 +421,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         // Check errors 
         $response = $this->miraklRequest('offers/imports/'.$import_id.'/error_report', raw: true);
                 
-        return(array('status' => false, 'message' => "Offer import in Mirakl has errors: ".print_r($response,true)));
+        return(array('status' => false, 'message' => "Angebotsimport in Mirakl hat Fehler: ".print_r($response,true)));
 
     }
 
