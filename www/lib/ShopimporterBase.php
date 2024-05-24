@@ -632,18 +632,6 @@ Class ShopimporterBase{
         'variants',
         'free_fields',
       ],
-      'shopimporter_mirakl' => [
-        'article_descriptions',
-        'translations',
-        'categories',
-        'properties',
-        'pictures',
-        'cross_selling',
-        'bulk_prices',
-        'standard_price',
-        'variants',
-        'free_fields',
-      ],
       'shopimporter_shopify' => [
         'article_descriptions',
         'translations',

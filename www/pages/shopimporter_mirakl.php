@@ -19,7 +19,6 @@ JSON example for field_map
     "angebotskonfiguration": 
     [
         {
-            "kategorien": ["Schrauben"],
             "felder": {
               "product_id_type": {"wert": "SHOP_SKU"},
               "product_id": {"feld": "nummer"},
@@ -28,7 +27,8 @@ JSON example for field_map
               "description": "freifeld_Kategorie",
               "internal_description": {"eigenschaft": "Mirakl Steuertext"},
               "reversecharge": {"wert": "false","zusatzfeld": true},
-              "warehouse": {"wert": "1","zusatzfeld": true}
+              "warehouse": {"wert": "1","zusatzfeld": true},
+              "quantity": {"feld": "anzahl_lager"}
             }
         }
     ]
@@ -324,10 +324,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         return(null);
     }
 
+    public function ImportSendListLager() {
+        return($this->ImportSendList());
+    }
+
     /*
      *  Send articles to shop
      */
-
     public function ImportSendList() {
             
         $articleList = $this->CatchRemoteCommand('data');
@@ -421,9 +424,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         $json_for_mirakl = json_encode($data_for_mirakl);
 
-//        print_r($json_for_mirakl);
-//        exit();
-
         $result = [];
         $response = $this->miraklRequest('offers', postdata: $json_for_mirakl, content_type: 'application/json', raw: true);
 
@@ -459,8 +459,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
         
         // Check errors 
-        $response = $this->miraklRequest('offers/imports/'.$import_id.'/error_report', raw: true);
-                
+        $response = $this->miraklRequest('offers/imports/'.$import_id.'/error_report', raw: true);               
         return(array('status' => false, 'message' => "Angebotsimport in Mirakl hat Fehler: ".print_r($response,true)));
 
     }
