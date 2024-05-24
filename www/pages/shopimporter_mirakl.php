@@ -43,6 +43,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     private $protocol;
     private $apiKey;
     private $shopUrl;
+    private $mirakl_shopid;
     private $createManufacturerAllowed = false;
     private $idsabholen;
     private $idbearbeitung;
@@ -99,7 +100,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'bezeichnung' => '{|Shop URL|}:',
                     'size' => 40,
                 ],
-                'shopid' => [
+                'mirakl_shopid' => [
                     'typ' => 'text',
                     'bezeichnung' => '{|Shop ID des Shops|}:',
                     'size' => 40,
@@ -178,7 +179,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $this->data = $data;
         $importerSettings = $this->app->DB->SelectArr("SELECT `einstellungen_json` FROM `shopexport` WHERE `id` = '$shopid' LIMIT 1");
         $importerSettings = reset($importerSettings);
-
         $einstellungen = [];
         if (!empty($importerSettings['einstellungen_json'])) {
             $einstellungen = json_decode($importerSettings['einstellungen_json'], true);
@@ -186,6 +186,8 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $this->protocol = $einstellungen['felder']['protokoll'];
         $this->apiKey = $einstellungen['felder']['apikey'];
         $this->shopUrl = rtrim($einstellungen['felder']['shopurl'], '/') . '/';
+        $this->mirakl_shopid = $einstellungen['felder']['mirakl_shopid'];
+
         if ($einstellungen['felder']['autoerstellehersteller'] === '1') {
             $this->createManufacturerAllowed = true;
         }
@@ -212,6 +214,10 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
+        if (!empty($this->mirakl_shopid)) {
+            $getdata['shop_id'] = $this->mirakl_shopid;
+        }
+
         if (!empty($getdata)) {
             $url_addition = "?";
             $ampersand = "";
@@ -219,7 +225,8 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 $url_addition .= $ampersand . $key . "=" . $value;
                 $ampersand = "&";
             }
-        } else if (!empty($postdata)) {
+        } 
+        if (!empty($postdata)) {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
             $headers[] = 'Content-Type: ' . $content_type;
@@ -237,10 +244,12 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         curl_close($ch);
 
         $information = curl_getinfo($ch);
-//        print_r($information);
-//        print_r($postdata);
-//        print_r($response);
-//        exit();
+
+/*        print_r($information);
+        print_r($postdata);
+        print_r($response);
+        exit();
+*/
 
         if ($raw)
             return $response;
