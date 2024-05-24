@@ -2,9 +2,38 @@
 
 /*
  * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2024 OpenXE project
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
+
+
+/*
+
+JSON example for field_map
+
+{
+    "katalogkonfiguration": {
+        "kategorie": {"feld": "freifeld_Kategorie"}
+    },
+    "angebotskonfiguration": 
+    [
+        {
+            "kategorien": ["Schrauben"],
+            "felder": {
+              "product_id_type": {"wert": "SHOP_SKU"},
+              "product_id": {"feld": "nummer"},
+              "shop_sku": {"feld": "nummer"},
+              "price": {"feld": "preis"},
+              "description": "freifeld_Kategorie",
+              "internal_description": {"eigenschaft": "Mirakl Steuertext"},
+              "reversecharge": {"wert": "false","zusatzfeld": true},
+              "warehouse": {"wert": "1","zusatzfeld": true}
+            }
+        }
+    ]
+}
+*/
 
 class Shopimporter_Mirakl extends ShopimporterBase {
 
@@ -320,9 +349,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             foreach ($this->field_map['angebotskonfiguration'] as $offer_field_entry) {
 
                 $kategorie = $this->GetFieldValue($article, $this->field_map['katalogkonfiguration']['kategorie']);               
-                if ($offer_field_entry['kategorie'] != $kategorie && $offer_field_entry['kategorie'] != null) {
-                    continue;
-                };
+                if ($offer_field_entry['kategorien'] != null) {
+                    if (!in_array($kategorie,$offer_field_entry['kategorien'])) {
+                        continue;
+                    }
+                }
                                 
                 // Check Required attributes
                 $required = [
