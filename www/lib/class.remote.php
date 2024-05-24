@@ -2218,7 +2218,7 @@ class Remote
     $data2 = $data;
     foreach ($data2 as $key => $value){
       $data2[$key]['artikel'] = $value['artikelid'];
-    }
+    }      
     $result =  $this->RemoteCommand($id,'sendlistlager',$data2);
     $this->app->DB->Update(
       sprintf(
@@ -2286,17 +2286,7 @@ class Remote
       }//Altes Verhalten
     }
     if(!$isLagerExported){
-      $data2 = $data;
-      foreach ($data2 as $key => $value){
-        $data2[$key]['artikel'] = $value['artikelid'];
-      }
-      $this->RemoteCommand($id,'sendlistlager',$data2);
-      $this->app->DB->Update(
-        sprintf(
-          'UPDATE artikel_onlineshops SET last_storage_transfer = NOW() WHERE artikel = %d AND shop = %d',
-          $data2[$i]['artikel'], $id
-        )
-      );
+         $this->sendlistlager($i,$id,$data);
     }
     return $result;
   }
