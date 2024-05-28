@@ -5636,6 +5636,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     {
       $this->kommissionierung = $this->app->erp->GetNextKommissionierung();
     }
+
+
     // mit der funktionen koennen nur erstauftraege abgewickelt koennen!!!
     $internmodus = 0;
     if($id!='')
@@ -5710,7 +5712,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     {
       $useredittimestamp = 1000;
     }
-
+    
     $anzahl_artikel = $this->app->DB->Select("SELECT id FROM auftrag_position WHERE auftrag=$id LIMIT 1");
     if($anzahl_artikel <= 0)
     {
@@ -5920,7 +5922,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       $druckercode = $this->app->erp->Firmendaten('standardversanddrucker');
 
-
       $this->app->erp->Protokoll("WeiterfuehrenAuftragZuRechnung AB $belegnr Kommissionierverfahren: $kommissionierverfahren Projekt $projekt");
 
       switch($kommissionierverfahren)
@@ -5949,12 +5950,14 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             if($this->kommissionierung){
               $this->app->DB->Update(
                 sprintf(
-                  "UPDATE lieferschein SET kommissionierung = %d WHERE id = %d LIMIT 1",
-                  $this->kommissionierung, $lieferschein
+                  "UPDATE kommissionierung SET lieferschein = %d WHERE id = %d LIMIT 1",
+                  $id,
+                  $this->kommissionierung
                 )
               );
-              $this->updateCase($this->kommissionierung);
             }
+            
+            $auslagernresult =            
             $this->app->erp->LieferscheinAuslagern(
               $lieferschein,
               true,
@@ -5965,9 +5968,31 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               $nurRestmenge
             );
             
+            foreach ($auslagernresult['storageMovements'] as $storageMovement) {            
+                $this->app->DB->Update(
+                    sprintf(
+                        "INSERT INTO kommissionierung_position (kommissionierung, artikel, lager_platz, menge) VALUES (%d, %d, %d, %d)",
+                        $this->kommissionierung,
+                        $storageMovement['artikel'],
+                        $storageMovement['lager_platz'],
+                        $storageMovement['menge']
+                    )
+                );
+            }
+
+            // Kommissionierschein drucken?
+            if ($projektarr['autodruckkommissionierscheinstufe1']) {              
+                $Brief = new KommissionierungPDF($this->app, styleData: array('ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
+                $Brief->GetKommissionierung($this->kommissionierung);
+                $tmpfile = $Brief->displayTMP();
+                for($mengedruck=$projektarr['autodruckkommissionierscheinstufe1menge'];$mengedruck > 0;$mengedruck--) {        
+                    $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
+                    $this->app->printer->Drucken($druckercode, $tmpfile);
+                }
+                unlink($tmpfile);                        
+            }           
+            
             // Prozesse ohne Versandzentrum
-
-
             $this->app->erp->BriefpapierHintergrundDisable($druckercode);
 
             $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;

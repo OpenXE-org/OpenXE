@@ -1,5 +1,6 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2024 OpenXE-org
  * SPDX-FileCopyrightText: 2022 Andreas Palm
  * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
  *
@@ -3025,6 +3026,8 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 }
 
   // @refactor LagerBeleg Modul
+  // Returns Array:
+  // storageMovements => array('lager_platz', 'artikel', 'menge');
   function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $standardlager = 0, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0)
   {
     if($lieferschein <= 0) {
@@ -3138,6 +3141,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
       }
     }
     $storageLocations = [];
+    $storageMovements = [];
     $cartikel = $artikelarr?count($artikelarr):0;
     for($i= ($belegtyp==='produktion'?1:0) ;$i<$cartikel;$i++) {
       $beschreibung = $artikelarr[$i]['beschreibung'];
@@ -3454,51 +3458,33 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
           }
           if((round($maxAuslagern,8) > round($lager_max[0]['menge'],8)) && ($lager_max[0]['menge'] > 0)) {
             // es werden mehr gebraucht als im lager sind
-            $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$lager_max[0]['menge'],$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
-            if($anzeige_lagerplaetze_in_lieferschein){
-              $this->LagerAuslagernText($artikel, $subid, $lager_max[0]['lager_platz'], $lager_max[0]['menge'], $belegtyp);
-            }else{
-              $this->LagerAuslagernObjektLagerPlatz($artikel, $subid, $lager_max[0]['lager_platz'], $lager_max[0]['menge'], $belegtyp);
-            }
-            $storageLocations[] = $lager_max[0]['lager_platz'];
-            $regal_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='".$lager_max[0]['lager_platz']."' LIMIT 1");
-            $lager_string .= $regal_name."(".$lager_max[0]['menge'].") ";
-            $restmenge = round($restmenge - $lager_max[0]['menge'],8);
-            if(!$nurrestmenge){
-              $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$lager_max[0]['menge'],$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
-            }
+            $menge_auslagern = $lager_max[0]['menge'];
           }
           else if( ($lager_max[0]['menge'] >= $maxAuslagern) && ($maxAuslagern > 0)  ) {
             // es sind genuegend lager
-            $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$maxAuslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
-              $storageLocations[] = $lager_max[0]['lager_platz'];
-              if($anzeige_lagerplaetze_in_lieferschein){
-                $this->LagerAuslagernText($artikel, $subid, $lager_max[0]['lager_platz'], $maxAuslagern, $belegtyp);
-              }else{
-                $this->LagerAuslagernObjektLagerPlatz($artikel, $subid, $lager_max[0]['lager_platz'], $maxAuslagern, $belegtyp);
-              }
-              $regal_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='".$lager_max[0]['lager_platz']."' LIMIT 1");
-              $lager_string .= $regal_name."(".(float)$maxAuslagern.") ";
-
-              if(!$nurrestmenge){
-                $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$maxAuslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
-              }
-              $restmenge = round($restmenge - $maxAuslagern, 8);
+            $menge_auslagern = $maxAuslagern;
           }
           else {
             break;
           }
-        }
 
-/*
-// neue datenstruktue
-        if($lager_string=='') {
-          $beschreibung .="\r\nLager: manuell";
+          $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
+          $storageLocations[] = $lager_max[0]['lager_platz'];
+          if($anzeige_lagerplaetze_in_lieferschein){
+              $this->LagerAuslagernText($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
+          } else {
+              $this->LagerAuslagernObjektLagerPlatz($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
+          }
+          $regal_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='".$lager_max[0]['lager_platz']."' LIMIT 1");
+          $lager_string .= $regal_name."(".(float)$menge_auslagern.") ";
+          if(!$nurrestmenge){
+              $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
+          }
+          $restmenge = round($restmenge - $menge_auslagern, 8);
+
+          $storageMovements[] = array('lager_platz' => $lager_max[0]['lager_platz'], 'artikel' => $artikel,'menge' => $menge_auslagern);
+
         }
-        else {
-          $beschreibung .="\r\nLager: $lager_string";
-        }
-*/
       }
 
       $geliefert = $menge;
@@ -3553,6 +3539,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
       $this->RunHook('erpapi_lieferschein_auslagern', 1, $lieferschein);
       $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
     }
+    return(array('storageMovements' => $storageMovements));
   }
 
   /**

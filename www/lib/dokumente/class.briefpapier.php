@@ -69,6 +69,7 @@ class Briefpapier extends SuperFPDF {
   public function __construct($app,$projekt="", $styleData = null) {
 
     if($styleData != null) $this->setStyleData($styleData);
+
     //$orientation='P';$unit='mm';$format='A4';
     //parent::PDF_EPS($orientation,$unit,$format);
     $this->projekt = $projekt;
@@ -94,6 +95,9 @@ class Briefpapier extends SuperFPDF {
       $this->ust_spalteausblende=true;
     }
 
+    if ($this->getStyleElement('ohne_steuer')) {
+      $this->ust_spalteausblende=true;
+    }
 
     $hintergrund = $this->getStyleElement('hintergrund');
 
@@ -2023,7 +2027,6 @@ class Briefpapier extends SuperFPDF {
     //$this->SetFont($this->GetFont(),'',9);
     //if(isset($this->recipient['country'])) $this->Cell_typed(80,5,$this->recipient['country'],0,1);
 
-
     //FREITEXT1
     $freitext1aktiv = $this->getStyleElement('freitext1aktiv');
     if($freitext1aktiv){
@@ -2297,6 +2300,7 @@ class Briefpapier extends SuperFPDF {
 
     $this->SetFont($this->GetFont(),'B',$betreffszeile);
     $this->SetY($this->GetY()+$this->abstand_betreffzeileoben);
+
     //$this->Cell_typed(85,6,$this->doctypeOrig);
     $this->MultiCell(210-83+$this->abstand_boxrechtsoben_lr-$this->getStyleElement("abstand_seitenrandlinks")-5,6,html_entity_decode($this->doctypeOrig,ENT_QUOTES),0,'L');
     $this->SetY($this->GetY()-$this->abstand_betreffzeileoben);
@@ -2559,25 +2563,30 @@ class Briefpapier extends SuperFPDF {
     $inventurohnepreis = null;
     if(!in_array($this->table ? $this->table : $this->doctype, ['rechnung','auftrag','angebot','bestellung'])) {
 
-	$from =  $this->table ? $this->table : $this->doctype;
+	    $from =  $this->table ? $this->table : $this->doctype;
 
-	if ($this->app->DB->Select("SHOW COLUMNS FROM `$from` LIKE 'noprice'")) {
+	    if ($this->app->DB->Select("SHOW COLUMNS FROM `$from` LIKE 'noprice'")) {
 
-	      $inventurohnepreis = $this->app->DB->Select(
-	        sprintf(
-	          'SELECT noprice 
-	          FROM `%s`
-	          WHERE id = %d 
-	          LIMIT 1',
-		$from,
-		$this->id
-	        )
-	      );
-	}
-	else {
-		$inventurohnepreis = false;
-	}
+	          $inventurohnepreis = $this->app->DB->Select(
+	            sprintf(
+	              'SELECT noprice 
+	              FROM `%s`
+	              WHERE id = %d 
+	              LIMIT 1',
+		    $from,
+		    $this->id
+	            )
+	          );
+	    }
+	    else {
+		    $inventurohnepreis = false;
+        }
     }
+
+    if ($this->getStyleElement("preise_ausblenden")) {
+        $inventurohnepreis = true;
+    }
+
     if($inventurohnepreis){
       $descWidth += 40;
     }
@@ -2731,7 +2740,13 @@ class Briefpapier extends SuperFPDF {
       $this->SetTextColor(0,0,0);
       for ($l=$pos; $l <= $pos+$jitposfix ; $l++) {
         //Arbeitet die Zwischenpositionen durch falls der vorherige Artikel ein Stücklistenartikel war bei dem Teile ausgeblendet wurden
-        $iszwichenpos = $this->DrawZwischenpositionen($l+$jitposfixbase);
+
+        if ($has_steuer) {
+            $iszwichenpos = $this->DrawZwischenpositionen($l+$jitposfixbase);
+        } else {
+            $iszwichenpos = $this->DrawZwischenpositionen($l+$jitposfixbase,'','');
+        }
+
       }
       $jitposfixbase += $jitposfix;
       if($item['keineeinzelartikelanzeigen'] == 1){
