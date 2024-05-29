@@ -5947,13 +5947,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           if($kommissionierverfahren==='lieferschein' && $lieferschein > 0)
           {
             //FALL 1 Lieferschein mit Lagerplatz
+
             if($this->kommissionierung){
-              $this->app->DB->Update(
-                sprintf(
-                  "UPDATE kommissionierung SET lieferschein = %d WHERE id = %d LIMIT 1",
-                  $id,
-                  $this->kommissionierung
-                )
+               $this->app->DB->Update(
+                 sprintf(
+                  "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d WHERE id = %d LIMIT 1",
+                   $lieferschein,
+                   $id,
+                   $this->kommissionierung
+                 )
               );
             }
             
