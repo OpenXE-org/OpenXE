@@ -48,6 +48,7 @@
     <option value="">{|bitte w&auml;hlen|} ...</option>
     <option value="versandstarten">Auto-Versand</option>
     <option value="versandstartenmit">Auto-Versand (mit Kommissionierbez.)</option>
+    <option value="vorkommissionieren">Vorkommissionieren</option>
     <option value="drucken">drucken</option>
   </select>
   <span id="druckerauswahl" style="display: none;">{|Drucker|}: <select name="seldruckerversand" id="seldruckerversand">[SELDRUCKERVERSAND]</select></span><input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />

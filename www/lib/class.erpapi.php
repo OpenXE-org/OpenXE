@@ -3028,7 +3028,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
   // @refactor LagerBeleg Modul
   // Returns Array:
   // storageMovements => array('lager_platz', 'artikel', 'menge');
-  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $standardlager = 0, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0)
+  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $standardlager = 0, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false)
   {
     if($lieferschein <= 0) {
       return;
@@ -3468,77 +3468,87 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             break;
           }
 
-          $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
-          $storageLocations[] = $lager_max[0]['lager_platz'];
-          if($anzeige_lagerplaetze_in_lieferschein){
-              $this->LagerAuslagernText($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
-          } else {
-              $this->LagerAuslagernObjektLagerPlatz($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
-          }
-          $regal_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='".$lager_max[0]['lager_platz']."' LIMIT 1");
-          $lager_string .= $regal_name."(".(float)$menge_auslagern.") ";
-          if(!$nurrestmenge){
-              $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
-          }
-          $restmenge = round($restmenge - $menge_auslagern, 8);
-
           $storageMovements[] = array('lager_platz' => $lager_max[0]['lager_platz'], 'artikel' => $artikel,'menge' => $menge_auslagern);
 
-        }
-      }
 
-      $geliefert = $menge;
-      if($nurrestmenge && $belegtyp=='produktion') {
-        $geliefert = $menge + $artikelarr[$i]['geliefert_menge'];
-      }
-      $artikelhatseriennummer = $this->app->DB->Select("SELECT seriennummern FROM artikel WHERE id='".$artikel."' LIMIT 1");
-      if($belegtyp == 'produktion')
-      {
-        $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert_menge='$geliefert', geliefert = 1 WHERE id='$subid' LIMIT 1");
-      }else{
-
-        if($belegtyp=="lieferschein")
-        {
-          $auftragposid=$this->app->DB->Select("SELECT auftrag_position_id FROM lieferschein_position WHERE id='$subid'");
-          if($auftragposid>0)
-          {
-            $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$geliefert' WHERE id='$auftragposid' LIMIT 1");
+          if (!$simulieren) {
+              $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
+              $storageLocations[] = $lager_max[0]['lager_platz'];
+              if($anzeige_lagerplaetze_in_lieferschein){
+                  $this->LagerAuslagernText($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
+              } else {
+                  $this->LagerAuslagernObjektLagerPlatz($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
+              }
+              $regal_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='".$lager_max[0]['lager_platz']."' LIMIT 1");
+              $lager_string .= $regal_name."(".(float)$menge_auslagern.") ";
+              if(!$nurrestmenge){
+                  $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
+              }
           }
-        }
-
-        if($seriennummernerfassen=='1' && ($artikelhatseriennummer=='vomprodukteinlagern' || $artikelhatseriennummer=='vomprodukt' || $artikelhatseriennummer=='eigene'))
-        {
-          // wenn Seriennummer erfasst werden soll
-          //if($anzeige_lagerplaetze_in_lieferschein)
-          //{
-            //$this->app->DB->Update("UPDATE ".$belegtyp."_position SET beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
-            //neue datenstruktur
-          //}
-          if($forceseriennummerngeliefertsetzen)$this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
-        } else {
-          //wenn nicht
-          //if($anzeige_lagerplaetze_in_lieferschein)
-          //  $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert',beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
-          //else
-          $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
+          $restmenge = round($restmenge - $menge_auslagern, 8);
         }
       }
-    }
-    if(!empty($storageLocations)) {
-      $this->addStorageCountry($belegtyp, $lieferschein, $storageLocations);
-    }
-    $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt = '$belegtyp' AND parameter = '$lieferschein'");
 
-    $auftragid = $this->app->DB->Select("SELECT auftragid FROM $belegtyp WHERE id='$lieferschein'");
-    if($auftragid){
-      $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt = 'auftrag' AND parameter = '$auftragid'");
+      if (!$simulieren) {
+
+          $geliefert = $menge;
+          if($nurrestmenge && $belegtyp=='produktion') {
+            $geliefert = $menge + $artikelarr[$i]['geliefert_menge'];
+          }
+          $artikelhatseriennummer = $this->app->DB->Select("SELECT seriennummern FROM artikel WHERE id='".$artikel."' LIMIT 1");
+          if($belegtyp == 'produktion')
+          {
+            $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert_menge='$geliefert', geliefert = 1 WHERE id='$subid' LIMIT 1");
+          }else{
+
+            if($belegtyp=="lieferschein")
+            {
+              $auftragposid=$this->app->DB->Select("SELECT auftrag_position_id FROM lieferschein_position WHERE id='$subid'");
+              if($auftragposid>0)
+              {
+                $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$geliefert' WHERE id='$auftragposid' LIMIT 1");
+              }
+            }
+
+            if($seriennummernerfassen=='1' && ($artikelhatseriennummer=='vomprodukteinlagern' || $artikelhatseriennummer=='vomprodukt' || $artikelhatseriennummer=='eigene'))
+            {
+              // wenn Seriennummer erfasst werden soll
+              //if($anzeige_lagerplaetze_in_lieferschein)
+              //{
+                //$this->app->DB->Update("UPDATE ".$belegtyp."_position SET beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
+                //neue datenstruktur
+              //}
+              if($forceseriennummerngeliefertsetzen)$this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
+            } else {
+              //wenn nicht
+              //if($anzeige_lagerplaetze_in_lieferschein)
+              //  $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert',beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
+              //else
+              $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
+            }
+          }
+       } // simulieren
+    } // for loop
+
+    if (!$simulieren) {
+
+        if(!empty($storageLocations)) {
+          $this->addStorageCountry($belegtyp, $lieferschein, $storageLocations);
+        }
+        $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt = '$belegtyp' AND parameter = '$lieferschein'");
+
+        if($belegtyp == '' || $belegtyp === 'lieferschein')
+        {
+            $auftragid = $this->app->DB->Select("SELECT auftragid FROM $belegtyp WHERE id='$lieferschein'");
+            if($auftragid){
+              $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt = 'auftrag' AND parameter = '$auftragid'");
+            }
+
+          $this->RunHook('erpapi_lieferschein_auslagern', 1, $lieferschein);
+          $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
+        }
     }
 
-    if($belegtyp == '' || $belegtyp === 'lieferschein')
-    {
-      $this->RunHook('erpapi_lieferschein_auslagern', 1, $lieferschein);
-      $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
-    }
     return(array('storageMovements' => $storageMovements));
   }
 

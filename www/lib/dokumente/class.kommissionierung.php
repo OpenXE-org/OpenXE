@@ -108,6 +108,7 @@ class KommissionierungPDF extends BriefpapierCustom {
             k.bezeichnung,
             k.bearbeiter,
             DATE_FORMAT(k.zeitstempel,'%Y%m%d') as datum,
+            k.ausgelagert,
             l.belegnr as lieferscheinnummer,
             ab.belegnr as auftragnummer,
             DATE_FORMAT(ab.tatsaechlicheslieferdatum,'%d.%m.%Y') as tatsaechlicheslieferdatum,
@@ -121,11 +122,11 @@ class KommissionierungPDF extends BriefpapierCustom {
         LEFT JOIN
             auftrag ab
         ON
-            l.auftragid = ab.id
+            l.auftragid = ab.id OR k.auftrag = ab.id
         LEFT JOIN 
             adresse a 
         ON 
-            a.id = l.adresse
+            a.id = k.adresse
         WHERE k.id='$id'
     ");
 
@@ -170,7 +171,7 @@ class KommissionierungPDF extends BriefpapierCustom {
                 ksp.menge as amount,
                 a.herstellernummer as `name`,
                 '' as steuersatz_ermaessigt,
-                DATE_FORMAT(zeitstempel,'%%Y%%m%%d') as datum
+                DATE_FORMAT(zeitstempel,'%%Y%%m%%d') as datum               
             FROM 
                 kommissionierung ks
             INNER JOIN kommissionierung_position ksp ON ks.id = ksp.kommissionierung
@@ -201,6 +202,11 @@ class KommissionierungPDF extends BriefpapierCustom {
     }       
     if (!empty($data['tatsaechlicheslieferdatum'])) {
         $corrDetails['Liefertermin'] = $data['tatsaechlicheslieferdatum'];
+    }
+    if (!empty($data['ausgelagert'])) {
+        $corrDetails['Ausgelagert'] = "ja";
+    } else {
+        $corrDetails['Ausgelagert'] = "nein";
     }
     $this->setCorrDetails($corrDetails, true);
   }
