@@ -7144,7 +7144,8 @@ title: 'Abschicken',
     if($this->ModulVorhanden('multiorderpicking')) {
       $navarray['menu']['admin'][$menu]['sec'][]  = array('Multiorder-Picking','multiorderpicking','list');
     }
-    $navarray['menu']['admin'][$menu]['sec'][]   = array('Reservierungen','lager','reservierungen');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Reservierung','lager','reservierungen');
+    $navarray['menu']['admin'][$menu]['sec'][]   = array('Kommissionierung','kommissionierung','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Inventur','inventur','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Versandzentrum','versanderzeugen','offene');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Produktionszentrum','produktionszentrum','list');
