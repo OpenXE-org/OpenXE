@@ -4031,7 +4031,7 @@ class Lager extends GenLager {
 
         $allowed = '/[^a-z0-9A-Z\-\_\.]/i';
         $kurzbezeichnung = preg_replace($allowed,'',$kurzbezeichnung);
-        $kurzbezeichnung =  substr($kurzbezeichnung,0,15);
+        $kurzbezeichnung =  substr($kurzbezeichnung,0,50);
 
         $adresse=$this->app->Secure->GetPOST('adresse');
         $adresse = trim($adresse);      
@@ -4136,7 +4136,7 @@ class Lager extends GenLager {
 
         $allowed = '/[^a-z0-9A-Z\-\_\.]/i';
         $kurzbezeichnung = preg_replace($allowed,'',$kurzbezeichnung);
-        $kurzbezeichnung =  substr($kurzbezeichnung,0,15);
+        $kurzbezeichnung =  substr($kurzbezeichnung,0,50);
   
         $adresse=$this->app->Secure->GetPOST('adresse');
         $adresse = trim($adresse);      
