@@ -5795,8 +5795,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                   "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d, adresse = %d WHERE id = %d LIMIT 1",
                    $lieferschein,
                    $id,
-                   $kommissionierung,
-                   $adresse
+                   $adresse,
+                   $kommissionierung
                  )
               );
             }

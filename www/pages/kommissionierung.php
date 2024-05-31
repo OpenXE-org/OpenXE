@@ -31,14 +31,14 @@ class Kommissionierung {
         switch ($name) {
             case "kommissionierung_list":
                 $allowed['kommissionierung_list'] = array('list');
-                $heading = array('','','Datum', 'Adresse', 'Auftrag', 'Lieferschein','Bearbeiter', 'Men&uuml;');
+                $heading = array('','','Nummer','Datum', 'Adresse', 'Auftrag', 'Lieferschein','Bearbeiter', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('k.id','k.id','k.zeitstempel', 'ad.name', 'a.belegnr', 'l.belegnr','k.bearbeiter',);
-                $searchsql = array('k.zeitstempel', 'k.bearbeiter', 'a.belegnr', 'ad.name', 'k.kommentar', 'l.belegnr');
+                $findcols = array('k.id','k.id','k.id','k.zeitstempel', 'ad.name', 'a.belegnr', 'l.belegnr','k.bearbeiter','k.id');
+                $searchsql = array('k.id','k.zeitstempel', 'k.bearbeiter', 'a.belegnr', 'ad.name', 'k.kommentar', 'l.belegnr');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -56,8 +56,9 @@ class Kommissionierung {
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=kommissionierung&action=print&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS k.id,
-                            $dropnbox,".
-                            $app->erp->FormatDate('k.zeitstempel').",
+                            $dropnbox,
+                            k.id as nummer,
+                            ".$app->erp->FormatDate('k.zeitstempel').",
                             ad.name,
                             a.belegnr as auftragnr,
                             l.belegnr as lieferscheinnr,
