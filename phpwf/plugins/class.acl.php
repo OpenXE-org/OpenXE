@@ -1304,7 +1304,7 @@ Allow from all
         }
     }
 
-    if (!isset($_SERVER['OPENXE_HTACCESS'])) {
+    if (!isset($_SERVER['HTTP_OPENXE_HTACCESS'])) {
         return("htaccess nicht aktiv.");
     }
 
