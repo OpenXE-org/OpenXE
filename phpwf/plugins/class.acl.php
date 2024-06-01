@@ -1228,7 +1228,7 @@ class Acl
   $nominal = array('
 # Generated file from class.acl.php
 # For detection of htaccess functionality
-SetEnv OPENXE_HTACCESS on
+SetEnv HTTP_OPENXE_HTACCESS on
 # Disable directory browsing 
 Options -Indexes
 # Set default page to index.php
