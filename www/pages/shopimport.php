@@ -1703,9 +1703,9 @@ class Shopimport
       $adresseprojekt = '';
     }
 
-    $checkid = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE `name`='".$this->app->erp->ReadyForPDF($warenkorb['name'])."' AND abteilung='".$this->app->erp->ReadyForPDF($warenkorb['abteilung'])."'
-              AND strasse='".$this->app->erp->ReadyForPDF($warenkorb['strasse'])."' AND plz='".$this->app->erp->ReadyForPDF($warenkorb['plz'])."' AND ort='".$this->app->erp->ReadyForPDF($warenkorb['ort'])."' AND kundennummer <> '' AND geloescht!=1 $adresseprojekt 
-              ORDER BY email='".$this->app->erp->ReadyForPDF($warenkorb['email'])."' DESC
+    $checkid = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE `name`='".$this->app->DB->real_escape_string($warenkorb['name'])."' AND abteilung='".$this->app->DB->real_escape_string($warenkorb['abteilung'])."'
+              AND strasse='".$this->app->DB->real_escape_string($warenkorb['strasse'])."' AND plz='".$this->app->DB->real_escape_string($warenkorb['plz'])."' AND ort='".$this->app->DB->real_escape_string($warenkorb['ort'])."' AND kundennummer <> '' AND geloescht!=1 $adresseprojekt 
+              ORDER BY email='".$this->app->DB->real_escape_string($warenkorb['email'])."' DESC
               LIMIT 1");
 
 
@@ -1719,7 +1719,7 @@ class Shopimport
         $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name LIKE '" . $warenkorb['name'] . "' AND ort LIKE '" . $warenkorb['ort'] . "'  AND geloescht!=1 $adresseprojekt  AND kundennummer <> '' LIMIT 1");
       }
     }else{
-      $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='".$this->app->erp->ReadyForPDF($warenkorb['name'])."' AND strasse='".$this->app->erp->ReadyForPDF($warenkorb['strasse'])."' AND plz='".$this->app->erp->ReadyForPDF($warenkorb['plz'])."' AND ort='".$this->app->erp->ReadyForPDF($warenkorb['ort'])."'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
+      $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='".$this->app->DB->real_escape_string($warenkorb['name'])."' AND strasse='".$this->app->DB->real_escape_string($warenkorb['strasse'])."' AND plz='".$this->app->DB->real_escape_string($warenkorb['plz'])."' AND ort='".$this->app->DB->real_escape_string($warenkorb['ort'])."'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
     }
 
     if($warenkorb['kundennummer']!='' && !empty($validkundennummer) && $validkundennummer==$warenkorb['kundennummer'])
@@ -1871,9 +1871,9 @@ class Shopimport
           $adresseprojekt = '';
         }
 
-        $checkid = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE `name`='".$this->app->erp->ReadyForPDF($warenkorb['name'])."' AND abteilung='".$this->app->erp->ReadyForPDF($warenkorb['abteilung'])."'
-              AND strasse='".$this->app->erp->ReadyForPDF($warenkorb['strasse'])."' AND plz='".$this->app->erp->ReadyForPDF($warenkorb['plz'])."' AND ort='".$this->app->erp->ReadyForPDF($warenkorb['ort'])."' AND kundennummer <> '' AND geloescht!=1 $adresseprojekt 
-              ORDER BY email='".$this->app->erp->ReadyForPDF($warenkorb['email'])."' DESC
+        $checkid = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE `name`='".$this->app->DB->real_escape_string($warenkorb['name'])."' AND abteilung='".$this->app->DB->real_escape_string($warenkorb['abteilung'])."'
+              AND strasse='".$this->app->DB->real_escape_string($warenkorb['strasse'])."' AND plz='".$this->app->DB->real_escape_string($warenkorb['plz'])."' AND ort='".$this->app->DB->real_escape_string($warenkorb['ort'])."' AND kundennummer <> '' AND geloescht!=1 $adresseprojekt 
+              ORDER BY email='".$this->app->DB->real_escape_string($warenkorb['email'])."' DESC
               LIMIT 1");
 
 
@@ -1887,7 +1887,7 @@ class Shopimport
             $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name LIKE '" . $warenkorb['name'] . "' AND ort LIKE '" . $warenkorb['ort'] . "'  AND geloescht!=1 $adresseprojekt  AND kundennummer <> '' LIMIT 1");
           }
         }else{
-          $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='".$this->app->erp->ReadyForPDF($warenkorb['name'])."' AND strasse='".$this->app->erp->ReadyForPDF($warenkorb['strasse'])."' AND plz='".$this->app->erp->ReadyForPDF($warenkorb['plz'])."' AND ort='".$this->app->erp->ReadyForPDF($warenkorb['ort'])."'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
+          $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='".$this->app->DB->real_escape_string($warenkorb['name'])."' AND strasse='".$this->app->DB->real_escape_string($warenkorb['strasse'])."' AND plz='".$this->app->DB->real_escape_string($warenkorb['plz'])."' AND ort='".$this->app->DB->real_escape_string($warenkorb['ort'])."'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
         }
 
         if($warenkorb['kundennummer']!='' && !empty($validkundennummer) && $validkundennummer==$warenkorb['kundennummer'])
