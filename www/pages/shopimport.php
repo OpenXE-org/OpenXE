@@ -1643,7 +1643,7 @@ class Shopimport
       $this->drawShopOrderTable($deletedRows);
     } else
     {
-      return $count+(isset($gesamtanzahl)?$gesamtanzahl:0);
+      return $count+(is_numeric($gesamtanzahl)?$gesamtanzahl:0);
     }
   }
 
