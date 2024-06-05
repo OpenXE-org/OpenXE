@@ -152,7 +152,6 @@ class WidgetProjekt extends WidgetGenProjekt
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
 
-
     $drucker = $this->app->erp->GetDrucker();
     $field = new HTMLSelect("kasse_drucker",0);
     $field->AddOptionsAsocSimpleArray($drucker);
