@@ -5787,6 +5787,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $kommissionierung = $this->app->erp->GetNextKommissionierung();
  
                 $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
+                $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_drucker');          
                        
                 $auslagernresult =            
                 $this->app->erp->LieferscheinAuslagern(
@@ -5799,6 +5800,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                   $nurRestmenge
                 );
 
+                $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
+                $settings = $this->app->DB->SelectRow($sql);               
+
                 $this->Kommissionieren(
                     kommissionierung : $kommissionierung,
                     auftrag: $id,
@@ -5806,7 +5810,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     ausgelagert: true,
                     lagerplatzliste: $auslagernresult,
                     mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
-                    druckercode: $druckercode);
+                    druckercode: $druckercode,
+                    mengeetiketten: $settings['etikettautodruck']?1:0,
+                    etikett: $settings['etikettautodruck']?$settings['etikett']:0,
+                    etikettendrucker: $etikettendrucker);
             }
                
             // Prozesse ohne Versandzentrum
@@ -5939,9 +5946,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       // Check for override in adresse      
       $sql = "SELECT rechnung_anzahlpapier, rechnung_anzahlpapier_abweichend FROM adresse WHERE id =".$adresse; 
-      $rechnung_anzahlpapier = $this->app->DB->SelectArr($sql);
-      if ($rechnung_anzahlpapier[0]['rechnung_anzahlpapier_abweichend']) {          
-          $autodruckrechnungstufe1menge = $rechnung_anzahlpapier[0]['rechnung_anzahlpapier'];
+      $adresse_settings = $this->app->DB->SelectArr($sql);
+      if ($adresse_settings[0]['rechnung_anzahlpapier_abweichend']) {          
+          $autodruckrechnungstufe1menge = $adresse_settings[0]['rechnung_anzahlpapier'];
       }
 
       if($exportdruckrechnungstufe1)
@@ -6506,6 +6513,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               }
             }
           break;
+          case 'vorkommissionieren_ohne_etiketten':
+              $vorkommissionieren_ohne_etiketten = true;
+            // break ommitted
           case 'vorkommissionieren':
                 
                 if (!empty($auftraegemarkiert)) {
@@ -6554,7 +6564,21 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             );
                             
                         $druckercode = $this->app->erp->Firmendaten('standardversanddrucker');
-                        $projektarr = $this->app->DB->SelectRow("SELECT projekt.* FROM projekt INNER JOIN auftrag ON projekt.id = auftrag.projekt WHERE auftrag.id = '".$v."'");
+
+                        $settings = $this->app->DB->SelectRow("
+                            SELECT 
+                                projekt.autodruckkommissionierscheinstufe1,
+                                projekt.autodruckkommissionierscheinstufe1menge,
+                                adresse.etikett,
+                                adresse.etikettautodruck,
+                                projekt.id as projekt
+                            FROM projekt 
+                            INNER JOIN auftrag ON projekt.id = auftrag.projekt
+                            INNER JOIN adresse ON adresse.id = auftrag.adresse
+                            WHERE auftrag.id = '".$v."'"
+                        );
+
+                        $etikettendrucker = $this->app->erp->Projektdaten($settings['projekt'],'etiketten_drucker');          
 
                         $this->Kommissionieren(
                             kommissionierung : $kid,
@@ -6562,11 +6586,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             lieferschein: 0,
                             ausgelagert: false,
                             lagerplatzliste: $auslagernresult,
-                            mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
-                            druckercode: $druckercode);
-                     
-                        $this->app->erp->AuftragProtokoll($v,'Auftrag vorkommissioniert, Kommissionierung '.$kid);
-                       
+                            mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
+                            druckercode: $druckercode,
+                            mengeetiketten: $settings['etikettautodruck']?1:0,
+                            etikett: $vorkommissionieren_ohne_etiketten?0:($settings['etikettautodruck']?$settings['etikett']:0),
+                            etikettendrucker: $etikettendrucker);                       
                     }
                 }
             break;
@@ -7294,7 +7318,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
      $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
     
-    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $mengedruck, int $druckercode) {
+    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $mengedruck, $druckercode, int $mengeetiketten, $etikett, $etikettendrucker) {
 
         $sql = sprintf(
             "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d, adresse = IF (%d != 0,(SELECT adresse FROM lieferschein WHERE id = %d LIMIT 1),(SELECT adresse FROM auftrag WHERE id = %d LIMIT 1)), ausgelagert = %d WHERE id = %d LIMIT 1",
@@ -7336,5 +7360,23 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             unlink($tmpfile);  
             $this->app->erp->BriefpapierHintergrundDisable($druckercode); // Restore default background from printersettings
         }
+
+        // Etiketten
+        if ($mengeetiketten > 0) {
+            foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {            
+                $this->app->erp->EtikettenDrucker(
+                    kennung: $etikett,
+                    anzahl: $mengeetiketten*$storageMovement['menge'],
+                    tabelle: 'artikel',
+                    id: $storageMovement['artikel'],
+                    variables: null,
+                    druckercode: $etikettendrucker
+                );                    
+            }
+
+            //function EtikettenDrucker($kennung,$anzahl,$tabelle,$id,$variables="",$xml="",$druckercode="",$filenameprefix="",$xmlaspdf=false,$adresse=0,$verwendenals="")
+        }
+
+
     }
 }
