@@ -642,11 +642,13 @@ class Versandpakete {
                 // Write to database                
                 // Add checks here
 
-                $sql = "SELECT status FROM versandpakete WHERE id = ".$id;
-                $input['status'] = $this->app->DB->SelectArr($sql)[0]['status']; // Status is not changeable
+                $sql = "SELECT * FROM versandpakete WHERE id = ".$id;
+                $paket_db = $this->app->DB->SelectRow($sql);
+                $input['status'] = $paket_db['status']; // Status is not changeable
                 if ($input['status'] != 'neu') { 
                     $input = Array('bemerkung' => $input['bemerkung']);
                 } 
+
                 if (!empty($paket_db['tracking'])) { // Tracking is not changeable
                     unset($input['tracking']);
                     unset($input['tracking_link']);
