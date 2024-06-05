@@ -7333,6 +7333,10 @@ class Artikel extends GenArtikel {
           $this->app->erp->MenuEintrag('index.php?module=artikel&action=eigenschaften&id='.$id, 'Eigenschaften');
         }
 
+        $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=list&artikel=$id",'&Uuml;bersetzung');
+
+        $this->app->erp->MenuEintrag("index.php?module=artikel&action=baum&id=$id",'Artikelbaum');
+
         if($rabatt!='1'){
           $this->app->erp->MenuEintrag("index.php?module=artikel&action=einkauf&id=$id",'Einkauf');
           if($this->app->erp->RechteVorhanden('einkaufabgleich','einkaufapi'))
@@ -7393,7 +7397,7 @@ class Artikel extends GenArtikel {
         }
 
         $this->app->erp->MenuEintrag('index.php?module=artikel&action=list','Zur&uuml;ck zur &Uuml;bersicht');
-        $this->app->erp->InsertMenuAfter("index.php?module=artikel&action=baum&id=$id",'Artikelbaum','artikel','eigenschaften');
+
       }
     }
     $this->app->erp->MenuEintrag('index.php?module=artikel&action=create','Neuen Artikel anlegen');

@@ -1177,11 +1177,7 @@ class Remote
     }
     $shopexportarr = $this->app->DB->SelectRow("SELECT * FROM shopexport WHERE id='$id' LIMIT 1");
     $artikelexport = $shopexportarr['artikelexport'];
-    $translationpossible = false;
-    if($this->app->erp->ModulVorhanden('artikel_texte'))
-    {
-      $translationpossible = true;
-    }
+
     $loadElements = [
       'foreign_numbers' => true,
       'article_descriptions' => true,
@@ -1811,7 +1807,7 @@ class Remote
         foreach ($db->yieldAll($query) as $matrixdaten) {
           $data[$i]['matrix_varianten']['gruppen'][$matrixdaten['gruppe']][$matrixdaten['wert']] = true;
 
-          if ($translationpossible && !empty($loadElements['translations'])) {
+          if (!empty($loadElements['translations'])) {
             if (empty($gruppenuebersetzung[$matrixdaten['gruppe']])) {
               $gruppennamen = $this->app->DB->SelectArr("SELECT 
                                         IF(name_external_from<>'',name_external_from,name_from) AS name_from, 
@@ -2092,17 +2088,16 @@ class Remote
                 $variantennettopreis = $this->app->erp->GetVerkaufspreis($v['id'], 1, 0);
               }
             }
-            if(!empty($loadElements['translations']) && $this->app->erp->ModulVorhanden('artikel_texte')){
-              $sprachen = ['de','en'];
-              foreach ($sprachen as $sprache){
+            $sprachen = ['de','en'];
+            foreach ($sprachen as $sprache){
                 $query = sprintf("SELECT * FROM artikel_texte WHERE shop=%d AND sprache='%s' AND artikel=%d AND aktiv=1 LIMIT 1",
-                  $id,strtoupper($sprache),$v['id']);
+                $id,strtoupper($sprache),$v['id']);
                 $ersetzeStandardbeschreibung = $this->app->DB->SelectRow($query);
-                if(!empty($ersetzeStandardbeschreibung)){
-                  $v['name_'.$sprache] = $ersetzeStandardbeschreibung['name'];
+                if(!empty($ersetzeStandardbeschreibung)) {
+                    $v['name_'.$sprache] = $ersetzeStandardbeschreibung['name'];
                 }
-              }
             }
+
             $this->app->erp->RunHook('remote_send_article_list_pseudostorage', 3, $id, $v['id'], $v['pseudolager']);
             if(is_numeric($v['pseudolager']) && $v['pseudolager'] < 0) {
               $v['pseudolager'] = 0;

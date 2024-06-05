@@ -1921,8 +1921,17 @@ class YUI {
           }
         }
 
-
         $this->app->erp->RunHook('AARLGPositionenSprache', 6, $module, $id, $artikel_id, $sprache, $bezeichnung, $beschreibung);
+
+        // OpenXE artikel_texte
+        $language = $this->app->erp->GetSpracheBeleg($module,$id);
+        $sql = "SELECT * FROM artikel_texte WHERE artikel = '".$artikel_id."' AND sprache = '".$language."'";
+        $uebersetzung = $this->app->DB->SelectRow($sql);        
+        if ($uebersetzung) {
+            $bezeichnung = $uebersetzung['name'];
+            $beschreibung = $uebersetzung['beschreibung'];
+        }
+
         $bezeichnung = $this->app->DB->real_escape_string($bezeichnung);
         $beschreibung = $this->app->DB->real_escape_string($beschreibung);
 
