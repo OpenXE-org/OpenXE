@@ -25,6 +25,7 @@
                                         </td>
                                         <td>
                                             <input type="text" value="[NAME_DE]" size="20" disabled>
+                                            <input type="text" value="[ARTIKEL]" name="artikel" size="20" hidden>
                                         </td>
                                     </tr>
                                     <tr>
@@ -35,6 +36,14 @@
                                             <select name="sprache">[SPRACHE]</select>
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td>
+                                            {|Aktiv|}:
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" name="aktiv" id="aktiv" value="1" [AKTIV] size="20">
+                                        </td>
+                                    </tr>                                    
                                     <tr>
                                         <td>
                                             {|Name|}:
@@ -96,7 +105,7 @@
                                             {|Katalogartikel|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="katalogartikel" id="katalogartikel" value="[KATALOGARTIKEL]"></input>
+                                            <input type="checkbox" name="katalogartikel" id="katalogartikel" value="1" [KATALOGARTIKEL] size="20">
                                         </td>
                                     </tr>
                                     <tr>
@@ -123,14 +132,6 @@
                                             <input type="text" name="shop" id="shop" value="[SHOP]" size="20">
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            {|Aktiv|}:
-                                        </td>
-                                        <td>
-                                            <input type="checkbox" name="aktiv" id="aktiv" value="1" [AKTIV] size="20">
-                                        </td>
-                                    </tr>                                    
                                 </table>
                             </fieldset>            
                         </div>

@@ -30,7 +30,7 @@ class Artikeltexte {
         switch ($name) {
             case "artikel_texte_list":
                 $allowed['artikel_texte_list'] = array('list');
-                $heading = array('','','Nummer','Artikel','Sprache', 'Name', 'Kurztext', 'Beschreibung', 'Beschreibung_online', 'Meta title', 'Meta description', 'Meta keywords', 'Katalogartikel', 'Katalogbezeichnung', 'Katalogtext', 'Shop', 'Aktiv', 'Men&uuml;');
+                $heading = array('','','Nummer','Artikel','Sprache', 'Aktiv', 'Name', 'Kurztext', 'Beschreibung', 'Beschreibung online', 'Meta title', 'Meta description', 'Meta keywords', 'Katalogartikel', 'Katalogbezeichnung', 'Katalogtext', 'Shop', 'Men&uuml;');
                 $width = array('1%','1%','1%'); // Fill out manually later
 
                 $artikel = $app->User->GetParameter('artikeltexte_artikel');
@@ -38,8 +38,8 @@ class Artikeltexte {
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('a.id','a.id','art.nummer', 'art.name_de', 'a.sprache', 'a.name', 'a.kurztext', 'a.beschreibung', 'a.beschreibung_online', 'a.meta_title', 'a.meta_description', 'a.meta_keywords', 'a.katalogartikel', 'a.katalog_bezeichnung', 'a.katalog_text', 'a.shop', 'a.aktiv');
-                $searchsql = array('a.artikel', 'a.sprache', 'a.name', 'a.kurztext', 'a.beschreibung', 'a.beschreibung_online', 'a.meta_title', 'a.meta_description', 'a.meta_keywords', 'a.katalogartikel', 'a.katalog_bezeichnung', 'a.katalog_text', 'a.shop', 'a.aktiv');
+                $findcols = array('a.id','a.id','art.nummer', 'art.name_de', 'a.sprache', 'a.aktiv', 'a.name', 'a.kurztext', 'a.beschreibung', 'a.beschreibung_online', 'a.meta_title', 'a.meta_description', 'a.meta_keywords', 'a.katalogartikel', 'a.katalog_bezeichnung', 'a.katalog_text', 'a.shop' );
+                $searchsql = array('a.artikel', 'a.sprache', 'a.name', 'a.kurztext', 'a.beschreibung', 'a.beschreibung_online', 'a.meta_title', 'a.meta_description', 'a.meta_keywords', 'a.katalog_bezeichnung', 'a.katalog_text');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -61,6 +61,7 @@ class Artikeltexte {
                         art.nummer,
                         art.name_de,
                         a.sprache,
+                        a.aktiv,
                         a.name,
                         a.kurztext,
                         a.beschreibung,
@@ -71,10 +72,10 @@ class Artikeltexte {
                         a.katalogartikel,
                         a.katalog_bezeichnung,
                         a.katalog_text,
-                        a.shop,
-                        a.aktiv,
+                        shopexport.bezeichnung as shop,
                         a.id FROM artikel_texte a
                         INNER JOIN artikel art ON art.id = a.artikel 
+                        LEFT JOIN shopexport ON shopexport.id = a.shop
                 ";
 
                 $where = "1";
@@ -100,13 +101,15 @@ class Artikeltexte {
     }
     
     function artikel_texte_list() {
+       
+        $artikel = $this->app->Secure->GetGET('artikel');    
+        if ($artikel) {
+            $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=create&artikel=".$artikel, "Neu anlegen");
+            $this->app->erp->MenuEintrag("index.php?module=artikel&action=edit&id=".$artikel."#tabs-2", "Zur&uuml;ck");
+        }                
+        
+        $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=list&artikel=".$artikel, "&Uuml;bersicht");   
 
-        $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=list", "&Uuml;bersicht");
-        $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=create", "Neu anlegen");
-
-        $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-
-        $artikel = $this->app->Secure->GetGET('artikel');
         $this->app->User->SetParameter('artikeltexte_artikel', $artikel);
 
         $this->app->YUI->TableSearch('TAB1', 'artikel_texte_list', "show", "", "", basename(__FILE__), __CLASS__);
@@ -115,9 +118,10 @@ class Artikeltexte {
 
     public function artikel_texte_delete() {
         $id = (int) $this->app->Secure->GetGET('id');     
+        $artikel = $this->app->DB->Select("SELECT artikel FROM `artikel_texte` WHERE `id` = '{$id}'");        
         $this->app->DB->Delete("DELETE FROM `artikel_texte` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
-        $this->artikel_texte_list();
+        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");
+        header("Location: index.php?module=artikeltexte&action=list&artikel=".$artikel."&msg=".$msg);
     } 
 
     /*
@@ -127,6 +131,7 @@ class Artikeltexte {
         
     function artikel_texte_edit() {
         $id = $this->app->Secure->GetGET('id');
+        $artikel = $this->app->Secure->GetGET('artikel');
         // Check if other users are editing this id
 /*        if($this->app->erp->DisableModul('artikel_texte',$id))
         {
@@ -136,7 +141,7 @@ class Artikeltexte {
         $this->app->Tpl->Set('ID', $id);
 
         $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=edit&id=$id", "Details");
-        $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
+               
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
@@ -144,9 +149,11 @@ class Artikeltexte {
         if (empty($id)) {
             // New item
             $id = 'NULL';
+            $input['artikel'] = $artikel;
+            $input['aktiv'] = 1;
         } 
 
-        if ($submit != '')
+        if ($submit != '' || $id == 'NULL')
         {
 
             // Write to database
@@ -181,7 +188,7 @@ class Artikeltexte {
 
             if ($id == 'NULL') {
                 $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=artikeltexte&action=list&msg=$msg");
+                header("Location: index.php?module=artikeltexte&action=list&artikel=".$artikel."&msg=".$msg);
             } else {
                 $this->app->Tpl->addMessage('success', 'Die Einstellungen wurden erfolgreich &uuml;bernommen.');
             }
@@ -198,6 +205,7 @@ class Artikeltexte {
                     $dropnbox,
                     art.name_de,
                     a.sprache,
+                    a.aktiv,
                     a.name,
                     a.kurztext,
                     a.beschreibung,
@@ -209,8 +217,8 @@ class Artikeltexte {
                     a.katalog_bezeichnung,
                     a.katalog_text,
                     a.shop,
-                    a.aktiv,
-                    a.id
+                    a.id,
+                    a.artikel
                 FROM
                     artikel_texte a 
                 INNER JOIN artikel art ON a.artikel = art.id
@@ -228,6 +236,12 @@ class Artikeltexte {
                 return;
             }
         }
+                       
+        if ($artikel_texte_from_db['artikel']) {
+            $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=create&artikel=".$artikel_texte_from_db['artikel'], "Neu anlegen");
+            $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=list&artikel=".$artikel_texte_from_db['artikel'], "Zur&uuml;ck");
+        }                
+
              
         /*
          * Add displayed items later
@@ -238,6 +252,11 @@ class Artikeltexte {
         $this->app->YUI->AutoComplete("artikel", "artikelnummer");
 
          */
+
+        $this->app->Tpl->Set('AKTIV', $artikel_texte_from_db['aktiv']?'checked':'');
+        $this->app->Tpl->Set('KATALOGARTIKEL', $artikel_texte_from_db['katalogartikel']?'checked':'');
+
+        $this->app->YUI->AutoComplete('shop','shopnameid');
 
         $sprachenOptions = $this->app->erp->GetSprachenSelect();    
         $this->app->Tpl->Set('SPRACHE', $this->app->erp->GetSelectAsso($sprachenOptions, $artikel_texte_from_db['sprache']));
@@ -259,7 +278,7 @@ class Artikeltexte {
 	    $input['meta_title'] = $this->app->Secure->GetPOST('meta_title');
 	    $input['meta_description'] = $this->app->Secure->GetPOST('meta_description');
 	    $input['meta_keywords'] = $this->app->Secure->GetPOST('meta_keywords');
-	    $input['katalogartikel'] = $this->app->Secure->GetPOST('katalogartikel');
+	    $input['katalogartikel'] = $this->app->Secure->GetPOST('katalogartikel')?'1':'0';
 	    $input['katalog_bezeichnung'] = $this->app->Secure->GetPOST('katalog_bezeichnung');
 	    $input['katalog_text'] = $this->app->Secure->GetPOST('katalog_text');
 	    $input['shop'] = $this->app->Secure->GetPOST('shop');
