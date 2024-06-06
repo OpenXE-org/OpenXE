@@ -665,7 +665,7 @@ class Auftrag extends GenAuftrag
         $menu .= "</a>";
 
         $moreinfo = true; // Minidetail active
-        $menucol = 11; // For minidetail
+        $menucol = 13; // For minidetail
 
         break;
         case 'auftraegeoffeneautowartend':
