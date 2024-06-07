@@ -6563,7 +6563,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                               simulieren: true  
                             );
                             
-                        $druckercode = $this->app->erp->Firmendaten('standardversanddrucker');
+                        $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
+                        $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
 
                         $settings = $this->app->DB->SelectRow("
                             SELECT 
@@ -7350,12 +7351,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
         // Kommissionierschein
         if ($mengedruck > 0) {
+            $this->app->erp->BriefpapierHintergrunddisable = true; // Disable background
             $Brief = new KommissionierungPDF($this->app, styleData: array('ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
             $Brief->GetKommissionierung($kommissionierung);
             $tmpfile = $Brief->displayTMP();
-            $this->app->erp->BriefpapierHintergrunddisable = true; // Disable background
             for($drucklauf = 0; $drucklauf < $mengedruck;$drucklauf++) {        
-                $this->app->printer->Drucken($druckercode, $tmpfile);
+                $spooler_id = $this->app->printer->Drucken($druckercode, $tmpfile);
             }
             unlink($tmpfile);  
             $this->app->erp->BriefpapierHintergrundDisable($druckercode); // Restore default background from printersettings
