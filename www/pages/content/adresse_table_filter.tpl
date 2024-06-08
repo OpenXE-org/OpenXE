@@ -62,10 +62,14 @@
 							<td>{|E-Mail|}:</td>
 							<td><input type="text" name="email" value=""></td>
 						</tr>
-            <tr>
-              <td>{|Kunde hat Abo|}</td><td><input type="checkbox" name="abo" value="1" /> {|Marketingsperre|}: <input type="checkbox" name="marketingsperre" value="1" /> {|Lead|}: <input type="checkbox" name="lead" value="1" />
-              </td>
-            </tr>
+						<tr>
+							<td>{|Lieferadresse|}:</td>
+							<td><input type="text" name="lieferadresse" value=""></td>
+						</tr>
+                        <tr>
+                          <td>{|Kunde hat Abo|}</td><td><input type="checkbox" name="abo" value="1" /> {|Marketingsperre|}: <input type="checkbox" name="marketingsperre" value="1" /> {|Lead|}: <input type="checkbox" name="lead" value="1" />
+                          </td>
+                        </tr>
 					</table>
 				</div>
 
@@ -150,13 +154,15 @@
 									[ROLLEN]
 								</select>
 							</td>
-              <td>Gruppen:</td>
-              <td>
+						</tr>
+						<tr>
+                            <td>Gruppen:</td>
+                            <td>
 								<select name="gruppe">
 									<option value="">{|Alle|}</option>
 									[GRUPPEN]
 								</select>
-              </td>
+                            </td>
 						</tr>
 					</table>
 				</div>

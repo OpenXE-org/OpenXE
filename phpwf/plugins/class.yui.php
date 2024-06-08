@@ -5275,6 +5275,25 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
             )
           ";
         }
+               
+        if(isset($parameter['lieferadresse']) && !empty($parameter['lieferadresse'])) {   
+          $paramsArray[] = "
+            ( 
+              a.id IN
+              (
+                SELECT 
+                  adresse 
+                FROM 
+                  lieferadressen lfadr
+                WHERE 
+                  lfadr.name LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.strasse LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.plz LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.ort LIKE '%" . $parameter['lieferadresse'] . "%'
+              )
+            )
+          ";
+        }
 
         if(isset($parameter['abteilung']) && !empty($parameter['abteilung'])) {
           $paramsArray[] = "a.abteilung LIKE '%".$parameter['abteilung']."%' ";
