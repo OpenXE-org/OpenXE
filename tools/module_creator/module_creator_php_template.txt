@@ -110,6 +110,10 @@ class PLACEHOLDER_MODULECLASSNAME {
         $this->app->erp->MenuEintrag("index.php?module=PLACEHOLDER_MODULENAME&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
+        
+        // Convert here
+    	// $input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";        
+        
         $submit = $this->app->Secure->GetPOST('submit');
                 
         if (empty($id)) {
@@ -185,6 +189,8 @@ class PLACEHOLDER_MODULECLASSNAME {
         $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
 
         $this->app->YUI->AutoComplete("artikel", "artikelnummer");
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$PLACEHOLDER_MODULENAME_from_db['projekt'],false));
+      	$this->app->Tpl->Set('PRIO', $PLACEHOLDER_MODULENAME_from_db['prio']==1?"checked":"");
 
          */
 
