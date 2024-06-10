@@ -5778,10 +5778,21 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           if($kommissionierverfahren==='lieferschein' && $lieferschein > 0)
           {
             //FALL 1 Lieferschein mit Lagerplatz
+
+            $auslagernresult =            
+            $this->app->erp->LieferscheinAuslagern(
+              $lieferschein,
+              true,
+              (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $id)),
+              'lieferschein',
+              true,
+              false,
+              $nurRestmenge
+            );
             
             $sql = "SELECT id FROM kommissionierung k WHERE k.auftrag = '".$id."'";
             $vorkommissionierung = $this->app->DB->Select($sql);
-                        
+                       
             if (!$vorkommissionierung)
             {
                 $kommissionierung = $this->app->erp->GetNextKommissionierung();
@@ -5789,17 +5800,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
                 $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_drucker');          
                        
-                $auslagernresult =            
-                $this->app->erp->LieferscheinAuslagern(
-                  $lieferschein,
-                  true,
-                  (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $id)),
-                  'lieferschein',
-                  true,
-                  false,
-                  $nurRestmenge
-                );
-
                 $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
                 $settings = $this->app->DB->SelectRow($sql);               
 
