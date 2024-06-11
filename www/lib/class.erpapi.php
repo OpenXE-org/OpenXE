@@ -38222,7 +38222,7 @@ function Firmendaten($field,$projekt="")
         $sql_erweiterung = '';
         if(!empty($gruppenarr))
         {
-          $sql_erweiterung .= ' OR v.gruppe IN ('.implode(' ', $gruppenarr).') ';
+          $sql_erweiterung .= ' OR v.gruppe IN ('.implode(', ', $gruppenarr).') ';
         }
         if(!$guenstigste_vk) {
           $vkarr = $this->app->DB->SelectArr("SELECT * FROM verkaufspreise v WHERE v.ab_menge <= '$menge' AND
