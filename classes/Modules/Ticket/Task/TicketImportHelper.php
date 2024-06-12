@@ -850,9 +850,9 @@ class TicketImportHelper
         if (
             $this->mailAccount->isAutoresponseEnabled()
             && $this->mailAccount->getAutoresponseText() !== ''
-            && (
-//                $this->erpApi->AutoresponderBlacklist($from) !== 1 ||
-                 $this->mailAccount->isAutoresponseLimitEnabled() === false
+            && !(
+                 $this->CheckAutoresponderBlacklist($from) &&
+                 $this->mailAccount->isAutoresponseLimitEnabled()
             )
         ) {
 
@@ -867,20 +867,38 @@ class TicketImportHelper
             $betreff = str_replace('{TICKET}', $ticketNumber, $betreff);
             $betreff = str_replace('{BETREFF}', $subject, $betreff);
 
-
             if (!$this->erpApi->isHTML($text)) {
                 $text = str_replace("\r\n", '<br>', $text);
             }
+                       
+            $this->SetAutoresponderBlacklist($from);
+                                  
             $this->erpApi->MailSend(
                 $this->mailAccount->getSenderEmailAddress(),
-                '',
+                $this->mailAccount->getSenderName(),
                 $from,
-                $name_sender,
+                $from,
                 $betreff,
                 $text
-            );
+            );                                   
         }
-
         return(true);
     } 
+    
+    // Check if the given address has already been autoresponded to
+    // True if blocked
+    function CheckAutoresponderBlacklist(string $mailaddress) : bool {
+        $blocked = $this->db->Select("SELECT * FROM autoresponder_blacklist WHERE mailaddress = '".$mailaddress."' AND cachetime > DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -24 HOUR)");
+        
+        $this->logger->debug('Blacklist',['address' => $mailaddress, 'result' => $blocked]);
+        
+        return(!empty($blocked));
+    }
+    
+    function SetAutoresponderBlacklist(string $mailaddress) {
+        $this->db->Insert("INSERT INTO autoresponder_blacklist (mailaddress) VALUES ('".$mailaddress."')");
+        $this->db->Delete("DELETE FROM autoresponder_blacklist WHERE cachetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -24 HOUR)");
+    }
+    
+    
 }

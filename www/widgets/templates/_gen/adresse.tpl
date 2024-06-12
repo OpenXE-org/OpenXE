@@ -773,6 +773,27 @@ function abweichend(cmd) {
 		</div>
 		<div class="row">
 			<div class="row-height">
+				<div class="col-xs-12 col-md-12 col-md-height">
+					<div class="inside inside-full-height">
+						<fieldset>
+							<legend>{|Etiketten|}</legend>
+							<table width="100%" class="mkTableFormular">
+								<tr>
+									<td width="210">{|Autodruck|}:</td>
+									<td>[ETIKETTAUTODRUCK][MSGETIKETTAUTODRUCK]&nbsp;<i>Bei der Kommissionierung werden Etiketten gedruckt</i></td>
+								</tr>
+								<tr>
+									<td width="210">{|Etikett|}:</td>
+									<td>[ETIKETT][MSGETIKETT]</td>
+								</tr>
+							</table>
+						</fieldset>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="row-height">
 				<div class="col-xs-12 col-md-6 col-md-height">
 					<div class="inside inside-full-height">
 						<fieldset>

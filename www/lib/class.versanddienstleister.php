@@ -18,7 +18,7 @@ abstract class Versanddienstleister
   protected int $projectId;
   protected ?int $labelPrinterId;
   protected ?int $documentPrinterId;
-  protected bool $shippingMail;
+  protected int $shippingMail;
   protected ?int $businessLetterTemplateId;
   protected ?object $settings;
 
@@ -453,6 +453,17 @@ abstract class Versanddienstleister
         $countries = Array();        
         $this->app->Tpl->addMessage('error', 'L&auml;nderliste ist leer. Siehe Einstellungen -> L&auml;nderliste.', false, 'PAGE');
     }  
+    
+    switch ($this->shippingMail) {
+        case -1:
+            $address['email'] = '';
+        break;
+        case 1:
+            // User text template (not implemented)
+        break;
+        default:            
+        break;
+    }
 
     $json['form'] = $address;
     $json['countries'] = $countries;
@@ -469,6 +480,7 @@ abstract class Versanddienstleister
     $json['form']['services'] = [
         Product::SERVICE_PREMIUM => false
     ];
+
     $this->app->Tpl->Set('JSON', json_encode($json));
     $this->app->Tpl->Set('CARRIERNAME', $this->GetName());
     $this->app->Tpl->Parse($target, 'createshipment.tpl');

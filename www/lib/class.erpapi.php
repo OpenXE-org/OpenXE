@@ -4318,39 +4318,6 @@ title: 'Abschicken',
       $result[0]['lieferemail'] = $auftragArr['lieferemail'];
     }
 
-    if($type==='bestellung' || $type==='angebot' || $type==='proformarechnung' || $type==='retoure')
-    {
-      $typeArr = $this->app->DB->SelectRow("SELECT * FROM $type WHERE id = '$id' LIMIT 1");
-      $result[0]['abweichendelieferadresse']=$typeArr['abweichendelieferadresse'];
-      $result[0]['liefername']=$typeArr['liefername'];
-      $result[0]['lieferabteilung']=$typeArr['lieferabteilung'];
-      $result[0]['lieferunterabteilung']=$typeArr['lieferunterabteilung'];
-      $result[0]['lieferadresszusatz']=$typeArr['lieferadresszusatz'];
-      $result[0]['liefertitel']=$typeArr['liefertitel'];
-      $result[0]['lieferansprechpartner']=$typeArr['lieferansprechpartner'];
-      $result[0]['lieferstrasse']=$typeArr['lieferstrasse'];
-      $result[0]['lieferplz']=$typeArr['lieferplz'];
-      $result[0]['lieferland']=$typeArr['lieferland'];
-      $result[0]['lieferort'] = $typeArr['lieferort'];
-      $result[0]['liefergln'] = $typeArr['liefergln'];
-      $result[0]['lieferemail'] = $typeArr['lieferemail'];
-      if($type === 'proformarechnung')
-      {
-        $result[0]['verzollungadresse']=$typeArr['verzollungadresse'];
-        $result[0]['verzollungname']=$typeArr['verzollungname'];
-        $result[0]['verzollungabteilung']=$typeArr['verzollungabteilung'];
-        $result[0]['verzollungunterabteilung']=$typeArr['verzollungunterabteilung'];
-        $result[0]['verzollungadresszusatz']=$typeArr['verzollungadresszusatz'];
-        $result[0]['verzollungtitel']=$typeArr['verzollungtitel'];
-        $result[0]['verzollungansprechpartner']=$typeArr['verzollungansprechpartner'];
-        $result[0]['verzollungstrasse']=$typeArr['verzollungstrasse'];
-        $result[0]['verzollungplz']=$typeArr['verzollungplz'];
-        $result[0]['verzollungland']=$typeArr['verzollungland'];
-        $result[0]['verzollungort'] = $typeArr['verzollungort'];
-        $result[0]['verzollunginformationen'] = $typeArr['verzollunginformationen'];
-      }
-    }
-
     if($type=="angebot" || $type=="auftrag")
     {
       $soll = $result[0]['gesamtsumme'];
@@ -4586,7 +4553,7 @@ title: 'Abschicken',
       $text = str_replace('{NETTOGEWICHT}',number_format((float)$nettogewicht,2,",",""),$text);
       $zahlungsweise = '';
       if($type !== 'lieferschein'){
-        $zahlungsweise = $this->app->DB->Select("SELECT zahlungsweise FROM $type WHERE id='$id' LIMIT 1");
+        $zahlungsweise = $result[0]['zahlungsweise'];
       }
       $text = str_replace("{ZAHLUNGSWEISE}",$zahlungsweise,$text);
     } else {
@@ -4599,8 +4566,6 @@ title: 'Abschicken',
       foreach($result[0] as $key=>$value)
         $result[0][$key]=str_replace('NONBLOCKINGZERO','',$result[0][$key]);
     }
-
-    $result[0]['anschreiben'] = $this->app->DB->Select("SELECT anschreiben FROM `$type` WHERE id='".$id."' LIMIT 1");
 
     if($type === 'adresse') {
       $tmpAddr = $result[0];
@@ -4663,7 +4628,7 @@ title: 'Abschicken',
 
     if($type=="rechnung" || $type=="lieferschein")
     {
-      $tmpauftragid = $this->app->DB->Select("SELECT auftragid FROM $type WHERE id='$id' LIMIT 1");
+      $tmpauftragid =$result[0]['auftragid'];
       $result[0]['lieferdatum'] = $this->app->DB->Select("SELECT lieferdatum FROM auftrag WHERE id='$tmpauftragid' LIMIT 1");
       $result[0]['tatsaechlicheslieferdatum'] = $this->app->DB->Select("SELECT tatsaechlicheslieferdatum FROM auftrag WHERE id='$tmpauftragid' LIMIT 1");
     }
@@ -4872,7 +4837,7 @@ title: 'Abschicken',
 
     if($type=="rechnung" || $type=="lieferschein")
     {
-      $tmpauftragid = $this->app->DB->Select("SELECT auftragid FROM $type WHERE id='$id' LIMIT 1");
+      $tmpauftragid = $resul[0]['auftragid'];
       $auftragsadresse = $this->app->DB->SelectRow("SELECT * FROM auftrag WHERE id='$tmpauftragid' LIMIT 1");
       if(!empty($auftragsadresse)){
         $auftragsadressetext = '';

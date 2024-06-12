@@ -84,11 +84,9 @@ class PLACEHOLDER_MODULECLASSNAME {
     }    
 
     public function PLACEHOLDER_DELETE() {
-        $id = (int) $this->app->Secure->GetGET('id');
-        
+        $id = (int) $this->app->Secure->GetGET('id');     
         $this->app->DB->Delete("DELETE FROM `PLACEHOLDER_MODULENAME` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
-
+        $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
         $this->PLACEHOLDER_LIST();
     } 
 
@@ -112,6 +110,10 @@ class PLACEHOLDER_MODULECLASSNAME {
         $this->app->erp->MenuEintrag("index.php?module=PLACEHOLDER_MODULENAME&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
+        
+        // Convert here
+    	// $input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";        
+        
         $submit = $this->app->Secure->GetPOST('submit');
                 
         if (empty($id)) {
@@ -156,23 +158,26 @@ class PLACEHOLDER_MODULECLASSNAME {
                 $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
                 header("Location: index.php?module=PLACEHOLDER_MODULENAME&action=list&msg=$msg");
             } else {
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                $this->app->Tpl->addMessage('success', 'Die Einstellungen wurden erfolgreich &uuml;bernommen.');
             }
         }
 
     
         // Load values again from database
-	$dropnbox = "PLACEHOLDER_DROPNBOX";
-        $result = $this->app->DB->SelectArr("PLACEHOLDER_SQL_LIST"." WHERE id=$id");        
+        if ($id != 'NULL') {
 
-        foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
-        }
+        	$dropnbox = "PLACEHOLDER_DROPNBOX";
+            $result = $this->app->DB->SelectArr("PLACEHOLDER_SQL_LIST"." WHERE id=$id");        
 
-        if (!empty($result)) {
-            $PLACEHOLDER_MODULENAME_from_db = $result[0];
-        } else {
-            return;
+            foreach ($result[0] as $key => $value) {
+                $this->app->Tpl->Set(strtoupper($key), $value);   
+            }
+
+            if (!empty($result)) {
+                $PLACEHOLDER_MODULENAME_from_db = $result[0];
+            } else {
+                return;
+            }
         }
              
         /*
@@ -184,6 +189,8 @@ class PLACEHOLDER_MODULECLASSNAME {
         $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
 
         $this->app->YUI->AutoComplete("artikel", "artikelnummer");
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$PLACEHOLDER_MODULENAME_from_db['projekt'],false));
+      	$this->app->Tpl->Set('PRIO', $PLACEHOLDER_MODULENAME_from_db['prio']==1?"checked":"");
 
          */
 
