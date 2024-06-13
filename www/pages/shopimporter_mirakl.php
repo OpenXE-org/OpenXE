@@ -7,34 +7,6 @@
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
 
-
-/*
-
-JSON example for field_map
-
-{
-    "katalogkonfiguration": {
-        "kategorie": {"feld": "freifeld_Kategorie"}
-    },
-    "angebotskonfiguration": 
-    [
-        {
-            "felder": {
-              "product_id_type": {"wert": "SHOP_SKU"},
-              "product_id": {"feld": "nummer"},
-              "shop_sku": {"feld": "nummer"},
-              "price": {"feld": "preis"},
-              "description": "freifeld_Kategorie",
-              "internal_description": {"eigenschaft": "Mirakl Steuertext"},
-              "reversecharge": {"wert": "false","zusatzfeld": true},
-              "warehouse": {"wert": "1","zusatzfeld": true},
-              "quantity": {"feld": "anzahl_lager"}
-            }
-        }
-    ]
-}
-*/
-
 class Shopimporter_Mirakl extends ShopimporterBase {
 
     private $app;
@@ -54,13 +26,9 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     private $taxationByDestinationCountry;
     private $orderSearchLimit;
 
-    private $category_identifier_source;
-    private $category_identifier_source_field;
-    private $product_identifier_type;
-    private $product_identifier_source;
-    private $product_identifier_source_field;
-    private $product_field_map;
-    private $field_map;
+    private $category_identifier;
+
+    private $offer_field_map;
 
     public function __construct($app, $intern = false) {
         $this->app = $app;
@@ -70,11 +38,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     }
 
     /*
-     * See widget.shopexport.php
+     * See widget.shopexport.php, ShowExtraeinstellungen()
      */
 
     public function EinstellungenStruktur() {
-        return [
+        $einstellungen = [
             'ausblenden' => ['abholmodus' => ['ab_nummer', 'zeitbereich']],
             'functions' => ['getarticlelist'],
             'felder' => [
@@ -82,14 +50,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'typ' => 'checkbox',
                     'bezeichnung' => '{|Protokollierung im Logfile|}:'
                 ],
-                /*            'textekuerzen' => [
-                  'typ' => 'checkbox',
-                  'bezeichnung' => '{|Texte bei Artikelexport auf Maximallänge kürzen|}:'
-                  ],
-                  'useKeyAsParameter' => [
-                  'typ' => 'checkbox',
-                  'bezeichnung' => '{|Shop Version ist mindestens 1.6.1.1|}:'
-                  ], */
                 'apikey' => [
                     'typ' => 'text',
                     'bezeichnung' => '{|API Key|}:',
@@ -106,75 +66,61 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'size' => 40,
                     'info' => 'optional, int64'
                 ],
-/*                'category_identifier_source' => [
+                'category_identifier_source' => [
                     'typ' => 'select',
-                    'bezeichnung' => '{|Kategorie-Identifizierer|}:',
+                    'bezeichnung' => '{|Katalogkategorie-Typ|}:',
                     'size' => 40,
-                    'optionen' => ['Kategorie' => '{|Kategorie|}', 'Freifeld' => '{|Freifeld|}', 'Eigenschaft' => '{|Eigenschaft|}'],
-                    'info' => 'Feld in OpenXE für die Zuordnung der Artikel zu den Katalogkategorien in Mirakl'
+                    'info' => 'Woher soll die Katalogkategorie des jeweiligen Artikels bezogen werden?',
+                    'default' => 'feld',
+                    'optionen' => ['feld' => '{|Feld|}', 'freifeld' => '{|Freifeld|}', 'eigenschaft' => '{|Eigenschaft|}', 'wert' => '{|Fester Wert|}']
                 ],
-                'category_identifier_source_field' => [
+                'category_identifier_source_value' => [
                     'typ' => 'text',
-                    'bezeichnung' => '{|Kategorie-Identifizierer Freifeld oder Eigenschaft|}:',
+                    'bezeichnung' => '{|Katalogkategorie-Wert|}:',
                     'size' => 40,
-                    'info' => 'Wenn oben Freifeld oder Eigenschaft gew&auml;hlt wurde'
+                    'info' => '',
+                    'default' => 'kategoriename'
                 ],
-                'product_field_map' => [
-                    'typ' => 'textarea',
-                    'bezeichnung' => '{|Zuordnung Produkt-Felder je Kategorie (JSON)|}:',
-                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Mögliche Zuordnungen aus OpenXE sind: Artikelnummer, Artikelname, Einheit, Hersteller, Herstellernummer, EAN oder eine konkrete Artikeleigenschaft'
-                ],*/
-                'field_map' => [
+                'offer_field_map' => [
                     'typ' => 'textarea',
                     'bezeichnung' => '{|Zuordnung Angebots-Felder je Kategorie (JSON)|}:',
-                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Zuordnung &uuml;ber "Mirakl-xyz": {"feld": "xyz"} oder kurz "Mirakl-xyz": "xyz" Mögliche Zuordnungen aus OpenXE sind: nummer, name_de, einheit, hersteller, herstellernummer, ean u.v.m. Freifelder wie im Reiter Freifelder mit Pr&auml;fix \'freifeld_\',  Eigenschaften: {"eigenschaft": "Eigenschaftenname xyz"}, Fester Wert: {"wert": "xyz"}, Zusatzfelder zusätzlich mit der Eigenschaft "zusatzfeld": true versehen: z.B. {"feld": "name_de", "zusatzfeld": true}'
+                    'cols' => 80,
+                    'rows' => 20,
+                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Ist keine Kategorie definiert, gilt der Eintrag für alle Artikel. Jedes Feld kann wie folgt zugeordnet werden:<br>Artikelfeld: &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;xyz&quot;} oder kurz &quot;Mirakel-Feldname&quot;: &quot;xyz&quot;,<br>Freifeld: &quot;Mirakel-Feldname&quot;: {&quot;freifeld&quot;: &quot;Bezeichnung in Shop&quot;} (Siehe Reiter &quot;Freifelder&quot;),<br>Eigenschaft: &quot;Mirakel-Feldname&quot;: {&quot;eigenschaft&quot;: &quot;Eigenschaftenname xyz&quot;},<br>Fester Wert: &quot;Mirakel-Feldname&quot;: {&quot;wert&quot;: &quot;xyz&quot;}<br><br>Zusatzfelder zusätzlich mit der Eigenschaft &quot;zusatzfeld&quot;: true versehen: z.B. &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;name_de&quot;, &quot;zusatzfeld&quot;: true}',
+                    'placeholder' => '[
+    {
+        &quot;kategorien&quot;: [
+            &quot;Schuhe&quot;, &quot;Hosen&quot;
+        ],
+        &quot;felder&quot;: {
+          &quot;product_id_type&quot;: {&quot;wert&quot;: &quot;SHOP_SKU&quot;},
+          &quot;product_id&quot;: {&quot;feld&quot;: &quot;nummer&quot;},
+          &quot;shop_sku&quot;: {&quot;feld&quot;: &quot;nummer&quot;},
+          &quot;price&quot;: {&quot;feld&quot;: &quot;preis&quot;},
+          &quot;description&quot;: {&quot;freifeld&quot;: &quot;Kategorie&quot;},
+          &quot;internal_description&quot;: {&quot;eigenschaft&quot;: &quot;Mirakl Steuertext&quot;},
+          &quot;reversecharge&quot;: {&quot;wert&quot;: &quot;false&quot;,&quot;zusatzfeld&quot;: true},
+          &quot;warehouse&quot;: {&quot;wert&quot;: &quot;1&quot;,&quot;zusatzfeld&quot;: true},
+          &quot;quantity&quot;: {&quot;feld&quot;: &quot;anzahl_lager&quot;}
+        }
+    }
+]'
                 ],
-            /*
-              'steuergruppen' => [
-              'typ' => 'text',
-              'bezeichnung' => '{|Steuergruppenmapping|}:',
-              'size' => 40,
-              ],
-              'zustand' => [
-              'typ' => 'text',
-              'bezeichnung' => '{|Freifeld Zustand|}:',
-              'size' => 40,
-              ],
-              'abholen' => [
-              'typ' => 'text',
-              'bezeichnung' => '{|\'Abholen\' Status IDs|}:',
-              'size' => 40,
-              ],
-              'bearbeitung' => [
-              'typ' => 'text',
-              'bezeichnung' => '{|\'In Bearbeitung\' Status IDs|}:',
-              'size' => 40,
-              ],
-              'abgeschlossen' => [
-              'typ' => 'text',
-              'bezeichnung' => '{|\'Abgeschlossen\' Status IDs|}:',
-              'size' => 40,
-              ],
-              'autoerstellehersteller' => [
-              'typ' => 'checkbox',
-              'bezeichnung' => '{|Fehlende Hersteller automatisch anlegen|}:',
-              'col' => 2
-              ],
-              'zeigezustand' => [
-              'typ' => 'checkbox',
-              'bezeichnung' => '{|Artikelzustand im Shop anzeigen|}:',
-              'col' => 2
-              ],
-              'zeigepreis' => [
-              'typ' => 'checkbox',
-              'bezeichnung' => '{|Artikelpreis im Shop anzeigen|}:',
-              'col' => 2
-              ], */
+                 'Artikelfelder' => [
+                    'heading' => 'Zusatzinformationen',
+                    'typ' => 'info',
+                    'text' => 'Folgende Artikelfelder stehen zur Verf&uuml;gung:',
+                    'bezeichnung' => null,
+                    'info' => 'artikel, artikelid, nummer, inaktiv, name_de, name_en, einheit, hersteller, herstellernummer, ean, artikelnummer_fremdnummern, kurztext_de, kurztext_en, anabregs_text, anabregs_text_en, beschreibung_de, beschreibung_en, uebersicht_de, uebersicht_en, herkunftsland, texteuebertragen, metadescription_de, metadescription_en, metakeywords_de, metakeywords_en, metatitle_de, metatitle_en, links_de, altersfreigabe, links_en, startseite_de, startseite_en, restmenge, startseite, standardbild, herstellerlink, lieferzeit, lieferzeitmanuell, gewicht, laenge, breite, hoehe, wichtig, porto, gesperrt, sperrgrund, gueltigbis, umsatzsteuer, ausverkauft, variante, variante_von_id, variantevon, pseudopreis, keinrabatterlaubt, einkaufspreis, pseudolager, downloadartikel, zolltarifnummer, freifeld_Kategorie, typ, kategoriename, steuer_art_produkt, steuer_art_produkt_download, anzahl_bilder, anzahl_lager, lagerkorrekturwert, autolagerlampe, waehrung, preis, steuersatz, bruttopreis, checksum, variantevorhanden'
+                ]
             ]
         ];
+    
+        return($einstellungen);
     }
 
     public function getKonfig($shopid, $data) {
+
         $this->shopid = $shopid;
         $this->data = $data;
         $importerSettings = $this->app->DB->SelectArr("SELECT `einstellungen_json` FROM `shopexport` WHERE `id` = '$shopid' LIMIT 1");
@@ -197,13 +143,9 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $query = sprintf('SELECT `steuerfreilieferlandexport` FROM `shopexport`  WHERE `id` = %d', $this->shopid);
         $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
         
-        $this->category_identifier_source = $einstellungen['felder']['category_identifier_source'];
-        $this->category_identifier_source_field = $einstellungen['felder']['category_identifier_source_field'];
-        $this->product_identifier_type = $einstellungen['felder']['product_identifier_type'];
-        $this->product_identifier_source = $einstellungen['felder']['product_identifier_source'];
-        $this->product_identifier_source_field = $einstellungen['felder']['product_identifier_source_field'];
-        $this->product_field_map = json_decode($einstellungen['felder']['product_field_map'], true);
-        $this->field_map = json_decode($einstellungen['felder']['field_map'], true);        
+        $this->category_identifier = array($einstellungen['felder']['category_identifier_source'] => $einstellungen['felder']['category_identifier_source_value']);
+
+        $this->offer_field_map = json_decode($einstellungen['felder']['offer_field_map'], true, flags: JSON_THROW_ON_ERROR);        
     }
 
     private function miraklRequest(string $endpoint, $postdata = null, array $getdata = null, string $content_type = null, bool $raw = false) {
@@ -310,7 +252,18 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         foreach ($field_map_entry as $key => $value) {                   
             switch ($key) {
                 case 'feld': 
-                    return($article[$value]);
+                    if (isset($article[$value])) {
+                        return($article[$value]);
+                    } else {
+                       throw new Exception("Artikelfeld existiert nicht: \"".$value."\"");               
+                    }
+                break;
+                case 'freifeld': 
+                    if (isset($article['freifelder']['DE'][$value])) {
+                        return($article['freifelder']['DE'][$value]);
+                    } else {
+                       throw new Exception("Freifeld existiert nicht: \"".$value."\"");               
+                    }
                 break;
                 case 'eigenschaft':
                     $sql = "SELECT wert FROM artikeleigenschaften ae INNER JOIN artikeleigenschaftenwerte aew ON aew.artikeleigenschaften = ae.id WHERE aew.artikel = '".$article['artikelid']."' AND ae.name = '".$value."' LIMIT 1";
@@ -320,7 +273,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     return($value);
                 break;                
             }                
-        }
+        }        
         return(null);
     }
 
@@ -350,23 +303,25 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             /*
              * Export offer
              */
-            $processed = false;
+            $category_found = false;
             $additional_fields = array();
              
             $offer_for_mirakl = array(
                 'state_code' => '11', // ?!?!
                 'update_delete' => null // Update delete flag. Could be empty (means "update"), "update" or "delete".
             );
-                      
-            foreach ($this->field_map['angebotskonfiguration'] as $offer_field_entry) {
 
-                $kategorie = $this->GetFieldValue($article, $this->field_map['katalogkonfiguration']['kategorie']);               
+            $kategorie = $this->GetFieldValue($article, $this->category_identifier);               
+                      
+            foreach ($this->offer_field_map as $offer_field_entry) {
                 if ($offer_field_entry['kategorien'] != null) {
                     if (!in_array($kategorie,$offer_field_entry['kategorien'])) {
                         continue;
                     }
-                }
-                                
+                }    
+
+                $category_found = true;
+    
                 // Check Required attributes
                 $required = [
                     'product_id_type',
@@ -405,12 +360,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                         $offer_for_mirakl[$offer_field] = $offer_field_value; 
                     }                             
                 }                                
-                $processed = true;
             }
 
-            if (!$processed) {
-                return(array('status' => false, 'message' => "Angebotskonfiguration für Kategorie \"".$kategorie."\" nicht gefunden"));
-            }
+            if (!$category_found) {
+                return(array('status' => false, 'message' => "Angebotskonfiguration für Artikel ".$article['nummer'].", Kategorie \"".$kategorie."\" nicht gefunden"));
+            }                               
 
             if (!empty($additional_fields)) {
                 $offer_for_mirakl['offer_additional_fields'] = $additional_fields;
