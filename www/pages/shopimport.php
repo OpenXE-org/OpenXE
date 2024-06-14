@@ -1881,10 +1881,10 @@ class Shopimport
         {
           if($warenkorb['email']!=='amazon_import_bounce@nfxmedia.de')
           {
-            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE email='".$warenkorb['email']."' and email <> '' $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
+            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE email='".$this->app->DB->real_escape_string($warenkorb['email'])."' and email <> '' $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
           }
           if((String)$checkidemail === ''){
-            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name LIKE '" . $warenkorb['name'] . "' AND ort LIKE '" . $warenkorb['ort'] . "'  AND geloescht!=1 $adresseprojekt  AND kundennummer <> '' LIMIT 1");
+            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name LIKE '" . $this->app->DB->real_escape_string($warenkorb['name']) . "' AND ort LIKE '" . $this->app->DB->real_escape_string($warenkorb['ort']) . "'  AND geloescht!=1 $adresseprojekt  AND kundennummer <> '' LIMIT 1");
           }
         }else{
           $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='".$this->app->DB->real_escape_string($warenkorb['name'])."' AND strasse='".$this->app->DB->real_escape_string($warenkorb['strasse'])."' AND plz='".$this->app->DB->real_escape_string($warenkorb['plz'])."' AND ort='".$this->app->DB->real_escape_string($warenkorb['ort'])."'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
