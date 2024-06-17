@@ -4739,7 +4739,7 @@ INNER JOIN shopexport s ON
           }
           $this->arrayToXmlHelper($subNode, $value, $nameSpaces,$subNodeName);
         }
-      } else {
+      } else if (gettype($value) == 'string') {
         $subNode = $xmlObj->addChild((string)$subNodeName, htmlspecialchars($value, ENT_QUOTES), $nameSpace);
         if(!empty($attributes)) {
           foreach($attributes as $attribute) {
