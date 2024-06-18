@@ -16,8 +16,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     private $apiKey;
     private $shopUrl;
     private $mirakl_shopid;
-    private $createManufacturerAllowed = false;
-    private $idsabholen;
     private $idbearbeitung;
     private $idabgeschlossen;
     public $data;
@@ -30,6 +28,9 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
     private $create_products;
     private $mirakl_error_text_product_missing;
+
+    private $normalTaxId;
+    private $reducedTaxId;
 
     private $offer_field_map;
     private $product_field_map;
@@ -97,6 +98,16 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'size' => 40,
                     'info' => 'Der Fehlertext der anzeigt dass das Produkt nicht existiert (Angebotsimport, Fehlerbericht)',
                     'default' => 'The product does not exist'
+                ],
+                'normalTaxId' => [
+                    'typ' => 'text',
+                    'bezeichnung' => '{|TaxId für Steuersatz "normal"|}',
+                    'size' => 40,
+                ],
+                'reducedTaxId' => [
+                    'typ' => 'text',
+                    'bezeichnung' => '{|TaxId für Steuersatz "ermäßigt"|}',
+                    'size' => 40,
                 ],
                 'product_field_map' => [
                     'typ' => 'textarea',
@@ -175,20 +186,14 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $this->apiKey = $einstellungen['felder']['apikey'];
         $this->shopUrl = rtrim($einstellungen['felder']['shopurl'], '/') . '/';
         $this->mirakl_shopid = $einstellungen['felder']['mirakl_shopid'];
-
-        if ($einstellungen['felder']['autoerstellehersteller'] === '1') {
-            $this->createManufacturerAllowed = true;
-        }
-        $this->idsabholen = $einstellungen['felder']['abholen'];
-        $this->idbearbeitung = $einstellungen['felder']['bearbeitung'];
-        $this->idabgeschlossen = $einstellungen['felder']['abgeschlossen'];
-        $query = sprintf('SELECT `steuerfreilieferlandexport` FROM `shopexport`  WHERE `id` = %d', $this->shopid);
-        $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
-        
+       
         $this->category_identifier = array($einstellungen['felder']['category_identifier_source'] => $einstellungen['felder']['category_identifier_source_value']);
 
         $this->create_products = $einstellungen['felder']['create_products'];
         $this->mirakl_error_text_product_missing = $einstellungen['felder']['mirakl_error_text_product_missing'];
+
+        $this->normalTaxId = $einstellungen['felder']['normalTaxId'];
+        $this->reducedTaxId = $einstellungen['felder']['reducedTaxId'];
 
         $this->offer_field_map = json_decode($einstellungen['felder']['offer_field_map'], true, flags: JSON_THROW_ON_ERROR);                
         $this->product_field_map = json_decode($einstellungen['felder']['product_field_map'], true, flags: JSON_THROW_ON_ERROR);                                
@@ -245,7 +250,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             print_r($information);
             print_r($postdata);
             print_r($response);
-            exit();
         }
 
         if ($raw)
@@ -261,7 +265,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $response = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         if ($code == 200) {
-            return 'success ' . print_r($response, true);
+            return 'success';
         }
         return $response;
     }
@@ -389,7 +393,8 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     }
 
     private function getOrdersToProcess(int $limit) {
-        
+        echo("getOrdersToProcess");        
+        exit();
     }
 
     private function Log($message, $dump = '') {
@@ -399,19 +404,132 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     }
 
     public function ImportDeleteAuftrag() {
-        
+        echo("ImportDeleteAuftrag");        
+        exit();
     }
 
     public function ImportUpdateAuftrag() {
-        
+        echo("ImportUpdateAuftrag");        
+        exit();
     }
 
-    public function ImportGetAuftraegeAnzahl() {
-        
+    // STAGING, WAITING_ACCEPTANCE, WAITING_DEBIT, WAITING_DEBIT_PAYMENT, SHIPPING, SHIPPED, TO_COLLECT, RECEIVED, CLOSED, REFUSED, CANCELED
+    public function ImportGetAuftraegeAnzahl() {    
+        $response = $this->miraklRequest('orders', getdata: array('order_state_codes' => 'WAITING_ACCEPTANCE'),  raw: true);                                     
+        $this->Log('ImportGetAuftraegeAnzahl', print_r($response,true));    
+        $result_array = json_decode($response);
+        return($result_array->total_count);    
     }
 
     public function ImportGetAuftrag() {
+
+        $parameters = array('order_state_codes' => 'WAITING_ACCEPTANCE');
+
+        if(!empty($this->data['nummer'])) {
+            $parameters['order_ids'] = $this->data['nummer'];
+        }
+
+        $response = $this->miraklRequest('orders', getdata: $parameters,  raw: true);          
+        $this->Log('ImportGetAuftraegeAnzahl', print_r($response,true));    
+        $result_array = json_decode($response);
+
+        $fetchedOrders = [];
+        foreach ($result_array->orders as $order) {
+            $cart = [];
+            $cart['zeitstempel'] = strval($order->created_date);
+
+            $cart['auftrag'] = strval($order->order_id);
+            $cart['onlinebestellnummer'] = strval($order->commercial_id);
+            $cart['gesamtsumme'] = strval($order->total_price);
+            
+            $cart['bestelldatum'] = strval($order->created_date);
+
+            $cart['lieferung'] = strval($order->shipping_type_code);
+
+            $cart['email'] = strval($order->customer_notification_email);
+            
+            $cart['kunde_sprache'] = '?';
+            $cart['kundennummer'] = $order->customer->customer_id;
+            
+            $cart['name'] = ($order->customer->civility?$order->customer->civility." ":"").$order->customer->firstname." ".$order->customer->lastname;
+            if (!empty(strval($order->customer->company))) {
+                $cart['ansprechpartner'] = $cart['name'];
+                $cart['name'] = strval($order->customer->company);
+            }
+            $cart['strasse'] = strval($order->customer->billing_address->street_1);
+            $cart['adresszusatz'] = strval($order->customer->billing_address->street_2);
+            $cart['telefon'] = strval($order->customer->billing_address->phone);
+            $cart['plz'] = strval($order->customer->billing_address->zip_code);
+            $cart['ort'] = strval($order->customer->billing_address->city);
+
+            $cart['ustid'] = '?';
+            $cart['land'] = strval($order->customer->billing_address->country_iso_code);
+
+            $cart['abweichendelieferadresse'] = 1;
+            $cart['lieferadresse_name'] = ($order->customer->shipping_address->civility?$order->customer->shipping_address->civility." ":"").$order->customer->shipping_address->firstname." ".$order->customer->shipping_address->lastname;
+            if (!empty(strval($order->customer->shipping_address->company))) {
+              $cart['lieferadresse_ansprechpartner'] = $cart['lieferadresse_name'];
+              $cart['lieferadresse_name'] = strval($deliveryAddress->company);
+            }
+            $cart['lieferadresse_strasse'] = strval($order->customer->shipping_address->street_1);
+            $cart['lieferadresse_adresszusatz'] = strval($order->customer->shipping_address->street_2);
+            $cart['lieferadresse_telefon'] = strval($order->customer->shipping_address->phone);
+            $cart['lieferadresse_plz'] = strval($order->customer->shipping_address->zip_code);
+            $cart['lieferadresse_ort'] = strval($order->customer->shipping_address->city);
+
+            $cart['zahlungsweise'] = strval($order->payment_type);
+
+            $cart['ust_befreit'] = '?'; // 1, 2
+
+            $cart['steuersatz_normal'] = '?';//strval($order->taxes[0]->amount); 
+            $cart['steuersatz_ermaessigt'] = '?'; // strval($order->taxes[0]->amount);
+
+            $cart['articlelist'] = [];
+
+            $shipping_tax_amount = 0;
+
+            foreach ($order->order_lines as $order_row) {
+
+                $steuersatz = '?';
+
+                switch ($order->row->taxes[0]->code) {
+                    case $this->normalTaxId:
+                        $steuersatz = 'normal';
+                    break;
+                    case $this->reducedTaxId:
+                        $steuersatz = 'ermaessigt';
+                    break;
+                }
+
+                $article = [
+                    'articleid' => strval($order_row->offer_sku),
+                    'name' => strval($order_row->product_title),
+                    'quantity' => strval($order_row->quantity),
+                    'price_netto' => strval($order_row->price_unit),
+                    'steuersatz' => $steuersatz
+                ];
+
+                foreach ($order_row->shipping_taxes as $shipment_tax) {
+                    $shipping_tax_amount += $shipment_tax->amount;
+                }
+                $cart['articlelist'][] = $article;
+            } // foreach articles
+
+            $cart['versandkostennetto'] = strval($order->shipping_price);
+            $cart['versandkostenbrutto'] = $cart['versandkostennetto']+$shipping_tax_amount;
+
+        } // foreach orders
+
+        $fetchedOrders[] = [
+            'id' => $cart['auftrag'],
+            'sessionid' => $cart['onlinebestellnummer'],
+            'logdatei' => '',
+            'warenkorb' => base64_encode(serialize($cart)),
+            'warenkorbjson' => base64_encode(json_encode($cart))
+        ];
         
+        $this->Log('Auftragsimport', $cart);
+        return $fetchedOrders;
     }
     
     /*
