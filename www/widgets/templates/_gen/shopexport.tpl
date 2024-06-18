@@ -115,7 +115,7 @@
             <fieldset><legend>{|Aktion|}</legend>
               <table width="100%">
                 <tr><td><input type="submit" form="frmpruefen" value="{|Verbindung pr&uuml;fen|}" class="aktionbutton" ></td></tr>
-                <tr><td width="50%"><input type="button" onclick="Holeauftrag();" value="{|Auftr&auml;ge abholen|}" class="aktionbutton" ></td></tr>
+                <tr><td width="50%"><input type="submit" form="frmabholen" value="{|Auftr&auml;ge abholen|}" class="aktionbutton" ></td></tr>
                 [AKTIONBUTTONS]
               </table>
             </fieldset>
