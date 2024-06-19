@@ -52,6 +52,7 @@ class Shopimport
     $this->app->ActionHandler("list","ShopimportList");
     $this->app->ActionHandler("alle","ShopimportAlle");
     $this->app->ActionHandler("import","ShopimportImport");
+    $this->app->ActionHandler("view","ShopimportView");
     $this->app->ActionHandler("einzelimport","ShopimportEinzelimport");
     $this->app->ActionHandler("navigation","ShopimportNavigation");
     $this->app->ActionHandler("logout","ShopimportLogout");
@@ -339,9 +340,9 @@ class Shopimport
       $this->app->Tpl->Set('TAB1','<div class="error">Es l&auml;uft gerade ein Cronjob der Auftr&auml;ge abholt. Die manuelle Auftragsabholung ist in dieser Zeit gesperrt. Bitte warten Sie ein paar Minuten und versuchen Sie es erneut.</div>');
     }else{
       $table = new EasyTable($this->app);
-      $table->Query("SELECT ae.bezeichnung,p.abkuerzung, 
+      $table->Query("SELECT ae.bezeichnung,p.abkuerzung as Projekt, 
           ae.id FROM shopexport ae LEFT JOIN projekt p ON p.id=ae.projekt WHERE ae.aktiv='1'");
-      $table->DisplayNew('INHALT',"<a href=\"index.php?module=shopimport&action=import&id=%value%\"><img src=\"./themes/new/images/forward.svg\" title=\"Shopimport\"></a>&nbsp;<a href=\"index.php?module=onlineshops&action=edit&id=%value%\"><img src=\"./themes/new/images/edit.svg\" title=\"Onlineshops\"></a>&nbsp;<!--<a href=\"index.php?module=shopimport&action=archiv&id=%value%\">Archiv</a>-->");
+      $table->DisplayNew('INHALT',"<a href=\"index.php?module=shopimport&action=import&id=%value%\"><img src=\"./themes/new/images/download.svg\" title=\"Importieren\"></a>&nbsp;<a href=\"index.php?module=shopimport&action=view&id=%value%\"><img src=\"./themes/new/images/lupe.svg\" title=\"Ansicht\"></a>&nbsp;<a href=\"index.php?module=onlineshops&action=edit&id=%value%\"><img src=\"./themes/new/images/edit.svg\" title=\"Bearbeiten\"></a>&nbsp;<!--<a href=\"index.php?module=shopimport&action=archiv&id=%value%\">Archiv</a>-->");
       $this->app->Tpl->Parse('TAB1','rahmen.tpl');
     }
     $this->app->Tpl->Set('INHALT','');
@@ -949,6 +950,10 @@ class Shopimport
       $bekanntezahlungsweisen = $this->app->erp->GetZahlungsweise();
 
       $tmpauftragid = $this->app->erp->ImportAuftrag($adresse,$warenkorb,$projekt,$shopid);
+      if ($tmpauftragid > 0) {
+          $sucess_import = true;
+      }
+      
       $doctype = 'auftrag';
       if($this->app->DB->Select("SELECT angeboteanlegen FROM shopexport WHERE id = '$shopid' LIMIT 1"))
       {
@@ -971,7 +976,7 @@ class Shopimport
         }
       }
       
-      if($shopimportid)
+      if($shopimportid && $tmpauftragid)
       {
         $this->app->DB->Update("UPDATE shopimport_auftraege SET imported='1' WHERE id='$shopimportid' LIMIT 1");
       }
@@ -985,10 +990,7 @@ class Shopimport
       }
       $this->app->erp->RunHook('Shopimportwarenkorb', 4, $doctype, $tmpauftragid, $shopid, $warenkorb);
       $this->app->erp->RunHook('Shopimport', 3, $doctype, $tmpauftragid, $shopid);
-
-
       $adresse ='';
-      $sucess_import++;
 
     return $sucess_import;
   }
@@ -1110,6 +1112,10 @@ class Shopimport
     $succes = $this->KundeAnlegenUpdate($shopImportedOrderId,'', $shopOrderCleaned, $customerNumber, $custumerNumberImported,$unknownPaymentTypes);
 
     return ['codingerror'=>$umlautefehler, 'success' => $succes];
+  }
+
+  public function ShopimportView() {
+      $this->ShopimportImport(showonly: true);
   }
 
   public function ShopimportImport($id='', $count = 0, $returncount = false, $showonly = false)
@@ -2001,7 +2007,6 @@ class Shopimport
         $htmltable->AddCol('<input type="radio" name="import['.$arr[$i]['id'].']" value="muell">');
         $htmltable->AddCol('<input type="radio" name="import['.$arr[$i]['id'].']" value="warten"'.(($doppelteonlinebestellnummer || $auftraegeaufspaeter)?' checked="checked" ':'').'>');
         $htmltable->AddCol($arr[$i]['abkuerzung']);
-
 
         $htmltable->AddCol(($doppelteonlinebestellnummer?'<b style="color:red">':'').$warenkorb['onlinebestellnummer'].($doppelteonlinebestellnummer?'</b>':''));
         $htmltable->AddCol($warenkorb['name'].$kdr_name.'<br>'.$warenkorb['email'].$email);
