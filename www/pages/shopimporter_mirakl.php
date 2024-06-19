@@ -430,7 +430,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
 
         $response = $this->miraklRequest('orders', getdata: $parameters,  raw: true);          
-        $this->Log('ImportGetAuftraegeAnzahl', print_r($response,true));    
+        $this->Log('ImportGetAuftrag', print_r($response,true));    
         $result_array = json_decode($response);
 
         $fetchedOrders = [];
@@ -448,7 +448,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
             $cart['email'] = strval($order->customer_notification_email);
             
-            $cart['kunde_sprache'] = '?';
+//            $cart['kunde_sprache'] = '?';
             $cart['kundennummer'] = $order->customer->customer_id;
             
             $cart['name'] = ($order->customer->civility?$order->customer->civility." ":"").$order->customer->firstname." ".$order->customer->lastname;
@@ -462,10 +462,15 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $cart['plz'] = strval($order->customer->billing_address->zip_code);
             $cart['ort'] = strval($order->customer->billing_address->city);
 
-            $cart['ustid'] = '?';
-            $cart['land'] = strval($order->customer->billing_address->country_iso_code);
+//            $cart['ustid'] = '?';
+            $sql = "SELECT iso FROM laender WHERE iso3 = '".$order->customer->billing_address->country_iso_code."'";           
+            $cart['land'] = $this->app->DB->Select($sql);           
 
             $cart['abweichendelieferadresse'] = 1;
+            
+            $sql = "SELECT iso FROM laender WHERE iso3 = '".$order->customer->shipping_address->country_iso_code."'";           
+            $cart['lieferadresse_land'] = $this->app->DB->Select($sql);           
+
             $cart['lieferadresse_name'] = ($order->customer->shipping_address->civility?$order->customer->shipping_address->civility." ":"").$order->customer->shipping_address->firstname." ".$order->customer->shipping_address->lastname;
             if (!empty(strval($order->customer->shipping_address->company))) {
               $cart['lieferadresse_ansprechpartner'] = $cart['lieferadresse_name'];
@@ -479,34 +484,43 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
             $cart['zahlungsweise'] = strval($order->payment_type);
 
-            $cart['ust_befreit'] = '?'; // 1, 2
+            $cart['waehrung'] = strval($order->currency_iso_code);
 
-            $cart['steuersatz_normal'] = '?';//strval($order->taxes[0]->amount); 
-            $cart['steuersatz_ermaessigt'] = '?'; // strval($order->taxes[0]->amount);
+//            $cart['ust_befreit'] = '?'; // 1, 2
 
-            $cart['articlelist'] = [];
+//            $cart['steuersatz_normal'] = 19;//strval($order->taxes[0]->amount); 
+//            $cart['steuersatz_ermaessigt'] 07; // strval($order->taxes[0]->amount);
+
+            $cart['articlelist'] = [];            
+            
 
             $shipping_tax_amount = 0;
 
             foreach ($order->order_lines as $order_row) {
 
-                $steuersatz = '?';
-
-                switch ($order->row->taxes[0]->code) {
-                    case $this->normalTaxId:
-                        $steuersatz = 'normal';
-                    break;
-                    case $this->reducedTaxId:
-                        $steuersatz = 'ermaessigt';
-                    break;
+                $steuersatz = 0;
+                $umsatzsteuer_typ = 'normal';
+                foreach($order_row->taxes as $tax) {
+                    if($tax->rate > $steuersatz) {
+                        $steuersatz = $tax->rate;
+                    }
+                    switch ($order->row->taxes[0]->code) {
+                        case $this->reducedTaxId:
+                            $umsatzsteuer_typ = 'ermaessigt';
+                        break;
+                        default:                   
+                        case $this->normalTaxId:
+                            $umsatzsteuer_typ = 'normal';
+                        break;
+                    }
                 }
 
                 $article = [
                     'articleid' => strval($order_row->offer_sku),
-                    'name' => strval($order_row->product_title),
+//                    'name' => strval($order_row->product_title),
                     'quantity' => strval($order_row->quantity),
                     'price_netto' => strval($order_row->price_unit),
-                    'steuersatz' => $steuersatz
+                    'umsatzsteuer' => $steuersatz
                 ];
 
                 foreach ($order_row->shipping_taxes as $shipment_tax) {
@@ -515,8 +529,8 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 $cart['articlelist'][] = $article;
             } // foreach articles
 
-            $cart['versandkostennetto'] = strval($order->shipping_price);
-            $cart['versandkostenbrutto'] = $cart['versandkostennetto']+$shipping_tax_amount;
+            $cart['versandkostennetto'] = round(strval($order->shipping_price),2);
+            $cart['versandkostenbrutto'] = round($cart['versandkostennetto']+$shipping_tax_amount,2);
 
         } // foreach orders
 
