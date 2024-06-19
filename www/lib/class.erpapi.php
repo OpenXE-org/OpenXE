@@ -18809,16 +18809,23 @@ function CheckShopTabelle($artikel)
         $artikelporto = $artikelportoermaessigt;
       }
 
-      if(empty($artikelporto) && $this->app->DB->Select("SELECT portoartikelanlegen FROM shopexport WHERE id = '$shop' LIMIT 1"))
-      {
-        if($warenkorb['versandkostennetto'] != 0 || $warenkorb['versandkostenbrutto'] != 0 || $portocheck == 1){
-          $portoartikelarr = array('projekt'=>$projekt,'porto'=>1, 'lagerartikel'=>0,'name_de'=>'Porto','umsatzsteuer'=>'normal');
-          $artikelporto = $this->app->erp->InsertUpdateArtikel($portoartikelarr);
-          if($artikelporto){
-            $this->app->DB->Update("UPDATE shopexport SET artikelporto = '$artikelporto' WHERE id = '$shop' AND artikelporto = 0 LIMIT 1");
-          }
+        if(empty($artikelporto)) {
+            if ($this->app->DB->Select("SELECT portoartikelanlegen FROM shopexport WHERE id = '$shop' LIMIT 1"))
+            {
+                if($warenkorb['versandkostennetto'] != 0 || $warenkorb['versandkostenbrutto'] != 0 || $portocheck == 1)
+                {
+                    $portoartikelarr = array('projekt'=>$projekt,'porto'=>1, 'lagerartikel'=>0,'name_de'=>'Porto','umsatzsteuer'=>'normal');
+                    $artikelporto = $this->app->erp->InsertUpdateArtikel($portoartikelarr);
+                    if($artikelporto)
+                    {
+                        $this->app->DB->Update("UPDATE shopexport SET artikelporto = '$artikelporto' WHERE id = '$shop' AND artikelporto = 0 LIMIT 1");
+                    }
+                }
+            } else {
+                $this->LogFile('Importauftrag Shop '.$shop.' Fehler: Kein Portoartikel vorhanden',['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
+                return(null);
+            }
         }
-      }
       $umsatzsteuer_porto = $this->app->DB->Select("SELECT umsatzsteuer FROM artikel WHERE id='$artikelporto' LIMIT 1");
 
       $versandname = '';
