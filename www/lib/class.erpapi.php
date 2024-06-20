@@ -17334,7 +17334,7 @@ function CheckShopTabelle($artikel)
     return $taxrates;
   }
 
-  function ImportAuftrag($adresse,$warenkorb,$projekt,$shop="",$auftrag=0)
+  function ImportAuftrag($adresse,$warenkorb,$projekt,$shop="",$auftrag=0) : array
   {
     $this->RunHook('ImportAuftragBefore',4, $adresse,$warenkorb,$projekt,$shop);
     if(!empty($this->app->stringcleaner)){
@@ -18822,8 +18822,9 @@ function CheckShopTabelle($artikel)
                     }
                 }
             } else {
-                $this->LogFile('Importauftrag Shop '.$shop.' Fehler: Kein Portoartikel vorhanden',['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
-                return(null);
+                $error_msg = 'Importauftrag Shop '.$shop.' Fehler: Kein Portoartikel vorhanden';
+                $this->LogFile($error_msg,['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
+                return(array("status" => false, "message" => $error_msg, "onlinebestellnummer" => $warenkorb['onlinebestellnummer']));
             }
         }
       $umsatzsteuer_porto = $this->app->DB->Select("SELECT umsatzsteuer FROM artikel WHERE id='$artikelporto' LIMIT 1");
@@ -19171,7 +19172,7 @@ function CheckShopTabelle($artikel)
     }
   }
 
-  return $auftrag;
+  return array("status" => true, "$auftragid" => $auftrag);
 }
 
 

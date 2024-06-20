@@ -452,10 +452,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $cart['kundennummer'] = $order->customer->customer_id;
             
             $cart['name'] = ($order->customer->civility?$order->customer->civility." ":"").$order->customer->firstname." ".$order->customer->lastname;
-            if (!empty(strval($order->customer->company))) {
+
+            if (!empty($order->customer->billing_address->company)) {
+                $cart['anrede'] = 'firma';
                 $cart['ansprechpartner'] = $cart['name'];
-                $cart['name'] = strval($order->customer->company);
+                $cart['name'] = strval($order->customer->billing_address->company);
             }
+
             $cart['strasse'] = strval($order->customer->billing_address->street_1);
             $cart['adresszusatz'] = strval($order->customer->billing_address->street_2);
             $cart['telefon'] = strval($order->customer->billing_address->phone);
@@ -472,10 +475,12 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $cart['lieferadresse_land'] = $this->app->DB->Select($sql);           
 
             $cart['lieferadresse_name'] = ($order->customer->shipping_address->civility?$order->customer->shipping_address->civility." ":"").$order->customer->shipping_address->firstname." ".$order->customer->shipping_address->lastname;
+
             if (!empty(strval($order->customer->shipping_address->company))) {
               $cart['lieferadresse_ansprechpartner'] = $cart['lieferadresse_name'];
               $cart['lieferadresse_name'] = strval($deliveryAddress->company);
             }
+
             $cart['lieferadresse_strasse'] = strval($order->customer->shipping_address->street_1);
             $cart['lieferadresse_adresszusatz'] = strval($order->customer->shipping_address->street_2);
             $cart['lieferadresse_telefon'] = strval($order->customer->shipping_address->phone);
