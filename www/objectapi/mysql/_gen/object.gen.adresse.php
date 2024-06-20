@@ -187,6 +187,8 @@ class ObjGenAdresse
   private  $freifeld9;
   private  $freifeld10;
   private  $rechnung_papier;
+  private  $etikettautodruck;
+  private  $etikett;
   private  $angebot_cc;
   private  $auftrag_cc;
   private  $rechnung_cc;
@@ -440,6 +442,8 @@ $result = $result[0];
     $this->freifeld9=$result['freifeld9'];
     $this->freifeld10=$result['freifeld10'];
     $this->rechnung_papier=$result['rechnung_papier'];
+    $this->etikettautodruck=$result['etikettautodruck'];
+    $this->etikett=$result['etikett'];
     $this->angebot_cc=$result['angebot_cc'];
     $this->auftrag_cc=$result['auftrag_cc'];
     $this->rechnung_cc=$result['rechnung_cc'];
@@ -693,6 +697,8 @@ $result = $result[0];
       `freifeld9`='{$this->freifeld9}',
       `freifeld10`='{$this->freifeld10}',
       `rechnung_papier`='{$this->rechnung_papier}',
+      `etikettautodruck`='{$this->etikettautodruck}',
+      `etikett`='{$this->etikett}',
       `angebot_cc`='{$this->angebot_cc}',
       `auftrag_cc`='{$this->auftrag_cc}',
       `rechnung_cc`='{$this->rechnung_cc}',
@@ -946,6 +952,8 @@ $result = $result[0];
     $this->freifeld9='';
     $this->freifeld10='';
     $this->rechnung_papier='';
+    $this->etikettautodruck='';
+    $this->etikett='';
     $this->angebot_cc='';
     $this->auftrag_cc='';
     $this->rechnung_cc='';
@@ -1392,6 +1400,10 @@ $result = $result[0];
   public function GetFreifeld10() { return $this->freifeld10; }
   public function SetRechnung_Papier($value) { $this->rechnung_papier=$value; }
   public function GetRechnung_Papier() { return $this->rechnung_papier; }
+  public function SetEtikettautodruck($value) { $this->etikettautodruck=$value; }
+  public function GetEtikettautodruck() { return $this->etikettautodruck; }
+  public function SetEtikett($value) { $this->etikett=$value; }
+  public function GetEtikett() { return $this->etikett; }
   public function SetAngebot_Cc($value) { $this->angebot_cc=$value; }
   public function GetAngebot_Cc() { return $this->angebot_cc; }
   public function SetAuftrag_Cc($value) { $this->auftrag_cc=$value; }

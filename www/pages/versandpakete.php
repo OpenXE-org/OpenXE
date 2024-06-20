@@ -283,13 +283,13 @@ class Versandpakete {
 
                 $allowed['versandpakete_lieferscheine'] = array('lieferscheine');
                 
-                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Monitor','Pakete','Paket hinzuf&uuml;gen');
-                $width = array(  '1%','1%',     '10%',          '10%',    '10%',  '10%',                    '1%',     '1%',    '1%'); // Fill out manually later
+                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Projekt','Monitor','Pakete','Paket hinzuf&uuml;gen');
+                $width = array(  '1%','1%',     '10%',          '10%',    '10%',  '10%',                    '5%',      '1%',     '1%',    '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('id','id','belegnr','name','lmenge','vmenge','(alle_versendet+alle_abgeschlossen*2)','id','id');
+                $findcols = array('id','id','belegnr','name','lmenge','vmenge','projekt','(alle_versendet+alle_abgeschlossen*2)','id','id');
                 $searchsql = array('belegnr','name');
 
                 $defaultorder = 1;
@@ -642,11 +642,13 @@ class Versandpakete {
                 // Write to database                
                 // Add checks here
 
-                $sql = "SELECT status FROM versandpakete WHERE id = ".$id;
-                $input['status'] = $this->app->DB->SelectArr($sql)[0]['status']; // Status is not changeable
+                $sql = "SELECT * FROM versandpakete WHERE id = ".$id;
+                $paket_db = $this->app->DB->SelectRow($sql);
+                $input['status'] = $paket_db['status']; // Status is not changeable
                 if ($input['status'] != 'neu') { 
                     $input = Array('bemerkung' => $input['bemerkung']);
                 } 
+
                 if (!empty($paket_db['tracking'])) { // Tracking is not changeable
                     unset($input['tracking']);
                     unset($input['tracking_link']);
@@ -1176,7 +1178,22 @@ class Versandpakete {
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
         $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
-        $versandmodul->Paketmarke('TAB1', 'lieferschein', $lieferschein['lieferschein'], $id);
+    
+        $sql = "
+            SELECT 
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE vlp.versandpaket = ".$id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);       
+        $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
 
@@ -1199,6 +1216,7 @@ class Versandpakete {
       $sql_lieferschein_position = "
                             SELECT
                                 l.id,
+                                p.abkuerzung AS projekt,
                                 l.belegnr,
                                 l.name,
                                 lp.menge lmenge,
@@ -1214,6 +1232,7 @@ class Versandpakete {
                             LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                             LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
                             LEFT JOIN versandpakete vop ON vop.lieferschein_ohne_pos = l.id                            
+                            LEFT JOIN projekt p ON p.id = l.projekt
                             WHERE
                                 l.versand_status <> 0 AND
                                 l.belegnr <> '' AND 
@@ -1224,6 +1243,7 @@ class Versandpakete {
                 $sql_lieferschein = "
                     SELECT 
                         id,
+                        projekt,
                         belegnr,
                         name,
                         SUM(lmenge) lmenge,
@@ -1247,6 +1267,7 @@ class Versandpakete {
                             name,
                             ".$app->erp->FormatMenge("lmenge").",
                             ".$app->erp->FormatMenge("vmenge").",
+                            projekt,
                             ".$app->YUI->IconsSQL_lieferung().",  
                             if(vmenge > 0 OR vop IS NOT NULL,CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>'),''),
                             id,

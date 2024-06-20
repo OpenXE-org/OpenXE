@@ -479,7 +479,7 @@ class Artikel extends GenArtikel {
         $joins .= $joineig;
 
 
-        $menu = "<a href=\"#\" class=\"articlematrix-quickadd\" data-id=\"%value%\" data-insert-url=\"index.php?module=artikel&action=profisuche&id=%value%&cmd=$cmd&sid=$id&insert=true&fmodul=$fmodul\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
+//        $menu = "<a href=\"#\" class=\"articlematrix-quickadd\" data-id=\"%value%\" data-insert-url=\"index.php?module=artikel&action=profisuche&id=%value%&cmd=$cmd&sid=$id&insert=true&fmodul=$fmodul\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, 
             CONCAT('<input type=\"checkbox\" name=\"auswahl[', v.id, ']\" class=\"articlematrix-checkbox\" id=\"articlematrix-checkbox-', v.id, '\" data-id=\"', v.id, '\">') AS auswahlbox,
@@ -1558,7 +1558,6 @@ class Artikel extends GenArtikel {
             $sql .= $joinartikelbaum;
             $groupby = ' GROUP BY a.id ';
           }
-
         }
 
         if ($paramsArray) {
@@ -1587,7 +1586,6 @@ class Artikel extends GenArtikel {
         $extrawhere .= " AND (aba.kategorie = '$artikelkategorie' OR a.typ = '".$artikelkategorie."_kat') ";
         $fastcount .= $joinartikelbaum;
       }
-
 
       if($this->app->erp->Firmendaten('artikel_artikelnummer_suche') == '1'){
 
@@ -2798,8 +2796,8 @@ class Artikel extends GenArtikel {
         if(isset($result[$nameofcolumn])) {
           if(
             ($result[$nameofcolumn]!='' && !is_array($result[$nameofcolumn]))
-            || $nameofcolumn==='lieferzeitmanuell' || $nameofcolumn==='pseudopreis'
-          ){
+         //   || $nameofcolumn==='lieferzeitmanuell' || $nameofcolumn==='pseudopreis'
+          ){           
             $this->app->DB->Update(
               "UPDATE artikel 
               SET " . $nameofcolumn . "='" . $this->app->DB->real_escape_string($result[$nameofcolumn]) . "' 
@@ -7081,6 +7079,8 @@ class Artikel extends GenArtikel {
     $this->app->YUI->AutoComplete('projekt', 'projektname', 1);
     $this->app->YUI->AutoComplete('lieferantname', 'lieferant', 1);
     $this->app->YUI->AutoComplete('hersteller', 'hersteller');
+
+    $this->app->YUI->AutoComplete('typ', 'artikelkategorienfull');
 
     $freifeld1bezeichnung = $this->app->erp->Firmendaten('freifeld1');
     if($freifeld1bezeichnung == ''){

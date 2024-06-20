@@ -605,7 +605,7 @@ class Exportbuchhaltung
                             $data['Umsatz'] = number_format(abs($difference), 2, ',', ''); // obligatory
                             $data['EU-Steuersatz (Bestimmung)'] = 0;
                             $data['WKZ Umsatz'] = $row['waehrung'];
-                            $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
+                            $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,36);
                             $data['Konto'] = $row['kundennummer'];
                             $data['Soll-/Haben-Kennzeichen'] = ($difference < 0)?'S':'H'; // obligatory   
                                                         
@@ -637,17 +637,19 @@ class Exportbuchhaltung
 
                 $data = array();
 
-                if ($row['betrag'] >= 0) {
+                if ($row['betrag'] > 0) {
                     $data['Umsatz'] = number_format($row['betrag'], 2, ',', ''); // obligatory
                     $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen']; // obligatory
-                } else {
+                } else if ($row['betrag'] < 0) {
                     $data['Umsatz'] = number_format(-$row['betrag'], 2, ',', ''); // obligatory
                     $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen_negativ']; // obligatory        
+                } else {
+                    continue;
                 }
 
                 $data['EU-Steuersatz (Bestimmung)'] = number_format($tmpsteuersatz, 2, ',', '');
                 $data['WKZ Umsatz'] = $row['pos_waehrung'];
-                $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,12);
+                $data['Belegfeld 1'] = mb_strimwidth($row['belegnr'],0,36);
                 $data['Konto'] = $row['kundennummer']; // obligatory
                 
                 if (!empty($typ['field_gegenkonto'])) {

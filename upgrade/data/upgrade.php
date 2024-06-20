@@ -119,6 +119,12 @@ if (php_sapi_name() == "cli") {
           $strict_db = false;
         } 
         
+        if (in_array('-drop_keys', $argv)) {
+          $drop_keys = true;
+        } else {
+          $drop_keys = false;
+        } 
+
         if (in_array('-do', $argv)) {
             if (!$check_git && !$check_db) {
                 $do_git = true;
@@ -143,7 +149,8 @@ if (php_sapi_name() == "cli") {
                             do_db: $do_db,
                             force: $force,
                             connection: $connection,
-                            origin: $origin);
+                            origin: $origin,
+                            drop_keys: $drop_keys);
         } else {
             info();
         }
@@ -155,7 +162,7 @@ if (php_sapi_name() == "cli") {
 } 
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin) {  
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin, bool $drop_keys) {  
   
     $mainfolder = dirname($directory);
     $datafolder = $directory."/data";
@@ -395,7 +402,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         echo_out("--------------- Calculating database upgrade for '$schema@$host'... ---------------\n");
 
         $upgrade_sql = array();
-        $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers, $strict_db);
+        $result =  mustal_calculate_db_upgrade($compare_def, $db_def, $upgrade_sql, $mustal_replacers, $strict_db, $drop_keys);
 
         if (!empty($result)) {
             abort(count($result)." errors.\n");
@@ -411,7 +418,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             foreach($upgrade_sql as $statement) {
                 echo_out($statement."\n");
             }
-        }
+        }       
 
         echo_out(count($upgrade_sql)." upgrade statements\n");
 

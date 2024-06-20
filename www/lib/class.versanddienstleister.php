@@ -18,7 +18,7 @@ abstract class Versanddienstleister
   protected int $projectId;
   protected ?int $labelPrinterId;
   protected ?int $documentPrinterId;
-  protected bool $shippingMail;
+  protected int $shippingMail;
   protected ?int $businessLetterTemplateId;
   protected ?object $settings;
 
@@ -162,13 +162,7 @@ abstract class Versanddienstleister
       AND r.status != 'storniert'
       ORDER BY lp.sort";
     $ret['positions'] = $this->app->DB->SelectArr($sql) ?? [];
-
-    if ($sid === "lieferschein") {
-      $standardkg = $this->app->erp->VersandartMindestgewicht($lieferscheinId);
-    } else {
-      $standardkg = $this->app->erp->VersandartMindestgewicht();
-    }
-    $ret['weight'] = $standardkg;
+  
     return $ret;
   }
 
@@ -370,9 +364,11 @@ abstract class Versanddienstleister
     return true;
   }
 
-  public function Paketmarke(string $target, string $docType, int $docId, $versandpaket = null): void
+  public function Paketmarke(string $target, string $docType, int $docId, $gewicht = 0, $versandpaket = null): void
   {
     $address = $this->GetAdressdaten($docId, $docType);
+    $address['weight'] = $gewicht;
+
     if (isset($_SERVER['CONTENT_TYPE']) && ($_SERVER['CONTENT_TYPE'] === 'application/json')) {
       $json = json_decode(file_get_contents('php://input'));
       $ret = [];
@@ -457,6 +453,17 @@ abstract class Versanddienstleister
         $countries = Array();        
         $this->app->Tpl->addMessage('error', 'L&auml;nderliste ist leer. Siehe Einstellungen -> L&auml;nderliste.', false, 'PAGE');
     }  
+    
+    switch ($this->shippingMail) {
+        case -1:
+            $address['email'] = '';
+        break;
+        case 1:
+            // User text template (not implemented)
+        break;
+        default:            
+        break;
+    }
 
     $json['form'] = $address;
     $json['countries'] = $countries;
@@ -469,9 +476,11 @@ abstract class Versanddienstleister
         CustomsInfo::CUSTOMS_TYPE_RETURN => 'Rücksendung'
     ];
     $json['messages'] = [];
+    $json['submitting'] = false;
     $json['form']['services'] = [
         Product::SERVICE_PREMIUM => false
     ];
+
     $this->app->Tpl->Set('JSON', json_encode($json));
     $this->app->Tpl->Set('CARRIERNAME', $this->GetName());
     $this->app->Tpl->Parse($target, 'createshipment.tpl');

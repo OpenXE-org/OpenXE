@@ -945,7 +945,7 @@ if($shops) {
               {
                 $onlinebestellnummer = $tmpwarenkorb['auftrag'];
               }
-              $projekt = $app->DB->Select("SELECT projekt WHERE shopexport = '$id' LIMIT 1");
+              $projekt = $app->DB->Select("SELECT projekt FROM shopexport WHERE id = '$id' LIMIT 1");
               if(!empty($tmpwarenkorb['projekt']) && $app->DB->Select("SELECT id FROM projekt WHERE id = '".(int)$tmpwarenkorb['projekt']."' LIMIT 1"))$projekt = (int)$tmpwarenkorb['projekt'];
               if(isset($tmpwarenkorb['subshop']) && $tmpwarenkorb['subshop'])
               {

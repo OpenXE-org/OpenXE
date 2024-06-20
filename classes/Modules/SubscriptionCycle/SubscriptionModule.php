@@ -61,6 +61,7 @@ class SubscriptionModule implements SubscriptionModuleInterface
         WHERE aa.dokument = :doctype
         AND greatest(aa.startdatum, aa.abgerechnetbis) <= :calcdate
         AND (aa.enddatum = '0000-00-00' OR aa.abgerechnetbis < aa.enddatum)
+        AND aa.preisart IN ('monat', 'jahr', '30tage')  
         AND aa.adresse = :address";
 
     return $this->db->fetchAll($sql, [

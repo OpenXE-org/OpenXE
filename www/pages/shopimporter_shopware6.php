@@ -38,6 +38,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     public $propertyOption;
     public $shopwareDefaultSalesChannel;
     public $shopwareMediaFolder;
+
+    private $normalTaxId;
+    private $reducedTaxId;
     public $protocol;
 
     /** @var bool  */
@@ -586,6 +589,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $this->propertyOption = $einstellungen['felder']['shopwarePropertyOption'];
         $this->shopwareDefaultSalesChannel = $einstellungen['felder']['shopwareDefaultSalesChannel'];
         $this->shopwareMediaFolder = $einstellungen['felder']['shopwareMediaFolder'];
+        $this->normalTaxId = $einstellungen['felder']['normalTaxId'];
+        $this->reducedTaxId = $einstellungen['felder']['reducedTaxId'];
         $query = sprintf('SELECT `steuerfreilieferlandexport` FROM `shopexport`  WHERE `id` = %d', $this->shopid);
         $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
 
@@ -668,6 +673,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'bezeichnung' => '{|Media Folder für Artikelbilder|}:',
                         'size' => 40,
                         'default' => 'Product Media'
+                    ],
+                    'normalTaxId' => [
+                        'typ' => 'text',
+                        'bezeichnung' => '{|TaxId für Steuersatz "normal"|}',
+                        'size' => 40,
+                    ],
+                    'reducedTaxId' => [
+                        'typ' => 'text',
+                        'bezeichnung' => '{|TaxId für Steuersatz "ermäßigt"|}',
+                        'size' => 40,
                     ],
                     'statesToFetch' => [
                         'typ' => 'text',
@@ -927,7 +942,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $quantity = $this->getCorrectedStockFromAvailable($active, (int)$quantity, $articleInfo);
             $taxRate = (float)$article['steuersatz'];
 
-            $taxId = $this->getTaxIdByRate($taxRate);
+            if (!empty($this->normalTaxId) && $article['umsatzsteuer'] == 'normal')
+              $taxId = $this->normalTaxId;
+            else if (!empty($this->reducedTaxId) && $article['umsatzsteuer'] == 'ermaessigt')
+              $taxId = $this->reducedTaxId;
+            else
+              $taxId = $this->getTaxIdByRate($taxRate);
 
             $mediaToAdd = $this->mediaToExport($article, $articleIdShopware);
 
@@ -1034,6 +1054,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'deliveryTimeId' => $deliveryTimeId
             ];
 
+            if (!$article['texteuebertragen']) {
+                unset($data['description']);
+            }
+
             $data = array_merge($data, $systemFieldsToAdd);
             if(empty($data['customFields'])
               || empty($data['customFields']['wawision_shopimporter_syncstate'])){
@@ -1057,7 +1081,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     sprintf('product/%s?_response=true', $articleIdShopware), $data, $headerInformation);
             }
 
-            if(!empty($articleIdShopware)){
+            if(!empty($articleIdShopware) && $article['texteuebertragen']) {
                 $this->exportTranslationsForArticle($article, $articleIdShopware);
             }
 
@@ -1352,8 +1376,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function mediaToExport($internalArticleData, $articleIdShopware)
     {
-        $mediaToAdd = [
-        ];
+        $mediaToAdd = [];
 
         if (empty($internalArticleData['Dateien'])) {
             return $mediaToAdd;
@@ -1826,7 +1849,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     protected function createPropertyOption($propertyGroupId, $propertyOptionName): ?string
     {
         $propertyOptionData = [
-            'id' => '',
             'name' => $propertyOptionName
         ];
         $createdPropertyOption = $this->shopwareRequest(
@@ -1881,13 +1903,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             if (empty($countryIsoToPropertyTranslation['DE'])) {
                 continue;
             }
-            $propertyGroupId = '';
-            if (array_key_exists($propertyDefaultName, $this->knownPropertyGroupIds)) {
-                $propertyGroupId = $this->knownPropertyGroupIds[$propertyDefaultName];
-            }
-            if (empty($propertyGroupId)) {
-                $propertyGroupId = $this->getPropertyGroupId($propertyDefaultName);
-            }
+            $propertyGroupId = $this->getPropertyGroupId($propertyDefaultName);
             if (empty($propertyGroupId)) {
                 $propertyGroupId = $this->createPropertyGroup($propertyDefaultName);
             }
@@ -2664,15 +2680,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (empty($article['matrix_varianten']) || empty($articleIdShopware)) {
             return false;
         }
+        $headerInformation = ['sw-language-id: ' . $languageId];
         $internalGroupPropertiesToShopwareId = [];
         foreach ($article['matrix_varianten']['gruppen'] as $propertyGroupName => $internalPropertyGroupValues) {
-            $propertyGroupId = '';
-            if (array_key_exists($propertyGroupName, $this->knownPropertyGroupIds)) {
-                $propertyGroupId = $this->knownPropertyGroupIds[$propertyGroupName];
-            }
-            if (empty($propertyGroupId)) {
-                $propertyGroupId = $this->getPropertyGroupId($propertyGroupName);
-            }
+            $propertyGroupId = $this->getPropertyGroupId($propertyGroupName);
             if (empty($propertyGroupId)) {
                 $propertyGroupId = $this->createPropertyGroup($propertyGroupName);
             }
@@ -2693,8 +2704,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 }
             }
 
-            $languageId = $this->getLanguageIdByCountryIso('DE');
-            $headerInformation = ['sw-language-id: ' . $languageId];
             $shopwarePropertyGroupOptions = $this->shopwareRequest(
                 'GET',
                 'property-group/' . $propertyGroupId . '/options?limit=100',
@@ -2705,7 +2714,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             foreach ($internalPropertyGroupValues as $internalPropertyGroupValue => $valueNotNeeded) {
-                if (!array_key_exists($internalPropertyGroupValue, $internalGroupPropertiesToShopwareId[$propertyGroupName])) {
+                if (!array_key_exists($internalPropertyGroupValue, $internalGroupPropertiesToShopwareId[$propertyGroupName] ?? [])) {
                     $newOptionData = [
                         'name' => (string)$internalPropertyGroupValue
                     ];
@@ -2778,6 +2787,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $isCloseOut = true;
             }
 
+            if ($variant['umsatzsteuer'] == 'normal' && !empty($this->normalTaxId))
+              $taxId = $this->normalTaxId;
+            else if ($variant['umsatzsteuer'] == 'ermaessigt' && !empty($this->reducedTaxId))
+              $taxId = $this->reducedTaxId;
+            else
+              $taxId = $this->getTaxIdByRate($variant['steuersatz']);
+
             $variantProductData = [
                 'active' => $active,
                 'isCloseout' => $isCloseOut,
@@ -2800,7 +2816,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 ],
                 'stock' => (int)$stock,
                 'ean' => null,
-                'taxId' => $this->getTaxIdByRate($variant['steuersatz']),
+                'taxId' => $taxId,
             ];
             if(!empty($weight)){
                 $variantProductData['weight'] = $weight;
@@ -2817,7 +2833,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             foreach ($internalVariantMatrixData as $expression) {
                 if (!in_array(
                     $internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']],
-                    $existingCombinationsByNumber[$productNumber]['options'],
+                    $existingCombinationsByNumber[$productNumber]['options'] ?? [],
                     false)) {
                     $renewVariant = true;
                 } else {
@@ -2960,14 +2976,21 @@ class Shopimporter_Shopware6 extends ShopimporterBase
    * @return PriceData[]
    */
     protected function getPricesFromArray($priceArray): array{
-      return array_map(static function($price){
-        return new PriceData(
-          (int)$price['ab_menge'],
-          (float)$price['preis'],
-          (float)$price['bruttopreis'],
-          $price['waehrung'],
-          $price['gruppeextern'] ?? '') ;
-      },$priceArray);
+        $c = count($priceArray);
+        $result = [];
+        for ($i = 0; $i < $c; $i++) {
+            $end = null;
+            if ($i+1 < $c && ($priceArray[$i+1]['gruppeextern'] ?? '') == ($priceArray[$i]['gruppeextern'] ?? ''))
+                $end = (int)$priceArray[$i+1]['ab_menge'] - 1;
+            $result[] = new PriceData(
+                (int)$priceArray[$i]['ab_menge'],
+                (float)$priceArray[$i]['preis'],
+                (float)$priceArray[$i]['bruttopreis'],
+                $priceArray[$i]['waehrung'],
+                $priceArray[$i]['gruppeextern'] ?? '',
+                $end);
+        }
+        return $result;
     }
 
     /**

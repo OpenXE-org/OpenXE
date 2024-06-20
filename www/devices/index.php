@@ -22,7 +22,7 @@ include '../lib/libextern.php';
 
 
 $config = new Config();
-$db = new DB($config->WFdbhost, $config->WFdbname, $config->WFdbuser, $config->WFdbpass,null,$conf->WFdbport);
+$db = new DB($config->WFdbhost, $config->WFdbname, $config->WFdbuser, $config->WFdbpass,null,$config->WFdbport);
 //$erp = new erpAPI($app);
 //$app->erp = $erp;
 

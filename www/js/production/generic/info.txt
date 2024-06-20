@@ -1,0 +1,1 @@
+This folder contains Mozilla pdfjs-4.2.67-dist added on 2024-05-15

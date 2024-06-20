@@ -57,7 +57,8 @@ class upgrade {
                                 do_db: false,
                                 force: $force,
                                 connection: false,
-                                origin: false
+                                origin: false,
+                                drop_keys: false
                 );
             break;
             case 'do_upgrade':
@@ -72,7 +73,8 @@ class upgrade {
                                 do_db: true,
                                 force: $force,
                                 connection: false,
-                                origin: false
+                                origin: false,
+                                drop_keys: false
                 );
             break;    
             case 'check_db':
@@ -88,7 +90,8 @@ class upgrade {
                                 do_db: false,
                                 force: $force,
                                 connection: false,
-                                origin: false
+                                origin: false,
+                                drop_keys: false
                 );
             break;    
             case 'do_db_upgrade':
@@ -104,7 +107,8 @@ class upgrade {
                                 do_db: true,
                                 force: $force,
                                 connection: false,
-                                origin: false
+                                origin: false,
+                                drop_keys: false
                 );
             break;    
             case 'refresh':

@@ -314,7 +314,7 @@ FROM
                 foreach ($menge_input as $key => $menge) {
                     if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
                         $artikel = substr($key,'6');
-                        if ($menge > 0) {
+                        if ($menge >= 0) {
                             $sql = "INSERT INTO bestellvorschlag (artikel, user, menge) VALUES($artikel,$user,$menge) ON DUPLICATE KEY UPDATE menge = $menge";
                             $this->app->DB->Insert($sql);
                         }

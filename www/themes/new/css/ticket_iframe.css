@@ -1,0 +1,20 @@
+@keyframes animation_blink {
+    0% { opacity: 1; }
+    25% { opacity: 1; }
+    26% { opacity: 0; }
+    75% { opacity: 0; }
+    76% { opacity: 1; }
+    100% { opacity: 1; }        
+}                
+.eye {
+    all: initial;
+    display:block;
+    float:right;
+    font-size:small;
+}             
+.blink {
+    animation-name:animation_blink;
+    animation-timing-function:linear;
+    animation-duration:2s;
+    animation-iteration-count:5;
+}                                                              

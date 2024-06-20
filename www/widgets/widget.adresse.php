@@ -438,6 +438,11 @@ class WidgetAdresse extends WidgetGenAdresse
       $this->app->Tpl->Set('NACHBUNDESSTAAT','-->');
     }
 
+    $etikettenart = $this->app->erp->GetEtiketten();
+    $field = new HTMLSelect("etikett",0);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
+    $this->form->NewField($field);
+
   }
 
   function ReplaceDecimal($db,$value,$fromform)

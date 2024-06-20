@@ -1214,8 +1214,10 @@ class Remote
     $projektlager = $this->app->DB->Select("SELECT id FROM projekt WHERE id = $projekt AND projektlager = 1 LIMIT 1");
     $tmp = new ObjGenArtikel($this->app);
     $cartikel_arr = !empty($artikel_arr)?count($artikel_arr):0;
+
     for($i=0;$i<$cartikel_arr;$i++)
     {
+
       $artikel = $artikel_arr[$i];
       $lagerexport = $this->app->erp->GetArtikelShopEinstellung('autolagerlampe', $artikel, $shopexportarr);
       $tmp->Select($artikel);
@@ -1260,6 +1262,9 @@ class Remote
       $data[$i]['uebersicht_de'] = htmlspecialchars($tmp->GetUebersicht_De(),ENT_QUOTES);
       $data[$i]['uebersicht_en'] = htmlspecialchars($tmp->GetUebersicht_En(),ENT_QUOTES);
       $data[$i]['herkunftsland'] = $tmp->GetHerkunftsland();
+
+      $data[$i]['texteuebertragen'] = $shopexportarr['texteuebertragen'];
+
       if(method_exists($tmp,'GetMetadescription_De'))
       {
         $data[$i]['metadescription_de'] = $tmp->GetMetadescription_De();
@@ -1892,7 +1897,7 @@ class Remote
                 'altersfreigabe' => $eigenschaft['altersfreigabe'], 'ean' => $eigenschaft['ean'],
                 'lag' => $matrixStock,
                 'pseudolager' => $matrixPseudoStorage, 'pseudopreis' => $eigenschaft['pseudopreis'],
-                'restmenge' => $eigenschaft['restmenge'], 'steuersatz' => ($steuer - 1) * 100,
+                'restmenge' => $eigenschaft['restmenge'], 'steuersatz' => ($steuer - 1) * 100, 'umsatzsteuer' => $eigenschaft['umsatzsteuer'],
                 'bruttopreis' => $eigenschaft['preis'] * $steuer, 'inaktiv' => $eigenschaft['inaktiv'],
                 'name_de' => $eigenschaft['name_de'], 'name_en' => $eigenschaft['name_en'],
                 'uebersicht_de' => $eigenschaft['uebersicht_de'], 'uebersicht_en' => $eigenschaft['uebersicht_en']);

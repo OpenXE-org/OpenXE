@@ -579,90 +579,93 @@ class Auftrag extends GenAuftrag
         break;
     case 'auftraegeoffeneauto':
 
-     $allowed['auftraegeoffeneauto'] = array('list');
+        $allowed['auftraegeoffeneauto'] = array('list');
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
-        $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%');
-        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag (brutto)','Kommissionierung','Monitor','Men&uuml;');
+        $width = array('1%','1%','1%',     '10%', '10%',     '27%', '10%',         '5%',  '5%',      '1%',      '1%',             '1%',              '1%');
+        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme','(SELECT id FROM kommissionierung WHERE auftrag = a.id)');
 
-                $defaultorder = 1;
-                $defaultorderdesc = 0;
+        $defaultorder = 1;
+        $defaultorderdesc = 0;
+        $alignright = array(3,4,5,11,12); 
 
-                $menu = "";
+        $menu = "";
 
-                $sql = "SELECT SQL_CALC_FOUND_ROWS
-                a.id,
-                '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
-                CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
-                IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
-                DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
-                lieferantkdrnummer,
-                name,
-                DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
-                land,
-                zahlungsweise,
-                gesamtsumme,
-                (" . $this->app->YUI->IconsSQL() . ")  AS icons,
-                a.id
-                FROM
-                auftrag a";
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
+        a.id,
+        '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+        CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
+        IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
+        DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
+        a.lieferantkdrnummer,
+        a.name,
+        DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
+        a.land,
+        p.abkuerzung,
+        a.zahlungsweise,
+        a.gesamtsumme,
+        (SELECT id FROM kommissionierung WHERE auftrag = a.id) as kommissionierung,
+        (" . $this->app->YUI->IconsSQL() . ")  AS icons,
+        a.id
+        FROM
+        auftrag a LEFT JOIN projekt p ON a.projekt = p.id";
 
-                $where = "a.status = 'freigegeben' AND a.cronjobkommissionierung = 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1"; // liefertermin_ok special treatment
+        $where = "a.status = 'freigegeben' AND a.cronjobkommissionierung = 0 AND a.lager_ok=1 AND a.porto_ok=1 AND a.ust_ok=1 AND a.vorkasse_ok=1 AND a.nachnahme_ok=1 AND a.autoversand=1 AND a.check_ok=1 AND a.kreditlimit_ok=1 AND a.liefersperre_ok=1"; // liefertermin_ok special treatment
 
-                $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
+        $count = "SELECT count(DISTINCT id) FROM auftrag a WHERE $where";
 
 //                $groupby = "";
 
-                $moreinfo = true; // Allow drop down details
+        $moreinfo = true; // Allow drop down details
 
-                // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#fastlane').click( function() { fnFilterColumn1( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_kundemehrereauftraege').click( function() { fnFilterColumn2( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_lieferdatum').click( function() { fnFilterColumn3( 0 ); } );");
+        // Toggle filters
+        $this->app->Tpl->Add('JQUERYREADY', "$('#fastlane').click( function() { fnFilterColumn1( 0 ); } );");
+        $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_kundemehrereauftraege').click( function() { fnFilterColumn2( 0 ); } );");
+        $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_lieferdatum').click( function() { fnFilterColumn3( 0 ); } );");
 
-                for ($r = 1;$r <= 3;$r++) {
-                  $this->app->Tpl->Add('JAVASCRIPT', '
-                                         function fnFilterColumn' . $r . ' ( i )
-                                         {
-                                         if(oMoreData' . $r . $name . '==1)
-                                         oMoreData' . $r . $name . ' = 0;
-                                         else
-                                         oMoreData' . $r . $name . ' = 1;
+        for ($r = 1;$r <= 3;$r++) {
+          $this->app->Tpl->Add('JAVASCRIPT', '
+                                 function fnFilterColumn' . $r . ' ( i )
+                                 {
+                                 if(oMoreData' . $r . $name . '==1)
+                                 oMoreData' . $r . $name . ' = 0;
+                                 else
+                                 oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter( 
-                                           \'\',
-                                           i, 
-                                           0,0
-                                           );
-                                         }
-                                         ');
-                }
+                                 $(\'#' . $name . '\').dataTable().fnFilter( 
+                                   \'\',
+                                   i, 
+                                   0,0
+                                   );
+                                 }
+                                 ');
+        }
 
-                $more_data1 = $this->app->Secure->GetGET("more_data1");
+        $more_data1 = $this->app->Secure->GetGET("more_data1");
 
-                if ($more_data1 == 1) {
-                   $where .= " AND a.fastlane=1";
-                } else {
-                }
+        if ($more_data1 == 1) {
+           $where .= " AND a.fastlane=1";
+        } else {
+        }
 
-                $more_data3 = $this->app->Secure->GetGET("more_data3");
-                if ($more_data3 == 1) {
-                }
-                else {
-                  $where .= " AND a.liefertermin_ok=1";
-                }                
+        $more_data3 = $this->app->Secure->GetGET("more_data3");
+        if ($more_data3 == 1) {
+        }
+        else {
+          $where .= " AND a.liefertermin_ok=1";
+        }                
 
-                $more_data2 = $this->app->Secure->GetGET("more_data2");
-                if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
+        $more_data2 = $this->app->Secure->GetGET("more_data2");
+        if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
 
-               // END Toggle filters
+       // END Toggle filters
 
-                $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
-                $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
-                $menu .= "</a>";
+        $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
+        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\">";
+        $menu .= "</a>";
 
-                $moreinfo = true; // Minidetail active
-                $menucol = 11; // For minidetail
+        $moreinfo = true; // Minidetail active
+        $menucol = 13; // For minidetail
 
         break;
         case 'auftraegeoffeneautowartend':
@@ -670,9 +673,9 @@ class Auftrag extends GenAuftrag
           // Show list for cronjob commissioning
           $allowed['auftraegeoffeneautowartend'] = array('list');
 
-          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
-          $width = array('1%','1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
-          $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'a.zahlungsweise', 'a.gesamtsumme');
+          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+          $width = array('1%','1%','1%', '10%', '10%', '10%', '27%', '5%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
+          $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -685,16 +688,17 @@ class Auftrag extends GenAuftrag
                 CONCAT('<input type=\"checkbox\" name=\"auswahlcronjob[]\" value=\"',a.id,'\" />') AS `auswahl`,
                 IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
                 DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
-                lieferantkdrnummer,
-                name,
+                a.lieferantkdrnummer,
+                a.name,
                 DATE_FORMAT(a.tatsaechlicheslieferdatum,'%d.%m.%Y') as `tatsaechlicheslieferdatum`,
-                land,
-                zahlungsweise,
-                gesamtsumme,
+                a.land,
+                p.abkuerzung,
+                a.zahlungsweise,
+                a.gesamtsumme,
                 (" . $this->app->YUI->IconsSQL() . ")  AS icons,
                 a.id
                 FROM
-                auftrag a";
+                auftrag a LEFT JOIN projekt p ON a.projekt = p.id";
 
                 $status_where =  'a.cronjobkommissionierung > 0';
 
@@ -884,7 +888,6 @@ class Auftrag extends GenAuftrag
    */
   public function __construct($app, $intern = false)
   {
-    $this->kommissionierung = false;
     $this->app=$app;
     if($intern) {
       return;
@@ -5451,9 +5454,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
 
-
-
-
   function AuftragReservieren()
   {
     $id = $this->app->Secure->GetGET('id');
@@ -5463,177 +5463,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->Location->execute("index.php?module=auftrag&action=edit&id=$id&msg=$msg");
   }
 
-  /**
-   * @param int $kommissionierungId
-   */
-  public function updateCase($kommissionierungId)
-  {
-    if($kommissionierungId <= 0) {
-      return;
-    }
-    $deliveryNotes = $this->app->DB->SelectArr(
-      sprintf(
-        'SELECT id, kiste FROM lieferschein WHERE kommissionierung = %d ORDER BY id',
-        $kommissionierungId
-      )
-    );
-    if(empty($deliveryNotes)) {
-      return;
-    }
-
-    $kiste = 0;
-    foreach($deliveryNotes as $deliveryNote) {
-      $kiste++;
-      if($deliveryNote['kiste'] != $kiste) {
-        $this->app->DB->Update(
-          sprintf(
-            'UPDATE lieferschein SET kiste = %d WHERE id = %d',
-            $kiste, $deliveryNote['id']
-          )
-        );
-      }
-    }
-  }
-
-  /**
-   * @param array $orders
-   * @param int   $projectId
-   * @param int   $cronjobCommissionId
-   * @param int   $cronjobId
-   * @param int   $commissionId
-   *
-   * @return int
-   */
-  public function sendOrders($orders, $projectId, $cronjobCommissionId, $cronjobId = 0, $commissionId = 0)
-  {
-    $return = 0;
-    if(empty($orders) || !is_array($orders)) {
-      return $return;
-    }
-
-    $commissionName = empty($cronjobCommissionId)?'': $this->app->DB->real_escape_string(
-      $this->app->DB->Select(
-        sprintf(
-          'SELECT `bezeichnung` FROM `cronjob_kommissionierung` WHERE `id` = %d',
-          $cronjobCommissionId
-        )
-      )
-    );
-    $this->kommissionierung = $commissionId > 0
-      ? $commissionId
-      : $this->app->erp->GetNextKommissionierung($commissionName);
-    foreach($orders as $auftrag) {
-      if(
-      $auftragRow = $this->app->DB->SelectRow(
-        sprintf(
-          "SELECT a.id, a.belegnr 
-          FROM auftrag AS a 
-          WHERE (cronjobkommissionierung = '$cronjobCommissionId' OR 0 = '$cronjobCommissionId') 
-            AND a.id != '' 
-            AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.inbearbeitung=0 
-            AND a.nachlieferung!='1' AND a.autoversand='1'  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' 
-            AND liefersperre_ok='1'
-            AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' 
-            AND a.id = %d
-          GROUP BY a.id 
-          ORDER by a.id",
-          $auftrag
-        )
-      )
-      ) {
-        if($cronjobId > 0){
-          $this->app->erp->ProzessstarterStatus(
-            'Auftrag Versand Auftrag: ' . $auftragRow['belegnr'], $cronjobId
-          );
-        }
-        //$this->app->erp->AuftragEinzelnBerechnen($auftrag);
-        $this->app->DB->Update(
-          "UPDATE prozessstarter 
-          SET mutex = 1 , mutexcounter = 0, letzteausfuerhung = now() 
-          WHERE (parameter = 'autoversand_standard' OR parameter = 'autoversand_manuell') AND aktiv = 1"
-        );
-        $erg = null;
-        $this->app->erp->RunHook('VorAutoversand', 1, $auftrag);
-        if(
-        $this->app->DB->Select(
-          sprintf(
-            "SELECT a.id 
-            FROM auftrag AS a 
-            WHERE a.id = %d AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' 
-              AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.autoversand='1'  AND a.liefertermin_ok='1' 
-              AND kreditlimit_ok='1' AND liefersperre_ok='1'
-              AND a.vorkasse_ok='1' AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1'      
-            GROUP BY a.id",
-            $auftrag
-          )
-        )
-        ) {
-          $this->AuftragVersand($auftrag, false, $erg, true);
-          $return++;
-        }
-        $this->app->DB->Update(
-          sprintf(
-            'UPDATE auftrag SET cronjobkommissionierung = 0 WHERE id = %d LIMIT 1',
-            $auftrag
-          )
-        );
-      }
-    }
-
-    if(
-      empty($projectId)
-      || empty($this->kommissionierung)
-      || !$this->app->DB->Select(
-        sprintf(
-          'SELECT `id` FROM `lieferschein` WHERE `kommissionierung` = %d LIMIT 1',
-          $this->kommissionierung
-        )
-      )
-    ) {
-      return $return;
-    }
-
-    $kommissionierlistestufe1 = $this->app->erp->Projektdaten($projectId, 'kommissionierlistestufe1');
-    if($kommissionierlistestufe1) {
-      $druckercode = $this->app->erp->Projektdaten($projectId, 'druckerlogistikstufe1');
-      if($druckercode <=0) {
-        $druckercode = $this->app->erp->Firmendaten('standardversanddrucker');
-      }
-      $kommissionierlistestufe1menge = $this->app->erp->Projektdaten(
-        $projectId, 'kommissionierlistestufe1menge'
-      );
-      if($kommissionierlistestufe1menge < 1) {
-        $kommissionierlistestufe1menge = 1;
-      }
-      /** @var Kommissionierlauf $obj2 */
-      $obj2 = $this->app->erp->LoadModul('kommissionierlauf');
-      if($obj2 && $this->kommissionierung) {
-        if($cronjobId > 0){
-          $this->app->erp->ProzessstarterStatus(
-            'KommissionierlaufPDF: ' . $this->kommissionierung, $cronjobId
-          );
-        }
-        $tmpfile = $obj2->KommissionierlaufPDF($this->kommissionierung);
-        for($mengedruck=$kommissionierlistestufe1menge;$mengedruck > 0;$mengedruck--) {
-          $this->app->printer->Drucken($druckercode,$tmpfile);
-        }
-        unlink($tmpfile);
-      }
-    }
-
-    return $return;
-  }
-
   /*
     order processed true or false
   */
 
   public function AuftragVersand($id='', $ignoriereliefertermin = false, &$ergebnis = null, $paketmarkedrucken = false)
-  {
-    if(!$this->kommissionierung)
-    {
-      $this->kommissionierung = $this->app->erp->GetNextKommissionierung();
-    }
+  {    
     // mit der funktionen koennen nur erstauftraege abgewickelt koennen!!!
     $internmodus = 0;
     if($id!='')
@@ -5708,7 +5543,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     {
       $useredittimestamp = 1000;
     }
-
+    
     $anzahl_artikel = $this->app->DB->Select("SELECT id FROM auftrag_position WHERE auftrag=$id LIMIT 1");
     if($anzahl_artikel <= 0)
     {
@@ -5918,7 +5753,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       $druckercode = $this->app->erp->Firmendaten('standardversanddrucker');
 
-
       $this->app->erp->Protokoll("WeiterfuehrenAuftragZuRechnung AB $belegnr Kommissionierverfahren: $kommissionierverfahren Projekt $projekt");
 
       switch($kommissionierverfahren)
@@ -5944,15 +5778,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           if($kommissionierverfahren==='lieferschein' && $lieferschein > 0)
           {
             //FALL 1 Lieferschein mit Lagerplatz
-            if($this->kommissionierung){
-              $this->app->DB->Update(
-                sprintf(
-                  "UPDATE lieferschein SET kommissionierung = %d WHERE id = %d LIMIT 1",
-                  $this->kommissionierung, $lieferschein
-                )
-              );
-              $this->updateCase($this->kommissionierung);
-            }
+
+            $auslagernresult =            
             $this->app->erp->LieferscheinAuslagern(
               $lieferschein,
               true,
@@ -5963,9 +5790,33 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               $nurRestmenge
             );
             
+            $sql = "SELECT id FROM kommissionierung k WHERE k.auftrag = '".$id."'";
+            $vorkommissionierung = $this->app->DB->Select($sql);
+                       
+            if (!$vorkommissionierung)
+            {
+                $kommissionierung = $this->app->erp->GetNextKommissionierung();
+ 
+                $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
+                $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_drucker');          
+                       
+                $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
+                $settings = $this->app->DB->SelectRow($sql);               
+
+                $this->Kommissionieren(
+                    kommissionierung : $kommissionierung,
+                    auftrag: $id,
+                    lieferschein: $lieferschein,
+                    ausgelagert: true,
+                    lagerplatzliste: $auslagernresult,
+                    mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
+                    druckercode: $druckercode,
+                    mengeetiketten: $settings['etikettautodruck']?1:0,
+                    etikett: $settings['etikettautodruck']?$settings['etikett']:0,
+                    etikettendrucker: $etikettendrucker);
+            }
+               
             // Prozesse ohne Versandzentrum
-
-
             $this->app->erp->BriefpapierHintergrundDisable($druckercode);
 
             $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
@@ -6095,9 +5946,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       // Check for override in adresse      
       $sql = "SELECT rechnung_anzahlpapier, rechnung_anzahlpapier_abweichend FROM adresse WHERE id =".$adresse; 
-      $rechnung_anzahlpapier = $this->app->DB->SelectArr($sql);
-      if ($rechnung_anzahlpapier[0]['rechnung_anzahlpapier_abweichend']) {          
-          $autodruckrechnungstufe1menge = $rechnung_anzahlpapier[0]['rechnung_anzahlpapier'];
+      $adresse_settings = $this->app->DB->SelectArr($sql);
+      if ($adresse_settings[0]['rechnung_anzahlpapier_abweichend']) {          
+          $autodruckrechnungstufe1menge = $adresse_settings[0]['rechnung_anzahlpapier'];
       }
 
       if($exportdruckrechnungstufe1)
@@ -6620,65 +6471,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               foreach ($auftraegenachprojekt as $projekt => $auftraege) {
                 if(!is_array($auftraege) || empty($auftraege)) {
                   continue;
-                }
-                $this->kommissionierung = $this->app->erp->GetNextKommissionierung($bezeichnung);
-    
+                }                  
                 $processed_orders_num = 0;
-
                 foreach ($auftraege as $auftrag) {
-
                   /* Process each order */
-                  if($this->AuftragVersand($auftrag)) {
+                  if($this->AuftragVersand($auftrag, true)) {
                     $processed_orders_num++;
                   }
-
                 }
-
                 $this->app->Tpl->Set('MESSAGE','<div class="info">'.$processed_orders_num.' Auftr&auml;ge wurden verarbeitet.</div>');
-
-                if(empty($this->kommissionierung)) {
-                  continue;
-                }
-                if(
-                  empty(
-                    $this->app->DB->Select(
-                      sprintf(
-                        'SELECT `id` FROM `lieferschein` WHERE `kommissionierung` = %d',
-                        $this->kommissionierung
-                      )
-                    )
-                  )
-                ) {
-                  continue;
-                }
-                $kommissionierlistestufe1 = $this->app->erp->Projektdaten($projekt, 'kommissionierlistestufe1');
-                if(empty($kommissionierlistestufe1)) {
-                  continue;
-                }
-                $druckercode = $this->app->DB->Select(
-                  sprintf(
-                    'SELECT druckerlogistikstufe1 FROM projekt WHERE id= %d LIMIT 1',
-                    $projekt
-                  )
-                );
-                if($druckercode <= 0){
-                  $druckercode = $this->app->erp->Firmendaten('standardversanddrucker');
-                }
-                $kommissionierlistestufe1menge = $this->app->erp->Projektdaten(
-                  $projekt, 'kommissionierlistestufe1menge'
-                );
-                if($kommissionierlistestufe1menge < 1){
-                  $kommissionierlistestufe1menge = 1;
-                }
-                /** @var Kommissionierlauf $obj */
-                $obj = $this->app->erp->LoadModul('kommissionierlauf');
-                if($obj && $this->kommissionierung){
-                  $tmpfile = $obj->KommissionierlaufPDF($this->kommissionierung);
-                  for ($mengedruck = $kommissionierlistestufe1menge; $mengedruck > 0; $mengedruck--) {
-                    $this->app->printer->Drucken($druckercode, $tmpfile);
-                  }
-                  unlink($tmpfile);
-                }
               }
             }
           break;
@@ -6712,6 +6513,88 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               }
             }
           break;
+          case 'vorkommissionieren_ohne_etiketten':
+              $vorkommissionieren_ohne_etiketten = true;
+            // break ommitted
+          case 'vorkommissionieren':
+                
+                if (!empty($auftraegemarkiert)) {
+                    foreach ($auftraegemarkiert as $k => $v) {
+                        $sql = "
+                            SELECT 
+                                k.id,
+                                a.belegnr,
+                                a.adresse
+                            FROM
+                               kommissionierung k
+                            LEFT JOIN
+                                lieferschein l
+                            ON
+                                l.id = k.lieferschein
+                            LEFT JOIN
+                                auftrag al 
+                            ON
+                                al.id = l.auftrag
+                            LEFT JOIN
+                                auftrag a 
+                            ON
+                                a.id = k.auftrag
+                            WHERE
+                                a.id = $v OR al.id = $v                                      
+                            LIMIT 1  
+                        ";
+                        $check = $this->app->DB->SelectRow($sql);
+                        if (!empty($check)) {
+                            $this->app->Tpl->addMessage('Error',"Bereits Kommissioniert: ".$check['belegnr']);
+                            break;
+                        }
+
+                        $kid = $this->app->erp->GetNextKommissionierung();
+
+                        $auslagernresult =            
+                            $this->app->erp->LieferscheinAuslagern(
+                              lieferschein: $v,
+                              anzeige_lagerplaetze_in_lieferschein: true,
+                              standardlager: (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $v)),
+                              belegtyp: 'auftrag',
+                              chargenmhdnachprojekt: true,
+                              forceseriennummerngeliefertsetzen: false,
+                              nurrestmenge: false,
+                              simulieren: true  
+                            );
+                            
+                        $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
+                        $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
+
+                        $settings = $this->app->DB->SelectRow("
+                            SELECT 
+                                projekt.autodruckkommissionierscheinstufe1,
+                                projekt.autodruckkommissionierscheinstufe1menge,
+                                adresse.etikett,
+                                adresse.etikettautodruck,
+                                projekt.id as projekt
+                            FROM projekt 
+                            INNER JOIN auftrag ON projekt.id = auftrag.projekt
+                            INNER JOIN adresse ON adresse.id = auftrag.adresse
+                            WHERE auftrag.id = '".$v."'"
+                        );
+
+                        $etikettendrucker = $this->app->erp->Projektdaten($settings['projekt'],'etiketten_drucker');          
+
+                        $this->Kommissionieren(
+                            kommissionierung : $kid,
+                            auftrag: $v,
+                            lieferschein: 0,
+                            ausgelagert: false,
+                            lagerplatzliste: $auslagernresult,
+                            mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
+                            druckercode: $druckercode,
+                            mengeetiketten: $settings['etikettautodruck']?1:0,
+                            etikett: $vorkommissionieren_ohne_etiketten?0:($settings['etikettautodruck']?$settings['etikett']:0),
+                            etikettendrucker: $etikettendrucker);                       
+                    }
+                }
+            break;
         }
       }
     }
@@ -7162,7 +7045,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           }
           foreach ($auftraegenachprojekt as $projekt => $auftraege) {
             if(is_array($auftraege)){
-              $this->kommissionierung = $this->app->erp->GetNextKommissionierung($bezeichnung);
               foreach ($auftraege as $auftrag) {
                 $this->AuftragVersand($auftrag);
               }
@@ -7436,5 +7318,66 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
      $this->app->YUI->TableSearch('TAB1','offenepositionen',"show","","",basename(__FILE__), __CLASS__);
      $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
+    
+    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $mengedruck, $druckercode, int $mengeetiketten, $etikett, $etikettendrucker) {
 
+        $sql = sprintf(
+            "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d, adresse = IF (%d != 0,(SELECT adresse FROM lieferschein WHERE id = %d LIMIT 1),(SELECT adresse FROM auftrag WHERE id = %d LIMIT 1)), ausgelagert = %d WHERE id = %d LIMIT 1",
+                $lieferschein,
+                $auftrag,
+                $lieferschein,
+                $lieferschein,
+                $auftrag,
+                $adresse,
+                $kommissionierung,
+                $ausgelager
+            );
+
+        $this->app->DB->Update(
+            $sql
+        );
+
+        foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {            
+            $this->app->DB->Update(
+                sprintf(
+                    "INSERT INTO kommissionierung_position (kommissionierung, artikel, lager_platz, menge) VALUES (%d, %d, %d, %d)",
+                    $kommissionierung,
+                    $storageMovement['artikel'],
+                    $storageMovement['lager_platz'],
+                    $storageMovement['menge']
+                )
+            );
+        }
+
+        // Kommissionierschein
+        if ($mengedruck > 0) {
+            $this->app->erp->BriefpapierHintergrunddisable = true; // Disable background
+            $Brief = new KommissionierungPDF($this->app, styleData: array('ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
+            $Brief->GetKommissionierung($kommissionierung);
+            $tmpfile = $Brief->displayTMP();
+            for($drucklauf = 0; $drucklauf < $mengedruck;$drucklauf++) {        
+                $spooler_id = $this->app->printer->Drucken($druckercode, $tmpfile);
+            }
+            unlink($tmpfile);  
+            $this->app->erp->BriefpapierHintergrundDisable($druckercode); // Restore default background from printersettings
+        }
+
+        // Etiketten
+        if ($mengeetiketten > 0) {
+            foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {            
+                $this->app->erp->EtikettenDrucker(
+                    kennung: $etikett,
+                    anzahl: $mengeetiketten*$storageMovement['menge'],
+                    tabelle: 'artikel',
+                    id: $storageMovement['artikel'],
+                    variables: null,
+                    druckercode: $etikettendrucker
+                );                    
+            }
+
+            //function EtikettenDrucker($kennung,$anzahl,$tabelle,$id,$variables="",$xml="",$druckercode="",$filenameprefix="",$xmlaspdf=false,$adresse=0,$verwendenals="")
+        }
+
+
+    }
 }
