@@ -24,7 +24,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     private $taxationByDestinationCountry;
     private $orderSearchLimit;
 
-    private $category_identifier;
+    private $configuration_identifier;
 
     private $create_products;
     private $mirakl_error_text_product_missing;
@@ -71,17 +71,17 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'size' => 40,
                     'info' => 'optional, int64'
                 ],
-                'category_identifier_source' => [
+                'configuration_identifier_source' => [
                     'typ' => 'select',
-                    'bezeichnung' => '{|Katalogkategorie-Typ|}:',
+                    'bezeichnung' => '{|Konfigurationsidentifizierer-Typ|}:',
                     'size' => 40,
-                    'info' => 'Woher soll die Katalogkategorie des jeweiligen Artikels bezogen werden?',
+                    'info' => 'Woher soll die Konfiguration des jeweiligen Artikels bezogen werden?',
                     'default' => 'feld',
                     'optionen' => ['feld' => '{|Feld|}', 'freifeld' => '{|Freifeld|}', 'eigenschaft' => '{|Eigenschaft|}', 'wert' => '{|Fester Wert|}']
                 ],
-                'category_identifier_source_value' => [
+                'configuration_identifier_source_value' => [
                     'typ' => 'text',
-                    'bezeichnung' => '{|Katalogkategorie-Wert|}:',
+                    'bezeichnung' => '{|Konfigurationsidentifizierer-Wert|}:',
                     'size' => 40,
                     'info' => '',
                     'default' => 'kategoriename'
@@ -111,13 +111,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 ],
                 'product_field_map' => [
                     'typ' => 'textarea',
-                    'bezeichnung' => '{|Zuordnung Produkt-Felder je Kategorie (JSON)|}:',
+                    'bezeichnung' => '{|Zuordnung Produkt-Felder je Konfiguration (JSON)|}:',
                     'cols' => 80,
                     'rows' => 20,
-                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Ist keine Kategorie definiert, gilt der Eintrag für alle Artikel. Jedes Feld kann wie folgt zugeordnet werden:<br>Artikelfeld: &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;xyz&quot;} oder kurz &quot;Mirakel-Feldname&quot;: &quot;xyz&quot;,<br>Freifeld: &quot;Mirakel-Feldname&quot;: {&quot;freifeld&quot;: &quot;Bezeichnung in Shop&quot;} (Siehe Reiter &quot;Freifelder&quot;),<br>Eigenschaft: &quot;Mirakel-Feldname&quot;: {&quot;eigenschaft&quot;: &quot;Eigenschaftenname xyz&quot;},<br>Fester Wert: &quot;Mirakel-Feldname&quot;: {&quot;wert&quot;: &quot;xyz&quot;}<br><br>Zusatzfelder zusätzlich mit der Eigenschaft &quot;zusatzfeld&quot;: true versehen: z.B. &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;name_de&quot;, &quot;zusatzfeld&quot;: true}',
+                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Ist keine Konfiguration definiert, gilt der Eintrag für alle Artikel. Jedes Feld kann wie folgt zugeordnet werden:<br>Artikelfeld: &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;xyz&quot;} oder kurz &quot;Mirakel-Feldname&quot;: &quot;xyz&quot;,<br>Freifeld: &quot;Mirakel-Feldname&quot;: {&quot;freifeld&quot;: &quot;Bezeichnung in Shop&quot;} (Siehe Reiter &quot;Freifelder&quot;),<br>Eigenschaft: &quot;Mirakel-Feldname&quot;: {&quot;eigenschaft&quot;: &quot;Eigenschaftenname xyz&quot;},<br>Fester Wert: &quot;Mirakel-Feldname&quot;: {&quot;wert&quot;: &quot;xyz&quot;}<br><br>Optionen:<br>Text voranstellen: &quot;praefix: &quot;Dieser Text vorne&quot;,<br>Text hinten anstellen: &quot;postfix: &quot;Dieser Text hinten&quot;,<br>Standardwert:  &quot;standardwert: &quot;Dieser Wert wenn nichts gefunden wurde&quot;,<br>Als Zusatzfeld senden: &quot;zusatzfeld&quot;: true',
                     'placeholder' => '[
     {
-        &quot;kategorien&quot;: [
+        &quot;konfigurationen&quot;: [
             &quot;Schuhe&quot;, &quot;Hosen&quot;
         ],
         &quot;felder&quot;: {
@@ -126,7 +126,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
           &quot;SHOP.PRODUCT.TITLE&quot;: {&quot;feld&quot;: &quot;nummer&quot;},
           &quot;ATT.GLOBAL.Brandname&quot;: {&quot;feld&quot;: &quot;preis&quot;},
           &quot;Product.BaseUnit&quot;: {&quot;freifeld&quot;: &quot;Kategorie&quot;},
-          &quot;ATT.GLOBAL.NoCUperOU&quot;: {&quot;eigenschaft&quot;: &quot;Mirakl Steuertext&quot;},
+          &quot;ATT.GLOBAL.NoCUperOU&quot;: {&quot;eigenschaft&quot;: &quot;Mirakl Steuertext&quot;, &quot;praefix&quot;: &quot;ST-&quot;},
           &quot;ATT.GLOBAL.NoCUperOU__UNIT&quot;: {&quot;wert&quot;: &quot;false&quot;,&quot;zusatzfeld&quot;: true},
           &quot;Product.TaxIndicator&quot;: {&quot;wert&quot;: &quot;1&quot;,&quot;zusatzfeld&quot;: true}
         }
@@ -136,13 +136,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
                 'offer_field_map' => [
                     'typ' => 'textarea',
-                    'bezeichnung' => '{|Zuordnung Angebots-Felder je Kategorie (JSON)|}:',
+                    'bezeichnung' => '{|Zuordnung Angebots-Felder je Konfiguration (JSON)|}:',
                     'cols' => 80,
                     'rows' => 20,
-                    'info' => 'Die Felder werden vom Mirakl-Betreiber vorgegeben. Ist keine Kategorie definiert, gilt der Eintrag für alle Artikel. Jedes Feld kann wie folgt zugeordnet werden:<br>Artikelfeld: &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;xyz&quot;} oder kurz &quot;Mirakel-Feldname&quot;: &quot;xyz&quot;,<br>Freifeld: &quot;Mirakel-Feldname&quot;: {&quot;freifeld&quot;: &quot;Bezeichnung in Shop&quot;} (Siehe Reiter &quot;Freifelder&quot;),<br>Eigenschaft: &quot;Mirakel-Feldname&quot;: {&quot;eigenschaft&quot;: &quot;Eigenschaftenname xyz&quot;},<br>Fester Wert: &quot;Mirakel-Feldname&quot;: {&quot;wert&quot;: &quot;xyz&quot;}<br><br>Zusatzfelder zusätzlich mit der Eigenschaft &quot;zusatzfeld&quot;: true versehen: z.B. &quot;Mirakel-Feldname&quot;: {&quot;feld&quot;: &quot;name_de&quot;, &quot;zusatzfeld&quot;: true}',
+                    'info' => '',
                     'placeholder' => '[
     {
-        &quot;kategorien&quot;: [
+        &quot;konfigurationen&quot;: [
             &quot;Schuhe&quot;, &quot;Hosen&quot;
         ],
         &quot;felder&quot;: {
@@ -187,7 +187,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $this->shopUrl = rtrim($einstellungen['felder']['shopurl'], '/') . '/';
         $this->mirakl_shopid = $einstellungen['felder']['mirakl_shopid'];
        
-        $this->category_identifier = array($einstellungen['felder']['category_identifier_source'] => $einstellungen['felder']['category_identifier_source_value']);
+        $this->configuration_identifier = array($einstellungen['felder']['configuration_identifier_source'] => $einstellungen['felder']['configuration_identifier_source_value']);
 
         $this->create_products = $einstellungen['felder']['create_products'];
         $this->mirakl_error_text_product_missing = $einstellungen['felder']['mirakl_error_text_product_missing'];
@@ -308,32 +308,51 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     *   Gets a flexible mapped fieldvalue from feld, wert or eigenschaft
     */
     public function GetFieldValue($article, $field_map_entry) {    
+
+        $prefix = null;
+        $postfix = null;
+        $returnval = null;
+
         foreach ($field_map_entry as $key => $value) {                   
             switch ($key) {
                 case 'feld': 
                     if (isset($article[$value])) {
-                        return($article[$value]);
+                        $returnval = $article[$value];
                     } else {
                        throw new Exception("Artikelfeld existiert nicht: \"".$value."\"");               
                     }
                 break;
                 case 'freifeld': 
                     if (isset($article['freifelder']['DE'][$value])) {
-                        return($article['freifelder']['DE'][$value]);
+                        $returnval = $article['freifelder']['DE'][$value];
                     } else {
                        throw new Exception("Freifeld existiert nicht: \"".$value."\"");               
                     }
                 break;
                 case 'eigenschaft':
                     $sql = "SELECT wert FROM artikeleigenschaften ae INNER JOIN artikeleigenschaftenwerte aew ON aew.artikeleigenschaften = ae.id WHERE aew.artikel = '".$article['artikelid']."' AND ae.name = '".$value."' LIMIT 1";
-                    return($this->app->DB->Select($sql));
+                    $result = $this->app->DB->SelectRow($sql);
+                    if (!empty($result)) {
+                        $returnval = $result['wert'];
+                    }
                 break;
                 case 'wert':
-                    return($value);
-                break;                
-            }                
-        }        
-        return(null);
+                    return($prefix.$value.$postfix);
+                break;   
+                case 'praefix':
+                    $prefix = $value;
+                break;
+                case 'postfix':
+                    $postfix = $value;
+                break;
+                case 'standardwert':
+                    if(empty($returnval)) {
+                        $returnval = $value;
+                    }
+                break;
+            }                            
+        }                      
+        return($prefix.$returnval.$postfix);
     }
 
     public function ImportSendListLager() {
@@ -586,11 +605,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 'update_delete' => null // Update delete flag. Could be empty (means "update"), "update" or "delete".
             );
 
-            $kategorie = $this->GetFieldValue($article, $this->category_identifier);               
+            $konfiguration = $this->GetFieldValue($article, $this->configuration_identifier);               
                       
             foreach ($this->offer_field_map as $offer_field_entry) {
-                if ($offer_field_entry['kategorien'] != null) {
-                    if (!in_array($kategorie,$offer_field_entry['kategorien'])) {
+                if ($offer_field_entry['konfigurationen'] != null) {
+                    if (!in_array($konfiguration,$offer_field_entry['konfigurationen'])) {
                         continue;
                     }
                 }    
@@ -612,7 +631,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 }       
                 if ($missing) {
                     $mirakl_export_offers_return_value['returncode'] = 1;
-                    $article['mirakl_export_offers_result'] = array('returncode' => 10, 'message' => "Pflichtfelder fehlen in Angebotskonfiguration von Kategorie \"".$offer_field_entry['kategorie']."\": ".implode(', ',$missing));
+                    $article['mirakl_export_offers_result'] = array('returncode' => 10, 'message' => "Pflichtfelder fehlen in Angebotskonfiguration \"".$offer_field_entry['konfiguration']."\": ".implode(', ',$missing));
                     $mirakl_export_offers_return_value['articleList'][] = $article;
                     $skip_article = true;
                 }
@@ -636,7 +655,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                         $additional_fields[] = $additional_field;
                     } else {
                         $offer_for_mirakl[$offer_field] = $offer_field_value; 
-                    }                             
+                    }        
                 }                                
             }
 
@@ -646,7 +665,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
             if (!$category_found) {            
                 $mirakl_export_offers_return_value['returncode'] = 1;
-                $article['mirakl_export_offers_result'] = array('returncode' => 11, 'message' => "Angebotskonfiguration für Artikel ".$article['nummer'].", Kategorie \"".$kategorie."\" nicht gefunden");
+                $article['mirakl_export_offers_result'] = array('returncode' => 11, 'message' => "Angebotskonfiguration für Artikel ".$article['nummer'].", Konfiguration \"".$konfiguration."\" nicht gefunden");
                 $mirakl_export_offers_return_value['articleList'][] = $article;
                 continue;
             }                               
