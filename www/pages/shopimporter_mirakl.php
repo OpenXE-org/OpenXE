@@ -26,14 +26,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
     private $configuration_identifier;
 
-    private $create_products;
     private $mirakl_error_text_product_missing;
 
     private $normalTaxId;
     private $reducedTaxId;
 
-    private $offer_field_map;
-    private $product_field_map;
+    private $offer_configuration;
+    private $product_configuration;
 
     public function __construct($app, $intern = false) {
         $this->app = $app;
@@ -86,12 +85,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'info' => '',
                     'default' => 'kategoriename'
                 ],
-                'create_products' => [
-                    'typ' => 'checkbox',
-                    'bezeichnung' => '{|Produkte anlegen|}:',
-                    'size' => 40,
-                    'info' => 'Produkte automatisch anlegen wenn sie nicht existieren'
-                ],
                 'mirakl_error_text_product_missing' => [
                     'typ' => 'text',
                     'bezeichnung' => '{|Fehlertext Produkt fehlt|}:',
@@ -109,7 +102,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'bezeichnung' => '{|TaxId für Steuersatz "ermäßigt"|}',
                     'size' => 40,
                 ],
-                'product_field_map' => [
+                'product_configuration' => [
                     'typ' => 'textarea',
                     'bezeichnung' => '{|Zuordnung Produkt-Felder je Konfiguration (JSON)|}:',
                     'cols' => 80,
@@ -134,7 +127,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 ]'
                 ],
 
-                'offer_field_map' => [
+                'offer_configuration' => [
                     'typ' => 'textarea',
                     'bezeichnung' => '{|Zuordnung Angebots-Felder je Konfiguration (JSON)|}:',
                     'cols' => 80,
@@ -189,14 +182,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
        
         $this->configuration_identifier = array($einstellungen['felder']['configuration_identifier_source'] => $einstellungen['felder']['configuration_identifier_source_value']);
 
-        $this->create_products = $einstellungen['felder']['create_products'];
         $this->mirakl_error_text_product_missing = $einstellungen['felder']['mirakl_error_text_product_missing'];
 
         $this->normalTaxId = $einstellungen['felder']['normalTaxId'];
         $this->reducedTaxId = $einstellungen['felder']['reducedTaxId'];
 
-        $this->offer_field_map = json_decode($einstellungen['felder']['offer_field_map'], true, flags: JSON_THROW_ON_ERROR);                
-        $this->product_field_map = json_decode($einstellungen['felder']['product_field_map'], true, flags: JSON_THROW_ON_ERROR);                                
+        $this->offer_configuration = json_decode($einstellungen['felder']['offer_configuration'], true, flags: JSON_THROW_ON_ERROR);                
+        $this->product_configuration = json_decode($einstellungen['felder']['product_configuration'], true, flags: JSON_THROW_ON_ERROR);                                
         
     }
 
@@ -356,24 +348,49 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     }
 
     public function ImportSendListLager() {
-        return($this->ImportSendList());
+        return $this->mirakl_export_offers_and_products(export_products : false);
+    }
+
+    public function ImportSendList() {
+        return $this->mirakl_export_offers_and_products(export_products : true);
     }
 
     /*
      *  Send articles to shop
      */
-    public function ImportSendList() {
+    public function mirakl_export_offers_and_products(bool $export_products) {
+
+        $message = "";
+        $komma = "";
+        $status = true;
             
         $articleList = $this->CatchRemoteCommand('data');
+
+        if ($export_products) {                       
+            $create_products_result = $this->mirakl_create_products($articleList);    
+            if ($create_products_result['returncode'] != 0) {
+                $this->Log("Produktsync nach Mirakl hat Fehler", print_r($create_products_result, true));            
+                $message = "Produktsync nach Mirakl hat Fehler";
+                $komma = ", ";
+            } else {
+                $message = "Produktimport in Mirakl ok";
+                $komma = ", ";
+            }
+        }
                        
         $offer_export_result = $this->mirakl_export_offers($articleList);
            
-        if ($offer_export_result['returncode'] == 0) {
-            return(array('status' => true, 'message' => "Angebotsimport in Mirakl ok"));
+        if ($offer_export_result['returncode'] != 0) {
+            $this->Log("Angebotsync nach Mirakl hat Fehler", print_r($offer_export_result, true));
+            $message .= $komma."Angebotsync in Mirakl hat Fehler";
+        } else {
+            $message .= $komma."Angebotsimport in Mirakl ok";
         }
        
+        return(array('status' => $status, 'message' => $message));
+
         // Check for missing products and try to create
-        if ($this->create_products) {                       
+/*        if ($export_products) {                       
         
             $create_products_list = array();
         
@@ -404,10 +421,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 return(array('status' => true, 'message' => "Angebots und Produktimport in Mirakl ok"));
             }                           
         }
+  
        
         $this->Log("Angebotsimport in Mirakl hat Fehler", print_r($offer_export_result, true));
        
-        return(array('status' => false, 'message' => "Angebotsimport in Mirakl hat Fehler"));
+        return(array('status' => false, 'message' => "Angebotsimport in Mirakl hat Fehler")); */
 
     }
 
@@ -584,7 +602,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $mirakl_export_offers_return_value['returncode'] = 0;
         $mirakl_export_offers_return_value['articleList'] = array();
 
-        $this->Log('Angebotsexport start', print_r($articleList,true));
+        $this->Log('Angebotsexport Start', print_r($articleList,true));
                
         // First gather all articles as offers and send them
         // Wait for import to finish
@@ -597,7 +615,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             /*
              * Export offer
              */
-            $category_found = false;
+            $configuration_found = false;
             $additional_fields = array();
              
             $offer_for_mirakl = array(
@@ -605,17 +623,20 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 'update_delete' => null // Update delete flag. Could be empty (means "update"), "update" or "delete".
             );
 
-            $konfiguration = $this->GetFieldValue($article, $this->configuration_identifier);               
+            $configuration_identifier = $this->GetFieldValue($article, $this->configuration_identifier);               
                       
-            foreach ($this->offer_field_map as $offer_field_entry) {
-                if ($offer_field_entry['konfigurationen'] != null) {
-                    if (!in_array($konfiguration,$offer_field_entry['konfigurationen'])) {
+            foreach ($this->offer_configuration as $offer_configuration_entry) {
+                if ($offer_configuration_entry['konfigurationen'] != null) {
+                    if (!in_array($configuration_identifier,$offer_configuration_entry['konfigurationen'])) {
                         continue;
                     }
                 }    
+                $configuration_found = true;
+                $offer_configuration = $offer_configuration_entry;
+                break;
+            }
 
-                $category_found = true;
-    
+            if ($configuration_found) {
                 // Check required attributes
                 $required = [
                     'product_id_type',
@@ -625,19 +646,19 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 ];
                 $missing = null;
                 foreach ($required as $key) {
-                    if (!isset($offer_field_entry['felder'][$key])) {
+                    if (!isset($offer_configuration['felder'][$key])) {
                         $missing[] = $key;
                     }
                 }       
                 if ($missing) {
                     $mirakl_export_offers_return_value['returncode'] = 1;
-                    $article['mirakl_export_offers_result'] = array('returncode' => 10, 'message' => "Pflichtfelder fehlen in Angebotskonfiguration \"".$offer_field_entry['konfiguration']."\": ".implode(', ',$missing));
+                    $article['mirakl_export_offers_result'] = array('returncode' => 10, 'message' => "Pflichtfelder fehlen in Angebotskonfiguration \"".$configuration['konfiguration']."\": ".implode(', ',$missing));
                     $mirakl_export_offers_return_value['articleList'][] = $article;
                     $skip_article = true;
                 }
                 // Check Required attributes
                 
-                foreach ($offer_field_entry['felder'] as $offer_field => $offer_field_source) {
+                foreach ($offer_configuration['felder'] as $offer_field => $offer_field_source) {
                     if (!is_array($offer_field_source)) {
                         $offer_field_source = array('feld' => $offer_field_source);
                     }
@@ -657,28 +678,26 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                         $offer_for_mirakl[$offer_field] = $offer_field_value; 
                     }        
                 }                                
-            }
+                
+                if ($skip_article) {
+                    continue;
+                }
+                                       
+                if (!empty($additional_fields)) {
+                    $offer_for_mirakl['offer_additional_fields'] = $additional_fields;
+                }
+                            
+                $offers_for_mirakl[] = $offer_for_mirakl;
+                
+                $article['mirakl_export_offers_result'] = array('returncode' => 0, 'message' => "");
+                $mirakl_export_offers_return_value['articleList'][] = $article;
 
-            if ($skip_article) {
-                continue;
-            }
-
-            if (!$category_found) {            
+            } else { // configuration_found
                 $mirakl_export_offers_return_value['returncode'] = 1;
                 $article['mirakl_export_offers_result'] = array('returncode' => 11, 'message' => "Angebotskonfiguration für Artikel ".$article['nummer'].", Konfiguration \"".$konfiguration."\" nicht gefunden");
                 $mirakl_export_offers_return_value['articleList'][] = $article;
                 continue;
-            }                               
-
-            if (!empty($additional_fields)) {
-                $offer_for_mirakl['offer_additional_fields'] = $additional_fields;
-            }
-                        
-            $offers_for_mirakl[] = $offer_for_mirakl;
-            
-            $article['mirakl_export_offers_result'] = array('returncode' => 0, 'message' => "");
-            $mirakl_export_offers_return_value['articleList'][] = $article;
-            
+            }                
         }
 
         if (empty($offers_for_mirakl)) {
@@ -693,7 +712,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         $json_for_mirakl = json_encode($data_for_mirakl);
 
-        $this->Log('Angebotsexport Daten', $json_for_mirakl);
+        $this->Log('Angebotsexport Daten', $json_for_mirakl); 
 
         $result = [];
         $response = $this->miraklRequest('offers', postdata: $json_for_mirakl, content_type: 'application/json', raw: true);
@@ -786,15 +805,36 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $mirakl_create_products_return_value = array();
         $mirakl_create_products_return_value['returncode'] = 0;
         $mirakl_create_products_return_value['articleList'] = $articleList;
-        
+               
+        $number_of_articles = 0;
+
         // Build CSV        
         $csv_header = "";
         $newline = "";        
         foreach ($articleList as $article) {
-    
-            // Try to create the product                   
-            $product_for_mirakl = array();                      
-            foreach ($this->product_field_map as $product_field_entry) {                    
+            $product_for_mirakl = array();  
+
+             // Determine configuration
+            $configuration_found = false;
+            $konfiguration = $this->GetFieldValue($article, $this->configuration_identifier);               
+                      
+            foreach ($this->product_configuration as $product_configuration) {
+                if ($product_configuration['konfigurationen'] != null) {
+                    if (!in_array($konfiguration,$product_configuration['konfigurationen'])) {
+                        continue;
+                    }
+                }                
+                $configuration_found = true;
+            }         
+
+            if (!$configuration_found) {        
+                $mirakl_create_products_return_value['returncode'] = 1;
+                $article['mirakl_export_offers_result'] = array('returncode' => 11, 'message' => "Produktkonfiguration für Artikel ".$article['nummer'].", Konfiguration \"".$konfiguration."\" nicht gefunden");
+                $mirakl_create_products_return_value['articleList'][] = $article;
+                continue;
+            }
+                  
+            foreach ($this->product_configuration as $product_field_entry) {                    
                 foreach ($product_field_entry['felder'] as $product_field => $product_field_source) {
                     if (!is_array($product_field_source)) {
                         $product_field_source = array('feld' => $product_field_source);
@@ -812,7 +852,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $csv .= $newline.'"'.implode('";"',$product_for_mirakl).'"';                    
             $newline = "\r\n";
         }                
-               
+              
+        if (!$csv) { // No articles found
+            return($mirakl_create_products_return_value);        
+        }
+ 
         $csv = $csv_header.$newline.$csv;
                
         $result = [];
@@ -844,7 +888,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         */
 
         while ($status != 'COMPLETE' && $status != 'FAILED') {
-            sleep(5);
+            sleep(30);
             $response = $this->miraklRequest('products/imports/'.$import_id, raw: true);
             $result = json_decode($response);
             $status = $result->import_status;
