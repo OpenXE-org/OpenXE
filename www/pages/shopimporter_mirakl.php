@@ -808,6 +808,8 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                
         $number_of_articles = 0;
 
+        $this->Log('Produktexport Start', print_r($csv,true));
+
         // Build CSV        
         $csv_header = "";
         $newline = "";        
