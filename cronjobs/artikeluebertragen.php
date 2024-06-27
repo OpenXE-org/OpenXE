@@ -1,5 +1,10 @@
 <?php
 
+use Xentral\Components\Logger\Logger;
+
+/** @var Logger $logger */
+$logger = $app->Container->get('Logger');
+
 if (file_exists(dirname(__DIR__) . '/www/lib/class.erpapi_custom.php') && !class_exists('erpAPICustom')) {
     include_once dirname(__DIR__) . '/www/lib/class.erpapi_custom.php';
 }
@@ -29,7 +34,9 @@ if (empty($app->remote)) {
     }
 }
 
-$app->erp->LogFile('Cronjob Artikeluebertragung Start');
+$logger->debug(
+    'Start'
+);
 
 $app->DB->Update(
         "UPDATE `prozessstarter` 
@@ -38,11 +45,14 @@ $app->DB->Update(
 );
 
 if ($app->DB->Select("SELECT `mutex` FROM `prozessstarter` WHERE (`parameter` = 'artikeluebertragen') LIMIT 1") == 1) {
-    return;
+    $logger->debug(
+        'Mutex'
+    );
+//    return;
 }
 
 $articles = $app->DB->SelectArr(
-        'SELECT `id`,`shop`,`artikel` FROM `shopexport_artikeluebertragen_check` ORDER BY `id` LIMIT 10'
+        'SELECT `id`,`shop`,`artikel` FROM `shopexport_artikeluebertragen_check` ORDER BY `id`'
 );
 if (!empty($articles)) {
     /** @var Shopexport $objShopexport */
@@ -51,6 +61,13 @@ if (!empty($articles)) {
         $objShopexport->addChangedArticles();
     }
 }
+
+$logger->debug(
+    'Prepare',
+    [
+        'articles' => $articles
+    ]
+);
 
 $anzChecked = [];
 $anzChanged = [];
@@ -101,6 +118,9 @@ while (!empty($articles)) {
             $anzChecked[$article['shop']]
     );
     if (method_exists($app->erp, 'canRunCronjob') && !$app->erp->canRunCronjob(['artikeluebertragen'])) {
+        $logger->debug(
+            '!canRunCronjob'
+        );
         return;
     }
     $articles = $app->DB->SelectArr(
@@ -119,6 +139,8 @@ $app->DB->Update(
   SET `letzteausfuerhung`=NOW(), `mutex` = 1,`mutexcounter`=0 
   WHERE `parameter` = 'artikeluebertragen'"
 );
+
+/*
 while ($check > 0) {
     $shopartikel = $app->DB->Query(
             "SELECT `id`,`shop`,`artikel`,`check_nr` FROM `shopexport_artikeluebertragen` ORDER BY `id` LIMIT 10"
@@ -164,7 +186,65 @@ while ($check > 0) {
     }
 
     $check = $app->DB->Select('SELECT COUNT(`id`) FROM `shopexport_artikeluebertragen`');
+}*/
+
+
+$sql = "SELECT DISTINCT `shop`, shopexport.`bezeichnung` FROM `shopexport_artikeluebertragen` INNER JOIN shopexport ON shopexport.id = `shop`";
+$shops_to_transmit = $app->DB->SelectArr($sql);
+
+//$app->erp->LogFile('Cronjob artikeluebertragen '.(!empty($shops_to_transmit)?count($shops_to_transmit):0)." shops", print_r($shops_to_transmit, true));
+$logger->debug(
+  '{count} Shops',
+  [
+    'count' => (!empty($shops_to_transmit)?count($shops_to_transmit):0),
+    'shops_to_transmit' => $shops_to_transmit
+  ]
+);
+
+foreach ($shops_to_transmit as $shop_to_transmit) {
+    $sql = "SELECT `artikel` FROM `shopexport_artikeluebertragen` WHERE `shop` = '".$shop_to_transmit['shop']."'";
+    $articles_to_transmit = $app->DB->SelectArr($sql);
+    
+    $logger->debug(
+        '{bezeichnung} (Shop {shop_to_transmit}) {count} Artikel',
+        [
+            'shop_to_transmit' => $shop_to_transmit['shop'],
+            'bezeichnung' => $shop_to_transmit['bezeichnung'],
+            'count' => (!empty($articles_to_transmit)?count($articles_to_transmit):0),
+            'articles_to_transmit' => $articles_to_transmit
+        ]
+    );
+    
+    if (!empty($articles_to_transmit)) {   
+    
+        $article_ids_to_transmit = array_column($articles_to_transmit, 'artikel');
+    
+        try {
+            $result = $app->remote->RemoteSendArticleList($shop_to_transmit['shop'], $article_ids_to_transmit); // Expected result is array $articles_to_transmit, field status contains transmission status
+        } catch (Execption $exception) {
+              $logger->error(
+                    'Fehler {bezeichnung} (Shop {shop_to_transmit}) {count} Artikel',
+                    [
+                        'shop_to_transmit' => $shop_to_transmit['shop'],
+                        'bezeichnung' => $shop_to_transmit['bezeichnung'],
+                        'count' => (!empty($articles_to_transmit)?count($articles_to_transmit):0),
+                        'exception' => $exception
+                    ]
+                );    
+        }
+
+        foreach ($result as $article) {
+            $app->erp->LagerSync($article['artikel'], true); 
+        }                       
+    } else {
+
+    }   
 }
+
+$logger->debug(
+    'Ende'
+);
+
 $app->DB->Update(
         "UPDATE `prozessstarter` 
   SET `letzteausfuerhung`= NOW(), `mutex` = 0,`mutexcounter`=0 

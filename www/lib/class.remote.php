@@ -1,5 +1,6 @@
 <?php
 /*
+ * SPDX-FileCopyrightText: 2024 OpenXE project
  * SPDX-FileCopyrightText: 2022 Andreas Palm
  * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
  *
@@ -21,14 +22,18 @@
 ?>
 <?php
 use Xentral\Modules\Onlineshop\Data\ShopConnectorResponseInterface;
+use Xentral\Components\Logger\Logger;
 
 class Remote
 {
   /** @var ApplicationCore $app */
   public $app;
+  /** @var Logger $logger */
+  public $logger;
   public function __construct($app)
   {
     $this->app=$app;
+    $this->logger = $app->Container->get('Logger');
   }
 
   /**
@@ -1171,6 +1176,14 @@ class Remote
    */
   public function RemoteSendArticleList($id,$artikel_arr, $extnummer = '', $nurlager = false)
   {
+
+    $this->logger->debug(
+      'RemoteSendArticleList',
+      [
+        'artikel_arr' => $artikel_arr
+      ]
+    );
+
     if(!class_exists('ObjGenArtikel') &&
       is_file(dirname(__DIR__) . '/objectapi/mysql/_gen/object.gen.artikel.php')){
         include_once dirname(__DIR__) . '/objectapi/mysql/_gen/object.gen.artikel.php';
@@ -1217,8 +1230,16 @@ class Remote
 
     for($i=0;$i<$cartikel_arr;$i++)
     {
-
       $artikel = $artikel_arr[$i];
+      
+      $this->logger->debug(
+        'RemoteSendArticleList',
+          [
+            'artikel' => $artikel,
+            'i' => $i
+          ]
+      );
+      
       $lagerexport = $this->app->erp->GetArtikelShopEinstellung('autolagerlampe', $artikel, $shopexportarr);
       $tmp->Select($artikel);
       $data[$i] = ['artikel' => $artikel,'artikelid' => $artikel];
@@ -1642,17 +1663,19 @@ class Remote
             AND (v.objekt = 'Standard' OR v.objekt = '') AND (v.adresse = '0' OR v.adresse = '') 
             AND (v.gueltig_bis >= NOW() OR v.gueltig_bis = '0000-00-00') 
           ORDER BY v.preis DESC LIMIT 1");
-        $priceInformation = reset($priceInformation);
-        $defaultPrice = $priceInformation['preis'];
-        $defaultCurrency = $priceInformation['waehrung'] ?: 'EUR';
-        if($preisgruppe && method_exists($this->app->erp, 'GetVerkaufspreisGruppe')){
-          $defaultCurrency = 'EUR'; //the follow up function imply EUR as the default currency
-          $defaultPrice = $this->app->erp->GetVerkaufspreisGruppe($artikel, 1, $preisgruppe);
-        }
-
-        $data[$i]['waehrung'] = $defaultCurrency;
-        $data[$i]['preis'] = $defaultPrice;
-
+          
+          if (!empty($priceInformation)) {
+            $priceInformation = reset($priceInformation);
+            $defaultPrice = $priceInformation['preis'];
+            $defaultCurrency = $priceInformation['waehrung'] ?: 'EUR';
+            if($preisgruppe && method_exists($this->app->erp, 'GetVerkaufspreisGruppe')){
+                $defaultCurrency = 'EUR'; //the follow up function imply EUR as the default currency
+                $defaultPrice = $this->app->erp->GetVerkaufspreisGruppe($artikel, 1, $preisgruppe);
+            }
+            $data[$i]['waehrung'] = $defaultCurrency;
+            $data[$i]['preis'] = $defaultPrice;
+          }
+          
         if(!empty($tmp->GetSteuersatz()) && $tmp->GetSteuersatz() != -1){
           $data[$i]['steuersatz'] = (float)$tmp->GetSteuersatz();
         }elseif($data[$i]['umsatzsteuer'] === 'ermaessigt'){
@@ -1759,8 +1782,6 @@ class Remote
            * @deprecated Ende
            */
         }
-
-
         $data[$i]['bruttopreis'] = $data[$i]['preis'] * $steuer;
       }
       $data[$i]['checksum'] = $tmp->GetChecksum();
@@ -2053,11 +2074,11 @@ class Remote
               $data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']][$iv]['values'] = $matrixdaten[$iv]['wert'];
             }
           }
-
+           
           $result = null;
           if(empty($data)) {
             continue;
-          }
+          }          
           if (!empty($lagerexport)) {
             $result = $this->sendlistlager($i, $id, $data);
           }
@@ -2182,7 +2203,7 @@ class Remote
       }else{
         $data[$i]['variantevorhanden'] = 0;
       }
-
+      
       $result = null;
       if(empty($data)){
         continue;
@@ -2445,11 +2466,19 @@ class Remote
           $this->app->DB->Update($query);
 
           $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop fehlgeschlagen', $bearbeiter);
-          $this->app->erp->Logfile('Versandmeldung an Shop fehlgeschlagen', print_r([
+/*          $this->app->erp->Logfile('Versandmeldung an Shop fehlgeschlagen', print_r([
             'orderId' => $orderId,
             'shopId'  => $shopId,
-            'message' => $response->getMessage()],true));
-
+            'message' => $response->getMessage()],true));*/
+            
+          $this->logger->error('Versandmeldung an Shop fehlgeschlagen', 
+            [
+                'orderId' => $orderId,
+                'shopId'  => $shopId,
+                'message' => $response->getMessage()
+            ]
+          );
+                       
           return;
       }
 
@@ -2857,7 +2886,14 @@ class Remote
     $post_data['data'] = base64_encode(serialize($data));
     $client->timeout = 120;
     if(!$client->post($geturl,$post_data)) {
-      $this->app->erp->LogFile(mysqli_real_escape_string($this->app->DB->connection,'An error occurred: '.$client->getError()));
+//      $this->app->erp->LogFile(mysqli_real_escape_string($this->app->DB->connection,'An error occurred: '.$client->getError()));
+      
+      $this->logger->error('An error occurred',
+            [
+                'error' => $client->getError()
+            ]
+          );
+      
       throw new Exception('An error occurred: '.$client->getError());
       //return 'Netzwerkverbindung von WaWison zu Shopimporter fehlgeschlagen: '.$client->getError();
     }
@@ -2932,7 +2968,14 @@ class Remote
 
     if(!$client->post($geturl,$post_data))
     {
-      $this->app->erp->LogFile(mysqli_real_escape_string($this->app->DB->connection,'An error occurred: '.$client->getError()));
+//      $this->app->erp->LogFile(mysqli_real_escape_string($this->app->DB->connection,'An error occurred: '.$client->getError()));
+
+      $this->logger->error('An error occurred',
+        [
+            'error' => $client->getError()
+        ]
+      );
+
       throw new Exception('An error occurred: '.$client->getError());
     }
     return unserialize($aes->decrypt(base64_decode($client->getContent())));

@@ -384,6 +384,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $this->Log("Angebotsync nach Mirakl hat Fehler", print_r($offer_export_result, true));
             $message .= $komma."Angebotsync in Mirakl hat Fehler";
         } else {
+            $this->Log("Angebotsync nach Mirakl ok", print_r($offer_export_result, true));
             $message .= $komma."Angebotsimport in Mirakl ok";
         }
        
@@ -801,11 +802,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     *       returncode articleList 0 = ok, 20 rejected from mirakl
     */
     private function mirakl_create_products(array $articleList) : array {
-        
+
         $mirakl_create_products_return_value = array();
         $mirakl_create_products_return_value['returncode'] = 0;
         $mirakl_create_products_return_value['articleList'] = $articleList;
-               
+                             
         $number_of_articles = 0;
 
         $this->Log('Produktexport Start', print_r($csv,true));
