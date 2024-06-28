@@ -1062,6 +1062,23 @@ class Remote {
      *
      * @return mixed|null
      * @throws Exception
+     *
+     * (NEW 2024-06-28)
+     *
+     * return value: (comes from Importsendlist or Importsendlistlager inside shopimporter_...)
+     * array (
+     *      'count' => int, // Number of successfully sent articles
+     *      'new' => array (artikelid, fremdnummer), // List of new articles with external number  
+     *      'message' => string
+     *      'status' => bool,     // false = failed
+     *      'articles' => array(
+     *          'id',
+     *          'status',
+     *          'message',
+     *          ...
+     *      )
+     * )  
+     *
      */
     public function RemoteSendArticleList($id, $artikel_arr, $extnummer = '', $nurlager = false) {
 
@@ -1115,15 +1132,6 @@ class Remote {
 
         for ($i = 0; $i < $cartikel_arr; $i++) {
             $artikel = $artikel_arr[$i];
-
-            $this->logger->debug(
-                    'RemoteSendArticleList',
-                    [
-                        'artikel' => $artikel,
-                        'i' => $i
-                    ]
-            );
-
             $lagerexport = $this->app->erp->GetArtikelShopEinstellung('autolagerlampe', $artikel, $shopexportarr);
             $tmp->Select($artikel);
             $data[$i] = ['artikel' => $artikel, 'artikelid' => $artikel];
@@ -1919,18 +1927,19 @@ class Remote {
                         }
                     }
 
-                    $result = null;
                     if (empty($data)) {
                         continue;
                     }
-                    if (!empty($lagerexport)) {
-                        $result = $this->sendlistlager($i, $id, $data);
-                    }
-                    if (!empty($artikelexport) && !$nurlager) {
-                        $result = $this->sendlist($i, $id, $data, true);
-                    }
                 } while (count($data[$i]['matrix_varianten']['artikel']) >= 5000);
 
+                // Bulk transfer (new 2024-06-28)
+                $result = null;
+                if (!empty($lagerexport)) {
+                    $result = $this->sendlistlager($i, $id, $data);
+                }
+                if (!empty($artikelexport) && !$nurlager) {
+                    $result = $this->sendlist($i, $id, $data, true);
+                }
                 return $result;
             }
 
@@ -2044,18 +2053,19 @@ class Remote {
                 $data[$i]['variantevorhanden'] = 0;
             }
 
-            $result = null;
             if (empty($data)) {
                 continue;
             }
-            if (!empty($lagerexport)) {
-                $result = $this->sendlistlager($i, $id, $data);
-            }
-            if (!empty($artikelexport) && !$nurlager) {
-                $result = $this->sendlist($i, $id, $data, true);
-            }
         }
 
+        // Bulk transfer (new 2024-06-28)
+        $result = null;
+        if (!empty($lagerexport)) {
+            $result = $this->sendlistlager($i, $id, $data);
+        }
+        if (!empty($artikelexport) && !$nurlager) {
+            $result = $this->sendlist($i, $id, $data, true);
+        }
         return $result;
     }
 
@@ -2121,6 +2131,8 @@ class Remote {
                         $this->app->DB->real_escape_string($hash), $data[0]['artikel'], $id
                 )
         );
+
+        // See description of return format in function RemoteSendArticleList()
         if (!empty($result) && is_array($result) && !empty($result['new'])) {
             foreach ($result['new'] as $artikelid => $fremdnummer) {
                 $artikelid = (int) $artikelid;
@@ -2138,7 +2150,7 @@ class Remote {
                 }
             }
             if (isset($result['anzahl'])) {
-                $result = $result['anzahl'];
+                $result['count'] = $result['anzahl'];
             }//Altes Verhalten
         }
         if (!$isLagerExported) {
@@ -2293,10 +2305,6 @@ class Remote {
                 $this->app->DB->Update($query);
 
                 $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop fehlgeschlagen', $bearbeiter);
-                /*          $this->app->erp->Logfile('Versandmeldung an Shop fehlgeschlagen', print_r([
-                  'orderId' => $orderId,
-                  'shopId'  => $shopId,
-                  'message' => $response->getMessage()],true)); */
 
                 $this->logger->error('Versandmeldung an Shop fehlgeschlagen',
                         [
@@ -2670,7 +2678,6 @@ class Remote {
         $post_data['data'] = base64_encode(serialize($data));
         $client->timeout = 120;
         if (!$client->post($geturl, $post_data)) {
-//      $this->app->erp->LogFile(mysqli_real_escape_string($this->app->DB->connection,'An error occurred: '.$client->getError()));
 
             $this->logger->error('An error occurred',
                     [
@@ -2748,8 +2755,6 @@ class Remote {
         $post_data['data'] = base64_encode($aes->encrypt(serialize($data)));
 
         if (!$client->post($geturl, $post_data)) {
-//      $this->app->erp->LogFile(mysqli_real_escape_string($this->app->DB->connection,'An error occurred: '.$client->getError()));
-
             $this->logger->error('An error occurred',
                     [
                         'error' => $client->getError()

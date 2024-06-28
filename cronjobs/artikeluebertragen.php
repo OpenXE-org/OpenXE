@@ -46,9 +46,9 @@ $app->DB->Update(
 
 if ($app->DB->Select("SELECT `mutex` FROM `prozessstarter` WHERE (`parameter` = 'artikeluebertragen') LIMIT 1") == 1) {
     $logger->debug(
-        'Mutex'
+        'Läuft bereits'
     );
-//    return;
+    return;
 }
 
 $articles = $app->DB->SelectArr(
@@ -233,7 +233,25 @@ foreach ($shops_to_transmit as $shop_to_transmit) {
                 );    
         }
 
-        foreach ($result as $article) {
+        $logger->debug(
+            'Ende {bezeichnung} (Shop {shop_to_transmit}) {count} Artikel',
+            [
+                'shop_to_transmit' => $shop_to_transmit['shop'],
+                'bezeichnung' => $shop_to_transmit['bezeichnung'],
+                'count' => (!empty($articles_to_transmit)?count($articles_to_transmit):0),
+                'result' => $result
+            ]
+        );    
+
+        // See description of return format in function class.remote.php -> RemoteSendArticleList()
+        foreach ($result['articlelist'] as $article) {
+            $app->DB->Delete(
+                sprintf(
+                    'DELETE FROM `shopexport_artikeluebertragen` WHERE `artikel`= %d AND `shop` = %d',
+                    $article['artikel'],
+                    $shop_to_transmit['shop']
+                )
+            );
             $app->erp->LagerSync($article['artikel'], true); 
         }                       
     } else {
