@@ -360,21 +360,28 @@ class Shopimporter_Mirakl extends ShopimporterBase {
      */
     public function mirakl_export_offers_and_products(bool $export_products) {
 
+        $this->Log(Logger::DEBUG, "mirakl_export_offers_and_products", array('export products' => $export_products));
+
         $message = "";
         $komma = "";
         $status = true;
+            
+        $level = Logger::NOTICE;
+        $log_result = null;
             
         $articlelist = $this->CatchRemoteCommand('data');
 
         if ($export_products) {                       
             $create_products_result = $this->mirakl_create_products($articlelist);    
             if ($create_products_result['returncode'] != 0) {
-                $this->Log("Produktsync nach Mirakl hat Fehler", $create_products_result);            
+                $level = Logger::ERROR;
+                $log_result['create_products_result'] = $create_products_result;
                 $message = "Produktsync nach Mirakl hat Fehler";
                 $komma = ", ";
                 $status = false;
             } else {
-                $this->Log("Produktsync nach Mirakl ok", $create_products_result);            
+                $level = Logger::NOTICE;
+                $this->Log(Logger::INFO, "Produktsync nach Mirakl ok", $create_products_result);            
                 $message = "Produktimport in Mirakl ok";
                 $komma = ", ";
             }
@@ -383,13 +390,16 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $offer_export_result = $this->mirakl_export_offers($articlelist);
            
         if ($offer_export_result['returncode'] != 0) {
-            $this->Log("Angebotsync nach Mirakl hat Fehler", $offer_export_result);
+            $level = Logger::ERROR;
+            $log_result['offer_export_result'] = $offer_export_result;
             $message .= $komma."Angebotsync in Mirakl hat Fehler";
             $status = false;
         } else {
-            $this->Log("Angebotsync nach Mirakl ok", $offer_export_result);
+            $this->Log(Logger::INFO, "Angebotsync nach Mirakl ok", $offer_export_result);
             $message .= $komma."Angebotsimport in Mirakl ok";
         }
+       
+        $this->Log($level, $message, array('create_products_result' => $create_products_result, 'offer_export_result' => $offer_export_result));
        
         $articlelist = (array) $create_products_result['articlelist'] + (array) $offer_export_result['articlelist']; // This merges the fields for each article
         return(array('status' => $status, 'message' => $message, 'articlelist' => $articlelist));
@@ -416,7 +426,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $create_products_result = $this->mirakl_create_products($create_products_list);
             
             if ($create_products_result['returncode'] != 0) {
-                $this->Log("Produktimport in Mirakl hat Fehler", $create_products_result);            
+                $this->Log(Logger::DEBUG, "Produktimport in Mirakl hat Fehler", $create_products_result);            
                 return(array('status' => false, 'message' => "Produktimport in Mirakl hat Fehler"));
             }
             
@@ -426,37 +436,16 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 return(array('status' => true, 'message' => "Angebots und Produktimport in Mirakl ok"));
             }                           
         }      
-        $this->Log("Angebotsimport in Mirakl hat Fehler", $offer_export_result);
+        $this->Log(Logger::DEBUG, "Angebotsimport in Mirakl hat Fehler", $offer_export_result);
        
         return(array('status' => false, 'message' => "Angebotsimport in Mirakl hat Fehler")); */
 
     }
 
-    private function getOrdersToProcess(int $limit) {
-        echo("getOrdersToProcess");        
-        exit();
-    }
-
-    private function Log($message, $dump = array()) {
-        if ($this->protocol) {
-            $this->logger->debug('Mirakl (Shop '.$this->shopid.') '.$message, (array) $dump);
-        }
-    }
-
-    public function ImportDeleteAuftrag() {
-        echo("ImportDeleteAuftrag");        
-        exit();
-    }
-
-    public function ImportUpdateAuftrag() {
-        echo("ImportUpdateAuftrag");        
-        exit();
-    }
-
     // STAGING, WAITING_ACCEPTANCE, WAITING_DEBIT, WAITING_DEBIT_PAYMENT, SHIPPING, SHIPPED, TO_COLLECT, RECEIVED, CLOSED, REFUSED, CANCELED
     public function ImportGetAuftraegeAnzahl() {    
         $response = $this->miraklRequest('orders', getdata: array('order_state_codes' => 'WAITING_ACCEPTANCE'),  raw: true);                                     
-        $this->Log('ImportGetAuftraegeAnzahl', $response);    
+        $this->Log(Logger::DEBUG, 'ImportGetAuftraegeAnzahl', $response);    
         $result_array = json_decode($response);
         return($result_array->total_count);    
     }
@@ -470,7 +459,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
 
         $response = $this->miraklRequest('orders', getdata: $parameters,  raw: true);          
-        $this->Log('ImportGetAuftrag', $response);    
+        $this->Log(Logger::DEBUG, 'ImportGetAuftrag', $response);    
         $result_array = json_decode($response);
 
         $fetchedOrders = [];
@@ -587,7 +576,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             'warenkorbjson' => base64_encode(json_encode($cart))
         ];
         
-        $this->Log('Auftragsimport', $cart);
+        $this->Log(Logger::DEBUG, 'Auftragsimport', $cart);
         return $fetchedOrders;
     }
     
@@ -605,7 +594,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $mirakl_export_offers_return_value['returncode'] = 0;
         $mirakl_export_offers_return_value['articlelist'] = array();
 
-        $this->Log('Angebotsexport Start', $articlelist);
+        $this->Log(Logger::DEBUG, 'Angebotsexport Start', $articlelist);
                
         // First gather all articles as offers and send them
         // Wait for import to finish
@@ -705,7 +694,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         if (empty($offers_for_mirakl)) {
             $mirakl_export_offers_return_value['returncode'] = 1;
-            $this->Log('Angebotsexport keine Artikel bereit', $mirakl_export_offers_return_value);
+            $this->Log(Logger::ERROR, 'Angebotsexport keine Artikel bereit', $mirakl_export_offers_return_value);
             $mirakl_export_offers_return_value['message'] = "Angebotsexport keine Artikel bereit";
             return($mirakl_export_offers_return_value);
         }
@@ -715,7 +704,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         $json_for_mirakl = json_encode($data_for_mirakl);
 
-        $this->Log('Angebotsexport Daten', $json_for_mirakl); 
+        $this->Log(Logger::DEBUG, 'Angebotsexport Daten', $json_for_mirakl); 
 
         $result = [];
         $response = $this->miraklRequest('offers', postdata: $json_for_mirakl, content_type: 'application/json', raw: true);
@@ -724,12 +713,12 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         if (!isset($result->import_id)) {
             $mirakl_export_offers_return_value['returncode'] = 1;
-            $this->Log('Angebotsimport abgelehnt', $response);
+            $this->Log(Logger::ERROR, 'Angebotsimport abgelehnt', $response);
             $mirakl_export_offers_return_value['message'] = "Angebotsimport abgelehnt: ".print_r($response,true);
             return($mirakl_export_offers_return_value);
         } 
         
-        $this->Log('Angebotsimport angelegt', $response);
+        $this->Log(Logger::INFO, 'Angebotsimport angelegt', $response);
 
         $import_id = $result->import_id;
 
@@ -749,7 +738,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
         
         if ($status == 'FAILED') {                        
-            $this->Log('Angebotsimport fehlgeschlagen', $response);
+            $this->Log(Logger::ERROR, 'Angebotsimport fehlgeschlagen', $response);
             
             $mirakl_export_offers_return_value['returncode'] = 2;
             $mirakl_export_offers_return_value['message'] = "Angebotsimport fehlgeschlagen: ".print_r($response,true);
@@ -757,11 +746,11 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
                
         if ($result->lines_in_error == 0) {
-            $this->Log('Angebotsimport ok', $response);
+            $this->Log(Logger::INFO, 'Angebotsimport ok', $response);
             return($mirakl_export_offers_return_value);
         }
         
-        $this->Log('Angebotsimport meldet Fehler in '.$result->lines_in_error.' Zeilen', $response);
+        $this->Log(Logger::ERROR, 'Angebotsimport meldet Fehler in '.$result->lines_in_error.' Zeilen', $response);
    
         $result = array();                        
         // Check errors with CSV unfucking...
@@ -789,7 +778,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $mirakl_export_offers_return_value['articlelist'][$article_key]['mirakl_export_offers_result'] = array('returncode' => 12, 'message' => $response_array[$error_message_key]);                          
         }       
 
-        $this->Log('Angebotsimport Fehlerbericht', $response);
+        $this->Log(Logger::ERROR, 'Angebotsimport Fehlerbericht', $response);
 
         $mirakl_export_offers_return_value['returncode'] = 1;
 
@@ -811,7 +800,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                              
         $number_of_articles = 0;
 
-        $this->Log('Produktexport Start', $articlelist);
+        $this->Log(Logger::DEBUG, 'Produktexport Start', $articlelist);
 
         // Build CSV        
         $csv_header = "";
@@ -866,7 +855,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                
         $result = [];
         
-        $this->Log('Produktexport Daten', array('csv' => $csv));
+        $this->Log(Logger::DEBUG, 'Produktexport Daten', array('csv' => $csv));
                            
         $postdata = array('file' => new CURLStringFile(postname: 'import.csv', data: $csv));
                             
@@ -875,12 +864,12 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $result = json_decode($response);
 
         if (!isset($result->import_id)) {
-            $this->Log('Produktimport abgelehnt', $response);        
+            $this->Log(Logger::ERROR, 'Produktimport abgelehnt', $response);        
             $mirakl_create_products_return_value['returncode'] = 1;                 
             return($mirakl_create_products_return_value);        
         } 
 
-        $this->Log('Produktimport angelegt', $result);
+        $this->Log(Logger::INFO, 'Produktimport angelegt', $result);
 
         $import_id = $result->import_id;
 
@@ -900,26 +889,26 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         }
 
         if ($status == 'FAILED') {
-            $this->Log('Produktimport fehlgeschlagen', $response);
+            $this->Log(Logger::ERROR, 'Produktimport fehlgeschlagen', $response);
             $mirakl_create_products_return_value['returncode'] = 1;
             return($mirakl_create_products_return_value);        
         }
 
         if (!$result->has_error_report && !$result->has_transformation_error_report) {
-            $this->Log('Produktimport ok', $response);        
+            $this->Log(Logger::INFO, 'Produktimport ok', $response);        
         } else {
-            $this->Log('Produktimport meldet Fehler', $response);
+            $this->Log(Logger::ERROR, 'Produktimport meldet Fehler', $response);
             $mirakl_create_products_return_value['returncode'] = 1;
         }    
 
         if ($result->has_new_product_report) {
             $response = $this->miraklRequest('products/imports/'.$import_id.'/new_product_report', raw: true);
-            $this->Log('Produktimport "Hinzugefügte Produkte"-Bericht', $response);
+            $this->Log(Logger::DEBUG, 'Produktimport "Hinzugefügte Produkte"-Bericht', $response);
         }
 
         if ($result->has_transformed_file) {
             $response = $this->miraklRequest('products/imports/'.$import_id.'/transformed_file', raw: true);
-            $this->Log('Produktimport Datei im Marketplace-Format', $response);
+            $this->Log(Logger::DEBUG, 'Produktimport Datei im Marketplace-Format', $response);
         }                        
 
         if ($result->has_error_report) {
@@ -944,7 +933,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                      
                 $mirakl_create_products_return_value['articlelist'][$article_key]['mirakl_create_products_result'] = array('returncode' => 13, 'message' => $response_array[$error_message_key]);                          
             }       
-            $this->Log('Produktimport Fehlerbericht', $response);
+            $this->Log(Logger::ERROR, 'Produktimport Fehlerbericht', $response);
         }
 
         if ($result->has_transformation_error_report) {
@@ -969,11 +958,33 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                      
                 $mirakl_create_products_return_value['articlelist'][$article_key]['mirakl_create_products_result'] = array('returncode' => 14, 'message' => $response_array[$error_message_key]);                          
             }       
-            $this->Log('Produktimport Transformation-Fehlerbericht', $response);
+            $this->Log(Logger::ERROR, 'Produktimport Transformation-Fehlerbericht', $response);
         }
 
         return($mirakl_create_products_return_value);               
     }
-    
+
+    private function Log($level, $message, $dump = array()) {
+        if ($this->protocol) {
+            $this->logger->Log($level, 'Mirakl (Shop '.$this->shopid.') '.$message, (array) $dump);
+        }
+    }
+
+    private function getOrdersToProcess(int $limit) {
+        echo("getOrdersToProcess");        
+        exit();
+    }
+
+    public function ImportDeleteAuftrag() {
+        echo("ImportDeleteAuftrag");        
+        exit();
+    }
+
+    public function ImportUpdateAuftrag() {
+        echo("ImportUpdateAuftrag");        
+        exit();
+    }
+
+   
 }
 
