@@ -1930,15 +1930,15 @@ class Remote {
                     if (empty($data)) {
                         continue;
                     }
-                } while (count($data[$i]['matrix_varianten']['artikel']) >= 5000);
+                } while (count($data[$i]['matrix_varianten']['artikel']) >= 5000);             
 
                 // Bulk transfer (new 2024-06-28)
                 $result = null;
                 if (!empty($lagerexport)) {
-                    $result = $this->sendlistlager($i, $id, $data);
+                    $result = $this->sendlistlager($id, $data);
                 }
                 if (!empty($artikelexport) && !$nurlager) {
-                    $result = $this->sendlist($i, $id, $data, true);
+                    $result = $this->sendlist($id, $data, true);
                 }
                 return $result;
             }
@@ -2061,10 +2061,10 @@ class Remote {
         // Bulk transfer (new 2024-06-28)
         $result = null;
         if (!empty($lagerexport)) {
-            $result = $this->sendlistlager($i, $id, $data);
+            $result = $this->sendlistlager($id, $data);
         }
         if (!empty($artikelexport) && !$nurlager) {
-            $result = $this->sendlist($i, $id, $data, true);
+            $result = $this->sendlist($id, $data, true);
         }
         return $result;
     }
@@ -2085,66 +2085,61 @@ class Remote {
         return $this->app->DB->SelectArr($query);
     }
 
-    protected function sendlistlager($i, $id, $data) {
-        $data2 = $data;
-        foreach ($data2 as $key => $value) {
-            $data2[$key]['artikel'] = $value['artikelid'];
-        }
-        $result = $this->RemoteCommand($id, 'sendlistlager', $data2);
-        $this->app->DB->Update(
-                sprintf(
-                        'UPDATE artikel_onlineshops SET last_storage_transfer = NOW() WHERE artikel = %d AND shop = %d',
-                        $data2[$i]['artikel'], $id
-                )
-        );
+    protected function sendlistlager(int $shop_id, array $data) {
+        $result = $this->RemoteCommand($shop_id, 'sendlistlager', $data);    
         return $result;
     }
 
-    protected function sendlist($i, $id, $data, $isLagerExported) {
-        /** @var Shopexport $objShopexport */
-        $objShopexport = $this->app->loadModule('shopexport');
-        $changedHash = $objShopexport->hasArticleHashChanged($data[0]['artikel'], $id);
-        $hash = $changedHash['hash'];
-        //$changedHash = $changedHash['changed'];
-
-        $result = $this->RemoteCommand($id, 'sendlist', $data);
-        $checkAo = $this->app->DB->Select(
-                sprintf(
-                        'SELECT id FROM artikel_onlineshops WHERE artikel = %d AND shop=%d LIMIT 1',
-                        $data[0]['artikel'], $id
-                )
-        );
-        if (empty($checkAo)) {
-            $this->app->DB->Insert(
-                    sprintf(
-                            'INSERT INTO artikel_onlineshops (artikel, shop, aktiv, ausartikel) 
-            VALUES (%d, %d, 1, 1) ',
-                            $data[0]['artikel'], $id
-                    )
-            );
-        }
-        $this->app->DB->Update(
-                sprintf(
-                        "UPDATE artikel_onlineshops 
-          SET last_article_transfer = NOW(), last_article_hash = '%s' 
-          WHERE artikel = %d AND shop = %d",
-                        $this->app->DB->real_escape_string($hash), $data[0]['artikel'], $id
-                )
-        );
+    protected function sendlist(int $shop_id, array $data, $isLagerExported) {
 
         // See description of return format in function RemoteSendArticleList()
-        if (!empty($result) && is_array($result) && !empty($result['new'])) {
+        $result = $this->RemoteCommand($shop_id, 'sendlist', $data);       
+
+        if (!empty($result) && is_array($result)) {
+            foreach ($result['articles'] as $artikelid) {
+                /** @var Shopexport $objShopexport */
+                $objShopexport = $this->app->loadModule('shopexport');
+                $changedHash = $objShopexport->hasArticleHashChanged($artikelid, $shop_id);
+                $hash = $changedHash['hash'];
+               
+                $checkAo = $this->app->DB->Select(
+                        sprintf(
+                                'SELECT id FROM artikel_onlineshops WHERE artikel = %d AND shop=%d LIMIT 1',
+                                $artikelid, $shop_id
+                        )
+                );
+                if (empty($checkAo)) {
+                    $this->app->DB->Insert(
+                            sprintf(
+                                    'INSERT INTO artikel_onlineshops (artikel, shop, aktiv, ausartikel) 
+                    VALUES (%d, %d, 1, 1) ',
+                                    $artikelid, $shop_id
+                            )
+                    );
+                }
+                $this->app->DB->Update(
+                        sprintf(
+                                "UPDATE artikel_onlineshops 
+                  SET last_article_transfer = NOW(), last_article_hash = '%s' 
+                  WHERE artikel = %d AND shop = %d",
+                                $this->app->DB->real_escape_string($hash), $artikelid, $shop_id
+                        )
+                );
+            }
+        }
+
+        if (!empty($result) && is_array($result)) {
             foreach ($result['new'] as $artikelid => $fremdnummer) {
                 $artikelid = (int) $artikelid;
                 $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$artikelid' LIMIT 1");
                 if ($artikelid > 0 && $artikelnummer != trim($fremdnummer) &&
-                        ($this->app->DB->Select("SELECT id FROM artikel WHERE id = '$artikelid' AND (shop = '$id' OR shop2 = '$id' OR shop3 = '$id') LIMIT 1") ||
+                        ($this->app->DB->Select("SELECT id FROM artikel WHERE id = '$artikelid' AND (shop = '$shop_id' OR shop2 = '$shop_id' OR shop3 = '$shop_id') LIMIT 1") ||
                         $this->app->DB->Select("SELECT id FROM artikel_onlineshops WHERE artikel = '$artikelid' AND aktiv = 1")
                         ) && trim($fremdnummer) !== '') {
                     //Nur falls Artikel zum Shop passt und keine aktive Fremdnummer exisitert.
-                    if (!$this->app->DB->Select("SELECT id FROM `artikelnummer_fremdnummern` WHERE artikel = '$artikelid' AND shopid = '$id' AND nummer <> '' AND (aktiv = 1 OR nummer = '" . trim($this->app->DB->real_escape_string($fremdnummer)) . "') LIMIT 1 ")) {
+                    if (!$this->app->DB->Select("SELECT id FROM `artikelnummer_fremdnummern` WHERE artikel = '$artikelid' AND shopid = '$shop_id' AND nummer <> '' AND (aktiv = 1 OR nummer = '" . trim($this->app->DB->real_escape_string($fremdnummer)) . "') LIMIT 1 ")) {
                         $this->app->DB->Insert("INSERT INTO `artikelnummer_fremdnummern` (artikel, bezeichnung, nummer, shopid, bearbeiter, zeitstempel, aktiv)
-              VALUES ('$artikelid','Erstellt durch Artikelexport','" . trim($this->app->DB->real_escape_string($fremdnummer)) . "','$id','" . ((isset($this->app->User) && method_exists($this->app->User, 'GetName')) ? $this->app->DB->real_escape_string($this->app->User->GetName()) : 'Cronjob') . "',now(),0)
+              VALUES ('$artikelid','Erstellt durch Artikelexport','" . trim($this->app->DB->real_escape_string($fremdnummer)) . "','$shop_id','" . ((isset($this->app->User) && method_exists($this->app->User, 'GetName')) ? $this->app->DB->real_escape_string($this->app->User->GetName()) : 'Cronjob') . "',now(),0)
               ");
                     }
                 }
@@ -2153,8 +2148,9 @@ class Remote {
                 $result['count'] = $result['anzahl'];
             }//Altes Verhalten
         }
+
         if (!$isLagerExported) {
-            $this->sendlistlager($i, $id, $data);
+            $this->sendlistlager($shop_id, $data);
         }
         return $result;
     }
