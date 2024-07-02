@@ -81,7 +81,7 @@ class Artikeltexte {
                 $where = "1";
 
                 if ($artikel) {
-         //           $where .= " AND a.artikel = '".$artikel."'";
+                    $where .= " AND a.artikel = '".$artikel."'";
                 }
 
                 $count = "SELECT count(DISTINCT id) FROM artikel_texte a WHERE $where";
