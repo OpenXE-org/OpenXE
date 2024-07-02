@@ -841,9 +841,8 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
             if (!$configuration_found) {        
                 $mirakl_export_products_return_value['export_products_returncode'] = 1;
-                $article['product_export_result']['export_products_returncode'] = 11;
-                $article['product_export_result']['export_products_message'] = "Produktkonfiguration für Artikel ".$article['nummer'].", Konfiguration \"".$product_configuration_name."\" nicht gefunden";
-                $mirakl_export_products_return_value['articlelist'][] = $article;
+                $mirakl_export_products_return_value['articlelist'][$key]['export_products_returncode'] = 11;
+                $mirakl_export_products_return_value['articlelist'][$key]['export_products_message'] = "Produktkonfiguration für Artikel ".$article['nummer'].", Konfiguration \"".$product_configuration_name."\" nicht gefunden";
                 continue;
             }
         
