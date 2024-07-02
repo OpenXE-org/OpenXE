@@ -1934,11 +1934,11 @@ class Remote {
 
                 // Bulk transfer (new 2024-06-28)
                 $result = null;
-                if (!empty($lagerexport)) {
-                    $result = $this->sendlistlager($id, $data);
-                }
                 if (!empty($artikelexport) && !$nurlager) {
                     $result = $this->sendlist($id, $data, true);
+                }
+                if (!empty($lagerexport)) {
+                    $result = $this->sendlistlager($id, $data);
                 }
                 return $result;
             }
@@ -2060,11 +2060,11 @@ class Remote {
 
         // Bulk transfer (new 2024-06-28)
         $result = null;
-        if (!empty($lagerexport)) {
-            $result = $this->sendlistlager($id, $data);
-        }
         if (!empty($artikelexport) && !$nurlager) {
             $result = $this->sendlist($id, $data, true);
+        }
+        if (!empty($lagerexport)) {
+            $result = $this->sendlistlager($id, $data);
         }
         return $result;
     }
