@@ -15,6 +15,8 @@
 <?php
 
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 use Xentral\Modules\Shopware6\Client\Shopware6Client;
 use Xentral\Modules\Shopware6\Data\PriceData;
 
@@ -3372,6 +3374,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $productPriceType => $lineItem['attributes']['price']['unitPrice'],
                     'steuersatz' => $lineItem['attributes']['price']['calculatedTaxes'][0]['taxRate'],
                 ];
+                $this->parseBogxData($lineItem, $product);
                 $cart['articlelist'][] = $product;
             }
 
@@ -3408,9 +3411,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     public function ImportUpdateAuftrag()
     {
-        $tmp = $this->CatchRemoteCommand('data');
-        $auftrag = $tmp['auftrag'];
-        $tracking = $tmp['tracking'];
+        /** @var OrderStatusUpdateRequest $data */
+        $data = $this->CatchRemoteCommand('data');
+        if ($data->orderStatus !== OrderStatus::Completed)
+            return;
+
+        $auftrag = $data->shopOrderId;
 
         $this->shopwareRequest('POST', '_action/order/'.$auftrag.'/state/complete');
 
@@ -3421,17 +3427,17 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $this->shopwareRequest('POST', '_action/order_delivery/'.$deliveryId.'/state/ship');
 
             $deliveryData = [
-                'trackingCodes' => [$tracking]
+                'trackingCodes' => [$data->getTrackingNumberList()]
             ];
             $this->shopwareRequest('PATCH', 'order-delivery/'.$deliveryId,$deliveryData);
         }
 
         $this->sendInvoce($auftrag);
-        $this->addCustomFieldToOrder((string)$auftrag);
-        if(empty($tmp['orderId'])) {
+        $this->addCustomFieldToOrder($auftrag);
+        if(empty($data->orderId)) {
             return;
         }
-        $this->updateStorageForOrderIntId((int)$tmp['orderId']);
+        $this->updateStorageForOrderIntId($data->orderId);
     }
 
     public function ImportStorniereAuftrag()
@@ -3839,5 +3845,49 @@ class Shopimporter_Shopware6 extends ShopimporterBase
       }
 
       $this->updateArticleCacheToSync($articleIds);
+    }
+
+    protected function parseBogxData(array $lineItem, array &$product) : void
+    {
+        if (!isset($lineItem['attributes']['payload']['bogxProductConfigurator']))
+            return;
+
+        $bogxdata = $lineItem['attributes']['payload']['bogxProductConfigurator'];
+        $textlines = [];
+
+        if (isset($bogxdata['ordercode']))
+            $textlines[] = "Order-Code: ${bogxdata['ordercode']}";
+
+        foreach ($bogxdata['optionsGroups'] as $bogxposition)  {
+            $dt = $bogxposition['datatype'];
+            if ($dt == 'quantity_total')
+                continue;
+            if (is_array($bogxposition['valueID']) && is_array($bogxposition['title']))
+            {
+                foreach ($bogxposition['valueID'] as $valueID) {
+                    $bogxTitle = $bogxposition['title'][$valueID];
+                    if ($dt == 'checkbox_quantity')
+                        $bogxTitle = $bogxposition['label'][$valueID]." ".$bogxTitle;
+                    $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
+                }
+            }
+            else
+            {
+                if (is_array($bogxposition['title']))
+                    $bogxTitle = join(' ', $bogxposition['title']);
+                else
+                    $bogxTitle = $bogxposition['title'];
+                $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
+            }
+        }
+
+        if (!empty($bogxdata['shippingtime'])) {
+            $textlines[] = $bogxdata['shippingtime'];
+        }
+
+        $product['options'] .= join("\n", $textlines);
+        $product['price'] = $bogxdata['unitySurcharge'];
+        $product['price_netto'] = $bogxdata['unitySurchargeNetto'];
+        $product['quantity'] = $bogxdata['totalQuantity'];
     }
 }

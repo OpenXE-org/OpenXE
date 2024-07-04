@@ -14,6 +14,8 @@
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 
 class Shopimporter_Shopware extends ShopimporterBase
 {
@@ -2520,38 +2522,19 @@ class Shopimporter_Shopware extends ShopimporterBase
   //TODO fuer AuftragImport
   public function ImportUpdateAuftrag()
   {
-    $tmp = $this->CatchRemoteCommand('data');
+    /** @var OrderStatusUpdateRequest $data */
+    $data = $this->CatchRemoteCommand('data');
+    if ($data->orderStatus !== OrderStatus::Completed)
+        return;
 
     // pruefe ob $tmp[datei] vorhanden wenn nicht lege an sonst update [inhalt] und [checksum]
-    $auftrag = $tmp['auftrag'];
-    $zahlungok = $tmp['zahlung'];
-    $versandok = $tmp['versand'];
-    $tracking = $tmp['tracking'];
+    $auftrag = $data->shopOrderId;
 
-    /*if($zahlungok=='ok' || $zahlungok=='1')
-      $status_zahlung=12;
-    else
-      $status_zahlung=1;
-
-    if($versandok=='ok' || $versandok=='1')
-      $status_versand=7;
-    else
-      $status_versand=1;*/
-    /*
-       $date = new DateTime();
-       $date->modify('+10 days');
-       $date = $date->format(DateTime::ISO8601);
-     */
     $result = $this->adapter->put('orders/'.$auftrag, array(
-          // 'paymentStatusId' => $status_zahlung,
-          'orderStatusId' => $this->abgeschlossenStatusId,//$status_versand,
-          'trackingCode' => $tracking
-          //'comment' => 'Neuer Kommentar',
-          //'transactionId' => '0',
-          //   'clearedDate' => $date,
+          'orderStatusId' => $this->abgeschlossenStatusId,
+          'trackingCode' => join(',', $data->getTrackingNumberList())
           ));
     $this->ShopwareLog("Abschlussstatusrückmeldung für Auftrag: $auftrag", print_r($result,true));
-    //$this->app->DB->Delete("DELETE FROM auftraege WHERE id='$auftrag' LIMIT 1");
     return 'ok';
   }
 
