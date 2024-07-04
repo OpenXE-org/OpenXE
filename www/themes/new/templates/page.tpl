@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+
+SPDX-License-Identifier: LicenseRef-EGPL-3.1
+-->
+
 <!DOCTYPE html>
 <html lang="de">
   <head>
@@ -97,6 +104,7 @@ $(document).ready(function() {
 </style>
 [FINALCSSLINKS]
 [MODULEJAVASCRIPTHEAD]
+[JAVASCRIPTMODULES]
 [MODULESTYLESHEET]
   </head>
   <body class="[LAYOUTFIXMARKERCLASS]" data-module="[MODULE]" data-action="[ACTION]" data-version="[REVISION]">

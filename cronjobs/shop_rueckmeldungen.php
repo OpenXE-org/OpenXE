@@ -387,15 +387,16 @@ function GetLaender()
   $join = '';
   $where = '';
   $app->erp->RunHook('shop_rueckmeldung', 2, $join, $where);
-  $sql = "SELECT a.id,apro.zeit, a.shop, l.id as lieferschein, v.id as versandid, l.projekt 
-    FROM auftrag AS a 
-    LEFT JOIN lieferschein AS l on l.auftragid = a.id 
-    LEFT JOIN auftrag_protokoll AS apro ON a.id = apro.auftrag AND apro.grund LIKE 'Auftrag importiert vom Shop'
-    LEFT JOIN projekt AS pr ON l.projekt = pr.id
-    LEFT JOIN versand AS v ON v.lieferschein = l.id
+  $sql = "SELECT DISTINCT a.id, a.shop 
+    FROM auftrag a 
+    LEFT JOIN lieferschein l on l.auftragid = a.id 
+    LEFT JOIN projekt pr ON l.projekt = pr.id
+    LEFT JOIN lieferschein_position lp ON lp.lieferschein = l.id
+    LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
+    LEFT JOIN versandpakete v ON (v.lieferschein_ohne_pos = l.id OR v.id = vlp.versandpaket)
     $join
     WHERE a.status = 'abgeschlossen' AND $subwhere AND 
-    DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 2 WEEK),'%Y-%m-%d') < a.datum AND 
+    DATE_SUB(NOW(),INTERVAL 2 WEEK) < a.datum AND 
     a.shopextstatus <> 'abgeschlossen' AND a.shop > 0 AND 
     (
       ( v.tracking <> '' AND l.status = 'versendet')  OR 

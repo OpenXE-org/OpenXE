@@ -1,4 +1,9 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 namespace Xentral\Modules\Article\Gateway;
 
@@ -345,5 +350,14 @@ final class ArticleGateway
                 'Required argument "SellingId" is empty or invalid.'
             );
         }
+    }
+
+    public function SetVariantStatus(int $articleId, ?int $variantOfId) : void {
+      $sql = "UPDATE artikel SET variante = :isVariant, variante_von = :variantOfId WHERE id = :articleId";
+      $this->db->perform($sql, [
+        'articleId' => $articleId,
+        'variantOfId' => $variantOfId > 0 ? $variantOfId : null,
+        'isVariant' => $variantOfId > 0
+      ]);
     }
 }
