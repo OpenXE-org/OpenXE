@@ -476,7 +476,13 @@ class Ticket {
             '<table>',
             '<tr>',
             '<td>',
-            '<style>'
+            '<style>',
+            '<ol>',
+            '<ul>',
+            '<li>',
+            '<dd>',
+            '<dt>',
+            '<img>'
         );
 
         $mid = $this->app->Secure->GetGET('mid');
@@ -491,24 +497,37 @@ class Ticket {
         if (empty($messages)) {
         }
 
-        if ($insecure) {
-            // Adjust cid images
-            $attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$mid);
-            foreach($attachments as $attachment) {
-                $filename = $this->app->erp->GetDateiName($attachment);
-                $messages[0]['text'] = str_replace($filename,'index.php?module=dateien&action=send&id='.$attachment,$messages[0]['text']);
-            }
-            $this->app->Tpl->Set("TEXT",$messages[0]['text']);
-        } else {
-
-            $secure_text = strip_tags($messages[0]['text'],$secure_html_tags);
-
-            if (strlen($secure_text) != strlen($messages[0]['text'])) {
-//                $secure_text = "<p style=\"all: initial;border-bottom-color:black;border-bottom-style:solid;border-bottom-width:1px;display:block;font-size:small;\">Einige Elemente wurden durch OpenXE blockiert.</p>".$secure_text;
-                $secure_text = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/icon-invisible.svg\" alt=\"Einige Elemente wurden durch OpenXE blockiert.\" title=\"Einige Elemente wurden durch OpenXE blockiert.\" border=\"0\" style=\"all: initial;display:block;float:right;font-size:small;\">".$secure_text;
-            }
-            $this->app->Tpl->Set("TEXT",$secure_text);
+        $html_start = "<!DOCTYPE html><html>";
+        $head_start = "<head>";
+        $security = "";
+        $style = "<link rel=\"stylesheet\" type=\"text/css\" href=\"./themes/new/css/ticket_iframe.css?v=3\"/>";
+        $head_end = "</head>";
+        $html_end = "</html>";
+        $prepared_text = $messages[0]['text'];
+               
+        // Adjust cid images
+        $attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$mid);
+        foreach($attachments as $attachment) {
+            $filename = $this->app->erp->GetDateiName($attachment);
+            $prepared_text = str_replace($filename,'index.php?module=dateien&action=send&id='.$attachment,$prepared_text);
         }
+        
+        if ($insecure) {            
+            // Add Content Security Policy
+        } else {
+       
+            // Add Content Security Policy
+            $security = "<meta  http-equiv=\"Content-Security-Policy\" content=\"default-src 'self';\" />";
+       
+            // Strip html tags
+            $stripped_prepared_text = strip_tags($prepared_text,$secure_html_tags);           
+           
+            if (strlen($stripped_prepared_text) != strlen($prepared_text)) {                                           
+                $stripped_prepared_text = "<img class=\"eye blink\" src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/icon-invisible.svg\" alt=\"Einige Elemente wurden durch OpenXE blockiert.\" title=\"Einige Elemente wurden durch OpenXE blockiert.\" border=\"0\">".$stripped_prepared_text;
+            }        
+            $prepared_text = $stripped_prepared_text;        
+        }        
+        $this->app->Tpl->Set("TEXT",$html_start.$head_start.$security.$style.$head_end.$prepared_text.$html_end);        
         $this->app->Tpl->Output('ticket_text.tpl');
         $this->app->ExitXentral();
     }

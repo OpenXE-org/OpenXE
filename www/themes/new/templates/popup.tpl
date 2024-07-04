@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' xentral.com *.xentral.com xentral.biz *.xentral.biz *.wawision.de *.embedded-projects.net maps.googleapis.com maps.gstatic.com [ADDITIONALCSPHEADER];">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' [ADDITIONALCSPHEADER];">
   [ADDITIONALHEADER]
 <title>[TITLE]</title>
 

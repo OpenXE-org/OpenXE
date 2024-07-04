@@ -642,11 +642,13 @@ class Versandpakete {
                 // Write to database                
                 // Add checks here
 
-                $sql = "SELECT status FROM versandpakete WHERE id = ".$id;
-                $input['status'] = $this->app->DB->SelectArr($sql)[0]['status']; // Status is not changeable
+                $sql = "SELECT * FROM versandpakete WHERE id = ".$id;
+                $paket_db = $this->app->DB->SelectRow($sql);
+                $input['status'] = $paket_db['status']; // Status is not changeable
                 if ($input['status'] != 'neu') { 
                     $input = Array('bemerkung' => $input['bemerkung']);
                 } 
+
                 if (!empty($paket_db['tracking'])) { // Tracking is not changeable
                     unset($input['tracking']);
                     unset($input['tracking_link']);
@@ -1176,7 +1178,22 @@ class Versandpakete {
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
         $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
-        $versandmodul->Paketmarke('TAB1', 'lieferschein', $lieferschein['lieferschein'], $id);
+    
+        $sql = "
+            SELECT 
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE vlp.versandpaket = ".$id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);       
+        $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
 

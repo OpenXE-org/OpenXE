@@ -667,6 +667,13 @@ class WidgetGenadresse
     $field = new HTMLInput("kennung","text","","30","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("etikettautodruck","","","1","0","0");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("etikett","text","","30","","","","","","","","0","","");
+    $this->form->NewField($field);
+
+
   }
 
 }

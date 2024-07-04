@@ -49,9 +49,9 @@ final class PdfMerger
         }
 
         try {
-            $this->fpdi->mergeFiles($sourceFiles, $targetFile);
-        } catch (PdfIncompatibleException $exception) {
             $this->gs->mergeFiles($sourceFiles, $targetFile);
+        } catch (Exception $exception) {
+            $this->fpdi->mergeFiles($sourceFiles, $targetFile);
         }
 
         return $targetFile;

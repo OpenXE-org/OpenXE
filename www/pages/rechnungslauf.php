@@ -70,7 +70,7 @@ class Rechnungslauf {
               $calcdate = new \DateTimeImmutable('today');
               $scalcdate = $calcdate->format('Y-m-d');
                 $where = " aa.id > 0
-                    AND aa.dokument = '$doctype' 
+                    AND aa.dokument = '$doctype' AND aa.preisart IN ('monat', 'jahr', '30tage')
                     AND greatest(aa.startdatum, aa.abgerechnetbis) < '$scalcdate' 
                     AND (aa.enddatum = '0000-00-00' OR aa.abgerechnetbis < aa.enddatum)";
 
@@ -167,7 +167,8 @@ class Rechnungslauf {
                     . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" border=\"0\"></a>"
                     . "&nbsp;</td></tr></table>";
 
-                $where = " aa.id > 0 AND (aa.enddatum = '0000-00-00' OR aa.abgerechnetbis < aa.enddatum) ";
+                $where = " aa.id > 0 AND aa.preisart IN ('monat', 'jahr', '30tage') 
+                          AND (aa.enddatum = '0000-00-00' OR aa.abgerechnetbis < aa.enddatum) ";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS aa.id, ad.name, ad.kundennummer, 
                         aa.bezeichnung, a.nummer, DATE_FORMAT(aa.abgerechnetbis, '%d.%m.%Y'),

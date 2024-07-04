@@ -214,7 +214,7 @@
                   method: 'POST',
                   processData: false,
                   contentType: false,
-                  success: function() {
+                  complete: function() {
                     window.location.href = ('index.php?module=[DOCTYP]&action=positionen&fmodul=[FMODUL]&id=[ID]');
                   }
                 });
@@ -238,7 +238,7 @@
                   dataType: 'json',
                   beforeSend: function () {
                   },
-                  success: function (data) {
+                  complete: function (data) {
                     window.location.href = ('index.php?module=[DOCTYP]&action=positionen&fmodul=[FMODUL]&id=[ID]');
                   }
                 });

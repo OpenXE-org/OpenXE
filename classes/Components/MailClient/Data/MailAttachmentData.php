@@ -67,11 +67,18 @@ class MailAttachmentData implements MailAttachmentInterface
                 } else if ($split[0] === 'inline') {
                     return ('inline');
                 }
-            } else {    // Check for application/octet-stream
+            } else {    
+                // No disposition given (that is a bad thing)
+                // Check for application/octet-stream
                 $content_type = $part->getContentType();
                 if ($content_type == 'application/octet-stream') {
                     return('application/octet-stream');
-                }
+                }                
+                // Check for Content-id
+                $contentIdHeader = $part->getHeader('content-id');                                              
+                if ($contentIdHeader !== null) {
+                    return ('inline');
+                }               
             }
         }
 

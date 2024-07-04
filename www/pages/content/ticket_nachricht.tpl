@@ -18,12 +18,10 @@
                                             </fieldset> 
                                         </div>
                                		</div>                         		         
-                                    <div class="col-xs-12 col-md-8 col-md-height ticket_nachricht_box" style="float:[NACHRICHT_FLOAT]">
+                                    <div class="col-xs-12 col-md-8 col-md-height" style="float:[NACHRICHT_FLOAT]">
 	                        			<div class="inside inside-full-height">
 	                        				<fieldset>
-                                                <table width="100%" border="0" class="mkTableFormular">
-                                                    <tr><td colspan=2><div id="body" class="ticket_text_div">[NACHRICHT_TEXT]</div></td></tr>
-                                                </table>
+                                                <div id="body" class="ticket_nachricht_box">[NACHRICHT_TEXT]</div>
                                             </fieldset> 
                                         </div>
                                		</div>                         

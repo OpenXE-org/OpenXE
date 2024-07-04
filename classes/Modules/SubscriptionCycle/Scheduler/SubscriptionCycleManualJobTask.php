@@ -15,6 +15,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use Xentral\Components\Database\Database;
+use Xentral\Components\Logger\Logger;
 use Xentral\Modules\SubscriptionCycle\Service\SubscriptionCycleJobService;
 use Xentral\Modules\SubscriptionCycle\SubscriptionCycleModuleInterface;
 use Xentral\Modules\SubscriptionCycle\SubscriptionModuleInterface;
@@ -58,15 +59,23 @@ final class SubscriptionCycleManualJobTask
         $this->taskMutexService->setMutex('rechnungslauf_manual');
         $jobs = $this->cycleJobService->listAll(100);
         foreach ($jobs as $job) {
-          switch ($job['document_type']) {
-            case 'rechnung':
-              $this->subscriptionModule->CreateInvoice((int)$job['address_id']);
-              break;
-            case 'auftrag':
-              $this->subscriptionModule->CreateOrder((int)$job['address_id']);
-              break;
-          }
-          $this->cycleJobService->delete((int)$job['id']);
+            try {
+                switch ($job['document_type']) {
+                    case 'rechnung':
+                        $this->subscriptionModule->CreateInvoice((int)$job['address_id']);
+                        break;
+                    case 'auftrag':
+                        $this->subscriptionModule->CreateOrder((int)$job['address_id']);
+                        break;
+                }
+            }
+            catch (Exception $e) {
+                /** @var Logger $logger */
+                $logger = $this->app->Container->get('Logger');
+                $logger->error($e->getMessage(), $job);
+            } finally {
+                $this->cycleJobService->delete((int)$job['id']);
+            }
         }
     }
 

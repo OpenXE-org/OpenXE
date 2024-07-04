@@ -71,7 +71,7 @@ class WidgetShopexport extends WidgetGenShopexport
         $task = $this->app->DB->SelectRow('SELECT * FROM onlineshops_tasks WHERE shop_id=\'' . $id . '\' AND command=\'' . $command . '\' LIMIT 1');
         if(!empty($task['id'])){
           if($task['status'] !== 'running'){
-            $this->app->DB->Update('UPDATE onlineshop_tasks SET status=\'inactive\',counter=0 WHERE id=' . $task['id']);
+            $this->app->DB->Update('UPDATE onlineshops_tasks SET status=\'inactive\',counter=0 WHERE id=' . $task['id']);
           }
         }else{
           $this->app->DB->Insert('INSERT INTO onlineshops_tasks (shop_id, command) VALUES (' . $id . ',\'' . $command . '\')');
