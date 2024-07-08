@@ -4247,7 +4247,6 @@ title: 'Abschicken',
 
     $result = $this->app->DB->SelectArr("SELECT * FROM $type WHERE id='$id' LIMIT 1");
     $waehrung = $result[0]['waehrung'];
-
     $text = str_replace('{BELEGART}',ucfirst($type),$text);
 
     $text = str_replace('{FIRMA}',$this->Firmendaten("name"),$text);
@@ -4302,20 +4301,24 @@ title: 'Abschicken',
     if($type!=='auftrag' && $type!=='bestellung' && $type!=='retoure')
     {
       $auftragArr = $this->app->DB->SelectRow("SELECT a.*, DATE_FORMAT(datum,'%d.%m.%Y') as datum_de FROM auftrag AS a WHERE id='".$result[0]['auftragid']."' LIMIT 1");
-      $result[0]['internet'] = $auftragArr['internet'];
-      $result[0]['abweichendelieferadresse']=$auftragArr['abweichendelieferadresse'];
-      $result[0]['liefername']=$auftragArr['liefername'];
-      $result[0]['lieferabteilung']=$auftragArr['lieferabteilung'];
-      $result[0]['lieferunterabteilung']=$auftragArr['lieferunterabteilung'];
-      $result[0]['lieferadresszusatz']=$auftragArr['lieferadresszusatz'];
-      $result[0]['liefertitel']=$auftragArr['liefertitel'];
-      $result[0]['lieferansprechpartner']=$auftragArr['lieferansprechpartner'];
-      $result[0]['lieferstrasse']=$auftragArr['lieferstrasse'];
-      $result[0]['lieferplz']=$auftragArr['lieferplz'];
-      $result[0]['lieferland']=$auftragArr['lieferland'];
-      $result[0]['lieferort'] = $auftragArr['lieferort'];
-      $result[0]['liefergln'] = $auftragArr['liefergln'];
-      $result[0]['lieferemail'] = $auftragArr['lieferemail'];
+
+      if (!empty($auftragArr)) {
+
+          $result[0]['internet'] = $auftragArr['internet'];
+          $result[0]['abweichendelieferadresse']=$auftragArr['abweichendelieferadresse'];
+          $result[0]['liefername']=$auftragArr['liefername'];
+          $result[0]['lieferabteilung']=$auftragArr['lieferabteilung'];
+          $result[0]['lieferunterabteilung']=$auftragArr['lieferunterabteilung'];
+          $result[0]['lieferadresszusatz']=$auftragArr['lieferadresszusatz'];
+          $result[0]['liefertitel']=$auftragArr['liefertitel'];
+          $result[0]['lieferansprechpartner']=$auftragArr['lieferansprechpartner'];
+          $result[0]['lieferstrasse']=$auftragArr['lieferstrasse'];
+          $result[0]['lieferplz']=$auftragArr['lieferplz'];
+          $result[0]['lieferland']=$auftragArr['lieferland'];
+          $result[0]['lieferort'] = $auftragArr['lieferort'];
+          $result[0]['liefergln'] = $auftragArr['liefergln'];
+          $result[0]['lieferemail'] = $auftragArr['lieferemail'];
+        }
     }
 
     if($type=="angebot" || $type=="auftrag")
@@ -4860,7 +4863,6 @@ title: 'Abschicken',
         }
       }
     }
-
     if($result[0]['abweichendelieferadresse']=="1")
     {
       $liefertext ="";
