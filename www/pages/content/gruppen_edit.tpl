@@ -40,7 +40,7 @@
                                             {|Kennziffer|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="kennziffer" id="kennziffer" value="[KENNZIFFER]" required size="20">
+                                            <input type="text" name="kennziffer" id="kennziffer" pattern="[a-zA-Z0-9_\-]+" value="[KENNZIFFER]" required size="20">
                                         </td>
                                     </tr>
                                     <tr>
