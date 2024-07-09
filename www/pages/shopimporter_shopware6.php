@@ -2901,6 +2901,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             $this->addCoverImage($variantImageData, $variantProductId);
+            if($article['texteuebertragen']) {
+                $this->exportTranslationsForArticle($variant, $variantProductId);
+            }
         }
 
         $existingConfigurations = $this->shopwareRequest(
