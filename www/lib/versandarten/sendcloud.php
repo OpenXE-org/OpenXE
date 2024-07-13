@@ -82,8 +82,18 @@ class Versandart_sendcloud extends Versanddienstleister
     $parcel->ShippingMethodId = $json->product;
     $parcel->Name = $json->name;
     switch ($json->addresstype) {
-      case 0:
-        $parcel->CompanyName = trim("$json->name2 $json->name3");
+      case 0:     
+        $parcel->CompanyName = $json->company_name;                
+        $parcel->Name = join(
+                        ';', 
+                        array_filter(
+                            [
+                                $json->contact_name,
+                                $json->company_division
+                            ],
+                            fn(string $item) => !empty(trim($item))
+                        )
+                    );                
         $parcel->Address = $json->street;
         $parcel->Address2 = $json->address2;
         $parcel->HouseNumber = $json->streetnumber;
@@ -98,6 +108,23 @@ class Versandart_sendcloud extends Versanddienstleister
         $parcel->Address = "Postfiliale";
         $parcel->HouseNumber = $json->postofficeNumber;
         break;
+      case 3:           
+        $parcel->Name = join(
+                        ';', 
+                        array_filter(
+                            [
+                                $json->name,
+                                $json->contact_name
+                            ],
+                            fn(string $item) => !empty(trim($item))
+                        )
+                    );
+                
+        $parcel->Address = $json->street;
+        $parcel->Address2 = $json->address2;
+        $parcel->HouseNumber = $json->streetnumber;
+        break;
+
     }
     $parcel->Country = $json->country;
     $parcel->PostalCode = $json->zip;

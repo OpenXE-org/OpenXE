@@ -18,29 +18,34 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                         <td>{|Adresstyp|}:</td>
                         <td>
                             <select v-model.number="form.addresstype">
-                                <option value="0">Haus</option>
+                                <option value="0">Firma</option>
                                 <option value="1">Packstation</option>
                                 <option value="2">Filiale</option>
+                                <option value="3">Privatadresse</option>
                             </select>
                         </td>
                     </tr>
-                    <tr>
-                        <td>{|Name / Zeile 1|}:</td>
-                        <td><input type="text" size="36" v-model.trim="form.name"></td>
+                    <tr v-if="form.addresstype === 0">
+                        <td>{|Firma|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.company_name"></td>
                     </tr>
                     <tr v-if="form.addresstype === 0">
-                        <td>{|Firmenname / Zeile 2|}:</td>
-                        <td><input type="text" size="36" v-model.trim="form.name2"></td>
+                        <td>{|Abteilung|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.company_division"></td>
+                    </tr>
+                    <tr v-if="form.addresstype === 3">
+                        <td>{|Name|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.name"></td>
+                    </tr>
+                    <tr v-if="form.addresstype === 0 || form.addresstype === 3">
+                        <td>{|Ansprechpartner|}:</td>
+                        <td><input type="text" size="36" v-model.trim="form.contact_name"></td>
                     </tr>
                     <tr v-if="form.addresstype === 1 || form.addresstype === 2">
                         <td>{|Postnummer|}:</td>
                         <td><input type="text" size="36" v-model.trim="form.postnumber"></td>
                     </tr>
-                    <tr v-if="form.addresstype === 0">
-                        <td>{|Firmenname / Zeile 3|}:</td>
-                        <td><input type="text" size="36" v-model.trim="form.name3"></td>
-                    </tr>
-                    <tr v-if="form.addresstype === 0">
+                    <tr v-if="form.addresstype === 0 || form.addresstype === 3">
                         <td>{|Strasse/Hausnummer|}:</td>
                         <td>
                             <input type="text" size="30" v-model.trim="form.street">
@@ -55,7 +60,7 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                         <td>{|Postfilialnummer|}:</td>
                         <td><input type="text" size="10" v-model.trim="form.postofficeNumber"></td>
                     </tr>
-                    <tr v-if="form.addresstype === 0">
+                    <tr v-if="form.addresstype === 0 || form.addresstype === 3">
                         <td>{|Adresszeile 2|}:</td>
                         <td><input type="text" size="36" v-model.trim="form.address2"></td>
                     </tr>
@@ -76,10 +81,6 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
                                 <option v-for="(value, key) in countries" :value="key">{{value.name}}</option>
                             </select>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>{|Ansprechpartner|}:</td>
-                        <td><input type="text" size="36" v-model="form.contactperson"></td>
                     </tr>
                     <tr>
                         <td>{|E-Mail|}:</td>
