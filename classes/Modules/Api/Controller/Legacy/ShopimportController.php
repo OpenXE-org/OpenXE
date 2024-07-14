@@ -377,11 +377,13 @@ class ShopimportController
 
         $stats['packages_yesterday'] = $verkaufszahlen->getPackages(
             " v.versendet_am=DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 day),'%Y-%m-%d') '",
-            sprintf('INNER JOIN `auftrag` AS `a` ON l.auftragid = a.id AND a.shop = %d', $shopId)
+            sprintf('INNER JOIN `auftrag` AS `a` ON l.auftragid = a.id AND a.shop = %d', $shopId),
+            false
         );
         $stats['packages_today'] = $verkaufszahlen->getPackages(
             " v.versendet_am=DATE_FORMAT(NOW(),'%Y-%m-%d') '",
-            sprintf('INNER JOIN `auftrag` AS `a` ON l.auftragid = a.id AND a.shop = %d', $shopId)
+            sprintf('INNER JOIN `auftrag` AS `a` ON l.auftragid = a.id AND a.shop = %d', $shopId),
+            false
         );
 
         [
