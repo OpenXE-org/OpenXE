@@ -81,8 +81,9 @@ class Auftrag extends GenAuftrag
         $this->app->Tpl->Add('JQUERYREADY', "$('#autoversandok').click( function() { fnFilterColumn15( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#fastlanea').click( function() { fnFilterColumn16( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#tolate').click( function() { fnFilterColumn17( 0 ); } );");
+        $this->app->Tpl->Add('JQUERYREADY', "$('#notsent').click( function() { fnFilterColumn18( 0 ); } );");
         //            $this->app->Tpl->Add('JQUERYREADY',"$('#artikellager').click( function() {  oTable".$name.".fnDraw(); } );");
-        for ($r = 1;$r < 18;$r++) {
+        for ($r = 1;$r < 19;$r++) {
           $this->app->Tpl->Add('JAVASCRIPT', '
                                          function fnFilterColumn' . $r . ' ( i )
                                          {
@@ -431,7 +432,10 @@ class Auftrag extends GenAuftrag
            )";
         }
 
-
+        $notsent = $this->app->Secure->GetGET("more_data18");
+        if ($notsent == 1) {
+            $subwhere[] = "(a.versendet <> 1)";
+        }
 
         $tmp = '';
         if(!empty($subwhere)) {
