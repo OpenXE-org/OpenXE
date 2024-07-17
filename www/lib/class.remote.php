@@ -2068,7 +2068,7 @@ class Remote
             $result = $this->sendlist($i, $id, $data, true);
           }
 
-        } while (count($data[$i]['matrix_varianten']['artikel'])>=5000);
+        } while (count($data[$i]['matrix_varianten']['artikel'] ?? [])>=5000);
 
         return $result;
       }
@@ -2325,7 +2325,7 @@ class Remote
           $data->orderStatus = OrderStatus::Imported;
 
       $sql = "
-        SELECT
+        SELECT DISTINCT
             v.id,
             v.tracking,
             v.tracking_link,

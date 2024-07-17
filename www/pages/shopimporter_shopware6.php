@@ -3432,7 +3432,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $this->shopwareRequest('POST', '_action/order_delivery/'.$deliveryId.'/state/ship');
 
             $deliveryData = [
-                'trackingCodes' => [$data->getTrackingNumberList()]
+                'trackingCodes' => $data->getTrackingNumberList()
             ];
             $this->shopwareRequest('PATCH', 'order-delivery/'.$deliveryId,$deliveryData);
         }
