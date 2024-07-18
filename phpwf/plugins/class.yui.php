@@ -1122,6 +1122,15 @@ class YUI {
     return $newid;
   }
   
+  /*
+  * Move all special fields by one position after a certain position
+  * Use after inserting a position
+  */
+  function pushDrawItem($module, $id, $pos) {
+        $sql = "UPDATE `beleg_zwischenpositionen` set `pos` = `pos`+1 WHERE `pos` > $pos AND `doctype` = '$module' AND `doctypeid` = '$id'";
+        $this->app->DB->Update($sql);
+  }
+
   function ReSortDrawItem($module, $id)
   {
     $items = $this->app->DB->SelectArr("SELECT id, pos, sort FROM beleg_zwischenpositionen WHERE doctype = '".$module."' AND doctypeid = '$id' ORDER BY pos, sort");
@@ -1820,8 +1829,16 @@ class YUI {
           )
         );
         $projekt = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='$projekt' LIMIT 1");
-        $sort = $this->app->DB->Select("SELECT MAX(sort) FROM $table WHERE $module='$id' LIMIT 1");
-        $sort = $sort + 1;
+
+        $insertbefore = $this->app->Secure->GetPOST("insertbefore");    
+        if (is_numeric($insertbefore)) {
+            $sort = $insertbefore - 1;
+            $reload_afterwards = true;
+        } else {
+            $sort = $this->app->DB->Select("SELECT MAX(sort) FROM $table WHERE $module='$id' LIMIT 1");
+            $sort = $sort + 1;
+        }     
+
         $adresse = $docArr['adresse'];// $this->app->DB->Select("SELECT adresse FROM $module WHERE id='$id' LIMIT 1");
         $sprache = $docArr['sprache'];//$this->app->DB->Select("SELECT sprache FROM $module WHERE id='$id' LIMIT 1");
         if($sprache=='') {
@@ -3043,6 +3060,13 @@ class YUI {
       }
       $this->app->Tpl->Add('PAGE', "</fieldset>");
     }
+
+    if ($reload_afterwards) {
+      $this->pushDrawItem($module,$id,$sort);
+      header('Location: index.php?module='.$module.'&action=positionen&id='.$id);
+      exit;
+    }
+
   }
   
   function FormatPreis($spalte)
@@ -14792,7 +14816,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift" || $module == "proformarechnung") {
         
         if ($schreibschutz != 1) {
-          $addrow = array('<form action="" method="post" id="myform">', '[ARTIKELSTART]<input type="text" size="30" name="artikel" id="artikel" onblur="window.setTimeout(\'selectafterblur()\',200);">[ARTIKELENDE]', '<input type="text" name="projekt" id="projekt" size="10" readonly onclick="checkhere()" >', '<input type="text" name="nummer" id="nummer" size="7">', '<input type="text" size="8" name="lieferdatum" id="lieferdatum">', '<input type="text" name="menge" id="menge" size="5" onblur="window.setTimeout(\'selectafterblurmenge()\',200); document.getElementById(\'preis\').style.background =\'none\';">', '<input type="text" name="preis" id="preis" size="10" onclick="checkhere();">', '<input type="text" name="waehrung" id="waehrung" size="10" onclick="checkhere();">' ,'<input type="text" name="rabatt" id="rabatt" size="7">','','');
+          $addrow = array('<form action="" method="post" id="myform"><input type="number" min="1" size="4" name="insertbefore">', '[ARTIKELSTART]<input type="text" size="30" name="artikel" id="artikel" onblur="window.setTimeout(\'selectafterblur()\',200);">[ARTIKELENDE]', '<input type="text" name="projekt" id="projekt" size="10" readonly onclick="checkhere()" >', '<input type="text" name="nummer" id="nummer" size="7">', '<input type="text" size="8" name="lieferdatum" id="lieferdatum">', '<input type="text" name="menge" id="menge" size="5" onblur="window.setTimeout(\'selectafterblurmenge()\',200); document.getElementById(\'preis\').style.background =\'none\';">', '<input type="text" name="preis" id="preis" size="10" onclick="checkhere();">', '<input type="text" name="waehrung" id="waehrung" size="10" onclick="checkhere();">' ,'<input type="text" name="rabatt" id="rabatt" size="7">','','');
           $addrow[] = '<input type="submit" value="einf&uuml;gen" name="ajaxbuchen">
             <script type="text/javascript">
             document.onkeydown = function(evt) {
