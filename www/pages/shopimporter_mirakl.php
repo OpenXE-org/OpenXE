@@ -175,7 +175,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         if (!empty($importerSettings['einstellungen_json'])) {
             $einstellungen = json_decode($importerSettings['einstellungen_json'], true);
         }
-        $this->protocol = $einstellungen['felder']['protokoll'];
         $this->apiKey = $einstellungen['felder']['apikey'];
         $this->shopUrl = rtrim($einstellungen['felder']['shopurl'], '/') . '/';
         $this->mirakl_shopid = $einstellungen['felder']['mirakl_shopid'];
@@ -545,7 +544,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     if($tax->rate > $steuersatz) {
                         $steuersatz = $tax->rate;
                     }
-                    switch ($order->row->taxes[0]->code) {
+                    switch ($tax->code) {
                         case $this->reducedTaxId:
                             $umsatzsteuer_typ = 'ermaessigt';
                         break;

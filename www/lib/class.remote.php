@@ -2159,6 +2159,7 @@ class Remote {
     }
 
   public function getDataToSendForUpdateOrder(int $shopId, int $orderId): ?OrderStatusUpdateRequest
+  {
       $orderArr = $this->app->DB->SelectRow("SELECT `zahlungsweise`, `shopextid` FROM `auftrag` WHERE `id` = $orderId LIMIT 1");
       if (empty($orderArr))
           return null;
