@@ -27,7 +27,7 @@ $shipments = $db->fetchGroup($shipments_sql);
 
 foreach ($shipments as $module => $vps) {
     list($moduleId, $moduleName) = explode(';', $module,2);
-    $module = $app->erp->LoadVersandModul($moduleName, $moduleName);
+    $module = $app->erp->LoadVersandModul($moduleName, intval($moduleId));
 
     foreach ($vps as $vp) {
         $status = match ($module->GetShipmentStatus($vp['tracking'])) {
@@ -38,6 +38,6 @@ foreach ($shipments as $module => $vps) {
         };
         if ($status === null || $status === $vp['status']) continue;
         $db->perform('UPDATE versandpakete SET status = :status WHERE id = :id',
-            [':status' => $status, ':id' => $vp['id']]);
+            ['status' => $status, 'id' => $vp['id']]);
     }
 }
