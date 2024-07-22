@@ -228,7 +228,11 @@ class Verbindlichkeit {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;            
 
-                $offen_menge = "";
+                $offen_menge = "TRIM(IF(
+                            pd.menge > COALESCE(vp.menge,0),
+                            pd.menge - COALESCE(vp.menge,0),
+                            0
+                        ))+0";
 
                 $auswahl = array (
                     '<input type=\"checkbox\" name=\"ids[]\" value=\"',                   
@@ -238,8 +242,10 @@ class Verbindlichkeit {
 
                 $werte = array (
                     '<input type="number" name="werte[]" value="',
+                    ['sql' => $offen_menge],
                     '" min="0"',
                     ' max="',
+                    ['sql' => $offen_menge],
                     '"/>'
                 );       
 
@@ -297,7 +303,7 @@ class Verbindlichkeit {
                 // END Toggle filters              
 
                 $sql = "
-                    SELECT * FROM (
+                    SELECT SQL_CALC_FOUND_ROWS * FROM (
                         SELECT 
                             pa.id pa_id,
                             ".$this->app->erp->ConcatSQL($auswahl)." AS auswahl,
@@ -310,7 +316,11 @@ class Verbindlichkeit {
                             art.name_de,
                             pd.bemerkung,
                             pd.menge,
-                            0 offen_menge,
+                            IF(
+                                pd.menge > COALESCE(vp.menge,0),
+                                pd.menge - COALESCE(vp.menge,0),
+                                0
+                            ) offen_menge,
                             ".$this->app->erp->ConcatSQL($werte).",
                             ".$this->app->erp->ConcatSQL($preise)." AS preis,
                             if(art.umsatzsteuer = '',art.steuersatz,art.umsatzsteuer) steuer,
@@ -319,28 +329,38 @@ class Verbindlichkeit {
                                 CONCAT(skadr.sachkonto,' ',skadr.beschriftung)                               
                             ) AS sachkonto
                         FROM
-                            paketdistribution pd                            
-                        LEFT JOIN  paketannahme pa ON
+                            paketannahme pa
+                        INNER JOIN paketdistribution pd ON
                             pd.paketannahme = pa.id
-                        LEFT JOIN artikel art ON
+                        INNER JOIN artikel art ON
                             art.id = pd.artikel
                         LEFT JOIN adresse adr ON
                             adr.id = pa.adresse
                         LEFT JOIN bestellung_position bp ON
                             bp.id = pd.bestellung_position
                         LEFT JOIN bestellung b ON
-                            b.id = bp.bestellung                                           
+                            b.id = bp.bestellung                    
+                        LEFT JOIN(
+                            SELECT
+                                paketdistribution,
+                                SUM(menge) AS menge
+                            FROM
+                                verbindlichkeit_position vp
+                            GROUP BY
+                                paketdistribution
+                        ) vp
+                        ON
+                            vp.paketdistribution = pd.id   
                         LEFT JOIN 
                             kontorahmen skart ON skart.id = art.kontorahmen
                         LEFT JOIN 
                             kontorahmen skadr ON skadr.id = adr.kontorahmen        
-                        WHERE pa.adresse = '".$lieferant."' 
-                        GROUP BY pd.id
+                        WHERE pa.adresse = ".$lieferant." AND pd.vorlaeufig IS NULL".$innerwhere."
                     ) temp
                         ";
 
                 $count = "";
-                $groupby = "";
+//                $groupby = "";
 
                 break;
        case 'verbindlichkeit_positionen':
