@@ -3,6 +3,7 @@
 namespace Xentral\Modules\Article;
 
 use Xentral\Core\DependencyInjection\ContainerInterface;
+use Xentral\Modules\Article\Service\ArticleService;
 use Xentral\Modules\Article\Service\SellingPriceService;
 use Xentral\Modules\Article\Gateway\ArticleGateway;
 use Xentral\Modules\Article\Service\CurrencyConversionService;
@@ -17,6 +18,7 @@ final class Bootstrap
     {
         return [
             'ArticleGateway'            => 'onInitArticleGateway',
+            'ArticleService'            => 'onInitArticleService',
             'PurchasePriceService'      => 'onInitPurchasePriceService',
             'SellingPriceService'       => 'onInitSellingPriceService',
             'CurrencyConversionService' => 'onInitCurrencyConversionService',
@@ -64,5 +66,18 @@ final class Bootstrap
         $app = $container->get('LegacyApplication');
 
         return new CurrencyConversionService($app->erp);
+    }
+
+    /**
+     * @param ContainerInterface $container
+     *
+     * @return ArticleService
+     */
+    public static function onInitArticleService(ContainerInterface $container)
+    {
+        /** @var \ApplicationCore $app */
+        $app = $container->get('LegacyApplication');
+
+        return new ArticleService($app);
     }
 }

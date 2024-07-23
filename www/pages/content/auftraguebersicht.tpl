@@ -35,6 +35,7 @@ document.onkeydown = function(evt) {
 				<li class="filter-item"><input type="checkbox" id="autoversandok"><label for="autoversandok">{|Auto-Versand OK|}</label></li>
 				<li class="filter-item"><input type="checkbox" id="fastlanea"><label for="fastlanea">{|Fast-Lane|}</label></li>
 				<li class="filter-item"><input type="checkbox" id="tolate"><label for="tolate">{|Lieferdatum &uuml;berf&auml;llig|}</label></li>
+				<li class="filter-item"><input type="checkbox" id="notsent"><label for="notsent">{|Nicht versendet|}</label></li>
 				[HOOK_FILTER_1]
 			</ul>
 		</div>

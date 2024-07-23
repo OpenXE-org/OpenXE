@@ -32,7 +32,7 @@
                                             {|Preis|}:
                                         </td>
                                         <td>
-                                            <input type="number" name="preis" id="preis" step="0.00001" value="[PREIS]" size="20" [SAVEDISABLED]>
+                                            <input type="number" name="preis" id="preis" step="0.0000000001" value="[PREIS]" size="20" [SAVEDISABLED]>
                                         </td>
                                     </tr>
                                     <tr>

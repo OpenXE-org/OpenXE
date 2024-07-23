@@ -4247,7 +4247,6 @@ title: 'Abschicken',
 
     $result = $this->app->DB->SelectArr("SELECT * FROM $type WHERE id='$id' LIMIT 1");
     $waehrung = $result[0]['waehrung'];
-
     $text = str_replace('{BELEGART}',ucfirst($type),$text);
 
     $text = str_replace('{FIRMA}',$this->Firmendaten("name"),$text);
@@ -4302,20 +4301,24 @@ title: 'Abschicken',
     if($type!=='auftrag' && $type!=='bestellung' && $type!=='retoure')
     {
       $auftragArr = $this->app->DB->SelectRow("SELECT a.*, DATE_FORMAT(datum,'%d.%m.%Y') as datum_de FROM auftrag AS a WHERE id='".$result[0]['auftragid']."' LIMIT 1");
-      $result[0]['internet'] = $auftragArr['internet'];
-      $result[0]['abweichendelieferadresse']=$auftragArr['abweichendelieferadresse'];
-      $result[0]['liefername']=$auftragArr['liefername'];
-      $result[0]['lieferabteilung']=$auftragArr['lieferabteilung'];
-      $result[0]['lieferunterabteilung']=$auftragArr['lieferunterabteilung'];
-      $result[0]['lieferadresszusatz']=$auftragArr['lieferadresszusatz'];
-      $result[0]['liefertitel']=$auftragArr['liefertitel'];
-      $result[0]['lieferansprechpartner']=$auftragArr['lieferansprechpartner'];
-      $result[0]['lieferstrasse']=$auftragArr['lieferstrasse'];
-      $result[0]['lieferplz']=$auftragArr['lieferplz'];
-      $result[0]['lieferland']=$auftragArr['lieferland'];
-      $result[0]['lieferort'] = $auftragArr['lieferort'];
-      $result[0]['liefergln'] = $auftragArr['liefergln'];
-      $result[0]['lieferemail'] = $auftragArr['lieferemail'];
+
+      if (!empty($auftragArr)) {
+
+          $result[0]['internet'] = $auftragArr['internet'];
+          $result[0]['abweichendelieferadresse']=$auftragArr['abweichendelieferadresse'];
+          $result[0]['liefername']=$auftragArr['liefername'];
+          $result[0]['lieferabteilung']=$auftragArr['lieferabteilung'];
+          $result[0]['lieferunterabteilung']=$auftragArr['lieferunterabteilung'];
+          $result[0]['lieferadresszusatz']=$auftragArr['lieferadresszusatz'];
+          $result[0]['liefertitel']=$auftragArr['liefertitel'];
+          $result[0]['lieferansprechpartner']=$auftragArr['lieferansprechpartner'];
+          $result[0]['lieferstrasse']=$auftragArr['lieferstrasse'];
+          $result[0]['lieferplz']=$auftragArr['lieferplz'];
+          $result[0]['lieferland']=$auftragArr['lieferland'];
+          $result[0]['lieferort'] = $auftragArr['lieferort'];
+          $result[0]['liefergln'] = $auftragArr['liefergln'];
+          $result[0]['lieferemail'] = $auftragArr['lieferemail'];
+        }
     }
 
     if($type=="angebot" || $type=="auftrag")
@@ -4860,7 +4863,6 @@ title: 'Abschicken',
         }
       }
     }
-
     if($result[0]['abweichendelieferadresse']=="1")
     {
       $liefertext ="";
@@ -15849,127 +15851,6 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     }
     $this->app->Tpl->Set('ID',$id);
     $this->app->Tpl->Parse('PAGE','emptytab.tpl');
-  }
-
-  /**
-   * @param int $id
-   *
-   * @return string
-   *
-   */
-  public function GetTrackingRawLink($id)
-  {
-    return $this->GetTrackinglink($id, true);
-  }
-
-  /**
-   * @param int  $id
-   * @param bool $returnRaw
-   *
-   * @return string
-   */
-  public function GetTrackinglink($id, $returnRaw = false)
-  {
-    if($id > 0)
-    {
-      $versandarr = $this->app->DB->SelectRow("SELECT * FROM versand WHERE id='$id' LIMIT 1");
-    }
-    if(empty($versandarr))
-    {
-      return '';
-    }
-    $adresse = $versandarr['adresse'];
-    $lieferscheinid = $versandarr['lieferschein'];
-    if($lieferscheinid > 0){
-      $lieferscheinarr = $this->app->DB->SelectRow("SELECT auftragid,projekt FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
-    }
-    if(!empty($lieferscheinarr))
-    {
-      $auftrag = $lieferscheinarr['auftragid'];
-      $projekt = $lieferscheinarr['projekt'];
-    }else{
-      $auftrag = 0;
-      $projekt = 0;
-    }
-    $auftragarr = $this->app->DB->SelectRow("SELECT belegnr,internet,ihrebestellnummer,DATE_FORMAT(datum,'%d.%m.%Y') as datum_de FROM auftrag WHERE id='$auftrag' LIMIT 1");
-    if(!empty($auftragarr)){
-      $auftragbelegnr = $auftragarr['belegnr'];
-      $auftraginternet = $auftragarr['internet'];
-      $ihrebestellnummer = $auftragarr['ihrebestellnummer'];
-      $auftragdatum = $auftragarr['datum_de'];
-    }else{
-      $auftragbelegnr = '';
-      $auftraginternet = '';
-      $ihrebestellnummer = '';
-      $auftragdatum = '';
-    }
-
-    $tracking = $versandarr['tracking'];
-    $versandunternehmen = $versandarr['versandunternehmen'];
-
-    // FIX fuer selbstabholer Mail
-    $versandart = $versandarr['versandart'];
-    if($versandart=='selbstabholer') {
-      $versandunternehmen='selbstabholer';
-    }
-
-    if($versandunternehmen=='dhl' || $versandunternehmen=="dhlpremium" || $versandunternehmen=="intraship"){
-      $versandmodul = false;
-    }
-
-    $typ = $versandunternehmen;
-    if($typ === ''){
-      $typ = $versandart;
-    }
-    //$versandartenmodul = $this->app->DB->SelectArr("SELECT id, modul FROM versanddienstleister WHERE aktiv = 1 AND modul = '".$this->app->DB->real_escape_string($typ)."' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-    $versandartenmodul = $this->app->DB->SelectArr("SELECT * FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND modul != '' AND type = '".$this->app->DB->real_escape_string($typ)."' AND modul != '' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1");
-    $standard = true;
-    if($versandartenmodul && @is_file(dirname(__FILE__).'/versandarten/'.$versandartenmodul[0]['modul'].'.php'))
-    {
-      $obj = $this->LoadVersandModul($versandartenmodul[0]['modul'], $versandartenmodul[0]['id']);
-      if(!empty($obj) && method_exists($obj, 'Trackinglink'))
-      {
-        if($obj->Trackinglink($tracking, $notsend, $link, $rawlink))
-        {
-          if($returnRaw) {
-            return $rawlink;
-          }
-          return $link;
-        }
-      }
-    }elseif($versandartenmodul2 = $this->app->DB->SelectArr("SELECT * FROM versandarten WHERE aktiv = 1 AND ausprojekt = 0 AND type = '".$this->app->DB->real_escape_string($typ)."' AND (projekt = 0 OR projekt = '$projekt') ORDER BY projekt DESC LIMIT 1"))
-    {
-      $obj = $this->LoadVersandModul($versandartenmodul2[0]['modul'], $versandartenmodul2[0]['id']);
-      if(!empty($obj) && method_exists($obj, 'Trackinglink'))
-      {
-        if($obj->Trackinglink($tracking, $notsend, $link, $rawlink))
-        {
-          if($returnRaw) {
-            return $rawlink;
-          }
-          return $link;
-        }
-      }
-    }
-    if(!$versandmodul && $standard)
-    {
-      if($versandunternehmen=="dhl" || $versandunternehmen=="dhlpremium" || $versandunternehmen=="intraship")
-      {
-        return 'http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc='.$tracking;
-      }
-      else if ($versandunternehmen=="logoix")
-      {
-        return 'http://www.logoix.com/cgi-bin/tnt.pl?q='.$tracking;
-      }
-      else if ($versandunternehmen=="dpd")
-      {
-        return 'https://tracking.dpd.de/parcelstatus/?locale=de_DE&query='.$tracking;
-      }
-      else if ($versandunternehmen=="gls")
-      {
-        return 'https://www.gls-group.eu/276-I-PORTAL-WEB/content/GLS/DE03/DE/5004.htm?txtRefNo='.$tracking;
-      }
-    }
   }
 
   /**

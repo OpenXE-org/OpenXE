@@ -1,8 +1,8 @@
 <?php
 
 /*
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  * SPDX-FileCopyrightText: 2024 OpenXE project
- * SPDX-FileCopyrightText: 2022 Andreas Palm
  * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
@@ -23,6 +23,9 @@
 ?>
 <?php
 
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
+use Xentral\Modules\Onlineshop\Data\Shipment;
 use Xentral\Modules\Onlineshop\Data\ShopConnectorResponseInterface;
 use Xentral\Components\Logger\Logger;
 
@@ -1930,7 +1933,7 @@ class Remote {
                     if (empty($data)) {
                         continue;
                     }
-                } while (count($data[$i]['matrix_varianten']['artikel']) >= 5000);             
+        } while (count($data[$i]['matrix_varianten']['artikel'] ?? [])>=5000);
 
                 // Bulk transfer (new 2024-06-28)
                 $result = null;
@@ -2155,127 +2158,57 @@ class Remote {
         return $result;
     }
 
-    public function getDataToSendForUpdateOrder(int $shopId, int $orderId): array {
-        $orderArr = $this->app->DB->SelectRow("SELECT * FROM `auftrag` WHERE `id` = {$orderId} LIMIT 1");
-        $status = $orderArr['status'];
-        $zahlungsweise = $orderArr['zahlungsweise'];
-        $shopextid = $orderArr['shopextid'];
-        $internet = $orderArr['internet'];
-        $deliveryNoteArr = $this->app->DB->SelectRow(
-                "SELECT `id`, `versandart` FROM `lieferschein` WHERE `auftragid` = {$orderId} LIMIT 1"
-        );
-        $trackingArr = null;
-        $versandart = '';
-        $tracking = '';
-        $shippingProduct = null;
-        if (!empty($deliveryNoteArr)) {
-            $deliveryNoteId = $deliveryNoteArr['id'];
-            $versandart = $deliveryNoteArr['versandart'];
-            $query = "SELECT *
-        FROM `shopexport_versandarten` 
-        WHERE `aktiv`=1 AND `versandart_wawision` = '{$versandart}' AND `shop` = {$shopId} AND `versandart_wawision` <> '' 
-        LIMIT 1";
-            $shippingMapping = $this->app->DB->SelectRow($query);
-            $versandartAusgehend = $shippingMapping['versandart_ausgehend'] ?? null;
-            $shippingProduct = $shippingMapping['produkt_ausgehend'] ?? null;
+  public function getDataToSendForUpdateOrder(int $shopId, int $orderId): ?OrderStatusUpdateRequest
+      $orderArr = $this->app->DB->SelectRow("SELECT `zahlungsweise`, `shopextid` FROM `auftrag` WHERE `id` = $orderId LIMIT 1");
+      if (empty($orderArr))
+          return null;
 
-            if (!empty($versandartAusgehend)) {
-                $versandart = $versandartAusgehend;
-            }
-            $trackingArr = $this->app->DB->SelectPairs(
-                    sprintf(
-                            "SELECT `id`, `tracking` 
-          FROM `versand` 
-          WHERE `lieferschein` = {$deliveryNoteId} AND `tracking` <> '' 
-          ORDER BY `id` DESC"
-                    )
-            );
-            $tracking = '';
-            if (!empty($trackingArr)) {
-                $tracking = reset($trackingArr);
-            }
+      $data = new OrderStatusUpdateRequest();
+      $data->orderId = $orderId;
+      $data->shopOrderId = $orderArr['shopextid'];
 
-            $positionen = $this->app->DB->SelectArr(
-                    "SELECT ap.webid, trim(lp.geliefert)+0 AS `geliefert`, trim(lp.menge)+0 AS `menge`, lp.id 
-          FROM `lieferschein_position` AS `lp` 
-          INNER JOIN `lieferschein` AS `l` ON l.id = lp.lieferschein 
-          INNER JOIN `auftrag` AS `a` ON a.id = l.auftragid 
-          INNER JOIN `auftrag_position` AS `ap` ON ap.id = lp.auftrag_position_id 
-          WHERE l.id = {$deliveryNoteId} AND ap.webid <> '' "
-            );
-            $allPositions = false;
-            if (!empty($positionen)) {
-                $allPositions = true;
-                foreach ($positionen as $position) {
-                    if ($position['geliefert'] > 0) {
-                        $itemlist[] = array('webid' => $position['webid'], 'quantity' => $position['geliefert']);
-                        if ($position['geliefert'] < $position['menge']) {
-                            $allPositions = false;
-                        }
-                    } elseif ($this->app->DB->Select("SELECT trim(sum(geliefert))+0 
-            FROM lieferschein_position 
-            WHERE explodiert_parent = '" . $position['id'] . "' AND lieferschein = '$deliveryNoteId'")) {
-                        $itemlist[] = array('webid' => $position['webid'], 'quantity' => $position['menge']);
-                    } else {
-                        $allPositions = false;
-                    }
-                }
-                if ($allPositions && (!empty($itemlist) ? count($itemlist) : 0) <
-                        $this->app->DB->Select(
-                                sprintf('SELECT count(id) FROM auftrag_position WHERE auftrag = %d', $orderId)
-                        )
-                ) {
-                    $allPositions = false;
-                }
-            }
-        }
-        if (!empty($itemlist)) {
-            $data['itemlist'] = $itemlist;
-            if ($allPositions) {
-                $data['allpositions'] = 1;
-            }
-        }
+      $statusArr = $this->app->DB->SelectFirstCols("SELECT DISTINCT status FROM auftrag WHERE id = $orderId OR teillieferungvon = $orderId");
+      if (in_array('storniert', $statusArr))
+          $data->orderStatus = OrderStatus::Cancelled;
+      if (in_array('abgeschlossen', $statusArr))
+          $data->orderStatus = OrderStatus::Completed;
+      if (in_array('freigegeben', $statusArr))
+          $data->orderStatus = OrderStatus::InProgress;
+      if (in_array('angelegt', $statusArr))
+          $data->orderStatus = OrderStatus::Imported;
 
-        $data['orderId'] = $orderId;
-        $data['auftrag'] = $shopextid;
-        $data['internet'] = $internet;
-        $data['zahlungsweise'] = $zahlungsweise;
-        $data['versandart'] = $versandart;
-        if (!empty($trackingArr)) {
-            $data['trackinglist'] = $trackingArr;
-        }
-        if ($status === 'abgeschlossen') {
-            $data['versand'] = '1';
-            $data['zahlung'] = '1';
-            if ($shippingProduct !== null) {
-                $data['shipping_product'] = $shippingProduct;
-            }
-            if ($tracking != '') {
-                $data['tracking'] = $tracking;
-                $lastShippingId = (int) $this->app->DB->Select(
-                                sprintf(
-                                        "SELECT `id` FROM `versand` WHERE `lieferschein` = %d AND `lieferschein` > 0 
-            ORDER BY `id` DESC LIMIT 1",
-                                        $deliveryNoteId
-                                )
-                );
-                $trackinglink = $lastShippingId > 0 && method_exists($this->app->erp, 'GetTrackinglink') ? $this->app->erp->GetTrackinglink($lastShippingId) : '';
-                if ($trackinglink) {
-                    $data['trackinglink'] = $trackinglink;
-                    if (!empty($trackingArr)) {
-                        foreach ($trackingArr as $versandId => $track) {
-                            $data['trackinglinklist'][$versandId] = $this->app->erp->GetTrackinglink($versandId);
-                        }
-                    }
-                }
-                $trackinglinkRaw = $lastShippingId > 0 && method_exists($this->app->erp, 'GetTrackingRawLink') ? $this->app->erp->GetTrackingRawLink($lastShippingId) : '';
-                if (!empty($trackinglinkRaw)) {
-                    $data['trackinglinkraw'] = $trackinglinkRaw;
-                }
-            }
-        }
+      $sql = "
+        SELECT DISTINCT
+            v.id,
+            v.tracking,
+            v.tracking_link,
+            COALESCE(sv.versandart_ausgehend, sv.versandart_shop, v.versandart) versandart
+        FROM
+            auftrag a
+        LEFT JOIN lieferschein l ON
+            l.auftragid = a.id
+        LEFT JOIN lieferschein_position lp ON
+            lp.lieferschein = l.id
+        LEFT JOIN versandpaket_lieferschein_position vlp ON
+            vlp.lieferschein_position = lp.id
+        LEFT JOIN versandpakete v ON
+            vlp.versandpaket = v.id OR v.lieferschein_ohne_pos = l.id
+        LEFT JOIN shopexport_versandarten sv ON
+            sv.versandart_wawision = v.versandart AND sv.shop = $shopId
+        WHERE a.id = $orderId OR a.teillieferungvon = $orderId
+        ORDER BY v.id";
 
-        return $data;
+      $shipments = $this->app->DB->SelectArr($sql);
+      foreach ($shipments as $shipment) {
+          $item = new Shipment();
+          $item->id = $shipment['id'];
+          $item->trackingNumber = $shipment['tracking'];
+          $item->trackingUrl = $shipment['tracking_link'];
+          $item->shippingMethod = $shipment['versandart'];
+          $data->shipments[] = $item;
+      }
+
+      return $data;
     }
 
     /**
@@ -2285,8 +2218,10 @@ class Remote {
      * @throws Exception
      */
     public function RemoteUpdateAuftrag($shopId, $orderId) {
-        $data = $this->getDataToSendForUpdateOrder((int) $shopId, (int) $orderId);
-        if ($data['versand'] == '1' || $data['zahlung'] == '1') {
+      $data = $this->getDataToSendForUpdateOrder((int)$shopId, (int)$orderId);
+      if($data?->orderStatus !== OrderStatus::Completed)
+          return;
+
             $bearbeiter = 'Cronjob';
             if (isset($this->app->User)) {
                 $bearbeiter = $this->app->DB->real_escape_string($this->app->User->GetName());
@@ -2316,7 +2251,6 @@ class Remote {
             $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop &uuml;bertragen', $bearbeiter);
             $this->app->DB->Update("UPDATE `auftrag` SET `shopextstatus` = 'abgeschlossen' WHERE `id` = $orderId LIMIT 1");
         }
-    }
 
     /**
      * @param int    $shopId

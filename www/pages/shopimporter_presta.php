@@ -6,12 +6,15 @@
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
 
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
+
 class Shopimporter_Presta extends ShopimporterBase
 {
   private $app;
   private $intern;
   private $shopid;
-  private $data;
+  var $data;
   private $protocol;
   private $apiKey;
   private $shopUrl;
@@ -161,18 +164,21 @@ class Shopimporter_Presta extends ShopimporterBase
 
   public function ImportUpdateAuftrag()
   {
-    $auftrag = $this->data['auftrag'];
+    /** @var OrderStatusUpdateRequest $data */
+    $data = $this->CatchRemoteCommand('data');
+    if ($data->orderStatus !== OrderStatus::Completed)
+        return;
 
     $obj = $this->prestaRequest('GET', 'order_histories?schema=blank');
-    $obj->order_history->id_order = $auftrag;
+    $obj->order_history->id_order = $data->shopOrderId;
     $obj->order_history->id_order_state = $this->idabgeschlossen;
 
     $this->prestaRequest('POST', 'order_histories', $obj->asXML());
 
-    $req = $this->prestaRequest('GET', "order_carriers?filter[id_order]=$auftrag&display=[id]");
+    $req = $this->prestaRequest('GET', "order_carriers?filter[id_order]=$data->shopOrderId&display=[id]");
     $orderCarrierId = strval($req->order_carriers->order_carrier[0]->id);
     $req = $this->prestaRequest('GET', "order_carriers/$orderCarrierId");
-    $req->order_carrier->tracking_number = $this->data['tracking'];
+    $req->order_carrier->tracking_number = join(',', $data->getTrackingNumberList());
     $this->prestaRequest('PUT', "order_carriers/$orderCarrierId", $req->asXML());
   }
 
