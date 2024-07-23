@@ -621,8 +621,27 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $configuration_found = false;
             $additional_fields = array();
              
+            // Prepare volume prices
+            $volume_prices = array();
+
+            foreach ($article['staffelpreise_standard'] as $volume_price) {
+                if ($volume_price['ab_menge'] > 1) {
+                    $volume_prices[] = array (
+                        'quantity_threshold' => (int) $volume_price['ab_menge'],
+                        'unit_discount_price' => $volume_price['preis'],
+                        'unit_origin_price' => $article['preis']
+                    );
+                }
+            }
+
+            $all_prices = array (
+                'volume_prices' => $volume_prices
+            );
+
             $offer_for_mirakl = array(
-                'state_code' => '11', // ?!?!
+                'state_code' => '11', // Condition new
+                'price' => $article['preis'],
+                'all_prices' => array($all_prices),
                 'update_delete' => null // Update delete flag. Could be empty (means "update"), "update" or "delete".
             );
 
@@ -645,8 +664,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                 $required = [
                     'product_id_type',
                     'product_id',
-                    'shop_sku',
-                    'price'
+                    'shop_sku'
                 ];
                 $missing = null;
                 foreach ($required as $key) {
@@ -718,7 +736,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
         $json_for_mirakl = json_encode($data_for_mirakl);
 
-        $this->Log(Logger::DEBUG, 'Angebotsexport Daten', $json_for_mirakl); 
+        $this->Log(Logger::DEBUG, 'Angebotsexport Daten', ['json' => $json_for_mirakl]); 
 
         $result = [];
         $response = $this->miraklRequest('offers', postdata: $json_for_mirakl, content_type: 'application/json', raw: true);
