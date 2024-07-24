@@ -21046,7 +21046,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $anzges = 0;
         $anzfehler = 0;
 
-        $result = null; // 1 on success
+        $result = null; // $result['status'] == 1 on success
 
         if(!empty($extnummer) && is_array($extnummer)) {
           foreach($extnummer as $nummer) {
@@ -21077,9 +21077,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         }
 
 
-       $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.gettype($result).' '.$result);
+       $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
 
-        if ($result == 1) {
+        if ($result['status'] == 1 || $status === 1) {
             $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
             $this->app->DB->Update(
               "UPDATE `artikel` SET `cache_lagerplatzinhaltmenge` = '{$cacheQuantity}'
