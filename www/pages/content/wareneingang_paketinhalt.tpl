@@ -164,7 +164,7 @@
                                     </tr>
                                     <tr [BUCHENHIDDEN]>
 										<td>
-											<input type=text name="ziellager" id="ziellager" value="[LAGER]" style="width:98%;">
+											<input type=text name="ziellager" id="ziellager" value="[LAGER]" placeholder="Standardlager" class="placeholder_warning" style="width:98%;">
                                         </td>
 									</tr> 
 									<tr [ABSCHLIESSENHIDDEN]>

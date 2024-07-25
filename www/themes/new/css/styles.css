@@ -1809,10 +1809,11 @@ a.startpage {
 ::-ms-input-placeholder { /* Microsoft Edge */
     color: #BBB;
 }
-::placeholder { /* Modern Browser */
-    color: #BBB;
+:placeholder { /* Modern Browser */
+    color: #F00;
     opacity: 1; /* Firefox */
 }
+
 input.ui-autocomplete-input::-webkit-input-placeholder {
     color: #999;
     opacity: 1;
@@ -4875,3 +4876,8 @@ tilegrid
     padding: 0;
     margin: 0;
 }
+
+input:placeholder-shown.placeholder_warning {
+  background-color: var(--warning);
+}
+

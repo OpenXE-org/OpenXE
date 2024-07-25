@@ -1251,7 +1251,6 @@ class Wareneingang {
                    ['sql' => 'artikel.nummer'],
                    '</a>',
                 );
-
               
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                             p.pos,
@@ -1322,7 +1321,7 @@ class Wareneingang {
                 break;
             case "paketannahme_list":              
                 $allowed['paketannahme_list'] = array('list');
-                $heading = array('', 'Paket-Nr.', 'Datum', 'Status', 'Name', 'Kunde', 'Lieferant', 'Bestellung', 'LS-Nr.', 'RE-Nr.', 'Bearbeiter', 'Bemerkung', 'Men&uuml;');
+                $heading = array('', 'Paket-Nr.', 'Datum', 'Status', 'Name', 'Kunde', 'Lieferant', 'Bestellung', 'LS-Nr.', 'RE-Nr.','Verbindlichkeit', 'Bearbeiter', 'Bemerkung', 'Men&uuml;');
                 $width = array('1%', '5%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%'); // Fill out manually later
 
                 $drop = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`";
@@ -1338,6 +1337,7 @@ class Wareneingang {
                     'bestellung.belegnr',
                     'paketannahme.lsnr',
                     'paketannahme.renr',
+                    'verbindlichkeit.belegnr',
                     'paketannahme.bearbeiter',
                     'paketannahme.datum',
                     'paketannahme.bemerkung',
@@ -1352,6 +1352,7 @@ class Wareneingang {
                     'bestellung.belegnr',
                     'paketannahme.lsnr',
                     'paketannahme.renr',
+                    'verbindlichkeit.belegnr',
                     'paketannahme.bearbeiter',
                     'paketannahme.bemerkung');
 
@@ -1371,7 +1372,8 @@ class Wareneingang {
                     adresse.lieferantennummer,
                     GROUP_CONCAT(DISTINCT bestellung.belegnr), 
                     paketannahme.lsnr, 
-                    paketannahme.renr, 
+                    paketannahme.renr,
+                    GROUP_CONCAT(DISTINCT verbindlichkeit.belegnr), 
                     paketannahme.bearbeiter, 
                     paketannahme.bemerkung, 
                     paketannahme.id 
@@ -1383,7 +1385,11 @@ class Wareneingang {
                     LEFT JOIN bestellung_position
                     ON paketdistribution.bestellung_position = bestellung_position.id
                     LEFT JOIN bestellung
-                    ON bestellung.id = bestellung_position.bestellung";
+                    ON bestellung.id = bestellung_position.bestellung
+                    LEFT JOIN verbindlichkeit_position 
+                    ON verbindlichkeit_position.paketdistribution = paketdistribution.id
+                    LEFT JOIN verbindlichkeit ON verbindlichkeit.id = verbindlichkeit_position.verbindlichkeit
+                ";
 
                 $where = "1";
 
