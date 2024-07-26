@@ -24,8 +24,6 @@
                     [SHOWCHRSTART]<tr valign="top"><td><b style="color:red"><label for="charge">{|Charge|}:</label></b></td><td><input type="text" name="charge" value="[CHARGEVALUE]" id="charge" style="width:200px">&nbsp;<br><i>({|Chargennummer von Hersteller|})</i></td></tr>
                     <tr valign="top"><td><label for="chargesnmhdbemerkung">{|Bemerkung|}:</label></td><td><input type="text" name="chargesnmhdbemerkung" value="[CHARGESNMHDBEMERKUNG]" id="chargesnmhdbemerkung" style="width:200px">&nbsp;<br><i>({|Infos zur Charge|})</i></td></tr>
                     <tr valign="top"><td><br></td><td align="center"></td></tr>[SHOWCHREND]
-                    [SHOWSRNSTART]<tr valign="top"><td><b style="color:red">{|Seriennummern|}:</b></td><td><input type="button" onclick="seriennummern_assistent([MENGE])" value="Assistent verwenden"><br>[SERIENNUMMERN]<i>({|Pro Artikel eine Nummer|})</i></td></tr>
-                    <tr valign="top"><td><br></td><td align="center"></td></tr> [SHOWSRNEND]
                     <tr><td><br></td><td></td></tr>
                     <tr><td><label for="projekt">{|Projekt|}:</label></td><td>[PROJEKTAUTOEND]<input type="text" id="projekt" name="projekt" value="[PROJEKT]" size="22" style="width:200px">[PROJEKTAUTOEND]</td></tr>
                     <tr><td><label for="grundreferenz">{|Grund|}:</label></td><td><input type="text" id="grundreferenz" name="grundreferenz" value="[GRUNDREFERENZ]" size="22" style="width:200px"></td></tr>

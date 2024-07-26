@@ -1882,13 +1882,14 @@ class Lager extends GenLager {
       {
         $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>Charge: ".$charge[$i-1]['charge']."</td></tr>");
       }
+/* XENTRAL Legacy 
       $srn = $this->app->DB->SelectArr("SELECT * FROM lager_seriennummern WHERE zwischenlagerid='$id'");
       $csrn = !empty($srn)?count($srn):0;
       for($i=1;$i<=$csrn;$i++)
       {
         $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>Seriennummer: ".$srn[$i-1]['seriennummer']."</td></tr>");
       }
-
+*/
       $this->app->Tpl->Set('SHOWCHRSTART','<!--');
       $this->app->Tpl->Set('SHOWCHREND','-->');
       if((!empty($mhd)?count($mhd):0) <=0)
@@ -1896,8 +1897,10 @@ class Lager extends GenLager {
         $this->app->Tpl->Set('SHOWMHDSTART','<!--');
         $this->app->Tpl->Set('SHOWMHDEND','-->');
       }
+/* XENTRAL Legacy 
       $this->app->Tpl->Set('SHOWSRNSTART','<!--');
       $this->app->Tpl->Set('SHOWSRNEND','-->');
+*/
     } else {
       $this->app->Tpl->Set('WOHERREADONLYSTART2','<!--');
       $this->app->Tpl->Set('WOHERREADONLYENDE2','-->');
@@ -2042,13 +2045,13 @@ class Lager extends GenLager {
       $suggestedbatch = $suggestedbestbeforebatch;
     }
 
-
+/* XENTRAL Legacy 
     $seriennummern = $artArr['seriennummern'];
     if($seriennummern != '' && $seriennummern !== 'keine') {
       $menge = (int)$menge;
     }
     // pruefen einlagern
-
+*/
     $error = 0;
     // Pflichtfelder pruefen
     $checkmhd = $this->app->String->Convert($this->app->Secure->GetPOST('mhd'),'%1.%2.%3','%3-%2-%1');
@@ -2059,6 +2062,8 @@ class Lager extends GenLager {
     if(($chargenverwaltung=='2' || $chargenverwaltung=="1") && $this->app->Secure->GetPOST('charge')=='' && $zwischenlagerid <=0) {
       $error++;
     }
+
+/* XENTRAL Legacy 
     if( ($seriennummern !=='keine' && $seriennummern !=='vomprodukt' && $seriennummern !=='eigene' && $seriennummern!='') && $cmd!=='zwischenlager') {
       $tmpcheck = $this->app->Secure->GetPOST("seriennummern");
       for($checkser=0;$checkser < $menge; $checkser++)  {
@@ -2067,6 +2072,7 @@ class Lager extends GenLager {
         }
       }
     }
+*/
 
     if($submit!='' && $error > 0) {
       $alles_komplett++;
@@ -2130,9 +2136,10 @@ class Lager extends GenLager {
           $this->app->erp->AddChargeLagerOhneBewegung($artikel,$menge,$regal,$datum,$chargemindest,$chargesnmhdbemerkung,0,'',0,$isInterim);
         }
 
+/* XENTRAL Legacy 
         //Seriennummern buchen
         $tmpcheck = $this->app->Secure->GetPOST('seriennummern');
-
+*/
 
         if($artikelid!=''){
           $this->app->Location->execute('index.php?module=artikel&action=lager&id='.$artikelid.($msg!=""?"&msg=".$msg:""));
@@ -2272,7 +2279,7 @@ class Lager extends GenLager {
             $this->app->Tpl->Set('MHDVALUE', $frmmhd);
           }
 
-
+          /* XENTRAL Legacy 
           if($seriennummern === 'keine' || $seriennummern ==='vomprodukt' || $seriennummern ==='eigene' || $menge <= 0 ||  $seriennummern=='')
           {
             $this->app->Tpl->Set('SHOWSRNSTART','<!--');
@@ -2288,7 +2295,7 @@ class Lager extends GenLager {
               $this->app->Tpl->Add('SERIENNUMMERNENTERJUMP', "document.getElementById('seriennummern_$ij').addEventListener('keypress', function(event) {if (event.keyCode == 13) {event.preventDefault();document.getElementById(".($ij < $menge?"'seriennummern_".($ij+1)."'":"'projekt'").").focus()}});");
             }
             $this->app->Tpl->Add('SERIENNUMMERN','</table>');
-          }
+          }*/
 
           $standardbild = $this->app->erp->GetArtikelStandardbild($artikel,true);
 
@@ -2374,7 +2381,6 @@ class Lager extends GenLager {
     if($menge_get  > 0) {
       $menge = $menge_get;
     }
-
 
     $this->app->Tpl->Set('MENGE', $this->app->erp->ReplaceMenge(0,(String)$menge,0));
     $this->app->Tpl->Set('GRUNDREFERENZ', $grundreferenz);
@@ -2547,10 +2553,12 @@ class Lager extends GenLager {
 
       $name_de = $this->app->DB->Select("SELECT name_de FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
       $einheit = $this->app->DB->Select("SELECT einheit FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
+/* XENTRAL Legacy
       $seriennummer = $this->app->DB->Select("SELECT seriennummern FROM artikel WHERE nummer='{$nummer}' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
       if($seriennummer === 'keine') {
         $seriennummer = '';
       }
+*/
 
       if ($nummer != $checkartikel && ($nummer!=''||$nummer!=0)) {
         $error++;
@@ -2570,10 +2578,14 @@ class Lager extends GenLager {
           $this->app->Tpl->Set('MESSAGELAGER', "<div class=\"error\">{|Zu wenig Artikel im Regal! Bitte kleinere Menge w&auml;hlen!|} ({|Summe|}: $summe)</div>");
         } else {
           // zeige alle in dem Lager an sortiert nach MHD
+/* XENTRAL Legacy
           $tmpsrn = false;
+*/
           $anzmhd = 0;
           $anzchargen = 0;
+/* XENTRAL Legacy
           $anzsrn = 0;
+*/
           $tmpmhd = $this->app->DB->SelectArr("SELECT *, replace(trim(menge)+0,'.',',')  as mhdmenge FROM lager_mindesthaltbarkeitsdatum WHERE 
               lager_platz='$regal' AND artikel='$artikel' ORDER by mhddatum, id");
           $tmpcharge = $this->app->DB->SelectArr("SELECT *, replace(trim(menge)+0,'.',',')  as cmenge FROM lager_charge WHERE 
@@ -2588,7 +2600,7 @@ class Lager extends GenLager {
               $anzchargen += $v['menge'];
             }
           }
-
+/* XENTRAL Legacy
           $this->app->Tpl->Set('ANZSRN', $anzsrn);
           $this->app->Tpl->Set('ANZMHD', $anzmhd);
           $this->app->Tpl->Set('ANZCHARGEN', $anzchargen);
@@ -2600,20 +2612,24 @@ class Lager extends GenLager {
           } else if ((!empty($tmpcharge)?count($tmpcharge):0) > 0) {
             $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>{|Charge|}</td></tr>");
           }
+*/
           $artikelArr = $this->app->DB->SelectRow(
             sprintf(
               'SELECT seriennummern,chargenverwaltung,mindesthaltbarkeitsdatum FROM artikel WHERE id = %d LIMIT 1',
               (int)$artikel
             )
           );
+/* XENTRAL Legacy
           $check_seriennummer = $artikelArr['seriennummern'];
           if($check_seriennummer !== 'keine' && $check_seriennummer != '') {
             $menge = (int)$menge;
           }
+*/
           $check_charge = $artikelArr['chargenverwaltung'];
           $check_mhd = $artikelArr['mindesthaltbarkeitsdatum'];
           $regaltreffer='1';
 
+/* XENTRAL Legacy
           if($check_seriennummer==='vomprodukteinlagern')
           {
             $ctmpsrn= !empty($tmpsrn)?count($tmpsrn):0;
@@ -2644,7 +2660,9 @@ class Lager extends GenLager {
                   <td>".$tmpsrn[$y]['seriennummer']."</td>
                   <td>".$tmpsrn[$y]['charge']."</td></tr>");
             }
-          } else if ($check_mhd=="1")
+          } else 
+*/
+          if ($check_mhd=="1")
           {
 
             $this->app->Tpl->Add("JQUERYREADY","checklagermengen();"); 
@@ -2764,7 +2782,9 @@ class Lager extends GenLager {
 
           $allow = 0;
 
-          if($check_seriennummer!=="keine" || $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
+          if(
+/* XENTRAL Legacy $check_seriennummer!=="keine" || */ 
+$check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           {
             if($this->app->Secure->GetPOST("abschluss_auslagern")=="1")
               $allow=1;
@@ -2963,12 +2983,13 @@ class Lager extends GenLager {
                 }
               }
             }
-
+/* XENTRAL Legacy
             if($seriennummer!='') {
               $tmp_sn = ' SN:'.$seriennummer;
             } else {
               $tmp_sn = '';
             }
+*/
 
             $bestand = $this->app->erp->ArtikelImLager($artikel);
 

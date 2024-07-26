@@ -2904,7 +2904,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -2931,7 +2931,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -2957,7 +2957,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -2966,7 +2966,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
           }else{
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
