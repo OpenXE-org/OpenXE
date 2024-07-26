@@ -2608,6 +2608,16 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $newarr[] = $arr[$i]['name'];
         }
         break;
+        case "seriennummerverfuegbar":
+            $artikel = (int)$this->app->Secure->GetGET('artikel');
+            $arr = $this->app->DB->SelectArr("SELECT seriennummer FROM seriennummern WHERE lieferschein = 0 AND seriennummer LIKE '%$term%' AND artikel = '$artikel' LIMIT 20");
+            $carr = !empty($arr)?count($arr):0;
+            for($i = 0; $i < $carr; $i++) {
+              $newarr[] = $arr[$i]['seriennummer'];
+            }
+        break;
+
+        break;
       case "artikelmengeinbeleg":
         $beleg = $this->app->Secure->GetGet('beleg');
         $belegid = $this->app->Secure->GetGet('id');
