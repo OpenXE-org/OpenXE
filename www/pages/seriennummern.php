@@ -31,13 +31,14 @@ class Seriennummern {
         switch ($name) {
             case "seriennummern_list":
                 $allowed['seriennummern_list'] = array('list');
-                $heading = array('','','Artikel', 'Seriennummer','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
+                $heading = array('','','Nummer','Artikel', 'Seriennummer','Erzeugt am','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('s.id','s.id','a.nummer', 's.seriennummer','ad.name','l.belegnr','l.datum','s.id');
+                $findcols = array('s.id','s.id', 'a.name_de', 'a.nummer', 's.seriennummer','s.logdatei','ad.name','l.belegnr','l.datum','s.id');
+                $searchsql = array('a.name_de', 'a.name_de', 'a.nummer', 's.seriennummer');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -58,8 +59,10 @@ class Seriennummern {
                     SELECT SQL_CALC_FOUND_ROWS 
                             s.id,
                             $dropnbox,
-                            a.nummer,
+                            CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
+                            a.name_de,
                             s.seriennummer,
+                            ".$app->erp->FormatDateTime("s.logdatei").",
                             ad.name,
                             l.belegnr,
                             ".$app->erp->FormatDate("l.datum").",
@@ -110,7 +113,7 @@ class Seriennummern {
                     '<a href="index.php?module=seriennummern&action=enter&artikel=',
                     ['sql' => 'a.id'],
                     '">',
-                    '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/add.png" alt="Erfassen" border="0">',
+                    '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/add.png" title="Neue Seriennummern erfassen" border="0">',
                     '</a>'    
                 );
 
@@ -119,7 +122,7 @@ class Seriennummern {
                         $dropnbox,
                         CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                         a.name_de,
-                        auf_lager.anzahl,
+                        ".$app->erp->FormatMenge('auf_lager.anzahl').",
                         SUM(if(s.id IS NULL,0,1))-SUM(if(s.lieferscheinpos <> 0,1,0)),
                         SUM(if(s.lieferscheinpos <> 0,1,0)),
                         SUM(if(s.id IS NULL,0,1)),
@@ -183,7 +186,7 @@ class Seriennummern {
                         $dropnbox,
                         CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                         a.name_de,
-                        auf_lager.anzahl,
+                        ".$app->erp->FormatMenge('auf_lager.anzahl').",
                         SUM(if(s.id IS NULL,0,1))-SUM(if(s.lieferscheinpos <> 0,1,0)),
                         SUM(if(s.lieferscheinpos <> 0,1,0)),
                         SUM(if(s.id IS NULL,0,1))
@@ -296,7 +299,7 @@ class Seriennummern {
                         continue;
                     }
                               
-                    $sql = "INSERT INTO seriennummern (seriennummer, artikel) VALUES ('".$this->app->DB->real_escape_string($seriennummer)."', '".$artikel_id."')";                                                                
+                    $sql = "INSERT INTO seriennummern (seriennummer, artikel, logdatei) VALUES ('".$this->app->DB->real_escape_string($seriennummer)."', '".$artikel_id."', CURRENT_TIMESTAMP)";                                                                
                     try {                
                         $this->app->DB->Insert($sql);
                     } catch (mysqli_sql_exception $e) {
@@ -327,13 +330,13 @@ class Seriennummern {
         $seriennummern = array_unique($seriennummern);                
 
         $check_seriennummern = $this->seriennummern_check_serials($artikel_id);                
-        if (empty($check_seriennummern)) {
+        $check_seriennummern = $check_seriennummern[0];
+              
+        $anzahl_fehlt = $check_seriennummern['menge_auf_lager']-$check_seriennummern['menge_nummern'];
+        
+        if ($anzahl_fehlt == 0) {
             $this->app->Tpl->addMessage('success', 'Seriennummern vollst&auml;ndig.');                 
         } 
-
-        $check_seriennummern = $check_seriennummern[0];
-        
-        $anzahl_fehlt = $check_seriennummern['menge_auf_lager']-$check_seriennummern['menge_nummern'];
 
         if ($anzahl_fehlt < 0) {
             $anzahl_fehlt = 0;
@@ -372,7 +375,7 @@ class Seriennummern {
                 auf_lager.id,
                 nummer,
                 name,                
-                auf_lager.anzahl menge_auf_lager,
+                ".$this->app->erp->FormatMenge('auf_lager.anzahl')." menge_auf_lager,
                 COALESCE(nummern_verfuegbar.anzahl,0) menge_nummern
             FROM
                 (
@@ -405,8 +408,6 @@ class Seriennummern {
                 auf_lager.id = nummern_verfuegbar.artikel
             GROUP BY
                 auf_lager.id
-            HAVING
-	            menge_nummern <> menge_auf_lager                
         ";
         
         $result = $this->app->DB->SelectArr($sql);        
@@ -419,29 +420,46 @@ class Seriennummern {
     *
     * @return void
     */
-    protected function seriennummern_create_notification($article)
+    protected function seriennummern_create_notification($artikel_id, $action, $title = 'Seriennummern', $message = 'Meldung', $button = 'Ok')
     {      
         // Notification erstellen
-        $message = new NotificationMessageData('default', 'Seriennummern check problem alter');
-        $message->setMessage('Nicht genug Seriendinges');
-        $message->addTags(['seriennummern']);
-        $message->setOption('id', $article);
-        $message->setPriority(true);
+        $notification_message = new NotificationMessageData('default', $title);
+        $artikel = $this->app->DB->SelectRow("SELECT name_de, nummer FROM artikel WHERE id = '".$artikel_id."' LIMIT 1");
+        $notification_message->setMessage($message.' Artikel ('.$artikel['nummer'].') '.$artikel['name']);
+        $notification_message->addTags(['seriennummern']);
+        $notification_message->setPriority(true);
 
         $messageButtons = [
             [
-                'text' => 'Seriennummern pflegen',
-                'link' => sprintf('index.php?module=seriennummern&action=edit&article=%s', $article),
-            ], 
-            [
-                'text' => 'Zum Spooler',
-                'link' => '#'
+                'text' => $button,
+                'link' => sprintf('index.php?module=seriennummern&action='.$action.'&artikel=%s', $artikel_id),
             ]
         ];
-        $message->setOption('buttons', $messageButtons);
+        $notification_message->setOption('buttons', $messageButtons);
 
         /** @var NotificationService $notification */
         $notification = $this->app->Container->get('NotificationService');
-        $notification->createFromData($this->app->User->GetID(), $message);
+        $notification->createFromData($this->app->User->GetID(), $notification_message);
     }
+    
+    /*
+    * Check if new numbers need to be entered, if yes, create notification
+    */
+    public function seriennummern_check_and_message_stock_added(int $artikel_id) {
+        $check_seriennummern = $this->seriennummern_check_serials($artikel_id);
+        if ($check_seriennummern[0]['menge_nummern'] < $check_seriennummern[0]['menge_auf_lager']) {
+            $this->seriennummern_create_notification($artikel_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Einlagerung erfassen','Zur Eingabe');
+        }          
+    }
+    
+    /*
+    * Check if numbers need to be entered after stock removal, if yes, create notification
+    */
+    public function seriennummern_check_and_message_stock_removed(int $artikel_id) {
+        $check_seriennummern = $this->seriennummern_check_serials($artikel_id);
+        if ($check_seriennummern[0]['menge_nummern'] > $check_seriennummern[0]['menge_auf_lager']) {
+            $this->seriennummern_create_notification($artikel_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Auslagerung erfassen','Zur Eingabe');
+        }          
+    }
+    
  }

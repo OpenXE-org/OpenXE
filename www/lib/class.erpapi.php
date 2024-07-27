@@ -1514,8 +1514,10 @@ public function NavigationHooks(&$menu)
   function FormatMenge($spalte, $decimals = 0)
   {
     return ('FORMAT('.$spalte.','.$decimals.',\'de_DE\')');
+  }
 
-//    return "replace(trim($spalte)+0,'.',',')";
+  function FormatMengeFuerFormular($spalte) {
+    return "trim($spalte)+0";
   }
 
   function FormatUCfirst($spalte)
@@ -2810,14 +2812,19 @@ public function NavigationHooks(&$menu)
 
   }
 
-function LieferscheinSeriennummernberechnen($id)
-{
-  /** @var Seriennummern $obj */
-  $obj = $this->LoadModul('seriennummern');
-  if(!empty($obj) && method_exists($obj, 'LieferscheinSeriennummernberechnen')) {
-    $obj->LieferscheinSeriennummernberechnen($id);
-  }
-}
+    function LieferscheinSeriennummernberechnen($id)
+    {
+      /** @var Seriennummern $obj */
+      $obj = $this->LoadModul('seriennummern');
+      if(!empty($obj) && method_exists($obj, 'LieferscheinSeriennummernberechnen')) {
+        $obj->LieferscheinSeriennummernberechnen($id);
+      }
+    }
+
+    function SeriennummernCheckWarnung($artikel_id) {
+        $obj = $this->LoadModul('seriennummern');
+        $obj->seriennummern_check_and_message_stock_added($artikel_id);
+    }  
 
 // @refactor in Lager Modul
 function ArtikelAnzahlLagerPlatzMitSperre($artikel,$lager_platz)
@@ -20465,6 +20472,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
 
     $this->RunHook('LagerEinlagern_after',7, $artikel, $menge, $regal, $projekt, $grund, $doctype,$doctypeid);
+    
+    $this->SeriennummernCheckWarnung($artikel);
   }
 
   function CreateLagerPlatzInhaltVPE($artikel, $menge, $gewicht, $laenge, $breite, $hoehe, $menge2 = 0, $gewicht2 = 0, $laenge2 = 0, $breite2 = 0, $hoehe2 = 0)
@@ -39577,7 +39586,7 @@ function Firmendaten($field,$projekt="")
     }
     return $sipuid;
   }
-}
+} // END erpAPI
 
 
 function parse_csv($str,$parse_split_parameter="")
