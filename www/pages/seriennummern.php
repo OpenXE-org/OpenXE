@@ -16,7 +16,8 @@ class Seriennummern {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "seriennummern_list");        
+        $this->app->ActionHandler("list", "seriennummern_artikel_list");
+        $this->app->ActionHandler("nummern_list", "seriennummern_nummern_list");                
         $this->app->ActionHandler("enter", "seriennummern_enter"); 
         $this->app->ActionHandler("delete", "seriennummern_delete");
         $this->app->DefaultActionHandler("list");
@@ -31,14 +32,14 @@ class Seriennummern {
         switch ($name) {
             case "seriennummern_list":
                 $allowed['seriennummern_list'] = array('list');
-                $heading = array('','','Nummer','Artikel', 'Seriennummer','Erzeugt am','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
+                $heading = array('','','Nummer','Artikel', 'Seriennummer','Erfasst am','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('s.id','s.id', 'a.name_de', 'a.nummer', 's.seriennummer','s.logdatei','ad.name','l.belegnr','l.datum','s.id');
-                $searchsql = array('a.name_de', 'a.name_de', 'a.nummer', 's.seriennummer');
+                $findcols = array('s.id','s.id', 'a.nummer', 'a.name_de', 's.seriennummer','s.logdatei','ad.name','l.belegnr','l.datum','s.id');
+                $searchsql = array('a.nummer', 'a.name_de', 's.seriennummer');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -79,8 +80,45 @@ class Seriennummern {
                             adresse ad ON ad.id = l.adresse
                  ";
 
-                $where = "1";
-                $count = "SELECT count(DISTINCT id) FROM seriennummern WHERE $where";
+                $artikel_id = $app->User->GetParameter('seriennummern_artikel_id');
+
+                $where = "(a.id = '".$artikel_id."' OR '".$artikel_id."' = '')";
+
+                // Toggle filters
+                $app->Tpl->Add('JQUERYREADY', "$('#verfuegbar').click( function() { fnFilterColumn1( 0 ); } );");
+                $app->Tpl->Add('JQUERYREADY', "$('#versendet').click( function() { fnFilterColumn2( 0 ); } );");
+
+                for ($r = 1;$r <= 2;$r++) {
+                  $app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= " AND s.lieferscheinpos = 0";                 
+                } else {
+                }
+                
+                $more_data2 = $app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                   $where .= " AND s.lieferscheinpos <> 0";                 
+                } else {
+                }
+
+                $count = "SELECT count(DISTINCT s.id) FROM seriennummern s LEFT JOIN artikel a on a.id = s.artikel WHERE $where";
 //                $groupby = "";
 
                 break;
@@ -114,6 +152,11 @@ class Seriennummern {
                     ['sql' => 'a.id'],
                     '">',
                     '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/add.png" title="Neue Seriennummern erfassen" border="0">',
+                    '</a>',    
+                    '<a href="index.php?module=seriennummern&action=nummern_list&artikel=',
+                    ['sql' => 'a.id'],
+                    '">',
+                    '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/lupe.svg" title="Seriennummern anzeigen" border="0">',
                     '</a>'    
                 );
 
@@ -229,30 +272,93 @@ class Seriennummern {
         return $erg;
     }
     
-    function seriennummern_list() {
+    function seriennummern_menu() {
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=list", "&Uuml;bersicht");
-
-        $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-
-        $this->app->YUI->TableSearch('TAB1', 'seriennummern_artikel_list', "show", "", "", basename(__FILE__), __CLASS__);
-        $this->app->YUI->TableSearch('TAB2', 'seriennummern_list', "show", "", "", basename(__FILE__), __CLASS__);       
-        
-        $check_seriennummern = $this->seriennummern_check_serials();
+        $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=nummern_list", "Seriennummern");
+     //   $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");    
+    }
+    
+    function seriennummern_check_and_message($artikel_id) {
+        $check_seriennummern = $this->seriennummern_check_serials($artikel_id);
                
         if (!empty($check_seriennummern)) {        
-            $artikel_id_links = array();           
+            $artikel_minus_id_links = array();
+            $artikel_plus_id_links = array();                      
             foreach ($check_seriennummern as $artikel_id) {        
                 if ($artikel_id['menge_nummern'] < $artikel_id['menge_auf_lager']) {                    
-                    $artikel_id_links[] = '<a href="index.php?module=seriennummern&action=enter&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
+                    $artikel_minus_id_links[] = '<a href="index.php?module=seriennummern&action=enter&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
+                }
+                else if ($artikel_id['menge_nummern'] > $artikel_id['menge_auf_lager']) {                    
+                    $artikel_plus_id_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
                 }
             }                
-            if (!empty($artikel_id_links)) {
-                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Artikel: '.implode(', ',$artikel_id_links));                    
+            if (!empty($artikel_minus_id_links)) {
+                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Artikel: '.implode(', ',$artikel_minus_id_links));                    
             }              
-        }          
+            if (!empty($artikel_plus_id_links)) {
+                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Artikel: '.implode(', ',$artikel_plus_id_links));                    
+            }              
+        }              
+    }
+    
+    function seriennummern_nummern_list() {
+    
+        $this->seriennummern_menu();
         
+        // For transfer to tablesearch    
+        $artikel_id = $this->app->Secure->GetGET('artikel');
+        $this->app->User->SetParameter('seriennummern_artikel_id', $artikel_id);
+        
+        if (empty($artikel_id)) {
+            $this->app->Tpl->Set('ARTIKEL_HIDDEN', "hidden");
+        } else {
+            $artikel = $this->app->DB->SelectRow("SELECT name_de, nummer FROM artikel WHERE id ='".$artikel_id."'");
+            
+            $check_seriennummern = $this->seriennummern_check_serials($artikel_id);                
+            $check_seriennummern = $check_seriennummern[0];                          
+              
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT1','Anzeigen');                
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2',$artikel['name_de']." (Artikel ".$artikel['nummer'].")");
+              
+            $anzahl_fehlt = $check_seriennummern['menge_auf_lager']-$check_seriennummern['menge_nummern'];
+        
+            if ($anzahl_fehlt == 0) {
+                $this->app->Tpl->addMessage('success', 'Seriennummern vollst&auml;ndig.');                 
+            } 
+
+            if ($anzahl_fehlt < 0) {
+                $anzahl_fehlt = 0;
+            }
+
+            $letzte_seriennummer = (string) $this->app->DB->Select("SELECT seriennummer FROM seriennummern WHERE artikel = '".$artikel_id."' ORDER BY id DESC LIMIT 1");       
+            $this->app->Tpl->Set('LETZTE', $letzte_seriennummer);
+
+            $this->app->Tpl->Set('ANZAHL', $anzahl_fehlt);
+            $this->app->Tpl->Set('ARTIKEL_ID', $artikel_id);
+
+            $this->app->Tpl->Set('ARTIKELNUMMER', '<a href="index.php?module=artikel&action=edit&id='.$check_seriennummern['id'].'">'.$check_seriennummern['nummer'].'</a>');
+            $this->app->Tpl->Set('ARTIKEL', $check_seriennummern['name']);
+            $this->app->Tpl->Set('ANZLAGER', $check_seriennummern['menge_auf_lager']);        
+            $this->app->Tpl->Set('ANZVORHANDEN', $check_seriennummern['menge_nummern']);
+            $this->app->Tpl->Set('ANZFEHLT', $anzahl_fehlt);
+        }
+        
+        $this->seriennummern_check_and_message($artikel_id);
+
+        $this->app->YUI->TableSearch('TAB1', 'seriennummern_list', "show", "", "", basename(__FILE__), __CLASS__);              
+        
+        $this->app->Tpl->Parse('PAGE', "seriennummern_nummern_list.tpl");
+    }    
+
+    function seriennummern_artikel_list() {
+        $this->seriennummern_menu();
+        $this->seriennummern_check_and_message(null);
+
+        $this->app->YUI->TableSearch('TAB1', 'seriennummern_artikel_list', "show", "", "", basename(__FILE__), __CLASS__);
+               
         $this->app->Tpl->Parse('PAGE', "seriennummern_list.tpl");
     }    
+
 
     public function seriennummern_delete() {
         $id = (int) $this->app->Secure->GetGET('id');     

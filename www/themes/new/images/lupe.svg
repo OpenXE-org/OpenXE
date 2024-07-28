@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="5.56mm" height="5.56mm" fill-rule="evenodd" stroke-linejoin="round" stroke-width="28.222" preserveAspectRatio="xMidYMid" version="1.2" viewBox="0 0 556 556" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+ <defs class="ClipPathGroup"><clipPath id="presentation_clip_path">
+   <rect width="556" height="556"/>
+  </clipPath></defs>
+ 
+ 
+ 
+  <g class="Master_Slide">
+   
+   
+  </g>
+ 
+ <g class="SlideGroup">
+  
+   
+    <g class="Slide" clip-path="url(#presentation_clip_path)">
+     <g class="Page">
+      <g class="com.sun.star.drawing.ClosedBezierShape">
+       
+        <rect class="BoundingBox" x="175" y="80" width="302" height="302" fill="none"/>
+        <path d="m421 286c10-17 15-36 15-56 0-19-5-38-15-55s-23-30-40-40-36-15-56-15c-19 0-38 5-55 15s-30 23-40 40-15 36-15 56c0 19 5 38 15 55s23 30 40 40 36 15 56 15c19 0 38-5 55-15s30-23 40-40zm35 20c-13 23-32 42-55 55s-49 20-75 20c-27 0-53-7-76-20s-42-32-55-55-20-49-20-75c0-27 7-53 20-76s32-42 55-55 49-20 75-20c27 0 53 7 76 20s42 32 55 55 20 49 20 75c0 27-7 53-20 76z" fill="#929292"/>
+       
+      
+      
+       
+        <rect class="BoundingBox" x="78" y="286" width="190" height="191" fill="none"/>
+        <path d="m195 306c13 23 32 42 55 55 6 3 11 6 17 8l-102 102c-2 3-5 4-8 4h-67c-6 0-11-5-11-11v-67c0-3 1-6 4-8l103-103c2 7 6 14 9 20z" fill="#929292"/>
+       
+      </g>
+     </g>
+    </g>
+   
+  
+ </g>
+</svg>
