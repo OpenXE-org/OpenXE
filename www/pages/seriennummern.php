@@ -369,7 +369,7 @@ class Seriennummern {
         } else {
             $this->app->Tpl->addMessage('error', 'Der Eintrag kann nicht gel&ouml;scht werden!');        
         }
-        $this->seriennummern_list();
+        $this->seriennummern_nummern_list();
     } 
       
     function seriennummern_enter() {
