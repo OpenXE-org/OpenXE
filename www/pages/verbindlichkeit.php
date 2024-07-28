@@ -250,7 +250,7 @@ class Verbindlichkeit {
                 );       
 
                 $preise = array (
-                    '<input type="number" name="preise[]" step="0.00001" value="',
+                    '<input type="number" name="preise[]" step="0.0000000001" value="',
                     ['sql' => "TRIM(COALESCE(bp.preis,0))+0"],
                     '" min="0"',                    
                     '/>'
