@@ -501,7 +501,9 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $cart['ort'] = strval($order->customer->billing_address->city);
 
 //            $cart['ustid'] = '?';
-            $sql = "SELECT iso FROM laender WHERE iso3 = '".$order->customer->billing_address->country_iso_code."'";           
+            if ($order->customer->billing_address->country_iso_code) {
+                $sql = "SELECT iso FROM laender WHERE iso3 = '".$order->customer->billing_address->country_iso_code."' LIMIT 1";           
+            }
             $cart['land'] = $this->app->DB->Select($sql);           
 
             $cart['abweichendelieferadresse'] = 1;
