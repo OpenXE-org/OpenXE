@@ -22,7 +22,7 @@
                                     </tr>                                   
                                     <tr>
                                         <td>
-                                            {|Seriennummern verf&uuml;gbar|}:
+                                            {|Seriennummern eingelagert|}:
                                         </td>
                                         <td>
                                             <input type="text" value="[ANZVORHANDEN]" size="40" disabled>
@@ -68,7 +68,17 @@
                                 </span>
                             </label>
                             <label for="verfuegbar">
-                                {|Nur verf&uuml;gbare|}
+                                {|Nur eingelagerte|}
+                            </label>
+                        </li>
+                        <li class="filter-item">
+                            <label for="ausgelagert" class="switch">
+                                <input type="checkbox" id="ausgelagert" />
+                                <span class="slider round">
+                                </span>
+                            </label>
+                            <label for="ausgelagert">
+                                {|Nur ausgelagerte|}
                             </label>
                         </li>
                         <li class="filter-item">

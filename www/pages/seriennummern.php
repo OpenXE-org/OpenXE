@@ -33,13 +33,13 @@ class Seriennummern {
         switch ($name) {
             case "seriennummern_list":
                 $allowed['seriennummern_list'] = array('list');
-                $heading = array('','','Nummer','Artikel', 'Seriennummer','Erfasst am','Eingelagert','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
+                $heading = array('','','Artikel-Nr.','Artikel', 'Seriennummer','Erfasst am','Eingelagert','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('s.id','s.id', 'a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','ad.name','l.belegnr','l.datum','s.id');
+                $findcols = array('s.id','s.id', 'a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','lh.adresse_name','lh.belegnr','lh.datum','s.id');
                 $searchsql = array('a.nummer', 'a.name_de', 's.seriennummer');
 
                 $defaultorder = 1;
@@ -57,40 +57,68 @@ class Seriennummern {
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=seriennummern&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
-                $sql = "
-                    SELECT SQL_CALC_FOUND_ROWS 
-                            s.id,
-                            $dropnbox,
-                            CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
-                            a.name_de,
-                            s.seriennummer,
-                            ".$app->erp->FormatDate("s.datum").",
-                            if(s.eingelagert,'Ja','Nein'),
-                            ad.name,
-                            l.belegnr,
-                            ".$app->erp->FormatDate("l.datum").",
-                            s.id 
-                        FROM 
+                $lieferschein_link = array(
+                    '<a href="index.php?module=lieferschein&action=edit&id=',
+                    ['sql' => 'lh.lieferschein'],
+                    '">',
+                    ['sql' => 'lh.belegnr'],
+                    '</a>',    
+                );
+
+                $sql_columns = "
+                    s.id,
+                    $dropnbox,
+                    CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
+                    a.name_de,
+                    s.seriennummer,
+                    ".$app->erp->FormatDate("s.datum").",
+                    if(s.eingelagert,'Ja','Nein'),
+                    lh.adresse_name,
+                    ".$app->erp->ConcatSQL($lieferschein_link).",
+                    ".$app->erp->FormatDate("lh.datum").",
+                    s.id 
+                ";
+
+                $sql_tables = "
                             seriennummern s 
                         INNER JOIN 
                             artikel a ON s.artikel = a.id
-                        LEFT JOIN 
-                            lieferschein_position lp ON lp.id = s.lieferscheinpos
-                        LEFT JOIN 
-                            lieferschein l ON l.id = lp.lieferschein
-                        LEFT JOIN
-                            adresse ad ON ad.id = l.adresse
+                        LEFT JOIN (
+                            SELECT DISTINCT
+                                slp.seriennummer,        
+                                a.id adresse,
+                                a.name adresse_name,
+                                l.datum,
+                                l.id lieferschein,
+                                l.belegnr
+                            FROM
+                                seriennummern_lieferschein_position slp
+                            INNER JOIN lieferschein_position lp ON
+                                lp.id = slp.lieferschein_position
+                            INNER JOIN lieferschein l ON
+                                l.id = lp.lieferschein
+                            INNER JOIN adresse a ON
+                                a.id = l.adresse
+                            ORDER BY
+                                l.datum
+                            DESC
+                                ,
+                                l.id
+                            DESC
+                        ) lh ON lh.seriennummer = s.id                     
                  ";
 
                 $artikel_id = $app->User->GetParameter('seriennummern_artikel_id');
 
                 $where = "(a.id = '".$artikel_id."' OR '".$artikel_id."' = '')";
+                $count = "SELECT COUNT(DISTINCT s.id) FROM ".$sql_tables." WHERE ".$where;
 
                 // Toggle filters
                 $app->Tpl->Add('JQUERYREADY', "$('#verfuegbar').click( function() { fnFilterColumn1( 0 ); } );");
-                $app->Tpl->Add('JQUERYREADY', "$('#versendet').click( function() { fnFilterColumn2( 0 ); } );");
+                $app->Tpl->Add('JQUERYREADY', "$('#ausgelagert').click( function() { fnFilterColumn2( 0 ); } );");
+                $app->Tpl->Add('JQUERYREADY', "$('#versendet').click( function() { fnFilterColumn3( 0 ); } );");
 
-                for ($r = 1;$r <= 2;$r++) {
+                for ($r = 1;$r <= 3;$r++) {
                   $app->Tpl->Add('JAVASCRIPT', '
                                          function fnFilterColumn' . $r . ' ( i )
                                          {
@@ -116,17 +144,27 @@ class Seriennummern {
                 
                 $more_data2 = $app->Secure->GetGET("more_data2");
                 if ($more_data2 == 1) {
-                   $where .= " AND s.lieferscheinpos <> 0";                 
+                   $where .= " AND s.eingelagert = 0";                 
                 } else {
                 }
 
-                $count = "SELECT count(DISTINCT s.id) FROM seriennummern s LEFT JOIN artikel a on a.id = s.artikel WHERE $where";
-//                $groupby = "";
+                $more_data3 = $app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                   $where .= " AND lh.seriennummer IS NOT NULL";                 
+                } else {
+                }
+            
+                $groupby = "GROUP BY s.id";
+
+                $sql = "SELECT SQL_CALC_FOUND_ROWS ".$sql_columns." FROM ".$sql_tables;
+  
+//                echo($sql." WHERE ".$where." ".$groupby);
+//                echo($count); 
 
                 break;
             case "seriennummern_artikel_list":
                 $allowed['seriennummern_artikel_list'] = array('list');
-                $heading = array('','', 'Nummer', 'Artikel', 'Lagermenge', 'Nummern verf&uuml;gbar', 'Nummern ausgeliefert', 'Nummern gesamt', 'Men&uuml;','');
+                $heading = array('','', 'Artikel-Nr.', 'Artikel', 'Lagermenge', 'Nummern verf&uuml;gbar', 'Nummern ausgeliefert', 'Nummern gesamt', 'Men&uuml;','');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -139,7 +177,7 @@ class Seriennummern {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
                 $aligncenter = array();
-                $alignright = array();
+                $alignright = array(5,6,7,8,9);
                 $numbercols = array();
                 $sumcol = array();
 
@@ -168,8 +206,8 @@ class Seriennummern {
                         CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                         a.name_de,
                         ".$app->erp->FormatMenge('auf_lager.anzahl').",
-                        SUM(if(s.eingelagert <> 0,1,0)),
-                        SUM(if(s.lieferscheinpos <> 0,1,0)),
+                        SUM(if(s.eingelagert = 1,1,0)),
+                        SUM(if(s.eingelagert = 0,1,0)),
                         SUM(if(s.id IS NULL,0,1)),
                         ".$app->erp->ConcatSQL($menu_link).",
                         a.id
@@ -192,12 +230,15 @@ class Seriennummern {
                             a.id
                     ) auf_lager ON auf_lager.id = a.id
                     LEFT JOIN
-                        seriennummern s ON s.artikel = a.id
+                        seriennummern s ON s.artikel = a.id                 
                 ";
 
                 $where = "a.seriennummern <> 'keine' AND a.seriennummern <> ''";
-                $count = "SELECT count(DISTINCT a.id) FROM artikel a WHERE $where";
                 $groupby = "GROUP BY a.id";
+                $count = "SELECT count(DISTINCT a.id) FROM artikel a WHERE ".$where;
+         
+//                echo($sql." WHERE ".$where." ".$groupby);
+//                echo($count); 
 
                 break;
             case "seriennummern_lieferscheine_list":
@@ -206,7 +247,7 @@ class Seriennummern {
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                $alignright = array(6,7,8,9); 
 
                 $findcols = array('l.id','l.id', 'l.belegnr', 'l.datum', 'adr.name', 'null', 'null', 'null', 'null', 'null');
                 $searchsql = array('l.belegnr');
@@ -214,7 +255,6 @@ class Seriennummern {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
                 $aligncenter = array();
-                $alignright = array();
                 $numbercols = array();
                 $sumcol = array();
 
@@ -230,31 +270,48 @@ class Seriennummern {
                     '</a>',    
                 );
 
+                $lieferschein_link = array(
+                    '<a href="index.php?module=lieferschein&action=edit&id=',
+                    ['sql' => 'l.id'],
+                    '">',
+                    ['sql' => 'l.belegnr'],
+                    '</a>',    
+                );
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                             l.id,
                             $dropnbox,
-                            l.belegnr,
+                            ".$app->erp->ConcatSQL($lieferschein_link).",
                             ".$app->erp->FormatDate("l.datum").",
                             adr.name,
-                            ".$app->erp->FormatMengeFuerFormular("SUM(menge)").",
-                            ".$app->erp->FormatMengeFuerFormular("COUNT(s.id)").",
-                            ".$app->erp->FormatMengeFuerFormular("SUM(menge)-COUNT(s.id)").",
+                            ".$app->erp->FormatMengeFuerFormular("menge").",
+                            SUM(if(slp.id IS NULL,0,1)),
+                            ".$app->erp->FormatMengeFuerFormular("menge-SUM(if(slp.id IS NULL,0,1))").",
                             ".$app->erp->ConcatSQL($menu_link).",
                             l.id
                         FROM
                             lieferschein_position lp
+                        LEFT JOIN seriennummern_lieferschein_position slp 
+                            ON slp.lieferschein_position = lp.id
                         INNER JOIN lieferschein l ON
                             l.id = lp.lieferschein
                         INNER JOIN artikel a ON
                             a.id = lp.artikel
                         INNER JOIN adresse adr ON
                             adr.id = l.adresse
-                        LEFT JOIN seriennummern s ON
-                            lp.id = s.lieferscheinpos
                 ";
 
                 $where = "(a.seriennummern <> 'keine') AND (l.datum >= (SELECT MIN(datum) FROM seriennummern WHERE artikel = a.id))";
-                $count = "";
+                $count = "SELECT COUNT(DISTINCT lp.lieferschein) FROM
+                             lieferschein_position lp
+                            LEFT JOIN seriennummern_lieferschein_position slp 
+                                ON slp.lieferschein_position = lp.id
+                            INNER JOIN lieferschein l ON
+                                l.id = lp.lieferschein
+                            INNER JOIN artikel a ON
+                                a.id = lp.artikel 
+                            "." WHERE ".$where;
+    
                 $groupby = "GROUP BY l.id";
                 break;
         }
@@ -299,9 +356,32 @@ class Seriennummern {
         }              
     }
     
+    function seriennummern_delivery_note_check_and_message($lieferschein_id) {
+               
+        $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id);
+        if (!empty($check_delivery_notes)) {
+            $lieferschein_minus_id_links = array();
+            $lieferschein_plus_id_links = array();                      
+            foreach ($check_delivery_notes as $lieferschein_id) {        
+                if ($lieferschein_id['anzahl_nummern'] < $lieferschein_id['menge']) {                    
+                    $lieferschein_minus_id_links[] = '<a href="index.php?module=seriennummern&action=enter&lieferschein='.$lieferschein_id['id'].'">'.$lieferschein_id['nummer'].'</a>';
+                }
+                else if ($lieferschein_id['anzahl_nummern'] > $lieferschein_id['menge']) {                    
+                    $lieferschein_plus_id_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&lieferschein='.$lieferschein_id['id'].'">'.$lieferschein_id['nummer'].'</a>';
+                }
+            }                
+            if (!empty($lieferschein_minus_id_links)) {
+                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Lieferschein: '.implode(', ',$lieferschein_minus_id_links));                    
+            }              
+            if (!empty($lieferschein_plus_id_links)) {
+                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Lieferschein: '.implode(', ',$lieferschein_plus_id_links));                    
+            }            
+        }     
+    } 
+
     function seriennummern_nummern_list() {
     
-        $this->seriennummern_menu();
+        $this->seriennummern_menu();       
         
         // For transfer to tablesearch    
         $artikel_id = $this->app->Secure->GetGET('artikel');
@@ -342,6 +422,7 @@ class Seriennummern {
         }
         
         $this->seriennummern_check_and_message($artikel_id);
+        $this->seriennummern_delivery_note_check_and_message(null);
 
         $this->app->YUI->TableSearch('TAB1', 'seriennummern_list', "show", "", "", basename(__FILE__), __CLASS__);              
         
@@ -351,6 +432,7 @@ class Seriennummern {
     function seriennummern_artikel_list() {
         $this->seriennummern_menu();
         $this->seriennummern_check_and_message(null);
+        $this->seriennummern_delivery_note_check_and_message(null);
 
         $this->app->YUI->TableSearch('TAB1', 'seriennummern_artikel_list', "show", "", "", basename(__FILE__), __CLASS__);
                
@@ -360,6 +442,7 @@ class Seriennummern {
     function seriennummern_lieferscheine_list() {
         $this->seriennummern_menu();
         $this->seriennummern_check_and_message(null);
+        $this->seriennummern_delivery_note_check_and_message(null);
 
         $this->app->YUI->TableSearch('TAB1', 'seriennummern_lieferscheine_list', "show", "", "", basename(__FILE__), __CLASS__);
                
@@ -369,11 +452,11 @@ class Seriennummern {
     public function seriennummern_delete() {
         $id = (int) $this->app->Secure->GetGET('id');     
 
-        if ($this->app->DB->Select("SELECT id FROM `seriennummern` WHERE `id` = '{$id}' AND `lieferscheinpos` = 0")) {
-            $this->app->DB->Delete("DELETE FROM `seriennummern` WHERE `id` = '{$id}' AND `lieferscheinpos` = 0");        
+        if (!$this->app->DB->Select("SELECT id FROM `seriennummern_lieferschein_position` WHERE `seriennummer` = '{$id}'")) {
+            $this->app->DB->Delete("DELETE FROM `seriennummern` WHERE `id` = '{$id}'");        
             $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
         } else {
-            $this->app->Tpl->addMessage('error', 'Der Eintrag kann nicht gel&ouml;scht werden!');        
+            $this->app->Tpl->addMessage('error', 'Der Eintrag kann nicht gel&ouml;scht werden da eine Lieferscheinzuordnung existiert!');        
         }
         $this->seriennummern_nummern_list();
     } 
@@ -382,12 +465,14 @@ class Seriennummern {
 
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $artikel_id = (int) $this->app->Secure->GetGET('artikel');
+        $lieferschein_id = (int) $this->app->Secure->GetGET('lieferschein');
         
         $artikel = $this->app->DB->SelectRow("SELECT name_de, nummer FROM artikel WHERE id ='".$artikel_id."'");
 
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT1','Erfassen');                
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT2',$artikel['name_de']." (Artikel ".$artikel['nummer'].")");
 
+        $allowold = $this->app->Secure->GetPOST('allowold');        
         $submit = $this->app->Secure->GetPOST('submit');
         $seriennummern = array();
 
@@ -403,6 +488,8 @@ class Seriennummern {
             break;
             case 'speichern':
                 $seriennummern_not_written = array();
+                $seriennummern_already_exist = array();
+                $seriennummern_old_not_allowed = array();
                 foreach ($seriennummern as $seriennummer) {  
                 
                     $seriennummer = trim($seriennummer);
@@ -411,18 +498,40 @@ class Seriennummern {
                         continue;
                     }
                               
-                    $sql = "INSERT INTO seriennummern (seriennummer, artikel, logdatei, eingelagert) VALUES ('".$this->app->DB->real_escape_string($seriennummer)."', '".$artikel_id."', CURRENT_TIMESTAMP, 1)";
-                    try {                
-                        $this->app->DB->Insert($sql);
-                    } catch (mysqli_sql_exception $e) {
-                        $error = true;
-                        $seriennummern_not_written[] = $seriennummer;
-                    }                   
+                    $sql = "SELECT id, eingelagert FROM seriennummern WHERE seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."' AND artikel = '".$artikel_id."'";
+                    $check_existing = $this->app->DB->SelectRow($sql);
+            
+                    if (empty($check_existing)) { // New serial
+                        $sql = "INSERT INTO seriennummern (seriennummer, artikel, logdatei, eingelagert) VALUES ('".$this->app->DB->real_escape_string($seriennummer)."', '".$artikel_id."', CURRENT_TIMESTAMP, 1)";
+                        try {                
+                            $this->app->DB->Insert($sql);
+                        } catch (mysqli_sql_exception $e) {
+                            $error = true;
+                            $seriennummern_not_written[] = $seriennummer;
+                        }                     
+                    } else {
+                        if ($check_existing['eingelagert']) { // Old serial, already here
+                            $seriennummern_already_exist[] = $seriennummer;
+                        } else { // Old serial, returning
+                            if ($allowold) {
+                                $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."' AND artikel = '".$artikel_id."'";
+                                $this->app->DB->Update($sql);
+                            } else {
+                                $seriennummern_old_not_allowed[] = $seriennummer;
+                            }
+                        }
+                    }
                 }                              
-                if ($error) {
-                    $this->app->Tpl->addMessage('error', 'Einige Seriennummern konnten nicht gespeichert werden.');          
+                if (!empty($seriennummern_already_exist)) {
+                    $this->app->Tpl->addMessage('error', 'Seriennummern existieren bereits: '.implode(', ',$seriennummern_already_exist));          
                 }
-                $seriennummern = $seriennummern_not_written;                             
+                if (!empty($seriennummern_old_not_allowed)) {
+                    $this->app->Tpl->addMessage('error', 'Seriennummern bereits ausgeliefert: '.implode(', ',$seriennummern_old_not_allowed));          
+                }
+                if (!empty($seriennummern_not_written)) {
+                    $this->app->Tpl->addMessage('error', 'Seriennummern konnten nicht gespeichert werden: '.implode(', ',$seriennummern_not_written));          
+                }
+                $seriennummern = array_merge($seriennummern_not_written, $seriennummern_already_exist, $seriennummern_old_not_allowed);
             break;
             case 'assistent':
                 $praefix = $this->app->Secure->GetPOST('praefix');
@@ -508,11 +617,9 @@ class Seriennummern {
             LEFT JOIN(
                 SELECT
                     artikel,
-                    COUNT(id) anzahl
+                    SUM(if(eingelagert,1,0)) anzahl
                 FROM
                     seriennummern
-                WHERE
-                    lieferscheinpos = 0
                 GROUP BY
                     artikel
             ) nummern_verfuegbar
@@ -530,29 +637,35 @@ class Seriennummern {
     * Check if all delivery notes have serials
     * Return array of delivery note positions and head information
     */
-    public function seriennummern_check_deliver_notes($lieferschein_id = null) : array {
+    public function seriennummern_check_delivery_notes($lieferschein_id = null) : array {
         $sql = "
-            SELECT
-                l.id lieferschein,
-                l.datum,
-                l.belegnr lieferschein_belegnr,
-                lp.id lieferschein_position,
-                a.nummer,
-                menge,
-                COUNT(s.id) anzahl_nummern,
-                GROUP_CONCAT(s.seriennummer)
-            FROM
-                lieferschein_position lp
-            INNER JOIN lieferschein l ON
-                l.id = lp.lieferschein
-            INNER JOIN artikel a ON
-                a.id = lp.artikel
-            LEFT JOIN seriennummern s ON
-                lp.id = s.lieferscheinpos
-            WHERE (l.id = '".$lieferschein_id."' OR '".$lieferschein_id."' = '')
-            GROUP BY
-                lp.id    
-            HAVING menge > anzahl_nummern        
+                SELECT SQL_CALC_FOUND_ROWS
+                    l.id,
+                    l.belegnr nummer,
+                    menge,
+                    SUM(IF(slp.id IS NULL, 0, 1)) menge_nummern
+                FROM
+                    lieferschein_position lp
+                LEFT JOIN seriennummern_lieferschein_position slp ON
+                    slp.lieferschein_position = lp.id
+                INNER JOIN lieferschein l ON
+                    l.id = lp.lieferschein
+                INNER JOIN artikel a ON
+                    a.id = lp.artikel
+                WHERE
+                    (a.seriennummern <> 'keine') AND(
+                        l.datum >=(
+                        SELECT
+                            MIN(datum)
+                        FROM
+                            seriennummern
+                        WHERE
+                            artikel = a.id
+                    )
+                    ) AND (l.id = '".$lieferschein_id."' OR '".$lieferschein_id."' = '')
+                GROUP BY
+                    l.id            
+                HAVING menge > menge_nummern        
         ";
         
         $result = $this->app->DB->SelectArr($sql);        
@@ -617,8 +730,8 @@ class Seriennummern {
     * Check if numbers need to be entered after stock removal, if yes, create notification
     */
     public function seriennummern_check_and_message_delivery_note_removed(int $lieferschein_id) {
-        $check_deliver_notes = $this->seriennummern_check_deliver_notes($lieferschein_id);
-        if (!empty($check_deliver_notes)) {
+        $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id);
+        if (!empty($check_delivery_notes)) {
             $this->seriennummern_create_notification_lieferschein($lieferschein_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Lieferschein erfassen','Zur Eingabe');
         }          
     }

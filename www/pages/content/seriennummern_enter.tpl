@@ -140,7 +140,7 @@
                                             <textarea name="seriennummern" id="seriennummern" rows="20" style="width:100%;">[SERIENNUMMERN]</textarea>
                                             <i>Liste der Seriennummern, 1 pro Zeile</i>
                                         </td>
-                                    </tr>                               
+                                    </tr>    
                                 </table>
                             </fieldset>            
                         </div>
@@ -150,6 +150,11 @@
             				<fieldset>
                                 <legend>{|<!--Legend for this form area goes here>-->Aktionen|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">                                  
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="allowold" id="allowold" value="1" [PRIO] size="20">{|Ausgelieferte erlauben|}
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td>
                                             <button name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button>
