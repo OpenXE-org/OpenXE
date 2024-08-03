@@ -2826,6 +2826,11 @@ public function NavigationHooks(&$menu)
         $obj->seriennummern_check_and_message_stock_added($artikel_id);
     }  
 
+    function SeriennummernCheckLieferscheinWarnung($lieferschein_id) {
+        $obj = $this->LoadModul('seriennummern');
+        $obj->seriennummern_check_and_message_delivery_note_removed($lieferschein_id);
+    }
+
 // @refactor in Lager Modul
 function ArtikelAnzahlLagerPlatzMitSperre($artikel,$lager_platz)
 {
@@ -3552,6 +3557,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
 
           $this->RunHook('erpapi_lieferschein_auslagern', 1, $lieferschein);
+          $this->SeriennummernCheckLieferscheinWarnung($lieferschein);
           $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
         }
     }
