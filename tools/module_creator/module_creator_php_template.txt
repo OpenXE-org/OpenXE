@@ -36,7 +36,7 @@ class PLACEHOLDER_MODULECLASSNAME {
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('PLACEHOLDER_ID_COLUMN','PLACEHOLDER_ID_COLUMN',PLACEHOLDER_SQL_COLUMNS);
+                $findcols = array('PLACEHOLDER_ID_COLUMN','PLACEHOLDER_ID_COLUMN',PLACEHOLDER_SQL_COLUMNS); // use 'null' for non-searchable columns
                 $searchsql = array(PLACEHOLDER_SQL_COLUMNS);
 
                 $defaultorder = 1;
@@ -59,6 +59,8 @@ class PLACEHOLDER_MODULECLASSNAME {
                 $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM PLACEHOLDER_MODULENAME WHERE $where";
 //                $groupby = "";
+
+//                echo($sql." WHERE ".$where." ".$groupby);
 
                 break;
         }
