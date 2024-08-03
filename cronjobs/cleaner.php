@@ -148,8 +148,7 @@ $tables = [
   'templatemessage',
   'shopimport_auftraege',
   'versandzentrum_log',
-  'api_request_response_log',
-  'shopimport_amazon_fees',
+  'api_request_response_log'
 ];
 $minMemoryMb = 1;
 $minMemory = $minMemoryMb * 1024 * 1024;
@@ -623,33 +622,10 @@ if($shopExportLogCleanerActive && $tage > 0) {
 
 $shopExportLogCleanerActive = $app->erp->Firmendaten('cleaner_shopexportlog');
 $tage = (int)$app->erp->Firmendaten('cleaner_shopexportlog_tage');
-$isToDelete = !empty($tableSchemaByTables['shopimport_amazon_fees'])
-  && !empty($tableSchemaByTables['shopimport_amazon_fees']['todelete']);
-if((!$shopExportLogCleanerActive || $tage <= 0 || $tage > 30) && $isToDelete) {
-  $shopExportLogCleanerActive = true;
-  if($tage <= 0 || $tage > 30) {
-    $tage = 30;
-  }
-}
+
 if($shopExportLogCleanerActive && $tage > 0) {
   if($tage < 30) {
     $tage = 30;
-  }
-  $app->DB->Delete(
-    sprintf(
-      "DELETE FROM `shopimport_amazon_fees` 
-      WHERE DATE_SUB(NOW(), INTERVAL %d DAY) >= `zeitstempel` OR `zeitstempel` = '0000-00-00 00:00:00'",
-      $tage
-    )
-  );
-  $affectedRows = $app->DB->affected_rows();
-  if(!empty($tableSchemaByTables['shopimport_amazon_fees'])
-    && ($tableSchemaByTables['shopimport_amazon_fees']['todelete'] > 0)) {
-    $tableSchemaByTables['shopimport_amazon_fees']['todelete'] -= $affectedRows;
-  }
-  if($affectedRows > 0 && !empty($optimize['shopimport_amazon_fees'])) {
-    $app->DB->Query('OPTIMIZE TABLE `shopimport_amazon_fees`');
-    unset($optimize['shopimport_amazon_fees']);
   }
   $app->DB->Update(
     "UPDATE prozessstarter SET letzteausfuerhung=NOW(),mutex=1,mutexcounter=0 WHERE parameter = 'cleaner' AND aktiv = 1"
