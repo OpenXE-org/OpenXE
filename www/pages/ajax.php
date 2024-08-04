@@ -2610,7 +2610,29 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         break;
         case "seriennummerverfuegbar":
             $artikel = (int)$this->app->Secure->GetGET('artikel');
-            $arr = $this->app->DB->SelectArr("SELECT seriennummer FROM seriennummern WHERE lieferschein = 0 AND seriennummer LIKE '%$term%' AND artikel = '$artikel' LIMIT 20");
+            $lieferschein = (int)$this->app->Secure->GetGET('lieferschein');
+
+            $sql = "
+                SELECT DISTINCT
+                    s.seriennummer
+                FROM    
+                    seriennummern s
+                INNER JOIN
+                    lieferschein_position lp ON lp.artikel = s.artikel
+                LEFT JOIN
+                    seriennummern_lieferschein_position slp ON slp.seriennummer = s.id
+                WHERE
+                    s.eingelagert = 1
+                    AND slp.id IS NULL
+                    AND s.seriennummer LIKE '%$term%' 
+                    AND (s.artikel = '$artikel' OR '$artikel' = '0')                 
+                LIMIT 20
+            ";
+
+            //echo($sql);
+
+            $arr = $this->app->DB->SelectArr($sql);
+
             $carr = !empty($arr)?count($arr):0;
             for($i = 0; $i < $carr; $i++) {
               $newarr[] = $arr[$i]['seriennummer'];
