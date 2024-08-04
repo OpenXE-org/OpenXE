@@ -33,13 +33,13 @@ class Seriennummern {
         switch ($name) {
             case "seriennummern_list":
                 $allowed['seriennummern_list'] = array('list');
-                $heading = array('','','Artikel-Nr.','Artikel', 'Seriennummer','Erfasst am','Eingelagert','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
-                $width = array('1%','1%','10%'); // Fill out manually later
+                $heading = array('Artikel-Nr.','Artikel', 'Seriennummer','Erfasst am','Eingelagert','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
+                $width = array('10%','20%','20%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('s.id','s.id', 'a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','lh.adresse_name','lh.belegnr','lh.datum','s.id');
+                $findcols = array('a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','lh.adresse_name','lh.belegnr','lh.datum','s.id');
                 $searchsql = array('a.nummer', 'a.name_de', 's.seriennummer');
 
                 $defaultorder = 1;
@@ -67,7 +67,6 @@ class Seriennummern {
 
                 $sql_columns = "
                     s.id,
-                    $dropnbox,
                     CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                     a.name_de,
                     s.seriennummer,
@@ -164,20 +163,20 @@ class Seriennummern {
                 break;
             case "seriennummern_artikel_list":
                 $allowed['seriennummern_artikel_list'] = array('list');
-                $heading = array('','', 'Artikel-Nr.', 'Artikel', 'Lagermenge', 'Nummern verf&uuml;gbar', 'Nummern ausgeliefert', 'Nummern gesamt', 'Men&uuml;','');
-                $width = array('1%','1%','10%'); // Fill out manually later
+                $heading = array('Artikel-Nr.', 'Artikel', 'Lagermenge', 'Nummern verf&uuml;gbar', 'Nummern ausgeliefert', 'Nummern gesamt', 'Men&uuml;','');
+                $width = array('10%','20%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('a.id','a.id', 'a.nummer', 'a.name_de' , 'null', 'null', 'null', 'null', 'null', 'null');
+                $findcols = array('a.nummer', 'a.name_de' , 'null', 'null', 'null', 'null', 'null', 'null');
                 $searchsql = array('a.name_de', 'a.nummer');
 
                 $menucol = 1;
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
                 $aligncenter = array();
-                $alignright = array(5,6,7,8,9);
+                $alignright = array(3,4,5,6,7);
                 $numbercols = array();
                 $sumcol = array();
 
@@ -202,7 +201,6 @@ class Seriennummern {
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                         a.id,
-                        $dropnbox,
                         CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                         a.name_de,
                         ".$app->erp->FormatMenge('auf_lager.anzahl').",
@@ -243,13 +241,13 @@ class Seriennummern {
                 break;
             case "seriennummern_lieferscheine_list":
                 $allowed['seriennummern_artikel_list'] = array('list');
-                $heading = array('','', 'Lieferschein', 'Vom', 'Adresse', 'Menge Artikel', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;','');
-                $width = array('1%','1%','10%'); // Fill out manually later
+                $heading = array('Lieferschein', 'Vom', 'Adresse', 'Menge Artikel', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;','');
+                $width = array('10%','10%','20%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                $alignright = array(6,7,8,9); 
+                $alignright = array(4,5,6,7); 
 
-                $findcols = array('l.id','l.id', 'l.belegnr', 'l.datum', 'adr.name', 'null', 'null', 'null', 'null', 'null');
+                $findcols = array('l.belegnr', 'l.datum', 'adr.name', 'null', 'null', 'null', 'null', 'null');
                 $searchsql = array('l.belegnr');
 
                 $defaultorder = 1;
@@ -280,7 +278,6 @@ class Seriennummern {
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                             l.id,
-                            $dropnbox,
                             ".$app->erp->ConcatSQL($lieferschein_link).",
                             ".$app->erp->FormatDate("l.datum").",
                             adr.name,
