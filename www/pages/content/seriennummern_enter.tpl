@@ -17,148 +17,148 @@
                     <div class="col-xs-14 col-md-6 col-md-height">
                         <div class="inside inside-full-height">
                             <fieldset>
-                                <legend>{|Lieferscheinpositionen|}</legend>
-                                [LIEFERSCHEINPOSITIONEN]
+                                <legend [LIEFERSCHEIN_HIDDEN]>{|Lieferscheinpositionen|}</legend>
+                                <legend [ARTIKEL_HIDDEN]>{|Seriennummern|}</legend>
+                                [POSITIONEN]
                             </fieldset>
                         </div>
-                    </div>
+                    </div>                   
                     <div class="col-xs-14 col-md-6 col-md-height">
-                        <div class="inside inside-full-height">
-                            <div class="row">
-                                <div class="row-height">
-                                    <div class="col-xs-14 col-md-14 col-md-height">
-                                        <div class="inside inside-full-height">
-                                            <fieldset>
-                                                <legend>{|Seriennummern erfassen [LEGEND]|}</legend>
-                                                <table width="100%" border="0" class="mkTableFormular">
-                                                    <tr [ARTIKEL_HIDDEN]>
-                                                        <td>
-                                                            {|Lagermenge|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" value="[ANZLAGER]" size="40" disabled />
-                                                        </td>
-                                                    </tr>
-                                                    <tr [ARTIKEL_HIDDEN]>
-                                                        <td>
-                                                            {|Seriennummern verf&uuml;gbar|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" value="[ANZVORHANDEN]" size="40" disabled />
-                                                        </td>
-                                                    </tr>
-                                                    <tr [ARTIKEL_HIDDEN]>
-                                                        <td>
-                                                            {|Seriennummern fehlen|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" value="[ANZFEHLT]" size="40" disabled />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Seriennummer scannen|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="eingabescan" id="eingabescan" value="[EINGABESCAN]" size="40" autofocus />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Seriennummer w&auml;hlen|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="eingabe" id="eingabe" value="[EINGABE]" size="40" />
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </fieldset>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>                        
-                            <div class="row">
-                                <div class="row-height">
-                                    <div class="col-xs-14 col-md-14 col-md-height">
-                                        <div class="inside inside-full-height">
-                                            <fieldset>
+                        <div class="inside inside-full-height">                          
+                            <fieldset>
+                                <legend>{|Seriennummern erfassen [LEGEND]|}</legend>
+                                <table width="100%" border="0" class="mkTableFormular">
+                                    <tr [ARTIKEL_HIDDEN]>
+                                        <td>
+                                            {|Lagermenge|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" value="[ANZLAGER]" size="40" disabled />
+                                        </td>
+                                    </tr>
+                                    <tr [ARTIKEL_HIDDEN]>
+                                        <td>
+                                            {|Seriennummern verf&uuml;gbar|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" value="[ANZVORHANDEN]" size="40" disabled />
+                                        </td>
+                                    </tr>
+                                    <tr [LIEFERSCHEIN_HIDDEN]>
+                                        <td>
+                                            {|Menge auf Lieferschein|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" value="[ANZLIEFERSCHEIN]" size="40" disabled />
+                                        </td>
+                                    </tr>
+                                    <tr [LIEFERSCHEIN_HIDDEN]>
+                                        <td>
+                                            {|Seriennummern zugeordnet|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" value="[ANZVORHANDEN]" size="40" disabled />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {|Seriennummern fehlen|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" value="[ANZFEHLT]" size="40" disabled />
+                                        </td>
+                                    </tr>
+                                    <tr [ARTIKEL_HIDDEN] [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Seriennummer scannen|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="eingabescan" id="eingabescan" value="[EINGABESCAN]" size="40" autofocus />
+                                        </td>
+                                    </tr>
+                                    <tr [LIEFERSCHEIN_HIDDEN] [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Seriennummer w&auml;hlen|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="eingabe" id="eingabe" value="[EINGABE]" size="40" autofocus/>
+                                        </td>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            <fieldset>                      
                                                 <legend>{|Seriennummernassistent|}</legend>
-                                                <table width="100%" border="0" class="mkTableFormular">
-                                                    <tr>
-                                                        <td>
-                                                            {|Letzte Seriennummer|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="muster" id="muster" value="[LETZTE]" size="40" disabled />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Pr&auml;fix|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="praefix" id="praefix" value="[PRAEFIX]" size="40" />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Start|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" name="start" id="start" value="[START]" size="40" />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Postfix|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="postfix" id="postfix" value="[POSTFIX]" size="40" />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {|Anzahl|}:
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" name="anzahl" id="anzahl" value="[ANZAHL]" size="40" />
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </fieldset>
-                                        </div>
-                                    </div>
-                                </div>                                 
-                            </div>
-                            <div class="row">
-                                <div class="row-height">
-                                    <div class="col-xs-14 col-md-14 col-md-height">
-                                        <div class="inside inside-full-height">                                         
-                                            <fieldset>
+                                            </fieldset>   
+                                        </tr>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td [ARTIKEL_HIDDEN]>
+                                            {|Letzte Seriennummer|}:
+                                        </td>
+                                        <td [LIEFERSCHEIN_HIDDEN]>
+                                            {|N&auml;chste Seriennummer|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="muster" id="muster" value="[LETZTE]" size="40" disabled />
+                                        </td>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Pr&auml;fix|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="praefix" id="praefix" value="[PRAEFIX]" size="40" />
+                                        </td>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Start|}:
+                                        </td>
+                                        <td>
+                                            <input type="number" name="start" id="start" value="[START]" size="40" />
+                                        </td>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Postfix|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="postfix" id="postfix" value="[POSTFIX]" size="40" />
+                                        </td>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Anzahl|}:
+                                        </td>
+                                        <td>
+                                            <input type="number" name="anzahl" id="anzahl" value="[ANZAHL]" size="40" />
+                                        </td>
+                                    </tr>      
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            <fieldset>                      
                                                 <legend>{|Gew&auml;hlte Seriennummern|}</legend>
-                                                <table width="100%" border="0" class="mkTableFormular"> 
-                                                    <tr>
-                                                        <td>
-                                                            {|Seriennummern|}:
-                                                        </td>
-                                                        <td>
-                                                            <textarea name="seriennummern" id="seriennummern" rows="20" style="width:100%;">[SERIENNUMMERN]</textarea>
-                                                            <i>Liste der Seriennummern, 1 pro Zeile</i>
-                                                        </td>
-                                                    </tr>    
-                                                </table>
-                                            </fieldset>                                                    
-                                        </div>
-                                    </div>
-                                </div>                                 
-                            </div>
+                                            </fieldset>   
+                                        </tr>
+                                    </tr>
+                                    <tr [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Seriennummern|}:
+                                        </td>
+                                        <td>
+                                            <textarea name="seriennummern" id="seriennummern" rows="20" style="width:100%;">[SERIENNUMMERN]</textarea>
+                                            <i>Liste der Seriennummern, 1 pro Zeile</i>
+                                        </td>
+                                    </tr>  
+                                </table>
+                            <fieldset>
                         </div>                                                
                     </div>                  
                     <div class="col-xs-14 col-md-2 col-md-height">
                         <div class="inside inside-full-height">                          
             				<fieldset>
                                 <legend>{|<!--Legend for this form area goes here>-->Aktionen|}</legend>
-                                <table width="100%" border="0" class="mkTableFormular">                                  
+                                <table width="100%" border="0" class="mkTableFormular" [EINGABE_HIDDEN]>                                  
                                     <tr>
                                         <td>
                                             <button name="submit" value="hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button>
@@ -179,7 +179,7 @@
                                             <button name="submit" value="einlagern" class="ui-button-icon" style="width:100%;">Einlagern</button>
                                         </td>
                                     </tr>
-                                    <tr>
+                                    <tr [LIEFERSCHEIN_HIDDEN]>
                                         <td>
                                             <button name="submit" value="lieferscheinzuordnen" class="ui-button-icon" style="width:100%;">Zuordnen</button>
                                         </td>
