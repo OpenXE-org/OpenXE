@@ -425,6 +425,8 @@ class Seriennummern {
     
                 $groupby = "GROUP BY lp.id";
 
+                $orderby = "ORDER BY lp.sort ASC";
+
 //                echo($sql." WHERE ".$where." ".$groupby);
 
                 break;
@@ -472,7 +474,7 @@ class Seriennummern {
     
     function seriennummern_delivery_note_check_and_message($lieferschein_id) {
                
-        $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id);
+        $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id, group_lieferschein: true);
         if (!empty($check_delivery_notes)) {
             $lieferschein_minus_links = array();
             $lieferschein_plus_links = array();                      
@@ -490,7 +492,7 @@ class Seriennummern {
             if (!empty($lieferschein_plus_links)) {
                 $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Lieferschein: '.implode(', ',$lieferschein_plus_links));                    
             }            
-        }     
+        }         
     } 
 
     function seriennummern_nummern_list() {
@@ -931,12 +933,21 @@ class Seriennummern {
     * Check if all delivery notes have serials
     * Return array of delivery note positions and head information
     */
-    public function seriennummern_check_delivery_notes($lieferschein_id = null, $ignore_date = false, $only_missing = true) : array {
+    public function seriennummern_check_delivery_notes($lieferschein_id = null, $ignore_date = false, $only_missing = true, $group_lieferschein = false) : array {
+
+        if ($group_lieferschein) {
+            $sql_lp = "''";
+            $sql_lp_group = "";
+        } else {
+            $sql_lp = "lp.id";
+            $sql_lp_group = ", lp.id";
+        }
+
         $sql = "
                 SELECT SQL_CALC_FOUND_ROWS
                     l.id lieferschein,
                     l.belegnr belegnr,
-                    lp.id lieferschein_position,
+                    $sql_lp lieferschein_position,
                     a.id artikel,
                     a.nummer artikel_nummer,
                     a.name_de,
@@ -971,12 +982,12 @@ class Seriennummern {
                     ) 
                     AND (l.id = '".$lieferschein_id."' OR '".$lieferschein_id."' = '')
                 GROUP BY
-                    l.id,
-                    lp.id          
+                    l.id
+                    $sql_lp_group
         ";
 
         if ($only_missing) {
-            $sql .= " HAVING menge_lieferschein > menge_nummern";
+            $sql .= " HAVING menge_lieferschein <> menge_nummern";
         }
 
         $result = $this->app->DB->SelectArr($sql);        
