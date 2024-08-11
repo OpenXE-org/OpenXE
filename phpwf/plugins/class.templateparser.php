@@ -616,7 +616,7 @@ class TemplateParser {
         }
       }
       
-      if(count($this->VARARRAY)>0)
+      if(!empty($this->VARARRAY))
         foreach($this->VARARRAY as $key=>$value)
         {
           if($key!="")

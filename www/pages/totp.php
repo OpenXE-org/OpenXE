@@ -104,7 +104,6 @@ class Totp
   {
     /** @var TOTPLoginService $totpLoginService */
     $totpLoginService = $this->app->Container->get('TOTPLoginService');
-
     if(!$totpLoginService->isTOTPEnabled($userID)){
       return;
     }
@@ -120,7 +119,7 @@ class Totp
 
     $secret = $tokenManager->generateBase32Secret();
 
-    $label = 'Xentral' . ' | ' . $this->app->erp->GetFirmaName();
+    $label = 'OpenXE' . ':' . $this->app->User->Getname();
 
     $qr = $totpLoginService->generatePairingQrCode($this->app->User->GetID(), $label, $secret);
 
