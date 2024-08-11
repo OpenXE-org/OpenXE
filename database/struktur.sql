@@ -17882,6 +17882,14 @@ INSERT INTO `hook_register`(
  ( 0, 'TOTPCheckLogin', 1, 1, (SELECT id FROM hook WHERE NAME = 'login_password_check_otp' LIMIT 1), 'totp', 0);
 /* OpenXE 2024-08-11 für TOTP */
 
+/* OpenXE 2024-08-11 für Smarty shopimport */
+INSERT INTO `hook` (`name`, `aktiv`, `parametercount`, `alias`, `description`) VALUES
+('ImportAuftragBefore', 1, 4, '', '');
+
+INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `hook`, `module`, `module_parameter`) VALUES
+(0, 'ImportAuftragBeforeHook', 1, 1, (SELECT id FROM hook WHERE name = 'ImportAuftragBefore' LIMIT 1), 'onlineshops', 0);
+/* OpenXE 2024-08-11 für Smarty shopimport */
+
 /*
 BelegPositionenButtons
 
