@@ -981,6 +981,7 @@ class Seriennummern {
                         ) OR ('".$ignore_date."' <> '')
                     ) 
                     AND (l.id = '".$lieferschein_id."' OR '".$lieferschein_id."' = '')
+                    AND l.belegnr <> ''
                 GROUP BY
                     l.id
                     $sql_lp_group
