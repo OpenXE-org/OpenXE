@@ -137,7 +137,7 @@
                                     <tr [EINGABE_HIDDEN]>
                                         <td>
                                             <fieldset>                      
-                                                <legend>{|Gew&auml;hlte Seriennummern|}</legend>
+                                                <legend>{|Liste der gew&auml;hlten Seriennummern|}</legend>
                                             </fieldset>   
                                         </tr>
                                     </tr>
@@ -161,7 +161,7 @@
                                 <table width="100%" border="0" class="mkTableFormular" [EINGABE_HIDDEN]>                                  
                                     <tr>
                                         <td>
-                                            <button name="submit" value="hinzufuegen" class="ui-button-icon" style="width:100%;">Hinzuf&uuml;gen</button>
+                                            <button name="submit" value="hinzufuegen" class="ui-button-icon" style="width:100%;">Zur Liste hinzuf&uuml;gen</button>
                                         </td>
                                     </tr>
                                     <tr>
@@ -176,12 +176,12 @@
                                     </tr>
                                     <tr [ARTIKEL_HIDDEN]>
                                         <td>
-                                            <button name="submit" value="einlagern" class="ui-button-icon" style="width:100%;">Einlagern</button>
+                                            <button name="submit" value="einlagern" class="ui-button-icon" style="width:100%;">Speichern</button>
                                         </td>
                                     </tr>
                                     <tr [LIEFERSCHEIN_HIDDEN]>
                                         <td>
-                                            <button name="submit" value="lieferscheinzuordnen" class="ui-button-icon" style="width:100%;">Zuordnen</button>
+                                            <button name="submit" value="lieferscheinzuordnen" class="ui-button-icon" style="width:100%;">Speichern</button>
                                         </td>
                                     </tr>
                                 </table>

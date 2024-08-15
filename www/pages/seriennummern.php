@@ -278,7 +278,7 @@ class Seriennummern {
                 $menu_link = array(
                     '<a href="index.php?module=seriennummern&action=enter&lieferschein=',
                     ['sql' => 'l.id'],
-                    '">',
+                    '&from=seriennummern">',
                     '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/edit.svg" title="Seriennummern erfassen" border="0">',
                     '</a>',    
                 );
@@ -599,6 +599,8 @@ class Seriennummern {
 
         $task = "";
 
+        $from = $this->app->Secure->GetGET('from');          
+
         $artikel_id = (int) $this->app->Secure->GetGET('artikel');
         if (!empty($artikel_id)) {
             $artikel = $this->app->DB->SelectRow("SELECT name_de, nummer FROM artikel WHERE id ='".$artikel_id."'");
@@ -614,7 +616,7 @@ class Seriennummern {
             $lieferschein = $this->app->DB->SelectRow("SELECT belegnr FROM lieferschein WHERE id ='".$lieferschein_id."'");
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT1','Erfassen');                
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2','Lieferschein '.$lieferschein['belegnr']);
-            $this->app->Tpl->SetText('LEGEND','Lieferschein '.$lieferschein['belegnr']);
+            $this->app->Tpl->SetText('LEGEND','Lieferschein <a href="index.php?module=lieferschein&action=edit&id='.$lieferschein_id.'">'.$lieferschein['belegnr'].'</a>', html: true);
             $task = "lieferschein";
         }
 
@@ -811,7 +813,16 @@ class Seriennummern {
                                                        
             break;
             case 'lieferschein':
-                $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=lieferscheine_list", "Zur&uuml;ck");
+
+                switch ($from) {
+                    case 'lieferschein':
+                        $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=".$lieferschein_id, "Zur&uuml;ck");
+                    break;
+                    case 'seriennummern':
+                        $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=lieferscheine_list", "Zur&uuml;ck");
+                    break;
+                }
+
                 $this->app->Tpl->Set('ARTIKEL_HIDDEN', "hidden");
                 $this->app->Tpl->Set('LIEFERSCHEINNUMMER', '<a href="index.php?module=lieferschein&action=edit&id='.$lieferschein_id.'">'.$lieferschein['belegnr'].'</a>');
 
@@ -1050,12 +1061,16 @@ class Seriennummern {
     }    
 
     /*
-    * Check if numbers need to be entered after stock removal, if yes, create notification
+    * Check if numbers need to be entered after stock removal, if yes, create notification or message
     */
-    public function seriennummern_check_and_message_delivery_note_removed(int $lieferschein_id) {
+    public function seriennummern_check_and_message_delivery_note(int $lieferschein_id, bool $notification) {
         $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id);
         if (!empty($check_delivery_notes)) {
-            $this->seriennummern_create_notification_lieferschein($lieferschein_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Lieferschein erfassen','Zur Eingabe');
+            if ($notificiation) {
+                $this->seriennummern_create_notification_lieferschein($lieferschein_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Lieferschein erfassen','Zur Eingabe');
+            } else {
+                $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Bitte Seriennummern erfassen <input type=\"button\" value=\"Jetzt erfassen\" onclick=\"window.location.href='index.php?module=seriennummern&action=enter&from=lieferschein&lieferschein=$lieferschein_id'\"></div>");
+            }
         }          
     }
 

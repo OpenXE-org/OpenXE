@@ -1727,9 +1727,6 @@ class Lieferschein extends GenLieferschein
     // $this->app->Tpl->Set(KURZUEBERSCHRIFT,"Lieferschein $belegnr");
     $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"$name Lieferschein $belegnr");
 
-
-
-
     //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Lieferscheindaten");
     //$this->app->Tpl->Add(TABS,"<li><a href=\"index.php?module=lieferschein&action=positionen&id=$id\">Positionen</a></li>");
 
@@ -1742,10 +1739,19 @@ class Lieferschein extends GenLieferschein
     }
 
     $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Details");
-    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
     //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=abschicken&id=$id","Abschicken / Protokoll");
     //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=protokoll&id=$id","Protokoll");
     $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=list","Zur&uuml;ck zur &Uuml;bersicht");
+
+    if (!empty($this->app->erp->SeriennummernCheckLieferschein(
+                lieferschein_id: $id,
+                ignore_date: true,
+                only_missing: false,
+                group_lieferschein: true))) {
+        $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=enter&lieferschein=".$id."&from=lieferschein", "Seriennummern");
+    }
+    
+    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
     
     $this->app->erp->RunMenuHook('lieferschein');
   }
@@ -1887,6 +1893,10 @@ class Lieferschein extends GenLieferschein
       $lieferantenretoure = $lieferscheinarr['lieferantenretoure'];//$this->app->DB->Select("SELECT lieferantenretoure FROM lieferschein WHERE id='$id' LIMIT 1");
       $schreibschutz = $lieferscheinarr['schreibschutz'];//$this->app->DB->Select("SELECT schreibschutz FROM lieferschein WHERE id='$id' LIMIT 1");
       $status = $lieferscheinarr['status'];//$this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
+
+      if ($status != 'angelegt' && $status != 'storniert') {
+          $this->app->erp->SeriennummernCheckLieferscheinWarnung($id, false);
+      }
     }else{
       $nummer = '';
       $projekt = 0;
