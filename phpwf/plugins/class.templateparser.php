@@ -365,9 +365,13 @@ class TemplateParser {
       echo '<br><br>';
     }
   }
-  function SetText($_var, $_value)
-  {
-    $this->VARARRAY[$_var]= $this->htmlspecialchars($_value);
+  function SetText($_var, $_value, $html = false)
+  {  
+    if(!$html)
+    {
+      $_value = $this->htmlspecialchars($_value);
+    }  
+    $this->VARARRAY[$_var]= $_value;
   }
 
   function AddText($_var,$_value, $variable = false){
