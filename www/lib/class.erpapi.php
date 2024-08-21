@@ -2828,7 +2828,7 @@ public function NavigationHooks(&$menu)
 
     function SeriennummernCheckLieferscheinWarnung(int $lieferschein_id, bool $notification) {
         $obj = $this->LoadModul('seriennummern');
-        $obj->seriennummern_check_and_message_delivery_note($lieferschein_id, $notification);
+        return($obj->seriennummern_check_and_message_delivery_note($lieferschein_id, $notification));
     }
 
     function SeriennummernCheckLieferschein($lieferschein_id = null, $ignore_date = false, $only_missing = true, $group_lieferschein = false) {

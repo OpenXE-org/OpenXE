@@ -645,12 +645,15 @@ class Lieferschein extends GenLieferschein
     $adresse = $this->app->DB->Select("SELECT adresse FROM lieferschein WHERE id='$id' LIMIT 1");
     $lieferantenretoure = $this->app->DB->Select("SELECT lieferantenretoure FROM lieferschein WHERE id='$id' LIMIT 1");
 
-    if($adresse > 0 && ($status=="angelegt" || $status==""))
-      $freigabe = "<option value=\"freigabe\">Lieferschein freigeben</option>";
+    if($adresse > 0 && ($status=="angelegt" || $status=="")) {
+        $freigabe = "<option value=\"freigabe\">Lieferschein freigeben</option>";
+    }
 
+    $seriennummern_check_result = $this->app->erp->SeriennummernCheckLieferschein(lieferschein_id: $id, ignore_date: true, only_missing: true, group_lieferschein: true);
 
-    if(($status=="versendet" || $status=="freigegeben") && $lieferantenretoure=="1")
-      $abschliessen = "<option value=\"abschliessen\">Lieferschein abschliessen</option>";
+    if(($status=="versendet" || $status=="freigegeben") && $lieferantenretoure=="1" && empty($seriennummern_check_result)) {
+        $abschliessen = "<option value=\"abschliessen\">Lieferschein abschliessen</option>";
+    }
 
     $checkifrgexists = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein='$id' LIMIT 1");
 
@@ -668,7 +671,6 @@ class Lieferschein extends GenLieferschein
     $hookcase = '';
     $this->app->erp->RunHook('Lieferschein_Aktion_option',3, $id, $status, $hookoption);
     $this->app->erp->RunHook('Lieferschein_Aktion_case',3, $id, $status, $hookcase);
-
     
     $bestellmengelagerartikel = $this->app->DB->Select("SELECT sum(lp.menge) as bestellmenge from lieferschein_position lp INNER JOIN artikel a on a.id=lp.artikel where a.lagerartikel=1 AND lp.lieferschein = '$id'");
     $liefermengelagerartikel = $this->app->DB->Select("SELECT sum(lp.geliefert) as liefermenge from lieferschein_position lp INNER JOIN artikel a on a.id=lp.artikel where a.lagerartikel=1 AND lp.lieferschein = '$id'");
@@ -695,18 +697,19 @@ class Lieferschein extends GenLieferschein
         }
 
         $optionumlagern = "<option value=\"umlagern\">Lieferschein umlagern</option>";
-        $abschicken = "<option value=\"abschicken\">Lieferschein abschicken</option>";
 
-       if($status!="angelegt" && $lieferantenretoure!="1")
-        {
-          $alsrechnung = "<option value=\"rechnung\">als Rechnung weiterf&uuml;hren</option>";
-          if($this->app->erp->RechteVorhanden('lieferschein', 'proformarechnung') && $this->app->erp->ModulVorhanden('proformarechnung'))
-          {
-            $alsrechnung .= "<option value=\"proformarechnung\">als Proformarechnung weiterf&uuml;hren</option>";
-          }
+        if (empty($seriennummern_check_result)) {
+            $abschicken = "<option value=\"abschicken\">Lieferschein abschicken</option>";
+            if($status!="angelegt" && $lieferantenretoure!="1")
+            {
+                $alsrechnung = "<option value=\"rechnung\">als Rechnung weiterf&uuml;hren</option>";
+                if($this->app->erp->RechteVorhanden('lieferschein', 'proformarechnung') && $this->app->erp->ModulVorhanden('proformarechnung'))
+                {
+                    $alsrechnung .= "<option value=\"proformarechnung\">als Proformarechnung weiterf&uuml;hren</option>";
+                }
+            }
         }
     }
-
 
     if($this->app->erp->RechteVorhanden('belegeimport', 'belegcsvexport'))
     { 
@@ -829,7 +832,6 @@ class Lieferschein extends GenLieferschein
       $lieferantenretoureinfo = $auftragArr[0]['lieferantenretoureinfo'];
     }
 
-
     $this->app->Tpl->Set('LIEFERANTENRETOUREINFO',$lieferantenretoureinfo);
 
     if($lieferantenretoure!='1') {
@@ -848,7 +850,6 @@ class Lieferschein extends GenLieferschein
     }
     $this->app->Tpl->Set('ZAHLWEISE',$auftragArr[0]['zahlungsweise']);
     $this->app->Tpl->Set('STATUS',$auftragArr[0]['status']);
-
 
     if($auftragArr[0]['auftragid'] > 0){
       $orderRow = $this->app->DB->SelectRow(
@@ -874,8 +875,7 @@ class Lieferschein extends GenLieferschein
     }else{
       $this->app->Tpl->Set('AUFTRAG','-');
     }
-
-    
+   
     if($auftragArr[0]['auftragid'] > 0){
       $rechnung = $this->app->DB->SelectArr(
         ($auftragArr[0]['auftragid']?
@@ -915,9 +915,7 @@ class Lieferschein extends GenLieferschein
           INNER JOIN lieferschein_position lp ON lp.id = s.lieferschein_position_id
           WHERE lp.lieferschein='$id'
           ");
-
       }
-
     }
 
     $crechnung = !empty($rechnung)?count($rechnung):0;
@@ -939,14 +937,13 @@ class Lieferschein extends GenLieferschein
     else
       $this->app->Tpl->Set('STEUER',"Export");
 
-
     if($menu)
     {
       $menu = $this->LieferscheinIconMenu($id);
       $this->app->Tpl->Set('MENU',$menu);
     }
-    // ARTIKEL
 
+    // ARTIKEL
     $lieferscheinarr = $this->app->DB->SelectRow("SELECT * FROM  lieferschein WHERE id='$id' LIMIT 1");
 
     $status = $lieferscheinarr['status'];//$this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
@@ -1312,8 +1309,6 @@ class Lieferschein extends GenLieferschein
     $this->LieferscheinMenu();
     $this->app->erp->DokumentAbschicken();
   }
-
-
 
   function LieferscheinDelete($id = null)
   {
@@ -1716,7 +1711,7 @@ class Lieferschein extends GenLieferschein
   }
 
 
-  function LieferscheinMenu()
+  function LieferscheinMenu($seriennummern_zeigen = false, $paketmarke_zeigen = false)
   {
     $id = $this->app->Secure->GetGET("id");
 
@@ -1733,26 +1728,22 @@ class Lieferschein extends GenLieferschein
     // status bestell
     $status = $this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
 
+    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Details");
+
     if ($status=="angelegt")
     {
-      $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=freigabe&id=$id","Freigabe");
+        $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=freigabe&id=$id","Freigabe");
+    } else {
+        if ($seriennummern_zeigen) {
+            $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=enter&lieferschein=".$id."&from=lieferschein", "Seriennummern");
+        }   
+        if ($paketmarke_zeigen) {
+            $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
+        }   
     }
 
-    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Details");
-    //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=abschicken&id=$id","Abschicken / Protokoll");
-    //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=protokoll&id=$id","Protokoll");
     $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=list","Zur&uuml;ck zur &Uuml;bersicht");
-
-    if (!empty($this->app->erp->SeriennummernCheckLieferschein(
-                lieferschein_id: $id,
-                ignore_date: true,
-                only_missing: false,
-                group_lieferschein: true))) {
-        $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=enter&lieferschein=".$id."&from=lieferschein", "Seriennummern");
-    }
-    
-    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
-    
+        
     $this->app->erp->RunMenuHook('lieferschein');
   }
 
@@ -1869,14 +1860,24 @@ class Lieferschein extends GenLieferschein
     if($this->app->erp->InnendienstAendern("lieferschein",$id,$cmd,$sid))
       return;
 
+
+    $seriennummern = $this->app->erp->SeriennummernCheckLieferschein(
+                lieferschein_id: $id,
+                ignore_date: true,
+                only_missing: false,
+                group_lieferschein: true);
+
+    $seriennummern_aktiv = !empty($seriennummern);
+
+    $seriennummern_check_result = $this->app->erp->SeriennummernCheckLieferscheinWarnung($id, false);
+
+    $seriennummern_ok = empty($seriennummern_check_result);
+
     if($this->app->erp->DisableModul("lieferschein",$id))
     {
-      //$this->app->erp->MenuEintrag("index.php?module=auftrag&action=list","Zur&uuml;ck zur &Uuml;bersicht");
-      $this->LieferscheinMenu();
+      $this->LieferscheinMenu(seriennummern_zeigen: !empty($seriennummern), paketmarke_zeigen: false);
       return;
     }
-
-
 
     $this->app->YUI->AARLGPositionen();
 
@@ -1893,10 +1894,6 @@ class Lieferschein extends GenLieferschein
       $lieferantenretoure = $lieferscheinarr['lieferantenretoure'];//$this->app->DB->Select("SELECT lieferantenretoure FROM lieferschein WHERE id='$id' LIMIT 1");
       $schreibschutz = $lieferscheinarr['schreibschutz'];//$this->app->DB->Select("SELECT schreibschutz FROM lieferschein WHERE id='$id' LIMIT 1");
       $status = $lieferscheinarr['status'];//$this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
-
-      if ($status != 'angelegt' && $status != 'storniert') {
-          $this->app->erp->SeriennummernCheckLieferscheinWarnung($id, false);
-      }
     }else{
       $nummer = '';
       $projekt = 0;
@@ -1958,20 +1955,19 @@ class Lieferschein extends GenLieferschein
       $this->app->erp->PDFArchivieren('lieferschein', $id, true);
     }
 
-    if($status != "angelegt" && $status != "angelegta" && $status != "a")
+    if($status != "angelegt" && $status != "angelegta" && $status != "a" && $seriennummern_ok)
     {
       $Brief = new Briefpapier($this->app);
-      if($Brief->zuArchivieren($id, "lieferschein"))
+      if ($Brief->zuArchivieren($id, "lieferschein"))
       {
-        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Der Lieferschein ist noch nicht archiviert! Bitte versenden oder manuell archivieren.
-<input type=\"button\" onclick=\"if(!confirm('Soll das Dokument archiviert werden?')) return false;else window.location.href='index.php?module=lieferschein&action=archivierepdf&id=$id';\" value=\"Manuell archivieren\" /> <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('lieferschein',$id)\"></div>");
-      }elseif(!$this->app->DB->Select("SELECT versendet FROM lieferschein WHERE id = '$id' LIMIT 1"))
+        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Der Lieferschein ist noch nicht archiviert! Bitte versenden oder manuell archivieren.<input type=\"button\" onclick=\"if(!confirm('Soll das Dokument archiviert werden?')) return false;else window.location.href='index.php?module=lieferschein&action=archivierepdf&id=$id';\" value=\"Manuell archivieren\" /> <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('lieferschein',$id)\"></div>");
+      } elseif(!$this->app->DB->Select("SELECT versendet FROM lieferschein WHERE id = '$id' LIMIT 1"))
       {
         $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Der Lieferschein wurde noch nicht versendet! <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('lieferschein',$id)\"></div>");
       }
     }
     
-    if($schreibschutz!="1")// && $this->app->erp->RechteVorhanden("lieferschein","schreibschutz"))
+    if($schreibschutz!="1")
     {
       $this->app->erp->AnsprechpartnerButton($adresse);
       $this->app->erp->LieferadresseButton($adresse);
@@ -1980,11 +1976,8 @@ class Lieferschein extends GenLieferschein
       $this->app->erp->LieferscheinNeuberechnen($id);
     }
 
-
-    //$this->LieferscheinMiniDetail(MINIDETAIL,false);
     $this->app->Tpl->Set('ICONMENU',$this->LieferscheinIconMenu($id));
-    $this->app->Tpl->Set('ICONMENU2',$this->LieferscheinIconMenu($id,2));
-
+    //$this->app->Tpl->Set('ICONMENU2',$this->LieferscheinIconMenu($id,2));
 
     if($nummer!="")
     {
@@ -1998,7 +1991,6 @@ class Lieferschein extends GenLieferschein
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden("lieferschein","schreibschutz"))
     {
       $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Dieser Lieferschein ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diesen Lieferschein wirklich entfernt werden?')) return false;else window.location.href='index.php?module=lieferschein&action=schreibschutz&id=$id';\"></div>");
-      //      $this->app->erp->CommonReadonly();
     }
     if($schreibschutz=="1")
       $this->app->erp->CommonReadonly();
@@ -2012,12 +2004,10 @@ class Lieferschein extends GenLieferschein
         <input type="button" value="&uuml;bernehmen" onclick="if(!confirm(\'Soll der neue Kunde wirklich &uuml;bernommen werden? Es werden alle Felder &uuml;berladen.\')) return false;else document.getElementById(\'uebernehmen\').value=1; document.getElementById(\'eprooform\').submit();"/><input type="hidden" id="uebernehmen" name="uebernehmen" value="0">
         ');
 
-
       $this->app->Tpl->Set('BUTTON_UEBERNEHMEN2', '
         <input type="button" value="&uuml;bernehmen" onclick="if(!confirm(\'Soll der neue Lieferant wirklich &uuml;bernommen werden? Es werden alle Felder &uuml;berladen.\')) return false;else document.getElementById(\'uebernehmen2\').value=1; document.getElementById(\'eprooform\').submit();"/><input type="hidden" id="uebernehmen2" name="uebernehmen2" value="0">
         ');
     }
-
 
     // immer wenn sich der lieferant genändert hat standartwerte setzen
     if($this->app->Secure->GetPOST("adresse")!="")
@@ -2053,9 +2043,7 @@ class Lieferschein extends GenLieferschein
         header("Location: index.php?module=lieferschein&action=edit&id=$id");
         exit;
       }
-
     }
-
 
     // easy table mit arbeitspaketen YUI als template 
     $table = new EasyTable($this->app);
@@ -2086,7 +2074,8 @@ class Lieferschein extends GenLieferschein
       header("Location: index.php?module=lieferschein&action=positionen&id=$id");
       exit;
     }
-    $this->LieferscheinMenu();
+
+    $this->LieferscheinMenu(seriennummern_zeigen: $seriennummern_aktiv, paketmarke_zeigen: $seriennummern_ok);
 
   }
 
@@ -2229,8 +2218,6 @@ class Lieferschein extends GenLieferschein
     $this->app->Tpl->Add('UEBERSCHRIFT'," (Dateien)");
     $this->app->YUI->DateiUpload('PAGE',"Lieferschein",$id);
   }
-
-
 
   function LieferscheinList()
   {

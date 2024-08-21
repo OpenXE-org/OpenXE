@@ -22,6 +22,7 @@ class Seriennummern {
         $this->app->ActionHandler("enter", "seriennummern_enter"); 
         $this->app->ActionHandler("delete", "seriennummern_delete");
         $this->app->ActionHandler("remove", "seriennummern_remove");
+        $this->app->ActionHandler("minidetail_lieferscheinposition", "seriennummern_lieferscheinpos_minidetail");
         $this->app->ActionHandler("minidetail", "seriennummern_minidetail");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -36,14 +37,14 @@ class Seriennummern {
             case "seriennummern_list":
                 $allowed['seriennummern_list'] = array('list');
 //                $heading = array('Artikel-Nr.','Artikel', 'Seriennummer','Erfasst am','Eingelagert','Adresse','Lieferschein','Lieferdatum', 'Men&uuml;');
-                $heading = array('Artikel-Nr.','Artikel', 'Seriennummer','Erfasst am','Eingelagert', 'Men&uuml;');
-                $width = array('10%','20%','20%','10%','1%','1%'); // Fill out manually later
+                $heading = array('','','Artikel-Nr.','Artikel', 'Seriennummer','Erfasst am','Eingelagert', 'Men&uuml;');
+                $width = array('1%','1%','10%','20%','20%','10%','1%','1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
 //                $findcols = array('a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','lh.adresse_name','lh.belegnr','lh.datum','s.id');
-                $findcols = array('a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','s.id');
+                $findcols = array('s.id','s.id','a.nummer', 'a.name_de', 's.seriennummer','s.datum','s.eingelagert','s.id');
                 $searchsql = array('a.nummer', 'a.name_de', 's.seriennummer');
 
                 $defaultorder = 1;
@@ -55,9 +56,9 @@ class Seriennummern {
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',s.id,'\" />') AS `auswahl`";
 
-//                $moreinfo = true; // Allow drop down details
+                $moreinfo = true; // Allow drop down details
 //                $moreinfoaction = "lieferschein"; // specify suffix for minidetail-URL to allow different minidetails
-//                $menucol = 11; // Set id col for moredata/menu
+                $menucol = 1; // Set id col for moredata/menu
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=seriennummern&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
@@ -84,6 +85,7 @@ class Seriennummern {
 
                 $sql_columns = "
                     s.id,
+                    $dropnbox,
                     CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                     a.name_de,
                     s.seriennummer,
@@ -369,7 +371,7 @@ class Seriennummern {
                 $searchsql = array('l.belegnr');
 
                 $moreinfo = true; // Allow drop down details
-//                $moreinfoaction = "lieferschein"; // specify suffix for minidetail-URL to allow different minidetails
+                $moreinfoaction = "_lieferscheinposition"; // specify suffix for minidetail-URL to allow different minidetails
                 $menucol = 1; // Set id col for moredata/menu
 
                 $defaultorder = 1;
@@ -380,7 +382,7 @@ class Seriennummern {
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',lp.id,'\" />') AS `auswahl`";
 
-                $menu = "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=seriennummern&action=remove&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>";
+                $menu = "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=seriennummern&action=remove&id=%value%&from=lieferschein\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>";
 
                 $lieferschein_link = array(
                     '<a href="index.php?module=lieferschein&action=edit&id=',
@@ -581,14 +583,28 @@ class Seriennummern {
     } 
 
     public function seriennummern_remove() {
-        $id = (int) $this->app->Secure->GetGET('id');     
+        $id = (int) $this->app->Secure->GetGET('id');
+        $from = $this->app->Secure->GetGET('from');
 
-        if ($id) {
-            if (!$this->app->DB->Delete("DELETE FROM `seriennummern_lieferschein_position` WHERE `lieferschein_position` = '{$id}'")) {
-                $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
-            }    
-            $lieferschein = $this->app->DB->Select("SELECT lieferschein FROM lieferschein_position WHERE id = '".$id."'");
-            $this->app->Location->execute("index.php?module=seriennummern&action=enter&lieferschein=$lieferschein&msg=$msg");
+        if ($id) {       
+            $sql = "SELECT l.id, l.schreibschutz FROM lieferschein l INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein WHERE lp.id = '".$id."' LIMIT 1";
+            $lieferschein = $this->app->DB->SelectRow($sql);
+            if ($lieferschein['schreibschutz']) {
+                $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Lieferschein ist schreibgesch&uuml;tzt.</div>");                
+            } else {
+                $sql = "SELECT seriennummer FROM seriennummern_lieferschein_position WHERE `lieferschein_position` = '{$id}'";                
+                $seriennummer_ids = $this->app->DB->SelectArr($sql); 
+                if (!$this->app->DB->Delete("DELETE FROM `seriennummern_lieferschein_position` WHERE `lieferschein_position` = '{$id}'")) {
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Eintr&auml;ge wurden nicht gel&ouml;scht!</div>");
+                } else {               
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Die Eintr&auml;ge wurden gel&ouml;scht.</div>");                
+                    if (!empty($seriennummer_ids)) {
+                        $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE id IN (".implode(', ',array_column($seriennummer_ids, 'seriennummer')).")";
+                        $this->app->DB->Update($sql);                       
+                    }
+                }
+            }         
+            $this->app->Location->execute("index.php?module=seriennummern&action=enter&lieferschein=".$lieferschein['id']."&msg=$msg&from=$from");
         }        
     } 
 
@@ -746,22 +762,20 @@ class Seriennummern {
                                 }                                 
                                 if ($lieferschein_position == $position['lieferschein_position']) {
                                     $sql = "INSERT INTO seriennummern_lieferschein_position (lieferschein_position, seriennummer) VALUES ('".$lieferschein_position."','".$check_existing[0]['id']."') ";
-
                                     $this->app->DB->Insert($sql);
+                                    $sql = "UPDATE seriennummern SET eingelagert = 0, logdatei = CURRENT_TIMESTAMP WHERE id = '".$check_existing[0]['id']."'";
+                                    $this->app->DB->Update($sql);
                                     $written = true;
                                 }
                             }
                         }
-
                         if (!$written) {
                             $seriennummern_not_written[] = $seriennummer;
                         }
-
                     }
-
                 }                              
                 if (!empty($seriennummern_dont_exist)) {
-                    $this->app->Tpl->addMessage('error', 'Seriennummern existieren nicht: '.implode(', ',$seriennummern_dont_exist));          
+                    $this->app->Tpl->addMessage('error', 'Seriennummern nicht verf&uuml;gbar: '.implode(', ',$seriennummern_dont_exist));          
                 }
                 if (!empty($seriennummern_ambigious)) {
                     $this->app->Tpl->addMessage('error', 'Seriennummern nicht eindeutig: '.implode(', ',$seriennummern_ambigious));          
@@ -853,12 +867,9 @@ class Seriennummern {
                         DISTINCT s.seriennummer
                     FROM
                         seriennummern s
-                    LEFT JOIN
-                        seriennummern_lieferschein_position slp ON slp.seriennummer = s.id
                     WHERE
                         s.artikel = '".$check_lieferschein[0]['artikel']."'
                         AND s.eingelagert = 1                        
-                        AND slp.id IS NULL
                     ORDER BY s.id ASC
                     LIMIT 1
                 ";       
@@ -1069,12 +1080,13 @@ class Seriennummern {
             if ($notificiation) {
                 $this->seriennummern_create_notification_lieferschein($lieferschein_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Lieferschein erfassen','Zur Eingabe');
             } else {
-                $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Bitte Seriennummern erfassen <input type=\"button\" value=\"Jetzt erfassen\" onclick=\"window.location.href='index.php?module=seriennummern&action=enter&from=lieferschein&lieferschein=$lieferschein_id'\"></div>");
+                $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Seriennummern unvollst&auml;ndig!<input type=\"button\" value=\"Jetzt erfassen\" onclick=\"window.location.href='index.php?module=seriennummern&action=enter&from=lieferschein&lieferschein=$lieferschein_id'\"></div>");
             }
         }          
+        return($check_delivery_notes);
     }
 
-    public function seriennummern_minidetail($parsetarget='',$menu=true) {
+    public function seriennummern_lieferscheinpos_minidetail($parsetarget='',$menu=true) {
         $id = $this->app->Secure->GetGET('id');
 
         if($parsetarget=='')
@@ -1087,4 +1099,18 @@ class Seriennummern {
             $this->app->ExitXentral();
         }   
     }
+    
+    public function seriennummern_minidetail($parsetarget='',$menu=true) {
+        $id = $this->app->Secure->GetGET('id');
+
+        if($parsetarget=='')
+        {
+            $tmp = new EasyTable($this->app);
+            $tmp->Query("SELECT l.belegnr AS Lieferschein, ".$this->app->erp->FormatDate('l.datum')." AS Datum, a.name AS Adresse FROM lieferschein l INNER JOIN adresse a ON a.id = l.adresse INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein INNER JOIN seriennummern_lieferschein_position slp ON slp.lieferschein_position = lp.id WHERE slp.seriennummer ='$id' ",0,"");
+            $tmp->DisplayNew('TAB1',"Adresse","noAction");
+
+            $this->app->Tpl->Output('emptytab.tpl');
+            $this->app->ExitXentral();
+        }   
+    }        
 }
