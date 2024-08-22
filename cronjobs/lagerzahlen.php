@@ -139,8 +139,8 @@ foreach ($lagerartikel as $articleCounter => $articleId) {
         $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: lagerzahlen-Job kann nicht geladen werden");
         return;
     }
-    $app->erp->LogFile("Lagerzahlen-Synchronisation: Warte 10 Sekunden");
-    usleep(10000);
+//    $app->erp->LogFile("Lagerzahlen-Synchronisation: Warte 10 Sekunden");
+//    usleep(10000);
 }
 $app->DB->Update(
     "UPDATE `prozessstarter` 
