@@ -14,17 +14,17 @@ class Shipment
     public int $id;
 
     /**
-     * @var string plain tracking number
+     * @var ?string plain tracking number
      */
-    public string $trackingNumber;
+    public ?string $trackingNumber;
 
     /**
-     * @var string URL to view tracking details
+     * @var ?string URL to view tracking details
      */
-    public string $trackingUrl;
+    public ?string $trackingUrl;
 
     /**
-     * @var string shipping method (after mapping to Shop domain)
+     * @var ?string shipping method (after mapping to Shop domain)
      */
-    public string $shippingMethod;
+    public ?string $shippingMethod;
 }
