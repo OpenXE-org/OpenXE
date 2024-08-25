@@ -1756,6 +1756,7 @@ class Verbindlichkeit {
             $betrag_brutto_pos_summe = 0;
             $steuer_normal = 0;
             $steuer_ermaessigt = 0;
+            $betrag_brutto_alternativ = 0;
 
             /*
                 Normal: umsatzsteuer leer, steuersatz = leer
@@ -1763,6 +1764,9 @@ class Verbindlichkeit {
                 Befreit: umsatzsteuer befreit, steursatz = -1
                 Individuell: umsatzsteuer leer, steuersatz = wert
             */
+            
+            $betrag_brutto_pro_steuersatz = array();
+            
             foreach ($positionen as $position) {
 
                 $tmpsteuersatz = null;
@@ -1775,23 +1779,31 @@ class Verbindlichkeit {
                 $position['steuertext_berechnet'] = $tmpsteuertext;
                 $position['steuererloes_berechnet'] = $erloes;
 
-                $betrag_netto += ($position['menge']*$position['preis']);
-                $betrag_brutto += ($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100));
-                $betrag_brutto_pos_summe += round(($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100)),2);
+                $betrag_netto_pos = ($position['menge']*$position['preis']);
+                $betrag_netto += $betrag_netto_pos;
+                $betrag_brutto_pos = ($position['menge']*$position['preis'])*(1+($tmpsteuersatz/100));
+                $betrag_brutto += $betrag_brutto_pos;
+                $betrag_brutto_pos_summe += round($betrag_brutto_pos,2);
+                $betrag_netto_pro_steuersatz[$tmpsteuersatz] += round($betrag_netto_pos,2);
 
             }
 
             $result['betrag_netto'] = round($betrag_netto,2);
             $result['betrag_brutto'] = round($betrag_brutto,2);
 
+            foreach ($betrag_netto_pro_steuersatz as $steuersatz => $betrag_netto) {
+                $betrag_brutto_alternativ += round($betrag_netto*(1+($steuersatz/100)),2);
+            }
+            
             if ($bruttobetrag_verbindlichkeit == round($betrag_brutto,2)) {
                 $result['pos_ok'] = true;
             }
             else if (round($bruttobetrag_verbindlichkeit,2) == round($betrag_brutto_pos_summe,2)) {
                 $result['pos_ok'] = true;
-                if (round($bruttobetrag_verbindlichkeit,2) != round($betrag_brutto_pos_summe,2)) {
-                    $result['rundungsdifferenz'] = round(round($betrag_brutto,2) - $betrag_brutto_pos_summe,2);
-                }
+                $result['rundungsdifferenz'] = round($bruttobetrag_verbindlichkeit-$result['betrag_brutto'],2);
+            } else if (round($bruttobetrag_verbindlichkeit,2) == $betrag_brutto_alternativ) {
+                $result['pos_ok'] = true;
+                $result['rundungsdifferenz'] = round($bruttobetrag_verbindlichkeit-$result['betrag_brutto'],2);
             }
         }
 
