@@ -1088,6 +1088,7 @@ class Remote {
         $this->logger->debug(
                 'RemoteSendArticleList',
                 [
+                    'shop' => $id,
                     'artikel_arr' => $artikel_arr
                 ]
         );
