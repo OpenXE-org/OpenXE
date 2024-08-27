@@ -16624,9 +16624,10 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       $check = $this->app->DB->Select("SELECT $key FROM adresse WHERE id='$adresse' LIMIT 1");
       if($check!=${$key})
       {
-        $this->app->DB->Update("UPDATE adresse SET $key='".${$key}."' WHERE id='$adresse' LIMIT 1");
+        $val = $this->app->DB->real_escape_string(${$key});
+        $this->app->DB->Update("UPDATE adresse SET $key='$val' WHERE id='$adresse' LIMIT 1");
         $logfile = $this->app->DB->Select("SELECT `logfile` FROM adresse WHERE id='$adresse' LIMIT 1");
-        $this->app->DB->Update("UPDATE adresse SET `logfile`='".$logfile." Update Feld $key alt:$check neu:".${$key}.";' WHERE id='$adresse' LIMIT 1");
+        $this->app->DB->Update("UPDATE adresse SET `logfile`='".$logfile." Update Feld $key alt:$check neu:".$val.";' WHERE id='$adresse' LIMIT 1");
       }
 
     }
