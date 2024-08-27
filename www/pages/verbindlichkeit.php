@@ -1062,13 +1062,15 @@ class Verbindlichkeit {
 
         if (empty($verbindlichkeit_from_db['freigabe'])) {
             $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_paketdistribution_list', "show", "", "", basename(__FILE__), __CLASS__);
-        } else {
+        }
+
+        if (!empty($verbindlichkeit_from_db)) {
             // -- POSITIONEN
             $this->app->YUI->AutoComplete("positionen_sachkonto", "sachkonto", 1);
             $this->app->YUI->TableSearch('POSITIONEN', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
             $this->app->Tpl->Parse('POSITIONENTAB', "verbindlichkeit_positionen.tpl");
             // -- POSITIONEN
-            
+
             $this->verbindlichkeit_minidetail('MINIDETAIL',false);
         }
 
