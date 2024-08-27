@@ -603,13 +603,13 @@ class Verbindlichkeit {
                     $input['skontobis'] = $this->app->erp->ReplaceDatum(true,$input['skontobis'],true); // Parameters: Target db?, value, from form?
                     $input['zahlbarbis'] = $this->app->erp->ReplaceDatum(true,$input['zahlbarbis'],true); // Parameters: Target db?, value, from form?
 
-                    if(!empty($input['zahlbarbis_tage'])) {
+                    if($input['zahlbarbis_tage'] != '') {
                         $zahlbarbis = date_create_from_format('Y-m-d', $input['rechnungsdatum']);
                         date_add($zahlbarbis,date_interval_create_from_date_string($input['zahlbarbis_tage']." days"));
                         $input['zahlbarbis'] = date_format($zahlbarbis, 'Y-m-d');
                     }
                     unset($input['zahlbarbis_tage']);
-                    if(!empty($input['skontobis_tage'])) {
+                    if($input['skontobis_tage'] != '') {
                         $skontobis = date_create_from_format('Y-m-d', $input['rechnungsdatum']);
                         date_add($skontobis,date_interval_create_from_date_string($input['skontobis_tage']." days"));
                         $input['skontobis'] = date_format($skontobis, 'Y-m-d');
@@ -1032,6 +1032,7 @@ class Verbindlichkeit {
 	    $icons = $this->app->DB->SelectArr($sql);
         $this->app->Tpl->Add('STATUSICONS',  $icons[0]['icons']);
 
+        $this->app->YUI->DatePicker("rechnungsdatum");
         $this->app->YUI->AutoComplete("adresse", "lieferant");
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$verbindlichkeit_from_db['projekt'],false));
@@ -1063,13 +1064,16 @@ class Verbindlichkeit {
             $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_paketdistribution_list', "show", "", "", basename(__FILE__), __CLASS__);
         }
 
-        // -- POSITIONEN
-        $this->app->YUI->AutoComplete("positionen_sachkonto", "sachkonto", 1);
-        $this->app->YUI->TableSearch('POSITIONEN', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
-        $this->app->Tpl->Parse('POSITIONENTAB', "verbindlichkeit_positionen.tpl");
-        // -- POSITIONEN
+        if (!empty($verbindlichkeit_from_db)) {
+            // -- POSITIONEN
+            $this->app->YUI->AutoComplete("positionen_sachkonto", "sachkonto", 1);
+            $this->app->YUI->TableSearch('POSITIONEN', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
+            $this->app->Tpl->Parse('POSITIONENTAB', "verbindlichkeit_positionen.tpl");
+            // -- POSITIONEN
 
-        $this->verbindlichkeit_minidetail('MINIDETAIL',false);
+            $this->verbindlichkeit_minidetail('MINIDETAIL',false);
+        }
+
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_edit.tpl");
 
     }
