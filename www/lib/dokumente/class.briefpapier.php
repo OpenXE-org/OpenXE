@@ -3525,7 +3525,7 @@ class Briefpapier extends SuperFPDF {
         ($this->doctype == "gutschrift" && $this->getStyleElement("gutschrift_artikelbild")) ||
         ($this->doctype == "angebot" && $this->getStyleElement("angebot_artikelbild"))
       ){
-        $datei = $this->app->DB->Select("SELECT datei FROM `datei_stichwoerter` WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='" . $item['artikel'] . "' ORDER by sort ASC LIMIT 1");
+        $datei = $this->app->erp->GetArtikelStandardbild($item['artikel'],true);
         if(!empty($datei)){
           $datei = $this->app->DB->Select("SELECT id FROM datei_version WHERE datei = '$datei' ORDER BY id DESC LIMIT 1");
         }

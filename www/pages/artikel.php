@@ -8432,7 +8432,7 @@ padding: 10px;\">
         FROM `datei_stichwoerter` AS `ds`
         INNER JOIN `datei_version` AS `dv` ON dv.datei = ds.datei
         INNER JOIN `datei` AS `d` ON dv.datei = d.id AND IFNULL(d.geloescht, 0) = 0
-        WHERE ds.objekt LIKE 'artikel' AND ds.parameter = '%d'
+        WHERE ds.objekt LIKE 'artikel' AND ds.parameter = '%d' AND d.geloescht = 0
               AND
               (
                   ds.subjekt like 'Shopbild' 

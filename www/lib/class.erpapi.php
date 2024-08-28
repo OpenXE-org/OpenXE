@@ -37437,7 +37437,8 @@ function Firmendaten($field,$projekt="")
            SELECT dv.datei AS datei 
            FROM datei_stichwoerter AS ds 
            JOIN (SELECT datei, MAX(id) AS id FROM datei_version GROUP BY datei) AS dv ON dv.datei = ds.datei
-           WHERE ds.objekt LIKE 'Artikel' AND 
+           JOIN datei AS d on ds.datei = d.id
+           WHERE ds.objekt LIKE 'Artikel' AND d.geloescht = 0
             ds.parameter = '%d' AND 
              (ds.subjekt LIKE 'Shopbild' OR ds.subjekt LIKE 'Druckbild' OR ds.subjekt LIKE 'Bild') 
            ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC, ds.sort
