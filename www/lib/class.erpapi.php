@@ -17727,6 +17727,9 @@ function CheckShopTabelle($artikel)
   if($doctype === 'angebot'){
     $this->app->DB->Update("UPDATE angebot SET anfrage = '".$this->app->DB->real_escape_string($warenkorb['onlinebestellnummer'])."' WHERE id = '$auftrag' LIMIT 1");
   }
+  if($doctype === 'auftrag'){
+    $this->app->DB->Update("UPDATE auftrag SET ihrebestellnummer = '".$this->app->DB->real_escape_string($warenkorb['ihrebestellnummer'])."' WHERE id = '$auftrag' LIMIT 1");
+  }
 
   $this->app->DB->Update("UPDATE $doctype SET
       belegnr='$belegnr',

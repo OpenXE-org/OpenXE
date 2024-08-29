@@ -522,9 +522,9 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
             $cart['lieferadresse_name'] = ($order->customer->shipping_address->civility?$order->customer->shipping_address->civility." ":"").$order->customer->shipping_address->firstname." ".$order->customer->shipping_address->lastname;
 
-            if (!empty(strval($order->customer->shipping_address->company))) {
+            if (!empty($order->customer->shipping_address->company)) {
               $cart['lieferadresse_ansprechpartner'] = $cart['lieferadresse_name'];
-              $cart['lieferadresse_name'] = strval($deliveryAddress->company);
+              $cart['lieferadresse_name'] = strval($order->customer->shipping_address->company);
             }
 
             $cart['lieferadresse_strasse'] = strval($order->customer->shipping_address->street_1);
@@ -532,6 +532,16 @@ class Shopimporter_Mirakl extends ShopimporterBase {
             $cart['lieferadresse_telefon'] = strval($order->customer->shipping_address->phone);
             $cart['lieferadresse_plz'] = strval($order->customer->shipping_address->zip_code);
             $cart['lieferadresse_ort'] = strval($order->customer->shipping_address->city);
+            
+            $cart['internebemerkung'] = strval($order->customer->shipping_address->additional_info);
+            
+            if (is_array($order->order_additional_fields)) {
+                $order_reference = array_search('customer-order-reference',array_column($order->order_additional_fields,'code'));
+                
+                if ($order_reference !== false) {
+                    $cart['ihrebestellnummer'] .= $order->order_additional_fields[$order_reference]->value;
+                }
+            }
 
             $cart['zahlungsweise'] = strval($order->payment_type);
 
@@ -544,7 +554,6 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
             $cart['articlelist'] = [];            
             
-
             $shipping_tax_amount = 0;
 
             foreach ($order->order_lines as $order_row) {
