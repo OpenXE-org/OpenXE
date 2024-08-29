@@ -31278,15 +31278,15 @@ function Firmendaten($field,$projekt="")
           $variante_von = $this->app->DB->Select("SELECT variante_von FROM artikel WHERE id = '$artikel' LIMIT 1");
           if($variante_von)$beschreibung = $this->app->DB->real_escape_string($this->app->DB->Select("SELECT anabregs_text FROM artikel WHERE id='$variante_von' LIMIT 1"));
         }
-        if($this->ModulVorhanden('artikel_texte')){
-          if(array_key_exists($belegsprache,$adresssprachen)){
+
+        if(array_key_exists($belegsprache,$adresssprachen)){
             $belegsprache = $adresssprachen[$belegsprache];
-          }
-          $artikelbeschreibung = $this->app->DB->Select("SELECT beschreibung FROM artikel_texte WHERE artikel=$artikel AND sprache='$belegsprache'");
-          if($artikelbeschreibung){
-            $beschreibung = $artikelbeschreibung;
-          }
         }
+        $artikelbeschreibung = $this->app->DB->Select("SELECT beschreibung FROM artikel_texte WHERE artikel=$artikel AND sprache='$belegsprache'");
+        if($artikelbeschreibung){
+            $beschreibung = $artikelbeschreibung;
+        }
+
       }
       //$vpe = $this->app->DB->Select("SELECT vpe FROM verkaufspreise WHERE id='$verkauf' LIMIT 1");
       $sort = $this->app->DB->Select("SELECT MAX(sort) FROM ".$typ."_position WHERE $typ='$id' LIMIT 1");
@@ -31301,20 +31301,19 @@ function Firmendaten($field,$projekt="")
         if($this->app->DB->Select("SELECT adr.id FROM auftrag auf INNER JOIN adresse adr ON auf.adresse = adr.id AND adr.sprache = 'englisch' WHERE auf.id = '$id' LIMIT 1"))
           $name = $this->app->DB->Select("SELECT name_en FROM artikel WHERE id = '$artikel'");
         if($name === '')$name = $this->app->DB->Select("SELECT name_de FROM artikel WHERE id = '$artikel'");
-        if($this->ModulVorhanden('artikel_texte')){
-          if(array_key_exists($belegsprache,$adresssprachen)){
+
+        if(array_key_exists($belegsprache,$adresssprachen)){
             $belegsprache = $adresssprachen[$belegsprache];
-          }
-          $artikelbezeichnung = $this->app->DB->Select(
+        }
+        $artikelbezeichnung = $this->app->DB->Select(
             "SELECT name 
             FROM artikel_texte 
             WHERE artikel=$artikel AND sprache='$belegsprache' 
             ORDER BY name <> '' DESC 
             LIMIT 1"
-          );
-          if($artikelbezeichnung){
+        );
+        if($artikelbezeichnung){
             $name = $artikelbezeichnung;
-          }
         }
       }
 
@@ -38106,7 +38105,7 @@ function Firmendaten($field,$projekt="")
         $sql_erweiterung = '';
         if(!empty($gruppenarr))
         {
-          $sql_erweiterung .= ' OR v.gruppe IN ('.implode(' ', $gruppenarr).') ';
+          $sql_erweiterung .= ' OR v.gruppe IN ('.implode(', ', $gruppenarr).') ';
         }
         if(!$guenstigste_vk) {
           $vkarr = $this->app->DB->SelectArr("SELECT * FROM verkaufspreise v WHERE v.ab_menge <= '$menge' AND

@@ -62,6 +62,9 @@ abstract class Versanddienstleister
       $auftragId = $this->app->DB->Select("SELECT auftragid FROM rechnung WHERE id=$rechnungId LIMIT 1");
 
     if ($sid === 'rechnung' || $sid === 'lieferschein' || $sid === 'adresse') {
+    
+      $ret['addresstype'] = 0; // 0 = firma, 1 = packstation, 2 = postfiliale, 3 = privatadresse
+    
       $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $id LIMIT 1");
       $ret['addressId'] = $docArr['adresse'];
       $ret['auftragId'] = $auftragId;
@@ -73,12 +76,28 @@ abstract class Versanddienstleister
 
       $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
 
-      $ret['name'] = empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : trim($docArr['ansprechpartner']);
-      $ret['name2'] = !empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : '';
-      $ret['name3'] = join(';', array_filter([
-          $docArr['abteilung'],
-          $docArr['unterabteilung']
-      ], fn(string $item) => !empty(trim($item))));
+      if ($docArr['typ'] == "firma") {
+        $ret['company_name'] = $docArr['name'];
+        $ret['addresstype'] = 0;
+      } else {
+        $ret['addresstype'] = 3;
+      }
+
+      $ret['contact_name'] = $docArr['ansprechpartner'];
+      
+      $ret['company_division'] = join(
+                        ';', 
+                        array_filter(
+                            [
+                                $docArr['abteilung'],
+                                $docArr['unterabteilung']
+                            ],
+                            fn(string $item) => !empty(trim($item))
+                        )
+                    );
+            
+      $ret['name'] = $docArr['name'];    
+      
       $ret['address2'] = $docArr['adresszusatz'];
 
       $ret['city'] = $docArr['ort'];
@@ -86,7 +105,6 @@ abstract class Versanddienstleister
       $ret['country'] = $docArr['land'];
       $ret['phone'] = $docArr['telefon'];
       $ret['email'] = $docArr['email'];
-      $ret['addresstype'] = 0;
 
       $strasse = trim($docArr['strasse']);
       $ret['streetwithnumber'] = $strasse;

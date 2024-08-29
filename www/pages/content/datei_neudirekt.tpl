@@ -11,7 +11,7 @@
   								<td colspan="4">[ERROR]</td>
   							</tr>
   							<tr id="trdropfiles">
-    							<td colspan="4">	
+    							<td colspan="6">	
     								<div id="drop-files" ondragover="return false">
 											{|Dateien hier einf&uuml;gen|}
     								</div>
@@ -333,8 +333,8 @@ $(document).ready(function() {
                 }
             }
 
-            $('#trdatei').before('<tr><td>Datei '+vorschau+'</td><td class="tddateiname"><input type="hidden" name="dateiv[]" value="'+image+'" /><input type="hidden" name="dateiname[]" value="'+filenameEncoded+'" />'+filenameEncoded+'</td><td>Titel: <input type="text" name="dateititel[]" /></td><td><select name="dateistichwort[]">'+$('#stichwort').html()+'</select></td></tr>');
-					}; 
+            $('#trdatei').before('                <tr>                    <td>Datei '+vorschau+'</td>                    <td class="tddateiname"><input type="hidden" name="dateiv[]" value="'+image+'" /><input type="hidden" name="dateiname[]" value="'+filenameEncoded+'" />'+filenameEncoded+'</td>                    <td>Titel: <input type="text" name="dateititel[]" /></td>    				<td>{|Beschreibung|}:</td>                    <td><textarea name="dateibeschreibung[]" cols="50"></textarea></td>                    <td><select name="dateistichwort[]">'+$('#stichwort').html()+'</select></td>                </tr>            ');
+			}; 
 					
 				})(files[index]);
       fileReader.readAsDataURL(file);

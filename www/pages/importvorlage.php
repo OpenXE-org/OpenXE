@@ -3990,7 +3990,6 @@ class Importvorlage extends GenImportvorlage {
 
           if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){
             //Sprachen
-            if($this->app->erp->ModulVorhanden('artikel_texte')){
               $erlaubtefelder= array('name','kurztext','beschreibung','beschreibung_online','meta_title',
                 'meta_description','meta_keywords','katalog_bezeichnung','katalog_text','katalogartikel','shop','aktiv');
               $zuImportierendeSprachen = [];
@@ -4066,8 +4065,7 @@ class Importvorlage extends GenImportvorlage {
                     }
                   }
                 }
-              }
-            }
+            } // Sprachen            
 
             //freifelduebersetzungen
             foreach ($tmp as $feldname => $feldwerte) {

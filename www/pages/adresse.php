@@ -780,7 +780,7 @@ class Adresse extends GenAdresse {
     }
 
     $Brief->GetAdressstammblatt($id);
-    $Brief->displayDocument();
+    $Brief->displayDocument(archive: false);
     $this->app->ExitXentral();
   }
 

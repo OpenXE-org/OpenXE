@@ -80,6 +80,7 @@ class Exportbuchhaltung
         $lgchecked = $this->app->Secure->GetPOST("lieferantengutschrift");
         $diffignore = $this->app->Secure->GetPOST("diffignore");
 		$sachkonto = $this->app->Secure->GetPOST('sachkonto');
+        $format = $this->app->Secure->GetPOST('format');
 			
 		$account_id = null;
 		if (!empty($sachkonto)) {
@@ -162,7 +163,7 @@ class Exportbuchhaltung
             if ($dataok) {
                 $filename = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
                 try {
-                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $lgchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename, $diffignore, $sachkonto_kennung);                   
+                    $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $lgchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename, $diffignore, $sachkonto_kennung, $format);                   
                     header("Content-Disposition: attachment; filename=" . $filename);
                     header("Pragma: no-cache");
                     header("Expires: 0");
@@ -214,9 +215,10 @@ class Exportbuchhaltung
 
     /*
     * Create DATEV Buchhungsstapel
+    * format: "ISO-8859-1", "UTF-8", "UTF-8-BOM"
     * @throws ConsistencyException with string (list of items) if consistency check fails and no sachkonto for differences is given 
     */      
-    function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, bool $lieferantengutschrift, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences) : string {            
+    function DATEV_Buchuchungsstapel(bool $rechnung, bool $gutschrift, bool $verbindlichkeit, bool $lieferantengutschrift, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, int $projekt = 0, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences, string $format = "ISO-8859-1") : string {            
 
         $datev_header_definition = array (
             '1' => 'Kennzeichen',
@@ -671,7 +673,17 @@ class Exportbuchhaltung
 
         $csv .= '"0";"S";"EUR";"0";"";"";"1234";"1370";"";"101";"";"";"";"Testbuchung";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"0";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";"";""'; // Testbuchung
 
-        $csv = mb_convert_encoding($csv, "ISO-8859-1", "UTF-8");
+        switch ($format) {
+            case "UTF-8":
+            break;
+            case "UTF-8-BOM":
+                $csv = "\xef\xbb\xbf".$csv;
+            break;
+            default:
+                $csv = mb_convert_encoding($csv, "ISO-8859-1", "UTF-8");
+            break;
+        }
+
         return($csv);
     } 
     
