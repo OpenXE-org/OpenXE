@@ -30,6 +30,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
     private $configuration_identifier;
 
     private $mirakl_error_text_product_missing;
+    private $configuration_order_fetch_status;
 
     private $normalTaxId;
     private $reducedTaxId;
@@ -91,6 +92,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
                     'size' => 40,
                     'info' => 'Der Fehlertext der anzeigt dass das Produkt nicht existiert (Angebotsimport, Fehlerbericht)',
                     'default' => 'The product does not exist'
+                ],
+                'configuration_order_fetch_status' => [
+                    'typ' => 'text',
+                    'bezeichnung' => '{|Status f&uuml;r abzuholende Auftr&auml;ge|}:',
+                    'size' => 40,
+                    'info' => 'STAGING, WAITING_ACCEPTANCE, WAITING_DEBIT, WAITING_DEBIT_PAYMENT, SHIPPING, SHIPPED, TO_COLLECT, RECEIVED, CLOSED, REFUSED, CANCELED',
+                    'default' => 'WAITING_ACCEPTANCE'
                 ],
                 'normalTaxId' => [
                     'typ' => 'text',
@@ -182,6 +190,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
         $this->configuration_identifier = array($einstellungen['felder']['configuration_identifier_source'] => $einstellungen['felder']['configuration_identifier_source_value']);
 
         $this->mirakl_error_text_product_missing = $einstellungen['felder']['mirakl_error_text_product_missing'];
+        $this->configuration_order_fetch_status = $einstellungen['felder']['configuration_order_fetch_status'];
 
         $this->normalTaxId = $einstellungen['felder']['normalTaxId'];
         $this->reducedTaxId = $einstellungen['felder']['reducedTaxId'];
@@ -450,7 +459,7 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
     // STAGING, WAITING_ACCEPTANCE, WAITING_DEBIT, WAITING_DEBIT_PAYMENT, SHIPPING, SHIPPED, TO_COLLECT, RECEIVED, CLOSED, REFUSED, CANCELED
     public function ImportGetAuftraegeAnzahl() {    
-        $response = $this->miraklRequest('orders', getdata: array('order_state_codes' => 'WAITING_ACCEPTANCE'),  raw: true);                                     
+        $response = $this->miraklRequest('orders', getdata: array('order_state_codes' => $this->configuration_order_fetch_status),  raw: true);
         $this->Log(Logger::DEBUG, 'ImportGetAuftraegeAnzahl', $response);    
         $result_array = json_decode($response);
         return($result_array->total_count);    
@@ -458,13 +467,13 @@ class Shopimporter_Mirakl extends ShopimporterBase {
 
     public function ImportGetAuftrag() {
 
-        $parameters = array('order_state_codes' => 'WAITING_ACCEPTANCE');
+        $parameters = array('order_state_codes' => $this->configuration_order_fetch_status);
 
         if(!empty($this->data['nummer'])) {
             $parameters['order_ids'] = $this->data['nummer'];
         }
 
-        $response = $this->miraklRequest('orders', getdata: $parameters,  raw: true);          
+        $response = $this->miraklRequest('orders', getdata: $parameters,  raw: true);
         $this->Log(Logger::DEBUG, 'ImportGetAuftrag', $response);    
         $result_array = json_decode($response);
 
