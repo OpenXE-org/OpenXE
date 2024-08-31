@@ -2628,6 +2628,10 @@ class Appstore {
         'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_presta',
         'Icon'=>'Icons_dunkel_1.gif',
         'Versionen'=>'ALL','install'=>true, 'beta' => false,'kategorie'=>'{|Shop Schnittstelle|}')
+    ,'shopimporter_mirakl'=>array('Bezeichnung'=>'Mirakl',
+        'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_mirakl',
+        'Icon'=>'Icons_dunkel_1.gif', 
+        'Versionen'=>'ALL','install'=>true, 'beta' => false,'kategorie'=>'{|Shop Schnittstelle|}')
     ,'shopimporter_shopify'=>array(
         'Bezeichnung'=>'Shopify API Advanced',
         'Link'=>'index.php?module=onlineshops&action=create&cmd=shopimporter_shopify',
@@ -3966,7 +3970,6 @@ class Appstore {
         }
       }
     }
-
 
     if(isset($module['installiert'])) {
       foreach($module['installiert'] as $k => $v) {

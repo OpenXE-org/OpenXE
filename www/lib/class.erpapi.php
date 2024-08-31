@@ -17199,7 +17199,7 @@ function CheckShopTabelle($artikel)
     return $taxrates;
   }
 
-  function ImportAuftrag($adresse,$warenkorb,$projekt,$shop="",$auftrag=0)
+  function ImportAuftrag($adresse,$warenkorb,$projekt,$shop="",$auftrag=0) : array
   {
     $this->RunHook('ImportAuftragBefore',4, $adresse,$warenkorb,$projekt,$shop);
     if(!empty($this->app->stringcleaner)){
@@ -17710,6 +17710,9 @@ function CheckShopTabelle($artikel)
 
   if($doctype === 'angebot'){
     $this->app->DB->Update("UPDATE angebot SET anfrage = '".$this->app->DB->real_escape_string($warenkorb['onlinebestellnummer'])."' WHERE id = '$auftrag' LIMIT 1");
+  }
+  if($doctype === 'auftrag'){
+    $this->app->DB->Update("UPDATE auftrag SET ihrebestellnummer = '".$this->app->DB->real_escape_string($warenkorb['ihrebestellnummer'])."' WHERE id = '$auftrag' LIMIT 1");
   }
 
   $this->app->DB->Update("UPDATE $doctype SET
@@ -18674,16 +18677,24 @@ function CheckShopTabelle($artikel)
         $artikelporto = $artikelportoermaessigt;
       }
 
-      if(empty($artikelporto) && $this->app->DB->Select("SELECT portoartikelanlegen FROM shopexport WHERE id = '$shop' LIMIT 1"))
-      {
-        if($warenkorb['versandkostennetto'] != 0 || $warenkorb['versandkostenbrutto'] != 0 || $portocheck == 1){
-          $portoartikelarr = array('projekt'=>$projekt,'porto'=>1, 'lagerartikel'=>0,'name_de'=>'Porto','umsatzsteuer'=>'normal');
-          $artikelporto = $this->app->erp->InsertUpdateArtikel($portoartikelarr);
-          if($artikelporto){
-            $this->app->DB->Update("UPDATE shopexport SET artikelporto = '$artikelporto' WHERE id = '$shop' AND artikelporto = 0 LIMIT 1");
-          }
+        if(empty($artikelporto)) {
+            if ($this->app->DB->Select("SELECT portoartikelanlegen FROM shopexport WHERE id = '$shop' LIMIT 1"))
+            {
+                if($warenkorb['versandkostennetto'] != 0 || $warenkorb['versandkostenbrutto'] != 0 || $portocheck == 1)
+                {
+                    $portoartikelarr = array('projekt'=>$projekt,'porto'=>1, 'lagerartikel'=>0,'name_de'=>'Porto','umsatzsteuer'=>'normal');
+                    $artikelporto = $this->app->erp->InsertUpdateArtikel($portoartikelarr);
+                    if($artikelporto)
+                    {
+                        $this->app->DB->Update("UPDATE shopexport SET artikelporto = '$artikelporto' WHERE id = '$shop' AND artikelporto = 0 LIMIT 1");
+                    }
+                }
+            } else {
+                $error_msg = 'Importauftrag Shop '.$shop.' Fehler: Kein Portoartikel vorhanden';
+                $this->LogFile($error_msg,['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
+                return(array("status" => false, "message" => $error_msg, "onlinebestellnummer" => $warenkorb['onlinebestellnummer']));
+            }
         }
-      }
       $umsatzsteuer_porto = $this->app->DB->Select("SELECT umsatzsteuer FROM artikel WHERE id='$artikelporto' LIMIT 1");
 
       $versandname = '';
@@ -19029,7 +19040,7 @@ function CheckShopTabelle($artikel)
     }
   }
 
-  return $auftrag;
+  return array("status" => true, "$auftragid" => $auftrag);
 }
 
 
@@ -21022,7 +21033,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $anzges = 0;
         $anzfehler = 0;
 
-        $result = null; // 1 on success
+        $result = null; // $result['status'] == 1 on success
 
         if(!empty($extnummer) && is_array($extnummer)) {
           foreach($extnummer as $nummer) {
@@ -21053,9 +21064,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         }
 
 
-       $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.gettype($result).' '.$result);
+       $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
 
-        if ($result == 1) {
+        if ((is_array($result)?$result['status'] == 1:false) || $status === 1) {
             $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
             $this->app->DB->Update(
               "UPDATE `artikel` SET `cache_lagerplatzinhaltmenge` = '{$cacheQuantity}'

@@ -3339,7 +3339,7 @@ INNER JOIN shopexport s ON
     }
 
     if($this->app->Secure->GetPOST('pruefen')) {
-      
+     
       $className = 'Remote';
       $methodName = 'RemoteConnection';
       $r = new ReflectionMethod($className, $methodName);

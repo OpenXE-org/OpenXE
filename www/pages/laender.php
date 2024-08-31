@@ -25,11 +25,11 @@ class Laender {
       case "laender_list":
       $allowed['laender'] = array('list');
 
-      $heading = array('ISO', 'Bezeichnung DE', 'Bezeichnung EN','EU', 'Men&uuml;');
-      $width = array('9%', '40%', '40%','10%','1%');
+      $heading = array('ISO', 'ISO3','Bezeichnung DE', 'Bezeichnung EN','EU', 'Men&uuml;');
+      $width = array('9%', '9%','40%', '40%','10%','1%');
 
-      $findcols = array('l.iso', 'l.bezeichnung_de', 'l.bezeichnung_en', "if(l.eu,'EU','')", 'l.id');
-      $searchsql = array('l.iso', 'l.bezeichnung_de', 'l.bezeichnung_en');
+      $findcols = array('l.iso', 'l.iso3', 'l.bezeichnung_de', 'l.bezeichnung_en', "if(l.eu,'EU','')", 'l.id');
+      $searchsql = array('l.iso','l.iso3', 'l.bezeichnung_de', 'l.bezeichnung_en');
 
       $defaultorder = 1;
       $defaultorderdesc = 0;
@@ -38,7 +38,7 @@ class Laender {
 
       $where = " l.id > 0 ";
 
-      $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.iso, l.bezeichnung_de, l.bezeichnung_en, if(l.eu,'EU',''), l.id FROM laender l";
+      $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.iso, l.iso3, l.bezeichnung_de, l.bezeichnung_en, if(l.eu,'EU',''), l.id FROM laender l";
 
       $count = "SELECT count(l.id) FROM laender l WHERE $where";
       break;
@@ -118,7 +118,7 @@ class Laender {
         $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">$error</div>");
       }else{
         if($error == ""){
-          $this->app->DB->Update("UPDATE laender SET iso='{$input['iso']}', bezeichnung_de='{$input['bezeichnung_de']}', bezeichnung_en='{$input['bezeichnung_en']}', eu='{$input['eu']}' WHERE id = '$id' LIMIT 1");
+          $this->app->DB->Update("UPDATE laender SET iso='{$input['iso']}', iso3='{$input['iso3']}', bezeichnung_de='{$input['bezeichnung_de']}', bezeichnung_en='{$input['bezeichnung_en']}', eu='{$input['eu']}' WHERE id = '$id' LIMIT 1");
           if($input['eu']==1){
             $this->app->Tpl->Set('EU', "checked");
           }
@@ -127,12 +127,14 @@ class Laender {
       }
     }
     $iso = $this->app->DB->Select("SELECT iso FROM laender WHERE id = '$id'");
+    $iso3 = $this->app->DB->Select("SELECT iso3 FROM laender WHERE id = '$id'");
     $bezeichnung_de = $this->app->DB->Select("SELECT bezeichnung_de FROM laender WHERE id = '$id'");
     $bezeichnung_en = $this->app->DB->Select("SELECT bezeichnung_en FROM laender WHERE id = '$id'");
     $eu = $this->app->DB->Select("SELECT eu FROM laender WHERE id = '$id'");
 
 
     $this->app->Tpl->Set('ISO', $iso);
+    $this->app->Tpl->Set('ISO3', $iso3);
     $this->app->Tpl->Set('BEZEICHNUNG_DE', $bezeichnung_de);
     $this->app->Tpl->Set('BEZEICHNUNG_EN', $bezeichnung_en);
     if($eu == 1){
@@ -177,7 +179,7 @@ class Laender {
       if($error!=''){
         $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">$error</div>");
       }else {
-        $this->app->DB->Insert("INSERT INTO laender (iso, bezeichnung_de, bezeichnung_en, eu) VALUES ('{$input['iso']}', '{$input['bezeichnung_de']}', '{$input['bezeichnung_en']}', '{$input['eu']}')");
+        $this->app->DB->Insert("INSERT INTO laender (iso, iso3, bezeichnung_de, bezeichnung_en, eu) VALUES ('{$input['iso']}', '{$input['iso3']}', '{$input['bezeichnung_de']}', '{$input['bezeichnung_en']}', '{$input['eu']}')");
         $newid = $this->app->DB->GetInsertID();
         $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Der L&auml;ndereintrag wurde erfolgreich angelegt.</div>");
         header("Location: index.php?module=laender&action=edit&id=$newid&msg=$msg");
@@ -194,6 +196,7 @@ class Laender {
   function GetInput(){
     $input = array();
     $input['iso'] = $this->app->Secure->GetPOST('iso');
+    $input['iso3'] = $this->app->Secure->GetPOST('iso3');
     $input['bezeichnung_de'] = $this->app->Secure->GetPOST('bezeichnung_de');
     $input['bezeichnung_en'] = $this->app->Secure->GetPOST('bezeichnung_en');
     $input['eu'] = (int)$this->app->Secure->GetPOST('eu');
@@ -203,6 +206,7 @@ class Laender {
 
   function SetInput($input){
     $this->app->Tpl->Set('ISO', $input['iso']);
+    $this->app->Tpl->Set('ISO3', $input['iso3']);
     $this->app->Tpl->Set('BEZEICHNUNG_DE', $input['bezeichnung_de']);
     $this->app->Tpl->Set('BEZEICHNUNG_EN', $input['bezeichnung_en']);
     if($input['eu']==1){
