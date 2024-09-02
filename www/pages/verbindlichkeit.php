@@ -502,6 +502,31 @@ class Verbindlichkeit {
                                 }
                             }
                         break;
+                        case 'drucken':
+                            $drucker = $this->app->Secure->GetPOST('seldrucker');
+                            foreach ($selectedIds as $id) {
+                                $file_attachments = $this->app->erp->GetDateiSubjektObjekt('%','verbindlichkeit',$id);
+                                if (!empty($file_attachments)) {
+                                    foreach ($file_attachments as $file_attachment) {
+                                        if ($this->app->erp->GetDateiEndung($file_attachment) == 'pdf') {
+                                            $file_contents = $this->app->erp->GetDatei($file_attachment);
+                                            $verbindlichkeit = $this->app->DB->SelectRow("SELECT DATE_FORMAT(rechnungsdatum, '%Y%m%d') rechnungsdatum, belegnr FROM verbindlichkeit WHERE id = ".$id." LIMIT 1");
+                                            $file_name = $verbindlichkeit['rechnungsdatum']."_VB".$verbindlichkeit['belegnr'].".pdf";
+                                            $file_path = rtrim($this->app->erp->GetTMP(),'/')."/".$file_name;
+                                            $handle = fopen ($file_path, "wb");
+                                            if ($handle)
+                                            {
+                                                fwrite($handle, $file_contents);
+                                                fclose($handle);
+                                                $this->app->printer->Drucken($drucker,$file_path);
+                                            } else {
+                                                $this->app->YUI->Message('error',"Drucken fehlgeschlagen!");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        break;
                     }
                 }
             break;
@@ -529,6 +554,8 @@ class Verbindlichkeit {
 
         $this->app->User->SetParameter('table_verbindlichkeit_list_zahlbarbis', '');
         $this->app->User->SetParameter('table_verbindlichkeit_list_skontobis', '');
+
+        $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker());
 
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_list.tpl");
     }
