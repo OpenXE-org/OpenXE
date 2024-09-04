@@ -61,7 +61,11 @@
                                         </select>
                                     </td>
                                 </tr>
-                            </table>                            
+                                <tr>
+                                    <td>{|PDF-Dateien exportieren:|}</td>
+                                    <td><input type="checkbox" name="pdfexport" value="1" [PDFEXPORT] /></td>
+                                </tr>
+                           </table>                            
                         </fieldset>
                     </div>
                 </div>
