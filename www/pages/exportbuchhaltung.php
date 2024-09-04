@@ -102,7 +102,7 @@ class Exportbuchhaltung
                     'field_betrag_gesamt' => 'b.betrag',
                     'field_betrag' => 'p.preis*p.menge*((100+p.steuersatz)/100)',
                     'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
-                    'condition_where' => ' AND b.status IN (\'freigegeben\')',
+                    'condition_where' => ' AND b.status IN (\'freigegeben\', \'abgeschlossen\')',
                     'Buchungstyp' => '',
                     'do' => $verbindlichkeit,
                     'pdf' => 'load'
@@ -122,7 +122,7 @@ class Exportbuchhaltung
                     'field_betrag_gesamt' => 'b.betrag',
                     'field_betrag' => 'p.preis*p.menge*((100+p.steuersatz)/100)',
                     'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
-                    'condition_where' => ' AND b.status IN (\'freigegeben\')',
+                    'condition_where' => ' AND b.status IN (\'freigegeben\', \'abgeschlossen\')',
                     'Buchungstyp' => '',
                     'do' => $lieferantengutschrift,
                     'pdf' => 'load'
