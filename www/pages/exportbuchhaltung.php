@@ -268,6 +268,11 @@ class Exportbuchhaltung
                                 b.".$typ['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typ['condition_where'];
                             $belege = $this->app->DB->SelectArr($sql);
                             foreach ($belege as $beleg) {
+                            
+                                if (!$typ['do']) {
+                                    continue;
+                                }
+                            
                                 switch ($typ['pdf']) {
                                     case 'print':
                                         switch ($typ['typ']) {
