@@ -145,13 +145,15 @@ class Bundesstaaten {
         var bundeslandel = $(\'#'.$bundeslandid.'\');
         var bundeslandval = $(bundeslandel).val();
         $(bundeslandel).html(\'<option value=""></option>\');
-        $(bundeslaender'.$bundeslandid.').each(function(k,v){
-          if(landsel == v.land)
-          {
-            $(bundeslandel).html($(bundeslandel).html()+\'<option value="\'+v.iso+\'">\'+v.bundesstaat+\'</option>\');
-          }
-        });
-        $(bundeslaender'.$bundeslandid.').val(bundeslandval);
+        if (typeof bundeslaender'.$bundeslandid.' !== \'undefined\') {
+            $(bundeslaender'.$bundeslandid.').each(function(k,v){
+              if(landsel == v.land)
+              {
+                $(bundeslandel).html($(bundeslandel).html()+\'<option value="\'+v.iso+\'">\'+v.bundesstaat+\'</option>\');
+              }
+            });
+            $(bundeslaender'.$bundeslandid.').val(bundeslandval);
+        }
       });
     });
     </script>');
