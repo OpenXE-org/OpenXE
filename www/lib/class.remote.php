@@ -2197,7 +2197,7 @@ class Remote {
             vlp.versandpaket = v.id OR v.lieferschein_ohne_pos = l.id
         LEFT JOIN shopexport_versandarten sv ON
             sv.versandart_wawision = v.versandart AND sv.shop = $shopId
-        WHERE a.id = $orderId OR a.teillieferungvon = $orderId
+        WHERE (a.id = $orderId OR a.teillieferungvon = $orderId) AND v.id IS NOT NULL
         ORDER BY v.id";
 
       $shipments = $this->app->DB->SelectArr($sql);
