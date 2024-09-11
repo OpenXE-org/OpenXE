@@ -1,3 +1,5 @@
+@layer reset, primevue;
+
 body {
     font-size: 12px;
 	font-family: 'Inter', Arial, Helvetica, sans-serif;
@@ -878,14 +880,11 @@ ul.menu > li > a {
 }
 
 #main.fixed .menu-wrapper {
-    width: calc(100% - var(--sidebar-not-collapsed-width));
+    width: calc(100% - 72px);
     z-index: 950;
     position: fixed;
     top: 0;
     border-bottom: 3px solid #2DCA73;
-}
-#sidebar.collapsed + #main.fixed .menu-wrapper {
-    width: calc(100% - var(--sidebar-collapsed-width));
 }
 
 #main.fixed .menu-wrapper #current{
@@ -1809,11 +1808,10 @@ a.startpage {
 ::-ms-input-placeholder { /* Microsoft Edge */
     color: #BBB;
 }
-:placeholder { /* Modern Browser */
-    color: #F00;
+::placeholder { /* Modern Browser */
+    color: #BBB;
     opacity: 1; /* Firefox */
 }
-
 input.ui-autocomplete-input::-webkit-input-placeholder {
     color: #999;
     opacity: 1;
@@ -2408,10 +2406,6 @@ ul.tag-editor {
     border-color: var(--textfield-border);
     border-radius: 7px;
     padding: 0px !important;
-    min-height: 300px;
-    height: 300px;
-    resize: vertical;
-    overflow: hidden;
 }
 
 .ticket_nachricht_box fieldset {
@@ -2420,8 +2414,8 @@ ul.tag-editor {
 
 .ticket_text {
     width: 100%;
-    height: 100%;
     border: none;
+    height: 300px;
 }
 
 .ui-button-icon,
@@ -4876,8 +4870,3 @@ tilegrid
     padding: 0;
     margin: 0;
 }
-
-input:placeholder-shown.placeholder_warning {
-  background-color: var(--warning);
-}
-
