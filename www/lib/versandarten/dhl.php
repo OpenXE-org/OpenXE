@@ -102,7 +102,19 @@ class Versandart_dhl extends Versanddienstleister{
     switch ($json->addresstype) {
       case 0:
         $shipment->Receiver->Address = new ReceiverNativeAddress();
-        $shipment->Receiver->Address->name2 = $json->name2;
+                
+        $shipment->Receiver->name1 = $json->company_name;
+        $shipment->Receiver->Address->name2 = join(
+                        ';', 
+                        array_filter(
+                            [
+                                $json->contact_name,
+                                $json->company_division
+                            ],
+                            fn(string $item) => !empty(trim($item))
+                        )
+                    );                        
+                              
         $shipment->Receiver->Address->streetName = $json->street ?? '';
         $shipment->Receiver->Address->streetNumber = $json->streetnumber;
         $shipment->Receiver->Address->city = $json->city ?? '';
@@ -126,6 +138,20 @@ class Versandart_dhl extends Versanddienstleister{
         $shipment->Receiver->Postfiliale->city = $json->city ?? '';
         $shipment->Receiver->Postfiliale->zip = $json->zip ?? '';
         $shipment->Receiver->Postfiliale->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        break;
+      case 3:
+        $shipment->Receiver->Address = new ReceiverNativeAddress();
+                
+        $shipment->Receiver->name1 = $json->name;
+        $shipment->Receiver->Address->name2 = $json->contact_name;
+                       
+        $shipment->Receiver->Address->streetName = $json->street ?? '';
+        $shipment->Receiver->Address->streetNumber = $json->streetnumber;
+        $shipment->Receiver->Address->city = $json->city ?? '';
+        $shipment->Receiver->Address->zip = $json->zip ?? '';
+        $shipment->Receiver->Address->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        if (isset($json->address2) && !empty($json->address2))
+          $shipment->Receiver->Address->addressAddition[] = $json->address2;
         break;
     }
     $shipment->Receiver->Communication = new Communication();

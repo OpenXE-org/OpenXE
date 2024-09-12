@@ -270,7 +270,7 @@ class TOTPLoginService
             $secret = $this->getTOTPSecret($userId);
         }
 
-        $query = "otpauth://totp/{$label}?secret=" . $secret . '&issuer=Xentral&algorithm=SHA1&digits=6&period=30';
+        $query = "otpauth://totp/{$label}?secret=" . $secret . '&issuer=OpenXE&algorithm=SHA1&digits=6&period=30';
 
         return $this->barcodeService->createQrCode($query);
     }

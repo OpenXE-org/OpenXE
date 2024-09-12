@@ -1938,8 +1938,17 @@ class YUI {
           }
         }
 
-
         $this->app->erp->RunHook('AARLGPositionenSprache', 6, $module, $id, $artikel_id, $sprache, $bezeichnung, $beschreibung);
+
+        // OpenXE artikel_texte
+        $language = $this->app->erp->GetSpracheBeleg($module,$id);
+        $sql = "SELECT * FROM artikel_texte WHERE artikel = '".$artikel_id."' AND sprache = '".$language."'";
+        $uebersetzung = $this->app->DB->SelectRow($sql);        
+        if ($uebersetzung) {
+            $bezeichnung = $uebersetzung['name'];
+            $beschreibung = $uebersetzung['beschreibung'];
+        }
+
         $bezeichnung = $this->app->DB->real_escape_string($bezeichnung);
         $beschreibung = $this->app->DB->real_escape_string($beschreibung);
 
@@ -5286,6 +5295,25 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
                   ansprechpartner ansp 
                 WHERE 
                   ansp.name LIKE '%" . $parameter['ansprechpartner'] . "%'
+              )
+            )
+          ";
+        }
+               
+        if(isset($parameter['lieferadresse']) && !empty($parameter['lieferadresse'])) {   
+          $paramsArray[] = "
+            ( 
+              a.id IN
+              (
+                SELECT 
+                  adresse 
+                FROM 
+                  lieferadressen lfadr
+                WHERE 
+                  lfadr.name LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.strasse LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.plz LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.ort LIKE '%" . $parameter['lieferadresse'] . "%'
               )
             )
           ";
@@ -14131,24 +14159,18 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       $action = $this->app->Secure->GetGET("action");
       $id = $this->app->Secure->GetGET("id");
       if($id)$this->app->Tpl->Set('ID',$id);
-      if ($speichern != "") {
-        $titel = $this->app->Secure->GetPOST("titel");
-        $beschreibung = $this->app->Secure->GetPOST("beschreibung");
-        $stichwort = $this->app->Secure->GetPOST("stichwort");
-        $this->app->Tpl->Set('TITLE', $titel);
-        $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
-        
-        if ($_FILES['upload']['tmp_name'] == "") {
-          $this->app->Tpl->Set('ERROR', "<div class=\"info\">Bitte w&auml;hlen Sie eine Datei aus und laden Sie diese herauf!</div>");
-          $this->app->erp->EnableTab("tabs-2");
-        } else {
 
-          //$fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'],$titel,$beschreibung,"",$_FILES['upload']['tmp_name'],$this->app->User->GetName());
-          $this->app->erp->AddDateiVersion($datei, $this->app->User->GetName(), $_FILES['upload']['name'], "Neue Version", $_FILES['upload']['tmp_name']);
-          header("Location: index.php?module=$module&action=$action&id=$id");
-          exit;
+      // Get files here
+      if ($speichern != "") {
+        $retval = $this->FilesFromUploadtoDMS(null, null, $datei);
+        if ($retval !== true) {
+            $this->app->Tpl->Set('ERROR', implode(', ',$retval));
+            $this->app->erp->EnableTab("tabs-2");
+        } else {
+            header("Location: index.php?module=$module&action=$action&id=$id");
         }
       }
+
       $this->app->Tpl->Set('STARTDISABLE', "<!--");
       $this->app->Tpl->Set('ENDEDISABLE', "-->");
       $this->app->Tpl->Parse($parsetarget, "datei_neudirekt.tpl");
@@ -14225,61 +14247,18 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       $id = $this->app->Secure->GetGET("id");
       $sid = $this->app->Secure->GetGET("sid");
       if($id)$this->app->Tpl->Set('ID', $id);
+
+      // Get files here      
       if ($speichern != "") {
-        if($parameter == '')$parameter = $id;
-        if(isset($_POST['dateiv']))
-        {
-          foreach($_POST['dateiv'] as $k => $v)
-          {
-            $name = $this->app->DB->real_escape_string($_POST['dateiname'][$k]);
-            $titel = $this->app->DB->real_escape_string($_POST['dateititel'][$k]);
-            $beschreibung = $this->app->DB->real_escape_string($_POST['beschreibung'][$k]);
-            $stichwort = $this->app->DB->real_escape_string($_POST['dateistichwort'][$k]);
-            
-            //$getMime = explode('.', $name);
-            //$mime = end($getMime);
-
-            $data = explode(',', $v);
-
-            $encodedData = str_replace(' ','+',$data[1]);
-            $decodedData = base64_decode($encodedData);
-            
-            $this->app->Tpl->Set('TITLE', $titel);
-            $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
-            
-            if ($v == "" ) {
-              $this->app->Tpl->Set('ERROR', "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>");
-              $this->app->erp->EnableTab("tabs-2");
-            } else {
-              $fileid = $this->app->erp->CreateDatei($name, $titel, $beschreibung, "", $decodedData, $this->app->User->GetName());
-
-              // stichwoerter hinzufuegen
-              $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
-            }            
-          }
-          if($_FILES['upload']['tmp_name'] == "")
-          {
-            header("Location: index.php?module=$_module&action=$_action&id=$id&sid=$sid".($typ!=''?"&typ=".$typ:''));
-          }
+        if($parameter == '') {
+            $parameter = $id;        
         }
-
-        
-        
-        $titel = $this->app->Secure->GetPOST("titel");
-        $beschreibung = $this->app->Secure->GetPOST("beschreibung");
-        $stichwort = $this->app->Secure->GetPOST("stichwort");
-        $this->app->Tpl->Set('TITLE', $titel);
-        $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
-
-        if ($_FILES['upload']['tmp_name'] == "" && empty($_POST['dateiv'])) {
-          $this->app->Tpl->Set('ERROR', "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>");
-          $this->app->erp->EnableTab("tabs-2");
-        } elseif($_FILES['upload']['tmp_name'] != '') {
-          $fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'], $titel, $beschreibung, "", $_FILES['upload']['tmp_name'], $this->app->User->GetName());
-
-          // stichwoerter hinzufuegen
-          $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
-          header("Location: index.php?module=$_module&action=$_action&id=$id&sid=$sid".($typ!=''?"&typ=".$typ:''));
+        $retval = $this->FilesFromUploadtoDMS($objekt, $parameter);
+        if ($retval !== true) {
+            $this->app->Tpl->Set('ERROR', implode(', ',$retval));
+            $this->app->erp->EnableTab("tabs-2");
+        } else {
+            header("Location: index.php?module=$_module&action=$_action&id=$id&sid=$sid".($typ!=''?"&typ=".$typ:''));                        
         }
       }
 
@@ -14545,6 +14524,87 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       }else{
         $this->app->Tpl->Parse($parsetarget, 'dateienuebersicht.tpl');
       }
+    }
+
+    /*
+    *   Retrieve uploaded files and put them into DMS
+    *   $datei: given file, just add a new version
+    *   Return array of errors or true
+    */
+    function FilesFromUploadtoDMS($objekt, $parameter, $datei = false) {
+
+        $retval = true;
+        // Files come from drag'n'drop
+        if(isset($_POST['dateiv']))
+        {              
+            foreach($_POST['dateiv'] as $k => $v)
+            {
+                $name = $this->app->DB->real_escape_string($_POST['dateiname'][$k]);
+                $titel = $this->app->DB->real_escape_string($_POST['dateititel'][$k]);
+                $beschreibung = $this->app->DB->real_escape_string($_POST['dateibeschreibung'][$k]);
+                $stichwort = $this->app->DB->real_escape_string($_POST['dateistichwort'][$k]);
+
+                $data = explode(',', $v);            
+
+                $encodedData = str_replace(' ','+',$data[1]);
+                $decodedData = base64_decode($encodedData);
+
+                $this->app->Tpl->Set('TITLE', $titel);
+                $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
+
+                if ($v == "" ) {
+                    $this->app->Tpl->Set('ERROR', "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>");
+                    $this->app->erp->EnableTab("tabs-2");
+                } else {
+                    // Save file to disk first
+                    $tempfilename = rtrim($this->app->erp->GetTMP(), '/') . "/" . $name;
+                    if($handle = fopen($tempfilename, "wb")){
+                        fwrite($handle, $decodedData);
+                        fclose($handle);
+                        // Add file to DMS
+                        if ($datei) {
+                            $this->app->erp->AddDateiVersion($datei, $this->app->User->GetName(), $name, "Neue Version", $tempfilename);                    
+                        } else {
+                            $fileid = $this->app->erp->CreateDatei($name, $titel, $beschreibung, "", $tempfilename, $this->app->User->GetName());
+                            // stichwoerter hinzufuegen
+                            $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
+                        }
+                    } else {
+                        if ($retval === true) {
+                            $retval = array();
+                        } 
+                        $retval[] = "<div class=\"error\">Datei konnte nicht gespeichert werden: ".$name."</div>";
+                    }
+                }            
+            }
+        } // drag'n'drop
+        // Single file comes from browse button
+        else {
+            $titel = $this->app->Secure->GetPOST("titel");
+            $beschreibung = $this->app->Secure->GetPOST("beschreibung");
+            $stichwort = $this->app->Secure->GetPOST("stichwort");
+            $this->app->Tpl->Set('TITLE', $titel);
+            $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
+
+            if ($_FILES['upload']['tmp_name'] == "" && empty($_POST['dateiv'])) {
+              $this->app->erp->EnableTab("tabs-2");
+                if ($retval === true) {
+                    $retval = array();
+                } 
+                $retval[] = "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>";
+
+            } elseif ($_FILES['upload']['tmp_name'] != '') {       
+                if ($datei) {
+                    $this->app->erp->AddDateiVersion($datei, $this->app->User->GetName(), $_FILES['upload']['name'], "Neue Version", $_FILES['upload']['tmp_name']);
+                }
+                else {
+                    $fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'], $titel, $beschreibung, "", $_FILES['upload']['tmp_name'], $this->app->User->GetName());
+                    // stichwoerter hinzufuegen
+                    $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
+                }                
+            }
+        }
+        return($retval);
     }
 
     function SortListAdd($parsetarget, &$ref, $menu, $sql, $sort = true) {

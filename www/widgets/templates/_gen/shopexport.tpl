@@ -53,20 +53,36 @@
                 <tr>
                   <td style="min-width:130px;"><label for="bezeichnung">{|Bezeichnung|}:</label></td>
                   <td>[BEZEICHNUNG][MSGBEZEICHNUNG]</td>
-                  <td><label for="modus">{|Import-Modus|}:</label></td><td>[SELMODUS]</td>
                 </tr>
                 <tr>
                   <td><label for="aktiv">{|Aktiv|}:</label></td>
                   <td>[AKTIV][MSGAKTIV]</td>
-                  <td><label for="einzelsync">{|Nur 1 Auftrag pro Anfrage|}:</label></td>
-                  <td class="einzelsyncclass">[EINZELSYNC][MSGEINZELSYNC]</td>
                 </tr>
                 <tr>
                   <td><label for="projekt">{|Projekt|}:</label></td>
                   <td>[PROJEKT][MSGPROJEKT]</td>
-                  <td><label for="warteschlange">{|Aufträge in Zwischentabelle|}:</label></td><td>[WARTESCHLANGE] <i>{|Freigabe erfolgt manuell|}</i>
-                </td></tr>
-                <tr><td><label for="abholmodus">{|Abholmodus|}:</label></td><td>[SELABHOLMODUS]</td><td class="manuellebegrenzung">{|Anzahl abholen begrenzen|}:</td><td class="manuellebegrenzung">[MAXMANUELL][MSGMAXMANUELL]&nbsp;<i>{|0 bedeutet Begrenzung auf 100|}</i></td></tr>
+                </tr>
+                <tr>
+                    <td><label for="abholmodus">{|Abholmodus|}:</label></td><td>[SELABHOLMODUS]</td>
+                </tr>
+                <tr>
+                    <td class="manuellebegrenzung">{|Anzahl abholen begrenzen|}:</td>
+                    <td class="manuellebegrenzung">[MAXMANUELL][MSGMAXMANUELL]</td>
+                    <td><i>{|0 bedeutet Begrenzung auf 100|}</i></td>
+                </tr>
+                <tr>
+                    <td><label for="modus">{|Import-Modus|}:</label></td><td>[SELMODUS]</td>
+                </tr>
+                <tr>
+                    <td><label for="einzelsync">{|Nur 1 Auftrag pro Anfrage|}:</label></td>
+                    <td class="einzelsyncclass">[EINZELSYNC][MSGEINZELSYNC]</td>
+                </tr>
+                <tr>
+                </tr>
+                    <td><label for="warteschlange">{|Aufträge in Zwischentabelle|}:</label></td><td>[WARTESCHLANGE]</td>
+                    <td><i>{|Freigabe erfolgt manuell|}</i></td>
+                <tr>
+                </tr>
                 <tr class="ab_nummerzeitraum zeitraum">
                   <td><label for="vondatum">{|Datum von|}:</label></td>
                   <td nowrap>
@@ -98,8 +114,8 @@
           <div class="inside inside-full-height">
             <fieldset><legend>{|Aktion|}</legend>
               <table width="100%">
-                <tr><td><input type="button" onclick="verpruefen();" value="{|Verbindung pr&uuml;fen|}" class="aktionbutton" ></td></tr>
-                <tr><td width="50%"><input type="button" onclick="Holeauftrag();" value="{|Auftr&auml;ge abholen|}" class="aktionbutton" ></td></tr>
+                <tr><td><input type="submit" form="frmpruefen" value="{|Verbindung pr&uuml;fen|}" class="aktionbutton" ></td></tr>
+                <tr><td width="50%"><input type="submit" form="frmabholen" value="{|Auftr&auml;ge abholen|}" class="aktionbutton" ></td></tr>
                 [AKTIONBUTTONS]
               </table>
             </fieldset>

@@ -2841,100 +2841,82 @@ class Artikel extends GenArtikel {
     return ['status'=>$isOk, 'info'=>$info, 'msg_encoded' => $msg, 'error' => $error];
   }
 
-  public function ArtikelShopexport()
-  {
-    $id = $this->app->Secure->GetGET('id'); 
-    $shop = $this->app->Secure->GetGET('shop'); 
-    $artikel = array($id);
-    $artikelshopid = (int)$this->app->Secure->GetGET('artikelshopid');
-    
-    if($artikelshopid > 0)
-    {
-      $shop = $this->app->DB->Select("SELECT shop FROM artikel_onlineshops WHERE id = '$artikelshopid' AND artikel = '$id' AND aktiv = 1 LIMIT 1");
-      $this->app->User->SetParameter('artikel_shopexport_shop', '');
-    }else{
-      if($shop=='1'){
-        $shop = $this->app->DB->Select("SELECT shop FROM artikel WHERE id='$id' LIMIT 1");
-      }
-      elseif($shop=='2'){
-        $shop = $this->app->DB->Select("SELECT shop2 FROM artikel WHERE id='$id' LIMIT 1");
-      }
-      elseif($shop=='3'){
-        $shop = $this->app->DB->Select("SELECT shop3 FROM artikel WHERE id='$id' LIMIT 1");
-      }
-    }
-    
-    $artikelexport = $this->app->DB->Select("SELECT artikelexport FROM shopexport WHERE id='$shop' LIMIT 1");
-    $lagerexport = $this->app->DB->Select("SELECT lagerexport FROM shopexport WHERE id='$shop' LIMIT 1");
+    public function ArtikelShopexport() {
+        $id = $this->app->Secure->GetGET('id');
+        $shop = $this->app->Secure->GetGET('shop');
+        $artikel = array($id);
+        $artikelshopid = (int) $this->app->Secure->GetGET('artikelshopid');
 
-    $externenummer = $this->app->DB->Select("SELECT nummer FROM artikelnummer_fremdnummern WHERE artikel = '$id' AND aktiv = 1 AND shopid = '$shop' AND nummer <> '' ORDER BY bezeichnung = 'SHOPID' DESC LIMIT 1");
-
-    if($externenummer)
-    {
-      $extartikelnummer = array($externenummer);
-    }else{
-      $extartikelnummer = '';
-    }
-
-    $pageContents = $this->app->remote->RemoteSendArticleList($shop,$artikel,$extartikelnummer);
-    $check = strpos($pageContents ,'error:');
-    $msg = '';
-    if(!empty($pageContents) && is_array($pageContents)) {
-      if(!empty($pageContents['status']) && !empty($pageContents['message'])) {
-        $msg = $this->app->erp->base64_url_encode('<div class="info">'.$pageContents['message'].'</div>');
-      }
-      elseif(isset($pageContents['status']) && !empty($pageContents['message'])) {
-        $msg = $this->app->erp->base64_url_encode('<div class="error">'.$pageContents['message'].'</div>');
-      }
-    }
-    elseif($pageContents=='1') {
-      $pageContents='success';
-    }
-
-    if(empty($msg) && $pageContents!='') {
-      $pageContents = " ($pageContents)";
-    }
-
-    $this->app->erp->LogFile($this->app->DB->real_escape_string('manueller Shopexport Artikel: '.$this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1").' Shop: '.$shop.' Status: '.$pageContents));
-    // keine fehlermeldung vom shop
-    if(empty($msg)) {
-      $linkToImporterSettings = '';
-      if($this->app->erp->RechteVorhanden('onlineshops', 'edit')){
-        $url = 'index.php?module=onlineshops&action=edit&id='.$shop;
-        $linkToImporterSettings = "<a href='$url' class='button button-primary'>Zu den Shopeinstellungen</a>";
-      }
-
-      if($check === 0){
-        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Es gab einen Fehler beim Aktualisieren des Artikels im Shop!$pageContents</div>");
-      }
-      else if($pageContents == ''){
-        if($artikelexport != 1 && $lagerexport != 1){
-          $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Artikel konnte nicht zum Shop &uuml;bertragen werden! In den Shopeinstellungen ist festgelegt, dass die Artikelinformation- und Lagerbestands&uuml;bertragung nicht erlaubt ist!$pageContents $linkToImporterSettings</div>");
+        if ($artikelshopid > 0) {
+            $shop = $this->app->DB->Select("SELECT shop FROM artikel_onlineshops WHERE id = '$artikelshopid' AND artikel = '$id' AND aktiv = 1 LIMIT 1");
+            $this->app->User->SetParameter('artikel_shopexport_shop', '');
+        } else {
+            if ($shop == '1') {
+                $shop = $this->app->DB->Select("SELECT shop FROM artikel WHERE id='$id' LIMIT 1");
+            } elseif ($shop == '2') {
+                $shop = $this->app->DB->Select("SELECT shop2 FROM artikel WHERE id='$id' LIMIT 1");
+            } elseif ($shop == '3') {
+                $shop = $this->app->DB->Select("SELECT shop3 FROM artikel WHERE id='$id' LIMIT 1");
+            }
         }
-        else{
-          if($pageContents === '0' || $pageContents === 0){
-            $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Es gab einen Fehler beim Aktualisieren des Artikels im Shop! Stellen Sie sicher, dass die Zugangsdaten und URL's korrekt sind! M&ouml;glicherweise kein Artikelpreis hinterlegt</div>");
-          }else{
-            $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Es gab einen Fehler beim Aktualisieren des Artikels im Shop! Stellen Sie sicher, dass die Zugangsdaten und URL's korrekt sind!$pageContents $linkToImporterSettings</div>");
-          }
-        }
-      }
-      else{
-        if($artikelexport != 1 && $lagerexport == 1){
-          $msg = $this->app->erp->base64_url_encode("<div class=info>Es wurde nur der Lagerbestand (nicht die Artikelinfos entsprechend der Einstellungen) im Shop aktualisiert!$pageContents $linkToImporterSettings</div>");
-        }
-        else if($lagerexport != 1 && $artikelexport == 1){
-          $msg = $this->app->erp->base64_url_encode("<div class=info>Es wurde nur der Artikel (nicht der Lagerbestand entsprechend der Einstellungen) im Shop aktualisiert!$pageContents $linkToImporterSettings</div>");
-        }
-        else{
-          $msg = $this->app->erp->base64_url_encode("<div class=info>Der Artikel wurde im Shop aktualisiert!$pageContents</div>");
-        }
-      }
-    }
-    $this->app->erp->LagerSync($artikel);
 
-    $this->app->Location->execute("index.php?module=artikel&action=edit&id=$id&msg=$msg#tabs-4");
-  }
+        $artikelexport = $this->app->DB->Select("SELECT artikelexport FROM shopexport WHERE id='$shop' LIMIT 1");
+        $lagerexport = $this->app->DB->Select("SELECT lagerexport FROM shopexport WHERE id='$shop' LIMIT 1");
+
+        $externenummer = $this->app->DB->Select("SELECT nummer FROM artikelnummer_fremdnummern WHERE artikel = '$id' AND aktiv = 1 AND shopid = '$shop' AND nummer <> '' ORDER BY bezeichnung = 'SHOPID' DESC LIMIT 1");
+
+        if ($externenummer) {
+            $extartikelnummer = array($externenummer);
+        } else {
+            $extartikelnummer = '';
+        }
+             
+        $remote_result = $this->app->remote->RemoteSendArticleList($shop, $artikel, $extartikelnummer);
+
+        if (is_array($remote_result)) {
+            $remote_status = $remote_result['status'];
+            $remote_message = $remote_result['message'];
+        } else if (is_numeric($remote_result)) {
+            if ($remote_result == 1) {
+                $remote_status = true;
+            } else {
+                $remote_status = false;
+                $remote_message = "Der Artikel konnte nicht zum Shop &uuml;bertragen werden!";
+            }
+        } else if ($remote_result === null) {
+            $remote_status = false;
+            $remote_message = "Keine Aktion durchgef&uuml;hrt";
+        } else {
+            $remote_message = $remote_result;
+            if (strpos((string) $remote_result, 'error:') === 0) {
+                $remote_status = false;
+            } else {
+                $remote_status = true;
+            }
+        }
+
+        if ($remote_status) {
+            $msg = $this->app->erp->base64_url_encode('<div class="info">' . $remote_message . '</div>');
+        } else {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">' . $remote_message . '</div>');
+        }
+
+        $this->app->erp->LogFile($this->app->DB->real_escape_string('manueller Shopexport Artikel: '.$this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1").' Shop: '.$shop.' Status: '.((int) $remote_status)), $remote_message);
+
+        // keine fehlermeldung vom shop
+        if ($remote_status) {
+            $linkToImporterSettings = '';
+            if ($this->app->erp->RechteVorhanden('onlineshops', 'edit')) {
+                $url = 'index.php?module=onlineshops&action=edit&id=' . $shop;
+                $linkToImporterSettings = "<a href='$url' class='button button-primary'>Zu den Shopeinstellungen</a>";
+            }
+        }
+
+        $this->app->erp->LagerSync($artikel);
+
+        $this->app->Location->execute("index.php?module=artikel&action=edit&id=$id&msg=$msg#tabs-4");
+    }
+
 
   public function ArtikelShopexportFiles()
   {
@@ -7200,6 +7182,9 @@ class Artikel extends GenArtikel {
         if ($tmp[0]['matrixprodukt']==1) {
           $this->app->erp->MenuEintrag("index.php?module=matrixprodukt&action=artikel&id=$id", 'Matrixprodukt');
         }
+        $this->app->erp->MenuEintrag("index.php?module=artikeltexte&action=list&artikel=$id",'&Uuml;bersetzung');
+
+        $this->app->erp->MenuEintrag("index.php?module=artikel&action=baum&id=$id",'Artikelbaum');
 
         if($rabatt!='1'){
           $this->app->erp->MenuEintrag("index.php?module=artikel&action=einkauf&id=$id",'Einkauf');
@@ -7261,7 +7246,7 @@ class Artikel extends GenArtikel {
         }
 
         $this->app->erp->MenuEintrag('index.php?module=artikel&action=list','Zur&uuml;ck zur &Uuml;bersicht');
-        $this->app->erp->InsertMenuAfter("index.php?module=artikel&action=baum&id=$id",'Artikelbaum','artikel','eigenschaften');
+
       }
     }
     $this->app->erp->MenuEintrag('index.php?module=artikel&action=create','Neuen Artikel anlegen');
@@ -8432,7 +8417,7 @@ padding: 10px;\">
         FROM `datei_stichwoerter` AS `ds`
         INNER JOIN `datei_version` AS `dv` ON dv.datei = ds.datei
         INNER JOIN `datei` AS `d` ON dv.datei = d.id AND IFNULL(d.geloescht, 0) = 0
-        WHERE ds.objekt LIKE 'artikel' AND ds.parameter = '%d'
+        WHERE ds.objekt LIKE 'artikel' AND ds.parameter = '%d' AND d.geloescht = 0
               AND
               (
                   ds.subjekt like 'Shopbild' 

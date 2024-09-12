@@ -51,7 +51,21 @@
                                     <td>Konto f&uuml;r Differenzen:</td>
                                     <td><input type="text" name="sachkonto" id="sachkonto" value="[SACHKONTO]" /></td>
                                 </tr>
-                            </table>                            
+                                <tr>
+                                    <td>Format:</td>
+                                    <td>
+                                        <select name="format">
+                                            <option value="ISO-8859-1">ISO-8859-1</option>
+                                            <option value="UTF-8">UTF-8</option>
+                                            <option value="UTF-8-BOM">UTF-8 mit BOM</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{|PDF-Dateien exportieren:|}</td>
+                                    <td><input type="checkbox" name="pdfexport" value="1" [PDFEXPORT] /></td>
+                                </tr>
+                           </table>                            
                         </fieldset>
                     </div>
                 </div>
