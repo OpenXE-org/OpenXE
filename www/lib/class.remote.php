@@ -2240,13 +2240,12 @@ class Remote {
                 $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop fehlgeschlagen', $bearbeiter);
 
                 $this->logger->error('Versandmeldung an Shop fehlgeschlagen',
-                        [
-                            'orderId' => $orderId,
-                            'shopId' => $shopId,
-                            'message' => $response->getMessage()
-                        ]
+                    [
+                        'orderId' => $orderId,
+                        'shopId' => $shopId,
+                        'message' => $response->getMessage()
+                    ]
                 );
-
                 return;
             }
 
@@ -2486,7 +2485,21 @@ class Remote {
         $shoptyp = $this->app->DB->Select("SELECT shoptyp FROM shopexport WHERE id='$id' LIMIT 1");
         $modulename = trim($this->app->DB->Select("SELECT modulename FROM shopexport WHERE id='$id' LIMIT 1"), '.');
         $isActionAuth = $action === 'auth';
+        $exception = null;
+        
+        $this->logger->debug(
+                'RemoteCommand (Shop '.$id.") ".$action,
+                [
+                    'shop' => $id,
+                    'action' => $action,
+                    'data' => $data
+                ]
+        );
+        
         if ($shoptyp === 'custom') {
+
+            $error = null;
+
             if ($modulename != '') {
 
                 $file = dirname(__DIR__) . '/plugins/external/shopimporter/' . $modulename;
@@ -2507,29 +2520,37 @@ class Remote {
                                 $method = $this->getMethod($obj, $action);
                                 if (method_exists($obj, $method)) {
                                     $ret = $obj->$method();
+                                     $this->logger->debug('RemoteCommand result (Shop '.$id.') '.$modulename.' '.$action,
+                                        [
+                                            'shop' => $id,
+                                            'action' => $action,
+                                            'data' => $data,
+                                            'result' => $ret
+                                        ]
+                                    );
                                     if (!empty($this->app->stringcleaner)) {
                                         $this->app->stringcleaner->XMLArray_clean($ret);
                                     }
                                 } elseif ($isActionAuth) {
-                                    return 'Fehler: Importer konnte nicht initialisiert werden';
+                                    $error = 'Fehler: Importer konnte nicht initialisiert werden';
                                 }
                             } elseif ($isActionAuth) {
-                                return 'Fehler: Importer konnte nicht initialisiert werden';
+                                $error = 'Fehler: Importer konnte nicht initialisiert werden';
                             }
                         } elseif ($isActionAuth) {
-                            return 'Fehler: Importer konnte nicht initialisiert werden';
+                            $error = 'Fehler: Importer konnte nicht initialisiert werden';
                         }
                     } elseif ($isActionAuth) {
-                        return 'Fehler: Datei ' . $file . ' existiert nicht';
+                        $error = 'Fehler: Datei ' . $file . ' existiert nicht';
                     }
                 } elseif ($isActionAuth) {
-                    return 'Fehler: Schnittstelle nicht aktiv';
+                    $error = 'Fehler: Schnittstelle nicht aktiv';
                 }
+            } else {
+               $error = 'Fehler: Kein Modul angegeben';
             }
-            return '';
         }
-
-        if ($shoptyp === 'intern') {
+        else if ($shoptyp === 'intern') {
             if ($modulename != '') {
                 if ($this->app->erp->ModulVorhanden($modulename)) {
                     $obj = $this->app->erp->LoadModul($modulename);
@@ -2538,94 +2559,57 @@ class Remote {
                             $obj->getKonfig($id, $data);
                         }
                         $method = 'Import' . $action;
-
                         if (method_exists($obj, $method)) {
                             try {
                                 $ret = $obj->$method();
                             } catch (Exception $e) {
+                                $exception = $e;
                                 if ($isActionAuth) {
-                                    return 'Fehler Auth: ' . $e->getMessage();
+                                    $error = 'Fehler Auth: ' . $e->getMessage();
+                                } else {
+                                    $error = 'Fehler: ' . $e->getMessage();
                                 }
-                                return 'Fehler: ' . $e->getMessage();
                             }
-
+                            $this->logger->debug('RemoteCommand result (Shop '.$id.') '.$modulename.' '.$action,
+                                [
+                                    'shop' => $id,
+                                    'action' => $action,
+                                    'data' => $data,
+                                    'result' => $ret
+                                ]
+                            );
                             if (!empty($this->app->stringcleaner)) {
                                 $this->app->stringcleaner->XMLArray_clean($ret);
                             }
                             $this->parseReturn($ret, $id, $action);
-                            return $ret;
                         } else {
-                            return 'Fehler: Funktion nicht implementiert: ' . $method;
+                            $error = 'Fehler: Funktion nicht implementiert: ' . $method;
                         }
                     } elseif ($isActionAuth) {
-                        return 'Fehler: Importer konnte nicht initialisiert werden';
+                        $error = 'Fehler: Importer konnte nicht initialisiert werden';
                     }
                 } elseif ($isActionAuth) {
-                    return 'Fehler: Dieses Modul ist nicht verf&uuml;gbar';
+                    $error = 'Fehler: Dieses Modul ist nicht verf&uuml;gbar';
                 }
             } elseif ($isActionAuth) {
-                return 'Fehler: Kein Modul vorhanden';
+                $error = 'Fehler: Kein Modul vorhanden';
+            } else {
+               $error = 'Fehler: Kein Modul angegeben';
             }
-            return '';
         }
-        $shopexport = $this->app->DB->SelectRow("SELECT * FROM shopexport WHERE id='$id' LIMIT 1");
-        if ($shopexport) {
-            if ($shopexport['shoptyp'] === 'intern' || $shopexport['shoptyp'] === 'custom') {
-                return '';
-            }
-            $token = $shopexport['token'];
-            $url = $shopexport['url'];
-            $z = $shopexport['passwort'];
-            $bezeichnung = $shopexport['bezeichnung'];
-        } else {
-            $token = '';
-            $z = '';
-            $url = '';
-        }
-        if ($isActionAuth) {
-            if ($token === '' || strlen($z) < 32 || $url === '') {
-                return 'Fehler: Bitte Zugangsdaten pr&uuml;fen';
-            }
-        } elseif ($token === '' || strlen($z) < 32 || $url === '' || !$this->app->DB->Select("SELECT id FROM shopexport WHERE id = '$id' AND aktiv = 1 LIMIT 1")) {
-            return '';
-        }
-
-        $tmp = parse_url($url);
-        $tmp['host'] = rtrim($tmp['host'], '/');
-        $tmp['path'] = rtrim($tmp['path'], '/') . '/';
-
-        $aes = new AES($z);
-        $token = base64_encode($aes->encrypt(serialize($token)));
-        $client = new HttpClient($tmp['host'], stripos($url, 'https') === 0 ? 443 : 80);
-        $geturl = $tmp['path'] . 'index.php?module=import&action=' . $action . '&challenge=' . (isset($challenge) ? $challenge : '');
-        //Kein Fragezeichen vor module=import...
-        if (false !== stripos($bezeichnung, 'woocommerce')) {
-            $geturl = $tmp['path'] . 'module=import&action=' . $action . '&challenge=' . (isset($challenge) ? $challenge : '');
-        }
-        if (false !== stripos($bezeichnung, 'shopware plugin')) {
-            $geturl = $tmp['path'] . 'wawisionimporter/?smodule=import&saction=' . $action . '&challenge=' . (isset($challenge) ? $challenge : '');
-        }
-
-        $post_data['token'] = $token;
-        $post_data['data'] = base64_encode(serialize($data));
-        $client->timeout = 120;
-        if (!$client->post($geturl, $post_data)) {
-
-            $this->logger->error('An error occurred',
-                    [
-                        'error' => $client->getError()
-                    ]
+        if ($error) {
+            $this->logger->error('RemoteCommand error (Shop '.$id.') '.$modulename.' '.$action,
+                [
+                    'error' => $error,
+                    'exception' => $exception
+                ]
             );
-
-            throw new Exception('An error occurred: ' . $client->getError());
-            //return 'Netzwerkverbindung von WaWison zu Shopimporter fehlgeschlagen: '.$client->getError();
-        }
-        $ret = unserialize(base64_decode($client->getContent()));
-        if (!empty($this->app->stringcleaner)) {
-            $this->app->stringcleaner->XMLArray_clean($ret);
-        }
-        $this->parseReturn($ret, $id, $action);
+            return($error);
+        }            
+        
         return $ret;
+   
+        // Dead code removed here 2024-09-13
     }
 
     /**
