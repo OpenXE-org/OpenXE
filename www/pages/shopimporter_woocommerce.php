@@ -388,7 +388,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     // The item could be a variable product in which case we have to retrieve the sku of the variation product
     if (!empty($wcOrderItem->variation_id)) {
-      $variation_product_sku = $this->getSKUByShopId($wcOrderItem->id,$wcOrderItem->variation_id);
+      $variation_product_sku = $this->getSKUByShopId($wcOrderItem->product_id,$wcOrderItem->variation_id);
       if (!empty($variation_product_sku)) {
         $orderItem['articleid'] = $variation_product_sku;
       }
