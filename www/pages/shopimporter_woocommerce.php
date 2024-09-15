@@ -426,7 +426,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     if ($data->orderStatus !== OrderStatus::Completed)
         return;
 
-    $trackingCode = $data->shipments[0]?->trackingNumber;
+    if (isset($data->shipments)) {
+        $trackingCode = $data->shipments[0]?->trackingNumber;
+    }
 
     if (!empty($trackingCode)) {
       $this->client->post('orders/'.$data->shopOrderId.'/notes', [
@@ -446,7 +448,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'meta_data' => [
             [
                 'key' => 'tracking_code',
-                'value' => $data->shipments[0]?->trackingNumber
+                'value' => $trackingCode
             ],
             [
                 'key' => 'shipping_carrier',
