@@ -202,9 +202,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'warenkorb' => base64_encode(serialize($order)),
       ];
     }
-
     return $tmp;
-
   }
 
   // This function searches the wcOrder for the specified WC Meta key
@@ -424,19 +422,20 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   {
     /** @var OrderStatusUpdateRequest $data */
     $data = $this->CatchRemoteCommand('data');
+       
     if ($data->orderStatus !== OrderStatus::Completed)
         return;
 
     $trackingCode = $data->shipments[0]?->trackingNumber;
 
     if (!empty($trackingCode)) {
-      $this->client->post('orders/'.$data->orderId.'/notes', [
+      $this->client->post('orders/'.$data->shopOrderId.'/notes', [
         'note' => 'Tracking Code: ' . $trackingCode
       ]);
       
       $this->logger->info("WooCommerce Tracking Code Rückmeldung für Auftrag: ".$data->orderId,
         [
-            'orderId' => $data->orderId,
+            'orderId' => $data->shopOrderId,
             'trackingCode' => $trackingCode
         ]
       );     
@@ -455,11 +454,11 @@ class Shopimporter_Woocommerce extends ShopimporterBase
             ]
         ],
     ];
-    $this->client->put('orders/'.$data->orderId, $updateData);
+    $this->client->put('orders/'.$data->shopOrderId, $updateData);
         
     $this->logger->info("WooCommerce Statusrückmeldung 'completed' für Auftrag: ".$data->orderId,
         [
-            'orderId' => $data->orderId,
+            'orderId' => $data->shopOrderId,
             'status' => $this->statusCompleted
         ]
     );            
