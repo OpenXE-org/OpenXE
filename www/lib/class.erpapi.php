@@ -19040,7 +19040,7 @@ function CheckShopTabelle($artikel)
     }
   }
 
-  return array("status" => true, "$auftragid" => $auftrag);
+  return array("status" => true, "auftragid" => $auftrag);
 }
 
 
