@@ -18,7 +18,8 @@ class Seriennummern {
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "seriennummern_artikel_list");
         $this->app->ActionHandler("nummern_list", "seriennummern_nummern_list");
-        $this->app->ActionHandler("lieferscheine_list", "seriennummern_lieferscheine_list");                                
+        $this->app->ActionHandler("lieferscheine_list", "seriennummern_lieferscheine_list");
+        $this->app->ActionHandler("wareneingaenge_list", "seriennummern_wareneingaenge_list");                                                                
         $this->app->ActionHandler("enter", "seriennummern_enter"); 
         $this->app->ActionHandler("delete", "seriennummern_delete");
         $this->app->ActionHandler("remove", "seriennummern_remove");
@@ -258,7 +259,7 @@ class Seriennummern {
                 break;
             case "seriennummern_lieferscheine_list":
                 $allowed['seriennummern_artikel_list'] = array('list');
-                $heading = array('Lieferschein', 'Vom', 'Adresse', 'Menge Artikel', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;','');
+                $heading = array('Lieferschein', 'Datum', 'Adresse', 'Menge Artikel', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;','');
                 $width = array('10%','10%','20%','1%','1%','1%','1%','1%','1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -357,6 +358,108 @@ class Seriennummern {
     
                 $groupby = "GROUP BY l.id";
                 break;
+            case "seriennummern_wareneingaenge_list":
+                $allowed['seriennummern_wareneingaenge_list'] = array('list');
+                $heading = array('Paket-Nr.', 'Datum', 'Adresse', 'Menge Artikel', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;','');
+                $width = array('10%','10%','20%','1%','1%','1%','1%','1%','1%'); // Fill out manually later
+
+                // columns that are aligned right (numbers etc)
+                $alignright = array(4,5,6,7); 
+
+                $findcols = array('pa.id', 'pa.datum', 'adr.name', 'null', 'null', 'null', 'null', 'null');
+                $searchsql = array('adr.name');
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+                $aligncenter = array();
+                $numbercols = array();
+                $sumcol = array();
+
+        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',l.id,'\" />') AS `auswahl`";
+
+                //$menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=seriennummern&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=seriennummern&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+
+                $menu_link = array(
+                    '<a href="index.php?module=seriennummern&action=enter&wareneingang=',
+                    ['sql' => 'pa.id'],
+                    '&from=seriennummern">',
+                    '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/edit.svg" title="Seriennummern erfassen" border="0">',
+                    '</a>'
+                );
+
+                $wareneingang_link = array(
+                    '<a href="index.php?module=wareneingang&action=distriinhalt&id=',
+                    ['sql' => 'pa.id'],
+                    '">',
+                    ['sql' => 'pa.id'],
+                    '</a>'
+                );             
+
+                $sql = "
+                    SELECT
+                        pa.id,
+                        ".$app->erp->ConcatSQL($wareneingang_link).",
+                        ".$app->erp->FormatDate("pa.datum").",
+                        adr.name adresse,
+                        ".$app->erp->FormatMengeFuerFormular("SUM(pd.menge)")." menge,
+                        SUM(if(spd.id IS NULL,0,1)),
+                        ".$app->erp->FormatMengeFuerFormular("if(menge>SUM(if(spd.id IS NULL,0,1)),menge-SUM(if(spd.id IS NULL,0,1)),0) ").",
+                        ".$app->erp->ConcatSQL($menu_link)."
+                    FROM
+                        paketannahme pa
+                    INNER JOIN paketdistribution pd ON
+                        pd.paketannahme = pa.id
+                    INNER JOIN adresse adr ON
+                        adr.id = pa.adresse
+                    INNER JOIN artikel a ON
+                        a.id = pd.artikel
+                    LEFT JOIN seriennummern_paketdistribution spd ON
+                        spd.paketdistribution = pd.id
+                    LEFT JOIN seriennummern s ON
+                        s.id = spd.seriennummer
+                ";
+
+                $where = "(a.seriennummern <> 'keine')";
+
+                // Toggle filters
+                $app->Tpl->Add('JQUERYREADY', "$('#geschlossenewareneingaenge').click( function() { fnFilterColumn1( 0 ); } );");
+
+                for ($r = 1;$r <= 1;$r++) {
+                  $app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                           \'\',
+                                           i, 
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                } else {
+                   $where .= " AND (pa.status <> 'abgeschlossen')";
+                }
+
+
+                $count = "SELECT COUNT(DISTINCT pd.paketannahme) FROM
+                                paketdistribution pd
+                            INNER JOIN paketannahme pa ON pa.id = pd.paketannahme
+                            INNER JOIN seriennummern_paketdistribution spd 
+                                ON spd.paketdistribution = pd.id
+                            INNER JOIN artikel a ON
+                                a.id = pd.artikel 
+                            "." WHERE ".$where;
+    
+                $groupby = "GROUP BY pa.id";
+                break;
            case "seriennummern_lieferschein_positionen":
                 $allowed['seriennummern_artikel_list'] = array('list');
                 $heading = array('','','Position', 'Artikel-Nr.', 'Artikel', 'Menge', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;');
@@ -448,6 +551,7 @@ class Seriennummern {
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=nummern_list", "Seriennummern");
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=lieferscheine_list", "Lieferscheine");
+        $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=wareneingaenge_list", "Wareneing&auml;nge");
      //   $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");    
     }
     
@@ -476,7 +580,7 @@ class Seriennummern {
     
     function seriennummern_delivery_note_check_and_message($lieferschein_id) {
                
-        $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id, group_lieferschein: true);
+        $check_incoming_goods = $this->seriennummern_check_delivery_notes($lieferschein_id, group_lieferschein: true);
         if (!empty($check_delivery_notes)) {
             $lieferschein_minus_links = array();
             $lieferschein_plus_links = array();                      
@@ -496,10 +600,35 @@ class Seriennummern {
             }            
         }         
     } 
+    
+    function seriennummern_check_incoming_goods_and_message($wareneingang_id) {
+               
+        $check_incoming_goods = $this->seriennummern_check_incoming_goods($wareneingang_id, group_wareneingang: true);
+               
+        if (!empty($check_incoming_goods)) {
+            $wareneingang_minus_links = array();
+            $wareneingang_plus_links = array();                      
+            foreach ($check_incoming_goods as $check_delivery_note) {        
+                if ($check_delivery_note['anzahl_nummern'] < $check_delivery_note['menge_wareneingang']) {                    
+                    $wareneingang_minus_links[] = '<a href="index.php?module=seriennummern&action=enter&wareneingang='.$check_delivery_note['wareneingang'].'">'.$check_delivery_note['belegnr'].'</a>';
+                }
+                else if ($check_delivery_note['anzahl_nummern'] > $check_delivery_note['menge']) {                    
+                    $wareneingang_plus_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&wareneingang='.$check_delivery_note['wareneingang'].'">'.$check_delivery_note['belegnr'].'</a>';
+                }
+            }                
+            if (!empty($wareneingang_minus_links)) {
+                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Wareneingang: '.implode(', ',$wareneingang_minus_links));                    
+            }              
+            if (!empty($wareneingang_plus_links)) {
+                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Wareneingang: '.implode(', ',$wareneingang_plus_links));                    
+            }            
+        }         
+    }         
 
     function seriennummern_nummern_list() {
     
         $this->seriennummern_menu();       
+        $this->seriennummern_menu_checks();
         
         // For transfer to tablesearch    
         $artikel_id = $this->app->Secure->GetGET('artikel');
@@ -539,18 +668,20 @@ class Seriennummern {
             $this->app->Tpl->Set('ANZFEHLT', $anzahl_fehlt);
         }
         
-        $this->seriennummern_check_and_message($artikel_id);
-        $this->seriennummern_delivery_note_check_and_message(null);
-
         $this->app->YUI->TableSearch('TAB1', 'seriennummern_list', "show", "", "", basename(__FILE__), __CLASS__);              
 
         $this->app->Tpl->Parse('PAGE', "seriennummern_nummern_list.tpl");
     }    
 
-    function seriennummern_artikel_list() {
-        $this->seriennummern_menu();
+    function seriennummern_menu_checks() {
         $this->seriennummern_check_and_message(null);
         $this->seriennummern_delivery_note_check_and_message(null);
+        $this->seriennummern_check_incoming_goods_and_message(null);   
+    }
+
+    function seriennummern_artikel_list() {
+        $this->seriennummern_menu();
+        $this->seriennummern_menu_checks();
 
         $this->app->YUI->TableSearch('TAB1', 'seriennummern_artikel_list', "show", "", "", basename(__FILE__), __CLASS__);
                
@@ -559,13 +690,22 @@ class Seriennummern {
 
     function seriennummern_lieferscheine_list() {
         $this->seriennummern_menu();
-        $this->seriennummern_check_and_message(null);
-        $this->seriennummern_delivery_note_check_and_message(null);
-
+        $this->seriennummern_menu_checks();
+        
         $this->app->YUI->TableSearch('TAB1', 'seriennummern_lieferscheine_list', "show", "", "", basename(__FILE__), __CLASS__);
                
         $this->app->Tpl->Parse('PAGE', "seriennummern_lieferscheine_list.tpl");
     }   
+    
+    function seriennummern_wareneingaenge_list() {
+        $this->seriennummern_menu();
+        $this->seriennummern_menu_checks();
+
+        $this->app->YUI->TableSearch('TAB1', 'seriennummern_wareneingaenge_list', "show", "", "", basename(__FILE__), __CLASS__);
+               
+        $this->app->Tpl->Parse('PAGE', "seriennummern_wareneingaenge_list.tpl");
+    }   
+
 
     public function seriennummern_delete() {
         $id = (int) $this->app->Secure->GetGET('id');     
@@ -952,6 +1092,71 @@ class Seriennummern {
     }
 
     /*
+    * Check if all incoming goods notes have serials
+    * Return array of incoming goods note positions and head information
+    */
+    public function seriennummern_check_incoming_goods($wareneingang_id = null, $ignore_date = false, $only_missing = true, $group_wareneingang = false) : array {
+
+        if ($group_wareneingang) {
+            $sql_we = "''";
+            $sql_we_group = "";
+        } else {
+            $sql_we = "pa.id";
+            $sql_we_group = ", pa.id";
+        }
+
+        $sql = "
+                SELECT SQL_CALC_FOUND_ROWS
+                    pa.id wareneingang,
+                    pa.id belegnr,
+                    $sql_we wareneingang_position,
+                    a.id artikel,
+                    a.nummer artikel_nummer,
+                    a.name_de,
+                    ".$this->app->erp->FormatMenge('SUM(menge)')." menge_wareneingang,
+                    SUM(COALESCE(menge_nummern,0)) menge_nummern
+                FROM
+                    paketdistribution pd                
+                INNER JOIN paketannahme pa ON
+                    pa.id = pd.paketannahme
+                INNER JOIN artikel a ON
+                    a.id = pd.artikel
+                LEFT JOIN (
+                    SELECT 
+                        paketdistribution,
+                        COUNT(*) menge_nummern
+                    FROM
+                        seriennummern_paketdistribution spd
+                    GROUP BY
+                        spd.paketdistribution
+                ) spd ON spd.paketdistribution = pd.id
+                WHERE
+                    (a.seriennummern <> 'keine') 
+                    AND (
+                        pa.datum >=(
+                            SELECT
+                                COALESCE(DATE(MIN(datum)),CURRENT_DATE())
+                            FROM
+                                seriennummern
+                            WHERE
+                                artikel = a.id
+                        ) OR ('".$ignore_date."' <> '')
+                    ) 
+                    AND (pa.id = '".$wareneingang_id."' OR '".$wareneingang_id."' = '')
+                GROUP BY
+                    pa.id
+                    $sql_we_group
+        ";
+
+        if ($only_missing) {
+            $sql .= " HAVING menge_wareneingang <> menge_nummern";
+        }
+
+        $result = $this->app->DB->SelectArr($sql);        
+        return(empty($result)?array():$result);
+    }
+
+    /*
     * Check if all delivery notes have serials
     * Return array of delivery note positions and head information
     */
@@ -995,7 +1200,7 @@ class Seriennummern {
                     AND (
                         l.datum >=(
                             SELECT
-                                DATE(MIN(datum))
+                                COALESCE(DATE(MIN(datum)),CURRENT_DATE())
                             FROM
                                 seriennummern
                             WHERE
@@ -1069,7 +1274,7 @@ class Seriennummern {
         if ($check_seriennummern[0]['menge_nummern'] < $check_seriennummern[0]['menge_auf_lager']) {
             $this->seriennummern_create_notification_artikel($artikel_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Einlagerung erfassen','Zur Eingabe');
         }          
-    }    
+    }       
 
     /*
     * Check if numbers need to be entered after stock removal, if yes, create notification or message
