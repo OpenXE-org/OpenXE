@@ -1869,7 +1869,7 @@ class Lieferschein extends GenLieferschein
 
     $seriennummern_aktiv = !empty($seriennummern);
 
-    $seriennummern_check_result = $this->app->erp->SeriennummernCheckLieferscheinWarnung($id, false);
+    $seriennummern_check_result = $this->app->erp->SeriennummernCheckLieferscheinWarnung($id);
 
     $seriennummern_ok = empty($seriennummern_check_result);
 

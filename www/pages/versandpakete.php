@@ -814,6 +814,7 @@ class Versandpakete {
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");        
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Artikel hinzuf&uuml;gen');
         if (empty($id)) { 
+
             $lieferschein = $this->app->Secure->GetGET('lieferschein'); 
             if (empty($lieferschein)) {               
                 $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
@@ -874,8 +875,12 @@ class Versandpakete {
                 }    
                 $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein, false); // Parameters: Target db?, value, from form?
                 $input['lieferschein'] = $lieferschein;
+            } else {
+
             }
         }      
+
+        $this->app->erp->SeriennummernCheckLieferscheinWarnung(lieferschein_id: $lieferschein);
         
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('versandpakete',$id))

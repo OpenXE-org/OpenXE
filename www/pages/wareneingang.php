@@ -2014,14 +2014,29 @@ class Wareneingang {
 
         $id = $this->app->Secure->GetGET('id');
         $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=distriinhalt&id='.$id, 'Details');
+        
+
         $this->app->Tpl->Add('KURZUEBERSCHRIFT', ' Paketannahme / Leistungserfassung');
         $cmd = $this->app->Secure->GetGET('cmd');
         $lsnr = $this->app->Secure->GetPOST('lsnr');
         $renr = $this->app->Secure->GetPOST('renr');
-        $bemerkung = $this->app->Secure->GetPOST('bemerkung');
-
+        $bemerkung = $this->app->Secure->GetPOST('bemerkung');                        
         $bemerkung = str_replace(array('\r\n', '\r', '\n'), "\n", $bemerkung);
 
+        $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
+                        wareneingang_id: $id,
+                        ignore_date: true,
+                        only_missing: false,
+                        group_wareneingang: true);
+
+        $seriennummern_aktiv = !empty($seriennummern);
+        
+        if ($seriennummern_aktiv) {
+            $this->app->erp->MenuEintrag('index.php?module=seriennummern&action=enter&wareneingang='.$id, 'Seriennummern');
+            $seriennummern_check_result = $this->app->erp->SeriennummernCheckWareneingangWarnung($id, false);
+            $seriennummern_ok = empty($seriennummern_check_result);
+        }
+    
         $this->app->User->SetParameter('table_wareneingang_lieferant_ausfuellen', '');
 
         // Load from DB
@@ -2633,6 +2648,11 @@ class Wareneingang {
                 $this->app->YUI->Message('info','Wareneingang noch nicht abgeschlossen');
             }            
         }
+        
+        if ($seriennummern_aktiv && !$seriennummern_ok) {
+            $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
+        }
+        
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
        
     }

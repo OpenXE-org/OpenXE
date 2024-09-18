@@ -554,77 +554,7 @@ class Seriennummern {
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=wareneingaenge_list", "Wareneing&auml;nge");
      //   $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");    
     }
-    
-    function seriennummern_check_and_message($artikel_id) {
-        $check_seriennummern = $this->seriennummern_check_serials($artikel_id);
-               
-        if (!empty($check_seriennummern)) {        
-            $artikel_minus_id_links = array();
-            $artikel_plus_id_links = array();                      
-            foreach ($check_seriennummern as $artikel_id) {        
-                if ($artikel_id['menge_nummern'] < $artikel_id['menge_auf_lager']) {                    
-                    $artikel_minus_id_links[] = '<a href="index.php?module=seriennummern&action=enter&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
-                }
-                else if ($artikel_id['menge_nummern'] > $artikel_id['menge_auf_lager']) {                    
-                    $artikel_plus_id_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
-                }
-            }                
-            if (!empty($artikel_minus_id_links)) {
-                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Artikel: '.implode(', ',$artikel_minus_id_links));                    
-            }              
-            if (!empty($artikel_plus_id_links)) {
-                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Artikel: '.implode(', ',$artikel_plus_id_links));                    
-            }              
-        }              
-    }
-    
-    function seriennummern_delivery_note_check_and_message($lieferschein_id) {
-               
-        $check_incoming_goods = $this->seriennummern_check_delivery_notes($lieferschein_id, group_lieferschein: true);
-        if (!empty($check_delivery_notes)) {
-            $lieferschein_minus_links = array();
-            $lieferschein_plus_links = array();                      
-            foreach ($check_delivery_notes as $check_delivery_note) {        
-                if ($check_delivery_note['anzahl_nummern'] < $check_delivery_note['menge_lieferschein']) {                    
-                    $lieferschein_minus_links[] = '<a href="index.php?module=seriennummern&action=enter&lieferschein='.$check_delivery_note['lieferschein'].'">'.$check_delivery_note['belegnr'].'</a>';
-                }
-                else if ($check_delivery_note['anzahl_nummern'] > $check_delivery_note['menge']) {                    
-                    $lieferschein_plus_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&lieferschein='.$check_delivery_note['lieferschein'].'">'.$check_delivery_note['belegnr'].'</a>';
-                }
-            }                
-            if (!empty($lieferschein_minus_links)) {
-                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Lieferschein: '.implode(', ',$lieferschein_minus_links));                    
-            }              
-            if (!empty($lieferschein_plus_links)) {
-                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Lieferschein: '.implode(', ',$lieferschein_plus_links));                    
-            }            
-        }         
-    } 
-    
-    function seriennummern_check_incoming_goods_and_message($wareneingang_id) {
-               
-        $check_incoming_goods = $this->seriennummern_check_incoming_goods($wareneingang_id, group_wareneingang: true);
-               
-        if (!empty($check_incoming_goods)) {
-            $wareneingang_minus_links = array();
-            $wareneingang_plus_links = array();                      
-            foreach ($check_incoming_goods as $check_delivery_note) {        
-                if ($check_delivery_note['anzahl_nummern'] < $check_delivery_note['menge_wareneingang']) {                    
-                    $wareneingang_minus_links[] = '<a href="index.php?module=seriennummern&action=enter&wareneingang='.$check_delivery_note['wareneingang'].'">'.$check_delivery_note['belegnr'].'</a>';
-                }
-                else if ($check_delivery_note['anzahl_nummern'] > $check_delivery_note['menge']) {                    
-                    $wareneingang_plus_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&wareneingang='.$check_delivery_note['wareneingang'].'">'.$check_delivery_note['belegnr'].'</a>';
-                }
-            }                
-            if (!empty($wareneingang_minus_links)) {
-                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Wareneingang: '.implode(', ',$wareneingang_minus_links));                    
-            }              
-            if (!empty($wareneingang_plus_links)) {
-                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Wareneingang: '.implode(', ',$wareneingang_plus_links));                    
-            }            
-        }         
-    }         
-
+       
     function seriennummern_nummern_list() {
     
         $this->seriennummern_menu();       
@@ -675,8 +605,8 @@ class Seriennummern {
 
     function seriennummern_menu_checks() {
         $this->seriennummern_check_and_message(null);
-        $this->seriennummern_delivery_note_check_and_message(null);
-        $this->seriennummern_check_incoming_goods_and_message(null);   
+        $this->seriennummern_check_and_message_delivery_notes(null);
+        $this->seriennummern_check_and_message_incoming_goods(null);   
     }
 
     function seriennummern_artikel_list() {
@@ -1044,6 +974,9 @@ class Seriennummern {
                 
     }
    
+    /* --------------------------------------------
+    CHECKS
+    -------------------------------------------- */
     /*
     * Check if all serial numbers are given
     * Return array of article ids
@@ -1095,7 +1028,7 @@ class Seriennummern {
     * Check if all incoming goods notes have serials
     * Return array of incoming goods note positions and head information
     */
-    public function seriennummern_check_incoming_goods($wareneingang_id = null, $ignore_date = false, $only_missing = true, $group_wareneingang = false) : array {
+    public function seriennummern_check_incoming_goods($wareneingang_id = null, $only_missing = true, $group_wareneingang = false) : array {
 
         if ($group_wareneingang) {
             $sql_we = "''";
@@ -1132,16 +1065,7 @@ class Seriennummern {
                 ) spd ON spd.paketdistribution = pd.id
                 WHERE
                     (a.seriennummern <> 'keine') 
-                    AND (
-                        pa.datum >=(
-                            SELECT
-                                COALESCE(DATE(MIN(datum)),CURRENT_DATE())
-                            FROM
-                                seriennummern
-                            WHERE
-                                artikel = a.id
-                        ) OR ('".$ignore_date."' <> '')
-                    ) 
+                    AND pa.status <> 'abgeschlossen'
                     AND (pa.id = '".$wareneingang_id."' OR '".$wareneingang_id."' = '')
                 GROUP BY
                     pa.id
@@ -1222,6 +1146,9 @@ class Seriennummern {
         return(empty($result)?array():$result);
     }
     
+    /* --------------------------------------------
+    NOTIFICATIONS
+    -------------------------------------------- */
     protected function seriennummern_create_notification_artikel($artikel_id, $action, $title = 'Seriennummern', $message = 'Meldung', $button = 'Ok')
     {      
         // Notification erstellen
@@ -1265,31 +1192,130 @@ class Seriennummern {
         $notification = $this->app->Container->get('NotificationService');
         $notification->createFromData($this->app->User->GetID(), $notification_message);
     }
-    
+  
+    /* --------------------------------------------
+    CHECKS AND NOTIFICATIONS
+    -------------------------------------------- */
     /*
     * Check if new numbers need to be entered, if yes, create notification
     */
-    public function seriennummern_check_and_message_stock_added(int $artikel_id) {
+    public function seriennummern_check_and_notification_stock_added(int $artikel_id) {
         $check_seriennummern = $this->seriennummern_check_serials($artikel_id);
         if ($check_seriennummern[0]['menge_nummern'] < $check_seriennummern[0]['menge_auf_lager']) {
             $this->seriennummern_create_notification_artikel($artikel_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Einlagerung erfassen','Zur Eingabe');
         }          
-    }       
-
+    }   
+   
     /*
     * Check if numbers need to be entered after stock removal, if yes, create notification or message
     */
-    public function seriennummern_check_and_message_delivery_note(int $lieferschein_id, bool $notification) {
+    public function seriennummern_check_and_notification_delivery_note(int $lieferschein_id) {
         $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id);
         if (!empty($check_delivery_notes)) {
-            if ($notificiation) {
-                $this->seriennummern_create_notification_lieferschein($lieferschein_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Lieferschein erfassen','Zur Eingabe');
-            } else {
-                $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Seriennummern unvollst&auml;ndig!<input type=\"button\" value=\"Jetzt erfassen\" onclick=\"window.location.href='index.php?module=seriennummern&action=enter&from=lieferschein&lieferschein=$lieferschein_id'\"></div>");
-            }
+            $this->seriennummern_create_notification_lieferschein($lieferschein_id, 'enter', 'Seriennummern','Bitte Seriennummern f&uuml;r Lieferschein erfassen','Zur Eingabe');
         }          
         return($check_delivery_notes);
     }
+
+    /* --------------------------------------------
+    CHECKS AND MESSAGES MODULE HEADER
+    -------------------------------------------- */
+    function seriennummern_check_and_message($artikel_id) {
+        $check_seriennummern = $this->seriennummern_check_serials($artikel_id);
+               
+        if (!empty($check_seriennummern)) {        
+            $artikel_minus_id_links = array();
+            $artikel_plus_id_links = array();                      
+            foreach ($check_seriennummern as $artikel_id) {        
+                if ($artikel_id['menge_nummern'] < $artikel_id['menge_auf_lager']) {                    
+                    $artikel_minus_id_links[] = '<a href="index.php?module=seriennummern&action=enter&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
+                }
+                else if ($artikel_id['menge_nummern'] > $artikel_id['menge_auf_lager']) {                    
+                    $artikel_plus_id_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&artikel='.$artikel_id['id'].'">'.$artikel_id['nummer'].'</a>';
+                }
+            }                
+            if (!empty($artikel_minus_id_links)) {
+                $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Artikel: '.implode(', ',$artikel_minus_id_links));                    
+            }              
+            if (!empty($artikel_plus_id_links)) {
+                $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Artikel: '.implode(', ',$artikel_plus_id_links));                    
+            }              
+        }              
+    }
+
+    function seriennummern_check_and_message_incoming_goods($wareneingang_id) {
+               
+        $check_incoming_goods = $this->seriennummern_check_incoming_goods($wareneingang_id, group_wareneingang: true);
+               
+        if (!empty($check_incoming_goods)) {
+            if (empty($wareneingang_id)) {
+                $wareneingang_minus_links = array();
+                $wareneingang_plus_links = array();                      
+                foreach ($check_incoming_goods as $check_delivery_note) {        
+                    if ($check_delivery_note['anzahl_nummern'] < $check_delivery_note['menge_wareneingang']) {                    
+                        $wareneingang_minus_links[] = '<a href="index.php?module=seriennummern&action=enter&wareneingang='.$check_delivery_note['wareneingang'].'">'.$check_delivery_note['belegnr'].'</a>';
+                    }
+                    else if ($check_delivery_note['anzahl_nummern'] > $check_delivery_note['menge']) {                    
+                        $wareneingang_plus_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&wareneingang='.$check_delivery_note['wareneingang'].'">'.$check_delivery_note['belegnr'].'</a>';
+                    }
+                }                
+                if (!empty($wareneingang_minus_links)) {
+                    $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Wareneingang: '.implode(', ',$wareneingang_minus_links));                    
+                }              
+                if (!empty($wareneingang_plus_links)) {
+                    $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Wareneingang: '.implode(', ',$wareneingang_plus_links));                                    
+                }
+            }
+            else {
+                $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Seriennummern unvollst&auml;ndig!<input type=\"button\" value=\"Jetzt erfassen\" onclick=\"window.location.href='index.php?module=seriennummern&action=enter&from=wareneingang&wareneingang=$wareneingang_id'\"></div>");
+            }
+        }         
+        return($check_incoming_goods);
+    }         
+
+    function seriennummern_check_and_message_delivery_notes($lieferschein_id) {
+        $check_delivery_notes = $this->seriennummern_check_delivery_notes($lieferschein_id, group_lieferschein: true);
+        if (!empty($check_delivery_notes)) {
+            if (empty($lieferschein_id)) {
+                $lieferschein_minus_links = array();
+                $lieferschein_plus_links = array();                      
+                foreach ($check_delivery_notes as $check_delivery_note) {        
+                    if ($check_delivery_note['anzahl_nummern'] < $check_delivery_note['menge_lieferschein']) {                    
+                        $lieferschein_minus_links[] = '<a href="index.php?module=seriennummern&action=enter&lieferschein='.$check_delivery_note['lieferschein'].'">'.$check_delivery_note['belegnr'].'</a>';
+                    }
+                    else if ($check_delivery_note['anzahl_nummern'] > $check_delivery_note['menge']) {                    
+                        $lieferschein_plus_links[] = '<a href="index.php?module=seriennummern&action=nummern_list&lieferschein='.$check_delivery_note['lieferschein'].'">'.$check_delivery_note['belegnr'].'</a>';
+                    }
+                }                
+                if (!empty($lieferschein_minus_links)) {
+                    $this->app->YUI->Message('warning','Seriennummern fehlen f&uuml;r Lieferschein: '.implode(', ',$lieferschein_minus_links));                    
+                }              
+                if (!empty($lieferschein_plus_links)) {
+                    $this->app->YUI->Message('warning','Seriennummern Überschuss f&uuml;r Lieferschein: '.implode(', ',$lieferschein_plus_links));                    
+                }            
+            } else {
+                $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Seriennummern unvollst&auml;ndig!<input type=\"button\" value=\"Jetzt erfassen\" onclick=\"window.location.href='index.php?module=seriennummern&action=enter&from=lieferschein&lieferschein=$lieferschein_id'\"></div>");
+            }                  
+        }  
+        return($check_delivery_notes);       
+    } 
+
+    /*
+    MINIDETAILS
+    */
+    public function seriennummern_minidetail($parsetarget='',$menu=true) {
+        $id = $this->app->Secure->GetGET('id');
+
+        if($parsetarget=='')
+        {
+            $tmp = new EasyTable($this->app);
+            $tmp->Query("SELECT l.belegnr AS Lieferschein, ".$this->app->erp->FormatDate('l.datum')." AS Datum, a.name AS Adresse FROM lieferschein l INNER JOIN adresse a ON a.id = l.adresse INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein INNER JOIN seriennummern_lieferschein_position slp ON slp.lieferschein_position = lp.id WHERE slp.seriennummer ='$id' ",0,"");
+            $tmp->DisplayNew('TAB1',"Adresse","noAction");
+
+            $this->app->Tpl->Output('emptytab.tpl');
+            $this->app->ExitXentral();
+        }   
+    }    
 
     public function seriennummern_lieferscheinpos_minidetail($parsetarget='',$menu=true) {
         $id = $this->app->Secure->GetGET('id');
@@ -1304,18 +1330,6 @@ class Seriennummern {
             $this->app->ExitXentral();
         }   
     }
+   
     
-    public function seriennummern_minidetail($parsetarget='',$menu=true) {
-        $id = $this->app->Secure->GetGET('id');
-
-        if($parsetarget=='')
-        {
-            $tmp = new EasyTable($this->app);
-            $tmp->Query("SELECT l.belegnr AS Lieferschein, ".$this->app->erp->FormatDate('l.datum')." AS Datum, a.name AS Adresse FROM lieferschein l INNER JOIN adresse a ON a.id = l.adresse INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein INNER JOIN seriennummern_lieferschein_position slp ON slp.lieferschein_position = lp.id WHERE slp.seriennummer ='$id' ",0,"");
-            $tmp->DisplayNew('TAB1',"Adresse","noAction");
-
-            $this->app->Tpl->Output('emptytab.tpl');
-            $this->app->ExitXentral();
-        }   
-    }        
 }

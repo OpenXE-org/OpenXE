@@ -5794,6 +5794,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               $nurRestmenge
             );
             
+            $this->app->erp->SeriennummernCheckLieferscheinBenachrichtigung($lieferschein);
+            
             $sql = "SELECT id FROM kommissionierung k WHERE k.auftrag = '".$id."'";
             $vorkommissionierung = $this->app->DB->Select($sql);
                        

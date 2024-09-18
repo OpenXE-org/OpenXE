@@ -2821,20 +2821,36 @@ public function NavigationHooks(&$menu)
       }
     }
 
-    function SeriennummernCheckWarnung(int $artikel_id) {
+    function SeriennummernCheckBenachrichtigung(int $artikel_id) {
         $obj = $this->LoadModul('seriennummern');
-        $obj->seriennummern_check_and_message_stock_added($artikel_id);
+        return($obj->seriennummern_check_and_notification_stock_added($artikel_id));
     }  
-
-    function SeriennummernCheckLieferscheinWarnung(int $lieferschein_id, bool $notification) {
+    
+    function SeriennummernCheckLieferscheinBenachrichtigung(int $lieferschein_id) {
         $obj = $this->LoadModul('seriennummern');
-        return($obj->seriennummern_check_and_message_delivery_note($lieferschein_id, $notification));
+        return($obj->seriennummern_check_and_notification_delivery_note($lieferschein_id));
+    }
+
+    function SeriennummernCheckLieferscheinWarnung(int $lieferschein_id) {
+        $obj = $this->LoadModul('seriennummern');
+        return($obj->seriennummern_check_and_message_delivery_notes($lieferschein_id));
     }
 
     function SeriennummernCheckLieferschein($lieferschein_id = null, $ignore_date = false, $only_missing = true, $group_lieferschein = false) {
         $obj = $this->LoadModul('seriennummern');       
         return ($obj->seriennummern_check_delivery_notes($lieferschein_id, $ignore_date, $only_missing, $group_lieferschein));
     }
+    
+    function SeriennummernCheckWareneingangWarnung(int $wareneingang_id) {
+        $obj = $this->LoadModul('seriennummern');
+        return($obj->seriennummern_check_and_message_incoming_goods($wareneingang_id));
+    }
+
+    function SeriennummernCheckWareneingang($wareneingang_id = null, $ignore_date = false, $only_missing = true, $group_wareneingang = false) {
+        $obj = $this->LoadModul('seriennummern');       
+        return ($obj->seriennummern_check_incoming_goods($wareneingang_id, $ignore_date, $only_missing, $group_wareneingang));
+    }
+
 
 // @refactor in Lager Modul
 function ArtikelAnzahlLagerPlatzMitSperre($artikel,$lager_platz)
@@ -20479,7 +20495,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     $this->RunHook('LagerEinlagern_after',7, $artikel, $menge, $regal, $projekt, $grund, $doctype,$doctypeid);
     
-    $this->SeriennummernCheckWarnung($artikel);
+    $this->SeriennummernCheckBenachrichtigung($artikel);
   }
 
   function CreateLagerPlatzInhaltVPE($artikel, $menge, $gewicht, $laenge, $breite, $hoehe, $menge2 = 0, $gewicht2 = 0, $laenge2 = 0, $breite2 = 0, $hoehe2 = 0)
