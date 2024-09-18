@@ -806,6 +806,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     }
 
     $this->protokoll = $preferences['felder']['protokoll'];
+    $this->ssl_ignore = $preferences['felder']['ssl_ignore'];
     $ImportWooCommerceApiSecret = $preferences['felder']['ImportWoocommerceApiSecret'];
     $ImportWooCommerceApiKey = $preferences['felder']['ImportWoocommerceApiKey'];
     $ImportWooCommerceApiUrl = $preferences['felder']['ImportWoocommerceApiUrl'];
@@ -825,7 +826,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       //WooCommerce API Secret
       $ImportWooCommerceApiSecret,
       ["query_string_auth" => true],
-      $this->logger
+      $this->logger,
+      $this->ssl_ignore
     );
 
   }
@@ -868,7 +870,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $ImportWooCommerceApiKey,
       $ImportWooCommerceApiSecret,
       ['query_string_auth' => true],
-      $this->logger
+      $this->logger,
+      $this->ssl_ignore
     );
     $auth = $this->ImportAuth();
 
@@ -969,6 +972,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'archiv'=>array('ab_nummer'),
         'felder'=>array(
 //          'protokoll'=>array('typ'=>'checkbox','bezeichnung'=>'Protokollierung im Logfile:'),
+          'ssl_ignore'=>array('typ'=>'checkbox','bezeichnung'=>'SSL-Prüfung abschalten:','info' => 'Nur für Testzwecke!'),
           'ImportWoocommerceApiKey'=>array('typ'=>'text','bezeichnung'=>'{|API Key:','size'=>60),
           'ImportWoocommerceApiSecret'=>array('typ'=>'text','bezeichnung'=>'{|API Secret|}:','size'=>60),
           'ImportWoocommerceApiUrl'=>array('typ'=>'text','bezeichnung'=>'{|API Url|}:','size'=>40),
@@ -1027,6 +1031,8 @@ class WCClient
   /** @var Logger $logger */
   public $logger;
   
+  public $ssl_ignore = false;
+  
   /**
    * Initialize client.
    *
@@ -1037,9 +1043,9 @@ class WCClient
    *
    * @throws WCHttpClientException
    */
-  public function __construct($url, $consumerKey, $consumerSecret, $options = [], $logger)
+  public function __construct($url, $consumerKey, $consumerSecret, $options = [], $logger, $ssl_ignore)
   {
-    $this->http = new WCHttpClient($url, $consumerKey, $consumerSecret, $options, $logger);
+    $this->http = new WCHttpClient($url, $consumerKey, $consumerSecret, $options, $logger, $ssl_ignore);
     $this->logger = $logger;
   }
 
@@ -1792,7 +1798,7 @@ class WCHttpClientException extends \Exception
    * @var WCResponse
    */
   private $response;
-
+  
   /**
    * Initialize exception.
    *
@@ -1805,7 +1811,7 @@ class WCHttpClientException extends \Exception
   {
     parent::__construct($message, $code);
 
-    $this->request  = $request;
+    $this->request  = $request;    
     $this->response = $response;
   }
 
@@ -1890,6 +1896,8 @@ class WCHttpClient
   
   /** @var Logger $logger */
   public $logger;
+  
+  public $ssl_ignore = false;
 
   /**
    * Initialize HTTP client.
@@ -1901,7 +1909,7 @@ class WCHttpClient
    *
    * @throws WCHttpClientException
    */
-  public function __construct($url, $consumerKey, $consumerSecret, $options, $logger)
+  public function __construct($url, $consumerKey, $consumerSecret, $options, $logger, $ssl_ignore)
   {
     if (!function_exists('curl_version')) {
       throw new WCHttpClientException('cURL is NOT installed on this server', -1, new WCRequest(), new WCResponse());
@@ -1912,6 +1920,7 @@ class WCHttpClient
     $this->consumerKey    = $consumerKey;
     $this->consumerSecret = $consumerSecret;
     $this->logger = $logger;
+    $this->ssl_ignore = $ssl_ignore;
   }
 
   /**
@@ -2123,7 +2132,10 @@ class WCHttpClient
    */
   protected function setDefaultCurlSettings()
   {
-//    $verifySsl       = $this->options->verifySsl();
+    if (!$this->ssl_ignore) {  
+        $verifySsl   = $this->options->verifySsl();
+    }
+       
     $timeout         = $this->options->getTimeout();
     $followRedirects = $this->options->getFollowRedirects();
 
