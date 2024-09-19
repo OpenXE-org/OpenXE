@@ -24,6 +24,7 @@ class Seriennummern {
         $this->app->ActionHandler("delete", "seriennummern_delete");
         $this->app->ActionHandler("remove", "seriennummern_remove");
         $this->app->ActionHandler("minidetail_lieferscheinposition", "seriennummern_lieferscheinpos_minidetail");
+        $this->app->ActionHandler("minidetail_wareneingangposition", "seriennummern_wareneingang_minidetail");        
         $this->app->ActionHandler("minidetail", "seriennummern_minidetail");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -461,7 +462,7 @@ class Seriennummern {
                 $groupby = "GROUP BY pa.id";
                 break;
            case "seriennummern_lieferschein_positionen":
-                $allowed['seriennummern_artikel_list'] = array('list');
+                $allowed['seriennummern_lieferschein_positionen'] = array('list');
                 $heading = array('','','Position', 'Artikel-Nr.', 'Artikel', 'Menge', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;');
                 $width = array('1%','1%','10%','10%','20%'); // Fill out manually later
 
@@ -499,7 +500,7 @@ class Seriennummern {
                             lp.id,  
                             $dropnbox,                          
                             lp.sort,
-                            a.nummer,
+                            CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
                             a.name_de,
                             ".$app->erp->FormatMengeFuerFormular("menge").",
                             SUM(if(slp.id IS NULL,0,1)),
@@ -535,6 +536,81 @@ class Seriennummern {
 //                echo($sql." WHERE ".$where." ".$groupby);
 
                 break;
+                case 'seriennummern_wareneingang_positionen':
+                
+                $allowed['seriennummern_wareneingang_positionen'] = array('list');
+                $heading = array('','','Position', 'Artikel-Nr.', 'Artikel', 'Menge', 'Nummern zugeordnet', 'Nummern fehlen', 'Men&uuml;');
+                $width = array('1%','1%','10%','10%','20%'); // Fill out manually later
+
+                $wareneingang_id = $app->User->GetParameter('seriennummern_wareneingang_id');
+
+                // columns that are aligned right (numbers etc)
+                $alignright = array(6,7,8,9); 
+
+                $findcols = array('pd.id','pd.id','pd.id','a.nummer', 'a.name_de', 'null', 'null', 'null', 'null', 'null', 'null');
+                $searchsql = array('w.id');
+
+                $moreinfo = true; // Allow drop down details
+                $moreinfoaction = "_wareneingangposition"; // specify suffix for minidetail-URL to allow different minidetails
+                $menucol = 1; // Set id col for moredata/menu
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+                $aligncenter = array();
+                $numbercols = array();
+                $sumcol = array();
+
+        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',pd.id,'\" />') AS `auswahl`";
+
+                $menu = "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=seriennummern&action=remove&id=%value%&from=wareneingang\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>";
+
+                $wareneingang_link = array(
+                    '<a href="index.php?module=wareneingang&action=edit&id=',
+                    ['sql' => 'w.id'],
+                    '">',
+                    ['sql' => 'w.id'],
+                    '</a>',    
+                );
+
+                $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                            pd.id,  
+                            $dropnbox,
+                            pd.id,
+                            CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
+                            a.name_de,
+                            ".$app->erp->FormatMengeFuerFormular("menge").",
+                            SUM(if(spd.id IS NULL,0,1)),
+                            ".$app->erp->FormatMengeFuerFormular("menge-SUM(if(spd.id IS NULL,0,1))").",
+                            pd.id
+                        FROM
+                            paketdistribution pd
+                        LEFT JOIN seriennummern_paketdistribution spd 
+                            ON spd.paketdistribution = pd.id
+                        INNER JOIN paketannahme pa ON
+                            pa.id = pd.paketannahme
+                        INNER JOIN artikel a ON
+                            a.id = pd.artikel
+                        INNER JOIN adresse adr ON
+                            adr.id = pa.adresse
+                ";
+
+                $where = "(a.seriennummern <> 'keine') AND (pa.id = '".$wareneingang_id."')";
+                $count = "SELECT COUNT(DISTINCT pd.id) FROM
+                             paketdistribution pd
+                            LEFT JOIN seriennummern_paketdistribution spd 
+                                ON spd.paketdistribution = pd.id
+                            INNER JOIN paketannahme pa ON
+                                pa.id = pd.paketannahme
+                            INNER JOIN artikel a ON
+                                a.id = pd.artikel 
+                            "." WHERE ".$where;
+    
+                $groupby = "GROUP BY pd.id";
+
+                $orderby = "ORDER BY pd.id ASC";
+
+//                echo($sql." WHERE ".$where." ".$groupby);                                              
+                break;
         }
 
         $erg = false;
@@ -548,6 +624,16 @@ class Seriennummern {
     }
     
     function seriennummern_menu() {
+    
+        $from = $this->app->Secure->GetGET('from');
+        $artikel = $this->app->Secure->GetGET('artikel');
+                
+        switch ($from) {
+            case 'artikel':
+                $this->app->erp->MenuEintrag("index.php?module=artikel&action=edit&id=".$artikel, "Zur&uuml;ck");
+            break;
+        }
+    
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=nummern_list", "Seriennummern");
         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=lieferscheine_list", "Lieferscheine");
@@ -559,7 +645,7 @@ class Seriennummern {
     
         $this->seriennummern_menu();       
         $this->seriennummern_menu_checks();
-        
+               
         // For transfer to tablesearch    
         $artikel_id = $this->app->Secure->GetGET('artikel');
         $this->app->User->SetParameter('seriennummern_artikel_id', $artikel_id);
@@ -641,11 +727,14 @@ class Seriennummern {
         $id = (int) $this->app->Secure->GetGET('id');     
 
         if ($id) {
-            if (!$this->app->DB->Select("SELECT id FROM `seriennummern_lieferschein_position` WHERE `seriennummer` = '{$id}'")) {
+            if (
+                !$this->app->DB->Select("SELECT id FROM `seriennummern_lieferschein_position` WHERE `seriennummer` = '{$id}'") &&
+                !$this->app->DB->Select("SELECT id FROM `seriennummern_paketdistribution` WHERE `seriennummer` = '{$id}'")
+            ) {
                 $this->app->DB->Delete("DELETE FROM `seriennummern` WHERE `id` = '{$id}'");        
                 $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
             } else {
-                $this->app->Tpl->addMessage('error', 'Der Eintrag kann nicht gel&ouml;scht werden da eine Lieferscheinzuordnung existiert!');        
+                $this->app->Tpl->addMessage('error', 'Der Eintrag kann nicht gel&ouml;scht werden da eine Zuordnung existiert!');        
             }
             $this->seriennummern_nummern_list();
         }
@@ -656,28 +745,53 @@ class Seriennummern {
         $id = (int) $this->app->Secure->GetGET('id');
         $from = $this->app->Secure->GetGET('from');
 
-        if ($id) {       
-            $sql = "SELECT l.id, l.schreibschutz FROM lieferschein l INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein WHERE lp.id = '".$id."' LIMIT 1";
-            $lieferschein = $this->app->DB->SelectRow($sql);
-            if ($lieferschein['schreibschutz']) {
-                $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Lieferschein ist schreibgesch&uuml;tzt.</div>");                
-            } else {
-                $sql = "SELECT seriennummer FROM seriennummern_lieferschein_position WHERE `lieferschein_position` = '{$id}'";                
-                $seriennummer_ids = $this->app->DB->SelectArr($sql); 
-                if (!$this->app->DB->Delete("DELETE FROM `seriennummern_lieferschein_position` WHERE `lieferschein_position` = '{$id}'")) {
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Eintr&auml;ge wurden nicht gel&ouml;scht!</div>");
-                } else {               
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Die Eintr&auml;ge wurden gel&ouml;scht.</div>");                
-                    if (!empty($seriennummer_ids)) {
-                        $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE id IN (".implode(', ',array_column($seriennummer_ids, 'seriennummer')).")";
-                        $this->app->DB->Update($sql);                       
-                    }
-                }
-            }         
-            $this->app->Location->execute("index.php?module=seriennummern&action=enter&lieferschein=".$lieferschein['id']."&msg=$msg&from=$from");
-        }        
-    } 
+        if (empty($id)) {
+            return;
+        }
 
+        switch ($from) {
+            case 'lieferschein':
+                $sql = "SELECT l.id, l.schreibschutz FROM lieferschein l INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein WHERE lp.id = '".$id."' LIMIT 1";
+                $lieferschein = $this->app->DB->SelectRow($sql);
+                if ($lieferschein['schreibschutz']) {
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Lieferschein ist schreibgesch&uuml;tzt.</div>");                
+                } else {
+                    $sql = "SELECT seriennummer FROM seriennummern_lieferschein_position WHERE `lieferschein_position` = '{$id}'";                
+                    $seriennummer_ids = $this->app->DB->SelectArr($sql); 
+                    if (!$this->app->DB->Delete("DELETE FROM `seriennummern_lieferschein_position` WHERE `lieferschein_position` = '{$id}'")) {
+                        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Eintr&auml;ge wurden nicht gel&ouml;scht!</div>");
+                    } else {               
+                        $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Die Eintr&auml;ge wurden gel&ouml;scht.</div>");                
+                        if (!empty($seriennummer_ids)) {
+                            $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE id IN (".implode(', ',array_column($seriennummer_ids, 'seriennummer')).")";
+                            $this->app->DB->Update($sql);                       
+                        }
+                    }
+                }         
+                $this->app->Location->execute("index.php?module=seriennummern&action=enter&lieferschein=".$lieferschein['id']."&msg=$msg&from=$from");
+            break;
+            case 'wareneingang':
+                $sql = "SELECT pa.id, pa.status FROM paketannahme pa INNER JOIN paketdistribution pd ON pa.id = pd.paketannahme WHERE pd.id = '".$id."' LIMIT 1";
+                $wareneingang = $this->app->DB->SelectRow($sql);
+                if ($wareneingang['status'] == 'abgeschlossen') {
+                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Wareneingang ist abgeschlossen.</div>");                
+                } else {
+                    $sql = "SELECT seriennummer FROM seriennummern_paketdistribution WHERE `paketdistribution` = '{$id}'";                
+                    $seriennummer_ids = $this->app->DB->SelectArr($sql); 
+                    if (!$this->app->DB->Delete("DELETE FROM `seriennummern_paketdistribution` WHERE `paketdistribution` = '{$id}'")) {
+                        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Eintr&auml;ge wurden nicht gel&ouml;scht!</div>");
+                    } else {               
+                        $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Die Eintr&auml;ge wurden gel&ouml;scht.</div>");                
+                        if (!empty($seriennummer_ids)) {
+                            $sql = "UPDATE seriennummern SET eingelagert = 0, logdatei = CURRENT_TIMESTAMP WHERE id IN (".implode(', ',array_column($seriennummer_ids, 'seriennummer')).")";
+                            $this->app->DB->Update($sql);                       
+                        }
+                    }
+                }         
+                $this->app->Location->execute("index.php?module=seriennummern&action=enter&wareneingang=".$wareneingang['id']."&msg=$msg&from=$from");                
+            break;
+        }
+    } 
       
     function seriennummern_enter() {
 
@@ -692,8 +806,17 @@ class Seriennummern {
             $artikel = $this->app->DB->SelectRow("SELECT name_de, nummer FROM artikel WHERE id ='".$artikel_id."'");
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT1','Erfassen');                
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2',$artikel['name_de']." (Artikel ".$artikel['nummer'].")");
-            $this->app->Tpl->SetText('LEGEND',$artikel['name_de']." (Artikel ".$artikel['nummer'].")");
+            $this->app->Tpl->SetText('LEGEND','<a href="index.php?module=artikel&action=edit&id='.$artikel_id.'">'.$artikel['name_de'].' (Artikel '.$artikel['nummer'].')</a>', html: true);
             $task = "artikel";
+        }
+
+        $wareneingang_id = (int) $this->app->Secure->GetGET('wareneingang');          
+        if (!empty($wareneingang_id)) {
+            $this->app->User->SetParameter('seriennummern_wareneingang_id', $wareneingang_id);
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT1','Erfassen');                
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2','Wareneingang '.$wareneingang_id);
+            $this->app->Tpl->SetText('LEGEND','<a href="index.php?module=wareneingang&action=distriinhalt&id='.$wareneingang_id.'">Wareneingang '.$wareneingang_id.'</a>', html: true);
+            $task = "wareneingang";
         }
 
         $lieferschein_id = (int) $this->app->Secure->GetGET('lieferschein');          
@@ -702,7 +825,7 @@ class Seriennummern {
             $lieferschein = $this->app->DB->SelectRow("SELECT belegnr FROM lieferschein WHERE id ='".$lieferschein_id."'");
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT1','Erfassen');                
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2','Lieferschein '.$lieferschein['belegnr']);
-            $this->app->Tpl->SetText('LEGEND','Lieferschein <a href="index.php?module=lieferschein&action=edit&id='.$lieferschein_id.'">'.$lieferschein['belegnr'].'</a>', html: true);
+            $this->app->Tpl->SetText('LEGEND','<a href="index.php?module=lieferschein&action=edit&id='.$lieferschein_id.'">Lieferschein '.$lieferschein['belegnr'].'</a>', html: true);
             $task = "lieferschein";
         }
 
@@ -783,11 +906,9 @@ class Seriennummern {
                 $seriennummern = array_merge($seriennummern_not_written, $seriennummern_already_exist, $seriennummern_old_not_allowed);
             break;
             case 'lieferscheinzuordnen':
-
                 if (empty($lieferschein_id)) {
                     break;
                 }
-
                 $auswahl = $this->app->Secure->GetPOST('auswahl');                              
                 if (!empty($auswahl)) {
                     if (count($auswahl) > 1) {
@@ -797,32 +918,23 @@ class Seriennummern {
                     $lieferschein_position = $auswahl[0];
                     $sql_auswahl = " AND artikel IN (SELECT artikel FROM lieferschein_position WHERE id = '".$lieferschein_position."'";
                 }
-
                 $seriennummern_not_written = array();
                 $seriennummern_dont_exist = array();
                 $seriennummern_ambigious = array();             
-
-                foreach ($seriennummern as $seriennummer) {  
-                
-                    $seriennummer = trim($seriennummer);
-                              
+                foreach ($seriennummern as $seriennummer) {              
+                    $seriennummer = trim($seriennummer);                              
                     if (empty($seriennummer)) {
                         continue;
                     }
-
                     $sql = "SELECT id, artikel FROM seriennummern WHERE eingelagert = 1 AND seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."'".$sql_auswahl;
-
-                    $check_existing = $this->app->DB->SelectArr($sql);
-                    
+                    $check_existing = $this->app->DB->SelectArr($sql);                    
                     if (empty($check_existing)) { 
                         $seriennummern_dont_exist[] = $seriennummer;                
                     } else if (count($check_existing) > 1) {
                         $seriennummern_ambigious[] = $seriennummer;
                     } else {
-
                         $check_lieferschein = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true);        
                         $written = false;
-
                         foreach ($check_lieferschein as $position) {
                             $menge_offen = $position['menge_lieferschein']-$position['menge_nummern'];
 
@@ -851,6 +963,82 @@ class Seriennummern {
                     $this->app->Tpl->addMessage('error', 'Seriennummern nicht eindeutig: '.implode(', ',$seriennummern_ambigious));          
                 }
                 $seriennummern = array_merge($seriennummern_not_written, $seriennummern_ambigious, $seriennummern_dont_exist);
+            break;
+            case 'wareneingangzuordnen':
+                if (empty($wareneingang_id)) {
+                    break;
+                }
+                $auswahl = $this->app->Secure->GetPOST('auswahl');                              
+                
+                $auswahl_ok = true;
+                
+                if (!empty($auswahl)) {
+                    if (count($auswahl) > 1) {
+                        $auswahl_ok = false;
+                    }                   
+                } else {
+                    $auswahl_ok = false;
+                }           
+
+                if (!$auswahl_ok) {                
+                    $this->app->Tpl->addMessage('error', 'Bitte genau eine Position anklicken');
+                    break;
+                }
+                
+                $wareneingang_position = $auswahl[0];
+                $artikel_id = $this->app->DB->Select("SELECT artikel FROM paketdistribution pd WHERE pd.id ='".$wareneingang_position."' LIMIT 1");
+ 
+                $seriennummern_not_written = array();
+                $seriennummern_already_exist = array();
+                $seriennummern_old_not_allowed = array();
+                foreach ($seriennummern as $seriennummer) {  
+                
+                    $seriennummer = trim($seriennummer);
+                              
+                    if (empty($seriennummer)) {
+                        continue;
+                    }
+                              
+                    $sql = "SELECT id, eingelagert FROM seriennummern WHERE seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."' AND artikel = '".$artikel_id."'";
+                    $check_existing = $this->app->DB->SelectRow($sql);
+            
+                    if (empty($check_existing)) { // New serial
+                        $sql = "INSERT INTO seriennummern (seriennummer, artikel, logdatei, eingelagert) VALUES ('".$this->app->DB->real_escape_string($seriennummer)."', '".$artikel_id."', CURRENT_TIMESTAMP, 1)";
+                        try {                
+                            $this->app->DB->Insert($sql);
+                            $seriennummer_id = $this->app->DB->GetInsertId();
+                            $sql = "INSERT INTO seriennummern_paketdistribution (seriennummer, paketdistribution) VALUES ('".$seriennummer_id."', '".$wareneingang_position."')";
+                            $this->app->DB->Insert($sql);
+                        } catch (mysqli_sql_exception $e) {
+                            $error = true;
+                            $seriennummern_not_written[] = $seriennummer;
+                        }                     
+                    } else {
+                        if ($check_existing['eingelagert']) { // Old serial, already here
+                            $seriennummern_already_exist[] = $seriennummer;
+                        } else { // Old serial, returning
+                            if ($allowold) {
+                                $seriennummer_id = $this->app->DB->Select("SELECT id FROM seriennummern WHERE seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."' AND artikel = '".$artikel_id."'");
+                                $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE id = '".$seriennummer_id."'";
+                                $this->app->DB->Update($sql);
+                                $sql = "INSERT INTO seriennummern_paketdistribution (seriennummer, paketdistribution) VALUES ('".$seriennummer_id."', '".$wareneingang_position."')";
+                                $this->app->DB->Insert($sql);
+                            } else {
+                                $seriennummern_old_not_allowed[] = $seriennummer;
+                            }
+                        }
+                    }
+                }                              
+                if (!empty($seriennummern_already_exist)) {
+                    $this->app->Tpl->addMessage('error', 'Seriennummern existieren bereits: '.implode(', ',$seriennummern_already_exist));          
+                }
+                if (!empty($seriennummern_old_not_allowed)) {
+                    $this->app->Tpl->addMessage('error', 'Seriennummern bereits ausgeliefert: '.implode(', ',$seriennummern_old_not_allowed));          
+                }
+                if (!empty($seriennummern_not_written)) {
+                    $this->app->Tpl->addMessage('error', 'Seriennummern konnten nicht gespeichert werden: '.implode(', ',$seriennummern_not_written));          
+                }
+                $seriennummern = array_merge($seriennummern_not_written, $seriennummern_already_exist, $seriennummern_old_not_allowed);
 
             break;
         }       
@@ -861,6 +1049,8 @@ class Seriennummern {
         switch ($task) {
             case 'artikel':
                 $this->app->Tpl->Set('LIEFERSCHEIN_HIDDEN', "hidden=\"true\"");
+                $this->app->Tpl->Set('WARENEINGANG_HIDDEN', "hidden=\"true\"");
+                $this->app->Tpl->Set('BELEG_HIDDEN', "hidden=\"true\"");
                 $check_seriennummern = $this->seriennummern_check_serials($artikel_id);                
                 $check_seriennummern = $check_seriennummern[0];
                       
@@ -908,29 +1098,97 @@ class Seriennummern {
                 }
 
                 $this->app->Tpl->Set('ARTIKEL_HIDDEN', "hidden");
-                $this->app->Tpl->Set('LIEFERSCHEINNUMMER', '<a href="index.php?module=lieferschein&action=edit&id='.$lieferschein_id.'">'.$lieferschein['belegnr'].'</a>');
+                $this->app->Tpl->Set('WARENEINGANG_HIDDEN', "hidden=\"true\"");
 
                 $check_lieferschein = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true);
 
                 if (empty($check_lieferschein)) {
                     $this->app->Tpl->AddMessage('success', 'Seriennummern vollst&auml;ndig.');
-                    $check_lieferschein = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true, only_missing: false);                 
+                    $check_lieferschein = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true, only_missing: true);                 
+                    $this->app->Tpl->Set('EINGABE_HIDDEN', 'hidden');
+                } else {
+                    $menge_lieferschein = array_sum(array_column($check_lieferschein,'menge_lieferschein'));
+                    $menge_nummern = array_sum(array_column($check_lieferschein,'menge_nummern'));
+                    $anzahl_fehlt = $menge_lieferschein-$menge_nummern;               
+
+                    if ($anzahl_fehlt < 0) {
+                        $anzahl_fehlt = 0;
+                    }
+
+                    $this->app->Tpl->Set('ANZBELEG', $menge_lieferschein);        
+                    $this->app->Tpl->Set('ANZVORHANDEN', $menge_nummern);
+                    $this->app->Tpl->Set('ANZFEHLT', $anzahl_fehlt);
+
+                    $artikel_lieferschein = $this->app->DB->SelectArr("SELECT artikel FROM lieferschein_position WHERE lieferschein = '".$lieferschein_id."'");
+
+                    $sql = "
+                        SELECT
+                            DISTINCT s.seriennummer
+                        FROM
+                            seriennummern s
+                        WHERE
+                            s.artikel = ".$check_lieferschein[0]['artikel']."
+                            AND s.eingelagert = 1                        
+                        ORDER BY s.id ASC
+                        LIMIT 1
+                    ";       
+
+                    $letzte_seriennummer = (string) $this->app->DB->Select($sql);
+
+                    $regex_result = array(preg_match('/(.*?)(\d+)(?!.*\d)(.*)/', $letzte_seriennummer, $matches));
+                    $this->app->Tpl->Set('LETZTE', $letzte_seriennummer);
+                    $this->app->Tpl->Set('PRAEFIX', $matches[1]);
+                    $this->app->Tpl->Set('START', $matches[2]);
+                    $this->app->Tpl->Set('POSTFIX', $matches[3]);
+
+                    $fehlt = $check_lieferschein[0]['menge_lieferschein']-$check_lieferschein[0]['menge_nummern'];
+                    if ($fehlt < 0) {
+                        $fehlt = 0;
+                    }
+                    $this->app->Tpl->Set('ANZAHL', $fehlt);
+                }
+
+                $this->app->YUI->TableSearch('POSITIONEN', 'seriennummern_lieferschein_positionen', "show", "", "", basename(__FILE__), __CLASS__);              
+                $this->app->YUI->AutoComplete("eingabe", "seriennummerverfuegbar",0,"&lieferschein=$lieferschein_id");   
+
+                $this->app->Tpl->Set('SERIENNUMMERN', implode("\n",$seriennummern));                              
+
+            break;
+            case 'wareneingang':
+
+               switch ($from) {
+                    case 'wareneingang':
+                        $this->app->erp->MenuEintrag("index.php?module=wareneingang&action=distriinhalt&id=".$wareneingang_id, "Zur&uuml;ck");
+                    break;
+                    case 'seriennummern':
+                        $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=wareneingaenge_list", "Zur&uuml;ck");
+                    break;
+                }
+
+                $this->app->Tpl->Set('LIEFERSCHEIN_HIDDEN', "hidden");
+                $this->app->Tpl->Set('ARTIKEL_HIDDEN', "hidden");
+
+                $check_wareneingang = $this->seriennummern_check_incoming_goods($wareneingang_id);
+
+                if (empty($check_wareneingang)) {
+                    $this->app->Tpl->AddMessage('success', 'Seriennummern vollst&auml;ndig.');
+                    $check_wareneingang = $this->seriennummern_check_incoming_goods($check_wareneingang, only_missing: true);                 
                     $this->app->Tpl->Set('EINGABE_HIDDEN', 'hidden');
                 }
 
-                $menge_lieferschein = array_sum(array_column($check_lieferschein,'menge_lieferschein'));
-                $menge_nummern = array_sum(array_column($check_lieferschein,'menge_nummern'));
-                $anzahl_fehlt = $menge_lieferschein-$menge_nummern;               
+                $menge_wareneingang = array_sum(array_column($check_wareneingang,'menge_wareneingang'));
+                $menge_nummern = array_sum(array_column($check_wareneingang,'menge_nummern'));
+                $anzahl_fehlt = $menge_wareneingang-$menge_nummern;               
 
                 if ($anzahl_fehlt < 0) {
                     $anzahl_fehlt = 0;
                 }
 
-                $this->app->Tpl->Set('ANZLIEFERSCHEIN', $menge_lieferschein);        
+                $this->app->Tpl->Set('ANZBELEG', $menge_wareneingang);        
                 $this->app->Tpl->Set('ANZVORHANDEN', $menge_nummern);
                 $this->app->Tpl->Set('ANZFEHLT', $anzahl_fehlt);
 
-                $artikel_lieferschein = $this->app->DB->SelectArr("SELECT artikel FROM lieferschein_position WHERE lieferschein = '".$lieferschein_id."'");
+                $artikel_wareneingang = $this->app->DB->SelectArr("SELECT artikel FROM paketdistribution WHERE paketannahme = '".$wareneingang_id."'");
 
                 $sql = "
                     SELECT
@@ -938,32 +1196,30 @@ class Seriennummern {
                     FROM
                         seriennummern s
                     WHERE
-                        s.artikel = '".$check_lieferschein[0]['artikel']."'
-                        AND s.eingelagert = 1                        
-                    ORDER BY s.id ASC
+                        s.artikel IN (".implode(',',array_column($artikel_wareneingang,'artikel')).")
+                    ORDER BY s.id DESC
                     LIMIT 1
                 ";       
 
-                $letzte_seriennummer = (string) $this->app->DB->Select($sql);
-
+                $letzte_seriennummer = (string) $this->app->DB->Select($sql);       
+                
                 $regex_result = array(preg_match('/(.*?)(\d+)(?!.*\d)(.*)/', $letzte_seriennummer, $matches));
                 $this->app->Tpl->Set('LETZTE', $letzte_seriennummer);
                 $this->app->Tpl->Set('PRAEFIX', $matches[1]);
-                $this->app->Tpl->Set('START', $matches[2]);
+                $this->app->Tpl->Set('START', $matches[2]+1);
                 $this->app->Tpl->Set('POSTFIX', $matches[3]);
 
-                $fehlt = $check_lieferschein[0]['menge_lieferschein']-$check_lieferschein[0]['menge_nummern'];
+                $fehlt = $check_lieferschein[0]['menge_wareneingang']-$check_wareneingang[0]['menge_nummern'];
                 if ($fehlt < 0) {
                     $fehlt = 0;
                 }
 
-                $this->app->Tpl->Set('ANZAHL', $fehlt);
+                $this->app->Tpl->Set('ANZAHL', $anzahl_fehlt);
 
-                $this->app->YUI->TableSearch('POSITIONEN', 'seriennummern_lieferschein_positionen', "show", "", "", basename(__FILE__), __CLASS__);              
+                $this->app->YUI->TableSearch('POSITIONEN', 'seriennummern_wareneingang_positionen', "show", "", "", basename(__FILE__), __CLASS__);              
                 $this->app->YUI->AutoComplete("eingabe", "seriennummerverfuegbar",0,"&lieferschein=$lieferschein_id");   
 
-                $this->app->Tpl->Set('SERIENNUMMERN', implode("\n",$seriennummern));                              
-
+                $this->app->Tpl->Set('SERIENNUMMERN', implode("\n",$seriennummern));                         
             break;
             default:
                 exit();
@@ -1324,6 +1580,20 @@ class Seriennummern {
         {
             $tmp = new EasyTable($this->app);
             $tmp->Query("SELECT s.seriennummer FROM seriennummern s INNER JOIN seriennummern_lieferschein_position slp ON slp.seriennummer = s.id WHERE slp.lieferschein_position ='$id' ",0,"");
+            $tmp->DisplayNew('TAB1',"Seriennummern","noAction");
+
+            $this->app->Tpl->Output('emptytab.tpl');
+            $this->app->ExitXentral();
+        }   
+    }
+    
+    public function seriennummern_wareneingang_minidetail($parsetarget='',$menu=true) {
+        $id = $this->app->Secure->GetGET('id');
+
+        if($parsetarget=='')
+        {
+            $tmp = new EasyTable($this->app);
+            $tmp->Query("SELECT s.seriennummer FROM seriennummern s INNER JOIN seriennummern_paketdistribution spd ON spd.seriennummer = s.id WHERE spd.paketdistribution ='$id' ",0,"");
             $tmp->DisplayNew('TAB1',"Seriennummern","noAction");
 
             $this->app->Tpl->Output('emptytab.tpl');

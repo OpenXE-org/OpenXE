@@ -17,8 +17,7 @@
                     <div class="col-xs-14 col-md-6 col-md-height">
                         <div class="inside inside-full-height">
                             <fieldset>
-                                <legend [LIEFERSCHEIN_HIDDEN]>{|Lieferscheinpositionen|}</legend>
-                                <legend [ARTIKEL_HIDDEN]>{|Seriennummern|}</legend>
+                                <legend >{|[LEGEND]|}</legend>
                                 [POSITIONEN]
                             </fieldset>
                         </div>
@@ -26,7 +25,7 @@
                     <div class="col-xs-14 col-md-6 col-md-height">
                         <div class="inside inside-full-height">                          
                             <fieldset>
-                                <legend>{|Seriennummern erfassen [LEGEND]|}</legend>
+                                <legend>{|Seriennummern erfassen|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr [ARTIKEL_HIDDEN]>
                                         <td>
@@ -44,15 +43,15 @@
                                             <input type="text" value="[ANZVORHANDEN]" size="40" disabled />
                                         </td>
                                     </tr>
-                                    <tr [LIEFERSCHEIN_HIDDEN]>
+                                    <tr [BELEG_HIDDEN]>
                                         <td>
-                                            {|Menge auf Lieferschein|}:
+                                            {|Menge auf Beleg|}:
                                         </td>
                                         <td>
-                                            <input type="text" value="[ANZLIEFERSCHEIN]" size="40" disabled />
+                                            <input type="text" value="[ANZBELEG]" size="40" disabled />
                                         </td>
                                     </tr>
-                                    <tr [LIEFERSCHEIN_HIDDEN]>
+                                    <tr [BELEG_HIDDEN]>
                                         <td>
                                             {|Seriennummern zugeordnet|}:
                                         </td>
@@ -69,6 +68,14 @@
                                         </td>
                                     </tr>
                                     <tr [ARTIKEL_HIDDEN] [EINGABE_HIDDEN]>
+                                        <td>
+                                            {|Seriennummer scannen|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="eingabescan" id="eingabescan" value="[EINGABESCAN]" size="40" autofocus />
+                                        </td>
+                                    </tr>
+                                    <tr [WARENEINGANG_HIDDEN] [EINGABE_HIDDEN]>
                                         <td>
                                             {|Seriennummer scannen|}:
                                         </td>
@@ -93,6 +100,9 @@
                                     </tr>
                                     <tr [EINGABE_HIDDEN]>
                                         <td [ARTIKEL_HIDDEN]>
+                                            {|Letzte Seriennummer|}:
+                                        </td>
+                                        <td [WARENEINGANG_HIDDEN]>
                                             {|Letzte Seriennummer|}:
                                         </td>
                                         <td [LIEFERSCHEIN_HIDDEN]>
@@ -173,7 +183,7 @@
                                         <td>
                                             <input type="checkbox" name="allowold" id="allowold" value="1" [PRIO] size="20">{|Ausgelieferte erlauben|}
                                         </td>
-                                    </tr>
+                                    </tr>                                    
                                     <tr [ARTIKEL_HIDDEN]>
                                         <td>
                                             <button name="submit" value="einlagern" class="ui-button-icon" style="width:100%;">Speichern</button>
@@ -182,6 +192,16 @@
                                     <tr [LIEFERSCHEIN_HIDDEN]>
                                         <td>
                                             <button name="submit" value="lieferscheinzuordnen" class="ui-button-icon" style="width:100%;">Speichern</button>
+                                        </td>
+                                    </tr>
+                                    <tr [WARENEINGANG_HIDDEN]>
+                                        <td>
+                                            <input type="checkbox" name="allowold" id="allowold" value="1" [PRIO] size="20">{|Ausgelieferte erlauben|}
+                                        </td>
+                                    </tr>
+                                    <tr [WARENEINGANG_HIDDEN]>
+                                        <td>
+                                            <button name="submit" value="wareneingangzuordnen" class="ui-button-icon" style="width:100%;">Speichern</button>
                                         </td>
                                     </tr>
                                 </table>
