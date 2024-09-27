@@ -72,19 +72,6 @@ class Seriennummern {
                     '</a>',    
                 );
 
-/*                $sql_columns = "
-                    s.id,
-                    CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\">',a.nummer,'</a>') as nummer,
-                    a.name_de,
-                    s.seriennummer,
-                    ".$app->erp->FormatDateTime("s.datum").",
-                    if(s.eingelagert,'Ja','Nein'),
-                    lh.adresse_name,
-                    ".$app->erp->ConcatSQL($lieferschein_link).",
-                    ".$app->erp->FormatDate("lh.datum").",
-                    s.id 
-                ";*/
-
                 $sql_columns = "
                     s.id,
                     $dropnbox,
@@ -95,7 +82,6 @@ class Seriennummern {
                     if(s.eingelagert,'Ja','Nein'),                    
                     s.id 
                 ";
-
 
                 $sql_tables = "
                             seriennummern s 
@@ -296,26 +282,36 @@ class Seriennummern {
                     '</a>',    
                 );
 
-                $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                $sql_columns = "
                             l.id,
                             ".$app->erp->ConcatSQL($lieferschein_link).",
                             ".$app->erp->FormatDate("l.datum").",
                             adr.name,
-                            ".$app->erp->FormatMengeFuerFormular("menge").",
-                            SUM(if(slp.id IS NULL,0,1)),
-                            ".$app->erp->FormatMengeFuerFormular("if(menge>SUM(if(slp.id IS NULL,0,1)),menge-SUM(if(slp.id IS NULL,0,1)),0) ").",
+                            ".$app->erp->FormatMengeFuerFormular("SUM(menge)").",
+                            SUM(menge_nummern),
+                            ".$app->erp->FormatMengeFuerFormular("if(SUM(menge)>SUM(menge_nummern),SUM(menge)-SUM(menge_nummern),0)").",
                             ".$app->erp->ConcatSQL($menu_link).",
-                            l.id
-                        FROM
+                            l.id";
+                $sql_tables = "
                             lieferschein_position lp
-                        LEFT JOIN seriennummern_beleg_position slp 
-                            ON slp.beleg_typ = 'lieferschein' AND slp.beleg_position = lp.id
                         INNER JOIN lieferschein l ON
                             l.id = lp.lieferschein
                         INNER JOIN artikel a ON
                             a.id = lp.artikel
                         INNER JOIN adresse adr ON
                             adr.id = l.adresse
+                        LEFT JOIN (
+                            SELECT
+                                beleg_position,
+                                COUNT(id) menge_nummern
+                            FROM
+                                seriennummern_beleg_position
+                            WHERE 
+                                beleg_typ = 'lieferschein'
+                            GROUP BY
+                                beleg_position
+                        ) sbp
+                        ON sbp.beleg_position = lp.id
                 ";
 
                 $where = "(a.seriennummern <> 'keine')";
@@ -347,17 +343,9 @@ class Seriennummern {
                    $where .= " AND (l.datum >= (SELECT DATE(MIN(datum)) FROM seriennummern WHERE artikel = a.id))";
                 }
 
-
-                $count = "SELECT COUNT(DISTINCT lp.lieferschein) FROM
-                             lieferschein_position lp
-                            LEFT JOIN seriennummern_beleg_position slp 
-                                ON slp.beleg_typ = 'lieferschein' AND slp.beleg_position = lp.id
-                            INNER JOIN lieferschein l ON
-                                l.id = lp.lieferschein
-                            INNER JOIN artikel a ON
-                                a.id = lp.artikel 
-                            "." WHERE ".$where;
-    
+                $sql = "SELECT SQL_CALC_FOUND_ROWS ".$sql_columns." FROM ".$sql_tables;
+                $count = "SELECT COUNT(DISTINCT l.id) FROM ".$sql_tables." WHERE ".$where;
+   
                 $groupby = "GROUP BY l.id";
                 break;
             case "seriennummern_wareneingaenge_list":
@@ -915,7 +903,7 @@ class Seriennummern {
                         break;
                     }
                     $lieferschein_position = $auswahl[0];
-                    $sql_auswahl = " AND artikel IN (SELECT artikel FROM lieferschein_position WHERE id = '".$lieferschein_position."'";
+                    $sql_auswahl = " AND artikel IN (SELECT artikel FROM lieferschein_position WHERE id = '".$lieferschein_position."')";
                 }
                 $seriennummern_not_written = array();
                 $seriennummern_dont_exist = array();
