@@ -110,13 +110,14 @@ class Seriennummern {
                                 l.id lieferschein,
                                 l.belegnr
                             FROM
-                                seriennummern_lieferschein_position slp
+                                seriennummern_beleg_position slp
                             INNER JOIN lieferschein_position lp ON
-                                lp.id = slp.lieferschein_position
+                                lp.id = slp.beleg_position
                             INNER JOIN lieferschein l ON
                                 l.id = lp.lieferschein
                             INNER JOIN adresse a ON
                                 a.id = l.adresse
+                            WHERE slp.beleg_typ = 'lieferschein'
                             ORDER BY
                                 l.datum
                             DESC
@@ -307,8 +308,8 @@ class Seriennummern {
                             l.id
                         FROM
                             lieferschein_position lp
-                        LEFT JOIN seriennummern_lieferschein_position slp 
-                            ON slp.lieferschein_position = lp.id
+                        LEFT JOIN seriennummern_beleg_position slp 
+                            ON slp.beleg_typ = 'lieferschein' AND slp.beleg_position = lp.id
                         INNER JOIN lieferschein l ON
                             l.id = lp.lieferschein
                         INNER JOIN artikel a ON
@@ -349,8 +350,8 @@ class Seriennummern {
 
                 $count = "SELECT COUNT(DISTINCT lp.lieferschein) FROM
                              lieferschein_position lp
-                            LEFT JOIN seriennummern_lieferschein_position slp 
-                                ON slp.lieferschein_position = lp.id
+                            LEFT JOIN seriennummern_beleg_position slp 
+                                ON slp.beleg_typ = 'lieferschein' AND slp.beleg_position = lp.id
                             INNER JOIN lieferschein l ON
                                 l.id = lp.lieferschein
                             INNER JOIN artikel a ON
@@ -414,8 +415,8 @@ class Seriennummern {
                         adr.id = pa.adresse
                     INNER JOIN artikel a ON
                         a.id = pd.artikel
-                    LEFT JOIN seriennummern_paketdistribution spd ON
-                        spd.paketdistribution = pd.id
+                    LEFT JOIN seriennummern_beleg_position spd ON
+                        spd.beleg_typ = 'wareneingang' AND spd.beleg_position = pd.id
                     LEFT JOIN seriennummern s ON
                         s.id = spd.seriennummer
                 ";
@@ -449,12 +450,11 @@ class Seriennummern {
                    $where .= " AND (pa.status <> 'abgeschlossen')";
                 }
 
-
                 $count = "SELECT COUNT(DISTINCT pd.paketannahme) FROM
                                 paketdistribution pd
                             INNER JOIN paketannahme pa ON pa.id = pd.paketannahme
-                            INNER JOIN seriennummern_paketdistribution spd 
-                                ON spd.paketdistribution = pd.id
+                            INNER JOIN seriennummern_beleg_position spd 
+                                ON spd.beleg_typ = 'wareneingang' AND spd.beleg_position = pd.id
                             INNER JOIN artikel a ON
                                 a.id = pd.artikel 
                             "." WHERE ".$where;
@@ -508,8 +508,8 @@ class Seriennummern {
                             lp.id
                         FROM
                             lieferschein_position lp
-                        LEFT JOIN seriennummern_lieferschein_position slp 
-                            ON slp.lieferschein_position = lp.id
+                        LEFT JOIN seriennummern_beleg_position slp 
+                            ON slp.beleg_typ = 'lieferschein' AND slp.beleg_position = lp.id
                         INNER JOIN lieferschein l ON
                             l.id = lp.lieferschein
                         INNER JOIN artikel a ON
@@ -521,8 +521,8 @@ class Seriennummern {
                 $where = "(a.seriennummern <> 'keine') AND (l.id = '".$lieferschein_id."')";
                 $count = "SELECT COUNT(DISTINCT lp.lieferschein) FROM
                              lieferschein_position lp
-                            LEFT JOIN seriennummern_lieferschein_position slp 
-                                ON slp.lieferschein_position = lp.id
+                            LEFT JOIN seriennummern_beleg_position slp 
+                                ON slp.beleg_typ = 'lieferschein' AND slp.beleg_position = lp.id
                             INNER JOIN lieferschein l ON
                                 l.id = lp.lieferschein
                             INNER JOIN artikel a ON
@@ -584,8 +584,8 @@ class Seriennummern {
                             pd.id
                         FROM
                             paketdistribution pd
-                        LEFT JOIN seriennummern_paketdistribution spd 
-                            ON spd.paketdistribution = pd.id
+                        LEFT JOIN seriennummern_beleg_position spd 
+                            ON spd.beleg_typ = 'wareneingang' AND spd.beleg_position = pd.id
                         INNER JOIN paketannahme pa ON
                             pa.id = pd.paketannahme
                         INNER JOIN artikel a ON
@@ -597,8 +597,8 @@ class Seriennummern {
                 $where = "(a.seriennummern <> 'keine') AND (pa.id = '".$wareneingang_id."')";
                 $count = "SELECT COUNT(DISTINCT pd.id) FROM
                              paketdistribution pd
-                            LEFT JOIN seriennummern_paketdistribution spd 
-                                ON spd.paketdistribution = pd.id
+                            LEFT JOIN seriennummern_beleg_position spd 
+                                ON spd.beleg_typ = 'wareneingang' AND spd.beleg_position = pd.id
                             INNER JOIN paketannahme pa ON
                                 pa.id = pd.paketannahme
                             INNER JOIN artikel a ON
@@ -728,8 +728,7 @@ class Seriennummern {
 
         if ($id) {
             if (
-                !$this->app->DB->Select("SELECT id FROM `seriennummern_lieferschein_position` WHERE `seriennummer` = '{$id}'") &&
-                !$this->app->DB->Select("SELECT id FROM `seriennummern_paketdistribution` WHERE `seriennummer` = '{$id}'")
+                !$this->app->DB->Select("SELECT id FROM `seriennummern_beleg_position` WHERE `seriennummer` = '{$id}'")
             ) {
                 $this->app->DB->Delete("DELETE FROM `seriennummern` WHERE `id` = '{$id}'");        
                 $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
@@ -756,9 +755,9 @@ class Seriennummern {
                 if ($lieferschein['schreibschutz']) {
                     $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Lieferschein ist schreibgesch&uuml;tzt.</div>");                
                 } else {
-                    $sql = "SELECT seriennummer FROM seriennummern_lieferschein_position WHERE `lieferschein_position` = '{$id}'";                
+                    $sql = "SELECT seriennummer FROM seriennummern_beleg_position WHERE beleg_typ = 'lieferschein' AND `beleg_position` = '{$id}'";                
                     $seriennummer_ids = $this->app->DB->SelectArr($sql); 
-                    if (!$this->app->DB->Delete("DELETE FROM `seriennummern_lieferschein_position` WHERE `lieferschein_position` = '{$id}'")) {
+                    if (!$this->app->DB->Delete("DELETE FROM `seriennummern_beleg_position` WHERE beleg_typ = 'lieferschein' AND `beleg_position` = '{$id}'")) {
                         $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Eintr&auml;ge wurden nicht gel&ouml;scht!</div>");
                     } else {               
                         $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Die Eintr&auml;ge wurden gel&ouml;scht.</div>");                
@@ -776,9 +775,9 @@ class Seriennummern {
                 if ($wareneingang['status'] == 'abgeschlossen') {
                     $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Wareneingang ist abgeschlossen.</div>");                
                 } else {
-                    $sql = "SELECT seriennummer FROM seriennummern_paketdistribution WHERE `paketdistribution` = '{$id}'";                
+                    $sql = "SELECT seriennummer FROM seriennummern_beleg_position WHERE beleg_typ = 'wareneingang' AND `beleg_position` = '{$id}'";                
                     $seriennummer_ids = $this->app->DB->SelectArr($sql); 
-                    if (!$this->app->DB->Delete("DELETE FROM `seriennummern_paketdistribution` WHERE `paketdistribution` = '{$id}'")) {
+                    if (!$this->app->DB->Delete("DELETE FROM `seriennummern_beleg_position` WHERE  beleg_typ = 'wareneingang' AND `beleg_position` = '{$id}'")) {
                         $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Eintr&auml;ge wurden nicht gel&ouml;scht!</div>");
                     } else {               
                         $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Die Eintr&auml;ge wurden gel&ouml;scht.</div>");                
@@ -943,7 +942,7 @@ class Seriennummern {
                                     $lieferschein_position = $position['lieferschein_position'];
                                 }                                 
                                 if ($lieferschein_position == $position['lieferschein_position']) {
-                                    $sql = "INSERT INTO seriennummern_lieferschein_position (lieferschein_position, seriennummer) VALUES ('".$lieferschein_position."','".$check_existing[0]['id']."') ";
+                                    $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, beleg_position, seriennummer) VALUES ('lieferschein','".$lieferschein_position."','".$check_existing[0]['id']."') ";
                                     $this->app->DB->Insert($sql);
                                     $sql = "UPDATE seriennummern SET eingelagert = 0, logdatei = CURRENT_TIMESTAMP WHERE id = '".$check_existing[0]['id']."'";
                                     $this->app->DB->Update($sql);
@@ -1007,7 +1006,7 @@ class Seriennummern {
                         try {                
                             $this->app->DB->Insert($sql);
                             $seriennummer_id = $this->app->DB->GetInsertId();
-                            $sql = "INSERT INTO seriennummern_paketdistribution (seriennummer, paketdistribution) VALUES ('".$seriennummer_id."', '".$wareneingang_position."')";
+                            $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, seriennummer, paketdistribution) VALUES ('wareneingang','".$seriennummer_id."', '".$wareneingang_position."')";
                             $this->app->DB->Insert($sql);
                         } catch (mysqli_sql_exception $e) {
                             $error = true;
@@ -1021,7 +1020,7 @@ class Seriennummern {
                                 $seriennummer_id = $this->app->DB->Select("SELECT id FROM seriennummern WHERE seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."' AND artikel = '".$artikel_id."'");
                                 $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE id = '".$seriennummer_id."'";
                                 $this->app->DB->Update($sql);
-                                $sql = "INSERT INTO seriennummern_paketdistribution (seriennummer, paketdistribution) VALUES ('".$seriennummer_id."', '".$wareneingang_position."')";
+                                $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, seriennummer, paketdistribution) VALUES ('wareneingang','".$seriennummer_id."', '".$wareneingang_position."')";
                                 $this->app->DB->Insert($sql);
                             } else {
                                 $seriennummern_old_not_allowed[] = $seriennummer;
@@ -1312,13 +1311,15 @@ class Seriennummern {
                     a.id = pd.artikel
                 LEFT JOIN (
                     SELECT 
-                        paketdistribution,
+                        beleg_position,
                         COUNT(*) menge_nummern
                     FROM
-                        seriennummern_paketdistribution spd
+                        seriennummern_beleg_position spd
+                    WHERE
+                        spd.beleg_typ = 'wareneingang'
                     GROUP BY
-                        spd.paketdistribution
-                ) spd ON spd.paketdistribution = pd.id
+                        spd.beleg_position
+                ) spd ON spd.beleg_position = pd.id
                 WHERE
                     (a.seriennummern <> 'keine') 
                     AND pa.status <> 'abgeschlossen'
@@ -1368,13 +1369,14 @@ class Seriennummern {
                     a.id = lp.artikel
                 LEFT JOIN (
                     SELECT 
-                        lieferschein_position,
+                        beleg_position,
                         COUNT(*) menge_nummern
                     FROM
-                        seriennummern_lieferschein_position slp
+                        seriennummern_beleg_position slp
+                    WHERE slp.beleg_typ = 'lieferschein'
                     GROUP BY
-                        slp.lieferschein_position
-                ) slp ON slp.lieferschein_position = lp.id
+                        slp.beleg_position
+                ) slp ON slp.beleg_position = lp.id
                 WHERE
                     (a.seriennummern <> 'keine') 
                     AND (
@@ -1565,7 +1567,26 @@ class Seriennummern {
         if($parsetarget=='')
         {
             $tmp = new EasyTable($this->app);
-            $tmp->Query("SELECT l.belegnr AS Lieferschein, ".$this->app->erp->FormatDate('l.datum')." AS Datum, a.name AS Adresse FROM lieferschein l INNER JOIN adresse a ON a.id = l.adresse INNER JOIN lieferschein_position lp ON l.id = lp.lieferschein INNER JOIN seriennummern_lieferschein_position slp ON slp.lieferschein_position = lp.id WHERE slp.seriennummer ='$id' ",0,"");
+
+            $tmp->Query("SELECT 
+                    CONCAT(
+                        UCASE(LEFT(sbp.beleg_typ, 1)), 
+                        SUBSTRING(sbp.beleg_typ, 2)
+                    ) AS Belegtyp,
+                    COALESCE(l.belegnr,w.id) AS Beleg,
+                    ".$this->app->erp->FormatDate('l.datum')." AS Datum,
+                    COALESCE(al.name,aw.name) AS Adresse                     
+                FROM seriennummern_beleg_position sbp
+                LEFT JOIN lieferschein_position lp ON sbp.beleg_typ = 'lieferschein' AND lp.id = sbp.beleg_position
+                LEFT JOIN lieferschein l ON l.id = lp.lieferschein
+                LEFT JOIN adresse al ON al.id = l.adresse
+                
+                LEFT JOIN paketdistribution pd ON sbp.beleg_typ = 'wareneingang' AND pd.id = sbp.beleg_position
+                LEFT JOIN paketannahme w ON w.id = pd.paketannahme
+                LEFT JOIN adresse aw ON aw.id = w.adresse
+                
+                WHERE sbp.seriennummer ='$id' "
+            ,0,"");
             $tmp->DisplayNew('TAB1',"Adresse","noAction");
 
             $this->app->Tpl->Output('emptytab.tpl');
@@ -1579,7 +1600,7 @@ class Seriennummern {
         if($parsetarget=='')
         {
             $tmp = new EasyTable($this->app);
-            $tmp->Query("SELECT s.seriennummer FROM seriennummern s INNER JOIN seriennummern_lieferschein_position slp ON slp.seriennummer = s.id WHERE slp.lieferschein_position ='$id' ",0,"");
+            $tmp->Query("SELECT s.seriennummer FROM seriennummern s INNER JOIN seriennummern_beleg_position slp ON slp.beleg_typ = 'lieferschein' AND slp.seriennummer = s.id WHERE slp.beleg_position ='$id' ",0,"");
             $tmp->DisplayNew('TAB1',"Seriennummern","noAction");
 
             $this->app->Tpl->Output('emptytab.tpl');
@@ -1593,7 +1614,7 @@ class Seriennummern {
         if($parsetarget=='')
         {
             $tmp = new EasyTable($this->app);
-            $tmp->Query("SELECT s.seriennummer FROM seriennummern s INNER JOIN seriennummern_paketdistribution spd ON spd.seriennummer = s.id WHERE spd.paketdistribution ='$id' ",0,"");
+            $tmp->Query("SELECT s.seriennummer FROM seriennummern s INNER JOIN seriennummern_beleg_position spd ON spd.beleg_typ = 'wareneingang' AND spd.seriennummer = s.id WHERE spd.beleg_position ='$id' ",0,"");
             $tmp->DisplayNew('TAB1',"Seriennummern","noAction");
 
             $this->app->Tpl->Output('emptytab.tpl');

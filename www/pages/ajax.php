@@ -2619,11 +2619,8 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
                     seriennummern s
                 INNER JOIN
                     lieferschein_position lp ON lp.artikel = s.artikel
-                LEFT JOIN
-                    seriennummern_lieferschein_position slp ON slp.seriennummer = s.id
                 WHERE
                     s.eingelagert = 1
-                    AND slp.id IS NULL
                     AND s.seriennummer LIKE '%$term%' 
                     AND (s.artikel = '$artikel' OR '$artikel' = '0')                 
                 LIMIT 20
