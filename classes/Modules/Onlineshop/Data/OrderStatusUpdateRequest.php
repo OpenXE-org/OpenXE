@@ -26,7 +26,7 @@ class OrderStatusUpdateRequest
     /**
      * @var Shipment[] list of shipments for this order
      */
-    public array $shipments;
+    public array $shipments = array();
 
     public function getTrackingNumberList() : array {
         $list = [];

@@ -18526,7 +18526,26 @@ function CheckShopTabelle($artikel)
           if(!empty($anummer)){
             $value['articleid'] = $anummer;
           }
-          $ap = $this->AddAuftragPositionNummer($auftrag,$value['articleid'],$value['quantity'],$projekt,"",true, $doctype, $warenkorb['articlelist'][$key]);
+          $gruppenpreis = $this->GetVerkaufspreisGruppe($j_id,$value['quantity'],$shopexportArr['preisgruppe'],$waehrung);
+          if ($gruppenpreis) {
+              $ap = $this->AddPositionManuellPreisNummer(
+                    $doctype,
+                    $auftrag,
+                    $projekt,
+                    $value['articleid'],
+                    $value['quantity'],
+                    $value['name'],
+                    $gruppenpreis,
+                    $j_umsatzsteuer,
+                    $value['rabatt'],
+                    $shop,
+                    $waehrung,
+                    $warenkorb['articlelist'][$key],
+                    $warenkorb['articlelist']
+              );
+          } else {
+              $ap = $this->AddAuftragPositionNummer($auftrag,$value['articleid'],$value['quantity'],$projekt,"",true, $doctype, $warenkorb['articlelist'][$key]);
+          }
           if(isset($value['webid'])){
             $this->app->DB->Update("UPDATE $doctype"."_position SET webid = '".$this->app->DB->real_escape_string($value['webid'])."' WHERE id = '$ap' LIMIT 1");
           }
@@ -19040,7 +19059,7 @@ function CheckShopTabelle($artikel)
     }
   }
 
-  return array("status" => true, "$auftragid" => $auftrag);
+  return array("status" => true, "auftragid" => $auftrag);
 }
 
 
