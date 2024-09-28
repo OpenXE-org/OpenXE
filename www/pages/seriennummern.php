@@ -288,8 +288,8 @@ class Seriennummern {
                             ".$app->erp->FormatDate("l.datum").",
                             adr.name,
                             ".$app->erp->FormatMengeFuerFormular("SUM(menge)").",
-                            SUM(menge_nummern),
-                            ".$app->erp->FormatMengeFuerFormular("if(SUM(menge)>SUM(menge_nummern),SUM(menge)-SUM(menge_nummern),0)").",
+                            SUM(COALESCE(menge_nummern,0)),
+                            ".$app->erp->FormatMengeFuerFormular("if(SUM(menge)>SUM(COALESCE(menge_nummern,0)),SUM(menge)-SUM(COALESCE(menge_nummern,0)),0)").",
                             ".$app->erp->ConcatSQL($menu_link).",
                             l.id";
                 $sql_tables = "
@@ -391,9 +391,9 @@ class Seriennummern {
                         ".$app->erp->ConcatSQL($wareneingang_link).",
                         ".$app->erp->FormatDate("pa.datum").",
                         adr.name adresse,
-                        ".$app->erp->FormatMengeFuerFormular("SUM(pd.menge)")." menge,
-                        SUM(if(spd.id IS NULL,0,1)),
-                        ".$app->erp->FormatMengeFuerFormular("if(menge>SUM(if(spd.id IS NULL,0,1)),menge-SUM(if(spd.id IS NULL,0,1)),0) ").",
+                        ".$app->erp->FormatMengeFuerFormular("SUM(menge)")." menge,
+                        SUM(COALESCE(menge_nummern,0)),
+                        ".$app->erp->FormatMengeFuerFormular("if(SUM(menge)>SUM(COALESCE(menge_nummern,0)),SUM(menge)-SUM(COALESCE(menge_nummern,0)),0) ").",
                         ".$app->erp->ConcatSQL($menu_link)."
                     FROM
                         paketannahme pa
@@ -403,10 +403,18 @@ class Seriennummern {
                         adr.id = pa.adresse
                     INNER JOIN artikel a ON
                         a.id = pd.artikel
-                    LEFT JOIN seriennummern_beleg_position spd ON
-                        spd.beleg_typ = 'wareneingang' AND spd.beleg_position = pd.id
-                    LEFT JOIN seriennummern s ON
-                        s.id = spd.seriennummer
+                    LEFT JOIN (
+                            SELECT
+                                beleg_position,
+                                COUNT(id) menge_nummern
+                            FROM
+                                seriennummern_beleg_position
+                            WHERE 
+                                beleg_typ = 'wareneingang'
+                            GROUP BY
+                                beleg_position
+                        ) sbp
+                        ON sbp.beleg_position = pd.id
                 ";
 
                 $where = "(a.seriennummern <> 'keine')";
@@ -994,7 +1002,7 @@ class Seriennummern {
                         try {                
                             $this->app->DB->Insert($sql);
                             $seriennummer_id = $this->app->DB->GetInsertId();
-                            $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, seriennummer, paketdistribution) VALUES ('wareneingang','".$seriennummer_id."', '".$wareneingang_position."')";
+                            $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, seriennummer, beleg_position) VALUES ('wareneingang','".$seriennummer_id."', '".$wareneingang_position."')";
                             $this->app->DB->Insert($sql);
                         } catch (mysqli_sql_exception $e) {
                             $error = true;
@@ -1008,7 +1016,7 @@ class Seriennummern {
                                 $seriennummer_id = $this->app->DB->Select("SELECT id FROM seriennummern WHERE seriennummer = '".$this->app->DB->real_escape_string($seriennummer)."' AND artikel = '".$artikel_id."'");
                                 $sql = "UPDATE seriennummern SET eingelagert = 1, logdatei = CURRENT_TIMESTAMP WHERE id = '".$seriennummer_id."'";
                                 $this->app->DB->Update($sql);
-                                $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, seriennummer, paketdistribution) VALUES ('wareneingang','".$seriennummer_id."', '".$wareneingang_position."')";
+                                $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, seriennummer, beleg_position) VALUES ('wareneingang','".$seriennummer_id."', '".$wareneingang_position."')";
                                 $this->app->DB->Insert($sql);
                             } else {
                                 $seriennummern_old_not_allowed[] = $seriennummer;
@@ -1091,11 +1099,12 @@ class Seriennummern {
 
                 if (empty($check_lieferschein)) {
                     $this->app->Tpl->AddMessage('success', 'Seriennummern vollst&auml;ndig.');
-                    $check_lieferschein = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true, only_missing: true);                 
                     $this->app->Tpl->Set('EINGABE_HIDDEN', 'hidden');
                 } else {
-                    $menge_lieferschein = array_sum(array_column($check_lieferschein,'menge_lieferschein'));
-                    $menge_nummern = array_sum(array_column($check_lieferschein,'menge_nummern'));
+                    $check_lieferschein_alle = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true, only_missing: false);                 
+                    
+                    $menge_lieferschein = array_sum(array_column($check_lieferschein_alle,'menge_lieferschein'));
+                    $menge_nummern = array_sum(array_column($check_lieferschein_alle,'menge_nummern'));
                     $anzahl_fehlt = $menge_lieferschein-$menge_nummern;               
 
                     if ($anzahl_fehlt < 0) {
@@ -1128,13 +1137,13 @@ class Seriennummern {
                     $this->app->Tpl->Set('START', $matches[2]);
                     $this->app->Tpl->Set('POSTFIX', $matches[3]);
 
-                    $fehlt = $check_lieferschein[0]['menge_lieferschein']-$check_lieferschein[0]['menge_nummern'];
-                    if ($fehlt < 0) {
-                        $fehlt = 0;
+                    $anzahl_vorschlag = $check_lieferschein[0]['menge_lieferschein']-$check_lieferschein[0]['menge_nummern'];
+                    if ($anzahl_vorschlag < 0) {
+                        $anzahl_vorschlag = 0;
                     }
-                    $this->app->Tpl->Set('ANZAHL', $fehlt);
+                    $this->app->Tpl->Set('ANZAHL', $anzahl_vorschlag);
                 }
-
+                                
                 $this->app->YUI->TableSearch('POSITIONEN', 'seriennummern_lieferschein_positionen', "show", "", "", basename(__FILE__), __CLASS__);              
                 $this->app->YUI->AutoComplete("eingabe", "seriennummerverfuegbar",0,"&lieferschein=$lieferschein_id");   
 
@@ -1159,52 +1168,52 @@ class Seriennummern {
 
                 if (empty($check_wareneingang)) {
                     $this->app->Tpl->AddMessage('success', 'Seriennummern vollst&auml;ndig.');
-                    $check_wareneingang = $this->seriennummern_check_incoming_goods($check_wareneingang, only_missing: true);                 
                     $this->app->Tpl->Set('EINGABE_HIDDEN', 'hidden');
+                } else {
+                    $check_wareneingang_alle = $this->seriennummern_check_incoming_goods($wareneingang_id, only_missing: false);                 
+
+                    $menge_wareneingang = array_sum(array_column($check_wareneingang_alle,'menge_wareneingang'));
+                    $menge_nummern = array_sum(array_column($check_wareneingang_alle,'menge_nummern'));
+                    $anzahl_fehlt = $menge_wareneingang-$menge_nummern;               
+
+                    if ($anzahl_fehlt < 0) {
+                        $anzahl_fehlt = 0;
+                    }
+
+                    $this->app->Tpl->Set('ANZBELEG', $menge_wareneingang);        
+                    $this->app->Tpl->Set('ANZVORHANDEN', $menge_nummern);
+                    $this->app->Tpl->Set('ANZFEHLT', $anzahl_fehlt);
+
+                    $artikel_wareneingang = $this->app->DB->SelectArr("SELECT artikel FROM paketdistribution WHERE paketannahme = '".$wareneingang_id."'");
+
+                    $sql = "
+                        SELECT
+                            DISTINCT s.seriennummer
+                        FROM
+                            seriennummern s
+                        WHERE
+                            s.artikel = ".$check_wareneingang[0]['artikel']."
+                        ORDER BY s.id DESC
+                        LIMIT 1
+                    ";       
+
+                    $letzte_seriennummer = (string) $this->app->DB->Select($sql);       
+                    
+                    $regex_result = array(preg_match('/(.*?)(\d+)(?!.*\d)(.*)/', $letzte_seriennummer, $matches));
+                    $this->app->Tpl->Set('LETZTE', $letzte_seriennummer);
+                    $this->app->Tpl->Set('PRAEFIX', $matches[1]);
+                    $this->app->Tpl->Set('START', $matches[2]+1);
+                    $this->app->Tpl->Set('POSTFIX', $matches[3]);
+
+                    $anzahl_vorschlag = $check_wareneingang[0]['menge_wareneingang']-$check_wareneingang[0]['menge_nummern'];
+                    if ($anzahl_vorschlag < 0) {
+                        $anzahl_vorschlag = 0;
+                    }
+                    $this->app->Tpl->Set('ANZAHL', $anzahl_vorschlag);                                                      
                 }
-
-                $menge_wareneingang = array_sum(array_column($check_wareneingang,'menge_wareneingang'));
-                $menge_nummern = array_sum(array_column($check_wareneingang,'menge_nummern'));
-                $anzahl_fehlt = $menge_wareneingang-$menge_nummern;               
-
-                if ($anzahl_fehlt < 0) {
-                    $anzahl_fehlt = 0;
-                }
-
-                $this->app->Tpl->Set('ANZBELEG', $menge_wareneingang);        
-                $this->app->Tpl->Set('ANZVORHANDEN', $menge_nummern);
-                $this->app->Tpl->Set('ANZFEHLT', $anzahl_fehlt);
-
-                $artikel_wareneingang = $this->app->DB->SelectArr("SELECT artikel FROM paketdistribution WHERE paketannahme = '".$wareneingang_id."'");
-
-                $sql = "
-                    SELECT
-                        DISTINCT s.seriennummer
-                    FROM
-                        seriennummern s
-                    WHERE
-                        s.artikel IN (".implode(',',array_column($artikel_wareneingang,'artikel')).")
-                    ORDER BY s.id DESC
-                    LIMIT 1
-                ";       
-
-                $letzte_seriennummer = (string) $this->app->DB->Select($sql);       
-                
-                $regex_result = array(preg_match('/(.*?)(\d+)(?!.*\d)(.*)/', $letzte_seriennummer, $matches));
-                $this->app->Tpl->Set('LETZTE', $letzte_seriennummer);
-                $this->app->Tpl->Set('PRAEFIX', $matches[1]);
-                $this->app->Tpl->Set('START', $matches[2]+1);
-                $this->app->Tpl->Set('POSTFIX', $matches[3]);
-
-                $fehlt = $check_lieferschein[0]['menge_wareneingang']-$check_wareneingang[0]['menge_nummern'];
-                if ($fehlt < 0) {
-                    $fehlt = 0;
-                }
-
-                $this->app->Tpl->Set('ANZAHL', $anzahl_fehlt);
 
                 $this->app->YUI->TableSearch('POSITIONEN', 'seriennummern_wareneingang_positionen', "show", "", "", basename(__FILE__), __CLASS__);              
-                $this->app->YUI->AutoComplete("eingabe", "seriennummerverfuegbar",0,"&lieferschein=$lieferschein_id");   
+                $this->app->YUI->AutoComplete("eingabe", "seriennummerverfuegbar");   
 
                 $this->app->Tpl->Set('SERIENNUMMERN', implode("\n",$seriennummern));                         
             break;
@@ -1277,8 +1286,8 @@ class Seriennummern {
             $sql_we = "''";
             $sql_we_group = "";
         } else {
-            $sql_we = "pa.id";
-            $sql_we_group = ", pa.id";
+            $sql_we = "pd.id";
+            $sql_we_group = ", pd.id";
         }
 
         $sql = "
@@ -1562,7 +1571,7 @@ class Seriennummern {
                         SUBSTRING(sbp.beleg_typ, 2)
                     ) AS Belegtyp,
                     COALESCE(l.belegnr,w.id) AS Beleg,
-                    ".$this->app->erp->FormatDate('l.datum')." AS Datum,
+                    ".$this->app->erp->FormatDate('COALESCE(l.datum,w.datum)')." AS Datum,
                     COALESCE(al.name,aw.name) AS Adresse                     
                 FROM seriennummern_beleg_position sbp
                 LEFT JOIN lieferschein_position lp ON sbp.beleg_typ = 'lieferschein' AND lp.id = sbp.beleg_position
@@ -1573,7 +1582,8 @@ class Seriennummern {
                 LEFT JOIN paketannahme w ON w.id = pd.paketannahme
                 LEFT JOIN adresse aw ON aw.id = w.adresse
                 
-                WHERE sbp.seriennummer ='$id' "
+                WHERE sbp.seriennummer ='$id' 
+                ORDER BY COALESCE(l.datum,w.datum) DESC"
             ,0,"");
             $tmp->DisplayNew('TAB1',"Adresse","noAction");
 
