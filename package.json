@@ -15,7 +15,7 @@
   "dependencies": {
     "@vitejs/plugin-vue": "^5",
     "axios": "^1",
-    "glob": "^10.3.12",
+    "glob": "^11",
     "primevue": "^3",
     "vite": "^5",
     "vue": "^3"
