@@ -230,8 +230,6 @@ class Mahnwesen {
                     ";
             $offene_rechnungen = $this->app->DB->SelectArr($sql);         
 
-            echo($sql);
-
             foreach ($offene_rechnungen as $offene_rechnung) {
                 if ($offene_rechnung['mahnwesen'] != $offene_rechnung['mahnwesen_neu']) {
                     $sql = "UPDATE rechnung set mahnwesen = ".$offene_rechnung['mahnwesen_neu'].", versendet_mahnwesen = 0 WHERE id = ".$offene_rechnung['id'];
