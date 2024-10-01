@@ -316,9 +316,9 @@ class Briefpapier extends SuperFPDF {
                     FROM
                         seriennummern s
                     INNER JOIN
-                        seriennummern_lieferschein_position slp ON slp.seriennummer = s.id
+                        seriennummern_beleg_position slp ON slp.beleg_typ = 'lieferschein' AND slp.seriennummer = s.id
                     WHERE
-                        slp.lieferschein_position = $posid
+                        slp.beleg_position = $posid
             ";
             $values = (array) $this->app->DB->SelectArr($sql);
             return(implode(', ',array_column($values,'seriennummer')));
