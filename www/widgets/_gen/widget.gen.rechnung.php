@@ -125,6 +125,9 @@ class WidgetGenrechnung
     $field = new HTMLInput("bezahlt_am","text","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("zahlbetrag","money","","10","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("ist","text","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 

@@ -1613,17 +1613,17 @@ class Rechnung extends GenRechnung
 
     $invoiceArr = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT zahlungsweise,zahlungszieltage,dta_datei,status,schreibschutz  FROM rechnung WHERE id= %d LIMIT 1',
+        'SELECT zahlungsweise,zahlungszieltage,dta_datei,status,zahlungsstatus,schreibschutz  FROM rechnung WHERE id= %d LIMIT 1',
         (int)$id
       )
     );
     $zahlungsweise= $invoiceArr['zahlungsweise'];
     $zahlungszieltage= $invoiceArr['zahlungszieltage'];
+    $zahlungsstatus= $invoiceArr['zahlungsstatus'];
     if($zahlungsweise==='rechnung' && $zahlungszieltage<1)
     {
       $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Hinweis: F&auml;lligkeit auf \"sofort\", da Zahlungsziel in Tagen auf 0 Tage gesetzt ist!</div>");
     }
-
 
     $status= $invoiceArr['status'];
     $schreibschutz= $invoiceArr['schreibschutz'];
@@ -1743,10 +1743,7 @@ class Rechnung extends GenRechnung
     if($zahlungsweise==='vorkasse' || $zahlungsweise==='kreditkarte' || $zahlungsweise==='paypal' || $zahlungsweise==='bar') {
       $this->app->Tpl->Set('VORKASSE','');
     }
-
-    $ist = $this->app->erp->EUR($this->app->erp->GetSaldoDokument($id,'rechnung')['betrag']);
-    $this->app->Tpl->Set('ISTDB',$ist);
-
+   
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden('rechnung','schreibschutz'))
     {
       $this->app->Tpl->Set('MESSAGE',"<div class=\"warning\">Diese Rechnung ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diese Rechnung wirklich entfernt werden? Die gespeicherte Rechnung wird &uuml;berschrieben!')) return false;else window.location.href='index.php?module=rechnung&action=schreibschutz&id=$id';\"></div>");
@@ -1756,15 +1753,20 @@ class Rechnung extends GenRechnung
       $this->app->erp->CommonReadonly();
     }
 
+    if($schreibschutz=='1' && $this->app->erp->RechteVorhanden('rechnung','manuellbezahltmarkiert') && $zahlungsstatus=="offen")
+    {
+      $this->app->erp->RemoveReadonly('bezahlt_am');
+      $this->app->erp->RemoveReadonly('zahlbetrag');
+      $this->app->erp->RemoveReadonly('zahlungsstatus');
+    }
+
     if($schreibschutz=='1' && $this->app->erp->RechteVorhanden('rechnung','mahnwesen'))
     {
       $this->app->erp->RemoveReadonly('mahnwesen_datum');
       $this->app->erp->RemoveReadonly('mahnwesen_gesperrt');
       $this->app->erp->RemoveReadonly('mahnwesen_internebemerkung');
-      $this->app->erp->RemoveReadonly('zahlungsstatus');
       $this->app->erp->RemoveReadonly('mahnwesenfestsetzen');
       $this->app->erp->RemoveReadonly('mahnwesen');
-      $this->app->erp->RemoveReadonly('bezahlt_am');
 /*
         'ist' should not be edited manually
 
@@ -1795,9 +1797,9 @@ class Rechnung extends GenRechnung
 
     if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','mahnwesen'))
     {
-
       $mahnwesen_datum = $this->app->Secure->GetPOST('mahnwesen_datum');
       $bezahlt_am = $this->app->Secure->GetPOST('bezahlt_am');
+      $zahlbetrag = $this->app->Secure->GetPOST('zahlbetrag');
       $mahnwesen_gesperrt = $this->app->Secure->GetPOST('mahnwesen_gesperrt');
       $mahnwesen_internebemerkung = $this->app->Secure->GetPOST('mahnwesen_internebemerkung');
       $zahlungsstatus = $this->app->Secure->GetPOST('zahlungsstatus');
@@ -1823,12 +1825,75 @@ class Rechnung extends GenRechnung
 
 /*      if($mahnwesenfestsetzen=='1')
       {*/
-        $this->app->DB->Update("UPDATE rechnung SET mahnwesen_internebemerkung='$mahnwesen_internebemerkung',zahlungsstatus='$zahlungsstatus',versendet_mahnwesen='$versendet',
-          mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum', mahnwesenfestsetzen='$mahnwesenfestsetzen',internebemerkung='$internebemerkung',
-          mahnwesen='$mahnwesen',skonto_gegeben='$skonto_gegeben',bezahlt_am='$bezahlt_am' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("
+                UPDATE rechnung SET 
+                    mahnwesen_internebemerkung='$mahnwesen_internebemerkung',
+                    zahlungsstatus='$zahlungsstatus',
+                    versendet_mahnwesen='$versendet',
+                    mahnwesen_gesperrt='$mahnwesen_gesperrt',
+                    mahnwesen_datum='$mahnwesen_datum',
+                    mahnwesenfestsetzen='$mahnwesenfestsetzen',
+                    internebemerkung='$internebemerkung'
+                WHERE id='$id' LIMIT 1");
 /*      } else {
         $this->app->DB->Update("UPDATE rechnung SET mahnwesen='$mahnwesen', mahnwesenfestsetzen='$mahnwesenfestsetzen', mahnwesen_internebemerkung='$mahnwesen_internebemerkung', mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum' WHERE id='$id' LIMIT 1");
       }*/
+    }
+
+    if ($zahlungsstatus == 'bezahlt') {
+        $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
+        $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
+    }
+
+    $saldo = $this->app->erp->GetSaldoDokument($id,'rechnung');    
+    if (empty($saldo)) {
+        $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
+        $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
+    } else {
+        $ist = $this->app->erp->EUR($saldo['betrag']);
+        $this->app->Tpl->Set('ISTDB',$ist);
+        if ($ist > $soll) {
+            $this->app->Tpl->addMessage('error','Rechnung ist überzahlt!');
+        }    
+    }
+
+    $rechnung_schnelleingabe_konto = $this->app->erp->Firmendaten('rechnung_schnelleingabe_konto');
+        
+    if (!empty($rechnung_schnelleingabe_konto)) {
+        $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
+        if ($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','manuellbezahltmarkiert') && !empty($zahlbetrag)) {            
+            if ($bezahlt_am == '0000-00-00') {
+                $bezahlt_am = date('Y-m-d');
+            }
+            $sql = "
+                INSERT INTO kontoauszuege
+                (
+                    konto,
+                    buchung,
+                    importdatum,
+                    buchungstext,
+                    soll,
+                    waehrung,
+                    bearbeiter
+                )
+                VALUES
+                (
+                    $rechnung_schnelleingabe_konto,
+                    '$bezahlt_am',
+                    '".date("Y-m-d")."',
+                    'Rechnung ".$nummer." Schnelleingabe',
+                    $zahlbetrag,
+                    'EUR',
+                    '".$this->app->User->GetName()."'
+                )
+            ";
+            $this->app->DB->Insert($sql);
+            $kontoauszug = $this->app->DB->GetInsertID();
+            $this->app->erp->fibu_buchungen_buchen("kontoauszuege",$kontoauszug, "rechnung", $id, -$zahlbetrag, 'EUR', $bezahlt_am, "Rechnung ".$nummer." Schnelleingabe");
+            $this->rechnung_zahlstatus_berechnen($id);        
+        }       
+    } else {    
+        $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
     }
 
     if($status=='')
@@ -2749,9 +2814,14 @@ class Rechnung extends GenRechnung
     *   Recalculate the payments status with skonto
     */
 
-    function rechnung_zahlstatus_berechnen() {
+    function rechnung_zahlstatus_berechnen($rechnung_id = null) {
         // START RECALCULATE
         $this->app->erp->fibu_rebuild_tables();
+        
+        if (!empty($rechnung_id)) {
+            $condition = " AND id = '".$rechnung_id."'";
+        }
+        
         $offene_rechnungen = $this->app->DB->SelectArr("  SELECT 
                                                     id, 
                                                     soll, 
@@ -2768,9 +2838,9 @@ class Rechnung extends GenRechnung
                                                     rechnung 
                                                 WHERE 
                                                     belegnr <> '' AND zahlungsstatus = 'offen'
-                                                ");
+                                                ".$condition);
 
-        foreach ($offene_rechnungen as $offene_rechnung) {
+          foreach ($offene_rechnungen as $offene_rechnung) {
             $saldo = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung');
             if (!empty($saldo)) {
                 if ($saldo['waehrung'] == $offene_rechnung['waehrung']) {
@@ -2781,12 +2851,13 @@ class Rechnung extends GenRechnung
                     // Check overall value
                     if ($saldo['betrag'] == 0) {
                         // ok -> will be marked as paid
-                    } else if ($skontorelevante_zahlungen >= $offene_rechnung['skontosoll']) {
+                    } else if (abs($skontorelevante_zahlungen-$offene_rechnung['skontosoll']) <= 0.01) {
                         // Skonto ok -> book difference
                         $sachkonto = $this->app->erp->Firmendaten('rechnung_skonto_kontorahmen');
-                        if (!empty($sachkonto)) {                                         
-                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,-$saldo['betrag'],$offene_rechnung['waehrung'],date('Y-m-d'),'');
+                        if (!empty($sachkonto)) {                                                                
+                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,$offene_rechnung['soll']-$skontorelevante_zahlungen,$offene_rechnung['waehrung'],date('Y-m-d'),'');
                             $offene_rechnung['ist'] = $offene_rechnung['soll'];
+                            $saldo['betrag'] = 0;
                         } else {
                         }
                     } else if ($offene_rechnung['faellig']) {
@@ -2800,7 +2871,7 @@ class Rechnung extends GenRechnung
                             SET
                                 ist = ".$saldo['betrag']."+soll,
                                 zahlungsstatus = IF(".$saldo['betrag']." = 0,'bezahlt','offen')
-                            WHERE id=".$offene_rechnung['id'];
+                            WHERE id=".$offene_rechnung['id'];                            
                     $this->app->DB->Update($sql);
                 } 
             }

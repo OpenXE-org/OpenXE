@@ -4014,6 +4014,17 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         }
         break;
       break;
+      case "konto":
+        $cmd = $this->app->Secure->GetGET("cmd");
+
+        $arr = $this->app->DB->SelectArr("
+            SELECT CONCAT(kurzbezeichnung,' ',bezeichnung) as name FROM konten
+            WHERE (kurzbezeichnung LIKE '%$term%' OR bezeichnung LIKE '%$term%') ORDER by kurzbezeichnung");
+
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['name'];
+      break;
       case "datevkonto":
         $arr = $this->app->DB->SelectArr("SELECT DISTINCT t.gegenkonto FROM
         ( (SELECT  concat(datevkonto, ' ',bezeichnung) as gegenkonto FROM konten WHERE datevkonto <> 0 AND datevkonto <> '' AND aktiv = 1)

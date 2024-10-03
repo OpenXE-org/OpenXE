@@ -13811,6 +13811,20 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
         }
     }
 
+    function ReplaceKonto($db,$value,$fromform = null) {
+        $value = $this->app->DB->real_escape_string($value);
+
+        if ($db) {
+            $konto = explode(' ',$value)[0];
+            $kontoid = $this->app->DB->Select("SELECT id FROM konten WHERE kurzbezeichnung = '$konto' LIMIT 1");
+            return($kontoid);
+        } else {
+            $konto = $this->app->DB->Select("SELECT CONCAT(kurzbezeichnung,' ',bezeichnung) FROM konten WHERE id = '$value' LIMIT 1");
+            return($konto);
+        }
+    }
+
+
   // @refactor FormHelper Komponente
   function ReplaceLieferant($db,$value,$fromform)
   {

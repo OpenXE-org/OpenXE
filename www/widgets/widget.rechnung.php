@@ -84,6 +84,7 @@ class WidgetRechnung extends WidgetGenRechnung
     $this->app->erp->AnzeigeAbweichendeBezeichnung("rechnung");
 
     $this->form->ReplaceFunction("ist",$this,"ReplaceDecimal");
+    $this->form->ReplaceFunction("zahlbetrag",$this,"ReplaceDecimal");
     $this->form->ReplaceFunction("kurs",$this,"ReplaceBetrag");
     $this->form->ReplaceFunction("skonto_gegeben",$this,"ReplaceDecimal");
 
