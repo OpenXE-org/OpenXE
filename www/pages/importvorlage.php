@@ -4008,7 +4008,8 @@ class Importvorlage extends GenImportvorlage {
                     $feldnameohnepsrache = str_replace($sprachenSet,'',$feldnameohnepsrache);
                   }
 
-                  if(in_array($feldnameohnepsrache, $erlaubtefelder,false) && !in_array($sprachenSet,$zuImportierendeSprachen[$sprache],false)){
+                  $haystack = $zuImportierendeSprachen[$sprache]?$zuImportierendeSprachen[$sprache]:array();
+                  if(in_array($feldnameohnepsrache, $erlaubtefelder,false) && !in_array($sprachenSet,$haystack,false)){
                     $zuImportierendeSprachen[$sprache][] = $sprachenSet;
                   }
                 }

@@ -7209,6 +7209,20 @@ title: 'Abschicken',
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Wiedervorlage','wiedervorlage','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Wiki','wiki','list');
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Zeiterfassung','zeiterfassung','create');
+
+    foreach ($navarray['menu']['admin'] as $key => $menuitem) {
+        usort($menuitem['sec'], function ($a, $b) {
+          $a_val = $a[0];
+          $b_val = $b[0];
+
+          if($a_val > $b_val) return 1;
+          if($a_val < $b_val) return -1;
+          return 0;
+        });
+        $navarray['menu']['admin'][$key] = $menuitem;
+    }
+
+    // Always the last entry
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abmelden','welcome','logout');
 
     return $this->CalculateNavigation($navarray);

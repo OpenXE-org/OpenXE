@@ -232,7 +232,7 @@ class RechnungPDF extends BriefpapierCustom {
         FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
 
     if($datumlieferschein=="00.00.0000") $datumlieferschein = $datum;
-    if($lieferdatum=="00.00.0000") $lieferdatum = $datum;
+    if($lieferdatum=="00.00.0000") $lieferdatum = "";
     if($mahnwesen_datum=="00.00.0000") $mahnwesen_datum = "";
 
     $bearbeiteremail = $this->app->DB->Select("SELECT b.email FROM rechnung r LEFT JOIN adresse b ON b.id=r.bearbeiterid WHERE r.id='$id' LIMIT 1");
