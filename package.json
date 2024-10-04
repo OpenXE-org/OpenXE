@@ -13,10 +13,13 @@
     "raml2html-werk-theme": "^1.3.4"
   },
   "dependencies": {
+    "@primevue/icons": "^4.0.7",
+    "@primevue/themes": "^4.0.7",
     "@vitejs/plugin-vue": "^5",
     "axios": "^1",
     "glob": "^11",
-    "primevue": "^3",
+    "primeicons": "^7.0.0",
+    "primevue": "^4",
     "vite": "^5",
     "vue": "^3"
   }

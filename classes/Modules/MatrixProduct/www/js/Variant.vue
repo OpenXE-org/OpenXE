@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2023-2024 Andreas Palm
 
 SPDX-License-Identifier: LicenseRef-EGPL-3.1
 -->
@@ -8,7 +8,8 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
 import AutoComplete from "@res/vue/AutoComplete.vue";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import Dropdown from "primevue/dropdown";
+import Select from "primevue/select";
+import Fluid from "primevue/fluid";
 import {onMounted, ref} from "vue";
 import axios from "axios";
 import {AlertErrorHandler} from "@res/js/ajaxErrorHandler";
@@ -41,18 +42,21 @@ const buttons = {
 
 <template>
   <Dialog visible modal header="Variante" style="width: 500px" @update:visible="emit('close')">
-    <div class="grid gap-1" style="grid-template-columns: 25% 75%;">
-      <label>Artikel</label>
-      <AutoComplete v-model="model.variant"
-                    :optionLabel="(item) => [item.nummer, item.name].join(' ')"
-                    ajax-filter="artikelnummer"
-                    forceSelection
-      />
-      <template v-for="group in model.groups">
-        <label>{{ group.name }}</label>
-        <Dropdown v-model="group.selected" :options="group.options" optionLabel="name" optionValue="value" />
-      </template>
-    </div>
+    <Fluid>
+      <div class="grid gap-1" style="grid-template-columns: 25% 75%;">
+        <label>Artikel</label>
+        <AutoComplete v-model="model.variant"
+                      :option-label="(item) => [item.nummer, item.name].join(' ')"
+                      ajax-filter="artikelnummer"
+                      force-selection
+                      autofocus
+        />
+        <template v-for="group in model.groups">
+          <label>{{ group.name }}</label>
+          <Select v-model="group.selected" :options="group.options" option-label="name" option-value="value" />
+        </template>
+      </div>
+    </Fluid>
     <template #footer>
       <Button label="ABBRECHEN" @click="emit('close')" />
       <Button label="SPEICHERN" @click="save" />
