@@ -121,15 +121,23 @@
                                        <td>
                                           {|SOLL|}:
                                        </td>
-                                       <td>
+                                       <td align="right">
                                           [SOLL]
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td>
+                                          {|SKONTOSOLL|}:
+                                       </td>
+                                       <td align="right">
+                                          [SKONTOSOLL]
                                        </td>
                                     </tr>
                                     <tr>
                                        <td>
                                           {|FEHLT|}:
                                        </td>
-                                       <td id="istdb">
+                                       <td id="istdb" align="right">
                                           [ISTDB]
                                        </td>
                                     </tr>                                  

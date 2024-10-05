@@ -1081,6 +1081,7 @@ class Rechnung extends GenRechnung
       $intern = true;
       $freigabe=$intern;
     }
+   
     $allowedFrm = true;
     $showDefault = true;
     $this->app->erp->CheckVertrieb($id,'rechnung');
@@ -1096,6 +1097,7 @@ class Rechnung extends GenRechnung
       if($belegnr=='')
       {	
         $this->app->erp->BelegFreigabe('rechnung',$id);
+        $this->rechnung_zahlstatus_berechnen($id);
         if($intern) {
           return 1;
         }
@@ -1119,7 +1121,7 @@ class Rechnung extends GenRechnung
         jetzt freigegeben werden? <input type=\"button\" class=\"btnImportantLarge\" value=\"Jetzt freigeben\" onclick=\"window.location.href='index.php?module=rechnung&action=freigabe&id=$id&freigabe=$id'\">
         </div>");
     }
-
+    
     $this->RechnungMenu();
     $this->app->Tpl->Parse('PAGE','tabview.tpl');
   }
@@ -1661,12 +1663,15 @@ class Rechnung extends GenRechnung
       $bonuspunkte = $rechnungarr['bonuspunkte'];//$this->app->DB->Select("SELECT bonuspunkte FROM rechnung WHERE id='$id' LIMIT 1");
       $soll = $rechnungarr['soll'];//$this->app->DB->Select("SELECT soll FROM rechnung WHERE id='$id' LIMIT 1");
       $projekt = $rechnungarr['projekt'];
+      
+      $skontosoll = $this->app->DB->Select("SELECT TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll FROM rechnung where id = '".$id."' LIMIT 1");
     }
 
     $this->app->Tpl->Set('PUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$punkte\" size=\"10\" readonly>");
     $this->app->Tpl->Set('BONUSPUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$bonuspunkte\" size=\"10\" readonly>");
 
     $this->app->Tpl->Set('SOLL',"$soll"."<input type=\"hidden\" id=\"soll_tmp\" value=\"$soll\">");
+    $this->app->Tpl->Set('SKONTOSOLL',$skontosoll);
 
     if($schreibschutz!='1')// && $this->app->erp->RechteVorhanden("rechnung","schreibschutz"))
     {
