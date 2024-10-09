@@ -1,7 +1,7 @@
 <?php
 
 /*
- * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -17,6 +17,7 @@ use Xentral\Carrier\SendCloud\Data\ShippingMethod;
 use Xentral\Carrier\SendCloud\SendcloudApiException;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
@@ -189,6 +190,15 @@ class Versandart_sendcloud extends Versanddienstleister
     }
     return $result;
   }
+
+    public function GetShipmentStatus(string $tracking): ShipmentStatus|null
+    {
+        try {
+            return $this->api->GetTrackingStatus($tracking);
+        } catch (SendcloudApiException) {
+            return null;
+        }
+    }
 
 
 }
