@@ -30,7 +30,6 @@
                       <label for="inkl_gesperrte">{|Inkl. gesperrte|}</label>
                     </li>               
                   </ul>
-                  <input type="submit" class="btnBlue" name="mahnstufe_berechnen" value="{|Mahnstufe berechnen|}" />
                 </div>    
             </div>                 
         </form>

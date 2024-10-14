@@ -40,6 +40,8 @@ class Mahnwesen {
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
+                $mahnwesen_stufe_filter = $this->app->DB->real_escape_string($this->app->User->GetParameter('mahnwesen_stufe_filter'));               
+
                 $faellig_datum = "DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)";
                 $faellig_tage = "DATEDIFF(CURRENT_DATE,DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY))";
                 $mahn_druck = "if(m.druck,'Ja','')";
@@ -55,6 +57,8 @@ class Mahnwesen {
 		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',r.id,'\" />') AS `auswahl`";
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=rechnung&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "</td></tr></table>";
+
+                $sql_tables = "rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id LEFT JOIN auftrag au ON au.id = r.auftragid LEFT JOIN mahnwesen m ON r.mahnwesen = m.id";
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                     r.id,
@@ -81,9 +85,13 @@ class Mahnwesen {
                     if(r.mahnwesen_gesperrt,'Ja',''),
                     REPLACE(r.mahnwesen_internebemerkung,'\r\n','<br> '),
                     r.id
-                    FROM rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id LEFT JOIN auftrag au ON au.id = r.auftragid LEFT JOIN mahnwesen m ON r.mahnwesen = m.id";
+                    FROM ".$sql_tables;
 
                 $where = " r.belegnr <> ''";
+                
+                if (!empty($mahnwesen_stufe_filter)) {
+                    $where .= " AND m.id = '".$mahnwesen_stufe_filter."'";
+                }
 
                 // Toggle filters
                 $this->app->Tpl->Add('JQUERYREADY', "$('#zu_mahnen').click( function() { fnFilterColumn1( 0 ); } );");
@@ -126,8 +134,7 @@ class Mahnwesen {
                 }                
                 // END Toggle filters
 
-
-                $count = "SELECT count(DISTINCT id) FROM rechnung r WHERE $where";
+                $count = "SELECT count(DISTINCT r.id) FROM ".$sql_tables." WHERE $where";
 //                $groupby = "";
 
                 break;
@@ -178,66 +185,6 @@ class Mahnwesen {
     
     function mahnwesen_list() {
         $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=list", "&Uuml;bersicht");
-//        $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=create", "Neu anlegen");
-//        $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=einstellungen", "Einstellungen");
-
-        if($this->app->Secure->GetPOST('mahnstufe_berechnen') && $this->app->erp->RechteVorhanden('rechnung', 'edit')) {
-            $this->app->erp->rechnung_zahlstatus_berechnen();   
-
-            $sql = "
-                    SELECT
-                        r.id, r.mahnwesen, rid_mid.mahnwesen_neu
-                    FROM
-                        rechnung r
-                    INNER JOIN 
-                        (
-                        SELECT
-                            id_tage.id,
-                            m.id AS mahnwesen_neu
-                        FROM
-                            mahnwesen m
-                        INNER JOIN(
-                            SELECT
-                                id,
-                                MAX(tage) AS tage
-                            FROM
-                                (
-                                SELECT
-                                    r.id,
-                                    m.tage
-                                FROM
-                                    rechnung r
-                                INNER JOIN mahnwesen m ON
-                                    DATEDIFF(
-                                        CURRENT_DATE,
-                                        DATE_ADD(
-                                            r.datum,
-                                            INTERVAL r.zahlungszieltage DAY
-                                        )
-                                    ) > m.tage
-                                WHERE
-                                    r.zahlungsstatus = 'offen'
-                                ORDER BY
-                                    `r`.`id` ASC
-                            ) temp
-                        GROUP BY
-                            id
-                        ) id_tage
-                    ON
-                        m.tage = id_tage.tage
-                    ) rid_mid
-                    ON r.id = rid_mid.id
-                    ";
-            $offene_rechnungen = $this->app->DB->SelectArr($sql);         
-
-            foreach ($offene_rechnungen as $offene_rechnung) {
-                if ($offene_rechnung['mahnwesen'] != $offene_rechnung['mahnwesen_neu']) {
-                    $sql = "UPDATE rechnung set mahnwesen = ".$offene_rechnung['mahnwesen_neu'].", versendet_mahnwesen = 0 WHERE id = ".$offene_rechnung['id'];
-                    $this->app->DB->Update($sql);
-                }
-            }
-
-        }      
 
         if($this->app->Secure->GetPOST('sel_aktion') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
         {
@@ -354,6 +301,76 @@ class Mahnwesen {
           }      
         } // ende ausfuehren
 
+        // Refresh status and create tabs
+        $this->app->erp->rechnung_zahlstatus_berechnen();   
+        $sql = "
+                SELECT
+                    r.id,
+                    r.mahnwesen,
+                    r.versendet_mahnwesen,
+                    rid_mid.mahnwesen_neu,
+                    rid_mid.name
+                FROM
+                    rechnung r
+                INNER JOIN 
+                    (
+                    SELECT
+                        id_tage.id,
+                        m.id AS mahnwesen_neu,
+                        m.name,
+                        m.tage
+                    FROM
+                        mahnwesen m
+                    INNER JOIN(
+                        SELECT
+                            id,
+                            MAX(tage) AS tage
+                        FROM
+                            (
+                            SELECT
+                                r.id,
+                                m.tage                                    
+                            FROM
+                                rechnung r
+                            INNER JOIN mahnwesen m ON
+                                DATEDIFF(
+                                    CURRENT_DATE,
+                                    DATE_ADD(
+                                        r.datum,
+                                        INTERVAL r.zahlungszieltage DAY
+                                    )
+                                ) > m.tage
+                            WHERE
+                                r.zahlungsstatus = 'offen'
+                            ORDER BY
+                                `r`.`id` ASC
+                        ) temp
+                    GROUP BY
+                        id
+                    ) id_tage
+                ON
+                    m.tage = id_tage.tage
+                ) rid_mid
+                ON r.id = rid_mid.id
+                WHERE mahnwesen <> mahnwesen_neu OR versendet_mahnwesen = 0
+                ORDER BY rid_mid.tage
+                ";
+        $offene_rechnungen = $this->app->DB->SelectArr($sql);         
+                
+        $menus = array();
+
+        foreach ($offene_rechnungen as $offene_rechnung) {
+            if ($offene_rechnung['mahnwesen'] != $offene_rechnung['mahnwesen_neu']) {
+                $sql = "UPDATE rechnung set mahnwesen = ".$offene_rechnung['mahnwesen_neu'].", versendet_mahnwesen = 0 WHERE id = ".$offene_rechnung['id'];
+                $this->app->DB->Update($sql);               
+            } 
+            
+            if (!in_array($offene_rechnung['mahnwesen_neu'],$menus) && count($menus) < 5) {                    
+                $menus[] = $offene_rechnung['mahnwesen_neu'];                    
+                $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=list&stufe=".$offene_rechnung['mahnwesen_neu'], $this->app->DB->real_escape_string($offene_rechnung['name']));
+            }              
+        }
+
         if (!empty($msg)) {
             $this->app->Tpl->Set('MESSAGE', $msg);
         }
@@ -364,6 +381,12 @@ class Mahnwesen {
 
         $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
 
+        $mahnwesen_stufe_filter = $this->app->Secure->GetGET('stufe');
+        $this->app->User->SetParameter('mahnwesen_stufe_filter', $mahnwesen_stufe_filter);               
+        if (!empty($mahnwesen_stufe_filter)) {
+            $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"Stufe: ".$this->app->DB->Select("SELECT name FROM mahnwesen WHERE id = ".$mahnwesen_stufe_filter." LIMIT 1"));        
+        }              
+        
         $this->app->YUI->TableSearch('TAB1', 'mahnwesen_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "mahnwesen_list.tpl");
     }    
