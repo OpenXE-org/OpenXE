@@ -14,7 +14,8 @@ class Mahnwesen {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "mahnwesen_list");        
+        $this->app->ActionHandler("list", "mahnwesen_list");
+        $this->app->ActionHandler("stufe_list", "mahnwesen_stufe_list");
         $this->app->ActionHandler("create", "mahnwesen_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "mahnwesen_edit");        
         $this->app->ActionHandler("einstellungen", "mahnwesen_einstellungen");
@@ -90,7 +91,7 @@ class Mahnwesen {
                 $where = " r.belegnr <> ''";
                 
                 if (!empty($mahnwesen_stufe_filter)) {
-                    $where .= " AND m.id = '".$mahnwesen_stufe_filter."'";
+                    $where .= " AND m.id = '".$mahnwesen_stufe_filter."' AND r.versendet_mahnwesen ";
                 }
 
                 // Toggle filters
@@ -116,7 +117,7 @@ class Mahnwesen {
                 }
 
                 $more_data1 = $app->Secure->GetGET("more_data1");
-                if ($more_data1 == 1) {
+                if ($more_data1 == 1 && empty($mahnwesen_stufe_filter)) {
                     $where .= " AND NOT r.versendet_mahnwesen AND r.mahnwesen <> ''";
                 } else {
                 }
@@ -181,6 +182,11 @@ class Mahnwesen {
             }
         }
         return $erg;
+    }
+
+    // For Tab-highlighting
+    function mahnwesen_stufe_list() {
+        $this->mahnwesen_list();
     }
     
     function mahnwesen_list() {
@@ -351,8 +357,7 @@ class Mahnwesen {
                 ON
                     m.tage = id_tage.tage
                 ) rid_mid
-                ON r.id = rid_mid.id
-                WHERE mahnwesen <> mahnwesen_neu OR versendet_mahnwesen = 0
+                ON r.id = rid_mid.id                
                 ORDER BY rid_mid.tage
                 ";
         $offene_rechnungen = $this->app->DB->SelectArr($sql);         
@@ -365,9 +370,9 @@ class Mahnwesen {
                 $this->app->DB->Update($sql);               
             } 
             
-            if (!in_array($offene_rechnung['mahnwesen_neu'],$menus) && count($menus) < 5) {                    
+            if (!in_array($offene_rechnung['mahnwesen_neu'],$menus) && ($offene_rechnung['versendet_mahnwesen']) && count($menus) < 5) {                    
                 $menus[] = $offene_rechnung['mahnwesen_neu'];                    
-                $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=list&stufe=".$offene_rechnung['mahnwesen_neu'], $this->app->DB->real_escape_string($offene_rechnung['name']));
+                $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=stufe_list&stufe=".$offene_rechnung['mahnwesen_neu'], $this->app->DB->real_escape_string($offene_rechnung['name']));
             }              
         }
 
@@ -385,6 +390,7 @@ class Mahnwesen {
         $this->app->User->SetParameter('mahnwesen_stufe_filter', $mahnwesen_stufe_filter);               
         if (!empty($mahnwesen_stufe_filter)) {
             $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"Stufe: ".$this->app->DB->Select("SELECT name FROM mahnwesen WHERE id = ".$mahnwesen_stufe_filter." LIMIT 1"));        
+            $this->app->Tpl->Set('ZU_MAHNEN_HIDDEN', 'hidden');
         }              
         
         $this->app->YUI->TableSearch('TAB1', 'mahnwesen_list', "show", "", "", basename(__FILE__), __CLASS__);

@@ -4,7 +4,7 @@
     </ul>
     <div id="tabs-1">
         <form method="post" action="#">        
-            <div class="filter-box filter-usersave">
+            <div class="filter-box filter-usersave" [ZU_MAHNEN_HIDDEN]>
                 <div class="filter-block filter-inline">
                   <div class="filter-title">{|Filter|}</div>
                   <ul class="filter-list">
