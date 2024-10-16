@@ -361,19 +361,41 @@ class Mahnwesen {
                 ORDER BY rid_mid.tage
                 ";
         $offene_rechnungen = $this->app->DB->SelectArr($sql);         
-                
-        $menus = array();
-
+                   
         foreach ($offene_rechnungen as $offene_rechnung) {
             if ($offene_rechnung['mahnwesen'] != $offene_rechnung['mahnwesen_neu']) {
                 $sql = "UPDATE rechnung set mahnwesen = ".$offene_rechnung['mahnwesen_neu'].", versendet_mahnwesen = 0 WHERE id = ".$offene_rechnung['id'];
                 $this->app->DB->Update($sql);               
-            } 
-            
-            if (!in_array($offene_rechnung['mahnwesen_neu'],$menus) && ($offene_rechnung['versendet_mahnwesen']) && count($menus) < 5) {                    
-                $menus[] = $offene_rechnung['mahnwesen_neu'];                    
-                $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=stufe_list&stufe=".$offene_rechnung['mahnwesen_neu'], $this->app->DB->real_escape_string($offene_rechnung['name']));
-            }              
+            }             
+        }
+
+        $menus = $this->app->DB->SelectArr("
+            SELECT
+                m.id mahnung,
+                m.name,
+                SUM(if(r.versendet_mahnwesen = 1,1,0)) anzahl
+            FROM
+                mahnwesen m
+            LEFT JOIN rechnung r ON
+                m.id = r.mahnwesen
+            WHERE
+	            r.id IS NULL OR
+                (
+                    r.zahlungsstatus <> 'bezahlt' AND
+                    r.mahnwesen_gesperrt <> 1
+                )
+            GROUP BY    
+                m.id
+            ORDER BY
+                m.tage ASC
+        ");
+
+        foreach ($menus as $menu) {
+            $suffix = "";
+            if ($menu['anzahl']) {
+                $suffix = " (".$menu['anzahl'].")";
+            }
+            $this->app->erp->MenuEintrag("index.php?module=mahnwesen&action=stufe_list&stufe=".$menu['mahnung'], $this->app->DB->real_escape_string($menu['name']).$suffix);
         }
 
         if (!empty($msg)) {
