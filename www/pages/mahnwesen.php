@@ -88,7 +88,7 @@ class Mahnwesen {
                     r.id
                     FROM ".$sql_tables;
 
-                $where = " r.belegnr <> ''";
+                $where = " r.belegnr <> '' AND r.status <> 'storniert'";
                 
                 if (!empty($mahnwesen_stufe_filter)) {
                     $where .= " AND m.id = '".$mahnwesen_stufe_filter."' AND r.versendet_mahnwesen ";
