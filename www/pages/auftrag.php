@@ -6690,7 +6690,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   {
 
      // refresh all open items
-    $openids = $this->app->DB->SelectArr("SELECT id from auftrag WHERE status <> 'abgeschlossen'");
+    $openids = $this->app->DB->SelectArr("SELECT id from auftrag WHERE status <>'abgeschlossen' and status <>'storniert' and status <>'angelegt'");
     foreach ($openids as $openid) {
         $this->app->erp->AuftragAutoversandBerechnen($openid['id']);
     }  
