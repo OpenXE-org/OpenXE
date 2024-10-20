@@ -307,8 +307,12 @@ class Mahnwesen {
           }      
         } // ende ausfuehren
 
-        // Refresh status and create tabs
-        $this->app->erp->rechnung_zahlstatus_berechnen();   
+        // Refresh status
+        if($this->app->Secure->GetPOST('mahnstufe_berechnen') && $this->app->erp->RechteVorhanden('rechnung', 'edit')) {
+            $this->app->erp->rechnung_zahlstatus_berechnen();   
+        }
+     
+        // Create tabs
         $sql = "
                 SELECT
                     r.id,
