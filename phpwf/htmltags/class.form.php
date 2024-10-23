@@ -194,6 +194,11 @@ class HTMLInput
 	  name=\"{$this->name}\"  value=\"{$this->value}\"  size=\"{$this->size}\"
 	  maxlength=\"{$this->maxlength}\" {$this->readonly} {$this->disabled}>";
       break;
+      case "money":
+        $html = "<input type=\"number\" step=\"any\" id=\"{$this->id}\"  class=\"{$this->class}\" tabindex=\"{$this->tabindex}\"
+            name=\"{$this->name}\"  value=\"".preg_replace("/\"/","&quot;",$this->value)."\"  size=\"{$this->size}\" placeholder=\"{$this->placeholder}\"
+            maxlength=\"{$this->maxlength}\" {$this->readonly} {$this->disabled} [COMMONREADONLYINPUT]>";
+      break;
     }
 	
     return $html;
