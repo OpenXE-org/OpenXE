@@ -34459,10 +34459,10 @@ function Firmendaten($field,$projekt="")
         * Recalculate payment status and skonto
         * using module rechnung
         */
-        public function rechnung_zahlstatus_berechnen() {
+        public function rechnung_zahlstatus_berechnen($id) {
             $rechnung = $this->app->loadModule('rechnung', false);
             if($rechnung !== null && method_exists($rechnung, 'rechnung_zahlstatus_berechnen')) {
-              return $rechnung->rechnung_zahlstatus_berechnen();
+              return $rechnung->rechnung_zahlstatus_berechnen($id);
             }          
         }
 
