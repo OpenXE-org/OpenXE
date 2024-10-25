@@ -363,9 +363,10 @@ class Matrixprodukt
                         $result[$option->groupId]['options'][] = ['value' => $option->id, 'name' => $option->name];
                         $result[$option->groupId]['selected'][] = $option->id;
                     }
-                    return new JsonResponse(['groups' => $result ?? []]);
+                    return new JsonResponse(['groups' => $result ?? [], 'separator' => '_']);
                 } else {
                     $json = $this->request->getJson();
+                    $separator = substr($json->separator ?? '_', 0, 2);
                     $list = [[]];
                     foreach ($json->groups as $group) {
                         if (empty($group->selected))
@@ -373,18 +374,18 @@ class Matrixprodukt
                         $newList = [];
                         foreach ($list as $old) {
                             foreach ($group->selected as $option) {
-                                $newList[] = array_merge($old, [$option]);
+                                $newList[] = array_merge($old, [(int)$option]);
                             }
                         }
                         $list = $newList;
                     }
-                    $oldnumber = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = $json->articleId");
+                    $oldnumber = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = (int)$json->articleId");
                     $created = [];
                     foreach ($list as $optionSet) {
                         $variantId = $this->service->GetVariantIdByOptionSet($optionSet);
                         if ($variantId)
                             continue;
-                        $number = $oldnumber.'_'.$this->service->GetSuffixStringForOptionSet($optionSet);
+                        $number = $oldnumber.$separator.$this->service->GetSuffixStringForOptionSet($optionSet);
                         $newId = $this->articleService->CopyArticle($json->articleId, true, true, true, true, true, true, true, $number);
                         $this->service->SaveVariant($json->articleId, $newId, $optionSet);
                         $created[] = $number;

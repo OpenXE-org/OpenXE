@@ -9,6 +9,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import MultiSelect from "primevue/multiselect";
 import Fluid from "primevue/fluid";
+import InputText from "primevue/inputtext";
 import {onMounted, ref} from "vue";
 import axios from "axios";
 import {AlertErrorHandler} from "@res/js/ajaxErrorHandler";
@@ -41,6 +42,8 @@ async function save() {
   <Dialog visible modal header="Variante" style="width: 500px" @update:visible="emit('close')">
     <Fluid>
       <div class="grid gap-1" style="grid-template-columns: 25% 75%;" autofocus>
+        <label>Trennzeichen:</label>
+        <InputText v-model="model.separator" maxlength="2" />
         <template v-for="group in model.groups">
           <label>{{ group.name }}</label>
           <MultiSelect v-model="group.selected" :options="group.options" option-label="name" option-value="value"/>
