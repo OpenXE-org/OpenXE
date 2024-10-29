@@ -146,7 +146,6 @@ final class MatrixProductService
             groupId: $groupId,
             nameExternal: $option['name_ext'],
             sort: $option['sort'],
-            articleNumber: $option['articlenumber'],
             articleNumberSuffix: $option['articlenumber_suffix'],
             globalOptionId: $option['id'],
             articleId: $articleId);
