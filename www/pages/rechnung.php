@@ -1297,7 +1297,9 @@ class Rechnung extends GenRechnung
             echo(json_encode($result,JSON_PRETTY_PRINT));
         } else {
             $template = $this->app->DB->Select("SELECT template from smarty_templates LIMIT 1");
-            $smarty = new Smarty;
+            $smarty = new Smarty;            
+            $directory = $this->app->erp->GetTMP().'/smarty/templates';            
+            $smarty->setCompileDir($directory);            
             $smarty->assign('rechnung', $result);
             $html = $smarty->fetch('string:'.$template);
             header('Content-type:application/xml');
