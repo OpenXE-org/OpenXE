@@ -279,6 +279,9 @@ class WidgetGenadresse
     $field->AddOption('{|nur Rechnung erstellen|}','rechnung');
     $this->form->NewField($field);
 
+    $field = new HTMLInput("rechnung_smarty_template","text","","","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("kommissionskonsignationslager","text","","","","","","","","","","0","","");
     $this->form->NewField($field);
 

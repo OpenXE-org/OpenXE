@@ -1296,17 +1296,24 @@ class Rechnung extends GenRechnung
             header('Content-Disposition: attachment;filename='.$filename.'.json');
             echo(json_encode($result,JSON_PRETTY_PRINT));
         } else {
-            $template = $this->app->DB->Select("SELECT template from smarty_templates LIMIT 1");
-            $smarty = new Smarty;            
-            $directory = $this->app->erp->GetTMP().'/smarty/templates';            
-            $smarty->setCompileDir($directory);            
-            $smarty->assign('rechnung', $result);
-            $html = $smarty->fetch('string:'.$template);
-            header('Content-type:application/xml');
-            header('Content-Disposition: attachment;filename='.$filename.'.xml');
-            echo($html);
-        }
 
+            $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '".$adresse[0]['rechnung_smarty_template']."' LIMIT 1");
+                       
+            if(empty($template)) {                
+                header('Content-type:text/plain');
+                header('Content-Disposition: attachment;filename='.$filename.'.xml');
+                echo('Kein Smarty Template in der Adresse hinterlegt.');              
+            } else {
+                $smarty = new Smarty;            
+                $directory = $this->app->erp->GetTMP().'/smarty/templates';            
+                $smarty->setCompileDir($directory);            
+                $smarty->assign('rechnung', $result);
+                $html = $smarty->fetch('string:'.$template);
+                header('Content-type:application/xml');
+                header('Content-Disposition: attachment;filename='.$filename.'.xml');
+                echo($html);
+            }                       
+        }
         $this->app->ExitXentral();
   }
 
