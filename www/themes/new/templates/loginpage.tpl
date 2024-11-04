@@ -29,7 +29,7 @@
 	</img>
 
 		<div class="intro">
-			Willkommen bei OpenXE ERP.<br/>
+			Willkommen beim ERP im Kölner Keller.<br/>
 			Bitte gib Deinen Benutzernamen und Passwort ein!
 		</div>
 		<div [LOGINWARNING_VISIBLE] class="warning"><p>[LOGINWARNING_TEXT]</p></div>
