@@ -21,7 +21,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y ${DEB_PKG} ${DEB_PKG_TMP} && \
     docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
     docker-php-ext-install ${PHP_EXT} && \
-    apt-get remove --purge -y ${DEB_PKG_TMP}
+    apt-get remove --purge -y ${DEB_PKG_TMP} && \
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+COPY docker/php "$PHP_INI_DIR/conf.d/"
 COPY --chown=www-data:www-data . /var/www/html
 COPY --chown=www-data:www-data --from=frontend /app/www/dist /var/www/html/www/dist
