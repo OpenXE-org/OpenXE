@@ -138,6 +138,7 @@ class SendCloudApi
               case 'shipment-on-route':
               case 'driver-on-route':
                   $highest = ShipmentStatus::EnRoute;
+                  break;
               case 'delivered': return ShipmentStatus::Delivered;
           }
       }
