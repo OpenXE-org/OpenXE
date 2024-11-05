@@ -2339,7 +2339,7 @@ class Briefpapier extends SuperFPDF {
     if(isset($this->textDetails['footer'])) {
       $freitext  = $this->getStyleElement('freitext');
 
-      if($this->getStyleElement("kleinunternehmer"))
+      if($this->getStyleElement("kleinunternehmer") == '1')
       {
         if($this->textDetails['footer']=="") $this->textDetails['footer'] ="Als Kleinunternehmer im Sinne von §19 Abs.1 UStG wird Umsatzsteuer nicht berechnet!";
         else $this->textDetails['footer'] .="\r\nAls Kleinunternehmer im Sinne von § 19 Abs. 1 UStG wird Umsatzsteuer nicht berechnet!";
