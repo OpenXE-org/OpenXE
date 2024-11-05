@@ -1,7 +1,7 @@
 <?php
 
 /*
- * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -14,6 +14,7 @@ use Xentral\Carrier\SendCloud\Data\ParcelCreation;
 use Xentral\Carrier\SendCloud\Data\ParcelResponse;
 use Xentral\Carrier\SendCloud\Data\SenderAddress;
 use Xentral\Carrier\SendCloud\Data\ShippingProduct;
+use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 class SendCloudApi
 {
@@ -116,6 +117,32 @@ class SendCloudApi
     if ($code != 200)
       throw SendcloudApiException::fromResponse(['code' => $code, 'body' => $output]);
     return $output;
+  }
+
+  /**
+   * @throws SendcloudApiException
+   */
+  public function GetTrackingStatus(string $trackingNumber): ShipmentStatus|null
+  {
+      $uri = self::PROD_BASE_URI . '/tracking/' . $trackingNumber;
+      $response = $this->sendRequest($uri);
+      $highest = null;
+      foreach ($response['body']->statuses as $status) {
+          switch ($status->parent_status) {
+              case 'announcing':
+              case 'ready-to-send':
+                  if ($highest === null) $highest = ShipmentStatus::Announced;
+                  break;
+              case 'to-sorting':
+              case 'at-sorting-centre':
+              case 'shipment-on-route':
+              case 'driver-on-route':
+                  $highest = ShipmentStatus::EnRoute;
+                  break;
+              case 'delivered': return ShipmentStatus::Delivered;
+          }
+      }
+      return $highest;
   }
 
   /**

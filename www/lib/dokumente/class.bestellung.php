@@ -31,7 +31,7 @@ class BestellungPDF extends BriefpapierCustom {
     $this->doctype="bestellung";
     $this->doctypeOrig="Bestellung";
     $this->bestellungohnepreis=0;
-    parent::__construct($this->app,$projekt);
+    parent::__construct($this->app,$projekt,Array('kleinunternehmer' => 'ignore')); // Fix for ignoring kleinunternehmer 0 or false does not work because of  function getStyleElement($key) (class.briefpapier.php)
   } 
 
 

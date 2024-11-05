@@ -1,6 +1,6 @@
 <?php
 /*
- * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
@@ -9,6 +9,7 @@
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\CustomsInfo;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 abstract class Versanddienstleister
 {
@@ -504,4 +505,6 @@ abstract class Versanddienstleister
    * @return Product[]
    */
   public abstract function GetShippingProducts(): array;
+
+  public abstract function GetShipmentStatus(string $tracking): ShipmentStatus|null;
 }

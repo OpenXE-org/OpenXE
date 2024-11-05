@@ -5716,6 +5716,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           );
 
           $this->app->erp->ANABREGSNeuberechnen($rechnung,"rechnung");
+          $this->app->erp->rechnung_zahlstatus_berechnen($id);
           $this->app->erp->PDFArchivieren("rechnung",$rechnung);
         }
       }
@@ -5793,6 +5794,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               false,
               $nurRestmenge
             );
+            
+            $this->app->erp->SeriennummernCheckLieferscheinBenachrichtigung($lieferschein);
             
             $sql = "SELECT id FROM kommissionierung k WHERE k.auftrag = '".$id."'";
             $vorkommissionierung = $this->app->DB->Select($sql);

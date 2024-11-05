@@ -12945,12 +12945,8 @@ DROP TABLE IF EXISTS `seriennummern`;
 CREATE TABLE `seriennummern` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `seriennummer` varchar(255) NOT NULL,
-  `adresse` int(11) NOT NULL,
   `artikel` int(11) NOT NULL,
   `beschreibung` varchar(255) NOT NULL,
-  `lieferung` date NOT NULL,
-  `lieferschein` int(11) NOT NULL,
-  `lieferscheinpos` int(11) NOT NULL,
   `bearbeiter` varchar(255) NOT NULL,
   `logdatei` datetime NOT NULL,
   PRIMARY KEY (`id`)

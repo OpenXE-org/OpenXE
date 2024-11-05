@@ -7204,6 +7204,9 @@ class Artikel extends GenArtikel {
           $this->app->erp->MenuEintrag("index.php?module=artikel&action=lager&id=$id",'Lager');
         }
 
+        if ($tmp[0]['seriennummern'] <> 'keine') {
+            $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=nummern_list&artikel=$id&from=artikel",'Seriennummern');
+        }
 
         if($tmp[0]['mindesthaltbarkeitsdatum']=='1' && $tmp[0]['chargenverwaltung']<=0)
         {
