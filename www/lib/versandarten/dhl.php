@@ -1,7 +1,7 @@
 <?php
 
 /*
- * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -17,6 +17,7 @@ use Xentral\Carrier\Dhl\Data\ShipmentItem;
 use Xentral\Carrier\Dhl\DhlApi;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 require_once(dirname(__DIR__).'/class.versanddienstleister.php');
 class Versandart_dhl extends Versanddienstleister{
@@ -245,4 +246,11 @@ class Versandart_dhl extends Versanddienstleister{
     }
     return null;
   }
+
+    public function GetShipmentStatus(string $tracking): ShipmentStatus|null
+    {
+        return null;
+    }
+
+
 }
