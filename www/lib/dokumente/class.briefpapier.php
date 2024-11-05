@@ -307,6 +307,36 @@ class Briefpapier extends SuperFPDF {
 
   public function GetChargeMHDSNString($type,$doctype,$doctypeid,$posid, $returnSimpleString = false)
   {
+
+
+    switch ($type) {
+        case 'sn':
+            $sql = "SELECT 
+                        s.seriennummer   
+                    FROM
+                        seriennummern s
+                    INNER JOIN
+                        seriennummern_beleg_position slp ON slp.beleg_typ = 'lieferschein' AND slp.seriennummer = s.id
+                    WHERE
+                        slp.beleg_position = $posid
+            ";
+            $values = (array) $this->app->DB->SelectArr($sql);
+            return(implode(', ',array_column($values,'seriennummer')));
+        break;
+    }
+
+    if(!empty($values)){
+        if($returnSimpleString) {
+            return implode(', ', $values);
+        }
+        return implode("\r\n",$values);
+    }
+    return '';
+
+
+// XENTRAL Legacy
+/*
+
     $lieferschein_posid = 0;
     $auftrag_position_id = 0;
     $lieferschein = 0;
@@ -560,6 +590,7 @@ class Briefpapier extends SuperFPDF {
       return implode("\r\n",$tmp_string);
     }
     return '';
+*/
   }
 
   function CheckPosition($value,$doctype,$doctypeid,$posid)
@@ -3305,6 +3336,10 @@ class Briefpapier extends SuperFPDF {
           );
         }
       }
+
+      // OpenXE Seriennummern
+      
+
 
       if(!empty($this->doctype) && !empty($this->id) && strpos($item['desc'], '{') !== false) {
         $item['desc'] = $this->app->erp->ParseUserVars($this->doctype, $this->id ,$item['desc']);

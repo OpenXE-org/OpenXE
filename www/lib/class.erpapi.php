@@ -1514,8 +1514,10 @@ public function NavigationHooks(&$menu)
   function FormatMenge($spalte, $decimals = 0)
   {
     return ('FORMAT('.$spalte.','.$decimals.',\'de_DE\')');
+  }
 
-//    return "replace(trim($spalte)+0,'.',',')";
+  function FormatMengeFuerFormular($spalte) {
+    return "trim($spalte)+0";
   }
 
   function FormatUCfirst($spalte)
@@ -2810,14 +2812,45 @@ public function NavigationHooks(&$menu)
 
   }
 
-function LieferscheinSeriennummernberechnen($id)
-{
-  /** @var Seriennummern $obj */
-  $obj = $this->LoadModul('seriennummern');
-  if(!empty($obj) && method_exists($obj, 'LieferscheinSeriennummernberechnen')) {
-    $obj->LieferscheinSeriennummernberechnen($id);
-  }
-}
+    function LieferscheinSeriennummernberechnen($id)
+    {
+      /** @var Seriennummern $obj */
+      $obj = $this->LoadModul('seriennummern');
+      if(!empty($obj) && method_exists($obj, 'LieferscheinSeriennummernberechnen')) {
+        $obj->LieferscheinSeriennummernberechnen($id);
+      }
+    }
+
+    function SeriennummernCheckBenachrichtigung(int $artikel_id) {
+        $obj = $this->LoadModul('seriennummern');
+        return($obj->seriennummern_check_and_notification_stock_added($artikel_id));
+    }  
+    
+    function SeriennummernCheckLieferscheinBenachrichtigung(int $lieferschein_id) {
+        $obj = $this->LoadModul('seriennummern');
+        return($obj->seriennummern_check_and_notification_delivery_note($lieferschein_id));
+    }
+
+    function SeriennummernCheckLieferscheinWarnung(int $lieferschein_id) {
+        $obj = $this->LoadModul('seriennummern');
+        return($obj->seriennummern_check_and_message_delivery_notes($lieferschein_id));
+    }
+
+    function SeriennummernCheckLieferschein($lieferschein_id = null, $ignore_date = false, $only_missing = true, $group_lieferschein = false) {
+        $obj = $this->LoadModul('seriennummern');       
+        return ($obj->seriennummern_check_delivery_notes($lieferschein_id, $ignore_date, $only_missing, $group_lieferschein));
+    }
+    
+    function SeriennummernCheckWareneingangWarnung(int $wareneingang_id) {
+        $obj = $this->LoadModul('seriennummern');
+        return($obj->seriennummern_check_and_message_incoming_goods($wareneingang_id));
+    }
+
+    function SeriennummernCheckWareneingang($wareneingang_id = null, $ignore_date = false, $only_missing = true, $group_wareneingang = false) {
+        $obj = $this->LoadModul('seriennummern');       
+        return ($obj->seriennummern_check_incoming_goods($wareneingang_id, $ignore_date, $only_missing, $group_wareneingang));
+    }
+
 
 // @refactor in Lager Modul
 function ArtikelAnzahlLagerPlatzMitSperre($artikel,$lager_platz)
@@ -2904,7 +2937,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -2931,7 +2964,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -2957,7 +2990,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -2966,7 +2999,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
           }else{
             if(isset($v['table']) &&  $v['table'] == 'seriennummern' && !empty($v['id']))
             {
-              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy              $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
             }elseif(isset($v['table']) && $v['table'] == 'beleg_chargesnmhd' && !empty($v['id'])){
               $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
             }
@@ -3545,6 +3578,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
 
           $this->RunHook('erpapi_lieferschein_auslagern', 1, $lieferschein);
+          $this->SeriennummernCheckLieferscheinWarnung($lieferschein, true);
           $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
         }
     }
@@ -20507,6 +20541,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
 
     $this->RunHook('LagerEinlagern_after',7, $artikel, $menge, $regal, $projekt, $grund, $doctype,$doctypeid);
+    
+    $this->SeriennummernCheckBenachrichtigung($artikel);
   }
 
   function CreateLagerPlatzInhaltVPE($artikel, $menge, $gewicht, $laenge, $breite, $hoehe, $menge2 = 0, $gewicht2 = 0, $laenge2 = 0, $breite2 = 0, $hoehe2 = 0)
@@ -39630,7 +39666,7 @@ function Firmendaten($field,$projekt="")
     }
     return $sipuid;
   }
-}
+} // END erpAPI
 
 
 function parse_csv($str,$parse_split_parameter="")
