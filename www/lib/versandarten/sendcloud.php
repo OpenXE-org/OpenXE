@@ -19,12 +19,18 @@ use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
 use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
+use Xentral\Components\Logger\Logger;
+
 require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
 class Versandart_sendcloud extends Versanddienstleister
 {
   protected SendCloudApi $api;
   protected array $options;
+  protected $versandart_id;
+ 
+  /** @var Logger $logger */
+  public $logger;
 
   public function __construct(ApplicationCore $app, ?int $id)
   {
@@ -32,6 +38,8 @@ class Versandart_sendcloud extends Versanddienstleister
     if (!isset($this->id))
       return;
     $this->api = new SendCloudApi($this->settings->public_key, $this->settings->private_key);
+    $this->versandart_id = $id;
+    $this->logger = $app->Container->get('Logger');
   }
 
   public function GetName(): string
@@ -193,9 +201,25 @@ class Versandart_sendcloud extends Versanddienstleister
 
     public function GetShipmentStatus(string $tracking): ShipmentStatus|null
     {
+        $this->logger->debug("Sendcloud tracking status request ".$this->versandart_id,
+            [
+                'trackingCode' => $tracking
+            ]
+        );
         try {
-            return $this->api->GetTrackingStatus($tracking);
-        } catch (SendcloudApiException) {
+            $result = $this->api->GetTrackingStatus($tracking);
+            $this->logger->debug("Sendcloud tracking status result ".$this->versandart_id,
+                [
+                    'result' => $result
+                ]
+            );
+            return ($result);
+        } catch (SendcloudApiException $e) {
+            $this->logger->debug("Sendcloud tracking status error ".$this->versandart_id,
+                [
+                    'exception' => $e
+                ]
+            );
             return null;
         }
     }
