@@ -486,8 +486,8 @@ class Systemhealth {
 
         $dbVersionArr = explode('.',$dbVersion);
 
-        if($dbVersionArr[0] >= 10 && !($dbVersionArr[1] < 2)) {
-          $status = 'ok';
+        if (($dbVersionArr[0] == 10 && !($dbVersionArr[1] < 2)) || ($dbVersionArr[0] > 10)) {
+            $status = 'ok';
         }
         $mysqlVersion = 'MariaDB '.$dbVersion;
       }

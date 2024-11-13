@@ -154,7 +154,8 @@ class DB{
       $version_stringFormat = str_replace('.','',$version_string);
       return ['mysql', $version_string, $version_stringFormat];
     }
-    $mariaVersion =  substr($version, 0, 4);
+    $version_array = explode('.', $version);
+    $mariaVersion = $version_array[0].'.'.$version_array[1];
     $version_stringFormat = str_replace('.','', $mariaVersion);
     return ['mariadb',$mariaVersion, $version_stringFormat];
   }
