@@ -464,11 +464,11 @@ class Lieferschein extends GenLieferschein
     $status = $lieferschein['status'];
     $umgelagert = $lieferschein['umgelagert'];
 
-    $quelllager = $this->app->Secure->GetPOST('quelllager');
-    $ziellager = $this->app->Secure->GetPOST('ziellager');
+    $quelllagerplatz = $this->app->Secure->GetPOST('quelllagerplatz');
+    $ziellagerplatz = $this->app->Secure->GetPOST('ziellagerplatz');
 
-    $quellager_id = $this->app->erp->ReplaceLagerPlatz(true, $quelllager, true);
-    $ziellager_id = $this->app->erp->ReplaceLagerPlatz(true, $ziellager, true);
+    $quellager_id = $this->app->erp->ReplaceLagerPlatz(true, $quelllagerplatz, true);
+    $ziellagerplatz_id = $this->app->erp->ReplaceLagerPlatz(true, $ziellagerplatz, true);
 
     if (empty($quellager_id)) {
         $quellager_id = $lieferschein['standardlager'];
@@ -488,8 +488,8 @@ class Lieferschein extends GenLieferschein
         $submit = $this->app->Secure->GetPOST('submit');
         if ($submit == 'umlagern') {
 
-            if (empty($quellager_id) || empty($ziellager_id)) {
-                $this->app->Tpl->AddMessage('error',"Bitte Quell- und Ziellager angeben.");
+            if (empty($quellager_id) || empty($ziellagerplatz_id)) {
+                $this->app->Tpl->AddMessage('error',"Bitte Quell- und Ziellagerplatz angeben.");
             } else {
                 $sql = "SELECT artikel, name_de, a.nummer AS artikelnummer, SUM(menge) AS menge FROM lieferschein_position lp INNER JOIN artikel a ON a.id = lp.artikel WHERE lp.lieferschein = $id GROUP BY lp.artikel";
 	            $positionen = $this->app->DB->SelectArr($sql);
@@ -520,15 +520,15 @@ class Lieferschein extends GenLieferschein
                         $doctypeId = $id;
 
                         $this->app->erp->LagerAuslagernRegal($artikel,$quellager_id,$menge,$projekt,$grund,$importer,$doctype,$doctypeid);
-                        $this->app->erp->LagerEinlagern($artikel,$menge,$ziellager_id,$projekt,$grund,$importer,$paketannahme,$doctype,$doctypeid);
+                        $this->app->erp->LagerEinlagern($artikel,$menge,$ziellagerplatz_id,$projekt,$grund,$importer,$paketannahme,$doctype,$doctypeid);
                     }
                     $sql = "UPDATE lieferschein SET umgelagert = 1 WHERE id = ".$id;
                     $this->app->DB->Update($sql);
-                    $this->app->erp->LieferscheinProtokoll($id,"Lieferschein umgelagert von ".$quelllager." nach ".$ziellager);
+                    $this->app->erp->LieferscheinProtokoll($id,"Lieferschein umgelagert von ".$quelllagerplatz." nach ".$ziellagerplatz);
                     $this->app->Tpl->AddMessage('success','Erfolgreich umgelagert.');
 		    $erneut = null;
                 } else {                
-                    $this->app->Tpl->AddMessage('error',"Mengen im Quelllager nicht ausreichend.");   
+                    $this->app->Tpl->AddMessage('error',"Mengen im Quelllagerplatz nicht ausreichend.");   
                     $tmp = new EasyTable($this->app);
                     $tmp->headings = array('Nummer','Artikel','Lieferschein Menge','Lager Menge','');
                     $tmp->datasets = $fehlt;
@@ -540,15 +540,15 @@ class Lieferschein extends GenLieferschein
 
     $this->LieferscheinMenu();
 
-    $this->app->YUI->AutoComplete("quelllager", "lagerplatz");
-    $this->app->YUI->AutoComplete("ziellager", "lagerplatz");
+    $this->app->YUI->AutoComplete("quelllagerplatz", "lagerplatz");
+    $this->app->YUI->AutoComplete("ziellagerplatz", "lagerplatz");
 
     $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"Lieferschein $belegnr umlagern");
     $this->app->Tpl->Set('TABTEXT',"Umlagern");
 
-    $this->app->Tpl->Set('QUELLLAGER',$this->app->erp->ReplaceLagerPlatz(false, $quellager_id, false));
+    $this->app->Tpl->Set('QUELLLAGERPLATZ',$this->app->erp->ReplaceLagerPlatz(false, $quellager_id, false));
 
-    $this->app->Tpl->Set('ZIELLAGER',$this->app->erp->ReplaceLagerPlatz(false, $ziellager_id, false));
+    $this->app->Tpl->Set('ZIELLAGERPLATZ',$this->app->erp->ReplaceLagerPlatz(false, $ziellagerplatz_id, false));
 
     $this->app->Tpl->Set('ERNEUT_CHECKED',$erneut?'checked':'');
 
