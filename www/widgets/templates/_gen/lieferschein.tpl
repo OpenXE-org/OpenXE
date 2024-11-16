@@ -75,7 +75,7 @@ $(document).ready(function(){
   <tr><td>{|Ihre Bestellnummer|}:</td><td>[IHREBESTELLNUMMER][MSGIHREBESTELLNUMMER]</td></tr>
   <tr><td>{|Interne Bezeichnung|}:</td><td>[INTERNEBEZEICHNUNG][MSGINTERNEBEZEICHNUNG]</td></tr>
   <tr><td>{|Datum|}:</td><td>[DATUM][MSGDATUM]</td></tr>
-  <tr><td>{|Standardlagerplatz|}:</td><td>[STANDARDLAGER][MSGSTANDARDLAGER]</td></tr>
+  <tr><td>{|Lager|}:</td><td>[STANDARDLAGER][MSGSTANDARDLAGER]</td></tr>
 [VORKOMMISSIONSKONSIGNATIONSLAGER]<tr><td>[KOMMISSIONIERLAGER]:<br></td><td>[KOMMISSIONSKONSIGNATIONSLAGER][MSGKOMMISSIONSKONSIGNATIONSLAGER]</td></tr>[NACHKOMMISSIONSKONSIGNATIONSLAGER]
   <tr><td>Schreibschutz:</td><td>[SCHREIBSCHUTZ][MSGSCHREIBSCHUTZ]&nbsp;</td></tr>
   <tr><td>[ABWEICHENDEBEZEICHNUNGBESCHRIFTUNG]:</td><td>[ABWEICHENDEBEZEICHNUNG][MSGABWEICHENDEBEZEICHNUNG]&nbsp;</td></tr>
