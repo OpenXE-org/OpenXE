@@ -4503,9 +4503,16 @@ a.reportbutton.active:active {
     background: var(--sidebar-background);
 }
 
-font[color="blue"]{
+font[color="blue"] {
     color: #2f3890;
 }
+
+#belegnredit {
+    color: #2f3890;
+    border-width: 0;
+    font-weight: bold;
+} 
+
 span.project_sensitive,
 span.special,
 span.legacy,

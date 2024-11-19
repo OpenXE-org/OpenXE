@@ -76,6 +76,8 @@ class Rechnung extends GenRechnung
     $this->app->ActionHandler("archivierepdf","RechnungArchivierePDF");
 
     $this->app->ActionHandler("summe","RechnungSumme"); // nur fuer rechte
+    $this->app->ActionHandler("belegnredit","belegnredit"); // nur fuer rechte
+    
     $this->app->ActionHandler("einkaufspreise","RechnungEinkaufspreise");
     $this->app->ActionHandler("steuer","RechnungSteuer");
     $this->app->ActionHandler("formeln","RechnungFormeln");
@@ -1680,7 +1682,15 @@ class Rechnung extends GenRechnung
     }
 
     if($nummer!='') {
-      $this->app->Tpl->Set('NUMMER',$nummer);
+
+      $this->app->Tpl->Set('NUMMER',$nummer);      
+    
+      if (($schreibschutz!='1') && $this->app->erp->RechteVorhanden('rechnung','belegnredit')){
+        $this->app->Tpl->Set('BELEGNRHIDDEN','hidden');
+      } else {
+        $this->app->Tpl->Set('BELEGNREDITHIDDEN','hidden');
+      }
+      
       if($this->app->erp->RechteVorhanden('adresse','edit')){
         $this->app->Tpl->Set('KUNDE', "&nbsp;&nbsp;&nbsp;Kd-Nr. <a href=\"index.php?module=adresse&action=edit&id=$adresse\" target=\"_blank\">" . $kundennummer . "</a>");
       }
@@ -1799,6 +1809,16 @@ class Rechnung extends GenRechnung
     }
 
     $speichern = $this->app->Secure->GetPOST('speichern');
+    
+    if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','belegnredit')) {
+        $nummer_neu = $this->app->Secure->GetPOST('belegnredit');
+        
+        $nummer_neu = $this->app->DB->real_escape_string($nummer_neu);
+        
+        if(!$this->app->DB->select("SELECT id from rechnung WHERE belegnr ='".$nummer_neu."'")) {
+            $this->app->DB->update("UPDATE rechnung SET belegnr ='".$nummer_neu."' WHERE id = '".$id."'");
+        }
+    }
 
     if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','mahnwesen'))
     {
