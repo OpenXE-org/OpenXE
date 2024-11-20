@@ -36,7 +36,7 @@ class Kostenstellen {
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8); 
 
-                $findcols = array('k.id','k.id','k.nummer', 'k.beschreibung', 'k.internebemerkung');
+                $findcols = array('k.id','k.id','k.nummer', 'k.beschreibung', 'k.internebemerkung'); // use 'null' for non-searchable columns
                 $searchsql = array('k.nummer', 'k.beschreibung', 'k.internebemerkung');
 
                 $defaultorder = 1;
@@ -59,6 +59,8 @@ class Kostenstellen {
                 $where = "1";
                 $count = "SELECT count(DISTINCT id) FROM kostenstellen WHERE $where";
 //                $groupby = "";
+
+//                echo($sql." WHERE ".$where." ".$groupby);
 
                 break;
         }
@@ -84,11 +86,9 @@ class Kostenstellen {
     }    
 
     public function kostenstellen_delete() {
-        $id = (int) $this->app->Secure->GetGET('id');
-        
+        $id = (int) $this->app->Secure->GetGET('id');     
         $this->app->DB->Delete("DELETE FROM `kostenstellen` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
-
+        $this->app->Tpl->addMessage('error', 'Der Eintrag wurde gel&ouml;scht');        
         $this->kostenstellen_list();
     } 
 
@@ -100,11 +100,11 @@ class Kostenstellen {
     function kostenstellen_edit() {
         $id = $this->app->Secure->GetGET('id');
         
-        // Check if other users are editing this id
-        if($this->app->erp->DisableModul('artikel',$id))
+/*        // Check if other users are editing this id
+        if($this->app->erp->DisableModul('kostenstellen',$id))
         {
           return;
-        }   
+        } */
               
         $this->app->Tpl->Set('ID', $id);
 
@@ -112,6 +112,10 @@ class Kostenstellen {
         $this->app->erp->MenuEintrag("index.php?module=kostenstellen&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
+        
+        // Convert here
+    	// $input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";        
+        
         $submit = $this->app->Secure->GetPOST('submit');
                 
         if (empty($id)) {
@@ -156,23 +160,26 @@ class Kostenstellen {
                 $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
                 header("Location: index.php?module=kostenstellen&action=list&msg=$msg");
             } else {
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                $this->app->Tpl->addMessage('success', 'Die Einstellungen wurden erfolgreich &uuml;bernommen.');
             }
         }
 
     
         // Load values again from database
-	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',k.id,'\" />') AS `auswahl`";
-        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS k.id, $dropnbox, k.nummer, k.beschreibung, k.internebemerkung, k.id FROM kostenstellen k"." WHERE id=$id");        
+        if ($id != 'NULL') {
 
-        foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
-        }
+        	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',k.id,'\" />') AS `auswahl`";
+            $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS k.id, $dropnbox, k.nummer, k.beschreibung, k.internebemerkung, k.id FROM kostenstellen k"." WHERE id=$id");        
 
-        if (!empty($result)) {
-            $kostenstellen_from_db = $result[0];
-        } else {
-            return;
+            foreach ($result[0] as $key => $value) {
+                $this->app->Tpl->Set(strtoupper($key), $value);   
+            }
+
+            if (!empty($result)) {
+                $kostenstellen_from_db = $result[0];
+            } else {
+                return;
+            }
         }
              
         /*
@@ -184,6 +191,8 @@ class Kostenstellen {
         $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
 
         $this->app->YUI->AutoComplete("artikel", "artikelnummer");
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$kostenstellen_from_db['projekt'],false));
+      	$this->app->Tpl->Set('PRIO', $kostenstellen_from_db['prio']==1?"checked":"");
 
          */
 
