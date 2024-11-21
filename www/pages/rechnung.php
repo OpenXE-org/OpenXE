@@ -1266,6 +1266,8 @@ class Rechnung extends GenRechnung
             SELECT * FROM rechnung WHERE id = $id LIMIT 1
         ");
         $result['kopf'] = $rechnung;
+        $result['kopf']['internet_bestellnummer'] = $this->app->DB->Select("SELECT a.internet FROM rechnung r LEFT JOIN auftrag a ON a.id=r.auftragid WHERE r.id='$id' AND r.id > 0 LIMIT 1");
+
         $adresse = $this->app->DB->SelectArr("
             SELECT * FROM adresse WHERE id = (SELECT adresse FROM rechnung WHERE id = $id LIMIT 1)
         ");
