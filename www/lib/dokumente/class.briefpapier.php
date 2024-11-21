@@ -3304,11 +3304,10 @@ class Briefpapier extends SuperFPDF {
           {
             $freifeldbeschriftung = $this->app->erp->Beschriftung('artikel_freifeld' . $ifreifeld);
             $freifeldtyp = $this->getStyleElement('freifeld' . $ifreifeld.'typ');
-            if($freifeldtyp==='select')
+            if($freifeldtyp==='select' && str_contains($freifeldbeschriftung, '|'))
             {
               $freifeldbeschriftung = strstr($freifeldbeschriftung, '|', true);
             }
-
             if($item['desc']!=''){
               $item['desc'] = $item['desc'] . "\r\n" . $freifeldbeschriftung . ': ' . $item['freifeld' . $ifreifeld];
             }
