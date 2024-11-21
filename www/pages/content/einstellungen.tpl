@@ -126,7 +126,7 @@
                 </td>            
             </tr>
             <tr align="center">
-                <td><a href="index.php?module=versandarten&action=list">{|Smarty Templates|}</a></td>
+                <td><a href="index.php?module=smarty_templates&action=list">{|Smarty Templates|}</a></td>
             </tr>
         </table>
     </fieldset>
