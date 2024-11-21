@@ -10,6 +10,8 @@ use Xentral\Modules\SystemNotification\Service\NotificationService;
 
 class Seriennummern {
 
+    const SQL_CONDITION_ACTIVE = "(a.seriennummern <> 'keine' AND a.seriennummern <> '')";
+
     function __construct($app, $intern = false) {
         $this->app = $app;
         if ($intern)
@@ -229,7 +231,7 @@ class Seriennummern {
                         INNER JOIN lager_platz_inhalt lpi ON
                             a.id = lpi.artikel
                         WHERE
-                            a.seriennummern <> 'keine' AND a.seriennummern <> ''
+                            ".self::SQL_CONDITION_ACTIVE."
                         GROUP BY
                             a.id
                     ) auf_lager ON auf_lager.id = a.id
@@ -237,7 +239,7 @@ class Seriennummern {
                         seriennummern s ON s.artikel = a.id                 
                 ";
 
-                $where = "a.seriennummern <> 'keine' AND a.seriennummern <> ''";
+                $where = self::SQL_CONDITION_ACTIVE;
                 $groupby = "GROUP BY a.id";
                 $count = "SELECT count(DISTINCT a.id) FROM artikel a WHERE ".$where;
          
@@ -314,7 +316,7 @@ class Seriennummern {
                         ON sbp.beleg_position = lp.id
                 ";
 
-                $where = "(a.seriennummern <> 'keine')";
+                $where = self::SQL_CONDITION_ACTIVE;
 
                 // Toggle filters
                 $app->Tpl->Add('JQUERYREADY', "$('#altelieferscheine').click( function() { fnFilterColumn1( 0 ); } );");
@@ -417,7 +419,7 @@ class Seriennummern {
                         ON sbp.beleg_position = pd.id
                 ";
 
-                $where = "(a.seriennummern <> 'keine')";
+                $where = self::SQL_CONDITION_ACTIVE;
 
                 // Toggle filters
                 $app->Tpl->Add('JQUERYREADY', "$('#geschlossenewareneingaenge').click( function() { fnFilterColumn1( 0 ); } );");
@@ -514,7 +516,7 @@ class Seriennummern {
                             adr.id = l.adresse
                 ";
 
-                $where = "(a.seriennummern <> 'keine') AND (l.id = '".$lieferschein_id."')";
+                $where = self::SQL_CONDITION_ACTIVE." AND (l.id = '".$lieferschein_id."')";
                 $count = "SELECT COUNT(DISTINCT lp.lieferschein) FROM
                              lieferschein_position lp
                             LEFT JOIN seriennummern_beleg_position slp 
@@ -590,7 +592,7 @@ class Seriennummern {
                             adr.id = pa.adresse
                 ";
 
-                $where = "(a.seriennummern <> 'keine') AND (pa.id = '".$wareneingang_id."')";
+                $where = self::SQL_CONDITION_ACTIVE." AND (pa.id = '".$wareneingang_id."')";
                 $count = "SELECT COUNT(DISTINCT pd.id) FROM
                              paketdistribution pd
                             LEFT JOIN seriennummern_beleg_position spd 
@@ -1253,7 +1255,7 @@ class Seriennummern {
                 INNER JOIN lager_platz_inhalt lpi ON
                     a.id = lpi.artikel
                 WHERE
-                    a.seriennummern <> 'keine' AND a.seriennummern <> '' AND (a.id = '".$artikel_id."' OR '".$artikel_id."' = '')
+                    ".self::SQL_CONDITION_ACTIVE." AND (a.id = '".$artikel_id."' OR '".$artikel_id."' = '')
                 GROUP BY
                     a.id
             ) auf_lager
@@ -1318,7 +1320,7 @@ class Seriennummern {
                         spd.beleg_position
                 ) spd ON spd.beleg_position = pd.id
                 WHERE
-                    (a.seriennummern <> 'keine') 
+                    ".self::SQL_CONDITION_ACTIVE."
                     AND pa.status <> 'abgeschlossen'
                     AND (pa.id = '".$wareneingang_id."' OR '".$wareneingang_id."' = '')
                 GROUP BY
@@ -1375,7 +1377,7 @@ class Seriennummern {
                         slp.beleg_position
                 ) slp ON slp.beleg_position = lp.id
                 WHERE
-                    (a.seriennummern <> 'keine') 
+                    ".self::SQL_CONDITION_ACTIVE."
                     AND (
                         l.datum >=(
                             SELECT
