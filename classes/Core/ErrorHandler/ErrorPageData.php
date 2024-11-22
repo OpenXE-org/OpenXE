@@ -323,15 +323,6 @@ final class ErrorPageData implements JsonSerializable
             'ldap'                        => function () {
                 return function_exists('ldap_connect');
             },
-            'ioncube'                     => function () {
-                if (!function_exists('ioncube_loader_version')) {
-                    return false;
-                }
-
-                $ioncubeMajorVersion = (int)@ioncube_loader_version();
-
-                return $ioncubeMajorVersion >= 5;
-            },
         ];
     }
 

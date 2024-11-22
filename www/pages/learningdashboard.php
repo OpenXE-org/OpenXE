@@ -124,12 +124,6 @@ class Learningdashboard
     $initialSetupLesson->addTask(new Task($wizardService->getWizard('basic_settings', $userId)));
     $initialSetupLesson->addTask(new Task($wizardService->getWizard('parts_list', $userId)));
 
-    /** @var EnvironmentConfig $environmentConfig */
-    $environmentConfig = $this->app->Container->get('EnvironmentConfig');
-    if($environmentConfig->isSystemFlaggedAsDevelopmentVersion() || $environmentConfig->isSystemFlaggedAsTestVersion()){
-      $initialSetupLesson->addTask(new Task($wizardService->getWizard('restore_factory_settings', $userId)));
-    }
-
     $shopConnectionLesson = new Lesson('Shopanbindung');
     $shopConnectionLesson->addTask(new Task($wizardService->getWizard('shopify', $userId)));
     $shopConnectionLesson->addTask(new Task($wizardService->getWizard('amazon', $userId)));

@@ -1,0 +1,8 @@
+# This file can be used to override defaults from the docker-compose.yml file
+# if it is copied/renamed to docker-compose.override.yml
+
+version: '3.9'
+services:
+  vite:
+    # Set this to your local uid:gid to run the frontend build as your user and keep the working directory clean
+    user: 1000:1000

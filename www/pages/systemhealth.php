@@ -719,7 +719,6 @@ class Systemhealth {
         'max_upload'         => 'Upload-Kapazit&auml;t',
         'max_execution_time' => 'Scriptlauftzeit',
         'userdata_writeable' => 'Schreibrechte in Userdata',
-        'ioncube'            => 'Lizenz',
         'tls1-2'             => 'TLS v1.2',
       ],
       'settings' => [

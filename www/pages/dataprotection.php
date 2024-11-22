@@ -80,8 +80,6 @@ class Dataprotection
 
           $this->app->Location->execute('index.php?module=dataprotection&action=services');
       }
-      $isDemo = !empty(erpAPI::Ioncube_Property('testlizenz'))
-        && !empty(erpAPI::Ioncube_Property('iscloud'));
       $google = $this->isGoogleAnalyticsActive();
       $improvement = $this->isImprovementProgramActive();
       $hubspot = $this->isHubspotActive();
@@ -102,9 +100,7 @@ class Dataprotection
       if($zendesk) {
           $this->app->Tpl->Set('DATAPROTECTION_ZENDESK', ' checked="checked" ');
       }
-      if(!$isDemo) {
-          $this->app->Tpl->Set('DISABLED_HUBSPOT', ' disabled="disabled" ');
-      }
+      $this->app->Tpl->Set('DISABLED_HUBSPOT', ' disabled="disabled" ');
 
       $this->app->erp->MenuEintrag('index.php?module=dataprotection&action=list', 'Datenschutzerklärung');
       $this->app->erp->MenuEintrag('index.php?module=dataprotection&action=services', 'Dienste');
@@ -162,12 +158,6 @@ class Dataprotection
   public function isHubspotActive(): bool
   {
     $hubspot = $this->systemConfigModule->tryGetValue('dataprotection', 'hubspot');
-
-    $isDemo = !empty(erpAPI::Ioncube_Property('testlizenz'))
-      && !empty(erpAPI::Ioncube_Property('iscloud'));
-    if($hubspot === null) {
-      return $isDemo;
-    }
 
     return $hubspot === '1';
   }

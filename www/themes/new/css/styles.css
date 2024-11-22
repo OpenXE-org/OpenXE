@@ -1,3 +1,5 @@
+@layer reset, primevue;
+
 body {
     font-size: 12px;
 	font-family: 'Inter', Arial, Helvetica, sans-serif;
@@ -7,6 +9,7 @@ body {
 
 html {
     box-sizing: border-box;
+    font-size: 11px;
 }
 
 *,

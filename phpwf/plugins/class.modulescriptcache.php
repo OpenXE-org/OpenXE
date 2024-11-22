@@ -64,7 +64,7 @@ class ModuleScriptCache
     $this->absoluteCacheDir = $this->baseDir . '/www/cache';
     $this->relativeCacheDir = './cache';
     $this->assetDir = '/dist';
-    $this->assetManifest = json_decode(file_get_contents($this->baseDir. '/www' . $this->assetDir . '/manifest.json'));
+    $this->assetManifest = json_decode(file_get_contents($this->baseDir. '/www' . $this->assetDir . '/.vite/manifest.json'));
 
     // Cache-Ordner anzulegen, falls nicht existent
     if (!is_dir($this->absoluteCacheDir)) {
@@ -221,6 +221,7 @@ class ModuleScriptCache
       $realPath = realpath($this->baseDir . '/' . $file);
       if (!is_file($realPath))
         continue;
+      $this->javascriptModules[] = $file; continue;
 
       if (isset($this->assetManifest->$file))
         $this->javascriptModules[] = $this->assetManifest->$file;
@@ -299,7 +300,23 @@ class ModuleScriptCache
     if (empty($this->javascriptModules))
       return '';
 
-    $html = '';
+    $tags = [];
+    if (defined('VITE_DEV_SERVER')) {
+        foreach ($this->javascriptModules as $module)
+            $tags[] = sprintf('<script type="module" src="%s"></script>',VITE_DEV_SERVER.'/'.$module);
+    } else {
+        foreach ($this->javascriptModules as $module)
+            $this->includeChunk($module, true);
+        foreach (array_unique($this->renderedCss) as $css)
+            $tags[] = sprintf('<link rel="stylesheet" href="%s" />', $this->GetLinkUrl($css));
+        foreach (array_unique($this->renderedJs) as $js)
+            $tags[] = sprintf('<script type="module" src="%s"></script>', $this->GetLinkUrl($js));
+        foreach (array_diff(array_unique($this->renderedPreload), $this->renderedJs) as $preload)
+            $tags[] = sprintf('<link rel="modulepreload" href="%s" />', $this->GetLinkUrl($preload));
+    }
+
+    return join("\n", $tags);
+
     foreach ($this->javascriptModules as $module) {
       if (is_object($module)) {
         if (defined('VITE_DEV_SERVER')) {
@@ -322,6 +339,32 @@ class ModuleScriptCache
       }
     }
     return $html;
+  }
+
+  private array $renderedCss = [];
+  private array $renderedJs = [];
+  private array $renderedPreload = [];
+  private function includeChunk(string $chunkName, bool $isRoot = false) : void
+  {
+      if (!isset($this->assetManifest->$chunkName))
+          return;
+
+      $manifestEntry = $this->assetManifest->$chunkName;
+      foreach ($manifestEntry->css as $cssFile)
+          $this->renderedCss[] = $cssFile;
+      foreach ($manifestEntry->imports as $import)
+          $this->includeChunk($import);
+
+      if ($isRoot)
+          $this->renderedJs[] = $manifestEntry->file;
+      else
+          $this->renderedPreload[] = $manifestEntry->file;
+  }
+
+  private function GetLinkUrl(string $chunkFile) {
+      if (str_starts_with($chunkFile, 'http:'))
+          return $chunkFile;
+      return '.'.$this->assetDir.'/'.$chunkFile;
   }
 
   /**

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2023-2024 Andreas Palm
 
 SPDX-License-Identifier: LicenseRef-EGPL-3.1
 -->
@@ -9,6 +9,10 @@ import {ref, onMounted} from "vue";
 import axios from "axios";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
+import Checkbox from "primevue/checkbox";
+import Fluid from "primevue/fluid";
 import {AlertErrorHandler} from "@res/js/ajaxErrorHandler";
 import AutoComplete from "@res/vue/AutoComplete.vue";
 
@@ -44,26 +48,28 @@ async function save() {
 </script>
 
 <template>
-  <Dialog visible modal header="Gruppe anlegen/bearbeiten" style="width: 500px" @update:visible="emit('close')" class="p-fluid">
-    <div class="grid gap-1" style="grid-template-columns: 25% 75%">
-      <label for="matrixProduct_group_name">Name:</label>
-      <input type="text" v-model="model.name" required />
-      <label for="matrixProduct_group_nameExternal">Name Extern:</label>
-      <input type="text" v-model="model.nameExternal" />
-      <label for="matrixProduct_group_project">Projekt:</label>
-      <AutoComplete
-          v-model="model.project"
-          :optionLabel="item => [item.abkuerzung, item.name].join(' ')"
-          ajaxFilter="projektname"
-          forceSelection
-      />
-      <label v-if="articleId" for="matrixProduct_group_sort">Sortierung:</label>
-      <input v-if="articleId" type="text" v-model="model.sort">
-      <label for="matrixProduct_group_required">Pflicht:</label>
-      <input type="checkbox" v-model="model.required" class="justify-self-start">
-      <label for="matrixProduct_group_active">Aktiv:</label>
-      <input type="checkbox" v-model="model.active" class="justify-self-start">
-    </div>
+  <Dialog visible modal header="Gruppe anlegen/bearbeiten" style="width: 500px" @update:visible="emit('close')">
+    <Fluid>
+      <div class="grid gap-1" style="grid-template-columns: 25% 75%">
+        <label for="matrixProduct_group_name">Name:</label>
+        <InputText id="matrixProduct_group_name" v-model="model.name" autofocus required />
+        <label for="matrixProduct_group_nameExternal">Name Extern:</label>
+        <InputText id="matrixProduct_group_nameExternal" v-model="model.nameExternal" />
+        <label for="matrixProduct_group_project">Projekt:</label>
+        <AutoComplete input-id="matrixProduct_group_project"
+            v-model="model.project"
+            :optionLabel="item => [item.abkuerzung, item.name].join(' ')"
+            ajaxFilter="projektname"
+            forceSelection
+        />
+        <label v-if="articleId" for="matrixProduct_group_sort">Sortierung:</label>
+        <InputNumber v-if="articleId" v-model="model.sort" input-id="matrixProduct_group_sort" show-buttons />
+        <label for="matrixProduct_group_required">Pflicht:</label>
+        <Checkbox v-model="model.required" binary />
+        <label for="matrixProduct_group_active">Aktiv:</label>
+        <Checkbox v-model="model.active" binary />
+      </div>
+    </Fluid>
     <template #footer>
       <Button label="ABBRECHEN" @click="emit('close')" />
       <Button label="SPEICHERN" @click="save" :disabled="!model.name"/>

@@ -2,7 +2,7 @@
 
 /*
  * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
- * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2023-2024 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -104,105 +104,7 @@ class Player {
         $module = 'welcome';
         $action = 'main';
       }
-      
-
-      if($this->app->erp->isIoncube() && method_exists($this->app->erp, 'IoncubeProperty')
-        && WithGUI() && !(($module=='welcome' && $action=='upgrade') || $module=='' || ($module=='welcome' && $action=='start')))
-      {
-        if(method_exists('erpAPI','Ioncube_getMaxUser'))
-        {
-          $maxuser = erpAPI::Ioncube_getMaxUser();
-        }elseif(method_exists($this->app->erp, 'IoncubegetMaxUser'))
-        {
-          $maxuser = $this->app->erp->IoncubegetMaxUser();
-        }else{
-          $maxuser = 0;
-        }
-        if(method_exists('erpAPI','Ioncube_getMaxLightusers'))
-        {
-          $maxlightuser = erpAPI::Ioncube_getMaxLightusers();
-        }else{
-          $maxlightuser = 0;
-        }
-        if($maxuser)
-        {
-          $anzuser2 = 0;
-          if($maxlightuser > 0) {
-            $anzuser2 = (int)$this->app->DB->Select("SELECT count(DISTINCT u.id) FROM `user` u WHERE activ = 1 AND type = 'lightuser' ");
-            $anzuser = (int)$this->app->DB->Select("SELECT count(id) FROM `user` WHERE activ = 1 AND not isnull(hwtoken) AND hwtoken <> 4") - $anzuser2;
-            $anzuserzeiterfassung = (int)$this->app->DB->Select("SELECT count(*) from user where activ = 1 AND hwtoken = 4 AND type != 'lightuser'");
-          }else{
-            $anzuser = $this->app->DB->Select("SELECT count(*) from user where activ = 1 AND hwtoken <> 4 ");
-            $anzuserzeiterfassung = (int)$this->app->DB->Select("SELECT count(*) from user where activ = 1 AND hwtoken = 4");
-          }
-
-          $maxmitarbeiterzeiterfassung = $this->app->erp->ModulVorhanden('mitarbeiterzeiterfassung')?$maxuser:0;
-          if($anzuser > $maxuser
-            || (
-              ($anzuser + $anzuserzeiterfassung + $anzuser2) >
-              $maxmitarbeiterzeiterfassung + $maxuser + $maxlightuser
-            )
-            || (($anzuser + $anzuserzeiterfassung) > $maxmitarbeiterzeiterfassung + $maxuser)
-          ) {
-            if(!(($module == 'welcome' &&
-                ($action=='info' || $action == 'start' || $action == 'logout' || $action == '' || $action == 'main')) ||
-              ($module == 'einstellungen' && ($action == 'list' || $action == '')) ||
-              $module == 'benutzer'
-            ))
-            {
-              if($this->app->erp->RechteVorhanden('benutzer','list'))
-              {
-                $module = 'benutzer';
-                $action = 'list';
-
-                if($maxlightuser > 0){
-                  $error = 'Es existieren mehr aktive Benutzer als Ihre Lizenz erlaubt: Benutzer ' . ($anzuser + $anzuser2) . ($maxlightuser > 0 ? ' (davon ' . $anzuser2 . ' Light-User)' : '') . ' von ' . ($maxuser + $maxlightuser) . ($maxlightuser > 0 ? ' (' . $maxlightuser . ' Light-User)' : '');
-                }else{
-                  $error = 'Es existieren mehr aktive Benutzer als Ihre Lizenz erlaubt: Benutzer ' . ($anzuser + $anzuser2) . ($maxlightuser > 0 ? ' (davon ' . $anzuser2 . ' Zeiterfassungs-User)' : '') . ' von ' . ($maxuser + $anzuser2) . ($anzuser2 > 0 ? ' (' . $anzuser2 . ' Zeiterfassungs-User)' : '');
-                }
-                $error = '<div class="error">'.$error.'</div>';
-                $this->app->Tpl->Add('MESSAGE', $error);
-                $this->app->Secure->GET['msg'] = $this->app->erp->base64_url_encode($error);
-              }else{
-                $module = 'welcome';
-                $action = 'info';
-              }
-              $this->app->Secure->GET['module'] = $module;
-              $this->app->Secure->GET['action'] = $action;
-            }
-          }
-        }
-        if(method_exists('erpAPI','Ioncube_Property'))
-        {
-          $deaktivateonexp = erpAPI::Ioncube_Property('deaktivateonexp');
-        }else{
-          $deaktivateonexp = $this->app->erp->IoncubeProperty('deaktivateonexp');
-        }
-        if($deaktivateonexp)
-        {
-          if(method_exists('erpAPI','Ioncube_HasExpired'))
-          {
-            $IoncubeHasExpired = erpAPI::Ioncube_HasExpired();
-          }elseif(method_exists($this->app->erp, 'IoncubeHasExpired'))
-          {
-            $IoncubeHasExpired = $this->app->erp->IoncubeHasExpired();
-          }else{
-            $IoncubeHasExpired = false;
-          }
-        }else{
-          $IoncubeHasExpired = false;
-        }
-        if($deaktivateonexp && $IoncubeHasExpired
-        && !(($module == 'welcome' && $action='logout') || ($module == 'welcome' && $action='start') || ($module == 'welcome' && $action='main'))
-        )
-        {
-          $module = 'welcome';
-          $action = 'info';
-          $this->app->Secure->GET['module'] = $module;
-          $this->app->Secure->GET['action'] = $action;
-        }
-      }
-    } 
+    }
 
     if($action!="list" && $action!="css" && $action!="logo" && $action!="poll" && $module!="ajax" && $module!="protokoll" && $action!="thumbnail"){
       $this->app->erp->Protokoll();
