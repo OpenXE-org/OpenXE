@@ -478,6 +478,10 @@ function abweichend(cmd) {
 									<tr>
 										<td>{|Belege im Auto-Versand erstellen|}:</td>
 										<td>[ART][MSGART]</td>
+									</tr>
+									<tr>
+										<td>{|Smarty Template für XML-Rechnung|}:</td>
+										<td>[RECHNUNG_SMARTY_TEMPLATE][MSGRECHNUNG_SMARTY_TEMPLATE]</td>
 									</tr> [VORKOMMISSIONIERLAGER]
 									<tr>
 										<td>{|Kommissions-/Konsignationslager|}:</td>

@@ -13858,6 +13858,18 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
         }
     }
 
+    function ReplaceSmartyTemplate($db,$value,$fromform = null) {
+        $value = $this->app->DB->real_escape_string($value);
+
+        if ($db) {
+            $smarty_template = explode(' ',$value)[0];
+            return($smarty_template);
+        } else {
+            $smarty_template = $this->app->DB->Select("SELECT CONCAT(id,' ',name) FROM smarty_templates WHERE id = '$value' LIMIT 1");
+            return($smarty_template);
+        }
+    }
+
 
   // @refactor FormHelper Komponente
   function ReplaceLieferant($db,$value,$fromform)

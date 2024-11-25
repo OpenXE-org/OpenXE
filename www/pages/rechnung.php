@@ -55,6 +55,8 @@ class Rechnung extends GenRechnung
     $this->app->ActionHandler("freigabe","RechnungFreigabe");
     $this->app->ActionHandler("abschicken","RechnungAbschicken");
     $this->app->ActionHandler("pdf","RechnungPDF");
+    $this->app->ActionHandler("xml","RechnungSmarty");
+    $this->app->ActionHandler("json","RechnungJSON");
     $this->app->ActionHandler("alternativpdf","RechnungAlternativPDF");
     $this->app->ActionHandler("inlinepdf","RechnungInlinePDF");
     $this->app->ActionHandler("lastschrift","RechnungLastschrift");
@@ -549,6 +551,7 @@ class Rechnung extends GenRechnung
    $menu .=   "
 
     <a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>
+      <a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>
       <!--  <a href=\"index.php?module=rechnung&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
       <a onclick=\"if(!confirm('Wirklich stornieren?')) return false; else window.location.href='index.php?module=rechnung&action=delete&id=%value%';\" title=\"Stornieren\">
       <img src=\"./themes/new/images/delete.svg\" border=\"0\"></a>
@@ -1243,6 +1246,79 @@ class Rechnung extends GenRechnung
     $Brief->displayDocument($schreibschutz); 
 
     $this->RechnungList();
+  }
+
+    // Print PHP array for SmartyXML
+  function RechnungJSON() {
+    $this->RechnungSmarty(true);
+  }
+
+  function RechnungSmarty($json = false) {
+        $id = $this->app->Secure->GetGET('id');
+        $result = Array();
+        
+        $result['rechnungssteller']['name'] = $this->app->erp->Firmendaten('name');
+        $result['rechnungssteller']['strasse'] = $this->app->erp->Firmendaten('strasse');
+        $result['rechnungssteller']['ort'] = $this->app->erp->Firmendaten('ort');
+        $result['rechnungssteller']['plz'] = $this->app->erp->Firmendaten('plz');
+        $result['rechnungssteller']['land'] = $this->app->erp->Firmendaten('land');
+        $result['rechnungssteller']['steuernummer'] = $this->app->erp->Firmendaten('steuernummer');  
+        
+        $rechnung = $this->app->DB->SelectRow("
+            SELECT * FROM rechnung WHERE id = $id LIMIT 1
+        ");
+        $result['kopf'] = $rechnung;
+        $result['kopf']['internet_bestellnummer'] = $this->app->DB->Select("SELECT a.internet FROM rechnung r LEFT JOIN auftrag a ON a.id=r.auftragid WHERE r.id='$id' AND r.id > 0 LIMIT 1");
+
+        $adresse = $this->app->DB->SelectArr("
+            SELECT * FROM adresse WHERE id = (SELECT adresse FROM rechnung WHERE id = $id LIMIT 1)
+        ");
+        $result['adresse'] = $adresse[0];
+                      
+        $positionen = $this->app->DB->SelectArr("
+            SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort ASC
+        ");        
+        $steuern = Array();        
+        foreach ($positionen as $key => $position) {                            
+            $this->app->erp->GetSteuerPosition('rechnung', $position['id'], $steuersatz, $steuertext, $erloes);
+            $positionen[$key]['steuersatz'] = $steuersatz;
+            $positionen[$key]['steuertext'] = $steuertext;
+            $positionen[$key]['erloese'] = $erloes;
+                       
+            $steuern[$steuersatz]['umsatz_netto'] += $position['umsatz_netto_gesamt'];
+            $steuern[$steuersatz]['umsatz_brutto'] += $position['umsatz_brutto_gesamt'];
+            $steuern[$steuersatz]['prozent'] = $steuersatz;
+        }
+        
+        $result['positionen'] = $positionen;
+        $result['steuern'] = $steuern;
+
+        $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
+
+        if ($json) {
+            header('Content-type:text/plain');
+            header('Content-Disposition: attachment;filename='.$filename.'.json');
+            echo(json_encode($result,JSON_PRETTY_PRINT));
+        } else {
+
+            $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '".$adresse[0]['rechnung_smarty_template']."' LIMIT 1");
+                       
+            if(empty($template)) {                
+                header('Content-type:text/plain');
+                header('Content-Disposition: attachment;filename='.$filename.'.xml');
+                echo('Kein Smarty Template in der Adresse hinterlegt.');              
+            } else {
+                $smarty = new Smarty;            
+                $directory = $this->app->erp->GetTMP().'/smarty/templates';            
+                $smarty->setCompileDir($directory);            
+                $smarty->assign('rechnung', $result);
+                $html = $smarty->fetch('string:'.$template);
+                header('Content-type:application/xml');
+                header('Content-Disposition: attachment;filename='.$filename.'.xml');
+                echo($html);
+            }                       
+        }
+        $this->app->ExitXentral();
   }
 
   function RechnungSuche()

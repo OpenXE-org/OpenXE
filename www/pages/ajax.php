@@ -4224,6 +4224,14 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         );
 
         break;
+        case "smarty_template":
+            $newarr = $this->app->DB->SelectFirstCols(
+            sprintf(
+                "SELECT CONCAT(`id`,' ',`name`) FROM `smarty_templates` WHERE (`name` LIKE '%%%s%%')",
+                $term
+            )
+        );
+        break;
       default:
         $newarr = null;
         $this->app->erp->RunHook('ajax_filter_hook1', 5,$filtername,$newarr, $term, $term2, $term3);
