@@ -221,12 +221,7 @@ class ModuleScriptCache
       $realPath = realpath($this->baseDir . '/' . $file);
       if (!is_file($realPath))
         continue;
-      $this->javascriptModules[] = $file; continue;
-
-      if (isset($this->assetManifest->$file))
-        $this->javascriptModules[] = $this->assetManifest->$file;
-      else
-        $this->javascriptModules[] = $realPath;
+      $this->javascriptModules[] = $file;
     }
   }
 
@@ -316,29 +311,6 @@ class ModuleScriptCache
     }
 
     return join("\n", $tags);
-
-    foreach ($this->javascriptModules as $module) {
-      if (is_object($module)) {
-        if (defined('VITE_DEV_SERVER')) {
-          $url = 'http://' . VITE_DEV_SERVER . '/' . $module->src;
-        } else {
-          $url = '.'.$this->assetDir . '/' . $module->file;
-          if (isset($module->css)) {
-            foreach ($module->css as $css)
-              $html .= sprintf('<link rel="stylesheet" type="text/css" href="%s" />', '.'.$this->assetDir.'/'.$css);
-              $html .= "\r\n";
-          }
-        }
-      } elseif (str_starts_with($module,$this->baseDir.'/www')) {
-        $url = '.'.substr($module, strlen($this->baseDir)+4);
-      }
-
-      if (isset($url))  {
-        $html .= sprintf('<script type="module" src="%s"></script>', $url);
-        $html .= "\r\n";
-      }
-    }
-    return $html;
   }
 
   private array $renderedCss = [];
