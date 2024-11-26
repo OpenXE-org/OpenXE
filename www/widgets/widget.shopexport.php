@@ -296,17 +296,6 @@ class WidgetShopexport extends WidgetGenShopexport
               }
             }
           }
-          $err = null;
-          if($altedaten && $this->app->Secure->GetPOST('aktiv') && method_exists($this->app->erp, 'OnlineshopsLizenzFehler'))
-          {
-            if($err = $this->app->erp->OnlineshopsLizenzFehler($data['modulename']))
-            {
-              $this->app->DB->Update("UPDATE shopexport SET aktiv = '0' WHERE id = '$id' LIMIT 1");
-              $this->form->HTMLList['aktiv']->dbvalue = 0;
-              $this->form->HTMLList['aktiv']->htmlvalue = 0;
-              $this->app->User->SetParameter('shopexport_meldung', '<div class="error">'.$err['Error'].'</div>');
-            }
-          }
           $this->app->erp->RunHook('shopexport_speichern',1, $id);
         }
       }else

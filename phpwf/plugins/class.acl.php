@@ -295,8 +295,6 @@ class Acl
     /** @var EnvironmentConfig $environmentConfig */
     $environmentConfig = $this->app->Container->get('EnvironmentConfig');
 
-    $mailAddresses = array_merge($mailAddresses, $environmentConfig->getSystemFallbackEmailAddresses());
-
     return array_unique($mailAddresses);
   }
 
@@ -438,37 +436,24 @@ class Acl
             if(!empty($serverLocation)) {
               $server = rtrim($serverLocation,'/') . '?module=welcome&action=passwortvergessen&code=' . $code;
             }
-            foreach(['default', 'fallback'] as $sentSetting) {
-              if($sentSetting === 'fallback') {
-                $db = $this->app->Conf->WFdbname;
-                if(
-                  empty(erpAPI::Ioncube_Property('cloudemail'))
-                  || $this->app->erp->firmendaten[$db]['email'] === erpAPI::Ioncube_Property('cloudemail')
-                ) {
-                  break;
-                }
-                $this->app->erp->firmendaten[$db]['mailanstellesmtp'] = 1;
-                $this->app->erp->firmendaten[$db]['email'] = erpAPI::Ioncube_Property('cloudemail');
+            foreach ($emailAddresses as $email) {
+              $recipientMailAddress = $email;
+              $recipientName = $name;
+              if(empty($recipientMailAddress) || empty($recipientName)) {
+                continue;
               }
-              foreach ($emailAddresses as $email) {
-                $recipientMailAddress = $email;
-                $recipientName = $name;
-                if(empty($recipientMailAddress) || empty($recipientName)) {
-                  continue;
-                }
 
-                $mailContent = str_replace(['{NAME}', '{ANREDE}', '{URL}'], [$recipientName, $anrede, $server], $mailContent);
+              $mailContent = str_replace(['{NAME}', '{ANREDE}', '{URL}'], [$recipientName, $anrede, $server], $mailContent);
 
-                if(!$this->app->erp->isHTML($mailContent)){
-                  $mailContent = str_replace("\r\n", '<br>', $mailContent);
-                }
-                $mailSuccessfullySent = $this->app->erp->MailSend(
-                  $this->app->erp->GetFirmaMail(), $this->app->erp->GetFirmaAbsender(),
-                  $recipientMailAddress, $recipientName, $mailSubject, $mailContent, '', 0, true, '', '', true
-                );
-                if($mailSuccessfullySent){
-                  break 2;
-                }
+              if(!$this->app->erp->isHTML($mailContent)){
+                $mailContent = str_replace("\r\n", '<br>', $mailContent);
+              }
+              $mailSuccessfullySent = $this->app->erp->MailSend(
+                $this->app->erp->GetFirmaMail(), $this->app->erp->GetFirmaAbsender(),
+                $recipientMailAddress, $recipientName, $mailSubject, $mailContent, '', 0, true, '', '', true
+              );
+              if($mailSuccessfullySent){
+                break;
               }
             }
           }

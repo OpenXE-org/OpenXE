@@ -16,6 +16,7 @@ class ArticleService
     function CopyArticle(int $id, bool $purchasePrices, bool $sellingPrices, bool $files, bool $properties,
         bool $instructions, bool $partLists, bool $customFields, string $newArticleNumber = '')
     {
+        $newArticleNumber = $this->app->DB->real_escape_string($newArticleNumber);
         $this->app->DB->MysqlCopyRow('artikel','id',$id);
 
         $idnew = $this->app->DB->GetInsertID();
@@ -26,7 +27,7 @@ class ArticleService
             $this->app->DB->Update("UPDATE artikel SET steuersatz = '$steuersatz' WHERE id = '$idnew' LIMIT 1");
         }
 
-        $this->app->DB->Update("UPDATE artikel SET nummer='$newArticleNumber' WHERE id='$idnew' LIMIT 1");
+        $this->app->DB->Update("UPDATE artikel SET nummer='$newArticleNumber', matrixprodukt = 0 WHERE id='$idnew' LIMIT 1");
         if($this->app->DB->Select("SELECT variante_kopie FROM artikel WHERE id = '$id' LIMIT 1"))
             $this->app->DB->Update("UPDATE artikel SET variante = 1, variante_von = '$id' WHERE id = '$idnew' LIMIT 1");
 

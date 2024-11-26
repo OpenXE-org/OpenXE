@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2023-2024 Andreas Palm
 
 SPDX-License-Identifier: LicenseRef-EGPL-3.1
 -->
@@ -9,7 +9,9 @@ import {ref, onMounted} from "vue";
 import axios from "axios";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
-import Dropdown from "primevue/dropdown";
+import Fluid from "primevue/fluid";
+import InputText from "primevue/inputtext";
+import Select from "primevue/select";
 import {AlertErrorHandler} from "@res/js/ajaxErrorHandler";
 
 
@@ -59,24 +61,26 @@ function ready() {
 </script>
 
 <template>
-  <Dialog visible modal header="Übersetzung anlegen/bearbeiten" style="width: 500px" @update:visible="emit('close')" class="p-fluid">
-    <div class="grid gap-1" style="grid-template-columns: 25% 75%">
-      <label for="matrixProduct_nameFrom">DE Name:</label>
-      <input type="text" v-model="model.nameFrom" required />
-      <label for="matrixProduct_nameExternalFrom">DE Name Extern:</label>
-      <input type="text" v-model="model.nameExternalFrom" />
-      <label for="matrixProduct_languageTo">Sprache:</label>
-      <Dropdown
-          v-model="model.languageTo"
-          :options="languages"
-          option-label="bezeichnung_de"
-          option-value="iso"
-      />
-      <label for="matrixProduct_nameTo">Übersetzung Name:</label>
-      <input type="text" v-model="model.nameTo" required>
-      <label for="matrixProduct_nameTo">Übersetzung Name Extern:</label>
-      <input type="text" v-model="model.nameExternalTo" :required="model.nameExternalFrom">
-    </div>
+  <Dialog visible modal header="Übersetzung anlegen/bearbeiten" style="width: 500px" @update:visible="emit('close')">
+    <Fluid>
+      <div class="grid gap-1" style="grid-template-columns: 25% 75%">
+        <label for="matrixProduct_nameFrom">DE Name:</label>
+        <InputText v-model="model.nameFrom" required autofocus />
+        <label for="matrixProduct_nameExternalFrom">DE Name Extern:</label>
+        <InputText v-model="model.nameExternalFrom" />
+        <label for="matrixProduct_languageTo">Sprache:</label>
+        <Select
+            v-model="model.languageTo"
+            :options="languages"
+            option-label="bezeichnung_de"
+            option-value="iso"
+        />
+        <label for="matrixProduct_nameTo">Übersetzung Name:</label>
+        <InputText v-model="model.nameTo" required />
+        <label for="matrixProduct_nameTo">Übersetzung Name Extern:</label>
+        <InputText v-model="model.nameExternalTo" :required="model.nameExternalFrom" />
+      </div>
+    </Fluid>
     <template #footer>
       <Button label="ABBRECHEN" @click="emit('close')" />
       <Button label="SPEICHERN" @click="save" :disabled="!ready()"/>

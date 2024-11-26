@@ -214,25 +214,6 @@ final class GoogleAccountGateway
     }
 
     /**
-     * Will be removed after Dec 31. 2020
-     *
-     * @deprecated
-     *
-     * @codeCoverageIgnore
-     *
-     * @return GoogleAccountData
-     */
-    public function getCloudPrintAccount(): GoogleAccountData
-    {
-        $accounts = $this->getAccountsByScope(GoogleScope::CLOUDPRINT);
-        if (count($accounts) < 1) {
-            throw new GoogleAccountNotFoundException('No cloud printing account available.');
-        }
-
-        return $accounts[0];
-    }
-
-    /**
      * @param int $accountId
      *
      * @return GoogleAccountPropertyCollection

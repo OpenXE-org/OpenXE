@@ -84,10 +84,6 @@ final class ErrorHandler
     public function handleException($exception)
     {
         $title = null;
-        if ($this->isIoncubeError($exception)) {
-            $title = $this->handleIoncubeError($exception);
-        }
-
         $data = new ErrorPageData($exception, $title);
         $renderer = new ErrorPageRenderer($data);
         header('HTTP/1.1 500 Internal Server Error');
@@ -124,97 +120,5 @@ final class ErrorHandler
     private function isErrorTypeHaltingExecution($type)
     {
         return in_array((int)$type, self::THROWABLE_ERROR_TYPES, true);
-    }
-
-    /**
-     * @param Throwable $exception
-     *
-     * @return bool
-     */
-    private function isIoncubeError($exception)
-    {
-        if ((int)$exception->getCode() !== E_CORE_ERROR) {
-            return false;
-        }
-        if (strpos($exception->getMessage(), 'requires a license file.') !== false) {
-            return true;
-        }
-        if (strpos($exception->getMessage(), 'ionCube Encoder') !== false) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Throwable $exception
-     *
-     * @return string|null
-     */
-    private function handleIoncubeError($exception)
-    {
-        $file = $this->extractFileFromIoncubeError($exception);
-        if (empty($file)) {
-            return null;
-        }
-
-        if (!$this->isDeleteableFile($file)) {
-            return null;
-        }
-
-        @unlink($file);
-        if(is_file($file)) {
-            return sprintf('Es wurde eine alte Systemdatei gefunden die nicht manuell gelöscht werden konnte. 
-            Bitte löschen Sie die Datei %s', $file);
-        }
-        return 'Es wurde eine alte Systemdatei gefunden und automatisch gelöscht. 
-        Bitte führen Sie das Update nochmal durch dann sollte diese Meldung nicht mehr erscheinen.';
-    }
-
-    /**
-     * @param string $file
-     *
-     * @return bool
-     */
-    private function isDeleteableFile(string $file)
-    {
-        if (!is_file($file)) {
-            return false;
-        }
-        $dir = dirname($file);
-        foreach (self::DELETE_FILE_FOLDERS as $folder) {
-            if (substr($dir, -strlen($folder)) === $folder) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @example "<br>The encoded file <b>/var/www/xentral/www/pages/adresse.php</b> requires a license file.<br>"
-     *          "The license file <b>/var/www/xentral/key.php</b> is corrupt."
-     *
-     * @param Throwable $exception
-     *
-     * @return string|null
-     */
-    private function extractFileFromIoncubeError($exception)
-    {
-        $message = strip_tags($exception->getMessage());
-        $theFilePos = stripos($message, 'The File ');
-        if ($theFilePos === false) {
-            $theFilePos = strpos($message, 'The encoded file');
-            if ($theFilePos === false) {
-                return null;
-            }
-            $theFilePos += 16;
-        } else {
-            $theFilePos += 9;
-        }
-        $file = trim(substr($message, $theFilePos));
-        $file = explode(' ', $file);
-
-        return reset($file);
     }
 }

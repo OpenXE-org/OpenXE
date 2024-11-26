@@ -130,13 +130,25 @@ final class MatrixProductService
     foreach ($optionArr as $option) {
       $groupId = $this->gateway->GetArticleGroupIdByName($articleId, $option['groupname']);
       if (!$groupId) {
-        $obj = new Group($option['groupname'], nameExternal: $option['groupnameext'], projectId: $option['groupprojekt'], required: $option['grouprequired'], articleId: $articleId);
+        $obj = new Group(
+            name: $option['groupname'],
+            nameExternal: $option['groupnameext'],
+            projectId: $option['groupprojekt'],
+            required: $option['grouprequired'],
+            articleId: $articleId);
         $group = $this->gateway->InsertArticleGroup($obj);
         $groupId = $group->id;
       }
       $optionId = $this->gateway->GetArticleOptionIdByName($articleId, $groupId, $option['name']);
       if (!$optionId) {
-        $obj = new Option($option['name'], $groupId, nameExternal: $option['name_ext'], sort: $option['sort'], globalOptionId: $option['id'], articleId: $articleId);
+        $obj = new Option(
+            name: $option['name'],
+            groupId: $groupId,
+            nameExternal: $option['name_ext'],
+            sort: $option['sort'],
+            articleNumberSuffix: $option['articlenumber_suffix'],
+            globalOptionId: $option['id'],
+            articleId: $articleId);
         $this->gateway->InsertArticleOption($obj);
       }
     }

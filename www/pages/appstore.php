@@ -305,10 +305,8 @@ class Appstore {
       $ret['lightuser'] = (int)$art['menge'];
     }
 
-    $maxUser = erpAPI::Ioncube_Property('maxuser');
-    $maxLightUser = erpAPI::Ioncube_Property('maxlightuser');
-    $ret['maxuser'] = (int)$maxUser;
-    $ret['maxlightuser'] = (int)$maxLightUser;
+    $ret['maxuser'] = 0;
+    $ret['maxlightuser'] = 0;
     if(!empty($data['customerinfo'])) {
       $ret = array_merge($ret, $data['customerinfo']);
       $ret['customerinfo'] = $this->getCustomInfoHtml($data['customerinfo']);
@@ -386,12 +384,12 @@ class Appstore {
       'user' => 'Benutzeranzahl',
       'agreement' => 'Einverständnis',
     ];
-    $isTestlizenz = !empty(erpAPI::Ioncube_Property('testlizenz'));
+    $isTestlizenz = false;
     if(!$isTestlizenz) {
       unset($mapping['agreement']);
       $field = 'add_user';
       $new = $data['user'];
-      $old = erpAPI::Ioncube_Property('maxuser');
+      $old = 0;
       return $this->SendBuyInfo($field, $new, $old);
     }
     $error = [];
@@ -808,8 +806,8 @@ class Appstore {
    */
   private function isPossibleToChangeUser($type, $count)
   {
-    $oldUser = (int)erpAPI::Ioncube_Property('maxuser');
-    $oldLightUser = (int)erpAPI::Ioncube_Property('maxlightuser');
+    $oldUser = 0;
+    $oldLightUser = 0;
     $maxUser = $oldUser;
     $maxLightUser = $oldLightUser;
     if($type === 'user') {
@@ -986,33 +984,6 @@ class Appstore {
     ];
   }
 
-  protected function showUpdateMessage(): void
-  {
-    if(!$this->canBuy()) {
-      return;
-    }
-    if($this->app->User->GetType() !== 'admin') {
-      return;
-    }
-    $moduleForInfos = $this->getModulesForUpdateInfo();
-    if(empty($moduleForInfos)) {
-      return;
-    }
-    $this->app->Tpl->Set(
-      'MESSAGE',
-      '<div class="info">Es sind Module zum Herunterladen verfügbar. Sie können nun ein Update installieren. 
-      <a target="_blank" href="update.php?rand='.sha1(uniqid('', true)).'"><input type="button" value="Update starten" /></a></div>'
-    );
-  }
-
-  /**
-   * @return bool
-   */
-  public function canBuy(): bool
-  {
-    return method_exists('erpAPI', 'Ioncube_Property') && !empty(erpAPI::Ioncube_Property('canbuy'));
-  }
-
   /**
    * @param string $iban
    *
@@ -1069,30 +1040,6 @@ class Appstore {
 
     return $mod === 1;
   }
-
-  /**
-   * @param string $module
-   *
-   * @return bool
-   */
-  public function isModulePossibleToBuy($module): bool
-  {
-    if(!$this->canBuy()) {
-      return false;
-    }
-
-      if($this->app->erp->ModulVorhanden($module)) {
-        return false;
-      }
-
-    $buyList = $this->getActualBuyList();
-    if(empty($buyList['modules']) || !is_array($buyList['modules'])) {
-      return false;
-    }
-    return in_array($module, $buyList['modules']);
-    //return !empty(erpAPI::Ioncube_Property('canbuymodule'.str_replace('_','X', $module)));
-  }
-
 
   /**
    * @param bool $intern
@@ -1444,14 +1391,6 @@ class Appstore {
       }
       if(!isset($app['project_sensitive'])){
         $app['project_sensitive'] = false;
-      }
-      $ablaufdatum = $this->app->erp->IoncubeProperty('moduleablaufdatumX'.str_replace('_','X',$key));
-      $test = $this->app->erp->IoncubeProperty('testmoduleX'.str_replace('_','X',$key));
-      if(!empty($ablaufdatum)) {
-        $app['ablaufdatum'] = $ablaufdatum;
-      }
-      if($test) {
-        $app['test'] = $test;
       }
       if($this->app->erp->ModulVorhanden($key, $withDeactivated)) {
         if($app['Versionen'] == '' || $app['Versionen'] === 'ALL') {
@@ -3865,16 +3804,14 @@ class Appstore {
       ],
     );
 
-    if(empty(erpAPI::Ioncube_Property('disabledevelopmentprogram'))) {
-      $apps['developmentprogram'] = [
-        'Bezeichnung' => 'Development Programm',
-        'Link' => 'index.php?module=developmentprogram&action=list',
-        'Icon' => 'Icons_dunkel_25.gif',
-        'Versionen' => 'ENT',
-        'kategorie' => '{|System|}',
-        'beta' => false,
-      ];
-    }
+    $apps['developmentprogram'] = [
+      'Bezeichnung' => 'Development Programm',
+      'Link' => 'index.php?module=developmentprogram&action=list',
+      'Icon' => 'Icons_dunkel_25.gif',
+      'Versionen' => 'ENT',
+      'kategorie' => '{|System|}',
+      'beta' => false,
+    ];
 
     if(!empty($this->app->Tpl) && method_exists($this->app->Tpl,'pruefeuebersetzung')) {
       foreach($apps as $k => $v) {
@@ -4245,52 +4182,7 @@ class Appstore {
 
     $canUserTestModule = $this->app->erp->RechteVorhanden('appstore', 'testmodule');
 
-    if($canUserTestModule && $this->app->erp->isIoncube() && $this->app->Secure->GetPOST('testen')) {
-      $modul = $this->app->Secure->GetPOST('modul');
-      $get = $this->app->Secure->GetPOST('modulbestaetigen');
-      $json = false;
-      if($modul == '' && $get != '') {
-        $json = true;
-        $message = '';
-        if($module && !empty($module['kauf'])) {
-          foreach($module['kauf'] as $k => $v) {
-            if($v['md5'] === $get) {
-              $mods = $this->app->erp->getAppList();
-              foreach($mods as $k2 => $v2) {
-                if(md5($v2['Bezeichnung']) === $get) {
-                  $modul = $k2;
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-      if($modul) {
-        $testapp = $modul;
-        if(is_file(dirname(__DIR__).'/update.php')) {
-          $result = '';
-          include_once dirname(__DIR__).'/update.php';
-          if($result === 'OK') {
-            $message = '<div class="info">Das Modul wurde zum Testen angefragt. Bitte ziehen Sie sich über den Update-Prozess in ca 10 Minuten ein Update. Sie erhalten mit diesem das Modul zum Testen.</div>';
-            if(!$json) {
-              $this->app->Tpl->Add('MESSAGE', $message);
-            }
-          }
-          else{
-            $message = '<div class="error">Es ist ein Fehler beim Senden der Anfrage aufgetreten: '.$result.'</div>';
-            if(!$json) {
-              $this->app->Tpl->Add('MESSAGE', $message);
-            }
-          }
-        }
-      }
-      if($json) {
-        return new JsonResponse(['html'=>$message]);
-      }
-      $this->clearCache();
-    }
-    elseif($canUserTestModule && !empty($get = $this->app->Secure->GetGET('get')) && !empty($module['kauf'])) {
+    if($canUserTestModule && !empty($get = $this->app->Secure->GetGET('get')) && !empty($module['kauf'])) {
       foreach($module['kauf'] as $v) {
         if($v['md5'] === $get) {
           $mods = $this->app->erp->getAppList();
@@ -4360,7 +4252,6 @@ class Appstore {
 
     // Detail-Seite ausblenden
     $this->app->Tpl->Set('APPSTOREDETAILSEITEAUSBLENDEN', 'display: none;');
-    $this->showUpdateMessage();
 
     /** @var Welcome $welcome */
     $welcome = $this->app->loadModule('welcome');

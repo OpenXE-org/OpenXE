@@ -354,25 +354,6 @@
         $ret[] = $tmp;
       }
       
-      if(!function_exists('ioncube_loader_version'))
-      {
-        $tmp['status'] = 'warning';
-        $tmp['text'] = 'Ioncube ist nicht installiert (Eine Installation ist trotzdem m&ouml;glich)';
-        $ret[] = $tmp;
-      } else {       
-        $ioncube_loader_version = ioncube_loader_version();
-        if($ioncube_loader_version[0]< 5 && $ioncube_loader_version[1] == '.')
-        {
-          $tmp['status'] = 'warning';
-          $tmp['text'] = 'Die Ioncubeversion ist zu alt (Eine Installation ist trotzdem m&ouml;glich)';
-          $ret[] = $tmp;
-        }else{        
-          $tmp['status'] = 'ok';
-          $tmp['text'] = 'Ioncube verf&uuml;gbar';      
-          $ret[] = $tmp;
-        }
-      }
-
       if(!file_exists("../../database/struktur.sql"))
       {
         $tmp['status'] = 'error';

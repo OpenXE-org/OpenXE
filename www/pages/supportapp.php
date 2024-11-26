@@ -989,57 +989,6 @@ class Supportapp Extends GenSupportapp {
 	}
     }
 
-    /*
-    $updatedaten = $this->app->DB->SelectArr("SELECT w.*,
-      date_format(versionupdate,'%d.%m.%Y %H:%i:%s') as versionupdatede ,
-      date_format(ioncube_expdate,'%d.%m.%Y') as ioncube_expdatede,
-      datediff(ioncube_expdate,CURDATE()) as diff  FROM wawisionsupport w WHERE adresse = '$kundenid' LIMIT 1");
-    if($updatedaten)
-    {
-      $updatedaten = reset($updatedaten);
-      $this->app->Tpl->Add('UPDATE_MODULLIST',str_replace(',',', ',$updatedaten['module']));
-
-      $revision = $updatedaten['revision'];
-      if($revision)$revision = '<a target="_blank" href="http://192.168.0.81/versionen/versionen.php?version='.$revision.'">'.$revision.'</a>';
-      $this->app->Tpl->Add('UPDATE_REVISION',$revision);
-      $this->app->Tpl->Add('UPDATE_MAXUSER', $updatedaten['ioncube_maxuser']);
-      $this->app->Tpl->Add('UPDATE_MAXLIGHTUSER', $updatedaten['ioncube_maxlightuser']);
-      $this->app->Tpl->Add('UPDATE_VERSIONUPATE', $updatedaten['versionupdatede']);
-      $this->app->Tpl->Add('UPDATE_ABLAUFAM',$updatedaten['ioncube_expdatede']);
-      $this->app->Tpl->Add('UPDATE_ABLAUFIN',$updatedaten['diff']);
-      $this->app->Tpl->Add('UPDATE_VERSIONSHINWEIS',$updatedaten['versionshinweis']);
-
-      $this->app->Tpl->Add('UPDATE_DEAKTIVIEREN', $updatedaten['ioncube_deaktivateonexp']?'ja':'nein');
-      $this->app->Tpl->Add('UPDATE_GESPERRT', $updatedaten['gesperrt']?'ja':'nein');
-      $this->app->Tpl->Add('UPDATE_TESTLIZENZ', $updatedaten['testlizenz']?'ja':'nein');
-      $this->app->Tpl->Add('UPDATE_CLOUD', $updatedaten['cloud']!=''?ucfirst($updatedaten['cloud']):'Kauf Erstvertrag');
-
-      if($updatedaten['module_custom']!='')
-      {
-        $this->app->Tpl->Add('UPDATEWARNUNG','<div class="error">Kundenspezifische Modifikationen vorhanden!</div>');
-
-        $module_custom = json_decode($updatedaten['module_custom']);
-        foreach($module_custom as $datei => $arr)
-        {
-          if(strpos($datei,'/download/') !== 0)
-          {
-            $this->app->Tpl->Add('UEBERLADENLISTE','<div >'.$datei.'');
-            
-            //foreach($arr as $fkey => $arr2)
-           // {
-           //   $this->app->Tpl->Add('UEBERLADENLISTE','<pre>'."\r\n...\r\n");
-           //   foreach($arr2 as $v)$this->app->Tpl->Add('UEBERLADENLISTE',$v);
-           //   $this->app->Tpl->Add('UEBERLADENLISTE',"\r\n...\r\n".'</pre><br /><br />');
-            //}
-            $this->app->Tpl->Add('UEBERLADENLISTE','</div>');
-          }
-        }
-
-      }
-    }*/
-    //$this->app->Tpl->Add('MODULEUPDATE');
-
-
     $updates ='<table class="mkTable" cellpadding="0" cellspacing="0">
       <tr>
         <td>Datum</td>
