@@ -1417,10 +1417,11 @@ class DB{
    * @param string $TableName
    * @param string $IDFieldName
    * @param int    $IDToDuplicate
+   * replace array('field' => 'value')
    *
    * @return int|null
    */
-  public function MysqlCopyRow($TableName, $IDFieldName, $IDToDuplicate)
+  public function MysqlCopyRow($TableName, $IDFieldName, $IDToDuplicate, $replace = Array())
   {
     if(empty($TableName) || empty($IDFieldName) || empty($IDToDuplicate)) {
       return null;
@@ -1452,7 +1453,17 @@ class DB{
     $comma = "";
     foreach ($fields as $field => $value) {
         if ($field != $IDFieldName) {
-            $sql .= $comma."`".$field."`";
+            $replaced = false;
+            foreach ($replace as $rkey => $rvalue) {
+                if ($field == $rkey) {
+                    $sql .= $comma."'".$rvalue."' AS `".$rkey."`";
+                    $replaced = true;
+                    break;
+                }
+            }
+            if (!$replaced) {
+                $sql .= $comma."`".$field."`";
+            }
         } else {
             $sql .= "NULL";
         }            

@@ -104,8 +104,7 @@ class ArticleService
             $aeigenschaften = $this->app->DB->SelectArr("SELECT id FROM artikeleigenschaftenwerte WHERE artikel = '$id'");
             if($aeigenschaften){
                 foreach($aeigenschaften as $eigenschaft){
-                    $neue_eigenschaft = $this->app->DB->MysqlCopyRow("artikeleigenschaftenwerte", "id", $eigenschaft['id']);
-                    $this->app->DB->Update("UPDATE artikeleigenschaftenwerte SET artikel = '$idnew' WHERE id = '$neue_eigenschaft' LIMIT 1");
+                    $this->app->DB->MysqlCopyRow("artikeleigenschaftenwerte", "id", $eigenschaft['id'], Array('artikel' => $idnew));
                 }
             }
         }
