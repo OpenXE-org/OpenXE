@@ -379,7 +379,7 @@ class Matrixprodukt
                         }
                         $list = $newList;
                     }
-                    $oldnumber = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = (int)$json->articleId");
+                    $oldnumber = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = ".((int)$json->articleId));
                     $created = [];
                     foreach ($list as $optionSet) {
                         $variantId = $this->service->GetVariantIdByOptionSet($optionSet);
