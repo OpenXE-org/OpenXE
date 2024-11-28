@@ -7035,7 +7035,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
         // SQL statement
         $sql =
-          "SELECT 
+          "SELECT SQL_CALC_FOUND_ROWS
           b.id,
           '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
           'ENTWURF' AS `belegnr`, 
