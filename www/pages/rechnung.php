@@ -1252,6 +1252,28 @@ class Rechnung extends GenRechnung
   function RechnungJSON() {
     $this->RechnungSmarty(true);
   }
+  
+  function remove_html_entities_from_array(&$array) {
+    foreach ($array as $key => $item) {
+        if (is_array($item)) {
+            $this->remove_html_entities_from_array($array[$key]);
+        } else {
+            $array[$key] = html_entity_decode($item);
+        }
+    }
+  }
+
+  function remove_CDATA_fragments_from_array(&$array) {
+    foreach ($array as $key => $item) {
+        if (is_array($item)) {
+            $this->remove_CDATA_fragments_from_array($array[$key]);
+        } else {
+            $item = str_replace('<![CDATA[','',$item);
+            $item = str_replace(']]>','',$item);
+            $array[$key] = $item;
+        }
+    }
+  }
 
   function RechnungSmarty($json = false) {
         $id = $this->app->Secure->GetGET('id');
@@ -1295,6 +1317,9 @@ class Rechnung extends GenRechnung
 
         $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
 
+        $this->remove_html_entities_from_array($result);
+        $this->remove_CDATA_fragments_from_array($result);
+
         if ($json) {
             header('Content-type:text/plain');
             header('Content-Disposition: attachment;filename='.$filename.'.json');
@@ -1304,9 +1329,12 @@ class Rechnung extends GenRechnung
             $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '".$adresse[0]['rechnung_smarty_template']."' LIMIT 1");
                        
             if(empty($template)) {                
-                header('Content-type:text/plain');
+                header('Content-type:text/xml');
                 header('Content-Disposition: attachment;filename='.$filename.'.xml');
-                echo('Kein Smarty Template in der Adresse hinterlegt.');              
+                echo('<?xml version="1.0" encoding="utf-8"?>
+<note>
+  <body>Kein Smarty Template an der Addresse hinterlegt!</body>
+</note>');
             } else {
                 $smarty = new Smarty;            
                 $directory = $this->app->erp->GetTMP().'/smarty/templates';            
