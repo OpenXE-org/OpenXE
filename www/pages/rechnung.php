@@ -417,7 +417,7 @@ class Rechnung extends GenRechnung
   {
     if($id > 0){
       $rechnungarr = $this->app->DB->SelectRow(
-        "SELECT status,zahlungsstatus FROM rechnung WHERE id='$id' LIMIT 1"
+        "SELECT status,zahlungsstatus,erechnung,belegnr FROM rechnung WHERE id='$id' LIMIT 1"
       );
     }
     $status = '';
@@ -548,11 +548,20 @@ class Rechnung extends GenRechnung
       </select>&nbsp;
       ";
       
-   $menu .=   "
-
-    <a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>
-      <a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>
-      <!--  <a href=\"index.php?module=rechnung&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
+      if (!empty($rechnungarr['belegnr'])) {
+          if ($rechnungarr['erechnung']) {
+            $downloadicon = "<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>";
+          } else {
+            $downloadicon = "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>";
+          }
+      } else {
+        $downloadicon = '';
+      }
+      
+    $menu .= $downloadicon;
+       
+    $menu .= 
+      "<!--  <a href=\"index.php?module=rechnung&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
       <a onclick=\"if(!confirm('Wirklich stornieren?')) return false; else window.location.href='index.php?module=rechnung&action=delete&id=%value%';\" title=\"Stornieren\">
       <img src=\"./themes/new/images/delete.svg\" border=\"0\"></a>
       <a onclick=\"if(!confirm('Wirklich kopieren?')) return false; else window.location.href='index.php?module=rechnung&action=copy&id=%value%';\" title=\"Kopieren\">
@@ -1299,7 +1308,12 @@ class Rechnung extends GenRechnung
                       
         $positionen = $this->app->DB->SelectArr("
             SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort ASC
-        ");        
+        ");    
+        
+        if (empty($positionen)) {
+            throw new exception("Rechnung enthält keine Positionen!");
+        }
+            
         $steuern = Array();        
         foreach ($positionen as $key => $position) {                            
             $this->app->erp->GetSteuerPosition('rechnung', $position['id'], $steuersatz, $steuertext, $erloes);
@@ -1339,7 +1353,7 @@ class Rechnung extends GenRechnung
                 $smarty = new Smarty;            
                 $directory = $this->app->erp->GetTMP().'/smarty/templates';            
                 $smarty->setCompileDir($directory);            
-                $smarty->assign('rechnung', $result);
+                $smarty->assign('rechnung', $result);                
                 $html = $smarty->fetch('string:'.$template);
                 header('Content-type:application/xml');
                 header('Content-Disposition: attachment;filename='.$filename.'.xml');
@@ -2563,33 +2577,82 @@ class Rechnung extends GenRechnung
       $usereditid = $this->app->User->GetID();
     }
 
+    if (!empty($adresse)) {
+        // Check XML Smarty template
+        $erechnung = false;
+        
+        
+        $sql = "SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'";
+        $rechnung_smarty_template = $this->app->DB->Select($sql);
+        
+        if (!empty($rechnung_smarty_template)) {
+           $erechnung = true;
+        } else {
+            $sql = "SELECT id FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
+            $gruppen = $this->app->DB->SelectArr($sql);
+            foreach ($gruppen as $gruppe) {
+                if ($this->app->erp->IsAdresseInGruppe($adresse,$gruppe['id'])) {
+                    $erechnung = true;
+                }
+            }
+        }                
+    }   
+
     if($this->app->erp->StandardZahlungsweise($projekt)==='rechnung')
     {
-      $this->app->DB->Insert("INSERT INTO rechnung (id,datum,bearbeiter,firma,belegnr,zahlungsweise,
-          zahlungszieltage,
-          zahlungszieltageskonto,
-          zahlungszielskonto,
-          lieferdatum,
-          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid,abweichendebezeichnung)
-            VALUES ('',NOW(),'','".$this->app->User->GetFirma()."','$belegmax','".$this->app->erp->StandardZahlungsweise($projekt)."',
-              '".$this->app->erp->ZahlungsZielTage($projekt)."',
-              '".$this->app->erp->ZahlungsZielTageSkonto($projekt)."',
-              '".$this->app->erp->ZahlungsZielSkonto($projekt)."',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
+          $zahlungszieltage = $this->app->erp->ZahlungsZielTage($projekt);
+          $zahlungszieltageskonto = $this->app->erp->ZahlungsZielTageSkonto($projekt);
+          $zahlungszielskonto = $this->app->erp->ZahlungsZielSkonto($projekt);
     } else {
-      $this->app->DB->Insert("INSERT INTO rechnung (id,datum,bearbeiter,firma,belegnr,zahlungsweise,
-          zahlungszieltage,
-          zahlungszieltageskonto,
-          zahlungszielskonto,
-          lieferdatum,
-          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid,abweichendebezeichnung)
-            VALUES ('',NOW(),'','".$this->app->User->GetFirma()."','$belegmax','".$this->app->erp->StandardZahlungsweise($projekt)."',
-              '0',
-              '0',
-              '0',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
-    }
-
+          $zahlungszieltage = 0;
+          $zahlungszieltageskonto = 0;
+          $zahlungszielskonto = 0;   
+    }       
+        
+    $this->app->DB->Insert("INSERT INTO rechnung (
+            id,
+            datum,
+            bearbeiter,
+            firma,
+            belegnr,
+            zahlungsweise,
+            zahlungszieltage,
+            zahlungszieltageskonto,
+            zahlungszielskonto,
+            lieferdatum,
+            status,
+            projekt,
+            adresse,
+            auftragid,
+            ohne_briefpapier,
+            angelegtam,
+            usereditid,
+            abweichendebezeichnung,
+            erechnung
+        )
+        VALUES (
+            '',
+            NOW(),
+            '',
+            '".$this->app->User->GetFirma()."',
+            '$belegmax',
+            '".$this->app->erp->StandardZahlungsweise($projekt)."',
+            '".$zahlungszieltage."',
+            '".$zahlungszieltageskonto."',
+            '".$zahlungszielskonto."',
+            NOW(),
+            'angelegt',
+            '$projekt',
+            '$adresse',
+            0,
+            '".$ohnebriefpapier."',
+            NOW(),
+            '$usereditid',
+            '$abweichendebezeichnung',
+            '$erechnung'
+        )"
+    );
+    
     $id = $this->app->DB->GetInsertID();
     $this->app->erp->CheckVertrieb($id,'rechnung');
     $this->app->erp->CheckBearbeiter($id,'rechnung');
