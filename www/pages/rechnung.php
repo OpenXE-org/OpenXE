@@ -2558,6 +2558,32 @@ class Rechnung extends GenRechnung
     
     $this->app->Tpl->Parse('PAGE','rechnunguebersicht.tpl');
   }
+  
+  // Decide if XML Smarty invoice according to address
+  public function SetXMLRechnung($id) {
+      $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."' LIMIT 1");
+      if (!empty($adresse)) {
+            // Check XML Smarty template
+            $erechnung = false;
+            $sql = "SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'";
+            $rechnung_smarty_template = $this->app->DB->Select($sql);
+            
+            if (!empty($rechnung_smarty_template)) {
+               $erechnung = true;
+            } else {
+                $sql = "SELECT id FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
+                $gruppen = $this->app->DB->SelectArr($sql);
+                foreach ($gruppen as $gruppe) {
+                    if ($this->app->erp->IsAdresseInGruppe($adresse,$gruppe['id'])) {
+                        $erechnung = true;
+                    }
+                }
+            }
+            if ($erechnung) {
+                $this->app->DB->Update("UPDATE rechnung SET erechnung = 1 WHERE id = '".$id."' AND schreibschutz <> 1");
+            }
+        }
+  }
 
   /**
    * @param string|int $adresse
@@ -2575,27 +2601,6 @@ class Rechnung extends GenRechnung
     $usereditid = 0;
     if(isset($this->app->User) && $this->app->User && method_exists($this->app->User,'GetID')){
       $usereditid = $this->app->User->GetID();
-    }
-
-    if (!empty($adresse)) {
-        // Check XML Smarty template
-        $erechnung = false;
-        
-        
-        $sql = "SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'";
-        $rechnung_smarty_template = $this->app->DB->Select($sql);
-        
-        if (!empty($rechnung_smarty_template)) {
-           $erechnung = true;
-        } else {
-            $sql = "SELECT id FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
-            $gruppen = $this->app->DB->SelectArr($sql);
-            foreach ($gruppen as $gruppe) {
-                if ($this->app->erp->IsAdresseInGruppe($adresse,$gruppe['id'])) {
-                    $erechnung = true;
-                }
-            }
-        }                
     }   
 
     if($this->app->erp->StandardZahlungsweise($projekt)==='rechnung')
@@ -2606,7 +2611,7 @@ class Rechnung extends GenRechnung
     } else {
           $zahlungszieltage = 0;
           $zahlungszieltageskonto = 0;
-          $zahlungszielskonto = 0;   
+          $zahlungszielskonto = 0;
     }       
         
     $this->app->DB->Insert("INSERT INTO rechnung (

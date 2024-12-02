@@ -29217,6 +29217,16 @@ function Firmendaten($field,$projekt="")
         }
       }
 
+      function SetXMLRechnung($id)
+      {
+        /** @var Preisanfrage $obj */
+        $obj = $this->app->erp->LoadModul('rechnung');
+        if(!empty($obj) && method_exists($obj,'SetXMLRechnung')) {
+          return $obj->SetXMLRechnung($id);
+        }
+        return 0;
+      }
+
       function BelegFreigabe($beleg,$id)
       {
         if($id <= 0 || empty($beleg)) {
@@ -29271,6 +29281,9 @@ function Firmendaten($field,$projekt="")
               SET a.`laststorage_changed` = NOW() WHERE `ap`.auftrag = %d', $id
             )
           );
+        }
+        if ($beleg === 'rechnung') {        
+          $this->SetXMLRechnung($id);
         }
       }
 

@@ -99,6 +99,10 @@
                               <td>[ABWEICHENDEBEZEICHNUNGBESCHRIFTUNG]:</td>
                               <td>[ABWEICHENDEBEZEICHNUNG][MSGABWEICHENDEBEZEICHNUNG]&nbsp;</td>
                            </tr>
+                           <tr>
+                              <td>{|XML-Rechnung|}:</td>
+                              <td>[ERECHNUNG][MSGERECHNUNG]&nbsp;</td>
+                           </tr>
                         </table>
                      </fieldset>
                   </div>
