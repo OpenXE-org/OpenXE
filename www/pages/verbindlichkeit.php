@@ -235,9 +235,12 @@ class Verbindlichkeit {
                         ))+0";
 
                 $auswahl = array (
-                    '<input type=\"checkbox\" name=\"ids[]\" value=\"',
+                    '<input type=\"checkbox\" name=\"auswahl[]\" value=\"',
                     ['sql' => 'pd.id'],
-                    '"/>'
+                    '"/>',
+                    '<input type=\"number\" name=\"ids[]\" value=\"',
+                    ['sql' => 'pd.id'],
+                    '" hidden/>'
                 );
 
                 $werte = array (
@@ -715,18 +718,27 @@ class Verbindlichkeit {
 
                // Process multi action
                 $ids = $this->app->Secure->GetPOST('ids');
+                $auswahl = $this->app->Secure->GetPOST('auswahl');
                 $werte = $this->app->Secure->GetPOST('werte');
                 $preise = $this->app->Secure->GetPOST('preise');
 
                 $bruttoeingabe = $this->app->Secure->GetPOST('bruttoeingabe');
 
-                foreach ($ids as $key => $paketdistribution) {
+                foreach ($auswahl as $key => $paketdistribution) {
+                    $key = -1;
+                    foreach ($ids as $index => $value) {
+                        if ($value == $paketdistribution) {
+                            $key = $index;
+                            break;
+                        }
+                    }
+                    if ($key == -1) {
+                        continue;
+                    }
                     $menge = $werte[$key];
-
                     if ($menge <= 0) {
                         continue;
                     }
-
                     // Check available number
                     $sql = "
                         SELECT
