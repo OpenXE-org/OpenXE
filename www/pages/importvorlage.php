@@ -5152,6 +5152,11 @@ class Importvorlage extends GenImportvorlage {
 
                 $row['buchung'] = $this->app->erp->ReplaceDatum(true,$row['buchung'],false);
 
+                // Sanitize input
+                foreach ($row as $key => $value) {
+                    $row[$key] = $this->app->DB->real_escape_string($value);
+                }
+
                 // Calculate hash
                 $hash_fields = array('buchung','soll','waehrung','buchungstext');
                 $hash_text = "";
