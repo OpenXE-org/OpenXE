@@ -1339,10 +1339,8 @@ class Rechnung extends GenRechnung
             header('Content-Disposition: attachment;filename='.$filename.'.json');
             echo(json_encode($result,JSON_PRETTY_PRINT));
         } else {
-
-            $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '".$adresse[0]['rechnung_smarty_template']."' LIMIT 1");
-                       
-            if(empty($template)) {                
+            $template_id = $this->GetXMLSmartyTemplate($id);
+            if(empty($template_id)) {
                 header('Content-type:text/xml');
                 header('Content-Disposition: attachment;filename='.$filename.'.xml');
                 echo('<?xml version="1.0" encoding="utf-8"?>
@@ -1350,6 +1348,7 @@ class Rechnung extends GenRechnung
   <body>Kein Smarty Template an der Addresse hinterlegt!</body>
 </note>');
             } else {
+                $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '$template_id' LIMIT 1");
                 $smarty = new Smarty;            
                 $directory = $this->app->erp->GetTMP().'/smarty/templates';            
                 $smarty->setCompileDir($directory);            
@@ -2559,27 +2558,29 @@ class Rechnung extends GenRechnung
     $this->app->Tpl->Parse('PAGE','rechnunguebersicht.tpl');
   }
   
-  // Decide if XML Smarty invoice according to address
+  public function GetXMLSmartyTemplate($id) {
+    $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."'");
+    $rechnung_smarty_template = $this->app->DB->Select("SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'");
+    if (!empty($rechnung_smarty_template)) {
+       return($rechnung_smarty_template);
+    } else {
+        $sql = "SELECT id, rechnung_smarty_template FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
+        $gruppen = $this->app->DB->SelectArr($sql);
+        foreach ($gruppen as $gruppe) {
+            if ($this->app->erp->IsAdresseInGruppe($adresse,$gruppe['id'])) {
+                return($gruppe['rechnung_smarty_template']);
+            }
+        }
+    }
+    return(null);
+  }
+ 
+  // Decide if XML Smarty invoice according to address and group
   public function SetXMLRechnung($id) {
       $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."' LIMIT 1");
       if (!empty($adresse)) {
             // Check XML Smarty template
-            $erechnung = false;
-            $sql = "SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'";
-            $rechnung_smarty_template = $this->app->DB->Select($sql);
-            
-            if (!empty($rechnung_smarty_template)) {
-               $erechnung = true;
-            } else {
-                $sql = "SELECT id FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
-                $gruppen = $this->app->DB->SelectArr($sql);
-                foreach ($gruppen as $gruppe) {
-                    if ($this->app->erp->IsAdresseInGruppe($adresse,$gruppe['id'])) {
-                        $erechnung = true;
-                    }
-                }
-            }
-            if ($erechnung) {
+            if (!empty($this->GetXMLSmartyTemplate($id))) {
                 $this->app->DB->Update("UPDATE rechnung SET erechnung = 1 WHERE id = '".$id."' AND schreibschutz <> 1");
             }
         }
