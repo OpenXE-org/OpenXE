@@ -69,6 +69,14 @@
                                             <input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20">
                                         </td>
                                     </tr>
+                                     <tr>
+                                        <td>
+                                            {|Smarty Template für XML-Rechnung|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" name="rechnung_smarty_template" id="rechnung_smarty_template" value="[RECHNUNG_SMARTY_TEMPLATE]" size="20">
+                                        </td>
+                                    </tr>
                                     <tr [PREISGRUPPEHIDDEN]>
                                         <td>
                                             {|Grundrabatt|}:
