@@ -112,6 +112,9 @@ class WidgetGenrechnung
     $field = new HTMLCheckbox("abweichendebezeichnung","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("erechnung","","","1","0","0");
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("mahnwesenfestsetzen","","","1","0","0");
     $this->form->NewField($field);
 
