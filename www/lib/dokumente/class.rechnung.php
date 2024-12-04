@@ -78,12 +78,12 @@ class RechnungPDF extends BriefpapierCustom {
        DATE_FORMAT(DATE_ADD(r.datum, INTERVAL r.zahlungszieltageskonto DAY),'%d.%m.%Y') AS zahlungszielskontodatum, 
        r.abweichendebezeichnung AS rechnungersatz, 
        r.kundennummer, r.sprache, r.schreibschutz, r.soll AS gesamtsumme,
-       DATE_FORMAT(r.datum,'%Y%m%d') as datum2, r.telefon, r.email, r.erechnung
+       DATE_FORMAT(r.datum,'%Y%m%d') as datum2, r.telefon, r.email, r.xmlrechnung
        FROM rechnung r LEFT JOIN auftrag a ON a.id=r.auftragid WHERE r.id='$id' LIMIT 1"
     );
 
 
-    if ($data['erechnung']) {
+    if ($data['xmlrechnung']) {
         exit();
     }
 
