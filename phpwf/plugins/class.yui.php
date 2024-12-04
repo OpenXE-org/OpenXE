@@ -6844,7 +6844,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                 as fehlt,
                 if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status
                 ".(!empty($zusatzcols)?','.implode(', ',$zusatzcols):'').",
-                IF(r.erechnung,
+                IF(r.xmlrechnung,
                 CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',r.id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\">'),
                 CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\">')
                 ), 
