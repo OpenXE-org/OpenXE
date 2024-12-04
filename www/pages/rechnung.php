@@ -417,7 +417,7 @@ class Rechnung extends GenRechnung
   {
     if($id > 0){
       $rechnungarr = $this->app->DB->SelectRow(
-        "SELECT status,zahlungsstatus,erechnung,belegnr FROM rechnung WHERE id='$id' LIMIT 1"
+        "SELECT status,zahlungsstatus,xmlrechnung,belegnr FROM rechnung WHERE id='$id' LIMIT 1"
       );
     }
     $status = '';
@@ -549,7 +549,7 @@ class Rechnung extends GenRechnung
       ";
       
       if (!empty($rechnungarr['belegnr'])) {
-          if ($rechnungarr['erechnung']) {
+          if ($rechnungarr['xmlrechnung']) {
             $downloadicon = "<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>";
           } else {
             $downloadicon = "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>";
@@ -1784,6 +1784,8 @@ class Rechnung extends GenRechnung
       $projekt = $rechnungarr['projekt'];
       
       $skontosoll = $this->app->DB->Select("SELECT TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll FROM rechnung where id = '".$id."' LIMIT 1");
+
+      $xmlrechnung = $rechnungarr['xmlrechnung'];
     }
 
     $this->app->Tpl->Set('PUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$punkte\" size=\"10\" readonly>");
@@ -1815,6 +1817,11 @@ class Rechnung extends GenRechnung
         $this->app->Tpl->Set('KUNDE', "&nbsp;&nbsp;&nbsp;Kd-Nr. " . $kundennummer);
       }
     }
+
+    if ($xmlrechnung) {
+        $this->app->Tpl->Set('PDFVORSCHAUHIDDEN', "hidden");
+    }
+
     $lieferdatum = '';
     $rechnungsdatum = '';
     $lieferscheinid = 0;
@@ -2581,7 +2588,7 @@ class Rechnung extends GenRechnung
       if (!empty($adresse)) {
             // Check XML Smarty template
             if (!empty($this->GetXMLSmartyTemplate($id))) {
-                $this->app->DB->Update("UPDATE rechnung SET erechnung = 1 WHERE id = '".$id."' AND schreibschutz <> 1");
+                $this->app->DB->Update("UPDATE rechnung SET xmlrechnung = 1 WHERE id = '".$id."' AND schreibschutz <> 1");
             }
         }
   }
@@ -2634,7 +2641,7 @@ class Rechnung extends GenRechnung
             angelegtam,
             usereditid,
             abweichendebezeichnung,
-            erechnung
+            xmlrechnung
         )
         VALUES (
             '',
@@ -2655,7 +2662,7 @@ class Rechnung extends GenRechnung
             NOW(),
             '$usereditid',
             '$abweichendebezeichnung',
-            '$erechnung'
+            '$xmlrechnung'
         )"
     );
     

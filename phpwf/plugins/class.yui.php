@@ -6758,11 +6758,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
-        $menu .= "<td>";
+/*        $menu .= "<td>";
         $menu .= "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\">";
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu .= "</a>";
-        $menu .= "</td>";
+        $menu .= "</td>";*/
         $menu .= "<td>";
         $menu .= '<a href="#" class="label-manager" data-label-column-number="6" data-label-reference-id="%value%" data-label-reference-table="rechnung">';
         $menu .= '<span class="label-manager-icon"></span>';
@@ -6811,6 +6811,10 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
         $width[] = '1%';
         $findcols[] = 'r.id';
+        $heading[] = '';
+
+        $width[] = '1%';
+        $findcols[] = 'r.id';
         $heading[] = 'Men&uuml;';
 
         $parameter = $this->app->User->GetParameter('table_filter_rechnung');
@@ -6838,8 +6842,12 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                     if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})),
                     '') 
                 as fehlt,
-                if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status,
-                ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')." 
+                if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status
+                ".(!empty($zusatzcols)?','.implode(', ',$zusatzcols):'').",
+                IF(r.erechnung,
+                CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',r.id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\">'),
+                CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\">')
+                ), 
                 r.id
                 FROM  rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id LEFT JOIN auftrag au ON au.id = r.auftragid ";
         if(isset($parameter['artikel']) && !empty($parameter['artikel'])) {
