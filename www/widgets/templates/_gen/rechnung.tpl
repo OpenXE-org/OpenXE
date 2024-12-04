@@ -101,7 +101,7 @@
                            </tr>
                            <tr>
                               <td>{|XML-Rechnung|}:</td>
-                              <td>[ERECHNUNG][MSGERECHNUNG]&nbsp;</td>
+                              <td>[XMLRECHNUNG][MSGXMLRECHNUNG]&nbsp;</td>
                            </tr>
                         </table>
                      </fieldset>
