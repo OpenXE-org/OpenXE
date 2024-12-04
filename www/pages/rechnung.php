@@ -1784,6 +1784,8 @@ class Rechnung extends GenRechnung
       $projekt = $rechnungarr['projekt'];
       
       $skontosoll = $this->app->DB->Select("SELECT TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll FROM rechnung where id = '".$id."' LIMIT 1");
+
+      $erechnung = $rechnungarr['erechnung'];
     }
 
     $this->app->Tpl->Set('PUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$punkte\" size=\"10\" readonly>");
@@ -1815,6 +1817,11 @@ class Rechnung extends GenRechnung
         $this->app->Tpl->Set('KUNDE', "&nbsp;&nbsp;&nbsp;Kd-Nr. " . $kundennummer);
       }
     }
+
+    if ($erechnung) {
+        $this->app->Tpl->Set('PDFVORSCHAUHIDDEN', "hidden");
+    }
+
     $lieferdatum = '';
     $rechnungsdatum = '';
     $lieferscheinid = 0;
