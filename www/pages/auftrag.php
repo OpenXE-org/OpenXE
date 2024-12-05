@@ -1640,6 +1640,7 @@ class Auftrag extends GenAuftrag
    *
    * @return string
    */
+/* XENTRAL Legacy
   public function AuftragTrackingTabelle($id)
   {
     $table = new EasyTable($this->app);
@@ -1676,6 +1677,7 @@ class Auftrag extends GenAuftrag
 
     return $result;
   }
+*/
   
   function AuftragPDFfromArchiv()
   {
@@ -2117,26 +2119,28 @@ class Auftrag extends GenAuftrag
 
     /* rechnungen */
   
+    $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
+
     $sammelrechnungcheck = $this->app->DB->Select("SELECT * FROM sammelrechnung_position LIMIT 1");
     if($sammelrechnungcheck) {
       $rechnung = $this->app->DB->SelectPairs(
         "SELECT 
-          r.id, CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
+              r.id,
+              ".$link_zur_rechnung." as rechnung
           FROM rechnung r 
           WHERE r.auftragid='$id'
           union 
           SELECT 
-          r.id,CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
+              r.id,
+              ".$link_zur_rechnung." as rechnung
           FROM rechnung r 
           INNER JOIN sammelrechnung_position s ON r.id = s.rechnung 
           INNER JOIN auftrag_position p ON s.auftrag_position_id = p.id 
           WHERE p.auftrag='$id'
           union 
           SELECT 
-          r.id,CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
+              r.id,
+              ".$link_zur_rechnung." as rechnung
           FROM rechnung r 
           INNER JOIN sammelrechnung_position s ON r.id = s.rechnung 
           INNER JOIN lieferschein_position lp ON lp.id = s.lieferschein_position_id
@@ -2158,9 +2162,8 @@ class Auftrag extends GenAuftrag
     else{
       $rechnung = $this->app->DB->SelectPairs(
         "SELECT 
-          r.id, CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>'
-          ) as rechnung
+              r.id,
+              ".$link_zur_rechnung." as rechnung
         FROM rechnung r 
         WHERE r.auftragid='$id'"
       );
@@ -2176,10 +2179,9 @@ class Auftrag extends GenAuftrag
     if(!$rechnung) {
       $rechnung = $this->app->DB->SelectPairs(
         "SELECT 
-                r.id, CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>'
-                    ) as rechnung
-         FROM rechnung r 
+              r.id,
+              ".$link_zur_rechnung." as rechnung
+          FROM rechnung r 
          INNER JOIN auftrag a ON a.rechnungid = r.id
          WHERE a.id='$id' 
       ");
@@ -5071,7 +5073,7 @@ class Auftrag extends GenAuftrag
         foreach($lieferscheine as $deliveryNoteId => $deliveryNoteNumber) {
           $optional .= "&nbsp;<input type=\"button\" value=\"LS "
             .$deliveryNoteNumber
-            ."\" onclick=\"window.location.href='index.php?module=lieferschein&action=pdf&id="
+            ."\" onclick=\"window.location.href='index.php?module=lieferschein&action=edit&id="
             .$deliveryNoteId."'\">";
         }
       }
@@ -5084,7 +5086,7 @@ class Auftrag extends GenAuftrag
         foreach($rechnungen as $invoiceId => $invoiceNumber) {
           $optional .= "&nbsp;<input type=\"button\" value=\"RE "
             .$invoiceNumber
-            ."\" onclick=\"window.location.href='index.php?module=rechnung&action=pdf&id="
+            ."\" onclick=\"window.location.href='index.php?module=rechnung&action=edit&id="
             .$invoiceId."'\">";
         }
       }
@@ -5260,11 +5262,13 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Add('AUFTRAGSDOKUMENTE',"</fieldset>");
     }
 
+/* XENTRAL Legacy
     //suche alle LS zu diesem Auftrag
     if($auftragsnummer>0) {
       $trackingInfo = $this->AuftragTrackingTabelle(empty($deliveryNoteIds)?0: $id);
       $this->app->Tpl->Set('VERSAND', $trackingInfo);
     } 
+*/
 
     // UST
     $ust_ok = $orderRow['ust_ok'];//$this->app->DB->Select("SELECT ust_ok FROM auftrag WHERE id='$id' LIMIT 1");
@@ -5717,7 +5721,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
           $this->app->erp->ANABREGSNeuberechnen($rechnung,"rechnung");
           $this->app->erp->rechnung_zahlstatus_berechnen($id);
-          $this->app->erp->PDFArchivieren("rechnung",$rechnung);
+          $this->app->erp->RechnungArchivieren($rechnung);
         }
       }
       // auftrag_position geliefert_menge und geliefert anpassen
@@ -6129,15 +6133,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
         unlink($tmpfile);
       }
-
       // Send the invoice as last step
       if($autodruckrechnungstufe1mail && $rechnung > 0)
       {
         $this->app->erp->Rechnungsmail($rechnung);
       }      
-
       $this->app->erp->RunHook('auftrag_versand_ende', 1, $id);
-
       // wenn per URL aufgerufen      
       if($internmodus!='1')
       {
