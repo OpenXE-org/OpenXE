@@ -5717,7 +5717,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
           $this->app->erp->ANABREGSNeuberechnen($rechnung,"rechnung");
           $this->app->erp->rechnung_zahlstatus_berechnen($id);
-          $this->app->erp->PDFArchivieren("rechnung",$rechnung);
+          $this->app->erp->RechnungArchivieren($rechnung);
         }
       }
       // auftrag_position geliefert_menge und geliefert anpassen
@@ -6129,15 +6129,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
         unlink($tmpfile);
       }
-
       // Send the invoice as last step
       if($autodruckrechnungstufe1mail && $rechnung > 0)
       {
         $this->app->erp->Rechnungsmail($rechnung);
       }      
-
       $this->app->erp->RunHook('auftrag_versand_ende', 1, $id);
-
       // wenn per URL aufgerufen      
       if($internmodus!='1')
       {

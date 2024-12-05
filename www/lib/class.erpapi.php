@@ -15246,7 +15246,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     }
 
     $rechnungarr = $this->app->DB->SelectRow(
-      "SELECT adresse, email, name,belegnr,projekt,sprache,schreibschutz,zuarchivieren 
+      "SELECT adresse, email, name,belegnr,projekt,sprache,schreibschutz,zuarchivieren,xmlrechnung
       FROM rechnung WHERE id='$id' LIMIT 1"
     );
     if(empty($rechnungarr)) {
@@ -15260,6 +15260,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     $to_name = $rechnungarr['name'];
     $belegnr = $rechnungarr['belegnr'];
     $projekt = $rechnungarr['projekt'];
+    $xmlrechnung = $rechnungarr['xmlrechnung'];
 
     $sprache = $rechnungarr['sprache'];
     if($sprache=='' && $adresse > 0) {
@@ -15284,21 +15285,27 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     $betreff = $this->ParseUserVars('rechnung',$id,$betreff); // 19.01.2018 eingefuegt BW
     if($id > 0)
     {
-      $this->app->erp->BriefpapierHintergrunddisable = false;
-      if(class_exists('RechnungPDFCustom'))
-      {
-        $Brief = new RechnungPDFCustom($this->app,$projekt);
-      }else{
-        $Brief = new RechnungPDF($this->app,$projekt);
-      }
-      $Brief->GetRechnung($id);
-      $arrtmpfile[] = $Brief->displayTMP();
 
-      if(!$Brief->DocumentArchiviert()) {
-        $Brief->ArchiviereDocument(true, true);
+      if (!$xmlrechnung) {
+          $this->app->erp->BriefpapierHintergrunddisable = false;
+          if(class_exists('RechnungPDFCustom'))
+          {
+            $Brief = new RechnungPDFCustom($this->app,$projekt);
+          }else{
+            $Brief = new RechnungPDF($this->app,$projekt);
+          }
+          $Brief->GetRechnung($id);
+          $arrtmpfile[] = $Brief->displayTMP();
+
+          if(!$Brief->DocumentArchiviert()) {
+            $Brief->ArchiviereDocument(true, true);
+          }
+          $md5arr[] = @md5_file($arrtmpfile[(!empty($arrtmpfile)?count($arrtmpfile):0)-1]);
+      } else {
+        $arrtmpfile = Array();
+        $md5arr = Array();
       }
 
-      $md5arr[] = @md5_file($arrtmpfile[(!empty($arrtmpfile)?count($arrtmpfile):0)-1]);
       // anhaenge automatisch mitversenden
       $resultdateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter WHERE objekt LIKE 'Rechnung' AND parameter='$id'");
       $cResultdateien = !empty($resultdateien)?count($resultdateien):0;
@@ -23489,54 +23496,63 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       if($typ=="rechnung")
       {
         // sende
-        $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-        if(class_exists('RechnungPDFCustom'))
-        {
-          $Brief = new RechnungPDFCustom($this->app,$projektbriefpapier);
-        }else{
-          $Brief = new RechnungPDF($this->app,$projektbriefpapier);
-        }
-        $Brief->GetRechnung($id);
+        $xmlrechnug = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id ='".$id."' LIMIT 1");
+        if ($xmlrechnung) {
+            $xmlrechnungresult = $this->app->erp->GetXMLRechnung($id);
+            if ($xmlrechnungresult['success']) {
+                $tmpfile = $xmlrechnungresult['xml'];
+            } else {
+                throw new exception("XML Rechnung fehlgeschlagen!");
+            }
+        } else {
+            $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
+            if(class_exists('RechnungPDFCustom'))
+            {
+              $Brief = new RechnungPDFCustom($this->app,$projektbriefpapier);
+            }else{
+              $Brief = new RechnungPDF($this->app,$projektbriefpapier);
+            }
+            $Brief->GetRechnung($id);
 
-        if(isset($sammelpdf))
-        {
-          foreach($sammelpdf as $dat)
-          {
-            $Brief->AddPDF($dat);
-          }
-        }
+            if(isset($sammelpdf))
+            {
+              foreach($sammelpdf as $dat)
+              {
+                $Brief->AddPDF($dat);
+              }
+            }
 
-        //$Brief->ArchiviereDocument();
-        $tmpfile = $Brief->displayTMP();
-        $Brief->ArchiviereDocument(true);
-        unlink($tmpfile);
-        $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-        if(class_exists('RechnungPDFCustom'))
-        {
-          $Brief = new RechnungPDFCustom($this->app,$projektbriefpapier);
-        }else{
-          $Brief = new RechnungPDF($this->app,$projektbriefpapier);
+            //$Brief->ArchiviereDocument();
+            $tmpfile = $Brief->displayTMP();
+            $Brief->ArchiviereDocument(true);
+            unlink($tmpfile);
+            $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
+            if(class_exists('RechnungPDFCustom'))
+            {
+              $Brief = new RechnungPDFCustom($this->app,$projektbriefpapier);
+            }else{
+              $Brief = new RechnungPDF($this->app,$projektbriefpapier);
+            }
+            $Brief->GetRechnung($id);
+            $tmpfile = $Brief->displayTMP();
+            $Brief->ArchiviereDocument(true);
+            if(isset($sammelpdf))
+            {
+              unlink($tmpfile);
+              if(class_exists('RechnungPDFCustom'))
+              {
+                $Brief = new RechnungPDFCustom($this->app,$projektbriefpapier);
+              }else{
+                $Brief = new RechnungPDF($this->app,$projektbriefpapier);
+              }
+              $Brief->GetRechnung($id);
+              foreach($sammelpdf as $dat)
+              {
+                $Brief->AddPDF($dat);
+              }
+              $tmpfile = $Brief->displayTMP();
+            }
         }
-        $Brief->GetRechnung($id);
-        $tmpfile = $Brief->displayTMP();
-        $Brief->ArchiviereDocument(true);
-        if(isset($sammelpdf))
-        {
-          unlink($tmpfile);
-          if(class_exists('RechnungPDFCustom'))
-          {
-            $Brief = new RechnungPDFCustom($this->app,$projektbriefpapier);
-          }else{
-            $Brief = new RechnungPDF($this->app,$projektbriefpapier);
-          }
-          $Brief->GetRechnung($id);
-          foreach($sammelpdf as $dat)
-          {
-            $Brief->AddPDF($dat);
-          }
-          $tmpfile = $Brief->displayTMP();
-        }
-
         //$Brief->ArchiviereDocument();
 
       }
@@ -29231,10 +29247,18 @@ function Firmendaten($field,$projekt="")
 
       function SetXMLRechnung($id)
       {
-        /** @var Preisanfrage $obj */
         $obj = $this->app->erp->LoadModul('rechnung');
         if(!empty($obj) && method_exists($obj,'SetXMLRechnung')) {
           return $obj->SetXMLRechnung($id);
+        }
+        return 0;
+      }
+
+      function GetXMLRechnung($id)
+      {
+        $obj = $this->app->erp->LoadModul('rechnung');
+        if(!empty($obj) && method_exists($obj,'RechnungSmarty')) {
+          return $obj->RechnungSmarty(id: $id, returnvalue: true);
         }
         return 0;
       }
@@ -33055,7 +33079,6 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-
       function DeleteBestellung($id)
       {
         /** @var Bestellung $obj */
@@ -33066,7 +33089,6 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-
       function CreateRechnung($adresse="")
       {
         /** @var Rechnung $obj */
@@ -33075,7 +33097,6 @@ function Firmendaten($field,$projekt="")
           return $obj->CreateRechnung($adresse);
         }
       }
-
 
       public function GetStandardWaehrung($projekt=0)
       {
