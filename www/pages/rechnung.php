@@ -577,15 +577,7 @@ class Rechnung extends GenRechnung
       </select>&nbsp;
       ";
       
-      if (!empty($rechnungarr['belegnr'])) {
-          if ($rechnungarr['xmlrechnung']) {
-            $downloadicon = "<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>";
-          } else {
-            $downloadicon = "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>";
-          }
-      } else {
-        $downloadicon = '';
-      }
+      $downloadicon = $this->app->YUI->GetRechnungFileDownloadLinkIcon($id);
       
     $menu .= $downloadicon;
        

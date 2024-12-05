@@ -6844,10 +6844,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                 as fehlt,
                 if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status
                 ".(!empty($zusatzcols)?','.implode(', ',$zusatzcols):'').",
-                IF(r.xmlrechnung,
-                CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',r.id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\">'),
-                CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\">')
-                ), 
+                ".$this->GetRechnungFileDownloadLinkIconSQL().",
                 r.id
                 FROM  rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id LEFT JOIN auftrag au ON au.id = r.auftragid ";
         if(isset($parameter['artikel']) && !empty($parameter['artikel'])) {
@@ -15941,4 +15938,24 @@ function IframeDialog($width, $height, $src = "") {
     return 'convert(cast(convert('.$field.' using  latin1) as binary) using utf8)';
     //return $field.' COLLATE utf8_general_ci'; ersetzt Original
   }
+
+    public function GetRechnungFileDownloadLinkIconSQL($tablename = 'r') {
+        return(
+            "IF(".$tablename.".xmlrechnung,
+            CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\">'),
+            CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\">')
+            )"
+        );
+    }
+
+    public function GetRechnungFileDownloadLinkIcon($id) {
+        $xmlrechnung =  $this->app->DB->SelectRow("SELECT belegnr, xmlrechnung FROM rechnung WHERE id = '".$id."' LIMIT 1");
+        if ($xmlrechnung['belegnr'] == '') {
+            return('');
+        }  else if ($xmlrechnung['xmlrechnung']) {
+            return("<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>");
+        } else {
+           return("<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>");
+        }
+    }
 }
