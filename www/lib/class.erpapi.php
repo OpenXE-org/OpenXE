@@ -2199,6 +2199,18 @@ public function NavigationHooks(&$menu)
     return false;
   }
 
+    // Rechnung special treatment because of XML
+    function RechnungArchivieren($id) {
+        $sql = "SELECT xmlrechnung FROM rechnung WHERE id = '".$id."' LIMIT 1";
+        $xmlrechnung = $this->app->DB->Select($sql);
+        if ($xmlrechnung) {
+            $rechnungsmodul = $this->app->loadModule('rechnung', false);
+            return($rechnungsmodul->RechnungArchiviereXML($id));
+        } else {
+            $this->PDFArchivieren('rechnung',$id,true);
+        }
+    }
+
   // @refactor in Location Klasse
   function UrlOrigin($s, $use_forwarded_host=false)
   {
@@ -3267,7 +3279,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               );
               $this->app->erp->ANABREGSNeuberechnen($invoice['id'], 'rechnung');
               if($invoice['schreibschutz']) {
-                $this->app->erp->PDFArchivieren('rechunng', $invoice['id'], true);
+                $this->app->erp->RechnungArchivieren($invoice['id']);
               }
             }
           }
@@ -15241,7 +15253,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       return;
     }
     if(!empty($rechnungarr['schreibschutz']) && !empty($rechnungarr['zuarchivieren'])) {
-      $this->app->erp->PDFArchivieren('rechnung', $id, true);
+      $this->app->erp->RechnungArchivieren($id);
     }
     $adresse = $rechnungarr['adresse'];
     $to = $rechnungarr['email'];
