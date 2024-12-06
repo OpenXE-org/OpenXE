@@ -128,7 +128,7 @@
               <!--<tr><td width="300">{|Automatisch Versand anlegen|}:</td><td>[AUTOVERSAND][MSGAUTOVERSAND]&nbsp;<i>Bei Auftr&auml;gen ist die Option "per Versandzentrum versenden" automatisch gesetzt.</i></td></tr>-->
 						  <tr><td>{|Drucker Stufe (Kommissionierung)|}</td><td>[DRUCKERLOGISTIKSTUFE1][MSGDRUCKERLOGISTIKSTUFE1]&nbsp;<i>{|z.B. Lieferschein drucken|}</i></td></tr>
 		          <tr><td>{|Drucker Stufe (Versand)|}</td><td>[DRUCKERLOGISTIKSTUFE2][MSGDRUCKERLOGISTIKSTUFE2]&nbsp;<i>{|Belege bei Versandstation|}</i></td></tr>
-						  <tr><td>{|Lieferscheinposition: Etiketten|}</td><td>[ETIKETTEN_POSITIONEN][MSGETIKETTEN_POSITIONEN]&nbsp;<i></i></td></tr>
+						  <tr><td>{|Lieferscheinposition: Etiketten|}</td><td>[ETIKETTEN_POSITIONEN][MSGETIKETTEN_POSITIONEN]&nbsp;<i>Kann auch nur an einzelnen Adressen aktiviert werden</i></td></tr>
 	            <tr><td>{|Lieferscheinposition: Etiketten-Drucker|}</td><td>[ETIKETTEN_DRUCKER][MSGETIKETTEN_DRUCKER]&nbsp;<i></i></td></tr>
 	            <tr><td>{|Lieferscheinposition: Etiketten-Art|}</td><td>[ETIKETTEN_ART][MSGETIKETTEN_ART]&nbsp;<i></i></td></tr>
 	            <tr><td>{|Lieferscheinposition: Etiketten-Sortierung|}</td><td>[ETIKETTEN_SORT][MSGETIKETTEN_SORT]&nbsp;<i></i></td></tr>

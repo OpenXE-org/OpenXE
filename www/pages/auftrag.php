@@ -5643,6 +5643,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           $etiketten_art = $projektarr['etiketten_art'];//$this->app->DB->Select("SELECT etiketten_art FROM projekt WHERE id='$projekt' LIMIT 1");
           $etiketten_drucker = $projektarr['etiketten_drucker'];//$this->app->DB->Select("SELECT etiketten_drucker FROM projekt WHERE id='$projekt' LIMIT 1");
           $etiketten_sort= $projektarr['etiketten_sort'];//$this->app->DB->Select("SELECT etiketten_drucker FROM projekt WHERE id='$projekt' LIMIT 1");
+
+          $etikett_adresse = $this->app->DB->SelectRow("SELECT lieferscheinpositionetikettdruck, lieferscheinpositionetikett FROM adresse WHERE id ='".$adresse."' LIMIT 1");
+          if ($etikett_adresse['lieferscheinpositionetikettdruck']) {
+            $etiketten_positionen = 1;
+            $etiketten_art = $etikett_adresse['lieferscheinpositionetikett'];
+          }
         }
         if($etiketten_positionen > 0)
         {

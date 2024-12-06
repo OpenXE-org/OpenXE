@@ -718,6 +718,10 @@ class Lieferschein extends GenLieferschein
     }
     
     $etiketten_positionen = $this->app->DB->Select("SELECT etiketten_positionen FROM projekt WHERE id='$projekt' LIMIT 1");
+    $etikett_adresse = $this->app->DB->SelectRow("SELECT lieferscheinpositionetikettdruck, lieferscheinpositionetikett FROM adresse WHERE id ='".$adresse."' LIMIT 1");
+    if ($etikett_adresse['lieferscheinpositionetikettdruck']) {
+        $etiketten_positionen = 1;
+    }
     if($etiketten_positionen  > 0)
       $etiketten = "<option value=\"positionenetiketten\">Positionen als Etiketten</option>";
     $casestorno = "case 'storno': if(!confirm('Wirklich stornieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=lieferschein&action=delete&id=%value%'; break;";
@@ -2100,6 +2104,11 @@ class Lieferschein extends GenLieferschein
         $projectId
       )
     );
+    $etikett_adresse = $this->app->DB->SelectRow("SELECT lieferscheinpositionetikettdruck, lieferscheinpositionetikett FROM adresse WHERE id = (SELECT adresse FROM lieferschein WHERE id = '".$deliveryNoteId."') LIMIT 1");
+    if ($etikett_adresse['lieferscheinpositionetikettdruck']) {
+        $projectRow['etiketten_positionen'] = 1;
+        $projectRow['etiketten_art'] = $etikett_adresse['lieferscheinpositionetikett'];
+    }
     if(empty($projectRow) || $projectRow['etiketten_positionen'] <= 0) {
       return false;
     }
