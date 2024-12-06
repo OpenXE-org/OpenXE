@@ -139,7 +139,7 @@
                 <tr><td>{|Druck bei Kommissionierung|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG][MSGETIKETTEN_KOMMISSIONIERUNG]&nbsp;<i>Kann auch nur an einzelnen Adressen aktiviert werden</i></td></tr>
 	            <tr><td>{|Etiketten-Drucker|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_DRUCKER][MSGEETIKETTEN_KOMMISSIONIERUNG_DRUCKER]&nbsp;<i></i></td></tr>
 	            <tr><td>{|Etiketten-Art|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_ART][MSGETIKETTEN_KOMMISSIONIERUNG_ART]&nbsp;<i></i></td></tr>
-	            <tr><td>{|Etiketten-Sortierung|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_SORT][MSGETIKETTEN_KOMMISSIONIERUNG_SORT]&nbsp;<i></i></td></tr>
+<!--	            <tr><td>{|Etiketten-Sortierung|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_SORT][MSGETIKETTEN_KOMMISSIONIERUNG_SORT]&nbsp;<i></i></td></tr> --!>
                 <tr><td><b>{|Liefscheinposition-Etiketten|}</b></td></tr>
                 <tr><td>{|Druck mit/statt Lieferschein|}</td><td>[ETIKETTEN_POSITIONEN][MSGETIKETTEN_POSITIONEN]&nbsp;<i>Kann auch nur an einzelnen Adressen aktiviert werden</i></td></tr>
 	            <tr><td>{|Etiketten-Drucker|}</td><td>[ETIKETTEN_DRUCKER][MSGETIKETTEN_DRUCKER]&nbsp;<i></i></td></tr>
