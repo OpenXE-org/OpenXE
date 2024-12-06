@@ -446,6 +446,9 @@ class WidgetAdresse extends WidgetGenAdresse
     $field = new HTMLSelect("etikett",0);
     $field->AddOptionsAsocSimpleArray($etikettenart);
     $this->form->NewField($field);
+    $field = new HTMLSelect("lieferscheinpositionetikett",0);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
+    $this->form->NewField($field);
 
   }
 

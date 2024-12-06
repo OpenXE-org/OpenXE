@@ -790,6 +790,14 @@ function abweichend(cmd) {
 									<td width="210">{|Etikett|}:</td>
 									<td>[ETIKETT][MSGETIKETT]</td>
 								</tr>
+								<tr>
+									<td width="210">{|Lieferschein-Position-Etiketten|}:</td>
+									<td>[LIEFERSCHEINPOSITIONETIKETTDRUCK][MSGLIEFERSCHEINPOSITIONETIKETTDRUCK]&nbsp;<i>Mit dem Lieferschein werden Etiketten f&uuml;r jede Position gedruckt</i></td>
+								</tr>
+								<tr>
+									<td width="210">{|Etikett|}:</td>
+									<td>[LIEFERSCHEINPOSITIONETIKETT][MSGLIEFERSCHEINPOSITIONETIKETT]</td>
+								</tr>
 							</table>
 						</fieldset>
 					</div>

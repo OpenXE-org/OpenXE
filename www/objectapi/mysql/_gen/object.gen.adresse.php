@@ -190,6 +190,8 @@ class ObjGenAdresse
   private  $rechnung_papier;
   private  $etikettautodruck;
   private  $etikett;
+  private  $lieferscheinpositionetikettdruck;
+  private  $lieferscheinpositionetikett;
   private  $angebot_cc;
   private  $auftrag_cc;
   private  $rechnung_cc;
@@ -446,6 +448,8 @@ $result = $result[0];
     $this->rechnung_papier=$result['rechnung_papier'];
     $this->etikettautodruck=$result['etikettautodruck'];
     $this->etikett=$result['etikett'];
+    $this->lieferscheinpositionetikettdruck=$result['lieferscheinpositionetikettdruck'];
+    $this->lieferscheinpositionetikett=$result['lieferscheinpositionetikett'];
     $this->angebot_cc=$result['angebot_cc'];
     $this->auftrag_cc=$result['auftrag_cc'];
     $this->rechnung_cc=$result['rechnung_cc'];
@@ -702,6 +706,8 @@ $result = $result[0];
       `rechnung_papier`='{$this->rechnung_papier}',
       `etikettautodruck`='{$this->etikettautodruck}',
       `etikett`='{$this->etikett}',
+      `lieferscheinpositionetikettdruck`='{$this->lieferscheinpositionetikettdruck}',
+      `lieferscheinpositionetikett`='{$this->lieferscheinpositionetikett}',
       `angebot_cc`='{$this->angebot_cc}',
       `auftrag_cc`='{$this->auftrag_cc}',
       `rechnung_cc`='{$this->rechnung_cc}',
@@ -958,6 +964,8 @@ $result = $result[0];
     $this->rechnung_papier='';
     $this->etikettautodruck='';
     $this->etikett='';
+    $this->lieferscheinpositionetikettdruck='';
+    $this->lieferscheinpositionetikett='';
     $this->angebot_cc='';
     $this->auftrag_cc='';
     $this->rechnung_cc='';
@@ -1410,6 +1418,10 @@ $result = $result[0];
   public function GetEtikettautodruck() { return $this->etikettautodruck; }
   public function SetEtikett($value) { $this->etikett=$value; }
   public function GetEtikett() { return $this->etikett; }
+  public function SetLieferscheinpositionetikettdruck($value) { $this->lieferscheinpositionetikettdruck=$value; }
+  public function GetLieferscheinpositionetikettdruck() { return $this->lieferscheinpositionetikettdruck; }
+  public function SetLieferscheinpositionetikett($value) { $this->lieferscheinpositionetikett=$value; }
+  public function GetLieferscheinpositionetikett() { return $this->lieferscheinpositionetikett; }
   public function SetAngebot_Cc($value) { $this->angebot_cc=$value; }
   public function GetAngebot_Cc() { return $this->angebot_cc; }
   public function SetAuftrag_Cc($value) { $this->auftrag_cc=$value; }
