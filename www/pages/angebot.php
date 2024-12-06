@@ -353,6 +353,12 @@ class Angebot extends GenAngebot
     }
 
 
+    $auftragArr = $this->app->DB->SelectArr("SELECT * FROM angebot WHERE id='$id' LIMIT 1");
+    $kundennummer = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE id='{$auftragArr[0]['adresse']}' LIMIT 1");
+    $projekt = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id='{$auftragArr[0]['projekt']}' LIMIT 1");
+    $kundenname = $this->app->DB->Select("SELECT name FROM adresse WHERE id='{$auftragArr[0]['adresse']}' LIMIT 1");
+    $this->app->Tpl->Set('KUNDE',"<a href=\"index.php?module=adresse&action=edit&id=".$auftragArr[0]['adresse']."\" target=\"_blank\">".$kundennummer."</a> ".$kundenname);
+
     if($this->app->erp->RechteVorhanden('projekt','dashboard')){
       $this->app->Tpl->Set('PROJEKT', "<a href=\"index.php?module=projekt&action=dashboard&id=" . $auftragArr[0]['projekt'] . "\" target=\"_blank\">$projekt</a>");
     }
@@ -363,6 +369,10 @@ class Angebot extends GenAngebot
     $this->app->Tpl->Set('ZAHLWEISE',$auftragArr[0]['zahlungsweise']);
     $this->app->Tpl->Set('STATUS',$auftragArr[0]['status']);
     $this->app->Tpl->Set('ANFRAGE',$auftragArr[0]['anfrage']);
+
+    $sql = "SELECT gesamtsumme FROM angebot WHERE id = %s";
+    $betrag = $this->app->DB->Select(sprintf($sql,$id));
+    $this->app->Tpl->Set('GESAMTSUMME',number_format($betrag,"2",",","."));
 
     if($auftragArr[0]['ust_befreit']==0)
       $this->app->Tpl->Set('STEUER',"Inland");
