@@ -123,10 +123,14 @@
             <tr align="center">
                 <td width="25%" style="position: relative;">
                     <a href="index.php?module=smarty_templates&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_26.gif" border="0" width="30%" /></a>
-                </td>            
+                </td>        
+                <td width="25%" style="position: relative;">
+                    <a href="index.php?module=steuersaetze&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_18.gif" border="0" width="30%" /></a>
+                </td>        
             </tr>
             <tr align="center">
                 <td><a href="index.php?module=smarty_templates&action=list">{|Smarty Templates|}</a></td>
+                <td><a href="index.php?module=steuersaetze&action=list">{|Steuers&auml;tze|}</a></td>
             </tr>
         </table>
     </fieldset>
