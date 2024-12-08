@@ -5815,10 +5815,17 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $kommissionierung = $this->app->erp->GetNextKommissionierung();
  
                 $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
-                $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_drucker');          
+                $etikettautodruck = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung');
+                $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
+                $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
                        
                 $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
                 $settings = $this->app->DB->SelectRow($sql);               
+
+                if ($settings['etikettautodruck']) {
+                    $etikettautodruck = true;
+                    $etikettart = $settings['etikett'];
+                }
 
                 $this->Kommissionieren(
                     kommissionierung : $kommissionierung,
@@ -5828,8 +5835,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     lagerplatzliste: $auslagernresult,
                     mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
                     druckercode: $druckercode,
-                    mengeetiketten: $settings['etikettautodruck']?1:0,
-                    etikett: $settings['etikettautodruck']?$settings['etikett']:0,
+                    mengeetiketten: $etikettautodruck?1:0,
+                    etikett: $etikettautodruck?$etikettart:0,
                     etikettendrucker: $etikettendrucker);
             }
                
@@ -6593,7 +6600,17 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             WHERE auftrag.id = '".$v."'"
                         );
 
-                        $etikettendrucker = $this->app->erp->Projektdaten($settings['projekt'],'etiketten_drucker');          
+                        $etikettautodruck = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung');
+                        $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
+                        $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
+                               
+                        $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
+                        $settings = $this->app->DB->SelectRow($sql);               
+
+                        if ($settings['etikettautodruck']) {
+                            $etikettautodruck = true;
+                            $etikettart = $settings['etikett'];
+                        }
 
                         $this->Kommissionieren(
                             kommissionierung : $kid,
@@ -6603,8 +6620,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             lagerplatzliste: $auslagernresult,
                             mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
                             druckercode: $druckercode,
-                            mengeetiketten: $settings['etikettautodruck']?1:0,
-                            etikett: $vorkommissionieren_ohne_etiketten?0:($settings['etikettautodruck']?$settings['etikett']:0),
+                            mengeetiketten: $etikettautodruck?1:0,
+                            etikett: $vorkommissionieren_ohne_etiketten?0:($etikettautodruck?$etikettart:0),
                             etikettendrucker: $etikettendrucker);                       
                     }
                 }
@@ -7390,10 +7407,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     druckercode: $etikettendrucker
                 );                    
             }
-
-            //function EtikettenDrucker($kennung,$anzahl,$tabelle,$id,$variables="",$xml="",$druckercode="",$filenameprefix="",$xmlaspdf=false,$adresse=0,$verwendenals="")
         }
-
-
     }
 }

@@ -141,22 +141,28 @@ class WidgetProjekt extends WidgetGenProjekt
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
 
-
     $drucker = $this->app->erp->GetEtikettendrucker();
+    $field = new HTMLSelect("etiketten_kommissionierung_drucker",0);
+    $field->AddOptionsAsocSimpleArray($drucker);
+    $this->form->NewField($field);
+
     $field = new HTMLSelect("etiketten_drucker",0);
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
 
-    $drucker = $this->app->erp->GetEtiketten();
+    $etikettenart = $this->app->erp->GetEtiketten();
+    $field = new HTMLSelect("etiketten_kommissionierung_art",0);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
+    $this->form->NewField($field);
+
     $field = new HTMLSelect("etiketten_art",0);
-    $field->AddOptionsAsocSimpleArray($drucker);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
     $this->form->NewField($field);
 
     $drucker = $this->app->erp->GetDrucker();
     $field = new HTMLSelect("kasse_drucker",0);
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
-
 
     $versandart = $this->app->erp->GetDrucker();
     $field = new HTMLSelect("intraship_drucker",0);
