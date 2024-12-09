@@ -6593,7 +6593,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 projekt.autodruckkommissionierscheinstufe1menge,
                                 adresse.etikett,
                                 adresse.etikettautodruck,
-                                projekt.id as projekt
+                                projekt.id as projekt,
+                                auftrag.adresse
                             FROM projekt 
                             INNER JOIN auftrag ON projekt.id = auftrag.projekt
                             INNER JOIN adresse ON adresse.id = auftrag.adresse
@@ -6604,7 +6605,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
                         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
                                
-                        $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
+                        $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$settings['adresse']; 
                         $settings = $this->app->DB->SelectRow($sql);               
 
                         if ($settings['etikettautodruck']) {
