@@ -6606,11 +6606,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
                                
                         $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$settings['adresse']; 
-                        $settings = $this->app->DB->SelectRow($sql);               
+                        $adressesettings = $this->app->DB->SelectRow($sql);
 
-                        if ($settings['etikettautodruck']) {
+                        if ($adressesettings['etikettautodruck']) {
                             $etikettautodruck = true;
-                            $etikettart = $settings['etikett'];
+                            $etikettart = $adressesettings['etikett'];
                         }
 
                         $this->Kommissionieren(
