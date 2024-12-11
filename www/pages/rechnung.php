@@ -240,7 +240,8 @@ class Rechnung extends GenRechnung
                     ersteller: $this->app->User->GetName(),
                     subjekt: 'rechnung',
                     objekt: 'rechnung',
-                    parameter: $id
+                    parameter: $id,
+                    geschuetzt: true
                 );
             }
         } else {

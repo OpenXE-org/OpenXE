@@ -36386,23 +36386,6 @@ function Firmendaten($field,$projekt="")
         return $tmpname;
       }
 
-      function CreateDateiOhneInitialeVersion($titel,$beschreibung,$nummer,$ersteller,$without_log=false)
-      {
-        if(!$without_log)
-        {
-          $this->app->DB->Insert("INSERT INTO datei (id,titel,beschreibung,nummer,firma) VALUES
-              ('','$titel','$beschreibung','$nummer','".$this->app->User->GetFirma()."')");
-        } else {
-          $this->app->DB->InsertWithoutLog("INSERT INTO datei (id,titel,beschreibung,nummer,firma) VALUES
-              ('','$titel','$beschreibung','$nummer',1)");
-        }
-
-        $fileid = $this->app->DB->GetInsertID();
-        //$this->AddDateiVersion($fileid,$ersteller,$name,"Initiale Version",$datei,$without_log);
-
-        return  $fileid;
-      }
-  
       function GetDMSPath($id, $path = '', $cache = false)
       {
         $ids = explode('_', $id, 2);
@@ -36500,7 +36483,7 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-      function CreateDateiWithStichwort($name, $titel,$beschreibung,$nummer,$datei, $ersteller ,$subjekt,$objekt,$parameter, $path = "",$without_log=false)
+      function CreateDateiWithStichwort($name, $titel,$beschreibung,$nummer,$datei, $ersteller ,$subjekt,$objekt,$parameter, $path = "",$without_log=false,$geschuetzt=null)
       {
         $dateien = $this->app->DB->SelectArr("SELECT dv.datei, dv.id FROM datei_stichwoerter ds 
           INNER JOIN datei d ON ds.datei = d.id AND ifnull(d.geloescht,0) = 0
@@ -36536,12 +36519,12 @@ function Firmendaten($field,$projekt="")
             }
           }
         }
-        $fileid = $this->CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log,$path);
+        $fileid = $this->CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log,$path,$geschuetzt);
         $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log);
         return $fileid;
       }
 
-      function CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log=false,$path="")
+      function CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log=false,$path="",$geschuetzt=null)
       {
         // Anführungszeichen in Unterstriche wandeln
         $name = str_replace(['\\\'', '\\"', '\'', '"'], '_', $name);
@@ -36553,13 +36536,15 @@ function Firmendaten($field,$projekt="")
                 titel,
                 beschreibung,
                 nummer,
-                firma
+                firma,
+                geschuetzt
             ) VALUES (
                 '',
                 '".$this->app->DB->real_escape_string($titel)."',
                 '".$this->app->DB->real_escape_string($beschreibung)."',
                 '".$this->app->DB->real_escape_string($nummer)."',
-                '".$this->app->User->GetFirma()."'
+                '".$this->app->User->GetFirma()."',
+                '".$geschuetzt."'
             )"
           );
         } else {
@@ -36568,13 +36553,15 @@ function Firmendaten($field,$projekt="")
                 titel,
                 beschreibung,
                 nummer,
-                firma
+                firma,
+                geschuetzt
             ) VALUES (
                 '',
                 '".$this->app->DB->real_escape_string($titel)."',
                 '".$this->app->DB->real_escape_string($beschreibung)."',
                 '".$this->app->DB->real_escape_string($nummer)."',
-                1
+                1,
+                '".$geschuetzt."'
             )
           ");
         }
@@ -36771,6 +36758,12 @@ function Firmendaten($field,$projekt="")
         if(!$id){
           return false;
         }
+
+        $geschuetzt = $this->app->DB->SelectArr("SELECT geschuetzt FROM datei WHERE datei = '".$id."'");
+        if ($geschuetzt) {
+          return false;
+        }
+
         $error = false;
         $versionen = $this->app->DB->SelectArr("SELECT * FROM datei_version WHERE datei = '".$id."'");
         if($versionen)
