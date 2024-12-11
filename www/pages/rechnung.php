@@ -1377,7 +1377,7 @@ class Rechnung extends GenRechnung
                 $smarty = new Smarty;
                 $directory = $this->app->erp->GetTMP().'/smarty/templates';
                 $smarty->setCompileDir($directory);
-                $smarty->assign('rechnung', $output);
+                $smarty->assign('rechnung', $result);
                 $output = $smarty->fetch('string:'.$template);
             }
         }
