@@ -184,10 +184,18 @@ class Dateien {
 
   function DateienMinidetail()
   {
-    $id = (int)$this->app->Secure->GetGET('id');
-    echo "<h2>Beschreibung:</h2>";
-    echo nl2br($this->app->DB->Select("SELECT beschreibung FROM datei WHERE id = '$id' LIMIT 1"));
-    $this->app->ExitXentral();
+    $id = (int)$this->app->Secure->GetGET('id');   
+    $table = new EasyTable($this->app);
+    $table->Query("SELECT version,dateiname,datum,ersteller,bemerkung,id FROM datei_version WHERE datei='$id'",0,"");
+    $table->DisplayNew('VERSIONEN',"
+      <a href=\"index.php?module=dateien&action=send&fid=%value%&id=$id\"><img src=\"./themes/new/images/download.svg\" border=\"0\"></a>
+      ");
+  
+    $table = new EasyTable($this->app);
+    $table->Query("SELECT subjekt,objekt,parameter FROM datei_stichwoerter WHERE datei='$id'",0,"");
+    $table->DisplayNew('STICHWOERTER',"Parameter","noAction");
+    $this->app->Tpl->Output('datei_minidetail.tpl');
+    $this->app->ExitXentral();    
   }
 
   function DateienHauptMenu()

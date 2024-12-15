@@ -4215,9 +4215,9 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
 
         $sortmodus = $this->TableSearchFilter($name, 1, 'sortmodus',  0,0,  'checkbox');
         // headings
-        $heading = array('','','','Titel', 'Stichwort', 'Version','Gr&ouml;&szlig;e', 'Ersteller','Version','Datum','Sortierung','Gesch&uuml;tzt','Men&uuml;');
+        $heading = array('','','','Titel', 'Stichwort', 'Version','Gr&ouml;&szlig;e', 'Ersteller','Beschreibung','Datum','Sortierung','Gesch&uuml;tzt','Men&uuml;');
         $width = array('1%','1%','10','40%', '15%', '5%','10%','15%', '10%', '10%','15%', '10%','5%','1%','1%');
-        $findcols = array('open','d.id','d.id',"CONCAT(d.titel,' ',v.dateiname)", 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','v.bemerkung','v.datum', 's.sort','d.geschuetzt','s.id');
+        $findcols = array('open','d.id','d.id',"CONCAT(d.titel,' ',v.dateiname)", 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','d.beschreibungbemerkung','v.datum', 's.sort','d.geschuetzt','s.id');
         $searchsql = array('d.titel', 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','v.bemerkung','v.dateiname',"DATE_FORMAT(v.datum, '%d.%m.%Y')");
 
         $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"#\" onclick=editdatei(%value%,\"$cmd\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=delete&cmd=".urlencode($objekt)."&id=%value%\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
@@ -4232,10 +4232,21 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         }
         
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS d.id,'<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open,concat('<input type=\"checkbox\" id=\"auswahl_',d.id,'\"  onchange=\"chauswahl();\" value=\"1\" />'),
-        $img, 
-        
-        if(d.titel!='',CONCAT(d.titel,'<br><i style=color:#999>',v.dateiname,'</i>'),v.dateiname), s.subjekt, v.version, if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),''), v.ersteller, v.bemerkung, DATE_FORMAT(v.datum, '%d.%m.%Y'),s.sort,d.geschuetzt,".($sortmodus?"s.id": "d.id")." 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+            d.id,
+            '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open,
+            CONCAT('<input type=\"checkbox\" id=\"auswahl_',d.id,'\"  onchange=\"chauswahl();\" value=\"1\" />'),
+            $img,        
+            if(d.titel!='',CONCAT(d.titel,'<br><i style=color:#999>',v.dateiname,'</i>'),v.dateiname), 
+            s.subjekt,
+            v.version,
+            if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),''),
+            v.ersteller,
+            d.beschreibung,
+            ".$this->app->erp->FormatDate("v.datum").",
+            s.sort,
+            d.geschuetzt,
+            ".($sortmodus?"s.id": "d.id")." 
             FROM `datei` AS `d` 
             INNER JOIN `datei_stichwoerter` AS `s` ON d.id=s.datei
             LEFT JOIN (
