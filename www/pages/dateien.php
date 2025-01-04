@@ -145,8 +145,7 @@ class Dateien {
     $this->app->ActionHandler("zahlung","DateienZahlung");
     $this->app->ActionHandler("protokoll","DateienProtokoll");
     $this->app->ActionHandler("abschicken","DateienAbschicken");
-    $this->app->ActionHandler("freigabe","DateienFreigabe");
-    $this->app->ActionHandler("delete","DateienDelete");
+    $this->app->ActionHandler("freigabe","DateienFreigabe");    
     $this->app->ActionHandler("listfreigegebene","DateienListFreigegebene");
     $this->app->ActionHandler("kundeuebernehmen","DateienKundeuebernehmen");
     $this->app->ActionHandler("versand","DateienVersand");
@@ -185,10 +184,18 @@ class Dateien {
 
   function DateienMinidetail()
   {
-    $id = (int)$this->app->Secure->GetGET('id');
-    echo "<h2>Beschreibung:</h2>";
-    echo nl2br($this->app->DB->Select("SELECT beschreibung FROM datei WHERE id = '$id' LIMIT 1"));
-    $this->app->ExitXentral();
+    $id = (int)$this->app->Secure->GetGET('id');   
+    $table = new EasyTable($this->app);
+    $table->Query("SELECT version,dateiname,datum,ersteller,bemerkung,id FROM datei_version WHERE datei='$id'",0,"");
+    $table->DisplayNew('VERSIONEN',"
+      <a href=\"index.php?module=dateien&action=send&fid=%value%&id=$id\"><img src=\"./themes/new/images/download.svg\" border=\"0\"></a>
+      ");
+  
+    $table = new EasyTable($this->app);
+    $table->Query("SELECT subjekt,objekt,parameter FROM datei_stichwoerter WHERE datei='$id'",0,"");
+    $table->DisplayNew('STICHWOERTER',"Parameter","noAction");
+    $this->app->Tpl->Output('datei_minidetail.tpl');
+    $this->app->ExitXentral();    
   }
 
   function DateienHauptMenu()
@@ -307,16 +314,21 @@ class Dateien {
     $id = $this->app->Secure->GetGET("id");
 
     $this->DateienHauptMenu();
-    $this->app->YUI->DateiUploadNeuVersion('NEUEVERSION',$id);
 
-    $speichern = $this->app->Secure->GetPOST("speichern");
-    if($speichern !="")
-    {
-      $titel= $this->app->Secure->GetPOST("titel");
-      $beschreibung= $this->app->Secure->GetPOST("beschreibung");
-
-      $this->app->DB->Update("UPDATE datei SET titel='$titel', beschreibung='$beschreibung' WHERE id='$id' LIMIT 1");
+    $geschuetzt = $this->app->DB->Select("SELECT geschuetzt FROM datei WHERE id = '".$id."' LIMIT 1");
+    if (!$geschuetzt) {
+        $this->DateiUploadNeuVersion('NEUEVERSION',$id);
+        $speichern = $this->app->Secure->GetPOST("titel_beschreibung_speichern");
+        if($titel_beschreibung_speichern !="")
+        {
+            $titel= $this->app->Secure->GetPOST("titel");
+            $beschreibung= $this->app->Secure->GetPOST("beschreibung");
+            $this->app->DB->Update("UPDATE datei SET titel='$titel', beschreibung='$beschreibung' WHERE id='$id' LIMIT 1");
+        }
     }
+    $this->app->Tpl->Set('STARTDISABLE', "<!--");
+    $this->app->Tpl->Set('ENDEDISABLE', "-->");
+    $this->app->Tpl->Parse('NEUEVERSION', "datei_neudirekt.tpl");
 
     $titel = $this->app->DB->Select("SELECT titel FROM datei WHERE id='$id' LIMIT 1");
     $beschreibung = $this->app->DB->Select("SELECT beschreibung FROM datei WHERE id='$id' LIMIT 1");
@@ -369,7 +381,7 @@ class Dateien {
 
     // Deletion of files removed, they only get marketd
 
-    $this->app->DB->Update("UPDATE datei SET geloescht=1 WHERE id='$id'");
+    $this->app->DB->Update("UPDATE datei SET geloescht=1 WHERE id='$id' AND NOT geschuetzt");
     $refer = $_SERVER['HTTP_REFERER'];
     $this->app->Location->execute($refer);
   }
@@ -382,5 +394,24 @@ class Dateien {
     $this->app->Tpl->Set('HEADING',"Dateien (Protokoll)");
     $this->app->Tpl->Parse('PAGE',"dateien_protokoll.tpl");
   }
+
+  function DateiUploadNeuVersion($parsetarget, $datei) {
+      $speichern = $this->app->Secure->GetPOST("speichern");
+      $module = $this->app->Secure->GetGET("module");
+      $action = $this->app->Secure->GetGET("action");
+      $id = $this->app->Secure->GetGET("id");
+      if($id)$this->app->Tpl->Set('ID',$id);
+
+      // Get files here
+      if ($speichern != "") {
+        $retval = $this->app->YUI->FilesFromUploadtoDMS(null, null, $datei);
+        if ($retval !== true) {
+            $this->app->Tpl->Set('ERROR', implode(', ',$retval));
+            $this->app->erp->EnableTab("tabs-2");
+        } else {
+//            header("Location: index.php?module=$module&action=$action&id=$id");
+        }
+      }
+    }
 }
 

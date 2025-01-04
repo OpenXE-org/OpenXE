@@ -2274,6 +2274,9 @@ class Shopimporter_Shopware extends ShopimporterBase
     return $anzahl;
   }
 
+/*
+  Dysfunctional code: column `datei` does not exist in table `datei`
+
   public function ImportDeleteFile()
   {
     $tmp = $this->CatchRemoteCommand('data');
@@ -2303,7 +2306,7 @@ class Shopimporter_Shopware extends ShopimporterBase
     }
     return 'ok';
   }
-
+*/
 
   public function ImportAddFileSubjekt()
   {
@@ -2319,7 +2322,6 @@ class Shopimporter_Shopware extends ShopimporterBase
     }
     return 'ok';
   }
-
 
   // delete an article
   public function ImportDeleteArticle()

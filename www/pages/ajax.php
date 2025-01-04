@@ -438,8 +438,11 @@ class Ajax {
       $objekt = $this->app->YUI->dateien_module_objekt_map($module);      
 
       $ersteller = $this->app->DB->real_escape_string($this->app->User->GetName());
+
+      $geschuetzt = $this->app->DB->Select("SELECT geschuetzt FROM datei WHERE id = '".$id."'");
+
       $datei = $this->app->DB->SelectArr("SELECT d.id, s.id as sid FROM datei d LEFT JOIN datei_stichwoerter s ON d.id=s.datei LEFT JOIN datei_version v ON v.datei=d.id WHERE s.objekt LIKE '$objekt' AND s.parameter='$parameter' AND d.geloescht=0 AND d.id = '$id' LIMIT 1");
-      if($datei)
+      if($datei && !$geschuetzt)
       {
         $sid = $datei[0]['sid'];
         if($subjekt && $sid)
