@@ -302,10 +302,9 @@ class Briefpapier extends SuperFPDF {
     return '';
   }
 
+  // OpenXE Seriennummern
   public function GetChargeMHDSNString($type,$doctype,$doctypeid,$posid, $returnSimpleString = false)
   {
-
-
     switch ($type) {
         case 'sn':
             $sql = "SELECT 
@@ -313,7 +312,9 @@ class Briefpapier extends SuperFPDF {
                     FROM
                         seriennummern s
                     INNER JOIN
-                        seriennummern_beleg_position slp ON slp.beleg_typ = 'lieferschein' AND slp.seriennummer = s.id
+                        seriennummern_beleg_position slp ON slp.beleg_typ = '".$doctype."' AND slp.seriennummer = s.id
+                    INNER JOIN ".$doctype."_position dp ON dp.id = slp.beleg_position
+                    INNER JOIN ".$doctype." d ON d.id = dp.".$doctype."
                     WHERE
                         slp.beleg_position = $posid
             ";
@@ -3332,11 +3333,7 @@ class Briefpapier extends SuperFPDF {
           );
         }
       }
-
-      // OpenXE Seriennummern
-      
-
-
+   
       if(!empty($this->doctype) && !empty($this->id) && strpos($item['desc'], '{') !== false) {
         $item['desc'] = $this->app->erp->ParseUserVars($this->doctype, $this->id ,$item['desc']);
       }
