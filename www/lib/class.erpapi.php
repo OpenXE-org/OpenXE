@@ -36759,7 +36759,7 @@ function Firmendaten($field,$projekt="")
           return false;
         }
 
-        $geschuetzt = $this->app->DB->SelectArr("SELECT geschuetzt FROM datei WHERE datei = '".$id."'");
+        $geschuetzt = $this->app->DB->Select("SELECT geschuetzt FROM datei WHERE id = '".$id."'");
         if ($geschuetzt) {
           return false;
         }
