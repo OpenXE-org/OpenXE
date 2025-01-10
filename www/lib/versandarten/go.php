@@ -55,7 +55,7 @@ class Versandart_go extends Versanddienstleister
         'consignorHouseNumber' => ['typ' => 'text', 'bezeichnung' => 'Absender Hausnummer:'],
         'consignorZipCode' => ['typ' => 'text', 'bezeichnung' => 'Absender PLZ:'],
         'consignorCity' => ['typ' => 'text', 'bezeichnung' => 'Absender Stadt:'],
-        'consignorCountry' => ['typ' => 'text', 'bezeichnung' => 'Absender Land:'],
+        'consignorCountry' => ['typ' => 'text', 'bezeichnung' => 'Absender Land:', 'info' => '2-Letter-Code (z.B. \'DE\')'],
         'consignorPhoneNumber' => ['typ' => 'text', 'bezeichnung' => 'Absender Telefon:'],
         'consignorRemarks' => ['typ' => 'text', 'bezeichnung' => 'Absender Bemerkungen:'],
         'consignorEmail' => ['typ' => 'text', 'bezeichnung' => 'Absender Email:'],

@@ -16,7 +16,7 @@ class GoApi {
 
     protected string $baseUrl;
 
-    public function __construct(protected string $username, protected string $password, bool $testMode) {
+    public function __construct(protected string $username, protected string $password, bool $testMode = true) {
         if ($testMode)
             $this->baseUrl = self::BASE_URL_TEST;
         else
@@ -49,6 +49,10 @@ class GoApi {
             $ret->barcodes = array_map(function ($item) { return $item->barcode; }, $response->package);
             return $ret;
         }
-        return $response->message;
+        if (isset($response->message))
+            return $response->message;
+        if (isset($response->Message))
+            return $response->Message;
+        return print_r($response, TRUE);
     }
 }
