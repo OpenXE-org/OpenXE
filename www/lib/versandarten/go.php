@@ -126,7 +126,7 @@ class Versandart_go extends Versanddienstleister
     if ($result instanceof CreateOrderResponse) {
       $ret->Success = true;
       $ret->TrackingNumber = $result->hwbNumber;
-      $ret->TrackingUrl = '';
+      $ret->TrackingUrl =  'https://www.general-overnight.com/deu_de/versenden/sendungsverfolgung.html?reference='.$result->hwbNumber;
       $ret->Label = base64_decode($result->hwbOrPackageLabel);
     } else {
       $ret->Errors[] = $result;
