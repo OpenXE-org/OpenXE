@@ -327,9 +327,11 @@ class SuperFPDF extends PDF_EPS {
           }
           $stack = "issetcolor";
         }
-        if (isset($attr['FACE']) and in_array(strtolower($attr['FACE']), $this->fontlist)) {
-          $this->SetFont(strtolower($attr['FACE']));
-          $stack = "issetfont";
+        if (isset($attr['FACE']) && isset($this->fontlist)) {
+            if (in_array(strtolower($attr['FACE']), $this->fontlist)) {
+              $this->SetFont(strtolower($attr['FACE']));
+              $stack = "issetfont";
+            }
         }
         break;
       case 'SPAN':
