@@ -23496,7 +23496,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       if($typ=="rechnung")
       {
         // sende
-        $xmlrechnug = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id ='".$id."' LIMIT 1");
+        $xmlrechnung = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id ='".$id."' LIMIT 1");
         if ($xmlrechnung) {
             $xmlrechnungresult = $this->app->erp->GetXMLRechnung($id);
             if ($xmlrechnungresult['success']) {
