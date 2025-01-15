@@ -1162,11 +1162,10 @@ class Rechnung extends GenRechnung
     $this->app->Tpl->Parse('PAGE','tabview.tpl');
   }
 
-
-
   function RechnungAbschicken()
   {
     $this->RechnungMenu();
+    $this->app->erp->RechnungArchivieren($this->app->Secure->GetGET('id'));
     $this->app->erp->DokumentAbschicken();
   }
 
