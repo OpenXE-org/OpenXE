@@ -164,15 +164,14 @@ class Exportbuchhaltung
         $vbchecked = $this->app->Secure->GetPOST("verbindlichkeit");
         $lgchecked = $this->app->Secure->GetPOST("lieferantengutschrift");
         $diffignore = $this->app->Secure->GetPOST("diffignore");
-		$sachkonto = $this->app->Secure->GetPOST('sachkonto');
+    	$sachkonto = $this->app->Secure->GetPOST('sachkonto');
         $format = $this->app->Secure->GetPOST('format');
         $pdfexport = $this->app->Secure->GetPOST("pdfexport");
-			
-		$account_id = null;
-		if (!empty($sachkonto)) {
-		    $sachkonto_kennung = explode(' ',$sachkonto)[0];
-            $account_id = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];
-		}
+	    $account_id = null;
+    	if (!empty($sachkonto)) {
+    	    $sachkonto_kennung = explode(' ',$sachkonto)[0];
+                $account_id = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];
+    	}
 
         $msg = "";
 
@@ -219,7 +218,6 @@ class Exportbuchhaltung
         //---------- DOWNLOAD HERE
         if ($submit == 'Download') {
             $dataok = true;
-
             if (
               !$rgchecked &&
               !$gschecked &&
@@ -250,6 +248,7 @@ class Exportbuchhaltung
                 $filename_csv = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
                 try {
                     $csv = $this->DATEV_Buchuchungsstapel($rgchecked, $gschecked, $vbchecked, $lgchecked, $buchhaltung_berater, $buchhaltung_mandant, $buchhaltung_wj_beginn, $buchhaltung_sachkontenlaenge, $von, $bis, $projekt, $filename_csv, $diffignore, $sachkonto_kennung, $format);
+
                     if ($pdfexport) {
 
                         $dateinamezip = 'Export_Buchhaltung_'.date('Y-m-d').'.zip';
@@ -267,13 +266,20 @@ class Exportbuchhaltung
                                 WHERE
                                 b.".$typ['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typ['condition_where'];
                             $belege = $this->app->DB->SelectArr($sql);
+
                             foreach ($belege as $beleg) {
-                            
                                 if (!$typ['do']) {
                                     continue;
                                 }
-                            
-                                switch ($typ['pdf']) {
+
+                                $action = $typ['pdf'];
+
+                                if ($typ['typ'] == 'rechnung') {
+                                    if ($this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id'])) {
+                                        $action = 'load';
+                                    }
+                                }
+                                switch ($action) {
                                     case 'print':
                                         switch ($typ['typ']) {
                                             case 'rechnung':
@@ -301,15 +307,16 @@ class Exportbuchhaltung
                                         $tmpfile = $Brief->displayTMP();
                                         $file_name = $beleg['belegnr'].".pdf";
                                         $zip->addFromString($typ['typ']."/".$file_name, file_get_contents($tmpfile));
-                                    break;
+             			            break;
                                     case 'load':
                                         $file_attachments = $this->app->erp->GetDateiSubjektObjekt('%',$typ['typ'],$beleg['id']);
                                         $suffix = "";
                                         $count = 0;
                                         foreach ($file_attachments as $file_attachment) {
-                                            if ($this->app->erp->GetDateiEndung($file_attachment) == 'pdf') {
+		                    			    $ending = $this->app->erp->GetDateiEndung($file_attachment);
+                                            if (in_array($ending,['pdf','xml'])) {
                                                 $file_contents = $this->app->erp->GetDatei($file_attachment);
-                                                $file_name = filter_var($beleg['belegnr'],FILTER_SANITIZE_EMAIL).$suffix.".pdf";                                     
+                                                $file_name = filter_var($beleg['belegnr'],FILTER_SANITIZE_EMAIL).$suffix.".".$ending;
                                                 $zip->addFromString($typ['typ']."/".$file_name, $file_contents);
                                                 $count++;
                                                 $suffix = "_".$count;
@@ -320,7 +327,6 @@ class Exportbuchhaltung
                             }
                         }
                         $zip->close();
-
                         // download
                         header('Content-Type: application/zip');
                         header("Content-Disposition: attachment; filename=$dateinamezip");
@@ -717,9 +723,6 @@ class Exportbuchhaltung
             // Query position data
             $arr = $this->app->DB->Query($sql);
             while ($row = $this->app->DB->Fetch_Assoc($arr)) {
-
-                    //print_r($row);
-
                 $posid = $row['pos_id'];
                 $tmpsteuersatz = 0;
                 $tmpsteuertext = '';
