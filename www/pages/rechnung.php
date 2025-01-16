@@ -1343,10 +1343,13 @@ class Rechnung extends GenRechnung
             $this->app->erp->GetSteuerPosition('rechnung', $position['id'], $steuersatz, $steuertext, $erloes);
             $positionen[$key]['steuersatz'] = $steuersatz;
             $positionen[$key]['steuertext'] = $steuertext;
-            $positionen[$key]['erloese'] = $erloes;
+            $positionen[$key]['erloese'] = round($erloes,2);
 
-            $steuern[$steuersatz]['umsatz_netto'] += $position['umsatz_netto_gesamt'];
-            $steuern[$steuersatz]['umsatz_brutto'] += $position['umsatz_brutto_gesamt'];
+            $positionen[$key]['umsatz_netto_gesamt'] = round($position['umsatz_netto_gesamt'],2);
+            $positionen[$key]['umsatz_brutto_gesamt'] = round($position['umsatz_brutto_gesamt'],2);
+
+            $steuern[$steuersatz]['umsatz_netto'] += round($position['umsatz_netto_gesamt'],2);
+            $steuern[$steuersatz]['umsatz_brutto'] += round($position['umsatz_brutto_gesamt'],2);
             $steuern[$steuersatz]['prozent'] = $steuersatz;
         }
         
