@@ -2626,6 +2626,8 @@ class YUI {
                 $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
                         CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
                         ";
+            } else {
+                $sql .= "'-' AS 'einkaufspreis', '-' AS 'DB',";
             }             
                
         $sql .= "b.id as id
@@ -2871,7 +2873,9 @@ class YUI {
                 $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
                         CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
                         ";
-            }          
+            } else {
+                $sql .= "'-' AS 'einkaufspreis', '-' AS 'DB',";
+            }             
                               
         } else {
         $sql = "SELECT $sortcol, CONCAT($hersteller_ansicht if(b.beschreibung!='',
