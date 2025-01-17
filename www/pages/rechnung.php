@@ -1339,6 +1339,8 @@ class Rechnung extends GenRechnung
         }
             
         $steuern = Array();
+        $steuer_gesamt = 0;
+        $umsatz_brutto_gesamt = 0;
         foreach ($positionen as $key => $position) {
             $this->app->erp->GetSteuerPosition('rechnung', $position['id'], $steuersatz, $steuertext, $erloes);
             $positionen[$key]['steuersatz'] = $steuersatz;
@@ -1351,10 +1353,14 @@ class Rechnung extends GenRechnung
             $steuern[$steuersatz]['umsatz_netto'] += round($position['umsatz_netto_gesamt'],2);
             $steuern[$steuersatz]['umsatz_brutto'] += round($position['umsatz_brutto_gesamt'],2);
             $steuern[$steuersatz]['prozent'] = $steuersatz;
+            $umsatz_brutto_gesamt += round($position['umsatz_brutto_gesamt'],2);
+            $steuer_gesamt += round($position['umsatz_brutto_gesamt'],2)-round($position['umsatz_netto_gesamt'],2);
         }
         
         $result['positionen'] = $positionen;
         $result['steuern'] = $steuern;
+        $result['umsatz_brutto_gesamt'] = $umsatz_brutto_gesamt;
+        $result['steuer_gesamt'] = $steuer_gesamt;
 
         $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
 
