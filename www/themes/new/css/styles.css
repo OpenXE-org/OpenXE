@@ -1,3 +1,5 @@
+@layer reset, primevue;
+
 body {
     font-size: 12px;
 	font-family: 'Inter', Arial, Helvetica, sans-serif;
@@ -7,6 +9,7 @@ body {
 
 html {
     box-sizing: border-box;
+    font-size: 11px;
 }
 
 *,
@@ -1809,10 +1812,11 @@ a.startpage {
 ::-ms-input-placeholder { /* Microsoft Edge */
     color: #BBB;
 }
-::placeholder { /* Modern Browser */
-    color: #BBB;
+:placeholder { /* Modern Browser */
+    color: #F00;
     opacity: 1; /* Firefox */
 }
+
 input.ui-autocomplete-input::-webkit-input-placeholder {
     color: #999;
     opacity: 1;
@@ -4502,9 +4506,16 @@ a.reportbutton.active:active {
     background: var(--sidebar-background);
 }
 
-font[color="blue"]{
+font[color="blue"] {
     color: #2f3890;
 }
+
+#belegnredit {
+    color: #2f3890;
+    border-width: 0;
+    font-weight: bold;
+} 
+
 span.project_sensitive,
 span.special,
 span.legacy,
@@ -4875,3 +4886,8 @@ tilegrid
     padding: 0;
     margin: 0;
 }
+
+input:placeholder-shown.placeholder_warning {
+  background-color: var(--warning);
+}
+

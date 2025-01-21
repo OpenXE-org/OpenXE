@@ -22,9 +22,6 @@ class GoogleApi
     /** @var string MODULE_NAME */
     public const MODULE_NAME = 'GoogleApi';
 
-    /** @var string GOOGLE_API_TESTURL_PRINT */
-    //private const TESTURL_PRINT = 'https://www.google.com/cloudprint/search';
-
     /** @var string GOOGLE_API_TESTURL_CALENDAR */
     //private const TESTURL_CALENDAR = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
 
@@ -64,9 +61,7 @@ class GoogleApi
         // ab hier alle Action Handler definieren die das Modul hat
         $this->app->ActionHandler('list', 'GoogleApiEdit');
         $this->app->ActionHandler('edit', 'GoogleApiEdit');
-        $this->app->ActionHandler('print', 'GoogleApiPrint');
         $this->app->ActionHandler('redirect', 'GoogleApiRedirect');
-        $this->app->ActionHandler('ajaxprinters', 'GoogleApiAjaxPrinters');
 
         $this->app->ActionHandlerListen($app);
     }
@@ -135,7 +130,6 @@ class GoogleApi
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS g.id, g.id_name, g.description,
                            (CASE g.type
-                                WHEN 'print' THEN 'Google Cloud Print'
                                 WHEN 'mail' THEN 'Google Mail'
                                 WHEN 'calendar' THEN 'Google Calendar'
                                 ELSE ''
@@ -320,41 +314,6 @@ class GoogleApi
     }
 
     /**
-     * @return void
-     */
-    public function GoogleApiPrint(): void
-    {
-        /** @var Request $request */
-        $request = $this->app->Container->get('Request');
-        if ($request->post->has('authorize_cloudprint')) {
-            /** @var Session $session */
-            $session = $this->app->Container->get('Session');
-            $redirect = $this->auth->requestScopeAuthorization(
-                $session,
-                [GoogleScope::CLOUDPRINT],
-                'index.php?module=googleapi&action=print'
-            );
-            SessionHandler::commitSession($session);
-            $redirect->send();
-            $this->app->ExitXentral();
-        }
-
-        if ($request->post->has('unauthorize')) {
-            $this->unauthorize();
-        }
-
-        $this->app->Tpl->Add(
-            'MESSAGE',
-            '<div class="warning">
-              Hinweis: Google wird den Cloud Print Dienst am 31.12.2020 abschalten.</div>'
-        );
-
-        $this->app->erp->Headlines('Google Cloud Print');
-        $this->createMenu();
-        $this->app->Tpl->Parse('PAGE', 'googleapi_print.tpl');
-    }
-
-    /**
      * After user confirmed access to Google API manually, Google API
      * redirects user to this action sending authentication code and API scope
      * as GET parameters.
@@ -381,47 +340,6 @@ class GoogleApi
         $this->app->Tpl->Parse('PAGE', 'googleapi_redirect.tpl');
     }
 
-
-    /**
-     * Action for the printer setup gui to get printer options from api connection
-     *
-     * @return void
-     */
-    public function GoogleApiAjaxPrinters()
-    {
-        $data = [];
-        $apiName = $this->app->DB->real_escape_string(trim($this->app->Secure->GetPOST('api_name')));
-        if(!empty($apiName)) {
-            $id = $this->getGoogleApiByName($apiName);
-            $token = $this->getAccessToken($id);
-            $authHeader = sprintf('Authorization: Bearer %s', $token);
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [$authHeader]);
-            curl_setopt( $ch, CURLOPT_FOLLOWLOCATION,true);
-            curl_setopt( $ch, CURLOPT_HEADER,false);
-            curl_setopt( $ch, CURLOPT_RETURNTRANSFER,true);
-            curl_setopt( $ch, CURLOPT_HTTPAUTH,CURLAUTH_ANY);
-            curl_setopt( $ch, CURLOPT_URL, 'https://www.google.com/cloudprint/search');
-            curl_setopt( $ch, CURLOPT_POST, true );
-            curl_setopt ( $ch, CURLOPT_POSTFIELDS, ['printerid' => $id]);
-
-            $response = curl_exec($ch);
-            $result = json_decode($response, true);
-
-            $printers = $result['printers'];
-            if(!empty($printers)) {
-                foreach ($printers as $item) {
-                    $data[$item['id']] = sprintf('%s:%s', $item['displayName'], $item['connectionStatus']);
-                }
-            }
-        }
-
-        $responseData = json_encode($data);
-        header('Content-Type: application/json');
-        echo $responseData;
-        $this->app->ExitXentral();
-    }
 
     /**
      * Automatically calls getAccessTokenByRederect if needed.
@@ -682,11 +600,6 @@ class GoogleApi
         }
 
         switch ($type) {
-            case 'print':
-                $scope = self::GOOGLE_API_SCOPE_PRINT;
-
-                break;
-
             case 'mail':
                 $scope = self::GOOGLE_API_SCOPE_MAIL;
 
@@ -855,10 +768,6 @@ class GoogleApi
 
         $type = $this->app->DB->Select(sprintf("SELECT g.type FROM googleapi AS g WHERE g.id = '%s';", $id));
         switch ($type) {
-            case 'print':
-                $testurl = self::GOOGLE_API_TESTURL_PRINT;
-                break;
-
             case 'mail':
                 $this->app->Tpl->Add(
                     $messageTarget,
@@ -885,18 +794,6 @@ class GoogleApi
 
         if ((int)$info['http_code'] !== 200) {
             $error = sprintf('Test fehlgeschlagen: ERROR %s %s', $info['http_code'], $response['error']);
-            $this->app->Tpl->Add(
-                $messageTarget,
-                sprintf('<div class="error">%s</div>', $error)
-            );
-
-            return false;
-        }
-
-        if ($type === 'print' &&
-            (!isset($info['content_type']) || explode(';', $info['content_type'])[0] !== 'text/plain')
-        ) {
-            $error = 'Test fehlgeschlagen: Fehlerhafte Antwort vom Server';
             $this->app->Tpl->Add(
                 $messageTarget,
                 sprintf('<div class="error">%s</div>', $error)
@@ -977,6 +874,5 @@ class GoogleApi
         $this->app->erp->MenuEintrag('index.php?module=googleapi&action=list',
             'Zur&uuml;ck zur &Uuml;bersicht');
         $this->app->erp->MenuEintrag('index.php?module=googleapi&action=list', 'Übersicht');
-        $this->app->erp->MenuEintrag('index.php?module=googleapi&action=print', 'Google Cloud Print');
     }
 }

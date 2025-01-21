@@ -906,38 +906,6 @@ class Benutzer
 
     if(is_numeric($user) && $module!='' && $action!='' && $value!='') {
       $id = $this->app->DB->Select("SELECT id FROM userrights WHERE user='$user' AND module='$module' AND action='$action' LIMIT 1");
-      if($value && $this->app->erp->isIoncube() && method_exists('erpAPI','Ioncube_getMaxLightusersRights') && method_exists('erpAPI','Ioncube_LightuserRechteanzahl'))
-      {
-        $lightuser = $this->app->DB->Select("SELECT id FROM `user` WHERE id = '$user' AND type='lightuser' LIMIT 1");
-        if($lightuser)
-        {
-          $anzerlaubt = erpAPI::Ioncube_getMaxLightusersRights();
-          $anzvorhanden = erpAPI::Ioncube_LightuserRechteanzahl($this->app, $user);
-          if($anzvorhanden >= $anzerlaubt)
-          {
-            exit;
-          }
-          if($id)
-          {
-            if(!$this->app->DB->Select("SELECT permission FROM userrights WHERE id = '$id'"))exit;
-          }else{
-            if($anzvorhanden + 1 > $anzerlaubt)exit;
-          }
-        }
-        if($value && method_exists($this->app->erp, 'ModuleBenutzeranzahlLizenzFehler') && ($err = $this->app->erp->ModuleBenutzeranzahlLizenzFehler($module)))
-        {
-          if(isset($err['Error']))
-          {
-            if(is_array($err['Error']))
-            {
-              echo "Error".implode('<br />',$err['Error']);
-            }else{
-              echo "Error".$err['Error'];
-            }
-          }
-          exit;
-        }
-      }
       if(is_numeric($id) && $id>0)
       {
         if($value=="1")

@@ -1,0 +1,59 @@
+{
+  "require": {
+    "php": "^7.4|^8",
+    "ext-gd": "*",
+    "aura/sqlquery": "2.7.1",
+    "aws/aws-sdk-php": "3.175.2",
+    "container-interop/container-interop": "1.2.0",
+    "ezyang/htmlpurifier": "v4.13.0",
+    "fiskaly/fiskaly-sdk-php": "1.2.100",
+    "guzzlehttp/guzzle": "6.5.5",
+    "guzzlehttp/promises": "1.4.1",
+    "guzzlehttp/psr7": "1.8.1",
+    "laminas/laminas-loader": "2.6.1",
+    "laminas/laminas-mime": "2.7.4",
+    "laminas/laminas-mail": "2.12.5",
+    "laminas/laminas-stdlib": "3.2.1",
+    "laminas/laminas-validator": "2.13.5",
+    "league/color-extractor": "0.3.2",
+    "league/flysystem": "1.0.70",
+    "league/oauth1-client": "v1.9.0",
+    "league/oauth2-client": "2.6.0",
+    "lfkeitel/phptotp": "v1.0.0",
+    "mtdowling/jmespath.php": "2.6.0",
+    "nikic/fast-route": "v1.3.0",
+    "phpmailer/phpmailer": "v6.3.0",
+    "phpseclib/phpseclib": "2.0.30",
+    "psr/container": "1.1.1",
+    "psr/http-message": "1.0.1",
+    "psr/log": "1.1.3",
+    "rakit/validation": "v0.22.3",
+    "sabre/dav": "3.2.3",
+    "smarty/smarty": "v3.1.39",
+    "swiss-payment-slip/swiss-payment-slip": "0.13.0 as 0.11.1",
+    "swiss-payment-slip/swiss-payment-slip-fpdf": "0.6.0",
+    "symfony/polyfill-intl-idn": "v1.22.1",
+    "symfony/polyfill-intl-normalizer": "v1.22.1",
+    "symfony/polyfill-mbstring": "v1.22.1",
+    "symfony/polyfill-php72": "v1.22.1",
+    "tecnickcom/tcpdf": "6.3.5",
+    "y0lk/oauth1-etsy": "1.1.0"
+  },
+  "replace": {
+    "itbz/fpdf": "*",
+    "laminas/laminas-zendframework-bridge": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Xentral\\": "classes"
+    },
+    "classmap": ["www/lib/versandarten/"]
+  },
+  "config": {
+    "platform": {
+      "php": "7.4",
+      "ext-gd": "7.4"
+    },
+    "optimize-autoloader": true
+  }
+}

@@ -85,7 +85,7 @@ $result = $result[0];
     else
       return -1;
 
-    $sql = "DELETE FROM datei WHERE (id='{$this->id}')";
+    $sql = "DELETE FROM datei WHERE (id='{$this->id}' AND geloescht <> 1)";
     $this->app->DB->Delete($sql);
 
     $this->id="";

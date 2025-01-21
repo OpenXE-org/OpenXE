@@ -566,11 +566,13 @@
 <div class="inside inside-full-height">
 
 
-<fieldset><legend>&nbsp;{|Beschreibung|}&nbsp;</legend>
+<fieldset>
+    <legend>&nbsp;{|Beschreibung|}&nbsp;</legend>
 <table class="mkTableFormular" border="0">
 
 				<tr valign="top"><td width="500">{|Artikel (DE) (Bitte im ersten Tab bearbeiten)|}:<br>[ARTIKEL_DE_ANZEIGE]</td><td width="20"></td>
-	      <td width="500">{|Artikel (EN)|}:<br>[NAME_EN][MSGNAME_EN]</td></tr>
+	      <td width="500">{|Artikel (EN)|}:<br>[NAME_EN][MSGNAME_EN]</td>
+</tr>
 
 
 				<tr><td>{|Kurztext (DE) (Bitte im ersten Tab bearbeiten)|}:<br>[KURZTEXT_DE_ANZEIGE]</td><td width="20"></td>

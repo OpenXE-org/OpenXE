@@ -126,7 +126,7 @@ class Einstellungen  {
     }
 
     $this->app->erp->MenuEintrag('index.php?module=einstellungen&action=betaprogram', 'Beta Programm');
-    if(!empty(erpAPI::Ioncube_Property('isbetaactive'))) {
+    if(false) {
       $this->app->Tpl->Set('BEFORESHOWIFBETADEACTIVATED', '<!--');
       $this->app->Tpl->Set('AFTERSHOWIFBETADEACTIVATED', '-->');
     }

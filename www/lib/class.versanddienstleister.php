@@ -1,6 +1,6 @@
 <?php
 /*
- * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  * SPDX-FileCopyrightText: 2019 Xentral (c) Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg, Germany
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
@@ -9,6 +9,7 @@
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\CustomsInfo;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 abstract class Versanddienstleister
 {
@@ -57,17 +58,14 @@ abstract class Versanddienstleister
       if ($rechnungId <= 0)
         $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
     }
-    if ($sid === 'versand') {
-      $versandId = $id;
-      $lieferscheinId = $this->app->DB->Select("SELECT lieferschein FROM versand WHERE id='$versandId' LIMIT 1");
-      $rechnungId = $this->app->DB->Select("SELECT rechnung FROM versand WHERE id='$versandId' LIMIT 1");
-      $sid = 'lieferschein';
-    }
 
     if ($auftragId <= 0 && $rechnungId > 0)
       $auftragId = $this->app->DB->Select("SELECT auftragid FROM rechnung WHERE id=$rechnungId LIMIT 1");
 
     if ($sid === 'rechnung' || $sid === 'lieferschein' || $sid === 'adresse') {
+    
+      $ret['addresstype'] = 0; // 0 = firma, 1 = packstation, 2 = postfiliale, 3 = privatadresse
+    
       $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $id LIMIT 1");
       $ret['addressId'] = $docArr['adresse'];
       $ret['auftragId'] = $auftragId;
@@ -79,12 +77,28 @@ abstract class Versanddienstleister
 
       $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
 
-      $ret['name'] = empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : trim($docArr['ansprechpartner']);
-      $ret['name2'] = !empty(trim($docArr['ansprechpartner'])) ? trim($docArr['name']) : '';
-      $ret['name3'] = join(';', array_filter([
-          $docArr['abteilung'],
-          $docArr['unterabteilung']
-      ], fn(string $item) => !empty(trim($item))));
+      if ($docArr['typ'] == "firma") {
+        $ret['company_name'] = $docArr['name'];
+        $ret['addresstype'] = 0;
+      } else {
+        $ret['addresstype'] = 3;
+      }
+
+      $ret['contact_name'] = $docArr['ansprechpartner'];
+      
+      $ret['company_division'] = join(
+                        ';', 
+                        array_filter(
+                            [
+                                $docArr['abteilung'],
+                                $docArr['unterabteilung']
+                            ],
+                            fn(string $item) => !empty(trim($item))
+                        )
+                    );
+            
+      $ret['name'] = $docArr['name'];    
+      
       $ret['address2'] = $docArr['adresszusatz'];
 
       $ret['city'] = $docArr['ort'];
@@ -92,7 +106,6 @@ abstract class Versanddienstleister
       $ret['country'] = $docArr['land'];
       $ret['phone'] = $docArr['telefon'];
       $ret['email'] = $docArr['email'];
-      $ret['addresstype'] = 0;
 
       $strasse = trim($docArr['strasse']);
       $ret['streetwithnumber'] = $strasse;
@@ -492,4 +505,6 @@ abstract class Versanddienstleister
    * @return Product[]
    */
   public abstract function GetShippingProducts(): array;
+
+  public abstract function GetShipmentStatus(string $tracking): ShipmentStatus|null;
 }

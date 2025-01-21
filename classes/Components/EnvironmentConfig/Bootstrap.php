@@ -44,14 +44,6 @@ class Bootstrap
         /** @var LegacyApplication $app */
         $app = $container->get('LegacyApplication');
 
-        if (!class_exists('License')) {
-            $test = dirname(__DIR__, 3) . '/phpwf/plugins/class.license.php';
-            $file = new SplFileInfo($test);
-            if ($file->isFile()) {
-                include $test;
-            }
-        }
-
-        return new EnvironmentConfigProvider(new License(), $app->Conf);
+        return new EnvironmentConfigProvider($app->Conf);
     }
 }

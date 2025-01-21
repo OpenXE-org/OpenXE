@@ -474,9 +474,11 @@ class Dokumentenvorlage extends SuperFPDF {
     $this->Output($dir."/".$this->table."/".$this->id."_".$this->filename,'F');
   }
 
-  public function displayDocument() {
+  public function displayDocument($archive = true) {
     $this->renderDocument();
-    $this->archiveDocument();
+    if ($archive) { 
+        $this->archiveDocument();
+    }
     $this->Output($this->filename,'D');
     exit;
   }

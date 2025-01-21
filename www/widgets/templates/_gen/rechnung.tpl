@@ -4,7 +4,7 @@
    <ul>
       <li><a href="#tabs-1">Rechnung</a></li>
       <li><a href="#tabs-2" onclick="callCursor();">Positionen</a></li>
-      <li><a href="index.php?module=rechnung&action=inlinepdf&id=[ID]&frame=true#tabs-3">Vorschau</a></li>
+      <li [PDFVORSCHAUHIDDEN]><a href="index.php?module=rechnung&action=inlinepdf&id=[ID]&frame=true#tabs-3">Vorschau</a></li>
       [FURTHERTABS]
    </ul>
    <div id="tabs-1">
@@ -21,7 +21,10 @@
                      <!-- // ende anfang -->
                      <table width="100%" align="center">
                         <tr>
-                           <td>&nbsp;<b style="font-size: 14pt">Rechnung <font color="blue">[NUMMER]</font></b>[KUNDE][RABATTANZEIGE]</td>
+                           <td>&nbsp;
+                                <b style="font-size: 14pt" [BELEGNRHIDDEN]>Rechnung <font color="blue">[NUMMER]</font></b>
+                                <b style="font-size: 14pt" [BELEGNREDITHIDDEN]>Rechnung <input id="belegnredit" type="text" style="" name="belegnredit" value="[NUMMER]"><font color="blue"></font></input></b>                                
+                                [KUNDE][RABATTANZEIGE]</td>
                            <td></td>
                            <td align="right" nowrap>[ICONMENU]&nbsp;[SAVEBUTTON]</td>
                         </tr>
@@ -96,6 +99,10 @@
                               <td>[ABWEICHENDEBEZEICHNUNGBESCHRIFTUNG]:</td>
                               <td>[ABWEICHENDEBEZEICHNUNG][MSGABWEICHENDEBEZEICHNUNG]&nbsp;</td>
                            </tr>
+                           <tr>
+                              <td>{|XML-Rechnung|}:</td>
+                              <td>[XMLRECHNUNG][MSGXMLRECHNUNG]&nbsp;</td>
+                           </tr>
                         </table>
                      </fieldset>
                   </div>
@@ -104,7 +111,9 @@
                   <div class="inside inside-full-height">
                      [MAHNWESENIF]
                      <fieldset>
-                        <legend>{|Zahlungsstatus|}</legend>
+                        <legend>
+                            {|Zahlungsstatus|}&nbsp;<img class="wawitooltipicon" src="themes/new/images/tooltip_grau.png" title="Zur Nutzung der Schnelleingabe muss in den Grundeinstellungen das Geschäftskonto für Schnelleingabe und optional das Sachkonto für Rechnung-Skontobuchungen gesetzt werden." [SCHNELLEINGABE_TOOLTIP_HIDDEN]>
+                        </legend>
                         <table class="tablemahnwesenfestsetzen">                           
                            <tr>
                               <td width="200">{|Zahlungsstatus|}:</td>
@@ -119,15 +128,23 @@
                                        <td>
                                           {|SOLL|}:
                                        </td>
-                                       <td>
+                                       <td align="right">
                                           [SOLL]
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td>
+                                          {|SKONTOSOLL|}:
+                                       </td>
+                                       <td align="right">
+                                          [SKONTOSOLL]
                                        </td>
                                     </tr>
                                     <tr>
                                        <td>
                                           {|FEHLT|}:
                                        </td>
-                                       <td id="istdb">
+                                       <td id="istdb" align="right">
                                           [ISTDB]
                                        </td>
                                     </tr>                                  
@@ -135,6 +152,23 @@
                               </td>
                            </tr>
                         </table>
+                    </fieldset>
+                    <fieldset [SCHNELLEINGABE_HIDDEN]>
+                        <legend>{|Schnelleingabe|}</legend>
+                        <table>
+                           <tr>
+                              <td width="200">{|Bezahlt am|}:</td>
+                              <td width="70%">[BEZAHLT_AM][MSGBEZAHLT_AM]
+                              </td>
+                           </tr>
+                           <tr>
+                              <td>{|Zahlbetrag|}:</td>
+                              <td>[ZAHLBETRAG][MSGZAHLBETRAG]</td>
+                           </tr>
+                        </table>
+                    </fieldset>
+                    <fieldset>
+                        <legend>{|Mahnwesen|}</legend>
                         <table>
                            <tr>
                               <td width="200">{|Mahnstufe|}:</td>

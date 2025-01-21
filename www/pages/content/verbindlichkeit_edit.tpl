@@ -62,7 +62,7 @@
                                                             {|Rechnungsdatum|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="rechnungsdatum" id="rechnungsdatum" value="[RECHNUNGSDATUM]" size="20" [SAVEDISABLED]>
+                                                            <input type="text" name="rechnungsdatum" id="rechnungsdatum" value="[RECHNUNGSDATUM]" size="20" [SAVEDISABLED] required>
                                                         </td>
                                                     </tr>  
                                                     <tr>
@@ -103,7 +103,7 @@
                                                             {|Zahlbar bis|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="zahlbarbis" id="zahlbarbis" value="[ZAHLBARBIS]" size="20" [SAVEDISABLED]>
+                                                            <input type="text" name="zahlbarbis" id="zahlbarbis" value="[ZAHLBARBIS]" size="20" [SAVEDISABLED]>&nbsp;<input type="number" name="zahlbarbis_tage" id="zahlbarbis_tage" size="4" [SAVEDISABLED]>&nbsp;Tage
                                                         </td>
                                                     </tr>                                               
                                                     <tr>
@@ -119,7 +119,7 @@
                                                             {|Skonto bis|}:
                                                         </td>
                                                         <td>
-                                                            <input type="text" name="skontobis" id="skontobis" value="[SKONTOBIS]" size="20" [SAVEDISABLED]>
+                                                            <input type="text" name="skontobis" id="skontobis" value="[SKONTOBIS]" size="20" [SAVEDISABLED]>&nbsp;<input type="number" name="skontobis_tage" id="skontobis_tage" size="4" [SAVEDISABLED]>&nbsp;Tage
                                                         </td>
                                                     </tr>                                                                                                                                                                                                                                            
                                                     <tr>

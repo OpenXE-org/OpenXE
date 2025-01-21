@@ -124,14 +124,27 @@
                 <td>{|Auto-Versand als Standard deaktivieren|}:</td>
                 <td>[DEACTIVATEAUTOSHIPPING][MSGDEACTIVATEAUTOSHIPPING]</td>
               </tr>
-            
-              <!--<tr><td width="300">{|Automatisch Versand anlegen|}:</td><td>[AUTOVERSAND][MSGAUTOVERSAND]&nbsp;<i>Bei Auftr&auml;gen ist die Option "per Versandzentrum versenden" automatisch gesetzt.</i></td></tr>-->
-						  <tr><td>{|Drucker Stufe (Kommissionierung)|}</td><td>[DRUCKERLOGISTIKSTUFE1][MSGDRUCKERLOGISTIKSTUFE1]&nbsp;<i>{|z.B. Lieferschein drucken|}</i></td></tr>
-		          <tr><td>{|Drucker Stufe (Versand)|}</td><td>[DRUCKERLOGISTIKSTUFE2][MSGDRUCKERLOGISTIKSTUFE2]&nbsp;<i>{|Belege bei Versandstation|}</i></td></tr>
-						  <tr><td>{|Lieferscheinposition: Etiketten|}</td><td>[ETIKETTEN_POSITIONEN][MSGETIKETTEN_POSITIONEN]&nbsp;<i></i></td></tr>
-	            <tr><td>{|Lieferscheinposition: Etiketten-Drucker|}</td><td>[ETIKETTEN_DRUCKER][MSGETIKETTEN_DRUCKER]&nbsp;<i></i></td></tr>
-	            <tr><td>{|Lieferscheinposition: Etiketten-Art|}</td><td>[ETIKETTEN_ART][MSGETIKETTEN_ART]&nbsp;<i></i></td></tr>
-	            <tr><td>{|Lieferscheinposition: Etiketten-Sortierung|}</td><td>[ETIKETTEN_SORT][MSGETIKETTEN_SORT]&nbsp;<i></i></td></tr>
+              <tr><td>{|Drucker Stufe (Kommissionierung)|}</td><td>[DRUCKERLOGISTIKSTUFE1][MSGDRUCKERLOGISTIKSTUFE1]&nbsp;<i>{|z.B. Lieferschein drucken|}</i></td></tr>
+  	          <tr><td>{|Drucker Stufe (Versand)|}</td><td>[DRUCKERLOGISTIKSTUFE2][MSGDRUCKERLOGISTIKSTUFE2]&nbsp;<i>{|Belege bei Versandstation|}</i></td></tr>
+            </table>
+          </fieldset>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-height">
+        <div class="inside inside-full-height">
+          <fieldset>
+            <legend>{|Etikettendruck|}</legend>
+            <table border="0" width="100%">
+                <tr><td><b>{|Artikeletikettendruck|}</b></td></tr>
+                <tr><td>{|Druck bei Kommissionierung|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG][MSGETIKETTEN_KOMMISSIONIERUNG]&nbsp;<i>Kann auch nur an einzelnen Adressen aktiviert werden</i></td></tr>
+	            <tr><td>{|Etiketten-Drucker|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_DRUCKER][MSGEETIKETTEN_KOMMISSIONIERUNG_DRUCKER]&nbsp;<i></i></td></tr>
+	            <tr><td>{|Etiketten-Art|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_ART][MSGETIKETTEN_KOMMISSIONIERUNG_ART]&nbsp;<i></i></td></tr>
+<!--	            <tr><td>{|Etiketten-Sortierung|}</td><td>[ETIKETTEN_KOMMISSIONIERUNG_SORT][MSGETIKETTEN_KOMMISSIONIERUNG_SORT]&nbsp;<i></i></td></tr> --!>
+                <tr><td><b>{|Liefscheinposition-Etiketten|}</b></td></tr>
+                <tr><td>{|Druck mit/statt Lieferschein|}</td><td>[ETIKETTEN_POSITIONEN][MSGETIKETTEN_POSITIONEN]&nbsp;<i>Kann auch nur an einzelnen Adressen aktiviert werden</i></td></tr>
+	            <tr><td>{|Etiketten-Drucker|}</td><td>[ETIKETTEN_DRUCKER][MSGETIKETTEN_DRUCKER]&nbsp;<i></i></td></tr>
+	            <tr><td>{|Etiketten-Art|}</td><td>[ETIKETTEN_ART][MSGETIKETTEN_ART]&nbsp;<i></i></td></tr>
+	            <tr><td>{|Etiketten-Sortierung|}</td><td>[ETIKETTEN_SORT][MSGETIKETTEN_SORT]&nbsp;<i></i></td></tr>
             </table>
           </fieldset>
         </div>

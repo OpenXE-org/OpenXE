@@ -1,0 +1,63 @@
+{
+    "name": "swiss-payment-slip/swiss-payment-slip",
+    "description": "A library for creating Swiss payment slips (ESR)",
+    "license": "MIT",
+    "homepage": "https://github.com/ravage84/SwissPaymentSlip",
+    "keywords": [
+        "Payment slip",
+        "Inpayment slip",
+        "Einzahlungsschein",
+        "ESR"
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.0.0",
+        "squizlabs/php_codesniffer": "^2.1.0"
+    },
+    "authors": [
+        {
+            "name": "Marc Würth",
+            "email": "ravage@bluewin.ch",
+            "role": "Lead developer"
+        },
+        {
+            "name": "Manuel Reinhard",
+            "email": "manu@sprain.ch",
+            "homepage": "http://www.sprain.ch",
+            "role": "Developer of the original class"
+        },
+        {
+            "name": "Peter Siska",
+            "email": "pesche@gridonic.ch",
+            "homepage": "http://www.gridonic.ch",
+            "role": "Contributor"
+        }
+    ],
+    "support": {
+        "email": "ravage@bluewin.ch",
+        "issues": "https://github.com/ravage84/SwissPaymentSlip/issues",
+        "source": "https://github.com/ravage84/SwissPaymentSlip"
+    },
+    "autoload": {
+        "psr-4": {
+            "SwissPaymentSlip\\SwissPaymentSlip\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SwissPaymentSlip\\SwissPaymentSlip\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "check-codestyle": "phpcs -p --standard=PSR2 --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 src tests examples",
+        "fix-codestyle": "phpcbf -p --standard=PSR2 --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 src tests examples"
+    },
+    "config": {
+        "platform": {
+            "php": "5.4.0"
+        }
+    }
+}

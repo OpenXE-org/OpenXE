@@ -3990,7 +3990,6 @@ class Importvorlage extends GenImportvorlage {
 
           if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){
             //Sprachen
-            if($this->app->erp->ModulVorhanden('artikel_texte')){
               $erlaubtefelder= array('name','kurztext','beschreibung','beschreibung_online','meta_title',
                 'meta_description','meta_keywords','katalog_bezeichnung','katalog_text','katalogartikel','shop','aktiv');
               $zuImportierendeSprachen = [];
@@ -4009,7 +4008,8 @@ class Importvorlage extends GenImportvorlage {
                     $feldnameohnepsrache = str_replace($sprachenSet,'',$feldnameohnepsrache);
                   }
 
-                  if(in_array($feldnameohnepsrache, $erlaubtefelder,false) && !in_array($sprachenSet,$zuImportierendeSprachen[$sprache],false)){
+                  $haystack = $zuImportierendeSprachen[$sprache]?$zuImportierendeSprachen[$sprache]:array();
+                  if(in_array($feldnameohnepsrache, $erlaubtefelder,false) && !in_array($sprachenSet,$haystack,false)){
                     $zuImportierendeSprachen[$sprache][] = $sprachenSet;
                   }
                 }
@@ -4066,8 +4066,26 @@ class Importvorlage extends GenImportvorlage {
                     }
                   }
                 }
-              }
-            }
+            } // Sprachen            
+
+            // Artikeleigenschaften        
+            // leer = löschen
+            
+            $artikeleigenschaften = array();
+            foreach ($tmp as $feldname => $feldwerte) {                                                                          
+                if (strpos($feldname,'eigenschaftname') !== false) {                                    
+                    $eigenschaftspaltennummer = substr($feldname,strlen('eigenschaftname'));                                                           
+                    $artikeleigenschaften[$feldwerte[$i]] = $tmp['eigenschaftwert'.$eigenschaftspaltennummer][$i];                  
+                }
+            }                                  
+            foreach ($artikeleigenschaften as $key => $value) {
+                $sql = "INSERT INTO artikeleigenschaften (name) VALUES ('".$key."') ON DUPLICATE KEY UPDATE name = '".$key."'";
+                $this->app->DB->Update($sql);
+                $sql = "INSERT INTO artikeleigenschaftenwerte (artikel, artikeleigenschaften, wert) VALUES ('".$artikelid."' ,(SELECT id FROM artikeleigenschaften WHERE name = '".$key."'), '".$value."') ON DUPLICATE KEY UPDATE wert = '".$value."'";
+                $this->app->DB->Update($sql);
+            }           
+            $sql = "DELETE FROM artikeleigenschaftenwerte WHERE wert = ''";
+            $this->app->DB->Delete($sql);            
 
             //freifelduebersetzungen
             foreach ($tmp as $feldname => $feldwerte) {

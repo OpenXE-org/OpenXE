@@ -95,6 +95,16 @@
 <li>{ETIKETTENBILD} <i>aktuell nur in PDF</i></li>
 <li>{BEZEICHNUNG1},{BEZEICHNUNG2}<i>Etikettendrucker 2-Zeilig</i></li>
 </ul>
+Lieferscheinpositionen:
+<br>
+<ul>
+<li>{AUFTRAGNUMMER}</li>
+<li>{INTERNET}</li>
+<li>{KUNDENBESTELLNUMMER}</li>
+<li>{ARTIKELNUMMERKUNDE}</li>
+<li>{EAN}</li>
+<li>{MENGE}</li>
+</ul>
 Produktion:
 <br>
 <ul>

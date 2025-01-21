@@ -141,22 +141,28 @@ class WidgetProjekt extends WidgetGenProjekt
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
 
-
     $drucker = $this->app->erp->GetEtikettendrucker();
+    $field = new HTMLSelect("etiketten_kommissionierung_drucker",0);
+    $field->AddOptionsAsocSimpleArray($drucker);
+    $this->form->NewField($field);
+
     $field = new HTMLSelect("etiketten_drucker",0);
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
 
-    $drucker = $this->app->erp->GetEtiketten();
+    $etikettenart = $this->app->erp->GetEtiketten();
+    $field = new HTMLSelect("etiketten_kommissionierung_art",0);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
+    $this->form->NewField($field);
+
     $field = new HTMLSelect("etiketten_art",0);
-    $field->AddOptionsAsocSimpleArray($drucker);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
     $this->form->NewField($field);
 
     $drucker = $this->app->erp->GetDrucker();
     $field = new HTMLSelect("kasse_drucker",0);
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
-
 
     $versandart = $this->app->erp->GetDrucker();
     $field = new HTMLSelect("intraship_drucker",0);
@@ -193,64 +199,62 @@ class WidgetProjekt extends WidgetGenProjekt
     $field->AddOptionsAsocSimpleArray($drucker);
     $this->form->NewField($field);
 
-
-
     $field = new HTMLInput("next_angebot","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_auftrag","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_lieferschein","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_retoure","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_rechnung","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_gutschrift","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_bestellung","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_arbeitsnachweis","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_reisekosten","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_produktion","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_anfrage","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_proformarechnung","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_verbindlichkeit","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_lieferantengutschrift","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput("next_kundennummer","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_lieferantennummer","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_mitarbeiternummer","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);    
     $field = new HTMLInput("next_artikelnummer","text","",40);
-    $field->readonly="readonly";
+//    $field->readonly="readonly";
     $this->form->NewField($field);
     $field = new HTMLInput('next_goodspostingdocument','text','',40);
-    $field->readonly='readonly';
+//    $field->readonly="readonly";
     $this->form->NewField($field);
 
     if(!$this->app->erp->ModulVorhanden('kommissionierlauf'))

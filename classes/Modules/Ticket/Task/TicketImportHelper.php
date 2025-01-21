@@ -799,15 +799,18 @@ class TicketImportHelper
             $this->logger->debug('Add '.count($attachments).' attachments',['']); 
 
             foreach ($attachments as $attachment) {
-                if ($attachment->getFileName() !== '') {
-                    $handle = fopen($ordner . '/' . $attachment->getFileName(), 'wb');
+
+                $dateiname = $attachment->getFileName();
+                $dateiname = str_replace(array('\\','/',':','*','?','"','<','>','|'),' ',$dateiname); // Remove problematic characters
+
+                if ($dateiname !== '') {
+                    $handle = fopen($ordner . '/' . $dateiname, 'wb');
                     if ($handle) {
                         fwrite($handle, $attachment->getContent());
                         fclose($handle);
                     }
                     //Schreibe Anhänge in Datei-Tabelle
-                    $datei = $ordner . '/' . $attachment->getFileName();
-                    $dateiname = $attachment->getFileName();
+                    $datei = $ordner . '/' . $dateiname;
 
                     if (stripos(strtoupper($dateiname), '=?UTF-8') !== false) {
                         $dateiname = $this->formatter->encodeToUtf8($dateiname);

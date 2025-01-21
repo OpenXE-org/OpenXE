@@ -78,9 +78,15 @@ class RechnungPDF extends BriefpapierCustom {
        DATE_FORMAT(DATE_ADD(r.datum, INTERVAL r.zahlungszieltageskonto DAY),'%d.%m.%Y') AS zahlungszielskontodatum, 
        r.abweichendebezeichnung AS rechnungersatz, 
        r.kundennummer, r.sprache, r.schreibschutz, r.soll AS gesamtsumme,
-       DATE_FORMAT(r.datum,'%Y%m%d') as datum2, r.telefon, r.email
+       DATE_FORMAT(r.datum,'%Y%m%d') as datum2, r.telefon, r.email, r.xmlrechnung
        FROM rechnung r LEFT JOIN auftrag a ON a.id=r.auftragid WHERE r.id='$id' LIMIT 1"
     );
+
+
+    if ($data['xmlrechnung']) {
+        exit();
+    }
+
     extract($data,EXTR_OVERWRITE);
     $adresse = $data['adresse'];
     $auftrag = $data['auftrag'];
@@ -232,7 +238,7 @@ class RechnungPDF extends BriefpapierCustom {
         FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
 
     if($datumlieferschein=="00.00.0000") $datumlieferschein = $datum;
-    if($lieferdatum=="00.00.0000") $lieferdatum = $datum;
+    if($lieferdatum=="00.00.0000") $lieferdatum = "";
     if($mahnwesen_datum=="00.00.0000") $mahnwesen_datum = "";
 
     $bearbeiteremail = $this->app->DB->Select("SELECT b.email FROM rechnung r LEFT JOIN adresse b ON b.id=r.bearbeiterid WHERE r.id='$id' LIMIT 1");

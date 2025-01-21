@@ -15,8 +15,8 @@
                                     <tr valign="top">
                                     <td align="center">
                                     <table width="90%">
-                                      <tr><td><b>{|Quelllager|}:</b></td><td><input type="text" id="quelllager" name="quelllager" value="[QUELLLAGER]"  size="27" style="width:200px"></td></tr>
-                                      <tr><td><b>{|Ziellager|}:</b></td><td><input type="text" id="ziellager" name="ziellager" value="[ZIELLAGER]"  size="27" style="width:200px"></td></tr>
+                                      <tr><td><b>{|Quelllagerplatz|}:</b></td><td><input type="text" id="quelllagerplatz" name="quelllagerplatz" value="[QUELLLAGERPLATZ]"  size="27" style="width:200px"></td></tr>
+                                      <tr><td><b>{|Ziellagerplatz|}:</b></td><td><input type="text" id="ziellagerplatz" name="ziellagerplatz" value="[ZIELLAGERPLATZ]"  size="27" style="width:200px"></td></tr>
                                     <tr>
                                         <td>
                                             <p [ERNEUT_UMLAGERN_HIDDEN]><input type="checkbox" name="erneut" id="erneut" value="1" size="20" [ERNEUT_CHECKED]>{|Erneut umlagern|}</input></p>

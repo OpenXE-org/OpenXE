@@ -55,6 +55,8 @@ class Rechnung extends GenRechnung
     $this->app->ActionHandler("freigabe","RechnungFreigabe");
     $this->app->ActionHandler("abschicken","RechnungAbschicken");
     $this->app->ActionHandler("pdf","RechnungPDF");
+    $this->app->ActionHandler("xml","RechnungSmarty");
+    $this->app->ActionHandler("json","RechnungJSON");
     $this->app->ActionHandler("alternativpdf","RechnungAlternativPDF");
     $this->app->ActionHandler("inlinepdf","RechnungInlinePDF");
     $this->app->ActionHandler("lastschrift","RechnungLastschrift");
@@ -74,8 +76,11 @@ class Rechnung extends GenRechnung
     $this->app->ActionHandler("dateien","RechnungDateien");
     $this->app->ActionHandler("pdffromarchive","RechnungPDFfromArchiv");
     $this->app->ActionHandler("archivierepdf","RechnungArchivierePDF");
+    $this->app->ActionHandler("archivierexml","RechnungArchiviereXML");
 
     $this->app->ActionHandler("summe","RechnungSumme"); // nur fuer rechte
+    $this->app->ActionHandler("belegnredit","belegnredit"); // nur fuer rechte
+    
     $this->app->ActionHandler("einkaufspreise","RechnungEinkaufspreise");
     $this->app->ActionHandler("steuer","RechnungSteuer");
     $this->app->ActionHandler("formeln","RechnungFormeln");
@@ -197,33 +202,62 @@ class Rechnung extends GenRechnung
     $this->app->ExitXentral();
   }
 
-  
+    function RechnungArchiviereXML($id = null) {
+        if ($id === null) {
+            $id = (int)$this->app->Secure->GetGET('id');
+            $redirect = true;
+        }
+        $result = $this->RechnungSmarty(id: $id, json: false, returnvalue: true);
+
+        if ($result['success']) {
+
+            // Check for old files
+            $existing = false;
+            $existing_ids = $this->app->erp->GetDateiSubjektObjekt('rechnung','rechnung',$id);
+            foreach ($existing_ids as $existing_id) {
+                if($this->app->erp->GetDateiEndung($existing_id) == 'xml') {
+                    $existing = true;
+                    break;
+                }
+            }
+
+            if ($existing) {
+               $this->app->erp->AddDateiVersion(
+                    id: $existing_id,
+                    ersteller: $this->app->User->GetName(),
+                    dateiname: $result['filename'].'.xml',
+                    bemerkung: '',
+                    datei: $result['xml'],
+                    path: ""
+                );
+            } else {
+                $this->app->erp->CreateDateiWithStichwort(
+                    name: $result['filename'].'.xml',
+                    titel: $result['title'],
+                    beschreibung: '',
+                    nummer: '',
+                    datei: $result['xml'],
+                    ersteller: $this->app->User->GetName(),
+                    subjekt: 'rechnung',
+                    objekt: 'rechnung',
+                    parameter: $id,
+                    geschuetzt: true
+                );
+            }
+        } else {
+            throw new exception("XML Rechnung fehlgeschlagen!");
+        }
+        
+        $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1', zuarchivieren = '0' WHERE id='$id'");
+        if ($redirect) {
+            $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id);
+        }
+    }
+      
   function RechnungArchivierePDF()
   {
     $id = (int)$this->app->Secure->GetGET('id');
-    $projekt = $this->app->DB->Select("SELECT projekt FROM rechnung WHERE id = '$id' LIMIT 1");
-    $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-    if(class_exists('RechnungPDFCustom'))
-    {
-      $Brief = new RechnungPDFCustom($this->app,$projekt);
-    }else{
-      $Brief = new RechnungPDF($this->app,$projekt);
-    }
-    $Brief->GetRechnung($id);
-    $tmpfile = $Brief->displayTMP();
-    $Brief->ArchiviereDocument(1);    
-    unlink($tmpfile);
-    $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-    if(class_exists('RechnungPDFCustom'))
-    {
-      $Brief = new RechnungPDFCustom($this->app,$projekt);
-    }else{
-      $Brief = new RechnungPDF($this->app,$projekt);
-    }
-    $Brief->GetRechnung($id);
-    $tmpfile = $Brief->displayTMP();
-    $Brief->ArchiviereDocument(1);
-    
+    $this->app->erp->PDFArchivieren('rechnung', $id, true);
     $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1' WHERE id='$id'");
     $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id);
   }
@@ -413,7 +447,7 @@ class Rechnung extends GenRechnung
   {
     if($id > 0){
       $rechnungarr = $this->app->DB->SelectRow(
-        "SELECT status,zahlungsstatus FROM rechnung WHERE id='$id' LIMIT 1"
+        "SELECT status,zahlungsstatus,xmlrechnung,belegnr FROM rechnung WHERE id='$id' LIMIT 1"
       );
     }
     $status = '';
@@ -544,10 +578,12 @@ class Rechnung extends GenRechnung
       </select>&nbsp;
       ";
       
-   $menu .=   "
-
-    <a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>
-      <!--  <a href=\"index.php?module=rechnung&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
+      $downloadicon = $this->app->YUI->GetRechnungFileDownloadLinkIcon($id);
+      
+    $menu .= $downloadicon;
+       
+    $menu .= 
+      "<!--  <a href=\"index.php?module=rechnung&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
       <a onclick=\"if(!confirm('Wirklich stornieren?')) return false; else window.location.href='index.php?module=rechnung&action=delete&id=%value%';\" title=\"Stornieren\">
       <img src=\"./themes/new/images/delete.svg\" border=\"0\"></a>
       <a onclick=\"if(!confirm('Wirklich kopieren?')) return false; else window.location.href='index.php?module=rechnung&action=copy&id=%value%';\" title=\"Kopieren\">
@@ -1081,6 +1117,7 @@ class Rechnung extends GenRechnung
       $intern = true;
       $freigabe=$intern;
     }
+   
     $allowedFrm = true;
     $showDefault = true;
     $this->app->erp->CheckVertrieb($id,'rechnung');
@@ -1096,6 +1133,7 @@ class Rechnung extends GenRechnung
       if($belegnr=='')
       {	
         $this->app->erp->BelegFreigabe('rechnung',$id);
+        $this->rechnung_zahlstatus_berechnen($id);
         if($intern) {
           return 1;
         }
@@ -1119,16 +1157,15 @@ class Rechnung extends GenRechnung
         jetzt freigegeben werden? <input type=\"button\" class=\"btnImportantLarge\" value=\"Jetzt freigeben\" onclick=\"window.location.href='index.php?module=rechnung&action=freigabe&id=$id&freigabe=$id'\">
         </div>");
     }
-
+    
     $this->RechnungMenu();
     $this->app->Tpl->Parse('PAGE','tabview.tpl');
   }
 
-
-
   function RechnungAbschicken()
   {
     $this->RechnungMenu();
+    $this->app->erp->RechnungArchivieren($this->app->Secure->GetGET('id'));
     $this->app->erp->DokumentAbschicken();
   }
 
@@ -1218,7 +1255,7 @@ class Rechnung extends GenRechnung
     $doppel = $this->app->Secure->GetGET('doppel');
     $invoiceArr = $this->app->DB->SelectRow("SELECT schreibschutz, projekt, zuarchivieren FROM rechnung WHERE id='$id' LIMIT 1");
     if(!empty($invoiceArr['schreibschutz']) && !empty($invoiceArr['zuarchivieren'])) {
-      $this->app->erp->PDFArchivieren('rechnung', $id, true);
+      $this->app->erp->RechnungArchivieren($id);
     }
     $projekt = $invoiceArr['projekt'];
     $schreibschutz = $invoiceArr['schreibschutz'];
@@ -1239,6 +1276,135 @@ class Rechnung extends GenRechnung
     $Brief->displayDocument($schreibschutz); 
 
     $this->RechnungList();
+  }
+
+    // Print PHP array for SmartyXML
+  function RechnungJSON() {
+    $this->RechnungSmarty(json: true);
+  }
+  
+  function remove_html_entities_from_array(&$array) {
+    foreach ($array as $key => $item) {
+        if (is_array($item)) {
+            $this->remove_html_entities_from_array($array[$key]);
+        } else {
+            $array[$key] = html_entity_decode($item);
+        }
+    }
+  }
+
+  function remove_CDATA_fragments_from_array(&$array) {
+    foreach ($array as $key => $item) {
+        if (is_array($item)) {
+            $this->remove_CDATA_fragments_from_array($array[$key]);
+        } else {
+            $item = str_replace('<![CDATA[','',$item);
+            $item = str_replace(']]>','',$item);
+            $array[$key] = $item;
+        }
+    }
+  }
+
+  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
+        if ($id === null) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $result = Array();
+        $success = true;
+        
+        $result['rechnungssteller']['name'] = $this->app->erp->Firmendaten('name');
+        $result['rechnungssteller']['strasse'] = $this->app->erp->Firmendaten('strasse');
+        $result['rechnungssteller']['ort'] = $this->app->erp->Firmendaten('ort');
+        $result['rechnungssteller']['plz'] = $this->app->erp->Firmendaten('plz');
+        $result['rechnungssteller']['land'] = $this->app->erp->Firmendaten('land');
+        $result['rechnungssteller']['steuernummer'] = $this->app->erp->Firmendaten('steuernummer');
+        
+        $rechnung = $this->app->DB->SelectRow("
+            SELECT * FROM rechnung WHERE id = $id LIMIT 1
+        ");
+        $result['kopf'] = $rechnung;
+        $result['kopf']['internet_bestellnummer'] = $this->app->DB->Select("SELECT a.internet FROM rechnung r LEFT JOIN auftrag a ON a.id=r.auftragid WHERE r.id='$id' AND r.id > 0 LIMIT 1");
+
+        $adresse = $this->app->DB->SelectArr("
+            SELECT * FROM adresse WHERE id = (SELECT adresse FROM rechnung WHERE id = $id LIMIT 1)
+        ");
+        $result['adresse'] = $adresse[0];
+                      
+        $positionen = $this->app->DB->SelectArr("
+            SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort ASC
+        ");    
+        
+        if (empty($positionen)) {
+            throw new exception("Rechnung enthält keine Positionen!");
+        }
+            
+        $steuern = Array();
+        $steuer_gesamt = 0;
+        $umsatz_brutto_gesamt = 0;
+        foreach ($positionen as $key => $position) {
+            $this->app->erp->GetSteuerPosition('rechnung', $position['id'], $steuersatz, $steuertext, $erloes);
+            $positionen[$key]['steuersatz'] = $steuersatz;
+            $positionen[$key]['steuertext'] = $steuertext;
+            $positionen[$key]['erloese'] = round($erloes,2);
+
+            $positionen[$key]['umsatz_netto_gesamt'] = round($position['umsatz_netto_gesamt'],2);
+            $positionen[$key]['umsatz_brutto_gesamt'] = round($position['umsatz_brutto_gesamt'],2);
+
+            $steuern[$steuersatz]['umsatz_netto'] += round($position['umsatz_netto_gesamt'],2);
+            $steuern[$steuersatz]['umsatz_brutto'] += round($position['umsatz_brutto_gesamt'],2);
+            $steuern[$steuersatz]['prozent'] = $steuersatz;
+            $umsatz_brutto_gesamt += round($position['umsatz_brutto_gesamt'],2);
+            $steuer_gesamt += round($position['umsatz_brutto_gesamt'],2)-round($position['umsatz_netto_gesamt'],2);
+        }
+        
+        $result['positionen'] = $positionen;
+        $result['steuern'] = $steuern;
+        $result['umsatz_brutto_gesamt'] = $umsatz_brutto_gesamt;
+        $result['steuer_gesamt'] = $steuer_gesamt;
+
+        $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
+
+        $this->remove_html_entities_from_array($result);
+        $this->remove_CDATA_fragments_from_array($result);
+
+        if ($json) {
+            $headers[] = 'Content-type:text/plain';
+            $headers[] = 'Content-Disposition: attachment;filename='.$filename.'.json';
+            $output = json_encode($result,JSON_PRETTY_PRINT);
+        } else {
+            $headers[] = 'Content-type:text/xml';
+            $headers[] = 'Content-Disposition: attachment;filename='.$filename.'.xml';
+            $template_id = $this->GetXMLSmartyTemplate($id);
+            if(empty($template_id)) {
+                $output = '<?xml version="1.0" encoding="utf-8"?>
+<note>
+  <body>Kein Smarty Template an der Addresse hinterlegt!</body>
+</note>';
+                $success = false;
+            } else {
+                $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '$template_id' LIMIT 1");
+                $smarty = new Smarty;
+                $directory = $this->app->erp->GetTMP().'/smarty/templates';
+                $smarty->setCompileDir($directory);
+                $smarty->assign('rechnung', $result);
+                $output = $smarty->fetch('string:'.$template);
+            }
+        }
+        
+        if ($returnvalue) {
+            return(Array(
+                'success' => $success,
+                'title' => 'Rechnung '.$result['kopf']['belegnr'],
+                'filename' => $filename,
+                'xml' => $output
+             ));
+        } else {
+            foreach ($headers as $header) {
+                header($header);
+            }
+            echo($output);
+            $this->app->ExitXentral();
+        }        
   }
 
   function RechnungSuche()
@@ -1342,7 +1508,7 @@ class Rechnung extends GenRechnung
   public function CopyRechnungPosition()
   {
     $this->app->YUI->SortListEvent('copy','rechnung_position','rechnung');
-    $this->RechnungPositionen();    
+    $this->RechnungPositionen();
   }
 
   public function DelRechnungPosition()
@@ -1611,38 +1777,6 @@ class Rechnung extends GenRechnung
     $this->app->erp->CheckBearbeiter($id,'rechnung');
     $this->app->erp->CheckBuchhaltung($id,'rechnung');
 
-    $invoiceArr = $this->app->DB->SelectRow(
-      sprintf(
-        'SELECT zahlungsweise,zahlungszieltage,dta_datei,status,schreibschutz  FROM rechnung WHERE id= %d LIMIT 1',
-        (int)$id
-      )
-    );
-    $zahlungsweise= $invoiceArr['zahlungsweise'];
-    $zahlungszieltage= $invoiceArr['zahlungszieltage'];
-    if($zahlungsweise==='rechnung' && $zahlungszieltage<1)
-    {
-      $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Hinweis: F&auml;lligkeit auf \"sofort\", da Zahlungsziel in Tagen auf 0 Tage gesetzt ist!</div>");
-    }
-
-
-    $status= $invoiceArr['status'];
-    $schreibschutz= $invoiceArr['schreibschutz'];
-    if($status !== 'angelegt' && $status !== 'angelegta' && $status !== 'a')
-    {
-      $Brief = new Briefpapier($this->app);
-      if($Brief->zuArchivieren($id, "rechnung"))
-      {
-        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Die Rechnung ist noch nicht archiviert! Bitte versenden oder manuell archivieren. <input type=\"button\" onclick=\"if(!confirm('Soll das Dokument archiviert werden?')) return false;else window.location.href='index.php?module=rechnung&action=archivierepdf&id=$id';\" value=\"Manuell archivieren\" /> <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('rechnung',$id)\"></div>");
-      }elseif(!$this->app->DB->Select("SELECT versendet FROM rechnung WHERE id = '$id' LIMIT 1"))
-      {
-        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Die Rechnung wurde noch nicht versendet! <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('rechnung',$id)\"></div>");
-      }
-    }
-    $this->app->erp->RechnungNeuberechnen($id); //BENE
-
-    $this->RechnungMiniDetail('MINIDETAIL',false); //BENE
-    $this->app->Tpl->Set('ICONMENU',$this->RechnungIconMenu($id));
-    $this->app->Tpl->Set('ICONMENU2',$this->RechnungIconMenu($id,2));
     if($id > 0){
       $rechnungarr = $this->app->DB->SelectRow("SELECT * FROM rechnung WHERE id='$id' LIMIT 1");
     }
@@ -1654,19 +1788,52 @@ class Rechnung extends GenRechnung
     $soll = 0;
     $projekt = 0;
     if(!empty($rechnungarr)){
-      $nummer = $rechnungarr['belegnr'];//$this->app->DB->Select("SELECT belegnr FROM rechnung WHERE id='$id' LIMIT 1");
-      $kundennummer = $rechnungarr['kundennummer'];//$this->app->DB->Select("SELECT kundennummer FROM rechnung WHERE id='$id' LIMIT 1");
-      $adresse = $rechnungarr['adresse'];//$this->app->DB->Select("SELECT adresse FROM rechnung WHERE id='$id' LIMIT 1");
-      $punkte = $rechnungarr['punkte'];//$this->app->DB->Select("SELECT punkte FROM rechnung WHERE id='$id' LIMIT 1");
-      $bonuspunkte = $rechnungarr['bonuspunkte'];//$this->app->DB->Select("SELECT bonuspunkte FROM rechnung WHERE id='$id' LIMIT 1");
-      $soll = $rechnungarr['soll'];//$this->app->DB->Select("SELECT soll FROM rechnung WHERE id='$id' LIMIT 1");
-      $projekt = $rechnungarr['projekt'];
+        $nummer = $rechnungarr['belegnr'];//$this->app->DB->Select("SELECT belegnr FROM rechnung WHERE id='$id' LIMIT 1");
+        $kundennummer = $rechnungarr['kundennummer'];//$this->app->DB->Select("SELECT kundennummer FROM rechnung WHERE id='$id' LIMIT 1");
+        $adresse = $rechnungarr['adresse'];//$this->app->DB->Select("SELECT adresse FROM rechnung WHERE id='$id' LIMIT 1");
+        $punkte = $rechnungarr['punkte'];//$this->app->DB->Select("SELECT punkte FROM rechnung WHERE id='$id' LIMIT 1");
+        $bonuspunkte = $rechnungarr['bonuspunkte'];//$this->app->DB->Select("SELECT bonuspunkte FROM rechnung WHERE id='$id' LIMIT 1");
+        $soll = $rechnungarr['soll'];//$this->app->DB->Select("SELECT soll FROM rechnung WHERE id='$id' LIMIT 1");
+        $projekt = $rechnungarr['projekt'];
+        $skontosoll = $this->app->DB->Select("SELECT TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll FROM rechnung where id = '".$id."' LIMIT 1");
+        $xmlrechnung = $rechnungarr['xmlrechnung'];
+        $zahlungsweise= $rechnungarr['zahlungsweise'];
+        $zahlungszieltage= $rechnungarr['zahlungszieltage'];
+        $zahlungsstatus= $rechnungarr['zahlungsstatus'];
+        if($zahlungsweise==='rechnung' && $zahlungszieltage<1)
+        {
+            $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Hinweis: F&auml;lligkeit auf \"sofort\", da Zahlungsziel in Tagen auf 0 Tage gesetzt ist!</div>");
+        }
+        $status= $rechnungarr['status'];
+        $schreibschutz= $rechnungarr['schreibschutz'];
     }
+    if($status !== 'angelegt' && $status !== 'angelegta' && $status !== 'a')
+    {
+      $Brief = new Briefpapier($this->app);
+      if($Brief->zuArchivieren($id, "rechnung"))
+      {
+        if ($xmlrechnung) {
+            $archiviere = "archivierexml";
+        } else {
+            $archiviere = "archivierepdf";
+        }
+        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Die Rechnung ist noch nicht archiviert! Bitte versenden oder manuell archivieren. <input type=\"button\" onclick=\"if(!confirm('Soll das Dokument archiviert werden?')) return false;else window.location.href='index.php?module=rechnung&action=$archiviere&id=$id';\" value=\"Manuell archivieren\" /> <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('rechnung',$id)\"></div>");
+      }elseif(!$this->app->DB->Select("SELECT versendet FROM rechnung WHERE id = '$id' LIMIT 1"))
+      {
+        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Die Rechnung wurde noch nicht versendet! <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('rechnung',$id)\"></div>");
+      }
+    }
+    $this->app->erp->RechnungNeuberechnen($id); //BENE
+
+    $this->RechnungMiniDetail('MINIDETAIL',false); //BENE
+    $this->app->Tpl->Set('ICONMENU',$this->RechnungIconMenu($id));
+    $this->app->Tpl->Set('ICONMENU2',$this->RechnungIconMenu($id,2)); 
 
     $this->app->Tpl->Set('PUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$punkte\" size=\"10\" readonly>");
     $this->app->Tpl->Set('BONUSPUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$bonuspunkte\" size=\"10\" readonly>");
 
     $this->app->Tpl->Set('SOLL',"$soll"."<input type=\"hidden\" id=\"soll_tmp\" value=\"$soll\">");
+    $this->app->Tpl->Set('SKONTOSOLL',$skontosoll);
 
     if($schreibschutz!='1')// && $this->app->erp->RechteVorhanden("rechnung","schreibschutz"))
     {
@@ -1675,7 +1842,15 @@ class Rechnung extends GenRechnung
     }
 
     if($nummer!='') {
+
       $this->app->Tpl->Set('NUMMER',$nummer);
+    
+      if (($schreibschutz!='1') && $this->app->erp->RechteVorhanden('rechnung','belegnredit')){
+        $this->app->Tpl->Set('BELEGNRHIDDEN','hidden');
+      } else {
+        $this->app->Tpl->Set('BELEGNREDITHIDDEN','hidden');
+      }
+      
       if($this->app->erp->RechteVorhanden('adresse','edit')){
         $this->app->Tpl->Set('KUNDE', "&nbsp;&nbsp;&nbsp;Kd-Nr. <a href=\"index.php?module=adresse&action=edit&id=$adresse\" target=\"_blank\">" . $kundennummer . "</a>");
       }
@@ -1683,6 +1858,11 @@ class Rechnung extends GenRechnung
         $this->app->Tpl->Set('KUNDE', "&nbsp;&nbsp;&nbsp;Kd-Nr. " . $kundennummer);
       }
     }
+
+    if ($xmlrechnung) {
+        $this->app->Tpl->Set('PDFVORSCHAUHIDDEN', "hidden");
+    }
+
     $lieferdatum = '';
     $rechnungsdatum = '';
     $lieferscheinid = 0;
@@ -1743,10 +1923,7 @@ class Rechnung extends GenRechnung
     if($zahlungsweise==='vorkasse' || $zahlungsweise==='kreditkarte' || $zahlungsweise==='paypal' || $zahlungsweise==='bar') {
       $this->app->Tpl->Set('VORKASSE','');
     }
-
-    $ist = $this->app->erp->EUR($this->app->erp->GetSaldoDokument($id,'rechnung')['betrag']);
-    $this->app->Tpl->Set('ISTDB',$ist);
-
+   
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden('rechnung','schreibschutz'))
     {
       $this->app->Tpl->Set('MESSAGE',"<div class=\"warning\">Diese Rechnung ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diese Rechnung wirklich entfernt werden? Die gespeicherte Rechnung wird &uuml;berschrieben!')) return false;else window.location.href='index.php?module=rechnung&action=schreibschutz&id=$id';\"></div>");
@@ -1756,21 +1933,26 @@ class Rechnung extends GenRechnung
       $this->app->erp->CommonReadonly();
     }
 
+    if($schreibschutz=='1' && $this->app->erp->RechteVorhanden('rechnung','manuellbezahltmarkiert') && $zahlungsstatus=="offen")
+    {
+      $this->app->erp->RemoveReadonly('bezahlt_am');
+      $this->app->erp->RemoveReadonly('zahlbetrag');
+      $this->app->erp->RemoveReadonly('zahlungsstatus');
+    }
+
     if($schreibschutz=='1' && $this->app->erp->RechteVorhanden('rechnung','mahnwesen'))
     {
       $this->app->erp->RemoveReadonly('mahnwesen_datum');
       $this->app->erp->RemoveReadonly('mahnwesen_gesperrt');
       $this->app->erp->RemoveReadonly('mahnwesen_internebemerkung');
-      $this->app->erp->RemoveReadonly('zahlungsstatus');
       $this->app->erp->RemoveReadonly('mahnwesenfestsetzen');
       $this->app->erp->RemoveReadonly('mahnwesen');
-      $this->app->erp->RemoveReadonly('bezahlt_am');
 /*
         'ist' should not be edited manually
 
       $this->app->erp->RemoveReadonly('ist');
 
-      if($this->app->erp->Firmendaten('mahnwesenmitkontoabgleich')!='1' || $this->app->DB->Select("SELECT mahnwesenfestsetzen FROM rechnung WHERE id='$id' LIMIT 1")==1)  
+      if($this->app->erp->Firmendaten('mahnwesenmitkontoabgleich')!='1' || $this->app->DB->Select("SELECT mahnwesenfestsetzen FROM rechnung WHERE id='$id' LIMIT 1")==1)
         $this->app->erp->RemoveReadonly('ist');*/
 
       //$auftrag= $this->app->DB->Select("SELECT auftrag FROM rechnung WHERE id='$id' LIMIT 1");
@@ -1792,12 +1974,22 @@ class Rechnung extends GenRechnung
     }
 
     $speichern = $this->app->Secure->GetPOST('speichern');
+    
+    if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','belegnredit')) {
+        $nummer_neu = $this->app->Secure->GetPOST('belegnredit');
+        
+        $nummer_neu = $this->app->DB->real_escape_string($nummer_neu);
+        
+        if(!$this->app->DB->select("SELECT id from rechnung WHERE belegnr ='".$nummer_neu."'")) {
+            $this->app->DB->update("UPDATE rechnung SET belegnr ='".$nummer_neu."' WHERE id = '".$id."'");
+        }
+    }
 
     if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','mahnwesen'))
     {
-
       $mahnwesen_datum = $this->app->Secure->GetPOST('mahnwesen_datum');
       $bezahlt_am = $this->app->Secure->GetPOST('bezahlt_am');
+      $zahlbetrag = $this->app->Secure->GetPOST('zahlbetrag');
       $mahnwesen_gesperrt = $this->app->Secure->GetPOST('mahnwesen_gesperrt');
       $mahnwesen_internebemerkung = $this->app->Secure->GetPOST('mahnwesen_internebemerkung');
       $zahlungsstatus = $this->app->Secure->GetPOST('zahlungsstatus');
@@ -1823,12 +2015,75 @@ class Rechnung extends GenRechnung
 
 /*      if($mahnwesenfestsetzen=='1')
       {*/
-        $this->app->DB->Update("UPDATE rechnung SET mahnwesen_internebemerkung='$mahnwesen_internebemerkung',zahlungsstatus='$zahlungsstatus',versendet_mahnwesen='$versendet',
-          mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum', mahnwesenfestsetzen='$mahnwesenfestsetzen',internebemerkung='$internebemerkung',
-          mahnwesen='$mahnwesen',skonto_gegeben='$skonto_gegeben',bezahlt_am='$bezahlt_am' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("
+                UPDATE rechnung SET 
+                    mahnwesen_internebemerkung='$mahnwesen_internebemerkung',
+                    zahlungsstatus='$zahlungsstatus',
+                    versendet_mahnwesen='$versendet',
+                    mahnwesen_gesperrt='$mahnwesen_gesperrt',
+                    mahnwesen_datum='$mahnwesen_datum',
+                    mahnwesenfestsetzen='$mahnwesenfestsetzen',
+                    internebemerkung='$internebemerkung'
+                WHERE id='$id' LIMIT 1");
 /*      } else {
         $this->app->DB->Update("UPDATE rechnung SET mahnwesen='$mahnwesen', mahnwesenfestsetzen='$mahnwesenfestsetzen', mahnwesen_internebemerkung='$mahnwesen_internebemerkung', mahnwesen_gesperrt='$mahnwesen_gesperrt',mahnwesen_datum='$mahnwesen_datum' WHERE id='$id' LIMIT 1");
       }*/
+    }
+
+    if ($zahlungsstatus == 'bezahlt') {
+        $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
+        $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
+    }
+
+    $saldo = $this->app->erp->GetSaldoDokument($id,'rechnung');
+    if (empty($saldo)) {
+        $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
+        $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
+    } else {
+        $ist = $this->app->erp->EUR($saldo['betrag']);
+        $this->app->Tpl->Set('ISTDB',$ist);
+        if ($ist > $soll) {
+            $this->app->Tpl->addMessage('error','Rechnung ist überzahlt!');
+        }    
+    }
+
+    $rechnung_schnelleingabe_konto = $this->app->erp->Firmendaten('rechnung_schnelleingabe_konto');
+        
+    if (!empty($rechnung_schnelleingabe_konto)) {
+        $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
+        if ($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','manuellbezahltmarkiert') && !empty($zahlbetrag)) {
+            if ($bezahlt_am == '0000-00-00') {
+                $bezahlt_am = date('Y-m-d');
+            }
+            $sql = "
+                INSERT INTO kontoauszuege
+                (
+                    konto,
+                    buchung,
+                    importdatum,
+                    buchungstext,
+                    soll,
+                    waehrung,
+                    bearbeiter
+                )
+                VALUES
+                (
+                    $rechnung_schnelleingabe_konto,
+                    '$bezahlt_am',
+                    '".date("Y-m-d")."',
+                    'Rechnung ".$nummer." Schnelleingabe',
+                    $zahlbetrag,
+                    'EUR',
+                    '".$this->app->User->GetName()."'
+                )
+            ";
+            $this->app->DB->Insert($sql);
+            $kontoauszug = $this->app->DB->GetInsertID();
+            $this->app->erp->fibu_buchungen_buchen("kontoauszuege",$kontoauszug, "rechnung", $id, -$zahlbetrag, 'EUR', $bezahlt_am, "Rechnung ".$nummer." Schnelleingabe");
+            $this->rechnung_zahlstatus_berechnen($id);
+        }       
+    } else {    
+        $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
     }
 
     if($status=='')
@@ -1943,7 +2198,7 @@ class Rechnung extends GenRechnung
         ' &uuml;berein <input type="submit" name="resetextsoll" value="Festgeschriebene Summe zur&uuml;cksetzen" /></div></form>'
       );
     }
-      
+
     parent::RechnungEdit();
     if($id > 0 && $this->app->DB->Select(
       sprintf(
@@ -1952,7 +2207,7 @@ class Rechnung extends GenRechnung
       )
       )
     ) {
-      $this->app->erp->PDFArchivieren('rechnung', $id, true);
+      $this->app->erp->RechnungArchivieren($id);
     }
     $this->app->erp->MessageHandlerStandardForm();
 
@@ -2041,25 +2296,14 @@ class Rechnung extends GenRechnung
         $invoiceId
       )
     );
-    $this->app->erp->PDFArchivieren('rechnung', $invoiceId, true);
-    if(class_exists('RechnungPDFCustom')) {
-      $Brief = new RechnungPDFCustom($this->app,$projekt);
-    }
-    else {
-      $Brief = new RechnungPDF($this->app,$projekt);
-    }
-    $Brief->GetRechnung($invoiceId);
-    $tmpfile = $Brief->displayTMP();
-    $Brief->ArchiviereDocument();
-    @unlink($tmpfile);
-
+    $this->app->erp->RechnungArchivieren($invoiceId);
     return true;
   }
 
   public function RechnungList()
   {
 
-    $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''");    
+    $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''"); 
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
     {
@@ -2093,17 +2337,20 @@ class Rechnung extends GenRechnung
                 implode(', ', $auswahl)
               )
             );
+
             foreach($auswahl as $v) {
               if(!$v) {
                 continue;
               }
+              $xmlrechnung = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id=$v LIMIT 1");
               $checkpapier = $this->app->DB->Select(
                 "SELECT a.rechnung_papier FROM rechnung AS r 
                 LEFT JOIN adresse AS a ON r.adresse=a.id 
                 WHERE r.id='$v' 
                 LIMIT 1"
               );
-              if($checkpapier!=1 &&
+
+              if((($checkpapier !=1) || $erechnung) &&
                 $this->app->DB->Select(
                   "SELECT r.id 
                   FROM rechnung AS r 
@@ -2112,11 +2359,11 @@ class Rechnung extends GenRechnung
                   LIMIT 1"
                 )
               ) {
-                $this->app->erp->PDFArchivieren('rechnung', $v, true);
+                $this->app->erp->RechnungArchivieren($v);
                 $this->app->erp->Rechnungsmail($v);
               }
-              else if($checkpapier && $drucker) {
-                $this->app->erp->PDFArchivieren('rechnung', $v, true);
+              else if($checkpapier && $drucker && !$erechnung) {
+                $this->app->erp->RechnungArchivieren($v);
                 $projekt = $this->app->DB->Select(
                   "SELECT projekt FROM rechnung WHERE id='$v' LIMIT 1"
                 );
@@ -2170,12 +2417,13 @@ class Rechnung extends GenRechnung
                 $reArr = $this->app->DB->SelectRow(
                   sprintf(
                     "SELECT projekt,belegnr,status,usereditid,adresse,
-                    DATE_SUB(NOW(), INTERVAL 30 SECOND) < useredittimestamp AS `open` 
+                    DATE_SUB(NOW(), INTERVAL 30 SECOND) < useredittimestamp AS `open`,
+                    xmlrechnung
                     FROM rechnung WHERE id=%d LIMIT 1",
                     $v
                   )
                 );
-                if($reArr['belegnr'] === '' || ($reArr['open'] && $reArr['status'] === 'freigegeben')) {
+                if($reArr['belegnr'] === '' || $reArr['xmlrechnung'] || ($reArr['open'] && $reArr['status'] === 'freigegeben')) {
                   continue;
                 }
                 if($reArr['status'] === 'freigegeben') {
@@ -2185,7 +2433,7 @@ class Rechnung extends GenRechnung
                 $this->app->erp->RechnungProtokoll($v,'Rechnung gedruckt');
                 $this->app->DB->Update("UPDATE rechnung SET schreibschutz=1, versendet = 1  WHERE id = '$v' LIMIT 1");
                 $this->app->DB->Update("UPDATE rechnung SET status='versendet' WHERE id = '$v' AND status!='storniert' LIMIT 1");
-                $this->app->erp->PDFArchivieren('rechnung', $v, true);
+                $this->app->erp->RechnungArchivieren($v);
                 if(class_exists('RechnungPDFCustom')) {
                   $Brief = new RechnungPDFCustom($this->app,$projekt);
                 }
@@ -2205,6 +2453,10 @@ class Rechnung extends GenRechnung
           case 'pdf':
             $tmpfile = [];
             foreach($auswahl as $v) {
+              $xmlrechnung = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id=$v LIMIT 1");
+              if ($xmlrechnung) {
+                continue;
+              }
               $projekt = $this->app->DB->Select("SELECT projekt FROM rechnung WHERE id=$v LIMIT 1");
               if(class_exists('RechnungPDFCustom')) {
                 $Brief = new RechnungPDFCustom($this->app,$projekt);
@@ -2350,6 +2602,34 @@ class Rechnung extends GenRechnung
     
     $this->app->Tpl->Parse('PAGE','rechnunguebersicht.tpl');
   }
+  
+  public function GetXMLSmartyTemplate($id) {
+    $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."'");
+    $rechnung_smarty_template = $this->app->DB->Select("SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'");
+    if (!empty($rechnung_smarty_template)) {
+       return($rechnung_smarty_template);
+    } else {
+        $sql = "SELECT id, rechnung_smarty_template FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
+        $gruppen = $this->app->DB->SelectArr($sql);
+        foreach ($gruppen as $gruppe) {
+            if ($this->app->erp->IsAdresseInGruppe($adresse,$gruppe['id'])) {
+                return($gruppe['rechnung_smarty_template']);
+            }
+        }
+    }
+    return(null);
+  }
+ 
+  // Decide if XML Smarty invoice according to address and group
+  public function SetXMLRechnung($id) {
+      $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."' LIMIT 1");
+      if (!empty($adresse)) {
+            // Check XML Smarty template
+            if (!empty($this->GetXMLSmartyTemplate($id))) {
+                $this->app->DB->Update("UPDATE rechnung SET xmlrechnung = 1 WHERE id = '".$id."' AND schreibschutz <> 1");
+            }
+        }
+  }
 
   /**
    * @param string|int $adresse
@@ -2367,35 +2647,61 @@ class Rechnung extends GenRechnung
     $usereditid = 0;
     if(isset($this->app->User) && $this->app->User && method_exists($this->app->User,'GetID')){
       $usereditid = $this->app->User->GetID();
-    }
+    }   
 
     if($this->app->erp->StandardZahlungsweise($projekt)==='rechnung')
     {
-      $this->app->DB->Insert("INSERT INTO rechnung (id,datum,bearbeiter,firma,belegnr,zahlungsweise,
-          zahlungszieltage,
-          zahlungszieltageskonto,
-          zahlungszielskonto,
-          lieferdatum,
-          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid,abweichendebezeichnung)
-            VALUES ('',NOW(),'','".$this->app->User->GetFirma()."','$belegmax','".$this->app->erp->StandardZahlungsweise($projekt)."',
-              '".$this->app->erp->ZahlungsZielTage($projekt)."',
-              '".$this->app->erp->ZahlungsZielTageSkonto($projekt)."',
-              '".$this->app->erp->ZahlungsZielSkonto($projekt)."',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
+          $zahlungszieltage = $this->app->erp->ZahlungsZielTage($projekt);
+          $zahlungszieltageskonto = $this->app->erp->ZahlungsZielTageSkonto($projekt);
+          $zahlungszielskonto = $this->app->erp->ZahlungsZielSkonto($projekt);
     } else {
-      $this->app->DB->Insert("INSERT INTO rechnung (id,datum,bearbeiter,firma,belegnr,zahlungsweise,
-          zahlungszieltage,
-          zahlungszieltageskonto,
-          zahlungszielskonto,
-          lieferdatum,
-          status,projekt,adresse,auftragid,ohne_briefpapier,angelegtam,usereditid,abweichendebezeichnung)
-            VALUES ('',NOW(),'','".$this->app->User->GetFirma()."','$belegmax','".$this->app->erp->StandardZahlungsweise($projekt)."',
-              '0',
-              '0',
-              '0',NOW(),
-              'angelegt','$projekt','$adresse',0,'".$ohnebriefpapier."',NOW(),'$usereditid','$abweichendebezeichnung')");
-    }
-
+          $zahlungszieltage = 0;
+          $zahlungszieltageskonto = 0;
+          $zahlungszielskonto = 0;
+    }       
+       
+    $this->app->DB->Insert("INSERT INTO rechnung (
+            id,
+            datum,
+            bearbeiter,
+            firma,
+            belegnr,
+            zahlungsweise,
+            zahlungszieltage,
+            zahlungszieltageskonto,
+            zahlungszielskonto,
+            lieferdatum,
+            status,
+            projekt,
+            adresse,
+            auftragid,
+            ohne_briefpapier,
+            angelegtam,
+            usereditid,
+            abweichendebezeichnung
+        )
+        VALUES (
+            '',
+            NOW(),
+            '',
+            '".$this->app->User->GetFirma()."',
+            '$belegmax',
+            '".$this->app->erp->StandardZahlungsweise($projekt)."',
+            '".$zahlungszieltage."',
+            '".$zahlungszieltageskonto."',
+            '".$zahlungszielskonto."',
+            NOW(),
+            'angelegt',
+            '$projekt',
+            '$adresse',
+            0,
+            '".$ohnebriefpapier."',
+            NOW(),
+            '$usereditid',
+            '$abweichendebezeichnung'
+        )"
+    );
+    
     $id = $this->app->DB->GetInsertID();
     $this->app->erp->CheckVertrieb($id,'rechnung');
     $this->app->erp->CheckBearbeiter($id,'rechnung');
@@ -2409,8 +2715,8 @@ class Rechnung extends GenRechnung
       $deliverythresholdvatid = $this->app->DB->real_escape_string($deliverythresholdvatid);
       $this->app->DB->Update("UPDATE rechnung SET deliverythresholdvatid = '$deliverythresholdvatid' WHERE id = $id LIMIT 1");
     }
+    $this->SetXMLRechnung($id);
     $this->app->erp->SchnellFreigabe('rechnung',$id);
-
     $this->app->erp->LoadSteuersaetzeWaehrung($id,'rechnung',$projekt);
     $this->app->erp->EventAPIAdd('EventRechnungCreate',$id,'rechnung','create');
 
@@ -2721,7 +3027,7 @@ class Rechnung extends GenRechnung
         foreach ($zahlungen as $zahlung) {
             $row = array(
                 $zahlung['datum'],
-                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
+                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">
                     ".ucfirst($zahlung['doc_typ'])." 
                     ".$zahlung['doc_info']."
                 </a>",
@@ -2732,7 +3038,7 @@ class Rechnung extends GenRechnung
         }
 
         $salden = $this->app->erp->GetSaldenDokument($id,'rechnung');
-        foreach ($salden as $saldo) {   
+        foreach ($salden as $saldo) { 
             $row = array(
                 '',
                 '<b>Saldo</b>',
@@ -2741,7 +3047,7 @@ class Rechnung extends GenRechnung
             );
             $et->AddRow($row);
         }
-        return($et->DisplayNew('return',""));           
+        return($et->DisplayNew('return',""));
     }
   }
 
@@ -2749,17 +3055,22 @@ class Rechnung extends GenRechnung
     *   Recalculate the payments status with skonto
     */
 
-    function rechnung_zahlstatus_berechnen() {
+    function rechnung_zahlstatus_berechnen($rechnung_id = null) {
         // START RECALCULATE
         $this->app->erp->fibu_rebuild_tables();
+        
+        if (!empty($rechnung_id)) {
+            $condition = " AND id = '".$rechnung_id."'";
+        }
+        
         $offene_rechnungen = $this->app->DB->SelectArr("  SELECT 
                                                     id, 
                                                     soll, 
                                                     waehrung, 
                                                     datum, 
                                                     zahlungszieltage, 
-                                                    DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as zieldatum,       
-                                                    CURRENT_DATE > DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as faellig,     
+                                                    DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as zieldatum,
+                                                    CURRENT_DATE > DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as faellig,
                                                     zahlungszielskonto, 
                                                     TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll,
                                                     zahlungszieltageskonto, 
@@ -2768,25 +3079,26 @@ class Rechnung extends GenRechnung
                                                     rechnung 
                                                 WHERE 
                                                     belegnr <> '' AND zahlungsstatus = 'offen'
-                                                ");
+                                                ".$condition);
 
-        foreach ($offene_rechnungen as $offene_rechnung) {
+          foreach ($offene_rechnungen as $offene_rechnung) {
             $saldo = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung');
             if (!empty($saldo)) {
                 if ($saldo['waehrung'] == $offene_rechnung['waehrung']) {
-                    $offene_rechnung['ist'] = $offene_rechnung['soll']+$saldo['betrag'];              
+                    $offene_rechnung['ist'] = $offene_rechnung['soll']+$saldo['betrag'];
                     // Check for skonto
                     $skontorelevante_zahlungen = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung','zubuchung',$offene_rechnung['zieldatumskonto'])['betrag'];
                     $zielkonforme_zahlungen = $this->app->erp->GetSaldoDokument($offene_rechnung['id'],'rechnung','zubuchung',$offene_rechnung['zieldatum'])['betrag'];
                     // Check overall value
                     if ($saldo['betrag'] == 0) {
                         // ok -> will be marked as paid
-                    } else if ($skontorelevante_zahlungen >= $offene_rechnung['skontosoll']) {
+                    } else if (abs($skontorelevante_zahlungen-$offene_rechnung['skontosoll']) <= 0.01) {
                         // Skonto ok -> book difference
                         $sachkonto = $this->app->erp->Firmendaten('rechnung_skonto_kontorahmen');
-                        if (!empty($sachkonto)) {                                         
-                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,-$saldo['betrag'],$offene_rechnung['waehrung'],date('Y-m-d'),'');
+                        if (!empty($sachkonto)) {
+                            $this->app->erp->fibu_buchungen_buchen('rechnung',$offene_rechnung['id'],'kontorahmen',$sachkonto,$offene_rechnung['soll']-$skontorelevante_zahlungen,$offene_rechnung['waehrung'],date('Y-m-d'),'');
                             $offene_rechnung['ist'] = $offene_rechnung['soll'];
+                            $saldo['betrag'] = 0;
                         } else {
                         }
                     } else if ($offene_rechnung['faellig']) {
@@ -2805,11 +3117,11 @@ class Rechnung extends GenRechnung
                 } 
             }
             else {
-                $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$offene_rechnung['id']);        
+                $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$offene_rechnung['id']);
             }
         }  
         $this->app->erp->fibu_rebuild_tables();
-        // END RECALCULATE       
+        // END RECALCULATE
     }
 
 }

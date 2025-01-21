@@ -1,7 +1,7 @@
 <?php
 
 /*
- * SPDX-FileCopyrightText: 2022 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -17,6 +17,7 @@ use Xentral\Carrier\Dhl\Data\ShipmentItem;
 use Xentral\Carrier\Dhl\DhlApi;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 require_once(dirname(__DIR__).'/class.versanddienstleister.php');
 class Versandart_dhl extends Versanddienstleister{
@@ -102,7 +103,19 @@ class Versandart_dhl extends Versanddienstleister{
     switch ($json->addresstype) {
       case 0:
         $shipment->Receiver->Address = new ReceiverNativeAddress();
-        $shipment->Receiver->Address->name2 = $json->name2;
+                
+        $shipment->Receiver->name1 = $json->company_name;
+        $shipment->Receiver->Address->name2 = join(
+                        ';', 
+                        array_filter(
+                            [
+                                $json->contact_name,
+                                $json->company_division
+                            ],
+                            fn(string $item) => !empty(trim($item))
+                        )
+                    );                        
+                              
         $shipment->Receiver->Address->streetName = $json->street ?? '';
         $shipment->Receiver->Address->streetNumber = $json->streetnumber;
         $shipment->Receiver->Address->city = $json->city ?? '';
@@ -126,6 +139,20 @@ class Versandart_dhl extends Versanddienstleister{
         $shipment->Receiver->Postfiliale->city = $json->city ?? '';
         $shipment->Receiver->Postfiliale->zip = $json->zip ?? '';
         $shipment->Receiver->Postfiliale->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        break;
+      case 3:
+        $shipment->Receiver->Address = new ReceiverNativeAddress();
+                
+        $shipment->Receiver->name1 = $json->name;
+        $shipment->Receiver->Address->name2 = $json->contact_name;
+                       
+        $shipment->Receiver->Address->streetName = $json->street ?? '';
+        $shipment->Receiver->Address->streetNumber = $json->streetnumber;
+        $shipment->Receiver->Address->city = $json->city ?? '';
+        $shipment->Receiver->Address->zip = $json->zip ?? '';
+        $shipment->Receiver->Address->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        if (isset($json->address2) && !empty($json->address2))
+          $shipment->Receiver->Address->addressAddition[] = $json->address2;
         break;
     }
     $shipment->Receiver->Communication = new Communication();
@@ -219,4 +246,11 @@ class Versandart_dhl extends Versanddienstleister{
     }
     return null;
   }
+
+    public function GetShipmentStatus(string $tracking): ShipmentStatus|null
+    {
+        return null;
+    }
+
+
 }

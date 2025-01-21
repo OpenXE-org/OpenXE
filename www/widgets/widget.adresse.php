@@ -35,7 +35,9 @@ class WidgetAdresse extends WidgetGenAdresse
     $this->form->ReplaceFunction("kreditlimiteinmalig",$this,"ReplaceBetrag");
 
     $this->app->YUI->AutoComplete("sachkonto","sachkonto",1);
-    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");    
+    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");
+    
+    $this->form->ReplaceFunction("rechnung_smarty_template",$this,"ReplaceSmartyTemplate");        
 
     $this->form->ReplaceFunction("lat",$this,"ReplaceBetrag");
     $this->form->ReplaceFunction("lng",$this,"ReplaceBetrag");
@@ -47,6 +49,8 @@ class WidgetAdresse extends WidgetGenAdresse
     $this->app->YUI->CkEditor("mandatsreferenzhinweis","basic");
 
     $this->app->YUI->AutoComplete("lieferbedingung","lieferbedingungen");
+
+    $this->app->YUI->AutoComplete("rechnung_smarty_template","smarty_template",1);
 
     $this->app->YUI->AutoComplete("kassiererprojekt","projektname",1);
     $this->form->ReplaceFunction("kassiererprojekt",$this,"ReplaceProjekt");
@@ -442,6 +446,9 @@ class WidgetAdresse extends WidgetGenAdresse
     $field = new HTMLSelect("etikett",0);
     $field->AddOptionsAsocSimpleArray($etikettenart);
     $this->form->NewField($field);
+    $field = new HTMLSelect("lieferscheinpositionetikett",0);
+    $field->AddOptionsAsocSimpleArray($etikettenart);
+    $this->form->NewField($field);
 
   }
 
@@ -484,6 +491,11 @@ class WidgetAdresse extends WidgetGenAdresse
   function ReplaceKontorahmen($db,$value,$fromform)
   {
     return $this->app->erp->ReplaceKontorahmen($db,$value,$fromform);
+  }
+  
+  function ReplaceSmartyTemplate($db,$value,$fromform)
+  {
+    return $this->app->erp->ReplaceSmartyTemplate($db,$value,$fromform);
   }
 
   /**

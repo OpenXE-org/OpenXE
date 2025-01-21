@@ -1,4 +1,12 @@
 <?php
+
+/*
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 * 
@@ -430,8 +438,11 @@ class Ajax {
       $objekt = $this->app->YUI->dateien_module_objekt_map($module);      
 
       $ersteller = $this->app->DB->real_escape_string($this->app->User->GetName());
+
+      $geschuetzt = $this->app->DB->Select("SELECT geschuetzt FROM datei WHERE id = '".$id."'");
+
       $datei = $this->app->DB->SelectArr("SELECT d.id, s.id as sid FROM datei d LEFT JOIN datei_stichwoerter s ON d.id=s.datei LEFT JOIN datei_version v ON v.datei=d.id WHERE s.objekt LIKE '$objekt' AND s.parameter='$parameter' AND d.geloescht=0 AND d.id = '$id' LIMIT 1");
-      if($datei)
+      if($datei && !$geschuetzt)
       {
         $sid = $datei[0]['sid'];
         if($subjekt && $sid)
@@ -1201,6 +1212,7 @@ class Ajax {
     $rmodule = $this->app->Secure->GetGET('rmodule');
     $raction = $this->app->Secure->GetGET('raction');
     $rid = (int)$this->app->Secure->GetGET('rid');
+    $asObject = $this->app->Secure->GetGET('object');
     $pruefemodule = array('artikel','auftrag','angebot','rechnung','lieferschein','gutschrift','bestellung','produktion');
     $filter_projekt = 0;
     if($raction === 'edit' && $rid && in_array($rmodule, $pruefemodule))
@@ -1599,6 +1611,9 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         for($i = 0; $i < $carr; $i++){
           $newarr[] = $arr[$i]['iso'];
         }
+        break;
+      case "activelanguages":
+        $newarr = $this->app->DB->SelectArr('SELECT * FROM sprachen WHERE aktiv=1');
         break;
       case "geschaeftsbrief_vorlagen":
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',subjekt,' (',sprache,')') as name FROM geschaeftsbrief_vorlagen");
@@ -2520,15 +2535,19 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         //if($checkprojekt > 0 && $eigenernummernkreis=="1") $tmp_where = " AND projekt='$checkprojekt' ";
         //else $tmp_where = "";
 
-
+        $selectfields = $asObject ? 'art.id, art.nummer, art.name_de name' : "CONCAT(nummer,' ',name_de) as `name`";
         $arr = $this->app->DB->SelectArr(
-          "SELECT CONCAT(nummer,' ',name_de) as `name` 
-          FROM artikel AS art WHERE geloescht=0 AND  ($subwhere) AND geloescht=0 AND intern_gesperrt!=1 $tmp_where ".
+          "SELECT $selectfields 
+          FROM artikel AS art WHERE geloescht=0 AND ($subwhere) AND intern_gesperrt!=1 $tmp_where ".
           $this->app->erp->ProjektRechte('art.projekt'). ' LIMIT 20'
         );
-        $carr = !empty($arr)?count($arr):0;
-        for($i = 0; $i < $carr; $i++) {
-          $newarr[] = $arr[$i]['name'];
+        if ($asObject) {
+          $newarr = $arr;
+        } else {
+          $carr = !empty($arr) ? count($arr) : 0;
+          for ($i = 0; $i < $carr; $i++) {
+            $newarr[] = $arr[$i]['name'];
+          }
         }
         break;
 
@@ -2591,6 +2610,35 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         for($i = 0; $i < $carr; $i++) {
           $newarr[] = $arr[$i]['name'];
         }
+        break;
+        case "seriennummerverfuegbar":
+            $artikel = (int)$this->app->Secure->GetGET('artikel');
+            $lieferschein = (int)$this->app->Secure->GetGET('lieferschein');
+
+            $sql = "
+                SELECT DISTINCT
+                    s.seriennummer
+                FROM    
+                    seriennummern s
+                INNER JOIN
+                    lieferschein_position lp ON lp.artikel = s.artikel
+                WHERE
+                    s.eingelagert = 1
+                    AND s.seriennummer LIKE '%$term%' 
+                    AND (s.artikel = '$artikel' OR '$artikel' = '0')                 
+                LIMIT 20
+            ";
+
+            //echo($sql);
+
+            $arr = $this->app->DB->SelectArr($sql);
+
+            $carr = !empty($arr)?count($arr):0;
+            for($i = 0; $i < $carr; $i++) {
+              $newarr[] = $arr[$i]['seriennummer'];
+            }
+        break;
+
         break;
       case "artikelmengeinbeleg":
         $beleg = $this->app->Secure->GetGet('beleg');
@@ -3861,11 +3909,16 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         }
         break;
 
-            case "projektname":
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(p.abkuerzung,' ',p.name) as name FROM projekt p WHERE p.geloescht=0 AND status <> 'abgeschlossen' AND (p.name LIKE '%$term%' OR p.name LIKE '%$term2%' OR p.name LIKE '%$term3%' OR p.abkuerzung LIKE '%$term%' OR p.abkuerzung LIKE '%$term2%' OR p.abkuerzung LIKE '%$term3%') ".$this->app->erp->ProjektRechte());
-        $carr = !empty($arr)?count($arr):0;
-        for($i = 0; $i < $carr; $i++) {
-          $newarr[] = $arr[$i]['name'];
+      case "projektname":
+        $fields = $asObject ? 'p.id, p.abkuerzung, p.name' : "CONCAT(p.abkuerzung,' ',p.name) as name";
+        $arr = $this->app->DB->SelectArr("SELECT $fields FROM projekt p WHERE p.geloescht=0 AND status <> 'abgeschlossen' AND (p.name LIKE '%$term%' OR p.name LIKE '%$term2%' OR p.name LIKE '%$term3%' OR p.abkuerzung LIKE '%$term%' OR p.abkuerzung LIKE '%$term2%' OR p.abkuerzung LIKE '%$term3%') ".$this->app->erp->ProjektRechte());
+        if ($asObject) {
+          $newarr = $arr;
+        } else {
+          $carr = !empty($arr) ? count($arr) : 0;
+          for ($i = 0; $i < $carr; $i++) {
+            $newarr[] = $arr[$i]['name'];
+          }
         }
         break;
         
@@ -3992,6 +4045,17 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $newarr[] = $arr[$i]['bezeichnung'];
         }
         break;
+      break;
+      case "konto":
+        $cmd = $this->app->Secure->GetGET("cmd");
+
+        $arr = $this->app->DB->SelectArr("
+            SELECT CONCAT(kurzbezeichnung,' ',bezeichnung) as name FROM konten
+            WHERE (kurzbezeichnung LIKE '%$term%' OR bezeichnung LIKE '%$term%') ORDER by kurzbezeichnung");
+
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['name'];
       break;
       case "datevkonto":
         $arr = $this->app->DB->SelectArr("SELECT DISTINCT t.gegenkonto FROM
@@ -4163,6 +4227,14 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         );
 
         break;
+        case "smarty_template":
+            $newarr = $this->app->DB->SelectFirstCols(
+            sprintf(
+                "SELECT CONCAT(`id`,' ',`name`) FROM `smarty_templates` WHERE (`name` LIKE '%%%s%%')",
+                $term
+            )
+        );
+        break;
       default:
         $newarr = null;
         $this->app->erp->RunHook('ajax_filter_hook1', 5,$filtername,$newarr, $term, $term2, $term3);
@@ -4179,7 +4251,16 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
     }else{
       $cnewarr = !empty($newarr)?count($newarr):0;
       for($i=0;$i<$cnewarr;$i++) {
-        $tmp[] = $this->app->erp->ClearDataBeforeOutput(html_entity_decode($newarr[$i], ENT_QUOTES, 'UTF-8'));
+        $row = $newarr[$i];
+        if (is_string($row))
+          $tmp[] = $this->app->erp->ClearDataBeforeOutput(html_entity_decode($newarr[$i], ENT_QUOTES, 'UTF-8'));
+        else if (is_array($row)) {
+          $tmprow = [];
+          foreach ($row as $key => $value) {
+            $tmprow[$key] = $this->app->erp->ClearDataBeforeOutput(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
+          }
+          $tmp[] = $tmprow;
+        }
       }
     }
 

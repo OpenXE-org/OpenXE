@@ -720,25 +720,6 @@ class Systemlog {
       }
     }
     $typeToMessage['php-ssh2'] = (!empty($ret)?count($ret):0) - 1;
-    if(!function_exists('ioncube_loader_version')) {
-      $tmp['status'] = 'warning';
-      $tmp['text'] = 'Ioncube ist nicht installiert (Eine Installation ist trotzdem m&ouml;glich)';
-      $ret[] = $tmp;
-    }
-    else {
-      $ioncube_loader_version = ioncube_loader_version();
-      if($ioncube_loader_version[0]< 5 && $ioncube_loader_version[1] === '.') {
-        $tmp['status'] = 'warning';
-        $tmp['text'] = 'Die Ioncubeversion ist zu alt (Eine Installation ist trotzdem m&ouml;glich)';
-        $ret[] = $tmp;
-      }
-      else{
-        $tmp['status'] = 'ok';
-        $tmp['text'] = 'Ioncube verf&uuml;gbar';
-        $ret[] = $tmp;
-      }
-    }
-    $typeToMessage['ioncube'] = (!empty($ret)?count($ret):0) - 1;
     $post_max_size = @ini_get('client_max_body_size');
     if($post_max_size == ''){
       $post_max_size = @ini_get('post_max_size');

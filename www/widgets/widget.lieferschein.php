@@ -51,7 +51,7 @@ class WidgetLieferschein extends WidgetGenlieferschein
     $this->app->YUI->AutoComplete("projekt","projektname",1);
     $this->app->YUI->AutoComplete("auftragid","auftrag",1);
     $this->app->YUI->AutoComplete("aktion","aktionscode",1);
-    $this->app->YUI->AutoComplete("standardlager","lagerplatz");
+    $this->app->YUI->AutoComplete("standardlager","lager");
 
     $this->app->YUI->AutoComplete("lieferbedingung","lieferbedingungen");
 
@@ -64,7 +64,7 @@ class WidgetLieferschein extends WidgetGenlieferschein
     $this->form->ReplaceFunction("adresse",$this,"ReplaceKunde");
     $this->form->ReplaceFunction("lieferant",$this,"ReplaceLieferant");
     $this->form->ReplaceFunction("auftragid",$this,"ReplaceAuftrag");
-    $this->form->ReplaceFunction("standardlager",$this,"ReplaceLagerPlatz");
+    $this->form->ReplaceFunction("standardlager",$this,"ReplaceLager");
 
     if($this->app->erp->ModulVorhanden('kommissionskonsignationslager'))
     {

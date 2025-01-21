@@ -284,6 +284,36 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 return(-1);
             }
             echo_output($output);
+                      
+            // Remove files cache
+            echo_out("--------------- Cleaning Filescache ---------------\n");  
+            class UserdataInfo {
+                function __construct($dir) {
+                    require($dir."/../conf/user.inc.php");
+                }
+            }
+
+            $udi = new UserdataInfo($directory);     
+
+            $cache_files = array('cache_javascript.php','cache_services.php');
+          
+            $delete_cache_result = true;
+            
+            foreach ($cache_files as $cache_file) {
+                $filename = $udi->WFuserdata."/tmp/".$udi->WFdbname."/".$cache_file;
+                $delete_cache_file_result = @unlink($filename);            
+                if (!$delete_cache_file_result) {
+                    echo_out("Failed to delete ".$filename."! Please delete manually...\n");
+                    $delete_cache_result = false;
+                }
+            }
+            
+            if ($delete_cache_result) {
+                echo_out("--------------- Cleaning Filescache completed ---------------\n");
+            } else {
+                echo_out("--------------- Cleaning Filescache failed! ---------------\n");
+            }                      
+            
         } // $do_git
         else { // Dry run
             echo_out("--------------- Dry run, use -do to upgrade ---------------\n");

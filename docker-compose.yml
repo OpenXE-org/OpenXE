@@ -1,0 +1,62 @@
+version: '3.9'
+services:
+  vite:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: frontend
+    image: openxe_frontend
+    entrypoint: npm run dev
+    volumes:
+      - .:/app
+    ports:
+      - "5173:5173"
+  app_init:
+    image: openxe:test
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html/upgrade
+    entrypoint: php data/upgrade.php -db -do
+    depends_on:
+      mysql:
+        condition: service_healthy
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: openxe:test
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8081:80"
+    depends_on:
+      app_init:
+        condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: "rootpw"
+      MYSQL_USER: "openxe"
+      MYSQL_PASSWORD: "openxe"
+      MYSQL_DATABASE: "openxe"
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      interval: 5s
+      retries: 3
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--connect",
+          "--innodb_initialized"
+        ]
+      timeout: 30s
+
+volumes:
+  mysqldata: {}

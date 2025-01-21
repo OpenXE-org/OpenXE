@@ -138,6 +138,9 @@ class ObjGenProjekt
   private  $dhlzahlungmandant;
   private  $dhlretourenschein;
   private  $land;
+  private  $etiketten_kommissionierung;
+  private  $etiketten_kommissionierung_drucker;
+  private  $etiketten_kommissionierung_art;
   private  $etiketten_positionen;
   private  $etiketten_drucker;
   private  $etiketten_art;
@@ -256,6 +259,7 @@ class ObjGenProjekt
   private  $freifeld10;
   private  $mahnwesen_abweichender_versender;
   private  $lagerplatzlieferscheinausblenden;
+  private  $etiketten_kommissionierung_sort;
   private  $etiketten_sort;
   private  $eanherstellerscanerlauben;
   private  $chargenerfassen;
@@ -523,6 +527,9 @@ $result = $result[0];
     $this->dhlzahlungmandant=$result['dhlzahlungmandant'];
     $this->dhlretourenschein=$result['dhlretourenschein'];
     $this->land=$result['land'];
+    $this->etiketten_kommissionierung=$result['etiketten_kommissionierung'];
+    $this->etiketten_kommissionierung_drucker=$result['etiketten_kommissionierung_drucker'];
+    $this->etiketten_kommissionierung_art=$result['etiketten_kommissionierung_art'];
     $this->etiketten_positionen=$result['etiketten_positionen'];
     $this->etiketten_drucker=$result['etiketten_drucker'];
     $this->etiketten_art=$result['etiketten_art'];
@@ -641,6 +648,7 @@ $result = $result[0];
     $this->freifeld10=$result['freifeld10'];
     $this->mahnwesen_abweichender_versender=$result['mahnwesen_abweichender_versender'];
     $this->lagerplatzlieferscheinausblenden=$result['lagerplatzlieferscheinausblenden'];
+    $this->etiketten_kommissionierung_sort=$result['etiketten_kommissionierung_sort'];
     $this->etiketten_sort=$result['etiketten_sort'];
     $this->eanherstellerscanerlauben=$result['eanherstellerscanerlauben'];
     $this->chargenerfassen=$result['chargenerfassen'];
@@ -917,6 +925,9 @@ $result = $result[0];
       `dhlzahlungmandant`='{$this->dhlzahlungmandant}',
       `dhlretourenschein`='{$this->dhlretourenschein}',
       `land`='{$this->land}',
+      `etiketten_kommissionierung`='{$this->etiketten_kommissionierung}',
+      `etiketten_kommissionierung_drucker`='{$this->etiketten_kommissionierung_drucker}',
+      `etiketten_kommissionierung_art`='{$this->etiketten_kommissionierung_art}',
       `etiketten_positionen`='{$this->etiketten_positionen}',
       `etiketten_drucker`='{$this->etiketten_drucker}',
       `etiketten_art`='{$this->etiketten_art}',
@@ -1035,6 +1046,7 @@ $result = $result[0];
       `freifeld10`='{$this->freifeld10}',
       `mahnwesen_abweichender_versender`='{$this->mahnwesen_abweichender_versender}',
       `lagerplatzlieferscheinausblenden`='{$this->lagerplatzlieferscheinausblenden}',
+      `etiketten_kommissionierung_sort`='{$this->etiketten_kommissionierung_sort}',
       `etiketten_sort`='{$this->etiketten_sort}',
       `eanherstellerscanerlauben`='{$this->eanherstellerscanerlauben}',
       `chargenerfassen`='{$this->chargenerfassen}',
@@ -1307,6 +1319,9 @@ $result = $result[0];
     $this->etiketten_positionen='';
     $this->etiketten_drucker='';
     $this->etiketten_art='';
+    $this->etiketten_kommissionierung='';
+    $this->etiketten_kommissionierung_drucker='';
+    $this->etiketten_kommissionierung_art='';
     $this->seriennummernerfassen='';
     $this->versandzweigeteilt='';
     $this->nachnahmecheck='';
@@ -1422,6 +1437,7 @@ $result = $result[0];
     $this->freifeld10='';
     $this->mahnwesen_abweichender_versender='';
     $this->lagerplatzlieferscheinausblenden='';
+    $this->etiketten_kommissionierung_sort='';
     $this->etiketten_sort='';
     $this->eanherstellerscanerlauben='';
     $this->chargenerfassen='';
@@ -1829,6 +1845,12 @@ $result = $result[0];
   public function GetDhlretourenschein() { return $this->dhlretourenschein; }
   public function SetLand($value) { $this->land=$value; }
   public function GetLand() { return $this->land; }
+  public function SetEtiketten_Kommissionierung($value) { $this->etiketten_kommissionierung=$value; }
+  public function GetEtiketten_Kommissionierung() { return $this->etiketten_kommissionierung; }
+  public function SetEtiketten_Kommissionierung_Drucker($value) { $this->etiketten_kommissionierung_drucker=$value; }
+  public function GetEtiketten_Kommissionierung_Drucker() { return $this->etiketten_kommissionierung_drucker; }
+  public function SetEtiketten_Kommissionierung_Art($value) { $this->etiketten_kommissionierung_art=$value; }
+  public function GetEtiketten_Kommissionierung_Art() { return $this->etiketten_kommissionierung_art; }
   public function SetEtiketten_Positionen($value) { $this->etiketten_positionen=$value; }
   public function GetEtiketten_Positionen() { return $this->etiketten_positionen; }
   public function SetEtiketten_Drucker($value) { $this->etiketten_drucker=$value; }
@@ -2065,6 +2087,8 @@ $result = $result[0];
   public function GetMahnwesen_Abweichender_Versender() { return $this->mahnwesen_abweichender_versender; }
   public function SetLagerplatzlieferscheinausblenden($value) { $this->lagerplatzlieferscheinausblenden=$value; }
   public function GetLagerplatzlieferscheinausblenden() { return $this->lagerplatzlieferscheinausblenden; }
+  public function SetEtiketten_Kommissionierung_Sort($value) { $this->etiketten_kommissionierung_sort=$value; }
+  public function GetEtiketten_Kommissionierung_Sort() { return $this->etiketten_kommissionierung_sort; }
   public function SetEtiketten_Sort($value) { $this->etiketten_sort=$value; }
   public function GetEtiketten_Sort() { return $this->etiketten_sort; }
   public function SetEanherstellerscanerlauben($value) { $this->eanherstellerscanerlauben=$value; }

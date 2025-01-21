@@ -101,10 +101,7 @@ class Briefpapier extends SuperFPDF {
 
     $hintergrund = $this->getStyleElement('hintergrund');
 
-    if(!empty(erpAPI::Ioncube_Property('isdevelopmentversion'))) {
-      $this->setDevelopmentVersionBackground();
-    }
-    elseif($this->app->erp->BriefpapierHintergrunddisable)
+    if($this->app->erp->BriefpapierHintergrunddisable)
     {
     }
     else if($hintergrund=='logo')
@@ -305,8 +302,39 @@ class Briefpapier extends SuperFPDF {
     return '';
   }
 
+  // OpenXE Seriennummern
   public function GetChargeMHDSNString($type,$doctype,$doctypeid,$posid, $returnSimpleString = false)
   {
+    switch ($type) {
+        case 'sn':
+            $sql = "SELECT 
+                        s.seriennummer   
+                    FROM
+                        seriennummern s
+                    INNER JOIN
+                        seriennummern_beleg_position slp ON slp.beleg_typ = '".$doctype."' AND slp.seriennummer = s.id
+                    INNER JOIN ".$doctype."_position dp ON dp.id = slp.beleg_position
+                    INNER JOIN ".$doctype." d ON d.id = dp.".$doctype."
+                    WHERE
+                        slp.beleg_position = $posid
+            ";
+            $values = (array) $this->app->DB->SelectArr($sql);
+            return(implode(', ',array_column($values,'seriennummer')));
+        break;
+    }
+
+    if(!empty($values)){
+        if($returnSimpleString) {
+            return implode(', ', $values);
+        }
+        return implode("\r\n",$values);
+    }
+    return '';
+
+
+// XENTRAL Legacy
+/*
+
     $lieferschein_posid = 0;
     $auftrag_position_id = 0;
     $lieferschein = 0;
@@ -560,6 +588,7 @@ class Briefpapier extends SuperFPDF {
       return implode("\r\n",$tmp_string);
     }
     return '';
+*/
   }
 
   function CheckPosition($value,$doctype,$doctypeid,$posid)
@@ -2339,7 +2368,7 @@ class Briefpapier extends SuperFPDF {
     if(isset($this->textDetails['footer'])) {
       $freitext  = $this->getStyleElement('freitext');
 
-      if($this->getStyleElement("kleinunternehmer"))
+      if($this->getStyleElement("kleinunternehmer") == '1')
       {
         if($this->textDetails['footer']=="") $this->textDetails['footer'] ="Als Kleinunternehmer im Sinne von §19 Abs.1 UStG wird Umsatzsteuer nicht berechnet!";
         else $this->textDetails['footer'] .="\r\nAls Kleinunternehmer im Sinne von § 19 Abs. 1 UStG wird Umsatzsteuer nicht berechnet!";
@@ -3273,11 +3302,10 @@ class Briefpapier extends SuperFPDF {
           {
             $freifeldbeschriftung = $this->app->erp->Beschriftung('artikel_freifeld' . $ifreifeld);
             $freifeldtyp = $this->getStyleElement('freifeld' . $ifreifeld.'typ');
-            if($freifeldtyp==='select')
+            if($freifeldtyp==='select' && str_contains($freifeldbeschriftung, '|'))
             {
               $freifeldbeschriftung = strstr($freifeldbeschriftung, '|', true);
             }
-
             if($item['desc']!=''){
               $item['desc'] = $item['desc'] . "\r\n" . $freifeldbeschriftung . ': ' . $item['freifeld' . $ifreifeld];
             }
@@ -3305,7 +3333,7 @@ class Briefpapier extends SuperFPDF {
           );
         }
       }
-
+   
       if(!empty($this->doctype) && !empty($this->id) && strpos($item['desc'], '{') !== false) {
         $item['desc'] = $this->app->erp->ParseUserVars($this->doctype, $this->id ,$item['desc']);
       }
@@ -3525,7 +3553,7 @@ class Briefpapier extends SuperFPDF {
         ($this->doctype == "gutschrift" && $this->getStyleElement("gutschrift_artikelbild")) ||
         ($this->doctype == "angebot" && $this->getStyleElement("angebot_artikelbild"))
       ){
-        $datei = $this->app->DB->Select("SELECT datei FROM `datei_stichwoerter` WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='" . $item['artikel'] . "' ORDER by sort ASC LIMIT 1");
+        $datei = $this->app->erp->GetArtikelStandardbild($item['artikel'],true);
         if(!empty($datei)){
           $datei = $this->app->DB->Select("SELECT id FROM datei_version WHERE datei = '$datei' ORDER BY id DESC LIMIT 1");
         }

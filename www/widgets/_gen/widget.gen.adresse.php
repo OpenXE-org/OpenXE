@@ -279,6 +279,9 @@ class WidgetGenadresse
     $field->AddOption('{|nur Rechnung erstellen|}','rechnung');
     $this->form->NewField($field);
 
+    $field = new HTMLInput("rechnung_smarty_template","text","","","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("kommissionskonsignationslager","text","","","","","","","","","","0","","");
     $this->form->NewField($field);
 
@@ -673,7 +676,11 @@ class WidgetGenadresse
     $field = new HTMLInput("etikett","text","","30","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("lieferscheinpositionetikettdruck","","","1","0","0");
+    $this->form->NewField($field);
 
+    $field = new HTMLInput("lieferscheinpositionetikett","text","","30","","","","","","","","0","","");
+    $this->form->NewField($field);
   }
 
 }

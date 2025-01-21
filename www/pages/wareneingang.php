@@ -1251,7 +1251,6 @@ class Wareneingang {
                    ['sql' => 'artikel.nummer'],
                    '</a>',
                 );
-
               
                 $sql = "SELECT SQL_CALC_FOUND_ROWS 
                             p.pos,
@@ -1322,7 +1321,7 @@ class Wareneingang {
                 break;
             case "paketannahme_list":              
                 $allowed['paketannahme_list'] = array('list');
-                $heading = array('', 'Paket-Nr.', 'Datum', 'Status', 'Name', 'Kunde', 'Lieferant', 'Bestellung', 'LS-Nr.', 'RE-Nr.', 'Bearbeiter', 'Bemerkung', 'Men&uuml;');
+                $heading = array('', 'Paket-Nr.', 'Datum', 'Status', 'Name', 'Kunde', 'Lieferant', 'Bestellung', 'LS-Nr.', 'RE-Nr.','Verbindlichkeit', 'Bearbeiter', 'Bemerkung', 'Men&uuml;');
                 $width = array('1%', '5%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%'); // Fill out manually later
 
                 $drop = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`";
@@ -1338,6 +1337,7 @@ class Wareneingang {
                     'bestellung.belegnr',
                     'paketannahme.lsnr',
                     'paketannahme.renr',
+                    'verbindlichkeit.belegnr',
                     'paketannahme.bearbeiter',
                     'paketannahme.datum',
                     'paketannahme.bemerkung',
@@ -1352,6 +1352,7 @@ class Wareneingang {
                     'bestellung.belegnr',
                     'paketannahme.lsnr',
                     'paketannahme.renr',
+                    'verbindlichkeit.belegnr',
                     'paketannahme.bearbeiter',
                     'paketannahme.bemerkung');
 
@@ -1371,7 +1372,8 @@ class Wareneingang {
                     adresse.lieferantennummer,
                     GROUP_CONCAT(DISTINCT bestellung.belegnr), 
                     paketannahme.lsnr, 
-                    paketannahme.renr, 
+                    paketannahme.renr,
+                    GROUP_CONCAT(DISTINCT verbindlichkeit.belegnr), 
                     paketannahme.bearbeiter, 
                     paketannahme.bemerkung, 
                     paketannahme.id 
@@ -1383,7 +1385,11 @@ class Wareneingang {
                     LEFT JOIN bestellung_position
                     ON paketdistribution.bestellung_position = bestellung_position.id
                     LEFT JOIN bestellung
-                    ON bestellung.id = bestellung_position.bestellung";
+                    ON bestellung.id = bestellung_position.bestellung
+                    LEFT JOIN verbindlichkeit_position 
+                    ON verbindlichkeit_position.paketdistribution = paketdistribution.id
+                    LEFT JOIN verbindlichkeit ON verbindlichkeit.id = verbindlichkeit_position.verbindlichkeit
+                ";
 
                 $where = "1";
 
@@ -2008,14 +2014,29 @@ class Wareneingang {
 
         $id = $this->app->Secure->GetGET('id');
         $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=distriinhalt&id='.$id, 'Details');
+        
+
         $this->app->Tpl->Add('KURZUEBERSCHRIFT', ' Paketannahme / Leistungserfassung');
         $cmd = $this->app->Secure->GetGET('cmd');
         $lsnr = $this->app->Secure->GetPOST('lsnr');
         $renr = $this->app->Secure->GetPOST('renr');
-        $bemerkung = $this->app->Secure->GetPOST('bemerkung');
-
+        $bemerkung = $this->app->Secure->GetPOST('bemerkung');                        
         $bemerkung = str_replace(array('\r\n', '\r', '\n'), "\n", $bemerkung);
 
+        $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
+                        wareneingang_id: $id,
+                        ignore_date: true,
+                        only_missing: false,
+                        group_wareneingang: true);
+
+        $seriennummern_aktiv = !empty($seriennummern);
+        
+        if ($seriennummern_aktiv) {
+            $this->app->erp->MenuEintrag('index.php?module=seriennummern&action=enter&wareneingang='.$id, 'Seriennummern');
+            $seriennummern_check_result = $this->app->erp->SeriennummernCheckWareneingangWarnung($id, false);
+            $seriennummern_ok = empty($seriennummern_check_result);
+        }
+    
         $this->app->User->SetParameter('table_wareneingang_lieferant_ausfuellen', '');
 
         // Load from DB
@@ -2627,6 +2648,11 @@ class Wareneingang {
                 $this->app->YUI->Message('info','Wareneingang noch nicht abgeschlossen');
             }            
         }
+        
+        if ($seriennummern_aktiv && !$seriennummern_ok) {
+            $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
+        }
+        
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
        
     }

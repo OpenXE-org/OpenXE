@@ -124,6 +124,20 @@ class WidgetGenprojekt
     $field = new HTMLSelect("druckerlogistikstufe2",0,"druckerlogistikstufe2","","","0");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("etiketten_kommissionierung","","","1","0","0");
+    $this->form->NewField($field);
+
+    $field = new HTMLSelect("etiketten_kommissionierung_drucker",0,"etiketten_drucker","","","0");
+    $this->form->NewField($field);
+
+    $field = new HTMLSelect("etiketten_kommissionierung_art",0,"etiketten_art","","","0");
+    $this->form->NewField($field);
+
+    $field = new HTMLSelect("etiketten_kommissionierung_sort",0,"etiketten_sort","","","0");
+    $field->AddOption('{|Position in Lieferschein|}','0');
+    $field->AddOption('{|Lagerplatz aufsteigend|}','1');
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("etiketten_positionen","","","1","0","0");
     $this->form->NewField($field);
 

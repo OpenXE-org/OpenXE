@@ -443,7 +443,11 @@ $(document).ready(function () {
             "Speichern": function () {
                 var errMsg = '';
 
-                if ($("#datum").val() == "") errMsg = "Geben Sie bitte ein g&uuml;ltiges Datum ein (dd.mm.jjjj)"
+                if ($("#datum").val() == "") errMsg = "Geben Sie bitte ein g&uuml;ltiges Datum ein (dd.mm.jjjj)";
+                if ($("#von").val() == "") $("#von").val("00:00");
+                if ($("#von").val().includes(':') == false) $("#von").val($("#von").val()+":00");
+                if ($("#bis").val() == "") $("#bis").val("23:59");
+                if ($("#bis").val().includes(':') == false) $("#bis").val($("#bis").val()+":00");
                 if ($("#titel").val() == "") errMsg = "Geben Sie bitte einen Titel ein";
 
                 if (errMsg != "")

@@ -1,0 +1,33 @@
+/*
+ * SPDX-FileCopyrightText: 2023 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
+
+.vueAction {
+    cursor: pointer;
+}
+
+.flex {
+    display: flex;
+}
+
+.grid {
+    display: grid;
+}
+
+.flex-align-center {
+    align-items: center;
+}
+
+.justify-self-start {
+    justify-self: start;
+}
+
+.gap-1 {
+    gap: 0.25rem;
+}
+
+.grid label, .grid .p-checkbox {
+    padding-top: 5px;
+}

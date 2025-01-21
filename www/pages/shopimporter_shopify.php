@@ -14,6 +14,8 @@
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\OrderStatus;
+use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 
 include_once 'Shopimporter_Shopify_Adapter.php';
 
@@ -3381,17 +3383,21 @@ class Shopimporter_Shopify extends ShopimporterBase
 
   public function ImportUpdateAuftrag()
   {
-    $tmp = $this->CatchRemoteCommand('data');
+      /** @var OrderStatusUpdateRequest $req */
+    $req = $this->CatchRemoteCommand('data');
+    if ($req->orderStatus !== OrderStatus::Completed)
+        return;
 
     // pruefe ob $tmp[datei] vorhanden wenn nicht lege an sonst update [inhalt] und [checksum]
-    $auftrag = $tmp['auftrag'];
+    $auftrag = $req->shopOrderId;
     if(!empty($auftrag)){
-      $zahlungok = $tmp['zahlung'];
-      $versandok = $tmp['versand'];
-      $tracking = $tmp['tracking'];
-      $versandart = $tmp['versandart'];
       $data = array();
-      $data['fulfillment'] = array('tracking_number' => $tracking, 'tracking_company' => $versandart, 'notify_customer' => false);
+      $data['fulfillment'] = [
+          'tracking_numbers' => $req->getTrackingNumberList(),
+          'tracking_company' => $req->shipments[0]?->shippingMethod,
+          'notify_customer' => false,
+          'tracking_urls' => $req->getTrackingUrlList()
+      ];
       if(!empty($this->location)){
         $data['fulfillment']['location_id'] = $this->location;
       }
@@ -3410,16 +3416,10 @@ class Shopimporter_Shopify extends ShopimporterBase
       if($this->shopifytracking){
         $data['fulfillment']['notify_customer'] = true;
       }
-      if(!empty($tmp['trackinglinkraw'])) {
-        $data['fulfillment']['tracking_urls'] = [$tmp['trackinglinkraw']];
-      }
-      elseif(!empty($tmp['trackinglink'])){
-        $data['fulfillment']['tracking_urls'] = [$tmp['trackinglink']];
-      }
 
       $result = $this->adapter->call('orders/' . $auftrag . '/fulfillments.json', 'POST', $data);
       if($this->logging){
-        $this->app->erp->LogFile(array($tmp, $auftrag, $data, $result['data']));
+        $this->app->erp->LogFile(array($data, $auftrag, $data, $result['data']));
       }
       $this->adapter->call('orders/' . $auftrag . '/metafields.json', 'POST', array('metafield' => [
         'key' => 'sync_status',
@@ -3429,7 +3429,7 @@ class Shopimporter_Shopify extends ShopimporterBase
       ]));
     }else{
       if($this->logging){
-        $this->app->erp->LogFile(array($tmp, $auftrag,'Kein Auftrag'));
+        $this->app->erp->LogFile(array($data, $auftrag,'Kein Auftrag'));
       }
     }
     return 'OK';

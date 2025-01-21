@@ -75,8 +75,10 @@
                     [MANUELLFREIGABEEINKAUF]                    
                     [MANUELLFREIGABEBUCHHALTUNG]
                     [ALSBEZAHLTMARKIEREN]
+                    <option value="drucken">{|drucken|}</option>
                 </select>
-                <button name="submit" value="ausfuehren" class="ui-button-icon">{|Ausf&uuml;hren|}</button>
+                &nbsp;{|Drucker|}: <select name="seldrucker">[SELDRUCKER]</select>&nbsp;
+                <button name="submit" value="ausfuehren" class="ui-button-icon">{|Ausf&uuml;hren|}</button>                
             </fieldset>
         </form>
         [TAB1NEXT]

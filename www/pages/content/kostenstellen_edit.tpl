@@ -17,14 +17,14 @@
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|<!--Legend for this form area goes here>-->kostenstellen|}
+                                <legend>{|<!--Legend for this form area goes here>-->Kostenstellen|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <tr>
                                         <td>
                                             {|Nummer|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="nummer" id="nummer" value="[NUMMER]" size="20">
+                                            <input type="text" name="nummer" id="nummer" value="[NUMMER]" required size="20">
                                         </td>
                                     </tr>
                                     <tr>
@@ -32,7 +32,7 @@
                                             {|Beschreibung|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="beschreibung" id="beschreibung" value="[BESCHREIBUNG]" size="20">
+                                            <input type="text" name="beschreibung" id="beschreibung" value="[BESCHREIBUNG]" required size="20">
                                         </td>
                                     </tr>
                                     <tr>

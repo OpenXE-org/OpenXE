@@ -1122,6 +1122,15 @@ class YUI {
     return $newid;
   }
   
+  /*
+  * Move all special fields by one position after a certain position
+  * Use after inserting a position
+  */
+  function pushDrawItem($module, $id, $pos) {
+        $sql = "UPDATE `beleg_zwischenpositionen` set `pos` = `pos`+1 WHERE `pos` > $pos AND `doctype` = '$module' AND `doctypeid` = '$id'";
+        $this->app->DB->Update($sql);
+  }
+
   function ReSortDrawItem($module, $id)
   {
     $items = $this->app->DB->SelectArr("SELECT id, pos, sort FROM beleg_zwischenpositionen WHERE doctype = '".$module."' AND doctypeid = '$id' ORDER BY pos, sort");
@@ -1820,8 +1829,16 @@ class YUI {
           )
         );
         $projekt = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='$projekt' LIMIT 1");
-        $sort = $this->app->DB->Select("SELECT MAX(sort) FROM $table WHERE $module='$id' LIMIT 1");
-        $sort = $sort + 1;
+
+        $insertbefore = $this->app->Secure->GetPOST("insertbefore");    
+        if (is_numeric($insertbefore)) {
+            $sort = $insertbefore - 1;
+            $reload_afterwards = true;
+        } else {
+            $sort = $this->app->DB->Select("SELECT MAX(sort) FROM $table WHERE $module='$id' LIMIT 1");
+            $sort = $sort + 1;
+        }     
+
         $adresse = $docArr['adresse'];// $this->app->DB->Select("SELECT adresse FROM $module WHERE id='$id' LIMIT 1");
         $sprache = $docArr['sprache'];//$this->app->DB->Select("SELECT sprache FROM $module WHERE id='$id' LIMIT 1");
         if($sprache=='') {
@@ -1921,8 +1938,17 @@ class YUI {
           }
         }
 
-
         $this->app->erp->RunHook('AARLGPositionenSprache', 6, $module, $id, $artikel_id, $sprache, $bezeichnung, $beschreibung);
+
+        // OpenXE artikel_texte
+        $language = $this->app->erp->GetSpracheBeleg($module,$id);
+        $sql = "SELECT * FROM artikel_texte WHERE artikel = '".$artikel_id."' AND sprache = '".$language."'";
+        $uebersetzung = $this->app->DB->SelectRow($sql);        
+        if ($uebersetzung) {
+            $bezeichnung = $uebersetzung['name'];
+            $beschreibung = $uebersetzung['beschreibung'];
+        }
+
         $bezeichnung = $this->app->DB->real_escape_string($bezeichnung);
         $beschreibung = $this->app->DB->real_escape_string($beschreibung);
 
@@ -2600,6 +2626,8 @@ class YUI {
                 $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
                         CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
                         ";
+            } else {
+                $sql .= "'-' AS 'einkaufspreis', '-' AS 'DB',";
             }             
                
         $sql .= "b.id as id
@@ -2845,7 +2873,9 @@ class YUI {
                 $sql .= $this->FormatPreis('einkaufspreis')." as einkaufspreis,
                         CONCAT(".$this->app->erp->FormatPreis("ROUND(deckungsbeitrag*100,2)",2).",'%') AS DB,
                         ";
-            }          
+            } else {
+                $sql .= "'-' AS 'einkaufspreis', '-' AS 'DB',";
+            }             
                               
         } else {
         $sql = "SELECT $sortcol, CONCAT($hersteller_ansicht if(b.beschreibung!='',
@@ -3043,6 +3073,13 @@ class YUI {
       }
       $this->app->Tpl->Add('PAGE', "</fieldset>");
     }
+
+    if ($reload_afterwards) {
+      $this->pushDrawItem($module,$id,$sort);
+      header('Location: index.php?module='.$module.'&action=positionen&id='.$id);
+      exit;
+    }
+
   }
   
   function FormatPreis($spalte)
@@ -4182,14 +4219,14 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
 
         $sortmodus = $this->TableSearchFilter($name, 1, 'sortmodus',  0,0,  'checkbox');
         // headings
-        $heading = array('','','','Titel', 'Stichwort', 'Version','Gr&ouml;&szlig;e', 'Ersteller','Version','Datum','Sortierung','Men&uuml;');
-        $width = array('1%','1%','10','40%', '15%', '5%','10%','15%', '10%', '10%','15%', '10%','5%','1%');
-        $findcols = array('open','d.id','d.id',"CONCAT(d.titel,' ',v.dateiname)", 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','v.bemerkung','v.datum', 's.sort','s.id');
+        $heading = array('','','','Titel', 'Stichwort', 'Version','Gr&ouml;&szlig;e', 'Ersteller','Beschreibung','Datum','Sortierung','Gesch&uuml;tzt','Men&uuml;');
+        $width = array('1%','1%','10','40%', '15%', '5%','10%','15%', '10%', '10%','15%', '10%','5%','1%','1%');
+        $findcols = array('open','d.id','d.id',"CONCAT(d.titel,' ',v.dateiname)", 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','d.beschreibungbemerkung','v.datum', 's.sort','d.geschuetzt','s.id');
         $searchsql = array('d.titel', 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','v.bemerkung','v.dateiname',"DATE_FORMAT(v.datum, '%d.%m.%Y')");
 
         $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"#\" onclick=editdatei(%value%,\"$cmd\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=delete&cmd=".urlencode($objekt)."&id=%value%\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
-        $menucol = 11;
-        $alignright=array(6,7,11);
+        $menucol = 12;
+        $alignright=array(6,7,11,12);
 
         if(!function_exists('imagejpeg'))
         {
@@ -4199,10 +4236,21 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         }
         
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS d.id,'<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open,concat('<input type=\"checkbox\" id=\"auswahl_',d.id,'\"  onchange=\"chauswahl();\" value=\"1\" />'),
-        $img, 
-        
-        if(d.titel!='',CONCAT(d.titel,'<br><i style=color:#999>',v.dateiname,'</i>'),v.dateiname), s.subjekt, v.version, if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),''), v.ersteller, v.bemerkung, DATE_FORMAT(v.datum, '%d.%m.%Y'),s.sort,".($sortmodus?"s.id": "d.id")." 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+            d.id,
+            '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' as open,
+            CONCAT('<input type=\"checkbox\" id=\"auswahl_',d.id,'\"  onchange=\"chauswahl();\" value=\"1\" />'),
+            $img,        
+            if(d.titel!='',CONCAT(d.titel,'<br><i style=color:#999>',v.dateiname,'</i>'),v.dateiname), 
+            s.subjekt,
+            v.version,
+            if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),''),
+            v.ersteller,
+            d.beschreibung,
+            ".$this->app->erp->FormatDate("v.datum").",
+            s.sort,
+            d.geschuetzt,
+            ".($sortmodus?"s.id": "d.id")." 
             FROM `datei` AS `d` 
             INNER JOIN `datei_stichwoerter` AS `s` ON d.id=s.datei
             LEFT JOIN (
@@ -5262,6 +5310,25 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
                   ansprechpartner ansp 
                 WHERE 
                   ansp.name LIKE '%" . $parameter['ansprechpartner'] . "%'
+              )
+            )
+          ";
+        }
+               
+        if(isset($parameter['lieferadresse']) && !empty($parameter['lieferadresse'])) {   
+          $paramsArray[] = "
+            ( 
+              a.id IN
+              (
+                SELECT 
+                  adresse 
+                FROM 
+                  lieferadressen lfadr
+                WHERE 
+                  lfadr.name LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.strasse LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.plz LIKE '%" . $parameter['lieferadresse'] . "%' OR
+                  lfadr.ort LIKE '%" . $parameter['lieferadresse'] . "%'
               )
             )
           ";
@@ -6706,11 +6773,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
-        $menu .= "<td>";
+/*        $menu .= "<td>";
         $menu .= "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\">";
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu .= "</a>";
-        $menu .= "</td>";
+        $menu .= "</td>";*/
         $menu .= "<td>";
         $menu .= '<a href="#" class="label-manager" data-label-column-number="6" data-label-reference-id="%value%" data-label-reference-table="rechnung">';
         $menu .= '<span class="label-manager-icon"></span>';
@@ -6759,6 +6826,10 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
         $width[] = '1%';
         $findcols[] = 'r.id';
+        $heading[] = '';
+
+        $width[] = '1%';
+        $findcols[] = 'r.id';
         $heading[] = 'Men&uuml;';
 
         $parameter = $this->app->User->GetParameter('table_filter_rechnung');
@@ -6786,8 +6857,9 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                     if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})),
                     '') 
                 as fehlt,
-                if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status,
-                ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')." 
+                if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status
+                ".(!empty($zusatzcols)?','.implode(', ',$zusatzcols):'').",
+                ".$this->GetRechnungFileDownloadLinkIconSQL().",
                 r.id
                 FROM  rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id LEFT JOIN auftrag au ON au.id = r.auftragid ";
         if(isset($parameter['artikel']) && !empty($parameter['artikel'])) {
@@ -6983,7 +7055,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
         // SQL statement
         $sql =
-          "SELECT 
+          "SELECT SQL_CALC_FOUND_ROWS
           b.id,
           '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
           'ENTWURF' AS `belegnr`, 
@@ -14099,36 +14171,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       }
       $werte = $werte . $values[$i + 1];
       $this->app->Tpl->Add('CHARTS', "c.add('', '$color', [ $werte]);");
-    }
-    
-    function DateiUploadNeuVersion($parsetarget, $datei) {
-      $speichern = $this->app->Secure->GetPOST("speichern");
-      $module = $this->app->Secure->GetGET("module");
-      $action = $this->app->Secure->GetGET("action");
-      $id = $this->app->Secure->GetGET("id");
-      if($id)$this->app->Tpl->Set('ID',$id);
-      if ($speichern != "") {
-        $titel = $this->app->Secure->GetPOST("titel");
-        $beschreibung = $this->app->Secure->GetPOST("beschreibung");
-        $stichwort = $this->app->Secure->GetPOST("stichwort");
-        $this->app->Tpl->Set('TITLE', $titel);
-        $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
-        
-        if ($_FILES['upload']['tmp_name'] == "") {
-          $this->app->Tpl->Set('ERROR', "<div class=\"info\">Bitte w&auml;hlen Sie eine Datei aus und laden Sie diese herauf!</div>");
-          $this->app->erp->EnableTab("tabs-2");
-        } else {
-
-          //$fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'],$titel,$beschreibung,"",$_FILES['upload']['tmp_name'],$this->app->User->GetName());
-          $this->app->erp->AddDateiVersion($datei, $this->app->User->GetName(), $_FILES['upload']['name'], "Neue Version", $_FILES['upload']['tmp_name']);
-          header("Location: index.php?module=$module&action=$action&id=$id");
-          exit;
-        }
-      }
-      $this->app->Tpl->Set('STARTDISABLE', "<!--");
-      $this->app->Tpl->Set('ENDEDISABLE', "-->");
-      $this->app->Tpl->Parse($parsetarget, "datei_neudirekt.tpl");
-    }
+    }     
     
     function DateiUpload($parsetarget, $objekt, $parameter, $optionen = null) {
       $speichern = $this->app->Secure->GetPOST("speichern");
@@ -14201,61 +14244,18 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       $id = $this->app->Secure->GetGET("id");
       $sid = $this->app->Secure->GetGET("sid");
       if($id)$this->app->Tpl->Set('ID', $id);
+
+      // Get files here      
       if ($speichern != "") {
-        if($parameter == '')$parameter = $id;
-        if(isset($_POST['dateiv']))
-        {
-          foreach($_POST['dateiv'] as $k => $v)
-          {
-            $name = $this->app->DB->real_escape_string($_POST['dateiname'][$k]);
-            $titel = $this->app->DB->real_escape_string($_POST['dateititel'][$k]);
-            $beschreibung = $this->app->DB->real_escape_string($_POST['beschreibung'][$k]);
-            $stichwort = $this->app->DB->real_escape_string($_POST['dateistichwort'][$k]);
-            
-            //$getMime = explode('.', $name);
-            //$mime = end($getMime);
-
-            $data = explode(',', $v);
-
-            $encodedData = str_replace(' ','+',$data[1]);
-            $decodedData = base64_decode($encodedData);
-            
-            $this->app->Tpl->Set('TITLE', $titel);
-            $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
-            
-            if ($v == "" ) {
-              $this->app->Tpl->Set('ERROR', "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>");
-              $this->app->erp->EnableTab("tabs-2");
-            } else {
-              $fileid = $this->app->erp->CreateDatei($name, $titel, $beschreibung, "", $decodedData, $this->app->User->GetName());
-
-              // stichwoerter hinzufuegen
-              $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
-            }            
-          }
-          if($_FILES['upload']['tmp_name'] == "")
-          {
-            header("Location: index.php?module=$_module&action=$_action&id=$id&sid=$sid".($typ!=''?"&typ=".$typ:''));
-          }
+        if($parameter == '') {
+            $parameter = $id;        
         }
-
-        
-        
-        $titel = $this->app->Secure->GetPOST("titel");
-        $beschreibung = $this->app->Secure->GetPOST("beschreibung");
-        $stichwort = $this->app->Secure->GetPOST("stichwort");
-        $this->app->Tpl->Set('TITLE', $titel);
-        $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
-
-        if ($_FILES['upload']['tmp_name'] == "" && empty($_POST['dateiv'])) {
-          $this->app->Tpl->Set('ERROR', "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>");
-          $this->app->erp->EnableTab("tabs-2");
-        } elseif($_FILES['upload']['tmp_name'] != '') {
-          $fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'], $titel, $beschreibung, "", $_FILES['upload']['tmp_name'], $this->app->User->GetName());
-
-          // stichwoerter hinzufuegen
-          $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
-          header("Location: index.php?module=$_module&action=$_action&id=$id&sid=$sid".($typ!=''?"&typ=".$typ:''));
+        $retval = $this->FilesFromUploadtoDMS($objekt, $parameter);
+        if ($retval !== true) {
+            $this->app->Tpl->Set('ERROR', implode(', ',$retval));
+            $this->app->erp->EnableTab("tabs-2");
+        } else {
+            header("Location: index.php?module=$_module&action=$_action&id=$id&sid=$sid".($typ!=''?"&typ=".$typ:''));                        
         }
       }
 
@@ -14521,6 +14521,87 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       }else{
         $this->app->Tpl->Parse($parsetarget, 'dateienuebersicht.tpl');
       }
+    }
+
+    /*
+    *   Retrieve uploaded files and put them into DMS
+    *   $datei: given file, just add a new version
+    *   Return array of errors or true
+    */
+    function FilesFromUploadtoDMS($objekt, $parameter, $datei = false) {
+
+        $retval = true;
+        // Files come from drag'n'drop
+        if(isset($_POST['dateiv']))
+        {              
+            foreach($_POST['dateiv'] as $k => $v)
+            {
+                $name = $this->app->DB->real_escape_string($_POST['dateiname'][$k]);
+                $titel = $this->app->DB->real_escape_string($_POST['dateititel'][$k]);
+                $beschreibung = $this->app->DB->real_escape_string($_POST['dateibeschreibung'][$k]);
+                $stichwort = $this->app->DB->real_escape_string($_POST['dateistichwort'][$k]);
+
+                $data = explode(',', $v);            
+
+                $encodedData = str_replace(' ','+',$data[1]);
+                $decodedData = base64_decode($encodedData);
+
+                $this->app->Tpl->Set('TITLE', $titel);
+                $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
+
+                if ($v == "" ) {
+                    $this->app->Tpl->Set('ERROR', "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>");
+                    $this->app->erp->EnableTab("tabs-2");
+                } else {
+                    // Save file to disk first
+                    $tempfilename = rtrim($this->app->erp->GetTMP(), '/') . "/" . $name;
+                    if($handle = fopen($tempfilename, "wb")){
+                        fwrite($handle, $decodedData);
+                        fclose($handle);
+                        // Add file to DMS
+                        if ($datei) {
+                            $this->app->erp->AddDateiVersion($datei, $this->app->User->GetName(), $name, "Neue Version", $tempfilename);                    
+                        } else {
+                            $fileid = $this->app->erp->CreateDatei($name, $titel, $beschreibung, "", $tempfilename, $this->app->User->GetName());
+                            // stichwoerter hinzufuegen
+                            $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
+                        }
+                    } else {
+                        if ($retval === true) {
+                            $retval = array();
+                        } 
+                        $retval[] = "<div class=\"error\">Datei konnte nicht gespeichert werden: ".$name."</div>";
+                    }
+                }            
+            }
+        } // drag'n'drop
+        // Single file comes from browse button
+        else {
+            $titel = $this->app->Secure->GetPOST("titel");
+            $beschreibung = $this->app->Secure->GetPOST("beschreibung");
+            $stichwort = $this->app->Secure->GetPOST("stichwort");
+            $this->app->Tpl->Set('TITLE', $titel);
+            $this->app->Tpl->Set('BESCHREIBUNG', $beschreibung);
+
+            if ($_FILES['upload']['tmp_name'] == "" && empty($_POST['dateiv'])) {
+              $this->app->erp->EnableTab("tabs-2");
+                if ($retval === true) {
+                    $retval = array();
+                } 
+                $retval[] = "<div class=\"error\">Keine Datei ausgew&auml;hlt!</div>";
+
+            } elseif ($_FILES['upload']['tmp_name'] != '') {       
+                if ($datei) {
+                    $this->app->erp->AddDateiVersion($datei, $this->app->User->GetName(), $_FILES['upload']['name'], "Neue Version", $_FILES['upload']['tmp_name']);
+                }
+                else {
+                    $fileid = $this->app->erp->CreateDatei($_FILES['upload']['name'], $titel, $beschreibung, "", $_FILES['upload']['tmp_name'], $this->app->User->GetName());
+                    // stichwoerter hinzufuegen
+                    $this->app->erp->AddDateiStichwort($fileid, $stichwort, $objekt, $parameter);
+                }                
+            }
+        }
+        return($retval);
     }
 
     function SortListAdd($parsetarget, &$ref, $menu, $sql, $sort = true) {
@@ -14792,7 +14873,7 @@ source: "index.php?module=ajax&action=filter&filtername=' . $filter . $extendurl
       if ($module == "angebot" || $module == "auftrag" || $module == "rechnung" || $module == "gutschrift" || $module == "proformarechnung") {
         
         if ($schreibschutz != 1) {
-          $addrow = array('<form action="" method="post" id="myform">', '[ARTIKELSTART]<input type="text" size="30" name="artikel" id="artikel" onblur="window.setTimeout(\'selectafterblur()\',200);">[ARTIKELENDE]', '<input type="text" name="projekt" id="projekt" size="10" readonly onclick="checkhere()" >', '<input type="text" name="nummer" id="nummer" size="7">', '<input type="text" size="8" name="lieferdatum" id="lieferdatum">', '<input type="text" name="menge" id="menge" size="5" onblur="window.setTimeout(\'selectafterblurmenge()\',200); document.getElementById(\'preis\').style.background =\'none\';">', '<input type="text" name="preis" id="preis" size="10" onclick="checkhere();">', '<input type="text" name="waehrung" id="waehrung" size="10" onclick="checkhere();">' ,'<input type="text" name="rabatt" id="rabatt" size="7">','','');
+          $addrow = array('<form action="" method="post" id="myform"><input type="number" min="1" size="4" name="insertbefore">', '[ARTIKELSTART]<input type="text" size="30" name="artikel" id="artikel" onblur="window.setTimeout(\'selectafterblur()\',200);">[ARTIKELENDE]', '<input type="text" name="projekt" id="projekt" size="10" readonly onclick="checkhere()" >', '<input type="text" name="nummer" id="nummer" size="7">', '<input type="text" size="8" name="lieferdatum" id="lieferdatum">', '<input type="text" name="menge" id="menge" size="5" onblur="window.setTimeout(\'selectafterblurmenge()\',200); document.getElementById(\'preis\').style.background =\'none\';">', '<input type="text" name="preis" id="preis" size="10" onclick="checkhere();">', '<input type="text" name="waehrung" id="waehrung" size="10" onclick="checkhere();">' ,'<input type="text" name="rabatt" id="rabatt" size="7">','','');
           $addrow[] = '<input type="submit" value="einf&uuml;gen" name="ajaxbuchen">
             <script type="text/javascript">
             document.onkeydown = function(evt) {
@@ -15849,4 +15930,24 @@ function IframeDialog($width, $height, $src = "") {
     return 'convert(cast(convert('.$field.' using  latin1) as binary) using utf8)';
     //return $field.' COLLATE utf8_general_ci'; ersetzt Original
   }
+
+    public function GetRechnungFileDownloadLinkIconSQL($tablename = 'r') {
+        return(
+            "IF(".$tablename.".xmlrechnung,
+            CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\">'),
+            CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\">')
+            )"
+        );
+    }
+
+    public function GetRechnungFileDownloadLinkIcon($id) {
+        $xmlrechnung =  $this->app->DB->SelectRow("SELECT belegnr, xmlrechnung FROM rechnung WHERE id = '".$id."' LIMIT 1");
+        if ($xmlrechnung['belegnr'] == '') {
+            return('');
+        }  else if ($xmlrechnung['xmlrechnung']) {
+            return("<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>");
+        } else {
+           return("<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>");
+        }
+    }
 }

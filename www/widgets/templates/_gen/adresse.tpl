@@ -478,6 +478,10 @@ function abweichend(cmd) {
 									<tr>
 										<td>{|Belege im Auto-Versand erstellen|}:</td>
 										<td>[ART][MSGART]</td>
+									</tr>
+									<tr>
+										<td>{|Smarty Template für XML-Rechnung|}:</td>
+										<td>[RECHNUNG_SMARTY_TEMPLATE][MSGRECHNUNG_SMARTY_TEMPLATE]</td>
 									</tr> [VORKOMMISSIONIERLAGER]
 									<tr>
 										<td>{|Kommissions-/Konsignationslager|}:</td>
@@ -785,6 +789,14 @@ function abweichend(cmd) {
 								<tr>
 									<td width="210">{|Etikett|}:</td>
 									<td>[ETIKETT][MSGETIKETT]</td>
+								</tr>
+								<tr>
+									<td width="210">{|Lieferschein-Position-Etiketten|}:</td>
+									<td>[LIEFERSCHEINPOSITIONETIKETTDRUCK][MSGLIEFERSCHEINPOSITIONETIKETTDRUCK]&nbsp;<i>Mit dem Lieferschein werden Etiketten f&uuml;r jede Position gedruckt</i></td>
+								</tr>
+								<tr>
+									<td width="210">{|Etikett|}:</td>
+									<td>[LIEFERSCHEINPOSITIONETIKETT][MSGLIEFERSCHEINPOSITIONETIKETT]</td>
 								</tr>
 							</table>
 						</fieldset>

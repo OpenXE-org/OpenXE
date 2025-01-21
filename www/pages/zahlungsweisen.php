@@ -794,50 +794,26 @@ class Zahlungsweisen {
       }
     }
 
-    if($this->app->erp->isIoncube() && $this->app->Secure->GetPOST('testen')) {
-      $modul = $this->app->Secure->GetPOST('modul');
-      if($modul) {
-        $testapp = $modul;
-        if(is_file(dirname(__DIR__).'/update.php')) {
-          $result = '';
-          include_once dirname(__DIR__).'/update.php';
-          if($result === 'OK') {
-            $this->app->Tpl->Add(
-              'MESSAGE',
-              '<div class="info">Das Modul wurde zum Testen angefragt. Bitte update xentral in 
-                fr&uuml;hestens 10 Minuten um das Modul zu laden</div>'
-            );
-          }
-          else{
-            $this->app->Tpl->Add(
-              'MESSAGE',
-              '<div class="error">Es ist ein Fehler beim Updaten aufgetreten: '.$result.'</div>');
-          }
-        }
-      }
-    }
-    else{
-      $get = $this->app->Secure->GetGET('get');
-      if($get && $module){
-        if(isset($module['kauf'])){
-          foreach($module['kauf'] as $k => $v) {
-            if($v['md5'] == $get){
-              $mods = $this->app->erp->getAppList();
-              foreach($mods as $k2 => $v2) {
-                if(md5($v2['Bezeichnung']) == $get){
-                  $this->app->Tpl->Add(
-                    'MESSAGE',
-                    '<div class="info">Bitte best&auml;tigen: <form method="POST" action="index.php?module=versandarten&action=create"><input type="hidden" name="modul" value="'.$k2.'" /><input type="submit" style="float:right;" value="Testmodul '.$v2['Bezeichnung'].' anfragen" name="testen" /></form></div>'
-                  );
-                  break;
-                }
+    $get = $this->app->Secure->GetGET('get');
+    if($get && $module){
+      if(isset($module['kauf'])){
+        foreach($module['kauf'] as $k => $v) {
+          if($v['md5'] == $get){
+            $mods = $this->app->erp->getAppList();
+            foreach($mods as $k2 => $v2) {
+              if(md5($v2['Bezeichnung']) == $get){
+                $this->app->Tpl->Add(
+                  'MESSAGE',
+                  '<div class="info">Bitte best&auml;tigen: <form method="POST" action="index.php?module=versandarten&action=create"><input type="hidden" name="modul" value="'.$k2.'" /><input type="submit" style="float:right;" value="Testmodul '.$v2['Bezeichnung'].' anfragen" name="testen" /></form></div>'
+                );
+                break;
               }
             }
           }
         }
       }
     }
-    
+
     $modullist = $this->getApps();
     /** @var Appstore $appstore */
     $appstore = $this->app->loadModule('appstore');

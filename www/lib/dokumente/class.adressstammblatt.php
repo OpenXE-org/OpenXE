@@ -21,6 +21,7 @@ class AdressstammblattPDF extends Dokumentenvorlage {
     $this->app=$app;
     //parent::Dokumentenvorlage();
     $this->doctype="adresse";
+    $this->table="adresse";
     $this->doctypeOrig="Adressstammblatt";
     parent::__construct($this->app,$projekt);
   } 
@@ -105,7 +106,7 @@ class AdressstammblattPDF extends Dokumentenvorlage {
     if($adresse['mitarbeiternummer']!="")
       $numbers[] = array("Mitarbeiter Nr.",$adresse['mitarbeiternummer']);  
 
-    if(count($numbers)>0)
+    if($numbers?count($numbers):0>0)
       $this->renderInfoBox($numbers);
 
     $this->Ln(5);
@@ -120,8 +121,8 @@ class AdressstammblattPDF extends Dokumentenvorlage {
       ', E-Mail: ',email
       ) as 'value' FROM ansprechpartner WHERE adresse='".$adresse['id']."'");
 
-    for($i=0;$i<count($ansprechpartner_tmp);$i++) $ansprechpartner[] = $ansprechpartner_tmp[$i]['value'];
-    if(count($ansprechpartner) > 0)
+    for($i=0;$i<($ansprechpartner_tmp?count($ansprechpartner_tmp):0);$i++) $ansprechpartner[] = $ansprechpartner_tmp[$i]['value'];
+    if($ansprechpartner_tmp?count($ansprechpartner):0 > 0)
     { 
       $this->Ln(5);
       $this->renderHeading("Ansprechpartner",8);
@@ -132,7 +133,7 @@ class AdressstammblattPDF extends Dokumentenvorlage {
       telefon,email
       FROM lieferadressen WHERE adresse='".$adresse['id']."' ORDER by standardlieferadresse DESC");
 
-    for($i=0;$i<count($lieferadressen_tmp);$i++) {
+    for($i=0;$i<($lieferadressen_tmp?count($lieferadressen_tmp):0);$i++) {
       $lieferadressen_tmp[$i]['value']=""; 
       foreach($lieferadressen_tmp[$i] as $key=>$value)
       {
@@ -161,7 +162,7 @@ class AdressstammblattPDF extends Dokumentenvorlage {
       $lieferadressen[] = $lieferadressen_tmp[$i]['value'].$standard;
     }
    
-    if(count($lieferadressen) > 0)
+    if($lieferadressen?count($lieferadressen):0 > 0)
     { 
       $this->Ln(5);
       $this->renderHeading("Lieferadressen",8);

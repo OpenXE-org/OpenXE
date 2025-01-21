@@ -139,9 +139,11 @@ class Etiketten extends GenEtiketten {
 
     $pos = $this->app->DB->SelectArr(
       sprintf(
-        'SELECT art.*,lp.id, lp.bezeichnung, lp.nummer as lpnummer, lp.menge
+        'SELECT art.*,lp.id, lp.bezeichnung, lp.nummer as lpnummer, TRIM(lp.menge)+0 AS menge, lp.artikelnummerkunde, a.belegnr as auftragnummer, a.internet, a.ihrebestellnummer
           FROM lieferschein_position AS lp
-          LEFT JOIN artikel AS art ON lp.artikel = art.id
+          INNER JOIN lieferschein AS l ON lp.lieferschein = l.id
+          LEFT JOIN auftrag a ON l.auftragid = a.id
+          LEFT JOIN artikel AS art ON lp.artikel = art.id          
           WHERE lp.lieferschein= %d ORDER BY %s',
         (int)$lieferschein, $etiketten_sort == 1?'lp.lagertext':'lp.sort'
       )
@@ -191,13 +193,17 @@ class Etiketten extends GenEtiketten {
           $tmp['name_de'] = $row['bezeichnung'];
           $tmp['nummer'] = $row['nummer'];
           unset($tmp['bezeichnung']);
-          $tmp['menge'] = str_replace('.', ',', $this->app->erp->FormatMengeBetrag($row['menge'])); //$pos[$i]['menge'];
+          $tmp['menge'] = str_replace('.', ',', $row['menge']);
           $tmp['lager_platz_name'] = $lagerbezeichnung;
-
+          $tmp['auftragnummer'] = $row['auftragnummer'];
+          $tmp['internet'] = $row['internet'];
+          $tmp['kundenbestellnummer'] = $row['ihrebestellnummer'];
+          $tmp['artikelnummerkunde'] = $row['artikelnummerkunde'];
           $this->app->erp->EtikettenDrucker($etiketten_art, 1, 'lieferschein', $lieferschein, $tmp, '', $etiketten_drucker, '', false, $adresse, 'lieferschein_position');
         }
       }
     }
+/*
     foreach($tmp as $key=>$value) {
       $tmp[$key] = "CUT/Trennetikett";
     }
@@ -209,6 +215,7 @@ class Etiketten extends GenEtiketten {
     $tmp['lager_platz_name']="CUT/Trennetikett";
 
     $this->app->erp->EtikettenDrucker($etiketten_art,1,'lieferschein', $lieferschein,$tmp,'',$etiketten_drucker,'',false,$adresse,'lieferschein_position');
+*/
   }
 }
 

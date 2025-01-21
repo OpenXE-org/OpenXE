@@ -486,8 +486,8 @@ class Systemhealth {
 
         $dbVersionArr = explode('.',$dbVersion);
 
-        if($dbVersionArr[0] >= 10 && !($dbVersionArr[1] < 2)) {
-          $status = 'ok';
+        if (($dbVersionArr[0] == 10 && !($dbVersionArr[1] < 2)) || ($dbVersionArr[0] > 10)) {
+            $status = 'ok';
         }
         $mysqlVersion = 'MariaDB '.$dbVersion;
       }
@@ -719,7 +719,6 @@ class Systemhealth {
         'max_upload'         => 'Upload-Kapazit&auml;t',
         'max_execution_time' => 'Scriptlauftzeit',
         'userdata_writeable' => 'Schreibrechte in Userdata',
-        'ioncube'            => 'Lizenz',
         'tls1-2'             => 'TLS v1.2',
       ],
       'settings' => [

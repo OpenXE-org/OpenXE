@@ -112,6 +112,9 @@ class WidgetGenrechnung
     $field = new HTMLCheckbox("abweichendebezeichnung","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("xmlrechnung","","","1","0","0");
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("mahnwesenfestsetzen","","","1","0","0");
     $this->form->NewField($field);
 
@@ -123,6 +126,9 @@ class WidgetGenrechnung
     $this->form->NewField($field);
 
     $field = new HTMLInput("bezahlt_am","text","","10","","","","","","","","0","","");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("zahlbetrag","money","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 
     $field = new HTMLInput("ist","text","","10","","","","","","","","0","","");

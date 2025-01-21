@@ -952,7 +952,7 @@ class Ticket {
             // Attachments
             $files = $this->app->erp->GetDateiSubjektObjektDateiname('Anhang','Ticket',$drafted_messages[0]['id'],"");
 
-            $pattern = '/[a-z0-9_\-\+\.]+@[a-z0-9\-]+\.([a-z]{2,63})(?:\.[a-z]{2,63})?/i';
+            $pattern = '/[a-z0-9_\-\+\.]+@[a-z0-9\-]+\.([a-z\-]{2,63})(?:\.[a-z]{2,63})?/i';
 
             preg_match_all($pattern, $drafted_messages[0]['mail'], $matches);
             $to = $matches[0];

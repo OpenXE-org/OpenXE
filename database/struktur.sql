@@ -12945,12 +12945,8 @@ DROP TABLE IF EXISTS `seriennummern`;
 CREATE TABLE `seriennummern` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `seriennummer` varchar(255) NOT NULL,
-  `adresse` int(11) NOT NULL,
   `artikel` int(11) NOT NULL,
   `beschreibung` varchar(255) NOT NULL,
-  `lieferung` date NOT NULL,
-  `lieferschein` int(11) NOT NULL,
-  `lieferscheinpos` int(11) NOT NULL,
   `bearbeiter` varchar(255) NOT NULL,
   `logdatei` datetime NOT NULL,
   PRIMARY KEY (`id`)
@@ -17872,6 +17868,23 @@ INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `ho
 (0, 'BelegevorlagenBelegPositionenButtons', 1, 2, (SELECT id FROM hook WHERE name = 'BelegPositionenButtons' LIMIT 1), 'belegevorlagen', 0)
 ;
 /* OpenXE 2024-02-03 für belegvorlagen */
+
+/* OpenXE 2024-08-11 für TOTP */
+INSERT INTO `hook`(`name`, `aktiv`, `parametercount`, `alias`, `description`) VALUES
+('login_password_check_otp', 1, 3, '', '');
+
+INSERT INTO `hook_register`(
+ `hook_action`, `function`, `aktiv`, `position`, `hook`, `module`, `module_parameter`) VALUES
+ ( 0, 'TOTPCheckLogin', 1, 1, (SELECT id FROM hook WHERE NAME = 'login_password_check_otp' LIMIT 1), 'totp', 0);
+/* OpenXE 2024-08-11 für TOTP */
+
+/* OpenXE 2024-08-11 für Smarty shopimport */
+INSERT INTO `hook` (`name`, `aktiv`, `parametercount`, `alias`, `description`) VALUES
+('ImportAuftragBefore', 1, 4, '', '');
+
+INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `hook`, `module`, `module_parameter`) VALUES
+(0, 'ImportAuftragBeforeHook', 1, 1, (SELECT id FROM hook WHERE name = 'ImportAuftragBefore' LIMIT 1), 'onlineshops', 0);
+/* OpenXE 2024-08-11 für Smarty shopimport */
 
 /*
 BelegPositionenButtons

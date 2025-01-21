@@ -296,17 +296,6 @@ class WidgetShopexport extends WidgetGenShopexport
               }
             }
           }
-          $err = null;
-          if($altedaten && $this->app->Secure->GetPOST('aktiv') && method_exists($this->app->erp, 'OnlineshopsLizenzFehler'))
-          {
-            if($err = $this->app->erp->OnlineshopsLizenzFehler($data['modulename']))
-            {
-              $this->app->DB->Update("UPDATE shopexport SET aktiv = '0' WHERE id = '$id' LIMIT 1");
-              $this->form->HTMLList['aktiv']->dbvalue = 0;
-              $this->form->HTMLList['aktiv']->htmlvalue = 0;
-              $this->app->User->SetParameter('shopexport_meldung', '<div class="error">'.$err['Error'].'</div>');
-            }
-          }
           $this->app->erp->RunHook('shopexport_speichern',1, $id);
         }
       }else
@@ -861,7 +850,7 @@ class WidgetShopexport extends WidgetGenShopexport
         switch($typ)
         {
           case 'textarea':
-            $aktcol .= '<textarea name="'.$name.'" id="'.$name.'">'.(!isset($json['felder'][$name])?'':htmlspecialchars($json['felder'][$name])).'</textarea>';
+            $aktcol .= '<textarea name="'.$name.'" id="'.$name.'" placeholder = "'.$val['placeholder'].'" cols="'.$val['cols'].'" rows="'.$val['rows'].'">'.(!isset($json['felder'][$name])?'':htmlspecialchars($json['felder'][$name])).'</textarea>';                   
           break;
           case 'checkbox':
             $aktcol .= '<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.((isset($json['felder'][$name]) && $json['felder'][$name])?' checked="checked" ':'').' />';
@@ -894,6 +883,9 @@ class WidgetShopexport extends WidgetGenShopexport
               }
             }
           break;
+          case 'info':
+            $aktcol .= $val['text'];
+          break;
           default:
             switch($typ) {
               case 'datum':
@@ -912,7 +904,7 @@ class WidgetShopexport extends WidgetGenShopexport
           $aktcol .= '&nbsp;<input type="button" value="'.($val['vorschlag_label']!=''?$val['vorschlag_label']:$val['vorschlag']).'" onclick="$(\'#'.$name.'\').val(\''.$val['vorschlag'].'\');" '.(isset($val['minvorschlagsize']) && $val['minvorschlagsize']?' style="min-width:'.$val['minvorschlagsize'].'px;" ':'').' />';
         }
         if(isset($val['info']) && $val['info']){
-          $aktcol .= ' <i>'.$val['info'].'</i>';
+          $aktcol .= '<td> <i>'.$val['info'].'</i></td>';
         }
         if(isset($val['col']) && $val['col'] == 2)
         {

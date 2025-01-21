@@ -192,7 +192,7 @@
                                     </tr>
                                     <tr [AKTION_PRODUZIEREN_VISIBLE]>
                                         <td>{|Ziellager|}:</td>
-                                        <td><input type="text" name="ziellager" id="ziellager" value="[ZIELLAGER]" size="20"></td>
+                                        <td><input type="text" name="ziellager" id="ziellager" value="[ZIELLAGER]" placeholder="Standardlager" class="placeholder_warning" size="20"></td>
                                     </tr>
                                 </table>
                             </fieldset>

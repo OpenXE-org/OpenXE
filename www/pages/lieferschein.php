@@ -464,11 +464,11 @@ class Lieferschein extends GenLieferschein
     $status = $lieferschein['status'];
     $umgelagert = $lieferschein['umgelagert'];
 
-    $quelllager = $this->app->Secure->GetPOST('quelllager');
-    $ziellager = $this->app->Secure->GetPOST('ziellager');
+    $quelllagerplatz = $this->app->Secure->GetPOST('quelllagerplatz');
+    $ziellagerplatz = $this->app->Secure->GetPOST('ziellagerplatz');
 
-    $quellager_id = $this->app->erp->ReplaceLagerPlatz(true, $quelllager, true);
-    $ziellager_id = $this->app->erp->ReplaceLagerPlatz(true, $ziellager, true);
+    $quellager_id = $this->app->erp->ReplaceLagerPlatz(true, $quelllagerplatz, true);
+    $ziellagerplatz_id = $this->app->erp->ReplaceLagerPlatz(true, $ziellagerplatz, true);
 
     if (empty($quellager_id)) {
         $quellager_id = $lieferschein['standardlager'];
@@ -488,8 +488,8 @@ class Lieferschein extends GenLieferschein
         $submit = $this->app->Secure->GetPOST('submit');
         if ($submit == 'umlagern') {
 
-            if (empty($quellager_id) || empty($ziellager_id)) {
-                $this->app->Tpl->AddMessage('error',"Bitte Quell- und Ziellager angeben.");
+            if (empty($quellager_id) || empty($ziellagerplatz_id)) {
+                $this->app->Tpl->AddMessage('error',"Bitte Quell- und Ziellagerplatz angeben.");
             } else {
                 $sql = "SELECT artikel, name_de, a.nummer AS artikelnummer, SUM(menge) AS menge FROM lieferschein_position lp INNER JOIN artikel a ON a.id = lp.artikel WHERE lp.lieferschein = $id GROUP BY lp.artikel";
 	            $positionen = $this->app->DB->SelectArr($sql);
@@ -520,15 +520,15 @@ class Lieferschein extends GenLieferschein
                         $doctypeId = $id;
 
                         $this->app->erp->LagerAuslagernRegal($artikel,$quellager_id,$menge,$projekt,$grund,$importer,$doctype,$doctypeid);
-                        $this->app->erp->LagerEinlagern($artikel,$menge,$ziellager_id,$projekt,$grund,$importer,$paketannahme,$doctype,$doctypeid);
+                        $this->app->erp->LagerEinlagern($artikel,$menge,$ziellagerplatz_id,$projekt,$grund,$importer,$paketannahme,$doctype,$doctypeid);
                     }
                     $sql = "UPDATE lieferschein SET umgelagert = 1 WHERE id = ".$id;
                     $this->app->DB->Update($sql);
-                    $this->app->erp->LieferscheinProtokoll($id,"Lieferschein umgelagert von ".$quelllager." nach ".$ziellager);
+                    $this->app->erp->LieferscheinProtokoll($id,"Lieferschein umgelagert von ".$quelllagerplatz." nach ".$ziellagerplatz);
                     $this->app->Tpl->AddMessage('success','Erfolgreich umgelagert.');
 		    $erneut = null;
                 } else {                
-                    $this->app->Tpl->AddMessage('error',"Mengen im Quelllager nicht ausreichend.");   
+                    $this->app->Tpl->AddMessage('error',"Mengen im Quelllagerplatz nicht ausreichend.");   
                     $tmp = new EasyTable($this->app);
                     $tmp->headings = array('Nummer','Artikel','Lieferschein Menge','Lager Menge','');
                     $tmp->datasets = $fehlt;
@@ -540,15 +540,15 @@ class Lieferschein extends GenLieferschein
 
     $this->LieferscheinMenu();
 
-    $this->app->YUI->AutoComplete("quelllager", "lagerplatz");
-    $this->app->YUI->AutoComplete("ziellager", "lagerplatz");
+    $this->app->YUI->AutoComplete("quelllagerplatz", "lagerplatz");
+    $this->app->YUI->AutoComplete("ziellagerplatz", "lagerplatz");
 
     $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"Lieferschein $belegnr umlagern");
     $this->app->Tpl->Set('TABTEXT',"Umlagern");
 
-    $this->app->Tpl->Set('QUELLLAGER',$this->app->erp->ReplaceLagerPlatz(false, $quellager_id, false));
+    $this->app->Tpl->Set('QUELLLAGERPLATZ',$this->app->erp->ReplaceLagerPlatz(false, $quellager_id, false));
 
-    $this->app->Tpl->Set('ZIELLAGER',$this->app->erp->ReplaceLagerPlatz(false, $ziellager_id, false));
+    $this->app->Tpl->Set('ZIELLAGERPLATZ',$this->app->erp->ReplaceLagerPlatz(false, $ziellagerplatz_id, false));
 
     $this->app->Tpl->Set('ERNEUT_CHECKED',$erneut?'checked':'');
 
@@ -645,12 +645,15 @@ class Lieferschein extends GenLieferschein
     $adresse = $this->app->DB->Select("SELECT adresse FROM lieferschein WHERE id='$id' LIMIT 1");
     $lieferantenretoure = $this->app->DB->Select("SELECT lieferantenretoure FROM lieferschein WHERE id='$id' LIMIT 1");
 
-    if($adresse > 0 && ($status=="angelegt" || $status==""))
-      $freigabe = "<option value=\"freigabe\">Lieferschein freigeben</option>";
+    if($adresse > 0 && ($status=="angelegt" || $status=="")) {
+        $freigabe = "<option value=\"freigabe\">Lieferschein freigeben</option>";
+    }
 
+    $seriennummern_check_result = $this->app->erp->SeriennummernCheckLieferschein(lieferschein_id: $id, ignore_date: true, only_missing: true, group_lieferschein: true);
 
-    if(($status=="versendet" || $status=="freigegeben") && $lieferantenretoure=="1")
-      $abschliessen = "<option value=\"abschliessen\">Lieferschein abschliessen</option>";
+    if(($status=="versendet" || $status=="freigegeben") && $lieferantenretoure=="1" && empty($seriennummern_check_result)) {
+        $abschliessen = "<option value=\"abschliessen\">Lieferschein abschliessen</option>";
+    }
 
     $checkifrgexists = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein='$id' LIMIT 1");
 
@@ -668,7 +671,6 @@ class Lieferschein extends GenLieferschein
     $hookcase = '';
     $this->app->erp->RunHook('Lieferschein_Aktion_option',3, $id, $status, $hookoption);
     $this->app->erp->RunHook('Lieferschein_Aktion_case',3, $id, $status, $hookcase);
-
     
     $bestellmengelagerartikel = $this->app->DB->Select("SELECT sum(lp.menge) as bestellmenge from lieferschein_position lp INNER JOIN artikel a on a.id=lp.artikel where a.lagerartikel=1 AND lp.lieferschein = '$id'");
     $liefermengelagerartikel = $this->app->DB->Select("SELECT sum(lp.geliefert) as liefermenge from lieferschein_position lp INNER JOIN artikel a on a.id=lp.artikel where a.lagerartikel=1 AND lp.lieferschein = '$id'");
@@ -695,18 +697,19 @@ class Lieferschein extends GenLieferschein
         }
 
         $optionumlagern = "<option value=\"umlagern\">Lieferschein umlagern</option>";
-        $abschicken = "<option value=\"abschicken\">Lieferschein abschicken</option>";
 
-       if($status!="angelegt" && $lieferantenretoure!="1")
-        {
-          $alsrechnung = "<option value=\"rechnung\">als Rechnung weiterf&uuml;hren</option>";
-          if($this->app->erp->RechteVorhanden('lieferschein', 'proformarechnung') && $this->app->erp->ModulVorhanden('proformarechnung'))
-          {
-            $alsrechnung .= "<option value=\"proformarechnung\">als Proformarechnung weiterf&uuml;hren</option>";
-          }
+        if (empty($seriennummern_check_result)) {
+            $abschicken = "<option value=\"abschicken\">Lieferschein abschicken</option>";
+            if($status!="angelegt" && $lieferantenretoure!="1")
+            {
+                $alsrechnung = "<option value=\"rechnung\">als Rechnung weiterf&uuml;hren</option>";
+                if($this->app->erp->RechteVorhanden('lieferschein', 'proformarechnung') && $this->app->erp->ModulVorhanden('proformarechnung'))
+                {
+                    $alsrechnung .= "<option value=\"proformarechnung\">als Proformarechnung weiterf&uuml;hren</option>";
+                }
+            }
         }
     }
-
 
     if($this->app->erp->RechteVorhanden('belegeimport', 'belegcsvexport'))
     { 
@@ -715,6 +718,10 @@ class Lieferschein extends GenLieferschein
     }
     
     $etiketten_positionen = $this->app->DB->Select("SELECT etiketten_positionen FROM projekt WHERE id='$projekt' LIMIT 1");
+    $etikett_adresse = $this->app->DB->SelectRow("SELECT lieferscheinpositionetikettdruck, lieferscheinpositionetikett FROM adresse WHERE id ='".$adresse."' LIMIT 1");
+    if ($etikett_adresse['lieferscheinpositionetikettdruck']) {
+        $etiketten_positionen = 1;
+    }
     if($etiketten_positionen  > 0)
       $etiketten = "<option value=\"positionenetiketten\">Positionen als Etiketten</option>";
     $casestorno = "case 'storno': if(!confirm('Wirklich stornieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=lieferschein&action=delete&id=%value%'; break;";
@@ -829,7 +836,6 @@ class Lieferschein extends GenLieferschein
       $lieferantenretoureinfo = $auftragArr[0]['lieferantenretoureinfo'];
     }
 
-
     $this->app->Tpl->Set('LIEFERANTENRETOUREINFO',$lieferantenretoureinfo);
 
     if($lieferantenretoure!='1') {
@@ -848,7 +854,6 @@ class Lieferschein extends GenLieferschein
     }
     $this->app->Tpl->Set('ZAHLWEISE',$auftragArr[0]['zahlungsweise']);
     $this->app->Tpl->Set('STATUS',$auftragArr[0]['status']);
-
 
     if($auftragArr[0]['auftragid'] > 0){
       $orderRow = $this->app->DB->SelectRow(
@@ -874,24 +879,20 @@ class Lieferschein extends GenLieferschein
     }else{
       $this->app->Tpl->Set('AUFTRAG','-');
     }
+   
+    $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
 
-    
     if($auftragArr[0]['auftragid'] > 0){
       $rechnung = $this->app->DB->SelectArr(
         ($auftragArr[0]['auftragid']?
           "SELECT 
-          CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\">',if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),'&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
-          FROM rechnung r WHERE r.auftragid='".$auftragArr[0]['auftragid']."' AND r.auftragid <> '0'
+            ".$link_zur_rechnung." as rechnung          FROM rechnung r WHERE r.auftragid='".$auftragArr[0]['auftragid']."' AND r.auftragid <> '0'
           union 
           SELECT 
-          CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\">',if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),'&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
-          FROM rechnung r INNER JOIN sammelrechnung_position s ON r.id = s.rechnung INNER JOIN auftrag_position p ON s.auftrag_position_id = p.id WHERE p.auftrag='".$auftragArr[0]['auftragid']."'
+            ".$link_zur_rechnung." as rechnung          FROM rechnung r INNER JOIN sammelrechnung_position s ON r.id = s.rechnung INNER JOIN auftrag_position p ON s.auftrag_position_id = p.id WHERE p.auftrag='".$auftragArr[0]['auftragid']."'
           union ":"")."
           SELECT 
-          CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\">',if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),'&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
+            ".$link_zur_rechnung." as rechnung
           FROM rechnung r INNER JOIN sammelrechnung_position s ON r.id = s.rechnung 
           INNER JOIN lieferschein_position lp ON lp.id = s.lieferschein_position_id
           WHERE lp.lieferschein='$id'
@@ -903,21 +904,16 @@ class Lieferschein extends GenLieferschein
       if($auftragArr[0]['rechnungid'] > 0){
 
         $rechnung = $this->app->DB->SelectArr("SELECT 
-          CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\">',if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),'&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
+              ".$link_zur_rechnung." as rechnung
           FROM rechnung r WHERE r.id='".$auftragArr[0]['rechnungid']."' AND r.id <> '0'
-          union 
-          
+          union          
           SELECT 
-          CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\">',if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),'&nbsp;<a href=\"index.php?module=rechnung&action=pdf&id=',r.id,'\"><img src=\"./themes/new/images/pdf.svg\" title=\"Rechnung PDF\" border=\"0\"></a>&nbsp;
-            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
+              ".$link_zur_rechnung." as rechnung
           FROM rechnung r INNER JOIN sammelrechnung_position s ON r.id = s.rechnung 
           INNER JOIN lieferschein_position lp ON lp.id = s.lieferschein_position_id
           WHERE lp.lieferschein='$id'
           ");
-
       }
-
     }
 
     $crechnung = !empty($rechnung)?count($rechnung):0;
@@ -939,14 +935,13 @@ class Lieferschein extends GenLieferschein
     else
       $this->app->Tpl->Set('STEUER',"Export");
 
-
     if($menu)
     {
       $menu = $this->LieferscheinIconMenu($id);
       $this->app->Tpl->Set('MENU',$menu);
     }
-    // ARTIKEL
 
+    // ARTIKEL
     $lieferscheinarr = $this->app->DB->SelectRow("SELECT * FROM  lieferschein WHERE id='$id' LIMIT 1");
 
     $status = $lieferscheinarr['status'];//$this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
@@ -1313,8 +1308,6 @@ class Lieferschein extends GenLieferschein
     $this->app->erp->DokumentAbschicken();
   }
 
-
-
   function LieferscheinDelete($id = null)
   {
     if(is_null($id))
@@ -1388,7 +1381,7 @@ class Lieferschein extends GenLieferschein
                 }
                 if(isset($v['table']) &&  $v['table'] === 'seriennummern' && !empty($v['id']))
                 {
-                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
                 }
                 elseif(isset($v['table']) && $v['table'] === 'beleg_chargesnmhd' && !empty($v['id'])){
                   $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
@@ -1422,7 +1415,7 @@ class Lieferschein extends GenLieferschein
                 }
                 if(isset($v['table']) &&  $v['table'] === 'seriennummern' && !empty($v['id']))
                 {
-                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
                 }
                 elseif(isset($v['table']) && $v['table'] === 'beleg_chargesnmhd' && !empty($v['id'])){
                   $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
@@ -1452,7 +1445,7 @@ class Lieferschein extends GenLieferschein
                   }
                 }
                 if(isset($v['table']) &&  $v['table'] === 'seriennummern' && !empty($v['id'])) {
-                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
                 }
                 elseif(isset($v['table']) && $v['table'] === 'beleg_chargesnmhd' && !empty($v['id'])){
                   $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
@@ -1467,7 +1460,7 @@ class Lieferschein extends GenLieferschein
               else{
                 if(isset($v['table']) &&  $v['table'] === 'seriennummern' && !empty($v['id']))
                 {
-                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
+// Xentral Legacy                  $this->app->DB->Delete("DELETE FROM seriennummern WHERE id = '".$v['id']."' LIMIT 1");
                 }
                 elseif(isset($v['table']) && $v['table'] === 'beleg_chargesnmhd' && !empty($v['id'])){
                   $this->app->DB->Delete("DELETE FROM beleg_chargesnmhd WHERE id = '".$v['id']."' LIMIT 1");
@@ -1716,7 +1709,7 @@ class Lieferschein extends GenLieferschein
   }
 
 
-  function LieferscheinMenu()
+  function LieferscheinMenu($seriennummern_zeigen = false, $paketmarke_zeigen = false)
   {
     $id = $this->app->Secure->GetGET("id");
 
@@ -1727,26 +1720,28 @@ class Lieferschein extends GenLieferschein
     // $this->app->Tpl->Set(KURZUEBERSCHRIFT,"Lieferschein $belegnr");
     $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"$name Lieferschein $belegnr");
 
-
-
-
     //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Lieferscheindaten");
     //$this->app->Tpl->Add(TABS,"<li><a href=\"index.php?module=lieferschein&action=positionen&id=$id\">Positionen</a></li>");
 
     // status bestell
     $status = $this->app->DB->Select("SELECT status FROM lieferschein WHERE id='$id' LIMIT 1");
 
+    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Details");
+
     if ($status=="angelegt")
     {
-      $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=freigabe&id=$id","Freigabe");
+        $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=freigabe&id=$id","Freigabe");
+    } else {
+        if ($seriennummern_zeigen) {
+            $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=enter&lieferschein=".$id."&from=lieferschein", "Seriennummern");
+        }   
+        if ($paketmarke_zeigen) {
+            $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
+        }   
     }
 
-    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=edit&id=$id","Details");
-    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
-    //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=abschicken&id=$id","Abschicken / Protokoll");
-    //    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=protokoll&id=$id","Protokoll");
     $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=list","Zur&uuml;ck zur &Uuml;bersicht");
-    
+        
     $this->app->erp->RunMenuHook('lieferschein');
   }
 
@@ -1863,14 +1858,24 @@ class Lieferschein extends GenLieferschein
     if($this->app->erp->InnendienstAendern("lieferschein",$id,$cmd,$sid))
       return;
 
+
+    $seriennummern = $this->app->erp->SeriennummernCheckLieferschein(
+                lieferschein_id: $id,
+                ignore_date: true,
+                only_missing: false,
+                group_lieferschein: true);
+
+    $seriennummern_aktiv = !empty($seriennummern);
+
+    $seriennummern_check_result = $this->app->erp->SeriennummernCheckLieferscheinWarnung($id);
+
+    $seriennummern_ok = empty($seriennummern_check_result);
+
     if($this->app->erp->DisableModul("lieferschein",$id))
     {
-      //$this->app->erp->MenuEintrag("index.php?module=auftrag&action=list","Zur&uuml;ck zur &Uuml;bersicht");
-      $this->LieferscheinMenu();
+      $this->LieferscheinMenu(seriennummern_zeigen: !empty($seriennummern), paketmarke_zeigen: false);
       return;
     }
-
-
 
     $this->app->YUI->AARLGPositionen();
 
@@ -1948,20 +1953,19 @@ class Lieferschein extends GenLieferschein
       $this->app->erp->PDFArchivieren('lieferschein', $id, true);
     }
 
-    if($status != "angelegt" && $status != "angelegta" && $status != "a")
+    if($status != "angelegt" && $status != "angelegta" && $status != "a" && $seriennummern_ok)
     {
       $Brief = new Briefpapier($this->app);
-      if($Brief->zuArchivieren($id, "lieferschein"))
+      if ($Brief->zuArchivieren($id, "lieferschein"))
       {
-        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Der Lieferschein ist noch nicht archiviert! Bitte versenden oder manuell archivieren.
-<input type=\"button\" onclick=\"if(!confirm('Soll das Dokument archiviert werden?')) return false;else window.location.href='index.php?module=lieferschein&action=archivierepdf&id=$id';\" value=\"Manuell archivieren\" /> <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('lieferschein',$id)\"></div>");
-      }elseif(!$this->app->DB->Select("SELECT versendet FROM lieferschein WHERE id = '$id' LIMIT 1"))
+        $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Der Lieferschein ist noch nicht archiviert! Bitte versenden oder manuell archivieren.<input type=\"button\" onclick=\"if(!confirm('Soll das Dokument archiviert werden?')) return false;else window.location.href='index.php?module=lieferschein&action=archivierepdf&id=$id';\" value=\"Manuell archivieren\" /> <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('lieferschein',$id)\"></div>");
+      } elseif(!$this->app->DB->Select("SELECT versendet FROM lieferschein WHERE id = '$id' LIMIT 1"))
       {
         $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Der Lieferschein wurde noch nicht versendet! <input type=\"button\" value=\"Dokument versenden\" onclick=\"DokumentAbschicken('lieferschein',$id)\"></div>");
       }
     }
     
-    if($schreibschutz!="1")// && $this->app->erp->RechteVorhanden("lieferschein","schreibschutz"))
+    if($schreibschutz!="1")
     {
       $this->app->erp->AnsprechpartnerButton($adresse);
       $this->app->erp->LieferadresseButton($adresse);
@@ -1970,11 +1974,8 @@ class Lieferschein extends GenLieferschein
       $this->app->erp->LieferscheinNeuberechnen($id);
     }
 
-
-    //$this->LieferscheinMiniDetail(MINIDETAIL,false);
     $this->app->Tpl->Set('ICONMENU',$this->LieferscheinIconMenu($id));
-    $this->app->Tpl->Set('ICONMENU2',$this->LieferscheinIconMenu($id,2));
-
+    //$this->app->Tpl->Set('ICONMENU2',$this->LieferscheinIconMenu($id,2));
 
     if($nummer!="")
     {
@@ -1988,7 +1989,6 @@ class Lieferschein extends GenLieferschein
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden("lieferschein","schreibschutz"))
     {
       $this->app->Tpl->Add('MESSAGE',"<div class=\"warning\">Dieser Lieferschein ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diesen Lieferschein wirklich entfernt werden?')) return false;else window.location.href='index.php?module=lieferschein&action=schreibschutz&id=$id';\"></div>");
-      //      $this->app->erp->CommonReadonly();
     }
     if($schreibschutz=="1")
       $this->app->erp->CommonReadonly();
@@ -2002,12 +2002,10 @@ class Lieferschein extends GenLieferschein
         <input type="button" value="&uuml;bernehmen" onclick="if(!confirm(\'Soll der neue Kunde wirklich &uuml;bernommen werden? Es werden alle Felder &uuml;berladen.\')) return false;else document.getElementById(\'uebernehmen\').value=1; document.getElementById(\'eprooform\').submit();"/><input type="hidden" id="uebernehmen" name="uebernehmen" value="0">
         ');
 
-
       $this->app->Tpl->Set('BUTTON_UEBERNEHMEN2', '
         <input type="button" value="&uuml;bernehmen" onclick="if(!confirm(\'Soll der neue Lieferant wirklich &uuml;bernommen werden? Es werden alle Felder &uuml;berladen.\')) return false;else document.getElementById(\'uebernehmen2\').value=1; document.getElementById(\'eprooform\').submit();"/><input type="hidden" id="uebernehmen2" name="uebernehmen2" value="0">
         ');
     }
-
 
     // immer wenn sich der lieferant genändert hat standartwerte setzen
     if($this->app->Secure->GetPOST("adresse")!="")
@@ -2043,9 +2041,7 @@ class Lieferschein extends GenLieferschein
         header("Location: index.php?module=lieferschein&action=edit&id=$id");
         exit;
       }
-
     }
-
 
     // easy table mit arbeitspaketen YUI als template 
     $table = new EasyTable($this->app);
@@ -2076,7 +2072,8 @@ class Lieferschein extends GenLieferschein
       header("Location: index.php?module=lieferschein&action=positionen&id=$id");
       exit;
     }
-    $this->LieferscheinMenu();
+
+    $this->LieferscheinMenu(seriennummern_zeigen: $seriennummern_aktiv, paketmarke_zeigen: $seriennummern_ok);
 
   }
 
@@ -2107,6 +2104,11 @@ class Lieferschein extends GenLieferschein
         $projectId
       )
     );
+    $etikett_adresse = $this->app->DB->SelectRow("SELECT lieferscheinpositionetikettdruck, lieferscheinpositionetikett FROM adresse WHERE id = (SELECT adresse FROM lieferschein WHERE id = '".$deliveryNoteId."') LIMIT 1");
+    if ($etikett_adresse['lieferscheinpositionetikettdruck']) {
+        $projectRow['etiketten_positionen'] = 1;
+        $projectRow['etiketten_art'] = $etikett_adresse['lieferscheinpositionetikett'];
+    }
     if(empty($projectRow) || $projectRow['etiketten_positionen'] <= 0) {
       return false;
     }
@@ -2219,8 +2221,6 @@ class Lieferschein extends GenLieferschein
     $this->app->Tpl->Add('UEBERSCHRIFT'," (Dateien)");
     $this->app->YUI->DateiUpload('PAGE',"Lieferschein",$id);
   }
-
-
 
   function LieferscheinList()
   {

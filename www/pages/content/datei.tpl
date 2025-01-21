@@ -20,7 +20,7 @@
     <table border="0" width="100%">
         <tr>
             <td width="" valign="" height="" bgcolor="" align="right" bordercolor="" classname="orange2" class="orange2">
-                <input type="submit" name="speichern" value="Speichern" />
+                <input type="submit" name="titel_beschreibung_speichern" value="Speichern" />
             </td>
         </tr> 
         <tr>
