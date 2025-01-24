@@ -6,6 +6,9 @@
 
 namespace Xentral\Carrier\Go;
 
+use DateTime;
+use Exception;
+use JsonException;
 use Xentral\Carrier\Go\Data\CreateOrderRequest;
 use Xentral\Carrier\Go\Data\CreateOrderResponse;
 use Xentral\Carrier\Go\Data\OrderStatus;
@@ -25,6 +28,11 @@ class GoApi {
 
     public function createOrder(CreateOrderRequest $request): CreateOrderResponse|string {
         $curl = curl_init();
+        try {
+            $json = json_encode($request, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return 'Internal Error: '.$e->getMessage();
+        }
         curl_setopt_array($curl, [
            CURLOPT_RETURNTRANSFER => 1,
            CURLOPT_URL => $this->baseUrl.'createOrder',
@@ -32,7 +40,7 @@ class GoApi {
            CURLOPT_USERNAME => $this->username,
            CURLOPT_PASSWORD => $this->password,
            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-           CURLOPT_POSTFIELDS => json_encode($request, JSON_THROW_ON_ERROR),
+           CURLOPT_POSTFIELDS => $json,
         ]);
 
         $response = json_decode(curl_exec($curl));
@@ -43,8 +51,10 @@ class GoApi {
             $ret = new CreateOrderResponse();
             $ret->hwbNumber = $response->hwbNumber;
             $ret->orderStatus = OrderStatus::from($response->orderStatus);
-            $ret->pickupDate = new \DateTime($response->pickupDate);
-            $ret->deliveryDate = new \DateTime($response->deliveryDate);
+            try {
+                $ret->pickupDate =  new DateTime($response->pickupDate);
+                $ret->deliveryDate = new DateTime($response->deliveryDate);
+            } catch (Exception) {}
             $ret->hwbOrPackageLabel = $response->hwbOrPackageLabel;
             $ret->barcodes = array_map(function ($item) { return $item->barcode; }, $response->package);
             return $ret;
