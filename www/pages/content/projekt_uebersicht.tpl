@@ -47,6 +47,12 @@
                   </td>
                 </tr>
                 <tr>
+                  <td>&Uuml;bergeordnetes Projekt:</td>
+                  <td>
+                    <input type="text" name="uebergeordnetes_projekt" id="uebergeordnetes_projekt" size="30" value="[UEBERGEORDNETES_PROJEKT]"><i>Für Nummernkreise</i>
+                  </td>
+                </tr>
+                <tr>
                   <td>Status:</td>
                   <td>
                     <select id="status" name="status"><option [STATUSGEPLANT]>geplant</option><option [STATUSGESTARTET]>gestartet</option><option [STATUSABGESCHLOSSEN]>abgeschlossen</option></select>

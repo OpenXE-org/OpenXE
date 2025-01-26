@@ -27254,6 +27254,23 @@ function Firmendaten($field,$projekt="")
 
         $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$projekt' LIMIT 1");
         $belegnr = '';
+
+        $untergeordnetes_projekt = $projekt;
+        if (empty($eigenernummernkreis)) {
+            do {
+                $uebergeordnetes_projekt = $this->app->DB->Select("SELECT uebergeordnetes_projekt FROM projekt WHERE id='$untergeordnetes_projekt' LIMIT 1");                
+                if (!empty($uebergeordnetes_projekt)) {
+                    $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$uebergeordnetes_projekt' LIMIT 1");
+                    if ($eigenernummernkreis) {
+                        $projekt = $uebergeordnetes_projekt;
+                        break;
+                    } else {
+                        $untergeordnetes_projekt = $uebergeordnetes_projekt;
+                    }
+                }
+            } while (!empty($uebergeordnetes_projekt) && $uebergeordnetes_projekt != $projekt);
+        }
+
         if($eigenernummernkreis=='1')
         {
           $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',

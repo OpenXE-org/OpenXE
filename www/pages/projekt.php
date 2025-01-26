@@ -1890,6 +1890,10 @@ class Projekt extends GenProjekt {
     {
       $kunde = $this->app->Secure->GetPOST("kunde");
       $verantwortlicher = $this->app->Secure->GetPOST("verantwortlicher");
+      $uebergeordnetes_projekt = $this->app->Secure->GetPOST('uebergeordnetes_projekt');
+
+      $uebergeordnetes_projekt = $this->app->erp->ReplaceProjektName(true,$uebergeordnetes_projekt,true);
+
       $kundennummer = strstr($kunde,' ',true);
       $mitarbeiternummer = strstr($verantwortlicher,' ',true);
       $kundeid = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer!='' AND kundennummer='$kundennummer' AND geloescht!=1 LIMIT 1");
@@ -1921,7 +1925,7 @@ class Projekt extends GenProjekt {
       }
 
       $this->app->FormHandler->FormUpdateDatabase("projekt",$id);
-      $this->app->DB->Update("UPDATE projekt SET kunde='$kundeid', verantwortlicher='$verantwortlicherid' WHERE id='$id' LIMIT 1");
+      $this->app->DB->Update("UPDATE projekt SET kunde='$kundeid', verantwortlicher='$verantwortlicherid', uebergeordnetes_projekt='$uebergeordnetes_projekt' WHERE id='$id' LIMIT 1");
       if($msg!="")
       {
         header("Location: index.php?module=projekt&action=uebersicht&id=$id&msg=$msg");
@@ -1931,12 +1935,13 @@ class Projekt extends GenProjekt {
     }
 
     $this->app->FormHandler->FormGetVars("projekt",$id);
-    $data = $this->app->DB->SelectArr("SELECT CONCAT(a.kundennummer,' ',a.name) as kunde, CONCAT(a2.id,' ',a2.name) as mitarbeiter, status FROM projekt p
+    $data = $this->app->DB->SelectArr("SELECT CONCAT(a.kundennummer,' ',a.name) as kunde, CONCAT(a2.id,' ',a2.name) as mitarbeiter, status, uebergeordnetes_projekt FROM projekt p
       LEFT JOIN adresse a ON a.id=p.kunde LEFT JOIN adresse a2 ON a2.id=p.verantwortlicher WHERE p.id='$id' LIMIT 1");
     if(isset($data[0]))
     {  
       $this->app->Tpl->Set('KUNDE',$data[0]['kunde']);
-      $this->app->Tpl->Set('VERANTWORTLICHER',$data[0]['mitarbeiter']);    
+      $this->app->Tpl->Set('VERANTWORTLICHER',$data[0]['mitarbeiter']);
+      $this->app->Tpl->Set('UEBERGEORDNETES_PROJEKT',$this->app->erp->ReplaceProjektName(false,$data[0]['uebergeordnetes_projekt'],false));    
       switch($data[0]['status']){
         case 'gestartet':
         case 'geplant':
@@ -1945,8 +1950,6 @@ class Projekt extends GenProjekt {
         break;
       }
     }
-
-
 
     for($i = 0; $i <= 10; $i++)
     {
@@ -2041,9 +2044,10 @@ class Projekt extends GenProjekt {
 
     $this->app->Tpl->Set("FREIFELDER",$output);
 
-    $this->app->YUI->AutoComplete("abkuerzung","projektname",1);
+ //   $this->app->YUI->AutoComplete("abkuerzung","projektname",1);
     $this->app->YUI->AutoComplete("kunde","kunde");
     $this->app->YUI->AutoComplete("verantwortlicher","adresse");
+    $this->app->YUI->AutoComplete("uebergeordnetes_projekt","projektname");
     $this->app->YUI->CkEditor("beschreibung","belege");
     $this->app->YUI->CkEditor("sonstiges","internal");
     $this->app->Tpl->Parse('PAGE','projekt_uebersicht.tpl');
@@ -2825,9 +2829,14 @@ class Projekt extends GenProjekt {
       if($check > 0){
         $this->app->DB->Update(
           "UPDATE `projekt` 
-          SET `name` = '" . $data['name'] . "', `abkuerzung` = '" . $data['abkuerzung'] . "',
-          `kunde` = '" . $data['kunde'] . "', `verantwortlicher` = '" . $data['verantwortlicher'] . "',
-          `beschreibung` = '" . $data['beschreibung'] . "', `status` = '" . $data['status'] . "' 
+          SET 
+            `name` = '" . $data['name'] . "',
+            `abkuerzung` = '" . $data['abkuerzung'] . "',
+            `kunde` = '" . $data['kunde'] . "',
+            `verantwortlicher` = '" . $data['verantwortlicher'] . "',
+            `uebergeordnetes_projekt` = '" . $data['uebergeordnetes_projekt'] . "',            
+            `beschreibung` = '" . $data['beschreibung'] . "',
+            `status` = '" . $data['status'] . "' 
           WHERE `id` = '$check' 
           LIMIT 1"
         );
