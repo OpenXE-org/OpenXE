@@ -30,16 +30,19 @@
                   <td>
                     <input type="text" size="30" name="abkuerzung" id="abkuerzung" value="[ABKUERZUNG]">
                   </td>
+                </tr>              
+                <tr>
+                  <td>Status:</td>
+                  <td>
+                    <select id="status" name="status"><option [STATUSGEPLANT]>geplant</option><option [STATUSGESTARTET]>gestartet</option><option [STATUSABGESCHLOSSEN]>abgeschlossen</option></select>
+                  </td>
                 </tr>
-               
-
                 <tr class="gruppebestehend">
                   <td>Kunde:</td>
                   <td>
                     <input type="text" size="30" name="kunde" id="kunde" value="[KUNDE]">
                   </td>
                 </tr>
-
                 <tr class="gruppeneu">
                   <td>Verantwortlicher:</td>
                   <td>
@@ -52,20 +55,17 @@
                     <input type="text" name="uebergeordnetes_projekt" id="uebergeordnetes_projekt" size="30" value="[UEBERGEORDNETES_PROJEKT]"><i>Für Nummernkreise</i>
                   </td>
                 </tr>
-                <tr>
-                  <td>Status:</td>
+                <tr [PROJEKTBAUMHIDDEN]>
+                  <td>Struktur:</td>
                   <td>
-                    <select id="status" name="status"><option [STATUSGEPLANT]>geplant</option><option [STATUSGESTARTET]>gestartet</option><option [STATUSABGESCHLOSSEN]>abgeschlossen</option></select>
+                    <pre>[PROJEKTBAUM]</pre>
                   </td>
-                </tr>
+                </tr>                                                           
                 [FREIFELDER]
-              </table>
+              </table>              
             </fieldset>
-
-
           </div>
         </div>
-
         <div class="col-xs-12 col-md-8 col-md-height">
           <div class="inside inside-full-height">
             <fieldset>
@@ -84,15 +84,11 @@
                     <textarea name="sonstiges" id="sonstiges">[SONSTIGES]</textarea>
                   </td>
                 </tr>
-
               </table>
-
-
           </fieldset>
         </div>
       </div>
-
-</div>
+    </div>
 </div>
 <table width="100%"><tr><td align="right"><input type="submit" value="Speichern" name="speichern"></td></tr></table>
 </form>

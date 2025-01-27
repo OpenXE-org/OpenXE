@@ -1884,7 +1884,6 @@ class Projekt extends GenProjekt {
     $id = (int)$this->app->Secure->GetGET('id');
     $this->ProjektMenu();
 
-
     $speichern = $this->app->Secure->GetPOST('speichern');
     if($speichern!='')
     {
@@ -1935,7 +1934,7 @@ class Projekt extends GenProjekt {
     }
 
     $this->app->FormHandler->FormGetVars("projekt",$id);
-    $data = $this->app->DB->SelectArr("SELECT CONCAT(a.kundennummer,' ',a.name) as kunde, CONCAT(a2.id,' ',a2.name) as mitarbeiter, status, uebergeordnetes_projekt FROM projekt p
+    $data = $this->app->DB->SelectArr("SELECT CONCAT(a.kundennummer,' ',a.name) as kunde, CONCAT(a2.id,' ',a2.name) as mitarbeiter, status, uebergeordnetes_projekt, abkuerzung FROM projekt p
       LEFT JOIN adresse a ON a.id=p.kunde LEFT JOIN adresse a2 ON a2.id=p.verantwortlicher WHERE p.id='$id' LIMIT 1");
     if(isset($data[0]))
     {  
@@ -2043,6 +2042,48 @@ class Projekt extends GenProjekt {
     }
 
     $this->app->Tpl->Set("FREIFELDER",$output);
+
+    // Build simple tree view
+    $projekte = $this->app->DB->SelectArr("SELECT id, abkuerzung, name, uebergeordnetes_projekt FROM projekt");
+    function buildTree(array $elements, $parentId = 0, $limit = 10) {
+        $limit--;
+        if ($limit < 1) {
+            return;
+        }
+        $branch = array();
+        foreach ($elements as $element) {
+            if ($element['uebergeordnetes_projekt'] == $parentId) {
+                $children = buildTree($elements, $element['id'], $limit);
+                if ($children) {
+                    $element['children'] = $children;
+                }
+                $branch[] = $element;
+            }
+        }
+        return $branch;
+    }
+    $projektbaum = buildTree($projekte, $id);
+    if (!empty($projektbaum)) {
+        $root = array();
+        $root['abkuerzung'] = $data[0]['abkuerzung'];
+        $root['children'] = $projektbaum;
+        function printleaf($leaf, $level, $first = false) {
+            if (!$first) {
+                $s = $level;
+            }
+            $s .= "- ".$leaf['abkuerzung']."\n";
+            if ($leaf['children']) {
+                foreach ($leaf['children'] as $childleaf) {
+                    $s .= printleaf($childleaf, $level.$level);
+                }
+            }
+            return($s);
+        }
+        $baum .= printleaf($root," ", true);
+        $this->app->Tpl->Set("PROJEKTBAUM",$baum);
+    } else {
+       $this->app->Tpl->Set("PROJEKTBAUMHIDDEN",'hidden');
+    }
 
  //   $this->app->YUI->AutoComplete("abkuerzung","projektname",1);
     $this->app->YUI->AutoComplete("kunde","kunde");
