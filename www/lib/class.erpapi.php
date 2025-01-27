@@ -11953,6 +11953,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
           // darunter war ein else if
           if($just_stueckliste=="1" && $explodiert=="0")
           {
+          /* table lieferkette_bestellung does not exist
             $checklieferkette = 0;
             if($typ === 'auftrag'){
               $checklieferkette = $this->app->DB->Select("SELECT id FROM lieferkette_bestellung WHERE belegtyp='auftrag' AND belegid='$auftrag' LIMIT 1");
@@ -11966,14 +11967,14 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
               WHERE s.stuecklistevonartikel='$artikel' AND s.art!='it' AND s.art!='bt'"
               );
             }
-            else{
+            else{ */
               $artikel_von_stueckliste = $this->app->DB->SelectArr(
                 "SELECT s.*, art.nummer AS artnummer,art.projekt AS artprojekt
               FROM stueckliste AS s
               INNER JOIN artikel AS art ON s.artikel = art.id
               WHERE s.stuecklistevonartikel='$artikel'"
               );
-            }
+//            }
 
             $treffer++;
             $changed = true;
