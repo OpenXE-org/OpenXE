@@ -152,7 +152,7 @@ class Projekt extends GenProjekt {
         $width = array('1%','8%', '20%','5%','15%', '15%');
         $moreinfo = true;
         $moreinfoaction='projektuebersicht';
-        $findcols = array('p.abkuerzung','p.name','a.kundennummer','a.name','p.verantwortlicher');
+        $findcols = array('','p.abkuerzung','p.name','a.kundennummer','a.name','a2.name');
 
         $defaultorder = 6;
         $menu = "<table class=\"nopadding\" cellpadding=\"0\" cellspacing=\"0\">";
@@ -161,8 +161,12 @@ class Projekt extends GenProjekt {
         $width[] = '8%';
         $heading[] = '&Ouml;ffentlich';
         $findcols[] = "if(p.oeffentlich,'ja','-')";
-        $searchsql = array('p.name', 'p.abkuerzung', 'a2.name', 'a.kundennummer', 'a.name',"if(p.oeffentlich,'ja','-')");
 
+        $width[] = '1%';
+        $heading[] = 'Nummern-Kreis';
+        $findcols[] = "if(p.eigenernummernkreis,'ja','-')";
+
+        $searchsql = array('p.name', 'p.abkuerzung', 'a2.name', 'a.kundennummer', 'a.name',"if(p.oeffentlich,'ja','-')");
 
         $heading[] = 'Men&uuml;';
 
@@ -192,8 +196,10 @@ class Projekt extends GenProjekt {
         // SQL statement
         $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, '<img src=./themes/".$app->Conf->WFconf['defaulttheme']."/images/details_open.png class=details>' as open,";
         $sql .= "  p.abkuerzung, p.name, a.kundennummer,a.name, a2.name,";
-        $sql .= "if(p.oeffentlich,'ja','-') as oeffentlich, $freifeldsql
-                p.id as menu FROM projekt p LEFT JOIN adresse a ON a.id=p.kunde LEFT JOIN adresse a2 ON p.verantwortlicher = a2.id ";
+        $sql .= " if(p.oeffentlich,'ja','-') as oeffentlich,";
+        $sql .= " if(p.eigenernummernkreis,'ja','-') as eigenernummernkreis,";
+        $sql .= $freifeldsql;
+        $sql .= "p.id as menu FROM projekt p LEFT JOIN adresse a ON a.id=p.kunde LEFT JOIN adresse a2 ON p.verantwortlicher = a2.id ";
         //if(p.status like 'abgeschlossen','abgeschlossen','offen') as status,
         // fester filter
         $where = " p.geloescht=0 " . $app->erp->ProjektRechte();
