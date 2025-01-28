@@ -182,16 +182,16 @@ class Lager extends GenLager {
           $defaultCountry = 'DE';
         }
         // headings
-        $heading = array('Bezeichnung', 'Projekt','Kommissions- / Produktionslager','Land','Men&uuml;');
-        $width = array('60%', '10%','20%','5%', '8%');
-        $findcols = array('l.bezeichnung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)", 'l.id');
-        $searchsql = array('l.bezeichnung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)",'p.name');
+        $heading = array('Bezeichnung','Beschreibung', 'Projekt','Kommissions- / Produktionslager','Land','Men&uuml;');
+        $width = array('20%','60%', '10%','20%','5%', '8%');
+        $findcols = array('l.bezeichnung','l.beschreibung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)", 'l.id');
+        $searchsql = array('l.bezeichnung','l.beschreibung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)",'p.name');
         $defaultorder = 4;
         $defaultorderdesc = 1;
         $menu = "<table><tr><td nowrap><a href=\"index.php?module=lager&action=edit&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=PrintDialog(\"index.php?module=lager&action=regaletiketten&id=%value%&cmd=all\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\"></a></td></tr></table>";
 
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.bezeichnung, p.abkuerzung, a.name,
+        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.bezeichnung, l.beschreibung, p.abkuerzung, a.name,
                            IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land),
               l.id as menu 
             FROM `lager` AS `l`
