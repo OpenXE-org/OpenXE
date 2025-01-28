@@ -310,9 +310,9 @@ class Lager extends GenLager {
           }
         }
 
-        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Lagerplatz','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs','',  'Gesamt','');
-        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%',  '5%' ,       '5%',   '5%',     '5%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
-        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername', 'name',$colmenge,$colgewicht,$colvolumen);
+        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Lagerplatz','Adresse','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs','',  'Gesamt','');
+        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%',  '5%'        ,'5%',     '5%',   '5%',     '5%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
+        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername', 'lagerplatzname','adressname',$colmenge,$colgewicht,$colvolumen);
 
         if ($preiseineuro) {
             $preisEUR = "((SELECT preisfinal)*if((SELECT waehrungfinal) = 'EUR' OR (SELECT waehrungfinal) = NULL,1,kurs))";                  
@@ -472,7 +472,9 @@ class Lager extends GenLager {
             GROUP BY
                 artikel,
                 waehrung
-        ";        
+        ";
+
+        $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung lagerplatzname, lager_platz.adresse from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
 
         $sql = "SELECT DISTINCT SQL_CALC_FOUND_ROWS 
                             art.id, 
@@ -481,7 +483,8 @@ class Lager extends GenLager {
                             art.name_de, 
                             (select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, 'kat', 1), '_', 1) as type from artikel where id=art.id)) as artikelkategorie,
                             lagerplatz.lagername,
-                            lagerplatz.name, 
+                            lagerplatzname,
+                            adr.adressname,
                             ".$app->erp->FormatMenge('lw.menge',2).",".$app->erp->FormatPreis($colgewicht,2).",".$app->erp->FormatPreis($colvolumen,2)." as menge,
                             ".self::PreisTypErgebnis($preisart)." as preisart,
                             ".self::EinzelPreis($preisart)." AS preisfinal,
@@ -493,14 +496,12 @@ class Lager extends GenLager {
                         FROM 
                             artikel art 
                         INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1
+                        INNER JOIN ".$lagerplatz_sql." ON lw.lager_platz = lagerplatz.id
+                        LEFT JOIN (SELECT id, name adressname FROM adresse) adr ON adr.id = lagerplatz.adresse
                         LEFT JOIN (".$prices_sql.") AS ek ON art.id = ek.artikel AND ".self::Waehrung($preisart)." = ek.waehrung
                         LEFT JOIN (".$currency_sql.") AS kurs ON kurs.waehrung_von = ".self::Waehrung($preisart)." AND kurs.waehrung_nach = 'EUR'
         ";
    
-        $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung name from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
-
-        $sql .= "INNER JOIN ".$lagerplatz_sql." ON lw.lager_platz = lagerplatz.id";       
-
         $where .= " AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1 ";      
         
         $sql = $app->YUI->CodiereSQLForOneQuery($sql, $name);     
