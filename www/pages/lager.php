@@ -287,6 +287,8 @@ class Lager extends GenLager {
         $datum = $app->User->GetParameter('datum');
         $gruppierenlager = $app->User->GetParameter('gruppierenlager');
         $preiseineuro = $app->User->GetParameter('preiseineuro');
+        $sperrlager_nicht_bewerten = $app->User->GetParameter('sperrlager_nicht_bewerten');
+        $konsignationslager_nicht_bewerten = $app->User->GetParameter('konsignationslager_nicht_bewerten');
 
         if($datum)
         {
@@ -310,9 +312,9 @@ class Lager extends GenLager {
           }
         }
 
-        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Lagerplatz','Adresse','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs','',  'Gesamt','');
-        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%',  '5%'        ,'5%',     '5%',   '5%',     '5%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
-        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername', 'lagerplatzname','adressname',$colmenge,$colgewicht,$colvolumen);
+        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Adresse','Lagerplatz','gesp.','Adresse','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs', 'Gesamt','');
+        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%', '5%', '5%'        ,'5%','1%',     '5%',   '5%',     '1%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
+        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername','lageradressename', 'lagerplatzname','lagerplatz.sperrlager','lagerplatzadressename',$colmenge,$colgewicht,$colvolumen);
 
         if ($preiseineuro) {
             $preisEUR = "((SELECT preisfinal)*if((SELECT waehrungfinal) = 'EUR' OR (SELECT waehrungfinal) = NULL,1,kurs))";                  
@@ -322,12 +324,19 @@ class Lager extends GenLager {
             $gesamtcol = "((SELECT preisfinal)*lw.menge)";
             $kurs = 1;
         }
+    
+        if ($sperrlager_nicht_bewerten) {
+            $gesamtcol = "if (lagerplatz.sperrlager,0,".$gesamtcol.")";
+        }
+
+        if ($konsignationslager_nicht_bewerten) {
+            $gesamtcol = "if (lagerplatz.lagerplatzadresse OR lagerplatz.lageradresse,0,".$gesamtcol.")";
+        }
 
         $findcols[] = self::PreisTypErgebnis($preisart);        
         $findcols[] = $preis;
         $findcols[] = 'waehrung';
         $findcols[] = 'kurs';
-        $findcols[] = '';
         $findcols[] = $gesamtcol;
         $findcols[] = 'art.id';
         
@@ -336,9 +345,9 @@ class Lager extends GenLager {
 
         $defaultorder = 1;
         $defaultorderdesc = 0;
-        $alignright = array(7,8,9,10,11,11,13,15);
-        $sumcol = array(7,15);
-        $numbercols = array(7,8,9,11,13,15);
+        $alignright = array(9,10,11,12,13,15,16);
+        $sumcol = array(9,16);
+        $numbercols = array(9,10,11,12,13,15);
         $datecols = array(0);     
         $onequeryperuser = true;
 
@@ -474,7 +483,7 @@ class Lager extends GenLager {
                 waehrung
         ";
 
-        $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung lagerplatzname, lager_platz.adresse from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
+        $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung lagerplatzname, lager_platz.adresse lagerplatzadresse, lager_platz.sperrlager, lager.adresse lageradresse from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
 
         $sql = "SELECT DISTINCT SQL_CALC_FOUND_ROWS 
                             art.id, 
@@ -483,21 +492,23 @@ class Lager extends GenLager {
                             art.name_de, 
                             (select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, 'kat', 1), '_', 1) as type from artikel where id=art.id)) as artikelkategorie,
                             lagerplatz.lagername,
+                            lageradressename,
                             lagerplatzname,
-                            adr.adressname,
+                            if(sperrlager,'ja',''),
+                            lagerplatzadressename,
                             ".$app->erp->FormatMenge('lw.menge',2).",".$app->erp->FormatPreis($colgewicht,2).",".$app->erp->FormatPreis($colvolumen,2)." as menge,
                             ".self::PreisTypErgebnis($preisart)." as preisart,
                             ".self::EinzelPreis($preisart)." AS preisfinal,
                             ".self::Waehrung($preisart)." AS waehrungfinal,
                             ".$kurs." AS kurs,
-                            '' as hidden,
                             ".$app->erp->FormatPreis($gesamtcol,2)." as gesamt,
                             art.id 
                         FROM 
                             artikel art 
-                        INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1
+                        INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1                        
                         INNER JOIN ".$lagerplatz_sql." ON lw.lager_platz = lagerplatz.id
-                        LEFT JOIN (SELECT id, name adressname FROM adresse) adr ON adr.id = lagerplatz.adresse
+                        LEFT JOIN (SELECT id, name lageradressename FROM adresse) lageradr ON lageradr.id = lagerplatz.lageradresse
+                        LEFT JOIN (SELECT id, name lagerplatzadressename FROM adresse) adr ON adr.id = lagerplatz.lagerplatzadresse
                         LEFT JOIN (".$prices_sql.") AS ek ON art.id = ek.artikel AND ".self::Waehrung($preisart)." = ek.waehrung
                         LEFT JOIN (".$currency_sql.") AS kurs ON kurs.waehrung_von = ".self::Waehrung($preisart)." AND kurs.waehrung_nach = 'EUR'
         ";
@@ -1678,10 +1689,18 @@ class Lager extends GenLager {
     $preisart = $this->app->Secure->GetPOST('preisart');
     $this->app->User->SetParameter('preisart', $preisart);
 
+    $sperrlager_nicht_bewerten = $this->app->Secure->GetPOST('sperrlager_nicht_bewerten');
+    $this->app->User->SetParameter('sperrlager_nicht_bewerten', $sperrlager_nicht_bewerten);
+
+    $konsignationslager_nicht_bewerten = $this->app->Secure->GetPOST('konsignationslager_nicht_bewerten');
+    $this->app->User->SetParameter('konsignationslager_nicht_bewerten', $konsignationslager_nicht_bewerten);
+
     $this->app->YUI->DatePicker("datum");
  
   	$this->app->Tpl->Set('DATUM', $datum);
   	$this->app->Tpl->Set('PREISEINEURO', $preiseineuro==1?"checked":"");
+  	$this->app->Tpl->Set('SPERRLAGER_NICHT_BEWERTEN', $sperrlager_nicht_bewerten==1?"checked":"");
+  	$this->app->Tpl->Set('KONSIGNATIONSLAGER_NICHT_BEWERTEN', $konsignationslager_nicht_bewerten==1?"checked":"");
     $this->app->Tpl->Set('GRUPPIERENLAGER', $gruppierenlager==1?"checked":"");
 
   	$this->app->Tpl->Set(strtoupper($preisart), 'selected');
