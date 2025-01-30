@@ -4230,7 +4230,12 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
 
         if(!function_exists('imagejpeg'))
         {
-          $img = "'<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/icon_img_error.png title=\"Keine GD-Erweiterung installiert\" />'";
+          $img = "concat('
+          <span style=\"width:100px;text-align:center;display:block;\">
+            <a href=\"index.php?module=dateien&action=send&id=',d.id,'\">
+              <img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg title=\"Datei anzeigen\" />
+            </a>
+          </span>')";
         }else{
           $img = "concat('<span style=\"width:100px;text-align:center;display:block;\"><a href=\"index.php?module=dateien&action=send&id=',d.id,'\"><img src=\"index.php?module=ajax&action=thumbnail&cmd=$cmd&id=',d.id,'\" style=\"border:0;max-width:100px;max-height:100px;\" /></a></span>')";
         }
