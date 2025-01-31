@@ -350,7 +350,11 @@ class Wareneingang {
 
 //                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>Menge:&nbsp;<input type=\"text\" size=\"5\" name=\"pos[%value%]\">&nbsp;</td></tr></table>";
                 $menucol = 4;
-                $lagerartikel = "";
+                if($this->app->erp->Firmendaten("wareneingang_lagerartikel")) {
+                    $lagerartikel = "AND art.lagerartikel = 1";
+                } else {
+                    $lagerartikel = "";
+                }
                 $receiptDocument = $this->app->erp->ModulVorhanden('receiptdocument');
                 if ($receiptDocument) {
                     $this->app->DB->Select('SELECT id FROM receiptdocument LIMIT 1');
