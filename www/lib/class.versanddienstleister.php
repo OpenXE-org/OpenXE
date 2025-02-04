@@ -445,6 +445,8 @@ abstract class Versanddienstleister
                 $this->app->printer->Drucken($this->documentPrinterId, $filefullpath);
             }
             $ret['messages'][] = ['class' => 'info', 'text' => "Paketmarke wurde erfolgreich erstellt: $result->TrackingNumber"];
+            if ($result->AdditionalInfo != null)
+                $ret['messages'][] = ['class' => 'info', 'text' => $result->AdditionalInfo];
         } else {
             $ret['messages'] = array_map(fn(string $item) => ['class' => 'error', 'text' => $item], array_unique($result->Errors));
         }

@@ -16,4 +16,5 @@ class CreateShipmentResult
   public ?string $ExportDocuments;
   public ?string $TrackingNumber;
   public ?string $TrackingUrl;
+  public ?string $AdditionalInfo;
 }
