@@ -1,6 +1,7 @@
 <?php
 
 use Xentral\Components\Logger\Logger;
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 
 /** @var Logger $logger */
 $logger = $app->Container->get('Logger');
@@ -244,11 +245,12 @@ foreach ($shops_to_transmit as $shop_to_transmit) {
         );    
 
         // See description of return format in function class.remote.php -> RemoteSendArticleList()
-        foreach ($result['articlelist'] as $article) {
+        /** @var ArticleExportResult $articleResult */
+        foreach ($result as $articleResult) {
             $app->DB->Delete(
                 sprintf(
                     'DELETE FROM `shopexport_artikeluebertragen` WHERE `artikel`= %d AND `shop` = %d',
-                    $article['artikel'],
+                    $articleResult->articleId,
                     $shop_to_transmit['shop']
                 )
             );
