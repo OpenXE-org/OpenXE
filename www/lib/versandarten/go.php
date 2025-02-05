@@ -128,6 +128,7 @@ class Versandart_go extends Versanddienstleister
       $ret->TrackingNumber = $result->hwbNumber;
       $ret->TrackingUrl =  'https://www.general-overnight.com/deu_de/versenden/sendungsverfolgung.html?reference='.$result->hwbNumber;
       $ret->Label = base64_decode($result->hwbOrPackageLabel);
+      $ret->AdditionalInfo = "Abholtag: ".$result->pickupDate->format('d.m.Y')." / Zustelltag: ".$result->deliveryDate->format('d.m.Y');
     } else {
       $ret->Errors[] = $result;
     }
