@@ -1739,7 +1739,14 @@ class Lieferschein extends GenLieferschein
             $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=paketmarke&id=$id","Paketmarke");
         }   
     }
-
+    
+    $anzahldateien = '';
+    if ($id > 0) {
+      $anzahldateien = $this->app->erp->AnzahlDateien('lieferschein', $id);
+      $anzahldateien = $anzahldateien > 0?' ('.$anzahldateien.')':'';
+    }
+    $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=dateien&id=$id", 'Dateien'.$anzahldateien);
+    
     $this->app->erp->MenuEintrag("index.php?module=lieferschein&action=list","Zur&uuml;ck zur &Uuml;bersicht");
         
     $this->app->erp->RunMenuHook('lieferschein');
