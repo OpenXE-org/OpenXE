@@ -1287,6 +1287,7 @@
 							<tr><td>Auftr&auml;ge zu Bestellungen im Wareneingang anzeigen:</td><td><input type="checkbox" name="wareneingangauftragzubestellung" [WARENEINGANGAUFTRAGZUBESTELLUNG]></td></tr>
 							<tr><td>{|Bildtyp beim Upload im Wareneingang|}:</td><td><select name="wareneingangbildtypvorauswahl" id="wareneingangbildtypvorauswahl">[WARENEINGANBILDTYPVORAUSWAHL]</select></td></tr>
 							<tr><td>{|Verhalten beim Scannen im Wareneingang|}:</td><td><select name="wareneingangscanverhalten" id="wareneingangscanverhalten">[WARENEINGANGSCANVERHALTENAUSWAHL]</select></td></tr>
+							<tr><td>Nur Lagerartikel im Wareneingang:</td><td><input type="checkbox" name="wareneingang_lagerartikel" [WARENEINGANG_LAGERARTIKEL]> </td></tr>
 						</table>
 					</fieldset>
 				</div>
