@@ -2309,15 +2309,35 @@ class Briefpapier extends SuperFPDF {
     $this->SetY($this->GetY()+$this->abstand_boxrechtsoben);
 
     $this->SetFont($this->GetFont(),'',$fontinfobox);
-    $tempY = $this->GetY();
+ /*   $tempY = $this->GetY();
     $this->SetX($startpos_links_rechts);
     $this->MultiCell($this->box_breite1,4,$titleStr,"",$this->boxausrichtung); //BL
     $this->SetXY($startpos_links_rechts+$breite_spalte_rechts,$tempY);
-    $this->MultiCell($this->box_breitexi21,4,$valueStr,"",$this->boxausrichtung); //BR
+    $this->MultiCell($this->box_breitexi21,4,$valueStr,"",$this->boxausrichtung); //BR*/
+
+    foreach($this->corrDetails as $title => $value) {
+        if($value!="")
+        {
+            $titleStr = $title !== ''?$this->app->erp->ReadyForPDF($title).": \n":" \n";
+            $valueStr = $this->app->erp->ReadyForPDF($value)."\n";
+            $startY = $this->GetY();
+            $this->SetX($startpos_links_rechts);
+            $this->MultiCell($this->box_breite1,4,$titleStr,"",$this->boxausrichtung); //BL
+            $tempY = $this->GetY();
+            $this->SetY($startY);
+            $this->SetX($startpos_links_rechts+$breite_spalte_rechts);
+            $this->MultiCell($this->box_breitexi21,4,$valueStr,"",$this->boxausrichtung); //BR*/
+
+            if ($tempY > $this->GetY()) {
+                $this->SetY($tempY);
+            }
+
+        }
+    }
 
     return($this->GetY());
   }
-
+  
   public function renderDoctype() {
     //$this->Ln(1);
 
