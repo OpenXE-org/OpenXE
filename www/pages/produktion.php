@@ -20,12 +20,12 @@ class Produktion {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "produktion_list");        
+        $this->app->ActionHandler("list", "produktion_list");
         $this->app->ActionHandler("create", "produktion_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "produktion_edit");
         $this->app->ActionHandler("copy", "produktion_copy");
         $this->app->ActionHandler("minidetail", "produktion_minidetail");
-        $this->app->ActionHandler("delete", "produktion_delete");     
+        $this->app->ActionHandler("delete", "produktion_delete");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
 
@@ -53,9 +53,9 @@ class Produktion {
                             IFNULL((SELECT CONCAT(a.name_de,' (',a.nummer,')','<br>') FROM artikel a INNER JOIN produktion_position pp ON pp.artikel = a.id WHERE pp.stuecklistestufe = 1 AND pp.produktion = p.id LIMIT 1),''),
                             CONCAT('<i>',internebezeichnung,'</i>')
                         )";
-                        
-                $adresse = "(SELECT name FROM adresse WHERE kundennummer = p.kundennummer AND p.kundennummer != 0 LIMIT 1)";                     
-                        
+
+                $adresse = "(SELECT name FROM adresse WHERE kundennummer = p.kundennummer AND p.kundennummer != 0 LIMIT 1)";
+
                 $findcols = array('p.id','p.id','p.belegnr','p.kundennummer',$adresse,'p.datum',$bezeichnung,'soll','ist', 'zeit_geplant','zeit_geplant', 'projekt','p.status','icons','id');
 
                 $searchsql = array('p.belegnr','p.kundennummer','p.name',$bezeichnung);
@@ -63,24 +63,24 @@ class Produktion {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";               
+		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
 
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . 
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" .
                         "<a href=\"index.php?module=produktion&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;".
-                        "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . 
-                        "<a href=\"#\" onclick=CopyDialog(\"index.php?module=produktion&action=copy&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\"></a>" . 
+                        "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" .
+                        "<a href=\"#\" onclick=CopyDialog(\"index.php?module=produktion&action=copy&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\"></a>" .
                         "</td></tr></table>";
 
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.datum, p.art, p.projekt, p.belegnr, p.internet, p.bearbeiter, p.angebot, p.freitext, p.internebemerkung, p.status, p.adresse, p.name, p.abteilung, p.unterabteilung, p.strasse, p.adresszusatz, p.ansprechpartner, p.plz, p.ort, p.land, p.ustid, p.ust_befreit, p.ust_inner, p.email, p.telefon, p.telefax, p.betreff, p.kundennummer, p.versandart, p.vertrieb, p.zahlungsweise, p.zahlungszieltage, p.zahlungszieltageskonto, p.zahlungszielskonto, p.bank_inhaber, p.bank_institut, p.bank_blz, p.bank_konto, p.kreditkarte_typ, p.kreditkarte_inhaber, p.kreditkarte_nummer, p.kreditkarte_pruefnummer, p.kreditkarte_monat, p.kreditkarte_jahr, p.firma, p.versendet, p.versendet_am, p.versendet_per, p.versendet_durch, p.autoversand, p.keinporto, p.keinestornomail, p.abweichendelieferadresse, p.liefername, p.lieferabteilung, p.lieferunterabteilung, p.lieferland, p.lieferstrasse, p.lieferort, p.lieferplz, p.lieferadresszusatz, p.lieferansprechpartner, p.packstation_inhaber, p.packstation_station, p.packstation_ident, p.packstation_plz, p.packstation_ort, p.autofreigabe, p.freigabe, p.nachbesserung, p.gesamtsumme, p.inbearbeitung, p.abgeschlossen, p.nachlieferung, p.lager_ok, p.porto_ok, p.ust_ok, p.check_ok, p.vorkasse_ok, p.nachnahme_ok, p.reserviert_ok, p.bestellt_ok, p.zeit_ok, p.versand_ok, p.partnerid, p.folgebestaetigung, p.zahlungsmail, p.stornogrund, p.stornosonstiges, p.stornorueckzahlung, p.stornobetrag, p.stornobankinhaber, p.stornobankkonto, p.stornobankblz, p.stornobankbank, p.stornogutschrift, p.stornogutschriftbeleg, p.stornowareerhalten, p.stornomanuellebearbeitung, p.stornokommentar, p.stornobezahlt, p.stornobezahltam, p.stornobezahltvon, p.stornoabgeschlossen, p.stornorueckzahlungper, p.stornowareerhaltenretour, p.partnerausgezahlt, p.partnerausgezahltam, p.kennen, p.logdatei, p.bezeichnung, p.datumproduktion, p.anschreiben, p.usereditid, p.useredittimestamp, p.steuersatz_normal, p.steuersatz_zwischen, p.steuersatz_ermaessigt, p.steuersatz_starkermaessigt, p.steuersatz_dienstleistung, p.waehrung, p.schreibschutz, p.pdfarchiviert, p.pdfarchiviertversion, p.typ, p.reservierart, p.auslagerart, p.projektfiliale, p.datumauslieferung, p.datumbereitstellung, p.unterlistenexplodieren, p.charge, p.arbeitsschrittetextanzeigen, p.einlagern_ok, p.auslagern_ok, p.mhd, p.auftragmengenanpassen, p.internebezeichnung, p.mengeoriginal, p.teilproduktionvon, p.teilproduktionnummer, p.parent, p.parentnummer, p.bearbeiterid, p.mengeausschuss, p.mengeerfolgreich, p.abschlussbemerkung, p.auftragid, p.funktionstest, p.seriennummer_erstellen, p.unterseriennummern_erfassen, p.datumproduktionende, p.standardlager, p.id FROM produktion p";
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.belegnr, p.kundennummer, p.name, p.datum, \"SUBSELECT\", \"SUBSELECT\", p.mengeerfolgreich, \"-\", \"-\", p.projekt, p.status, p.status, p.id FROM produktion p";
-                $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
 			            p.id,
 			            $dropnbox,
 			            p.belegnr,
 			            p.kundennummer,
 			            ".$adresse." as name,
                         DATE_FORMAT(datum,'%d.%m.%Y') as datum,
-                        
+
                         ".$bezeichnung." as bezeichnung,
 
 			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE') as soll,
@@ -91,7 +91,7 @@ class Produktion {
 			            p.status,
 	                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
-			            FROM produktion p                            
+			            FROM produktion p
                         ";
 
                 $where = "0";
@@ -111,9 +111,9 @@ class Produktion {
                                          else
                                          oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
                                            \'\',
-                                           i, 
+                                           i,
                                            0,0
                                            );
                                          }
@@ -132,21 +132,21 @@ class Produktion {
                   $where .= " OR p.status IN ('freigegeben','gestartet')";
                 }
                 else {
-                }                
+                }
 
                 $more_data3 = $this->app->Secure->GetGET("more_data3");
-                if ($more_data3 == 1) {            
+                if ($more_data3 == 1) {
                   $where .= " OR p.status IN ('abgeschlossen')";
                 }
                 else {
-                }                
+                }
 
                 $more_data4 = $this->app->Secure->GetGET("more_data4");
                 if ($more_data4 == 1) {
                   $where .= " OR p.status IN ('storniert')";
                 }
                 else {
-                }                
+                }
                 // END Toggle filters
 
                 $moreinfo = true; // Allow drop down details
@@ -178,24 +178,24 @@ class Produktion {
 
                 if (in_array($status,array('angelegt','freigegeben'))) {
                     $heading = array('','','Nummer', 'Artikel', 'Projekt', 'Planmenge pro St&uuml;ck', 'Lager alle (verf&uuml;gbar)', 'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht', 'Men&uuml;');
-                    $width = array(  '1%','1%','5%', '30%',     '5%',      '1%',                       '1%',                          '1%' ,                    '1%',         '1%',        '1%'         ,'1%'); 
-                    $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";    
+                    $width = array(  '1%','1%','5%', '30%',     '5%',      '1%',                       '1%',                          '1%' ,                    '1%',         '1%',        '1%'         ,'1%');
+                    $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=produktion_position&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion_position&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
                 } else {
                     $heading = array('','','Nummer', 'Artikel', 'Projekt','Planmenge pro St&uuml;ck', 'Lager alle (verf&uuml;gbar)',  'Lager (verf&uuml;gbar)', 'Reserviert', 'Planmenge', 'Verbraucht', '');
-                    $width = array(  '1%','1%','5%', '30%',     '5%',      '1%',                       '1%',                          '1%' ,                    '1%',         '1%',        '1%'         ,'1%'); 
+                    $width = array(  '1%','1%','5%', '30%',     '5%',      '1%',                       '1%',                          '1%' ,                    '1%',         '1%',        '1%'         ,'1%');
                     $menu = "";
-                }            
+                }
 
                 $alignright = array(6,7,8,9,10);
 
                 $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','stueckmenge','lageralle','lager','reserviert','menge','geliefert_menge');
                 $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
-              
+
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
 		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
-                
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                     p.id,
                     $dropnbox,
@@ -227,12 +227,12 @@ class Produktion {
                             ),
                             ')'
                         )
-                        ,''                    
+                        ,''
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
                     FORMAT(p.menge,0,'de_DE'),
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
-                    p.id 
+                    p.id
                     FROM produktion_position p";
 
                 $where = " stuecklistestufe = 0 AND produktion = $id";
@@ -296,12 +296,12 @@ class Produktion {
                             ),
                             ')'
                         )
-                        ,''                    
+                        ,''
                     ) as lager,
                     FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0,'de_DE') as reserviert,
                     FORMAT(SUM(p.menge),0,'de_DE') as menge,
                     FORMAT(SUM(p.geliefert_menge),0,'de_DE') as geliefert_menge,
-                    p.id 
+                    p.id
                     FROM produktion_position p";
 
                 $where = " stuecklistestufe = 0 AND produktion = $id";
@@ -321,7 +321,7 @@ class Produktion {
         }
         return $erg;
     }
-    
+
     function produktion_list() {
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=create", "Neu anlegen");
@@ -332,32 +332,32 @@ class Produktion {
 
         $this->app->YUI->TableSearch('TAB1', 'produktion_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "produktion_list.tpl");
-    }    
+    }
 
     public function produktion_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
-        
+
         // Check if storno possible -> No partial production yet
 
 	    $geliefert_menge = $this->app->DB->SelectArr("SELECT SUM(geliefert_menge) as menge FROM produktion_position pp WHERE pp.produktion = $id")[0]['menge'];
-        
+
         if ($geliefert_menge == 0) {
 
             $sql = "UPDATE produktion SET status='storniert' WHERE id = '$id'";
             $this->app->DB->Update($sql);
-            $this->app->Tpl->Set('MESSAGE', "<div class=\"info\">Der Eintrag wurde storniert.</div>");           
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"info\">Der Eintrag wurde storniert.</div>");
         } else {
-            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag kann nicht storniert werden, da bereits Buchungen vorhanden sind.</div>");           
-        } 
+            $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag kann nicht storniert werden, da bereits Buchungen vorhanden sind.</div>");
+        }
 
         $this->produktion_list();
-    } 
+    }
 
     /*
      * Edit produktion item
      * If id is empty, create a new one
      */
-        
+
     function produktion_edit($id = NULL) {
 
         if (empty($id)) {
@@ -375,25 +375,25 @@ class Produktion {
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=edit&id=$id", "Details");
         $this->app->erp->MenuEintrag("index.php?module=produktion&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
         $input = $this->GetInput();
-        $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));                      
+        $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));
 
         $sql = "SELECT status, belegnr, projekt, standardlager FROM produktion WHERE id = '$id'";
-        $from_db = $this->app->DB->SelectArr($sql)[0];        
+        $from_db = $this->app->DB->SelectArr($sql)[0];
         $global_status = $from_db['status'];
         $global_produktionsnummer = $from_db['belegnr'];
-        $global_projekt = $from_db['projekt'];                  
-        $global_standardlager = $from_db['standardlager'];                
-               
+        $global_projekt = $from_db['projekt'];
+        $global_standardlager = $from_db['standardlager'];
+
 //        foreach ($input as $key => $value) {
 //            echo($key." -> ".$value."<br>\n");
 //        }
 
-        $this->app->Tpl->Set('MESSAGE', "");          
+        $this->app->Tpl->Set('MESSAGE', "");
 
         if (empty($id)) {
             // New item
-            $id = 'NULL';        
-            
+            $id = 'NULL';
+
         } else {
         }
 
@@ -405,7 +405,7 @@ class Produktion {
             switch ($submit) {
                 case 'speichern':
                     // Write to database
-            
+
                     // Add checks here
 
                     if (empty($input['datum'])) {
@@ -427,21 +427,21 @@ class Produktion {
                     $columns = "id, ";
                     $values = "$id, ";
                     $update = "";
-            
+
                     $fix = "";
 
                     foreach ($input as $key => $value) {
                         $columns = $columns.$fix.$key;
                         $values = $values.$fix."'".$value."'";
                         $update = $update.$fix.$key." = '$value'";
-                        $fix = ", ";                           
+                        $fix = ", ";
                     }
 
                     $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
                     $this->app->DB->Update($sql);
 
                     if ($id == 'NULL') {
-    
+
                         $id = $this->app->DB->GetInsertID();
 
                         if (!empty($id)) {
@@ -450,25 +450,25 @@ class Produktion {
                             $msg = $this->app->erp->base64_url_encode($msg);
                             header("Location: index.php?module=produktion&action=edit&id=$id&msg=$msg");
                         }
-                        
+
                     } else {
                         $msg .= "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>";
                     }
                 break;
                 case 'planen':
-                    
-                    // Check 
-                    // Parse positions            
+
+                    // Check
+                    // Parse positions
                 	$sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
             	    $produktionsartikel = $this->app->DB->SelectArr($sql);
 
                     if (!empty($produktionsartikel)) {
                         $msg .= "<div class=\"success\">Bereits geplant.</div>";
-                        break;                        
+                        break;
                     }
 
                     $artikel_planen_id = $this->app->erp->ReplaceArtikel(true, $this->app->Secure->GetPOST('artikel_planen'),true); // Convert from form to artikel number
-                    $artikel_planen_menge = $this->app->Secure->GetPOST('artikel_planen_menge');                       
+                    $artikel_planen_menge = $this->app->Secure->GetPOST('artikel_planen_menge');
 
                     if (!$artikel_planen_id) {
                         $msg .= "<div class=\"error\">Artikel ist keine St&uuml;ckliste.</div>";
@@ -492,28 +492,28 @@ class Produktion {
                         break;
                     }
 
-                    foreach ($stueckliste as $key => $value) {                        
+                    foreach ($stueckliste as $key => $value) {
                         $value['menge'] = $value['menge'] * $artikel_planen_menge;
                         $position_values[] = '('.implode(",",$value).',\'\')';
                     }
 
                     $sql = "INSERT INTO produktion_position (produktion, artikel, menge, stuecklistestufe, projekt) VALUES ( $id, $artikel_planen_id, $artikel_planen_menge, 1, '$global_projekt'), ".implode(',',$position_values);
-                    $this->app->DB->Update($sql);                   
+                    $this->app->DB->Update($sql);
 
                     $msg .= "<div class=\"success\">Planung angelegt.</div>";
                     $this->ProtokollSchreiben($id,"Produktion geplant ($artikel_planen_menge)");
 
-                break;            
+                break;
                 case 'freigeben':
                     $this->app->erp->BelegFreigabe("produktion",$id);
                     $this->ProtokollSchreiben($id,'Produktion freigegeben');
                 break;
                 case 'reservieren':
-                  
+
                     // Check quantities and reserve for every position
 
                     if($global_standardlager == 0) {
-                        break;    
+                        break;
                     }
 
                     $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
@@ -530,16 +530,16 @@ class Produktion {
                     foreach ($materialbedarf as $materialbedarf_position) {
 
                         // Calculate new needed quantity if there is scrap
-                        $materialbedarf_position['menge'] = $materialbedarf_position['menge']*($fortschritt['ausschuss']+$fortschritt['geplant'])/$fortschritt['geplant'];                    
+                        $materialbedarf_position['menge'] = $materialbedarf_position['menge']*($fortschritt['ausschuss']+$fortschritt['geplant'])/$fortschritt['geplant'];
 
-                        $result = $this->ArtikelReservieren($materialbedarf_position['artikel'], $global_standardlager, $materialbedarf_position['menge']-$materialbedarf_position['geliefert_menge'], 0, 'produktion', $id, $materialbedarf_position['id'],"Produktion $global_produktionsnummer");                   
+                        $result = $this->ArtikelReservieren($materialbedarf_position['artikel'], $global_standardlager, $materialbedarf_position['menge']-$materialbedarf_position['geliefert_menge'], 0, 'produktion', $id, $materialbedarf_position['id'],"Produktion $global_produktionsnummer");
                         if ($result > 0) {
-                            $reservierung_durchgefuehrt = true;                            
-                        } 
-                    }               
+                            $reservierung_durchgefuehrt = true;
+                        }
+                    }
 
                     // Message output
-                    if ($reservierung_durchgefuehrt) {                    
+                    if ($reservierung_durchgefuehrt) {
                          $msg .= "<div class=\"info\">Reservierung durchgeführt.</div>";
                     } else {
                          $msg .= "<div class=\"error\">Keine Reservierung durchgeführt!</div>";
@@ -560,11 +560,11 @@ class Produktion {
                     $menge_produzieren = $this->app->Secure->GetPOST('menge_produzieren');
                     if (empty($menge_produzieren)) {
                         $menge_produzieren = 0;
-                    }                   
-                    $menge_ausschuss = $this->app->Secure->GetPOST('menge_ausschuss_produzieren');           
+                    }
+                    $menge_ausschuss = $this->app->Secure->GetPOST('menge_ausschuss_produzieren');
                     if (empty($menge_ausschuss)) {
                         $menge_ausschuss = 0;
-                    }                   
+                    }
 
                     $menge_plan = $produktionsartikel_position['menge'];
                     $menge_geliefert = $produktionsartikel_position['geliefert_menge'];
@@ -607,16 +607,16 @@ class Produktion {
                         }
 
                         // Update position
-                        $sql = "UPDATE produktion_position SET geliefert_menge = geliefert_menge + $menge_artikel_auslagern WHERE id = ".$material_position['id'];                     
+                        $sql = "UPDATE produktion_position SET geliefert_menge = geliefert_menge + $menge_artikel_auslagern WHERE id = ".$material_position['id'];
 
                         $this->app->DB->Update($sql);
-                    }                    
+                    }
 
                     if ($error) {
                        break;
                     }
 
-                    // Insert produced parts into stock               
+                    // Insert produced parts into stock
                     // Check target stock, if not existing, use default stock of article, if not given use production stock
 
 
@@ -627,19 +627,19 @@ class Produktion {
 
                     if (!empty($ziellager_from_form)) {
                         $sql = "SELECT id FROM lager_platz WHERE id = ".$ziellager_from_form;
-                        $result = $this->app->DB->SelectArr($sql);                            
-                        if (!empty($result)) {   
+                        $result = $this->app->DB->SelectArr($sql);
+                        if (!empty($result)) {
                             $ziellager = $ziellager_from_form;
                         } else {
                             $use_artikel_lager = true;
                         }
                     } else {
-                        $use_artikel_lager = true;                     
+                        $use_artikel_lager = true;
                     }
 
-                    if ($use_artikel_lager) {                
+                    if ($use_artikel_lager) {
                         $sql = "SELECT lager_platz FROM artikel WHERE id = ".$produktionsartikel_position['artikel'];
-                        $result = $this->app->DB->SelectArr($sql);                            
+                        $result = $this->app->DB->SelectArr($sql);
                         if (!empty($result) && !empty($result[0]['lager_platz'])) {
                             $ziellager = $result[0]['lager_platz'];
                         } else {
@@ -649,7 +649,7 @@ class Produktion {
 
                     }
                     $sql = "SELECT kurzbezeichnung FROM lager_platz WHERE id = $ziellager";
-                    $lagername = $this->app->DB->SelectArr($sql)[0]['kurzbezeichnung'];                                              
+                    $lagername = $this->app->DB->SelectArr($sql)[0]['kurzbezeichnung'];
 
                     // ERPAPI
                     //   function LagerEinlagern($artikel,$menge,$regal,$projekt,$grund="",$importer="",$paketannahme="",$doctype = "", $doctypeid = 0, $vpeid = 0, $permanenteinventur = 0, $adresse = 0)
@@ -726,14 +726,14 @@ class Produktion {
                     $columns = "";
                     $values = "";
                     $update = "";
-            
+
                     $fix = "";
 
                     foreach ($produktion_neu as $key => $value) {
                         $columns = $columns.$fix.$key;
                         $values = $values.$fix."'".$value."'";
                         $update = $update.$fix.$key." = '$value'";
-                        $fix = ", ";                           
+                        $fix = ", ";
                     }
 
                     $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.")";
@@ -742,7 +742,7 @@ class Produktion {
 
                     // Now add the positions
                     $sql = "SELECT * FROM produktion_position WHERE produktion = $id";
-                    $positionen = $this->app->DB->SelectArr($sql); 
+                    $positionen = $this->app->DB->SelectArr($sql);
 
                     foreach ($positionen as $position) {
 
@@ -802,20 +802,20 @@ class Produktion {
 
                 break;
                 case 'leeren':
-                    
+
                     if ($global_status == 'angelegt' || $global_status == 'freigegeben') {
                         $sql = "SELECT id, artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
                 	    $material = $this->app->DB->SelectArr($sql);
-                        foreach ($material as $material_position) {  
+                        foreach ($material as $material_position) {
                             // Remove reservation
                             $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
                         }
                         $sql = "DELETE FROM produktion_position WHERE produktion = $id";
-                        $this->app->DB->Update($sql);       
-                        $msg .= "<div class=\"warning\">Planung geleert.</div>"; 
+                        $this->app->DB->Update($sql);
+                        $msg .= "<div class=\"warning\">Planung geleert.</div>";
                     } else {
-                        $msg .= "<div class=\"error\">Planung kann nicht geleert werden.</div>"; 
-                    }                    
+                        $msg .= "<div class=\"error\">Planung kann nicht geleert werden.</div>";
+                    }
 
                 break;
                 case 'anpassen':
@@ -842,31 +842,55 @@ class Produktion {
 
                     $this->ProtokollSchreiben($id,"Menge angepasst auf ".$this->FormatMenge($menge_anpassen));
 
-                break;               
+                break;
                 case 'abschliessen':
                     $sql = "UPDATE produktion SET status = 'abgeschlossen' WHERE id=$id";
-                    $this->app->DB->Update($sql);       
+                    $this->app->DB->Update($sql);
 
                 	$sql = "SELECT id, artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=0";
             	    $material = $this->app->DB->SelectArr($sql);
 
-                    foreach ($material as $material_position) {  
+                    foreach ($material as $material_position) {
                         // Remove reservation
                         $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
                     }
-            
+
                     $this->ProtokollSchreiben($id,'Produktion abgeschlossen');
 
                 break;
+                case 'etikettendrucken':
 
-            }           
+                    $menge_drucken = $this->app->Secure->GetPOST('menge_produzieren');
+                    if ($menge_drucken) {
+                        $sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+                	    $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
+                        $produktionsartikel_id = $produktionsartikel_position['artikel'];
+
+                        $sql = "SELECT al.* FROM article_label al INNER JOIN artikel a ON a.id = al.article_id WHERE type = 'produktion' AND al.article_id = ".$produktionsartikel_id;
+                        $produktionsetiketten = $this->app->DB->SelectArr($sql);
+
+                        if (!empty($produktionsetiketten)) {
+                            foreach ($produktionsetiketten as $produktionsetikett) {
+                                $this->app->erp->EtikettenDrucker(
+                                    kennung: $produktionsetikett['label_id'],
+                                    anzahl: $menge_drucken*$produktionsetikett['amount'],
+                                    tabelle: 'artikel',
+                                    id: $produktionsartikel_id,
+                                    variables: null,
+                                    druckercode: $produktionsetikett['printer_id']
+                                );
+                            }
+                        }
+                    }                              	
+                break;
+            }
         }
 
-    
+
         // Load values again from database
         // toDo: cleanup
 
-        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
                 p.id,
     			(SELECT pp.bezeichnung FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1 LIMIT 1) as artikelname,
                 p.datum,
@@ -1027,12 +1051,12 @@ class Produktion {
         $produktion_from_db = $this->app->DB->SelectArr($sql)[0];
 
         foreach ($produktion_from_db as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);             
+            $this->app->Tpl->Set(strtoupper($key), $value);
         }
-             
+
         /*
          * Add displayed items later
-         */ 
+         */
 
         $this->StatusBerechnen((int)$id);
 
@@ -1099,24 +1123,25 @@ class Produktion {
             AKTION_FREIGEBEN_VISIBLE
             AKTION_RESERVIEREN_VISIBLE
             AKTION_PRODUZIEREN_VISIBLE
+            AKTION_ETIKETTEN_DRUCKEN_DISABLED
             AKTION_ABSCHLIESSEN_VISIBLE
             POSITIONEN_TAB_VISIBLE
         */
 
-        // Reparse positions            
+        // Reparse positions
     	$sql = "SELECT id,artikel, menge, geliefert_menge FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
         $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
 
         // Not planned
         if (empty($produktionsartikel_position)) {
 
-            $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');      
-            $this->app->Tpl->Set('ARTIKEL_MENGE_VISIBLE','hidden');         
+            $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
+            $this->app->Tpl->Set('ARTIKEL_MENGE_VISIBLE','hidden');
             $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
-            $this->app->Tpl->Set('AKTION_LEEREN_VISIBLE','hidden');               
-            $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');               
-            $this->app->Tpl->Set('AKTION_TEILEN_VISIBLE','hidden');               
-        } else {                                     
+            $this->app->Tpl->Set('AKTION_LEEREN_VISIBLE','hidden');
+            $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
+            $this->app->Tpl->Set('AKTION_TEILEN_VISIBLE','hidden');
+        } else {
         // Planned
 
             $fortschritt = $this->MengeFortschritt((int) $id, 0);
@@ -1144,19 +1169,29 @@ class Produktion {
             $produktionsartikel = $this->app->DB->SelectArr($sql)[0];
             $produktionsartikel_name = $produktionsartikel['name_de'];
             $produktionsartikel_nummer = $produktionsartikel['nummer'];
-      }
+
+            $sql = "SELECT al.* FROM article_label al INNER JOIN artikel a ON a.id = al.article_id WHERE type = 'produktion'";
+
+
+            $sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
+
+            $sql = "SELECT al.* FROM article_label al INNER JOIN artikel a ON a.id = al.article_id WHERE type = 'produktion' AND al.article_id = ".$produktionsartikel_id;
+            $produktionsetiketten = $this->app->DB->SelectArr($sql);
+        }
+
+        if (empty($produktionsetiketten)) {
+            $this->app->Tpl->Set('AKTION_ETIKETTEN_DRUCKEN_DISABLED','disabled');
+        }
 
         if (empty($produktion_from_db['belegnr'])) {
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'ENTWURF - '.$produktionsartikel_name." (".$produktionsartikel_nummer.")");
         } else {
-            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $produktion_from_db['belegnr']." ".$produktionsartikel_name." (".$produktionsartikel_nummer.")");
+            $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $produktion_from_db['belegnr']." ".$produktionsartikel_name." (<a href=\"index.php?module=artikel&action=edit&id=".$produktionsartikel_id."\">".$produktionsartikel_nummer."</a>)", html: true);
         }
-
-        $this->app->Tpl->SetText('ARTIKELNAME', $produktionsartikel_name);
 
         // Action menu
         switch ($produktion_from_db['status']) {
-            case 'angelegt':                
+            case 'angelegt':
                 $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
@@ -1172,7 +1207,7 @@ class Produktion {
             case 'abgeschlossen':
             case 'storniert':
                 $this->app->Tpl->Set('AKTION_SPEICHERN_DISABLED','disabled');
-                $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden'); 
+                $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
@@ -1196,7 +1231,7 @@ class Produktion {
     /*
         Create a copy as draft
     */
-    
+
     function produktion_copy() {
         $id = (int) $this->app->Secure->GetGET('id');
         if (empty($id)) {
@@ -1205,14 +1240,14 @@ class Produktion {
         $result = $this->Copy($id,0);
         if ($result <= 0) {
             $msg .= "<div class=\"error\">Fehler beim Anlegen der Kopie.</div>";
-            $this->app->Tpl->Set('MESSAGE', $msg);           
+            $this->app->Tpl->Set('MESSAGE', $msg);
             $this->produktion_list();
         }
         else {
             $msg .= "<div class=\"success\">Kopie angelegt. $result new $id old</div>";
-            $this->app->Tpl->Set('MESSAGE', $msg);           
+            $this->app->Tpl->Set('MESSAGE', $msg);
             $this->produktion_edit((int) $result);
-        }      
+        }
     }
 
     public function produktion_minidetail($parsetarget='',$menu=true) {
@@ -1252,16 +1287,16 @@ class Produktion {
     	$input['kundennummer'] = $this->app->Secure->GetPOST('kundennummer');
     	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
     	$input['auftragid'] = $this->app->Secure->GetPOST('auftragid');
-	    $input['internebezeichnung'] = $this->app->Secure->GetPOST('internebezeichnung');   
+	    $input['internebezeichnung'] = $this->app->Secure->GetPOST('internebezeichnung');
 
         $input['datum'] = $this->app->Secure->GetPOST('datum');
     	$input['standardlager'] = $this->app->Secure->GetPOST('standardlager');
         $input['standardlager'] = $this->app->erp->ReplaceLagerPlatz(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
 
 	    $input['reservierart'] = $this->app->Secure->GetPOST('reservierart');
-	    $input['auslagerart'] = $this->app->Secure->GetPOST('auslagerart');      
+	    $input['auslagerart'] = $this->app->Secure->GetPOST('auslagerart');
     	$input['unterlistenexplodieren'] = $this->app->Secure->GetPOST('unterlistenexplodieren');
-    	$input['funktionstest'] = $this->app->Secure->GetPOST('funktionstest');        
+    	$input['funktionstest'] = $this->app->Secure->GetPOST('funktionstest');
     	$input['arbeitsschrittetextanzeigen'] = $this->app->Secure->GetPOST('arbeitsschrittetextanzeigen');
     	$input['seriennummer_erstellen'] = $this->app->Secure->GetPOST('seriennummer_erstellen');
 
@@ -1306,7 +1341,7 @@ class Produktion {
 
             $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
-           
+
             if ($only_reservations) {
                 $menge_verfuegbar = $menge_reserviert_diese;
             } else {
@@ -1329,8 +1364,8 @@ class Produktion {
             }
 
 //          echo("------------------------Lager $lager a $artikel menge_plan_artikel $menge_plan_artikel menge_geliefert $menge_geliefert menge_lager $menge_lager menge_reserviert_diese $menge_reserviert_diese menge_reserviert_gesamt $menge_reserviert_gesamt menge_verfuegbar $menge_verfuegbar menge_moeglich_artikel $menge_moeglich_artikel menge_moeglich $menge_moeglich<br>");
-                
-        }       
+
+        }
 
         if ($menge_moeglich < 0) {
             $menge_moeglich = 0;
@@ -1338,7 +1373,7 @@ class Produktion {
 
 
         return($menge_moeglich);
-    }    
+    }
 
     // Modify or add reservation
     // If quantity is negative, the existing reservation will be reduced
@@ -1367,18 +1402,18 @@ class Produktion {
         if ($menge_lager == null) {
             $menge_lager = 0;
         }
-      
+
         if ($menge_reservieren < 0) { // Relative reduction
             $menge_reservieren = $menge_reserviert_diese+$menge_reservieren;
-            
-            if ($menge_reservieren < 0) { 
+
+            if ($menge_reservieren < 0) {
                 $menge_reservieren = 0;
-            }  
-        } 
+            }
+        }
 
         if (($menge_reservieren == 0) && ($menge_reservieren_limit <= 0)) {
             $sql = "DELETE FROM lager_reserviert WHERE objekt = '$objekt' AND parameter = $objekt_id AND artikel = $artikel AND posid = $position_id";
-            $this->app->DB->Update($sql);  
+            $this->app->DB->Update($sql);
             return(0);
         }
 
@@ -1391,7 +1426,7 @@ class Produktion {
                 // Nothing to do
                 return($menge_reserviert_diese);
             }
-        }      
+        }
 
         if ($menge_lager_reservierbar > 0) {
             if ($menge_reserviert_diese > 0) {
@@ -1399,9 +1434,9 @@ class Produktion {
                 if ($menge_reservieren > $menge_lager_reservierbar) {
                     $menge_reservieren = $menge_lager_reservierbar; // Take all that is there
                 }
-                $sql = "UPDATE lager_reserviert SET menge = $menge_reservieren WHERE objekt = '$objekt' AND parameter = $objekt_id AND artikel = $artikel AND posid = $position_id";                               
-                $this->app->DB->Update($sql);      
-            } else {                                
+                $sql = "UPDATE lager_reserviert SET menge = $menge_reservieren WHERE objekt = '$objekt' AND parameter = $objekt_id AND artikel = $artikel AND posid = $position_id";
+                $this->app->DB->Update($sql);
+            } else {
                 // Create new entry
                 if ($menge_reservieren > $menge_lager_reservierbar) {
                     $menge_reservieren = $menge_lager_reservierbar; // Take all that is there
@@ -1415,15 +1450,15 @@ class Produktion {
                         $lager.",".
                         "'$text'".
                         ")";
-                $this->app->DB->Update($sql);      
-            } 
+                $this->app->DB->Update($sql);
+            }
         } else {
             $menge_reservieren = 0;
-        }                       
+        }
 
         return ($menge_reservieren);
 
-    }       
+    }
 
 
     /*
@@ -1450,7 +1485,7 @@ class Produktion {
 
         // Process positions
         $sql = "SELECT * FROM produktion_position WHERE produktion = $produktion_id";
-        $positionen = $this->app->DB->SelectArr($sql); 
+        $positionen = $this->app->DB->SelectArr($sql);
 
         foreach ($positionen as $position) {
             $menge_pro_stueck = $position['menge']/$produktionsmengen_alt['menge'];
@@ -1519,7 +1554,7 @@ class Produktion {
 
         return($result);
     }
-  
+
     // Do calculations for the status icon display
     // id = 0 for all open ones
     function StatusBerechnen(int $produktion_id) {
@@ -1532,7 +1567,7 @@ class Produktion {
 
         $sql = "SELECT id, lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok FROM produktion ".$where;
         $produktionen = $this->app->DB->SelectArr($sql);
-        
+
         foreach ($produktionen as $produktion) {
 
             $produktion_id = $produktion['id'];
@@ -1600,9 +1635,9 @@ class Produktion {
         }
     }
 
-    // Copy an existing produktion as draft, with option to adjust the quantity    
+    // Copy an existing produktion as draft, with option to adjust the quantity
     // return id on sucess, else negative number
-        
+
     function Copy($produktion_id, $menge_abteilen) : int {
 
         if (empty($produktion_id)) {
@@ -1644,8 +1679,8 @@ class Produktion {
         } else {
             $produktion_neu['internebezeichnung '] = $produktion_alt['internebezeichnung'];
         }
-    
-        $produktion_neu['standardlager'] = $produktion_alt['standardlager'];        
+
+        $produktion_neu['standardlager'] = $produktion_alt['standardlager'];
 
 
         $columns = "";
@@ -1658,7 +1693,7 @@ class Produktion {
             $columns = $columns.$fix.$key;
             $values = $values.$fix."'".$value."'";
             $update = $update.$fix.$key." = '$value'";
-            $fix = ", ";                           
+            $fix = ", ";
         }
 
         $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.")";
@@ -1667,7 +1702,7 @@ class Produktion {
 
         // Now add the positions
         $sql = "SELECT * FROM produktion_position WHERE produktion = $produktion_id";
-        $positionen = $this->app->DB->SelectArr($sql); 
+        $positionen = $this->app->DB->SelectArr($sql);
 
         foreach ($positionen as $position) {
 
@@ -1699,7 +1734,7 @@ class Produktion {
         Write something into the log
     */
     function ProtokollSchreiben(int $produktion_id, string $text) {
-        $sql = "INSERT INTO produktion_protokoll (produktion, zeit, bearbeiter, grund) VALUES ($produktion_id, NOW(), '".$this->app->DB->real_escape_string($this->app->User->GetName())."','".$this->app->DB->real_escape_string($text)."')";       
+        $sql = "INSERT INTO produktion_protokoll (produktion, zeit, bearbeiter, grund) VALUES ($produktion_id, NOW(), '".$this->app->DB->real_escape_string($this->app->User->GetName())."','".$this->app->DB->real_escape_string($text)."')";
         $this->app->DB->Insert($sql);
     }
 
