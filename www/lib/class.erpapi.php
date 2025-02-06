@@ -25361,6 +25361,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['dokument_lieferschein']['deutsch'] = "Lieferschein";
     $uebersetzung['dokument_retoure']['deutsch'] = "Retoure";
     $uebersetzung['dokument_kommissionierschein']['deutsch'] = "Kommissionierschein";
+    $uebersetzung['dokument_produktion']['deutsch'] = "Produktion";
     $uebersetzung['dokument_ansprechpartner']['deutsch'] = "Ansprechpartner";
     $uebersetzung['dokument_rechnungsdatum']['deutsch'] = "Rechnungsdatum";
     $uebersetzung['dokument_proformarechnungsdatum']['deutsch'] = "Datum";

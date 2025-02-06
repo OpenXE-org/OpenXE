@@ -26,6 +26,7 @@ class Produktion {
         $this->app->ActionHandler("copy", "produktion_copy");
         $this->app->ActionHandler("minidetail", "produktion_minidetail");
         $this->app->ActionHandler("delete", "produktion_delete");
+        $this->app->ActionHandler("pdf", "produktion_pdf");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
 
@@ -54,9 +55,7 @@ class Produktion {
                             CONCAT('<i>',internebezeichnung,'</i>')
                         )";
 
-                $adresse = "(SELECT name FROM adresse WHERE kundennummer = p.kundennummer AND p.kundennummer != 0 LIMIT 1)";
-
-                $findcols = array('p.id','p.id','p.belegnr','p.kundennummer',$adresse,'p.datum',$bezeichnung,'soll','ist', 'zeit_geplant','zeit_geplant', 'projekt','p.status','icons','id');
+                $findcols = array('p.id','p.id','p.belegnr','adresse.kundennummer','adresse.name','p.datum',$bezeichnung,'soll','ist', 'zeit_geplant','zeit_geplant', 'projekt','p.status','icons','id');
 
                 $searchsql = array('p.belegnr','p.kundennummer','p.name',$bezeichnung);
 
@@ -69,7 +68,9 @@ class Produktion {
                         "<a href=\"index.php?module=produktion&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;".
                         "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=produktion&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" .
                         "<a href=\"#\" onclick=CopyDialog(\"index.php?module=produktion&action=copy&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\"></a>" .
+                        "<a href=\"index.php?module=produktion&action=pdf&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>".
                         "</td></tr></table>";
+
 
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.datum, p.art, p.projekt, p.belegnr, p.internet, p.bearbeiter, p.angebot, p.freitext, p.internebemerkung, p.status, p.adresse, p.name, p.abteilung, p.unterabteilung, p.strasse, p.adresszusatz, p.ansprechpartner, p.plz, p.ort, p.land, p.ustid, p.ust_befreit, p.ust_inner, p.email, p.telefon, p.telefax, p.betreff, p.kundennummer, p.versandart, p.vertrieb, p.zahlungsweise, p.zahlungszieltage, p.zahlungszieltageskonto, p.zahlungszielskonto, p.bank_inhaber, p.bank_institut, p.bank_blz, p.bank_konto, p.kreditkarte_typ, p.kreditkarte_inhaber, p.kreditkarte_nummer, p.kreditkarte_pruefnummer, p.kreditkarte_monat, p.kreditkarte_jahr, p.firma, p.versendet, p.versendet_am, p.versendet_per, p.versendet_durch, p.autoversand, p.keinporto, p.keinestornomail, p.abweichendelieferadresse, p.liefername, p.lieferabteilung, p.lieferunterabteilung, p.lieferland, p.lieferstrasse, p.lieferort, p.lieferplz, p.lieferadresszusatz, p.lieferansprechpartner, p.packstation_inhaber, p.packstation_station, p.packstation_ident, p.packstation_plz, p.packstation_ort, p.autofreigabe, p.freigabe, p.nachbesserung, p.gesamtsumme, p.inbearbeitung, p.abgeschlossen, p.nachlieferung, p.lager_ok, p.porto_ok, p.ust_ok, p.check_ok, p.vorkasse_ok, p.nachnahme_ok, p.reserviert_ok, p.bestellt_ok, p.zeit_ok, p.versand_ok, p.partnerid, p.folgebestaetigung, p.zahlungsmail, p.stornogrund, p.stornosonstiges, p.stornorueckzahlung, p.stornobetrag, p.stornobankinhaber, p.stornobankkonto, p.stornobankblz, p.stornobankbank, p.stornogutschrift, p.stornogutschriftbeleg, p.stornowareerhalten, p.stornomanuellebearbeitung, p.stornokommentar, p.stornobezahlt, p.stornobezahltam, p.stornobezahltvon, p.stornoabgeschlossen, p.stornorueckzahlungper, p.stornowareerhaltenretour, p.partnerausgezahlt, p.partnerausgezahltam, p.kennen, p.logdatei, p.bezeichnung, p.datumproduktion, p.anschreiben, p.usereditid, p.useredittimestamp, p.steuersatz_normal, p.steuersatz_zwischen, p.steuersatz_ermaessigt, p.steuersatz_starkermaessigt, p.steuersatz_dienstleistung, p.waehrung, p.schreibschutz, p.pdfarchiviert, p.pdfarchiviertversion, p.typ, p.reservierart, p.auslagerart, p.projektfiliale, p.datumauslieferung, p.datumbereitstellung, p.unterlistenexplodieren, p.charge, p.arbeitsschrittetextanzeigen, p.einlagern_ok, p.auslagern_ok, p.mhd, p.auftragmengenanpassen, p.internebezeichnung, p.mengeoriginal, p.teilproduktionvon, p.teilproduktionnummer, p.parent, p.parentnummer, p.bearbeiterid, p.mengeausschuss, p.mengeerfolgreich, p.abschlussbemerkung, p.auftragid, p.funktionstest, p.seriennummer_erstellen, p.unterseriennummern_erfassen, p.datumproduktionende, p.standardlager, p.id FROM produktion p";
 //                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.belegnr, p.kundennummer, p.name, p.datum, \"SUBSELECT\", \"SUBSELECT\", p.mengeerfolgreich, \"-\", \"-\", p.projekt, p.status, p.status, p.id FROM produktion p";
@@ -77,8 +78,8 @@ class Produktion {
 			            p.id,
 			            $dropnbox,
 			            p.belegnr,
-			            p.kundennummer,
-			            ".$adresse." as name,
+			            adresse.kundennummer,
+			            adresse.name as name,
                         DATE_FORMAT(datum,'%d.%m.%Y') as datum,
 
                         ".$bezeichnung." as bezeichnung,
@@ -92,6 +93,7 @@ class Produktion {
 	                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
 			            FROM produktion p
+			            LEFT JOIN adresse ON adresse.id = p.adresse
                         ";
 
                 $where = "0";
@@ -422,6 +424,10 @@ class Produktion {
                     $input['datumbereitstellung'] = $this->app->erp->ReplaceDatum(true,$input['datumbereitstellung'],true);
                     $input['datumproduktion'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktion'],true);
                     $input['datumproduktionende'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktionende'],true);
+
+                    $input['adresse'] = $this->app->erp->ReplaceKunde(true,$input['adresse'],true);
+                    $input['auftragid'] = $this->app->erp->ReplaceAuftrag(true,$input['auftrag'],true);
+                    unset($input['auftrag']);
                     $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
 
                     $columns = "id, ";
@@ -438,6 +444,7 @@ class Produktion {
                     }
 
                     $sql = "INSERT INTO produktion (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+
                     $this->app->DB->Update($sql);
 
                     if ($id == 'NULL') {
@@ -861,6 +868,7 @@ class Produktion {
                 case 'etikettendrucken':
 
                     $menge_drucken = $this->app->Secure->GetPOST('menge_produzieren');
+
                     if ($menge_drucken) {
                         $sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1";
                 	    $produktionsartikel_position = $this->app->DB->SelectArr($sql)[0];
@@ -881,11 +889,12 @@ class Produktion {
                                 );
                             }
                         }
-                    }                              	
+                    } else {
+                        $msg .= "<div class=\"error\">Ung&uuml;ltige Menge.</div>";
+                    }
                 break;
             }
         }
-
 
         // Load values again from database
         // toDo: cleanup
@@ -1082,10 +1091,12 @@ class Produktion {
         }
 
         $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$produktion_from_db['projekt'],false));
+        $this->app->Tpl->Set('ADRESSE',$this->app->erp->ReplaceKunde(false,$produktion_from_db['adresse'],false));
+        $this->app->Tpl->Set('AUFTRAG',$this->app->erp->ReplaceAuftrag(false,$produktion_from_db['auftragid'],false));
 
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
-        $this->app->YUI->AutoComplete("kundennummer", "kunde", 1);
-        $this->app->YUI->AutoComplete("auftragid", "auftrag", 1);
+        $this->app->YUI->AutoComplete("adresse", "kunde", 1);
+        $this->app->YUI->AutoComplete("auftrag", "auftrag", 1);
 
         $this->app->YUI->AutoComplete("artikel_planen", "stuecklistenartikel");
         $this->app->YUI->AutoComplete("artikel_hinzu", "artikelnummer");
@@ -1284,9 +1295,10 @@ class Produktion {
     public function GetInput(): array {
         $input = array();
 
-    	$input['kundennummer'] = $this->app->Secure->GetPOST('kundennummer');
-    	$input['projekt'] = $this->app->Secure->GetPOST('projekt');
-    	$input['auftragid'] = $this->app->Secure->GetPOST('auftragid');
+        $input['adresse'] = $this->app->Secure->GetPOST('adresse');
+        $input['projekt'] = $this->app->Secure->GetPOST('projekt');
+        $input['auftrag'] = $this->app->Secure->GetPOST('auftrag');
+    	    	
 	    $input['internebezeichnung'] = $this->app->Secure->GetPOST('internebezeichnung');
 
         $input['datum'] = $this->app->Secure->GetPOST('datum');
@@ -1668,7 +1680,7 @@ class Produktion {
         $produktion_neu['art'] = $produktion_alt['art'];
         $produktion_neu['projekt'] = $produktion_alt['projekt'];
         $produktion_neu['angebot'] = $produktion_alt['angebot'];
-        $produktion_neu['kundennummer'] = $produktion_alt['kundennummer'];
+        $produktion_neu['adresse'] = $produktion_alt['adresse'];
         $produktion_neu['auftragid'] = $produktion_alt['auftragid'];
         $produktion_neu['freitext'] = $produktion_alt['freitext'];
         $produktion_neu['internebemerkung'] = $produktion_alt['internebemerkung'];
@@ -1745,6 +1757,13 @@ class Produktion {
         $tmp->DisplayNew($parsetarget,'Protokoll','noAction');
     }
 
+    function produktion_pdf() {
+        $id = $this->app->Secure->GetGET('id');
+        $Brief = new ProduktionPDF($this->app, styleData: Array('herstellernummerimdokument' => 1, 'ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -80, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true, 'hintergrund' => 'none'));
+        $Brief->GetProduktion($id);
+        $Brief->displayDocument(false);
+        exit();
+    }
 
 }
 

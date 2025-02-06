@@ -29,9 +29,9 @@
 	        				<fieldset>
                                 <legend>{|Allgemein|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
-                                        <tr><td>{|Kunde|}:</td><td><input type="text" name="kundennummer" id="kundennummer" value="[KUNDENNUMMER]" size="20"></td></tr>
+                                        <tr><td>{|Kunde|}:</td><td><input type="text" name="adresse" id="adresse" value="[ADRESSE]" size="20"></td></tr>
                                         <tr><td>{|Projekt|}:</td><td><input type="text" name="projekt" id="projekt" value="[PROJEKT]" size="20"></td></tr>
-                                        <tr><td>{|Auftrag|}:</td><td><input type="text" name="auftragid" id="auftragid" value="[AUFTRAGID]" size="20"></td></tr>
+                                        <tr><td>{|Auftrag|}:</td><td><input type="text" name="auftrag" id="auftrag" value="[AUFTRAG]" size="20"></td></tr>
                                         <tr><td>{|Interne Bezeichnung|}:</td><td><input type="text" name="internebezeichnung" value="[INTERNEBEZEICHNUNG]" size="20"></td></tr>
                                 </table>
                             </fieldset>
