@@ -133,6 +133,7 @@ class ProduktionPDF extends BriefpapierCustom {
 
     $produktionsartikel = $this->app->DB->SelectRow("
         SELECT
+            a.id,
             a.name_de,
             a.nummer,
             a.internerkommentar,
@@ -156,6 +157,25 @@ class ProduktionPDF extends BriefpapierCustom {
     }
     if (!empty($data['internebemerkung'])) {
         $bodytext['Interne Bemerkung'] = $data['internebemerkung'];
+    }
+
+    $sql = "SELECT
+                etiketten.name,
+                al.amount
+            FROM article_label al
+            INNER JOIN artikel a ON a.id = al.article_id
+            INNER JOIN etiketten ON etiketten.id = al.label_id
+            WHERE
+                al.type = 'produktion' AND al.article_id = ".$produktionsartikel['id'];
+    $produktionsetiketten = $this->app->DB->SelectArr($sql);
+
+    if (!empty($produktionsetiketten)) {
+        $komma = "";
+        foreach ($produktionsetiketten as $produktionsetikett) {
+            $etikettentext .= $komma.$produktionsetikett['name']." (".$produktionsetikett['amount'].")";
+            $komma = ", ";
+        }
+        $bodytext['Etiketten'] = $etikettentext;
     }
 
     $nlbr = "";
