@@ -141,7 +141,7 @@ class ProduktionPDF extends BriefpapierCustom {
             produktion p
         INNER JOIN produktion_position pp ON p.id = pp.produktion
         INNER JOIN artikel a ON a.id = pp.artikel
-        WHERE pp.stuecklistestufe = 1
+        WHERE p.id = ".$id." AND pp.stuecklistestufe = 1
     ");
 
     $bodytexte = Array();
