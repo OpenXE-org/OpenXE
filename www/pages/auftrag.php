@@ -449,6 +449,10 @@ class Auftrag extends GenAuftrag
         }
 
         if ($tmp != "" && !$ignore) $tmp.= " AND a.status='freigegeben' ";
+        
+        if ($tmp == "") {
+          $tmp = " AND a.status != 'angelegt' ";
+        }
 
         // ENDE EXTRA more
         $where = " a.id!='' $tmp " . $this->app->erp->ProjektRechte('a.projekt', true, 'a.vertriebid');
