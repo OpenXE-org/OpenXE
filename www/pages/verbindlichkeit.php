@@ -197,10 +197,78 @@ class Verbindlichkeit {
                     $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
                     $where .= " AND v.skontobis <= '".$filterskontobis."'";
                 }
+                
+                $where .= " AND v.status <> 'angelegt'";
+                
                 // END Toggle filters
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
+
+                break;
+            case 'verbindlichkeit_inbearbeitung':
+                $allowed['verbindlichkeit_inbearbeitung'] = array('list');
+                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
+                $width = array('1%','1%','10%'); // Fill out manually later
+
+                // columns that are aligned right (numbers etc)
+                // $alignright = array(4,5,6,7,8);
+
+                $findcols = array(
+                    'v.id',
+                    'v.id',
+                    'v.belegnr',
+                    'a.name',
+                    'a.lieferantennummer',
+                    'v.rechnung',
+                    'v.rechnungsdatum',
+                    'v.betrag',
+                    'v.waehrung',
+                    'v.bezahlt',
+                    'v.zahlbarbis',
+                    'v.skontobis',
+                    'v.skonto',
+                    'v.status',
+                    'v.status_beleg',
+                    'v.id'
+                );
+
+                $searchsql = array(
+                    'a.name',
+                    'a.lieferantennummer',
+                    'v.rechnung',
+                    'v.internebemerkung'
+                );
+
+                $defaultorder = 1;
+                $defaultorderdesc = 0;
+                $alignright = array(8);
+                $sumcol = array(8);
+
+        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',v.id,'\" />') AS `auswahl`";
+
+                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=verbindlichkeit&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=verbindlichkeit&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
+                            v.id,
+                            $dropnbox,
+                            'ENTWURF' as belegnr,
+                            a.name,
+                            a.lieferantennummer,
+                            v.rechnung,
+                            ".$app->erp->FormatDate("v.rechnungsdatum").",
+                            ".$app->erp->FormatMenge('v.betrag',2).",
+                            v.waehrung,
+                            if(v.bezahlt,'bezahlt','offen'),
+                            ".$app->erp->FormatDate("v.zahlbarbis").",
+                            IF(v.skonto <> 0,".$app->erp->FormatDate("v.skontobis").",''),
+                            IF(v.skonto <> 0,CONCAT(".$app->erp->FormatMenge('v.skonto',0).",'%'),''),
+                            v.status,
+                            ".$app->YUI->IconsSQLVerbindlichkeit().",
+                            v.id FROM verbindlichkeit v
+                        LEFT JOIN adresse a ON v.adresse = a.id";
+                $where = "v.status = 'angelegt'";
+                $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
 
                 break;
             case 'verbindlichkeit_paketdistribution_list':
@@ -539,9 +607,12 @@ class Verbindlichkeit {
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-
+        
+        $this->app->Tpl->Set('TABTEXT1','Verbindlichkeiten');
+        $this->app->Tpl->Set('TABTEXT2','In Bearbeitung');
+        
         $this->app->YUI->TableSearch('TAB1', 'verbindlichkeit_list', "show", "", "", basename(__FILE__), __CLASS__);
-
+        $this->app->YUI->TableSearch('TAB2', 'verbindlichkeit_inbearbeitung', "show", "", "", basename(__FILE__), __CLASS__);
 
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabeeinkauf')){
             $this->app->Tpl->Set('MANUELLFREIGABEEINKAUF', '<option value="freigabeeinkauf">{|freigeben (Einkauf)|}</option>');
