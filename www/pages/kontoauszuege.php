@@ -120,8 +120,8 @@ class Kontoauszuege {
 
                 $sumcol = array(10);
 
-                $findcols = array('q.id','q.id','q.kurzbezeichnung', 'q.importdatum', 'q.buchung', 'q.soll', 'q.waehrung', 'q.buchungstext','q.internebemerkung','q.saldo');
-                $searchsql = array('q.kurzbezeichnung', 'q.buchung', 'q.soll', 'q.buchungstext','q.internebemerkung');
+                $findcols = array('q.id','q.id', 'q.importdatum', 'q.kurzbezeichnung', 'q.buchungdatum', 'q.soll', 'q.waehrung', 'q.buchungstext','q.internebemerkung','q.saldo');
+                $searchsql = array('q.kurzbezeichnung', 'q.buchungdatum', 'q.soll', 'q.buchungstext','q.internebemerkung');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -173,13 +173,14 @@ class Kontoauszuege {
                                     ".$app->erp->FormatMenge('(k.soll)',2).",
                                     '</del>'
                                 ),
-                                ".$app->erp->FormatMenge('(k.soll)',2)."),
+                                ".$app->erp->FormatMenge('(k.soll)',2).") AS soll,
                             k.waehrung,
                             k.buchungstext,
                             k.internebemerkung,
                             ".$app->erp->FormatMenge('SUM(fb.betrag)',2)." AS saldo,
                             k.id as menuid,
-                            SUM(fb.betrag) AS saldonum
+                            SUM(fb.betrag) AS saldonum,
+                            k.buchung AS buchungdatum
                         FROM kontoauszuege k
                         LEFT JOIN fibu_buchungen_alle fb ON
                             fb.id = k.id AND fb.typ = 'kontoauszuege'
