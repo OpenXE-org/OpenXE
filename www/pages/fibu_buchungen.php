@@ -273,7 +273,7 @@ class Fibu_buchungen {
                             '' AS dummy,
                             '' AS dummy2,
                             auswahl,
-                            datum,
+                            ".$this->app->erp->FormatDate(" datum ").",
                             ".$this->app->erp->FormatUCfirst("typ").",
                             objektlink,
                             saldo,
@@ -308,7 +308,7 @@ class Fibu_buchungen {
                             FROM
                                 (
                                 SELECT
-                                    ".$this->app->erp->FormatDate(" fb.datum ")." AS datum,
+                                    fb.datum,
                                     fb.typ,
                                     fb.id,
                                     fo.info,
