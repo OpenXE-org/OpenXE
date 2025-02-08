@@ -1333,6 +1333,7 @@ class Remote {
                 }
                 $this->app->erp->GetKategorienbaum($kategorienbaum, $categoryRootId, 0, $id);
                 if (!empty($kategorienbaum)) {
+                    $katid = [];
                     $kategorien = $this->app->DB->SelectArr("SELECT ak.id, ak.bezeichnung FROM `artikelbaum_artikel` aa INNER JOIN `artikelkategorien` ak ON aa.kategorie = ak.id AND ak.geloescht <> 1 AND aa.artikel = '$artikel' ORDER by ak.bezeichnung");
                     if ($kategorien) {
                         foreach ($kategorien as $v) {
