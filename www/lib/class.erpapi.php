@@ -34214,7 +34214,7 @@ function Firmendaten($field,$projekt="")
           $rabatt5 = 0;
           if($art==='angebot' || $art==='auftrag' || $art==='rechnung' || $art==='gutschrift' || $art==='proformarechnung')
           {
-            $rabattarr = $this->app->DB->SelectRow("SELECT * FROM $art WHERE id='$id' LIMIT 1");
+            $rabattarr = $this->app->DB->SelectRow("SELECT rabatt, rabatt1, rabatt2, rabatt3, rabatt4, rabatt5, realrabatt FROM $art WHERE id='$id' LIMIT 1");
             if(!empty($rabattarr)){
               $grundrabatt = $rabattarr['rabatt'];
               $rabatt1 = $rabattarr['rabatt1'];
@@ -34222,6 +34222,17 @@ function Firmendaten($field,$projekt="")
               $rabatt3 = $rabattarr['rabatt3'];
               $rabatt4 = $rabattarr['rabatt4'];
               $rabatt5 = $rabattarr['rabatt5'];
+            }
+
+            $gruppe = $belegarr['gruppe'];
+            $preisgruppen = $this->app->DB->SelectRow("SELECT * FROM gruppen WHERE id = '$gruppe' AND art = 'preisgruppe' LIMIT 1");
+            if(!empty($preisgruppen)){
+              $grundrabatt = $preisgruppen['grundrabatt'];
+              $rabatt1 = $preisgruppen['rabatt1'];
+              $rabatt2 = $preisgruppen['rabatt2'];
+              $rabatt3 = $preisgruppen['rabatt3'];
+              $rabatt4 = $preisgruppen['rabatt4'];
+              $rabatt5 = $preisgruppen['rabatt5'];
             }
 
             if($grundrabatt>0) $rabattarr[] =  ((100-$grundrabatt)/100.0);
