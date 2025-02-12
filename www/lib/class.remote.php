@@ -23,6 +23,7 @@
 ?>
 <?php
 
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Modules\Onlineshop\Data\OrderStatus;
 use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 use Xentral\Modules\Onlineshop\Data\Shipment;
@@ -1332,6 +1333,7 @@ class Remote {
                 }
                 $this->app->erp->GetKategorienbaum($kategorienbaum, $categoryRootId, 0, $id);
                 if (!empty($kategorienbaum)) {
+                    $katid = [];
                     $kategorien = $this->app->DB->SelectArr("SELECT ak.id, ak.bezeichnung FROM `artikelbaum_artikel` aa INNER JOIN `artikelkategorien` ak ON aa.kategorie = ak.id AND ak.geloescht <> 1 AND aa.artikel = '$artikel' ORDER by ak.bezeichnung");
                     if ($kategorien) {
                         foreach ($kategorien as $v) {
@@ -1941,7 +1943,7 @@ class Remote {
                 if (!empty($artikelexport) && !$nurlager) {
                     $result = $this->sendlist($id, $data, true);
                 }
-                if (!empty($lagerexport)) {
+                else if (!empty($lagerexport)) {
                     $result = $this->sendlistlager($id, $data);
                 }
                 return $result;
@@ -2067,7 +2069,7 @@ class Remote {
         if (!empty($artikelexport) && !$nurlager) {
             $result = $this->sendlist($id, $data, true);
         }
-        if (!empty($lagerexport)) {
+        else if (!empty($lagerexport)) {
             $result = $this->sendlistlager($id, $data);
         }
         return $result;
@@ -2100,16 +2102,19 @@ class Remote {
         $result = $this->RemoteCommand($shop_id, 'sendlist', $data);       
 
         if (!empty($result) && is_array($result)) {
-            foreach ($result['articles'] as $artikelid) {
+            /** @var ArticleExportResult $articleResult */
+            foreach ($result as $articleResult) {
+                if (!$articleResult instanceof ArticleExportResult)
+                    continue;
                 /** @var Shopexport $objShopexport */
                 $objShopexport = $this->app->loadModule('shopexport');
-                $changedHash = $objShopexport->hasArticleHashChanged($artikelid, $shop_id);
+                $changedHash = $objShopexport->hasArticleHashChanged($articleResult->articleId, $shop_id);
                 $hash = $changedHash['hash'];
                
                 $checkAo = $this->app->DB->Select(
                         sprintf(
                                 'SELECT id FROM artikel_onlineshops WHERE artikel = %d AND shop=%d LIMIT 1',
-                                $artikelid, $shop_id
+                            $articleResult->articleId, $shop_id
                         )
                 );
                 if (empty($checkAo)) {
@@ -2117,7 +2122,7 @@ class Remote {
                             sprintf(
                                     'INSERT INTO artikel_onlineshops (artikel, shop, aktiv, ausartikel) 
                     VALUES (%d, %d, 1, 1) ',
-                                    $artikelid, $shop_id
+                                $articleResult->articleId, $shop_id
                             )
                     );
                 }
@@ -2126,31 +2131,27 @@ class Remote {
                                 "UPDATE artikel_onlineshops 
                   SET last_article_transfer = NOW(), last_article_hash = '%s' 
                   WHERE artikel = %d AND shop = %d",
-                                $this->app->DB->real_escape_string($hash), $artikelid, $shop_id
+                                $this->app->DB->real_escape_string($hash), $articleResult->articleId, $shop_id
                         )
                 );
-            }
-        }
 
-        if (!empty($result) && is_array($result)) {
-            foreach ($result['new'] as $artikelid => $fremdnummer) {
-                $artikelid = (int) $artikelid;
-                $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$artikelid' LIMIT 1");
-                if ($artikelid > 0 && $artikelnummer != trim($fremdnummer) &&
-                        ($this->app->DB->Select("SELECT id FROM artikel WHERE id = '$artikelid' AND (shop = '$shop_id' OR shop2 = '$shop_id' OR shop3 = '$shop_id') LIMIT 1") ||
-                        $this->app->DB->Select("SELECT id FROM artikel_onlineshops WHERE artikel = '$artikelid' AND aktiv = 1")
-                        ) && trim($fremdnummer) !== '') {
-                    //Nur falls Artikel zum Shop passt und keine aktive Fremdnummer exisitert.
-                    if (!$this->app->DB->Select("SELECT id FROM `artikelnummer_fremdnummern` WHERE artikel = '$artikelid' AND shopid = '$shop_id' AND nummer <> '' AND (aktiv = 1 OR nummer = '" . trim($this->app->DB->real_escape_string($fremdnummer)) . "') LIMIT 1 ")) {
-                        $this->app->DB->Insert("INSERT INTO `artikelnummer_fremdnummern` (artikel, bezeichnung, nummer, shopid, bearbeiter, zeitstempel, aktiv)
-              VALUES ('$artikelid','Erstellt durch Artikelexport','" . trim($this->app->DB->real_escape_string($fremdnummer)) . "','$shop_id','" . ((isset($this->app->User) && method_exists($this->app->User, 'GetName')) ? $this->app->DB->real_escape_string($this->app->User->GetName()) : 'Cronjob') . "',now(),0)
-              ");
+                $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$articleResult->articleId' LIMIT 1");
+                $artikelfremdnummer = $this->app->DB->Select("SELECT nummer 
+                    FROM `artikelnummer_fremdnummern` 
+                    WHERE artikel = '$articleResult->articleId'
+                    AND shopid = '$shop_id'
+                    AND nummer != ''
+                    AND (aktiv = 1 OR nummer = '".trim($this->app->DB->real_escape_string($articleResult->extArticleId))."') LIMIT 1 ");
+                if ($articleResult->articleId > 0 && $articleResult->extArticleId != null &&
+                    trim($articleResult->extArticleId) != '' &&
+                    $artikelnummer != trim($articleResult->extArticleId) &&
+                    empty($artikelfremdnummer)) {
+                    //Nur falls keine aktive Fremdnummer exisitert.
+                    $this->app->DB->Insert("INSERT INTO `artikelnummer_fremdnummern` (artikel, bezeichnung, nummer, shopid, bearbeiter, zeitstempel, aktiv)
+                        VALUES ($articleResult->articleId,'Erstellt durch Artikelexport','" . trim($this->app->DB->real_escape_string($articleResult->extArticleId)) . "','$shop_id','" . ((isset($this->app->User) && method_exists($this->app->User, 'GetName')) ? $this->app->DB->real_escape_string($this->app->User->GetName()) : 'Cronjob') . "',now(),0)
+                        ");
                     }
-                }
             }
-            if (isset($result['anzahl'])) {
-                $result['count'] = $result['anzahl'];
-            }//Altes Verhalten
         }
 
         if (!$isLagerExported) {

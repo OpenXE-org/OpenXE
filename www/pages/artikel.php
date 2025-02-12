@@ -22,6 +22,7 @@
 ?>
 <?php
 
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Widgets\SuperSearch\Result\ResultGroup;
 use Xentral\Widgets\SuperSearch\Result\ResultItem;
 
@@ -2873,9 +2874,9 @@ class Artikel extends GenArtikel {
              
         $remote_result = $this->app->remote->RemoteSendArticleList($shop, $artikel, $extartikelnummer);
 
-        if (is_array($remote_result)) {
-            $remote_status = $remote_result['status'];
-            $remote_message = $remote_result['message'];
+        if (is_array($remote_result) && $remote_result[0] instanceof ArticleExportResult) {
+            $remote_status = $remote_result[0]->success;
+            $remote_message = $remote_result[0]->message;
         } else if (is_numeric($remote_result)) {
             if ($remote_result == 1) {
                 $remote_status = true;

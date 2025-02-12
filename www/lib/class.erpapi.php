@@ -23,6 +23,7 @@
 <?php
 use Xentral\Components\MailClient\Client\MimeMessageFormatterInterface;
 use Xentral\Core\LegacyConfig\ConfigLoader;
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Modules\SystemMailClient\MailClientConfigProvider;
 use Xentral\Modules\SystemMailClient\MailClientProvider;
 use Xentral\Modules\SystemMailer\Data\EmailBackupAccount;
@@ -20721,7 +20722,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
         $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
 
-        if ((is_array($result)?$result['status'] == 1:false) || $result === 1) {
+        if ((is_array($result) && $result instanceof ArticleExportResult ? $result->success : false) || $result === 1) {
             $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
             $this->app->DB->Update(
               "UPDATE `artikel` SET `cache_lagerplatzinhaltmenge` = '{$cacheQuantity}'
@@ -23015,7 +23016,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
     $ansprechpartner = str_replace('&lt;','<',$ansprechpartner);
     $ansprechpartner = str_replace('&gt;','>',$ansprechpartner);
-    list($name, $email) = explode('<', trim($ansprechpartner,'>'));
+    [$name, $email] = explode('<', trim($ansprechpartner,'>'));
 
     $betreff = str_replace('\"','"',$betreff);
     $betreff = str_replace("\'","'",$betreff);

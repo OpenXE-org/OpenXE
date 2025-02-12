@@ -14,6 +14,7 @@
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Modules\Onlineshop\Data\OrderStatus;
 use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 
@@ -750,10 +751,14 @@ class Shopimporter_Shopify extends ShopimporterBase
     $bezprodukt = $this->bezprodukt;
     $bezvariant = $this->bezvariant;
     $ctmp = !empty($tmp)?count($tmp):0;
+    $return = [];
     for($i=0;$i<$ctmp;$i++)
     {
+      $return[$i] = new ArticleExportResult();
+      $return[$i]->articleId = intval($tmp[$i]['artikel']);
       if($tmp[$i]['variante'] && $tmp[$i]['variantevon'] != ''){
-        return "error: Variantenexport ist nur über den Hauptartikel möglich.";
+        $return[$i]->message = "Variantenexport ist nur über den Hauptartikel möglich.";
+        continue;
       }
       $artikel = $tmp[$i]['artikel'];
       if($artikel == 'ignore'){
@@ -1432,9 +1437,10 @@ class Shopimporter_Shopify extends ShopimporterBase
       }
       $this->translateFreeFields($productid, $freeFieldTranslations);
 
-      $anzahl++;
+      $return[$i]->extArticleId = $productid;
+      $return[$i]->success = true;
     }
-    return $anzahl;
+    return $return;
   }
 
 
