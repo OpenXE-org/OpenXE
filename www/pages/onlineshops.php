@@ -13,6 +13,7 @@
 */
 ?>
 <?php
+use Xentral\Components\Logger\Logger;
 use Xentral\Components\Http\JsonResponse;
 use Xentral\Modules\TransferSmartyTemplate\TransferSmartyTemplate;
 
@@ -47,6 +48,8 @@ class Onlineshops extends GenShopexport {
 
   /** @var string $segment */
   protected $segment;
+
+  public $logger;
 
   /**
    * @param Application $app
@@ -211,6 +214,7 @@ INNER JOIN shopexport s ON
   public function __construct($app, $intern = false) {
     //parent::GenShopexport($app);
     $this->app=$app;
+    $this->logger = $app->Container->get('Logger');
     if($intern) {
       return;
     }
@@ -2860,7 +2864,8 @@ INNER JOIN shopexport s ON
         LEFT JOIN (SELECT artikel FROM artikel_onlineshops WHERE shop = '$id' AND aktiv = 1 GROUP BY artikel) oa ON a.id = oa.artikel
         SET a.cache_lagerplatzinhaltmenge = -999 WHERE (a.shop = '$id' OR a.shop2 = '$id' OR a.shop3 = '$id' OR NOT ISNULL(oa.artikel)) AND a.geloescht = 0 AND ($where)");
         $anz = $this->app->DB->affected_rows();
-        $this->app->erp->LogFile("Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
+//        $this->app->erp->LogFile("Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
+        $this->Log(Logger::INFO, "Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
         $this->app->Tpl->Add('MESSAGE','<div class="info">Lagerzahlencache zurückgesetzt für '.$anz.' Artikel, shopid: '.$id.'</div>');
       }
     }
@@ -3156,7 +3161,8 @@ INNER JOIN shopexport s ON
           }
         }
       }catch(Exception $ex){
-        $this->app->erp->LogFile('Fehlerhafter Aufruf in Modul: '.$moduleName);
+//        $this->app->erp->LogFile('Fehlerhafter Aufruf in Modul: '.$moduleName);
+        $this->Log(Logger::INFO, 'Fehlerhafter Aufruf in Modul: '.$moduleName, $ex);
       }
 
       $username = $this->app->DB->real_escape_string($this->app->User->GetUsername());
@@ -3337,6 +3343,8 @@ INNER JOIN shopexport s ON
 
     if($this->app->Secure->GetPOST('pruefen')) {
      
+      $this->Log(Logger::DEBUG, "Verbindung prüfen");
+
       $className = 'Remote';
       $methodName = 'RemoteConnection';
       $r = new ReflectionMethod($className, $methodName);
@@ -4980,4 +4988,10 @@ INNER JOIN shopexport s ON
 
     return $ret;
   }
+
+    private function Log($level, $message, $dump = array()) {
+        $shopid = (int)$this->app->Secure->GetGET('id');
+        $this->logger->Log($level, 'Onlineshops (Shop '.$shopid.') '.$message, (array) $dump);
+    }
+
 }
