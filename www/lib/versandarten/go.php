@@ -30,6 +30,7 @@ class Versandart_go extends Versanddienstleister
             return;
         }
         $this->api = new GoApi(
+            $this->app->Container->get('Logger'),
             $this->settings->username,
             $this->settings->password,
             $this->settings->useTestEndpoint ?? true,
