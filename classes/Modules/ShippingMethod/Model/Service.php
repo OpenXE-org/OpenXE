@@ -8,4 +8,5 @@ enum Service : string {
     case SERVICE_PICKUP = 'pickup';
     case SERVICE_PICKUP_DATE = 'pickup_date';
     case SERVICE_PICKUP_TIME = 'pickup_time';
+    case SERVICE_HAZMAT = 'hazmat';
 }

@@ -61,7 +61,7 @@ class Product
      * @return $this
      */
   public function WithServices(array $services): Product {
-    $this->AvailableServices = $services;
+    $this->AvailableServices = array_merge($this->AvailableServices, $services);
     return $this;
   }
 }

@@ -8,9 +8,10 @@ SPDX-License-Identifier: LicenseRef-EGPL-3.1
 import { useI18n } from 'vue-i18n';
 import {computed, onBeforeUpdate, onMounted, ref} from "vue";
 import axios from "axios";
-import { Button, Checkbox, DatePicker, Fieldset, InputNumber, InputText, Select } from "primevue";
+import { Button, Checkbox, DatePicker, Dialog, Fieldset, InputNumber, InputText, Select } from "primevue";
 import { Column, ColumnGroup, DataTable, Row } from "primevue";
 import {AlertErrorHandler} from "@res/js/ajaxErrorHandler";
+import HazmatInfo from "./HazmatInfo.vue";
 
 const {t, d, n} = useI18n();
 
@@ -20,6 +21,7 @@ const products = ref({});
 const submitting = ref(false);
 const countries = ref({});
 const carrier = ref(null);
+const dialog = ref(null);
 const addressTypes = [
   {name: t('address.type.company'), value: 0},
   {name: t('address.type.parcelStation'), value: 1},
@@ -88,6 +90,10 @@ function autoselectproduct() {
     return;
 
   model.value.productId = availProducts.value[0]?.Id;
+}
+
+function openDialog(name) {
+  dialog.value = name;
 }
 
 function submit() {
@@ -238,6 +244,10 @@ onBeforeUpdate(autoselectproduct);
               <DatePicker v-model="model.services.pickupTimeTill" time-only hour-format="24" />
             </div>
           </template>
+          <template v-if="serviceAvailable('hazmat')">
+            <label>{{ t('services.hazmat') }}:</label>
+            <Button icon="pi pi-cog" variant="text" @click="openDialog('hazmat')" rounded size="large" />
+          </template>
         </div>
       </Fieldset>
     </div>
@@ -331,6 +341,9 @@ onBeforeUpdate(autoselectproduct);
     <div>
       <Button :label="t('printLabel')" :disabled="submitting" @click="submit" class="my-4" />
     </div>
+    <Dialog :visible="dialog == 'hazmat'" @update:visible="dialog = null" modal style="width: 40vw" :header="t('hazmat.info')">
+      <HazmatInfo v-model="model.services.hazmat" />
+    </Dialog>
   </div>
 </template>
 
