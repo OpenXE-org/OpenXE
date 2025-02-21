@@ -35,8 +35,10 @@ final class ErrorPageRenderer
         $content .= '<h2>' . htmlspecialchars($data['exception']['message'], ENT_QUOTES) . '</h2>';
         $content .= '</td></tr>';
         $content .= '<tr>';
-        $content .= '<td width="20%" id="side">' . $this->renderInformationData($data['information']) . '</td>';
         $content .= '<td width="80%" id="main">' . $this->renderExceptionData($data['exception']) . '</td>';
+        $content .= '</tr>';
+        $content .= '<tr>';
+        $content .= '<td width="20%" id="side">' . $this->renderInformationData($data['information']) . '</td>';
         $content .= '</tr></table>';
 
         $content .= $this->renderPageFooter();
@@ -61,12 +63,10 @@ final class ErrorPageRenderer
     h1, h2, h3, h4, h5, h6 { padding: 0; margin: 0.5em 0 0.5em 0; font-weight: bold; }
     p { padding: 0; margin: 0 0 .25em 0; }
     a, a:link, a:visited, a:hover, a:active { text-decoration: none; }
-    #headline { padding: 24px 12px 18px 12px; background-color: #42B8C5; }
-    #headline h1 { color: #F5F5F5; font-size: 2rem; margin: 1rem 0; }
-    #headline h2 { color: #9CD6DB; font-size: 1.1rem; font-weight: normal; margin: 1rem 0; }
+    #headline { padding: 5px 5px 5px 5px; background-color: #42B8C5; }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    table td, table th { text-align: left; padding: 10px 0 10px 0; vertical-align: baseline; }
-    table th.head {  padding: 5px 0 10px 0; background-color: #FFF; vertical-align: baseline; border-bottom: 2px solid #DBDBDB; }
+    table td, table th { text-align: left; padding: 5px 0 5px 0; vertical-align: baseline; }
+    table th.head {  padding: 5px 0 5px 0; background-color: #FFF; vertical-align: baseline; border-bottom: 2px solid #DBDBDB; }
     table th.head h3 { margin: 3px 0; }
     table td.trace { background-color: #F5F5F5; vertical-align: baseline; }
     table.exception { margin-bottom: 20px; border-top: 2px solid #DBDBDB; }
@@ -76,8 +76,8 @@ final class ErrorPageRenderer
     table.exception a:link code, table.exception a:visited code { color: #42B8C5; }
     table.exception a:hover code, table.exception a:active code { color: #2F9099; }
     td.stacktrace tr:last-child td { border: none; }
-    #main { background-color: #FFF; padding: 2rem; }
-    #side { min-width: 240px; padding: 5px 15px; background-color: #E9ECEF; }
+    #main { background-color: #FFF; padding: 5px; }
+    #side { min-width: 240px; padding: 5px 5px; background-color: #E9ECEF; }
     #side h1, #side h2, #side h3, #side h4, #side h5, #side h6 { color: #7A7A7A; font-weight: normal; text-transform: uppercase; margin: 1em 0 0.5em 0; }
     .float-right { float: right; }
     .separator { color: #999; }

@@ -182,16 +182,16 @@ class Lager extends GenLager {
           $defaultCountry = 'DE';
         }
         // headings
-        $heading = array('Bezeichnung', 'Projekt','Kommissions- / Produktionslager','Land','Men&uuml;');
-        $width = array('60%', '10%','20%','5%', '8%');
-        $findcols = array('l.bezeichnung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)", 'l.id');
-        $searchsql = array('l.bezeichnung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)",'p.name');
+        $heading = array('Bezeichnung','Beschreibung', 'Projekt','Kommissions- / Produktionslager','Land','Men&uuml;');
+        $width = array('20%','60%', '10%','20%','5%', '8%');
+        $findcols = array('l.bezeichnung','l.beschreibung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)", 'l.id');
+        $searchsql = array('l.bezeichnung','l.beschreibung', 'p.abkuerzung','a.name',"IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land)",'p.name');
         $defaultorder = 4;
         $defaultorderdesc = 1;
         $menu = "<table><tr><td nowrap><a href=\"index.php?module=lager&action=edit&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=delete&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=PrintDialog(\"index.php?module=lager&action=regaletiketten&id=%value%&cmd=all\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\"></a></td></tr></table>";
 
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.bezeichnung, p.abkuerzung, a.name,
+        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.bezeichnung, l.beschreibung, p.abkuerzung, a.name,
                            IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land),
               l.id as menu 
             FROM `lager` AS `l`
@@ -287,6 +287,8 @@ class Lager extends GenLager {
         $datum = $app->User->GetParameter('datum');
         $gruppierenlager = $app->User->GetParameter('gruppierenlager');
         $preiseineuro = $app->User->GetParameter('preiseineuro');
+        $sperrlager_nicht_bewerten = $app->User->GetParameter('sperrlager_nicht_bewerten');
+        $konsignationslager_nicht_bewerten = $app->User->GetParameter('konsignationslager_nicht_bewerten');
 
         if($datum)
         {
@@ -310,9 +312,9 @@ class Lager extends GenLager {
           }
         }
 
-        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Lagerplatz','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs','',  'Gesamt','');
-        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%',  '5%' ,       '5%',   '5%',     '5%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
-        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername', 'name',$colmenge,$colgewicht,$colvolumen);
+        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Adresse','Lagerplatz','gesp.','Adresse','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs', 'Gesamt','');
+        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%', '5%', '5%'        ,'5%','1%',     '5%',   '5%',     '1%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
+        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername','lageradressename', 'lagerplatzname','lagerplatz.sperrlager','lagerplatzadressename',$colmenge,$colgewicht,$colvolumen);
 
         if ($preiseineuro) {
             $preisEUR = "((SELECT preisfinal)*if((SELECT waehrungfinal) = 'EUR' OR (SELECT waehrungfinal) = NULL,1,kurs))";                  
@@ -322,12 +324,19 @@ class Lager extends GenLager {
             $gesamtcol = "((SELECT preisfinal)*lw.menge)";
             $kurs = 1;
         }
+    
+        if ($sperrlager_nicht_bewerten) {
+            $gesamtcol = "if (lagerplatz.sperrlager,0,".$gesamtcol.")";
+        }
+
+        if ($konsignationslager_nicht_bewerten) {
+            $gesamtcol = "if (lagerplatz.lagerplatzadresse OR lagerplatz.lageradresse,0,".$gesamtcol.")";
+        }
 
         $findcols[] = self::PreisTypErgebnis($preisart);        
         $findcols[] = $preis;
         $findcols[] = 'waehrung';
         $findcols[] = 'kurs';
-        $findcols[] = '';
         $findcols[] = $gesamtcol;
         $findcols[] = 'art.id';
         
@@ -336,9 +345,9 @@ class Lager extends GenLager {
 
         $defaultorder = 1;
         $defaultorderdesc = 0;
-        $alignright = array(7,8,9,10,11,11,13,15);
-        $sumcol = array(7,15);
-        $numbercols = array(7,8,9,11,13,15);
+        $alignright = array(9,10,11,12,13,15,16);
+        $sumcol = array(9,16);
+        $numbercols = array(9,10,11,12,13,15);
         $datecols = array(0);     
         $onequeryperuser = true;
 
@@ -472,7 +481,9 @@ class Lager extends GenLager {
             GROUP BY
                 artikel,
                 waehrung
-        ";        
+        ";
+
+        $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung lagerplatzname, lager_platz.adresse lagerplatzadresse, lager_platz.sperrlager, lager.adresse lageradresse from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
 
         $sql = "SELECT DISTINCT SQL_CALC_FOUND_ROWS 
                             art.id, 
@@ -481,26 +492,27 @@ class Lager extends GenLager {
                             art.name_de, 
                             (select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, 'kat', 1), '_', 1) as type from artikel where id=art.id)) as artikelkategorie,
                             lagerplatz.lagername,
-                            lagerplatz.name, 
+                            lageradressename,
+                            lagerplatzname,
+                            if(sperrlager,'ja',''),
+                            lagerplatzadressename,
                             ".$app->erp->FormatMenge('lw.menge',2).",".$app->erp->FormatPreis($colgewicht,2).",".$app->erp->FormatPreis($colvolumen,2)." as menge,
                             ".self::PreisTypErgebnis($preisart)." as preisart,
                             ".self::EinzelPreis($preisart)." AS preisfinal,
                             ".self::Waehrung($preisart)." AS waehrungfinal,
                             ".$kurs." AS kurs,
-                            '' as hidden,
                             ".$app->erp->FormatPreis($gesamtcol,2)." as gesamt,
                             art.id 
                         FROM 
                             artikel art 
-                        INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1
+                        INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1                        
+                        INNER JOIN ".$lagerplatz_sql." ON lw.lager_platz = lagerplatz.id
+                        LEFT JOIN (SELECT id, name lageradressename FROM adresse) lageradr ON lageradr.id = lagerplatz.lageradresse
+                        LEFT JOIN (SELECT id, name lagerplatzadressename FROM adresse) adr ON adr.id = lagerplatz.lagerplatzadresse
                         LEFT JOIN (".$prices_sql.") AS ek ON art.id = ek.artikel AND ".self::Waehrung($preisart)." = ek.waehrung
                         LEFT JOIN (".$currency_sql.") AS kurs ON kurs.waehrung_von = ".self::Waehrung($preisart)." AND kurs.waehrung_nach = 'EUR'
         ";
    
-        $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung name from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
-
-        $sql .= "INNER JOIN ".$lagerplatz_sql." ON lw.lager_platz = lagerplatz.id";       
-
         $where .= " AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1 ";      
         
         $sql = $app->YUI->CodiereSQLForOneQuery($sql, $name);     
@@ -1048,6 +1060,47 @@ class Lager extends GenLager {
         JOIN lager_platz lp2 ON lp2.id = vorschlag.storage_area_id";
 
       break;
+      case 'lagerplatz_etiketten':
+        $allowed['lager'] = array('platz');
+
+        // headings
+
+        $heading = array('','Lager', 'Bezeichnung', 'Nachschublager', 'Verbrauchslager','POS Lager', 'kein Auto-Versand','Volumen','Regalart','Kategorie','Kommissions- / Produktionslager','Men&uuml;');
+
+        $width = array('1%','15%','15%', '10%', '10%','5%','5%','10%','10%','5%','10%','8%','1%');
+        $findcols = array('lp.id','l.bezeichnung','lp.kurzbezeichnung', "IF(lp.autolagersperre,'kein Versand aus diesem Lager','')", "IF(lp.verbrauchslager,'ja','')","IF(lp.poslager,'ja','')","IF(lp.sperrlager,'ja','')",'breite','regalart','abckategorie','a.name','id');
+        $searchsql = array('lp.kurzbezeichnung','regalart','abckategorie','a.name');
+        $defaultorder = 4;
+        $defaultorderdesc = 1;
+        $alignright = [10];
+
+        $menu = "<table><tr><td nowrap><a href=\"index.php?module=lager&action=platzeditpopup&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>"
+//        . "&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=deleteplatz&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>"
+//        . "&nbsp;<a href=\"#\" onclick=PrintDialog(\"index.php?module=lager&action=regaletiketten&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\"></a>"
+        ."</td></tr></table>";
+
+		$box = "CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',lp.id,'\" />') AS `auswahl`";
+
+        // SQL statement
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
+                lp.id,
+                $box,
+                l.bezeichnung,
+                lp.kurzbezeichnung, if(lp.autolagersperre,'kein Versand aus diesem Lager','') as autolagersperre, 
+                if(lp.verbrauchslager,'ja','') as verbrauchslager,
+                if(lp.poslager,'ja','') as poslager,
+                if(lp.sperrlager,'ja','') as sperrlager,
+                if(lp.laenge!=0.0,CONCAT(lp.laenge,'/',lp.breite,'/',lp.hoehe),'-') as volumen,
+                lp.regalart,lp.abckategorie, a.name,
+                lp.id as menu
+                FROM lager_platz lp
+                INNER JOIN lager l ON l.id = lp.lager
+                LEFT JOIN adresse a ON a.id=lp.adresse ";
+
+        // fester filter
+        $where = " lp.geloescht=0 AND lp.id!=0";
+        $count = "SELECT COUNT(id) FROM lager_platz WHERE geloescht=0";
+        break;
     }
     
     $erg = [];
@@ -1677,10 +1730,18 @@ class Lager extends GenLager {
     $preisart = $this->app->Secure->GetPOST('preisart');
     $this->app->User->SetParameter('preisart', $preisart);
 
+    $sperrlager_nicht_bewerten = $this->app->Secure->GetPOST('sperrlager_nicht_bewerten');
+    $this->app->User->SetParameter('sperrlager_nicht_bewerten', $sperrlager_nicht_bewerten);
+
+    $konsignationslager_nicht_bewerten = $this->app->Secure->GetPOST('konsignationslager_nicht_bewerten');
+    $this->app->User->SetParameter('konsignationslager_nicht_bewerten', $konsignationslager_nicht_bewerten);
+
     $this->app->YUI->DatePicker("datum");
  
   	$this->app->Tpl->Set('DATUM', $datum);
   	$this->app->Tpl->Set('PREISEINEURO', $preiseineuro==1?"checked":"");
+  	$this->app->Tpl->Set('SPERRLAGER_NICHT_BEWERTEN', $sperrlager_nicht_bewerten==1?"checked":"");
+  	$this->app->Tpl->Set('KONSIGNATIONSLAGER_NICHT_BEWERTEN', $konsignationslager_nicht_bewerten==1?"checked":"");
     $this->app->Tpl->Set('GRUPPIERENLAGER', $gruppierenlager==1?"checked":"");
 
   	$this->app->Tpl->Set(strtoupper($preisart), 'selected');
@@ -4288,7 +4349,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
     public function LagerEtikettenlist()
     {
       $this->app->erp->Headlines('','Etiketten');
-
+/*
       $this->app->YUI->AutoComplete('von','lagerplatz');
       $this->app->YUI->AutoComplete('bis','lagerplatz');
 
@@ -4339,19 +4400,48 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         echo json_encode(array('status'=>1));
         $this->app->ExitXentral();
       }
+      */
+
+        // Process multi action
+        $auswahl = $this->app->Secure->GetPOST('auswahl');
+        $drucken = $this->app->Secure->GetPOST('drucken');
+        $selectedIds = [];
+        if(!empty($auswahl)) {
+            foreach($auswahl as $selectedId) {
+                $selectedId = (int)$selectedId;
+                if ($selectedId > 0) {
+                    $selectedIds[] = $selectedId;
+                }
+            }
+        }
+
+        $etikettenauswahl = $this->app->Secure->GetPOST('etikettenauswahl');
+        $etikettendrucker = $this->app->Secure->GetPOST('etikettendrucker');
+
+        if ($drucken) {
+            foreach ($selectedIds as $selectedId) {
+//              function EtikettenDrucker($kennung,$anzahl,$tabelle,$id,$variables="",$xml="",$druckercode="",$filenameprefix="",$xmlaspdf=false,$adresse=0,$verwendenals="")
+                $this->app->erp->EtikettenDrucker($etikettenauswahl,1,'lager_platz',$selectedId,'','',$etikettendrucker);
+            }
+        }
+
       $this->LagerHauptmenu();
       $etiketten = $this->app->erp->GetSelectEtiketten("lagerplatz_klein",$etikettenauswahl);
       if($etiketten=="") $etiketten="<option>Standard</option>";
-
+      $this->app->Tpl->Set('ETIKETTENOPTIONS',$etiketten);
+      
       $drucker = $this->app->erp->GetSelectEtikettenDrucker($etikettendrucker);
+      $this->app->Tpl->Set('DRUCKEROPTIONS',$drucker);
 
       $druckbutton = "<input type=\"button\" onclick=\"Etikettendrucken()\" class=\"btnBlue\" value=\"{|Drucken|}\">";
-      $this->app->Tpl->Set('FORMULAR',"<form action=\"\" method=\"post\"><table class=\"mkTableFormular\">
+   /*   $this->app->Tpl->Set('FORMULAR',"<form action=\"\" method=\"post\"><table class=\"mkTableFormular\">
         <tr><td>{|Lagerplatz|} ({|von|}):</td><td><input type=\"text\" name=\"von\" id=\"von\" value=\"$von\"></td></tr>
         <tr><td>{|Lagerplatz|} ({|bis|}):</td><td><input type=\"text\" name=\"bis\" id=\"bis\" value=\"$bis\">&nbsp;$druckbutton</td></tr>
         <tr><td>{|Etikett|}:</td><td><select name=\"etikettenauswahl\" id=\"etikettenauswahl\">".$etiketten."</select></td></tr>
         <tr><td>{|Drucker|}:</td><td><select name=\"etikettendrucker\" id=\"etikettendrucker\">".$drucker."</select></td></tr></table>
-        </form><br><br>");
+        </form><br><br>");*/
+
+      $this->app->YUI->TableSearch('TABELLE', 'lagerplatz_etiketten', 'show','','',basename(__FILE__), __CLASS__);
        
       $this->app->Tpl->Parse('PAGE', 'lager_etikettenlist.tpl');
     }

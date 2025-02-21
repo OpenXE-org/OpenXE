@@ -42,7 +42,15 @@
                 </td>
             <td>
               <input type="checkbox" value="1" id="preiseineuro" name="preiseineuro" [PREISEINEURO]/>
-              <label for="preiseineuro">{|alle Preise in EUR anzeigen|}</label>
+              <label for="preiseineuro">{|Preise in EUR|}</label>
+            </td>
+            <td>
+              <input type="checkbox" value="1" id="sperrlager_nicht_bewerten" name="sperrlager_nicht_bewerten" [SPERRLAGER_NICHT_BEWERTEN]/>
+              <label for="sperrlager_nicht_bewerten">{|Sperrlager nicht bewerten|}</label>
+            </td>
+            <td>
+              <input type="checkbox" value="1" id="konsignationslager_nicht_bewerten" name="konsignationslager_nicht_bewerten" [KONSIGNATIONSLAGER_NICHT_BEWERTEN]/>
+              <label for="konsignationslager_nicht_bewerten">{|Konsignationslager nicht bewerten|}</label>
             </td>
             <td>
               <input type="submit" value="{|Laden|}" name="laden"/>

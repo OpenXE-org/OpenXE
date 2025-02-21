@@ -35,7 +35,9 @@
 <br>
 <table>
 <tr><td width="150">{|Textbaustein|}:</td><td>&lt;line x="5" y="1" size="3"&gt;Test&lt;/line&gt;</td></tr>
-<tr><td width="150">{|Barcode|}:</td><td>&lt;barcode x="5" y="1" size="3" type="1"&gt;Test&lt;/barcode&gt;</td></tr>
+<tr><td width="150">{|Barcode Code 39 (Standard)|}:</td><td>&lt;barcode x="5" y="1" linewidth="0.5" size="3" type="2"&gt;Test&lt;/barcode&gt;</td></tr>
+<tr><td width="150">{|Barcode Code 128|}:</td><td>&lt;barcode x="5" y="1" size="3" type="1"&gt;Test&lt;/barcode&gt;</td></tr>
+<tr><td width="150">{|Barcode Code GS1-128|}:</td><td>&lt;barcode x="5" y="1" size="3" type="GS1-128"&gt;Test&lt;/barcode&gt;</td></tr>
 <tr><td width="150" valign="top">{|QR-Code|}:</td><td>&lt;qrcode x="5" y="1" size="3" type="3"&gt;Test&lt;/qrcode&gt;<br /><br /></td></tr>
 <tr><td width="150" valign="top">{|Artikel klein|}:</td><td>
   <label>

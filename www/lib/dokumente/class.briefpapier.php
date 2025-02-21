@@ -1922,7 +1922,7 @@ class Briefpapier extends SuperFPDF {
     {
       if(!empty($this->corrDetails) || !empty($this->boldCorrDetails) || !empty($this->italicCorrDetails)
         || !empty($this->italicBoldCorrDetails))
-        $this->renderCorrDetails();
+        $corrDetailsY = $this->renderCorrDetails();
     }
 
     $this->renderDoctype();
@@ -1930,6 +1930,10 @@ class Briefpapier extends SuperFPDF {
     {
       $this->SetY(95);
       $this->textDetails['body']=$this->letterDetails['body'];
+    }
+
+    if ($corrDetailsY > $this->GetY()) {
+        $this->SetY($corrDetailsY);
     }
 
     $this->renderText();
@@ -1943,7 +1947,7 @@ class Briefpapier extends SuperFPDF {
     $this->renderFooter();
     $this->logofile = "";
     $this->briefpapier="";
-    $this->briefpapier2="";
+    $this->briefpapier2="";      
     if($this->addpdf)
     {
       foreach($this->addpdf as $addpdf)
@@ -2305,17 +2309,35 @@ class Briefpapier extends SuperFPDF {
     $this->SetY($this->GetY()+$this->abstand_boxrechtsoben);
 
     $this->SetFont($this->GetFont(),'',$fontinfobox);
-    $tempY = $this->GetY();
+ /*   $tempY = $this->GetY();
     $this->SetX($startpos_links_rechts);
     $this->MultiCell($this->box_breite1,4,$titleStr,"",$this->boxausrichtung); //BL
     $this->SetXY($startpos_links_rechts+$breite_spalte_rechts,$tempY);
-    $this->MultiCell($this->box_breitexi21,4,$valueStr,"",$this->boxausrichtung); //BR
+    $this->MultiCell($this->box_breitexi21,4,$valueStr,"",$this->boxausrichtung); //BR*/
 
-    $this->SetY(80+$this->abstand_artikeltabelleoben); //Hoehe Box
-    //$this->SetY(60);//+$this->abstand_artikeltabelleoben); //Hoehe Box
+    foreach($this->corrDetails as $title => $value) {
+        if($value!="")
+        {
+            $titleStr = $title !== ''?$this->app->erp->ReadyForPDF($title).": \n":" \n";
+            $valueStr = $this->app->erp->ReadyForPDF($value)."\n";
+            $startY = $this->GetY();
+            $this->SetX($startpos_links_rechts);
+            $this->MultiCell($this->box_breite1,4,$titleStr,"",$this->boxausrichtung); //BL
+            $tempY = $this->GetY();
+            $this->SetY($startY);
+            $this->SetX($startpos_links_rechts+$breite_spalte_rechts);
+            $this->MultiCell($this->box_breitexi21,4,$valueStr,"",$this->boxausrichtung); //BR*/
+
+            if ($tempY > $this->GetY()) {
+                $this->SetY($tempY);
+            }
+
+        }
+    }
+
+    return($this->GetY());
   }
-
-
+  
   public function renderDoctype() {
     //$this->Ln(1);
 

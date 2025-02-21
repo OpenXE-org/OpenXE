@@ -11953,6 +11953,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
           // darunter war ein else if
           if($just_stueckliste=="1" && $explodiert=="0")
           {
+          /* table lieferkette_bestellung does not exist
             $checklieferkette = 0;
             if($typ === 'auftrag'){
               $checklieferkette = $this->app->DB->Select("SELECT id FROM lieferkette_bestellung WHERE belegtyp='auftrag' AND belegid='$auftrag' LIMIT 1");
@@ -11966,14 +11967,14 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
               WHERE s.stuecklistevonartikel='$artikel' AND s.art!='it' AND s.art!='bt'"
               );
             }
-            else{
+            else{ */
               $artikel_von_stueckliste = $this->app->DB->SelectArr(
                 "SELECT s.*, art.nummer AS artnummer,art.projekt AS artprojekt
               FROM stueckliste AS s
               INNER JOIN artikel AS art ON s.artikel = art.id
               WHERE s.stuecklistevonartikel='$artikel'"
               );
-            }
+//            }
 
             $treffer++;
             $changed = true;
@@ -25360,6 +25361,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['dokument_lieferschein']['deutsch'] = "Lieferschein";
     $uebersetzung['dokument_retoure']['deutsch'] = "Retoure";
     $uebersetzung['dokument_kommissionierschein']['deutsch'] = "Kommissionierschein";
+    $uebersetzung['dokument_produktion']['deutsch'] = "Produktion";
     $uebersetzung['dokument_ansprechpartner']['deutsch'] = "Ansprechpartner";
     $uebersetzung['dokument_rechnungsdatum']['deutsch'] = "Rechnungsdatum";
     $uebersetzung['dokument_proformarechnungsdatum']['deutsch'] = "Datum";
@@ -27254,6 +27256,23 @@ function Firmendaten($field,$projekt="")
 
         $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$projekt' LIMIT 1");
         $belegnr = '';
+
+        $untergeordnetes_projekt = $projekt;
+        if (empty($eigenernummernkreis)) {
+            do {
+                $uebergeordnetes_projekt = $this->app->DB->Select("SELECT uebergeordnetes_projekt FROM projekt WHERE id='$untergeordnetes_projekt' LIMIT 1");                
+                if (!empty($uebergeordnetes_projekt)) {
+                    $eigenernummernkreis = $this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$uebergeordnetes_projekt' LIMIT 1");
+                    if ($eigenernummernkreis) {
+                        $projekt = $uebergeordnetes_projekt;
+                        break;
+                    } else {
+                        $untergeordnetes_projekt = $uebergeordnetes_projekt;
+                    }
+                }
+            } while (!empty($uebergeordnetes_projekt) && $uebergeordnetes_projekt != $projekt);
+        }
+
         if($eigenernummernkreis=='1')
         {
           $allowedtypes = ['angebot', 'auftrag', 'rechnung', 'lieferschein', 'arbeitsnachweis', 'reisekosten',

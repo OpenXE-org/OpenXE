@@ -144,25 +144,29 @@ class EtikettenPDF extends SuperFPDF {
           break; 
 
         case "barcode":
-          if((String)($items->attributes()->type)=="E30") {
+
+          if ((String)($items->attributes()->type)=="E30") {
             $this->EAN13($items->attributes()->x,$items->attributes()->y, $items[0],$items->attributes()->size);
           }
-          else if((String)($items->attributes()->type)=="Code128" || (String)($items->attributes()->type)=="1") {
+          else if ((String)($items->attributes()->type)=="Code128" || (String)($items->attributes()->type)=="1") {
             $this->Code128($items->attributes()->x, $items->attributes()->y, $items[0], $items->attributes()->width, $items->attributes()->size);
           }
-          else if((String)($items->attributes()->type)=="GS1-128" || (String)($items->attributes()->type)=="1") {
-          //$items[0] = "!FNC1!0104012345012345!FNC1!081231!FNC1!1012345";
-
-          $tmp =explode("!FNC1!",$items[0]);
-          $codewithfnc1 = implode(chr(206),$tmp);
-
-          //echo chr(206)."0104012345012345".chr(206)."081231".chr(206)."1012345";
-          //$this->Code128($items->attributes()->x, $items->attributes()->y, chr(206)."0104012345012345".chr(206)."081231".chr(206)."1012345", $items->attributes()->width, $items->attributes()->size); // 206 = FNC1
-          $this->Code128($items->attributes()->x, $items->attributes()->y, $codewithfnc1, $items->attributes()->width, $items->attributes()->size); // 206 = FNC1
-          //$this->Code128($items->attributes()->x, $items->attributes()->y, chr(206).$items[0], $items->attributes()->width, $items->attributes()->size); // 206 = FNC1
+          else if ((String)($items->attributes()->type)=="GS1-128") {
+              //$items[0] = "!FNC1!0104012345012345!FNC1!081231!FNC1!1012345";
+              $tmp =explode("!FNC1!",$items[0]);
+              $codewithfnc1 = implode(chr(206),$tmp);
+              //echo chr(206)."0104012345012345".chr(206)."081231".chr(206)."1012345";
+              //$this->Code128($items->attributes()->x, $items->attributes()->y, chr(206)."0104012345012345".chr(206)."081231".chr(206)."1012345", $items->attributes()->width, $items->attributes()->size); // 206 = FNC1
+              $this->Code128($items->attributes()->x, $items->attributes()->y, $codewithfnc1, $items->attributes()->width, $items->attributes()->size); // 206 = FNC1
+              //$this->Code128($items->attributes()->x, $items->attributes()->y, chr(206).$items[0], $items->attributes()->width, $items->attributes()->size); // 206 = FNC1
           }
-          else { // standard auf 2 bzw default
-            $this->Code39($items->attributes()->x,$items->attributes()->y, $items[0], 0.5, $items->attributes()->size);//, $printText=false)
+          else { // standard Type 2, Code39
+            if (isset($items->attributes()->linewidth)) {
+                $baseline = $items->attributes()->linewidth;
+            } else {
+                $baseline = 0.5;
+            }
+            $this->Code39($items->attributes()->x,$items->attributes()->y, $items[0], $baseline, $items->attributes()->size);//, $printText=false)
           }
 
           break;
