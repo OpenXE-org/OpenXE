@@ -1572,7 +1572,9 @@ class Seriennummern {
                         UCASE(LEFT(sbp.beleg_typ, 1)), 
                         SUBSTRING(sbp.beleg_typ, 2)
                     ) AS Belegtyp,
-                    COALESCE(l.belegnr,w.id) AS Beleg,
+                    COALESCE(IF(w.id IS NOT NULL, CONCAT('<a href=\"index.php?module=wareneingang&action=distriinhalt&id=', w.id, '\">', w.id, '</a>'), NULL),
+                             IF(l.id IS NOT NULL, CONCAT('<a href=\"index.php?module=lieferschein&action=edit&id=', l.id, '\">', l.belegnr, '</a>'), NULL),
+                             '') AS Beleg,
                     ".$this->app->erp->FormatDate('COALESCE(l.datum,w.datum)')." AS Datum,
                     COALESCE(al.name,aw.name) AS Adresse                     
                 FROM seriennummern_beleg_position sbp
