@@ -1,6 +1,7 @@
 <div id="tabs">
     <ul>
-        <li><a href="#tabs-1"></a></li>
+        <li><a href="#tabs-1">Beleg</a></li>
+        <li [LIEFERSCHEIN_HIDDEN] ><a href="#tabs-2">Seriennummern</a></li>
     </ul>
     <!-- Example for multiple tabs
     <ul hidden">
@@ -210,6 +211,17 @@
                     </div>
                 </div>
             </div>
+        </form>
+    </div>
+    <div [LIEFERSCHEIN_HIDDEN] id="tabs-2">
+        <legend >{|[LEGEND]|}</legend>
+        <form action="" method="post">
+            <fieldset>
+                [SERIENNUMMERNLISTE]
+                <div style="text-align: center;">
+                    <button name="submit" value="lieferscheinzuordnen_seriennummernliste" class="ui-button-icon" style="padding-left: 30px; padding-right: 30px;">Speichern</button>
+                </div>
+            </fieldset>
         </form>
     </div>
 </div>

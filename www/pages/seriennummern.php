@@ -24,6 +24,7 @@ class Seriennummern {
         $this->app->ActionHandler("wareneingaenge_list", "seriennummern_wareneingaenge_list");                                                                
         $this->app->ActionHandler("enter", "seriennummern_enter"); 
         $this->app->ActionHandler("delete", "seriennummern_delete");
+        $this->app->ActionHandler("remove_serial", "seriennummern_remove_serial");
         $this->app->ActionHandler("remove", "seriennummern_remove");
         $this->app->ActionHandler("minidetail_lieferscheinposition", "seriennummern_lieferscheinpos_minidetail");
         $this->app->ActionHandler("minidetail_wareneingangposition", "seriennummern_wareneingang_minidetail");        
@@ -738,6 +739,26 @@ class Seriennummern {
         
     } 
 
+    public function seriennummern_remove_serial() {
+        $id = $this->app->Secure->GetGET('serial');
+        $beleg_pos = (int) $this->app->Secure->GetGET('beleg_pos');
+        
+        $from = $this->app->Secure->GetGET('from');
+        $beleg = $this->app->Secure->GetGET('beleg');
+
+        if ($id) {
+            $serial = $this->app->DB->SelectRow("SELECT slp.id as slp_id, s.id as s_id FROM seriennummern_beleg_position slp
+                                                INNER JOIN seriennummern s on s.id = slp.seriennummer
+                                                WHERE s.seriennummer = '{$id}' AND slp.beleg_position = {$beleg_pos} AND slp.beleg_typ = {$from}
+                                                LIMIT 1");
+            if (!empty($serial)) {
+                $this->app->DB->Delete("DELETE FROM seriennummern_beleg_position WHERE id = {$serial['slp_id']}");
+                $this->app->DB->Update("UPDATE seriennummern SET eingelagert = 1 WHERE id = {$serial['s_id']}");
+            }
+            $this->app->Location->execute("index.php?module=seriennummern&action=enter&{$from}={$beleg}&from={$from}");
+        }
+    }
+    
     public function seriennummern_remove() {
         $id = (int) $this->app->Secure->GetGET('id');
         $from = $this->app->Secure->GetGET('from');
@@ -901,6 +922,37 @@ class Seriennummern {
                     $this->app->Tpl->addMessage('error', 'Seriennummern konnten nicht gespeichert werden: '.implode(', ',$seriennummern_not_written));          
                 }
                 $seriennummern = array_merge($seriennummern_not_written, $seriennummern_already_exist, $seriennummern_old_not_allowed);
+            break;
+            case 'lieferscheinzuordnen_seriennummernliste':
+                $artikel_lieferschein = $this->app->DB->SelectArr("
+                    SELECT lp.id, lp.artikel
+                    FROM lieferschein_position lp
+                    WHERE lp.lieferschein = '".$lieferschein_id."'
+                    ORDER BY lp.id");
+            
+                foreach($artikel_lieferschein as $k => $v) {
+                    $lieferschein_pos_serial = $this->app->Secure->GetPOST('lieferschein_pos_'.$v['id']);
+                    if (empty($lieferschein_pos_serial)) {
+                        continue;
+                    }
+                    foreach($lieferschein_pos_serial as $serial) {
+                        if (empty($serial)) {
+                            continue;
+                        }
+                        $serial_id = $this->app->DB->Select("SELECT id FROM seriennummern WHERE seriennummer = '".$serial."' and artikel = ".$v['artikel']." LIMIT 1");
+                        if (empty($serial_id)) {
+                            $this->app->DB->Insert("INSERT INTO seriennummern (seriennummer, artikel, eingelagert) VALUES ('".$serial."',".$v['artikel'].", 1)");
+                            $serial_id = $this->app->DB->GetInsertID();
+                        }
+                        $sql = "INSERT INTO seriennummern_beleg_position (beleg_typ, beleg_position, seriennummer) VALUES ('lieferschein','".$v['id']."','".$serial_id."') ";
+                        $this->app->DB->Insert($sql);
+                        
+                        $sql = "UPDATE seriennummern SET eingelagert = 0, logdatei = CURRENT_TIMESTAMP WHERE id = '".$serial_id."'";
+                        $this->app->DB->Update($sql);
+                    }
+                }
+                
+                $this->app->Location->execute("index.php?module=seriennummern&action=enter&lieferschein=".$lieferschein_id."&from=".$from."#tabs-2");
             break;
             case 'lieferscheinzuordnen':
                 if (empty($lieferschein_id)) {
@@ -1151,6 +1203,81 @@ class Seriennummern {
 
                 $this->app->Tpl->Set('SERIENNUMMERN', implode("\n",$seriennummern));                              
 
+                //quick serial list on tab 2
+                $tmp = new EasyTable($this->app);
+                $tmp->headings = array('Nummer', 'Bezeichnung', 'Seriennummer', 'Aktion');
+                
+                $artikel_lieferschein = $this->app->DB->SelectArr("
+                    SELECT lp.id, lp.artikel, lp.menge, lp.bezeichnung, lp.nummer, s.seriennummer, slp.id as slp_id
+                    FROM lieferschein_position lp
+                    INNER JOIN artikel a ON a.id = lp.artikel AND a.seriennummern != 'keine'
+                    LEFT JOIN seriennummern_beleg_position slp ON slp.beleg_position = lp.id AND slp.beleg_typ = 'lieferschein'
+                    LEFT JOIN seriennummern s ON slp.seriennummer = s.id
+                    WHERE lp.lieferschein = {$lieferschein_id}
+                    ORDER BY lp.id, slp.id");
+                
+                $tmp->datasets = [];
+                $i = 0;
+                $last = null;
+                $sn_count = 0;
+                $sn_max_count = 0;
+                
+                foreach($artikel_lieferschein as $k => $v) {
+
+                    $input_field = "<input type='text' id='sn_input_field_{$v['artikel']}' name='lieferschein_pos_{$v['id']}[]' value=''>";
+                    $auto_complete = "sn_input_field_{$v['artikel']}";
+                    
+                    if ($last == null || $last['id'] != $v['id']) {
+                        //new position, generate empty lines of last position with input field for remaining lp.menge
+                        //todo: would be nicer if the sql query could also contain the no s/n rows for each position with up to lp.menge count
+                        while ($last != null && $i < $last['menge']) {
+                            $pos['nummer'] = $last['nummer'];
+                            $pos['bezeichnung'] = $last['bezeichnung'];
+                            $pos['seriennummer'] = $last['input_field'];
+                            $this->app->YUI->AutoComplete($last['auto_complete'], "seriennummerverfuegbar",0,"&lieferschein=$lieferschein_id&artikel={$last['artikel']}");
+                            $pos['aktion'] = '';
+                            $tmp->datasets[] = $pos;
+                            $i++;
+                            $sn_count++;
+                        }
+                        $i = 0;
+                        $last = $v;
+                        $last['input_field'] = $input_field;
+                        $last['auto_complete'] = $auto_complete;
+                        $sn_max_count += $v['menge'];
+                    }
+
+                    $this->app->YUI->AutoComplete($auto_complete, "seriennummerverfuegbar",0,"&lieferschein=$lieferschein_id&artikel={$v['artikel']}");
+                    
+                    //new or existing serial, one line per position
+                    $pos['nummer'] = $v['nummer'];
+                    $pos['bezeichnung'] = $v['bezeichnung'];
+                    if (!empty($v['seriennummer'])) {
+                        $pos['seriennummer'] = $v['seriennummer'];
+                        $pos['aktion'] = 
+                        "<a href=\"index.php?module=seriennummern&action=remove_serial&beleg={$lieferschein_id}&serial={$v['seriennummer']}&beleg_pos={$v['id']}&from=lieferschein#tabs-2\">" . "<img src=\"themes/new/images/delete.svg\" border=\"0\"></a>";
+                    } else {
+                        $pos['seriennummer'] = $input_field;
+                        $pos['aktion'] = '';
+                    }
+                    $tmp->datasets[] = $pos;
+                    $i++;
+                    $sn_count++;
+                }
+                
+                //perhaps some unassigned positions left, generate empty lines of last position with input field
+                while ($sn_count < $sn_max_count) {
+                    $pos['nummer'] = $v['nummer'];
+                    $pos['bezeichnung'] = $v['bezeichnung'];
+                    $pos['seriennummer'] = $input_field;
+                    $pos['aktion'] = '';
+                    $tmp->datasets[] = $pos;
+                    $i++;
+                    $sn_count++;
+                }
+    
+                $tmp->DisplayNew('SERIENNUMMERNLISTE',"","noAction",true);
+                
             break;
             case 'wareneingang':
 
