@@ -27,7 +27,12 @@ class Versandart_go extends Versanddienstleister
     parent::__construct($app, $id);
     if (!isset($this->id) || !isset($this->settings->username) || !isset($this->settings->password))
       return;
-    $this->api = new GoApi($this->settings->username, $this->settings->password, $this->settings->useTestEndpoint ?? true);
+    $this->api = new GoApi(
+        $this->app->Container->get('Logger'),
+        $this->settings->username,
+        $this->settings->password,
+        $this->settings->useTestEndpoint ?? true,
+    );
   }
 
   public function GetName(): string

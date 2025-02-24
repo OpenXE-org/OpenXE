@@ -6,6 +6,7 @@
 
 namespace Xentral\Carrier\Go;
 
+use Psr\Log\LoggerInterface;
 use Xentral\Carrier\Go\Data\CreateOrderRequest;
 use Xentral\Carrier\Go\Data\CreateOrderResponse;
 use Xentral\Carrier\Go\Data\OrderStatus;
@@ -16,7 +17,7 @@ class GoApi {
 
     protected string $baseUrl;
 
-    public function __construct(protected string $username, protected string $password, bool $testMode = true) {
+    public function __construct(protected LoggerInterface $logger, protected string $username, protected string $password, bool $testMode = true) {
         if ($testMode)
             $this->baseUrl = self::BASE_URL_TEST;
         else
@@ -25,6 +26,12 @@ class GoApi {
 
     public function createOrder(CreateOrderRequest $request): CreateOrderResponse|string {
         $curl = curl_init();
+        try {
+            $json = json_encode($request, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+            $this->logger->debug('GO-API Create Order Request', ['json' => $json]);
+        } catch (JsonException $e) {
+            return 'Internal Error: '.$e->getMessage();
+        }
         curl_setopt_array($curl, [
            CURLOPT_RETURNTRANSFER => 1,
            CURLOPT_URL => $this->baseUrl.'createOrder',
@@ -32,12 +39,14 @@ class GoApi {
            CURLOPT_USERNAME => $this->username,
            CURLOPT_PASSWORD => $this->password,
            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-           CURLOPT_POSTFIELDS => json_encode($request, JSON_THROW_ON_ERROR),
+           CURLOPT_POSTFIELDS => $json,
         ]);
 
         $response = json_decode(curl_exec($curl));
         $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
+
+        $this->logger->debug('GO-API Create Order Response', ['response' => $response, 'code' => $code]);
 
         if ($code == 200) {
             $ret = new CreateOrderResponse();
