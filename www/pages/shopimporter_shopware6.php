@@ -11,10 +11,12 @@
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
+
 ?>
 <?php
 
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Modules\Onlineshop\Data\OrderStatus;
 use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 use Xentral\Modules\Shopware6\Client\Shopware6Client;
@@ -43,9 +45,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
     private $normalTaxId;
     private $reducedTaxId;
+
+    private $deliveryTimeId;
+
     public $protocol;
 
-    /** @var bool  */
+    /** @var bool */
     protected $exportCategories = false;
     /** @var Shopware6Client */
     protected $client;
@@ -92,45 +97,45 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $this->app->ActionHandler('getauftrag', 'ImportGetAuftrag');
         $this->app->ActionHandler('deleteauftrag', 'ImportDeleteAuftrag');
         $this->app->ActionHandler('updateauftrag', 'ImportUpdateAuftrag');
-        $this->app->ActionHandler('storniereauftrag','ImportStorniereAuftrag');
-        $this->app->ActionHandler('getarticle','ImportGetArticle');
-        $this->app->ActionHandler('getarticlelist','ImportGetArticleList');
-        $this->app->ActionHandler("updatezahlungsstatus","ImportUpdateZahlungsstatus");
+        $this->app->ActionHandler('storniereauftrag', 'ImportStorniereAuftrag');
+        $this->app->ActionHandler('getarticle', 'ImportGetArticle');
+        $this->app->ActionHandler('getarticlelist', 'ImportGetArticleList');
+        $this->app->ActionHandler("updatezahlungsstatus", "ImportUpdateZahlungsstatus");
         $this->app->DefaultActionHandler('list');
 
         $this->app->ActionHandlerListen($app);
     }
 
-  /**
-   * @param string $productId
-   *
-   * @return mixed
-   */
+    /**
+     * @param string $productId
+     *
+     * @return mixed
+     */
     public function addSyncCustomFieldToProduct(string $productId)
     {
-      $customField = [
-        'customFields' => [
-          'wawision_shopimporter_syncstate' => 1
-        ]
-      ];
+        $customField = [
+            'customFields' => [
+                'wawision_shopimporter_syncstate' => 1,
+            ],
+        ];
 
-      return $this->shopwareRequest('PATCH', "product/{$productId}", $customField);
+        return $this->shopwareRequest('PATCH', "product/{$productId}", $customField);
     }
 
-  /**
-   * @param string $orderId
-   *
-   * @return mixed
-   */
+    /**
+     * @param string $orderId
+     *
+     * @return mixed
+     */
     public function addCustomFieldToOrder(string $orderId)
     {
-      $customField = [
-        'customFields' => [
-          'wawision_shopimporter_syncstate' => 1
-        ]
-      ];
+        $customField = [
+            'customFields' => [
+                'wawision_shopimporter_syncstate' => 1,
+            ],
+        ];
 
-      return $this->shopwareRequest('PATCH', "order/{$orderId}", $customField);
+        return $this->shopwareRequest('PATCH', "order/{$orderId}", $customField);
     }
 
     public function ImportGetArticleList()
@@ -147,9 +152,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     [
                         'field' => 'product.parentId',
                         'type' => 'equals',
-                        'value' => null
-                    ]
-                ]
+                        'value' => null,
+                    ],
+                ],
             ];
 
             $productsInShop = $this->shopwareRequest('POST', 'search/product', $searchdata);
@@ -160,7 +165,11 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             foreach ($productIdsToAdd as $productId) {
-                $this->app->DB->Insert("INSERT INTO shopexport_getarticles (shop, nummer) VALUES ('$this->shopid', '" . $this->app->DB->real_escape_string($productId) . "')");
+                $this->app->DB->Insert(
+                    "INSERT INTO shopexport_getarticles (shop, nummer) VALUES ('$this->shopid', '" . $this->app->DB->real_escape_string(
+                        $productId,
+                    ) . "')",
+                );
             }
             $page++;
         } while (count($productsInShop['data']) === $limit);
@@ -168,7 +177,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
         $anzahl = $this->app->DB->Select("SELECT COUNT(id) FROM shopexport_getarticles WHERE shop=$this->shopid");
         $this->app->erp->SetKonfigurationValue('artikelimportanzahl_' . $this->shopid, $anzahl);
-
     }
 
     /**
@@ -199,6 +207,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $response = curl_exec($ch);
         if (curl_error($ch)) {
             $this->error[] = curl_error($ch);
+        }
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($code == 400) {
+            $this->Shopware6Log(
+                "Shopware-Request failed",
+                ['url' => $url, 'method' => $method, 'request' => $data, 'response' => $response],
+            );
         }
         curl_close($ch);
 
@@ -238,7 +253,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'Accept: application/json',
                 'Content-Type: application/json',
                 'Cache-Control: no-cache',
-            ]
+            ],
         );
         $response = json_decode(curl_exec($ch), true);
 
@@ -270,20 +285,26 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         } else {
             $nummer = $tmp['nummer'];
         }
-        $articleInfo = $this->shopwareRequest('GET', 'product?filter[product.productNumber]=' . $nummer .
-            '&associations[manufacturer][]&associations[properties][]');
+        $articleInfo = $this->shopwareRequest(
+            'GET',
+            'product?filter[product.productNumber]=' . $nummer .
+            '&associations[manufacturer][]&associations[properties][]',
+        );
         if (empty($articleInfo['data'][0])) {
             $this->error[] = 'Artikel in der Shop Datenbank nicht gefunden!';
             return;
         }
         $articleIdInShop = $articleInfo['data'][0]['id'];
-        if(empty($articleInfo['data'][0]['customFields'])
-          || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])){
-          $this->addSyncCustomFieldToProduct((string)$articleIdInShop);
+        if (empty($articleInfo['data'][0]['customFields'])
+            || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])) {
+            $this->addSyncCustomFieldToProduct((string)$articleIdInShop);
         }
 
-        $articleInfo = $this->shopwareRequest('GET', 'product?filter[product.productNumber]=' . $nummer .
-        '&associations[manufacturer][]&associations[properties][]');
+        $articleInfo = $this->shopwareRequest(
+            'GET',
+            'product?filter[product.productNumber]=' . $nummer .
+            '&associations[manufacturer][]&associations[properties][]',
+        );
         $associatedInformation = [];
         $properties = [];
         foreach ($articleInfo['included'] as $includedInformation) {
@@ -308,7 +329,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $imagesToAdd[] = [
                         'content' => base64_encode(@file_get_contents($mediaInfo['attributes']['url'])),
                         'path' => $mediaInfo['attributes']['url'],
-                        'id' => $mediaInfo['id']
+                        'id' => $mediaInfo['id'],
                     ];
                 }
             }
@@ -363,7 +384,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if ($this->freeFieldOption === 'toProperties') {
                     $data['eigenschaften'][] = [
                         'name' => $customFieldName,
-                        'values' => $customFieldValue
+                        'values' => $customFieldValue,
                     ];
                 }
                 if ($this->freeFieldOption === 'toCustomFields') {
@@ -384,7 +405,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $optionInfo = [];
             $optionGroupInfo = [];
             do {
-
                 $searchdata = [
                     'limit' => $limit,
                     'page' => $page,
@@ -392,20 +412,20 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         [
                             'field' => 'product.parentId',
                             'type' => 'equals',
-                            'value' => $articleIdInShop
-                        ]
+                            'value' => $articleIdInShop,
+                        ],
                     ],
                     'sort' => [
                         [
                             'field' => 'product.options.groupId',
                             'naturalSorting' => false,
-                            'order' => 'ASC'
+                            'order' => 'ASC',
                         ],
                         [
                             'field' => 'product.options.id',
                             'naturalSorting' => false,
-                            'order' => 'ASC'
-                        ]
+                            'order' => 'ASC',
+                        ],
                     ],
                     'associations' => [
                         'options' => [
@@ -413,23 +433,25 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                                 [
                                     'field' => 'groupId',
                                     'naturalSorting' => false,
-                                    'order' => 'ASC'
+                                    'order' => 'ASC',
                                 ],
                                 [
                                     'field' => 'id',
                                     'naturalSorting' => false,
-                                    'order' => 'ASC'
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'order' => 'ASC',
+                                ],
+                            ],
+                        ],
+                    ],
                 ];
                 $variantsInShop = $this->shopwareRequest('POST', 'search/product', $searchdata);
                 foreach ($variantsInShop['included'] as $includedInfo) {
                     if ($includedInfo['type'] === 'property_group_option') {
                         $optionInfo[$includedInfo['id']] = $includedInfo['attributes'];
                         if (empty($optionGroupInfo[$includedInfo['attributes']['groupId']])) {
-                            $optionGroupInfo[$includedInfo['attributes']['groupId']] = (!empty($optionGroupInfo)?count($optionGroupInfo):0) + 1;
+                            $optionGroupInfo[$includedInfo['attributes']['groupId']] = (!empty($optionGroupInfo) ? count(
+                                    $optionGroupInfo,
+                                ) : 0) + 1;
                         }
                     }
                 }
@@ -510,15 +532,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 "SELECT  `einstellungen_json`, `bezeichnung`,`id` 
           FROM `shopexport` 
           WHERE `modulename` = 'shopimporter_shopware6' 
-            AND `einstellungen_json` IS NOT NULL AND `einstellungen_json` <> ''"
-            )
+            AND `einstellungen_json` IS NOT NULL AND `einstellungen_json` <> ''",
+            ),
         );
         if (empty($shops)) {
             return [
                 'info' => [
                     'Shop' => 'Shopware',
                     'info' => 'Url ' . $data['data']['shopwareUrl'],
-                ]
+                ],
             ];
         }
         foreach ($shops as $shop) {
@@ -532,7 +554,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             if ($json['felder']['shopwareUrl'] === $data['data']['shopwareUrl']) {
                 return [
                     'success' => false,
-                    'error' => sprintf('Shop with url %s allready exists', $data['data']['shopwareUrl'])
+                    'error' => sprintf('Shop with url %s allready exists', $data['data']['shopwareUrl']),
                 ];
             }
         }
@@ -541,7 +563,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'info' => [
                 'Shop' => 'Shopware',
                 'info' => 'Url ' . $data['data']['shopwareUrl'],
-            ]
+            ],
         ];
     }
 
@@ -563,10 +585,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     {
         $this->shopid = $shopid;
         $this->data = $data;
-        $importerSettings = $this->app->DB->SelectArr("SELECT `einstellungen_json`, `kategorienuebertragen` FROM `shopexport` WHERE `id` = '$shopid' LIMIT 1");
+        $importerSettings = $this->app->DB->SelectArr(
+            "SELECT `einstellungen_json`, `kategorienuebertragen` FROM `shopexport` WHERE `id` = '$shopid' LIMIT 1",
+        );
         $importerSettings = reset($importerSettings);
 
-        $this->exportCategories = (bool) $importerSettings['kategorienuebertragen'];
+        $this->exportCategories = (bool)$importerSettings['kategorienuebertragen'];
 
         $einstellungen = [];
         if (!empty($importerSettings['einstellungen_json'])) {
@@ -593,15 +617,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $this->shopwareMediaFolder = $einstellungen['felder']['shopwareMediaFolder'];
         $this->normalTaxId = $einstellungen['felder']['normalTaxId'];
         $this->reducedTaxId = $einstellungen['felder']['reducedTaxId'];
+        $this->deliveryTimeId = $einstellungen['felder']['deliveryTimeId'];
         $query = sprintf('SELECT `steuerfreilieferlandexport` FROM `shopexport`  WHERE `id` = %d', $this->shopid);
         $this->taxationByDestinationCountry = !empty($this->app->DB->Select($query));
 
-      $this->client = $this->app->Container->get('Shopware6Client');
-      $this->client->setCredentials(
-        $this->UserName,
-        $this->Password,
-        $this->ShopUrl
-      );
+        $this->client = $this->app->Container->get('Shopware6Client');
+        $this->client->setCredentials(
+            $this->UserName,
+            $this->Password,
+            $this->ShopUrl,
+        );
     }
 
     /**
@@ -612,10 +637,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         return
             [
                 'ausblenden' => ['abholmodus' => ['ab_nummer']],
-                'functions' =>  ['exportartikelbaum','getarticlelist','updatezahlungsstatus'],
-                'felder'     => [
-                    'protocol'                        => [
-                        'typ'         => 'checkbox',
+                'functions' => ['exportartikelbaum', 'getarticlelist', 'updatezahlungsstatus'],
+                'felder' => [
+                    'protocol' => [
+                        'typ' => 'checkbox',
                         'bezeichnung' => '{|Protokollierung im Logfile|}:',
                     ],
                     'shopwareUserName' => [
@@ -655,26 +680,34 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'bezeichnung' => '{|Xentral Artikel Eigenschaften|}:',
                         'size' => 40,
                         'default' => 'toProperties',
-                        'optionen' => ['toProperties' => '{|Shopware Eigenschaften|}', 'toCustomFields' => '{|Shopware Zusatzfelder|}', 'doNotExport' => '{|Nicht übertragen|}']
+                        'optionen' => [
+                            'toProperties' => '{|Shopware Eigenschaften|}',
+                            'toCustomFields' => '{|Shopware Zusatzfelder|}',
+                            'doNotExport' => '{|Nicht übertragen|}',
+                        ],
                     ],
                     'shopwareFreeFieldOption' => [
                         'typ' => 'select',
                         'bezeichnung' => '{|Xentral Artikel Freifelder|}:',
                         'size' => 40,
                         'default' => 'toCustomFields',
-                        'optionen' => ['toProperties' => '{|Shopware Eigenschaften|}', 'toCustomFields' => '{|Shopware Zusatzfelder|}', 'doNotExport' => '{|Nicht übertragen|}']
+                        'optionen' => [
+                            'toProperties' => '{|Shopware Eigenschaften|}',
+                            'toCustomFields' => '{|Shopware Zusatzfelder|}',
+                            'doNotExport' => '{|Nicht übertragen|}',
+                        ],
                     ],
                     'shopwareDefaultSalesChannel' => [
                         'heading' => '{|Artikelexport Standardeinstellungen|}',
                         'typ' => 'text',
                         'bezeichnung' => '{|Standard Sichtbarkeit|}:',
-                        'size' => 40
+                        'size' => 40,
                     ],
-                        'shopwareMediaFolder' => [
+                    'shopwareMediaFolder' => [
                         'typ' => 'text',
                         'bezeichnung' => '{|Media Folder für Artikelbilder|}:',
                         'size' => 40,
-                        'default' => 'Product Media'
+                        'default' => 'Product Media',
                     ],
                     'normalTaxId' => [
                         'typ' => 'text',
@@ -686,13 +719,18 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'bezeichnung' => '{|TaxId für Steuersatz "ermäßigt"|}',
                         'size' => 40,
                     ],
+                    'deliveryTimeId' => [
+                        'typ' => 'text',
+                        'bezeichnung' => 'Standard-Lieferzeit (Id)',
+                        'size' => 40,
+                    ],
                     'statesToFetch' => [
                         'typ' => 'text',
                         'bezeichnung' => '{|Abzuholender Bestellstatus|}:',
                         'size' => 40,
                         'default' => 'open',
                         'col' => 2,
-                        'info' => '<br />Erlaubte Werte: open;in_progress;completed;cancelled'
+                        'info' => '<br />Erlaubte Werte: open;in_progress;completed;cancelled',
                     ],
                     'deliveryStatesToFetch' => [
                         'typ' => 'text',
@@ -700,7 +738,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'size' => 40,
                         'default' => '',
                         'col' => 2,
-                        'info' => '<br />Erlaubte Werte: open;shipped_partially;shipped;returned;returned_partially;cancelled'
+                        'info' => '<br />Erlaubte Werte: open;shipped_partially;shipped;returned;returned_partially;cancelled',
                     ],
                     'transactionStatesToFetch' => [
                         'typ' => 'text',
@@ -708,7 +746,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'size' => 40,
                         'default' => '',
                         'col' => 2,
-                        'info' => '<br />Erlaubte Werte: open;paid;authorized;paid_partially;refunded;refunded_partially;reminded;cancelled'
+                        'info' => '<br />Erlaubte Werte: open;paid;authorized;paid_partially;refunded;refunded_partially;reminded;cancelled',
                     ],
                     'salesChannelToFetch' => [
                         'typ' => 'text',
@@ -716,7 +754,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'size' => 40,
                         'default' => '',
                         'col' => 2,
-                        'info' => '<br />Klicke auf "Verbindung prüfen" um die verfügbaren Channels (bitte die Id verwenden) anzuzeigen.'
+                        'info' => '<br />Klicke auf "Verbindung prüfen" um die verfügbaren Channels (bitte die Id verwenden) anzuzeigen.',
                     ],
                     'orderSearchLimit' => [
                         'typ' => 'select',
@@ -728,7 +766,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                             '100' => '100',
                         ],
                         'default' => '25',
-                        'col' => 2
+                        'col' => 2,
                     ],
                 ],
             ];
@@ -739,22 +777,23 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $tmp = $this->CatchRemoteCommand('data');
         $auftrag = $tmp['auftrag'];
 
-        $transactions = $this->shopwareRequest('GET', 'order/'.$auftrag.'/transactions');
+        $transactions = $this->shopwareRequest('GET', 'order/' . $auftrag . '/transactions');
         $transactionId = $transactions['data'][0]['id'];
 
-        if(empty($transactionId)){
+        if (empty($transactionId)) {
             return;
         }
 
-        $response = $this->shopwareRequest('POST', '_action/order_transaction/'.$transactionId.'/state/paid');
+        $response = $this->shopwareRequest('POST', '_action/order_transaction/' . $transactionId . '/state/paid');
         if (!empty($response['id'])) {
             return 'ok';
         }
     }
 
-  public function ImportSendArtikelbaum(){
-    $xentralCategoryTree = [];
-    $this->app->erp->GetKategorienbaum($xentralCategoryTree, 0, 0, $this->shopid);
+    public function ImportSendArtikelbaum()
+    {
+        $xentralCategoryTree = [];
+        $this->app->erp->GetKategorienbaum($xentralCategoryTree, 0, 0, $this->shopid);
 
         $xentralCategoryIdToParentId = [];
         foreach ($xentralCategoryTree as $key => $value) {
@@ -777,7 +816,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $parentId = $xentralCategoryTree[$xentralCategoryIdToParentId[$xentralCategoryTree[$id]['parent']]]['shopid'];
         }
         if ($xentralCategoryTree[$id]['parent'] && !$xentralCategoryTree[$xentralCategoryIdToParentId[$xentralCategoryTree[$id]['parent']]]['erledigt']) {
-            $this->createCategoryTree($xentralCategoryIdToParentId[$xentralCategoryTree[$id]['parent']], $xentralCategoryTree, $xentralCategoryIdToParentId, $parentCategoryId);
+            $this->createCategoryTree(
+                $xentralCategoryIdToParentId[$xentralCategoryTree[$id]['parent']],
+                $xentralCategoryTree,
+                $xentralCategoryIdToParentId,
+                $parentCategoryId,
+            );
         }
         $xentralCategoryTree[$id]['erledigt'] = true;
 
@@ -788,14 +832,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'category.name',
                     'type' => 'equals',
-                    'value' => $categoryName
+                    'value' => $categoryName,
                 ],
                 [
                     'field' => 'category.parentId',
                     'type' => 'equals',
-                    'value' => $parentId
-                ]
-            ]
+                    'value' => $parentId,
+                ],
+            ],
         ];
 
         $categoriesInShop = $this->shopwareRequest('POST', 'search/category', $searchdata);
@@ -808,7 +852,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (!$categoryId) {
             $categoryData = [
                 'parentId' => $parentId,
-                'name' => $categoryName
+                'name' => $categoryName,
             ];
             $result = $this->shopwareRequest('POST', 'category?_response=true', $categoryData);
             if ($result['data']['id']) {
@@ -845,9 +889,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $this->Shopware6Log('Artikel wurde nicht im Shop gefunden: ' . $nummer, $articleInfo);
                 continue;
             }
-            if(empty($articleInfo['data'][0]['customFields'])
-              || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])){
-              $this->addSyncCustomFieldToProduct((string)$articleInfo['data'][0]['id']);
+            if (empty($articleInfo['data'][0]['customFields'])
+                || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])) {
+                $this->addSyncCustomFieldToProduct((string)$articleInfo['data'][0]['id']);
             }
 
             $active = true;
@@ -872,34 +916,34 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         return $count;
     }
 
-  /**
-   * @param bool       $isStockActive
-   * @param int        $stock
-   * @param array|null $articleInfo
-   *
-   * @return int
-   */
+    /**
+     * @param bool $isStockActive
+     * @param int $stock
+     * @param array|null $articleInfo
+     *
+     * @return int
+     */
     public function getCorrectedStockFromAvailable(bool $isStockActive, int $stock, ?array $articleInfo): int
     {
-      if(!$isStockActive) {
-        return $stock;
-      }
-      if(empty($articleInfo)) {
-        return $stock;
-      }
-      if(!isset($articleInfo['data'][0]['attributes']['availableStock'])) {
-        return $stock;
-      }
-      if(!isset($articleInfo['data'][0]['attributes']['availableStock'])) {
-        return $stock;
-      }
-      $reserved = (int)$articleInfo['data'][0]['attributes']['stock']
-        - (int)$articleInfo['data'][0]['attributes']['availableStock'];
-      if($reserved <= 0) {
-        return $stock;
-      }
+        if (!$isStockActive) {
+            return $stock;
+        }
+        if (empty($articleInfo)) {
+            return $stock;
+        }
+        if (!isset($articleInfo['data'][0]['attributes']['availableStock'])) {
+            return $stock;
+        }
+        if (!isset($articleInfo['data'][0]['attributes']['availableStock'])) {
+            return $stock;
+        }
+        $reserved = (int)$articleInfo['data'][0]['attributes']['stock']
+            - (int)$articleInfo['data'][0]['attributes']['availableStock'];
+        if ($reserved <= 0) {
+            return $stock;
+        }
 
-      return $stock + $reserved;
+        return $stock + $reserved;
     }
 
     /**
@@ -919,13 +963,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     public function ImportSendList()
     {
         $articleList = $this->CatchRemoteCommand('data');
+        $articleList = array_slice($articleList, 0, 50);
 
-        $successCounter = 0;
+        $return = [];
         foreach ($articleList as $article) {
+            $articleResult = new ArticleExportResult();
+            $articleResult->articleId = intval($article['artikel']);
             $number = $article['nummer'];
             $articleInfo = $this->shopwareRequest(
                 'GET',
-                sprintf('product?filter[product.productNumber]=%s', $number)
+                sprintf('product?filter[product.productNumber]=%s', $number),
             );
             $articleIdShopware = '';
             if (!empty($articleInfo['data'][0]['id'])) {
@@ -944,18 +991,21 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $quantity = $this->getCorrectedStockFromAvailable($active, (int)$quantity, $articleInfo);
             $taxRate = (float)$article['steuersatz'];
 
-            if (!empty($this->normalTaxId) && $article['umsatzsteuer'] == 'normal')
-              $taxId = $this->normalTaxId;
-            else if (!empty($this->reducedTaxId) && $article['umsatzsteuer'] == 'ermaessigt')
-              $taxId = $this->reducedTaxId;
-            else
-              $taxId = $this->getTaxIdByRate($taxRate);
+            if (!empty($this->normalTaxId) && $article['umsatzsteuer'] == 'normal') {
+                $taxId = $this->normalTaxId;
+            } else {
+                if (!empty($this->reducedTaxId) && $article['umsatzsteuer'] == 'ermaessigt') {
+                    $taxId = $this->reducedTaxId;
+                } else {
+                    $taxId = $this->getTaxIdByRate($taxRate);
+                }
+            }
 
             $mediaToAdd = $this->mediaToExport($article, $articleIdShopware);
 
             $categoriesToAdd = [];
-            if($this->exportCategories){
-              $categoriesToAdd = $this->categoriesToExport($article, $articleIdShopware);
+            if ($this->exportCategories) {
+                $categoriesToAdd = $this->categoriesToExport($article, $articleIdShopware);
             }
 
             $propertiesToAdd = $this->propertiesToExport($article, $articleIdShopware);
@@ -964,16 +1014,19 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
             $systemFieldsToAdd = $this->systemFieldsToExport($article, $articleIdShopware);
 
-            $deliveryTimeId = null;
-            if(!empty($article['lieferzeitmanuell'])){
-              $deliveryTimeId = $this->getDeliveryTimeId($article['lieferzeitmanuell']);
+            $deliveryTimeId = $this->deliveryTimeId;
+            if (!empty($article['lieferzeitmanuell'])) {
+                $deliveryTimeId = $this->getDeliveryTimeId($article['lieferzeitmanuell']);
             }
 
             if (empty($systemFieldsToAdd['visibilities']) && !empty($this->shopwareDefaultSalesChannel)) {
-                $systemFieldsToAdd['visibilities'] = $this->modifySalesChannel(explode(',', $this->shopwareDefaultSalesChannel), $articleIdShopware);
+                $systemFieldsToAdd['visibilities'] = $this->modifySalesChannel(
+                    explode(',', $this->shopwareDefaultSalesChannel),
+                    $articleIdShopware,
+                );
             }
 
-            if(empty($systemFieldsToAdd['unitId']) && !empty($article['einheit']) ){
+            if (empty($systemFieldsToAdd['unitId']) && !empty($article['einheit'])) {
                 $systemFieldsToAdd['unitId'] = $this->unitToAdd($article['einheit']);
             }
 
@@ -987,11 +1040,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             if (empty($manufacturerId)) {
-                return 'error: Für den Artikelexport ist die Herstellerinformation zwingend erforderlich';
+                $articleResult->message = 'Für den Artikelexport ist die Herstellerinformation zwingend erforderlich';
+                $return[] = $articleResult;
+                continue;
             }
 
             $isCloseOut = false;
-            if(!empty($article['restmenge'])){
+            if (!empty($article['restmenge'])) {
                 $isCloseOut = true;
             }
 
@@ -1018,14 +1073,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'net' => $article['preis'],
                 'gross' => $article['bruttopreis'],
                 'currencyId' => $currencyId,
-                'linked' => true];
+                'linked' => true,
+            ];
 
             if (!empty($article['pseudopreis'])) {
                 $price['listPrice'] = [
                     'currencyId' => $currencyId,
                     'gross' => $article['pseudopreis'],
                     'linked' => true,
-                    'net' => $article['pseudopreis']/(1+$taxRate/100)
+                    'net' => $article['pseudopreis'] / (1 + $taxRate / 100),
                 ];
             }
 
@@ -1053,7 +1109,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'properties' => $propertiesToAdd,
                 'crossSellings' => $crosselingToAdd,
                 'media' => $mediaToAdd,
-                'deliveryTimeId' => $deliveryTimeId
+                'deliveryTimeId' => $deliveryTimeId,
             ];
 
             if (!$article['texteuebertragen']) {
@@ -1061,14 +1117,17 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             $data = array_merge($data, $systemFieldsToAdd);
-            if(empty($data['customFields'])
-              || empty($data['customFields']['wawision_shopimporter_syncstate'])){
-              $data['customFields']['wawision_shopimporter_syncstate'] = 1;
+            if (empty($data['customFields'])
+                || empty($data['customFields']['wawision_shopimporter_syncstate'])) {
+                $data['customFields']['wawision_shopimporter_syncstate'] = 1;
             }
 
             if (empty($articleIdShopware)) {
-                $result = $this->shopwareRequest('POST',
-                    'product?_response=true', $data);
+                $result = $this->shopwareRequest(
+                    'POST',
+                    'product?_response=true',
+                    $data,
+                );
                 if (!empty($result['data']['id'])) {
                     $articleIdShopware = $result['data']['id'];
                     $articleInfo['data'][0] = $result['data'];
@@ -1079,11 +1138,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if (!empty($languageId)) {
                     $headerInformation[] = 'sw-language-id: ' . $languageId;
                 }
-                $result = $this->shopwareRequest('PATCH',
-                    sprintf('product/%s?_response=true', $articleIdShopware), $data, $headerInformation);
+                $result = $this->shopwareRequest(
+                    'PATCH',
+                    sprintf('product/%s?_response=true', $articleIdShopware),
+                    $data,
+                    $headerInformation,
+                );
             }
 
-            if(!empty($articleIdShopware) && $article['texteuebertragen']) {
+            if (!empty($articleIdShopware) && $article['texteuebertragen']) {
                 $this->exportTranslationsForArticle($article, $articleIdShopware);
             }
 
@@ -1091,6 +1154,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
             if (empty($result['data']) || is_array($result['errors'])) {
                 $this->Shopware6Log('Artikelexport fehlgeschlagen', ['data:' => $data, 'response' => $result]);
+                $articleResult->message = 'Artikelexport fehlgeschlagen, weitere Hinweise im Logfile';
+                $return[] = $articleResult;
                 continue;
             }
 
@@ -1099,76 +1164,84 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $this->exportVariants($article, $articleIdShopware, $currencyId);
 
             if (empty($result['data']) || is_array($result['errors'])) {
-                $this->Shopware6Log('Artikelexport bei Bild&uuml;bertragung fehlgeschlagen', ['data:' => $data, 'response' => $result]);
+                $this->Shopware6Log(
+                    'Artikelexport bei Bild&uuml;bertragung fehlgeschlagen',
+                    ['data:' => $data, 'response' => $result],
+                );
+                $articleResult->message = 'Artikelexport bei Bildübertragung fehlgeschlagen';
+                $return[] = $articleResult;
                 continue;
             }
 
-          $defaultPrices = $this->getPricesFromArray($article['staffelpreise_standard'] ?? []);
-          $groupPrices = $this->getPricesFromArray($article['staffelpreise_gruppen'] ?? []);
+            $defaultPrices = $this->getPricesFromArray($article['staffelpreise_standard'] ?? []);
+            $groupPrices = $this->getPricesFromArray($article['staffelpreise_gruppen'] ?? []);
 
-          if (!empty($defaultPrices) || !empty($groupPrices)) {
-            $this->deleteOldBulkPrices($articleIdShopware);
-          }
-          if (!empty($defaultPrices)) {
-            foreach ($defaultPrices as $priceData) {
-              $this->exportBulkPriceForGroup($articleIdShopware, $this->defaultRuleName, $priceData);
+            if (!empty($defaultPrices) || !empty($groupPrices)) {
+                $this->deleteOldBulkPrices($articleIdShopware);
             }
-          }
-          if (!empty($groupPrices)) {
-            foreach ($groupPrices as $priceData) {
-              $this->exportBulkPriceForGroup($articleIdShopware, $priceData->getGroupName(), $priceData);
+            if (!empty($defaultPrices)) {
+                foreach ($defaultPrices as $priceData) {
+                    $this->exportBulkPriceForGroup($articleIdShopware, $this->defaultRuleName, $priceData);
+                }
             }
-          }
+            if (!empty($groupPrices)) {
+                foreach ($groupPrices as $priceData) {
+                    $this->exportBulkPriceForGroup($articleIdShopware, $priceData->getGroupName(), $priceData);
+                }
+            }
 
-          $successCounter++;
+            $articleResult->extArticleId = $articleIdShopware;
+            $articleResult->success = true;
+            $articleResult->message = 'Artikelexport erfolgreich';
+            $return[] = $articleResult;
         }
 
-        return $successCounter;
+        return $return;
     }
 
-  protected function exportBulkPriceForGroup(string $productId, string $groupName, PriceData $priceData): void
-  {
-    $currencyId = $this->findCurrencyId($priceData->getCurrency());
+    protected function exportBulkPriceForGroup(string $productId, string $groupName, PriceData $priceData): void
+    {
+        $currencyId = $this->findCurrencyId($priceData->getCurrency());
 
-    $groupRuleId = $this->client->getGroupRuleId($groupName);
-    if (empty($groupRuleId)) {
-      $this->Shopware6Log("Fehler: Gruppe {$groupName} konnte im Shop nicht gefunden werden");
-      return;
+        $groupRuleId = $this->client->getGroupRuleId($groupName);
+        if (empty($groupRuleId)) {
+            $this->Shopware6Log("Fehler: Gruppe {$groupName} konnte im Shop nicht gefunden werden");
+            return;
+        }
+
+        $result = $this->client->saveBulkPrice($productId, $groupRuleId, $currencyId, $priceData);
+        if (empty($result['data'])) {
+            $this->Shopware6Log("Fehler: Staffelpreis für Gruppe {$groupName} konnte nicht exportiert werden", $result);
+        }
     }
 
-    $result = $this->client->saveBulkPrice($productId, $groupRuleId, $currencyId, $priceData);
-    if (empty($result['data'])) {
-        $this->Shopware6Log("Fehler: Staffelpreis für Gruppe {$groupName} konnte nicht exportiert werden", $result);
-    }
-  }
+    /**
+     * @param string $deliveryTimeText
+     *
+     * @return string|null
+     */
+    protected function getDeliveryTimeId(string $deliveryTimeText): ?string
+    {
+        $searchCommand = [
+            'limit' => 5,
+            'filter' => [
+                [
+                    'field' => 'name',
+                    'type' => 'equals',
+                    'value' => $deliveryTimeText,
+                ],
+            ],
+        ];
+        $result = $this->shopwareRequest('POST', 'search/delivery-time', $searchCommand);
 
-  /**
-   * @param string $deliveryTimeText
-   *
-   * @return string|null
-   */
-  protected function getDeliveryTimeId(string $deliveryTimeText): ?string
-  {
-    $searchCommand = [
-      'limit' => 5,
-      'filter' => [
-        [
-          'field' => 'name',
-          'type' => 'equals',
-          'value' => $deliveryTimeText
-        ]
-      ]
-    ];
-    $result = $this->shopwareRequest('POST', 'search/delivery-time', $searchCommand);
+        if (empty($result['data'][0]['id'])) {
+            return null;
+        }
 
-    if (empty($result['data'][0]['id'])) {
-      return null;
+        return $result['data'][0]['id'];
     }
 
-    return $result['data'][0]['id'];
-  }
-
-  /**
+    /**
      * @param string $description
      * @return string
      */
@@ -1202,9 +1275,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'metaTitle' => $article['metatitle_de'],
             'metaDescription' => $article['metadescription_de'],
             'keywords' => $article['metakeywords_de'],
-            'customFields' => []
+            'customFields' => [],
         ];
-        if(!empty($customFieldsToAdd['DE'])){
+        if (!empty($customFieldsToAdd['DE'])) {
             $preparedTranslations['DE']['customFields'] = $customFieldsToAdd['DE'];
         }
         $preparedTranslations['GB'] = [
@@ -1215,7 +1288,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'keywords' => $article['metakeywords_en'],
             'customFields' => [],
         ];
-        if(!empty($customFieldsToAdd['GB'])){
+        if (!empty($customFieldsToAdd['GB'])) {
             $preparedTranslations['GB']['customFields'] = $customFieldsToAdd['GB'];
         }
         foreach ($article['texte'] as $translation) {
@@ -1229,7 +1302,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'metaDescription' => $translation['meta_description'],
                 'keywords' => $translation['meta_keywords'],
             ];
-            if(!empty($customFieldsToAdd[$translation['sprache']])){
+            if (!empty($customFieldsToAdd[$translation['sprache']])) {
                 $preparedTranslations[$translation['sprache']]['customFields'] = $customFieldsToAdd[$translation['sprache']];
             }
         }
@@ -1245,7 +1318,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $this->shopwareRequest(
                 'PATCH',
                 sprintf('product/%s', $articleIdShopware),
-                $translation, $headerInformation
+                $translation,
+                $headerInformation,
             );
         }
     }
@@ -1257,7 +1331,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function getLanguageIdByCountryIso(string $countryIso): ?string
     {
-        if(array_key_exists($countryIso, $this->knownShopLanguageIds)){
+        if (array_key_exists($countryIso, $this->knownShopLanguageIds)) {
             return $this->knownShopLanguageIds[$countryIso];
         }
 
@@ -1267,22 +1341,22 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'country.iso',
                     'type' => 'equals',
-                    'value' => $countryIso
-                ]
-            ]
+                    'value' => $countryIso,
+                ],
+            ],
         ];
         $countryInformation = $this->shopwareRequest('POST', 'search/country', $searchCommand);
 
-        foreach ($countryInformation['data'] as $country){
+        foreach ($countryInformation['data'] as $country) {
             $searchCommand = [
                 'limit' => 5,
                 'filter' => [
                     [
                         'field' => 'locale.territory',
                         'type' => 'equals',
-                        'value' => $country['attributes']['name']
-                    ]
-                ]
+                        'value' => $country['attributes']['name'],
+                    ],
+                ],
             ];
             $localeInformation = $this->shopwareRequest('POST', 'search/locale', $searchCommand);
             foreach ($localeInformation['data'] as $locale) {
@@ -1292,9 +1366,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         [
                             'field' => 'language.localeId',
                             'type' => 'equals',
-                            'value' => $locale['id']
-                        ]
-                    ]
+                            'value' => $locale['id'],
+                        ],
+                    ],
                 ];
                 $languageInformation = $this->shopwareRequest('POST', 'search/language', $searchCommand);
                 if (!empty($languageInformation['data'][0]['id'])) {
@@ -1319,7 +1393,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $response = $this->shopwareRequest('POST', 'product-manufacturer?_response=true', $data);
 
         $manufacturerId = null;
-        if(!empty($response['data']['id'])){
+        if (!empty($response['data']['id'])) {
             $manufacturerId = $response['data']['id'];
             $this->knownManufacturerIds[$manufacturerName] = $manufacturerId;
         }
@@ -1344,7 +1418,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         }
         $manufacturer = $this->shopwareRequest(
             'GET',
-            'product-manufacturer?filter[product_manufacturer.name]=' . urlencode($manufacturerName)
+            'product-manufacturer?filter[product_manufacturer.name]=' . urlencode($manufacturerName),
         );
         $manufacturerId = $manufacturer['data'][0]['id'];
         $this->knownManufacturerIds[$manufacturerName] = $manufacturerId;
@@ -1357,12 +1431,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      *
      * @return string
      */
-    protected function getTaxIdByRate(float $taxRate): string{
-        if(empty($this->taxesInShop)){
+    protected function getTaxIdByRate(float $taxRate): string
+    {
+        if (empty($this->taxesInShop)) {
             $this->taxesInShop = $this->shopwareRequest('GET', 'tax');
         }
         foreach ($this->taxesInShop['data'] as $taxData) {
-            if (abs(($taxData['attributes']['taxRate']-$taxRate)) < 0.0001 ) {
+            if (abs(($taxData['attributes']['taxRate'] - $taxRate)) < 0.0001) {
                 return $taxData['id'];
             }
         }
@@ -1391,22 +1466,22 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'name',
                     'type' => 'equals',
-                    'value' => $this->shopwareMediaFolder
-                ]
-            ]
+                    'value' => $this->shopwareMediaFolder,
+                ],
+            ],
         ];
         $mediaFolderData = $this->shopwareRequest('POST', 'search/media-folder', $searchdata);
-        if(empty($mediaFolderData['data'][0]['id'])){
-          $this->Shopware6ErrorLog('Kein Media Folder gefunden für: ', $this->shopwareMediaFolder);
-          return [];
+        if (empty($mediaFolderData['data'][0]['id'])) {
+            $this->Shopware6ErrorLog('Kein Media Folder gefunden für: ', $this->shopwareMediaFolder);
+            return [];
         }
 
         $mediaFolderId = $mediaFolderData['data'][0]['id'];
 
         foreach ($internalArticleData['Dateien'] as $internalFile) {
             $filename = explode('.', $internalFile['filename']);
-            unset($filename[(!empty($filename)?count($filename):0) - 1]);
-            $filename = $internalFile['id'].'_'.implode($filename);
+            unset($filename[(!empty($filename) ? count($filename) : 0) - 1]);
+            $filename = $internalFile['id'] . '_' . implode($filename);
             $extension = $internalFile['extension'];
             $imageTitle = (string)$internalFile['titel'];
             $imageAltText = (string)$internalFile['beschreibung'];
@@ -1418,28 +1493,30 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     [
                         'field' => 'media.fileName',
                         'type' => 'equals',
-                        'value' => $filename
-                    ]
-                ]
+                        'value' => $filename,
+                    ],
+                ],
             ];
             $mediaData = $this->shopwareRequest('POST', 'search/media', $searchdata);
             if (!empty($mediaData['data'][0]['id'])) {
                 $internalMediaIds[] = $mediaData['data'][0]['id'];
-                if($mediaData['data'][0]['attributes']['title'] !== $imageTitle
-                  || $mediaData['data'][0]['attributes']['alt'] !== $imageAltText){
-                  $this->setMediaTitleAndAltText($mediaData['data'][0]['id'], $imageTitle, $imageAltText);
+                if ($mediaData['data'][0]['attributes']['title'] !== $imageTitle
+                    || $mediaData['data'][0]['attributes']['alt'] !== $imageAltText) {
+                    $this->setMediaTitleAndAltText($mediaData['data'][0]['id'], $imageTitle, $imageAltText);
                 }
                 continue;
             }
 
             $mediaData = $this->shopwareRequest('POST', 'media?_response=true', [
                 'title' => $imageTitle,
-                'alt' => $imageAltText
+                'alt' => $imageAltText,
             ]);
-            if(empty($mediaData['data']['id'])){
-              $this->Shopware6Log('Error when creating media for sku: ' . $internalArticleData['nummer'],
-                ['mediaData' => $mediaData, 'title' => $imageTitle, 'text' => $imageAltText]);
-              continue;
+            if (empty($mediaData['data']['id'])) {
+                $this->Shopware6Log(
+                    'Error when creating media for sku: ' . $internalArticleData['nummer'],
+                    ['mediaData' => $mediaData, 'title' => $imageTitle, 'text' => $imageAltText],
+                );
+                continue;
             }
             $mediaId = $mediaData['data']['id'];
 
@@ -1450,18 +1527,18 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     'payload' => [
                         [
                             'id' => $mediaId,
-                            'mediaFolderId' => $mediaFolderId
-                        ]
-                    ]
-                ]
+                            'mediaFolderId' => $mediaFolderId,
+                        ],
+                    ],
+                ],
             ];
             $this->shopwareRequest('POST', '_action/sync?_response=true', $mediaAssociationData);
 
-            $url = $this->ShopUrl . '_action/media/' . $mediaId . '/upload?extension=' . $extension . '&fileName=' . $filename;
+            $url = $this->ShopUrl . '_action/media/' . $mediaId . '/upload?extension=' . $extension . '&fileName=' . urlencode($filename);
             $ch = curl_init();
             $setHeaders = [
                 'Content-Type:image/' . $extension,
-                'Authorization:Bearer ' . $accessToken['token']
+                'Authorization:Bearer ' . $accessToken['token'],
             ];
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POSTFIELDS, base64_decode($internalFile['datei']));
@@ -1469,17 +1546,26 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             curl_setopt($ch, CURLOPT_HTTPHEADER, $setHeaders);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_exec($ch);
+            $response = curl_exec($ch);
+            if (curl_errno($ch) > 0 || curl_getinfo($ch, CURLINFO_HTTP_CODE) >= 400) {
+                $this->Shopware6Log("Curl error", ['error' => curl_error($ch), 'response' => $response, 'url' => $url]);
+            }
 
             $internalMediaIds[] = $mediaId;
         }
 
         $existingMediaConnection = [];
         if (!empty($articleIdShopware)) {
-            $existingMediaConnection = $this->shopwareRequest('GET', 'product/' . $articleIdShopware . '/media?limit=100');
+            $existingMediaConnection = $this->shopwareRequest(
+                'GET',
+                'product/' . $articleIdShopware . '/media?limit=100',
+            );
             foreach ($existingMediaConnection['data'] as $existingConnection) {
                 if (!in_array($existingConnection['attributes']['mediaId'], $internalMediaIds, false)) {
-                    $this->shopwareRequest('DELETE', 'product/' . $articleIdShopware . '/media/' . $existingConnection['id']);
+                    $this->shopwareRequest(
+                        'DELETE',
+                        'product/' . $articleIdShopware . '/media/' . $existingConnection['id'],
+                    );
                 }
             }
         }
@@ -1494,7 +1580,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         foreach ($internalMediaIds as $mediaId) {
             $mediaDataSet = [
                 'mediaId' => $mediaId,
-                'position' => $position
+                'position' => $position,
             ];
             if (array_key_exists($mediaId, $alreadyAddedMediaIDs)) {
                 $mediaDataSet['id'] = $alreadyAddedMediaIDs[$mediaId];
@@ -1506,39 +1592,42 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         return $mediaToAdd;
     }
 
-  /**
-   * @param string $mediaId
-   * @param string $title
-   * @param string $altText
-   */
-  protected function setMediaTitleAndAltText(string $mediaId, string $title, string $altText): void
-  {
-    $this->shopwareRequest('PATCH', 'media/' . $mediaId,
-      ['title' => $title,
-        'alt' => $altText
-      ]
-    );
-  }
+    /**
+     * @param string $mediaId
+     * @param string $title
+     * @param string $altText
+     */
+    protected function setMediaTitleAndAltText(string $mediaId, string $title, string $altText): void
+    {
+        $this->shopwareRequest(
+            'PATCH', 'media/' . $mediaId,
+            [
+                'title' => $title,
+                'alt' => $altText,
+            ],
+        );
+    }
 
     /**
      * @param array $articleInXentral
      * @param string $articleIdShopware
      */
-    protected function addCoverImage($articleInXentral, $articleIdShopware){
-        if(empty($articleIdShopware)){
+    protected function addCoverImage($articleInXentral, $articleIdShopware)
+    {
+        if (empty($articleIdShopware)) {
             return;
         }
-        if(empty($articleInXentral['Dateien'])){
+        if (empty($articleInXentral['Dateien'])) {
             return;
         }
         $existingMediaConnection = $this->shopwareRequest('GET', 'product/' . $articleIdShopware . '/media?limit=100');
-        if(empty($existingMediaConnection['data'])){
+        if (empty($existingMediaConnection['data'])) {
             return;
         }
         foreach ($articleInXentral['Dateien'] as $xentralFile) {
             $filename = explode('.', $xentralFile['filename']);
-            unset($filename[(!empty($filename)?count($filename):0) - 1]);
-            $filename = $xentralFile['id'].'_'.implode($filename);
+            unset($filename[(!empty($filename) ? count($filename) : 0) - 1]);
+            $filename = $xentralFile['id'] . '_' . implode($filename);
 
             $searchdata = [
                 'limit' => 5,
@@ -1546,18 +1635,20 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     [
                         'field' => 'media.fileName',
                         'type' => 'equals',
-                        'value' => $filename
-                    ]
-                ]
+                        'value' => $filename,
+                    ],
+                ],
             ];
             $mediaData = $this->shopwareRequest('POST', 'search/media', $searchdata);
             $mediaId = $mediaData['data'][0]['id'];
 
-            foreach ($existingMediaConnection['data'] as $mediaConnection){
-                if($mediaId === $mediaConnection['attributes']['mediaId']){
-
-                    $this->shopwareRequest('PATCH',
-                        sprintf('product/%s?_response=true', $articleIdShopware),['coverId' => $mediaConnection['id']]);
+            foreach ($existingMediaConnection['data'] as $mediaConnection) {
+                if ($mediaId === $mediaConnection['attributes']['mediaId']) {
+                    $this->shopwareRequest(
+                        'PATCH',
+                        sprintf('product/%s?_response=true', $articleIdShopware),
+                        ['coverId' => $mediaConnection['id']],
+                    );
                     return;
                 }
             }
@@ -1603,15 +1694,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         [
                             'field' => 'category.name',
                             'type' => 'equals',
-                            'value' => $categoryData['name']
-                        ]
-                    ]
+                            'value' => $categoryData['name'],
+                        ],
+                    ],
                 ];
                 if (!empty($parentid)) {
                     $searchdata['filter'][] = [
                         'field' => 'category.parentId',
                         'type' => 'equals',
-                        'value' => $parentid
+                        'value' => $parentid,
                     ];
                 }
                 $result = $this->shopwareRequest('POST', 'search/category', $searchdata);
@@ -1622,30 +1713,38 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $categoriesInXentral[] = $result['data'][0]['id'];
                 }
             }
-        } else if (!empty($categoryName)) {
-            $searchdata = [
-                'limit' => 25,
-                'filter' => [
-                    [
-                        'field' => 'category.name',
-                        'type' => 'equals',
-                        'value' => $categoryName
-                    ]
-                ]
-            ];
+        } else {
+            if (!empty($categoryName)) {
+                $searchdata = [
+                    'limit' => 25,
+                    'filter' => [
+                        [
+                            'field' => 'category.name',
+                            'type' => 'equals',
+                            'value' => $categoryName,
+                        ],
+                    ],
+                ];
 
-            $result = $this->shopwareRequest('POST', 'search/category', $searchdata);
+                $result = $this->shopwareRequest('POST', 'search/category', $searchdata);
 
-            if (!empty($result['data'][0]['id'])) {
-                $categoriesInXentral[] = $result['data'][0]['id'];
+                if (!empty($result['data'][0]['id'])) {
+                    $categoriesInXentral[] = $result['data'][0]['id'];
+                }
             }
         }
 
         if (!empty($articleIdShopware)) {
-            $existingCategories = $this->shopwareRequest('GET', 'product/' . $articleIdShopware . '/categories?limit=50');
+            $existingCategories = $this->shopwareRequest(
+                'GET',
+                'product/' . $articleIdShopware . '/categories?limit=50',
+            );
             foreach ($existingCategories['data'] as $existingCategory) {
                 if (!in_array($existingCategory['id'], $categoriesInXentral, false)) {
-                    $this->shopwareRequest('DELETE', 'product/' . $articleIdShopware . '/categories/' . $existingCategory['id']);
+                    $this->shopwareRequest(
+                        'DELETE',
+                        'product/' . $articleIdShopware . '/categories/' . $existingCategory['id'],
+                    );
                 }
             }
         }
@@ -1669,7 +1768,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             return $parentId;
         }
 
-        $parentCategoryData = $this->app->DB->SelectRow("SELECT id,parent,bezeichnung AS name FROM artikelkategorien WHERE id<>'' AND id<>'0' AND id='" . $categoryData['parent'] . "' LIMIT 1");
+        $parentCategoryData = $this->app->DB->SelectRow(
+            "SELECT id,parent,bezeichnung AS name FROM artikelkategorien WHERE id<>'' AND id<>'0' AND id='" . $categoryData['parent'] . "' LIMIT 1",
+        );
         if (empty($parentCategoryData)) {
             return null;
         }
@@ -1680,9 +1781,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'category.name',
                     'type' => 'equals',
-                    'value' => $parentCategoryData['name']
-                ]
-            ]
+                    'value' => $parentCategoryData['name'],
+                ],
+            ],
         ];
         $result = $this->shopwareRequest('POST', 'search/category', $searchData);
 
@@ -1704,14 +1805,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'category.name',
                     'type' => 'equals',
-                    'value' => $parentCategoryData['name']
+                    'value' => $parentCategoryData['name'],
                 ],
                 [
                     'field' => 'category.parentId',
                     'type' => 'equals',
-                    'value' => $grandparentId
-                ]
-            ]
+                    'value' => $grandparentId,
+                ],
+            ],
         ];
         $result = $this->shopwareRequest('POST', 'search/category', $searchData);
 
@@ -1731,7 +1832,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function getPropertyGroupId($propertyName): ?string
     {
-        if(array_key_exists($propertyName, $this->knownPropertyGroupIds)){
+        if (array_key_exists($propertyName, $this->knownPropertyGroupIds)) {
             return $this->knownPropertyGroupIds[$propertyName];
         }
 
@@ -1741,9 +1842,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'property_group.name',
                     'type' => 'equals',
-                    'value' => $propertyName
-                ]
-            ]
+                    'value' => $propertyName,
+                ],
+            ],
         ];
 
         $germanLanguageId = $this->getLanguageIdByCountryIso('DE');
@@ -1752,7 +1853,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'POST',
             'search/property-group',
             $searchData,
-            $headerInformation);
+            $headerInformation,
+        );
         if (empty($propertyData['data'][0]['id'])) {
             return null;
         }
@@ -1771,12 +1873,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $propertyGroupData = [
             'displayType' => 'text',
             'name' => $propertyName,
-            'sortingType' => 'alphanumeric'
+            'sortingType' => 'alphanumeric',
         ];
         $propertyGroup = $this->shopwareRequest(
             'POST',
             'property-group?_response=true',
-            $propertyGroupData);
+            $propertyGroupData,
+        );
 
         $this->knownPropertyGroupIds[$propertyName] = $propertyGroup['data']['id'];
 
@@ -1809,7 +1912,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'PATCH',
             sprintf('property-group/%s', $propertyGroupId),
             $translation,
-            $headerInformation);
+            $headerInformation,
+        );
     }
 
     /**
@@ -1826,9 +1930,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 [
                     'field' => 'property_group_option.name',
                     'type' => 'equals',
-                    'value' => $propertyOptionName
-                ]
-            ]
+                    'value' => $propertyOptionName,
+                ],
+            ],
         ];
         $languageId = $this->getLanguageIdByCountryIso($countryIsoCode);
         $headerInformation = ['sw-language-id: ' . $languageId];
@@ -1836,7 +1940,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'POST',
             'search/property-group/' . $propertyGroupId . '/options',
             $searchData,
-            $headerInformation);
+            $headerInformation,
+        );
 
         if (empty($optionData['data'][0]['id'])) {
             return null;
@@ -1853,12 +1958,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     protected function createPropertyOption($propertyGroupId, $propertyOptionName): ?string
     {
         $propertyOptionData = [
-            'name' => $propertyOptionName
+            'name' => $propertyOptionName,
         ];
         $createdPropertyOption = $this->shopwareRequest(
             'POST',
             'property-group/' . $propertyGroupId . '/options?_response=true',
-            $propertyOptionData);
+            $propertyOptionData,
+        );
 
         if (empty($createdPropertyOption['data']['id'])) {
             return null;
@@ -1887,7 +1993,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             'PATCH',
             sprintf('property-group-option/%s', $optionId),
             $translation,
-            $headerInformation);
+            $headerInformation,
+        );
     }
 
     /**
@@ -1921,12 +2028,21 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
 
-            $optionId = $this->getPropertyOptionId($propertyGroupId, $countryIsoToPropertyTranslation['DE']['value'], 'DE');
+            $optionId = $this->getPropertyOptionId(
+                $propertyGroupId,
+                $countryIsoToPropertyTranslation['DE']['value'],
+                'DE',
+            );
             if (empty($optionId)) {
-                $optionId = $this->createPropertyOption($propertyGroupId, $countryIsoToPropertyTranslation['DE']['value']);
+                $optionId = $this->createPropertyOption(
+                    $propertyGroupId,
+                    $countryIsoToPropertyTranslation['DE']['value'],
+                );
             }
             if (empty($optionId)) {
-                $this->Shopware6Log('Option kann nicht erstellt werden: ' . $countryIsoToPropertyTranslation['DE']['value']);
+                $this->Shopware6Log(
+                    'Option kann nicht erstellt werden: ' . $countryIsoToPropertyTranslation['DE']['value'],
+                );
                 continue;
             }
 
@@ -1938,10 +2054,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         }
 
         if (!empty($articleIdShopware)) {
-            $existingProperties = $this->shopwareRequest('GET', 'product/' . $articleIdShopware . '/properties?limit=100');
+            $existingProperties = $this->shopwareRequest(
+                'GET',
+                'product/' . $articleIdShopware . '/properties?limit=100',
+            );
             foreach ($existingProperties['data'] as $existingProperty) {
                 if (!in_array($existingProperty['id'], $assignedProperties, false)) {
-                    $this->shopwareRequest('DELETE', 'product/' . $articleIdShopware . '/properties/' . $existingProperty['id']);
+                    $this->shopwareRequest(
+                        'DELETE',
+                        'product/' . $articleIdShopware . '/properties/' . $existingProperty['id'],
+                    );
                 }
             }
         }
@@ -1984,13 +2106,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $propertyName = substr($property['name'], 9);
                     $propertiesToAdd[$propertyName]['DE'] = [
                         'name' => $propertyName,
-                        'value' => $property['values']];
+                        'value' => $property['values'],
+                    ];
                     continue;
                 }
                 if ($this->propertyOption === 'toProperties') {
                     $propertiesToAdd[$property['name']]['DE'] = [
                         'name' => $property['name'],
-                        'value' => $property['values']];
+                        'value' => $property['values'],
+                    ];
                 }
             }
         }
@@ -2000,19 +2124,24 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if ($translatedProperty['language_to'] === 'EN') {
                     $translatedProperty['language_to'] = 'GB';
                 }
-                if ($this->propertyMustBeIgnored($translatedProperty['property_to'], $translatedProperty['property_value_to'])) {
+                if ($this->propertyMustBeIgnored(
+                    $translatedProperty['property_to'],
+                    $translatedProperty['property_value_to'],
+                )) {
                     continue;
                 }
                 if (strpos($translatedProperty['property_to'], 'property_') === 0) {
                     $propertiesToAdd[$translatedProperty['property_from']][$translatedProperty['language_to']] = [
                         'name' => substr($translatedProperty['property_to'], 9),
-                        'value' => $translatedProperty['property_value_to']];
+                        'value' => $translatedProperty['property_value_to'],
+                    ];
                     continue;
                 }
                 if ($this->propertyOption === 'toProperties') {
                     $propertiesToAdd[$translatedProperty['property_from']][$translatedProperty['language_to']] = [
                         'name' => $translatedProperty['property_to'],
-                        'value' => $translatedProperty['property_value_to']];
+                        'value' => $translatedProperty['property_value_to'],
+                    ];
                 }
             }
         }
@@ -2026,14 +2155,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $propertyName = substr($freeFieldKey, 9);
                     $propertiesToAdd[$propertyName]['DE'] = [
                         'name' => $propertyName,
-                        'value' => $freeFieldValue
+                        'value' => $freeFieldValue,
                     ];
                     continue;
                 }
                 if ($this->freeFieldOption === 'toProperties') {
                     $propertiesToAdd[$freeFieldKey]['DE'] = [
                         'name' => $freeFieldKey,
-                        'value' => $freeFieldValue
+                        'value' => $freeFieldValue,
                     ];
                 }
             }
@@ -2053,14 +2182,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         $propertyName = substr($freeFieldData['mapping'], 9);
                         $propertiesToAdd[$propertyName][$languageIso] = [
                             'name' => $propertyName,
-                            'value' => $freeFieldData['wert']
+                            'value' => $freeFieldData['wert'],
                         ];
                         continue;
                     }
                     if ($this->freeFieldOption === 'toProperties') {
                         $propertiesToAdd[$freeFieldData['mapping']][$languageIso] = [
                             'name' => $freeFieldData['mapping'],
-                            'value' => $freeFieldData['wert']
+                            'value' => $freeFieldData['wert'],
                         ];
                     }
                 }
@@ -2088,9 +2217,11 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $customFields = [];
         if (!empty($articleIdShopware)) {
             $articleInfo = $this->shopwareRequest(
-                'GET', 'product/' . $articleIdShopware,
+                'GET',
+                'product/' . $articleIdShopware,
                 [],
-                $headerInformation);
+                $headerInformation,
+            );
             $customFields['DE'] = $articleInfo['data'][0]['attributes']['customFields'];
             if ($customFields === null) {
                 $customFields = [];
@@ -2102,7 +2233,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'GET',
                 sprintf('custom-field?filter[custom_field.name]=%s', $defaultFieldName),
                 [],
-                $headerInformation
+                $headerInformation,
             );
             if (empty($customFieldDefinition)) {
                 $this->Shopware6Log('Freifeld entspricht keinem shopware Freifeld', $defaultFieldName);
@@ -2115,7 +2246,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if ($value === '') {
                     continue;
                 }
-                if($countryIsoCode === 'EN'){
+                if ($countryIsoCode === 'EN') {
                     $countryIsoCode = 'GB';
                 }
                 $fieldType = $customFieldDefinition['data'][0]['attributes']['type'];
@@ -2126,7 +2257,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     case 'html':
                         if ($controlType === 'sw-media-field') {
                             $this->Shopware6Log(
-                                'Warnung: Freifelder vom Type "medium" werden nicht unterstützt.'
+                                'Warnung: Freifelder vom Type "medium" werden nicht unterstützt.',
                             );
                         } else {
                             $customFields[$countryIsoCode][$name] = (string)$value;
@@ -2153,7 +2284,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                             } else {
                                 $this->Shopware6Log(
                                     sprintf('Warnung: Freifeld "%s"="%s"; ungültiger Wert', $name, $value),
-                                    ['allowed values' => $allowedValues]
+                                    ['allowed values' => $allowedValues],
                                 );
                             }
                         }
@@ -2168,7 +2299,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                             } else {
                                 $this->Shopware6Log(
                                     sprintf('Warnung: Freifeld "%s"; ungültiger Wert', $name),
-                                    ['values' => $value, 'allowed values' => $allowedValues]
+                                    ['values' => $value, 'allowed values' => $allowedValues],
                                 );
                             }
                         }
@@ -2176,7 +2307,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     default:
                         $this->Shopware6Log(
                             'Warnung: Freifeld enthält falschen Typ.',
-                            ['freifeld' => $name, 'wert' => $value]
+                            ['freifeld' => $name, 'wert' => $value],
                         );
                         continue 2;
                 }
@@ -2215,35 +2346,38 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $customFieldName = substr($propertyInXentral['name'], 12);
                     $customFieldsToAdd[$customFieldName]['DE'] = [
                         'name' => $customFieldName,
-                        'value' => $propertyInXentral['values']
+                        'value' => $propertyInXentral['values'],
                     ];
                     continue;
                 }
                 if ($this->propertyOption === 'toCustomFields') {
                     $customFieldsToAdd[$propertyInXentral['name']]['DE'] = [
                         'name' => $propertyInXentral['name'],
-                        'value' => $propertyInXentral['values']
+                        'value' => $propertyInXentral['values'],
                     ];
                 }
             }
         }
         if (!empty($articleInXentral['eigenschaftenuebersetzungen'])) {
             foreach ($articleInXentral['eigenschaftenuebersetzungen'] as $translatedProperty) {
-                if ($this->customFieldMustBeIgnored($translatedProperty['property_to'], $translatedProperty['property_value_to'])) {
+                if ($this->customFieldMustBeIgnored(
+                    $translatedProperty['property_to'],
+                    $translatedProperty['property_value_to'],
+                )) {
                     continue;
                 }
                 if (strpos($translatedProperty['property_to'], 'customField_') === 0) {
                     $customFieldName = substr($translatedProperty['property_to'], 12);
                     $customFieldsToAdd[$customFieldName][$translatedProperty['language_to']] = [
                         'name' => $customFieldName,
-                        'value' => $translatedProperty['property_value_to']
+                        'value' => $translatedProperty['property_value_to'],
                     ];
                     continue;
                 }
                 if ($this->propertyOption === 'toCustomFields') {
                     $customFieldsToAdd[$translatedProperty['property_to']][$translatedProperty['language_to']] = [
                         'name' => $translatedProperty['property_to'],
-                        'value' => $translatedProperty['property_value_to']
+                        'value' => $translatedProperty['property_value_to'],
                     ];
                 }
             }
@@ -2258,14 +2392,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $customFieldName = substr($freeFieldKey, 12);
                     $customFieldsToAdd[$customFieldName]['DE'] = [
                         'name' => $customFieldName,
-                        'value' => $freeFieldValue
+                        'value' => $freeFieldValue,
                     ];
                     continue;
                 }
                 if ($this->freeFieldOption === 'toCustomFields') {
                     $customFieldsToAdd[$freeFieldKey]['DE'] = [
                         'name' => $freeFieldKey,
-                        'value' => $freeFieldValue
+                        'value' => $freeFieldValue,
                     ];
                 }
             }
@@ -2274,8 +2408,11 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if ($countryIsoCode === 'DE') {
                     continue;
                 }
-                foreach ($freeFieldTranslations as $freeFieldTranslation){
-                    if ($this->customFieldMustBeIgnored($freeFieldTranslation['mapping'], $freeFieldTranslation['wert'])) {
+                foreach ($freeFieldTranslations as $freeFieldTranslation) {
+                    if ($this->customFieldMustBeIgnored(
+                        $freeFieldTranslation['mapping'],
+                        $freeFieldTranslation['wert'],
+                    )) {
                         continue;
                     }
                     if ($countryIsoCode === 'EN') {
@@ -2285,14 +2422,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         $customFieldName = substr($freeFieldTranslation['mapping'], 12);
                         $customFieldsToAdd[$customFieldName][$countryIsoCode] = [
                             'name' => $customFieldName,
-                            'value' => $freeFieldTranslation['wert']
+                            'value' => $freeFieldTranslation['wert'],
                         ];
                         continue;
                     }
                     if ($this->freeFieldOption === 'toCustomFields') {
                         $customFieldsToAdd[$freeFieldTranslation['mapping']][$countryIsoCode] = [
                             'name' => $freeFieldTranslation['mapping'],
-                            'value' => $freeFieldTranslation['wert']
+                            'value' => $freeFieldTranslation['wert'],
                         ];
                     }
                 }
@@ -2308,29 +2445,41 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      *
      * @return array
      */
-    protected function crosssellingToExport($articleInXentral, $articleIdShopware){
+    protected function crosssellingToExport($articleInXentral, $articleIdShopware)
+    {
         if (empty($articleInXentral['crosssellingartikel'])) {
             return [];
         }
 
         $crosssellingArticles = [];
-        foreach ($articleInXentral['crosssellingartikel'] as $crosssellingArticle){
+        foreach ($articleInXentral['crosssellingartikel'] as $crosssellingArticle) {
             $type = 'Ähnlich';
-            if($crosssellingArticle['art'] == 2){
+            if ($crosssellingArticle['art'] == 2) {
                 $type = 'Zubehör';
             }
             $crosssellingArticles[$type][] = $crosssellingArticle['nummer'];
         }
         $crossselingInformation = [];
-        foreach ($crosssellingArticles as $type => $articles){
-            if(!empty($articleIdShopware)){
-                $existingCrossSellings = $this->shopwareRequest('GET', sprintf('product/%s/cross-sellings/',
-                    $articleIdShopware));
-                if(!empty($existingCrossSellings['data'])){
-                    foreach ($existingCrossSellings['data'] as $existingCrossSelling){
-                        if($existingCrossSelling['attributes']['name'] === $type){
-                            $this->shopwareRequest('DELETE', sprintf('product/%s/cross-sellings/%s/',
-                                $articleIdShopware, $existingCrossSelling['id']));
+        foreach ($crosssellingArticles as $type => $articles) {
+            if (!empty($articleIdShopware)) {
+                $existingCrossSellings = $this->shopwareRequest(
+                    'GET',
+                    sprintf(
+                        'product/%s/cross-sellings/',
+                        $articleIdShopware,
+                    ),
+                );
+                if (!empty($existingCrossSellings['data'])) {
+                    foreach ($existingCrossSellings['data'] as $existingCrossSelling) {
+                        if ($existingCrossSelling['attributes']['name'] === $type) {
+                            $this->shopwareRequest(
+                                'DELETE',
+                                sprintf(
+                                    'product/%s/cross-sellings/%s/',
+                                    $articleIdShopware,
+                                    $existingCrossSelling['id'],
+                                ),
+                            );
                         }
                     }
                 }
@@ -2340,15 +2489,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             foreach ($articles as $articleNumber) {
                 $articleInfo = $this->shopwareRequest(
                     'GET',
-                    sprintf('product?filter[product.productNumber]=%s', $articleNumber)
+                    sprintf('product?filter[product.productNumber]=%s', $articleNumber),
                 );
 
-                if(empty($articleInfo['data'][0]['id'])){
+                if (empty($articleInfo['data'][0]['id'])) {
                     continue;
                 }
                 $crosselingToAdd[] = $articleInfo['data'][0]['id'];
             }
-            if(empty($crosselingToAdd)){
+            if (empty($crosselingToAdd)) {
                 continue;
             }
             $crossselingInformationForType = [
@@ -2358,10 +2507,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'type' => 'productList',
                 'sortBy' => 'name',
                 'limit' => 24,
-                'position' => 1
+                'position' => 1,
             ];
             $position = 1;
-            foreach ($crosselingToAdd as $articleId){
+            foreach ($crosselingToAdd as $articleId) {
                 $crossselingInformationForType['assignedProducts'][] = [
                     'productId' => $articleId,
                     'position' => $position,
@@ -2380,43 +2529,47 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      *
      * @return string
      */
-    protected function unitToAdd(string $unitShortCode): string{
+    protected function unitToAdd(string $unitShortCode): string
+    {
         $searchData = [
             'limit' => 25,
             'source' => [
-                'id'
+                'id',
             ],
             'filter' => [
                 [
                     'field' => 'unit.shortCode',
                     'type' => 'equals',
-                    'value' => $unitShortCode
-                ]
-            ]
+                    'value' => $unitShortCode,
+                ],
+            ],
         ];
         $unitInShopware = $this->shopwareRequest(
             'POST',
             'search/unit',
-            $searchData);
+            $searchData,
+        );
 
-        if(!empty($unitInShopware['data'][0]['id'])){
+        if (!empty($unitInShopware['data'][0]['id'])) {
             return $unitInShopware['data'][0]['id'];
         }
 
-        $query = sprintf("SELECT `internebemerkung` FROM `artikeleinheit` WHERE `einheit_de` = '%s' LIMIT 1",
-            $unitShortCode);
+        $query = sprintf(
+            "SELECT `internebemerkung` FROM `artikeleinheit` WHERE `einheit_de` = '%s' LIMIT 1",
+            $unitShortCode,
+        );
         $unitName = $this->app->DB->Select($query);
-        if(empty($unitName)){
+        if (empty($unitName)) {
             $unitName = $unitShortCode;
         }
 
         $unitInformation = [
             'name' => $unitName,
-            'shortCode' => $unitShortCode
+            'shortCode' => $unitShortCode,
         ];
         $result = $this->shopwareRequest('POST', 'unit?_response=true', $unitInformation);
 
-        if(empty($result['data']['id'])){
+        if (empty($result['data']['id'])) {
             return '';
         }
 
@@ -2447,7 +2600,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         foreach ($internalSpecialFields as $fieldName => $fieldValue) {
             switch (strtolower($fieldName)) {
                 case 'shopware6_sales_channel':
-                    $systemFields['visibilities'] = $this->modifySalesChannel(explode(',', $fieldValue), $articleIdShopware);
+                    $systemFields['visibilities'] = $this->modifySalesChannel(
+                        explode(',', $fieldValue),
+                        $articleIdShopware,
+                    );
                     break;
                 case 'shopware6_purchase_unit':
                     $systemFields['purchaseUnit'] = (float)str_replace(',', '.', $fieldValue);
@@ -2462,8 +2618,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $systemFields['packUnit'] = (string)$fieldValue;
                     break;
                 case 'shopware6_restock_time':
-                  $systemFields['restockTime'] = (int)$fieldValue;
-                  break;
+                    $systemFields['restockTime'] = (int)$fieldValue;
+                    break;
                 case 'shopware6_pack_unit_plural':
                     $systemFields['packUnitPlural'] = (string)$fieldValue;
                     break;
@@ -2483,8 +2639,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     {
         $salesChannelInXentralIds = [];
         foreach ($salesChannelNames as $salesChannelName) {
-            $salesChannelInfo = $this->shopwareRequest('GET',
-                sprintf('sales-channel?filter[sales_channel.name]=%s', urlencode(trim($salesChannelName)))
+            $salesChannelInfo = $this->shopwareRequest(
+                'GET',
+                sprintf('sales-channel?filter[sales_channel.name]=%s', urlencode(trim($salesChannelName))),
             );
             if (!empty($salesChannelInfo['data'][0]['id'])) {
                 $salesChannelInXentralIds[] = $salesChannelInfo['data'][0]['id'];
@@ -2493,7 +2650,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
         $existingVisibilities = $this->shopwareRequest(
             'GET',
-            sprintf('product/%s/visibilities', $articleIdInShopware)
+            sprintf('product/%s/visibilities', $articleIdInShopware),
         );
 
         $existingSalesChannelIds = [];
@@ -2503,16 +2660,22 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
         }
 
-        foreach ($existingSalesChannelIds as $associationId => $existingSalesChannelId){
-            if (!in_array($existingSalesChannelId, $salesChannelInXentralIds,true)) {
-                $this->shopwareRequest('DELETE', sprintf('product/%s/visibilities/%s/',
-                    $articleIdInShopware, $associationId));
+        foreach ($existingSalesChannelIds as $associationId => $existingSalesChannelId) {
+            if (!in_array($existingSalesChannelId, $salesChannelInXentralIds, true)) {
+                $this->shopwareRequest(
+                    'DELETE',
+                    sprintf(
+                        'product/%s/visibilities/%s/',
+                        $articleIdInShopware,
+                        $associationId,
+                    ),
+                );
             }
         }
 
         $salesChannelsToAdd = [];
-        foreach ($salesChannelInXentralIds as $salesChannelInXentralId){
-            if (!in_array($salesChannelInXentralId, $existingSalesChannelIds,true)) {
+        foreach ($salesChannelInXentralIds as $salesChannelInXentralId) {
+            if (!in_array($salesChannelInXentralId, $existingSalesChannelIds, true)) {
                 $salesChannelsToAdd[] = $salesChannelInXentralId;
             }
         }
@@ -2521,7 +2684,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         foreach ($salesChannelsToAdd as $salesChannelIdToAdd) {
             $visibilities[] = [
                 'salesChannelId' => $salesChannelIdToAdd,
-                'visibility' => 30
+                'visibility' => 30,
             ];
         }
 
@@ -2535,14 +2698,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function findCurrencyId($isoCode)
     {
-
         $this->requestCurrencyMappingLazy();
         if (isset($this->currencyMapping[strtoupper($isoCode)])) {
             return $this->currencyMapping[strtoupper($isoCode)];
         }
         $this->Shopware6Log(
             sprintf('Warnung: Kein Mapping für Waehrung "%s" gefunden.', $isoCode),
-            $this->currencyMapping
+            $this->currencyMapping,
         );
 
         return null;
@@ -2553,7 +2715,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function requestCurrencyMappingLazy()
     {
-
         if ($this->currencyMapping !== null) {
             return;
         }
@@ -2580,16 +2741,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
         $preparedSeoInformation = [];
         foreach ($internalArticleData['freifelder'] as $countryIsoCode => $freeFieldInformation) {
-            if($countryIsoCode === 'EN'){
+            if ($countryIsoCode === 'EN') {
                 $countryIsoCode = 'GB';
             }
-            if($countryIsoCode === 'DE'){
+            if ($countryIsoCode === 'DE') {
                 foreach ($freeFieldInformation as $freeFieldName => $freeFieldValue) {
                     if (stripos($freeFieldName, 'shopware6_seo_url') !== false) {
                         $preparedSeoInformation[$countryIsoCode][$freeFieldName] = $freeFieldValue;
                     }
                 }
-            }else{
+            } else {
                 foreach ($freeFieldInformation as $freeFieldData) {
                     if (stripos($freeFieldData['mapping'], 'shopware6_seo_url') !== false) {
                         $preparedSeoInformation[$countryIsoCode][$freeFieldData['mapping']] = $freeFieldData['wert'];
@@ -2603,7 +2764,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
         }
         foreach ($internalArticleData['eigenschaftenuebersetzungen'] as $propertyTranslation) {
-            if($propertyTranslation['language_to'] === 'EN'){
+            if ($propertyTranslation['language_to'] === 'EN') {
                 $propertyTranslation['language_to'] = 'GB';
             }
             if (stripos($propertyTranslation['property_to'], 'shopware6_seo_url') !== false) {
@@ -2614,10 +2775,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $specificSalesChannelSeoUrls = [];
         $defaultSeoUrls = [];
         foreach ($preparedSeoInformation as $countryIsoCode => $channelAssociations) {
-            foreach ($channelAssociations as $fieldName => $fieldValue){
-                if(strtolower($fieldName) === 'shopware6_seo_url'){
+            foreach ($channelAssociations as $fieldName => $fieldValue) {
+                if (strtolower($fieldName) === 'shopware6_seo_url') {
                     $defaultSeoUrls[$countryIsoCode] = $fieldValue;
-                }else{
+                } else {
                     $seoInformation = explode('|', $fieldName);
                     $specificSalesChannelSeoUrls[$countryIsoCode][array_pop($seoInformation)] = $fieldValue;
                 }
@@ -2625,16 +2786,16 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         }
 
         if (empty($specificSalesChannelSeoUrls) && empty($defaultSeoUrls)) {
-             return false;
+            return false;
         }
 
         $salesChannelsIdToName = [];
-        $salesChannels = $this->shopwareRequest('GET','sales-channel');
+        $salesChannels = $this->shopwareRequest('GET', 'sales-channel');
         foreach ($salesChannels['data'] as $salesChannel) {
             $salesChannelsIdToName[$salesChannel['id']] = $salesChannel['attributes']['name'];
         }
 
-        foreach ($preparedSeoInformation as $countryIsoCode => $x){
+        foreach ($preparedSeoInformation as $countryIsoCode => $x) {
             $languageId = $this->getLanguageIdByCountryIso($countryIsoCode);
             if (empty($languageId)) {
                 $this->Shopware6Log('Language Id not found for country: ' . $countryIsoCode);
@@ -2658,9 +2819,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     'isDeleted' => false,
                     'routeName' => 'frontend.detail.page',
                     'foreignKey' => $articleIdInShopware,
-                    'pathInfo' => '/detail/'.$articleIdInShopware,
+                    'pathInfo' => '/detail/' . $articleIdInShopware,
                     'languageId' => $languageId,
-                    'salesChannelId' => $salesChannelId];
+                    'salesChannelId' => $salesChannelId,
+                ];
                 $this->shopwareRequest('PATCH', '_action/seo-url/canonical', $seoDataToSend, $headerInformation);
             }
         }
@@ -2704,28 +2866,37 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         $countryIsoCode = 'GB';
                     }
 
-                    $this->createTranslationForPropertyGroup($propertyGroupId, $matrixGroupTranslation[$propertyGroupName], $countryIsoCode);
+                    $this->createTranslationForPropertyGroup(
+                        $propertyGroupId,
+                        $matrixGroupTranslation[$propertyGroupName],
+                        $countryIsoCode,
+                    );
                 }
             }
 
             $shopwarePropertyGroupOptions = $this->shopwareRequest(
                 'GET',
                 'property-group/' . $propertyGroupId . '/options?limit=100',
-                $headerInformation);
+                $headerInformation,
+            );
             foreach ($shopwarePropertyGroupOptions['data'] as $shopwarePropertyGroupOption) {
                 $propertyValue = $shopwarePropertyGroupOption['attributes']['name'];
                 $internalGroupPropertiesToShopwareId[$propertyGroupName][$propertyValue] = $shopwarePropertyGroupOption['id'];
             }
 
             foreach ($internalPropertyGroupValues as $internalPropertyGroupValue => $valueNotNeeded) {
-                if (!array_key_exists($internalPropertyGroupValue, $internalGroupPropertiesToShopwareId[$propertyGroupName] ?? [])) {
+                if (!array_key_exists(
+                    $internalPropertyGroupValue,
+                    $internalGroupPropertiesToShopwareId[$propertyGroupName] ?? [],
+                )) {
                     $newOptionData = [
-                        'name' => (string)$internalPropertyGroupValue
+                        'name' => (string)$internalPropertyGroupValue,
                     ];
                     $optionData = $this->shopwareRequest(
                         'POST',
                         'property-group/' . $propertyGroupId . '/options?_response=true',
-                        $newOptionData);
+                        $newOptionData,
+                    );
                     $internalGroupPropertiesToShopwareId[$propertyGroupName][$internalPropertyGroupValue] = $optionData['data']['id'];
                 }
             }
@@ -2736,7 +2907,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     $this->createTranslationForPropertyOption(
                         $optionId,
                         $optionValue,
-                        'DE');
+                        'DE',
+                    );
                     foreach ($article['matrix_varianten']['texte']['werte'] as $countryIsoCode => $matrixOptionTranslations) {
                         if ($countryIsoCode === 'EN') {
                             $countryIsoCode = 'GB';
@@ -2745,7 +2917,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                             $this->createTranslationForPropertyOption(
                                 $optionId,
                                 $matrixOptionTranslations[$optionValue],
-                                $countryIsoCode);
+                                $countryIsoCode,
+                            );
                         }
                     }
                 }
@@ -2754,7 +2927,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
         $existingCombinations = $this->shopwareRequest(
             'GET',
-            '_action/product/' . $articleIdShopware . '/combinations');
+            '_action/product/' . $articleIdShopware . '/combinations',
+        );
         $existingCombinationsByNumber = [];
 
         foreach ($existingCombinations as $combinationId => $combinationInfo) {
@@ -2791,12 +2965,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $isCloseOut = true;
             }
 
-            if ($variant['umsatzsteuer'] == 'normal' && !empty($this->normalTaxId))
-              $taxId = $this->normalTaxId;
-            else if ($variant['umsatzsteuer'] == 'ermaessigt' && !empty($this->reducedTaxId))
-              $taxId = $this->reducedTaxId;
-            else
-              $taxId = $this->getTaxIdByRate($variant['steuersatz']);
+            if ($variant['umsatzsteuer'] == 'normal' && !empty($this->normalTaxId)) {
+                $taxId = $this->normalTaxId;
+            } else {
+                if ($variant['umsatzsteuer'] == 'ermaessigt' && !empty($this->reducedTaxId)) {
+                    $taxId = $this->reducedTaxId;
+                } else {
+                    $taxId = $this->getTaxIdByRate($variant['steuersatz']);
+                }
+            }
 
             $variantProductData = [
                 'active' => $active,
@@ -2814,18 +2991,18 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                             'currencyId' => $currencyId,
                             'gross' => $pseudoPrice,
                             'linked' => true,
-                            'net' => $pseudoPrice / (1 + $variant['steuersatz'] / 100)
-                        ]
-                    ]
+                            'net' => $pseudoPrice / (1 + $variant['steuersatz'] / 100),
+                        ],
+                    ],
                 ],
                 'stock' => (int)$stock,
                 'ean' => null,
                 'taxId' => $taxId,
             ];
-            if(!empty($weight)){
+            if (!empty($weight)) {
                 $variantProductData['weight'] = $weight;
             }
-            if(!empty($ean)){
+            if (!empty($ean)) {
                 $variantProductData['ean'] = $ean;
             }
             if (!empty($variant['uebersicht_de'])) {
@@ -2838,7 +3015,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if (!in_array(
                     $internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']],
                     $existingCombinationsByNumber[$productNumber]['options'] ?? [],
-                    false)) {
+                    false,
+                )) {
                     $renewVariant = true;
                 } else {
                     unset($existingCombinationsByNumber[$productNumber]['options'][$internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']]]);
@@ -2851,7 +3029,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             $variantImageData = [
-                'Dateien' => []
+                'Dateien' => [],
             ];
             $variantProductId = '';
             if (!empty($existingCombinationsByNumber[$productNumber]['id']) && !$renewVariant) {
@@ -2892,24 +3070,26 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
             $this->deleteOldBulkPrices($variantProductId);
             if (!empty($defaultPrices)) {
-              foreach ($defaultPrices as $priceData) {
-                $this->exportBulkPriceForGroup($variantProductId, $this->defaultRuleName, $priceData);
-              }
+                foreach ($defaultPrices as $priceData) {
+                    $this->exportBulkPriceForGroup($variantProductId, $this->defaultRuleName, $priceData);
+                }
             }
             if (!empty($groupPrices)) {
-              foreach ($groupPrices as $priceData) {
-                $this->exportBulkPriceForGroup($variantProductId, $priceData->getGroupName(), $priceData);
-              }
+                foreach ($groupPrices as $priceData) {
+                    $this->exportBulkPriceForGroup($variantProductId, $priceData->getGroupName(), $priceData);
+                }
             }
 
             $this->addCoverImage($variantImageData, $variantProductId);
-            if($article['texteuebertragen']) {
+            if ($article['texteuebertragen']) {
                 $this->exportTranslationsForArticle($variant, $variantProductId);
             }
         }
 
         $existingConfigurations = $this->shopwareRequest(
-            'GET', 'product/' . $articleIdShopware . '/configuratorSettings');
+            'GET',
+            'product/' . $articleIdShopware . '/configuratorSettings',
+        );
         $optionIdsToAdd = [];
         foreach ($article['artikel_varianten'] as $variant) {
             foreach ($article['matrix_varianten']['artikel'][$variant['artikel']] as $matrixInfo) {
@@ -2928,7 +3108,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (!empty($optionIdsToAdd)) {
             $optionIdsToAdd = array_flip(array_flip($optionIdsToAdd));
             $configurationData = [
-                'configuratorSettings' => []
+                'configuratorSettings' => [],
             ];
             foreach ($optionIdsToAdd as $id) {
                 $configurationData['configuratorSettings'][] = ['optionId' => $id];
@@ -2937,11 +3117,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $this->shopwareRequest(
                 'PATCH',
                 sprintf('product/%s', $articleIdShopware),
-                $configurationData
+                $configurationData,
             );
 
             $existingConfigurations = $this->shopwareRequest(
-                'GET', 'product/' . $articleIdShopware . '/configuratorSettings');
+                'GET',
+                'product/' . $articleIdShopware . '/configuratorSettings',
+            );
             $optionsToSort = [];
             foreach ($article['artikel_varianten'] as $variant) {
                 foreach ($article['matrix_varianten']['artikel'][$variant['artikel']] as $matrixInfo) {
@@ -2956,21 +3138,22 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             if (!empty($optionsToSort)) {
                 $optionsToSort = array_flip(array_flip($optionsToSort));
                 $configurationData = [
-                    'configuratorSettings' => []
+                    'configuratorSettings' => [],
                 ];
                 $position = 1;
 
                 foreach ($optionsToSort as $id) {
                     $configurationData['configuratorSettings'][] = [
                         'id' => $id,
-                        'position' => $position];
+                        'position' => $position,
+                    ];
                     $position++;
                 }
 
                 $this->shopwareRequest(
                     'PATCH',
                     sprintf('product/%s', $articleIdShopware),
-                    $configurationData
+                    $configurationData,
                 );
             }
         }
@@ -2978,24 +3161,27 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         return true;
     }
 
-  /**
-   * @param $priceArray
-   * @return PriceData[]
-   */
-    protected function getPricesFromArray($priceArray): array{
+    /**
+     * @param $priceArray
+     * @return PriceData[]
+     */
+    protected function getPricesFromArray($priceArray): array
+    {
         $c = count($priceArray);
         $result = [];
         for ($i = 0; $i < $c; $i++) {
             $end = null;
-            if ($i+1 < $c && ($priceArray[$i+1]['gruppeextern'] ?? '') == ($priceArray[$i]['gruppeextern'] ?? ''))
-                $end = (int)$priceArray[$i+1]['ab_menge'] - 1;
+            if ($i + 1 < $c && ($priceArray[$i + 1]['gruppeextern'] ?? '') == ($priceArray[$i]['gruppeextern'] ?? '')) {
+                $end = (int)$priceArray[$i + 1]['ab_menge'] - 1;
+            }
             $result[] = new PriceData(
                 (int)$priceArray[$i]['ab_menge'],
                 (float)$priceArray[$i]['preis'],
                 (float)$priceArray[$i]['bruttopreis'],
                 $priceArray[$i]['waehrung'],
                 $priceArray[$i]['gruppeextern'] ?? '',
-                $end);
+                $end,
+            );
         }
         return $result;
     }
@@ -3007,10 +3193,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function deleteOldBulkPrices($productId)
     {
-      //TODO Instead of deleting all old prices we should rather check first whether they are still in order
+        //TODO Instead of deleting all old prices we should rather check first whether they are still in order
         $oldPrices = $this->shopwareRequest(
             'GET',
-            sprintf('product-price?filter[product_price.productId]=%s', $productId)
+            sprintf('product-price?filter[product_price.productId]=%s', $productId),
         );
         if (is_array($oldPrices)) {
             foreach ($oldPrices['data'] as $deletePrice) {
@@ -3026,11 +3212,11 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     public function getOrderSearchLimit(): int
     {
-      if(in_array($this->orderSearchLimit, ['50', '75', '100'])) {
-        return (int)$this->orderSearchLimit;
-      }
+        if (in_array($this->orderSearchLimit, ['50', '75', '100'])) {
+            return (int)$this->orderSearchLimit;
+        }
 
-      return 25;
+        return 25;
     }
 
     /**
@@ -3042,12 +3228,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $dataToGet = $this->CatchRemoteCommand('data');
 
         if (empty($this->statesToFetch)) {
-          return false;
+            return false;
         }
 
         $ordersToProcess = $this->getOrdersToProcess($this->getOrderSearchLimit());
 
-        return (!empty(count($ordersToProcess['data'])?count($ordersToProcess['data']):0));
+        return (!empty(count($ordersToProcess['data']) ? count($ordersToProcess['data']) : 0));
     }
 
     /**
@@ -3064,8 +3250,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $this->shopid,
                 $this->app->DB->real_escape_string($parameter1),
                 $this->app->DB->real_escape_string($parameter2),
-                $this->app->DB->real_escape_string($this->app->User->GetName())
-            )
+                $this->app->DB->real_escape_string($this->app->User->GetName()),
+            ),
         );
     }
 
@@ -3079,8 +3265,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (!empty($this->transactionStatesToFetch)) {
             $transactionStatesToFetch = explode(';', $this->transactionStatesToFetch);
             foreach ($transactionStatesToFetch as $transactionStateToFetch) {
-                $stateInformation = $this->shopwareRequest('GET', 'state-machine-state?filter[technicalName]=' .
-                    trim($transactionStateToFetch) . '&filter[stateMachineId]=' . $stateMachinesIds['order_transaction.state']);
+                $stateInformation = $this->shopwareRequest(
+                    'GET',
+                    'state-machine-state?filter[technicalName]=' .
+                    trim(
+                        $transactionStateToFetch,
+                    ) . '&filter[stateMachineId]=' . $stateMachinesIds['order_transaction.state'],
+                );
                 if (empty($stateInformation['data'])) {
                     $this->Shopware6ErrorLog('Zahlungsstatus für Abholung nicht gefunden', $transactionStateToFetch);
                     return false;
@@ -3104,35 +3295,35 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $searchData = [
             'limit' => $limit,
             'includes' => [
-                'order' => ['id']
+                'order' => ['id'],
             ],
             'sort' => [
                 [
                     'field' => 'order.createdAt',
-                    'direction' => 'DESC'
-                ]
+                    'direction' => 'DESC',
+                ],
             ],
-            'filter' => []
+            'filter' => [],
         ];
 
         $searchData['filter'][] = [
             'field' => 'stateMachineState.technicalName',
             'type' => 'equalsAny',
-            'value' => explode(';', $this->statesToFetch)
+            'value' => explode(';', $this->statesToFetch),
         ];
 
         if (!empty($this->deliveryStatesToFetch)) {
             $searchData['filter'][] = [
                 'field' => 'deliveries.stateMachineState.technicalName',
                 'type' => 'equalsAny',
-                'value' => explode(';', $this->deliveryStatesToFetch)
+                'value' => explode(';', $this->deliveryStatesToFetch),
             ];
         }
         if (!empty($this->transactionStatesToFetch)) {
             $searchData['filter'][] = [
                 'field' => 'transactions.stateMachineState.technicalName',
                 'type' => 'equalsAny',
-                'value' => explode(';', $this->transactionStatesToFetch)
+                'value' => explode(';', $this->transactionStatesToFetch),
             ];
         }
 
@@ -3140,7 +3331,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $searchData['filter'][] = [
                 'field' => 'order.salesChannelId',
                 'type' => 'equals',
-                'value' => $this->salesChannelToFetch
+                'value' => $this->salesChannelToFetch,
             ];
         }
 
@@ -3152,8 +3343,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     public function ImportGetAuftrag()
     {
-        $voucherArticleId = $this->app->DB->Select("SELECT s.artikelrabatt FROM `shopexport` AS `s` WHERE s.id='$this->shopid' LIMIT 1");
-        $voucherArticleNumber = $this->app->DB->Select("SELECT a.nummer FROM `artikel` AS `a` WHERE a.id='$voucherArticleId' LIMIT 1");
+        $voucherArticleId = $this->app->DB->Select(
+            "SELECT s.artikelrabatt FROM `shopexport` AS `s` WHERE s.id='$this->shopid' LIMIT 1",
+        );
+        $voucherArticleNumber = $this->app->DB->Select(
+            "SELECT a.nummer FROM `artikel` AS `a` WHERE a.id='$voucherArticleId' LIMIT 1",
+        );
 
         $dataToGet = $this->CatchRemoteCommand('data');
         if (empty($this->statesToFetch)) {
@@ -3162,20 +3357,18 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $expectOrderArray = !empty($dataToGet['anzgleichzeitig']) && (int)$dataToGet['anzgleichzeitig'] > 1;
         $expectNumber = !empty($dataToGet['nummer']);
         $order = null;
-        if($expectNumber) {
+        if ($expectNumber) {
             $order = $this->shopwareRequest('GET', 'order/' . $dataToGet['nummer'] . '?associations[currency][]');
-            if(empty($order['data'])) {
+            if (empty($order['data'])) {
                 return false;
             }
-            $ordersToProcess = ['data' => [ ['id' => $dataToGet['nummer']] ]];
+            $ordersToProcess = ['data' => [['id' => $dataToGet['nummer']]]];
             $orderIncludedData = $order['included'];
             $order = $order['data'];
-        }
-        elseif(!$expectOrderArray) {
-          $ordersToProcess = $this->getOrdersToProcess(1);
-        }
-        elseif(!$expectNumber) {
-          $ordersToProcess = $this->getOrdersToProcess($this->getOrderSearchLimit());
+        } elseif (!$expectOrderArray) {
+            $ordersToProcess = $this->getOrdersToProcess(1);
+        } elseif (!$expectNumber) {
+            $ordersToProcess = $this->getOrdersToProcess($this->getOrderSearchLimit());
         }
         if (empty($ordersToProcess['data'])) {
             return false;
@@ -3189,7 +3382,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $orderIdToFetch = $currentlyOpenOrder['id'];
 
             if (empty($dataToGet['nummer']) || empty($order)) {
-                $order = $this->shopwareRequest('GET', 'order/' . $orderIdToFetch.'?associations[currency][]');
+                $order = $this->shopwareRequest('GET', 'order/' . $orderIdToFetch . '?associations[currency][]');
                 $orderIncludedData = $order['included'];
                 $order = $order['data'];
             }
@@ -3198,7 +3391,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $timestamp = date_create_from_format('Y-m-d\TH:i:s+', $order['attributes']['createdAt']);
                 $cart['zeitstempel'] = $timestamp->format('Y-m-d H:i:s');
             } catch (Exception $ex) {
-
             }
             $cart['auftrag'] = $order['id'];
             $cart['subshop'] = $order['attributes']['salesChannelId'];
@@ -3211,15 +3403,17 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $cart['freitext'] = $order['attributes']['customerComment'];
             }
 
-            foreach ($orderIncludedData as $includedDataSet){
-                if($includedDataSet['type'] === 'currency'){
+            foreach ($orderIncludedData as $includedDataSet) {
+                if ($includedDataSet['type'] === 'currency') {
                     $cart['waehrung'] = $includedDataSet['attributes']['isoCode'];
                 }
             }
 
             $deliveryInfo = $this->shopwareRequest('GET', 'order/' . $order['id'] . '/deliveries');
-            $shippingMethod = $this->shopwareRequest('GET',
-                'order-delivery/' . $deliveryInfo['data'][0]['id'] . '/shipping-method');
+            $shippingMethod = $this->shopwareRequest(
+                'GET',
+                'order-delivery/' . $deliveryInfo['data'][0]['id'] . '/shipping-method',
+            );
             $order['shippingMethod'] = $shippingMethod;
             $cart['lieferung'] = $shippingMethod['data'][0]['attributes']['name'];
 
@@ -3227,7 +3421,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $order['customer'] = $customer;
             $cart['email'] = $customer['data']['0']['attributes']['email'];
 
-            $addresses = $this->shopwareRequest('GET', 'order/' . $order['id'] . '/addresses?associations[salutation][]&associations[country][]');
+            $addresses = $this->shopwareRequest(
+                'GET',
+                'order/' . $order['id'] . '/addresses?associations[salutation][]&associations[country][]',
+            );
             $order['addresses'] = $addresses;
             $deliveryCountryId = '';
             $billingCountryId = '';
@@ -3244,8 +3441,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     }
                     $cart['strasse'] = $address['attributes']['street'];
                     $cart['abteilung'] = $address['attributes']['department'];
-                    $cart['adresszusatz'] = trim($address['attributes']['additionalAddressLine1'].' '.
-                      $address['attributes']['additionalAddressLine2']);
+                    $cart['adresszusatz'] = trim(
+                        $address['attributes']['additionalAddressLine1'] . ' ' .
+                        $address['attributes']['additionalAddressLine2'],
+                    );
                     $cart['telefon'] = $address['attributes']['phoneNumber'];
                     $cart['plz'] = $address['attributes']['zipcode'];
                     $cart['ort'] = $address['attributes']['city'];
@@ -3264,8 +3463,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     }
                     $cart['lieferadresse_strasse'] = $address['attributes']['street'];
                     $cart['lieferadresse_abteilung'] = $address['attributes']['department'];
-                    $cart['lieferadresse_adresszusatz'] = trim($address['attributes']['additionalAddressLine1'].' '.
-                    $address['attributes']['additionalAddressLine2']);
+                    $cart['lieferadresse_adresszusatz'] = trim(
+                        $address['attributes']['additionalAddressLine1'] . ' ' .
+                        $address['attributes']['additionalAddressLine2'],
+                    );
                     $cart['lieferadresse_plz'] = $address['attributes']['zipcode'];
                     $cart['lieferadresse_ort'] = $address['attributes']['city'];
                     $deliveryCountryId = $address['attributes']['countryId'];
@@ -3305,7 +3506,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $cart['transaktionsnummer'] = (string)$transactionData['data'][0]['attributes']['customFields']['swag_paypal_order_id'];
             }
             if (empty($cart['transaktionsnummer'] && !empty($transactionData['data'][0]['attributes']['customFields']['swag_paypal_transaction_id']))) {
-                $livePayPalData = $this->shopwareRequest('GET', 'paypal/payment-details/' . $order['id'] . '/' . $transactionData['data'][0]['attributes']['customFields']['swag_paypal_transaction_id']);
+                $livePayPalData = $this->shopwareRequest(
+                    'GET',
+                    'paypal/payment-details/' . $order['id'] . '/' . $transactionData['data'][0]['attributes']['customFields']['swag_paypal_transaction_id'],
+                );
                 if (!empty($livePayPalData['transactions'])) {
                     foreach ($livePayPalData['transactions'] as $payPalData) {
                         foreach ($payPalData['related_resources'] as $ressources) {
@@ -3317,10 +3521,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     }
                 }
             }
-            if(
+            if (
                 empty($cart['transaktionsnummer'])
                 && isset($transactionData['data'][0]['attributes']['customFields']['stripe_payment_context']['payment']['payment_intent_id'])
-            ){
+            ) {
                 $cart['transaktionsnummer'] = $transactionData['data'][0]['attributes']['customFields']['stripe_payment_context']['payment']['payment_intent_id'];
             }
 
@@ -3329,15 +3533,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $cart['zahlungsweise'] = $paymentMethod['data']['attributes']['name'];
 
             $taxedCountry = $land;
-            if($this->taxationByDestinationCountry){
+            if ($this->taxationByDestinationCountry) {
                 $taxedCountry = $lieferadresseLand;
             }
-            if($order['attributes']['amountTotal'] === $order['attributes']['amountNet']){
-                if($this->app->erp->IstEU($taxedCountry)){
+            if ($order['attributes']['amountTotal'] === $order['attributes']['amountNet']) {
+                if ($this->app->erp->IstEU($taxedCountry)) {
                     $cart['ust_befreit'] = 1;
-                }elseif($this->app->erp->Export($taxedCountry)){
+                } elseif ($this->app->erp->Export($taxedCountry)) {
                     $cart['ust_befreit'] = 2;
-                }else{
+                } else {
                     $cart['ust_befreit'] = 3;
                 }
             }
@@ -3354,7 +3558,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             $orderPriceType = 'price';
-            if(in_array($order['attributes']['taxStatus'], ['net', 'tax-free'])) {
+            if (in_array($order['attributes']['taxStatus'], ['net', 'tax-free'])) {
                 $orderPriceType = 'price_netto';
                 $cart['versandkostennetto'] = $cart['versandkostenbrutto'];
                 unset($cart['versandkostenbrutto']);
@@ -3362,15 +3566,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
 
             foreach ($lineItems['data'] as $lineItem) {
                 $productPriceType = $orderPriceType;
-                if(empty($lineItem['attributes']['price']['calculatedTaxes'][0]['taxRate'])){
+                if (empty($lineItem['attributes']['price']['calculatedTaxes'][0]['taxRate'])) {
                     $productPriceType = 'price_netto';
                 }
                 $articleId = null;
-                if($lineItem['attributes']['price']['unitPrice'] < 0) {
-                  $articleId = $voucherArticleNumber;
-                }
-                elseif(isset($lineItem['attributes']['payload']['productNumber'])){
-                  $articleId = $lineItem['attributes']['payload']['productNumber'];
+                if ($lineItem['attributes']['price']['unitPrice'] < 0) {
+                    $articleId = $voucherArticleNumber;
+                } elseif (isset($lineItem['attributes']['payload']['productNumber'])) {
+                    $articleId = $lineItem['attributes']['payload']['productNumber'];
                 }
                 $product = [
                     'articleid' => $articleId,
@@ -3407,7 +3610,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $tmp = $this->CatchRemoteCommand('data');
         $auftrag = $tmp['auftrag'];
 
-        $this->shopwareRequest('POST', '_action/order/'.$auftrag.'/state/process');
+        $this->shopwareRequest('POST', '_action/order/' . $auftrag . '/state/process');
         $this->addCustomFieldToOrder((string)$auftrag);
     }
 
@@ -3418,28 +3621,29 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     {
         /** @var OrderStatusUpdateRequest $data */
         $data = $this->CatchRemoteCommand('data');
-        if ($data->orderStatus !== OrderStatus::Completed)
+        if ($data->orderStatus !== OrderStatus::Completed) {
             return;
+        }
 
         $auftrag = $data->shopOrderId;
 
-        $this->shopwareRequest('POST', '_action/order/'.$auftrag.'/state/complete');
+        $this->shopwareRequest('POST', '_action/order/' . $auftrag . '/state/complete');
 
-        $deliveries = $this->shopwareRequest('GET', 'order/'.$auftrag.'/deliveries');
+        $deliveries = $this->shopwareRequest('GET', 'order/' . $auftrag . '/deliveries');
         $deliveryId = $deliveries['data'][0]['id'];
 
-        if(!empty($deliveryId)){
-            $this->shopwareRequest('POST', '_action/order_delivery/'.$deliveryId.'/state/ship');
+        if (!empty($deliveryId)) {
+            $this->shopwareRequest('POST', '_action/order_delivery/' . $deliveryId . '/state/ship');
 
             $deliveryData = [
-                'trackingCodes' => $data->getTrackingNumberList()
+                'trackingCodes' => $data->getTrackingNumberList(),
             ];
-            $this->shopwareRequest('PATCH', 'order-delivery/'.$deliveryId,$deliveryData);
+            $this->shopwareRequest('PATCH', 'order-delivery/' . $deliveryId, $deliveryData);
         }
 
         $this->sendInvoce($auftrag);
         $this->addCustomFieldToOrder($auftrag);
-        if(empty($data->orderId)) {
+        if (empty($data->orderId)) {
             return;
         }
         $this->updateStorageForOrderIntId($data->orderId);
@@ -3450,7 +3654,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $tmp = $this->CatchRemoteCommand('data');
         $auftrag = $tmp['auftrag'];
 
-        $this->shopwareRequest('POST', '_action/order/'.$auftrag.'/state/cancel');
+        $this->shopwareRequest('POST', '_action/order/' . $auftrag . '/state/cancel');
         $this->addCustomFieldToOrder((string)$auftrag);
     }
 
@@ -3462,8 +3666,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $order = $this->app->DB->SelectRow(
             sprintf(
                 "SELECT `rechnungid`, `id` FROM `auftrag` WHERE shopextid='%s'",
-                $extOrderId
-            )
+                $extOrderId,
+            ),
         );
         $invoiceId = 0;
         if (!empty($order['rechnungid'])) {
@@ -3478,8 +3682,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                       FROM `rechnung` 
                       WHERE `auftragid` = %d AND `status` <> 'storniert' AND `status` <> 'angelegt' 
                       LIMIT 1",
-                    $order['id']
-                )
+                    $order['id'],
+                ),
             );
             if (!empty($invoiceData)) {
                 $invoiceId = $invoiceData['id'];
@@ -3507,10 +3711,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     'documentNumber' => $documentNumber,
                 ],
                 'referenced_document_id' => null,
-                'static' => true
+                'static' => true,
             ];
 
-            $documentData = $this->shopwareRequest('POST', '_action/order/' . $extOrderId . '/document/invoice', $invoiceDocumentData);
+            $documentData = $this->shopwareRequest(
+                'POST',
+                '_action/order/' . $extOrderId . '/document/invoice',
+                $invoiceDocumentData,
+            );
             $documentId = $documentData['documentId'];
 
             $accessToken = $this->shopwareToken();
@@ -3519,7 +3727,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $ch = curl_init();
             $setHeaders = [
                 'Content-Type:application/pdf',
-                'Authorization:Bearer ' . $accessToken['token']
+                'Authorization:Bearer ' . $accessToken['token'],
             ];
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($filePath));
@@ -3531,7 +3739,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             curl_close($ch);
             if (!empty($response['errors'])) {
                 $this->Shopware6Log(
-                    'Fehler bei Rechnugnsübertragung für ' . $documentNumber, $response['errors']
+                    'Fehler bei Rechnugnsübertragung für ' . $documentNumber,
+                    $response['errors'],
                 );
             }
         }
@@ -3548,14 +3757,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (!$tokeninfo['success']) {
             return 'failed: ' . $tokeninfo['message'];
         }
-        if($this->data === 'info'){
+        if ($this->data === 'info') {
             $salesChannelsInShopware = $this->client->getAllSalesChannels();
             $salesChannelsToShow = ['subshops' => []];
-            foreach ($salesChannelsInShopware['data'] as $salesChannelInShopware){
+            foreach ($salesChannelsInShopware['data'] as $salesChannelInShopware) {
                 $salesChannelsToShow['subshops'][] = [
-                    'id'=>$salesChannelInShopware['id'],
-                    'name'=>$salesChannelInShopware['name'],
-                    'aktiv'=>$salesChannelInShopware['active']
+                    'id' => $salesChannelInShopware['id'],
+                    'name' => $salesChannelInShopware['name'],
+                    'aktiv' => $salesChannelInShopware['active'],
                 ];
             }
             return $salesChannelsToShow;
@@ -3578,7 +3787,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     {
         $shopwareCategory = $this->shopwareRequest(
             'GET',
-            'category?filter[category.name]=' . urlencode($categoryName)
+            'category?filter[category.name]=' . urlencode($categoryName),
         );
         if (!isset($shopwareCategory['data'][0]['id'])) {
             return $categoryTree;
@@ -3613,179 +3822,178 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         return $categoryTree;
     }
 
-  /**
-   * @param array $postData
-   *
-   * @return array
-   */
+    /**
+     * @param array $postData
+     *
+     * @return array
+     */
     public function updatePostDataForAssistent($postData)
     {
-      if(!empty($this->ShopUrl)) {
-        $postData['shopwareUrl'] = $this->ShopUrl;
-      }
-      return $postData;
+        if (!empty($this->ShopUrl)) {
+            $postData['shopwareUrl'] = $this->ShopUrl;
+        }
+        return $postData;
     }
 
-  /**
-   * @param array $shopArr
-   * @param array $postData
-   *
-   * @return array
-   */
+    /**
+     * @param array $shopArr
+     * @param array $postData
+     *
+     * @return array
+     */
     public function updateShopexportArr($shopArr, $postData)
     {
-      $shopArr['stornoabgleich'] = 1;
-      $shopArr['demomodus'] = 0;
+        $shopArr['stornoabgleich'] = 1;
+        $shopArr['demomodus'] = 0;
 
-      return $shopArr;
+        return $shopArr;
     }
 
-  /**
-   * @return JsonResponse|null
-   */
+    /**
+     * @return JsonResponse|null
+     */
     public function AuthByAssistent()
     {
-      $shopwareUrl = $this->app->Secure->GetPOST('shopwareUrl');
-      $shopwareUserName = $this->app->Secure->GetPOST('shopwareUserName');
-      $shopwarePassword = $this->app->Secure->GetPOST('shopwarePassword');
-      $step = (int)$this->app->Secure->GetPOST('step');
+        $shopwareUrl = $this->app->Secure->GetPOST('shopwareUrl');
+        $shopwareUserName = $this->app->Secure->GetPOST('shopwareUserName');
+        $shopwarePassword = $this->app->Secure->GetPOST('shopwarePassword');
+        $step = (int)$this->app->Secure->GetPOST('step');
 
-      if($step <= 1){
-        if(empty($shopwareUrl)){
-          return new JsonResponse(['error' => 'Bitte die URL des Shops angeben.'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-        if(empty($shopwareUserName)){
-          return new JsonResponse(['error' => 'Bitte den Benutzernamen angeben'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-        if(empty($shopwarePassword)){
-          return new JsonResponse(['error' => 'Bitte das Passwort angeben'], JsonResponse::HTTP_BAD_REQUEST);
+        if ($step <= 1) {
+            if (empty($shopwareUrl)) {
+                return new JsonResponse(['error' => 'Bitte die URL des Shops angeben.'], JsonResponse::HTTP_BAD_REQUEST,
+                );
+            }
+            if (empty($shopwareUserName)) {
+                return new JsonResponse(['error' => 'Bitte den Benutzernamen angeben'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            if (empty($shopwarePassword)) {
+                return new JsonResponse(['error' => 'Bitte das Passwort angeben'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            $this->UserName = $shopwareUserName;
+            $this->Password = $shopwarePassword;
+            $shopwareUrl = rtrim($shopwareUrl, '/') . '/';
+            $testUrls = [];
+            $hasNoHttp = strpos($shopwareUrl, 'http') !== 0;
+            if (substr($shopwareUrl, -5) !== '/api/') {
+                if ($hasNoHttp) {
+                    $testUrls[] = 'https://' . $shopwareUrl . 'api/';
+                    $testUrls[] = 'http://' . $shopwareUrl . 'api/';
+                }
+                $testUrls[] = $shopwareUrl . 'api/';
+            } elseif ($hasNoHttp) {
+                $testUrls[] = 'https://' . $shopwareUrl;
+                $testUrls[] = 'http://' . $shopwareUrl;
+            } else {
+                $testUrls[] = $shopwareUrl;
+            }
+            foreach ($testUrls as $testUrl) {
+                $this->ShopUrl = $testUrl;
+                $tokeninfo = $this->shopwareToken();
+                if (!empty($tokeninfo['success'])) {
+                    break;
+                }
+            }
+
+            if (!$tokeninfo['success']) {
+                return new JsonResponse(['error' => $tokeninfo['message']], JsonResponse::HTTP_BAD_REQUEST);
+            }
         }
 
-        $this->UserName = $shopwareUserName;
-        $this->Password = $shopwarePassword;
-        $shopwareUrl = rtrim($shopwareUrl, '/') . '/';
-        $testUrls = [];
-        $hasNoHttp = strpos($shopwareUrl,'http') !== 0;
-        if(substr($shopwareUrl, -5) !== '/api/') {
-          if($hasNoHttp) {
-            $testUrls[] = 'https://'.$shopwareUrl.'api/';
-            $testUrls[] = 'http://'.$shopwareUrl.'api/';
-          }
-          $testUrls[] = $shopwareUrl.'api/';
-        }
-        elseif($hasNoHttp) {
-          $testUrls[] = 'https://'.$shopwareUrl;
-          $testUrls[] = 'http://'.$shopwareUrl;
-        }
-        else {
-          $testUrls[] = $shopwareUrl;
-        }
-        foreach($testUrls as $testUrl) {
-          $this->ShopUrl = $testUrl;
-          $tokeninfo = $this->shopwareToken();
-          if(!empty($tokeninfo['success'])) {
-            break;
-          }
-        }
-
-        if(!$tokeninfo['success']){
-          return new JsonResponse(['error' => $tokeninfo['message']], JsonResponse::HTTP_BAD_REQUEST);
-        }
-      }
-
-      return null;
+        return null;
     }
 
-  /**
-   * @return string
-   */
+    /**
+     * @return string
+     */
     public function getClickByClickHeadline()
     {
-      return 'Bitte im Shopware Backend einen eigenen Benutzer für Xentral anlegen und diese 
+        return 'Bitte im Shopware Backend einen eigenen Benutzer für Xentral anlegen und diese 
       Zugangsdaten hier eintragen.';
     }
 
-  /**
-   * @return array
-   */
+    /**
+     * @return array
+     */
     public function getStructureDataForClickByClickSave()
     {
-      return [
-        'shopwareAllowCreateManufacturer' => 1,
-      ];
+        return [
+            'shopwareAllowCreateManufacturer' => 1,
+        ];
     }
 
-  /**
-   * @return array[]
-   */
+    /**
+     * @return array[]
+     */
     public function getCreateForm()
     {
-      return [
-        [
-          'id' => 0,
-          'name' => 'urls',
-          'inputs' => [
+        return [
             [
-              'label' => 'URL des Shops',
-              'type' => 'text',
-              'name' => 'shopwareUrl',
-              'validation' => true,
+                'id' => 0,
+                'name' => 'urls',
+                'inputs' => [
+                    [
+                        'label' => 'URL des Shops',
+                        'type' => 'text',
+                        'name' => 'shopwareUrl',
+                        'validation' => true,
+                    ],
+                ],
             ],
-          ],
-        ],
-        [
-          'id' => 1,
-          'name' => 'username',
-          'inputs' => [
             [
-              'label' => 'Benutzername aus Shopware',
-              'type' => 'text',
-              'name' => 'shopwareUserName',
-              'validation' => true,
+                'id' => 1,
+                'name' => 'username',
+                'inputs' => [
+                    [
+                        'label' => 'Benutzername aus Shopware',
+                        'type' => 'text',
+                        'name' => 'shopwareUserName',
+                        'validation' => true,
+                    ],
+                ],
             ],
-          ],
-        ],
-        [
-          'id' => 2,
-          'name' => 'password',
-          'inputs' => [
             [
-              'label' => 'Passwort aus Shopware',
-              'type' => 'password',
-              'name' => 'shopwarePassword',
-              'validation' => true,
+                'id' => 2,
+                'name' => 'password',
+                'inputs' => [
+                    [
+                        'label' => 'Passwort aus Shopware',
+                        'type' => 'password',
+                        'name' => 'shopwarePassword',
+                        'validation' => true,
+                    ],
+                ],
             ],
-          ],
-        ],
-      ];
+        ];
     }
 
     public function getBoosterHeadline(): string
     {
-      return 'Shopware 6 Business Booster App';
+        return 'Shopware 6 Business Booster App';
     }
 
     public function getBoosterSubHeadline(): string
     {
-      return 'Bitte gehe auf Shopware 6 und installiere dort das Plugin Xentral Business Booster App.
+        return 'Bitte gehe auf Shopware 6 und installiere dort das Plugin Xentral Business Booster App.
       Dort kann man sich dann mit ein paar Klicks mit Xentral verbinden.';
     }
 
-  /**
-   * @param int $intOrderId
-   *
-   * @return array
-   */
+    /**
+     * @param int $intOrderId
+     *
+     * @return array
+     */
     protected function getArticleShopLinks(int $intOrderId): array
     {
-      return $this->app->DB->SelectPairs(
-        "SELECT DISTINCT ao.artikel, a.nummer
+        return $this->app->DB->SelectPairs(
+            "SELECT DISTINCT ao.artikel, a.nummer
         FROM `auftrag_position` AS `ap`
         INNER JOIN `auftrag` AS `ab` ON ap.auftrag = ab.id
         INNER JOIN `artikel` AS `a` ON ap.artikel = a.id 
         INNER JOIN `artikel_onlineshops` AS `ao` ON ab.shop = ao.shop AND a.id = ao.artikel 
-        WHERE ab.id = {$intOrderId} AND ao.aktiv = 1"
-      );
+        WHERE ab.id = {$intOrderId} AND ao.aktiv = 1",
+        );
     }
 
     /**
@@ -3793,15 +4001,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function updateArticleCacheToSync(array $articleIds): void
     {
-      if(empty($articleIds)) {
-        return;
-      }
-      $articleIdsString = implode(', ', $articleIds);
-      $this->app->DB->Update(
-        "UPDATE `artikel` 
+        if (empty($articleIds)) {
+            return;
+        }
+        $articleIdsString = implode(', ', $articleIds);
+        $this->app->DB->Update(
+            "UPDATE `artikel` 
         SET `laststorage_changed` = DATE_ADD(NOW(), INTERVAL 1 SECOND) 
-        WHERE `id` IN ({$articleIdsString})"
-      );
+        WHERE `id` IN ({$articleIdsString})",
+        );
     }
 
     /**
@@ -3809,15 +4017,15 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function updateArticleOnlineShopCache(array $articleIds): void
     {
-      if(empty($articleIds)) {
-        return;
-      }
-      $articleIdsString = implode(', ', $articleIds);
-      $this->app->DB->Update(
-        "UPDATE `artikel_onlineshops` 
+        if (empty($articleIds)) {
+            return;
+        }
+        $articleIdsString = implode(', ', $articleIds);
+        $this->app->DB->Update(
+            "UPDATE `artikel_onlineshops` 
         SET `storage_cache` = -999, `pseudostorage_cache` = -999 
-        WHERE `artikel` IN ({$articleIdsString}) AND `aktiv` = 1 AND `shop` = {$this->shopid}"
-      );
+        WHERE `artikel` IN ({$articleIdsString}) AND `aktiv` = 1 AND `shop` = {$this->shopid}",
+        );
     }
 
     /**
@@ -3825,63 +4033,64 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function updateStorageForOrderIntId(int $intOrderId): void
     {
-      $articles = $this->getArticleShopLinks($intOrderId);
-      if(empty($articles)) {
-        return;
-      }
-      $articleIds = array_keys($articles);
-      $this->updateArticleCacheToSync($articleIds);
-      $this->updateArticleOnlineShopCache($articleIds);
-
-      $isStorageSyncCronjobActive = (int)$this->app->DB->Select(
-          "SELECT COUNT(`id`) FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'lagerzahlen'"
-        ) > 0;
-      if(!$isStorageSyncCronjobActive) {
-        return;
-      }
-      foreach($articleIds as $articleId) {
-        try {
-          $this->app->erp->LagerSync($articleId, false, [$this->shopid]);
+        $articles = $this->getArticleShopLinks($intOrderId);
+        if (empty($articles)) {
+            return;
         }
-        catch (Exception $e) {
-          $articleNumber = $articles[$articleId];
-          $this->Shopware6ErrorLog('LagerSync konnte nicht ausgeführt werden', $articleNumber);
-        }
-      }
+        $articleIds = array_keys($articles);
+        $this->updateArticleCacheToSync($articleIds);
+        $this->updateArticleOnlineShopCache($articleIds);
 
-      $this->updateArticleCacheToSync($articleIds);
+        $isStorageSyncCronjobActive = (int)$this->app->DB->Select(
+                "SELECT COUNT(`id`) FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'lagerzahlen'",
+            ) > 0;
+        if (!$isStorageSyncCronjobActive) {
+            return;
+        }
+        foreach ($articleIds as $articleId) {
+            try {
+                $this->app->erp->LagerSync($articleId, false, [$this->shopid]);
+            } catch (Exception $e) {
+                $articleNumber = $articles[$articleId];
+                $this->Shopware6ErrorLog('LagerSync konnte nicht ausgeführt werden', $articleNumber);
+            }
+        }
+
+        $this->updateArticleCacheToSync($articleIds);
     }
 
-    protected function parseBogxData(array $lineItem, array &$product) : void
+    protected function parseBogxData(array $lineItem, array &$product): void
     {
-        if (!isset($lineItem['attributes']['payload']['bogxProductConfigurator']))
+        if (!isset($lineItem['attributes']['payload']['bogxProductConfigurator'])) {
             return;
+        }
 
         $bogxdata = $lineItem['attributes']['payload']['bogxProductConfigurator'];
         $textlines = [];
 
-        if (isset($bogxdata['ordercode']))
+        if (isset($bogxdata['ordercode'])) {
             $textlines[] = "Order-Code: ${bogxdata['ordercode']}";
+        }
 
-        foreach ($bogxdata['optionsGroups'] as $bogxposition)  {
+        foreach ($bogxdata['optionsGroups'] as $bogxposition) {
             $dt = $bogxposition['datatype'];
-            if ($dt == 'quantity_total')
+            if ($dt == 'quantity_total') {
                 continue;
-            if (is_array($bogxposition['valueID']) && is_array($bogxposition['title']))
-            {
+            }
+            if (is_array($bogxposition['valueID']) && is_array($bogxposition['title'])) {
                 foreach ($bogxposition['valueID'] as $valueID) {
                     $bogxTitle = $bogxposition['title'][$valueID];
-                    if ($dt == 'checkbox_quantity')
-                        $bogxTitle = $bogxposition['label'][$valueID]." ".$bogxTitle;
+                    if ($dt == 'checkbox_quantity') {
+                        $bogxTitle = $bogxposition['label'][$valueID] . " " . $bogxTitle;
+                    }
                     $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
                 }
-            }
-            else
-            {
-                if (is_array($bogxposition['title']))
+            } else {
+                if (is_array($bogxposition['title'])) {
                     $bogxTitle = join(' ', $bogxposition['title']);
-                else
+                } else {
                     $bogxTitle = $bogxposition['title'];
+                }
                 $textlines[] = sprintf("%s: %s", $bogxposition['groupname'], $bogxTitle);
             }
         }

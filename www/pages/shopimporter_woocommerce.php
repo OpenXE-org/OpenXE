@@ -14,6 +14,7 @@
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Modules\Onlineshop\Data\OrderStatus;
 use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 use Xentral\Components\Logger\Logger;
@@ -556,8 +557,11 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   public function ImportSendList() {
     $tmp = $this->catchRemoteCommand('data');
     $anzahl = 0;
+    $return = [];
     for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++){
+      $return[$i] = new ArticleExportResult();
       $artikel = $tmp[$i]['artikel'];
+      $return[$i]->articleId = intval($artikel);
       $nummer = $tmp[$i]['nummer'];
       if(!empty($tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'])){
         $nummer = $tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'];
@@ -766,10 +770,10 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         }
       }
 
-      $anzahl++;
+      $return[$i]->success = true;
     }
 
-    return $anzahl;
+    return $return;
     // return array($product_id,$anzahl,$nummer,$steuersatz, $preis);
   }
 

@@ -14,6 +14,7 @@
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Modules\Onlineshop\Data\OrderStatus;
 use Xentral\Modules\Onlineshop\Data\OrderStatusUpdateRequest;
 
@@ -1112,8 +1113,10 @@ class Shopimporter_Shopware extends ShopimporterBase
       $crosssellingartikeluebertragen = 0;
       $preisgruppe = 0;
     }
+    $return = [];
     for($i=0;$i<$ctmp;$i++)
     {
+      $return[$i] = new ArticleExportResult();
       $filtergruppe = 0;
       $rootcategory = 1;
       if(!empty($this->RootCategoryName)) {
@@ -1207,6 +1210,7 @@ class Shopimporter_Shopware extends ShopimporterBase
 
       //Schritt 2: Artikeleigenschaften
       $artikel = $tmp[$i]['artikel'];
+      $return[$i]->articleId = intval($artikel);
       $nummer = isset($tmp[$i]['fremdnummer'])?$tmp[$i]['fremdnummer']:$tmp[$i]['nummer'];
       $inaktiv = $tmp[$i]['inaktiv'];
       $name_de = $tmp[$i]['name_de'];
@@ -1231,7 +1235,8 @@ class Shopimporter_Shopware extends ShopimporterBase
 
       $preis = $tmp[$i]['bruttopreis'];
       if(!$preis){
-        return 'error: Im Artikel ist kein Preis hinterlegt.';
+        $return[$i]->message = 'Im Artikel ist kein Preis hinterlegt.';
+        continue;
       }
 
       $nettopreis =$tmp[$i]['preis'];
@@ -2013,7 +2018,8 @@ class Shopimporter_Shopware extends ShopimporterBase
         }
 
         if(!is_array($result)){
-          return $result;
+          $return[$i]->message = $result;
+          continue;
         }
         //Schritt 8c: Alle Bilder anlegen und neu verlinken
         $first = 1;
@@ -2084,7 +2090,8 @@ class Shopimporter_Shopware extends ShopimporterBase
       }
 
       if(!is_array($result)){
-        return $result;
+        $return[$i]->message = $result;
+        continue;
       }
 
       $artikelid = $result['data']['id'];
@@ -2217,13 +2224,14 @@ class Shopimporter_Shopware extends ShopimporterBase
 
       if($result['success'])
       {
-        $anzahl++;
+        $return[$i]->success = true;
+        $return[$i]->extArticleId = $artikelid;
         //Erstellt Thumbnailbilder für den Artikel - behauptet die Doku
         $result = $this->adapter->put('generateArticleImages/'.$artikelexistiert);
       }
     }
 
-    return $anzahl;
+    return $result;
   }
 
   function GetImagesIdsbyNummer($nummer){

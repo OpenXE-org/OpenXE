@@ -473,6 +473,9 @@ class Shopexport
 
       // sende artikel liste      
       $tmp_anzahl  = $this->app->remote->RemoteSendArticleList($id,$artikel);
+      if (is_array($tmp_anzahl)) {
+          $tmp_anzahl = count(array_filter($tmp_anzahl, fn($var) => $var->success));
+      }
 
       // dateien update
       //$dateien = $this->app->DB->SelectArr("SELECT DISTINCT ds.datei FROM datei_stichwoerter ds, datei d WHERE d.id=ds.datei AND (ds.subjekt!='Druckbild') AND (ds.objekt='Artikel' OR ds.objekt='Kampangen') AND d.geloescht=0 AND d.firma='".$this->app->User->GetFirma()."'");
