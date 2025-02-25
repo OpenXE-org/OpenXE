@@ -3539,6 +3539,13 @@ class Importvorlage extends GenImportvorlage {
                       $this->UpdateEinkaufspreiseExtraWerte($ekid,$tmp,"3");
                     }
                     break;
+
+                  case "lager_lieferant":
+                    if($tmp['lager_lieferant'][$i] != '' && intval($tmp['lager_lieferant'][$i])){
+                      $this->app->DB->Update("UPDATE einkaufspreise SET lager_lieferant='".$tmp['lager_lieferant'][$i]."' WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."'" );
+                    }
+                    break;
+
                   case  "lieferanteinkaufnetto":
                     $einkaufsdaten = $this->app->DB->SelectRow("SELECT id,preis,bestellnummer FROM einkaufspreise WHERE ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."' AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW()) AND adresse='".$lieferantid."' AND artikel='".$artikelid."' LIMIT 1");
                     if($einkaufsdaten){
