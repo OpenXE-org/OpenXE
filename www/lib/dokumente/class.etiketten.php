@@ -68,20 +68,27 @@ class EtikettenPDF extends SuperFPDF {
         break;
   
         case "image":
-          $filename = '';
-          if(isset($items->attributes()->src))
-          {
-            $src = str_replace('&amp;','&',$items->attributes()->src);
-            if(stripos($src,'http://') === false && stripos($src,'https://') === false)
+            $filename = '';
+            if(isset($items->attributes()->src))
             {
-              $src = 'http://'.$src;
+                $src = str_replace('&amp;','&',$items->attributes()->src);
+                if(stripos($src,'http://') === false && stripos($src,'https://') === false)
+                {
+                  $src = 'http://'.$src;
+                }
+                $content = file_get_contents($src);
+            } else {
+                $content = base64_decode($items[0]);
+                if ($content === false) {
+                    throw new RuntimeException('invalid image data');
+                }
             }
-            $content = file_get_contents($src);
+
             if($content)
             {
               $filename = rtrim($this->app->erp->GetTMP(),'/').'/'.md5(microtime(true).$items[0]);
               file_put_contents($filename.'1.jpg', $content);
-              
+             
               $bildbreite = trim($items->attributes()->width);
               $bildhoehe = trim($items->attributes()->height);
               if(!class_exists('image'))include_once(__DIR__.'/../class.image.php');
@@ -120,9 +127,8 @@ class EtikettenPDF extends SuperFPDF {
                 $manipulator->save($filename.'2.jpg', $typ);
                 $items[0] = $filename.'2.jpg';
               }
-            }
-            
-          }
+            }           
+
           $type = exif_imagetype ( trim($items[0]) );
 
           switch($type)
@@ -132,10 +138,12 @@ class EtikettenPDF extends SuperFPDF {
             case IMAGETYPE_PNG: $type="png"; break;
             default: $type="";
           }
+
           if($type!="")
           {
             $this->Image(trim($items[0]),trim($items->attributes()->x),trim($items->attributes()->y),trim($items->attributes()->width),trim($items->attributes()->height),$type);
           } 
+
           if($filename != '')
           {
             unlink($filename.'1.jpg');
