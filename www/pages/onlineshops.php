@@ -264,6 +264,8 @@ INNER JOIN shopexport s ON
 
     $this->app->ActionHandler('artikellist', 'ShopexportArtikelList');
 
+    $this->app->ActionHandler('functioncall', 'ShopexportFunctionCall');
+
     $this->app->erp->Headlines('Shopexport');
     $this->app->ActionHandlerListen($app);
   }
@@ -4994,4 +4996,19 @@ INNER JOIN shopexport s ON
         $this->logger->Log($level, 'Onlineshops (Shop '.$shopid.') '.$message, (array) $dump);
     }
 
+    public function ShopexportFunctionCall()
+    {
+        $id = (int)$this->app->Secure->GetGET('id');
+        $function = $this->app->Secure->GetGET('function');
+        $result = $this->app->remote->RemoteCommand($id, $function);
+        $action = $this->app->Secure->GetGET('redirect');
+        $action = preg_replace('/[^a-z]/', '', $action);
+        if (!empty($result['message'])) {
+            if (empty($result['messageclass'])) {
+                $result['messageclass'] = 'info';
+            }
+            $msg = '&msg='.$this->app->erp->base64_url_encode('<div class="'.$result['messageclass'].'">'.$result['message'].'</div>');
+        }
+        $this->app->Location->execute('index.php?module=onlineshops&id='.$id.'&action='.$action.$msg);
+    }
 }
