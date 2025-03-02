@@ -54,9 +54,9 @@ class WidgetAuftrag extends WidgetGenAuftrag
             $this->form->HTMLList['standardlager']->dbvalue = $standardlager;
           }
           $deactivateautoshipping = $this->app->erp->Projektdaten($projektdanach, 'deactivateautoshipping');
-          if($deactivateautoshipping && $this->form->CallbackAndMandatorycheck(true)) {
-            $this->form->HTMLList['autoversand']->htmlvalue = 0;
-            $this->form->HTMLList['autoversand']->dbvalue = 0;
+          if($this->form->CallbackAndMandatorycheck(true)) {
+            $this->form->HTMLList['autoversand']->htmlvalue = ($deactivateautoshipping == 0);
+            $this->form->HTMLList['autoversand']->dbvalue = ($deactivateautoshipping == 0);
           }
           $query = sprintf("SELECT zahlungsweise, zahlungsweiselieferant, versandart FROM projekt WHERE id='%s'",
             $projektdanach);
@@ -219,7 +219,7 @@ class WidgetAuftrag extends WidgetGenAuftrag
     //    $field->onchange="versand(this.form.versandart.options[this.form.versandart.selectedIndex].value);";
     $field->AddOptionsSimpleArray($versandart);
     $this->form->NewField($field);
-    if(!empty($overwriteZahlungsweise)){
+    if(!empty($overwriteVersandart)){
       $this->form->HTMLList['versandart']->htmlvalue = $overwriteVersandart;
       $this->form->HTMLList['versandart']->dbvalue = $overwriteVersandart;
     }

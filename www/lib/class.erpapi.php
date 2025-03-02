@@ -33269,7 +33269,7 @@ function Firmendaten($field,$projekt="")
         } 
         if($kurs<>0)
         {
-          $this->app->DB->Update("UPDATE $typ SET kurs='$kurs' WHERE id='$id' LIMIT 1");
+          $this->app->DB->Update("UPDATE $typ SET kurs='$kurs' WHERE id='$id' AND kurs = 0 LIMIT 1");
         }
       }
 
@@ -34128,7 +34128,7 @@ function Firmendaten($field,$projekt="")
         }
 
         //$this->LoadSteuersaetze($id,$art); //03.01.2019 Bruno entfernt, da Shopaufträge umsgestellt werden
-        //$this->LoadKurs($id,$art); //03.01.2019 Bruno entfernt
+        $this->LoadKurs($id,$art); //03.01.2019 Bruno entfernt
         $belegarr = $this->app->DB->SelectRow("SELECT * FROM $art WHERE id='$id' LIMIT 1");
         if(empty($belegarr))
         {

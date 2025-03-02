@@ -122,7 +122,12 @@
               </tr>
               <tr>
                 <td>{|Auto-Versand als Standard deaktivieren|}:</td>
-                <td>[DEACTIVATEAUTOSHIPPING][MSGDEACTIVATEAUTOSHIPPING]</td>
+                <td>[DEACTIVATEAUTOSHIPPING][MSGDEACTIVATEAUTOSHIPPING]</td>    
+              </tr>
+              <tr>
+                <td>
+                    Standard Versandart:</td><td>[VERSANDART][MSGVERSANDART]
+                </td>
               </tr>
               <tr><td>{|Drucker Stufe (Kommissionierung)|}</td><td>[DRUCKERLOGISTIKSTUFE1][MSGDRUCKERLOGISTIKSTUFE1]&nbsp;<i>{|z.B. Lieferschein drucken|}</i></td></tr>
   	          <tr><td>{|Drucker Stufe (Versand)|}</td><td>[DRUCKERLOGISTIKSTUFE2][MSGDRUCKERLOGISTIKSTUFE2]&nbsp;<i>{|Belege bei Versandstation|}</i></td></tr>
@@ -338,7 +343,6 @@
              </tr>
              <tr><td>Standard Zahlungsweise Kunde:</td><td>[ZAHLUNGSWEISE][MSGZAHLUNGSWEISE]</td></tr>
              <tr><td>Standard Zahlungsweise Lieferant:</td><td>[ZAHLUNGSWEISELIEFERANT][MSGZAHLUNGSWEISELIEFERANT]</td></tr>
-             <tr><td>Standard Versandart:</td><td>[VERSANDART][MSGVERSANDART]</td></tr>
              <tr><td>{|W&auml;hrung|}:</td><td>[WAEHRUNG][MSGWAEHRUNG]&nbsp;</td></tr>
              <tr><td width="300">{|USt.-ID|}:</td><td>[STEUERNUMMER][MSGSTEUERNUMMER]&nbsp;</td></tr>
              <tr><td>{|Mahnwesen aktiv|}:</td><td>[MAHNWESEN][MSGMAHNWESEN]</td></tr>

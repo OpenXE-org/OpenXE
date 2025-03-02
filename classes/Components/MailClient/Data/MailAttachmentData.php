@@ -74,6 +74,11 @@ class MailAttachmentData implements MailAttachmentInterface
                 if ($content_type == 'application/octet-stream') {
                     return('application/octet-stream');
                 }                
+                // Check for application/pdf
+                $content_type = $part->getContentType();
+                if ($content_type == 'application/pdf') {
+                    return('application/pdf');
+                }
                 // Check for Content-id
                 $contentIdHeader = $part->getHeader('content-id');                                              
                 if ($contentIdHeader !== null) {

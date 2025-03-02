@@ -558,13 +558,7 @@ class TicketImportHelper
         }        
 
         if ($plainTextBody == '' && $htmlBody == '') {
-            $simple_content = $message->getContent();
-            if (empty($simple_content)) {
-                $this->logger->debug('Empty mail',[]);    
-            } else {
-                $plainTextBody = $simple_content;
-                $htmlBody = nl2br(htmlentities($simple_content));
-            }
+            $this->logger->debug('Empty mail',[]);
         }
 
         $this->logger->debug('Text',['plain' => $plainTextBody, 'html' => $htmlBody, 'simple_content' => $simple_content]);            

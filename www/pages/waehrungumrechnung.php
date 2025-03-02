@@ -220,4 +220,11 @@ class Waehrungumrechnung {
 	
     }
 
+    public function GetWaehrungUmrechnungskurs($von, $nach, $onlytable) {
+        $result = $this->app->DB->Select("SELECT kurs FROM waehrung_umrechnung WHERE waehrung_von = '$von' AND waehrung_nach = '$nach' AND gueltig_bis is NULL");
+        if (!is_null($result)) {
+            return $result;
+        }
+        return 0;
+    }
 }
