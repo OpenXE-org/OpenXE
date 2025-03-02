@@ -44,7 +44,10 @@ class Verbindlichkeit {
 
     function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
-            case "verbindlichkeit_list":
+            case 'verbindlichkeit_inbearbeitung':
+                $entwuerfe = true;
+                // break ommitted
+            case "verbindlichkeit_list":            
                 $allowed['verbindlichkeit_list'] = array('list');
                 $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
@@ -114,161 +117,101 @@ class Verbindlichkeit {
                         ) d ON d.parameter = v.id
                         ";
                 $where = "1";
-                $count = "SELECT count(DISTINCT id) FROM verbindlichkeit WHERE $where";
-//                $groupby = "";
 
-                // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
+                if ($entwuerfe) {
+                    $where .= " AND v.belegnr = '' OR v.belegnr IS NULL";
+                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";              
+                }
+                else {                
+                    $where .= " AND v.belegnr <> ''";
+                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";                
+                    // Toggle filters
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
 
-                for ($r = 1;$r <= 8;$r++) {
-                  $this->app->Tpl->Add('JAVASCRIPT', '
-                                         function fnFilterColumn' . $r . ' ( i )
-                                         {
-                                         if(oMoreData' . $r . $name . '==1)
-                                         oMoreData' . $r . $name . ' = 0;
-                                         else
-                                         oMoreData' . $r . $name . ' = 1;
+                    for ($r = 1;$r <= 8;$r++) {
+                      $this->app->Tpl->Add('JAVASCRIPT', '
+                                             function fnFilterColumn' . $r . ' ( i )
+                                             {
+                                             if(oMoreData' . $r . $name . '==1)
+                                             oMoreData' . $r . $name . ' = 0;
+                                             else
+                                             oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter(
-                                           \'\',
-                                           i,
-                                           0,0
-                                           );
-                                         }
-                                         ');
-                }
+                                             $(\'#' . $name . '\').dataTable().fnFilter(
+                                               \'\',
+                                               i,
+                                               0,0
+                                               );
+                                             }
+                                             ');
+                    }            
 
-                $more_data1 = $this->app->Secure->GetGET("more_data1");
-                if ($more_data1 == 1) {
-                   $where .= " AND datei_anzahl IS NULL";
-                } else {
-                }
+                    $more_data1 = $this->app->Secure->GetGET("more_data1");
+                    if ($more_data1 == 1) {
+                       $where .= " AND datei_anzahl IS NULL";
+                    } else {
+                    }
 
-                $more_data2 = $this->app->Secure->GetGET("more_data2");
-                if ($more_data2 == 1) {
-                   $where .= " AND v.freigabe <> '1'";
-                }
-                else {
-                }
+                    $more_data2 = $this->app->Secure->GetGET("more_data2");
+                    if ($more_data2 == 1) {
+                       $where .= " AND v.freigabe <> '1'";
+                    }
+                    else {
+                    }
 
-                $more_data3 = $this->app->Secure->GetGET("more_data3");
-                if ($more_data3 == 1) {
-                   $where .= " AND v.rechnungsfreigabe <> '1'";
-                }
-                else {
-                }
+                    $more_data3 = $this->app->Secure->GetGET("more_data3");
+                    if ($more_data3 == 1) {
+                       $where .= " AND v.rechnungsfreigabe <> '1'";
+                    }
+                    else {
+                    }
 
-                $more_data4 = $this->app->Secure->GetGET("more_data4");
-                if ($more_data4 == 1) {
-                   $where .= " AND v.bezahlt <> 1";
-                }
-                else {
-                }
+                    $more_data4 = $this->app->Secure->GetGET("more_data4");
+                    if ($more_data4 == 1) {
+                       $where .= " AND v.bezahlt <> 1";
+                    }
+                    else {
+                    }
 
-                $more_data5 = $this->app->Secure->GetGET("more_data5");
-                if ($more_data5 == 1) {
-                }
-                else {
-                   $where .= " AND v.status <> 'storniert'";
-                }
+                    $more_data5 = $this->app->Secure->GetGET("more_data5");
+                    if ($more_data5 == 1) {
+                    }
+                    else {
+                       $where .= " AND v.status <> 'storniert'";
+                    }
 
-                $more_data6 = $this->app->Secure->GetGET("more_data6");
-                if ($more_data6 == 1) {
-                }
-                else {
-                    $where .= " AND v.status <> 'abgeschlossen'";
-                }
+                    $more_data6 = $this->app->Secure->GetGET("more_data6");
+                    if ($more_data6 == 1) {
+                    }
+                    else {
+                        $where .= " AND v.status <> 'abgeschlossen'";
+                    }
 
-                $this->app->YUI->DatePicker('zahlbarbis');
-                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
-                if (!empty($filterzahlbarbis)) {
-                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
-                    $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
-                }
+                    $this->app->YUI->DatePicker('zahlbarbis');
+                    $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
+                    if (!empty($filterzahlbarbis)) {
+                        $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
+                        $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
+                    }
 
-                $this->app->YUI->DatePicker('skontobis');
-                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
-                if (!empty($filterskontobis)) {
-                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
-                    $where .= " AND v.skontobis <= '".$filterskontobis."'";
-                }
-                
-                $where .= " AND v.status <> 'angelegt'";
-                
-                // END Toggle filters
+                    $this->app->YUI->DatePicker('skontobis');
+                    $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
+                    if (!empty($filterskontobis)) {
+                        $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
+                        $where .= " AND v.skontobis <= '".$filterskontobis."'";
+                    }
+                    
+                    $where .= " AND v.status <> 'angelegt'";
+                    // END Toggle filters
+                }                    
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
-
-                break;
-            case 'verbindlichkeit_inbearbeitung':
-                $allowed['verbindlichkeit_inbearbeitung'] = array('list');
-                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
-                $width = array('1%','1%','10%'); // Fill out manually later
-
-                // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8);
-
-                $findcols = array(
-                    'v.id',
-                    'v.id',
-                    'v.belegnr',
-                    'a.name',
-                    'a.lieferantennummer',
-                    'v.rechnung',
-                    'v.rechnungsdatum',
-                    'v.betrag',
-                    'v.waehrung',
-                    'v.bezahlt',
-                    'v.zahlbarbis',
-                    'v.skontobis',
-                    'v.skonto',
-                    'v.status',
-                    'v.status_beleg',
-                    'v.id'
-                );
-
-                $searchsql = array(
-                    'a.name',
-                    'a.lieferantennummer',
-                    'v.rechnung',
-                    'v.internebemerkung'
-                );
-
-                $defaultorder = 1;
-                $defaultorderdesc = 0;
-                $alignright = array(8);
-                $sumcol = array(8);
-
-        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',v.id,'\" />') AS `auswahl`";
-
-                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=verbindlichkeit&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=verbindlichkeit&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
-
-                $sql = "SELECT SQL_CALC_FOUND_ROWS
-                            v.id,
-                            $dropnbox,
-                            'ENTWURF' as belegnr,
-                            a.name,
-                            a.lieferantennummer,
-                            v.rechnung,
-                            ".$app->erp->FormatDate("v.rechnungsdatum").",
-                            ".$app->erp->FormatMenge('v.betrag',2).",
-                            v.waehrung,
-                            if(v.bezahlt,'bezahlt','offen'),
-                            ".$app->erp->FormatDate("v.zahlbarbis").",
-                            IF(v.skonto <> 0,".$app->erp->FormatDate("v.skontobis").",''),
-                            IF(v.skonto <> 0,CONCAT(".$app->erp->FormatMenge('v.skonto',0).",'%'),''),
-                            v.status,
-                            ".$app->YUI->IconsSQLVerbindlichkeit().",
-                            v.id FROM verbindlichkeit v
-                        LEFT JOIN adresse a ON v.adresse = a.id";
-                $where = "v.status = 'angelegt'";
-                $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
 
                 break;
             case 'verbindlichkeit_paketdistribution_list':
