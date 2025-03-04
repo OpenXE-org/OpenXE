@@ -5838,7 +5838,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 );
 
                 $this->Kommissionieren_etiketten(
-                    lagerplatzliste: $auslagernresult,
+                    auftrag: $id,
                     mengeetiketten: $etikettautodruck?1:0,
                     etikett: $etikettautodruck?$etikettart:0,
                     etikettendrucker: $etikettendrucker);
@@ -6626,7 +6626,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
 
                         $this->Kommissionieren_etiketten(
-                            lagerplatzliste: $auslagernresult,
+                            auftrag: $v,
                             mengeetiketten: $etikettautodruck?1:0,
                             etikett: $vorkommissionieren_ohne_etiketten?0:($etikettautodruck?$etikettart:0),
                             etikettendrucker: $etikettendrucker);
@@ -7403,17 +7403,47 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
     }
 
-    function Kommissionieren_etiketten(array $lagerplatzliste, int $mengeetiketten, $etikett, $etikettendrucker) {
+    function Kommissionieren_etiketten(int $auftrag, int $mengeetiketten, $etikett, $etikettendrucker) {
         // Etiketten
         if ($mengeetiketten > 0) {
-            foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {
+
+            $freifelder = "";
+
+            for ($i = 1;$i<40;$i++) {
+                $freifelder = $freifelder."art.freifeld".$i.",\n";
+            }
+
+            $sql = "
+                SELECT 
+                    a.belegnr,
+                    $freifelder
+                    ap.nummer artikelnummer,
+                    ap.bezeichnung,
+                    ap.beschreibung,
+                    ap.artikelnummerkunde,
+                    ap.zolltarifnummer,
+                    ap.herkunftsland herkunftslandcode,
+                    art.ean,
+                    art.herstellernummer
+                FROM
+                    auftrag a 
+                INNER JOIN
+                    auftrag_position ap ON ap.auftrag = a.id
+                INNER 
+                    JOIN artikel art ON ap.artikel = art.id
+                WHERE
+                    a.id = ".$auftrag."
+            ";
+            $positionen = $this->app->DB->SelectArr($sql);
+
+            foreach ($positionen as $position) {
                 $this->app->erp->EtikettenDrucker(
                     kennung: $etikett,
-                    anzahl: $mengeetiketten*$storageMovement['menge'],
+                    anzahl: $mengeetiketten*$position['menge'],
+                    variables: $position,
+                    druckercode: $etikettendrucker,
                     tabelle: 'artikel',
-                    id: $storageMovement['artikel'],
-                    variables: null,
-                    druckercode: $etikettendrucker
+                    id: $position['artikel']
                 );
             }
         }

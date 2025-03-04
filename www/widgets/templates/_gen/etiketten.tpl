@@ -97,6 +97,20 @@
 <li>{ETIKETTENBILD} <i>aktuell nur in PDF</i></li>
 <li>{BEZEICHNUNG1},{BEZEICHNUNG2}<i>Etikettendrucker 2-Zeilig</i></li>
 </ul>
+Kommissionieretiketten (Artikel):
+<br>
+<ul>
+<li>{BELEGNR}</li>
+<li>{FREIFELDx}</li>
+<li>{ARTIKELNUMMER}</li>
+<li>{EAN}</li>
+<li>{BEZEICHNUNG}</li>
+<li>{BESCHREIBUNG}</li>
+<li>{ARTIKELNUMMERKUNDE}</li>
+<li>{HERSTELLERNUMMER}</li>
+<li>{ZOLLTARIFNUMMER}</li>
+<li>{HERKUNFTSLANDCODE}</li>
+</ul>
 Lieferscheinpositionen:
 <br>
 <ul>
