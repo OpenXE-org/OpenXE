@@ -960,6 +960,8 @@ class Auftrag extends GenAuftrag
 
     $this->app->ActionHandler("offene", "AuftragOffenePositionen");
 
+    $this->app->ActionHandler("etiketten","AuftragEtiketten");
+
     $this->app->DefaultActionHandler("list");
 
     $id = $this->app->Secure->GetGET('id');
@@ -1571,6 +1573,7 @@ class Auftrag extends GenAuftrag
           $casebelegeimport
           $proformarechnungcase
           $hookcase
+          case 'etiketten': window.location.href='index.php?module=auftrag&action=etiketten&id=%value%';
         }
       }
     </script>
@@ -1604,6 +1607,7 @@ class Auftrag extends GenAuftrag
       $optionbelegeimport
       $alleartikelreservieren
       $hookoption
+      <option value=\"etiketten\">Etiketten drucken</option>
       <option value=\"pdf\">PDF &ouml;ffnen</option>
       </select>&nbsp;
 
@@ -5814,18 +5818,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             {
                 $kommissionierung = $this->app->erp->GetNextKommissionierung();
  
-                $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');          
-                $etikettautodruck = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung');
-                $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
-                $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
-                       
-                $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$adresse; 
-                $settings = $this->app->DB->SelectRow($sql);               
-
-                if ($settings['etikettautodruck']) {
-                    $etikettautodruck = true;
-                    $etikettart = $settings['etikett'];
-                }
+                $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
 
                 $this->Kommissionieren(
                     kommissionierung : $kommissionierung,
@@ -5837,11 +5830,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     druckercode: $druckercode
                 );
 
-                $this->Kommissionieren_etiketten(
-                    auftrag: $id,
-                    mengeetiketten: $etikettautodruck?1:0,
-                    etikett: $etikettautodruck?$etikettart:0,
-                    etikettendrucker: $etikettendrucker);
+                $this->Kommissionieren_etiketten_drucken($id);
             }
                
             // Prozesse ohne Versandzentrum
@@ -6545,8 +6534,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 if (!empty($auftraegemarkiert)) {
                     foreach ($auftraegemarkiert as $k => $v) {
 
-                        $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
-
                         $auslagernresult =
                                 $this->app->erp->LieferscheinAuslagern(
                                   lieferschein: $v,
@@ -6571,15 +6558,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             INNER JOIN auftrag ON projekt.id = auftrag.projekt
                             INNER JOIN adresse ON adresse.id = auftrag.adresse
                             WHERE auftrag.id = '".$v."'"
-                        );
-
-                        $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$settings['adresse']; 
-                        $adressesettings = $this->app->DB->SelectRow($sql);
-
-                        if ($adressesettings['etikettautodruck']) {
-                            $etikettautodruck = true;
-                            $etikettart = $adressesettings['etikett'];
-                        }
+                        );                      
 
                         $sql = "
                             SELECT
@@ -6610,6 +6589,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$check['belegnr']);
                         } else {
                             $kid = $this->app->erp->GetNextKommissionierung();
+                            $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
                             $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
                             $this->Kommissionieren(
                                 kommissionierung : $kid,
@@ -6620,16 +6600,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
                                 druckercode: $druckercode);
                         }
-
-                        $etikettautodruck = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung');
-                        $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
-                        $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
-
-                        $this->Kommissionieren_etiketten(
-                            auftrag: $v,
-                            mengeetiketten: $etikettautodruck?1:0,
-                            etikett: $vorkommissionieren_ohne_etiketten?0:($etikettautodruck?$etikettart:0),
-                            etikettendrucker: $etikettendrucker);
+                        $this->Kommissionieren_etiketten_drucken($v);
                     }
                 }
             break;
@@ -7403,9 +7374,21 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
     }
 
-    function Kommissionieren_etiketten(int $auftrag, int $mengeetiketten, $etikett, $etikettendrucker) {
+    function Kommissionieren_etiketten_drucken(int $auftragid) {
         // Etiketten
-        if ($mengeetiketten > 0) {
+        $auftrag = $this->app->DB->SelectRow("SELECT adresse, projekt FROM auftrag WHERE id = ".$auftragid." LIMIT 1");
+        $result = Array();
+        $result['etikettautodruck'] = $this->app->erp->Projektdaten($auftrag['projekt'],'etiketten_kommissionierung');
+        $result['etikettendrucker'] = $this->app->erp->Projektdaten($auftrag['projekt'],'etiketten_kommissionierung_drucker');
+        $result['etikettart'] = $this->app->erp->Projektdaten($auftrag['projekt'],'etiketten_kommissionierung_art');
+        $sql = "SELECT etikett, etikettautodruck FROM adresse WHERE id =".$auftrag['adresse'];
+        $adresse_settings = $this->app->DB->SelectRow($sql);
+        if ($adresse_settings['etikettautodruck']) {
+            $result['etikettautodruck'] = true;
+            $result['etikettart'] = $adresse_settings['etikett'];
+        }
+
+        if ($result['etikettautodruck']) {
 
             $freifelder = "";
 
@@ -7416,6 +7399,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $sql = "
                 SELECT 
                     a.belegnr,
+                    ap.menge,
                     $freifelder
                     ap.nummer artikelnummer,
                     ap.bezeichnung,
@@ -7432,20 +7416,27 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 INNER 
                     JOIN artikel art ON ap.artikel = art.id
                 WHERE
-                    a.id = ".$auftrag."
+                    a.id = ".$auftragid."
             ";
             $positionen = $this->app->DB->SelectArr($sql);
 
             foreach ($positionen as $position) {
                 $this->app->erp->EtikettenDrucker(
-                    kennung: $etikett,
-                    anzahl: $mengeetiketten*$position['menge'],
+                    kennung:  $result['etikettart'],
+                    anzahl: $position['menge'],
                     variables: $position,
-                    druckercode: $etikettendrucker,
+                    druckercode: $result['etikettendrucker'],
                     tabelle: 'artikel',
                     id: $position['artikel']
                 );
             }
         }
     }
+
+    function AuftragEtiketten() {
+        $id=$this->app->Secure->GetGET("id");
+        $this->Kommissionieren_etiketten_drucken($id);
+        $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
+    }
+
 }
