@@ -6,6 +6,9 @@
 
 namespace Xentral\Carrier\Go;
 
+use DateTime;
+use Exception;
+use JsonException;
 use Psr\Log\LoggerInterface;
 use Xentral\Carrier\Go\Data\CreateOrderRequest;
 use Xentral\Carrier\Go\Data\CreateOrderResponse;
@@ -52,8 +55,10 @@ class GoApi {
             $ret = new CreateOrderResponse();
             $ret->hwbNumber = $response->hwbNumber;
             $ret->orderStatus = OrderStatus::from($response->orderStatus);
-            $ret->pickupDate = new \DateTime($response->pickupDate);
-            $ret->deliveryDate = new \DateTime($response->deliveryDate);
+            try {
+                $ret->pickupDate =  new DateTime($response->pickupDate);
+                $ret->deliveryDate = new DateTime($response->deliveryDate);
+            } catch (Exception) {}
             $ret->hwbOrPackageLabel = $response->hwbOrPackageLabel;
             $ret->barcodes = array_map(function ($item) { return $item->barcode; }, $response->package);
             return $ret;
