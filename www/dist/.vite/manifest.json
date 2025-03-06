@@ -3,8 +3,8 @@
     "file": "assets/vue-CMXOvwpj.css",
     "src": "_vue-!~{003}~.js"
   },
-  "_vue-BGepilzd.js": {
-    "file": "vue-BGepilzd.js",
+  "_vue-C8GNYUTc.js": {
+    "file": "vue-C8GNYUTc.js",
     "name": "vue",
     "css": [
       "assets/vue-CMXOvwpj.css"
@@ -18,21 +18,21 @@
     ]
   },
   "classes/Modules/MatrixProduct/www/js/entry.js": {
-    "file": "modules/MatrixProduct-C2Gu_q6G.js",
+    "file": "modules/MatrixProduct-BAQ9apDq.js",
     "name": "modules/MatrixProduct",
     "src": "classes/Modules/MatrixProduct/www/js/entry.js",
     "isEntry": true,
     "imports": [
-      "_vue-BGepilzd.js"
+      "_vue-C8GNYUTc.js"
     ]
   },
   "classes/Modules/ShippingMethod/www/js/shipment.entry.js": {
-    "file": "modules/ShippingMethod-shipment-DQ-Rue_Q.js",
+    "file": "modules/ShippingMethod-shipment-DLQpoRlS.js",
     "name": "modules/ShippingMethod-shipment",
     "src": "classes/Modules/ShippingMethod/www/js/shipment.entry.js",
     "isEntry": true,
     "imports": [
-      "_vue-BGepilzd.js"
+      "_vue-C8GNYUTc.js"
     ]
   },
   "node_modules/primeicons/fonts/primeicons.eot": {
