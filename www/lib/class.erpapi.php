@@ -33270,7 +33270,7 @@ function Firmendaten($field,$projekt="")
         } 
         if($kurs<>0)
         {
-          $this->app->DB->Update("UPDATE $typ SET kurs='$kurs' WHERE id='$id' LIMIT 1");
+          $this->app->DB->Update("UPDATE $typ SET kurs='$kurs' WHERE id='$id' AND kurs = 0 LIMIT 1");
         }
       }
 
@@ -34129,7 +34129,7 @@ function Firmendaten($field,$projekt="")
         }
 
         //$this->LoadSteuersaetze($id,$art); //03.01.2019 Bruno entfernt, da Shopaufträge umsgestellt werden
-        //$this->LoadKurs($id,$art); //03.01.2019 Bruno entfernt
+        $this->LoadKurs($id,$art); //03.01.2019 Bruno entfernt
         $belegarr = $this->app->DB->SelectRow("SELECT * FROM $art WHERE id='$id' LIMIT 1");
         if(empty($belegarr))
         {
@@ -34215,7 +34215,7 @@ function Firmendaten($field,$projekt="")
           $rabatt5 = 0;
           if($art==='angebot' || $art==='auftrag' || $art==='rechnung' || $art==='gutschrift' || $art==='proformarechnung')
           {
-            $rabattarr = $this->app->DB->SelectRow("SELECT * FROM $art WHERE id='$id' LIMIT 1");
+            $rabattarr = $this->app->DB->SelectRow("SELECT rabatt, rabatt1, rabatt2, rabatt3, rabatt4, rabatt5, realrabatt FROM $art WHERE id='$id' LIMIT 1");
             if(!empty($rabattarr)){
               $grundrabatt = $rabattarr['rabatt'];
               $rabatt1 = $rabattarr['rabatt1'];
@@ -34223,6 +34223,17 @@ function Firmendaten($field,$projekt="")
               $rabatt3 = $rabattarr['rabatt3'];
               $rabatt4 = $rabattarr['rabatt4'];
               $rabatt5 = $rabattarr['rabatt5'];
+            }
+
+            $gruppe = $belegarr['gruppe'];
+            $preisgruppen = $this->app->DB->SelectRow("SELECT * FROM gruppen WHERE id = '$gruppe' AND art = 'preisgruppe' LIMIT 1");
+            if(!empty($preisgruppen)){
+              $grundrabatt = $preisgruppen['grundrabatt'];
+              $rabatt1 = $preisgruppen['rabatt1'];
+              $rabatt2 = $preisgruppen['rabatt2'];
+              $rabatt3 = $preisgruppen['rabatt3'];
+              $rabatt4 = $preisgruppen['rabatt4'];
+              $rabatt5 = $preisgruppen['rabatt5'];
             }
 
             if($grundrabatt>0) $rabattarr[] =  ((100-$grundrabatt)/100.0);

@@ -3700,8 +3700,8 @@ class Artikel extends GenArtikel {
 	      $adresse = $this->app->DB->Select("SELECT adresse FROM $smodule WHERE id='$sid' LIMIT 1");
 	}
 
-	if (!is_null($module)) {
-		if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'waehrung'")) {
+	if (!is_null($smodule)) {
+		if ($this->app->DB->Select("SHOW COLUMNS FROM `$smodule` LIKE 'waehrung'")) {
 		      $waehrung = $this->app->DB->Select("SELECT waehrung FROM $smodule WHERE id='$sid' LIMIT 1");
 		}
 	}
