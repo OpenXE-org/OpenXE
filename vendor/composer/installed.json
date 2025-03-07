@@ -1303,23 +1303,23 @@
                 },
                 {
                         "name": "lfkeitel/phptotp",
-                        "version": "v1.0.0",
-                        "version_normalized": "1.0.0.0",
+                        "version": "v1.1.0",
+                        "version_normalized": "1.1.0.0",
                         "source": {
                                 "type": "git",
                                 "url": "https://github.com/lfkeitel/php-totp.git",
-                                "reference": "2211fb6e025d3c10362771c54c9a9ad5593a3469"
+                                "reference": "5b1673e895f857856b3e75ccb442855771c9b9be"
                         },
                         "dist": {
                                 "type": "zip",
-                                "url": "https://api.github.com/repos/lfkeitel/php-totp/zipball/2211fb6e025d3c10362771c54c9a9ad5593a3469",
-                                "reference": "2211fb6e025d3c10362771c54c9a9ad5593a3469",
+                                "url": "https://api.github.com/repos/lfkeitel/php-totp/zipball/5b1673e895f857856b3e75ccb442855771c9b9be",
+                                "reference": "5b1673e895f857856b3e75ccb442855771c9b9be",
                                 "shasum": ""
                         },
                         "require": {
-                                "php": "^5.6 || ^7.0"
+                                "php": "^5.6 || ^7.0 || ^8.0"
                         },
-                        "time": "2017-02-06T17:46:14+00:00",
+                        "time": "2022-04-07T20:52:00+00:00",
                         "type": "library",
                         "installation-source": "dist",
                         "autoload": {
@@ -1340,7 +1340,7 @@
                         ],
                         "support": {
                                 "issues": "https://github.com/lfkeitel/php-totp/issues",
-                                "source": "https://github.com/lfkeitel/php-totp/tree/v1.0.0"
+                                "source": "https://github.com/lfkeitel/php-totp/tree/v1.1.0"
                         },
                         "install-path": "../lfkeitel/phptotp"
                 },
@@ -1707,23 +1707,23 @@
                 },
                 {
                         "name": "psr/container",
-                        "version": "1.1.1",
-                        "version_normalized": "1.1.1.0",
+                        "version": "1.1.2",
+                        "version_normalized": "1.1.2.0",
                         "source": {
                                 "type": "git",
                                 "url": "https://github.com/php-fig/container.git",
-                                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
+                                "reference": "513e0666f7216c7459170d56df27dfcefe1689ea"
                         },
                         "dist": {
                                 "type": "zip",
-                                "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
-                                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
+                                "url": "https://api.github.com/repos/php-fig/container/zipball/513e0666f7216c7459170d56df27dfcefe1689ea",
+                                "reference": "513e0666f7216c7459170d56df27dfcefe1689ea",
                                 "shasum": ""
                         },
                         "require": {
-                                "php": ">=7.2.0"
+                                "php": ">=7.4.0"
                         },
-                        "time": "2021-03-05T17:36:06+00:00",
+                        "time": "2021-11-05T16:50:12+00:00",
                         "type": "library",
                         "installation-source": "dist",
                         "autoload": {
@@ -1752,33 +1752,33 @@
                         ],
                         "support": {
                                 "issues": "https://github.com/php-fig/container/issues",
-                                "source": "https://github.com/php-fig/container/tree/1.1.1"
+                                "source": "https://github.com/php-fig/container/tree/1.1.2"
                         },
                         "install-path": "../psr/container"
                 },
                 {
                         "name": "psr/http-message",
-                        "version": "1.0.1",
-                        "version_normalized": "1.0.1.0",
+                        "version": "1.1",
+                        "version_normalized": "1.1.0.0",
                         "source": {
                                 "type": "git",
                                 "url": "https://github.com/php-fig/http-message.git",
-                                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
+                                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba"
                         },
                         "dist": {
                                 "type": "zip",
-                                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
-                                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
+                                "url": "https://api.github.com/repos/php-fig/http-message/zipball/cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
+                                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
                                 "shasum": ""
                         },
                         "require": {
-                                "php": ">=5.3.0"
+                                "php": "^7.2 || ^8.0"
                         },
-                        "time": "2016-08-06T14:39:51+00:00",
+                        "time": "2023-04-04T09:50:52+00:00",
                         "type": "library",
                         "extra": {
                                 "branch-alias": {
-                                        "dev-master": "1.0.x-dev"
+                                        "dev-master": "1.1.x-dev"
                                 }
                         },
                         "installation-source": "dist",
@@ -1808,7 +1808,7 @@
                                 "response"
                         ],
                         "support": {
-                                "source": "https://github.com/php-fig/http-message/tree/master"
+                                "source": "https://github.com/php-fig/http-message/tree/1.1"
                         },
                         "install-path": "../psr/http-message"
                 },
@@ -2954,41 +2954,29 @@
                 },
                 {
                         "name": "symfony/polyfill-php72",
-                        "version": "v1.22.1",
-                        "version_normalized": "1.22.1.0",
+                        "version": "v1.31.0",
+                        "version_normalized": "1.31.0.0",
                         "source": {
                                 "type": "git",
                                 "url": "https://github.com/symfony/polyfill-php72.git",
-                                "reference": "cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9"
+                                "reference": "fa2ae56c44f03bed91a39bfc9822e31e7c5c38ce"
                         },
                         "dist": {
                                 "type": "zip",
-                                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9",
-                                "reference": "cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9",
+                                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/fa2ae56c44f03bed91a39bfc9822e31e7c5c38ce",
+                                "reference": "fa2ae56c44f03bed91a39bfc9822e31e7c5c38ce",
                                 "shasum": ""
                         },
                         "require": {
-                                "php": ">=7.1"
+                                "php": ">=7.2"
                         },
-                        "time": "2021-01-07T16:49:33+00:00",
-                        "type": "library",
+                        "time": "2024-09-09T11:45:10+00:00",
+                        "type": "metapackage",
                         "extra": {
-                                "branch-alias": {
-                                        "dev-main": "1.22-dev"
-                                },
                                 "thanks": {
-                                        "name": "symfony/polyfill",
-                                        "url": "https://github.com/symfony/polyfill"
+                                        "url": "https://github.com/symfony/polyfill",
+                                        "name": "symfony/polyfill"
                                 }
-                        },
-                        "installation-source": "dist",
-                        "autoload": {
-                                "psr-4": {
-                                        "Symfony\\Polyfill\\Php72\\": ""
-                                },
-                                "files": [
-                                        "bootstrap.php"
-                                ]
                         },
                         "notification-url": "https://packagist.org/downloads/",
                         "license": [
@@ -3013,7 +3001,7 @@
                                 "shim"
                         ],
                         "support": {
-                                "source": "https://github.com/symfony/polyfill-php72/tree/v1.22.1"
+                                "source": "https://github.com/symfony/polyfill-php72/tree/v1.31.0"
                         },
                         "funding": [
                                 {
@@ -3029,7 +3017,7 @@
                                         "type": "tidelift"
                                 }
                         ],
-                        "install-path": "../symfony/polyfill-php72"
+                        "install-path": null
                 },
                 {
                         "name": "tecnickcom/tcpdf",

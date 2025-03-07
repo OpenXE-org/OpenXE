@@ -11,7 +11,6 @@ return array(
     'Y0lk\\OAuth1\\Client\\Server\\' => array($vendorDir . '/y0lk/oauth1-etsy/src'),
     'Xentral\\' => array($baseDir . '/classes'),
     'TrueBV\\' => array($vendorDir . '/true/punycode/src'),
-    'Symfony\\Polyfill\\Php72\\' => array($vendorDir . '/symfony/polyfill-php72'),
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Polyfill\\Intl\\Normalizer\\' => array($vendorDir . '/symfony/polyfill-intl-normalizer'),
     'Symfony\\Polyfill\\Intl\\Idn\\' => array($vendorDir . '/symfony/polyfill-intl-idn'),

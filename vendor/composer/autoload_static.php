@@ -12,7 +12,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
-        '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
@@ -52,7 +51,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         ),
         'S' => 
         array (
-            'Symfony\\Polyfill\\Php72\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
             'Symfony\\Polyfill\\Intl\\Idn\\' => 26,
@@ -143,10 +141,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'TrueBV\\' => 
         array (
             0 => __DIR__ . '/..' . '/true/punycode/src',
-        ),
-        'Symfony\\Polyfill\\Php72\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php72',
         ),
         'Symfony\\Polyfill\\Mbstring\\' => 
         array (
@@ -2489,7 +2483,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Symfony\\Polyfill\\Intl\\Idn\\Resources\\unidata\\Regex' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/Resources/unidata/Regex.php',
         'Symfony\\Polyfill\\Intl\\Normalizer\\Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Normalizer.php',
         'Symfony\\Polyfill\\Mbstring\\Mbstring' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/Mbstring.php',
-        'Symfony\\Polyfill\\Php72\\Php72' => __DIR__ . '/..' . '/symfony/polyfill-php72/Php72.php',
         'TCPDF' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf.php',
         'TCPDF2DBarcode' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf_barcodes_2d.php',
         'TCPDFBarcode' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf_barcodes_1d.php',
@@ -2508,6 +2501,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'TrueBV\\Exception\\OutOfBoundsException' => __DIR__ . '/..' . '/true/punycode/src/Exception/OutOfBoundsException.php',
         'TrueBV\\Punycode' => __DIR__ . '/..' . '/true/punycode/src/Punycode.php',
         'Versandart_dhl' => __DIR__ . '/../..' . '/www/lib/versandarten/dhl.php',
+        'Versandart_go' => __DIR__ . '/../..' . '/www/lib/versandarten/go.php',
         'Versandart_sendcloud' => __DIR__ . '/../..' . '/www/lib/versandarten/sendcloud.php',
         'Xentral\\Carrier\\Dhl\\Data\\Bank' => __DIR__ . '/../..' . '/classes/Carrier/Dhl/Data/Bank.php',
         'Xentral\\Carrier\\Dhl\\Data\\Communication' => __DIR__ . '/../..' . '/classes/Carrier/Dhl/Data/Communication.php',
@@ -2544,6 +2538,19 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Carrier\\Dhl\\Data\\Statusinformation' => __DIR__ . '/../..' . '/classes/Carrier/Dhl/Data/Statusinformation.php',
         'Xentral\\Carrier\\Dhl\\Data\\Version' => __DIR__ . '/../..' . '/classes/Carrier/Dhl/Data/Version.php',
         'Xentral\\Carrier\\Dhl\\DhlApi' => __DIR__ . '/../..' . '/classes/Carrier/Dhl/DhlApi.php',
+        'Xentral\\Carrier\\Go\\Data\\Address' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/Address.php',
+        'Xentral\\Carrier\\Go\\Data\\CreateOrderRequest' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/CreateOrderRequest.php',
+        'Xentral\\Carrier\\Go\\Data\\CreateOrderResponse' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/CreateOrderResponse.php',
+        'Xentral\\Carrier\\Go\\Data\\Delivery' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/Delivery.php',
+        'Xentral\\Carrier\\Go\\Data\\ErrorResponse' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/ErrorResponse.php',
+        'Xentral\\Carrier\\Go\\Data\\LabelType' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/LabelType.php',
+        'Xentral\\Carrier\\Go\\Data\\MoneyValue' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/MoneyValue.php',
+        'Xentral\\Carrier\\Go\\Data\\OrderStatus' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/OrderStatus.php',
+        'Xentral\\Carrier\\Go\\Data\\Package' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/Package.php',
+        'Xentral\\Carrier\\Go\\Data\\Pickup' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/Pickup.php',
+        'Xentral\\Carrier\\Go\\Data\\Shipment' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/Shipment.php',
+        'Xentral\\Carrier\\Go\\Data\\ShipmentService' => __DIR__ . '/../..' . '/classes/Carrier/Go/Data/ShipmentService.php',
+        'Xentral\\Carrier\\Go\\GoApi' => __DIR__ . '/../..' . '/classes/Carrier/Go/GoApi.php',
         'Xentral\\Carrier\\SendCloud\\Data\\Document' => __DIR__ . '/../..' . '/classes/Carrier/SendCloud/Data/Document.php',
         'Xentral\\Carrier\\SendCloud\\Data\\Label' => __DIR__ . '/../..' . '/classes/Carrier/SendCloud/Data/Label.php',
         'Xentral\\Carrier\\SendCloud\\Data\\ParcelBase' => __DIR__ . '/../..' . '/classes/Carrier/SendCloud/Data/ParcelBase.php',
@@ -3559,6 +3566,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\MatrixProduct\\Data\\Translation' => __DIR__ . '/../..' . '/classes/Modules/MatrixProduct/Data/Translation.php',
         'Xentral\\Modules\\MatrixProduct\\MatrixProductGateway' => __DIR__ . '/../..' . '/classes/Modules/MatrixProduct/MatrixProductGateway.php',
         'Xentral\\Modules\\MatrixProduct\\MatrixProductService' => __DIR__ . '/../..' . '/classes/Modules/MatrixProduct/MatrixProductService.php',
+        'Xentral\\Modules\\Onlineshop\\Data\\ArticleExportResult' => __DIR__ . '/../..' . '/classes/Modules/Onlineshop/Data/ArticleExportResult.php',
         'Xentral\\Modules\\Onlineshop\\Data\\OrderStatus' => __DIR__ . '/../..' . '/classes/Modules/Onlineshop/Data/OrderStatus.php',
         'Xentral\\Modules\\Onlineshop\\Data\\OrderStatusUpdateRequest' => __DIR__ . '/../..' . '/classes/Modules/Onlineshop/Data/OrderStatusUpdateRequest.php',
         'Xentral\\Modules\\Onlineshop\\Data\\Shipment' => __DIR__ . '/../..' . '/classes/Modules/Onlineshop/Data/Shipment.php',
@@ -3722,6 +3730,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\ShippingMethod\\Model\\CreateShipmentResult' => __DIR__ . '/../..' . '/classes/Modules/ShippingMethod/Model/CreateShipmentResult.php',
         'Xentral\\Modules\\ShippingMethod\\Model\\CustomsInfo' => __DIR__ . '/../..' . '/classes/Modules/ShippingMethod/Model/CustomsInfo.php',
         'Xentral\\Modules\\ShippingMethod\\Model\\Product' => __DIR__ . '/../..' . '/classes/Modules/ShippingMethod/Model/Product.php',
+        'Xentral\\Modules\\ShippingMethod\\Model\\ShipmentStatus' => __DIR__ . '/../..' . '/classes/Modules/ShippingMethod/Model/ShipmentStatus.php',
         'Xentral\\Modules\\ShippingTaxSplit\\Bootstrap' => __DIR__ . '/../..' . '/classes/Modules/ShippingTaxSplit/Bootstrap.php',
         'Xentral\\Modules\\ShippingTaxSplit\\Exception\\InvalidArgumentException' => __DIR__ . '/../..' . '/classes/Modules/ShippingTaxSplit/Exception/InvalidArgumentException.php',
         'Xentral\\Modules\\ShippingTaxSplit\\Exception\\ShippingTaxSplitExceptionInterface' => __DIR__ . '/../..' . '/classes/Modules/ShippingTaxSplit/Exception/ShippingTaxSplitExceptionInterface.php',
