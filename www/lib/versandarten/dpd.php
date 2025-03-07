@@ -198,7 +198,7 @@ class Versandart_dpd extends Versanddienstleister
         $order->generalShipmentData->recipient->city = $json->address->city;
         $order->generalShipmentData->recipient->email = $json->address->email;
         $order->generalShipmentData->recipient->phone = $json->address->phone;
-        if ($this->settings->enableHazmat && !empty($json->services->hazmat)) {
+        if ($this->settings->enableHazmat && !empty($json->services->hazmat->unNumber)) {
             $hazardous = new Hazardous();
             $hazardous->identificationUnNo = $json->services->hazmat->unNumber;
             $hazardous->identificationClass = $json->services->hazmat->class;
@@ -254,7 +254,15 @@ class Versandart_dpd extends Versanddienstleister
             $dbdata = file_get_contents(self::HAZMAT_DB_URL . '?version=' . $version_data->version);
             file_put_contents($this->app->getTmpFolder() . 'dpd_hazmatdb', $dbdata);
         }
-        $defaults->services[Service::SERVICE_HAZMAT->value] = [];
+        $defaults->services[Service::SERVICE_HAZMAT->value] = [
+            'unNumber' => '',
+            'class' => '',
+            'classificationCode' => '',
+            'packingCode' => '',
+            'description' => '',
+            'weight' => 0,
+            'factor' => 1
+        ];
         return $defaults;
     }
 
