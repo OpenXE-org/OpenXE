@@ -1,0 +1,80 @@
+de:
+  title: Paketmarken Drucker für {carrier}
+  package: Paket
+  other: Sonstiges
+  packageWeight: Gewicht (in kg)
+  packageHeight: Höhe (in cm)
+  packageWidth: Breite (in cm)
+  packageLength: Länge (in cm)
+  shippingProduct: Produkt
+  references: Referenzen
+  insuredValue: Versicherungssumme
+  shipmentType: Sendungsart
+  content: Paketinhalt
+  services:
+    premium: Premium
+    pickup: Abholung
+    pickupDate: Abholtag
+    pickupTime: Abholzeit (von-bis)
+    hazmat: Gefahrgut
+  printLabel: Paketmarke drucken
+  customs:
+    declaration: Zollinhaltserklärung
+    hscode: HS-Code
+    itemValue: Einzelwert
+    itemWeight: Einzelgewicht
+    shipmentType:
+      gift: Geschenk
+      documents: Dokumente
+      goods: Waren
+      sample: Handelsmuster
+      return: Rücksendung
+  hazmat:
+    info: Gefahrgut Informationen
+    unNumber: UN Nummer
+    class: Klasse
+    classificationCode: Klassifizierungscode
+    packingCode: Verpackungscode
+    description: Beschreibung
+    weight: Gewicht
+    factor: Faktor
+en:
+  title: Print shipping labels for {carrier}
+  package: Package
+  other: Other
+  packageWeight: Weight (in kg)
+  packageHeight: Height (in cm)
+  packageWidth: Width (in cm)
+  packageLength: Length (in cm)
+  shippingProduct: Product
+  references: References
+  insuredValue: Insured value
+  shipmentType: Shipment type
+  content: Package content
+  services:
+    premium: Premium
+    pickup: Pick up
+    pickupDate: Pick up day
+    pickupTime: Pick up time (from-till)
+    hazmat: Hazard materials
+  printLabel: Print shipping label
+  customs:
+    declaration: Customs declaration
+    hscode: HS-Code
+    itemValue: Item value
+    itemWeight: Item weight
+    shipmentType:
+      gift: Gift
+      documents: Documents
+      goods: Goods
+      sample: Samples
+      return: Return
+  hazmat:
+    info: Hazardous materials declaration
+    unNumber: UN Number
+    class: Class
+    classificationCode: Classification Code
+    packingCode: Packing Code
+    description: Description
+    weight: Weight
+    factor: Factor

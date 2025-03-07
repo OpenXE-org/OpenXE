@@ -48,6 +48,7 @@ class Shipment implements \JsonSerializable {
     {
         $array = (array) $this;
         $array['dimensions'] = '';
+        if ($this->selfPickup) unset($array['pickup']);
         return array_map(function ($value) {
                 if (is_bool($value))
                     return $value ? 'Yes' : 'No';

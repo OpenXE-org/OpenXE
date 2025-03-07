@@ -7,15 +7,16 @@
 namespace Xentral\Carrier\Go\Data;
 
 class Pickup implements \JsonSerializable {
-    public \DateTime $dateFrom;
-    public \DateTime $dateTill;
+    public \DateTime $date;
+    public \DateTime $from;
+    public \DateTime $till;
 
     public function jsonSerialize()
     {
         return [
-            'date' => $this->dateFrom->format('d.m.Y'),
-            'timeFrom' => $this->dateFrom->format('H:i'),
-            'timeTill' => $this->dateTill->format('H:i'),
+            'date' => $this->date->format('d.m.Y'),
+            'timeFrom' => $this->from->format('H:i'),
+            'timeTill' => $this->till->format('H:i'),
         ];
     }
 }

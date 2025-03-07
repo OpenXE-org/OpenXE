@@ -1,33 +1,41 @@
 /*
- * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2023-2025 Andreas Palm
  *
- * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
+@import "flex_grid.css";
 
 .vueAction {
     cursor: pointer;
-}
-
-.flex {
-    display: flex;
-}
-
-.grid {
-    display: grid;
-}
-
-.flex-align-center {
-    align-items: center;
-}
-
-.justify-self-start {
-    justify-self: start;
 }
 
 .gap-1 {
     gap: 0.25rem;
 }
 
+.gap-x-4 {
+    column-gap: 1rem;
+}
+
 .grid label, .grid .p-checkbox {
     padding-top: 5px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.text-base {
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem; /* 24px */
+}
+
+.p-inputtext:not(.ui-widget) {
+    margin-right: 0;
+    padding: var(--p-inputtext-padding-y) var(--p-inputtext-padding-x);
+}
+
+.my-4 {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }

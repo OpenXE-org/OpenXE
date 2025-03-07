@@ -10,9 +10,6 @@ namespace Xentral\Modules\ShippingMethod\Model;
 
 class Product
 {
-  const SERVICE_COD = 'cod';
-  const SERVICE_PREMIUM = 'premium';
-
   public string $Id;
   public string $Name;
   public float $LengthMin = 0;
@@ -23,6 +20,9 @@ class Product
   public float $HeightMax = 500;
   public float $WeightMin = 0;
   public float $WeightMax = 100;
+    /**
+     * @var ShipmentService[]
+     */
   public array $AvailableServices = [];
 
   public static function Create(string $id, string $name):Product {
@@ -56,8 +56,12 @@ class Product
     return $this;
   }
 
+    /**
+     * @param ShipmentService[] $services
+     * @return $this
+     */
   public function WithServices(array $services): Product {
-    $this->AvailableServices = $services;
+    $this->AvailableServices = array_merge($this->AvailableServices, $services);
     return $this;
   }
 }

@@ -1,0 +1,67 @@
+<?php
+
+// SPDX-FileCopyrightText: 2025 Andreas Palm
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
+namespace Xentral\Carrier\Dpd\LoginService;
+
+use Psr\Log\LoggerInterface;
+use Xentral\Carrier\Dpd\LoginService\Data\GetAuth;
+use Xentral\Carrier\Dpd\LoginService\Data\Login;
+
+class LoginService
+{
+    protected const BASEURL_SANDBOX = 'https://public-ws-stage.dpd.com/restservices/LoginService/V2_0/';
+    protected const BASEURL_LIVE = 'https://dpd.com/common/service/LoginService/2.0/';
+    protected string $baseUrl;
+
+    public function __construct(protected LoggerInterface $logger, bool $sandbox = false)
+    {
+        if ($sandbox) {
+            $this->baseUrl = self::BASEURL_SANDBOX;
+        } else {
+            $this->baseUrl = self::BASEURL_LIVE;
+        }
+    }
+
+
+    /**
+     * @throws LoginServiceException
+     */
+    public function getAuth(GetAuth $auth): Login
+    {
+        $data = json_encode($auth);
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $this->baseUrl . 'getAuth',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response);
+        if (isset($response->getAuthResponse)) {
+            $login = new Login();
+            $login->delisId = $response->getAuthResponse->return->delisId;
+            $login->customerUid = $response->getAuthResponse->return->customerUid;
+            $login->authToken = $response->getAuthResponse->return->authToken;
+            $login->depot = $response->getAuthResponse->return->depot;
+            return $login;
+        }
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (isset($response->status)) {
+            throw new LoginServiceException(
+                "Login Error({$response->status->type}): {$response->status->message})",
+                $response->status->code,
+            );
+        }
+        $this->logger->error(
+            'DPD Login failed with unknown response',
+            ['response' => $response, 'reqData' => $data, 'code' => $code],
+        );
+        throw new LoginServiceException('unknown error (no valid response)');
+    }
+}
