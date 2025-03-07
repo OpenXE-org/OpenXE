@@ -247,13 +247,13 @@ class Versandart_dpd extends Versanddienstleister
             return $defaults;
         }
 
-        $check = $this->systemConfig->tryGetValue('dpd', 'hazmatdbcheck', time());
+/*        $check = $this->systemConfig->tryGetValue('dpd', 'hazmatdbcheck', time());
         if ($check <= time()) {
             $version_data = file_get_contents(self::HAZMAT_DB_URL);
             $version_data = json_decode($version_data);
             $dbdata = file_get_contents(self::HAZMAT_DB_URL . '?version=' . $version_data->version);
             file_put_contents($this->app->getTmpFolder() . 'dpd_hazmatdb', $dbdata);
-        }
+        }*/
         $defaults->services[Service::SERVICE_HAZMAT->value] = [
             'unNumber' => '',
             'class' => '',
