@@ -17,7 +17,7 @@
     "laminas/laminas-stdlib": "3.2.1",
     "laminas/laminas-validator": "2.13.5",
     "league/color-extractor": "0.3.2",
-    "league/flysystem": "1.0.70",
+    "league/flysystem": "^1.0.70",
     "league/oauth1-client": "v1.9.0",
     "league/oauth2-client": "2.6.0",
     "lfkeitel/phptotp": "^1.0",
