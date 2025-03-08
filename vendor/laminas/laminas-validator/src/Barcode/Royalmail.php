@@ -9,9 +9,10 @@ use function str_split;
 use function strlen;
 use function substr;
 
+/** @final */
 class Royalmail extends AbstractAdapter
 {
-    /** @var array<string, int> */
+    /** @var array<array-key, int> */
     protected $rows = [
         '0' => 1,
         '1' => 1,
@@ -51,7 +52,7 @@ class Royalmail extends AbstractAdapter
         'Z' => 0,
     ];
 
-    /** @var array<string, int> */
+    /** @var array<array-key, int> */
     protected $columns = [
         '0' => 1,
         '1' => 2,

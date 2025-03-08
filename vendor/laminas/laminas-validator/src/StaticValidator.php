@@ -7,6 +7,12 @@ use Laminas\ServiceManager\ServiceManager;
 use function array_values;
 use function method_exists;
 
+/**
+ * @deprecated Since 2.61.0 This validator will be removed in v3.0 without replacement. Most validators can be
+ *             constructed as desired and used in any context.
+ *
+ * @final
+ */
 class StaticValidator
 {
     /** @var ValidatorPluginManager|null */
@@ -48,14 +54,13 @@ class StaticValidator
     }
 
     /**
-     * @param  mixed                            $value
      * @param  class-string<ValidatorInterface> $classBaseName
      * @param  array                            $options OPTIONAL associative array of options to pass as
      *                                                   the sole argument to the validator constructor.
      * @return bool
      * @throws Exception\InvalidArgumentException For an invalid $options argument.
      */
-    public static function execute($value, $classBaseName, array $options = [])
+    public static function execute(mixed $value, $classBaseName, array $options = [])
     {
         if ($options && array_values($options) === $options) {
             throw new Exception\InvalidArgumentException(
@@ -63,9 +68,9 @@ class StaticValidator
             );
         }
 
-        $plugins = static::getPluginManager();
-
+        $plugins   = static::getPluginManager();
         $validator = $plugins->get($classBaseName, $options);
+
         return $validator->isValid($value);
     }
 }

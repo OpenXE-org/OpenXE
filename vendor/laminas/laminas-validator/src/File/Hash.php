@@ -10,13 +10,11 @@ use function array_unique;
 use function array_values;
 use function func_get_arg;
 use function func_num_args;
-use function get_class;
-use function gettype;
+use function get_debug_type;
 use function hash_algos;
 use function hash_file;
 use function in_array;
 use function is_array;
-use function is_object;
 use function is_readable;
 use function is_scalar;
 use function is_string;
@@ -71,11 +69,19 @@ class Hash extends AbstractValidator
             $options['algorithm'] = func_get_arg(1);
         }
 
+        // The combination of parent and local logic requires us to have the "algorithm" key before the "hash" key
+        // in the array, or else the default algorithm will be used instead of the passed one.
+        if (isset($options['algorithm'])) {
+            $options = ['algorithm' => $options['algorithm']] + $options;
+        }
+
         parent::__construct($options);
     }
 
     /**
      * Returns the set hash values as array, the hash as key and the algorithm the value
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @return array
      */
@@ -86,6 +92,8 @@ class Hash extends AbstractValidator
 
     /**
      * Sets the hash for one or multiple files
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @param  string|array $options
      * @return $this Provides a fluent interface
@@ -101,9 +109,11 @@ class Hash extends AbstractValidator
     /**
      * Adds the hash for one or multiple files
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @param  string|array $options
-     * @throws Exception\InvalidArgumentException
      * @return $this Provides a fluent interface
+     * @throws Exception\InvalidArgumentException
      */
     public function addHash($options)
     {
@@ -129,7 +139,7 @@ class Hash extends AbstractValidator
             if (! is_string($value)) {
                 throw new Exception\InvalidArgumentException(sprintf(
                     'Hash must be a string, %s received',
-                    is_object($value) ? get_class($value) : gettype($value)
+                    get_debug_type($value)
                 ));
             }
             $this->options['hash'][$value] = $algorithm;

@@ -6,6 +6,7 @@ use function ctype_xdigit;
 use function is_int;
 use function is_string;
 
+/** @final */
 class Hex extends AbstractValidator
 {
     public const INVALID = 'hexInvalid';
@@ -24,7 +25,7 @@ class Hex extends AbstractValidator
     /**
      * Returns true if and only if $value contains only hexadecimal digit characters
      *
-     * @param  string $value
+     * @param  mixed $value
      * @return bool
      */
     public function isValid($value)

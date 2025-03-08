@@ -6,9 +6,27 @@ use Exception;
 use Laminas\Validator\Exception\InvalidArgumentException;
 
 use function array_merge;
+use function assert;
 use function call_user_func_array;
+use function is_bool;
 use function is_callable;
 
+/**
+ * @psalm-type OptionsProperty = array{
+ *     callback: callable|null,
+ *     callbackOptions: array<array-key, mixed>,
+ *     throwExceptions: bool,
+ *     bind: bool,
+ * }
+ * @psalm-type OptionsArgument = array{
+ *     callback: callable,
+ *     callbackOptions?: array<array-key, mixed>,
+ *     throwExceptions?: bool,
+ *     bind?: bool,
+ *     ...<string, mixed>
+ * }
+ * @final
+ */
 class Callback extends AbstractValidator
 {
     /**
@@ -34,22 +52,27 @@ class Callback extends AbstractValidator
     /**
      * Default options to set for the validator
      *
-     * @var mixed
+     * @var OptionsProperty
      */
     protected $options = [
         'callback'        => null, // Callback in a call_user_func format, string || array
         'callbackOptions' => [], // Options for the callback
+        'throwExceptions' => false, // Whether to throw exceptions raised within the callback or not
+        'bind'            => false, // Bind the callback to the validator instance
     ];
 
-    /**
-     * Constructor
-     *
-     * @param array|callable $options
-     */
+    /** @param OptionsArgument|callable $options */
     public function __construct($options = null)
     {
         if (is_callable($options)) {
             $options = ['callback' => $options];
+        }
+
+        $bind = $options['bind'] ?? false;
+        assert(is_bool($bind));
+        $closure = $options['callback'] ?? null;
+        if (is_callable($closure) && $bind === true) {
+            $options['callback'] = $closure(...)->bindTo($this);
         }
 
         parent::__construct($options);
@@ -58,7 +81,9 @@ class Callback extends AbstractValidator
     /**
      * Returns the set callback
      *
-     * @return mixed
+     * @deprecated Since 2.60.0 All option setters and getters will be removed in v3.0
+     *
+     * @return callable|null
      */
     public function getCallback()
     {
@@ -68,7 +93,9 @@ class Callback extends AbstractValidator
     /**
      * Sets the callback
      *
-     * @param  string|array|callable $callback
+     * @deprecated Since 2.60.0 All option setters and getters will be removed in v3.0
+     *
+     * @param callable $callback
      * @return $this Provides a fluent interface
      * @throws InvalidArgumentException
      */
@@ -85,7 +112,9 @@ class Callback extends AbstractValidator
     /**
      * Returns the set options for the callback
      *
-     * @return mixed
+     * @deprecated Since 2.60.0 All option setters and getters will be removed in v3.0
+     *
+     * @return array<array-key, mixed>
      */
     public function getCallbackOptions()
     {
@@ -95,10 +124,12 @@ class Callback extends AbstractValidator
     /**
      * Sets options for the callback
      *
-     * @param  mixed $options
+     * @deprecated Since 2.60.0 All option setters and getters will be removed in v3.0
+     *
+     * @param array<array-key, mixed> $options
      * @return $this Provides a fluent interface
      */
-    public function setCallbackOptions($options)
+    public function setCallbackOptions(mixed $options)
     {
         $this->options['callbackOptions'] = (array) $options;
         return $this;
@@ -119,7 +150,7 @@ class Callback extends AbstractValidator
 
         $options  = $this->getCallbackOptions();
         $callback = $this->getCallback();
-        if (empty($callback)) {
+        if (! is_callable($callback)) {
             throw new InvalidArgumentException('No callback given');
         }
 
@@ -140,8 +171,16 @@ class Callback extends AbstractValidator
                 $this->error(self::INVALID_VALUE);
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
+            /**
+             * Intentionally excluding catchable \Error as they are indicative of a bug and should not be suppressed
+             */
             $this->error(self::INVALID_CALLBACK);
+
+            if ($this->options['throwExceptions'] === true) {
+                throw $exception;
+            }
+
             return false;
         }
 

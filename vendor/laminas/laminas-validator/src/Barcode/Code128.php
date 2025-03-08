@@ -10,6 +10,7 @@ use function chr;
 use function is_string;
 use function ord;
 
+/** @final */
 class Code128 extends AbstractAdapter
 {
     /**
@@ -358,6 +359,8 @@ class Code128 extends AbstractAdapter
     }
 
     /**
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
      * @return void
      */
     public function setUtf8StringWrapper(StringWrapperInterface $utf8StringWrapper)
@@ -372,6 +375,8 @@ class Code128 extends AbstractAdapter
 
     /**
      * Get the string wrapper supporting UTF-8 character encoding
+     *
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
      *
      * @return StringWrapperInterface
      */
@@ -505,7 +510,7 @@ class Code128 extends AbstractAdapter
         }
 
         $value = $strWrapper->substr($value, 1, null);
-        while ($strWrapper->strpos($value, 'Š') || ($value !== '')) {
+        while ($strWrapper->strpos((string) $value, 'Š') !== false || ((string) $value !== '')) {
             $char = $strWrapper->substr($value, 0, 1);
             if ($read === 'C') {
                 $char = $strWrapper->substr($value, 0, 2);
@@ -601,18 +606,12 @@ class Code128 extends AbstractAdapter
     protected function getCodingSet($value)
     {
         $value = $this->getUtf8StringWrapper()->substr($value, 0, 1);
-        switch ($value) {
-            case '‡':
-                return 'A';
-
-            case 'ˆ':
-                return 'B';
-
-            case '‰':
-                return 'C';
-        }
-
-        return '';
+        return match ($value) {
+            '‡' => 'A',
+            'ˆ' => 'B',
+            '‰' => 'C',
+            default => '',
+        };
     }
 
     /**

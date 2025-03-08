@@ -31,29 +31,36 @@ interface AdapterInterface
     /**
      * Returns the allowed barcode length
      *
-     * @return int|array
+     * @return int|string|array|null
      */
     public function getLength();
 
     /**
      * Returns the allowed characters
      *
-     * @return int|string|array
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @return int|string|array|null
      */
     public function getCharacters();
 
     /**
      * Returns if barcode uses a checksum
      *
-     * @return bool|int|string
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @return string|null
      */
     public function getChecksum();
 
     /**
      * Sets the checksum validation, if no value is given, the actual setting is returned
      *
-     * @param  bool $check
-     * @return AbstractAdapter|bool
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @param  bool|null $check
+     * @return $this|bool
+     * @psalm-return ($check is null ? bool : static)
      */
     public function useChecksum($check = null);
 }

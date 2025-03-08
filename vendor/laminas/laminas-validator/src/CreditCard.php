@@ -5,6 +5,7 @@ namespace Laminas\Validator;
 use Exception;
 use Laminas\Stdlib\ArrayUtils;
 use Laminas\Validator\Exception\InvalidArgumentException;
+use SensitiveParameter;
 use Traversable;
 
 use function array_key_exists;
@@ -19,10 +20,11 @@ use function in_array;
 use function is_array;
 use function is_callable;
 use function is_string;
+use function str_starts_with;
 use function strlen;
-use function strpos;
 use function strtoupper;
 
+/** @final */
 class CreditCard extends AbstractValidator
 {
     /**
@@ -277,6 +279,8 @@ class CreditCard extends AbstractValidator
     /**
      * Returns a list of accepted CCIs
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getType()
@@ -287,7 +291,9 @@ class CreditCard extends AbstractValidator
     /**
      * Sets CCIs which are accepted by validation
      *
-     * @param  string|array $type Type to allow for validation
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string|array $type Type to allow for validation
      * @return CreditCard Provides a fluid interface
      */
     public function setType($type)
@@ -298,6 +304,8 @@ class CreditCard extends AbstractValidator
 
     /**
      * Adds a CCI to be accepted by validation
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @param  string|array $type Type to allow for validation
      * @return $this Provides a fluid interface
@@ -331,6 +339,8 @@ class CreditCard extends AbstractValidator
     /**
      * Returns the actual set service
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return callable
      */
     public function getService()
@@ -341,7 +351,9 @@ class CreditCard extends AbstractValidator
     /**
      * Sets a new callback for service validation
      *
-     * @param  callable $service
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param callable $service
      * @return $this
      * @throws InvalidArgumentException On invalid service callback.
      */
@@ -355,14 +367,19 @@ class CreditCard extends AbstractValidator
         return $this;
     }
 
+    // The following rule is buggy for parameters attributes
+    // phpcs:disable SlevomatCodingStandard.TypeHints.ParameterTypeHintSpacing.NoSpaceBetweenTypeHintAndParameter
+
     /**
      * Returns true if and only if $value follows the Luhn algorithm (mod-10 checksum)
      *
-     * @param  string $value
+     * @param  mixed $value
      * @return bool
      */
-    public function isValid($value)
-    {
+    public function isValid(
+        #[SensitiveParameter]
+        $value
+    ) {
         $this->setValue($value);
 
         if (! is_string($value)) {
@@ -381,7 +398,7 @@ class CreditCard extends AbstractValidator
         $foundl = false;
         foreach ($types as $type) {
             foreach ($this->cardType[$type] as $prefix) {
-                if (0 === strpos($value, (string) $prefix)) {
+                if (str_starts_with($value, (string) $prefix)) {
                     $foundp = true;
                     if (in_array($length, $this->cardLength[$type])) {
                         $foundl = true;
@@ -425,7 +442,7 @@ class CreditCard extends AbstractValidator
                     $this->error(self::SERVICE, $value);
                     return false;
                 }
-            } catch (Exception $e) {
+            } catch (Exception) {
                 $this->error(self::SERVICEFAILURE, $value);
                 return false;
             }
@@ -433,4 +450,6 @@ class CreditCard extends AbstractValidator
 
         return true;
     }
+
+    // phpcs:enable SlevomatCodingStandard.TypeHints.ParameterTypeHintSpacing.NoSpaceBetweenTypeHintAndParameter
 }

@@ -2,11 +2,12 @@
 
 namespace Laminas\Validator\Barcode;
 
+use function str_contains;
 use function str_split;
 use function strlen;
-use function strpos;
 use function substr;
 
+/** @final */
 class Issn extends AbstractAdapter
 {
     /**
@@ -28,7 +29,7 @@ class Issn extends AbstractAdapter
     public function hasValidCharacters($value)
     {
         if (strlen($value) !== 8) {
-            if (strpos($value, 'X') !== false) {
+            if (str_contains($value, 'X')) {
                 return false;
             }
         }

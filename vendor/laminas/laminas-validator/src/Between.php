@@ -14,6 +14,11 @@ use function is_string;
 
 use const PHP_INT_MAX;
 
+/**
+ * @deprecated Since 2.60.0 - This validator has been superseded by the NumberComparison and DateComparison validators
+ *
+ * @final
+ */
 class Between extends AbstractValidator
 {
     public const NOT_BETWEEN        = 'notBetween';
@@ -127,10 +132,9 @@ class Between extends AbstractValidator
     /**
      * Sets the min option
      *
-     * @param  mixed $min
      * @return $this Provides a fluent interface
      */
-    public function setMin($min)
+    public function setMin(mixed $min)
     {
         $this->options['min'] = $min;
         return $this;
@@ -149,10 +153,9 @@ class Between extends AbstractValidator
     /**
      * Sets the max option
      *
-     * @param  mixed $max
      * @return $this Provides a fluent interface
      */
-    public function setMax($max)
+    public function setMax(mixed $max)
     {
         $this->options['max'] = $max;
         return $this;
