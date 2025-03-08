@@ -9,11 +9,7 @@
     "ezyang/htmlpurifier": "v4.13.0",
     "fiskaly/fiskaly-sdk-php": "1.2.100",
     "guzzlehttp/guzzle": "^6.5.5",
-    "laminas/laminas-loader": "2.6.1",
-    "laminas/laminas-mime": "2.7.4",
     "laminas/laminas-mail": "2.12.5",
-    "laminas/laminas-stdlib": "3.2.1",
-    "laminas/laminas-validator": "2.13.5",
     "league/color-extractor": "0.3.2",
     "league/flysystem": "^1.0.70",
     "league/oauth1-client": "v1.9.0",
@@ -30,8 +26,7 @@
     "y0lk/oauth1-etsy": "1.1.0"
   },
   "replace": {
-    "itbz/fpdf": "*",
-    "laminas/laminas-zendframework-bridge": "*"
+    "itbz/fpdf": "*"
   },
   "autoload": {
     "psr-4": {
