@@ -19,6 +19,8 @@ return array(
     'a1cce3d26cc15c00fcd0b3354bd72c88' => $vendorDir . '/sabre/event/lib/Promise/functions.php',
     '3569eecfeed3bcf0bad3c998a494ecb8' => $vendorDir . '/sabre/xml/lib/Deserializer/functions.php',
     '93aa591bc4ca510c520999e34229ee79' => $vendorDir . '/sabre/xml/lib/Serializer/functions.php',
+    'c9d07b32a2e02bc0fc582d4f0c1b56cc' => $vendorDir . '/laminas/laminas-servicemanager/src/autoload.php',
+    '7e9bd612cc444b3eed788ebbe46263a0' => $vendorDir . '/laminas/laminas-zendframework-bridge/src/autoload.php',
     'b067bc7112e384b61c701452d53a14a8' => $vendorDir . '/mtdowling/jmespath.php/src/JmesPath.php',
     'ebdb698ed4152ae445614b69b5e4bb6a' => $vendorDir . '/sabre/http/lib/functions.php',
     '8a9dc1de0ca7e01f3e08231539562f61' => $vendorDir . '/aws/aws-sdk-php/src/functions.php',
