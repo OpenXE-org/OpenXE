@@ -16,6 +16,8 @@ use function is_readable;
 
 /**
  * Validator for the image size of an image file
+ *
+ * @final
  */
 class ImageSize extends AbstractValidator
 {
@@ -112,6 +114,8 @@ class ImageSize extends AbstractValidator
     /**
      * Returns the minimum allowed width
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return int
      */
     public function getMinWidth()
@@ -141,6 +145,8 @@ class ImageSize extends AbstractValidator
 
     /**
      * Returns the maximum allowed width
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @return int
      */
@@ -172,6 +178,8 @@ class ImageSize extends AbstractValidator
     /**
      * Returns the minimum allowed height
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return int
      */
     public function getMinHeight()
@@ -182,7 +190,9 @@ class ImageSize extends AbstractValidator
     /**
      * Sets the minimum allowed height
      *
-     * @param  int $minHeight
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param int $minHeight
      * @return $this Provides a fluid interface
      * @throws Exception\InvalidArgumentException When minheight is greater than maxheight.
      */
@@ -202,6 +212,8 @@ class ImageSize extends AbstractValidator
     /**
      * Returns the maximum allowed height
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return int
      */
     public function getMaxHeight()
@@ -212,7 +224,9 @@ class ImageSize extends AbstractValidator
     /**
      * Sets the maximum allowed height
      *
-     * @param  int $maxHeight
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param int $maxHeight
      * @return $this Provides a fluid interface
      * @throws Exception\InvalidArgumentException When maxheight is less than minheight.
      */
@@ -232,6 +246,8 @@ class ImageSize extends AbstractValidator
     /**
      * Returns the set minimum image sizes
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getImageMin()
@@ -241,6 +257,8 @@ class ImageSize extends AbstractValidator
 
     /**
      * Returns the set maximum image sizes
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @return array
      */
@@ -252,6 +270,8 @@ class ImageSize extends AbstractValidator
     /**
      * Returns the set image width sizes
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getImageWidth()
@@ -262,6 +282,8 @@ class ImageSize extends AbstractValidator
     /**
      * Returns the set image height sizes
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getImageHeight()
@@ -271,6 +293,8 @@ class ImageSize extends AbstractValidator
 
     /**
      * Sets the minimum image size
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @param  array $options                 The minimum image dimensions
      * @return $this Provides a fluent interface
@@ -284,6 +308,8 @@ class ImageSize extends AbstractValidator
     /**
      * Sets the maximum image size
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @param array|Traversable $options The maximum image dimensions
      * @return $this Provides a fluent interface
      */
@@ -296,7 +322,9 @@ class ImageSize extends AbstractValidator
     /**
      * Sets the minimum and maximum image width
      *
-     * @param  array $options               The image width dimensions
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param array $options The image width dimensions
      * @return $this Provides a fluent interface
      */
     public function setImageWidth($options)
@@ -310,7 +338,9 @@ class ImageSize extends AbstractValidator
     /**
      * Sets the minimum and maximum image height
      *
-     * @param  array $options               The image height dimensions
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param array $options The image height dimensions
      * @return $this Provides a fluent interface
      */
     public function setImageHeight($options)

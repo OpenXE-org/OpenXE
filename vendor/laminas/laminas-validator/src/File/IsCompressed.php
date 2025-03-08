@@ -7,6 +7,8 @@ use Traversable;
 
 /**
  * Validator which checks if the file already exists in the directory
+ *
+ * @final
  */
 class IsCompressed extends MimeType
 {
@@ -17,7 +19,7 @@ class IsCompressed extends MimeType
     public const NOT_DETECTED = 'fileIsCompressedNotDetected';
     public const NOT_READABLE = 'fileIsCompressedNotReadable';
 
-    /** @var array Error message templates */
+    /** @inheritDoc */
     protected $messageTemplates = [
         self::FALSE_TYPE   => "File is not compressed, '%type%' detected",
         self::NOT_DETECTED => 'The mimetype could not be detected from the file',

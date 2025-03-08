@@ -1,15 +1,13 @@
-<?php // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
+<?php
 
 namespace Laminas\Validator;
 
+use Laminas\Stdlib\ArrayUtils;
 use Traversable;
 
 use function count;
-use function is_array;
 use function is_countable;
 use function is_numeric;
-use function sprintf;
-use function ucfirst;
 
 /**
  * Validate that a value is countable and the count meets expectations.
@@ -25,6 +23,20 @@ use function ucfirst;
  * When creating the instance or calling `setOptions()`, if you specify a
  * "count" option, specifying either "min" or "max" leads to an inconsistent
  * state and, as such will raise an Exception\InvalidArgumentException.
+ *
+ * @psalm-type Options = array{
+ *     count: int|null,
+ *     min: int|null,
+ *     max: int|null,
+ * }
+ * @psalm-type OptionsArgument = array{
+ *     count?: int|null,
+ *     min?: int|null,
+ *     max?: int|null,
+ * }&array<string, mixed>
+ * @property Options&array<string, mixed> $options Required to stop Psalm getting confused about the declaration
+ *                                                 on AbstractValidator
+ * @final
  */
 class IsCountable extends AbstractValidator
 {
@@ -36,7 +48,7 @@ class IsCountable extends AbstractValidator
     /**
      * Validation failure message template definitions
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $messageTemplates = [
         self::NOT_COUNTABLE => 'The input must be an array or an instance of \\Countable',
@@ -48,7 +60,7 @@ class IsCountable extends AbstractValidator
     /**
      * Additional variables available for validation failure messages
      *
-     * @var array
+     * @var array<string, array{options: string}>
      */
     protected $messageVariables = [
         'count' => ['options' => 'count'],
@@ -56,11 +68,7 @@ class IsCountable extends AbstractValidator
         'max'   => ['options' => 'max'],
     ];
 
-    /**
-     * Options for the between validator
-     *
-     * @var array
-     */
+    /** @psalm-var Options */
     protected $options = [
         'count' => null,
         'min'   => null,
@@ -68,28 +76,40 @@ class IsCountable extends AbstractValidator
     ];
 
     /**
-     * @param array|Traversable $options
+     * @param OptionsArgument|iterable<string, mixed> $options
      * @return $this Provides fluid interface
      */
     public function setOptions($options = [])
     {
-        foreach (['count', 'min', 'max'] as $option) {
-            if (! is_array($options) || ! isset($options[$option])) {
-                continue;
-            }
-
-            $method = sprintf('set%s', ucfirst($option));
-            $this->$method($options[$option]);
-            unset($options[$option]);
+        if ($options instanceof Traversable) {
+            $options = ArrayUtils::iteratorToArray($options);
         }
 
-        return parent::setOptions($options);
+        /** @psalm-var Options $options */
+
+        if (isset($options['count'])) {
+            $this->setCount($options['count']);
+        }
+
+        if (isset($options['min'])) {
+            $this->setMin($options['min']);
+        }
+
+        if (isset($options['max'])) {
+            $this->setMax($options['max']);
+        }
+
+        unset($options['count'], $options['min'], $options['max']);
+
+        parent::setOptions($options);
+
+        return $this;
     }
 
     /**
      * Returns true if and only if $value is countable (and the count validates against optional values).
      *
-     * @param  iterable $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value)
@@ -126,7 +146,9 @@ class IsCountable extends AbstractValidator
     /**
      * Returns the count option
      *
-     * @return mixed
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in 3.0
+     *
+     * @return int|null
      */
     public function getCount()
     {
@@ -136,7 +158,9 @@ class IsCountable extends AbstractValidator
     /**
      * Returns the min option
      *
-     * @return mixed
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in 3.0
+     *
+     * @return int|null
      */
     public function getMin()
     {
@@ -146,7 +170,9 @@ class IsCountable extends AbstractValidator
     /**
      * Returns the max option
      *
-     * @return mixed
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in 3.0
+     *
+     * @return int|null
      */
     public function getMax()
     {
@@ -154,12 +180,10 @@ class IsCountable extends AbstractValidator
     }
 
     /**
-     * @param mixed $value
-     * @return void
      * @throws Exception\InvalidArgumentException If either a min or max option
      *     was previously set.
      */
-    private function setCount($value)
+    private function setCount(int $value): void
     {
         if (isset($this->options['min']) || isset($this->options['max'])) {
             throw new Exception\InvalidArgumentException(
@@ -170,12 +194,10 @@ class IsCountable extends AbstractValidator
     }
 
     /**
-     * @param mixed $value
-     * @return void
      * @throws Exception\InvalidArgumentException If either a count or max option
      *     was previously set.
      */
-    private function setMin($value)
+    private function setMin(int $value): void
     {
         if (isset($this->options['count'])) {
             throw new Exception\InvalidArgumentException(
@@ -186,12 +208,10 @@ class IsCountable extends AbstractValidator
     }
 
     /**
-     * @param mixed $value
-     * @return void
      * @throws Exception\InvalidArgumentException If either a count or min option
      *     was previously set.
      */
-    private function setMax($value)
+    private function setMax(int $value): void
     {
         if (isset($this->options['count'])) {
             throw new Exception\InvalidArgumentException(

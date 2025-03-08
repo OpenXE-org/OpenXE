@@ -11,6 +11,7 @@ use function str_replace;
 use function strlen;
 use function substr;
 
+/** @final */
 class Isbn extends AbstractValidator
 {
     public const AUTO    = 'auto';
@@ -91,7 +92,7 @@ class Isbn extends AbstractValidator
     /**
      * Returns true if and only if $value is a valid ISBN.
      *
-     * @param  string $value
+     * @param  mixed $value
      * @return bool
      */
     public function isValid($value)
@@ -101,7 +102,8 @@ class Isbn extends AbstractValidator
             return false;
         }
 
-        $value = (string) $value;
+        $value         = (string) $value;
+        $originalValue = $value;
         $this->setValue($value);
 
         switch ($this->detectFormat()) {
@@ -122,7 +124,7 @@ class Isbn extends AbstractValidator
         $checksum = $isbn->getChecksum($value);
 
         // validate
-        if (substr($this->getValue(), -1) !== (string) $checksum) {
+        if (substr($originalValue, -1) !== (string) $checksum) {
             $this->error(self::NO_ISBN);
             return false;
         }
@@ -134,9 +136,11 @@ class Isbn extends AbstractValidator
      *
      * It is allowed only empty string, hyphen and space.
      *
-     * @param  string $separator
-     * @throws Exception\InvalidArgumentException When $separator is not valid.
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param string $separator
      * @return $this Provides a fluent interface
+     * @throws Exception\InvalidArgumentException When $separator is not valid.
      */
     public function setSeparator($separator)
     {
@@ -152,6 +156,8 @@ class Isbn extends AbstractValidator
     /**
      * Get separator characters.
      *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @return string
      */
     public function getSeparator()
@@ -162,9 +168,11 @@ class Isbn extends AbstractValidator
     /**
      * Set allowed ISBN type.
      *
-     * @param  string $type
-     * @throws Exception\InvalidArgumentException When $type is not valid.
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param string $type
      * @return $this Provides a fluent interface
+     * @throws Exception\InvalidArgumentException When $type is not valid.
      */
     public function setType($type)
     {
@@ -179,6 +187,8 @@ class Isbn extends AbstractValidator
 
     /**
      * Get allowed ISBN type.
+     *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
      *
      * @return string
      */

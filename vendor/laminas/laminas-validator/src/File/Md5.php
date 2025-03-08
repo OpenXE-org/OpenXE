@@ -9,6 +9,10 @@ use function is_readable;
 
 /**
  * Validator for the md5 hash of given files
+ *
+ * @deprecated Since 2.61.0 Use the {@link Hash} validator and specify `md5` as the algorithm
+ *
+ * @final
  */
 class Md5 extends Hash
 {
@@ -41,6 +45,8 @@ class Md5 extends Hash
     /**
      * Returns all set md5 hashes
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getMd5()
@@ -51,7 +57,9 @@ class Md5 extends Hash
     /**
      * Sets the md5 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string|array $options
      * @return Hash Provides a fluent interface
      */
     public function setMd5($options)
@@ -63,7 +71,9 @@ class Md5 extends Hash
     /**
      * Adds the md5 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string|array $options
      * @return Hash Provides a fluent interface
      */
     public function addMd5($options)

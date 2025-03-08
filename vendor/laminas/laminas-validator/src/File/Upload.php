@@ -17,6 +17,10 @@ use function is_uploaded_file;
 
 /**
  * Validator for the maximum size of a file up to a max of 2GB
+ *
+ * @deprecated Since 2.61.0 Use the {@link UploadFile} validator instead
+ *
+ * @final
  */
 class Upload extends AbstractValidator
 {
@@ -75,7 +79,9 @@ class Upload extends AbstractValidator
     /**
      * Returns the array of set files
      *
-     * @param  string $file (Optional) The file to return in detail
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string $file (Optional) The file to return in detail
      * @return array
      * @throws Exception\InvalidArgumentException If file is not found.
      */
@@ -110,7 +116,9 @@ class Upload extends AbstractValidator
     /**
      * Sets the files to be checked
      *
-     * @param  array $files The files to check in syntax of \Laminas\File\Transfer\Transfer
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param array $files The files to check in syntax of \Laminas\File\Transfer\Transfer
      * @return $this Provides a fluent interface
      */
     public function setFiles($files = [])

@@ -10,6 +10,11 @@ use function array_shift;
 use function func_get_args;
 use function is_array;
 
+/**
+ * @deprecated Since 2.60.0 - This validator has been superseded by the NumberComparison and DateComparison validators
+ *
+ * @final
+ */
 class GreaterThan extends AbstractValidator
 {
     public const NOT_GREATER           = 'notGreaterThan';
@@ -96,10 +101,9 @@ class GreaterThan extends AbstractValidator
     /**
      * Sets the min option
      *
-     * @param  mixed $min
      * @return $this Provides a fluent interface
      */
-    public function setMin($min)
+    public function setMin(mixed $min)
     {
         $this->min = $min;
         return $this;

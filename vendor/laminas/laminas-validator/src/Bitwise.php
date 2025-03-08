@@ -9,6 +9,7 @@ use function func_get_args;
 use function is_array;
 use function iterator_to_array;
 
+/** @final */
 class Bitwise extends AbstractValidator
 {
     public const OP_AND = 'and';
@@ -43,7 +44,7 @@ class Bitwise extends AbstractValidator
         'control' => 'control',
     ];
 
-    /** @var null|int */
+    /** @var null|string */
     protected $operator;
 
     /** @var bool */
@@ -86,6 +87,8 @@ class Bitwise extends AbstractValidator
     /**
      * Returns the control parameter.
      *
+     * @deprecated Since 2.60 All option getters and setters will be removed in 3.0
+     *
      * @return integer
      */
     public function getControl()
@@ -96,7 +99,9 @@ class Bitwise extends AbstractValidator
     /**
      * Returns the operator parameter.
      *
-     * @return null|int
+     * @deprecated Since 2.60 All option getters and setters will be removed in 3.0
+     *
+     * @return null|string
      */
     public function getOperator()
     {
@@ -105,6 +110,8 @@ class Bitwise extends AbstractValidator
 
     /**
      * Returns the strict parameter.
+     *
+     * @deprecated Since 2.60 All option getters and setters will be removed in 3.0
      *
      * @return boolean
      */
@@ -165,6 +172,8 @@ class Bitwise extends AbstractValidator
     /**
      * Sets the control parameter.
      *
+     * @deprecated Since 2.60 All option getters and setters will be removed in 3.0
+     *
      * @param  integer $control
      * @return $this
      */
@@ -178,6 +187,8 @@ class Bitwise extends AbstractValidator
     /**
      * Sets the operator parameter.
      *
+     * @deprecated Since 2.60 All option getters and setters will be removed in 3.0
+     *
      * @param  string  $operator
      * @return $this
      */
@@ -190,6 +201,8 @@ class Bitwise extends AbstractValidator
 
     /**
      * Sets the strict parameter.
+     *
+     * @deprecated Since 2.60 All option getters and setters will be removed in 3.0
      *
      * @param  boolean $strict
      * @return $this

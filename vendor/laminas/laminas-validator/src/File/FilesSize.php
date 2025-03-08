@@ -20,6 +20,8 @@ use function is_string;
 
 /**
  * Validator for the size of all files which will be validated in sum
+ *
+ * @final
  */
 class FilesSize extends Size
 {
@@ -162,7 +164,7 @@ class FilesSize extends Size
     /**
      * Throws an error of the given type
      *
-     * @param  string $file
+     * @param  string|null|array $file
      * @param  string $errorType
      * @return false
      */
