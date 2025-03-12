@@ -36,7 +36,7 @@ class Crossselling
 
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler('list', 'ActionList');
-        $this->app->ActionHandler('add', 'ActionAdd');
+        $this->app->ActionHandler('add', 'ActionEdit');
         $this->app->ActionHandler('edit', 'ActionEdit');
         $this->app->ActionHandler('delete', 'ActionDelete');
         $this->app->ActionHandlerListen($app);
@@ -53,15 +53,15 @@ class Crossselling
     {
         switch ($name) {
             case 'crossselling_list':
-                $heading = ['', 'Artikel', 'Cross-Selling Artikel', 'Art', 'Men&uuml;'];
-                $width = ['1%', '30%', '30%', '5%', '1%']; // Fill out manually later
-                $findcols = ['a.name_de', 'a2.name_de', null];
-                $searchsql = ['a.name_de', 'a2.name_de'];
+                $heading = ['', 'Artikel Nummer', 'Artikel Name', 'CS Artikel Nummer', 'Cross-Selling Artikel Name', 'Art', 'Men&uuml;'];
+                $width = ['1%', '10%', '30%', '10%', '30%', '5%', '1%']; // Fill out manually later
+                $findcols = [null, 'a.nummer', 'a.name_de', 'a2.nummer', 'a2.name_de', null];
+                $searchsql = ['a.nummer', 'a.name_de', 'a2.nummer', 'a2.name_de'];
                 $menu = '<table><tr><td nowrap>'
                     . "<img class=\"vueAction\" data-action=\"edit\" data-id=\"%value%\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\">&nbsp;"
                     . "<img class=\"vueAction\" data-action=\"delete\" data-id=\"%value%\" src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\">"
                     . '</td></tr></table>';
-                $sql = "SELECT SQL_CALC_FOUND_ROWS csa.id, csa.id, a.name_de, a2.name_de, 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS csa.id, csa.id, a.nummer, a.name_de, a2.nummer, a2.name_de, 
                            CASE csa.art WHEN 1 THEN 'Ähnlich' WHEN 2 THEN 'Zubehör' END as art, csa.id 
                         FROM crossselling_artikel csa
                         JOIN artikel a ON a.id = csa.artikel
@@ -91,17 +91,6 @@ class Crossselling
         $this->app->Tpl->Parse('PAGE', 'crossselling_list.tpl');
     }
 
-    public function ActionAdd(): JsonResponse
-    {
-        $json = $this->request->getJson();
-        if (!$this->checkShopProjectRights($json)) {
-            return JsonResponse::Forbidden();
-        }
-        $obj = $this->jsonToCrossSellingArticle($json);
-        $this->gateway->Insert($obj);
-        return JsonResponse::NoContent();
-    }
-
     public function ActionEdit(): JsonResponse
     {
         if ($this->request->getMethod() == 'POST') {
@@ -110,12 +99,17 @@ class Crossselling
                 return JsonResponse::Forbidden();
             }
             $obj = $this->jsonToCrossSellingArticle($json);
-            $this->gateway->Update($obj);
+            if ($this->gateway->Exists($obj))
+                return JsonResponse::BadRequest(['error' => 'Die ausgewählten Artikel sind bereits verknüpft.']);
+            if ($obj->id > 0)
+                $this->gateway->Update($obj);
+            else
+                $this->gateway->Insert($obj);
             return JsonResponse::NoContent();
         }
         $id = (int)$this->request->getGet('id');
         $obj = $this->gateway->Get($id);
-        $sql = 'SELECT id, nummer, name_de FROM artikel WHERE id = :id';
+        $sql = 'SELECT id, nummer, name_de as name FROM artikel WHERE id = :id';
         $obj->mainArticle = $this->database->fetchRow($sql, ['id' => $obj->mainArticleId]);
         $obj->connectedArticle = $this->database->fetchRow($sql, ['id' => $obj->connectedArticleId]);
         if ($obj->shopId > 0) {

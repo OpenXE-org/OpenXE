@@ -58,4 +58,16 @@ final class CrossSellingGateway
     $sql = 'DELETE FROM crossselling_artikel WHERE id = :id';
     $this->db->perform($sql, ['id' => $id]);
   }
+
+  public function Exists(CrossSellingArticle $obj) : bool {
+      $sql = 'SELECT 1 FROM crossselling_artikel WHERE art = :type 
+              AND (
+                  (artikel = :mainArticleId AND crosssellingartikel = :connectedArticleId) 
+                  OR (artikel = :connectedArticleId AND crosssellingartikel = :mainArticleId AND (gegenseitigzuweisen = 1 OR :bidirectional))
+                  )
+              AND shop = :shopId
+              AND id != :id';
+      $res = $this->db->fetchValue($sql, (array)$obj);
+      return $res == 1;
+  }
 }

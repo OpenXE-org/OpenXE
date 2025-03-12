@@ -21,7 +21,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['save', 'close']);
 
-const model = ref({});
+const model = ref({active: true});
 
 onMounted(async () => {
   if (props.id > 0) {
@@ -39,8 +39,7 @@ async function save() {
     ? 'index.php?module=crossselling&action=edit'
     : 'index.php?module=crossselling&action=add';
   await axios.post(url, {...props, ...model.value})
-      .catch(AlertErrorHandler)
-      .then(() => {emit('save')});
+      .then(() => {emit('save')}, AlertErrorHandler);
 }
 </script>
 
