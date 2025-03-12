@@ -2687,7 +2687,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
   // @refactor LagerBeleg Modul
   // Returns Array:
   // storageMovements => array('lager_platz', 'artikel', 'menge');
-  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $standardlager = 0, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false)
+  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $standardlager = 0, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false, $ziellagerplatz = null)
   {
     if($lieferschein <= 0) {
       return;
@@ -2981,7 +2981,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               }
             }
           }
-          else {
+          else { // ! MHD
             if($chargenverwaltung) {
               if($standardlager > 0) {
                 $lager_max = $this->app->DB->SelectArr(
@@ -3074,7 +3074,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
                 }
               }
             }
-            else{
+            else{ // ! Chargen NORMAL PROCESS HERE
               if($standardlager > 0) {
                 $lager_max = $this->app->DB->SelectArr(
                   "SELECT lpi.lager_platz, lpi.menge,lpi.id 
@@ -3129,7 +3129,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
           $storageMovements[] = array('lager_platz' => $lager_max[0]['lager_platz'], 'artikel' => $artikel,'menge' => $menge_auslagern);
 
-
           if (!$simulieren) {
               $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
               $storageLocations[] = $lager_max[0]['lager_platz'];
@@ -3143,6 +3142,11 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               if(!$nurrestmenge){
                   $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
               }
+
+              if ($ziellagerplatz) {
+                $this->LagerEinlagern(artikel: $artikel, menge: $menge_auslagern, regal: $ziellagerplatz, projekt: $projekt, grund: ucfirst($belegtyp)." ".$belegnr, doctype: $belegtyp, doctypeid: $lieferschein);
+              }
+
           }
           $restmenge = round($restmenge - $menge_auslagern, 8);
         }
@@ -20112,9 +20116,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         )
       );
     }
-
     $this->RunHook('LagerEinlagern_after',7, $artikel, $menge, $regal, $projekt, $grund, $doctype,$doctypeid);
-    
     $this->SeriennummernCheckBenachrichtigung($artikel);
   }
 

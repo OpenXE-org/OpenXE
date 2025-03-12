@@ -42,17 +42,14 @@
   <legend>Stapelverarbeitung</legend>
   <input type="checkbox" value="1" id="autoalle" checked="checked" />&nbsp;alle markieren&nbsp;
   <input type="hidden" id="bezeichnung" name="bezeichnung" value="" />
-  <!--<input type="submit" class="btnBlue" value="Auto-Versand starten" id="submit" name="submit">&nbsp;-->
-  <!--<input type="button" class="btnBlue" value="Auto-Versand starten (mit Kommissionierbezeichnung)" onclick="kommissionierfrage();" name="submit2" />&nbsp;-->
   <select name="auftrag_versandauswahl" id="auftrag_versandauswahl">
     <option value="">{|bitte w&auml;hlen|} ...</option>
     <option value="versandstarten">Auto-Versand</option>
-    <option value="versandstartenmit">Auto-Versand (mit Kommissionierbez.)</option>
     <option value="vorkommissionieren_ohne_etiketten">Vorkommissionieren (ohne Etiketten)</option>
     <option value="vorkommissionieren">Vorkommissionieren (mit Etiketten)</option>
-    <option value="drucken">drucken</option>
   </select>
-  <span id="druckerauswahl" style="display: none;">{|Drucker|}: <select name="seldruckerversand" id="seldruckerversand">[SELDRUCKERVERSAND]</select></span><input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />
+  <input type="text" id="kommissionierlagerplatz" name="kommissionierlagerplatz" value="" placeholder="Lagerplatz f&uuml;r Kommissionierung" size="30">
+  <input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />
   <input type="button" value="Anzahl x markieren" onclick="var anzahl = prompt('Anzahl zu markierender Aufträge:', ''); if( anzahl > 0) anzahlxmarkieren(anzahl);" class="btnBlue">&nbsp;
   [AUTOBERECHNEN]
 </fieldset>
