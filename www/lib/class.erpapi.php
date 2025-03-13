@@ -20764,6 +20764,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           )
         );
         $kommissionierverfahren= $projectArr['kommissionierverfahren'];
+        $projektbevorzugteslager = $projectArr['standardlager'];
         if(
         !($kommissionierverfahren==='lieferscheinlager' ||
           $kommissionierverfahren==='lieferscheinlagerscan' ||
@@ -20801,7 +20802,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $isBatch = false;
       $isSn = false;
     }
-    if($standardlager > 0)
+    if($standardlager > 0) // Standardlager beleg
     {
       $summe_im_lager = round(
         $this->app->DB->Select(
@@ -20875,7 +20876,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         ),
         $this->GetLagerNachkommastellen()
       );
-    }elseif($projektlager > 0)
+    }elseif($projektlager > 0) // Projektlager
     {
       $summe_im_lager = round(
         $this->app->DB->Select(
@@ -20930,15 +20931,25 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       }
       $artikel_reserviert = round($this->app->DB->Select("SELECT SUM(menge) 
         FROM lager_reserviert WHERE artikel='".$artikel."' AND projekt='$projekt' AND (datum>=NOW() OR datum='0000-00-00')"),$this->GetLagerNachkommastellen());
-    } else {
+    } else { // Normal
       $summe_im_lager = round(
         $this->app->DB->Select(
           sprintf(
-              "SELECT SUM(li.menge) 
-              FROM lager_platz_inhalt AS li 
-              LEFT JOIN lager_platz lp ON lp.id=li.lager_platz WHERE li.artikel= %d
-              AND lp.autolagersperre!=1 AND lp.sperrlager!=1",
-              $artikel
+              "SELECT SUM(li.menge)
+              FROM lager_platz_inhalt AS li
+              INNER JOIN lager_platz lp ON lp.id = li.lager_platz
+              INNER JOIN lager l ON lp.lager = l.id
+              WHERE
+                li.artikel= %d
+              AND
+                (l.id) = %d OR (%d = 0)
+              AND
+                lp.autolagersperre!=1 
+              AND
+                lp.sperrlager!=1",
+              $artikel,
+              $projektbevorzugteslager,
+              $projektbevorzugteslager
           )
         ),
         $this->GetLagerNachkommastellen()
@@ -20997,6 +21008,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       return 1;
     }
 
+/*
     if($standardlager) {
       $nichtStandardlager = round($summe_im_lager_gesamt - $summe_im_lager,8);
       if($nichtStandardlager > 0 ) {
@@ -21009,7 +21021,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           return 1;
         }
       }
-    }
+    }*/
 
     if($objekt === 'auftrag' && $artikel_fuer_adresse_reserviert > 0)
     {

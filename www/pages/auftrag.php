@@ -2503,11 +2503,19 @@ class Auftrag extends GenAuftrag
       $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
       $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
       $projektlager = 0;
-      if(!$standardlager){
-        $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
-      }
-      if($projektlager){
-        $projektlager = $auftragArr[0]['projekt'];
+      if(!$standardlager)
+      {
+        if (!$standardlager) {
+          $projektbevorzugteslager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+          if ($projektbevorzugteslager) {
+              $standardlager = $projektbevorzugteslager;
+          }
+        } else {
+          $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+          if($projektlager){
+            $projektlager = $auftragArr[0]['projekt'];
+          }
+        }
       }
       $standardlagertext = '';
       if($standardlager){
