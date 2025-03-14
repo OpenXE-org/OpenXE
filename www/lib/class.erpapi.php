@@ -2794,11 +2794,16 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         );
       }
     }
+
     if($standardlager == 0) {
       if($projekt > 0){
-        $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id='$projekt'");
+        $standardlager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id='$projekt'");
+        if($standardlager == 0) {
+           $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id='$projekt'");
+        }
       }
     }
+
     $storageLocations = [];
     $storageMovements = [];
     $cartikel = $artikelarr?count($artikelarr):0;
