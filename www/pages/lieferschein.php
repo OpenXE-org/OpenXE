@@ -406,9 +406,7 @@ class Lieferschein extends GenLieferschein
       if($this->LieferscheinCheck($id))
       {
         // wenn alles lagernd ist und nicht ausgelagert ist
-        $standardlager = $this->app->DB->Select("SELECT standardlager FROM lieferschein WHERE id = '$id' LIMIT 1");
-        if($standardlager && $this->app->DB->Select("SELECT count(id) FROM lager") <= 1)$standardlager = 0;
-        $this->app->erp->LieferscheinAuslagern($id, true, $standardlager, 'lieferschein', 0, true);
+        $this->app->erp->LieferscheinAuslagern(lieferschein: $id, anzeige_lagerplaetze_in_lieferschein: true, forceseriennummerngeliefertsetzen: true);
         $this->app->erp->RunHook('lieferschein_auslagern', 1, $id);
         $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Lieferschein wurde ausgelagert!</div>");
       } else {

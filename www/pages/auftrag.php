@@ -3777,7 +3777,7 @@ class Auftrag extends GenAuftrag
       $this->app->DB->Update("UPDATE lieferschein SET belegnr='$belegnr', status='freigegeben' WHERE id='$newid' LIMIT 1");
       $this->app->erp->LieferscheinProtokoll($newid,'Lieferschein freigegeben');
 
-      $this->app->erp->LieferscheinAuslagern($newid,true, (int)$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1"),'lieferschein',true);
+      $this->app->erp->LieferscheinAuslagern(lieferschein: $newid, anzeige_lagerplaetze_in_lieferschein: true, belegtyp: 'lieferschein', chargenmhdnachprojekt: true);
       $Brief = new LieferscheinPDF($this->app,$projekt);
       $Brief->GetLieferschein($newid);
       $tmpfile = $Brief->displayTMP();
@@ -5812,13 +5812,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
             $auslagernresult =            
             $this->app->erp->LieferscheinAuslagern(
-              $lieferschein,
-              true,
-              (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $id)),
-              'lieferschein',
-              true,
-              false,
-              $nurRestmenge
+              lieferschein: $lieferschein,
+              anzeige_lagerplaetze_in_lieferschein: true,
+              chargenmhdnachprojekt: true,
+              nurrestmenge: $nurRestmenge
             );
             
             $this->app->erp->SeriennummernCheckLieferscheinBenachrichtigung($lieferschein);
@@ -6550,7 +6547,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 $this->app->erp->LieferscheinAuslagern(
                                   lieferschein: $v,
                                   anzeige_lagerplaetze_in_lieferschein: true,
-                                  standardlager: (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $v)),
                                   belegtyp: 'auftrag',
                                   chargenmhdnachprojekt: true,
                                   forceseriennummerngeliefertsetzen: false,
@@ -6600,6 +6596,41 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         if (!empty($check)) {
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$check['belegnr']);
                         } else {
+                            $auslagernresult =
+                                $this->app->erp->LieferscheinAuslagern(
+                                  lieferschein: $v,
+                                  anzeige_lagerplaetze_in_lieferschein: true,
+                                  belegtyp: 'auftrag',
+                                  chargenmhdnachprojekt: true,
+                                  simulieren: $kommissionierlagerplatz?false:true,
+                                  ziellagerplatz: $kommissionierlagerplatz
+                                );
+
+                            if (count($auslagernresult['storageMovements']) == 0) {
+                                throw new exception("Lagervorgang fehlgeschlagen");
+                            }
+
+                            if ($kommissionierlagerplatz) {
+                                $lagerplatz = $this->app->DB->SelectRow("SELECT kurzbezeichnung, lager FROM lager_platz WHERE id = ".$kommissionierlagerplatz);
+                                $kommentar = "Kommissioniert in ".$lagerplatz['kurzbezeichnung'];
+                                $this->app->erp->AuftragProtokoll($v,'Auftrag kommissioniert in '.$lagerplatz['kurzbezeichnung']);
+                                $this->app->DB->Update("UPDATE auftrag SET standardlager = ".$lagerplatz['lager']." WHERE id = ".$v);
+                            }
+
+                            $settings = $this->app->DB->SelectRow("
+                                SELECT
+                                    projekt.autodruckkommissionierscheinstufe1,
+                                    projekt.autodruckkommissionierscheinstufe1menge,
+                                    adresse.etikett,
+                                    adresse.etikettautodruck,
+                                    projekt.id as projekt,
+                                    auftrag.adresse
+                                FROM projekt
+                                INNER JOIN auftrag ON projekt.id = auftrag.projekt
+                                INNER JOIN adresse ON adresse.id = auftrag.adresse
+                                WHERE auftrag.id = '".$v."'"
+                            );
+
                             $kid = $this->app->erp->GetNextKommissionierung();
                             $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
                             $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');

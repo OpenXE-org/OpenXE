@@ -2687,7 +2687,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
   // @refactor LagerBeleg Modul
   // Returns Array:
   // storageMovements => array('lager_platz', 'artikel', 'menge');
-  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $standardlager = 0, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false)
+  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false, $ziellagerplatz = null)
   {
     if($lieferschein <= 0) {
       return;
@@ -2708,6 +2708,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         $belegtyp, (int)$lieferschein
       )
     );
+    $standardlager = $belegarr['standardlager'];
     $kommissionskonsignationslager = 0;
     if($belegtyp === 'lieferschein'){
       $kommissionskonsignationslager = $belegarr['kommissionskonsignationslager'];
