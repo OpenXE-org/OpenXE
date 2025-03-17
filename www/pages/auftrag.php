@@ -2503,11 +2503,19 @@ class Auftrag extends GenAuftrag
       $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
       $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
       $projektlager = 0;
-      if(!$standardlager){
-        $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
-      }
-      if($projektlager){
-        $projektlager = $auftragArr[0]['projekt'];
+      if(!$standardlager)
+      {
+        if (!$standardlager) {
+          $projektbevorzugteslager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+          if ($projektbevorzugteslager) {
+              $standardlager = $projektbevorzugteslager;
+          }
+        } else {
+          $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+          if($projektlager){
+            $projektlager = $auftragArr[0]['projekt'];
+          }
+        }
       }
       $standardlagertext = '';
       if($standardlager){
@@ -3769,7 +3777,7 @@ class Auftrag extends GenAuftrag
       $this->app->DB->Update("UPDATE lieferschein SET belegnr='$belegnr', status='freigegeben' WHERE id='$newid' LIMIT 1");
       $this->app->erp->LieferscheinProtokoll($newid,'Lieferschein freigegeben');
 
-      $this->app->erp->LieferscheinAuslagern($newid,true, (int)$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1"),'lieferschein',true);
+      $this->app->erp->LieferscheinAuslagern(lieferschein: $newid, anzeige_lagerplaetze_in_lieferschein: true, belegtyp: 'lieferschein', chargenmhdnachprojekt: true);
       $Brief = new LieferscheinPDF($this->app,$projekt);
       $Brief->GetLieferschein($newid);
       $tmpfile = $Brief->displayTMP();
@@ -5806,8 +5814,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $this->app->erp->LieferscheinAuslagern(
               lieferschein: $lieferschein,
               anzeige_lagerplaetze_in_lieferschein: true,
-              standardlager: (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $id)),
-              belegtyp: 'lieferschein',
               chargenmhdnachprojekt: true,
               nurrestmenge: $nurRestmenge
             );
@@ -6540,6 +6546,31 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
                 if (!empty($auftraegemarkiert)) {
                     foreach ($auftraegemarkiert as $k => $v) {
+                        $auslagernresult =
+                                $this->app->erp->LieferscheinAuslagern(
+                                  lieferschein: $v,
+                                  anzeige_lagerplaetze_in_lieferschein: true,
+                                  belegtyp: 'auftrag',
+                                  chargenmhdnachprojekt: true,
+                                  forceseriennummerngeliefertsetzen: false,
+                                  nurrestmenge: false,
+                                  simulieren: true
+                                );
+
+                        $settings = $this->app->DB->SelectRow("
+                            SELECT 
+                                projekt.autodruckkommissionierscheinstufe1,
+                                projekt.autodruckkommissionierscheinstufe1menge,
+                                adresse.etikett,
+                                adresse.etikettautodruck,
+                                projekt.id as projekt,
+                                auftrag.adresse
+                            FROM projekt 
+                            INNER JOIN auftrag ON projekt.id = auftrag.projekt
+                            INNER JOIN adresse ON adresse.id = auftrag.adresse
+                            WHERE auftrag.id = '".$v."'"
+                        );                      
+
                         $sql = "
                             SELECT
                                 k.id,
@@ -6568,16 +6599,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         if (!empty($check)) {
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$check['belegnr']);
                         } else {
-
                             $auslagernresult =
                                 $this->app->erp->LieferscheinAuslagern(
                                   lieferschein: $v,
                                   anzeige_lagerplaetze_in_lieferschein: true,
-                                  standardlager: (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $v)),
                                   belegtyp: 'auftrag',
                                   chargenmhdnachprojekt: true,
-                                  forceseriennummerngeliefertsetzen: false,
-                                  nurrestmenge: false,
                                   simulieren: $kommissionierlagerplatz?false:true,
                                   ziellagerplatz: $kommissionierlagerplatz
                                 );

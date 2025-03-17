@@ -46,13 +46,10 @@ class WidgetAuftrag extends WidgetGenAuftrag
       $overwriteVersandart = null;
       if(!$schreibschutzbefore && $projektdanach != $projektabkuerzung){
         $projektdanach = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung = '$projektdanach' LIMIT 1");
-        $this->app->erp->LoadSteuersaetze($id, 'auftrag', $projektdanach);
         if(!empty($projektdanach)){
-          $standardlager = $this->app->DB->Select("SELECT l.id FROM projekt p INNER JOIN lager l ON p.standardlager = l.id WHERE p.id = '$projektdanach' LIMIT 1");
-          if($standardlager && $this->form->CallbackAndMandatorycheck(true)){
-            $this->form->HTMLList['standardlager']->htmlvalue = $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id = '$standardlager' LIMIT 1");
-            $this->form->HTMLList['standardlager']->dbvalue = $standardlager;
-          }
+          $this->app->erp->LoadSteuersaetze($id, 'auftrag', $projektdanach);
+          $this->form->HTMLList['standardlager']->htmlvalue = '';
+          $this->form->HTMLList['standardlager']->dbvalue = 0;
           $deactivateautoshipping = $this->app->erp->Projektdaten($projektdanach, 'deactivateautoshipping');
           if($this->form->CallbackAndMandatorycheck(true)) {
             $this->form->HTMLList['autoversand']->htmlvalue = ($deactivateautoshipping == 0);
