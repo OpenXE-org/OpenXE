@@ -7381,7 +7381,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
      $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
 
-    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $mengedruck, $druckercode, string $kommentar) {
+    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $mengedruck, $druckercode, string $kommentar = '') {
 
         $sql = sprintf(
             "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d, adresse = IF (%d != 0,(SELECT adresse FROM lieferschein WHERE id = %d LIMIT 1),(SELECT adresse FROM auftrag WHERE id = %d LIMIT 1)), ausgelagert = %d, kommentar = CONCAT(kommentar, '%s') WHERE id = %d LIMIT 1",
