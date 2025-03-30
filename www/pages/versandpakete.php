@@ -1198,7 +1198,7 @@ class Versandpakete {
         ";
 
         $gewicht = $this->app->DB->Select($sql);       
-        $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
+        $versandmodul->Paketmarke('TAB1', $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
 
