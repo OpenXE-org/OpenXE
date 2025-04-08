@@ -1099,13 +1099,58 @@ class Ticket {
         if ($docid) {
             $doctype = $this->app->Secure->GetGET("doctype");
             $ticketid = $this->app->Secure->GetGET("ticket");
-            $this->app->erp->AddDateiStichwort($fileid, "Anhang", $doctype , $docid);
-            header("Location: index.php?module=ticket&action=edit&id=".$ticketid);
+            $sendto = "ticket&action=edit&id=".$ticketid;
+        }
+        
+        $adresse = $this->app->DB->Select("SELECT adresse FROM ticket WHERE id = ".$id);
+        if (!empty($adresse)) {
+            $submit = $this->app->Secure->GetPOST("submit");
+
+            switch ($submit) {
+                case 'auftragneu':
+                    $docid = $this->app->erp->CreateAuftrag($adresse);
+                    if (!empty($docid)) {
+                        $doctype = 'auftrag';
+                        $sendto = "auftrag&action=edit&id=".$docid;
+                    } else {
+                        $error_msg = 'Auftrag konnte nicht angelegt werden.';
+                    }
+                break;
+                case 'verbindlichkeitneu':
+                    $datum = $this->app->erp->GetDateiDatum($fileid);
+                    $docid = $this->app->erp->CreateVerbindlichkeit($adresse, $datum);
+                    if (!empty($docid)) {
+                        $doctype = 'verbindlichkeit';
+                        $sendto = "verbindlichkeit&action=edit&id=".$docid;
+                    } else {
+                        $error_msg = 'Verbindlichkeit konnte nicht angelegt werden.';
+                    }
+                break;
+                case 'lieferantengutschriftneu':
+                    $datum = $this->app->erp->GetDateiDatum($fileid);
+                    $docid = $this->app->erp->CreateLieferantengutschrift($adresse, $datum);
+                    if (!empty($docid)) {
+                        $doctype = 'lieferantengutschrift';
+                        $sendto = "lieferantengutschrift&action=edit&id=".$docid;
+                    } else {
+                        $error_msg = 'Lieferantengutschrift konnte nicht angelegt werden.';
+                    }
+                break;
+            }
+        } else {
+            $this->app->Tpl->Set("NEWDISABLED", "disabled");
+            $this->app->Tpl->Set("INFO", "Keine Adresse hinterlegt");
         }
 
-        // For transfer to tablesearch
-        $this->app->User->SetParameter('ticket_adddoc_fileid', $fileid);
-        $this->app->User->SetParameter('ticket_adddoc_ticketid', $id);
+        if ($docid) {            
+            $this->app->erp->AddDateiStichwort($fileid, "Anhang", $doctype , $docid);
+            header("Location: index.php?module=".$sendto);
+        }
+
+        if ($error_msg) {
+            $this->app->Tpl->addMessage('error', $error_msg);
+        }
+
 
         $this->app->YUI->TableSearch('TAB1', 'adddoc', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "ticket_adddoc.tpl");

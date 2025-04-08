@@ -1866,4 +1866,13 @@ class Verbindlichkeit {
 
         return($result);
     }
+
+    // ERPAPI
+    function createLiability($adresse="", $datum = null) {
+        $sql = "INSERT INTO verbindlichkeit (status, adresse, rechnungsdatum, eingangsdatum) VALUES ('angelegt','".$adresse."','".$datum."','".$datum."')";
+        $this->app->DB->Insert($sql);
+        $id = $this->app->DB->GetInsertID();
+        return($id);
+    }
+
 }

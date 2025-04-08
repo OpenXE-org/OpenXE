@@ -8,10 +8,11 @@
 	        		<div class="col-xs-12 col-md-12 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
-                                <legend>{|Dokument zu Auftrag zuordnen|}</legend><i>Info like this.</i>
-                                <input type="submit" name="auftragneu" value="Auftrag anlegen" />
-                                <input type="submit" name="auftragneu" value="Verbindlichkeit anlegen" />
-                                <input type="submit" name="auftragneu" value="Lieferantengutschrift anlegen" />
+                                <legend>{|Dokument zu Beleg zuordnen|}</legend>
+                                <button type="submit" name="submit" value="auftragneu" class="ui-button-icon" [NEWDISABLED]>Auftrag anlegen</button>
+                                <button type="submit" name="submit" value="verbindlichkeitneu" class="ui-button-icon" [NEWDISABLED]>Verbindlichkeit anlegen</button>
+                                <button type="submit" name="submit" value="lieferantengutschriftneu" class="ui-button-icon" [NEWDISABLED]>Lieferantengutschrift anlegen</button>
+                                <i>[INFO]</i>
                                 [TAB1]
                             </fieldset>            
                         </div>

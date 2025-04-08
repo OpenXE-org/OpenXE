@@ -33086,12 +33086,22 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-      function CreateVerbindlichkeit($adresse="")
+      function CreateVerbindlichkeit($adresse="", $datum = null)
       {
         /** @var Verbindlichkeit $obj */
         $obj = $this->app->erp->LoadModul('verbindlichkeit');
         if(!empty($obj) && method_exists($obj,'createLiability')) {
-          return $obj->createLiability($adresse);
+          return $obj->createLiability($adresse, $datum);
+        }
+        return 0;
+      }
+
+      function CreateLieferantengutschrift($adresse="", $datum = null)
+      {
+        /** @var Verbindlichkeit $obj */
+        $obj = $this->app->erp->LoadModul('lieferantengutschrift');
+        if(!empty($obj) && method_exists($obj,'createlieferantengutschrift')) {
+          return $obj->createlieferantengutschrift($adresse, $datum);
         }
         return 0;
       }
@@ -36893,6 +36903,13 @@ function Firmendaten($field,$projekt="")
         $tmp = pathinfo($newid);
 
         return strtolower($tmp['extension']);
+      }
+
+      function GetDateiDatum($id) // MYSQL format
+      {
+        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
+        $date = $this->app->DB->Select("SELECT datum FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
+        return ($date);
       }
 
     /*

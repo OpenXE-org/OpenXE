@@ -1802,4 +1802,13 @@ class lieferantengutschrift {
              
         return($result);
     }
+
+    // ERPAPI
+    function createlieferantengutschrift($adresse="", $datum = null) {
+        $sql = "INSERT INTO lieferantengutschrift (status, adresse, rechnungsdatum, eingangsdatum) VALUES ('angelegt','".$adresse."','".$datum."','".$datum."')";
+        $this->app->DB->Insert($sql);
+        $id = $this->app->DB->GetInsertID();
+        return($id);
+    }
+
 }
