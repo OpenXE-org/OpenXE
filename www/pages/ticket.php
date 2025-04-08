@@ -1081,9 +1081,10 @@ class Ticket {
         $this->app->Tpl->Set('MESSAGE', $msg);
 
         $belege = $this->app->erp->GetTicketBelege($id);
+
         if (!empty($belege)) {
             function beleglink($beleg) {
-               return "<a href=index.php?module=".$beleg['doctype']."&action=edit&id=".$beleg['id'].">".(empty($beleg['belegnr'])?'ENTWURF':$beleg['belegnr'])."</a>";
+               return "<a href=index.php?module=".$beleg['doctype']."&action=edit&id=".$beleg['id'].">".(empty($beleg['belegnr'])?'ENTWURF':$beleg['belegnr']).(empty($beleg['externenr'])?"":" (".$beleg['externenr'].")")."</a>";
             }
             $this->app->Tpl->AddMessage('info',"Zu diesem Ticket geh&ouml;ren Belege: ".implode(', ',array_map('beleglink', $belege)), html: true);
         }

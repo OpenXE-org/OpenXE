@@ -36910,7 +36910,8 @@ function Firmendaten($field,$projekt="")
                 SELECT
                     dsb.objekt doctype,
                     dsb.parameter id,
-                    belege.belegnr
+                    belege.belegnr,
+                    belege.externenr
                 FROM
                     `datei_stichwoerter` dst
                 INNER JOIN `datei_stichwoerter` dsb ON
@@ -36921,11 +36922,11 @@ function Firmendaten($field,$projekt="")
                     t.schluessel = tn.ticket
                 INNER JOIN
                 (
-                    SELECT 'Auftrag' typ, id belegid, belegnr, datum, name FROM auftrag
+                    SELECT 'Auftrag' typ, id belegid, belegnr, ihrebestellnummer externenr, datum, name FROM auftrag
                     UNION
-                    SELECT 'Verbindlichkeit', v.id, v.belegnr, v.datum, a.name FROM verbindlichkeit v INNER JOIN adresse a ON v.adresse = a.id
+                    SELECT 'Verbindlichkeit', v.id, v.belegnr, rechnung, v.datum, a.name FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id
                     UNION
-                    SELECT 'Lieferantengutschrift', lg.id, lg.belegnr, lg.datum, a.name FROM lieferantengutschrift lg JOIN adresse a ON lg.adresse = a.id
+                    SELECT 'Lieferantengutschrift', lg.id, lg.belegnr, rechnung, lg.datum, a.name FROM lieferantengutschrift lg LEFT JOIN adresse a ON lg.adresse = a.id
                 ) belege ON belege.typ = dsb.objekt AND belege.belegid = dsb.parameter
                 WHERE
                     dsb.objekt IN(
@@ -36934,6 +36935,7 @@ function Firmendaten($field,$projekt="")
                         'verbindlichkeit'
                     ) AND t.id = '".$ticketid."'
             ";
+
             return($this->app->DB->SelectArr($sql));
         }
 
