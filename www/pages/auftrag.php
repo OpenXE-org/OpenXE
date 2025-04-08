@@ -4877,6 +4877,13 @@ class Auftrag extends GenAuftrag
       );
     }       
 
+    $tickets = $this->app->erp->GetBelegTickets('auftrag',$id);
+    if (!empty($tickets)) {
+        function ticketlink($ticket) {
+           return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Auftrag geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+    }
 
     $check = $this->app->DB->SelectPairs(
       "SELECT b.id, b.belegnr

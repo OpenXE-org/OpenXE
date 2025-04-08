@@ -36886,6 +36886,57 @@ function Firmendaten($field,$projekt="")
         return false;
       }
 
+        function GetBelegTickets($doctype, $doctypeid) {
+            $sql = "
+                SELECT
+                    t.id,
+                    tn.ticket
+                FROM
+                    `datei_stichwoerter` dst
+                INNER JOIN `datei_stichwoerter` dsb ON
+                    dst.datei = dsb.datei
+                INNER JOIN `ticket_nachricht` tn ON
+                    tn.id = dst.parameter
+                INNER JOIN `ticket` t ON
+                    t.schluessel = tn.ticket
+                WHERE
+                    dst.objekt = 'Ticket' AND dsb.objekt = '".$doctype."' AND dsb.parameter = '".$doctypeid."'
+            ";
+            return($this->app->DB->SelectArr($sql));
+        }
+
+        function GetTicketBelege($ticketid) {
+            $sql = "
+                SELECT
+                    dsb.objekt doctype,
+                    dsb.parameter id,
+                    belege.belegnr
+                FROM
+                    `datei_stichwoerter` dst
+                INNER JOIN `datei_stichwoerter` dsb ON
+                    dst.datei = dsb.datei
+                INNER JOIN `ticket_nachricht` tn ON
+                    tn.id = dst.parameter
+                INNER JOIN `ticket` t ON
+                    t.schluessel = tn.ticket
+                INNER JOIN
+                (
+                    SELECT 'Auftrag' typ, id belegid, belegnr, datum, name FROM auftrag
+                    UNION
+                    SELECT 'Verbindlichkeit', v.id, v.belegnr, v.datum, a.name FROM verbindlichkeit v INNER JOIN adresse a ON v.adresse = a.id
+                    UNION
+                    SELECT 'Lieferantengutschrift', lg.id, lg.belegnr, lg.datum, a.name FROM lieferantengutschrift lg JOIN adresse a ON lg.adresse = a.id
+                ) belege ON belege.typ = dsb.objekt AND belege.belegid = dsb.parameter
+                WHERE
+                    dsb.objekt IN(
+                        'lieferantengutschrift',
+                        'auftrag',
+                        'verbindlichkeit'
+                    ) AND t.id = '".$ticketid."'
+            ";
+            return($this->app->DB->SelectArr($sql));
+        }
+
       function GetDateiName($id)
       {
         $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");

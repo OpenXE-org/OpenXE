@@ -167,7 +167,7 @@ class Ticket {
                     $heading = array('Typ','Belegnr.','Datum','Name', 'Men&uuml;','');
                     $width = array(  '10%',  '10%',   '10%',  '80%',   '1%');
 
-                    $findcols = array('belegid','belegnr','datum','name');
+                    $findcols = array('typ','belegnr','datum','name');
                     $searchsql = array('belegnr');
 
 //                    $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticket&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" border=\"0\"></a>" . "</td></tr></table>";
@@ -191,7 +191,7 @@ class Ticket {
                         '&doctype=',
                         ['sql' => 'LOWER(typ)'],
                         '&fileid='.$fileid,
-                        '&ticket='.$ticketid,
+                        '&id='.$ticketid,
                         '">',
                         '<img src=\"./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg\" border=\"0\">',
                         '</a>'
@@ -212,8 +212,10 @@ class Ticket {
                             SELECT 'Verbindlichkeit', v.id, v.belegnr, v.datum, a.name FROM verbindlichkeit v INNER JOIN adresse a ON v.adresse = a.id
                             UNION
                             SELECT 'Lieferantengutschrift', lg.id, lg.belegnr, lg.datum, a.name FROM lieferantengutschrift lg JOIN adresse a ON lg.adresse = a.id
-                        ) belege WHERE belegnr <> ''
+                        ) belege
                     ";
+
+                    $where = "(belegnr <> '')";
 
 //                    echo($sql);
 
@@ -1073,10 +1075,18 @@ class Ticket {
 
           break;
         }
-
+        
         $this->add_messages_tpl($id, $messages, false);
         $this->add_attachments_header_html($id,'TICKET_ANHANG');
         $this->app->Tpl->Set('MESSAGE', $msg);
+
+        $belege = $this->app->erp->GetTicketBelege($id);
+        if (!empty($belege)) {
+            function beleglink($beleg) {
+               return "<a href=index.php?module=".$beleg['doctype']."&action=edit&id=".$beleg['id'].">".$beleg['belegnr']."</a>";
+            }
+            $this->app->Tpl->AddMessage('info',"Zu diesem Ticket geh&ouml;ren Belege: ".implode(', ',array_map('beleglink', $belege)), html: true);
+        }
         $this->app->Tpl->Parse('PAGE', "ticket_edit.tpl");
     }
 
@@ -1098,8 +1108,7 @@ class Ticket {
         $docid = $this->app->Secure->GetGET("docid");
         if ($docid) {
             $doctype = $this->app->Secure->GetGET("doctype");
-            $ticketid = $this->app->Secure->GetGET("ticket");
-            $sendto = "ticket&action=edit&id=".$ticketid;
+            $sendto = "ticket&action=edit&id=".$id;
         }
         
         $adresse = $this->app->DB->Select("SELECT adresse FROM ticket WHERE id = ".$id);
@@ -1142,7 +1151,7 @@ class Ticket {
             $this->app->Tpl->Set("INFO", "Keine Adresse hinterlegt");
         }
 
-        if ($docid) {            
+        if ($docid) {
             $this->app->erp->AddDateiStichwort($fileid, "Anhang", $doctype , $docid);
             header("Location: index.php?module=".$sendto);
         }
@@ -1151,6 +1160,9 @@ class Ticket {
             $this->app->Tpl->addMessage('error', $error_msg);
         }
 
+        // For transfer to tablesearch
+        $this->app->User->SetParameter('ticket_adddoc_fileid', $fileid);
+        $this->app->User->SetParameter('ticket_adddoc_ticketid', $id);
 
         $this->app->YUI->TableSearch('TAB1', 'adddoc', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "ticket_adddoc.tpl");

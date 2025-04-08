@@ -1113,6 +1113,14 @@ class Verbindlichkeit {
             $this->app->Tpl->Set('INLINEPDF', 'Keine Dateien vorhanden.');
         }
 
+        $tickets = $this->app->erp->GetBelegTickets('verbindlichkeit',$id);
+        if (!empty($tickets)) {
+            function ticketlink($ticket) {
+               return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+            }
+            $this->app->Tpl->AddMessage('info',"Zu dieser Verbindlichkeit geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+        }
+
         if (empty($verbindlichkeit_from_db['freigabe'])) {
             $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_paketdistribution_list', "show", "", "", basename(__FILE__), __CLASS__);
         }
