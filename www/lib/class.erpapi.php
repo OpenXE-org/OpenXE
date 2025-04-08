@@ -36888,7 +36888,7 @@ function Firmendaten($field,$projekt="")
 
         function GetBelegTickets($doctype, $doctypeid) {
             $sql = "
-                SELECT
+                SELECT DISTINCT
                     t.id,
                     tn.ticket
                 FROM
@@ -36907,7 +36907,7 @@ function Firmendaten($field,$projekt="")
 
         function GetTicketBelege($ticketid) {
             $sql = "
-                SELECT
+                SELECT DISTINCT
                     dsb.objekt doctype,
                     dsb.parameter id,
                     belege.belegnr,

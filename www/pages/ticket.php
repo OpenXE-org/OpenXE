@@ -400,6 +400,7 @@ class Ticket {
                 } else {
                     $deletetext = "";
                     $file_beleg_attachments = $this->app->erp->GetDateiStichwoerter($file_attachment);
+                    $linked = false;
                     foreach($file_beleg_attachments as $file_beleg_attachment) {
                         if (in_array($file_beleg_attachment['objekt'],['auftrag','verbindlichkeit','lieferantengutschrift'])) {
                             $linked = true;
