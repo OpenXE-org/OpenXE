@@ -33,6 +33,7 @@ class Dateien {
       $_objekt = str_replace('dateien_popup_','',$name);
 
       $id = $app->Secure->GetGET("id");
+      $doctype_id = $app->Secure->GetGET("id");
       $sid = $app->Secure->GetGET("sid");
       if($sid > 0) $id = $sid;
 
@@ -46,8 +47,7 @@ class Dateien {
       $findcols = array('open','d.id','d.id','d.titel', 's.subjekt', 'v.version','v.size', 'v.ersteller','v.bemerkung','v.datum', 's.id');
       $searchsql = array('d.titel', 's.subjekt', 'v.version','v.size', 'v.ersteller','v.bemerkung','v.dateiname');
 
-      //$menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"#\" onclick=editdatei(%value%,\"$cmd\")><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=delete&id=%value%\")><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
-      $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=delete&cmd=".urlencode($_objekt)."&id=%value%\")><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
+      $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=removelink&doctype=".urlencode($_objekt)."&doctypeid=".$doctype_id."&id=%value%\")><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
       $menucol = 10;
       $alignright=array(6,7);
 
@@ -142,6 +142,7 @@ class Dateien {
     $this->app->ActionHandler("artikel","DateienArtikel");
     $this->app->ActionHandler("send","DateienSend");
     $this->app->ActionHandler("delete","DateienDelete");
+    $this->app->ActionHandler("removelink","DateienRemoveLink");
     $this->app->ActionHandler("zahlung","DateienZahlung");
     $this->app->ActionHandler("protokoll","DateienProtokoll");
     $this->app->ActionHandler("abschicken","DateienAbschicken");
@@ -373,7 +374,6 @@ class Dateien {
 
   function DateienDelete()
   {
-    $fid = $this->app->Secure->GetGET("fid");
     $id = $this->app->Secure->GetGET("id"); 
     $cmd = urldecode($this->app->Secure->GetGET("cmd"));
 
@@ -382,6 +382,16 @@ class Dateien {
     // Deletion of files removed, they only get marketd
 
     $this->app->DB->Update("UPDATE datei SET geloescht=1 WHERE id='$id' AND NOT geschuetzt");
+    $refer = $_SERVER['HTTP_REFERER'];
+    $this->app->Location->execute($refer);
+  }
+
+  function DateienRemoveLink() {
+    $id = $this->app->Secure->GetGET("id");
+    $doctype = $this->app->Secure->GetGET("doctype");
+    $doctype_id = $this->app->Secure->GetGET("doctypeid");
+    $sql = "DELETE FROM datei_stichwoerter WHERE datei='$id' AND objekt='$doctype' AND parameter='$doctype_id'";
+    $this->app->DB->Update($sql);
     $refer = $_SERVER['HTTP_REFERER'];
     $this->app->Location->execute($refer);
   }
