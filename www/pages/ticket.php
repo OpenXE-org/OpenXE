@@ -612,7 +612,7 @@ class Ticket {
         $attachments = $this->app->erp->GetDateiSubjektObjekt('Anhang','Ticket',$mid);
         foreach($attachments as $attachment) {
             $filename = $this->app->erp->GetDateiName($attachment);
-            $prepared_text = str_replace($filename,'index.php?module=dateien&action=send&id='.$attachment,$prepared_text);
+            $prepared_text = str_replace('cid:'.$filename,'index.php?module=dateien&action=send&id='.$attachment,$prepared_text);
         }
 
         if ($insecure) {
