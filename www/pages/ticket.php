@@ -25,6 +25,7 @@ class Ticket {
         $this->app->ActionHandler("datefix", "ticket_datefix"); // Xentral 20 compatibility set all ticket dates to latest ticket_nachricht date
         $this->app->ActionHandler("dateien", "ticket_dateien");
         $this->app->ActionHandler("adddoc", "ticket_beleg_hinzufuegen");
+        $this->app->ActionHandler("protokoll", "ticket_protokoll");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -240,6 +241,42 @@ class Ticket {
                     AND id IN (".implode(',',$ids).")
                     AND warteschlange IN (SELECT label FROM warteschlangen WHERE adresse = '".$this->app->User->GetAdresse()."')";
         $this->app->DB->Update($sql);
+    }
+
+    function ticket_log_changes($id, bool $onlyread = false, array $old_values = null) {
+        $sql = "SELECT status, warteschlange, adresse, name, tags FROM ticket LEFT JOIN adresse ON adresse.id = ticket.adresse WHERE ticket.id = ".$id;
+        $values = $this->app->DB->SelectRow($sql);
+        if ($onlyread) {
+            return($values);
+        }
+        $changes = array();
+
+        if ($old_values['status'] != $values['status']) {
+            $status_values = $this->app->erp->GetTicketStatusValues();
+            $changes[] = "Status '".($status_values[$values['status']]?$status_values[$values['status']]:$values['status'])."'";
+        }
+        if ($old_values['warteschlange'] != $values['warteschlange']) {
+            $changes[] = "Warteschlange '".$values['warteschlange']."'";
+        }
+        if ($old_values['adresse'] != $values['adresse']) {
+            $changes[] = "Adresse '".$values['name']."'";
+        }
+        if ($old_values['tags'] != $values['tags']) {
+            $changes[] = "Tags '".$values['tags']."'";
+        }
+        if (!empty($changes)) {
+            $this->app->erp->TicketProtokoll($id, "Ge&auml;ndert: ".implode(', ', $changes));
+        }
+    }
+
+    public function ticket_protokoll()
+    {
+        $id = $this->app->Secure->GetGET('id');
+        $this->ticket_menu($id);
+        $tmp = new EasyTable($this->app);
+        $tmp->Query("SELECT zeit,bearbeiter,grund FROM ticket_protokoll WHERE ticket='$id' ORDER by zeit DESC");
+        $tmp->DisplayNew('TAB1','Protokoll','noAction');
+        $this->app->Tpl->Parse('PAGE','tabview.tpl');
     }
 
     function ticket_list() {
@@ -688,11 +725,12 @@ class Ticket {
           }
         }
 
+        $old = $this->ticket_log_changes($id, onlyread: true);
         $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
         $this->app->DB->Update($sql);
         $id = $this->app->DB->GetInsertID();
-
         $this->ticket_set_self_assigned_status(array($id));
+        $this->ticket_log_changes($id, old_values: $old);
 
         return($id);
     }
@@ -765,6 +803,7 @@ class Ticket {
             $anzahldateien="";
         }
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=dateien&id=$id", "Dateien".$anzahldateien);
+        $this->app->erp->MenuEintrag("index.php?module=ticket&action=protokoll&id=$id", "Protokoll");
     }
 
     function ticket_edit() {

@@ -25863,9 +25863,14 @@ function Firmendaten($field,$projekt="")
   }
 
   /** @deprecated */
+
+  function GetTicketStatusValues() {
+    return (array('neu'=>'neu','offen'=>'offen','warten_e'=>'warten auf Intern','warten_kd'=>'warten auf Kunde','klaeren'=>'kl&auml;ren','abgeschlossen'=>'abgeschlossen','spam'=>'Papierkorb'));
+  }
+
   function GetStatusTicketSelect($status)
   {
-    $stati = array('neu'=>'neu','offen'=>'offen','warten_e'=>'warten auf Intern','warten_kd'=>'warten auf Kunde','klaeren'=>'kl&auml;ren','abgeschlossen'=>'abgeschlossen','spam'=>'Papierkorb');
+    $stati = $this->GetTicketStatusValues();
 
     foreach($stati as $key=>$value)
     {
@@ -27994,6 +27999,13 @@ function Firmendaten($field,$projekt="")
             ('','$id',NOW(),'$bearbeiter','$text')");
       }
 
+      function TicketProtokoll($id, $text) {
+        if(!$id)return;
+        $bearbeiter = (isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetName'))?$this->app->DB->real_escape_string($this->app->User->GetName()):'';
+        $text = $this->app->DB->real_escape_string($text);
+        $this->app->DB->Insert("INSERT INTO ticket_protokoll (id,ticket,zeit,bearbeiter,grund) VALUES
+            ('','$id',NOW(),'$bearbeiter','$text')");
+      }
 
       function LoadArbeitsnachweisStandardwerte($id,$adresse,$projekt="")
       {
