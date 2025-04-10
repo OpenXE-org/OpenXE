@@ -26814,6 +26814,21 @@ function Firmendaten($field,$projekt="")
         }
         return $ret;
       }
+
+      /* array('id','name','checked') */
+      function GetCheckboxes($array, $formname = 'checkboxes', $break = false) {
+        foreach($array as $value)
+        {
+            $ret .= '<input type="checkbox" id="'.$value['id'].'" name="'.$formname.'[]" value="'.$value['id'].'" '.($value['checked']?'checked':'').'  >'.$value['name'].'</input>';
+            if ($break) {
+                $ret .= '<br>';
+            } else {
+                $ret .= '&nbsp;';
+            }
+        }
+        return $ret;
+      }
+
       function CreateAdresse($name,$firma="1")
       {
         $projekt = $this->app->DB->Select("SELECT standardprojekt FROM firma WHERE id='".$this->app->User->GetFirma()."' LIMIT 1");

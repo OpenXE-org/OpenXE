@@ -3,16 +3,15 @@
         <li><a href="#tabs-1">Allgemein</a></li>
     </ul>
     <div id="tabs-1">
-        [MESSAGE]        
-        <form action="" method="post">   
+        [MESSAGE]
+        <form action="" method="post">
              <div class="row">
             	<div class="row-height">
             		<div class="col-xs-14 col-md-4 col-md-height">
             			<div class="inside inside-full-height">
-                           <fieldset>                            
+                           <fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">
-                                    <legend>{|Einstellungen|}</legend>     
-
+                                    <legend>{|Einstellungen|}</legend>
                                         <td>{|Absatz ber&uuml;cksichtigen (Monate)|}:</td>
                                         <td><input type="number" min="0" name="monate_absatz" id="monate_absatz" value="[MONATE_ABSATZ]" size="20"></td>
                                     </tr>
@@ -26,13 +25,21 @@
                		</div>
                     <div class="col-xs-14 col-md-8 col-md-height">
             			<div class="inside inside-full-height">
+                            <fieldset>
+                                <legend>{|Filter|}</legend>
+                                <div class="filter-box filter-usersave">
+                                    <div class="filter-block filter-inline">
+                                        [KATEGORIENFILTER]
+                                    </div>
+                                </div>
+                            </fieldset>
                         </div>
                		</div>
                     <div class="col-xs-14 col-md-2 col-md-height">
             			<div class="inside inside-full-height">
                            <fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">
-                                    <legend>Aktionen</legend>                              
+                                    <legend>Aktionen</legend>
                                     <tr>
                                         <td><button name="submit" class="ui-button-icon" style="width:100%;" value="loeschen">{|Zur&uuml;cksetzen|}</button></td>
                                     </tr>
@@ -52,7 +59,7 @@
             	<div class="row-height">
             		<div class="col-xs-14 col-md-6 col-md-height">
             			<div class="inside inside-full-height">
-                           [TAB1]   
+                           [TAB1]
                             <fieldset>
                                 <table>
                                     <tr>
@@ -61,7 +68,7 @@
                                         </td>
                                     </tr>
                                 </table>
-                            </fieldset>                 
+                            </fieldset>
                         </div>
                		</div>
                	</div>	
@@ -78,7 +85,7 @@
           $('#bestellvorschlag_list').find('input[type="checkbox"]').prop('checked',wert);
           $('#bestellvorschlag_list').find('input[type="checkbox"]').first().trigger('change');
         });
-      
+
     </script>
 
 
