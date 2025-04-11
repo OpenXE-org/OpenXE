@@ -41,10 +41,10 @@
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <legend>Aktionen</legend>
                                     <tr>
-                                        <td><button name="submit" class="ui-button-icon" style="width:100%;" value="loeschen">{|Zur&uuml;cksetzen|}</button></td>
+                                        <td><button name="submit" class="ui-button-icon" style="width:100%;" value="speichern">{|Speichern|}</button></td>
                                     </tr>
                                     <tr>
-                                        <td><button name="submit" class="ui-button-icon" style="width:100%;" value="speichern">{|Speichern|}</button></td>
+                                        <td><button name="submit" class="ui-button-icon" style="width:100%;" value="loeschen">{|Zur&uuml;cksetzen|}</button></td>
                                     </tr>
                                     <tr>
                                         <td><button name="submit" class="ui-button-icon" style="width:100%;" value="bestellungen_erzeugen">{|Bestellungen erzeugen|}</button></td>

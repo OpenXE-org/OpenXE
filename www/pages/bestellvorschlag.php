@@ -47,22 +47,24 @@ class Bestellvorschlag {
                      $monate_voraus = 0;
                 }
 
-                $heading = array('',  '',  'Nr.', 'Artikel','Kategorie','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
-                $width =   array('1%','1%','1%',  '20%',    '5',        '10%',      '1%',          '1%',   '1%',      '1%',     '1%',    '1%',    '1%',       '1%',     '1%');
+                $heading = array('',  '',  'Nr.', 'Artikel','Bestell-Nr.','Kategorie','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
+                $width =   array('1%','1%','1%',  '15%',    '15%',           '10%',       '10%',      '1%',          '1%',   '1%',      '1%',     '1%',    '1%',    '1%',       '1%',     '1%');
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8);
 
                 $artikelkategorie = '(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))';
 
-                $findcols = array('art.id','art.id','art.nummer','art.name_de',$artikelkategorie,'l.name','mindestlager','lager','bestellt','auftrag','absatz','voraus','vorschlag');
+                $bestellnummer = '(SELECT bestellnummer FROM einkaufspreise WHERE adresse = art.adresse AND artikel=art.id AND geloescht <> 1 AND (gueltig_bis > NOW() OR gueltig_bis = \'0000-00-00\') ORDER BY id DESC LIMIT 1)';
+
+                $findcols = array('art.id','art.id','art.nummer','art.name_de',$bestellnummer,$artikelkategorie,'l.name','mindestlager','lager','bestellt','auftrag','absatz','voraus','vorschlag_ber_form','vorschlag','art.id');
                 $searchsql = array('art.name_de');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-                $numbercols = array(6,7,8,9,10,11,12);
+                $numbercols = array(8,9,10,11,12,13,14);
 //                $sumcol = array(6);
-                $alignright = array(6,7,8,9,10,11,12);
+                $alignright = array(8,9,10,11,12,13,14);
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',art.id,'\" />') AS `auswahl`";
 
@@ -127,7 +129,7 @@ class Bestellvorschlag {
             'versendet',
             'freigegeben',
             'angelegt'
-        )
+        ) AND NOT (auf.zahlungsweise = 'vorkasse' AND auf.vorabbezahltmarkieren <> 1)
 ) AS auftrag,
 (
     SELECT
@@ -267,6 +269,7 @@ FROM
                     $dropnbox,
                     ".$app->erp->ConcatSQL($artikellink).",
                     art.name_de,
+                    $bestellnummer,
                     $artikelkategorie as artikelkategorie,
                     l.name,
         		    mengen.mindestlager_form,
@@ -442,7 +445,7 @@ FROM
 
         $this->app->Tpl->Set('MESSAGE',$msg);
 
-        $kategorien = $this->app->DB->SelectArr("SELECT id, bezeichnung name FROM artikelkategorien WHERE geloescht <> 1");
+        $kategorien = $this->app->DB->SelectArr("SELECT id, bezeichnung name FROM artikelkategorien WHERE geloescht <> 1 ORDER by bezeichnung");
 
         $this->app->Tpl->Set('KATEGORIENFILTER',$this->app->erp->GetCheckboxes($kategorien, 'kategorien'));
 
