@@ -3341,9 +3341,9 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
               LEFT(IFNULL(e.bezeichnunglieferant,'nicht vorhanden'),50),
               ' | ',
               ' ab Menge ',
-              ".$this->app->erp->FormatMenge("IFNULL(e.ab_menge,1)").", 
+              ".$this->app->erp->FormatMengeFuerFormular("IFNULL(e.ab_menge,1)").", 
               ' | Preis ',
-              ".$this->app->erp->FormatPreis("IFNULL(e.preis,0)").", 
+              ".$this->app->erp->FormatPreis("IFNULL(e.preis,0)").",
               ' | VPE ',
               ".$this->app->erp->FormatMenge("IF(IFNULL(e.vpe,1)='',1,IFNULL(e.vpe,1))")."
             ) as `name` 
