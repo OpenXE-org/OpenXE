@@ -47,6 +47,44 @@ class Bestellvorschlag {
                      $monate_voraus = 0;
                 }
 
+
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#mindestlager').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#entwuerfe').click( function() { fnFilterColumn2( 0 ); } );");
+
+                for ($r = 1;$r <= 2;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
+                                           \'\',
+                                           i,
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                    $mindestlager = 'art.mindestlager';
+                  } else {
+                    $mindestlager = '0';
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                    $entwuerfe = ",'angelegt'";
+                  } else {
+                    $entwuerfe = '';
+                }
+
+
                 $heading = array('',  '',  'Nr.', 'Artikel','Bestell-Nr.','Kategorie','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
                 $width =   array('1%','1%','1%',  '15%',    '15%',           '10%',       '10%',      '1%',          '1%',   '1%',      '1%',     '1%',    '1%',    '1%',       '1%',     '1%');
 
@@ -113,8 +151,8 @@ class Bestellvorschlag {
     WHERE
         bp.artikel = art.id AND b.status IN(
             'versendet',
-            'freigegeben',
-            'angelegt'
+            'freigegeben'
+            $entwuerfe
         )
 ) AS bestellt,
 (
@@ -127,8 +165,8 @@ class Bestellvorschlag {
     WHERE
         aufp.artikel = art.id AND auf.status IN(
             'versendet',
-            'freigegeben',
-            'angelegt'
+            'freigegeben'
+            $entwuerfe
         ) AND NOT (auf.zahlungsweise = 'vorkasse' AND auf.vorabbezahltmarkieren <> 1)
 ) AS auftrag,
 (
@@ -142,6 +180,7 @@ class Bestellvorschlag {
         rp.artikel = art.id AND r.status IN(
             'versendet',
             'freigegeben'
+            $entwuerfe
         ) AND r.datum > LAST_DAY(CURDATE() - INTERVAL ('$monate_absatz'+1) MONTH) AND r.datum <= LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
 ) AS absatz,
 ROUND (
@@ -156,7 +195,7 @@ ROUND (
     WHERE
         bv.artikel = art.id AND bv.user = '$user'
 ) AS vorschlag_save,
-art.mindestlager -(
+$mindestlager -(
 SELECT
     lager
 ) - COALESCE((

@@ -27,6 +27,30 @@
             			<div class="inside inside-full-height">
                             <fieldset>
                                 <legend>{|Filter|}</legend>
+                            </fieldset>
+                            <fieldset>
+                                <div class="filter-box filter-usersave">
+                                    <div class="filter-block filter-inline">
+                                        <ul class="filter-list">
+                                            <li class="filter-item">
+                                              <label for="mindestlager" class="switch">
+                                                <input type="checkbox" id="mindestlager">
+                                                <span class="slider round" title="Mindestlagermengen ber&uuml;cksichtigen"></span>
+                                              </label>
+                                              <label for="mindestlager">{|Mindestlager|}</label>
+                                            </li>
+                                            <li class="filter-item">
+                                              <label for="entwuerfe" class="switch">
+                                                <input type="checkbox" id="entwuerfe"">
+                                                <span class="slider round" title="Belegentw&uuml;rfe berücksichtigen"></span>
+                                              </label>
+                                              <label for="entwuerfe">{|Entw&uuml;rfe|}</label>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset>
                                 <div class="filter-box filter-usersave">
                                     <div class="filter-block filter-inline">
                                         [KATEGORIENFILTER]
