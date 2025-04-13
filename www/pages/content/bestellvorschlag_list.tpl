@@ -32,19 +32,26 @@
                                 <div class="filter-box filter-usersave">
                                     <div class="filter-block filter-inline">
                                         <ul class="filter-list">
-                                            <li class="filter-item">
+                                            <li class="filter-item" title="Mindestlagermengen ber&uuml;cksichtigen">
                                               <label for="mindestlager" class="switch">
                                                 <input type="checkbox" id="mindestlager">
-                                                <span class="slider round" title="Mindestlagermengen ber&uuml;cksichtigen"></span>
+                                                <span class="slider round"></span>
                                               </label>
                                               <label for="mindestlager">{|Mindestlager|}</label>
                                             </li>
-                                            <li class="filter-item">
+                                            <li class="filter-item" title="Belegentw&uuml;rfe berücksichtigen">
                                               <label for="entwuerfe" class="switch">
                                                 <input type="checkbox" id="entwuerfe"">
-                                                <span class="slider round" title="Belegentw&uuml;rfe berücksichtigen"></span>
+                                                <span class="slider round"></span>
                                               </label>
                                               <label for="entwuerfe">{|Entw&uuml;rfe|}</label>
+                                            </li>
+                                            <li class="filter-item" title="Auftr&auml;ge mit Reserviersperre berücksichtigen">
+                                              <label for="reserviersperre" class="switch">
+                                                <input type="checkbox" id="reserviersperre"">
+                                                <span class="slider round"></span>
+                                              </label>
+                                              <label for="reserviersperre">{|inkl. Reserviersperre|}</label>
                                             </li>
                                         </ul>
                                     </div>

@@ -1372,7 +1372,7 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop 
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren 
          FROM auftrag 
          WHERE id = %d 
          LIMIT 1',
@@ -1445,8 +1445,10 @@ class Auftrag extends GenAuftrag
     }   
 
     if($status==='freigegeben') {
-      $alleartikelreservieren = "<option value=\"reservieren\">alle Artikel reservieren</option>";
-
+    
+      if (!$auftragArr['nicht_reservieren']) {
+            $alleartikelreservieren = "<option value=\"reservieren\">Artikel reservieren</option>";
+      }
 
       if($kommissionierart === "zweistufig" || $kommissionierart === "lieferscheinlagerscan" || $kommissionierart==="lieferscheinscan") {
         if($art==="rechnung"){
@@ -5489,8 +5491,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   {
     $id = $this->app->Secure->GetGET('id');
     $this->app->erp->AuftragEinzelnBerechnen($id,true);
-    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Artilel f&uuml;r diesen Auftrag reserviert!</div>  ");
-
+    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Artikel f&uuml;r diesen Auftrag reserviert!</div>");
     $this->app->Location->execute("index.php?module=auftrag&action=edit&id=$id&msg=$msg");
   }
 

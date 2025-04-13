@@ -51,8 +51,9 @@ class Bestellvorschlag {
                 // Toggle filters
                 $this->app->Tpl->Add('JQUERYREADY', "$('#mindestlager').click( function() { fnFilterColumn1( 0 ); } );");
                 $this->app->Tpl->Add('JQUERYREADY', "$('#entwuerfe').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#reserviersperre').click( function() { fnFilterColumn3( 0 ); } );");
 
-                for ($r = 1;$r <= 2;$r++) {
+                for ($r = 1;$r <= 3;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
                                          function fnFilterColumn' . $r . ' ( i )
                                          {
@@ -83,7 +84,13 @@ class Bestellvorschlag {
                   } else {
                     $entwuerfe = '';
                 }
-
+                
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                      $reserviersperre = '1';
+                  } else {
+                      $reserviersperre = 'COALESCE(auf.nicht_reservieren, 0) <> 1';
+                }
 
                 $heading = array('',  '',  'Nr.', 'Artikel','Bestell-Nr.','Kategorie','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
                 $width =   array('1%','1%','1%',  '15%',    '15%',           '10%',       '10%',      '1%',          '1%',   '1%',      '1%',     '1%',    '1%',    '1%',       '1%',     '1%');
@@ -168,6 +175,7 @@ class Bestellvorschlag {
             'freigegeben'
             $entwuerfe
         ) AND NOT (auf.zahlungsweise = 'vorkasse' AND auf.vorabbezahltmarkieren <> 1)
+        AND $reserviersperre
 ) AS auftrag,
 (
     SELECT
