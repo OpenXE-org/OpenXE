@@ -33469,23 +33469,18 @@ function Firmendaten($field,$projekt="")
         if($typ==='auftrag' && $id > 0){
           $auftragsArr = $this->app->DB->SelectRow(
             sprintf(
-              "SELECT id, adresse, projekt, belegnr, standardlager,reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
+              "SELECT id, adresse, projekt, belegnr, standardlager, nicht_reservieren, reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
               (int)$id
             )
           );
-          if($this->app->DB->error()) {
-            $auftragsArr = $this->app->DB->SelectRow(
-              sprintf(
-                "SELECT id, adresse, projekt, belegnr, standardlager, NULL AS reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
-                (int)$id
-              )
-            );
-          }
           if(empty($auftragsArr)) {
             return 0;
           }
           if(!empty($auftragsArr['reservationdate']) && $auftragsArr['reservationdate'] !== '0000-00-00'
           && strtotime($auftragsArr['reservationdate']) > strtotime(date('Y-m-d'))) {
+            return 0;
+          }
+          if (!empty($auftragsArr['nicht_reservieren'])) {
             return 0;
           }
           $id_check = $auftragsArr['id'];
