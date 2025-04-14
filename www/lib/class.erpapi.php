@@ -36944,7 +36944,9 @@ function Firmendaten($field,$projekt="")
                     t.schluessel = tn.ticket
                 INNER JOIN
                 (
-                    SELECT 'Auftrag' typ, id belegid, belegnr, ihrebestellnummer externenr, datum, name FROM auftrag
+                    SELECT 'Angebot' typ, id belegid, belegnr, anfrage externenr, datum, name FROM angebot
+                    UNION
+                    SELECT 'Auftrag' typ, id belegid, belegnr, ihrebestellnummer, datum, name FROM auftrag
                     UNION
                     SELECT 'Verbindlichkeit', v.id, v.belegnr, rechnung, v.datum, a.name FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id
                     UNION
@@ -36952,9 +36954,10 @@ function Firmendaten($field,$projekt="")
                 ) belege ON belege.typ = dsb.objekt AND belege.belegid = dsb.parameter
                 WHERE
                     dsb.objekt IN(
-                        'lieferantengutschrift',
+                        'angebot',
                         'auftrag',
-                        'verbindlichkeit'
+                        'verbindlichkeit',
+                        'lieferantengutschrift'
                     ) AND t.id = '".$ticketid."'
             ";
 

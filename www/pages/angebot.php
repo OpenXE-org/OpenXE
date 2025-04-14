@@ -1511,6 +1511,14 @@ class Angebot extends GenAngebot
         );
       }
     } 
+    
+    $tickets = $this->app->erp->GetBelegTickets('angebot',$id);
+    if (!empty($tickets)) {
+        function ticketlink($ticket) {
+           return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Angebot geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+    }
 
     $this->app->erp->InfoAuftragsErfassung('angebot',$id);
 

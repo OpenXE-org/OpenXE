@@ -208,11 +208,13 @@ class Ticket {
                         ".$this->app->erp->ConcatSQL($addlink)."
                         FROM
                         (
-                            SELECT 'Auftrag' typ, id belegid, belegnr, datum, name FROM auftrag
+                            SELECT 'Angebot' typ, id belegid, CONCAT(belegnr,' (',anfrage,')') belegnr, datum, name FROM angebot
                             UNION
-                            SELECT 'Verbindlichkeit', v.id, v.belegnr, v.datum, a.name FROM verbindlichkeit v INNER JOIN adresse a ON v.adresse = a.id
+                            SELECT 'Auftrag' typ, id belegid, CONCAT(belegnr,' (',ihrebestellnummer,')'), datum, name FROM auftrag
                             UNION
-                            SELECT 'Lieferantengutschrift', lg.id, lg.belegnr, lg.datum, a.name FROM lieferantengutschrift lg JOIN adresse a ON lg.adresse = a.id
+                            SELECT 'Verbindlichkeit', v.id, CONCAT(v.belegnr,' (',v.rechnung,')'), v.datum, a.name FROM verbindlichkeit v INNER JOIN adresse a ON v.adresse = a.id WHERE (v.belegnr <> '' OR v.rechnung <> '')
+                            UNION
+                            SELECT 'Lieferantengutschrift', lg.id, CONCAT(lg.belegnr,' (',lg.rechnung,')'), lg.datum, a.name FROM lieferantengutschrift lg JOIN adresse a ON lg.adresse = a.id WHERE (lg.belegnr <> '' OR lg.rechnung <> '')
                         ) belege
                     ";
 
@@ -439,7 +441,7 @@ class Ticket {
                     $file_beleg_attachments = $this->app->erp->GetDateiStichwoerter($file_attachment);
                     $linked = false;
                     foreach($file_beleg_attachments as $file_beleg_attachment) {
-                        if (in_array($file_beleg_attachment['objekt'],['auftrag','verbindlichkeit','lieferantengutschrift'])) {
+                        if (in_array($file_beleg_attachment['objekt'],['angebot','auftrag','verbindlichkeit','lieferantengutschrift'])) {
                             $linked = true;
                             break;
                         }
@@ -1115,7 +1117,7 @@ class Ticket {
 
           break;
         }
-        
+
         $this->add_messages_tpl($id, $messages, false);
         $this->add_attachments_header_html($id,'TICKET_ANHANG');
         $this->app->Tpl->Set('MESSAGE', $msg);
@@ -1151,45 +1153,53 @@ class Ticket {
             $doctype = $this->app->Secure->GetGET("doctype");
             $sendto = "ticket&action=edit&id=".$id;
         }
-        
-        $adresse = $this->app->DB->Select("SELECT adresse FROM ticket WHERE id = ".$id);
-        if (!empty($adresse)) {
-            $submit = $this->app->Secure->GetPOST("submit");
 
-            switch ($submit) {
-                case 'auftragneu':
-                    $docid = $this->app->erp->CreateAuftrag($adresse);
-                    if (!empty($docid)) {
-                        $doctype = 'auftrag';
-                        $sendto = "auftrag&action=edit&id=".$docid;
-                    } else {
-                        $error_msg = 'Auftrag konnte nicht angelegt werden.';
-                    }
-                break;
-                case 'verbindlichkeitneu':
-                    $datum = $this->app->erp->GetDateiDatum($fileid);
-                    $docid = $this->app->erp->CreateVerbindlichkeit($adresse, $datum);
-                    if (!empty($docid)) {
-                        $doctype = 'verbindlichkeit';
-                        $sendto = "verbindlichkeit&action=edit&id=".$docid;
-                    } else {
-                        $error_msg = 'Verbindlichkeit konnte nicht angelegt werden.';
-                    }
-                break;
-                case 'lieferantengutschriftneu':
-                    $datum = $this->app->erp->GetDateiDatum($fileid);
-                    $docid = $this->app->erp->CreateLieferantengutschrift($adresse, $datum);
-                    if (!empty($docid)) {
-                        $doctype = 'lieferantengutschrift';
-                        $sendto = "lieferantengutschrift&action=edit&id=".$docid;
-                    } else {
-                        $error_msg = 'Lieferantengutschrift konnte nicht angelegt werden.';
-                    }
-                break;
-            }
-        } else {
-            $this->app->Tpl->Set("NEWDISABLED", "disabled");
-            $this->app->Tpl->Set("INFO", "Keine Adresse hinterlegt");
+        $adresse = $this->app->DB->Select("SELECT adresse FROM ticket WHERE id = ".$id);
+        if (empty($adresse)) {
+            $this->app->Tpl->AddMessage("info", "Keine Adresse hinterlegt");
+        }
+
+        $submit = $this->app->Secure->GetPOST("submit");
+
+        switch ($submit) {
+            case 'angebotneu':
+                $docid = $this->app->erp->CreateAngebot($adresse);
+                if (!empty($docid)) {
+                    $doctype = 'angebot';
+                    $sendto = "angebot&action=edit&id=".$docid;
+                } else {
+                    $error_msg = 'Angebot konnte nicht angelegt werden.';
+                }
+            break;
+            case 'auftragneu':
+                $docid = $this->app->erp->CreateAuftrag($adresse);
+                if (!empty($docid)) {
+                    $doctype = 'auftrag';
+                    $sendto = "auftrag&action=edit&id=".$docid;
+                } else {
+                    $error_msg = 'Auftrag konnte nicht angelegt werden.';
+                }
+            break;
+            case 'verbindlichkeitneu':
+                $datum = $this->app->erp->GetDateiDatum($fileid);
+                $docid = $this->app->erp->CreateVerbindlichkeit($adresse, $datum);
+                if (!empty($docid)) {
+                    $doctype = 'verbindlichkeit';
+                    $sendto = "verbindlichkeit&action=edit&id=".$docid;
+                } else {
+                    $error_msg = 'Verbindlichkeit konnte nicht angelegt werden.';
+                }
+            break;
+            case 'lieferantengutschriftneu':
+                $datum = $this->app->erp->GetDateiDatum($fileid);
+                $docid = $this->app->erp->CreateLieferantengutschrift($adresse, $datum);
+                if (!empty($docid)) {
+                    $doctype = 'lieferantengutschrift';
+                    $sendto = "lieferantengutschrift&action=edit&id=".$docid;
+                } else {
+                    $error_msg = 'Lieferantengutschrift konnte nicht angelegt werden.';
+                }
+            break;
         }
 
         if ($docid) {
