@@ -31,8 +31,7 @@ class YUI {
   function dateien_module_objekt_map($module) : string {
     $dateien_module_objekt_map_array = array(
         'adresse' => 'adressen',
-        'ticket'  => 'ticket_header',
-        'aufgaben' => 'aufgabe'
+        'ticket'  => 'ticket_header'
     );
 
     return (isset($dateien_module_objekt_map_array[$module]) ? $dateien_module_objekt_map_array[$module] : $module);

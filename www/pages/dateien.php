@@ -389,8 +389,9 @@ class Dateien {
   function DateienRemoveLink() {
     $id = $this->app->Secure->GetGET("id");
     $doctype = $this->app->Secure->GetGET("doctype");
+    $objekttype = $this->app->YUI->dateien_module_objekt_map($doctype);
     $doctype_id = $this->app->Secure->GetGET("doctypeid");
-    $sql = "DELETE FROM datei_stichwoerter WHERE datei='$id' AND objekt='$doctype' AND parameter='$doctype_id'";
+    $sql = "DELETE FROM datei_stichwoerter WHERE datei='$id' AND LOWER(objekt)=LOWER('$objekttype') AND parameter='$doctype_id'";
     $this->app->DB->Update($sql);
     $refer = $_SERVER['HTTP_REFERER'];
     $this->app->Location->execute($refer);
