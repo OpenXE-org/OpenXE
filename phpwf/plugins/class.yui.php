@@ -3209,7 +3209,7 @@ class YUI {
       case "basic":
         $config[]=     " toolbar:
             [
-                ['Bold', 'Italic', 'Underline','RemoveFormat', '-', 'Undo', 'Redo', '-', 'SelectAll'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo', '-', 'SelectAll'],
                 ['Source']
             ]";
         $config[]  = " extraPlugins: 'removeformat' ";
@@ -3217,7 +3217,7 @@ class YUI {
       case "belege":
         $config[]=     " toolbar:
             [
-                ['Bold', 'Italic', 'Underline','RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
                 ['Font','FontSize','TextColor'],['Source']
             ]";
         $config[]  = " allowedContent:true ";
@@ -3226,7 +3226,7 @@ class YUI {
       case "all":
         $config[]=     " toolbar:
             [
-                ['Bold', 'Italic', 'Underline','RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
                 ['Font','FontSize','TextColor'],['Source']
             ]";
         $config[]  = " allowedContent:true ";
