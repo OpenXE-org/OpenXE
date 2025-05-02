@@ -6248,7 +6248,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
   public function AuftragAmpel($id,$parsetarget)
   {
-
+/*
     $status = $this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
 
     if($status=='abgeschlossen' || $status=='storniert')
@@ -6282,6 +6282,17 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         if(a.liefertermin_ok,'$go','$stop') as LT, 
         a.id
         FROM auftrag a, projekt p WHERE a.inbearbeitung=0 AND p.id=a.projekt AND a.id=$id LIMIT 1";
+  */
+
+    $table = new EasyTable($this->app);
+    $sql = "
+        SELECT 
+                    (" .  $this->app->YUI->IconsSQL() . ")  AS `icons`,
+            a.id 
+            FROM  `auftrag` AS `a` 
+            LEFT JOIN `projekt` AS `p` ON p.id = a.projekt 
+            LEFT JOIN `adresse` AS `adr` ON a.adresse = adr.id
+    ";
         
     $table->Query($sql);
 
