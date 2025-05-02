@@ -3430,9 +3430,10 @@ class YUI {
     if($this->app->erp->Firmendaten("ampellager")!="1")
     {
       $go_lager = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagergo.png\" style=\"margin-right:1px\" title=\"Artikel ist im Lager\" border=\"0\">";
-      $stop_lager = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagerstop.png\" style=\"margin-right:1px\" title=\"Artikel fehlt im Lager\" border=\"0\">";
+      $stop_lager = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/lagerstop.png\" style=\"margin-right:1px\" title=\"Artikel fehlt im Lager\" border=\"0\">";     
+      $go_packing = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/packing_go.png\" title=\"Kommissioniert\" border=\"0\" style=\"margin-right:1px\">";
       $anzahl++;
-    } else { $go_lager=""; $stop_lager=""; }
+    } else { $go_lager=""; $stop_lager=""; $go_packing="";}
 
     if($this->app->erp->Firmendaten("ampelporto")!="1")
     {
@@ -3497,7 +3498,6 @@ class YUI {
       $stop_liefersperre = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/liefersperrestop.png\" title=\"Liefersperre gesetzt\" border=\"0\" style=\"margin-right:1px\">";
       $anzahl++;
     }
-
 
     $reserviert = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/reserviert.png\" border=\"0\" style=\"margin-right:1px\">";
     $check = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/mail-mark-important.png\" border=\"0\" style=\"margin-right:1px\">";
@@ -3616,10 +3616,11 @@ class YUI {
                '<table cellpadding=0 cellspacing=0><tr><td nowrap>$tmp2',
                '<table cellpadding=0 cellspacing=0><tr><td nowrap>$tmpstorno2'),
 
-               CONCAT('<table cellpadding=0 cellspacing=0><tr><td nowrap>',
-                 if(a.lager_ok,'$go_lager','$stop_lager'),if(a.porto_ok,'$go_porto','$stop_porto'),if(a.ust_ok,'$go_ust',CONCAT('<a href=\"/index.php?module=adresse&action=ustprf&id=',a.adresse,'\">','$stop_ust','</a>')),
+               CONCAT('<table cellpadding=0 cellspacing=0><tr><td nowrap>',                 
+                 if(a.kommission_ok,'$go_packing',if(a.lager_ok,'$go_lager','$stop_lager')),
+                 if(a.porto_ok,'$go_porto','$stop_porto'),if(a.ust_ok,'$go_ust',CONCAT('<a href=\"/index.php?module=adresse&action=ustprf&id=',a.adresse,'\">','$stop_ust','</a>')),
                  if(a.vorkasse_ok=1,'$go_vorkasse',if(a.vorkasse_ok=2,'$gostop_vorkasse','$stop_vorkasse')),if(a.nachnahme_ok,'$go_nachnahme','$stop_nachnahme'),if(a.autoversand,'$go_autoversand','$stop_autoversand'),
-                 if(a.check_ok,'$go_check','$stop_check'),if(a.liefertermin_ok,'$go_liefertermin','$stop_liefertermin'),if(a.kreditlimit_ok,'$go_kreditlimit','$stop_kreditlimit'),if(a.liefersperre_ok,'$go_liefersperre','$stop_liefersperre')$extra,''
+                 if(a.check_ok,'$go_check','$stop_check'),if(a.liefertermin_ok,'$go_liefertermin','$stop_liefertermin'),if(a.kreditlimit_ok,'$go_kreditlimit','$stop_kreditlimit'),if(a.liefersperre_ok,'$go_liefersperre','$stop_liefersperre'),'$stop_packing')$extra,''
                  )),
                   if(
                   
@@ -3641,7 +3642,8 @@ class YUI {
                if(a.status='abgeschlossen','<table cellpadding=0 cellspacing=0><tr><td nowrap>$tmp</td></tr></table>','<table cellpadding=0 cellspacing=0><tr><td nowrap>$tmpstorno</td></tr></table>'),
 
                CONCAT('<table cellpadding=0 cellspacing=0><tr><td nowrap>',
-                 if(a.lager_ok,'$go_lager','$stop_lager'),if(a.porto_ok,'$go_porto','$stop_porto'),if(a.ust_ok,'$go_ust',CONCAT('<a href=\"/index.php?module=adresse&action=ustprf&id=',a.adresse,'\">','$stop_ust','</a>')),
+                 if(a.kommission_ok,'$go_packing',if(a.lager_ok,'$go_lager','$stop_lager')),
+                 if(a.porto_ok,'$go_porto','$stop_porto'),if(a.ust_ok,'$go_ust',CONCAT('<a href=\"/index.php?module=adresse&action=ustprf&id=',a.adresse,'\">','$stop_ust','</a>')),
                  if(a.vorkasse_ok=1,'$go_vorkasse',if(a.vorkasse_ok=2,'$gostop_vorkasse','$stop_vorkasse')),if(a.nachnahme_ok,'$go_nachnahme','$stop_nachnahme'),if(a.autoversand,'$go_autoversand','$stop_autoversand'),
                  if(a.check_ok,'$go_check','$stop_check'),if(a.liefertermin_ok,'$go_liefertermin','$stop_liefertermin'),if(a.kreditlimit_ok,'$go_kreditlimit','$stop_kreditlimit'),if(a.liefersperre_ok,'$go_liefersperre','$stop_liefersperre')$extra $extra2,'</td></tr></table>'
                  )))";

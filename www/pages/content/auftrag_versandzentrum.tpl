@@ -45,8 +45,8 @@
   <select name="auftrag_versandauswahl" id="auftrag_versandauswahl">
     <option value="">{|bitte w&auml;hlen|} ...</option>
     <option value="versandstarten">Auto-Versand</option>
+    <option value="vorkommissionieren">Vorkommissionieren</option>
     <option value="vorkommissionieren_ohne_etiketten">Vorkommissionieren (ohne Etiketten)</option>
-    <option value="vorkommissionieren">Vorkommissionieren (mit Etiketten)</option>
   </select>
   <input type="text" id="kommissionierlagerplatz" name="kommissionierlagerplatz" value="" placeholder="Lagerplatz f&uuml;r Kommissionierung" size="30">
   <input type="submit" class="btnBlue" name="ausfuehren" value="{|ausf&uuml;hren|}" />
