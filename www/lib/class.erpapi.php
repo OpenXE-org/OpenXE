@@ -3222,6 +3222,10 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
     return(array('storageMovements' => $storageMovements));
   }
 
+    function Kommissionauslagern(int $kommissionid) {
+        
+    }
+
   /**
    * @param string $doctype
    * @param int    $doctypeId

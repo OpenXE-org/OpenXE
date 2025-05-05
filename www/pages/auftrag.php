@@ -5835,6 +5835,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     lieferschein: $lieferschein,
                     ausgelagert: true,
                     lagerplatzliste: $auslagernresult,
+                    ziellagerplatz: null,
                     mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
                     druckercode: $druckercode
                 );
@@ -6655,6 +6656,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 lieferschein: 0,
                                 ausgelagert: false,
                                 lagerplatzliste: $auslagernresult,
+                                ziellagerplatz: $kommissionierlagerplatz?$kommissionierlagerplatz:null,
                                 mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
                                 druckercode: $druckercode,
                                 kommentar: $kommentar);
@@ -7392,7 +7394,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
      $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
 
-    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $mengedruck, $druckercode, $kommentar = '') {
+    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, $ziellagerplatz = null, int $mengedruck, $druckercode, $kommentar = '') {
 
         $sql = sprintf(
             "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d, adresse = IF (%d != 0,(SELECT adresse FROM lieferschein WHERE id = %d LIMIT 1),(SELECT adresse FROM auftrag WHERE id = %d LIMIT 1)), ausgelagert = %d, kommentar = CONCAT(kommentar, '%s') WHERE id = %d LIMIT 1",
@@ -7413,11 +7415,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {
             $this->app->DB->Update(
                 sprintf(
-                    "INSERT INTO kommissionierung_position (kommissionierung, artikel, lager_platz, menge) VALUES (%d, %d, %d, %d)",
+                    "INSERT INTO kommissionierung_position (kommissionierung, artikel, lager_platz, menge, ziel_lager_platz) VALUES (%d, %d, %d, %d, %d)",
                     $kommissionierung,
                     $storageMovement['artikel'],
                     $storageMovement['lager_platz'],
-                    $storageMovement['menge']
+                    $storageMovement['menge'],
+                    $ziellagerplatz
                 )
             );
         }

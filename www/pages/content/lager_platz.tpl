@@ -39,6 +39,11 @@
 									beim Auslagern für Auftr&auml;ge <b>nicht</b> vorgeschlagen.</i></td>
 						</tr>
 						<tr>
+        					<td><label for="komlager">{|Kommissionierlager|}:</label></td>
+							<td><input name="komlager" id="komlager" type="checkbox" value="1" [KOMLAGER]> <i>Dieses Lager wird
+									beim Auslagern für Auftr&auml;ge <b>nicht</b> vorgeschlagen.</i></td>
+						</tr>
+						<tr>
 							<td><label for="sperrlager">{|Kein Auto-Versand (Sperrlager) Lager|}:</label></td>
 							<td><input name="sperrlager" id="sperrlager" type="checkbox" value="1" [SPERRLAGER]><i>&nbsp;Der Bestand f&uuml;r diese
 									Lager wird f&uuml;r den Auto-Versand <b>nicht</b> verwendet.</i></td>
