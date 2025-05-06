@@ -545,7 +545,7 @@ class AngebotPDF extends BriefpapierCustom {
       $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0,"optional"=>$summe_netto_optional+$steuern_optional,"optional_netto"=>$summe_netto_optional));
       //$this->setTotals(array("totalArticles"=>$summe,"totalTaxV"=>$summeV,"totalTaxR"=>$summeR,"total"=>$summe+$summeV+$summeR));
     } else {
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe,"optional"=>$summe_netto_optional));
     }
 
     /* Dateiname */
