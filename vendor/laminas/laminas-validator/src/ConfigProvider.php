@@ -1,13 +1,8 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator;
 
+/** @final */
 class ConfigProvider
 {
     /**
@@ -30,13 +25,15 @@ class ConfigProvider
     public function getDependencyConfig()
     {
         return [
-            'aliases' => [
-                'ValidatorManager' => ValidatorPluginManager::class,
+            'aliases'   => [
+                Translator\TranslatorInterface::class => Translator\Translator::class,
+                'ValidatorManager'                    => ValidatorPluginManager::class,
 
                 // Legacy Zend Framework aliases
-                \Zend\Validator\ValidatorPluginManager::class => ValidatorPluginManager::class,
+                'Zend\Validator\ValidatorPluginManager' => ValidatorPluginManager::class,
             ],
             'factories' => [
+                Translator\Translator::class  => Translator\TranslatorFactory::class,
                 ValidatorPluginManager::class => ValidatorPluginManagerFactory::class,
             ],
         ];
