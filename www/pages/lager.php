@@ -4206,6 +4206,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $autolagersperre=$this->app->Secure->GetPOST('autolagersperre');
         $verbrauchslager=$this->app->Secure->GetPOST('verbrauchslager');
         $sperrlager=$this->app->Secure->GetPOST('sperrlager');
+        $kommissionierlager=$this->app->Secure->GetPOST('kommissionierlager');
         $poslager=$this->app->Secure->GetPOST('poslager');
         $breite=$this->app->Secure->GetPOST('breite');
         $laenge=$this->app->Secure->GetPOST('laenge');
@@ -4237,11 +4238,11 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $this->app->DB->Update(
             sprintf(
               "UPDATE lager_platz 
-              SET kurzbezeichnung='%s',autolagersperre=%d,verbrauchslager=%d,sperrlager=%d,poslager=%d, adresse=%d,
+              SET kurzbezeichnung='%s',autolagersperre=%d,verbrauchslager=%d,sperrlager=%d,kommissionierlager=%d,poslager=%d, adresse=%d,
               breite=%f,laenge=%f,hoehe=%f,abckategorie='%s',regalart='%s', rownumber = %d, allowproduction = %d
               WHERE id=%d 
               LIMIT 1",
-              $kurzbezeichnung,$autolagersperre, $verbrauchslager,$sperrlager,$poslager,$adresseid,
+              $kurzbezeichnung,$autolagersperre, $verbrauchslager,$sperrlager,$kommissionierlager,$poslager,$adresseid,
               $breite,$laenge,$hoehe,$abckategorie,$regalart,$rownumber,$allowproduction,
               $id
             )
@@ -4296,6 +4297,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $rownumber = $tmp['rownumber'];
 
         $sperrlager = $tmp['sperrlager'];
+        $kommissionierlager = $tmp['kommissionierlager'];
+
         $poslager = $tmp['poslager'];
         $abckategorie = $tmp['abckategorie'];
         $regalart = $tmp['regalart'];
@@ -4320,6 +4323,9 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         }
         if($sperrlager=='1') {
           $this->app->Tpl->Set('SPERRLAGER','checked');
+        }
+        if($kommissionierlager=='1') {
+          $this->app->Tpl->Set('KOMMISSIONIERLAGER','checked');
         }
         if($poslager=='1') {
           $this->app->Tpl->Set('POSLAGER','checked');
