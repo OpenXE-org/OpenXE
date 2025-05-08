@@ -2222,6 +2222,12 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         for($i = 0; $i < $carr; $i++)
           $newarr[] = $arr[$i]['kurzbezeichnung'];      
       break;
+      case "kommissionierlagerplatz":
+        $arr = $this->app->DB->SelectArr("SELECT kurzbezeichnung FROM lager_platz WHERE geloescht=0 AND kommissionierlager = 1 AND kurzbezeichnung LIKE '%$term%' ORDER by kurzbezeichnung");
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['kurzbezeichnung'];      
+      break;
       case "lagerplatzartikel":
         $artikel = (int)$this->app->Secure->GetGET('artikel');
         $pos = (int)$this->app->Secure->GetGET('pos');

@@ -6748,7 +6748,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 */
 
 	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
-    $this->app->YUI->AutoComplete("kommissionierlagerplatz", "lagerplatz");
+    $this->app->YUI->AutoComplete("kommissionierlagerplatz", "kommissionierlagerplatz");
 
     $this->app->YUI->TableSearch('TAB1','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
     $this->app->YUI->TableSearch('TAB2','auftraegeoffeneautowartend', 'show','','',basename(__FILE__), __CLASS__);
