@@ -169,7 +169,9 @@ class KommissionierungPDF extends BriefpapierCustom {
                 a.nummer as itemno,
                 lp.kurzbezeichnung as `desc`,
                 ksp.menge as amount,
-                a.herstellernummer as `name`,
+                a.name_de AS name,
+                a.herstellernummer,
+                ksp.artikelnummerkunde,
                 '' as steuersatz_ermaessigt,
                 DATE_FORMAT(zeitstempel,'%%Y%%m%%d') as datum               
             FROM 

@@ -7413,11 +7413,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         );
 
         foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {
+
+            $artikelnummerkunde = $this->app->DB->Select("SELECT artikelnummerkunde FROM auftrag_position WHERE auftrag = ".$auftrag." AND artikel = ".$storageMovement['artikel']." LIMIT 1");
+
             $this->app->DB->Update(
                 sprintf(
-                    "INSERT INTO kommissionierung_position (kommissionierung, artikel, lager_platz, menge, ziel_lager_platz) VALUES (%d, %d, %d, %d, %d)",
+                    "INSERT INTO kommissionierung_position (kommissionierung, artikel, artikelnummerkunde, lager_platz, menge, ziel_lager_platz) VALUES (%d, %d, '%s', %d, %d, %d)",
                     $kommissionierung,
                     $storageMovement['artikel'],
+                    $artikelnummerkunde,
                     $storageMovement['lager_platz'],
                     $storageMovement['menge'],
                     $ziellagerplatz
