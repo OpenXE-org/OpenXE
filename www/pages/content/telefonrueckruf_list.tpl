@@ -51,12 +51,12 @@
   <input type="hidden" id="e_id" value="0">
   <div class='row'>
   <div class='row-height'> 
-  <div class='col-xs-12 col-md-5 col-md-height'>
+  <div class='col-xs-12 col-md-9 col-md-height'>
   <div class='inside_white inside-full-height'>
 
     <fieldset>
     	<legend>{|Anruf|}</legend>
-    	<table>
+    	<table style="width:100%">
         <tr>
           <td>{|Anrufer|}:</td>
           <td colspan="3"><input type="text" name="evon" id="evon" size="42"></td>
@@ -73,7 +73,7 @@
         </tr>
         <tr>
           <td>{|Kommentar|}:</td>
-          <td colspan="3" ><textarea rows="10" cols="38" name="ebeschreibung" id="ebeschreibung">
+          <td colspan="3" ><textarea rows="10" cols="80" name="ebeschreibung" id="ebeschreibung">
           </textarea></td>
         </tr>
         <tr>
@@ -89,7 +89,7 @@
 
   </div>
   </div>
-  <div id="zweitesfieldset" style='display:none' class='col-xs-12 col-md-7 col-md-height'>
+  <div id="zweitesfieldset" style='display:none' class='col-xs-12 col-md-3 col-md-height'>
   <div class='inside inside-full-height'>
     <fieldset>
       <legend>{|Versuche|}</legend>
