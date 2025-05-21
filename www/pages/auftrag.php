@@ -1372,7 +1372,7 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop 
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,kommission_ok,lieferantenauftrag,art,adresse,shopextstatus,shop 
          FROM auftrag 
          WHERE id = %d 
          LIMIT 1',
@@ -1383,11 +1383,12 @@ class Auftrag extends GenAuftrag
       $shop = $auftragArr['shop'];
       $shopextstatus = $auftragArr['shopextstatus'];
       $adresse = $auftragArr['adresse'];
-      $status = $auftragArr['status'];//$auftragArr[''];// $this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
-      $projekt = $auftragArr['projekt'];//$this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$id' LIMIT 1");
-      $anfrageid = $auftragArr['anfrageid'];//$this->app->DB->Select("SELECT anfrageid FROM auftrag WHERE id='$id' LIMIT 1");
-      $kreditlimit_ok = $auftragArr['kreditlimit_ok'];//$this->app->DB->Select("SELECT kreditlimit_ok FROM auftrag WHERE id='$id' LIMIT 1");
-      $lieferantenauftrag = $auftragArr['lieferantenauftrag'];//$this->app->DB->Select("SELECT lieferantenauftrag FROM auftrag WHERE id='$id' LIMIT 1");
+      $status = $auftragArr['status'];
+      $projekt = $auftragArr['projekt'];
+      $anfrageid = $auftragArr['anfrageid'];
+      $kreditlimit_ok = $auftragArr['kreditlimit_ok'];
+      $kommission_ok = $auftragArr['kommission_ok'];
+      $lieferantenauftrag = $auftragArr['lieferantenauftrag'];
       $art = $auftragArr['art'];
     }
     $freigabe = '';
@@ -1445,8 +1446,10 @@ class Auftrag extends GenAuftrag
     }   
 
     if($status==='freigegeben') {
-      $alleartikelreservieren = "<option value=\"reservieren\">alle Artikel reservieren</option>";
 
+        if (empty($kommission_ok)) {
+            $alleartikelreservieren = "<option value=\"reservieren\">alle Artikel reservieren</option>";
+        }
 
       if($kommissionierart === "zweistufig" || $kommissionierart === "lieferscheinlagerscan" || $kommissionierart==="lieferscheinscan") {
         if($art==="rechnung"){
@@ -5808,15 +5811,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
           if($kommissionierverfahren==='lieferschein' && $lieferschein > 0)
           {
-            //FALL 1 Lieferschein mit Lagerplatz
-
-            $auslagernresult =            
-            $this->app->erp->LieferscheinAuslagern(
-              lieferschein: $lieferschein,
-              anzeige_lagerplaetze_in_lieferschein: true,
-              chargenmhdnachprojekt: true,
-              nurrestmenge: $nurRestmenge
-            );
+            //FALL 1 Lieferschein mit Lagerplatz         
             
             $this->app->erp->SeriennummernCheckLieferscheinBenachrichtigung($lieferschein);
             
@@ -5825,6 +5820,14 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                        
             if (!$vorkommissionierung)
             {
+               $auslagernresult =            
+               $this->app->erp->LieferscheinAuslagern(
+                  lieferschein: $lieferschein,
+                  anzeige_lagerplaetze_in_lieferschein: true,
+                  chargenmhdnachprojekt: true,
+                  nurrestmenge: $nurRestmenge
+                );
+
                 $kommissionierung = $this->app->erp->GetNextKommissionierung();
  
                 $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
@@ -5841,6 +5844,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 );
 
                 $this->Kommissionieren_etiketten_drucken($id);
+            } else {
+                $this->app->erp->Kommissionauslagern($vorkommissionierung);
+                $this->SeriennummernCheckLieferscheinWarnung($lieferschein, true);
+                $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
             }
                
             // Prozesse ohne Versandzentrum
@@ -6556,19 +6563,14 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $kommissionierlagerplatz = $this->app->Secure->GetPOST('kommissionierlagerplatz');
                 $kommissionierlagerplatz = $this->app->erp->ReplaceLagerPlatz(true,$kommissionierlagerplatz,true); // Parameters: Target db?, value, from form?
 
-                if (!empty($auftraegemarkiert)) {
-                    foreach ($auftraegemarkiert as $k => $v) {
-                        $auslagernresult =
-                                $this->app->erp->LieferscheinAuslagern(
-                                  lieferschein: $v,
-                                  anzeige_lagerplaetze_in_lieferschein: true,
-                                  belegtyp: 'auftrag',
-                                  chargenmhdnachprojekt: true,
-                                  forceseriennummerngeliefertsetzen: false,
-                                  nurrestmenge: false,
-                                  simulieren: true
-                                );
+                if(empty($kommissionierlagerplatz)) {
+                    $this->app->Tpl->addMessage('error',"Kein Kommissionierlagerplatz angegeben");
+                    break;
+                }
 
+                if (!empty($auftraegemarkiert)) {
+                    foreach ($auftraegemarkiert as $k => $v) {       
+                 
                         $settings = $this->app->DB->SelectRow("
                             SELECT 
                                 projekt.autodruckkommissionierscheinstufe1,
@@ -6576,48 +6578,27 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 adresse.etikett,
                                 adresse.etikettautodruck,
                                 projekt.id as projekt,
-                                auftrag.adresse
+                                auftrag.adresse,
+                                auftrag.belegnr
                             FROM projekt 
                             INNER JOIN auftrag ON projekt.id = auftrag.projekt
                             INNER JOIN adresse ON adresse.id = auftrag.adresse
                             WHERE auftrag.id = '".$v."'"
                         );                      
 
-                        $sql = "
-                            SELECT
-                                k.id,
-                                a.belegnr,
-                                a.adresse
-                            FROM
-                               kommissionierung k
-                            LEFT JOIN
-                                lieferschein l
-                            ON
-                                l.id = k.lieferschein
-                            LEFT JOIN
-                                auftrag al
-                            ON
-                                al.id = l.auftrag
-                            LEFT JOIN
-                                auftrag a
-                            ON
-                                a.id = k.auftrag
-                            WHERE
-                                a.id = $v OR al.id = $v
-                            LIMIT 1
-                        ";
-                        $check = $this->app->DB->SelectRow($sql);
-
-                        if (!empty($check)) {
-                            $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$check['belegnr']);
+                        if (!empty($this->app->erp->GetAuftragKommissionierung($v))) {
+                            $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$settings['belegnr']);
                         } else {
+
+                            $kid = $this->app->erp->GetNextKommissionierung();
+
                             $auslagernresult =
                                 $this->app->erp->LieferscheinAuslagern(
                                   lieferschein: $v,
                                   anzeige_lagerplaetze_in_lieferschein: true,
                                   belegtyp: 'auftrag',
                                   chargenmhdnachprojekt: true,
-                                  simulieren: $kommissionierlagerplatz?false:true,
+                                  simulieren: false,
                                   ziellagerplatz: $kommissionierlagerplatz
                                 );
 
@@ -6625,30 +6606,23 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 throw new exception("Lagervorgang fehlgeschlagen");
                             }
 
-                            if ($kommissionierlagerplatz) {
-                                $lagerplatz = $this->app->DB->SelectRow("SELECT kurzbezeichnung, lager FROM lager_platz WHERE id = ".$kommissionierlagerplatz);
-                                $kommentar = "Kommissioniert in ".$lagerplatz['kurzbezeichnung'];
-                                $this->app->erp->AuftragProtokoll($v,'Auftrag kommissioniert in '.$lagerplatz['kurzbezeichnung']);
-                                $this->app->DB->Update("UPDATE auftrag SET standardlager = ".$lagerplatz['lager']." WHERE id = ".$v);
+                            $lagerplatz = $this->app->DB->SelectRow("SELECT kurzbezeichnung, lager FROM lager_platz WHERE id = ".$kommissionierlagerplatz);
+                            $this->app->erp->AuftragProtokoll($v,'Auftrag kommissioniert in '.$lagerplatz['kurzbezeichnung']);
+                            $this->app->DB->Update("UPDATE auftrag SET standardlager = ".$lagerplatz['lager']." WHERE id = ".$v);
+
+                            foreach ($auslagernresult['storageMovements'] as $storageMovement) {
+                                $this->app->erp->LagerEinlagern(
+                                    artikel: $storageMovement['artikel'],
+                                    menge: $storageMovement['menge'],
+                                    regal: $kommissionierlagerplatz,
+                                    projekt: $settings['projekt'],
+                                    grund: "Kommissionierung ".$kid.", Auftrag ".$settings['belegnr'],
+                                    doctype: 'kommissionierung',
+                                    doctypeid: $kid
+                                );
                             }
 
-                            $settings = $this->app->DB->SelectRow("
-                                SELECT
-                                    projekt.autodruckkommissionierscheinstufe1,
-                                    projekt.autodruckkommissionierscheinstufe1menge,
-                                    adresse.etikett,
-                                    adresse.etikettautodruck,
-                                    projekt.id as projekt,
-                                    auftrag.adresse
-                                FROM projekt
-                                INNER JOIN auftrag ON projekt.id = auftrag.projekt
-                                INNER JOIN adresse ON adresse.id = auftrag.adresse
-                                WHERE auftrag.id = '".$v."'"
-                            );
-
-                            $kid = $this->app->erp->GetNextKommissionierung();
-                            $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
-                            $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');              
+                            $druckercode = $this->app->erp->Projektdaten($settings['projekt'],'druckerlogistikstufe1');              
 
                             $this->Kommissionieren(
                                 kommissionierung : $kid,
@@ -6659,7 +6633,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 ziellagerplatz: $kommissionierlagerplatz?$kommissionierlagerplatz:null,
                                 mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
                                 druckercode: $druckercode,
-                                kommentar: $kommentar);
+                                kommentar: "Kommissioniert in ".$lagerplatz['kurzbezeichnung']);
                         }                        
                         $this->Kommissionieren_etiketten_drucken($v);
                     }
@@ -7394,7 +7368,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
      $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
 
-    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, $ziellagerplatz = null, int $mengedruck, $druckercode, $kommentar = '') {
+    function Kommissionieren(int $kommissionierung, int $auftrag, int $lieferschein, bool $ausgelagert, array $lagerplatzliste, int $ziellagerplatz, int $mengedruck, $druckercode, $kommentar = '') {
 
         $sql = sprintf(
             "UPDATE kommissionierung SET lieferschein = %d, auftrag = %d, adresse = IF (%d != 0,(SELECT adresse FROM lieferschein WHERE id = %d LIMIT 1),(SELECT adresse FROM auftrag WHERE id = %d LIMIT 1)), ausgelagert = %d, kommentar = CONCAT(kommentar, '%s') WHERE id = %d LIMIT 1",
@@ -7412,10 +7386,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $sql
         );
 
+        $auftragarr = $this->app->DB->SelectRow("SELECT belegnr, adresse, projekt FROM auftrag WHERE id = ".$auftrag);
+
         foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {
-
             $artikelnummerkunde = $this->app->DB->Select("SELECT artikelnummerkunde FROM auftrag_position WHERE auftrag = ".$auftrag." AND artikel = ".$storageMovement['artikel']." LIMIT 1");
-
             $this->app->DB->Update(
                 sprintf(
                     "INSERT INTO kommissionierung_position (kommissionierung, artikel, artikelnummerkunde, lager_platz, menge, ziel_lager_platz) VALUES (%d, %d, '%s', %d, %d, %d)",
@@ -7427,7 +7401,32 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     $ziellagerplatz
                 )
             );
+
+            $this->app->erp->LagerEinlagern(artikel: $storageMovement['artikel'], menge: $storageMovement['menge'], regal: $ziellagerplatz, projekt: $auftragarr['projekt'], grund: 'Kommissionierung '.$kommissionierung, doctype: 'auftrag', doctypeid: $auftrag);
+
+//  function LagerEinlagern($artikel,$menge,$regal,$projekt,$grund="",$importer="",$paketannahme="",$doctype = "", $doctypeid = 0, $vpeid = 0, $permanenteinventur = 0, $adresse = 0)
+
+            $this->app->DB->Insert("
+                INSERT INTO 
+                    lager_reserviert
+                (id,adresse,artikel,menge,grund,projekt,firma,bearbeiter,datum,objekt,parameter)
+                VALUES(
+                    '',
+                    '$adresse',
+                    ".$storageMovement['artikel'].",
+                    ".$storageMovement['menge'].",
+                    'Reservierung f&uuml;r Kommissionierung ".$auftragarr['belegnr']."',
+                    ".$auftragarr['projekt'].",
+                    '".$this->app->User->GetFirma()."',
+                    '".$this->app->User->GetName()."',
+                    'NOW()',
+                    'auftrag',
+                    '$auftrag'
+                )");
+
         }
+
+        $this->app->DB->Update("UPDATE auftrag SET kommission_ok = 1 WHERE id = ".$auftrag);
 
         // Kommissionierschein
         if ($mengedruck > 0) {

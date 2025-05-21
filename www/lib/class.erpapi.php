@@ -2830,9 +2830,9 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
       $seriennummern = $arcticleRow['seriennummern'] === 'keine'?'':$arcticleRow['seriennummern'];
       $regal = 0;
 
-      $sperrlagerWhere = ' lp.sperrlager <> 1 ';
+      $sperrlagerWhere = ' (lp.sperrlager <> 1 AND lp.kommissionierlager <> 1)';
       if($belegtyp=='produktion') {
-        $sperrlagerWhere = ' (lp.sperrlager <> 1 OR lp.allowproduction = 1) ';
+        $sperrlagerWhere = ' ((lp.sperrlager <> 1 AND lp.kommissionierlager <> 1) OR lp.allowproduction = 1) ';
       }
 
       if($lagerartikel > 0)
@@ -3221,6 +3221,40 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
     return(array('storageMovements' => $storageMovements));
   }
+
+    function GetAuftragKommissionierung(int $auftragid) {
+        $sql = "
+            SELECT
+                k.id,
+                a.belegnr,
+                a.adresse
+            FROM
+               kommissionierung k
+            LEFT JOIN
+                lieferschein l
+            ON
+                l.id = k.lieferschein
+            LEFT JOIN
+                auftrag al
+            ON
+                al.id = l.auftrag
+            LEFT JOIN
+                auftrag a
+            ON
+                a.id = k.auftrag
+            WHERE
+                a.id = $auftragid OR al.id = $auftragid
+            LIMIT 1
+        ";
+        $check = $this->app->DB->SelectRow($sql);
+
+        if (!empty($check)) {
+            return($check[0]['k.id']);
+        }
+        else {
+            return(0);
+        }      
+    }
 
     function Kommissionauslagern(int $kommissionid) {
         
@@ -12141,54 +12175,56 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
 
     // Lager Check
-    $positionen_vorhanden = 0;
-    $artikelzaehlen=0;
-    $cartikelarr = $artikelarr?count($artikelarr):0;
-    for($k=0;$k<$cartikelarr; $k++)  {
-      $menge = $artikelarr[$k]['menge'] - $artikelarr[$k]['geliefert_menge'];
-      $artikel = $artikelarr[$k]['artikel'];
-      $artikel_position_id = $artikelarr[$k]['id'];
-      $lagerartikel = $artikelarr[$k]['artlagerartikel'];
-      if($lagerartikel==1) {
-        // wenn artikel oefters im Auftrag nehme gesamte summe her
+    if (!$auftraege[0]['kommission_ok']) {
+        $positionen_vorhanden = 0;
+        $artikelzaehlen=0;
+        $cartikelarr = $artikelarr?count($artikelarr):0;
+        for($k=0;$k<$cartikelarr; $k++)  {
+          $menge = $artikelarr[$k]['menge'] - $artikelarr[$k]['geliefert_menge'];
+          $artikel = $artikelarr[$k]['artikel'];
+          $artikel_position_id = $artikelarr[$k]['id'];
+          $lagerartikel = $artikelarr[$k]['artlagerartikel'];
+          if($lagerartikel==1) {
+            // wenn artikel oefters im Auftrag nehme gesamte summe her
 
-        $gesamte_menge_im_auftrag= $this->app->DB->Select("SELECT SUM(menge-geliefert_menge) FROM auftrag_position WHERE auftrag='$auftrag' AND artikel='$artikel'");
-        if($gesamte_menge_im_auftrag > $menge) {
-          $menge = $gesamte_menge_im_auftrag;
-        }
-        $artikelzaehlen++;
-        if($this->LagerCheck($adresse,$artikel,$menge,"auftrag",$auftrag)>0) {
-          $positionen_vorhanden++;
-        }
-        elseif($positionen_vorhanden > 0) {
-          break;
-        }
-        //else { if($auftrag==314) {echo "Artikel $artikel Menge $menge";exit;} }
+            $gesamte_menge_im_auftrag= $this->app->DB->Select("SELECT SUM(menge-geliefert_menge) FROM auftrag_position WHERE auftrag='$auftrag' AND artikel='$artikel'");
+            if($gesamte_menge_im_auftrag > $menge) {
+              $menge = $gesamte_menge_im_auftrag;
+            }
+            $artikelzaehlen++;
+            if($this->LagerCheck($adresse,$artikel,$menge,"auftrag",$auftrag)>0) {
+              $positionen_vorhanden++;
+            }
+            elseif($positionen_vorhanden > 0) {
+              break;
+            }
+            //else { if($auftrag==314) {echo "Artikel $artikel Menge $menge";exit;} }
 
-      }
-    }
-    $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$auftrag' LIMIT 1");
+          }
+        }
+        $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$auftrag' LIMIT 1");
 
-    $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='0' WHERE id='$auftrag' LIMIT 1");
-    //echo "$positionen_vorhanden $artikelzaehlen<hr>";
-    if($positionen_vorhanden==$artikelzaehlen){
-      $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
-    }
-    else {
-      $kommissionierverfahren = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id = '$projekt' LIMIT 1");
-      if($kommissionierverfahren == 'rechnungsmail')
-      {
+        $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='0' WHERE id='$auftrag' LIMIT 1");
+        //echo "$positionen_vorhanden $artikelzaehlen<hr>";
+        if($positionen_vorhanden==$artikelzaehlen){
+          $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+        }
+        else {
+          $kommissionierverfahren = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id = '$projekt' LIMIT 1");
+          if($kommissionierverfahren == 'rechnungsmail')
+          {
+            $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+          }else{
+            $this->app->DB->Update("UPDATE auftrag SET lager_ok='0' WHERE id='$auftrag' LIMIT 1");
+          }
+          if($positionen_vorhanden > 0 && $artikelzaehlen > 0)
+          {
+            $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='1' WHERE id='$auftrag' LIMIT 1");
+          }
+        }
+    } else {
         $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
-      }else{
-        $this->app->DB->Update("UPDATE auftrag SET lager_ok='0' WHERE id='$auftrag' LIMIT 1");
-      }
-      if($positionen_vorhanden > 0 && $artikelzaehlen > 0)
-      {
-        $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='1' WHERE id='$auftrag' LIMIT 1");
-      }
-
     }
-
 
     // projekt check start
     $projektcheck = 0;
@@ -33435,7 +33471,13 @@ function Firmendaten($field,$projekt="")
       {
         $standardlager = 0;
         $projektlager = 0;
-        if($typ==='auftrag' && $id > 0){
+        if($typ==='auftrag' && $id > 0) {
+
+            
+            if (!empty($this->app->erp->GetAuftragKommissionierung($v))) {
+                return 0;
+            }
+
           $auftragsArr = $this->app->DB->SelectRow(
             sprintf(
               "SELECT id, adresse, projekt, belegnr, standardlager,reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
