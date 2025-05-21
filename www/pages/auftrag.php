@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -92,9 +92,9 @@ class Auftrag extends GenAuftrag
                                          else
                                          oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
                                            \'\',
-                                           i, 
+                                           i,
                                            0,0
                                            );
                                          }
@@ -212,16 +212,16 @@ class Auftrag extends GenAuftrag
 
         $sql = "";
         $sql .=
-          "SELECT SQL_CALC_FOUND_ROWS 
+          "SELECT SQL_CALC_FOUND_ROWS
           a.id,
-          '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+          '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`,
           CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
           CONCAT(
             IF(a.status = 'angelegt','ENTWURF',a.belegnr),
             IF(
               a.projektfiliale > 0 OR a.fastlane = 1,
               CONCAT(
-                ' (', 
+                ' (',
                 IF(a.projektfiliale > 0,'F',''),
                 IF(
                   a.fastlane = 1,
@@ -232,8 +232,8 @@ class Auftrag extends GenAuftrag
               ),
               ''
             )
-          ) AS `auftrag`, 
-          DATE_FORMAT(a.datum,'%d.%m.%Y') AS `vom`, 
+          ) AS `auftrag`,
+          DATE_FORMAT(a.datum,'%d.%m.%Y') AS `vom`,
           a.lieferantkdrnummer AS `kunde`,
           CONCAT(
             " . $this->app->erp->MarkerUseredit("a.name", "a.useredittimestamp") . ",
@@ -269,9 +269,9 @@ class Auftrag extends GenAuftrag
               ),
               ''
             )
-          ) AS `name`, 
+          ) AS `name`,
           a.land AS `land`,
-          $projectColSql, 
+          $projectColSql,
           ".(
               $auftragmarkierenegsaldo ?
               "CONCAT(
@@ -288,10 +288,10 @@ class Auftrag extends GenAuftrag
                 '>'," :
                 ''
           )."
-          a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." AS `zahlungsweise`,  
+          a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." AS `zahlungsweise`,
           ".$app->erp->FormatPreis('a.gesamtsumme',2)." AS `betrag`,
           ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')."
-          (" . $this->app->YUI->IconsSQL() . ")  AS icons, 
+          (" . $this->app->YUI->IconsSQL() . ")  AS icons,
           a.id
           FROM `auftrag` AS `a` ";
 
@@ -368,7 +368,7 @@ class Auftrag extends GenAuftrag
         $more_data10 = $this->app->Secure->GetGET("more_data10");
 
         if ($more_data10 == 1) {
-          $subwhere[] = " (SELECT COUNT(r.id) FROM rechnung r WHERE r.auftragid=a.id) <= 0 
+          $subwhere[] = " (SELECT COUNT(r.id) FROM rechnung r WHERE r.auftragid=a.id) <= 0
           AND (SELECT count(sp1.id) FROM sammelrechnung_position sp1 INNER JOIN auftrag_position ap1 ON sp1.auftrag_position_id = ap1.id  WHERE ap1.auftrag = a.id) <= 0
           AND (SELECT count(sp1.id) FROM sammelrechnung_position sp1 INNER JOIN lieferschein_position lsp1 ON sp1.lieferschein_position_id = lsp1.id INNER JOIN auftrag_position ap1 ON ap1.id = lsp1.auftrag_position_id WHERE ap1.auftrag = a.id) <= 0
           AND (SELECT COUNT(l.id) FROM lieferschein l WHERE l.auftragid = a.id AND l.keinerechnung = 1) <= 0
@@ -406,12 +406,12 @@ class Auftrag extends GenAuftrag
           /*$subwhere[] = "
           (
             (
-              (a.datum < DATE_SUB(NOW(), INTERVAL 1 DAY)) 
+              (a.datum < DATE_SUB(NOW(), INTERVAL 1 DAY))
               OR (a.lieferdatum < DATE_SUB(NOW(), INTERVAL 1 DAY) AND a.lieferdatum!='0000-00-00')  OR
               (a.tatsaechlicheslieferdatum < DATE_SUB(NOW(), INTERVAL 1 DAY) AND a.tatsaechlicheslieferdatum!='0000-00-00')
               )
               AND a.status='freigegeben'
-            
+
           )";*/
 
           $subwhere[] =
@@ -449,7 +449,7 @@ class Auftrag extends GenAuftrag
         }
 
         if ($tmp != "" && !$ignore) $tmp.= " AND a.status='freigegeben' ";
-        
+
         if ($tmp == "") {
           $tmp = " AND a.status != 'angelegt' ";
         }
@@ -601,7 +601,7 @@ class Auftrag extends GenAuftrag
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS
         a.id,
-        '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+        '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`,
         CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`,
         IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
         DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
@@ -640,9 +640,9 @@ class Auftrag extends GenAuftrag
                                  else
                                  oMoreData' . $r . $name . ' = 1;
 
-                                 $(\'#' . $name . '\').dataTable().fnFilter( 
+                                 $(\'#' . $name . '\').dataTable().fnFilter(
                                    \'\',
-                                   i, 
+                                   i,
                                    0,0
                                    );
                                  }
@@ -661,7 +661,7 @@ class Auftrag extends GenAuftrag
         }
         else {
           $where .= " AND a.liefertermin_ok=1";
-        }                
+        }
 
         $more_data2 = $this->app->Secure->GetGET("more_data2");
         if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
@@ -692,7 +692,7 @@ class Auftrag extends GenAuftrag
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                 a.id,
-                '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`, 
+                '<img src=./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/details_open.png class=details>' AS `open`,
                 CONCAT('<input type=\"checkbox\" name=\"auswahlcronjob[]\" value=\"',a.id,'\" />') AS `auswahl`,
                 IF(a.fastlane=1,CONCAT(a.belegnr,' (FL)'),a.belegnr) AS `belegnr`,
                 DATE_FORMAT(a.datum,'%d.%m.%Y') AS `datum`,
@@ -732,7 +732,7 @@ class Auftrag extends GenAuftrag
                 $width = array(  '1%',      '60%',    '29%','5%','5%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('ap.sort','a.name_de','a.nummer','ap.menge','lager','teilmenge');
                 $searchsql = array('');
@@ -742,7 +742,7 @@ class Auftrag extends GenAuftrag
 
                 $input_for_menge = "CONCAT(
                         '<input type = \"number\" min=\"0\" max=\"',
-                        ap.menge,                        
+                        ap.menge,
                         '\" name=\"teilmenge_',
                         ap.id,
                         '\"',
@@ -755,17 +755,17 @@ class Auftrag extends GenAuftrag
 
 //                            .'(SELECT TRIM(IFNULL(SUM(l.menge),0))+0 FROM lager_platz_inhalt l WHERE l.artikel=a.id) as lager'
 
-                $sql = "SELECT SQL_CALC_FOUND_ROWS 
-                            ap.sort, 
-                            ap.sort, 
-                            a.name_de, 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
+                            ap.sort,
+                            ap.sort,
+                            a.name_de,
                             a.nummer,"
                             .$this->app->erp->FormatMenge('ap.menge').","
                             ."(SELECT TRIM(IFNULL(SUM(l.menge),0))+0 FROM lager_platz_inhalt l WHERE l.artikel=a.id) as lager,"
                             .$input_for_menge
-                            ." FROM auftrag_position ap 
-                                INNER JOIN 
-                            artikel a 
+                            ." FROM auftrag_position ap
+                                INNER JOIN
+                            artikel a
                             ON ap.artikel = a.id";
 
                 $where = " ap.auftrag = $id ";
@@ -799,25 +799,25 @@ class Auftrag extends GenAuftrag
 
         $sql = "SELECT  SQL_CALC_FOUND_ROWS
 		auftrag_id,
-		DATE_FORMAT(erwartetes_lieferdatum,\"%d.%m.%Y\") erwartetes_lieferdatum_form, 
-		CASE 
+		DATE_FORMAT(erwartetes_lieferdatum,\"%d.%m.%Y\") erwartetes_lieferdatum_form,
+		CASE
 			WHEN urspruengliches_lieferdatum <> erwartetes_lieferdatum THEN CONCAT(\"<p style=\'color:red;\'>\",DATE_FORMAT(urspruengliches_lieferdatum,\"%d.%m.%Y\"),\"</p>\")
 			ELSE DATE_FORMAT(urspruengliches_lieferdatum,\"%d.%m.%Y\")
-			END urspruengliches_lieferdatum_form, 
-		kunde, 
-		belegnr, 
-		position, 
-		CONCAT(\"<a href=index.php?module=artikel&action=edit&id=\",artikel_id,\" target=_blank>\",artikel,\"</a>\") artikel, 
-		bezeichnung, 
-		menge, 
+			END urspruengliches_lieferdatum_form,
+		kunde,
+		belegnr,
+		position,
+		CONCAT(\"<a href=index.php?module=artikel&action=edit&id=\",artikel_id,\" target=_blank>\",artikel,\"</a>\") artikel,
+		bezeichnung,
+		menge,
 		umsatz,
 		CASE WHEN menge <= lager THEN CONCAT(\"<a href=index.php?module=artikel&action=lager&id=\",artikel_id,\" target=_blank>\",ROUND(lager,0),\"</a>\")
 		ELSE CONCAT(\"<a href=index.php?module=artikel&action=lager&id=\",artikel_id,\" style=\'color:red;\' target=_blank>\",ROUND(lager,0),\"</a>\")
 		END lagermenge,".
-        $this->app->YUI->IconsSQL(). 		             
+        $this->app->YUI->IconsSQL(). 		
 		"autoversand_icon,
 		auftrag_id
-	FROM 
+	FROM
 		(
 		SELECT
         auf.id,
@@ -829,37 +829,37 @@ class Auftrag extends GenAuftrag
         auf.nachnahme_ok,
         auf.check_ok,
         auf.liefertermin_ok,
-        auf.kreditlimit_ok,    
+        auf.kreditlimit_ok,
         auf.liefersperre_ok,
         auf.adresse,
-   		CASE 
+   		CASE
                     WHEN auftrag_position.lieferdatum <> '0000-00-00' AND auftrag_position.lieferdatum > CURRENT_DATE THEN auftrag_position.lieferdatum
                     WHEN auftrag_position.lieferdatum <> '0000-00-00' THEN CURRENT_DATE
-                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' AND auf.tatsaechlicheslieferdatum > CURRENT_DATE THEN auf.tatsaechlicheslieferdatum      
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' AND auf.tatsaechlicheslieferdatum > CURRENT_DATE THEN auf.tatsaechlicheslieferdatum
                     WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN CURRENT_DATE
                     WHEN auf.lieferdatum <> '0000-00-00' AND auf.lieferdatum > CURRENT_DATE THEN auf.lieferdatum
                     ELSE CURRENT_DATE
                 END erwartetes_lieferdatum,
-                CASE 
+                CASE
                     WHEN auftrag_position.lieferdatum <> '0000-00-00' THEN auftrag_position.lieferdatum
-                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN auf.tatsaechlicheslieferdatum      
+                    WHEN auf.tatsaechlicheslieferdatum <> '0000-00-00' THEN auf.tatsaechlicheslieferdatum
                     WHEN auf.lieferdatum <> '0000-00-00' THEN auf.lieferdatum
                     ELSE auf.datum
-                END urspruengliches_lieferdatum, 
+                END urspruengliches_lieferdatum,
                 auf.name kunde,
- 		auf.belegnr belegnr, 
-		auftrag_position.sort position, 
-		artikel.nummer artikel, 
+ 		auf.belegnr belegnr,
+		auftrag_position.sort position,
+		artikel.nummer artikel,
 		artikel.id artikel_id,
-		auftrag_position.bezeichnung bezeichnung, 
-		round(auftrag_position.menge,0) menge, 
+		auftrag_position.bezeichnung bezeichnung,
+		round(auftrag_position.menge,0) menge,
 		round(auftrag_position.menge*auftrag_position.preis,2) umsatz,
 	        (SELECT SUM(menge) FROM lager_platz_inhalt INNER JOIN lager_platz ON lager_platz_inhalt.lager_platz = lager_platz.id WHERE lager_platz_inhalt.artikel = artikel.id AND lager_platz.sperrlager <> 1) as lager,
 		auf.autoversand autoversand,
-		auf.id auftrag_id         
+		auf.id auftrag_id
                 FROM auftrag auf
                 INNER JOIN auftrag_position ON auf.id = auftrag_position.auftrag
-                INNER JOIN artikel ON auftrag_position.artikel = artikel.id  
+                INNER JOIN artikel ON auftrag_position.artikel = artikel.id
 		WHERE auf.status NOT IN ('abgeschlossen','storniert') AND auf.belegnr <> ''
                 ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
                 ) a";
@@ -1076,19 +1076,19 @@ class Auftrag extends GenAuftrag
       }
     }
     ';
-    
+
   }
-  
+
   function AuftragSteuer()
   {
-      
+
   }
-  
+
   function AuftragEinkaufspreise()
   {
-    
+
   }
-  
+
   function AuftragSumme()
   {
   }
@@ -1135,7 +1135,7 @@ class Auftrag extends GenAuftrag
       }else if(isset($erg['error']))
       {
         $msg = $this->app->erp->base64_url_encode('<div class="error">'.$erg['error'].'</div>');
-        
+
       }else{
         $msg = $this->app->erp->base64_url_encode('<div class="info">Anfrage gesendet</div>');
       }
@@ -1144,7 +1144,7 @@ class Auftrag extends GenAuftrag
     }
     header('Location: index.php?module=auftrag&action=edit&id='.$id.'&msg='.$msg);
   }
-  
+
   function AuftragEAN()
   {
     $id=$this->app->Secure->GetGET('id');
@@ -1234,7 +1234,7 @@ class Auftrag extends GenAuftrag
     $adresse = $this->app->DB->Select("SELECT adresse FROM auftrag WHERE id='$id' LIMIT 1");
     $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Die Verbandsinformation wurde neu geladen!</div>  ");
     $this->app->Location->execute("index.php?module=auftrag&action=edit&id=$id&msg=$msg");
-  }       
+  }
 
   function AuftragDeleteRabatte()
   {
@@ -1243,7 +1243,7 @@ class Auftrag extends GenAuftrag
     $this->app->DB->Update("UPDATE auftrag SET rabatt='',rabatt1='',rabatt2='',rabatt3='',rabatt4='',rabatt5='',realrabatt='' WHERE id='$id' LIMIT 1");
     $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Die Rabatte wurden entfernt!</div>  ");
     $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id.'&msg='.$msg);
-  }       
+  }
 
   function AuftragShopexport()
   {
@@ -1372,9 +1372,9 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,kommission_ok,lieferantenauftrag,art,adresse,shopextstatus,shop 
-         FROM auftrag 
-         WHERE id = %d 
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,kommission_ok,lieferantenauftrag,art,adresse,shopextstatus,shop
+         FROM auftrag
+         WHERE id = %d
          LIMIT 1',
         $id
       )
@@ -1400,14 +1400,14 @@ class Auftrag extends GenAuftrag
     $proformapopup = '';
     $proformarechnungoption = '';
     $proformarechnungcase = '';
-    
+
     $casehook = '';
     $optionhook = '';
     $kreditlimit = '';
     $shopexport = '';
     $auswahlentsprechendkommissionierung = '';
     $this->app->erp->RunHook('auftragiconmenu_option', 5, $id, $casehook, $optionhook, $status, $prefix);
-    
+
     if($anfrageid > 0){
       $freigabe .= "<option value=\"anfrage\">in Anfrage r&uuml;ckf&uuml;hren</option>";
     }
@@ -1437,13 +1437,13 @@ class Auftrag extends GenAuftrag
     else if($status!="storniert")
       $storno = "<option value=\"storno\">Auftrag stornieren</option>";*/
 
-    $kommissionierart = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id='$projekt' LIMIT 1");   
+    $kommissionierart = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id='$projekt' LIMIT 1");
     //$art = $this->app->DB->Select("SELECT art FROM auftrag WHERE id='$id' LIMIT 1");
     $alleartikelreservieren = '';
 
     if ($status==='angelegt' || $status==='freigegeben') {
         $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
-    }   
+    }
 
     if($status==='freigegeben') {
 
@@ -1471,8 +1471,8 @@ class Auftrag extends GenAuftrag
     $zertifikatoption = '';
     $zertifikatcase = '';
     if($adresse > 0 && $this->app->erp->RechteVorhanden('zertifikatgenerator','list')) {
-      $zertifikate = $this->app->DB->Select("SELECT ds.datei 
-      FROM datei_stichwoerter ds 
+      $zertifikate = $this->app->DB->Select("SELECT ds.datei
+      FROM datei_stichwoerter ds
       INNER JOIN datei_stichwoerter ds2 ON ds.datei = ds2.datei AND ds2.objekt = 'Artikel'
       INNER JOIN auftrag_position ap ON ap.artikel = ds2.parameter AND ap.auftrag = '$id'
       WHERE ds.objekt = 'Adressen' AND ds.parameter = '$adresse'
@@ -1482,7 +1482,7 @@ class Auftrag extends GenAuftrag
         $zertifikatcase = "case 'zertifikate': if(!confirm('Zertifikate wirklich laden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=zertifikate&id=%value%'; break; ";
       }
     }
-    
+
     $artikeleinlagern = '';
     $artikelauslagern = '';
     $menueinlagern = '';
@@ -1494,19 +1494,19 @@ class Auftrag extends GenAuftrag
     if($this->app->erp->RechteVorhanden('auftrageinauslagern','einlagern'))
     {
       $artikeleinlagern = '<option value="artikeleinlagern">Artikel einlagern</option>';
-      $menueinlagern = "   case 'artikeleinlagern': if(!confirm('Artikel wirklich einlagern?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrageinauslagern&action=einlagern&id=%value%'; break;";          
+      $menueinlagern = "   case 'artikeleinlagern': if(!confirm('Artikel wirklich einlagern?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrageinauslagern&action=einlagern&id=%value%'; break;";
     }
     if($this->app->erp->RechteVorhanden('auftrageinauslagern','auslagern'))
     {
       $artikelauslagern = '<option value="artikelauslagern">Artikel auslagern</option>';
       $menuauslagern = " case 'artikelauslagern': if(!confirm('Artikel wirklich auslagern?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrageinauslagern&action=auslagern&id=%value%'; break;";
     }
-    
+
     if($status === 'abgeschlossen' && $this->app->erp->RechteVorhanden('auftrag','shopexport'))
     {
       if($shop > 0 && $shopexportstatus != 'abgeschlossen') {
         $shopexport = '<option value="shopexport">Status an Shop zur&uuml;ckmelden</option>';
-        $menushopupdate = " case 'shopexport': if(!confirm('Status wirklich an Shop melden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=shopexport&id=%value%'; break;";        
+        $menushopupdate = " case 'shopexport': if(!confirm('Status wirklich an Shop melden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=shopexport&id=%value%'; break;";
       }
     }
     if($this->app->erp->RechteVorhanden('lieferkette', 'create'))
@@ -1547,10 +1547,10 @@ class Auftrag extends GenAuftrag
           case 'storno':
             if(!confirm('Wirklich stornieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=delete&id=%value%'; break;
           case 'unstorno':
-            if(!confirm('Wirklich stornierten Auftrag wieder freigeben?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=undelete&id=%value%'; 
+            if(!confirm('Wirklich stornierten Auftrag wieder freigeben?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=undelete&id=%value%';
             break;
-          case 'teillieferung': 
-            window.location.href='index.php?module=auftrag&action=teillieferung&id=%value%'; 
+          case 'teillieferung':
+            window.location.href='index.php?module=auftrag&action=teillieferung&id=%value%';
           break;
           case 'anfrage':   if(!confirm('Wirklich rückführen?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=anfrage&id=%value%'; break;
           case 'kreditlimit':       if(!confirm('Wirklich Kreditlimit für diesen Auftrag freigeben?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=kreditlimit&id=%value%'; break;
@@ -1619,8 +1619,8 @@ class Auftrag extends GenAuftrag
       </select>&nbsp;
 
     <a href=\"index.php?module=auftrag&action=pdf&id=%value%\" title=\"PDF\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\"></a>";
-    
-    
+
+
     $menu .=  "<!--<a href=\"index.php?module=auftrag&action=proforma&id=%value%\" title=\"Proforma Rechnung\"><img border=\"0\" src=\"./themes/new/images/proforma.gif\"></a>-->
       <!--
       <a href=\"index.php?module=auftrag&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
@@ -1644,7 +1644,7 @@ class Auftrag extends GenAuftrag
     $menu = str_replace('%value%',$id,$menu);
     return $menu.$proformapopup;
   }
-  
+
 
   /**
    * @param int $id
@@ -1661,10 +1661,10 @@ class Auftrag extends GenAuftrag
         "SELECT if(v.versendet_am!='0000-00-00', DATE_FORMAT(v.versendet_am,'%d.%m.%Y'),CONCAT('Heute im Versand<br><a href=\"#\" onclick=\"if(!confirm(\'Auftrag wirklich aus dem Versand nehmen?\')) return false; else window.location.href=\'index.php?module=auftrag&action=ausversand&id=',v.id,'\'\">Aktuell im Versand <br>-> als RMA markieren</a>')) as datum, v.versandunternehmen as versand, v.tracking as L,
       CONCAT('<a href=\"index.php?module=lieferschein&action=pdf&id=',v.lieferschein,'\">',l.belegnr,'</a><br><a href=\"index.php?module=lieferschein&action=edit&id=',v.lieferschein,'\">zum LS</a>') as LS,
       CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',v.rechnung,'\">',r.belegnr,'</a><br><a href=\"index.php?module=rechnung&action=edit&id=',v.rechnung,'\">zur RE</a>') as RE,
-      if(tracking!='',CONCAT('<a href=\"http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc=',tracking,'\" target=\"_blank\">Online-Status</a>'),'') 
-      FROM versand v 
-      INNER JOIN lieferschein l ON v.lieferschein=l.id 
-      LEFT JOIN rechnung r ON v.rechnung=r.id 
+      if(tracking!='',CONCAT('<a href=\"http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc=',tracking,'\" target=\"_blank\">Online-Status</a>'),'')
+      FROM versand v
+      INNER JOIN lieferschein l ON v.lieferschein=l.id
+      LEFT JOIN rechnung r ON v.rechnung=r.id
       WHERE l.auftragid='$id' AND l.auftrag!=''"
       );
     }
@@ -1677,8 +1677,8 @@ class Auftrag extends GenAuftrag
 
     $heuteimversand = $this->app->DB->Select(
       "SELECT if(v.versendet_am!='0000-00-00', DATE_FORMAT(v.versendet_am,'%d.%m.%Y'),'Heute im Versand') as datum
-      FROM versand v 
-      INNER JOIN lieferschein l ON v.lieferschein=l.id 
+      FROM versand v
+      INNER JOIN lieferschein l ON v.lieferschein=l.id
       WHERE l.auftragid='$id' AND l.auftrag!=''"
     );
 
@@ -1689,7 +1689,7 @@ class Auftrag extends GenAuftrag
     return $result;
   }
 */
-  
+
   function AuftragPDFfromArchiv()
   {
     $id = $this->app->Secure->GetGET("id");
@@ -1728,7 +1728,7 @@ class Auftrag extends GenAuftrag
     }
     $artikelRow = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT id, mindesthaltbarkeitsdatum, chargenverwaltung 
+        'SELECT id, mindesthaltbarkeitsdatum, chargenverwaltung
         FROM artikel WHERE id = %d AND lagerartikel = 1 LIMIT 1', $id
       )
     );
@@ -1742,16 +1742,16 @@ class Auftrag extends GenAuftrag
     if(!empty($artikelRow['mindesthaltbarkeitsdatum'])) {
       $table->Query(
         sprintf(
-          'SELECT ' . $this->app->erp->FormatMenge('sum(lpi.menge)') . ' as menge, l.bezeichnung as Lager, ' . $this->app->erp->FormatMenge('sum(lm.menge)') . ' as `MHD-Menge`  
-          FROM lager l 
-          INNER JOIN lager_platz lp ON l.id = lp.lager AND l.geloescht = 0 
-          INNER JOIN lager_platz_inhalt lpi ON lp.id = lpi.lager_platz AND lpi.artikel = %d 
+          'SELECT ' . $this->app->erp->FormatMenge('sum(lpi.menge)') . ' as menge, l.bezeichnung as Lager, ' . $this->app->erp->FormatMenge('sum(lm.menge)') . ' as `MHD-Menge`
+          FROM lager l
+          INNER JOIN lager_platz lp ON l.id = lp.lager AND l.geloescht = 0
+          INNER JOIN lager_platz_inhalt lpi ON lp.id = lpi.lager_platz AND lpi.artikel = %d
           LEFT JOIN (
-            SELECT SUM(menge) AS menge, lager_platz 
-            FROM `lager_mindesthaltbarkeitsdatum` 
+            SELECT SUM(menge) AS menge, lager_platz
+            FROM `lager_mindesthaltbarkeitsdatum`
             WHERE artikel = %d
-            GROUP BY lager_platz 
-          ) AS lm ON lp.id = lm.lager_platz 
+            GROUP BY lager_platz
+          ) AS lm ON lp.id = lm.lager_platz
           GROUP BY l.id
           ORDER BY l.bezeichnung',
           (int)$id, (int)$id
@@ -1786,15 +1786,15 @@ class Auftrag extends GenAuftrag
       $table->Query(
         sprintf(
           'SELECT ' . $this->app->erp->FormatMenge('sum(lpi.menge)') . ' as menge, l.bezeichnung as Lager , ' . $this->app->erp->FormatMenge('sum(lc.menge)') . ' as `Chargen-Menge`
-          FROM lager l 
-          INNER JOIN lager_platz lp ON l.id = lp.lager AND l.geloescht = 0 
+          FROM lager l
+          INNER JOIN lager_platz lp ON l.id = lp.lager AND l.geloescht = 0
           INNER JOIN lager_platz_inhalt lpi ON lp.id = lpi.lager_platz AND lpi.artikel = %d
           LEFT JOIN (
-            SELECT SUM(menge) AS menge, lager_platz 
-            FROM `lager_charge` 
+            SELECT SUM(menge) AS menge, lager_platz
+            FROM `lager_charge`
             WHERE artikel = %d
-            GROUP BY lager_platz 
-          ) AS lc ON lp.id = lc.lager_platz  
+            GROUP BY lager_platz
+          ) AS lc ON lp.id = lc.lager_platz
           GROUP BY l.id
           ORDER BY l.bezeichnung',
           (int)$id, (int)$id
@@ -1828,10 +1828,10 @@ class Auftrag extends GenAuftrag
     else{
       $table->Query(
         sprintf(
-          'SELECT ' . $this->app->erp->FormatMenge('sum(lpi.menge)') . ' as menge, l.bezeichnung as Lager 
-          FROM lager l 
-          INNER JOIN lager_platz lp ON l.id = lp.lager AND l.geloescht = 0 
-          INNER JOIN lager_platz_inhalt lpi ON lp.id = lpi.lager_platz AND lpi.artikel = %d 
+          'SELECT ' . $this->app->erp->FormatMenge('sum(lpi.menge)') . ' as menge, l.bezeichnung as Lager
+          FROM lager l
+          INNER JOIN lager_platz lp ON l.id = lp.lager AND l.geloescht = 0
+          INNER JOIN lager_platz_inhalt lpi ON lp.id = lpi.lager_platz AND lpi.artikel = %d
           GROUP BY l.id
           ORDER BY l.bezeichnung',
           (int)$id
@@ -1903,9 +1903,9 @@ class Auftrag extends GenAuftrag
     }
     $auftragArr = $this->app->DB->SelectArr(
       sprintf(
-        "SELECT *,DATE_FORMAT(lieferdatum,'%%d.%%m.%%Y') as lieferdatum 
-        FROM auftrag 
-          WHERE id=%d 
+        "SELECT *,DATE_FORMAT(lieferdatum,'%%d.%%m.%%Y') as lieferdatum
+        FROM auftrag
+          WHERE id=%d
           LIMIT 1",
         $id
       )
@@ -1944,19 +1944,19 @@ class Auftrag extends GenAuftrag
     $this->app->Tpl->Set('IHREBESTELLNUMMER',$auftragArr[0]['ihrebestellnummer']);
 
     $rechnungs = $addressId <= 0?0: $this->app->DB->Select(
-      "SELECT SUM(soll-ist) 
-      FROM rechnung 
-      WHERE status != 'angelegt' AND zahlungsstatus != 'bezahlt' 
+      "SELECT SUM(soll-ist)
+      FROM rechnung
+      WHERE status != 'angelegt' AND zahlungsstatus != 'bezahlt'
         AND adresse = '".$addressId."'"
     );
     $gutschrifts = $addressId <= 0?0:$this->app->DB->Select(
-      "SELECT SUM(soll-ist) 
-      FROM gutschrift 
-      WHERE status != 'angelegt' 
-        AND (manuell_vorabbezahlt != '0000-00-00' OR manuell_vorabbezahlt IS NOT NULL) 
+      "SELECT SUM(soll-ist)
+      FROM gutschrift
+      WHERE status != 'angelegt'
+        AND (manuell_vorabbezahlt != '0000-00-00' OR manuell_vorabbezahlt IS NOT NULL)
         AND adresse = '".$addressId."'"
     );
-    
+
     $kundensaldo = $rechnungs - $gutschrifts;
     $kundensaldo = round($kundensaldo, 2);
 
@@ -1998,9 +1998,9 @@ class Auftrag extends GenAuftrag
     }
     $this->app->Tpl->Set('WUNSCHLIEFERDATUM',$auftragArr[0]['lieferdatum']);
     $gebuchtezeit = $this->app->DB->Select(
-      "SELECT IFNULL(SUM(TIME_TO_SEC(TIMEDIFF(bis, von)))/3600,0) 
-      FROM zeiterfassung z 
-      LEFT JOIN auftrag_position ap ON ap.id = z.auftragpositionid 
+      "SELECT IFNULL(SUM(TIME_TO_SEC(TIMEDIFF(bis, von)))/3600,0)
+      FROM zeiterfassung z
+      LEFT JOIN auftrag_position ap ON ap.id = z.auftragpositionid
       WHERE z.auftrag = '$id' OR ap.auftrag = '$id'"
     );
 
@@ -2031,7 +2031,7 @@ class Auftrag extends GenAuftrag
 
         $umsatz_gesamt = 0;
         $kosten_gesamt = 0;
-        $db_gesamt = 0;    
+        $db_gesamt = 0;
         foreach ($positionen as $position) {
             if (empty($position['einkaufspreis'])) {
                 $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);
@@ -2051,11 +2051,11 @@ class Auftrag extends GenAuftrag
                                 $this->app->erp->number_format_variable(
                                     round(
                                         $db_gesamt/$umsatz_gesamt*100,2
-                                    )                                
+                                    )
                                 )."%"
                             );
     }
-   
+
     $this->app->Tpl->Set('GEBUCHTEZEIT',0);
 
     if($auftragArr[0]['ust_befreit']==0){
@@ -2076,13 +2076,13 @@ class Auftrag extends GenAuftrag
     //ENDE ZUSTANDSAUTOMAT FARBEN
 
     // angebot
-      
+
     $angebot[]['angebot'] = $this->app->DB->Select(
       "SELECT CONCAT('<a href=\"index.php?module=angebot&action=edit&id=',an.id,'\" target=\"_blank\">',if(an.belegnr='0' OR an.belegnr='','ENTWURF',an.belegnr),'</a>&nbsp;<a href=\"index.php?module=angebot&action=pdf&id=',an.id,'\" target=\"blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Angebot PDF\" border=\"0\"></a>&nbsp;
-          <a href=\"index.php?module=angebot&action=edit&id=',an.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Angebot bearbeiten\" border=\"0\"></a>') 
-      FROM auftrag a 
-      LEFT JOIN angebot an ON an.id=a.angebotid 
-      WHERE a.id='$id' 
+          <a href=\"index.php?module=angebot&action=edit&id=',an.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Angebot bearbeiten\" border=\"0\"></a>')
+      FROM auftrag a
+      LEFT JOIN angebot an ON an.id=a.angebotid
+      WHERE a.id='$id'
       LIMIT 1"
     );
 
@@ -2099,7 +2099,7 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Set('ANGEBOT', '-');
     }
     $lieferschein = $this->app->DB->SelectPairs(
-      "SELECT 
+      "SELECT
         l.id, CONCAT(
             '<a href=\"index.php?module=lieferschein&action=edit&id=',
             l.id,'\" target=\"_blank\"',
@@ -2112,7 +2112,7 @@ class Auftrag extends GenAuftrag
             l.id,
             '\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Lieferschein bearbeiten\" border=\"0\"></a>'
             ) as lieferschein
-        FROM lieferschein l 
+        FROM lieferschein l
         WHERE l.auftragid='$id'"
     );
     $deliveryNoteIds = [0];
@@ -2129,31 +2129,31 @@ class Auftrag extends GenAuftrag
     }
 
     /* rechnungen */
-  
+
     $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
 
     $sammelrechnungcheck = $this->app->DB->Select("SELECT * FROM sammelrechnung_position LIMIT 1");
     if($sammelrechnungcheck) {
       $rechnung = $this->app->DB->SelectPairs(
-        "SELECT 
+        "SELECT
               r.id,
               ".$link_zur_rechnung." as rechnung
-          FROM rechnung r 
+          FROM rechnung r
           WHERE r.auftragid='$id'
-          union 
-          SELECT 
+          union
+          SELECT
               r.id,
               ".$link_zur_rechnung." as rechnung
-          FROM rechnung r 
-          INNER JOIN sammelrechnung_position s ON r.id = s.rechnung 
-          INNER JOIN auftrag_position p ON s.auftrag_position_id = p.id 
+          FROM rechnung r
+          INNER JOIN sammelrechnung_position s ON r.id = s.rechnung
+          INNER JOIN auftrag_position p ON s.auftrag_position_id = p.id
           WHERE p.auftrag='$id'
-          union 
-          SELECT 
+          union
+          SELECT
               r.id,
               ".$link_zur_rechnung." as rechnung
-          FROM rechnung r 
-          INNER JOIN sammelrechnung_position s ON r.id = s.rechnung 
+          FROM rechnung r
+          INNER JOIN sammelrechnung_position s ON r.id = s.rechnung
           INNER JOIN lieferschein_position lp ON lp.id = s.lieferschein_position_id
           INNER JOIN auftrag_position p ON p.id = lp.auftrag_position_id
           WHERE p.auftrag='$id'
@@ -2172,10 +2172,10 @@ class Auftrag extends GenAuftrag
     }
     else{
       $rechnung = $this->app->DB->SelectPairs(
-        "SELECT 
+        "SELECT
               r.id,
               ".$link_zur_rechnung." as rechnung
-        FROM rechnung r 
+        FROM rechnung r
         WHERE r.auftragid='$id'"
       );
 
@@ -2186,15 +2186,15 @@ class Auftrag extends GenAuftrag
         WHERE r.auftragid='$id' AND r.auftrag!='' "
       );*/
     }
-    
+
     if(!$rechnung) {
       $rechnung = $this->app->DB->SelectPairs(
-        "SELECT 
+        "SELECT
               r.id,
               ".$link_zur_rechnung." as rechnung
-          FROM rechnung r 
+          FROM rechnung r
          INNER JOIN auftrag a ON a.rechnungid = r.id
-         WHERE a.id='$id' 
+         WHERE a.id='$id'
       ");
     }
 
@@ -2208,8 +2208,8 @@ class Auftrag extends GenAuftrag
     /* ende rechnungen */
     $positionIdToArticleIds = $this->app->DB->SelectPairs(
       sprintf(
-        'SELECT id, artikel 
-        FROM auftrag_position 
+        'SELECT id, artikel
+        FROM auftrag_position
         WHERE auftrag = %d ',
         $id
       )
@@ -2229,8 +2229,8 @@ class Auftrag extends GenAuftrag
     else {
       $bpPositions = $this->app->DB->SelectPairs(
         sprintf(
-          'SELECT bp.id, bp.bestellung 
-          FROM bestellung_position AS bp 
+          'SELECT bp.id, bp.bestellung
+          FROM bestellung_position AS bp
           WHERE bp.auftrag_position_id IN (%s)',
           implode(',', $positionIds)
         )
@@ -2251,8 +2251,8 @@ class Auftrag extends GenAuftrag
     $check = empty($hasSupplierOrder)?[]:$this->app->DB->SelectPairs(
       sprintf(
         'SELECT b.id, b.belegnr
-        FROM bestellung b 
-        WHERE b.id IN (%s) 
+        FROM bestellung b
+        WHERE b.id IN (%s)
         ORDER BY b.belegnr, b.id',
         $bIdsImplode
       )
@@ -2276,7 +2276,7 @@ class Auftrag extends GenAuftrag
       sprintf(
         'SELECT ro.id, ro.belegnr, ro.status
         FROM `auftrag` AS `o`
-        LEFT JOIN `lieferschein` AS `dn` ON o.id = dn.auftragid  
+        LEFT JOIN `lieferschein` AS `dn` ON o.id = dn.auftragid
         INNER JOIN `retoure` AS `ro` ON ro.auftragid = o.id OR (ro.lieferscheinid = dn.id)
         WHERE o.id = %d
         ORDER BY ro.id',
@@ -2307,10 +2307,10 @@ class Auftrag extends GenAuftrag
     $priceRequests = empty($hasSupplierOrder)?[]: (array)$this->app->DB->SelectArr(
       sprintf(
         "SELECT pa.id, pa.belegnr, pa.status
-        FROM `bestellung` AS `b` 
+        FROM `bestellung` AS `b`
         INNER JOIN `preisanfrage` AS `pa` ON pa.id=b.preisanfrageid
-        WHERE b.id IN (%s) 
-        GROUP BY pa.belegnr, pa.id 
+        WHERE b.id IN (%s)
+        GROUP BY pa.belegnr, pa.id
         ORDER BY pa.belegnr, pa.id",
         $bIdsImplode
       )
@@ -2336,7 +2336,7 @@ class Auftrag extends GenAuftrag
     }
 /*
     $tmpVersand = !$hasDeliveryNotes?[]: $this->app->DB->SelectFirstCols(
-      "SELECT if(v.versendet_am!='0000-00-00', 
+      "SELECT if(v.versendet_am!='0000-00-00',
         CONCAT(DATE_FORMAT( v.versendet_am,'%d.%m.%Y'),' ',v.versandunternehmen),
         CONCAT(
         'Heute im Versand<br><a href=\"#\" onclick=\"if(!confirm(\'Auftrag wirklich aus dem Versand nehmen?\')) return false; else window.location.href=\'index.php?module=auftrag&action=ausversand&id=',
@@ -2344,16 +2344,16 @@ class Auftrag extends GenAuftrag
         '\'\">Aktuell im Versand <br>-> als RMA markieren</a>'
         )
         ) as datum
-      FROM versand AS v 
-      INNER JOIN lieferschein l ON v.lieferschein=l.id 
-      LEFT JOIN rechnung r ON v.rechnung=r.id 
+      FROM versand AS v
+      INNER JOIN lieferschein l ON v.lieferschein=l.id
+      LEFT JOIN rechnung r ON v.rechnung=r.id
       WHERE l.id IN (".$deliveryNoteIdsImplode.") AND l.auftragid='$id' AND l.auftrag!=''"
     );
     $tracking = !$hasDeliveryNotes?null:$this->app->DB->SelectArr("SELECT
        if(v.tracking_link IS NOT NULL AND v.tracking_link != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"', v.tracking_link, '\">', v.tracking, '</a>'),
         if(versandunternehmen = 'dhlexpress' AND l.land = 'DE' AND v.tracking != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=', v.tracking, '\" target=\"_blank\">', v.tracking, '</a>'),
           if(versandunternehmen = 'dhlexpress' AND l.land != 'DE' AND v.tracking != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"https://www.dhl.com/en/hidden/component_library/express/local_express/dhl_de_tracking/de/sendungsverfolgung_dhlde.html?AWB=', v.tracking, '&brand=DHL\" target=\"_blank\">', v.tracking, '</a>'),
-            if((versandunternehmen='dhl' OR versandunternehmen='intraship' OR versandunternehmen LIKE '%dhl%') AND v.tracking!='',          CONCAT(UPPER(versandunternehmen),':<a href=\"http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc=',v.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),        
+            if((versandunternehmen='dhl' OR versandunternehmen='intraship' OR versandunternehmen LIKE '%dhl%') AND v.tracking!='',          CONCAT(UPPER(versandunternehmen),':<a href=\"http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc=',v.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),
               if(versandunternehmen LIKE '%dpd%',CONCAT(UPPER(versandunternehmen),':<a href=\"https://tracking.dpd.de/parcelstatus/?locale=de_DE&query=',v.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),
                 if(versandunternehmen LIKE '%ups%' AND v.tracking != '', CONCAT(UPPER(versandunternehmen),':<a href=\"https://www.ups.com/track?loc=de_DE&tracknum=',v.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),
                   if(versandunternehmen LIKE '%gls%' AND v.tracking != '', CONCAT(UPPER(versandunternehmen),':<a href=\"https://www.gls-group.eu/276-I-PORTAL-WEB/content/GLS/DE03/DE/5004.htm?txtRefNo=',v.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),
@@ -2366,9 +2366,9 @@ class Auftrag extends GenAuftrag
           )
         )
       ) as versand2,
-      if(versandunternehmen = 'dhlexpress' AND l.land = 'DE' AND vp.tracking != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=', vp.tracking, '\" target=\"_blank\">', vp.tracking, '</a>'),  
+      if(versandunternehmen = 'dhlexpress' AND l.land = 'DE' AND vp.tracking != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=', vp.tracking, '\" target=\"_blank\">', vp.tracking, '</a>'),
         if(versandunternehmen = 'dhlexpress' AND l.land != 'DE' AND vp.tracking != '', CONCAT(UPPER(versandunternehmen), ':<a href=\"https://www.dhl.com/en/hidden/component_library/express/local_express/dhl_de_tracking/de/sendungsverfolgung_dhlde.html?AWB=', vp.tracking, '&brand=DHL\" target=\"_blank\">', vp.tracking, '</a>'),
-          if( (versandunternehmen='dhl' OR versandunternehmen='intraship') AND vp.tracking!='',          CONCAT(UPPER(versandunternehmen),':<a href=\"http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc=',vp.tracking,'\" target=\"_blank\">',vp.tracking,'</a>'),        
+          if( (versandunternehmen='dhl' OR versandunternehmen='intraship') AND vp.tracking!='',          CONCAT(UPPER(versandunternehmen),':<a href=\"http://nolp.dhl.de/nextt-online-public/set_identcodes.do?lang=de&idc=',vp.tracking,'\" target=\"_blank\">',vp.tracking,'</a>'),
             if(versandunternehmen LIKE '%dpd%',CONCAT(UPPER(versandunternehmen),':<a href=\"https://tracking.dpd.de/parcelstatus/?locale=de_DE&query=',vp.tracking,'\" target=\"_blank\">',vp.tracking,'</a>'),
               if(versandunternehmen LIKE '%ups%' AND vp.tracking != '', CONCAT(UPPER(versandunternehmen),':<a href=\"https://www.ups.com/track?loc=de_DE&tracknum=',vp.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),
                 if(versandunternehmen LIKE '%gls%' AND vp.tracking != '', CONCAT(UPPER(versandunternehmen),':<a href=\"https://www.gls-group.eu/276-I-PORTAL-WEB/content/GLS/DE03/DE/5004.htm?txtRefNo=',vp.tracking,'\" target=\"_blank\">',v.tracking,'</a>'),
@@ -2378,13 +2378,13 @@ class Auftrag extends GenAuftrag
               )
             )
           )
-        ) 
+        )
       ) as versand3,
          v.tracking as tracking2, vp.tracking as tracking3
-        FROM versand AS v 
+        FROM versand AS v
         INNER JOIN lieferschein AS l ON v.lieferschein=l.id
-        LEFT JOIN versandpakete AS vp ON v.id = vp.versand  
-        WHERE l.id IN (".$deliveryNoteIdsImplode.") AND l.auftragid='$id' AND l.auftrag!='' 
+        LEFT JOIN versandpakete AS vp ON v.id = vp.versand
+        WHERE l.id IN (".$deliveryNoteIdsImplode.") AND l.auftragid='$id' AND l.auftrag!=''
         ORDER BY v.id, vp.nr"
     );
 
@@ -2421,10 +2421,10 @@ class Auftrag extends GenAuftrag
 
 
       $sql = "SELECT SQL_CALC_FOUND_ROWS
-                v.id,                   
+                v.id,
                 v.tracking as tracking,
                 v.tracking_link
-            FROM 
+            FROM
                 versandpakete v
             LEFT JOIN
                 versandpaket_lieferschein_position vlp ON v.id = vlp.versandpaket
@@ -2433,10 +2433,10 @@ class Auftrag extends GenAuftrag
             LEFT JOIN
                 lieferschein l ON lp.lieferschein = l.id
             LEFT JOIN
-                lieferschein lop ON lop.id = v.lieferschein_ohne_pos 
-            WHERE 
+                lieferschein lop ON lop.id = v.lieferschein_ohne_pos
+            WHERE
                 l.auftragid = ".$id." OR lop.auftragid = ".$id."
-            GROUP BY 
+            GROUP BY
                v.id
             ";
     $tracking = $this->app->DB->SelectArr($sql);
@@ -2455,10 +2455,10 @@ class Auftrag extends GenAuftrag
     $icons = $this->app->YUI->IconsSQL();
     if(strpos($icons,'aac.status')) {
       $icons = $this->app->DB->Select(
-        "SELECT $icons 
-        FROM auftrag a 
-        LEFT JOIN `auftragsampel_auftrag_cache` aac ON a.id = aac.auftrag 
-        WHERE a.id='$id' 
+        "SELECT $icons
+        FROM auftrag a
+        LEFT JOIN `auftragsampel_auftrag_cache` aac ON a.id = aac.auftrag
+        WHERE a.id='$id'
         LIMIT 1"
       );
     }
@@ -2492,747 +2492,803 @@ class Auftrag extends GenAuftrag
     // ARTIKEL
     $auftragRow = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT status, projekt, standardlager,teillieferungvon FROM auftrag WHERE id = %d',
+        'SELECT status, projekt, standardlager,teillieferungvon, kommission_ok FROM auftrag WHERE id = %d',
         $id
       )
     );
     $status = $auftragRow['status'];//$this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
 
     $table = new EasyTable($this->app);
-    
+
     //$lagermehr = " <img class=\"contenttooltip\" src=\"./themes/".$this->app->Conf->WFconf['defaulttheme']."/images/tooltip_grau.png\" />";
-    
-    if($status==='freigegeben' || $status==='angelegt') {
-      $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
-      $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
-      $projektlager = 0;
-      if(!$standardlager)
-      {
-        if (!$standardlager) {
-          $projektbevorzugteslager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
-          if ($projektbevorzugteslager) {
-              $standardlager = $projektbevorzugteslager;
-          }
-        } else {
-          $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
-          if($projektlager){
-            $projektlager = $auftragArr[0]['projekt'];
-          }
-        }
-      }
-      $standardlagertext = '';
-      if($standardlager){
-        $standardlagertext = $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id = '$standardlager' LIMIT 1");
-      }
-      
-      $hookjoins = '';
-      $hookcolumns = '';
 
-      $lastcolumn = 'Reservierung';
-      $_lastcolumn = $lastcolumn;
-      $this->app->erp->RunHook("auftrag_minidetail_hook1",4, $id, $hookcolumns, $hookjoins, $lastcolumn);
+    // START ARTIKEL LAGER
 
-      $sql =
-        "SELECT 
+    $this->app->Tpl->Set('KOMMISSIONIERUNGHIDDEN','hidden');
+    $this->app->Tpl->Set('LAGERHIDDEN','');
 
-          if(ap.explodiert_parent > 1,CONCAT('***',if(CHAR_LENGTH(TRIM(ap.beschreibung)) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel, 
-
-          CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer, 
-          if(isnull(b.id),'-',concat('<a href=\"index.php?module=bestellung&action=edit&id=',b.id,'\">',if(b.belegnr <> '', b.belegnr,'ENTWURF'),'</a>')) as Bestellung,
-          ".$this->app->erp->FormatMenge("ifnull(a.gewicht,0)")." as gewicht,
-          
-          ".$this->app->erp->FormatMenge("ifnull(ap.menge,0)")." as Menge,
-
-          concat(if(a.lagerartikel,
-            if(a.porto,
-              'Porto',
-                if(
-                    (round(( 
-                        (SELECT TRIM(SUM(l.menge))+0 
-                          FROM lager_platz_inhalt l 
-                          LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        
-                        WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
-                          (
-                            (  r.parameter!='$id')
-                              OR (
-                              r.parameter='$id' AND r.posid!=ap.id)
-                          )) OR r.objekt!='auftrag' )
-                        
-                        
-                        ),0)
-                      ),8) 
-                        >= round(ap.menge,8) AND (
-                        
-                        round((SELECT TRIM(SUM(l.menge))+0 
-                          FROM lager_platz_inhalt l 
-                          LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
-                          
-                              r.parameter!='$id')
-                              
-                           OR r.objekt!='auftrag' )
-                        
-                        
-                        ),0),8) >= 
-                        round((SELECT sum(ap3.menge) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel),8)
-                        OR round(ap.menge,8) <= round(IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
-                          
-                              r.parameter='$id'
-                              
-                           
-                        
-                        
-                        ),0),8)
-                        )) OR  ((
-                        round(ifnull((SELECT SUM(l.menge)
-                          FROM lager_platz_inhalt l 
-                          INNER JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ),0),8) - round(IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND ((r.objekt!='auftrag' OR
-                          
-                              r.parameter!='$id')
-                              
-                            )
-                        
-                        
-                        ),0),8)
-                        > round(IFNULL(apc.menge,0),8)
-                        
-                        )
-                        ) ,
-                
-
-                    CONCAT(
-                    ifnull(
-                      ifnull((
-                        SELECT  ".$this->app->erp->FormatMenge("TRIM(SUM(l.menge))+0")."
-                        FROM lager_platz_inhalt l 
-                        LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
-                      ,0)
-
-                    ,0),
-                      if(round((
-                        SELECT TRIM(SUM(l.menge))+0 
-                        FROM lager_platz_inhalt l 
-                        LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1),8)>0,
-                      CONCAT(' + <a href=\"index.php?module=artikel&action=lager&id=',ap.artikel,'\" title=\"Nachschublager\" target=\"_blank\"><font color=red><b>',(SELECT ".$this->app->erp->FormatMenge("(SUM(l.menge))")." FROM lager_platz_inhalt l LEFT JOIN lager_platz lp ON lp.id=l.lager_platz WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1),'(N)<b></font></a>'),'')
-                      )
-
-
-                    ,
-                    if(round((
-                    
-                    (SELECT ".$this->app->erp->FormatMenge("(SUM(l.menge))")." 
-                      FROM lager_platz_inhalt l 
-                    LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                    WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
-                    - IFNULL((SELECT SUM(r.menge) FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter!='$id'),0)),8)>=0,
-                    CONCAT('<font color=red><b>',
-                        (SELECT ".$this->app->erp->FormatMenge("(SUM(l.menge))")." 
-                        FROM lager_platz_inhalt l 
-                        LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
-
-                        ,'</b></font>'),
-                      '<font color=red><b>aus</b></font>')
-                  )
-            )
-                  
-           ,if(a.porto,'Porto',if(a.stueckliste,'Set','kein Lagerartikel'))),'".($anzahllager >= 1?" lagermehr(',ap.artikel,') ":"")."') as Lager, 
-          ".($standardlager?"
-          
-          concat(if(a.lagerartikel,
-            if(a.porto,
-              'Porto',
-                if(
-                    (( 
-                        (SELECT TRIM(SUM(l.menge))+0 
-                          FROM lager_platz_inhalt l 
-                          INNER JOIN lager_platz lp ON lp.id=l.lager_platz AND lp.lager = '$standardlager'
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.standardlager = '$standardlager'
-                        WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id' OR r.parameter = '$id' AND r.posid != ap.id)
-                        ),0)
-                      ) 
-                        >= ap.menge AND (
-                        
-                        (SELECT TRIM(SUM(l.menge))+0 
-                          FROM lager_platz_inhalt l 
-                          INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.standardlager = '$standardlager'
-                        WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id')
-                        ),0)
-                        >= 
-                        (SELECT sum(ap3.menge) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
-                        OR ap.menge <= IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
-                          
-                              r.parameter='$id'
-                              
-                           
-                        
-                        
-                        ),0)
-                        ))  AND (
-                        
-                        ( 
-                        (SELECT TRIM(SUM(l.menge))+0 
-                          FROM lager_platz_inhalt l 
-                          LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        
-                        WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
-                          (
-                            (  r.parameter!='$id')
-                              OR (
-                              r.parameter='$id' AND r.posid!=ap.id)
-                          )) OR r.objekt!='auftrag' )
-                        
-                        
-                        ),0)
-                      ) 
-                        >= ap.menge AND (
-                        
-                        (SELECT TRIM(SUM(l.menge))+0 
-                          FROM lager_platz_inhalt l 
-                          LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
-                          
-                              r.parameter!='$id')
-                              
-                           OR r.objekt!='auftrag' )
-                        
-                        
-                        ),0) >= 
-                        (SELECT sum(ap3.menge) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
-                        OR ap.menge <= IFNULL((
-                        SELECT SUM(r.menge) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
-                          
-                              r.parameter='$id'
-                              
-                        
-                        ),0)
-                        )
-                        
-                        )
-                        
-                        ,
-                
-
-                    CONCAT(
-                    ifnull(
-                      trim(ifnull(lpin2.menge
-                      ,0))+0
-
-                    ,0),
-                      if((
-                        SELECT TRIM(SUM(l.menge))+0 
-                        FROM lager_platz_inhalt l 
-                        INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1)>0,
-                      CONCAT(' + <a href=\"index.php?module=artikel&action=lager&id=',ap.artikel,'\" title=\"Nachschublager\" target=\"_blank\"><font color=red><b>',(SELECT TRIM(SUM(l.menge))+0 FROM lager_platz_inhalt l LEFT JOIN lager_platz lp ON lp.id=l.lager_platz WHERE l.artikel=ap.artikel AND lp.lager='$standardlager' AND lp.autolagersperre=1 AND lp.sperrlager!=1),'(N)<b></font></a>'),'')
-                      )
-
-
-                    ,
-                    if((
-                    
-                    (SELECT TRIM(SUM(l.menge))+0 
-                      FROM lager_platz_inhalt l 
-                    INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
-                    WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1) 
-                    - IFNULL((SELECT SUM(r.menge) FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter!='$id'),0))>=0,
-                    CONCAT('<font color=red><b>',
-                        (SELECT TRIM(ifnull(SUM(l.menge),0))+0
-                        FROM lager_platz_inhalt l 
-                        INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
-
-                        ,'</b></font>'),
-                      '<font color=red><b>aus</b></font>')
-                  )
-            )
-                  
-           ,if(a.porto,'Porto',if(a.stueckliste,'Set','-'))) ,'".($anzahllager >= 1?" lagermehr(',ap.artikel,') ":"")."') as `$standardlagertext` ,
-          
-          ":($projektlager?"
-          
-        
-          
-          concat(if(a.lagerartikel,
-            if(a.porto,
-              'Porto',
-                if(
-                    (( 
-                        ifnull((SELECT TRIM(ifnull(SUM(l.menge),0))+0 
-                          FROM lager_platz_inhalt l 
-                          INNER JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ),0) 
-                        - IFNULL((
-                        SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r 
-                        INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.projekt = '$projektlager'
-                        WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id' OR r.parameter = '$id' AND r.posid != ap.id)
-                        ),0)
-                      ) 
-                        >= ap.menge AND (
-                        
-                        (SELECT TRIM(ifnull(SUM(l.menge),0))+0 
-                          FROM lager_platz_inhalt l 
-                          INNER JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r 
-                        INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.projekt = '$projektlager'
-                        WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id')
-                        ),0)
-                        >= 
-                        (SELECT ifnull(sum(ap3.menge),0) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
-                        OR ap.menge <= IFNULL((
-                        SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
-                          
-                              r.parameter='$id'
-                              
-                           
-                        
-                        
-                        ),0)
-                        ))  AND (
-                        
-                        ( 
-                        (SELECT TRIM(ifnull(SUM(l.menge),0))+0 
-                          FROM lager_platz_inhalt l 
-                          LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r 
-                        
-                        WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
-                          (
-                            (  r.parameter!='$id')
-                              OR (
-                              r.parameter='$id' AND r.posid!=ap.id)
-                          )) OR r.objekt!='auftrag' )
-                        
-                        
-                        ),0)
-                      ) 
-                        >= ap.menge AND (
-                        
-                        (SELECT TRIM(ifnull(SUM(l.menge),0))+0 
-                          FROM lager_platz_inhalt l 
-                          LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
-                          WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1 
-                        ) 
-                        - IFNULL((
-                        SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
-                          
-                              r.parameter!='$id')
-                              
-                           OR r.objekt!='auftrag' )
-                        
-                        
-                        ),0) >= 
-                        (SELECT ifnull(sum(ap3.menge),0) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
-                        OR ap.menge <= IFNULL((
-                        SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r 
-                        WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
-                          
-                              r.parameter='$id'
-                              
-                        
-                        ),0)
-                        )
-                        
-                        )
-                        
-                        ,
-                
-
-                    CONCAT(
-                    
-                       ".$this->app->erp->FormatMenge("ifnull(lpin2.menge,0)")."
-
-                    ,
-                      if((
-                        SELECT ifnull(SUM(l.menge),0)
-                        FROM lager_platz_inhalt l 
-                        INNER JOIN lager_platz lp ON lp.id=l.lager_platz 
-                        INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1)>0,
-                      CONCAT(' + <a href=\"index.php?module=artikel&action=lager&id=',ap.artikel,'\" title=\"Nachschublager\" target=\"_blank\"><font color=red><b>',(SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(l.menge),0)")." FROM lager_platz_inhalt l LEFT JOIN lager_platz lp ON lp.id=l.lager_platz WHERE l.artikel=ap.artikel AND lp.lager='$standardlager' AND lp.autolagersperre=1 AND lp.sperrlager!=1),'(N)<b></font></a>'),'')
-                     )
-
-
-                    ,
-                    if((
-                    
-                    (SELECT TRIM(ifnull(SUM(l.menge),0))+0 
-                      FROM lager_platz_inhalt l 
-                      INNER JOIN lager_platz lp ON lp.id=l.lager_platz 
-                      INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
-                    WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1) 
-                    - IFNULL((SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter!='$id'),0))>=0,
-                    CONCAT('<font color=red><b>',
-                        (SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(l.menge),0)")."
-                        FROM lager_platz_inhalt l 
-                        INNER JOIN lager_platz lp ON lp.id=l.lager_platz 
-                        INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
-                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
-
-                        ,'</b></font>'),
-                      '<font color=red><b>aus</b></font>')
-                  )
-            )
-                  
-           ,if(a.porto,'Porto',if(a.stueckliste,'Set','-'))),'".($anzahllager >= 1?" lagermehr(',ap.artikel,') ":"")."') as `Projektlager` ,
-          
-          
-          ":''))."
-            CONCAT(
-                IFNULL((SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(r.menge),0)")." FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter='$id' AND (r.posid=ap.id OR (r.artikel=ap.artikel AND r.posid=0))),'0')
-
-                ,
-                '&nbsp;/ ',(SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(r.menge),0)")." FROM lager_reserviert r WHERE r.artikel=ap.artikel )
-                ,' *') as '$_lastcolumn' $hookcolumns
-
-              FROM auftrag_position ap 
-              INNER JOIN artikel a ON a.id = ap.artikel 
-              LEFT JOIN (
-                SELECT apa.id, sum(apb.menge) as menge 
-                FROM auftrag_position apa
-                INNER JOIN auftrag_position apb ON apa.artikel = apb.artikel AND apa.auftrag = '$id' 
-                AND apb.auftrag = '$id'
-                AND apb.sort <= apa.sort 
-                WHERE apa.id IN (".$positionIdsImplode.") AND apb.id IN (".$positionIdsImplode.")
-                GROUP BY apa.id
-              ) apc ON ap.id = apc.id
-              
-              LEFT JOIN (
-                SELECT ifnull(sum(lpi1.menge),0) as menge, lpi1.artikel 
-                FROM lager_platz_inhalt lpi1 
-                INNER JOIN lager_platz lp1 ON lpi1.lager_platz = lp1.id AND lp1.autolagersperre != 1 AND lp1.sperrlager != 1 ".($standardlager?" AND lp1.lager != '$standardlager' ":"")."
-                WHERE lpi1.artikel IN (".$articleIdsimplode.") 
-                GROUP BY lpi1.artikel
-              ) as lpin1 ON ap.artikel = lpin1.artikel
-              ".($standardlager?"
-              
-              LEFT JOIN (
-                SELECT ifnull(sum(lpi2.menge),0) as menge, lpi2.artikel 
-                FROM lager_platz_inhalt lpi2 
-                INNER JOIN lager_platz lp2 ON lpi2.lager_platz = lp2.id AND lp2.autolagersperre != 1 
-                AND lp2.sperrlager != 1 AND lp2.lager = '$standardlager'  
-                WHERE lpi2.artikel IN (".$articleIdsimplode.")
-                GROUP BY lpi2.artikel
-              ) as lpin2 ON ap.artikel = lpin2.artikel
-              
-              ":($projektlager?"
-              
-              LEFT JOIN (
-                SELECT ifnull(sum(lpi2.menge),0) as menge, lpi2.artikel 
-                FROM lager_platz_inhalt lpi2 
-                INNER JOIN lager_platz lp2 ON lpi2.lager_platz = lp2.id AND lp2.autolagersperre != 1 AND lp2.sperrlager != 1 
-                INNER JOIN lager l2 ON lp2.lager = l2.id  AND l2.projekt = '$projektlager' 
-                WHERE lpi2.artikel IN (".$articleIdsimplode.")
-                GROUP BY lpi2.artikel
-              ) as lpin2 ON ap.artikel = lpin2.artikel
-              
-              ":""))."
-              
-              LEFT JOIN bestellung_position bp ON bp.id IN (".$bpIdsImplode.") AND ap.id = bp.auftrag_position_id AND bp.artikel IN (".$articleIdsimplode.")
-              LEFT JOIN bestellung b ON b.id IN (".$bIdsImplode.") AND b.id = bp.bestellung 
-              $hookjoins
-              WHERE ap.auftrag='$id' AND ap.id IN (".$positionIdsImplode.")
-              ORDER by ap.sort";
-      //$time = microtime(true);
-      $table->Query($sql);
-      //$time = microtime(true) - $time;
-      $gewichtanzeigen = false;
-      $bestellunganzeigen = false;
-      $reserviertfuerkundeanzeigen = false;
-      if($table->datasets) {
-        foreach($table->datasets as $k => $row) {
-          if(str_replace(',','.',$row['gewicht']) > 0){
-            $gewichtanzeigen = true;
-          }
-          if($row['Bestellung'] != '-')
+    if (empty($auftragRow['kommission_ok'])) {
+        if($status==='freigegeben' || $status==='angelegt') {
+          $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
+          $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
+          $projektlager = 0;
+          if(!$standardlager)
           {
-            $bestellunganzeigen = true;
-          }
-          if(isset($row['Res']) && $row['Res'] != ''){
-            $reserviertfuerkundeanzeigen = true;
-          }
-          if($row[$_lastcolumn] != ''){
-            $reserviertfuerkundeanzeigen = true;
-          }
-        }
-      }
-      if(!$bestellunganzeigen)
-      {
-        foreach($table->datasets as $k => $row)
-        {
-          unset($table->datasets[$k]['Bestellung']);
-        }
-        $table->headings[2] = $table->headings[3];
-        if(isset($table->headings[4]))$table->headings[3] = $table->headings[4];
-        if(isset($table->headings[5]))$table->headings[4] = $table->headings[5];
-        if(isset($table->headings[6]))$table->headings[5] = $table->headings[6];
-        if(isset($table->headings[7]))$table->headings[6] = $table->headings[7];
-        if(isset($table->headings[8]))$table->headings[7] = $table->headings[8];
-        if(isset($table->headings[8]))
-        {
-          unset($table->headings[8]);
-        }elseif(isset($table->headings[7]))
-        {
-          unset($table->headings[7]);
-        }elseif(isset($table->headings[6]))
-        {
-          unset($table->headings[6]);
-        }elseif(isset($table->headings[5])){
-          unset($table->headings[5]);
-        }else{
-          unset($table->headings[4]);
-        }
-      }
-
-      if(!$gewichtanzeigen)
-      {
-        foreach($table->datasets as $k => $row)
-        {
-          unset($table->datasets[$k]['gewicht']);
-        }
-        
-        if(!$bestellunganzeigen)
-        {
-          $table->headings[2] = $table->headings[3];
-        }
-        if(isset($table->headings[4]))$table->headings[3] = $table->headings[4];
-        if(isset($table->headings[5]))$table->headings[4] = $table->headings[5];
-        if(isset($table->headings[6]))$table->headings[5] = $table->headings[6];
-        if(isset($table->headings[7]))$table->headings[6] = $table->headings[7];
-        if(isset($table->headings[8]))$table->headings[7] = $table->headings[8];
-        if(isset($table->headings[8]))
-        {
-          unset($table->headings[8]);
-        }elseif(isset($table->headings[7]))
-        {
-          unset($table->headings[7]);
-        }elseif(isset($table->headings[6]))
-        {
-          unset($table->headings[6]);
-        }elseif(isset($table->headings[5]))
-        {
-          unset($table->headings[5]);
-        }elseif(isset($table->headings[4]))
-        {
-          unset($table->headings[4]);
-        }else{
-          unset($table->headings[3]);
-        }
-      }
-
-      if(!$reserviertfuerkundeanzeigen)
-      {
-        foreach($table->datasets as $k => $row)
-        {
-          unset($table->datasets[$k][$_lastcolumn]);
-        }
-        if($lastcolumn == $_lastcolumn)
-        {
-          unset($table->headings[(!empty($table->headings)?count($table->headings):0)-1]);
-        }else {
-          $cheading = !empty($table->headings)?count($table->headings):0;
-          for($hc = 0; $hc < $cheading; $hc++)
-          {
-            if($table->headings[$hc] == $_lastcolumn)
-            {
-              break;
-            }
-          }
-          for($hci = $hc; $hci < $cheading ;$hci++)
-          {
-            if(isset($table->headings[$hci])) {
-              if(isset($table->headings[$hci + 1])) {
-                $table->headings[$hci] = $table->headings[$hci + 1];
-              }else{
-                unset($table->headings[$hci]);
+            if (!$standardlager) {
+              $projektbevorzugteslager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+              if ($projektbevorzugteslager) {
+                  $standardlager = $projektbevorzugteslager;
+              }
+            } else {
+              $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+              if($projektlager){
+                $projektlager = $auftragArr[0]['projekt'];
               }
             }
           }
-        }
-
-        if($lastcolumn == $_lastcolumn)
-        {
-          $lastcolumn = $table->headings[(!empty($table->headings)?count($table->headings):0)-1];
-          if($lastcolumn == 'Aktion'){
-            $lastcolumn = $table->headings[(!empty($table->headings)?count($table->headings):0)-2];
+          $standardlagertext = '';
+          if($standardlager){
+            $standardlagertext = $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id = '$standardlager' LIMIT 1");
           }
-        }
-      }
 
-      if($table->datasets)
-      {
-        foreach($table->datasets as $k => $v)
-        {
-          foreach($v as $k2 =>  $v2)
-          {
-            if(preg_match_all('/^(.*)lagermehr\((.*)\)(.*)$/', $v2, $matches,PREG_OFFSET_CAPTURE))
-            {
-              $table->datasets[$k][$k2] = $matches[1][0][0].'&nbsp;'.$this->app->YUI->ContentTooltip('return','index.php?module=auftrag&action=minidetail&cmd=lager&id='.$matches[2][0][0],'url').$matches[3][0][0];
+          $hookjoins = '';
+          $hookcolumns = '';
+
+          $lastcolumn = 'Reservierung';
+          $_lastcolumn = $lastcolumn;
+          $this->app->erp->RunHook("auftrag_minidetail_hook1",4, $id, $hookcolumns, $hookjoins, $lastcolumn);
+
+          $sql =
+            "SELECT
+
+              if(ap.explodiert_parent > 1,CONCAT('***',if(CHAR_LENGTH(TRIM(ap.beschreibung)) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel,
+
+              CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer,
+              if(isnull(b.id),'-',concat('<a href=\"index.php?module=bestellung&action=edit&id=',b.id,'\">',if(b.belegnr <> '', b.belegnr,'ENTWURF'),'</a>')) as Bestellung,
+              ".$this->app->erp->FormatMenge("ifnull(a.gewicht,0)")." as gewicht,
+
+              ".$this->app->erp->FormatMenge("ifnull(ap.menge,0)")." as Menge,
+
+              concat(if(a.lagerartikel,
+                if(a.porto,
+                  'Porto',
+                    if(
+                        (round((
+                            (SELECT TRIM(SUM(l.menge))+0
+                              FROM lager_platz_inhalt l
+                              LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+
+                            WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
+                              (
+                                (  r.parameter!='$id')
+                                  OR (
+                                  r.parameter='$id' AND r.posid!=ap.id)
+                              )) OR r.objekt!='auftrag' )
+
+
+                            ),0)
+                          ),8)
+                            >= round(ap.menge,8) AND (
+
+                            round((SELECT TRIM(SUM(l.menge))+0
+                              FROM lager_platz_inhalt l
+                              LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
+
+                                  r.parameter!='$id')
+
+                               OR r.objekt!='auftrag' )
+
+
+                            ),0),8) >=
+                            round((SELECT sum(ap3.menge) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel),8)
+                            OR round(ap.menge,8) <= round(IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
+
+                                  r.parameter='$id'
+
+
+
+
+                            ),0),8)
+                            )) OR  ((
+                            round(ifnull((SELECT SUM(l.menge)
+                              FROM lager_platz_inhalt l
+                              INNER JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            ),0),8) - round(IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND ((r.objekt!='auftrag' OR
+
+                                  r.parameter!='$id')
+
+                                )
+
+
+                            ),0),8)
+                            > round(IFNULL(apc.menge,0),8)
+
+                            )
+                            ) ,
+
+
+                        CONCAT(
+                        ifnull(
+                          ifnull((
+                            SELECT  ".$this->app->erp->FormatMenge("TRIM(SUM(l.menge))+0")."
+                            FROM lager_platz_inhalt l
+                            LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+                          ,0)
+
+                        ,0),
+                          if(round((
+                            SELECT TRIM(SUM(l.menge))+0
+                            FROM lager_platz_inhalt l
+                            LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1),8)>0,
+                          CONCAT(' + <a href=\"index.php?module=artikel&action=lager&id=',ap.artikel,'\" title=\"Nachschublager\" target=\"_blank\"><font color=red><b>',(SELECT ".$this->app->erp->FormatMenge("(SUM(l.menge))")." FROM lager_platz_inhalt l LEFT JOIN lager_platz lp ON lp.id=l.lager_platz WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1),'(N)<b></font></a>'),'')
+                          )
+
+
+                        ,
+                        if(round((
+
+                        (SELECT ".$this->app->erp->FormatMenge("(SUM(l.menge))")."
+                          FROM lager_platz_inhalt l
+                        LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+                        - IFNULL((SELECT SUM(r.menge) FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter!='$id'),0)),8)>=0,
+                        CONCAT('<font color=red><b>',
+                            (SELECT ".$this->app->erp->FormatMenge("(SUM(l.menge))")."
+                            FROM lager_platz_inhalt l
+                            LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+
+                            ,'</b></font>'),
+                          '<font color=red><b>aus</b></font>')
+                      )
+                )
+
+               ,if(a.porto,'Porto',if(a.stueckliste,'Set','kein Lagerartikel'))),'".($anzahllager >= 1?" lagermehr(',ap.artikel,') ":"")."') as Lager,
+              ".($standardlager?"
+
+              concat(if(a.lagerartikel,
+                if(a.porto,
+                  'Porto',
+                    if(
+                        ((
+                            (SELECT TRIM(SUM(l.menge))+0
+                              FROM lager_platz_inhalt l
+                              INNER JOIN lager_platz lp ON lp.id=l.lager_platz AND lp.lager = '$standardlager'
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.standardlager = '$standardlager'
+                            WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id' OR r.parameter = '$id' AND r.posid != ap.id)
+                            ),0)
+                          )
+                            >= ap.menge AND (
+
+                            (SELECT TRIM(SUM(l.menge))+0
+                              FROM lager_platz_inhalt l
+                              INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.standardlager = '$standardlager'
+                            WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id')
+                            ),0)
+                            >=
+                            (SELECT sum(ap3.menge) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
+                            OR ap.menge <= IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
+
+                                  r.parameter='$id'
+
+
+
+
+                            ),0)
+                            ))  AND (
+
+                            (
+                            (SELECT TRIM(SUM(l.menge))+0
+                              FROM lager_platz_inhalt l
+                              LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+
+                            WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
+                              (
+                                (  r.parameter!='$id')
+                                  OR (
+                                  r.parameter='$id' AND r.posid!=ap.id)
+                              )) OR r.objekt!='auftrag' )
+
+
+                            ),0)
+                          )
+                            >= ap.menge AND (
+
+                            (SELECT TRIM(SUM(l.menge))+0
+                              FROM lager_platz_inhalt l
+                              LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
+
+                                  r.parameter!='$id')
+
+                               OR r.objekt!='auftrag' )
+
+
+                            ),0) >=
+                            (SELECT sum(ap3.menge) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
+                            OR ap.menge <= IFNULL((
+                            SELECT SUM(r.menge) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
+
+                                  r.parameter='$id'
+
+
+                            ),0)
+                            )
+
+                            )
+
+                            ,
+
+
+                        CONCAT(
+                        ifnull(
+                          trim(ifnull(lpin2.menge
+                          ,0))+0
+
+                        ,0),
+                          if((
+                            SELECT TRIM(SUM(l.menge))+0
+                            FROM lager_platz_inhalt l
+                            INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1)>0,
+                          CONCAT(' + <a href=\"index.php?module=artikel&action=lager&id=',ap.artikel,'\" title=\"Nachschublager\" target=\"_blank\"><font color=red><b>',(SELECT TRIM(SUM(l.menge))+0 FROM lager_platz_inhalt l LEFT JOIN lager_platz lp ON lp.id=l.lager_platz WHERE l.artikel=ap.artikel AND lp.lager='$standardlager' AND lp.autolagersperre=1 AND lp.sperrlager!=1),'(N)<b></font></a>'),'')
+                          )
+
+
+                        ,
+                        if((
+
+                        (SELECT TRIM(SUM(l.menge))+0
+                          FROM lager_platz_inhalt l
+                        INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
+                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+                        - IFNULL((SELECT SUM(r.menge) FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter!='$id'),0))>=0,
+                        CONCAT('<font color=red><b>',
+                            (SELECT TRIM(ifnull(SUM(l.menge),0))+0
+                            FROM lager_platz_inhalt l
+                            INNER JOIN lager_platz lp ON lp.id=l.lager_platz  AND lp.lager = '$standardlager'
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+
+                            ,'</b></font>'),
+                          '<font color=red><b>aus</b></font>')
+                      )
+                )
+
+               ,if(a.porto,'Porto',if(a.stueckliste,'Set','-'))) ,'".($anzahllager >= 1?" lagermehr(',ap.artikel,') ":"")."') as `$standardlagertext` ,
+
+              ":($projektlager?"
+
+
+
+              concat(if(a.lagerartikel,
+                if(a.porto,
+                  'Porto',
+                    if(
+                        ((
+                            ifnull((SELECT TRIM(ifnull(SUM(l.menge),0))+0
+                              FROM lager_platz_inhalt l
+                              INNER JOIN lager_platz lp ON lp.id=l.lager_platz
+                              INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            ),0)
+                            - IFNULL((
+                            SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r
+                            INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.projekt = '$projektlager'
+                            WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id' OR r.parameter = '$id' AND r.posid != ap.id)
+                            ),0)
+                          )
+                            >= ap.menge AND (
+
+                            (SELECT TRIM(ifnull(SUM(l.menge),0))+0
+                              FROM lager_platz_inhalt l
+                              INNER JOIN lager_platz lp ON lp.id=l.lager_platz
+                              INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r
+                            INNER JOIN auftrag a2 ON r.parameter = a2.id AND r.objekt = 'auftrag' AND a2.projekt = '$projektlager'
+                            WHERE r.artikel = ap.artikel  AND (r.parameter <> '$id')
+                            ),0)
+                            >=
+                            (SELECT ifnull(sum(ap3.menge),0) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
+                            OR ap.menge <= IFNULL((
+                            SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
+
+                                  r.parameter='$id'
+
+
+
+
+                            ),0)
+                            ))  AND (
+
+                            (
+                            (SELECT TRIM(ifnull(SUM(l.menge),0))+0
+                              FROM lager_platz_inhalt l
+                              LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r
+
+                            WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
+                              (
+                                (  r.parameter!='$id')
+                                  OR (
+                                  r.parameter='$id' AND r.posid!=ap.id)
+                              )) OR r.objekt!='auftrag' )
+
+
+                            ),0)
+                          )
+                            >= ap.menge AND (
+
+                            (SELECT TRIM(ifnull(SUM(l.menge),0))+0
+                              FROM lager_platz_inhalt l
+                              LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
+                              WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1
+                            )
+                            - IFNULL((
+                            SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND ((r.objekt='auftrag' AND
+
+                                  r.parameter!='$id')
+
+                               OR r.objekt!='auftrag' )
+
+
+                            ),0) >=
+                            (SELECT ifnull(sum(ap3.menge),0) FROM auftrag_position ap3 WHERE ap3.auftrag = '$id' AND ap3.artikel = ap.artikel)
+                            OR ap.menge <= IFNULL((
+                            SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r
+                            WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND
+
+                                  r.parameter='$id'
+
+
+                            ),0)
+                            )
+
+                            )
+
+                            ,
+
+
+                        CONCAT(
+
+                           ".$this->app->erp->FormatMenge("ifnull(lpin2.menge,0)")."
+
+                        ,
+                          if((
+                            SELECT ifnull(SUM(l.menge),0)
+                            FROM lager_platz_inhalt l
+                            INNER JOIN lager_platz lp ON lp.id=l.lager_platz
+                            INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre=1 AND lp.sperrlager!=1)>0,
+                          CONCAT(' + <a href=\"index.php?module=artikel&action=lager&id=',ap.artikel,'\" title=\"Nachschublager\" target=\"_blank\"><font color=red><b>',(SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(l.menge),0)")." FROM lager_platz_inhalt l LEFT JOIN lager_platz lp ON lp.id=l.lager_platz WHERE l.artikel=ap.artikel AND lp.lager='$standardlager' AND lp.autolagersperre=1 AND lp.sperrlager!=1),'(N)<b></font></a>'),'')
+                         )
+
+
+                        ,
+                        if((
+
+                        (SELECT TRIM(ifnull(SUM(l.menge),0))+0
+                          FROM lager_platz_inhalt l
+                          INNER JOIN lager_platz lp ON lp.id=l.lager_platz
+                          INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
+                        WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+                        - IFNULL((SELECT ifnull(SUM(r.menge),0) FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter!='$id'),0))>=0,
+                        CONCAT('<font color=red><b>',
+                            (SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(l.menge),0)")."
+                            FROM lager_platz_inhalt l
+                            INNER JOIN lager_platz lp ON lp.id=l.lager_platz
+                            INNER JOIN lager lag ON lp.lager = lag.id AND lag.projekt = '$projektlager'
+                            WHERE l.artikel=ap.artikel AND lp.autolagersperre!=1 AND lp.sperrlager!=1)
+
+                            ,'</b></font>'),
+                          '<font color=red><b>aus</b></font>')
+                      )
+                )
+
+               ,if(a.porto,'Porto',if(a.stueckliste,'Set','-'))),'".($anzahllager >= 1?" lagermehr(',ap.artikel,') ":"")."') as `Projektlager` ,
+
+
+              ":''))."
+                CONCAT(
+                    IFNULL((SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(r.menge),0)")." FROM lager_reserviert r WHERE r.artikel=ap.artikel AND r.objekt='auftrag' AND r.parameter='$id' AND (r.posid=ap.id OR (r.artikel=ap.artikel AND r.posid=0))),'0')
+
+                    ,
+                    '&nbsp;/ ',(SELECT ".$this->app->erp->FormatMenge("ifnull(SUM(r.menge),0)")." FROM lager_reserviert r WHERE r.artikel=ap.artikel )
+                    ,' *') as '$_lastcolumn' $hookcolumns
+
+                  FROM auftrag_position ap
+                  INNER JOIN artikel a ON a.id = ap.artikel
+                  LEFT JOIN (
+                    SELECT apa.id, sum(apb.menge) as menge
+                    FROM auftrag_position apa
+                    INNER JOIN auftrag_position apb ON apa.artikel = apb.artikel AND apa.auftrag = '$id'
+                    AND apb.auftrag = '$id'
+                    AND apb.sort <= apa.sort
+                    WHERE apa.id IN (".$positionIdsImplode.") AND apb.id IN (".$positionIdsImplode.")
+                    GROUP BY apa.id
+                  ) apc ON ap.id = apc.id
+
+                  LEFT JOIN (
+                    SELECT ifnull(sum(lpi1.menge),0) as menge, lpi1.artikel
+                    FROM lager_platz_inhalt lpi1
+                    INNER JOIN lager_platz lp1 ON lpi1.lager_platz = lp1.id AND lp1.autolagersperre != 1 AND lp1.sperrlager != 1 ".($standardlager?" AND lp1.lager != '$standardlager' ":"")."
+                    WHERE lpi1.artikel IN (".$articleIdsimplode.")
+                    GROUP BY lpi1.artikel
+                  ) as lpin1 ON ap.artikel = lpin1.artikel
+                  ".($standardlager?"
+
+                  LEFT JOIN (
+                    SELECT ifnull(sum(lpi2.menge),0) as menge, lpi2.artikel
+                    FROM lager_platz_inhalt lpi2
+                    INNER JOIN lager_platz lp2 ON lpi2.lager_platz = lp2.id AND lp2.autolagersperre != 1
+                    AND lp2.sperrlager != 1 AND lp2.lager = '$standardlager'
+                    WHERE lpi2.artikel IN (".$articleIdsimplode.")
+                    GROUP BY lpi2.artikel
+                  ) as lpin2 ON ap.artikel = lpin2.artikel
+
+                  ":($projektlager?"
+
+                  LEFT JOIN (
+                    SELECT ifnull(sum(lpi2.menge),0) as menge, lpi2.artikel
+                    FROM lager_platz_inhalt lpi2
+                    INNER JOIN lager_platz lp2 ON lpi2.lager_platz = lp2.id AND lp2.autolagersperre != 1 AND lp2.sperrlager != 1
+                    INNER JOIN lager l2 ON lp2.lager = l2.id  AND l2.projekt = '$projektlager'
+                    WHERE lpi2.artikel IN (".$articleIdsimplode.")
+                    GROUP BY lpi2.artikel
+                  ) as lpin2 ON ap.artikel = lpin2.artikel
+
+                  ":""))."
+
+                  LEFT JOIN bestellung_position bp ON bp.id IN (".$bpIdsImplode.") AND ap.id = bp.auftrag_position_id AND bp.artikel IN (".$articleIdsimplode.")
+                  LEFT JOIN bestellung b ON b.id IN (".$bIdsImplode.") AND b.id = bp.bestellung
+                  $hookjoins
+                  WHERE ap.auftrag='$id' AND ap.id IN (".$positionIdsImplode.")
+                  ORDER by ap.sort";
+          //$time = microtime(true);
+          $table->Query($sql);
+          //$time = microtime(true) - $time;
+          $gewichtanzeigen = false;
+          $bestellunganzeigen = false;
+          $reserviertfuerkundeanzeigen = false;
+          if($table->datasets) {
+            foreach($table->datasets as $k => $row) {
+              if(str_replace(',','.',$row['gewicht']) > 0){
+                $gewichtanzeigen = true;
+              }
+              if($row['Bestellung'] != '-')
+              {
+                $bestellunganzeigen = true;
+              }
+              if(isset($row['Res']) && $row['Res'] != ''){
+                $reserviertfuerkundeanzeigen = true;
+              }
+              if($row[$_lastcolumn] != ''){
+                $reserviertfuerkundeanzeigen = true;
+              }
             }
           }
-        }
-        foreach($table->headings as $k => $v)
-        {
-          if($v === 'Lager'){
-            $table->align[$k] = 'right';
-          }elseif($v === 'Menge'){
-            $table->align[$k] = 'right';
-          }elseif($v === 'Projektlager'){
-            $table->align[$k] = 'right';
-          }elseif($v == $standardlagertext){
-            $table->align[$k] = 'right';
+          if(!$bestellunganzeigen)
+          {
+            foreach($table->datasets as $k => $row)
+            {
+              unset($table->datasets[$k]['Bestellung']);
+            }
+            $table->headings[2] = $table->headings[3];
+            if(isset($table->headings[4]))$table->headings[3] = $table->headings[4];
+            if(isset($table->headings[5]))$table->headings[4] = $table->headings[5];
+            if(isset($table->headings[6]))$table->headings[5] = $table->headings[6];
+            if(isset($table->headings[7]))$table->headings[6] = $table->headings[7];
+            if(isset($table->headings[8]))$table->headings[7] = $table->headings[8];
+            if(isset($table->headings[8]))
+            {
+              unset($table->headings[8]);
+            }elseif(isset($table->headings[7]))
+            {
+              unset($table->headings[7]);
+            }elseif(isset($table->headings[6]))
+            {
+              unset($table->headings[6]);
+            }elseif(isset($table->headings[5])){
+              unset($table->headings[5]);
+            }else{
+              unset($table->headings[4]);
+            }
           }
+
+          if(!$gewichtanzeigen)
+          {
+            foreach($table->datasets as $k => $row)
+            {
+              unset($table->datasets[$k]['gewicht']);
+            }
+
+            if(!$bestellunganzeigen)
+            {
+              $table->headings[2] = $table->headings[3];
+            }
+            if(isset($table->headings[4]))$table->headings[3] = $table->headings[4];
+            if(isset($table->headings[5]))$table->headings[4] = $table->headings[5];
+            if(isset($table->headings[6]))$table->headings[5] = $table->headings[6];
+            if(isset($table->headings[7]))$table->headings[6] = $table->headings[7];
+            if(isset($table->headings[8]))$table->headings[7] = $table->headings[8];
+            if(isset($table->headings[8]))
+            {
+              unset($table->headings[8]);
+            }elseif(isset($table->headings[7]))
+            {
+              unset($table->headings[7]);
+            }elseif(isset($table->headings[6]))
+            {
+              unset($table->headings[6]);
+            }elseif(isset($table->headings[5]))
+            {
+              unset($table->headings[5]);
+            }elseif(isset($table->headings[4]))
+            {
+              unset($table->headings[4]);
+            }else{
+              unset($table->headings[3]);
+            }
+          }
+
+          if(!$reserviertfuerkundeanzeigen)
+          {
+            foreach($table->datasets as $k => $row)
+            {
+              unset($table->datasets[$k][$_lastcolumn]);
+            }
+            if($lastcolumn == $_lastcolumn)
+            {
+              unset($table->headings[(!empty($table->headings)?count($table->headings):0)-1]);
+            }else {
+              $cheading = !empty($table->headings)?count($table->headings):0;
+              for($hc = 0; $hc < $cheading; $hc++)
+              {
+                if($table->headings[$hc] == $_lastcolumn)
+                {
+                  break;
+                }
+              }
+              for($hci = $hc; $hci < $cheading ;$hci++)
+              {
+                if(isset($table->headings[$hci])) {
+                  if(isset($table->headings[$hci + 1])) {
+                    $table->headings[$hci] = $table->headings[$hci + 1];
+                  }else{
+                    unset($table->headings[$hci]);
+                  }
+                }
+              }
+            }
+
+            if($lastcolumn == $_lastcolumn)
+            {
+              $lastcolumn = $table->headings[(!empty($table->headings)?count($table->headings):0)-1];
+              if($lastcolumn == 'Aktion'){
+                $lastcolumn = $table->headings[(!empty($table->headings)?count($table->headings):0)-2];
+              }
+            }
+          }
+
+          if($table->datasets)
+          {
+            foreach($table->datasets as $k => $v)
+            {
+              foreach($v as $k2 =>  $v2)
+              {
+                if(preg_match_all('/^(.*)lagermehr\((.*)\)(.*)$/', $v2, $matches,PREG_OFFSET_CAPTURE))
+                {
+                  $table->datasets[$k][$k2] = $matches[1][0][0].'&nbsp;'.$this->app->YUI->ContentTooltip('return','index.php?module=auftrag&action=minidetail&cmd=lager&id='.$matches[2][0][0],'url').$matches[3][0][0];
+                }
+              }
+            }
+            foreach($table->headings as $k => $v)
+            {
+              if($v === 'Lager'){
+                $table->align[$k] = 'right';
+              }elseif($v === 'Menge'){
+                $table->align[$k] = 'right';
+              }elseif($v === 'Projektlager'){
+                $table->align[$k] = 'right';
+              }elseif($v == $standardlagertext){
+                $table->align[$k] = 'right';
+              }
+            }
+          }
+          $artikel = $table->DisplayNew("return",$lastcolumn,"noAction","false",0,0,false);
+
         }
-      }
-      $artikel = $table->DisplayNew("return",$lastcolumn,"noAction","false",0,0,false);
+    // ELSE ARTIKEL LAGER
+        else {
+          //$table->Query("SELECT ap.bezeichnung as artikel, ap.nummer as Nummer, if(a.lagerartikel,ap.menge,'-') as Menge
+          $hookjoins = '';
+          $hookcolumns = '';
+          $lastcolumn = 'Menge';
+          $this->app->erp->RunHook('auftrag_minidetail_hook1',4, $id, $hookcolumns, $hookjoins, $lastcolumn);
+
+          $sql =
+            "SELECT if(ap.explodiert_parent > 1,
+            CONCAT('***',if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer,
+             if(isnull(b.id),'-',concat('<a href=\"index.php?module=bestellung&action=edit&id=',b.id,'\" target=\"_blank\">',if(b.belegnr <> '', b.belegnr,'ENTWURF'),'</a>')
+              ) as Bestellung,a.gewicht as gewicht,
+            TRIM(ap.menge)+0 as Menge
+            $hookcolumns
+            FROM auftrag_position AS ap
+            INNER JOIN artikel AS a ON a.id=ap.artikel
+            LEFT JOIN bestellung_position AS bp ON ap.id = bp.auftrag_position_id AND bp.id IN (".$bpIdsImplode.")
+            LEFT JOIN bestellung AS b ON b.id = bp.bestellung AND b.id IN (".$bIdsImplode.")
+              $hookjoins
+            WHERE ap.id IN (".$positionIdsImplode.") AND ap.auftrag='$id'
+            ORDER by ap.sort ";
+
+          $table->Query($sql);
+
+          $gewichtanzeigen = false;
+          $bestellunganzeigen = false;
+          if($table->datasets){
+            foreach($table->datasets as $k => $row) {
+              if($row['gewicht'] > 0){
+                $gewichtanzeigen = true;
+              }
+              if($row['Bestellung'] != '-'){
+                $bestellunganzeigen = true;
+              }
+            }
+          }
+
+          if(!$bestellunganzeigen) {
+            foreach($table->datasets as $k => $row)  {
+              unset($table->datasets[$k]['Bestellung']);
+            }
+            $table->headings[2] = $table->headings[3];
+            if(isset($table->headings[4])){
+              $table->headings[3] = $table->headings[4];
+            }
+            if(isset($table->headings[5])){
+              $table->headings[4] = $table->headings[5];
+            }
+            if(isset($table->headings[6])){
+              $table->headings[5] = $table->headings[6];
+            }
+            if(isset($table->headings[7])){
+              $table->headings[6] = $table->headings[7];
+            }
+            if(isset($table->headings[7]))
+            {
+              unset($table->headings[7]);
+            }elseif(isset($table->headings[6]))
+            {
+              unset($table->headings[6]);
+            }elseif(isset($table->headings[5])){
+              unset($table->headings[5]);
+            }else{
+              unset($table->headings[4]);
+            }
+          }
+
+          if(!$gewichtanzeigen)
+          {
+            foreach($table->datasets as $k => $row)
+            {
+              unset($table->datasets[$k]['gewicht']);
+            }
+            if(!$bestellunganzeigen)
+            {
+              $table->headings[2] = $table->headings[3];
+            }
+            if(isset($table->headings[4]))$table->headings[3] = $table->headings[4];
+            if(isset($table->headings[5]))$table->headings[4] = $table->headings[5];
+            if(isset($table->headings[6]))$table->headings[5] = $table->headings[6];
+            if(isset($table->headings[7]))$table->headings[6] = $table->headings[7];
+            if(isset($table->headings[7]))
+            {
+              unset($table->headings[7]);
+            }elseif(isset($table->headings[6]))
+            {
+              unset($table->headings[6]);
+            }elseif(isset($table->headings[5])){
+              unset($table->headings[5]);
+            }elseif(isset($table->headings[4])){
+              unset($table->headings[4]);
+            }else{
+              unset($table->headings[3]);
+            }
+          }
+
+          $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
+        }
+    } else { // kommission_ok
+
+        $this->app->Tpl->Set('KOMMISSIONIERUNGHIDDEN','');
+        $this->app->Tpl->Set('LAGERHIDDEN','hidden');
+
+        $kommissionierung = $this->app->DB->Select("SELECT id FROM kommissionierung where auftrag = ".$id." LIMIT 1");
+
+        $this->app->Tpl->Set('KOMMISSIONIERUNGID',$kommissionierung);
+
+        $lastcolumn = 'Menge';
+        $this->app->erp->RunHook('auftrag_minidetail_hook1',4, $id, $hookcolumns, $hookjoins, $lastcolumn);
+        $sql =
+            "
+            SELECT if(ap.explodiert_parent > 1,
+                CONCAT('***',if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel,
+                CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer,
+                a.gewicht as gewicht,
+                TRIM(ap.menge)+0 as Menge
+            FROM auftrag_position AS ap
+            INNER JOIN artikel AS a ON a.id=ap.artikel
+            WHERE ap.auftrag='$id'
+            ORDER by ap.sort
+        ";
+        $table->Query($sql);
+
+        $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
+
+        $sql = "
+            SELECT
+                a.name_de Artikel,
+                a.nummer,
+                lp.kurzbezeichnung AS Lagerplatz,
+                TRIM(kp.menge)+0 as Menge
+            FROM kommissionierung k
+            INNER JOIN kommissionierung_position kp ON kp.kommissionierung = k.id
+            INNER JOIN artikel a ON kp.artikel = a.id
+            INNER JOIN lager_platz lp ON kp.ziel_lager_platz = lp.id
+            WHERE k.auftrag = ".$id."
+        ";
+
+        $table->Query($sql);
+
+        $kommissionierungtabelle = $table->DisplayNew("return",$lastcolumn,"noAction");
+
+        $this->app->Tpl->Set('KOMMISSIONIERUNG','<div id="kommissionierung'.$id.'">'.$kommissionierungtabelle.'</div>');
 
     }
-    else {
-      //$table->Query("SELECT ap.bezeichnung as artikel, ap.nummer as Nummer, if(a.lagerartikel,ap.menge,'-') as Menge
-      $hookjoins = '';
-      $hookcolumns = '';
-      $lastcolumn = 'Menge';
-      $this->app->erp->RunHook('auftrag_minidetail_hook1',4, $id, $hookcolumns, $hookjoins, $lastcolumn);
-      
-      $sql =
-        "SELECT if(ap.explodiert_parent > 1,
-        CONCAT('***',if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer, 
-         if(isnull(b.id),'-',concat('<a href=\"index.php?module=bestellung&action=edit&id=',b.id,'\" target=\"_blank\">',if(b.belegnr <> '', b.belegnr,'ENTWURF'),'</a>')
-          ) as Bestellung,a.gewicht as gewicht,
-        TRIM(ap.menge)+0 as Menge 
-        $hookcolumns
-        FROM auftrag_position AS ap 
-        INNER JOIN artikel AS a ON a.id=ap.artikel 
-        LEFT JOIN bestellung_position AS bp ON ap.id = bp.auftrag_position_id AND bp.id IN (".$bpIdsImplode.") 
-        LEFT JOIN bestellung AS b ON b.id = bp.bestellung AND b.id IN (".$bIdsImplode.")
-          $hookjoins
-        WHERE ap.id IN (".$positionIdsImplode.") AND ap.auftrag='$id'  
-        ORDER by ap.sort ";
+    // END ARTIKEL LAGER
 
-      $table->Query($sql);
-
-      $gewichtanzeigen = false;
-      $bestellunganzeigen = false;
-      if($table->datasets){
-        foreach($table->datasets as $k => $row) {
-          if($row['gewicht'] > 0){
-            $gewichtanzeigen = true;
-          }
-          if($row['Bestellung'] != '-'){
-            $bestellunganzeigen = true;
-          }
-        }
-      }
-      
-      if(!$bestellunganzeigen) {
-        foreach($table->datasets as $k => $row)  {
-          unset($table->datasets[$k]['Bestellung']);
-        }
-        $table->headings[2] = $table->headings[3];
-        if(isset($table->headings[4])){
-          $table->headings[3] = $table->headings[4];
-        }
-        if(isset($table->headings[5])){
-          $table->headings[4] = $table->headings[5];
-        }
-        if(isset($table->headings[6])){
-          $table->headings[5] = $table->headings[6];
-        }
-        if(isset($table->headings[7])){
-          $table->headings[6] = $table->headings[7];
-        }
-        if(isset($table->headings[7]))
-        {
-          unset($table->headings[7]);
-        }elseif(isset($table->headings[6]))
-        {
-          unset($table->headings[6]);
-        }elseif(isset($table->headings[5])){
-          unset($table->headings[5]);
-        }else{
-          unset($table->headings[4]);
-        }
-      }
-
-      if(!$gewichtanzeigen)
-      {
-        foreach($table->datasets as $k => $row)
-        {
-          unset($table->datasets[$k]['gewicht']);
-        }
-        if(!$bestellunganzeigen)
-        {
-          $table->headings[2] = $table->headings[3];
-        }
-        if(isset($table->headings[4]))$table->headings[3] = $table->headings[4];
-        if(isset($table->headings[5]))$table->headings[4] = $table->headings[5];
-        if(isset($table->headings[6]))$table->headings[5] = $table->headings[6];
-        if(isset($table->headings[7]))$table->headings[6] = $table->headings[7];
-        if(isset($table->headings[7]))
-        {
-          unset($table->headings[7]);
-        }elseif(isset($table->headings[6]))
-        {
-          unset($table->headings[6]);
-        }elseif(isset($table->headings[5])){
-          unset($table->headings[5]);
-        }elseif(isset($table->headings[4])){
-          unset($table->headings[4]);
-        }else{
-          unset($table->headings[3]);
-        }
-      }
-      
-      $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
-    }
     $this->app->Tpl->Set('ARTIKEL','<div id="artikeltabellelive'.$id.'">'.$artikel.'</div>');
     $nachartikeltarget = 'MINIDETAILNACHARTIKEL';
     $this->app->erp->RunHook("AuftragMiniDetailNachArtikel", 2, $id, $nachartikeltarget);
@@ -3307,10 +3363,10 @@ class Auftrag extends GenAuftrag
 
         if($gutschriftid > 0) {
           $tmp = $this->app->DB->Select(
-            "SELECT 
+            "SELECT
               CONCAT('<a href=\"index.php?module=gutschrift&action=edit&id=',r.id,'\" target=\"_blank\">',if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),'&nbsp;<a href=\"index.php?module=gutschrift&action=pdf&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Gutschrift PDF\" border=\"0\"></a>&nbsp;
                 <a href=\"index.php?module=gutschrift&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>') as rechnung
-            FROM gutschrift r 
+            FROM gutschrift r
             WHERE r.id='".$gutschriftid."' LIMIT 1"
           );
           $this->app->Tpl->Add('GUTSCHRIFT',$tmp);
@@ -3364,8 +3420,8 @@ class Auftrag extends GenAuftrag
       $produktionProtokoll = new EasyTable($this->app);
       $produktionProtokoll->Query(
         sprintf(
-          "SELECT DATE_FORMAT(pp.zeit,'%%d.%%m.%%Y %%H:%%i:%%s') AS `zeit`, pp.bearbeiter, pp.grund 
-          FROM `produktion_protokoll` AS `pp` 
+          "SELECT DATE_FORMAT(pp.zeit,'%%d.%%m.%%Y %%H:%%i:%%s') AS `zeit`, pp.bearbeiter, pp.grund
+          FROM `produktion_protokoll` AS `pp`
           WHERE pp.produktion = %d
           ORDER BY pp.zeit DESC, pp.id DESC",
           $produktionsId
@@ -3400,7 +3456,7 @@ class Auftrag extends GenAuftrag
           $tmp3->datasets[] = $tmpr;
         }
       }
-      
+
       $tmp3->DisplayNew('PDFARCHIV','Men&uuml;',"noAction");
     }
 
@@ -3444,7 +3500,7 @@ class Auftrag extends GenAuftrag
               dataType: "json",
               data: { internebemerkung: wert},
               success: function(data) {
-                
+
               }
             });
         }
@@ -3461,7 +3517,7 @@ class Auftrag extends GenAuftrag
       else{
         $this->app->Tpl->Add('INTERNEBEMERKUNGEDIT','</script>');
       }
-      
+
     }
     if($parsetarget=='') {
       $this->app->Tpl->Output('auftrag_minidetail.tpl');
@@ -3488,13 +3544,13 @@ class Auftrag extends GenAuftrag
     // wenn abweichende rechnungsadresse bei kunden aktiv ist dann diese verwenden
 
     $abweichende = $this->app->DB->Select("SELECT abweichende_rechnungsadresse FROM adresse WHERE id='".$data[0]['adresse']."' LIMIT 1");
-    if($abweichende=="1") 
+    if($abweichende=="1")
     {
       $adresse_data = $this->app->DB->SelectArr("SELECT * FROM adresse WHERE id='".$data[0]['adresse']."' LIMIT 1");
 
       foreach($adresse_data[0] as $key=>$value)
       {
-        if($adresse_data[0][$key]!="" && $key!="abweichendelieferadresse" && $key!="rechnung_land" && $key!="rechnung_plz") 
+        if($adresse_data[0][$key]!="" && $key!="abweichendelieferadresse" && $key!="rechnung_land" && $key!="rechnung_plz")
         {
           $adresse_data[0][$key] = $adresse_data[0][$key]."<br>";
         }
@@ -3528,7 +3584,7 @@ class Auftrag extends GenAuftrag
   {
     $id = $this->app->Secure->GetGET('id');
 
-    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag',true); 
+    $zahlungen = $this->app->erp->GetZahlungen($id,'auftrag',true);
     if (!empty($zahlungen)) {
         $et = new EasyTable($this->app);
 
@@ -3537,8 +3593,8 @@ class Auftrag extends GenAuftrag
         foreach ($zahlungen as $zahlung) {
             $row = array(
                 $zahlung['datum'],
-                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
-                    ".ucfirst($zahlung['doc_typ'])." 
+                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">
+                    ".ucfirst($zahlung['doc_typ'])."
                     ".$zahlung['doc_info']."
                 </a>",
                 $zahlung['betrag'],
@@ -3548,7 +3604,7 @@ class Auftrag extends GenAuftrag
         }
 
         $salden = $this->app->erp->GetSaldenDokument($id,'auftrag',true);
-        foreach ($salden as $saldo) {   
+        foreach ($salden as $saldo) {
             $row = array(
                 '',
                 '<b>Saldo</b>',
@@ -3557,7 +3613,7 @@ class Auftrag extends GenAuftrag
             );
             $et->AddRow($row);
         }
-        return($et->DisplayNew('return',""));           
+        return($et->DisplayNew('return',""));
     }
   }
 
@@ -3595,30 +3651,30 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Add('ERGEBNISSE',"<h2>Trefferliste:</h2><br>");
       if($suchwort!="")
       {
-        $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
+        $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a
             LEFT JOIN adresse adr ON adr.id = b.adresse WHERE (a.name LIKE '%$suchwort%' OR a.email LIKE '%$suchwort%' OR a.plz LIKE '$suchwort%' OR a.internet LIKE '%$suchwort%' OR (adr.kundennummer='$suchwort' AND adr.kundennummer!=0)
               OR (a.gesamtsumme='$suchwort' AND a.gesamtsumme!=0) OR (a.belegnr='$suchwort' AND a.belegnr!='' ))");
       } else {
         if($name!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse,  a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse,  a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.name LIKE '%$name%')");
         else if($email!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.email LIKE '%$email%')");
         else if($plz!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.plz LIKE '$plz%')");
         else if($proforma!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.internet LIKE '%$proforma%')");
         else if($kundennummer!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse,  a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse,  a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (adr.kundennummer='$kundennummer')");
         else if($betrag!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse,  a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse,  a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.gesamtsumme='$betrag')");
         else if($auftrag!="")
-          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a 
+          $table->Query("SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as datum, a.name, a.belegnr as auftrag, adr.kundennummer, a.internet, a.plz, a.ort, a.strasse, a.zahlungsweise, a.status, a.id FROM auftrag a
               LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.belegnr='$auftrag')");
 
       }
@@ -3725,17 +3781,17 @@ class Auftrag extends GenAuftrag
       if($newid){
         $this->app->Tpl->Add('TAB1', '
         <script>
-      
+
         window.parent.window.location.href=\'index.php?module=lieferschein&action=edit&id=' . $newid . '\';
-      
+
         </script>
       ');
       }else{
         $this->app->Tpl->Add('TAB1', '
         <script>
-      
+
         window.parent.window.location.href=\'index.php?module=auftrag&action=edit&id=' . $id.'&msg='.$msgNoArticle . '\';
-      
+
         </script>
       ');
       }
@@ -3837,8 +3893,8 @@ class Auftrag extends GenAuftrag
     $adresse = $this->app->DB->Select("SELECT adresse FROM auftrag WHERE id = '$id' LIMIT 1");
     if($adresse)
     {
-      $zertifikate = $this->app->DB->SelectArr("SELECT ds.datei 
-      FROM datei_stichwoerter ds 
+      $zertifikate = $this->app->DB->SelectArr("SELECT ds.datei
+      FROM datei_stichwoerter ds
       INNER JOIN datei_stichwoerter ds2 ON ds.datei = ds2.datei AND ds2.objekt = 'Artikel'
       INNER JOIN auftrag_position ap ON ap.artikel = ds2.parameter AND ap.auftrag = '$id'
       WHERE ds.objekt = 'Adressen' AND ds.parameter = '$adresse'
@@ -3903,7 +3959,7 @@ class Auftrag extends GenAuftrag
       if(empty($intern)){
         $this->app->erp->RunHook('beleg_freigabe', 4, $doctype, $id, $allowedFrm, $showDefault);
       }
-      
+
     }
     if(!empty($auftragarr)) {
       $projekt = $auftragarr['projekt'];//$this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$id' LIMIT 1");
@@ -3977,7 +4033,7 @@ class Auftrag extends GenAuftrag
 
       if($email!='')
       {
-        $this->app->Tpl->Set('TAB1',"<div class=\"info\">Soll der Auftrag an <b>$name</b> im Wert von <b>$summe $waehrung</b> 
+        $this->app->Tpl->Set('TAB1',"<div class=\"info\">Soll der Auftrag an <b>$name</b> im Wert von <b>$summe $waehrung</b>
             jetzt freigegeben werden?<table cellspacing=5><tr><td width=100></td><td>
             <input type=\"button\" class=\"btnImportantLarge\" value=\"Jetzt freigeben +  Mail ($email)\" onclick=\"window.location.href='index.php?module=auftrag&action=freigabe&id=$id&freigabe=$id&cmd=mail'\">
             &nbsp;oder&nbsp;ohne automatische Mail:&nbsp;
@@ -3989,8 +4045,8 @@ class Auftrag extends GenAuftrag
         {
           $this->app->Location->execute("index.php?module=auftrag&action=freigabe&id=$id&freigabe=$id");
         } else {
-          $this->app->Tpl->Set('TAB1',"<div class=\"info\">Soll der Auftrag an <b>$name</b> im Wert von <b>$summe $waehrung</b> 
-            jetzt freigegeben werden? 
+          $this->app->Tpl->Set('TAB1',"<div class=\"info\">Soll der Auftrag an <b>$name</b> im Wert von <b>$summe $waehrung</b>
+            jetzt freigegeben werden?
             <input type=\"button\" class=\"btnImportantLarge\" value=\"Jetzt freigeben\" onclick=\"window.location.href='index.php?module=auftrag&action=freigabe&id=$id&freigabe=$id'\">&nbsp;$extra
             </div>");
 
@@ -4058,11 +4114,11 @@ class Auftrag extends GenAuftrag
       else if($status==="abgeschlossen" || $status==="storniert" || $status==="versendet")
       {
         $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Auftrag \"$name\" ($belegnr) wurde wieder als freigegeben markiert!</div>  ");
-        $this->app->DB->Update("UPDATE auftrag SET status='freigegeben',schreibschutz=0 WHERE id='$id' LIMIT 1"); 
-        $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge=0,geliefert=0 WHERE auftrag='$id'"); 
+        $this->app->DB->Update("UPDATE auftrag SET status='freigegeben',schreibschutz=0 WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge=0,geliefert=0 WHERE auftrag='$id'");
         $this->app->erp->AuftragProtokoll($id,'Auftrag manuell als freigegeben markiert');
-      } 
-      else 
+      }
+      else
       {
         $msg = $this->app->erp->base64_url_encode('<div class="warning">Der Auftrag wurde abgeschlossen!</div>  ');
       }
@@ -4214,7 +4270,7 @@ class Auftrag extends GenAuftrag
       $id = $this->app->Secure->GetGET('id');
       $abschluss = $this->app->Secure->GetGET('abschluss');
       $mail = $this->app->Secure->GetGET('mail');
-    }else 
+    }else
     {
       $intern = true;
       $abschluss = $intern;
@@ -4379,7 +4435,7 @@ class Auftrag extends GenAuftrag
 
     $this->app->erp->AuftragProtokoll($auftrag,'Auftrag aus Versand storniert');
 
-    // RMA anlegen 
+    // RMA anlegen
 
     $msg = $this->app->erp->base64_url_encode('<div class="warning">Der Auftrag wurde als RMA im Versand markiert!</div>  ');
 
@@ -4414,7 +4470,7 @@ class Auftrag extends GenAuftrag
       $Brief = new AuftragPDF($this->app,$projekt,'proforma');
     }
     $Brief->GetAuftrag($id);
-    $Brief->displayDocument(); 
+    $Brief->displayDocument();
 
     $this->AuftragList();
   }
@@ -4590,7 +4646,7 @@ class Auftrag extends GenAuftrag
           }else{
             $this->app->DB->Delete("DELETE FROM auftrag_position WHERE id='$sidexplodiert' LIMIT 1");
             $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE parameter='$id' AND objekt='auftrag'
-                AND artikel='".$unterartikel[$i]['artikel']."'");              
+                AND artikel='".$unterartikel[$i]['artikel']."'");
           }
         }
         $this->DelAuftragStueckliste($id, $sidexplodiert, $lvl + 1);
@@ -4603,10 +4659,10 @@ class Auftrag extends GenAuftrag
       }
       // alle wirklich loeschen
       $this->app->DB->Delete("DELETE FROM auftrag_position WHERE explodiert_parent='$sid' AND auftrag='$id'");
-      
+
     }
   }
-  
+
   public function DelAuftragPosition()
   {
     $sid = (int)$this->app->Secure->GetGET('sid');
@@ -4622,7 +4678,7 @@ class Auftrag extends GenAuftrag
     }
     $this->AuftragPositionen();
   }
-  
+
   public function CopyAuftragPosition()
   {
     $this->app->YUI->SortListEvent('copy','auftrag_position','auftrag');
@@ -4642,16 +4698,16 @@ class Auftrag extends GenAuftrag
   }
 
   public function AuftragCheckDisplayPopup()
-  { 
+  {
     $frame = $this->app->Secure->GetGET('frame');
     $id = $this->app->Secure->GetGET('id');
 
     if($frame=='false')
-    { 
+    {
       // hier nur fenster größe anpassen
       $this->app->YUI->IframeDialog(700,700);
     } else {
-      // nach page      
+      // nach page
 
       $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$id' LIMIT 1");
       $projektcheckname = $this->app->DB->Select("SELECT checkname FROM projekt WHERE id='$projekt' LIMIT 1");
@@ -4713,7 +4769,7 @@ class Auftrag extends GenAuftrag
 
     // nach page inhalt des dialogs ausgeben
     $filename = 'widgets/widget.auftag_position_custom.php';
-    if(is_file($filename)) 
+    if(is_file($filename))
     {
       include_once $filename;
       $widget = new WidgetAuftrag_positionCustom($this->app,'PAGE');
@@ -4771,7 +4827,7 @@ class Auftrag extends GenAuftrag
       echo json_encode($erg);
       $this->app->ExitXentral();
     }
-    
+
     if($cmd === 'daup')
     {
       $erg['status'] = 0;
@@ -4799,11 +4855,11 @@ class Auftrag extends GenAuftrag
     if($this->app->erp->VertriebAendern('auftrag',$id,$cmd,$sid)){
       return;
     }
-  
+
     if($this->app->erp->InnendienstAendern('auftrag',$id,$cmd,$sid)){
       return;
     }
- 
+
 
     if($this->app->erp->DisableModul('auftrag',$id)) {
       //$this->app->erp->MenuEintrag("index.php?module=auftrag&action=list","Zur&uuml;ck zur &Uuml;bersicht");
@@ -4878,7 +4934,7 @@ class Auftrag extends GenAuftrag
         'MESSAGE',
         "<div class=\"warning\">Dies ist Teilauftrag Nr. $teillieferungnummer (Aktuell gesplittet in $teillieferungnummermax Auftr&auml;ge). Der urspr&uuml;ngliche Auftrag war: <a href=\"index.php?module=auftrag&action=edit&id=$hauptid\" target=\"_blank\">$teillieferung_von_auftrag_nummer</a></div>"
       );
-    }       
+    }
 
 
     $check = $this->app->DB->SelectPairs(
@@ -4886,7 +4942,7 @@ class Auftrag extends GenAuftrag
       FROM auftrag_position ap
       INNER JOIN bestellung_position bp ON ap.id = bp.auftrag_position_id
       INNER JOIN bestellung b ON bp.bestellung = b.id
-      WHERE ap.auftrag='$id' 
+      WHERE ap.auftrag='$id'
       GROUP BY b.belegnr, b.id
       ORDER BY b.belegnr, b.id"
     );
@@ -4906,13 +4962,13 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Add('MESSAGE',"</div>");
     }
 
-    
+
     if($this->app->erp->ModulVorhanden('lieferkette')) {
       $auftraglieferkette = $this->app->DB->Select(
-        "SELECT l.auftrag 
-        FROM lieferkette l 
-        INNER JOIN lieferkette_bestellung lb 
-            ON l.id = lb.lieferkette AND lb.belegtyp = 'auftrag' AND belegid = '$id' AND l.auftrag > 0 
+        "SELECT l.auftrag
+        FROM lieferkette l
+        INNER JOIN lieferkette_bestellung lb
+            ON l.id = lb.lieferkette AND lb.belegtyp = 'auftrag' AND belegid = '$id' AND l.auftrag > 0
         LIMIT 1"
       );
       if($auftraglieferkette) {
@@ -4921,9 +4977,9 @@ class Auftrag extends GenAuftrag
           '<div class="info">Dieser Auftrag geh&ouml;rt zur Lieferkette des Auftrags <a href="index.php?module=auftrag&action=edit&id='
           .$auftraglieferkette.'" target="_blank"><input type="button" value="'
           .$this->app->DB->Select(
-            "SELECT if(belegnr = '','ENTWURF',belegnr) 
-            FROM auftrag 
-            WHERE id = '$auftraglieferkette' 
+            "SELECT if(belegnr = '','ENTWURF',belegnr)
+            FROM auftrag
+            WHERE id = '$auftraglieferkette'
             LIMIT 1"
           )
           .'" /></a></div>'
@@ -4982,7 +5038,7 @@ class Auftrag extends GenAuftrag
       $icons = $this->app->DB->Select("SELECT $icons FROM auftrag a WHERE a.id='$id' LIMIT 1");
     }
     $this->app->Tpl->Set('STATUSICONS',$icons);
-    
+
     $this->app->YUI->AARLGPositionen();
 
     $orderRow = $this->app->DB->SelectRow(sprintf('SELECT * FROM auftrag WHERE id = %d', $id));
@@ -5065,7 +5121,7 @@ class Auftrag extends GenAuftrag
     }
     else {
       $this->app->Tpl->Set('HIDDENFIELD',"<input type=\"hidden\" name=\"storno_abschluss\" value=\"1\">");
-      // bearbeiter 
+      // bearbeiter
       $stornobezahltvon = $orderRow['stornobezahltvon'];//$this->app->DB->Select("SELECT stornobezahltvon FROM auftrag WHERE id='$id' LIMIT 1");
       $stornobezahltam = $orderRow['stornobezahltam'];//$this->app->DB->Select("SELECT stornobezahltam FROM auftrag WHERE id='$id' LIMIT 1");
       if($stornobezahltvon==''){
@@ -5082,7 +5138,7 @@ class Auftrag extends GenAuftrag
 
     $this->AuftragAmpel($id,'AMPEL');
     $optional = '';
-   
+
       $lieferscheine = $this->app->DB->SelectPairs(
         "SELECT id,belegnr FROM lieferschein WHERE auftragid='$id' AND auftragid > 0"
       );
@@ -5155,11 +5211,11 @@ class Auftrag extends GenAuftrag
       $kundennummer = $this->app->erp->FirstTillSpace($tmp);
       $filter_projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id = '$id' LIMIT 1");
       $adresse =  $this->app->DB->Select(
-        "SELECT id 
-        FROM adresse 
+        "SELECT id
+        FROM adresse
         WHERE kundennummer='$kundennummer' AND geloescht=0 "
-        .$this->app->erp->ProjektRechte('projekt', true, 'vertrieb')." 
-        ORDER by ".($filter_projekt?" projekt = '$filter_projekt' DESC, ":"")." projekt 
+        .$this->app->erp->ProjektRechte('projekt', true, 'vertrieb')."
+        ORDER by ".($filter_projekt?" projekt = '$filter_projekt' DESC, ":"")." projekt
         LIMIT 1"
       );
 
@@ -5201,11 +5257,11 @@ class Auftrag extends GenAuftrag
       }
     }
 
-    // easy table mit arbeitspaketen YUI als template 
+    // easy table mit arbeitspaketen YUI als template
     $table = new EasyTable($this->app);
     $table->Query(
-      "SELECT ap.bezeichnung as artikel, ap.nummer as Nummer, ap.menge, 
-       (SELECT TRIM(SUM(l.menge))+0 
+      "SELECT ap.bezeichnung as artikel, ap.nummer as Nummer, ap.menge,
+       (SELECT TRIM(SUM(l.menge))+0
        FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel
            ) as Lagerbestand, ap.geliefert ausgeliefert,ap.vpe as VPE
        FROM auftrag_position ap
@@ -5256,13 +5312,13 @@ class Auftrag extends GenAuftrag
     $this->app->Tpl->Set('STATUS',"<input type=\"text\" size=\"30\" value=\"".$status."\" readonly [COMMONREADONLYINPUT]>");
 
     // ENDE
-    
+
 
     //alle RE und LS zu diesem Auftrag
     $auftragsnummer  = $orderRow['belegnr'];//$this->app->DB->Select("SELECT belegnr FROM auftrag WHERE id='$id' LIMIT 1");
     $anzahl =   $this->app->DB->Select(
       "SELECT COUNT(r.belegnr)
-        FROM rechnung r 
+        FROM rechnung r
         WHERE r.adresse='$adresse' AND r.auftrag='$auftragsnummer' AND r.auftrag!=''");
 
     if($anzahl >0) {
@@ -5270,10 +5326,10 @@ class Auftrag extends GenAuftrag
 
       $table = new EasyTable($this->app);
       $table->Query(
-        "SELECT r.belegnr as rechnung, DATE_FORMAT(r.datum,'%d.%m.%Y') as ausgang, 
-          l.belegnr as lieferschein, r.soll as betrag 
-        FROM rechnung r 
-        LEFT JOIN lieferschein l ON r.lieferschein=l.id 
+        "SELECT r.belegnr as rechnung, DATE_FORMAT(r.datum,'%d.%m.%Y') as ausgang,
+          l.belegnr as lieferschein, r.soll as betrag
+        FROM rechnung r
+        LEFT JOIN lieferschein l ON r.lieferschein=l.id
         WHERE r.adresse='$adresse' AND r.auftrag='$auftragsnummer' AND r.auftrag!=''"
       );
       $table->DisplayNew('AUFTRAGSDOKUMENTE',"Betrag","noAction");
@@ -5286,7 +5342,7 @@ class Auftrag extends GenAuftrag
     if($auftragsnummer>0) {
       $trackingInfo = $this->AuftragTrackingTabelle(empty($deliveryNoteIds)?0: $id);
       $this->app->Tpl->Set('VERSAND', $trackingInfo);
-    } 
+    }
 */
 
     // UST
@@ -5294,9 +5350,9 @@ class Auftrag extends GenAuftrag
     $ust_befreit = $orderRow['ust_befreit'];//$this->app->DB->Select("SELECT ust_befreit FROM auftrag WHERE id='$id' LIMIT 1");
 
     $ustprfid = $this->app->DB->Select(
-      "SELECT id 
-      FROM ustprf 
-      WHERE DATE_FORMAT(datum_online,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d') AND adresse='$adresse' AND status='erfolgreich' 
+      "SELECT id
+      FROM ustprf
+      WHERE DATE_FORMAT(datum_online,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d') AND adresse='$adresse' AND status='erfolgreich'
       LIMIT 1"
     );
 
@@ -5354,8 +5410,8 @@ class Auftrag extends GenAuftrag
     $this->app->Tpl->Set('AKTIV_TAB1','selected');
     $sollExtSoll = $this->app->DB->SelectRow(
       sprintf(
-        "SELECT extsoll, gesamtsumme 
-        FROM auftrag 
+        "SELECT extsoll, gesamtsumme
+        FROM auftrag
         WHERE id = %d AND schreibschutz = 0 AND status = 'abgeschlossen' AND extsoll <> 0",
         $id
       )
@@ -5438,9 +5494,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $id = $this->app->erp->CreateAuftrag();
       $deactivateautoshipping = $this->app->DB->Select(
         sprintf(
-          'SELECT pr.deactivateautoshipping 
-          FROM auftrag AS o 
-          INNER JOIN projekt AS pr ON o.projekt = pr.id 
+          'SELECT pr.deactivateautoshipping
+          FROM auftrag AS o
+          INNER JOIN projekt AS pr ON o.projekt = pr.id
           WHERE o.id = %d',
           $id
         )
@@ -5468,9 +5524,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         Offene Auftr&auml;ge, die durch andere Mitarbeiter in Bearbeitung sind.
         <br>
         </td>
-        </tr>  
+        </tr>
         </table>
-        <br> 
+        <br>
         [AUFTRAGE]");
 
 
@@ -5495,7 +5551,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   */
 
   public function AuftragVersand($id='', $ignoriereliefertermin = false, &$ergebnis = null, $paketmarkedrucken = false)
-  {    
+  {
     // mit der funktionen koennen nur erstauftraege abgewickelt koennen!!!
     $internmodus = 0;
     if($id!='')
@@ -5570,7 +5626,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     {
       $useredittimestamp = 1000;
     }
-    
+
     $anzahl_artikel = $this->app->DB->Select("SELECT id FROM auftrag_position WHERE auftrag=$id LIMIT 1");
     if($anzahl_artikel <= 0)
     {
@@ -5592,7 +5648,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       $this->app->DB->Insert(
         sprintf(
-          "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES 
+          "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES
           (%d,now(),'%s','Lieferschein an Versandzentrum &uuml;bergeben')",
           (int)$id,(isset($this->app->User)?$this->app->DB->real_escape_string($this->app->User->GetName()):'Cronjob')
         )
@@ -5615,7 +5671,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         else {
           $lieferschein = $this->app->DB->Select(
             sprintf(
-              "SELECT dn.id 
+              "SELECT dn.id
               FROM lieferschein AS dn
               WHERE dn.auftragid = %d AND dn.status <> 'storniert'
               LIMIT 1",
@@ -5636,8 +5692,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           $ls_belegnr = $this->app->erp->GetNextNummer('lieferschein',$projekt,$lieferschein);
         }
 
-        $this->app->DB->Update("UPDATE lieferschein SET 
-                                    belegnr='$ls_belegnr',  
+        $this->app->DB->Update("UPDATE lieferschein SET
+                                    belegnr='$ls_belegnr',
                                     status='freigegeben',
                                     versand='".$this->app->User->GetDescription()."',
                                     versand_status = 1
@@ -5736,9 +5792,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
           $this->app->DB->Update(
             sprintf(
-              "UPDATE rechnung 
-              SET buchhaltung='%s' 
-              WHERE id=%d 
+              "UPDATE rechnung
+              SET buchhaltung='%s'
+              WHERE id=%d
               LIMIT 1",
               $this->app->DB->real_escape_string($this->app->User->GetDescription()), $rechnung
             )
@@ -5752,9 +5808,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       // auftrag_position geliefert_menge und geliefert anpassen
       $artikelarr = $this->app->DB->SelectArr(
         sprintf(
-          "SELECT ap.id,ap.artikel,ap.menge 
-          FROM auftrag_position AS ap 
-          INNER JOIN artikel AS art ON ap.artikel = art.id AND art.lagerartikel = 1 
+          "SELECT ap.id,ap.artikel,ap.menge
+          FROM auftrag_position AS ap
+          INNER JOIN artikel AS art ON ap.artikel = art.id AND art.lagerartikel = 1
           WHERE ap.auftrag=%d AND ap.auftrag > 0",
           (int)$id
         )
@@ -5768,10 +5824,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $menge= $artikelarr[$i]['menge'];
         // lager teile reservieren
 
-        $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt='auftrag' 
+        $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt='auftrag'
             AND parameter='$id' AND artikel='$artikel' ");
 
-        $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$menge', 
+        $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$menge',
               geliefert='1' WHERE id='$auftragspositionsid' LIMIT 1");
       }
 
@@ -5796,12 +5852,12 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           if($automailrechnung && $rechnung > 0)
           {
             // rechnung per mail versenden
-            // sende 
+            // sende
             // $this->app->erp->Rechnungsmail($rechnung);
           }
           $this->app->DB->Insert(
             sprintf(
-              "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES 
+              "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES
           (%d,now(),'%s','Autoversand ausgef&uuml;hrt')",
               (int)$id,(isset($this->app->User)?$this->app->DB->real_escape_string($this->app->User->GetName()):'Cronjob')
             )
@@ -5811,16 +5867,16 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
           if($kommissionierverfahren==='lieferschein' && $lieferschein > 0)
           {
-            //FALL 1 Lieferschein mit Lagerplatz         
-            
+            //FALL 1 Lieferschein mit Lagerplatz
+
             $this->app->erp->SeriennummernCheckLieferscheinBenachrichtigung($lieferschein);
-            
+
             $sql = "SELECT id FROM kommissionierung k WHERE k.auftrag = '".$id."'";
             $vorkommissionierung = $this->app->DB->Select($sql);
-                       
+
             if (!$vorkommissionierung)
             {
-               $auslagernresult =            
+               $auslagernresult =
                $this->app->erp->LieferscheinAuslagern(
                   lieferschein: $lieferschein,
                   anzeige_lagerplaetze_in_lieferschein: true,
@@ -5829,7 +5885,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 );
 
                 $kommissionierung = $this->app->erp->GetNextKommissionierung();
- 
+
                 $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
 
                 $this->Kommissionieren(
@@ -5849,7 +5905,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $this->SeriennummernCheckLieferscheinWarnung($lieferschein, true);
                 $this->LieferscheinProtokoll($lieferschein,"Lieferschein ausgelagert");
             }
-               
+
             // Prozesse ohne Versandzentrum
             $this->app->erp->BriefpapierHintergrundDisable($druckercode);
 
@@ -5865,7 +5921,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $Brief->ArchiviereDocument(false, true);
             unlink($tmpfile);
             $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-            
+
             if(class_exists('LieferscheinPDFCustom')) {
               $Brief = new LieferscheinPDFCustom($this->app,$projekt);
             }
@@ -5893,7 +5949,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             }
 
             $this->app->DB->Update("UPDATE lieferschein SET status='versendet',versendet='1',schreibschutz='1' WHERE id='$lieferschein' LIMIT 1");
-            $this->app->DB->Insert("INSERT INTO dokumente_send 
+            $this->app->DB->Insert("INSERT INTO dokumente_send
                 (id,dokument,zeit,bearbeiter,adresse,parameter,art,betreff,text,projekt,ansprechpartner,dateiid) VALUES ('','lieferschein',NOW(),'".$this->app->User->GetName()."',
                   '$adresse','$lieferschein','versand','$betreff','$text','$projekt','','$fileid_lieferschein')");
             $this->app->erp->LieferscheinProtokoll($lieferschein,'Lieferschein versendet (Auto-Versand)');
@@ -5910,7 +5966,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             }
             $this->app->DB->Insert(
               sprintf(
-                "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES 
+                "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES
           (%d,now(),'%s','Auftrag an Versandzentrum &uuml;bergeben')",
                 (int)$id,(isset($this->app->User)?$this->app->DB->real_escape_string($this->app->User->GetName()):'Cronjob')
               )
@@ -5923,7 +5979,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           // auftrag_position geliefert_menge und geliefert anpassen
           $artikelarr = $this->app->DB->SelectArr(
             sprintf(
-              "SELECT ap.id, ap.artikel,ap.menge 
+              "SELECT ap.id, ap.artikel,ap.menge
               FROM auftrag_position AS ap
               INNER JOIN artikel AS art ON ap.artikel = art.id AND art.lagerartikel = 1
               WHERE ap.auftrag=%d AND ap.auftrag > 0",
@@ -5937,7 +5993,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $menge= $artikelarr[$i]['menge'];
             // lager teile reservieren
 
-            $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt='auftrag' 
+            $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt='auftrag'
                 AND parameter='$id' AND artikel='$artikel' ");
 
             if($kommissionierverfahren==='zweistufig' && $lieferschein > 0)
@@ -5949,7 +6005,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             }
 
             if($lieferschein > 0) {
-              $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$menge', 
+              $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$menge',
               geliefert='1' WHERE id='$auftragspositionsid' LIMIT 1");
             }
 
@@ -5958,7 +6014,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
           $this->app->DB->Insert(
             sprintf(
-              "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES 
+              "INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) VALUES
             (%d,now(),'%s','Autoversand ausgef&uuml;hrt')",
               (int)$id,(isset($this->app->User)?$this->app->DB->real_escape_string($this->app->User->GetName()):'Cronjob')
             )
@@ -5978,10 +6034,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
       }
 
-      // Check for override in adresse      
-      $sql = "SELECT rechnung_anzahlpapier, rechnung_anzahlpapier_abweichend FROM adresse WHERE id =".$adresse; 
+      // Check for override in adresse
+      $sql = "SELECT rechnung_anzahlpapier, rechnung_anzahlpapier_abweichend FROM adresse WHERE id =".$adresse;
       $adresse_settings = $this->app->DB->SelectArr($sql);
-      if ($adresse_settings[0]['rechnung_anzahlpapier_abweichend']) {          
+      if ($adresse_settings[0]['rechnung_anzahlpapier_abweichend']) {
           $autodruckrechnungstufe1menge = $adresse_settings[0]['rechnung_anzahlpapier'];
       }
 
@@ -6038,7 +6094,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         unlink($tmpfile);
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
       }
-      
+
       // Rechnungsmail was here, but now at the end to prioritise processing and printing over mail
 
       // auftrag abschliessen
@@ -6160,9 +6216,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       if($autodruckrechnungstufe1mail && $rechnung > 0)
       {
         $this->app->erp->Rechnungsmail($rechnung);
-      }      
+      }
       $this->app->erp->RunHook('auftrag_versand_ende', 1, $id);
-      // wenn per URL aufgerufen      
+      // wenn per URL aufgerufen
       if($internmodus!='1')
       {
         if(!empty($fp))
@@ -6185,7 +6241,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     {
       $this->app->Location->execute('index.php?module=auftrag&action=positionen&id='.$id);
     }
-    
+
     // wenn per URL aufgerufen
     if($internmodus!='1')
     {
@@ -6240,16 +6296,16 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->YUI->IframeDialog(600,400);
     } else {
       // nach page inhalt des dialogs ausgeben
-      $table = new EasyTable($this->app); 
-      $table->Query("SELECT ap.nummer, ap.bezeichnung, ap.menge, (SELECT TRIM(SUM(lp.menge))+0 FROM lager_platz_inhalt lp WHERE lp.artikel=ap.artikel) as lager, 
-          (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=ap.artikel AND lr.datum>=NOW() AND lr.objekt!='lieferschein') as reserviert, 
+      $table = new EasyTable($this->app);
+      $table->Query("SELECT ap.nummer, ap.bezeichnung, ap.menge, (SELECT TRIM(SUM(lp.menge))+0 FROM lager_platz_inhalt lp WHERE lp.artikel=ap.artikel) as lager,
+          (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=ap.artikel AND lr.datum>=NOW() AND lr.objekt!='lieferschein') as reserviert,
           if(((SELECT SUM(lp.menge) FROM lager_platz_inhalt lp WHERE lp.artikel=ap.artikel) - (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=ap.artikel AND lr.datum>=NOW() AND lr.objekt!='lieferschein') - ap.menge)>=0,'',
             TRIM((SELECT SUM(lp.menge) FROM lager_platz_inhalt lp WHERE lp.artikel=ap.artikel) - (SELECT SUM(lr.menge) FROM lager_reserviert lr WHERE lr.artikel=ap.artikel AND lr.datum>=NOW() AND lr.objekt!='lieferschein') - ap.menge)+0
-            ) as fehlend 
+            ) as fehlend
           FROM auftrag_position ap LEFT JOIN artikel a ON a.id=ap.artikel WHERE ap.auftrag='$id' AND a.lagerartikel=1");
 
       $table->DisplayNEW('PAGE','Fehlende','noAction');
-      
+
       $this->app->BuildNavigation=false;
     }
   }
@@ -6276,32 +6332,32 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     // offene Auftraege
     $table = new EasyTable($this->app);
-    $sql = "SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as vom, if(a.belegnr!='',a.belegnr,'ohne Nummer') as auftrag, a.internet, CONCAT('<a href=\"index.php?module=adresse&action=edit&id=',a.adresse,'\">',a.name,'</a>') as name, a.land, p.abkuerzung as projekt, a.zahlungsweise as per, a.gesamtsumme as soll,"; 
+    $sql = "SELECT DATE_FORMAT(a.datum,'%d.%m.%Y') as vom, if(a.belegnr!='',a.belegnr,'ohne Nummer') as auftrag, a.internet, CONCAT('<a href=\"index.php?module=adresse&action=edit&id=',a.adresse,'\">',a.name,'</a>') as name, a.land, p.abkuerzung as projekt, a.zahlungsweise as per, a.gesamtsumme as soll,";
     $subsql = "'0' as ist,";
-    $sql .= $subsql. "if(a.check_ok,'','<a href=\"index.php?module=auftrag&action=checkdisplay&id=1031&frame=false\" onclick=\"makeRequest(this); return false;\">$check</a>') as AC, 
+    $sql .= $subsql. "if(a.check_ok,'','<a href=\"index.php?module=auftrag&action=checkdisplay&id=1031&frame=false\" onclick=\"makeRequest(this); return false;\">$check</a>') as AC,
 
-        if(a.reserviert_ok,'$reserviert','') as AR, 
-        if(a.lager_ok,'$go','$stop') as LA, 
-        if(a.porto_ok,'$go','$stop') as PO, 
-        if(a.ust_ok,'$go',CONCAT('<a href=\"/index.php?module=adresse&action=ustprf&id=',a.adresse,'\">','$stop','</a>')) as ST, 
-        if(a.vorkasse_ok,'$go','$stop') as ZE, 
-        if(a.nachnahme_ok,'$go','$stop') as N, 
-        if(a.autoversand,'$go','$stop') as A, 
-        if(a.liefertermin_ok,'$go','$stop') as LT, 
+        if(a.reserviert_ok,'$reserviert','') as AR,
+        if(a.lager_ok,'$go','$stop') as LA,
+        if(a.porto_ok,'$go','$stop') as PO,
+        if(a.ust_ok,'$go',CONCAT('<a href=\"/index.php?module=adresse&action=ustprf&id=',a.adresse,'\">','$stop','</a>')) as ST,
+        if(a.vorkasse_ok,'$go','$stop') as ZE,
+        if(a.nachnahme_ok,'$go','$stop') as N,
+        if(a.autoversand,'$go','$stop') as A,
+        if(a.liefertermin_ok,'$go','$stop') as LT,
         a.id
         FROM auftrag a, projekt p WHERE a.inbearbeitung=0 AND p.id=a.projekt AND a.id=$id LIMIT 1";
   */
 
     $table = new EasyTable($this->app);
     $sql = "
-        SELECT 
+        SELECT
                     (" .  $this->app->YUI->IconsSQL() . ")  AS `icons`,
-            a.id 
-            FROM  `auftrag` AS `a` 
-            LEFT JOIN `projekt` AS `p` ON p.id = a.projekt 
+            a.id
+            FROM  `auftrag` AS `a`
+            LEFT JOIN `projekt` AS `p` ON p.id = a.projekt
             LEFT JOIN `adresse` AS `adr` ON a.adresse = adr.id
     ";
-        
+
     $table->Query($sql);
 
     $table->DisplayNew($parsetarget, "
@@ -6346,15 +6402,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     );
 
 /*    $this->app->DB->Insert(
-      "INSERT INTO `cronjob_kommissionierung` (`id`, `bezeichnung`) 
+      "INSERT INTO `cronjob_kommissionierung` (`id`, `bezeichnung`)
         VALUES ({$nextCronjobCommissionId}, '{$description}') "
     );
     if($this->app->DB->GetInsertID() > 0) {
       return $this->app->DB->GetInsertID();
     }
     $this->app->DB->Update(
-      "UPDATE `cronjob_kommissionierung` 
-      SET `bezeichnung` = '{$description}' 
+      "UPDATE `cronjob_kommissionierung`
+      SET `bezeichnung` = '{$description}'
       WHERE `id` = {$nextCronjobCommissionId}"
     );*/
 
@@ -6372,8 +6428,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->erp->RunHook('OrderAutoShipment', 2, $targetMessage, $autoshipmentEnabled);
 
     $plusCronjobs = $this->app->DB->SelectRow(
-      "SELECT art, periode 
-        FROM prozessstarter 
+      "SELECT art, periode
+        FROM prozessstarter
         WHERE (parameter = 'autoversand' OR parameter = 'autoversand_plus') AND aktiv = 1
         ORDER BY art = 'periodisch', periode >= 30
         LIMIT 1"
@@ -6384,11 +6440,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->Tpl->Add('AUTOVERSANDBERECHNEN', '<div class="warning">'.$message.'</div>');
     }
 
-    // ZAHLUNGSMAIL 
+    // ZAHLUNGSMAIL
     $zahlungsmail= $this->app->Secure->GetPOST('zahlungsmail');
 
     if($zahlungsmail!=''){
-      $meineauftraege = $this->app->DB->SelectArr("SELECT id FROM auftrag WHERE status='freigegeben' 
+      $meineauftraege = $this->app->DB->SelectArr("SELECT id FROM auftrag WHERE status='freigegeben'
           AND vorkasse_ok!='1' AND zahlungsweise!='rechnung' AND zahlungsweise!='nachnahme' AND zahlungsweise!='bar' AND zahlungsweise!='lastschrift'");
       $cmeineauftraege = $meineauftraege?count($meineauftraege):0;
       for($i=0;$i<$cmeineauftraege;$i++) {
@@ -6442,21 +6498,21 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           */
 
             $cronjobActive = $this->app->DB->Select(
-              "SELECT ps.id 
+              "SELECT ps.id
               FROM `prozessstarter` AS `ps`
-              WHERE ps.aktiv = 1 and (ps.parameter = 'autoversand_standard' OR ps.parameter = 'autoversand_manuell') 
+              WHERE ps.aktiv = 1 and (ps.parameter = 'autoversand_standard' OR ps.parameter = 'autoversand_manuell')
               LIMIT 1"
             );
             $check = $cronjobActive;
             if(!$check){
               $check = $this->app->DB->Select(
-                "SELECT id 
-                FROM auftrag AS a 
-                WHERE  a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') 
+                "SELECT id
+                FROM auftrag AS a
+                WHERE  a.id!='' AND (a.belegnr!=0 OR a.belegnr!='')
                   AND a.status='freigegeben' AND a.autoversand='1' AND a.cronjobkommissionierung > 0
-                  AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.vorkasse_ok='1' 
-                  AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' 
-                  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1' 
+                  AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.vorkasse_ok='1'
+                  AND a.porto_ok='1' AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1'
+                  AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND liefersperre_ok='1'
                 LIMIT 1"
               );
             }
@@ -6479,16 +6535,16 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             if($check){
 
               /* Send all to cronjob */
-  
+
               $maxcronjobkommissionierung = $this->createCronjobCommission((string)$bezeichnung);
 
               $cauftraegemarkiert = $auftraegemarkiert ? count($auftraegemarkiert) : 0;
               for ($i = 0; $i < $cauftraegemarkiert; $i++) {
                 $this->app->DB->Update(
                   sprintf(
-                    'UPDATE `auftrag` 
+                    'UPDATE `auftrag`
                     SET `cronjobkommissionierung` = %d
-                    WHERE `id` = %d 
+                    WHERE `id` = %d
                     LIMIT 1',
                     $maxcronjobkommissionierung, $auftraegemarkiert[$i]
                   )
@@ -6513,7 +6569,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               foreach ($auftraegenachprojekt as $projekt => $auftraege) {
                 if(!is_array($auftraege) || empty($auftraege)) {
                   continue;
-                }                  
+                }
                 $processed_orders_num = 0;
                 foreach ($auftraege as $auftrag) {
                   /* Process each order */
@@ -6559,7 +6615,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
               $vorkommissionieren_ohne_etiketten = true;
             // break ommitted
           case 'vorkommissionieren':
-          
+
                 $kommissionierlagerplatz = $this->app->Secure->GetPOST('kommissionierlagerplatz');
                 $kommissionierlagerplatz = $this->app->erp->ReplaceLagerPlatz(true,$kommissionierlagerplatz,true); // Parameters: Target db?, value, from form?
 
@@ -6569,10 +6625,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 }
 
                 if (!empty($auftraegemarkiert)) {
-                    foreach ($auftraegemarkiert as $k => $v) {       
-                 
+                    foreach ($auftraegemarkiert as $k => $v) {
+
                         $settings = $this->app->DB->SelectRow("
-                            SELECT 
+                            SELECT
                                 projekt.autodruckkommissionierscheinstufe1,
                                 projekt.autodruckkommissionierscheinstufe1menge,
                                 adresse.etikett,
@@ -6580,11 +6636,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 projekt.id as projekt,
                                 auftrag.adresse,
                                 auftrag.belegnr
-                            FROM projekt 
+                            FROM projekt
                             INNER JOIN auftrag ON projekt.id = auftrag.projekt
                             INNER JOIN adresse ON adresse.id = auftrag.adresse
                             WHERE auftrag.id = '".$v."'"
-                        );                      
+                        );
 
                         if (!empty($this->app->erp->GetAuftragKommissionierung($v))) {
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$settings['belegnr']);
@@ -6622,7 +6678,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 );
                             }
 
-                            $druckercode = $this->app->erp->Projektdaten($settings['projekt'],'druckerlogistikstufe1');              
+                            $druckercode = $this->app->erp->Projektdaten($settings['projekt'],'druckerlogistikstufe1');
 
                             $this->Kommissionieren(
                                 kommissionierung : $kid,
@@ -6634,7 +6690,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
                                 druckercode: $druckercode,
                                 kommentar: "Kommissioniert in ".$lagerplatz['kurzbezeichnung']);
-                        }                        
+                        }
                         $this->Kommissionieren_etiketten_drucken($v);
                     }
                 }
@@ -6645,21 +6701,21 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $check = null;
     $cronjobActive = $this->app->DB->Select(
-      "SELECT ps.id 
-      FROM `prozessstarter` AS `ps` 
-      WHERE ps.aktiv = 1 and (ps.parameter = 'autoversand_standard' OR ps.parameter = 'autoversand_manuell') 
+      "SELECT ps.id
+      FROM `prozessstarter` AS `ps`
+      WHERE ps.aktiv = 1 and (ps.parameter = 'autoversand_standard' OR ps.parameter = 'autoversand_manuell')
       LIMIT 1"
     );
     if(!$cronjobActive) {
       $check = $this->app->DB->Select(
         sprintf(
-        "SELECT id 
+        "SELECT id
           FROM auftrag AS a
-          WHERE  a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.autoversand='1' AND 
+          WHERE  a.id!='' AND (a.belegnr!=0 OR a.belegnr!='') AND a.status='freigegeben' AND a.autoversand='1' AND
                 a.cronjobkommissionierung > 0
-                                     AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.vorkasse_ok='1' AND a.porto_ok='1' 
-            AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND 
-                liefersperre_ok='1' 
+                                     AND a.inbearbeitung=0 AND a.nachlieferung!='1' AND a.vorkasse_ok='1' AND a.porto_ok='1'
+            AND a.lager_ok='1' AND a.check_ok='1' AND a.ust_ok='1' AND a.liefertermin_ok='1' AND kreditlimit_ok='1' AND
+                liefersperre_ok='1'
           LIMIT 1"
         )
       );
@@ -6690,9 +6746,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       $this->app->Tpl->Add(
         'MESSAGE',
-        '<div class="warning">Der Prozessstarter &quot;Autoversand Manuell&quot; ist deaktivert, 
-        es befinden sich aber ausstehende Auftr&auml;ge in der Warteschlange. 
-        Bitte aktieren Sie den Prozessstarter 
+        '<div class="warning">Der Prozessstarter &quot;Autoversand Manuell&quot; ist deaktivert,
+        es befinden sich aber ausstehende Auftr&auml;ge in der Warteschlange.
+        Bitte aktieren Sie den Prozessstarter
         oder entfernen Sie die betreffenden Auftr&auml;ge in der Warteschlange</div>'
       );
     }
@@ -6727,7 +6783,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->YUI->TableSearch('TAB1','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
     $this->app->YUI->TableSearch('TAB2','auftraegeoffeneautowartend', 'show','','',basename(__FILE__), __CLASS__);
     $this->app->Tpl->Parse('PAGE','auftrag_versandzentrum.tpl');
-  } // Ende 
+  } // Ende
 
   public function AuftragList()
   {
@@ -6737,9 +6793,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $openids = $this->app->DB->SelectArr("SELECT id from auftrag WHERE status <>'abgeschlossen' and status <>'storniert' and status <>'angelegt'");
         foreach ($openids as $openid) {
             $this->app->erp->AuftragAutoversandBerechnen($openid['id']);
-        }  
-    }       
-            
+        }
+    }
+
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('auftrag', 'edit'))
     {
       $drucker = $this->app->Secure->GetPOST('seldrucker');
@@ -6877,7 +6933,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $this->app->erp->AuftragProtokoll($v,'Auftrag versendet');
               }
             }
-          
+
           break;
           case 'storniert':
             foreach($selectedIds as $v) {
@@ -6905,9 +6961,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $this->app->erp->AuftragProtokoll($v,'Auftrag storniert');
                 $this->app->DB->Update(
                   sprintf(
-                    "UPDATE auftrag 
-                    SET status='storniert', schreibschutz=1, versendet = 1 
-                    WHERE id = %d AND status!='angelegt' 
+                    "UPDATE auftrag
+                    SET status='storniert', schreibschutz=1, versendet = 1
+                    WHERE id = %d AND status!='angelegt'
                     LIMIT 1",
                     $v
                   )
@@ -7033,7 +7089,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
       }
     }
-    
+
     $this->AuftraguebersichtMenu();
 
     if(strlen($backurl)>5){
@@ -7046,15 +7102,15 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     $this->app->erp->RunMenuHook('auftrag_list');
 
-    // ZAHLUNGSMAIL 
+    // ZAHLUNGSMAIL
     $zahlungsmail= $this->app->Secure->GetPOST('zahlungsmail');
 
     if($zahlungsmail!='')
     {
       $orders = $this->app->DB->SelectArr(
         "SELECT id
-        FROM auftrag 
-        WHERE status='freigegeben' 
+        FROM auftrag
+        WHERE status='freigegeben'
           AND vorkasse_ok!='1' AND zahlungsweise!='rechnung' AND zahlungsweise!='nachnahme' AND zahlungsweise!='bar' AND zahlungsweise!='lastschrift'"
       );
       if(!empty($orders)){
@@ -7080,9 +7136,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
         $orders = empty($orderIds)?null:$this->app->DB->SelectArr(
           sprintf(
-            'SELECT id, projekt 
-            FROM `auftrag` 
-            WHERE id IN (%s) 
+            'SELECT id, projekt
+            FROM `auftrag`
+            WHERE id IN (%s)
             ORDER BY id',implode(', ', $orderIds)
           )
         );
@@ -7188,7 +7244,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
 
       $inbearbeitung = $this->app->DB->Select("SELECT count(a.id) FROM auftrag a WHERE a.id!='' AND a.status='angelegt'");
- 
+
       if($inbearbeitung > 0) {
         $inbearbeitung =' ('.$inbearbeitung.')';
       }
@@ -7262,7 +7318,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             switch ($submit) {
                 case 'speichern':
                     // Get parameters
-                   
+
                     $teilmenge_input = $this->app->Secure->GetPOSTArray();
 
                     $teilmengen = array();
@@ -7281,7 +7337,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         // Create new auftrag
                         $sql = "SELECT * from auftrag WHERE id = $id";
                 	    $auftrag_alt = $this->app->DB->SelectArr($sql)[0];
-                                          
+
                         // Part auftrag of part auftrag -> select parent
                         $hauptauftrag_id = $auftrag_alt['teillieferungvon'];
                         if ($hauptauftrag_id != 0) {
@@ -7307,8 +7363,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         $auftrag_neu['belegnr'] = $belegnr_neu;
                         $auftrag_neu['teillieferungvon'] = $hauptauftrag_id;
                         $auftrag_neu['teillieferungnummer'] = $teillieferungnummer;
-                   
-                        $id_neu = $this->app->DB->MysqlCopyRow('auftrag','id',$id);  
+
+                        $id_neu = $this->app->DB->MysqlCopyRow('auftrag','id',$id);
                         $sql = "UPDATE auftrag SET belegnr = '$belegnr_neu', teillieferungvon = $hauptauftrag_id, teillieferungnummer = $teillieferungnummer WHERE id = $id_neu";
                         $this->app->DB->Update($sql);
 
@@ -7321,18 +7377,18 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $menge_neu = $teilmenge['menge'];
                             if ($menge_neu > $menge_alt) {
                                 $menge_neu = $menge_alt;
-                            } 
+                            }
 
                             $menge_reduziert = $menge_alt-$menge_neu;
-                          
+
                             $posid_alt = $teilmenge['posid'];
-                            $posid_neu = $this->app->DB->MysqlCopyRow('auftrag_position','id',$posid_alt);  
+                            $posid_neu = $this->app->DB->MysqlCopyRow('auftrag_position','id',$posid_alt);
 
                             $sql = "UPDATE auftrag_position SET menge = $menge_reduziert WHERE id = $posid_alt";
                             $this->app->DB->Update($sql);
                             $sql = "UPDATE auftrag_position SET auftrag = $id_neu, menge = $menge_neu WHERE id = $posid_neu";
-                            $this->app->DB->Update($sql);                                                        
-                        }                    
+                            $this->app->DB->Update($sql);          
+                        }
 
                         $this->app->erp->AuftragProtokoll($id,"Teilauftrag $belegnr_neu erstellt");
                         $this->app->erp->PDFArchivieren('auftrag', $id, true);
@@ -7353,14 +7409,14 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         }
     } // Status ok
     else {
-        $msg = 'Teilauftrag in diesem Status nicht möglich.';                        
-    }    
+        $msg = 'Teilauftrag in diesem Status nicht möglich.';
+    }
 
     $this->app->Tpl->Add('INFOTEXT',$msg);
     $this->app->YUI->TableSearch('TABLE','positionen_teillieferung', 'show','','',basename(__FILE__), __CLASS__);
 
     $this->app->Tpl->Parse('PAGE','auftrag_teillieferung.tpl');
-  } // AuftragTeillieferung 
+  } // AuftragTeillieferung
 
   function AuftragOffenePositionen() {
     $this->AuftraguebersichtMenu();
@@ -7407,7 +7463,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 //  function LagerEinlagern($artikel,$menge,$regal,$projekt,$grund="",$importer="",$paketannahme="",$doctype = "", $doctypeid = 0, $vpeid = 0, $permanenteinventur = 0, $adresse = 0)
 
             $this->app->DB->Insert("
-                INSERT INTO 
+                INSERT INTO
                     lager_reserviert
                 (id,adresse,artikel,menge,grund,projekt,firma,bearbeiter,datum,objekt,parameter)
                 VALUES(
@@ -7465,7 +7521,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             }
 
             $sql = "
-                SELECT 
+                SELECT
                     a.belegnr,
                     ap.menge,
                     $freifelder
@@ -7478,10 +7534,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     art.ean,
                     art.herstellernummer
                 FROM
-                    auftrag a 
+                    auftrag a
                 INNER JOIN
                     auftrag_position ap ON ap.auftrag = a.id
-                INNER 
+                INNER
                     JOIN artikel art ON ap.artikel = art.id
                 WHERE
                     a.id = ".$auftragid."
