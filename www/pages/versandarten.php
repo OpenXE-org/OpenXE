@@ -836,7 +836,7 @@ class Versandarten {
       $obj = $this->loadModule($modul);
       if ($obj === null)
         continue;
-      $result[$modul] = $obj->name ?? ucfirst($modul);
+      $result[$modul] = $obj->GetName() ?? ucfirst($modul);
       unset($obj);
     }
 

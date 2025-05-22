@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: LicenseRef-EGPL-3.1
 
 use Psr\Log\LoggerInterface;
-use Xentral\Carrier\Dpd\Data\Hazardous;
-use Xentral\Carrier\Dpd\Data\HigherInsurance;
-use Xentral\Carrier\Dpd\Data\PaperFormat;
-use Xentral\Carrier\Dpd\Data\Parcel;
-use Xentral\Carrier\Dpd\Data\Pickup;
-use Xentral\Carrier\Dpd\Data\PrintOption;
-use Xentral\Carrier\Dpd\Data\ShipmentServiceData;
-use Xentral\Carrier\Dpd\LoginService\Data\GetAuth;
-use Xentral\Carrier\Dpd\LoginService\LoginService;
-use Xentral\Carrier\Dpd\LoginService\LoginServiceException;
-use Xentral\Carrier\Dpd\ShipmentService;
+use Xentral\Carrier\DpdDepot\Data\Hazardous;
+use Xentral\Carrier\DpdDepot\Data\HigherInsurance;
+use Xentral\Carrier\DpdDepot\Data\PaperFormat;
+use Xentral\Carrier\DpdDepot\Data\Parcel;
+use Xentral\Carrier\DpdDepot\Data\Pickup;
+use Xentral\Carrier\DpdDepot\Data\PrintOption;
+use Xentral\Carrier\DpdDepot\Data\ShipmentServiceData;
+use Xentral\Carrier\DpdDepot\LoginService\Data\GetAuth;
+use Xentral\Carrier\DpdDepot\LoginService\LoginService;
+use Xentral\Carrier\DpdDepot\LoginService\LoginServiceException;
+use Xentral\Carrier\DpdDepot\ShipmentService;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
 use Xentral\Modules\ShippingMethod\Model\Service;
@@ -26,7 +26,7 @@ use Xentral\Modules\SystemConfig\SystemConfigModule;
 
 require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
-class Versandart_dpd extends Versanddienstleister
+class Versandart_dpddepot extends Versanddienstleister
 {
     protected const HAZMAT_DB_URL = 'https://esolutions.dpd.com/partnerloesungen/hazdistributionservice.aspx';
     protected ShipmentService $api;
@@ -34,6 +34,8 @@ class Versandart_dpd extends Versanddienstleister
     protected LoggerInterface $logger;
     protected array $options;
     protected DateTimeZone $timeZone;
+
+    public bool $Beta = true;
 
     public function __construct(ApplicationCore $app, ?int $id)
     {
@@ -87,7 +89,7 @@ class Versandart_dpd extends Versanddienstleister
 
     public function GetName(): string
     {
-        return 'DPD';
+        return 'DPDdepot (BETA)';
     }
 
     public function AdditionalSettings(): array
