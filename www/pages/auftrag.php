@@ -2507,8 +2507,7 @@ class Auftrag extends GenAuftrag
     $this->app->Tpl->Set('KOMMISSIONIERUNGHIDDEN','hidden');
     $this->app->Tpl->Set('LAGERHIDDEN','');
 
-    if (empty($auftragRow['kommission_ok'])) {
-        if($status==='freigegeben' || $status==='angelegt') {
+    if (empty($auftragRow['kommission_ok']) && ($status==='freigegeben' || $status==='angelegt')) {
           $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
           $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
           $projektlager = 0;
@@ -2993,6 +2992,7 @@ class Auftrag extends GenAuftrag
           $gewichtanzeigen = false;
           $bestellunganzeigen = false;
           $reserviertfuerkundeanzeigen = false;
+
           if($table->datasets) {
             foreach($table->datasets as $k => $row) {
               if(str_replace(',','.',$row['gewicht']) > 0){
@@ -3141,8 +3141,60 @@ class Auftrag extends GenAuftrag
           $artikel = $table->DisplayNew("return",$lastcolumn,"noAction","false",0,0,false);
 
         }
-    // ELSE ARTIKEL LAGER
-        else {
+
+        // KOMMSSIONIERUNG LIST
+        if (!empty($auftragRow['kommission_ok']) && ($status==='freigegeben' || $status==='angelegt')) {
+
+            $this->app->Tpl->Set('KOMMISSIONIERUNGHIDDEN','');
+            $this->app->Tpl->Set('LAGERHIDDEN','hidden');
+
+            $kommissionierung = $this->app->DB->Select("SELECT id FROM kommissionierung where auftrag = ".$id." LIMIT 1");
+
+            $this->app->Tpl->Set('KOMMISSIONIERUNGID',$kommissionierung);
+
+            $lastcolumn = 'Menge';
+            $this->app->erp->RunHook('auftrag_minidetail_hook1',4, $id, $hookcolumns, $hookjoins, $lastcolumn);
+            $sql =
+                "
+                SELECT if(ap.explodiert_parent > 1,
+                    CONCAT('***',if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel,
+                    CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer,
+                    a.gewicht as gewicht,
+                    TRIM(ap.menge)+0 as Menge
+                FROM auftrag_position AS ap
+                INNER JOIN artikel AS a ON a.id=ap.artikel
+                WHERE ap.auftrag='$id'
+                ORDER by ap.sort
+            ";
+            $table->Query($sql);
+
+            $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
+
+            $sql = "
+                SELECT
+                    a.name_de Artikel,
+                    a.nummer,
+                    lp.kurzbezeichnung AS Lagerplatz,
+                    TRIM(kp.menge)+0 as Menge
+                FROM kommissionierung k
+                INNER JOIN kommissionierung_position kp ON kp.kommissionierung = k.id
+                INNER JOIN artikel a ON kp.artikel = a.id
+                INNER JOIN lager_platz lp ON kp.ziel_lager_platz = lp.id
+                WHERE k.auftrag = ".$id."
+            ";
+
+            $table->Query($sql);
+
+            $kommissionierungtabelle = $table->DisplayNew("return",$lastcolumn,"noAction");
+
+            $this->app->Tpl->Set('KOMMISSIONIERUNG','<div id="kommissionierung'.$id.'">'.$kommissionierungtabelle.'</div>');
+        }
+
+        // SIMPLE LIST
+        if (!($status==='freigegeben' || $status==='angelegt')) {
+
+          $this->app->Tpl->Set('LAGERHIDDEN','hidden');
+
           //$table->Query("SELECT ap.bezeichnung as artikel, ap.nummer as Nummer, if(a.lagerartikel,ap.menge,'-') as Menge
           $hookjoins = '';
           $hookcolumns = '';
@@ -3239,54 +3291,8 @@ class Auftrag extends GenAuftrag
           }
 
           $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
-        }
-    } else { // kommission_ok
-
-        $this->app->Tpl->Set('KOMMISSIONIERUNGHIDDEN','');
-        $this->app->Tpl->Set('LAGERHIDDEN','hidden');
-
-        $kommissionierung = $this->app->DB->Select("SELECT id FROM kommissionierung where auftrag = ".$id." LIMIT 1");
-
-        $this->app->Tpl->Set('KOMMISSIONIERUNGID',$kommissionierung);
-
-        $lastcolumn = 'Menge';
-        $this->app->erp->RunHook('auftrag_minidetail_hook1',4, $id, $hookcolumns, $hookjoins, $lastcolumn);
-        $sql =
-            "
-            SELECT if(ap.explodiert_parent > 1,
-                CONCAT('***',if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)),if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)) as artikel,
-                CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer,
-                a.gewicht as gewicht,
-                TRIM(ap.menge)+0 as Menge
-            FROM auftrag_position AS ap
-            INNER JOIN artikel AS a ON a.id=ap.artikel
-            WHERE ap.auftrag='$id'
-            ORDER by ap.sort
-        ";
-        $table->Query($sql);
-
-        $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
-
-        $sql = "
-            SELECT
-                a.name_de Artikel,
-                a.nummer,
-                lp.kurzbezeichnung AS Lagerplatz,
-                TRIM(kp.menge)+0 as Menge
-            FROM kommissionierung k
-            INNER JOIN kommissionierung_position kp ON kp.kommissionierung = k.id
-            INNER JOIN artikel a ON kp.artikel = a.id
-            INNER JOIN lager_platz lp ON kp.ziel_lager_platz = lp.id
-            WHERE k.auftrag = ".$id."
-        ";
-
-        $table->Query($sql);
-
-        $kommissionierungtabelle = $table->DisplayNew("return",$lastcolumn,"noAction");
-
-        $this->app->Tpl->Set('KOMMISSIONIERUNG','<div id="kommissionierung'.$id.'">'.$kommissionierungtabelle.'</div>');
-
-    }
+        
+    } 
     // END ARTIKEL LAGER
 
     $this->app->Tpl->Set('ARTIKEL','<div id="artikeltabellelive'.$id.'">'.$artikel.'</div>');
