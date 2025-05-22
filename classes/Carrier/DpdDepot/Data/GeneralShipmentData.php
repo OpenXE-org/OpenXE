@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-namespace Xentral\Carrier\Dpd\Data;
+namespace Xentral\Carrier\DpdDepot\Data;
 
 class GeneralShipmentData
 {

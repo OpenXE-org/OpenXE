@@ -4,11 +4,12 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-namespace Xentral\Carrier\Dpd\Data;
+namespace Xentral\Carrier\DpdDepot\LoginService\Data;
 
-class Authentication
+class Login
 {
     public string $delisId = '';
+    public string $customerUid = '';
     public string $authToken = '';
-    public string $messageLanguage = 'de_DE';
+    public string $depot = '';
 }

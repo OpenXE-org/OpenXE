@@ -4,11 +4,11 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-namespace Xentral\Carrier\Dpd\LoginService;
+namespace Xentral\Carrier\DpdDepot\LoginService;
 
 use Psr\Log\LoggerInterface;
-use Xentral\Carrier\Dpd\LoginService\Data\GetAuth;
-use Xentral\Carrier\Dpd\LoginService\Data\Login;
+use Xentral\Carrier\DpdDepot\LoginService\Data\GetAuth;
+use Xentral\Carrier\DpdDepot\LoginService\Data\Login;
 
 class LoginService
 {

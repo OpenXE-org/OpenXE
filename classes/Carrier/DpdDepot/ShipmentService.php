@@ -4,18 +4,18 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
-namespace Xentral\Carrier\Dpd;
+namespace Xentral\Carrier\DpdDepot;
 
 use Psr\Log\LoggerInterface;
 use SoapClient;
 use SoapFault;
 use SoapHeader;
-use Xentral\Carrier\Dpd\Data\Authentication;
-use Xentral\Carrier\Dpd\Data\Output;
-use Xentral\Carrier\Dpd\Data\ParcelInformation;
-use Xentral\Carrier\Dpd\Data\PrintOption;
-use Xentral\Carrier\Dpd\Data\ShipmentResponse;
-use Xentral\Carrier\Dpd\Data\StoreOrdersResponse;
+use Xentral\Carrier\DpdDepot\Data\Authentication;
+use Xentral\Carrier\DpdDepot\Data\Output;
+use Xentral\Carrier\DpdDepot\Data\ParcelInformation;
+use Xentral\Carrier\DpdDepot\Data\PrintOption;
+use Xentral\Carrier\DpdDepot\Data\ShipmentResponse;
+use Xentral\Carrier\DpdDepot\Data\StoreOrdersResponse;
 
 class ShipmentService
 {
