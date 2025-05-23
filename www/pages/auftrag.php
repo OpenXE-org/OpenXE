@@ -5004,8 +5004,7 @@ class Auftrag extends GenAuftrag
     $zahlungszieltage= $orderRow['zahlungszieltage'];//$this->app->DB->Select("SELECT zahlungszieltage FROM auftrag WHERE id='$id' LIMIT 1");
 
     $status= $orderRow['status'];//$this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
-    $schreibschutz= $orderRow['schreibschutz'];//$this->app->DB->Select("SELECT schreibschutz FROM auftrag WHERE id='$id' LIMIT 1");
-
+    $schreibschutz= $orderRow['schreibschutz'] || $orderRow['kommission_ok'];
 
     $adresse= $orderRow['adresse'];//$this->app->DB->Select("SELECT adresse FROM auftrag WHERE id='$id' LIMIT 1");
     $liefersperre= $this->app->DB->Select("SELECT liefersperre FROM adresse WHERE id='$adresse' LIMIT 1");
