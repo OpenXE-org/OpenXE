@@ -20948,7 +20948,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
               WHERE
                 li.artikel= %d
               AND
-                (l.id) = %d OR (%d = 0)
+                ((l.id = %d) OR (%d = 0))
               AND
                 lp.autolagersperre!=1 
               AND
