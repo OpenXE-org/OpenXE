@@ -124,6 +124,9 @@ class WidgetGenstueckliste
     $field = new HTMLInput("ypos","text","","70","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("rotation","text","","70","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLTextarea("internerkommentar",3,70,"","","","","0");   
     $this->form->NewField($field);
 

@@ -1372,9 +1372,9 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,kommission_ok,lieferantenauftrag,art,adresse,shopextstatus,shop
-         FROM auftrag
-         WHERE id = %d
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok 
+         FROM auftrag 
+         WHERE id = %d 
          LIMIT 1',
         $id
       )
@@ -1446,11 +1446,9 @@ class Auftrag extends GenAuftrag
     }
 
     if($status==='freigegeben') {
-
-        if (empty($kommission_ok)) {
+        if (empty($kommission_ok) && (!$auftragArr['nicht_reservieren'])) {
             $alleartikelreservieren = "<option value=\"reservieren\">alle Artikel reservieren</option>";
         }
-
       if($kommissionierart === "zweistufig" || $kommissionierart === "lieferscheinlagerscan" || $kommissionierart==="lieferscheinscan") {
         if($art==="rechnung"){
           $auswahlentsprechendkommissionierung = "<option value=\"versand\">Auto-Versand: RE u. LS erstellen (ohne Lager)</option>";
@@ -4942,6 +4940,13 @@ class Auftrag extends GenAuftrag
       );
     }
 
+    $tickets = $this->app->erp->GetBelegTickets('auftrag',$id);
+    if (!empty($tickets)) {
+        function ticketlink($ticket) {
+           return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Auftrag geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+    }
 
     $check = $this->app->DB->SelectPairs(
       "SELECT b.id, b.belegnr
@@ -5547,7 +5552,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   {
     $id = $this->app->Secure->GetGET('id');
     $this->app->erp->AuftragEinzelnBerechnen($id,true);
-    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Artilel f&uuml;r diesen Auftrag reserviert!</div>  ");
+    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Artikel f&uuml;r diesen Auftrag reserviert!</div>");
     $this->app->Location->execute("index.php?module=auftrag&action=edit&id=$id&msg=$msg");
   }
 

@@ -6112,7 +6112,7 @@ class Artikel extends GenArtikel {
   {
     $id = $this->app->Secure->GetGET('id');
     if($id > 0){
-      $sql = "SELECT avon.nummer as stuecklistevon, a.nummer, a.name_de, a.hersteller,a.herstellernummer,  REPLACE(TRIM(s.menge)+0,'.',',') as menge, s.referenz, s.place, s.layer, s.wert, s.bauform, s.zachse,s.xpos, s.ypos, s.art FROM stueckliste s LEFT JOIN artikel a ON a.id=s.artikel LEFT JOIN artikel avon ON avon.id=s.stuecklistevonartikel WHERE s.stuecklistevonartikel='$id'";
+      $sql = "SELECT avon.nummer as stuecklistevon, a.nummer, a.name_de, a.hersteller,a.herstellernummer,  REPLACE(TRIM(s.menge)+0,'.',',') as menge, s.referenz, s.place, s.layer, s.wert, s.bauform, s.zachse,s.xpos, s.ypos, s.art, s.rotation FROM stueckliste s LEFT JOIN artikel a ON a.id=s.artikel LEFT JOIN artikel avon ON avon.id=s.stuecklistevonartikel WHERE s.stuecklistevonartikel='$id'";
       $result = $this->app->DB->SelectArr($sql);
     }
     header('Content-type: text/csv');
@@ -6179,7 +6179,7 @@ class Artikel extends GenArtikel {
 
       $id = (int)$this->app->Secure->GetPOST('id');
         
-      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, trim(s.menge)+0 as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
+      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, trim(s.menge)+0 as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos, s.rotation FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
       
         if($data){
           if($data['artikel'] == 0){
@@ -6223,6 +6223,7 @@ class Artikel extends GenArtikel {
           $data['zachse'] = '';
           $data['xpos'] = '';
           $data['ypos'] = '';
+          $data['rotation'] = '';
 
         }
         echo json_encode($data);
@@ -6247,6 +6248,7 @@ class Artikel extends GenArtikel {
       $zachse = trim($this->app->Secure->GetPOST('ezachse'));
       $xpos = trim($this->app->Secure->GetPOST('expos'));
       $ypos = trim($this->app->Secure->GetPOST('eypos'));
+      $rotation = trim($this->app->Secure->GetPOST('erotation'));
 
       if($cmdsave === 'doppeltsave'){
         $einfuegen = trim($this->app->Secure->GetPOST('eeinfuegen'));
@@ -6305,12 +6307,12 @@ class Artikel extends GenArtikel {
           $this->app->ExitXentral();
         }
         if($id){
-          $this->app->DB->Update("UPDATE stueckliste SET artikel = '$artikelid', menge = '$menge', art = '$art', referenz = '$referenz', layer = '$layer', place = '$place', wert = '$wert', bauform = '$bauform', zachse = '$zachse', xpos = '$xpos', ypos = '$ypos' WHERE id = '$id'");
+          $this->app->DB->Update("UPDATE stueckliste SET artikel = '$artikelid', menge = '$menge', art = '$art', referenz = '$referenz', layer = '$layer', place = '$place', wert = '$wert', bauform = '$bauform', zachse = '$zachse', xpos = '$xpos', ypos = '$ypos', rotation = '$rotation' WHERE id = '$id'");
           echo json_encode(array('status'=>1));
           $this->app->ExitXentral();
         }
         if(($cmdsave === 'doppeltsave' && $einfuegen == 1) || $cmdsave === 'save'){
-          $this->app->DB->Insert("INSERT INTO stueckliste (sort, artikel, referenz, place, layer, stuecklistevonartikel, menge, art, firma, wert, bauform, zachse, xpos, ypos) VALUES (0, '$artikelid', '$referenz', '$place', '$layer', '$startikelid', '$menge', '$art', 1, '$wert', '$bauform', '$zachse', '$xpos', '$ypos')");
+          $this->app->DB->Insert("INSERT INTO stueckliste (sort, artikel, referenz, place, layer, stuecklistevonartikel, menge, art, firma, wert, bauform, zachse, xpos, ypos, rotation) VALUES (0, '$artikelid', '$referenz', '$place', '$layer', '$startikelid', '$menge', '$art', 1, '$wert', '$bauform', '$zachse', '$xpos', '$ypos', '$rotation')");
           echo json_encode(array('status'=>1));
           $this->app->ExitXentral();
         }
@@ -8079,7 +8081,7 @@ class Artikel extends GenArtikel {
       }
     }
   }
-
+/* DEPERECATED USE IMPORTVORLAGE
   function StuecklisteImport($fields, $preselected="",$startdelimititer=";",$parsetarget)
   {
 
@@ -8269,7 +8271,7 @@ padding: 10px;\">
       return $result;
     }
   }
-  
+*/  
   function getArtikelThumbnailDateiVersion($id)
   {
     $datei = $this->app->DB->SelectArr('

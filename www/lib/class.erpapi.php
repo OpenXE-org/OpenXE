@@ -25937,9 +25937,14 @@ function Firmendaten($field,$projekt="")
   }
 
   /** @deprecated */
+
+  function GetTicketStatusValues() {
+    return (array('neu'=>'neu','offen'=>'offen','warten_e'=>'warten auf Intern','warten_kd'=>'warten auf Kunde','klaeren'=>'kl&auml;ren','abgeschlossen'=>'abgeschlossen','spam'=>'Papierkorb'));
+  }
+
   function GetStatusTicketSelect($status)
   {
-    $stati = array('neu'=>'neu','offen'=>'offen','warten_e'=>'warten auf Intern','warten_kd'=>'warten auf Kunde','klaeren'=>'kl&auml;ren','abgeschlossen'=>'abgeschlossen','spam'=>'Papierkorb');
+    $stati = $this->GetTicketStatusValues();
 
     foreach($stati as $key=>$value)
     {
@@ -26883,6 +26888,21 @@ function Firmendaten($field,$projekt="")
         }
         return $ret;
       }
+
+      /* array('id','name','checked') */
+      function GetCheckboxes($array, $formname = 'checkboxes', $break = false) {
+        foreach($array as $value)
+        {
+            $ret .= '<input type="checkbox" id="'.$value['id'].'" name="'.$formname.'[]" value="'.$value['id'].'" '.($value['checked']?'checked':'').'  >'.$value['name'].'</input>';
+            if ($break) {
+                $ret .= '<br>';
+            } else {
+                $ret .= '&nbsp;';
+            }
+        }
+        return $ret;
+      }
+
       function CreateAdresse($name,$firma="1")
       {
         $projekt = $this->app->DB->Select("SELECT standardprojekt FROM firma WHERE id='".$this->app->User->GetFirma()."' LIMIT 1");
@@ -28068,6 +28088,13 @@ function Firmendaten($field,$projekt="")
             ('','$id',NOW(),'$bearbeiter','$text')");
       }
 
+      function TicketProtokoll($id, $text) {
+        if(!$id)return;
+        $bearbeiter = (isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetName'))?$this->app->DB->real_escape_string($this->app->User->GetName()):'';
+        $text = $this->app->DB->real_escape_string($text);
+        $this->app->DB->Insert("INSERT INTO ticket_protokoll (id,ticket,zeit,bearbeiter,grund) VALUES
+            ('','$id',NOW(),'$bearbeiter','$text')");
+      }
 
       function LoadArbeitsnachweisStandardwerte($id,$adresse,$projekt="")
       {
@@ -33160,12 +33187,22 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-      function CreateVerbindlichkeit($adresse="")
+      function CreateVerbindlichkeit($adresse="", $datum = null)
       {
         /** @var Verbindlichkeit $obj */
         $obj = $this->app->erp->LoadModul('verbindlichkeit');
         if(!empty($obj) && method_exists($obj,'createLiability')) {
-          return $obj->createLiability($adresse);
+          return $obj->createLiability($adresse, $datum);
+        }
+        return 0;
+      }
+
+      function CreateLieferantengutschrift($adresse="", $datum = null)
+      {
+        /** @var Verbindlichkeit $obj */
+        $obj = $this->app->erp->LoadModul('lieferantengutschrift');
+        if(!empty($obj) && method_exists($obj,'createlieferantengutschrift')) {
+          return $obj->createlieferantengutschrift($adresse, $datum);
         }
         return 0;
       }
@@ -33509,23 +33546,18 @@ function Firmendaten($field,$projekt="")
             }
           $auftragsArr = $this->app->DB->SelectRow(
             sprintf(
-              "SELECT id, adresse, projekt, belegnr, standardlager,reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
+              "SELECT id, adresse, projekt, belegnr, standardlager, nicht_reservieren, reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
               (int)$id
             )
           );
-          if($this->app->DB->error()) {
-            $auftragsArr = $this->app->DB->SelectRow(
-              sprintf(
-                "SELECT id, adresse, projekt, belegnr, standardlager, NULL AS reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
-                (int)$id
-              )
-            );
-          }
           if(empty($auftragsArr)) {
             return 0;
           }
           if(!empty($auftragsArr['reservationdate']) && $auftragsArr['reservationdate'] !== '0000-00-00'
           && strtotime($auftragsArr['reservationdate']) > strtotime(date('Y-m-d'))) {
+            return 0;
+          }
+          if (!empty($auftragsArr['nicht_reservieren'])) {
             return 0;
           }
           $id_check = $auftragsArr['id'];
@@ -36951,6 +36983,62 @@ function Firmendaten($field,$projekt="")
         return false;
       }
 
+        function GetBelegTickets($doctype, $doctypeid) {
+            $sql = "
+                SELECT DISTINCT
+                    t.id,
+                    tn.ticket
+                FROM
+                    `datei_stichwoerter` dst
+                INNER JOIN `datei_stichwoerter` dsb ON
+                    dst.datei = dsb.datei
+                INNER JOIN `ticket_nachricht` tn ON
+                    tn.id = dst.parameter
+                INNER JOIN `ticket` t ON
+                    t.schluessel = tn.ticket
+                WHERE
+                    dst.objekt = 'Ticket' AND dsb.objekt = '".$doctype."' AND dsb.parameter = '".$doctypeid."'
+            ";
+            return($this->app->DB->SelectArr($sql));
+        }
+
+        function GetTicketBelege($ticketid) {
+            $sql = "
+                SELECT DISTINCT
+                    dsb.objekt doctype,
+                    dsb.parameter id,
+                    belege.belegnr,
+                    belege.externenr
+                FROM
+                    `datei_stichwoerter` dst
+                INNER JOIN `datei_stichwoerter` dsb ON
+                    dst.datei = dsb.datei
+                INNER JOIN `ticket_nachricht` tn ON
+                    tn.id = dst.parameter
+                INNER JOIN `ticket` t ON
+                    t.schluessel = tn.ticket
+                INNER JOIN
+                (
+                    SELECT 'Angebot' typ, id belegid, belegnr, anfrage externenr, datum, name FROM angebot
+                    UNION
+                    SELECT 'Auftrag' typ, id belegid, belegnr, ihrebestellnummer, datum, name FROM auftrag
+                    UNION
+                    SELECT 'Verbindlichkeit', v.id, v.belegnr, rechnung, v.datum, a.name FROM verbindlichkeit v LEFT JOIN adresse a ON v.adresse = a.id
+                    UNION
+                    SELECT 'Lieferantengutschrift', lg.id, lg.belegnr, rechnung, lg.datum, a.name FROM lieferantengutschrift lg LEFT JOIN adresse a ON lg.adresse = a.id
+                ) belege ON belege.typ = dsb.objekt AND belege.belegid = dsb.parameter
+                WHERE
+                    dsb.objekt IN(
+                        'angebot',
+                        'auftrag',
+                        'verbindlichkeit',
+                        'lieferantengutschrift'
+                    ) AND t.id = '".$ticketid."'
+            ";
+
+            return($this->app->DB->SelectArr($sql));
+        }
+
       function GetDateiName($id)
       {
         $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
@@ -36968,6 +37056,13 @@ function Firmendaten($field,$projekt="")
         $tmp = pathinfo($newid);
 
         return strtolower($tmp['extension']);
+      }
+
+      function GetDateiDatum($id) // MYSQL format
+      {
+        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
+        $date = $this->app->DB->Select("SELECT datum FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
+        return ($date);
       }
 
     /*

@@ -214,8 +214,8 @@ class Telefonrueckruf {
     $this->app->YUI->AutoComplete("emitarbeiter", "mitarbeiteraktuell");
     $this->app->YUI->DatePicker("edatum");
     $this->app->YUI->TimePicker("ezeit");
-    $this->app->YUI->CkEditor("ebeschreibung", "basic", array("width"=>"300"));
-    $this->app->YUI->CkEditor("enotiz", "basic", array("width"=>"400", "height"=>"100"));
+    $this->app->YUI->CkEditor("ebeschreibung", "basic");
+    $this->app->YUI->CkEditor("enotiz", "basic");
     
     $this->app->YUI->TableSearch('TAB1','telefonrueckruf_list', "show","","",basename(__FILE__), __CLASS__);
 

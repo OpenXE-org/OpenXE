@@ -5196,7 +5196,7 @@ class Importvorlage extends GenImportvorlage {
           break;
           case 'stueckliste':
 
-            $allowed_fields = array('stuecklistevonartikel','artikel','menge','art','referenz','layer','wert','bauform','xpos','ypos','zachse','place');
+            $allowed_fields = array('stuecklistevonartikel','artikel','menge','art','referenz','layer','wert','bauform','xpos','ypos','zachse','place','rotation');
 
             // Create a row dataset (without checked and cmd)
             $row = array();

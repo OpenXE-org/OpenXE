@@ -124,6 +124,9 @@ class WidgetGenauftrag
     $field = new HTMLInput("tatsaechlicheslieferdatum","text","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLCheckbox("nicht_reservieren","","","1","0","0");
+    $this->form->NewField($field);
+
     $field = new HTMLInput("reservationdate","text","","10","","","","","","","","0","","");
     $this->form->NewField($field);
 

@@ -682,6 +682,11 @@
 							    <td>F&uuml;r Best&uuml;ckungen</td>
 						    </tr>                           
 						    <tr>
+							    <td>rotation</td>
+							    <td>Zahl</td>
+							    <td>F&uuml;r Best&uuml;ckungen</td>
+						    </tr>
+						    <tr>
 							    <td>art</td>
 							    <td>Einkaufsteil "et",Informationsteil "it" oder Beistellung "bt"</td>
 							    <td>Alternativposition?</td>

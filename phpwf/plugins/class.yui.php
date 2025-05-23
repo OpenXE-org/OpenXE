@@ -31,7 +31,7 @@ class YUI {
   function dateien_module_objekt_map($module) : string {
     $dateien_module_objekt_map_array = array(
         'adresse' => 'adressen',
-        'ticket'  => 'ticket_header' 
+        'ticket'  => 'ticket_header'
     );
 
     return (isset($dateien_module_objekt_map_array[$module]) ? $dateien_module_objekt_map_array[$module] : $module);
@@ -3209,7 +3209,7 @@ class YUI {
       case "basic":
         $config[]=     " toolbar:
             [
-                ['Bold', 'Italic', 'Underline','RemoveFormat', '-', 'Undo', 'Redo', '-', 'SelectAll'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo', '-', 'SelectAll'],
                 ['Source']
             ]";
         $config[]  = " extraPlugins: 'removeformat' ";
@@ -3217,7 +3217,7 @@ class YUI {
       case "belege":
         $config[]=     " toolbar:
             [
-                ['Bold', 'Italic', 'Underline','RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
                 ['Font','FontSize','TextColor'],['Source']
             ]";
         $config[]  = " allowedContent:true ";
@@ -3226,7 +3226,7 @@ class YUI {
       case "all":
         $config[]=     " toolbar:
             [
-                ['Bold', 'Italic', 'Underline','RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo'],['NumberedList','BulletedList'],
                 ['Font','FontSize','TextColor'],['Source']
             ]";
         $config[]  = " allowedContent:true ";
@@ -4204,6 +4204,10 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         }
         // alle artikel die ein Kunde kaufen kann mit preisen netto brutto
         $cmd = $this->app->Secure->GetGET('smodule');
+
+        $doctype = $this->app->Secure->GetGET("smodule");
+        $doctype_id = $this->app->Secure->GetGET("id");
+
         $adresse = 0;
 
         if(!empty($cmd) && $id > 0){
@@ -4217,7 +4221,7 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
 	            )
 	          );
 	        }
-	}
+	    }
 
         $sortmodus = $this->TableSearchFilter($name, 1, 'sortmodus',  0,0,  'checkbox');
         // headings
@@ -4226,7 +4230,7 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
         $findcols = array('open','d.id','d.id',"CONCAT(d.titel,' ',v.dateiname)", 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','d.beschreibungbemerkung','v.datum', 's.sort','d.geschuetzt','s.id');
         $searchsql = array('d.titel', 's.subjekt', 'v.version',"if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),'')", 'v.ersteller','v.bemerkung','v.dateiname',"DATE_FORMAT(v.datum, '%d.%m.%Y')");
 
-        $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"#\" onclick=editdatei(%value%,\"$cmd\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=delete&cmd=".urlencode($objekt)."&id=%value%\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
+        $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"#\" onclick=editdatei(%value%,\"$cmd\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=dateien&action=send&id=%value%\"><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=dateien&action=removelink&doctype=".$doctype."&doctypeid=".$doctype_id."&cmd=".urlencode($objekt)."&id=%value%\")><img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\" ></a></td></tr></table>";
         $menucol = 12;
         $alignright=array(6,7,11,12);
 
@@ -4249,7 +4253,7 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
             CONCAT('<input type=\"checkbox\" id=\"auswahl_',d.id,'\"  onchange=\"chauswahl();\" value=\"1\" />'),
             $img,        
             if(d.titel!='',CONCAT(d.titel,'<br><i style=color:#999>',v.dateiname,'</i>'),v.dateiname), 
-            s.subjekt,
+            CONCAT(UCASE(LEFT(s.subjekt, 1)), SUBSTRING(s.subjekt, 2)) subjekt,
             v.version,
             if(v.size!='',if(v.size > 1024*1024,CONCAT(ROUND(v.size/1024/1024,2),' MB'),CONCAT(ROUND(v.size/1024,2),' KB')),''),
             v.ersteller,

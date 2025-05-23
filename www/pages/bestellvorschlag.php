@@ -14,7 +14,7 @@ class Bestellvorschlag {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "bestellvorschlag_list");        
+        $this->app->ActionHandler("list", "bestellvorschlag_list");
 //        $this->app->ActionHandler("create", "bestellvorschlag_edit"); // This automatically adds a "New" button
 //        $this->app->ActionHandler("edit", "bestellvorschlag_edit");
 //        $this->app->ActionHandler("delete", "bestellvorschlag_delete");
@@ -31,6 +31,13 @@ class Bestellvorschlag {
             case "bestellvorschlag_list":
                 $allowed['bestellvorschlag_list'] = array('list');
 
+                $artikelkategorieid = 'SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1)';
+                $kategorienfilter = $this->app->User->GetParameter('bestellvorschlag_kategorienfilter');
+
+                if (!empty($kategorienfilter)) {
+                    $kategorienwhere = " AND $artikelkategorieid IN (".$kategorienfilter.")";
+                }
+
                 $monate_absatz = $this->app->User->GetParameter('bestellvorschlag_monate_absatz');
                 if (empty($monate_absatz)) {
                      $monate_absatz = 0;
@@ -40,29 +47,86 @@ class Bestellvorschlag {
                      $monate_voraus = 0;
                 }
 
-                $heading = array('',  '',  'Nr.', 'Artikel','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
-                $width =   array('1%','1%','1%',  '20%',     '10%',       '1%',        '1%',     '1%',     '1%',     '1%',    '1%',   '1%',      '1%',     '1%');
+
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#mindestlager').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#entwuerfe').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#reserviersperre').click( function() { fnFilterColumn3( 0 ); } );");
+
+                for ($r = 1;$r <= 3;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
+                                           \'\',
+                                           i,
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                    $mindestlager = 'art.mindestlager';
+                  } else {
+                    $mindestlager = '0';
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                    $entwuerfe = ",'angelegt'";
+                  } else {
+                    $entwuerfe = '';
+                }
+                
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                      $reserviersperre = '1';
+                  } else {
+                      $reserviersperre = 'COALESCE(auf.nicht_reservieren, 0) <> 1';
+                }
+
+                $heading = array('',  '',  'Nr.', 'Artikel','Bestell-Nr.','Kategorie','Lieferant','Mindestlager','Lager','Bestellt','Auftrag','Absatz','Voraus','Vorschlag','Eingabe','');
+                $width =   array('1%','1%','1%',  '15%',    '15%',           '10%',       '10%',      '1%',          '1%',   '1%',      '1%',     '1%',    '1%',    '1%',       '1%',     '1%');
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
-                $findcols = array('a.id','a.id','a.nummer','a.name_de','l.name','mindestlager','lager','bestellt','auftrag','absatz','voraus','vorschlag');
-                $searchsql = array('a.name_de');
+                $artikelkategorie = '(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))';
+
+                $bestellnummer = '(SELECT bestellnummer FROM einkaufspreise WHERE adresse = art.adresse AND artikel=art.id AND geloescht <> 1 AND (gueltig_bis > NOW() OR gueltig_bis = \'0000-00-00\') ORDER BY id DESC LIMIT 1)';
+
+                $findcols = array('art.id','art.id','art.nummer','art.name_de',$bestellnummer,$artikelkategorie,'l.name','mindestlager','lager','bestellt','auftrag','absatz','voraus','vorschlag_ber_form','vorschlag','art.id');
+                $searchsql = array('art.name_de');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-                $numbercols = array(6,7,8,9,10,11,12);
+                $numbercols = array(8,9,10,11,12,13,14);
 //                $sumcol = array(6);
-                $alignright = array(6,7,8,9,10,11,12);
+                $alignright = array(8,9,10,11,12,13,14);
 
-        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',a.id,'\" />') AS `auswahl`";
+        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',art.id,'\" />') AS `auswahl`";
 
 //                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=bestellvorschlag&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=bestellvorschlag&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
+
+                 $artikellink = array (
+                    '<a href="index.php?module=artikel&action=edit&id=',
+                    ['sql' => 'art.id'],
+                    '">',
+                    ['sql' => 'art.nummer'],
+                    '</a>'
+                );
 
                 $input_for_menge = "CONCAT(
                         '<input type = \"number\" min=\"0\"',
                         ' name=\"menge_',
-                        a.id,
+                        art.id,
                         '\" value=\"',
                         ROUND((SELECT mengen.vorschlag)),
                         '\" style=\"text-align:right; width:100%\">',
@@ -73,7 +137,7 @@ class Bestellvorschlag {
 
         		$sql_artikel_mengen = "
  SELECT
-    a.id,
+    art.id,
     (
     SELECT
         COALESCE(SUM(menge),0)
@@ -82,7 +146,7 @@ class Bestellvorschlag {
     INNER JOIN lager_platz lp ON
         lp.id = lpi.lager_platz
     WHERE
-        lpi.artikel = a.id AND lp.sperrlager = 0
+        lpi.artikel = art.id AND lp.sperrlager = 0
 ) AS lager,
 (
     SELECT
@@ -92,10 +156,10 @@ class Bestellvorschlag {
     INNER JOIN bestellung b ON
         bp.bestellung = b.id
     WHERE
-        bp.artikel = a.id AND b.status IN(
+        bp.artikel = art.id AND b.status IN(
             'versendet',
-            'freigegeben',
-            'angelegt'
+            'freigegeben'
+            $entwuerfe
         )
 ) AS bestellt,
 (
@@ -106,11 +170,12 @@ class Bestellvorschlag {
     INNER JOIN auftrag auf ON
         aufp.auftrag = auf.id
     WHERE
-        aufp.artikel = a.id AND auf.status IN(
+        aufp.artikel = art.id AND auf.status IN(
             'versendet',
-            'freigegeben',
-            'angelegt'
-        )
+            'freigegeben'
+            $entwuerfe
+        ) AND NOT (auf.zahlungsweise = 'vorkasse' AND auf.vorabbezahltmarkieren <> 1)
+        AND $reserviersperre
 ) AS auftrag,
 (
     SELECT
@@ -120,9 +185,10 @@ class Bestellvorschlag {
     INNER JOIN rechnung r ON
         rp.rechnung = r.id
     WHERE
-        rp.artikel = a.id AND r.status IN(
+        rp.artikel = art.id AND r.status IN(
             'versendet',
-            'freigegeben'            
+            'freigegeben'
+            $entwuerfe
         ) AND r.datum > LAST_DAY(CURDATE() - INTERVAL ('$monate_absatz'+1) MONTH) AND r.datum <= LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
 ) AS absatz,
 ROUND (
@@ -135,9 +201,9 @@ ROUND (
     FROM
         bestellvorschlag bv
     WHERE
-        bv.artikel = a.id AND bv.user = '$user'
+        bv.artikel = art.id AND bv.user = '$user'
 ) AS vorschlag_save,
-a.mindestlager -(
+$mindestlager -(
 SELECT
     lager
 ) - COALESCE((
@@ -177,7 +243,7 @@ SELECT
     vorschlag_ber
 )
 ) AS vorschlag,
-FORMAT(a.mindestlager, 0, 'de_DE') AS mindestlager_form,
+FORMAT(art.mindestlager, 0, 'de_DE') AS mindestlager_form,
 FORMAT((
 SELECT
     lager
@@ -238,18 +304,20 @@ SELECT
 'de_DE'
 ) AS vorschlag_form
 FROM
-    artikel a
+    artikel art
                     ";
 
 
 //echo($sql_artikel_mengen);
 
 
-                $sql = "SELECT SQL_CALC_FOUND_ROWS 
-                    a.id, 
-                    $dropnbox, 
-                    a.nummer, 
-                    a.name_de, 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
+                    art.id,
+                    $dropnbox,
+                    ".$app->erp->ConcatSQL($artikellink).",
+                    art.name_de,
+                    $bestellnummer,
+                    $artikelkategorie as artikelkategorie,
                     l.name,
         		    mengen.mindestlager_form,
 		            mengen.lager_form,
@@ -259,15 +327,18 @@ FROM
                     mengen.voraus_form,
 		            mengen.vorschlag_ber_form,"
         		    .$input_for_menge
-                    ."FROM 
-			artikel a 
-		    INNER JOIN 
-			adresse l ON l.id = a.adresse 
-		    INNER JOIN 
-			(SELECT * FROM ($sql_artikel_mengen) mengen_inner WHERE mengen_inner.vorschlag > 0) as mengen ON mengen.id = a.id";
+                    ."FROM
+			artikel art
+		    INNER JOIN
+			adresse l ON l.id = art.adresse
+		    INNER JOIN
+			(SELECT * FROM ($sql_artikel_mengen) mengen_inner WHERE mengen_inner.vorschlag > 0) as mengen ON mengen.id = art.id";
 
-                $where = "a.adresse != '' AND a.geloescht != 1 AND a.inaktiv != 1";
-                $count = "SELECT count(DISTINCT a.id) FROM artikel a WHERE $where";
+                $where = "art.adresse != '' AND art.geloescht != 1 AND art.inaktiv != 1";
+
+                $where .= $kategorienwhere;
+
+                $count = "SELECT count(DISTINCT art.id) FROM artikel art WHERE $where";
 //                $groupby = "";
 
                 break;
@@ -282,7 +353,7 @@ FROM
         }
         return $erg;
     }
-    
+
     function bestellvorschlag_list() {
 
 
@@ -298,12 +369,20 @@ FROM
              $monate_voraus = 0;
         }
 
-        // For transfer to tablesearch    
+        $kategorienfilter = $this->app->Secure->GetPOST('kategorien');
+
+        // For transfer to tablesearch
+        if (!empty($kategorienfilter)) {
+            $this->app->User->SetParameter('bestellvorschlag_kategorienfilter', implode(', ',$kategorienfilter));
+        } else {
+            $this->app->User->SetParameter('bestellvorschlag_kategorienfilter', '');
+        }
+
         $this->app->User->SetParameter('bestellvorschlag_monate_absatz', $monate_absatz);
         $this->app->User->SetParameter('bestellvorschlag_monate_voraus', $monate_voraus);
 
         switch ($submit) {
-            case 'loeschen':    
+            case 'loeschen':
                 $sql = "DELETE FROM bestellvorschlag where user = $user";
                 $this->app->DB->Delete($sql);
             break;
@@ -321,7 +400,7 @@ FROM
                     }
                 }
             break;
-            case 'bestellungen_erzeugen':                
+            case 'bestellungen_erzeugen':
 
                 $auswahl = $this->app->Secure->GetPOST('auswahl');
                 $selectedIds = [];
@@ -339,10 +418,10 @@ FROM
                         }
                     }
                 }
-                
+
                 $menge_input = $this->app->Secure->GetPOSTArray();
                 $mengen = array();
-                           
+
                 foreach ($selectedIds as $artikel_id) {
                     foreach ($menge_input as $key => $menge) {
                         if ((strpos($key,'menge_') === 0) && ($menge !== '')) {
@@ -351,7 +430,7 @@ FROM
                               $mengen[] = array('id' => $artikel,'menge' => $menge);
                             }
                         }
-                    }                      
+                    }
                 }
 
                 $mengen_pro_adresse = array();
@@ -371,7 +450,7 @@ FROM
                 $angelegt = 0;
 
                 foreach ($mengen_pro_adresse as $bestelladresse) {
-                    $bestellid = $this->app->erp->CreateBestellung($bestelladresse);                    
+                    $bestellid = $this->app->erp->CreateBestellung($bestelladresse);
                     if (!empty($bestellid)) {
 
                         $angelegt++;
@@ -392,8 +471,8 @@ FROM
                                 $preisid,
                                 $position['menge'],
                                 $datum,
-                                '',                            
-                                $artikelohnepreis                    
+                                '',
+                                $artikelohnepreis
                             );
                         }
                         $this->app->erp->BestellungNeuberechnen($bestellid);
@@ -413,33 +492,37 @@ FROM
 
         $this->app->Tpl->Set('MESSAGE',$msg);
 
+        $kategorien = $this->app->DB->SelectArr("SELECT id, bezeichnung name FROM artikelkategorien WHERE geloescht <> 1 ORDER by bezeichnung");
+
+        $this->app->Tpl->Set('KATEGORIENFILTER',$this->app->erp->GetCheckboxes($kategorien, 'kategorien'));
+
         $this->app->YUI->TableSearch('TAB1', 'bestellvorschlag_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "bestellvorschlag_list.tpl");
-    }    
+    }
 
     public function bestellvorschlag_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
-        
-        $this->app->DB->Delete("DELETE FROM `bestellvorschlag` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
+
+        $this->app->DB->Delete("DELETE FROM `bestellvorschlag` WHERE `id` = '{$id}'");
+        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");
 
         $this->bestellvorschlag_list();
-    } 
+    }
 
     /*
      * Edit bestellvorschlag item
      * If id is empty, create a new one
      */
-        
+
     function bestellvorschlag_edit() {
         $id = $this->app->Secure->GetGET('id');
-        
+
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('artikel',$id))
         {
           return;
-        }   
-              
+        }
+
         $this->app->Tpl->Set('ID', $id);
 
         $this->app->erp->MenuEintrag("index.php?module=bestellvorschlag&action=edit&id=$id", "Details");
@@ -447,23 +530,23 @@ FROM
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
-                
+
         if (empty($id)) {
             // New item
             $id = 'NULL';
-        } 
+        }
 
         if ($submit != '')
         {
 
             // Write to database
-            
+
             // Add checks here
 
             $columns = "id, ";
             $values = "$id, ";
             $update = "";
-    
+
             $fix = "";
 
             foreach ($input as $key => $value) {
@@ -492,25 +575,25 @@ FROM
             }
         }
 
-    
+
         // Load values again from database
 	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',b.id,'\" />') AS `auswahl`";
         $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS b.id, $dropnbox, b.artikel, b.adresse, b.lager, b.id FROM bestellvorschlag b"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
+            $this->app->Tpl->Set(strtoupper($key), $value);
         }
-             
+
         /*
          * Add displayed items later
-         * 
+         *
 
         $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
         $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
+        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);
          */
 
-//        $this->SetInput($input);              
+//        $this->SetInput($input);
         $this->app->Tpl->Parse('PAGE', "bestellvorschlag_edit.tpl");
     }
 
@@ -520,7 +603,7 @@ FROM
     public function GetInput(): array {
         $input = array();
         //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
-        
+
         $input['artikel'] = $this->app->Secure->GetPOST('artikel');
 	$input['adresse'] = $this->app->Secure->GetPOST('adresse');
 	$input['lager'] = $this->app->Secure->GetPOST('lager');
@@ -533,8 +616,8 @@ FROM
      * Set all fields in the page corresponding to $input
      */
     function SetInput($input) {
-        // $this->app->Tpl->Set('EMAIL', $input['email']);        
-        
+        // $this->app->Tpl->Set('EMAIL', $input['email']);
+
         $this->app->Tpl->Set('ARTIKEL', $input['artikel']);
 	$this->app->Tpl->Set('ADRESSE', $input['adresse']);
 	$this->app->Tpl->Set('LAGER', $input['lager']);
