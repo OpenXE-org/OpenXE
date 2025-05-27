@@ -2708,7 +2708,8 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         $belegtyp, (int)$lieferschein
       )
     );
-    $standardlager = $belegarr['standardlager'];
+    $standardlager = $this->GetBelegStandardlager($lieferschein, $belegtyp);
+
     $kommissionskonsignationslager = 0;
     if($belegtyp === 'lieferschein'){
       $kommissionskonsignationslager = $belegarr['kommissionskonsignationslager'];
@@ -2758,53 +2759,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
     $sortreihenfolge = 'ASC';
     if($belegtyp === 'produktion') {
       $sortreihenfolge = 'DESC';
-    }
-
-    if($belegtyp === 'produktion') {
-      if($standardlager > 0 && !$this->app->DB->Select(
-        sprintf(
-          "SELECT id FROM lager WHERE id = %d AND bezeichnung <> '' AND IFNULL(geloescht,0) = 0 LIMIT 1",
-          (int)$standardlager)
-        )
-      ) {
-        $standardlager = (int)$this->app->DB->Select(
-          sprintf(
-            "SELECT l.id 
-            FROM projekt AS p 
-            INNER JOIN lager AS l ON p.standardlagerproduktion = l.id 
-            WHERE p.id = %d AND l.bezeichnung <> '' AND IFNULL(l.geloescht,0) = 0 
-            LIMIT 1",
-            (int)$projekt
-          )
-        );
-      }
-    }
-    else{
-      if($standardlager > 0 && !$this->app->DB->Select(
-        sprintf(
-            "SELECT id FROM lager WHERE id = %d AND bezeichnung <> '' AND IFNULL(geloescht,0) = 0 LIMIT 1",
-            (int)$standardlager)
-        )){
-        $standardlager = (int)$this->app->DB->Select(
-          sprintf(
-            "SELECT l.id 
-            FROM projekt AS p 
-            INNER JOIN lager AS l ON p.standardlager = l.id 
-            WHERE p.id = %d AND l.bezeichnung <> '' AND IFNULL(l.geloescht,0) = 0
-            LIMIT 1",
-            $projekt
-          )
-        );
-      }
-    }
-
-    if($standardlager == 0) {
-      if($projekt > 0){
-        $standardlager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id='$projekt'");
-        if($standardlager == 0) {
-           $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id='$projekt'");
-        }
-      }
     }
 
     $storageLocations = [];
@@ -5481,6 +5435,28 @@ title: 'Abschicken',
       return $lagerbezeichnung;
     }
   }
+
+    function GetBelegStandardlager($beleg, $belegtyp) : int {
+        
+        $sql = "
+            SELECT 
+                l.standardlager_beleg,
+                p.standardlager_projekt
+            FROM
+                $beleg b
+            LEFT JOIN
+                lager l ON (l.id = b.standardlager) AND (IFNULL(l.geloescht,0) <> 0)
+            LEFT JOIN
+                projekt p ON p.id = b.projekt
+            LIMIT 1
+        ";
+        $result = $this->app->DB->SelectRow($sql);
+        if (empty($result['standardlager_beleg'])) {
+            return((int) $result['standardlager_projekt']);
+        } else {
+            return((int) $result['standardlager_beleg']);
+        }
+    }
 
   // @refactor in Etiketten Modul
   function LieferscheinPositionenDrucken($lieferschein,$etiketten_drucker,$etiketten_art,$etiketten_sort=0)
@@ -20831,6 +20807,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $docArr = $this->app->DB->SelectRow(sprintf('SELECT * FROM `%s` WHERE id=%d LIMIT 1', $objekt, (int)$parameter));
       $projekt = $docArr['projekt'];
       $auftrag = $parameter;
+
+      $standardlager = $this->GetBelegStandardlager($objekt, $parameter);        
+
       if($objekt === 'lieferschein')
       {
         $auftrag = $docArr['auftragid'];
@@ -20844,26 +20823,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           )
         );
         $kommissionierverfahren= $projectArr['kommissionierverfahren'];
-        $projektbevorzugteslager = $projectArr['standardlager'];
-        if(
-        !($kommissionierverfahren==='lieferscheinlager' ||
-          $kommissionierverfahren==='lieferscheinlagerscan' ||
-          $kommissionierverfahren==='lieferscheinscan' ||
-          $kommissionierverfahren === 'lieferschein') || $this->app->DB->Select('SELECT IFNULL(COUNT(id),0) FROM lager') <= 1
-        )
-        {
-          $standardlager = 0;
-        } else {
-          $projektlager = $projectArr['projektlager'];
-          if($objekt==='auftrag' || $objekt === 'lieferschein') {
-            $standardlager = $docArr['standardlager'];
-          } else{
-            $standardlager = $this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', (int)$auftrag));
-          }
-          if($standardlager && !$this->app->DB->Select(sprintf('SELECT id FROM lager WHERE id = %d LIMIT 1', (int)$standardlager))) {
-            $standardlager = $this->app->DB->Select(sprintf('SELECT id FROM lager WHERE id = %d LIMIT 1', (int)$docArr['standardlager']));
-          }
-        }
+        $projektbevorzugteslager = $projectArr['standardlager'];      
       }
     }
 
