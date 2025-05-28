@@ -3185,6 +3185,152 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
     return(array('storageMovements' => $storageMovements));
   }
 
+    // Check available items for an array('artikel','menge') with additional check for reserversations on beleg
+    // Returns Array:
+    // Array (result bool, storageItems => array('lager_platz', 'artikel', 'menge'), missing => array('artikel', 'menge'));
+    function LagerCheckArray($items, $doctype = '', $doctypeid = 0, $lager = 0, bool $incl_autolagersperre = false) {
+
+        // only one line per article
+    	$unique_items = array();
+        foreach ($items as $key => $item) {
+        	if (isset($unique_items[$item['artikel']])) {
+        		$unique_items[$item['artikel']] = array();
+        	}
+  			$unique_items[$item['artikel']]['menge'] += $item['menge'];
+        }
+        $items = $unique_items;
+
+        $result = array('success' => true, 'storageMovements' => array());
+
+        // SQL conditions
+        if ($incl_autolagersperre) {
+            $autolagersperrewhere = "1";
+        } else {
+            $autolagersperrewhere = "lp.autolagersperre <> 1";
+        }
+
+        if ($lager) {
+            $lagerwhere = "lager_platz.lager = ".$lager;
+        } else {
+            $lagerwhere = "1";
+        }
+
+        // Check reservations
+        if ($doctype <> '')  {
+
+            echo("Beleg $doctype $doctypeid<br>\n");
+
+            $sql = "SELECT artikel, SUM(menge) AS menge FROM
+                    lager_platz_inhalt lpi
+                    INNER JOIN
+                        lager_platz lp ON lp.id = lpi.lager_platz
+                    WHERE
+                        lp.sperrlager <> 1
+                            AND
+                        lp.kommissionierlager <> 1
+                            AND
+                        ".$autolagersperrewhere."
+                            AND
+                        ".$lagerwhere."
+                    GROUP BY
+                        artikel
+                    ";
+            $artikel_im_lager = $this->app->DB->SelectArr($sql);
+
+            $sql = "SELECT artikel, SUM(menge) AS menge FROM lager_reserviert WHERE objekt = '".$doctype."' AND parameter = ".$doctypeid." GROUP BY artikel";
+            $artikel_reserviert_beleg = $this->app->DB->SelectArr($sql);
+
+            $sql = "SELECT artikel, SUM(menge) AS menge FROM lager_reserviert WHERE objekt <> '".$doctype."' OR parameter <> ".$doctypeid." GROUP BY artikel";
+            $artikel_reserviert_andere = $this->app->DB->SelectArr($sql);
+
+            if (!empty($artikel_im_lager)) {
+                $artikel_im_lager = array_combine(array_column($artikel_im_lager,'artikel'),array_column($artikel_im_lager,'menge'));
+            }
+            if (!empty($artikel_reserviert_beleg)) {
+                $artikel_reserviert_beleg = array_combine(array_column($artikel_reserviert_beleg,'artikel'),array_column($artikel_reserviert_beleg,'menge'));
+            }
+            if (!empty($artikel_reserviert_andere)) {
+                $artikel_reserviert_andere = array_combine(array_column($artikel_reserviert_andere,'artikel'),array_column($artikel_reserviert_andere,'menge'));
+            }
+
+            foreach ($items as $artikel => $menge) {
+
+                $lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id = ".$artikel);
+
+                if (!$lagerartikel) {
+                    $items[$artikel]['ok'] = true;
+                    continue;
+                }
+
+                $items[$artikel]['restmenge'] = $items[$artikel]['menge'];
+                $items[$artikel]['im_lager'] = $artikel_im_lager[$artikel];
+                $items[$artikel]['reserviert_beleg'] = $artikel_reserviert_beleg[$artikel];
+                $items[$artikel]['reserviert_andere'] = $artikel_reserviert_andere[$artikel];
+
+                if ($items[$artikel]['im_lager']-$items[$artikel]['reserviert_andere'] >= $items[$artikel]['menge'] ) {
+                    $items[$artikel]['ok'] = true;
+                } else {
+                    $items[$artikel]['ok'] = false;
+                    $result['success'] = false;
+                }
+            }
+        }
+
+        foreach ($items as $artikel => $artikeldata) {
+
+            $this->LagerArtikelZusammenfassen($artikel);
+
+            $sql = "
+                SELECT lager_platz, menge FROM
+                    lager_platz_inhalt lpi 
+                INNER JOIN 
+                    lager_platz lp ON lp.id = lpi.lager_platz
+                WHERE
+                    lp.sperrlager <> 1 
+                        AND 
+                    lp.kommissionierlager <> 1 
+                        AND 
+                    ".$autolagersperrewhere."
+                        AND
+                    lpi.artikel = ".$artikel."
+                        AND
+                    ".$lagerwhere."
+                ORDER BY
+                    lpi.menge ASC
+            ";
+
+            $stockitems = $this->app->DB->SelectArr($sql);
+
+            foreach ($stockitems as $stockitem_key => $stockitem) {
+                if ($stockitem['menge'] >= $items[$artikel]['restmenge']) {
+                    $menge = $items[$artikel]['restmenge'];
+                } else {
+                    $menge = $stockitem['menge'];
+                }
+
+                if ($menge) {
+                    $result['storageMovements'][] = array('artikel' => $artikel,'lager_platz' => $stockitem['lager_platz'], 'menge' => $menge);
+                    $stockitems[$stockitem_key]['menge'] -= $menge;
+                    $items[$artikel]['restmenge'] -= $menge;
+                }
+            }
+            if ($items[$artikel]['restmenge']) { // Rest
+                $result['success'] = false;
+                $result['missing'][$artikel] = array('artikel' => $artikel, 'restmenge' => $items[$artikel]['restmenge']);
+            }
+        }
+
+        return($result);
+    }
+
+    // Remove an array of items from stock
+    function AuslagernArray($storageItems) {
+    }
+
+    function EinlagernArray() {
+    }
+
+
     function GetAuftragKommissionierung(int $auftragid) {
         $sql = "
             SELECT
@@ -5440,8 +5586,8 @@ title: 'Abschicken',
         
         $sql = "
             SELECT 
-                l.standardlager_beleg,
-                p.standardlager_projekt
+                l.id standardlager_beleg,
+                p.standardlager standardlager_projekt
             FROM
                 $beleg b
             LEFT JOIN
@@ -12180,6 +12326,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $this->app->DB->Update("UPDATE auftrag SET ust_ok='1' WHERE id='$auftrag' LIMIT 1");
     }
 
+/*
     // Lager Check
     if (!$auftraege[0]['kommission_ok']) {
         $positionen_vorhanden = 0;
@@ -12227,6 +12374,19 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
           {
             $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='1' WHERE id='$auftrag' LIMIT 1");
           }
+        }
+    } else {
+        $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+    } */
+
+
+    if (!$auftraege[0]['kommission_ok']) {
+        $positionen = $this->app->DB->SelectArr("SELECT artikel, menge FROM auftrag_position WHERE auftrag = ".$auftrag);
+        $lagercheck = $this->app->erp->LagerCheckArray(items: $positionen, doctype:  'auftrag', doctypeid: $auftrag);
+        if ($lagercheck['success']) {
+           $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+        } else {
+           $this->app->DB->Update("UPDATE auftrag SET lager_ok='0' WHERE id='$auftrag' LIMIT 1");
         }
     } else {
         $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
