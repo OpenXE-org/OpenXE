@@ -6617,7 +6617,10 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $allowed['rechnung'] = array('list', 'create');
 
         // headings
-        $heading = array('', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Zahlung', 'Status', 'Men&uuml;');
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'soll';
+
+        $heading = array('', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'), 'Zahlung', 'Status', 'Men&uuml;');
         $width = array('1%', '10%', '10%', '10%', '35%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open', 'r.belegnr', 'r.datum', 'adr.kundennummer', "CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),''))", 'r.land', 'p.abkuerzung', 'r.zahlungsweise', 'r.soll', 'r.zahlungsstatus', 'r.status', 'r.id');
         $searchsql = array('DATE_FORMAT(r.datum,\'%d.%m.%Y\')', 'r.belegnr', 'adr.kundennummer', 'r.name', 'r.land', 'p.abkuerzung', 'r.zahlungsweise', 'r.status', "FORMAT(r.soll,2{$extended_mysql55})", 'r.zahlungsstatus', 'adr.freifeld1', 'r.ihrebestellnummer','r.internebezeichnung', 'au.internet');
@@ -6654,7 +6657,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
               adr.kundennummer,
           CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),'')) as kunde,
             r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,  
-              FORMAT(r.soll,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, UPPER(r.status) as status, r.id
+              FORMAT(r.$summespalte,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, UPPER(r.status) as status, r.id
                 FROM  rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id LEFT JOIN auftrag au ON au.id = r.auftragid ";
 
         // Fester filter
@@ -6667,8 +6670,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
       case "rechnungenoffene":
 
         // headings
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'soll';
+
         $allowed['rechnung'] = array('list');
-        $heading = array('', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Zahlung', 'Status', 'Men&uuml;');
+        $heading = array('', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'), 'Zahlung', 'Status', 'Men&uuml;');
 
         //$width   =  array('1%','2%','5%','5%','50%','3%','3%','3%','3%','3%','3%','3%');
         $width = array('1%', '10%', '10%', '10%', '35%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
@@ -6709,7 +6715,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
           CONCAT(" . $this->app->erp->MarkerUseredit("r.name", "r.useredittimestamp") . ", if(r.internebezeichnung!='',CONCAT('<br><i style=color:#999>',r.internebezeichnung,'</i>'),'')) as kunde,
             r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,  
-              FORMAT(r.soll,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, UPPER(r.status) as status, r.id
+              FORMAT(r.$summespalte,2{$extended_mysql55}) as soll, r.zahlungsstatus as zahlung, UPPER(r.status) as status, r.id
                 FROM  rechnung r LEFT JOIN projekt p ON p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id  ";
 
         // Fester filter
@@ -6755,8 +6761,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $zusatzcols = array();
         $rechnungzusatzfelder = $this->app->erp->getZusatzfelderRechnung();
 
- // headings
-        $heading = array('', '', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'W&auml;hrung', 'Zahlstatus', 'Differenz', 'Status');
+        // headings
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'soll';
+
+        $heading = array('', '', 'Rechnung', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'), 'W&auml;hrung', 'Zahlstatus', 'Differenz', 'Status');
         $width = array('1%', '1%', '10%', '10%', '10%', '35%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open', 'r.belegnr', 'r.belegnr', 'r.datum', 'r.kundennummer', 'r.name', 'r.land', 'p.abkuerzung',
         'r.zahlungsweise', 'r.soll', 'r.waehrung', "if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus)", "r.ist-r.soll+r.skonto_gegeben", 'r.status');
@@ -6858,12 +6867,12 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
                 r.land as land,
                 p.abkuerzung as projekt,
                 r.zahlungsweise as zahlungsweise,
-                FORMAT(r.soll,2{$extended_mysql55} ) as soll,
+                FORMAT(r.$summespalte,2{$extended_mysql55} ) as soll,
                 ifnull(r.waehrung,'EUR'),
                 r.zahlungsstatus as zahlung, 
                 if (
                     r.zahlungsstatus <> 'bezahlt',
-                    if(r.soll-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.soll,2{$extended_mysql55}),FORMAT((r.soll-r.ist)*-1,2{$extended_mysql55})),
+                    if(r.$summespalte-r.ist!=0 AND r.ist > 0,FORMAT(r.ist-r.$summespalte,2{$extended_mysql55}),FORMAT((r.$summespalte-r.ist)*-1,2{$extended_mysql55})),
                     '') 
                 as fehlt,
                 if(r.status = 'storniert' AND r.teilstorno = 1,'TEILSTORNO',UPPER(r.status))  as status
@@ -7827,7 +7836,10 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $allowed['angebot'] = array('create', 'list');
 
         // headings
-        $heading = array('', 'Angebot', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Status', 'Men&uuml;');
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
+
+        $heading = array('', 'Angebot', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'), 'Status', 'Men&uuml;');
         $width = array('1%', '1%', '10%', '10%', '40%', '5%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open', 'belegnr', 'a.datum', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme', 'a.status', 'id');
         $searchsql = array('DATE_FORMAT(a.datum,\'%d.%m.%Y\')', 'a.belegnr', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.status', "FORMAT(a.gesamtsumme,2{$extended_mysql55})", 'a.status', 'adr.freifeld1','a.anfrage','a.internebezeichnung');
@@ -8179,8 +8191,10 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         // ENDE EXTRA checkboxen
         
         // headings
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
 
-        $heading = array('', '', 'Angebot', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Status','Bearbeiter', 'Men&uuml;');
+        $heading = array('', '', 'Angebot', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'), 'Status','Bearbeiter', 'Men&uuml;');
         $width = array('1%', '1%', '1%', '10%', '10%', '40%', '5%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open', 'a.belegnr', 'a.belegnr', 'a.datum', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme', 'a.status','a.bearbeiter', 'id');
         $searchsql = array('DATE_FORMAT(a.datum,\'%d.%m.%Y\')', 'a.anfrage','a.belegnr', 'adr.kundennummer', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.status', "FORMAT(a.gesamtsumme,2{$extended_mysql55})", 'a.status','a.bearbeiter', 'adr.freifeld1','a.internebezeichnung');
@@ -8235,7 +8249,7 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
           a.land as land, 
           p.abkuerzung as projekt, 
           a.zahlungsweise as zahlungsweise,  
-          FORMAT(a.gesamtsumme,2{$extended_mysql55}) as betrag, 
+          FORMAT(a.$summespalte,2{$extended_mysql55}) as betrag, 
           UPPER(a.status) as status, 
           a.bearbeiter,
           a.id
@@ -8434,7 +8448,10 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         $allowed['auftrag'] = array('create', 'list');
         $auftragmarkierenegsaldo = $this->app->erp->Firmendaten('auftragmarkierenegsaldo');
         // headings
-        $heading = array('', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)', 'Monitor', 'Men&uuml;');
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
+
+        $heading = array('', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'), 'Monitor', 'Men&uuml;');
         $width = array('1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open', 'a.belegnr', 'a.datum', 'if(a.lieferantenauftrag=1,adr.lieferantennummer,adr.kundennummer)', 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme', 'a.status', 'a.id');
         $searchsql = array('a.datum', 'a.belegnr', 'a.ihrebestellnummer', 'internet', "if(a.lieferantenauftrag=1,adr.lieferantennummer,adr.kundennummer)", 'a.name', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.status', 'a.gesamtsumme');
@@ -8475,7 +8492,7 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
                                        CONCAT(" . $this->app->erp->MarkerUseredit("a.name", "a.useredittimestamp") . ",if(a.internebemerkung='','',' <font color=red><strong>*</strong></font>'),if(a.freitext='','',' <font color=blue><strong>*</strong></font>'),if(a.internebezeichnung!='',CONCAT('<br><i style=color:#999>',a.internebezeichnung,'</i>'),'')) as name, 
                                          a.land as land,LEFT(UPPER( p.abkuerzung),10) as projekt, 
                                          ".($auftragmarkierenegsaldo?"CONCAT('<span',if(a.status = 'angelegt' or a.status = 'storniert' OR isnull(a.saldogeprueft) OR ( -(a.saldo) <= (if(isnull(a.skontobetrag),a.gesamtsumme * ( a.zahlungszielskonto) / 100.0,a.skontobetrag) )) OR (a.vorabbezahltmarkieren = 1 and a.zahlungsweise = 'vorkasse'),'',' style=\"color:red;\" '),'>',":'')."a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." as zahlungsweise,  
-                                         FORMAT(a.gesamtsumme,2{$extended_mysql55}) as betrag,  (" . $this->IconsSQL() . ")  as icons, a.id
+                                         FORMAT(a.$summespalte,2{$extended_mysql55}) as betrag,  (" . $this->IconsSQL() . ")  as icons, a.id
                                            FROM  auftrag a LEFT JOIN projekt p ON p.id=a.projekt LEFT JOIN adresse adr ON a.adresse=adr.id  ";
         $where = " a.id!='' AND a.status='angelegt' " . $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid');
 

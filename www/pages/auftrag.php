@@ -104,11 +104,13 @@ class Auftrag extends GenAuftrag
         // ENDE EXTRA checkboxen
 
         // headings
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
 
         $zusatzcols = array();
         $auftragzusatzfelder = $this->app->erp->getZusatzfelderAuftrag();
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'));
         $width = array('1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum'
         ,$useAddr? 'if(a.lieferantenauftrag=1,adr.lieferantennummer,adr.kundennummer)':'a.lieferantkdrnummer',
@@ -289,7 +291,7 @@ class Auftrag extends GenAuftrag
                 ''
           )."
           a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." AS `zahlungsweise`,  
-          ".$app->erp->FormatPreis('a.gesamtsumme',2)." AS `betrag`,
+          ".$app->erp->FormatPreis("a.$summespalte",2)." AS `betrag`,
           ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')."
           (" . $this->app->YUI->IconsSQL() . ")  AS icons, 
           a.id
@@ -589,7 +591,10 @@ class Auftrag extends GenAuftrag
 
         $allowed['auftraegeoffeneauto'] = array('list');
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag (brutto)','Kommissionierung','Monitor','Men&uuml;');
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
+
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Kommissionierung','Monitor','Men&uuml;');
         $width = array('1%','1%','1%',     '10%', '10%',     '27%', '10%',         '5%',  '5%',      '1%',      '1%',             '1%',              '1%');
         $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme','(SELECT id FROM kommissionierung WHERE auftrag = a.id)');
 
@@ -611,7 +616,7 @@ class Auftrag extends GenAuftrag
         a.land,
         p.abkuerzung,
         a.zahlungsweise,
-        a.gesamtsumme,
+        ".$app->erp->FormatPreis("a.$summespalte",2).",
         (SELECT id FROM kommissionierung WHERE auftrag = a.id) as kommissionierung,
         (" . $this->app->YUI->IconsSQL() . ")  AS icons,
         a.id
@@ -681,7 +686,10 @@ class Auftrag extends GenAuftrag
           // Show list for cronjob commissioning
           $allowed['auftraegeoffeneautowartend'] = array('list');
 
-          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+          $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+          $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
+
+          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Monitor','Men&uuml;');
           $width = array('1%','1%','1%', '10%', '10%', '10%', '27%', '5%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
           $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme');
 
@@ -702,7 +710,7 @@ class Auftrag extends GenAuftrag
                 a.land,
                 p.abkuerzung,
                 a.zahlungsweise,
-                a.gesamtsumme,
+                ".$app->erp->FormatPreis("a.$summespalte",2).",
                 (" . $this->app->YUI->IconsSQL() . ")  AS icons,
                 a.id
                 FROM
@@ -775,7 +783,11 @@ class Auftrag extends GenAuftrag
         break;
       case "offenepositionen":
     	$allowed['offenepositionen'] = array('list');
-	    $heading = array('Erwartetes Lieferdatum','Urspr&uumlngliches Lieferdatum','Kunde','Auftrag','Position','ArtikelNr.','Artikel','Menge','Auftragsvolumen','Lagermenge','Monitor','Men&uuml');
+
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto_gesamt':'umsatz_brutto_gesamt';
+
+	    $heading = array('Erwartetes Lieferdatum','Urspr&uumlngliches Lieferdatum','Kunde','Auftrag','Position','ArtikelNr.','Artikel','Menge','Betrag '.($kleinunternehmer?'netto':'brutto'),'Lagermenge','Monitor','Men&uuml');
         //	$width = array('10%','10%','10%','10%','30%','30%');
 
 	    // Spalten für die Sortierfunktion in der Liste, muss identisch mit SQL-Ergebnis sein, erste Spalte weglassen,Spalten- Alias funktioniert nicht
@@ -853,7 +865,7 @@ class Auftrag extends GenAuftrag
 		artikel.id artikel_id,
 		auftrag_position.bezeichnung bezeichnung, 
 		round(auftrag_position.menge,0) menge, 
-		round(auftrag_position.menge*auftrag_position.preis,2) umsatz,
+        ".$app->erp->FormatPreis("$summespalte",2)." umsatz,
 	        (SELECT SUM(menge) FROM lager_platz_inhalt INNER JOIN lager_platz ON lager_platz_inhalt.lager_platz = lager_platz.id WHERE lager_platz_inhalt.artikel = artikel.id AND lager_platz.sperrlager <> 1) as lager,
 		auf.autoversand autoversand,
 		auf.id auftrag_id         
