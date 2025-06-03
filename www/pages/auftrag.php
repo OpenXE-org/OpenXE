@@ -876,7 +876,7 @@ class Auftrag extends GenAuftrag
                 ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
                 ) a";
 
-	$where = "";
+	$where = "menge <> 0";
 
 	$groupby = "";
 
