@@ -32983,8 +32983,10 @@ function Firmendaten($field,$projekt="")
 
 
         if($this->Firmendaten("auftragabschliessen")!="1")
+        {
           $this->app->DB->Update("UPDATE auftrag SET status='abgeschlossen',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE parameter='$id' AND objekt='auftrag'");
+        }
         else {
           // erstmal nicht mehr umstellen
           //if($this->app->DB->Select("SELECT id FROM auftrag WHERE art <> 'rechnung' AND id = '$id' LIMIT 1"))$this->app->DB->Update("UPDATE auftrag SET art='lieferung' WHERE id='$id' LIMIT 1");
