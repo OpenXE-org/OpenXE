@@ -3256,7 +3256,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             foreach ($items as $artikel => $menge) {
 
                 $lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id = ".$artikel);
-
                 if (!$lagerartikel) {
                     $items[$artikel]['ok'] = true;
                     continue;
@@ -3276,15 +3275,23 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
         }
 
+        // Check available stock locations
         foreach ($items as $artikel => $artikeldata) {
+
+            $lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id = ".$artikel);
+            if (!$lagerartikel) {
+                continue;
+            }
 
             $this->LagerArtikelZusammenfassen($artikel);
 
             $sql = "
-                SELECT lager_platz, menge FROM
+                SELECT artikel, a.name_de artikel_name, a.nummer artikel_nummer, lpi.lager_platz, lp.kurzbezeichnung lager_platz_name, menge FROM
                     lager_platz_inhalt lpi 
                 INNER JOIN 
                     lager_platz lp ON lp.id = lpi.lager_platz
+                INNER JOIN
+                    artikel a ON a.id = lpi.artikel
                 WHERE
                     lp.sperrlager <> 1 
                         AND 
@@ -3314,11 +3321,16 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
                     $items[$artikel]['restmenge'] -= $menge;
                 }
             }
-            if ($items[$artikel]['restmenge']) { // Rest
+            if ($items[$artikel]['restmenge']) { // Not enough stock
                 $result['success'] = false;
                 $result['missing'][$artikel] = array('artikel' => $artikel, 'restmenge' => $items[$artikel]['restmenge']);
             }
+
+            // Stock overview
+            $result['available stock'][$artikel] = $stockitems;
         }
+
+        print_r($result);
 
         return($result);
     }
