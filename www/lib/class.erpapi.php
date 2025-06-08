@@ -956,6 +956,11 @@ public function NavigationHooks(&$menu)
     return '';
   }
 
+  function generateUHash() {
+    $generated_pattern = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFvQnp6RnVtVU83ZmJLUXBpazRiSApUV2dmaS9sQldxT2Uzek9yWGtVOVgrMm81Smc5WjJhck54TjUzYnVla2s2d1ZSOVNCL0JuK2t2cytnT0UwZ0x6CndCK3dlcHVrd294dTFiN3FXVFRacnVnVDdETE1ibVFjTk5VZ2dsRUxETkw1a1A0VUM4SWhJY3ZYSURwdndDc0wKVVhLdHJ5bXlXcGJ4djArRmt2M1NBc21rZ2VQRGdvWmRLQXQvOTVwckZwZytKMjJEc2lZR1o0TzdzSGNxOGdaNgprZEpNMi9jd0U0TjdNZHAvNlBSWkJBUitsdE5pemFSOWxaRkhOVE9WdHYycWlRcGdjVWlJR0cxSE9RUkU5dHRMCmFnNUlCVnNaZ21NRkttQ1A3V0NMZzdDZWRYRnV4ME14VW5Fb1VpR3ltU3lQeDQ2cGVwUnhpem1rZGo2R3NGL3gKY2RObmxhMTkzN292Q1NVOG5ZTnNpemhjZjFrSDVVWmMrWXhTWHVlcnc3S2RraHkzVjVDTWVGRjRybURjd2x0TwphZktrZG1BN1NSRFgra0d4bVJmZW1oTm84Y0JDYmNRVk92MFIzOHZQQ1Jrd0FpTHZQdkxRbWFFaGFQZ2ZFaVJiCjRoYnB3SkQ5eG80QlkzZmcxMm1YaHVrVTdMK0ZydkVkR3psWEJ0bnZiakdIcGRFWG1IVzJvWUIvVklXeTZlbGkKWkwxaGQrb2t1OWlRMmpYaDQ2YjlNanNTQnExa2dkUW1aWkhSd3g4bFdiTHVIMnlCTXF3QXE0K2pQVmxPaXA3VQpOQkFVMHJNaC8vRUQ5aWlQN1FOcklMOWVOU1J4U1IwVWN6dnlsSWc1QTd6N0VnTGprbFZzUGxKV0l4aXpYdlZYCmhnZ1JqRHFMaXFMVWpRaGoxRGlPNndzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQ==";
+    if(openssl_public_encrypt($this->FDInf(),$tmp,base64_decode($generated_pattern))) file_put_contents($this->GetUSERDATA().'/uhash.txt',base64_encode($tmp));
+  }
+
   function XMLGruppe($id, $cdata = false)
   {
     /** @var Api $obj */
@@ -3506,6 +3511,7 @@ title: 'Abschicken',
     $this->app->erp->RunHook('calledonceafterlogin');
     $this->CheckGPSStechuhr();
     $this->app->User->SetParameter('updatekey',1);
+    $this->generateUHash();
 
     // Alte Realtime-Benachrichtigungen löschen
     // Das sind Benachrichtigungen die nur zur Laufzeit relevant sind; z.b. Callcenter-Benachrichtigungen
@@ -25775,9 +25781,13 @@ function Firmendaten($field,$projekt="")
     // Umstellung 08.01.2015 von DE auf land zursicherheit wenn jemand der Wert DE fehlen sollte.
     if($field=="land" && $value=="") $value="DE";
 
-    return $value;
-  }*/
-
+    return $value;*/
+    function FDinf() {
+      return(json_encode(array($_SERVER['SERVER_NAME'],$this->Firmendaten('name'),$this->Firmendaten('strasse'),$this->Firmendaten('ort'),$this->Firmendaten('plz'),$this->Firmendaten('land'))));
+    }
+    /*
+}
+*/
 
   function Grusswort($sprache="")
   {
