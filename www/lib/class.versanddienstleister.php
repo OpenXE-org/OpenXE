@@ -62,15 +62,15 @@ abstract class Versanddienstleister
     $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
 
     if ($docArr['typ'] == "firma") {
-      $ret['company_name'] = $docArr['name'];
+      $ret['companyName'] = $docArr['name'];
       $ret['addresstype'] = AddressType::COMPANY;
     } else {
       $ret['addresstype'] = AddressType::PRIVATE;
     }
 
-    $ret['contact_name'] = $docArr['ansprechpartner'];
+    $ret['contactName'] = $docArr['ansprechpartner'];
 
-    $ret['company_division'] = join(
+    $ret['companyDivision'] = join(
         ';',
         array_filter(
             [

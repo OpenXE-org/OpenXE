@@ -90,13 +90,13 @@ class Versandart_sendcloud extends Versanddienstleister
     $parcel->Name = $json->address->name;
     switch ($json->address->addresstype) {
       case 0:     
-        $parcel->CompanyName = $json->address->company_name;
+        $parcel->CompanyName = $json->address->companyName;
         $parcel->Name = join(
                         ';', 
                         array_filter(
                             [
-                                $json->address->contact_name,
-                                $json->address->company_division
+                                $json->address->contactName,
+                                $json->address->companyDivision
                             ],
                             fn(string $item) => !empty(trim($item))
                         )
@@ -121,7 +121,7 @@ class Versandart_sendcloud extends Versanddienstleister
                         array_filter(
                             [
                                 $json->address->name,
-                                $json->address->contact_name
+                                $json->address->contactName
                             ],
                             fn(string $item) => !empty(trim($item))
                         )

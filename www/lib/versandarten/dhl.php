@@ -105,13 +105,13 @@ class Versandart_dhl extends Versanddienstleister{
       case 0:
         $shipment->Receiver->Address = new ReceiverNativeAddress();
                 
-        $shipment->Receiver->name1 = $json->address->company_name;
+        $shipment->Receiver->name1 = $json->address->companyName;
         $shipment->Receiver->Address->name2 = join(
                         ';', 
                         array_filter(
                             [
-                                $json->address->contact_name,
-                                $json->address->company_division
+                                $json->address->contactName,
+                                $json->address->companyDivision
                             ],
                             fn(string $item) => !empty(trim($item))
                         )
@@ -145,7 +145,7 @@ class Versandart_dhl extends Versanddienstleister{
         $shipment->Receiver->Address = new ReceiverNativeAddress();
                 
         $shipment->Receiver->name1 = $json->address->name;
-        $shipment->Receiver->Address->name2 = $json->address->contact_name;
+        $shipment->Receiver->Address->name2 = $json->address->contactName;
                        
         $shipment->Receiver->Address->streetName = $json->address->street ?? '';
         $shipment->Receiver->Address->streetNumber = $json->address->streetnumber;

@@ -148,7 +148,7 @@ onBeforeUpdate(autoselectproduct);
           </template>
           <template v-if="model.address.addresstype === 0 || model.address.addresstype === 3">
             <div>{{ t('address.contactName') }}:</div>
-            <InputText v-model.trim="model.address.contact_name" />
+            <InputText v-model.trim="model.address.contactName" />
           </template>
           <template v-if="model.address.addresstype === 1 || model.address.addresstype === 2">
             <div>{{ t('address.postNumber') }}:</div>
