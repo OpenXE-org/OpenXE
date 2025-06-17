@@ -48,15 +48,15 @@ class Versandart_dpddepot extends Versanddienstleister
         $this->timeZone = new DateTimeZone('Europe/Berlin');
         try {
             $token = $this->GetAuthToken();
-            $this->api = new ShipmentService(
-                $this->logger,
-                $this->settings->delisId,
-                $token,
-                $this->settings->useSandbox ?? true,
-            );
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
         }
+        $this->api = new ShipmentService(
+            $this->logger,
+            $this->settings->delisId,
+            $token ?? '',
+            $this->settings->useSandbox ?? true,
+        );
     }
 
     /**

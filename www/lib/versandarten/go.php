@@ -122,13 +122,13 @@ class Versandart_go extends Versanddienstleister
         $order->consignorAddress->email = $this->settings->consignorEmail;
         switch ($json->address->addresstype) {
             case 0:
-                $order->consigneeAddress->name1 = $json->address->company_name;
+                $order->consigneeAddress->name1 = $json->address->companyName;
                 $order->consigneeAddress->name2 = join(
                     ';',
                     array_filter(
                         [
-                            $json->address->contact_name,
-                            $json->address->company_division,
+                            $json->address->contactName,
+                            $json->address->companyDivision,
                         ],
                         fn(string $item) => !empty(trim($item)),
                     ),
@@ -136,7 +136,7 @@ class Versandart_go extends Versanddienstleister
                 break;
             case 3:
                 $order->consigneeAddress->name1 = $json->address->name;
-                $order->consigneeAddress->name2 = $json->address->contact_name;
+                $order->consigneeAddress->name2 = $json->address->contactName;
                 break;
         }
         $order->consigneeAddress->name3 = $json->address->address2;
