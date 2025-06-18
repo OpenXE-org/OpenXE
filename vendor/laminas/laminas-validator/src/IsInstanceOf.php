@@ -1,17 +1,19 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
 namespace Laminas\Validator;
 
 use Traversable;
 
+use function array_key_exists;
+use function array_shift;
+use function func_get_args;
+use function is_array;
+use function iterator_to_array;
+
+/** @final */
 class IsInstanceOf extends AbstractValidator
 {
-    const NOT_INSTANCE_OF = 'notInstanceOf';
+    public const NOT_INSTANCE_OF = 'notInstanceOf';
 
     /**
      * Validation failure message template definitions
@@ -31,11 +33,7 @@ class IsInstanceOf extends AbstractValidator
         'className' => 'className',
     ];
 
-    /**
-     * Class name
-     *
-     * @var string
-     */
+    /** @var string */
     protected $className;
 
     /**
@@ -54,7 +52,7 @@ class IsInstanceOf extends AbstractValidator
         if (! is_array($options)) {
             $options = func_get_args();
 
-            $tmpOptions = [];
+            $tmpOptions              = [];
             $tmpOptions['className'] = array_shift($options);
 
             $options = $tmpOptions;
@@ -70,6 +68,8 @@ class IsInstanceOf extends AbstractValidator
     /**
      * Get class name
      *
+     * @deprecated Since 2.61.0 All option setters and getters will be removed in v3.0
+     *
      * @return string
      */
     public function getClassName()
@@ -80,7 +80,9 @@ class IsInstanceOf extends AbstractValidator
     /**
      * Set class name
      *
-     * @param  string $className
+     * @deprecated Since 2.61.0 All option setters and getters will be removed in v3.0
+     *
+     * @param string $className
      * @return $this
      */
     public function setClassName($className)
