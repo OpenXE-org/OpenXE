@@ -175,13 +175,13 @@ class Versandart_dpddepot extends Versanddienstleister
         }
         switch ($json->address->addresstype) {
             case 0:
-                $order->generalShipmentData->recipient->name1 = $json->address->company_name;
+                $order->generalShipmentData->recipient->name1 = $json->address->companyName;
                 $order->generalShipmentData->recipient->name2 = join(
                     ';',
                     array_filter(
                         [
-                            $json->address->contact_name,
-                            $json->address->company_division,
+                            $json->address->contactName,
+                            $json->address->companyDivision,
                         ],
                         fn(string $item) => !empty(trim($item)),
                     ),
@@ -189,7 +189,7 @@ class Versandart_dpddepot extends Versanddienstleister
                 break;
             case 3:
                 $order->generalShipmentData->recipient->name1 = $json->address->name;
-                $order->generalShipmentData->recipient->name2 = $json->address->contact_name;
+                $order->generalShipmentData->recipient->name2 = $json->address->contactName;
                 break;
         }
         //$order->generalShipmentData->recipient->?? = $json->address->address2;
