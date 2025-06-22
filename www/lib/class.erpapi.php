@@ -3188,13 +3188,15 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
     // Check available items for an array('artikel','menge') with additional check for reserversations on beleg
     // Returns Array:
     // Array (result bool, storageItems => array('lager_platz', 'artikel', 'menge'), missing => array('artikel', 'menge'));
-    function LagerCheckArray($items, $doctype = '', $doctypeid = 0, $lager = 0, bool $incl_autolagersperre = false) {
+    function LagerCheckBeleg(string $doctype, $doctypeid, $lager = 0, bool $incl_autolagersperre = false) {
+
+        $items = $this->app->DB->SelectArr("SELECT artikel, nummer, bezeichnung, menge FROM ".$doctype."_position WHERE ".$doctype." = ".$doctypeid." ORDER by sort ASC");
 
         // only one line per article
     	$unique_items = array();
         foreach ($items as $key => $item) {
-        	if (isset($unique_items[$item['artikel']])) {
-        		$unique_items[$item['artikel']] = array();
+        	if (!isset($unique_items[$item['artikel']])) {
+        		$unique_items[$item['artikel']] = array('artikel_nummer' => $item['nummer'], 'artikel_name' => $item['bezeichnung']);
         	}
   			$unique_items[$item['artikel']]['menge'] += $item['menge'];
         }
@@ -3218,9 +3220,9 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         // Check reservations
         if ($doctype <> '')  {
 
-            print_r(debug_backtrace(limit: 1)[1]['function']);
+//            debug_print_backtrace(limit : 5);
 
-            echo("Beleg $doctype $doctypeid<br>\n");
+//            echo("Beleg $doctype $doctypeid<br>\n");
 
             $sql = "SELECT 
                     artikel,
@@ -3242,8 +3244,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
                     GROUP BY
                         artikel
                     ";
-
-            echo($sql);
 
             $artikel_im_lager = $this->app->DB->SelectArr($sql);
 
@@ -3283,8 +3283,11 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
                     $items[$artikel]['lagermenge'] = $artikel_im_lager[$artikel]['autoversandmenge'];
                 }
 
+                $items[$artikel]['lagermenge_verfuegbar'] = $artikel_im_lager[$artikel]['autoversandmenge']-$artikel_reserviert_andere[$artikel];
+
                 $items[$artikel]['reserviert_beleg'] = $artikel_reserviert_beleg[$artikel];
                 $items[$artikel]['reserviert_andere'] = $artikel_reserviert_andere[$artikel];
+                $items[$artikel]['reserviert'] = $artikel_reserviert_beleg[$artikel]+$artikel_reserviert_andere[$artikel];
 
                 if ($items[$artikel]['lagermenge']-$items[$artikel]['reserviert_andere'] >= $items[$artikel]['menge'] ) {
                     $items[$artikel]['ok'] = true;
@@ -3295,10 +3298,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
         }
 
-        echo("artikel_im_lager");
-        print_r($artikel_im_lager);
-        echo("items");
-        print_r($items);
+        $result['items'] = $items;
 
         // Check available stock locations
         foreach ($items as $artikel => $artikeldata) {
@@ -3312,9 +3312,10 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
             $sql = "
                 SELECT
-                    artikel,
+                    lpi.artikel,
                     a.name_de artikel_name,
                     a.nummer artikel_nummer,
+                    l.bezeichnung AS lager_name,
                     lpi.lager_platz,
                     lp.kurzbezeichnung lager_platz_name,
                     lp.autolagersperre AS nachschublager,
@@ -3325,6 +3326,8 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
                     lager_platz lp ON lp.id = lpi.lager_platz
                 INNER JOIN
                     artikel a ON a.id = lpi.artikel
+                INNER JOIN
+                    lager l ON l.id = lp.lager
                 WHERE
                     lp.sperrlager <> 1
                         AND
@@ -3361,8 +3364,8 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             $result['available stock'][$artikel] = $stockitems;
         }
 
-        echo("result");
-        print_r($result);
+//        echo("result");
+//        print_r($result);
 
         return($result);
     }
@@ -11407,6 +11410,10 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
   }
 
+  public function makemodulelink(string $text, string $module, string $action, int $id, string $additional_text = '') {
+    return("<a href=\"index.php?module=".$module."&action=".$action."&id=".$id.$additional_text."\">".$text."</a>");
+  }
+
   // @refactor Menu Widget
   public function formatmenulink($link, $beschreibung, $mark = false)
   {
@@ -12425,8 +12432,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
 
 
     if (!$auftraege[0]['kommission_ok']) {
-        $positionen = $this->app->DB->SelectArr("SELECT artikel, menge FROM auftrag_position WHERE auftrag = ".$auftrag);
-        $lagercheck = $this->app->erp->LagerCheckArray(items: $positionen, doctype:  'auftrag', doctypeid: $auftrag);
+        $lagercheck = $this->app->erp->LagerCheckBeleg(doctype:  'auftrag', doctypeid: $auftrag);
         if ($lagercheck['success']) {
            $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
         } else {

@@ -2506,6 +2506,9 @@ class Auftrag extends GenAuftrag
     $this->app->Tpl->Set('LAGERHIDDEN','');
 
     if (empty($auftragRow['kommission_ok']) && ($status==='freigegeben' || $status==='angelegt')) {
+
+          // START XENTRAL LEGACY CODE
+          /*
           $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
           $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
           $projektlager = 0;
@@ -3137,7 +3140,60 @@ class Auftrag extends GenAuftrag
             }
           }
           $artikel = $table->DisplayNew("return",$lastcolumn,"noAction","false",0,0,false);
+        */
+        // END XENTRAL LEGACY CODE
 
+
+            $lagercheck = $this->app->erp->LagerCheckBeleg('auftrag', $id);
+            $table = new EasyTable($this->app);
+            foreach ($lagercheck['items'] as $artikelid => $item) {
+
+                if ($item['ok']) {
+                    $mengefeld = $item['lagermenge_verfuegbar']+0;
+                } else {
+
+                    $mengefeld = '<font color=red><b>'.($item['lagermenge_verfuegbar']+0).'</b></font>';
+                }
+
+                $table->Addrow(array(
+                    $this->app->erp->makemodulelink($item['artikel_nummer'],"artikel","edit",$artikelid),
+                    $this->app->erp->makemodulelink($item['artikel_name'],"artikel","edit",$artikelid),
+                    $this->app->erp->makemodulelink($item['menge']+0,"artikel","lager",$artikelid),
+                    $this->app->erp->makemodulelink($mengefeld,"artikel","lager",$artikelid),
+                    $this->app->erp->makemodulelink($item['lagermenge_autoversand']+0,"artikel","lager",$artikelid),
+                    $this->app->erp->makemodulelink($item['lagermenge_nachschub']+0,"artikel","lager",$artikelid),
+                    $this->app->erp->makemodulelink($item['reserviert_beleg']+0,"artikel","lager",$artikelid),
+                ));
+            }
+            $table->headings = array(
+                "Nummer",
+                "Artikel",
+                "Menge",
+                "Verf&uuml;gbar",
+                "Versandlager",
+                "Nachschub",
+                "Reservierung*"
+            );
+            $table->headings_align = array(
+                'left',
+                'left',
+                'right',
+                'right',
+                'right',
+                'right',
+                'right'
+            );
+            $table->align = array(
+                'left',
+                'left',
+                'right',
+                'right',
+                'right',
+                'right',
+                'right'
+            );
+
+            $artikel = $table->DisplayNew("return");
         }
 
         // KOMMSSIONIERUNG LIST
@@ -3290,6 +3346,7 @@ class Auftrag extends GenAuftrag
 
           $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
         
+
     } 
     // END ARTIKEL LAGER
 
@@ -5035,7 +5092,6 @@ class Auftrag extends GenAuftrag
     }
     $this->app->erp->AuftragEinzelnBerechnen($id);
     $this->app->erp->AuftragNeuberechnen($id);
-    $this->app->erp->AuftragAutoversandBerechnen($id); // heute wieder eingebaut 09.03.2019 BS weil Termin ampel falsch
 
     $this->app->erp->DisableVerband();
     $this->AuftragMiniDetail('MINIDETAIL',true);
@@ -7386,6 +7442,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $this->app->DB->Update($sql);
                             $sql = "UPDATE auftrag_position SET auftrag = $id_neu, menge = $menge_neu WHERE id = $posid_neu";
                             $this->app->DB->Update($sql);          
+
                         }
 
                         $this->app->erp->AuftragProtokoll($id,"Teilauftrag $belegnr_neu erstellt");
