@@ -27,6 +27,8 @@ class EasyTable {
   /** @var array */
   var $headings;
   /** @var array */
+  var $headings_align;
+  /** @var array */
   public $width_headings;
   /** @var int|string */
   public $page;
@@ -137,7 +139,7 @@ class EasyTable {
     
     $htmltable = new HTMLTable(0,"100%","",3,1);
     $htmltable->width_headings = $this->width_headings;
-    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'));
+    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'),$this->headings_align);
 
     $htmltable->ChangingRowColors('#e0e0e0','#fff');
 
@@ -247,7 +249,7 @@ class EasyTable {
 
     $htmltable = new HTMLTable(0,"100%","",3,1);
     $htmltable->width_headings = $this->width_headings;
-    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'));
+    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'),$this->headings_align);
 
     $htmltable->ChangingRowColors('#e0e0e0','#fff');
 
@@ -296,7 +298,7 @@ class EasyTable {
   {
     $htmltable = new HTMLTable(0,"100%","",3,1);
     $htmltable->width_headings = $this->width_headings;
-    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'));
+    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'),$this->headings_align);
 
     $htmltable->ChangingRowColors('#e0e0e0','#fff');
 
@@ -341,7 +343,7 @@ class EasyTable {
       $this->headings[count($this->headings)-1] = $click;
 
     $htmltable->width_headings = $this->width_headings;
-    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'));
+    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'),$this->headings_align);
     $htmltable->ChangingRowColors('#e0e0e0','#fff');
 
     $result = '';
@@ -453,7 +455,7 @@ class EasyTable {
     }
 
     $htmltable->width_headings = isset($this->width_headings)?$this->width_headings:null;
-    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'));
+    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'),$this->headings_align);
     $htmltable->ChangingRowColors('#e0e0e0','#fff');
 
     if(!empty($this->datasets) && count($this->datasets)>0){
@@ -524,9 +526,9 @@ class EasyTable {
   {
     
     $htmltable = new HTMLTable(0,"100%","",3,1);
-    $htmltable->width_headings = $this->width_headings;
-    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'));
-
+    $htmltable->width_headings = $this->width_headings;   
+    $htmltable->AddRowAsHeading($this->app->Tpl->pruefeuebersetzung($this->headings,'table'),$this->headings_align);
+    
     $htmltable->ChangingRowColors('#e0e0e0','#fff');
 
     if(count($this->datasets)>0){
