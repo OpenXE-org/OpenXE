@@ -1372,9 +1372,9 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok 
-         FROM auftrag 
-         WHERE id = %d 
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok
+         FROM auftrag
+         WHERE id = %d
          LIMIT 1',
         $id
       )
@@ -3143,46 +3143,60 @@ class Auftrag extends GenAuftrag
         */
         // END XENTRAL LEGACY CODE
 
-
             $lagercheck = $this->app->erp->LagerCheckBeleg('auftrag', $id);
+
+            if (isset($lagercheck['lager'])) {
+                $lagername = " ".$lagercheck['lager']['lager_name'];
+            } else {
+                $lagername = "";
+            }
+
             $table = new EasyTable($this->app);
             foreach ($lagercheck['items'] as $artikelid => $item) {
 
-                if ($item['ok']) {
+                if ($item['menge'] <= $item['lagermenge_verfuegbar']) {
                     $mengefeld = $item['lagermenge_verfuegbar']+0;
                 } else {
-
                     $mengefeld = '<font color=red><b>'.($item['lagermenge_verfuegbar']+0).'</b></font>';
                 }
 
-                $table->Addrow(array(
-                    $this->app->erp->makemodulelink($item['artikel_nummer'],"artikel","edit",$artikelid),
-                    $this->app->erp->makemodulelink($item['artikel_name'],"artikel","edit",$artikelid),
-                    $this->app->erp->makemodulelink($item['menge']+0,"artikel","lager",$artikelid),
-                    $this->app->erp->makemodulelink($mengefeld,"artikel","lager",$artikelid),
-                    $this->app->erp->makemodulelink($item['lagermenge_autoversand']+0,"artikel","lager",$artikelid),
-                    $this->app->erp->makemodulelink($item['lagermenge_nachschub']+0,"artikel","lager",$artikelid),
-                    $this->app->erp->makemodulelink($item['reserviert_beleg']+0,"artikel","lager",$artikelid),
-                ));
+                if ($item['menge'] <= $item['lagermenge_autoversand_lager']) {
+                    $mengefeld_lager = $item['lagermenge_autoversand_lager']+0;
+                } else {
+                    $mengefeld_lager = '<font color=red><b>'.($item['lagermenge_autoversand_lager']+0).'</b></font>';
+                }
+
+                $new_row = array();
+                $new_row[] = $this->app->erp->makemodulelink($item['artikel_nummer'],"artikel","edit",$artikelid);
+                $new_row[] = $this->app->erp->makemodulelink($item['artikel_name'],"artikel","edit",$artikelid);
+
+                if ($item['lagerartikel']) {
+                    $new_row[] = $this->app->erp->makemodulelink($item['menge']+0,"artikel","lager",$artikelid);
+                    if ($lagername) {
+                        $new_row[] = $this->app->erp->makemodulelink($mengefeld_lager,"artikel","lager",$artikelid);
+                    }
+                    $new_row[] = $this->app->erp->makemodulelink($mengefeld,"artikel","lager",$artikelid);
+                    $new_row[] = $this->app->erp->makemodulelink($item['lagermenge_autoversand']+0,"artikel","lager",$artikelid);
+                    $new_row[] = $this->app->erp->makemodulelink($item['lagermenge_nachschub']+0,"artikel","lager",$artikelid);
+                    $new_row[] = $this->app->erp->makemodulelink(($item['reserviert_beleg']+0)." / ".($item['reserviert']+0),"artikel","lager",$artikelid);
+                }
+
+                $table->Addrow($new_row);
             }
-            $table->headings = array(
-                "Nummer",
-                "Artikel",
-                "Menge",
-                "Verf&uuml;gbar",
-                "Versandlager",
-                "Nachschub",
-                "Reservierung*"
-            );
-            $table->headings_align = array(
-                'left',
-                'left',
-                'right',
-                'right',
-                'right',
-                'right',
-                'right'
-            );
+
+            $table->headings = array();
+
+            $table->headings[] = "Nummer";
+            $table->headings[] = "Artikel";
+            $table->headings[] = "Menge";    
+            if ($lagername) {
+                $table->headings[] = $lagername;
+            }
+            $table->headings[] = "Verf&uuml;gbar";
+            $table->headings[] = "Versandlager";
+            $table->headings[] = "Nachschub";
+            $table->headings[] = "Reservierung*";
+
             $table->align = array(
                 'left',
                 'left',
@@ -3190,9 +3204,10 @@ class Auftrag extends GenAuftrag
                 'right',
                 'right',
                 'right',
+                'right',
                 'right'
             );
-
+            $table->headings_align = $table->align;
             $artikel = $table->DisplayNew("return");
         }
 
@@ -3345,9 +3360,8 @@ class Auftrag extends GenAuftrag
           }
 
           $artikel = $table->DisplayNew("return",$lastcolumn,"noAction");
-        
 
-    } 
+    }
     // END ARTIKEL LAGER
 
     $this->app->Tpl->Set('ARTIKEL','<div id="artikeltabellelive'.$id.'">'.$artikel.'</div>');
@@ -7441,7 +7455,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $sql = "UPDATE auftrag_position SET menge = $menge_reduziert WHERE id = $posid_alt";
                             $this->app->DB->Update($sql);
                             $sql = "UPDATE auftrag_position SET auftrag = $id_neu, menge = $menge_neu WHERE id = $posid_neu";
-                            $this->app->DB->Update($sql);          
+                            $this->app->DB->Update($sql);
 
                         }
 
