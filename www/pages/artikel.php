@@ -5423,7 +5423,7 @@ class Artikel extends GenArtikel {
       // easy table mit arbeitspaketen YUI als template 
       $table = new EasyTable($this->app);
       $table->Query("SELECT adr.name as kunde, trim(r.menge)+0 as menge, if(r.datum='0000-00-00','Kein Datum hinterlegt',r.datum) as bis,
-          p.abkuerzung as projekt,r.grund, IF(".$this->app->erp->RechteVorhanden("artikel","ausreservieren")."=1,CONCAT('<a onclick=\"var menge = prompt(\'Anzahl Artikel aus Reservierung entfernen:\',',(trim(r.menge)+0),'); if(parseFloat(menge.replace(\',\',\'.\')) > 0) window.location.href=\'index.php?module=artikel&action=ausreservieren&id=$id&lid=',r.id,'&menge=\'+menge;\" href=\"#\"><img src=\"./themes/[THEME]/images/delete.svg\" border=\"0\"></a>'),'') AS Aktion FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+          p.abkuerzung as projekt,r.grund, IF('".$this->app->erp->RechteVorhanden("artikel","ausreservieren")."'=1,CONCAT('<a onclick=\"var menge = prompt(\'Anzahl Artikel aus Reservierung entfernen:\',',(trim(r.menge)+0),'); if(parseFloat(menge.replace(\',\',\'.\')) > 0) window.location.href=\'index.php?module=artikel&action=ausreservieren&id=$id&lid=',r.id,'&menge=\'+menge;\" href=\"#\"><img src=\"./themes/[THEME]/images/delete.svg\" border=\"0\"></a>'),'') AS Aktion FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
           p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id WHERE  r.artikel='$id'");
       //$summe = round($this->app->DB->Select("SELECT SUM(menge) FROM lager_platz_inhalt WHERE artikel='$id'"),4);
       //$reserviert = round($this->app->DB->Select("SELECT SUM(menge) FROM lager_reserviert WHERE artikel='$id'"),4);// AND datum >= NOW()");
