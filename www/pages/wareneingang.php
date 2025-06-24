@@ -2026,6 +2026,8 @@ class Wareneingang {
         $renr = $this->app->Secure->GetPOST('renr');
         $bemerkung = $this->app->Secure->GetPOST('bemerkung');                        
         $bemerkung = str_replace(array('\r\n', '\r', '\n'), "\n", $bemerkung);
+        $projekt = $this->app->Secure->GetPOST('projekt');
+        $projekt = $this->app->erp->ReplaceProjekt(true,$projekt,true);
 
         $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
                         wareneingang_id: $id,
@@ -2042,35 +2044,6 @@ class Wareneingang {
         }
     
         $this->app->User->SetParameter('table_wareneingang_lieferant_ausfuellen', '');
-
-        // Load from DB
-        if (($lsnr == '' && $renr == '' && $bemerkung == '') && $id != '') {
-            $fields = $this->app->DB->SelectArr(
-                    sprintf(
-                            'SELECT `lsnr`, `renr`,`bemerkung` FROM `paketannahme` WHERE `id` = %d LIMIT 1',
-                            $id
-            ));
-
-            $lsnr = $fields[0]['lsnr'];
-            $renr = $fields[0]['renr'];
-            $bemerkung = $fields[0]['bemerkung'];
-        } else {
-
-            // Save header
-            $sql = "
-            UPDATE paketannahme SET 
-                lsnr='" . $lsnr . "',
-                renr='" . $renr . "',
-                bemerkung='" . $bemerkung . "'
-                WHERE id='$id' LIMIT 1
-            ";
-            $this->app->DB->Update($sql);               
-            $bemerkung = stripslashes($bemerkung);
-        }
-
-        $this->app->Tpl->Set('LSNR', $lsnr);
-        $this->app->Tpl->Set('RENR', $renr);
-        $this->app->Tpl->Set('BEMERKUNG', $bemerkung);
 
         $isCmdFromReturnOrder = $cmd === 'fromreturnorder';
         if ($isCmdFromReturnOrder) {
@@ -2098,7 +2071,40 @@ class Wareneingang {
         $submit = $this->app->Secure->GetPOST('submit');
         $submitkunde = $this->app->Secure->GetPOST('submitkunde');
 
+        if (!$submit) {
+            // Load from DB
+            if ($id != '') {
+                $fields = $this->app->DB->SelectArr(
+                        sprintf(
+                                'SELECT `lsnr`, `renr`,`bemerkung` FROM `paketannahme` WHERE `id` = %d LIMIT 1',
+                                $id
+                ));
+
+                $lsnr = $fields[0]['lsnr'];
+                $renr = $fields[0]['renr'];
+                $bemerkung = $fields[0]['bemerkung'];
+            }
+        }
+
+        $this->app->Tpl->Set('LSNR', $lsnr);
+        $this->app->Tpl->Set('RENR', $renr);
+        $this->app->Tpl->Set('BEMERKUNG', $bemerkung);
+
         switch ($submit) {
+            case 'speichern':
+
+                    // Save header
+                    $sql = "
+                    UPDATE paketannahme SET
+                        lsnr='" . $lsnr . "',
+                        renr='" . $renr . "',
+                        bemerkung='" . $bemerkung . "',
+                        projekt='".$projekt."'
+                        WHERE id='$id' LIMIT 1
+                    ";
+                    $this->app->DB->Update($sql);
+                    $bemerkung = stripslashes($bemerkung);
+            break;
             case 'fuellen':
                 // Get bestellung_position from form
                 $form_input = $this->app->Secure->GetPOSTArray();
@@ -2447,6 +2453,45 @@ class Wareneingang {
                 }
                
             break;
+            case 'etikettendrucken':
+
+                $result['etikettendrucker'] = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
+                $result['etikettart'] = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
+
+                $sql = "
+                    SELECT
+                    pa.id,
+                    pd.menge,
+                    a.nummer artikelnummer,
+                    a.name_de bezeichnung,
+                    a.beschreibung_de beschreibung,
+                    a.zolltarifnummer,
+                    a.herkunftsland herkunftslandcode,
+                    a.ean,
+                    a.herstellernummer
+                    FROM paketannahme pa
+                    INNER JOIN
+                        paketdistribution pd ON pd.paketannahme = pa.id
+                    INNER JOIN
+                        artikel a ON a.id = pd.artikel
+                    WHERE
+                        pa.id = ".$id."
+                ";
+
+                $positionen = $this->app->DB->SelectArr($sql);
+
+                foreach ($positionen as $position) {
+                    $this->app->erp->EtikettenDrucker(
+                        kennung:  $result['etikettart'],
+                        anzahl: $position['menge'],
+                        variables: $position,
+                        druckercode: $result['etikettendrucker'],
+                        tabelle: 'artikel',
+                        id: $position['artikel']
+                    );
+                }
+
+            break;
             case 'abschliessen':
 
                 $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
@@ -2529,7 +2574,7 @@ class Wareneingang {
           } */    // Submit
 
         $sql = sprintf(
-                'SELECT `adresse`,status,%s,bearbeiter_abgeschlossen,%s FROM `paketannahme` WHERE `id` = %d LIMIT 1',
+                'SELECT `adresse`,projekt,status,%s,bearbeiter_abgeschlossen,%s FROM `paketannahme` WHERE `id` = %d LIMIT 1',
                 $this->app->erp->FormatDate('datum_abgeschlossen', 'datum_abgeschlossen'),                
                 $this->app->erp->FormatDate('datum', 'datum'),
                 $id
@@ -2539,6 +2584,7 @@ class Wareneingang {
 
         $adresse = $paketannahme['adresse'];
         $status = $paketannahme['status'];
+        $projekt = $paketannahme['projekt'];
         $datum = $paketannahme['datum'];
         $datum_abgeschlossen = $paketannahme['datum_abgeschlossen'];
         $bearbeiter_abgeschlossen = $paketannahme['bearbeiter_abgeschlossen'];
@@ -2627,6 +2673,8 @@ class Wareneingang {
         $this->app->YUI->AutoComplete('ziellager', 'lagerplatz');
         $this->app->Tpl->Set('MESSAGE1',$msg);
         $this->app->Tpl->Set('STATUS',$status);
+        $this->app->YUI->AutoComplete("projekt", "projektname", 1);
+        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$projekt,false));
 
         if ($status == 'abgeschlossen') {
             $this->app->Tpl->Set('HINZUFUEGENHIDDEN','hidden');
@@ -2656,7 +2704,7 @@ class Wareneingang {
         if ($seriennummern_aktiv && !$seriennummern_ok) {
             $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
         }
-        
+                              
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
        
     }

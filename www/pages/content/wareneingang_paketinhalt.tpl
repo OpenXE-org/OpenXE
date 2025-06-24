@@ -17,6 +17,12 @@
 			                    <legend>{|[LEGENDE]|}</legend>
 			                    <table>
 				                    <tr>
+    				                    <td>{|Projekt|}:</td>
+					                    <td>
+						                    <input type=text name="projekt" id="projekt" size="40" value="[PROJEKT]">
+					                    </td>
+				                    </tr>
+				                    <tr>
 					                    <td>{|Status|}:</td>
 					                    <td>
 						                    <input type=text size="40" value="[STATUS]" disabled>
@@ -25,7 +31,7 @@
 				                    <tr [ABGESCHLOSSENHIDDEN]>
 					                    <td></td>
 					                    <td><i>Abgeschlossen am [DATUM_ABGESCHLOSSEN] durch [BEARBEITER_ABGESCHLOSSEN]</i></td>
-				                    </tr>				                 
+				                    </tr>
 				                    <tr>
 					                    <td>{|Lieferschein-Nr.|}:</td>
 					                    <td>
@@ -51,9 +57,9 @@
 					                    <td>
 						                    <textarea rows="5" cols="40" name="bemerkung">[BEMERKUNG]</textarea>
 					                    </td>
-				                    </tr> 
+				                    </tr>
 				                    [ISLIEFERANTSTART]
-				                    [ISLIEFERANTENDE] 
+				                    [ISLIEFERANTENDE]
                                 </table>
 		                    </fieldset>
 	                    </div>
@@ -91,7 +97,7 @@
                                       <label for="ausfuellen">{|Aus&uuml;llen|}</label>
                                     </li>
                                   </ul>
-                                </div>    
+                                </div>
                             </div>
                             [TAB1]
                         </div>
@@ -119,12 +125,12 @@
 										<td>
                                             <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">
 										</td>
-									</tr>   
+									</tr>
                                     <tr [HINZUFUEGENHIDDEN]>
 										<td>
 											<button name="submit" class="ui-button-icon" style="width:100%;" value="manuell_hinzufuegen">{|Hinzuf&uuml;gen|}</button>
 										</td>
-									</tr>   
+									</tr>
 									[ISNOTLIEFERANTENDE]
 								</table>
 							</fieldset>
@@ -136,7 +142,7 @@
 				<div class="row-height">
 					<div class="col-xs-12 col-md-10 col-md-height">
 						<div class="inside-white inside-full-height">
-                            
+
                         </div>
 					</div>
 				</div>
@@ -152,11 +158,16 @@
 								<button name="submit" class="ui-button-icon" style="width:100%;" value="speichern" hidden="true"></button>
 								<table width="100%" border="0" class="mkTableFormular">
 									<legend>{|Aktionen|}</legend>
+                                    <tr [ETIKETTENDRUCKENHIDDEN]>
+										<td>
+											<button name="submit" class="ui-button-icon" style="width:100%;" value="etikettendrucken" title="Etiketten gem&auml;&szlig; Projekteinstellungen drucken">{|Etiketten drucken|}</button>
+                                        </td>
+									</tr>
 									<tr [BUCHENHIDDEN]>
 										<td>
 											<button name="submit" class="ui-button-icon" style="width:100%;" value="vorlaeufige_buchen">{|Buchen|}</button>
 										</td>
-									</tr> 
+									</tr>
                                     <tr [BUCHENHIDDEN]>
 										<td>
                                             {|Ziellager|}:&nbsp;<img src="./themes/new/images/tooltip_grau.png" border="0" style="position: relative; left: 1px; top: 3px; z-index: 8;" class="wawitooltipicon" title="Wenn nicht angegeben, wird das Standardlager des Artikels bebucht.">
@@ -166,7 +177,7 @@
 										<td>
 											<input type=text name="ziellager" id="ziellager" value="[LAGER]" placeholder="Standardlager" class="placeholder_warning" style="width:98%;">
                                         </td>
-									</tr> 
+									</tr>
 									<tr [ABSCHLIESSENHIDDEN]>
 										<td>
 											<button name="submit" class="ui-button-icon" style="width:100%;" value="abschliessen">{|Abschlie&szlig;en|}</button>
@@ -174,7 +185,7 @@
 									</tr>
 									<tr [ABGESCHLOSSENHIDDEN]>
 										<td>
-									    	<button name="submit" class="ui-button-icon" style="width:100%;" value="oeffnen" form="oeffnen">{|&Ouml;ffnen|}</button>                
+									    	<button name="submit" class="ui-button-icon" style="width:100%;" value="oeffnen" form="oeffnen">{|&Ouml;ffnen|}</button>
 										</td>
 									</tr>
 								</table>
@@ -183,7 +194,7 @@
 					</div>
 				</div>
 			</div>
-	        [TAB1ENDE] 
+	        [TAB1ENDE]
         </div> [AFTERTAB1] [BEFORETAB2]
 	    <div id="tabs-2"> [TAB2START] [MESSAGE2]
 		    <div class="row">
@@ -208,23 +219,23 @@
 										<td>
                                             <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">
 										</td>
-									</tr>   
+									</tr>
 								    <tr [HINZUFUEGENHIDDEN]>
 									    <td>
 										    <button name="submit" class="ui-button-icon" style="width:100%;" value="manuell_hinzufuegen">{|Hinzuf&uuml;gen|}</button>
 									    </td>
-								    </tr>                                 
+								    </tr>
 							    </table>
 						    </fieldset>
 					    </div>
         			</div>
 			    </div>
-		    </div> [TAB2ENDE] 
+		    </div> [TAB2ENDE]
         </div> [AFTERTAB2]
-	</form> 
+	</form>
 </div>
 <form action="index.php?module=wareneingang&action=oeffnen" id="oeffnen" method="POST">
-    <input name="id" value="[ID]" hidden></input> 
+    <input name="id" value="[ID]" hidden></input>
 </form>
 <script type="text/javascript">
 $(document).ready(function() {
