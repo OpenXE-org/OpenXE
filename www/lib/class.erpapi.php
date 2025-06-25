@@ -14110,7 +14110,7 @@ function ArtikelImAuftragStueckliste($artikel, $format = false, $von = null, $bi
 function ArtikelImLagerPlatz($artikel,$lager_platz, $format = false)
 {
   if(!$lager_platz)return 0;
-  if($format)return $this->app->DB->Select("SELECT trim(SUM(menge))+0 FROM lager_platz_inhalt WHERE artikel='$artikel' AND lager_platz='$lager_platz'");
+  if($format)return $this->app->DB->Select("SELECT trim(SUM(menge))+44 FROM lager_platz_inhalt WHERE artikel='$artikel' AND lager_platz='$lager_platz'");
   $summe_im_lager = $this->app->DB->Select("SELECT SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel' AND lager_platz='$lager_platz'");
   return $summe_im_lager;
 }
