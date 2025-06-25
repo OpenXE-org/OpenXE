@@ -2535,7 +2535,6 @@ class Lager extends GenLager {
     }
     //session_close();
 
-
     if($projekt!=''){
       $_SESSION['projekt'] = $projekt;
     }
@@ -3102,13 +3101,14 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             if($artikelid > 0)
             {
               $this->app->Location->execute('index.php?module=artikel&action=lager&id='.$artikelid.'&msg='.$msg);
-            }
-              //$msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Artikel $name wurde umgelagert. Der n&auml;chste Artikel kann jetzt umgelagert werden.</div>");
+            }                                  
             if($cmd==='umlagern'){
+              $regalname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regal);
+              $regalneuname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regalneu);
+              $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Artikel ($name) wurde $menge mal von '$regalname' nach '$regalneuname' umgelagert. Anzahl '$regalneuname': <b>".floatval($gesamt)." $einheit</b> Anzahl Komplettbestand alle Regale: <b>".floatval($gesamt_alle)." $einheit</b></div>");
               $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&cmd=umlagern&msg='.$msg);
             }
-            $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&msg='.$msg);
-              
+            $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&msg='.$msg);                                    
           } // ende allow
           if ($regalneu != '' && $regal > 0 && $cmd==='umlagern') {
             $msgregal = "Dieses Regal gibt es nicht!";
@@ -3141,7 +3141,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $this->app->Tpl->Add('BEZEICHNUNG', "<tr valign=\"top\"><td>Bild:</td><td><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
         }
 
-        $lagermeist = $this->app->DB->SelectArr("SELECT lager_platz, SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel' GROUP BY lager_platz ORDER by 2 DESC LIMIT 1");
+        $lagermeist = $this->app->DB->SelectArr("SELECT lager_platz, SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel' AND lager_platz <> '$regal' GROUP BY lager_platz ORDER by 2 DESC LIMIT 1");
+
         $lagerbezeichnung = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='{$lagermeist[0]['lager_platz']}' LIMIT 1");
 
         $standard_lagerplatz = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='$artikel' LIMIT 1");
@@ -3161,7 +3162,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         {
           if($this->app->erp->Version()!=="stock")
           {
-            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\"  onclick=\"document.getElementById('regal').value='$regalvalue'\"; value=\"$regalvalue\"></td></tr>");
+            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Entnahmeregal:</td><td align=\"left\">$regalvalue</td></tr>");
+            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" > (aktuell am meisten im Lager)<br>$standardlageranzeigen</td></tr>");
           }
           $this->app->Tpl->Set('FOCUSFIELD','document.getElementById("regal").focus();');
           $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><b>Zielregal:</b></td><td align=\"left\"><input type=\"text\" style=\"width:200px;border: 2px solid red\" name=\"regalneu\" id=\"regal\" value=\"\"><br>Jetzt Regal abscannen!<script type=\"text/javascript\">document.getElementById('menge').style.backgroundColor='#ececec'; document.getElementById('nummer').style.backgroundColor='#ececec'; document.getElementById('grundreferenz').style.backgroundColor='#ececec';
