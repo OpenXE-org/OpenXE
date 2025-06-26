@@ -2265,7 +2265,7 @@ class Lager extends GenLager {
     } else {
 
       if (($menge == '' || $menge == 0) && $cmd!=='umlagern') {
-//        $menge = 1;
+        $menge = 1;
       }
 
       if ($this->app->Secure->GetPOST('woher') != '') {
@@ -2531,7 +2531,7 @@ class Lager extends GenLager {
 
     $frmMenge = $menge;
     if ($menge == '' || $menge == '0') {
-//      $menge = 1;
+      $menge = 1;
     }
     //session_close();
 
@@ -2624,8 +2624,18 @@ class Lager extends GenLager {
         $error++;
         $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">{|Diese Artikelnummer gibt es nicht, oder der Artikel ist kein Lagerartikel!|}</div>");
         $nummer = '';
-
       }
+
+      // Artikel nochmal gescannt -> Menge + 1
+      if ($regal == $checkartikel) {
+        if (empty($menge)) {
+          $menge = 2;
+        } else {
+            $menge = floatval($menge) + 1;
+        }
+        $regal = '';
+      }
+
       //z.B. es liegen 1 1 5 und man will 6 haben
       $checkregal = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$regal' LIMIT 1");
       $checkregalneu = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$regalneu' LIMIT 1");
@@ -3164,7 +3174,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" > (aktuell am meisten im Lager)<br>$standardlageranzeigen</td></tr>");
           }
           $this->app->Tpl->Set('FOCUSFIELD','document.getElementById("regal").focus();');
-          if (empty($menge)) {
+          if ($menge == 1) {
               $menge = $this->app->erp->ArtikelImLagerPlatz($artikel,$regal)+0;
               $mengecolor = "#FFAAAA";
           } else {
