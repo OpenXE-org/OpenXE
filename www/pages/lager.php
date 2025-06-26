@@ -2254,7 +2254,7 @@ class Lager extends GenLager {
         $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td></td><td><br></td></tr><tr ><td>Regalvorschlag:</td><td><font size=\"5\"><b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b></font></td></tr>");
 
       }
-      $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><br><br><b>Regal:</b></td><td><br><br><input type=\"text\" name=\"regal\" id=\"regal\" style=\"border: 2px solid;width:200px;\"><br>Jetzt Regal abscannen!</td></tr>
+      $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><br><br><b>Regal:</b></td><td><br><br><input type=\"text\" name=\"regal\" id=\"regal\" style=\"border: 2px solid;width:200px;\"><br>Jetzt Regal oder weitere gleiche Artikel scannen</td></tr>
           <input type=\"hidden\" name=\"zwischenlager\" value=\"$id\">");
       $this->app->Tpl->Add('ZWISCHENLAGERINFO', '<script type="text/javascript">
           document.getElementById("regal").focus();
@@ -2626,8 +2626,12 @@ class Lager extends GenLager {
         $nummer = '';
       }
 
+      if (empty($artikel)) {
+        $error++;
+      }
+
       // Artikel nochmal gescannt -> Menge + 1
-      if ($regal == $checkartikel) {
+      if (($regal == $checkartikel) && !empty($regal)) {
         if (empty($menge)) {
           $menge = 2;
         } else {
@@ -2826,8 +2830,7 @@ class Lager extends GenLager {
                     <td><input type=\"hidden\" name=\"lager_charge_id[]\" value=\"".$tmpcharge[$y]['id']."\" ><input class=\"chargenmengen\" onchange=\"checklagermengen();\" type=\"text\" size=\"6\" name=\"lager_charge_auswahl[]\" value=\"\" /> / <input type=\"hidden\" class=\"lager_charge_menge\" name=\"lager_charge_menge[]\" value=\"".$tmpcharge[$y]['cmenge']."\" />".$this->app->erp->ReplaceMenge(0,$tmpcharge[$y]['cmenge'],0)."&nbsp;$out</td>
                     <td>".$tmpcharge[$y]['charge']."</td></tr>");
                 if($y == 0)$this->app->Tpl->Set('ONCHANGEMENGE',' onchange="checklagermengen();" ');
-              }                    
-              
+              }
             }else{
               for($y=0;$y<$ctmpcharge;$y++)
               {
@@ -3060,7 +3063,6 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
               $tmp_sn = '';
             }
 */
-
             $bestand = $this->app->erp->ArtikelImLager($artikel);
 
             if($grundreferenz!=''){
@@ -3068,7 +3070,6 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             } else {
               $grundtext = "$grund $checkname $tmp_sn";
             }
-            
 
             // umlagern3 lager_bewegung buchen
 
@@ -3111,14 +3112,14 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             if($artikelid > 0)
             {
               $this->app->Location->execute('index.php?module=artikel&action=lager&id='.$artikelid.'&msg='.$msg);
-            }                                  
+            }
             if($cmd==='umlagern'){
               $regalname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regal);
               $regalneuname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regalneu);
-              $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Artikel ($name) wurde $menge mal von '$regalname' nach '$regalneuname' umgelagert. Anzahl '$regalneuname': <b>".floatval($gesamt)." $einheit</b>, Anzahl Komplettbestand alle Regale: <b>".floatval($gesamt_alle)." $einheit</b></div>");
+              $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Umlagern erfolgreich.<br>Artikel: <b>$name</b><br>Menge: <b>$menge</b><br>Von: <b>$regalname</b><br>Nach: <b>$regalneuname</b><br>Bestand '$regalneuname': <b>".floatval($gesamt)." $einheit</b><br>Bestand gesamt: <b>".floatval($gesamt_alle)." $einheit</b></div>");
               $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&cmd=umlagern&msg='.$msg);
             }
-            $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&msg='.$msg);                                    
+            $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&msg='.$msg);
           } // ende allow
           if ($regalneu != '' && $regal > 0 && $cmd==='umlagern') {
             $msgregal = "Dieses Regal gibt es nicht!";
@@ -3177,15 +3178,17 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           if ($menge == 1) {
               $menge = $this->app->erp->ArtikelImLagerPlatz($artikel,$regal)+0;
               $mengecolor = "#FFAAAA";
+              $mengereadonly = "false";
           } else {
               $mengecolor = "#ececec";
+              $mengereadonly = "true";
           }
           $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><b>Zielregal:</b></td><td align=\"left\"><input type=\"text\" style=\"width:200px;border: 2px solid red\" name=\"regalneu\" id=\"regal\" value=\"\"><br>Jetzt Regal abscannen!<script type=\"text/javascript\">
               document.getElementById('menge').style.backgroundColor='".$mengecolor."';
               document.getElementById('nummer').style.backgroundColor='#ececec';
               document.getElementById('grundreferenz').style.backgroundColor='#ececec';
               document.getElementById('grundreferenz').readOnly=true;
-              document.getElementById('menge').readOnly=true;
+              document.getElementById('menge').readOnly=".$mengereadonly.";
               document.getElementById('nummer').readOnly=true;
               </script>
               <input type=\"hidden\" name=\"regal\" value=\"$regalvalue\"></td></tr>");
