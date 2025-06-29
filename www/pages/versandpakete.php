@@ -35,7 +35,7 @@ class Versandpakete {
                     FROM
                         versandpaket_lieferschein_position vlp
                     INNER JOIN lieferschein_position lp ON
-                        vlp.lieferschein_position = lp.id                   
+                        vlp.lieferschein_position = lp.id
                 ";
 
     function __construct($app, $intern = false) {
@@ -44,7 +44,7 @@ class Versandpakete {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "versandpakete_list");        
+        $this->app->ActionHandler("list", "versandpakete_list");
         $this->app->ActionHandler("create", "versandpakete_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "versandpakete_edit");
         $this->app->ActionHandler("add", "versandpakete_add");
@@ -80,7 +80,7 @@ class Versandpakete {
                 $width = array(  '1%','1%','1%',       '1%',   '10%',     '1%',           '2%',         '2%',       '1%',                       '1%',    '1%',     '2%',        '10%',       '1%',     '1%',      '1%',        '1%');
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('id','id','id','datum','name','lieferscheine','versandart','tracking','lmenge','vmenge','gewicht','versender','bemerkung','status','id','id');
                 $searchsql = array('name', 'if (lieferscheine IS NULL, lieferscheine_ohne_pos, lieferscheine)', 'tracking', 'bemerkung');
@@ -91,9 +91,9 @@ class Versandpakete {
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',id,'\" />') AS `auswahl`";
 
-                $menu = "";              
-                $menucol = 1;     
-                $moreinfo = true; // Allow drop down details        
+                $menu = "";
+                $menucol = 1;
+                $moreinfo = true; // Allow drop down details
 
                 $menu_link = array(
                     '<a href="index.php?module=versandpakete&action=edit&id=',
@@ -112,7 +112,7 @@ class Versandpakete {
                     ['sql' => 'l.id'],
                     '">',
                     ['sql' => 'l.belegnr'],
-                    '</a>'     
+                    '</a>'
                 );
 
                 $lieferung_link = array(
@@ -120,7 +120,7 @@ class Versandpakete {
                     ['sql' => 'l.id'],
                     '">',
                     ['sql' => 'l.belegnr'],
-                    '</a>'     
+                    '</a>'
                 );
 
                 $lieferung_ohne_pos_link = array(
@@ -128,7 +128,7 @@ class Versandpakete {
                     ['sql' => 'lop.id'],
                     '">',
                     ['sql' => 'lop.belegnr'],
-                    '</a>'     
+                    '</a>'
                 );
 
                 $tracking_link = array(
@@ -136,8 +136,8 @@ class Versandpakete {
                     ['sql' => 'tracking_link'],
                     '">',
                     ['sql' => 'tracking'],
-                    '</a>'     
-                );                
+                    '</a>'
+                );
 
                 $sql_lieferschein_mengen = "
                     SELECT
@@ -148,33 +148,33 @@ class Versandpakete {
                         SUM(lp.menge) lmenge
                     FROM
                         lieferschein_position lp
-                    INNER JOIN 
+                    INNER JOIN
                         lieferschein l ON l.id = lp.lieferschein
-                    INNER JOIN 
+                    INNER JOIN
                         artikel a ON a.id = lp.artikel
-                    WHERE 
+                    WHERE
                         a.lagerartikel
                     GROUP BY l.id
                 ";
 
                 $sql_pakete_zu_lieferschein = "
-                    SELECT 
-                        v.id,                       
+                    SELECT
+                        v.id,
                         v.datum,
-                        v.lieferschein_ohne_pos,                            
+                        v.lieferschein_ohne_pos,
                         v.versandart,
-                        v.tracking_link,                                                        
-                        v.tracking,                                                
+                        v.tracking_link,
+                        v.tracking,
                         v.gewicht,
                         v.versender,
                         v.bemerkung,
                         v.status,
                         lp.lieferschein,
                         SUM(vlp.menge) AS vmenge
-                    FROM 
+                    FROM
                         versandpakete v
-                    LEFT JOIN 
-                        versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id                       
+                    LEFT JOIN
+                        versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
                     LEFT JOIN
                         lieferschein_position lp ON vlp.lieferschein_position = lp.id
                     GROUP BY v.id, lp.lieferschein
@@ -183,8 +183,8 @@ class Versandpakete {
                 $sql = "
                     SELECT SQL_CALC_FOUND_ROWS
                         id,
-                        ".$dropnbox.",                       
-                        id id2, 
+                        ".$dropnbox.",
+                        id id2,
                         ".$app->erp->FormatDateTimeShort("datum").",
                         name,
                         lieferscheine,
@@ -218,19 +218,19 @@ class Versandpakete {
                             lieferschein_ohne_pos
                         FROM
                             (".$sql_pakete_zu_lieferschein.") AS v
-                        LEFT JOIN 
+                        LEFT JOIN
                             (".$sql_lieferschein_mengen.") as l
                             ON v.lieferschein = l.id
                         LEFT JOIN
                             lieferschein lop ON lop.id = v.lieferschein_ohne_pos
-                            ".$lieferschein_filter_where."                                              
+                            ".$lieferschein_filter_where."
                         GROUP BY
                             v.id
                     ) final
                 ";
 
-                if (!$lieferschein_filter) {                    
-                    $where = "((status IN ('neu', 'versendet')";       
+                if (!$lieferschein_filter) {
+                    $where = "((status IN ('neu', 'versendet')";
                     // Toggle filters
                     $app->Tpl->Add('JQUERYREADY', "$('#geschlossene').click( function() { fnFilterColumn1( 0 ); } );");
                     $app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn2( 0 ); } );");
@@ -244,9 +244,9 @@ class Versandpakete {
                                              else
                                              oMoreData' . $r . $name . ' = 1;
 
-                                             $(\'#' . $name . '\').dataTable().fnFilter( 
+                                             $(\'#' . $name . '\').dataTable().fnFilter(
                                                \'\',
-                                               i, 
+                                               i,
                                                0,0
                                                );
                                              }
@@ -267,10 +267,10 @@ class Versandpakete {
                     }
                     else {
                        $where .= "  )";
-                    }                
-                    // END Toggle filters   
+                    }
+                    // END Toggle filters
 
-            
+
                 } else {
                     $where = "1";
                 }
@@ -282,12 +282,12 @@ class Versandpakete {
             case "versandpakete_lieferscheine":
 
                 $allowed['versandpakete_lieferscheine'] = array('lieferscheine');
-                
+
                 $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Projekt','Monitor','Pakete','Paket hinzuf&uuml;gen');
                 $width = array(  '1%','1%',     '10%',          '10%',    '10%',  '10%',                    '5%',      '1%',     '1%',    '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('id','id','belegnr','name','lmenge','vmenge','projekt','(alle_versendet+alle_abgeschlossen*2)','id','id');
                 $searchsql = array('belegnr','name');
@@ -295,12 +295,12 @@ class Versandpakete {
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
-                $menucol = 1;             
+                $menucol = 1;
                 $moreinfoaction = "lieferschein";
-                $moreinfo = true; // Allow drop down details        
+                $moreinfo = true; // Allow drop down details
                 $aligncenter = [5,6,7,8,9,10];
 
-                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";                
+                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
 
                 $sql = Versandpakete::versandpakete_lieferstatus_sql($app);
 
@@ -309,7 +309,7 @@ class Versandpakete {
                 // Toggle filters
                 $app->Tpl->Add('JQUERYREADY', "$('#geschlossene').click( function() { fnFilterColumn1( 0 ); } );");
                 $app->Tpl->Add('JQUERYREADY', "$('#unterwegs').click( function() { fnFilterColumn2( 0 ); } );");
-             
+
                 for ($r = 1;$r <= 2;$r++) {
                     $app->Tpl->Add('JAVASCRIPT', '
                                          function fnFilterColumn' . $r . ' ( i )
@@ -319,9 +319,9 @@ class Versandpakete {
                                          else
                                          oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
                                            \'\',
-                                           i, 
+                                           i,
                                            0,0
                                            );
                                          }
@@ -358,33 +358,33 @@ class Versandpakete {
                 $width = array(  '10%',         '10%', '10%',     '10%',        '1%',                 '1%',          '1%',       '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('l.belegnr','sort','a.name_de','a.nummer','lp.menge', 'vlp.menge', 'l.belegnr', 'l.belegnr');
                 $searchsql = array('v.versand', 'v.nr', 'v.tracking', 'v.versender', 'v.gewicht', 'v.bemerkung', 'v.status');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-    
+
                 $paket_link = array(
                     '<a href="index.php?module=versandpakete&action=edit&id=',
                     ['sql' => 'vlp.versandpaket'],
                     '">',
                     ['sql' => 'vlp.versandpaket'],
-                    '</a>'     
+                    '</a>'
                 );
 
 //                $menu = "<a href=\"index.php?module=versandpakete&action=deletepos&pos=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>";
                 $menu = "";
-                $menucol = 6;         
-                $aligncenter = [5,6,7];    
+                $menucol = 6;
+                $aligncenter = [5,6,7];
 
                 $lieferschein_link = array(
                     '<a href="index.php?module=lieferschein&action=edit&id=',
                     ['sql' => 'l.id'],
                     '">',
                     ['sql' => 'l.belegnr'],
-                    '</a>'     
+                    '</a>'
                 );
 
                 $delete_link = array(
@@ -394,12 +394,12 @@ class Versandpakete {
                     ['sql' => 'vlp.id'],
                     '">',
                     "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\">",
-                    '</a>'     
+                    '</a>'
                 );
-             
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                         lp.id,
-                        ".$app->erp->ConcatSQL($lieferschein_link)." as lieferschein, 
+                        ".$app->erp->ConcatSQL($lieferschein_link)." as lieferschein,
                         lp.sort,
                         a.name_de,
                         a.nummer,
@@ -412,9 +412,9 @@ class Versandpakete {
                     INNER JOIN versandpaket_lieferschein_position vlp ON
                         v.id = vlp.versandpaket
                     INNER JOIN lieferschein_position lp ON
-                        vlp.lieferschein_position = lp.id 
+                        vlp.lieferschein_position = lp.id
                     INNER JOIN lieferschein l ON
-                        lp.lieferschein = l.id                    
+                        lp.lieferschein = l.id
                     INNER JOIN artikel a ON
 	                    lp.artikel = a.id
                         ";
@@ -432,24 +432,24 @@ class Versandpakete {
                 $width = array('10%','10%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('sort','name_de','a.nummer','lp.menge','vlp.menge','versandpaket');
                 $searchsql = array('v.versand', 'v.nr', 'v.tracking', 'v.versender', 'v.gewicht', 'v.bemerkung', 'v.status');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-    
+
                 $menu = "";
-                $menucol = 6;       
-                $aligncenter = [4,5];      
+                $menucol = 6;
+                $aligncenter = [4,5];
 
                 $paket_link = array(
                     '<a href="index.php?module=versandpakete&action=edit&id=',
                     ['sql' => 'vlp.versandpaket'],
                     '">',
                     ['sql' => 'vlp.versandpaket'],
-                    '</a>'     
+                    '</a>'
                 );
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
@@ -488,7 +488,7 @@ class Versandpakete {
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferungen", "Lieferungen");
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=list", "Versandpakete");
     }
-    
+
     function versandpakete_status_select() {
         // Status select
         $options_text = "";
@@ -499,13 +499,13 @@ class Versandpakete {
         $this->app->Tpl->Set('STATUS_OPTIONS', $options_text);
     }
 
-    function versandpakete_list() {           
+    function versandpakete_list() {
         $this->versandpakete_menu();
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=create", "Neu anlegen");
         $this->versandpakete_status_select();
         $this->app->YUI->TableSearch('TAB1', 'versandpakete_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "versandpakete_list.tpl");
-    }    
+    }
 
     function versandpakete_stapelverarbeitung() {
         // Process multi action
@@ -517,14 +517,14 @@ class Versandpakete {
             if($selectedId > 0) {
               $selectedIds[] = $selectedId;
             }
-          }          
-          $status = $this->app->Secure->GetPOST('status');          
+          }
+          $status = $this->app->Secure->GetPOST('status');
           $sql = "UPDATE versandpakete SET status = '".$status."'";
           $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
           $this->app->DB->Update($sql);
-        }     
+        }
 
-        $from = $this->app->Secure->GetGET('from');        
+        $from = $this->app->Secure->GetGET('from');
         if ($from == "lieferung") {
             $this->versandpakete_lieferung();
         }
@@ -538,20 +538,20 @@ class Versandpakete {
         $this->app->YUI->TableSearch('TAB1', 'versandpakete_lieferscheine', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Lieferungen');
         $this->app->Tpl->Parse('PAGE', "versandpakete_lieferungen.tpl");
-    }    
+    }
 
     function versandpakete_lieferung() {
-        $lieferschein_filter = (int) $this->app->Secure->GetGET('id');        
+        $lieferschein_filter = (int) $this->app->Secure->GetGET('id');
         $this->versandpakete_menu();
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=add&lieferschein=".$lieferschein_filter, "Neu anlegen");
-        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferung&id=".$lieferschein_filter, "Details");        
+        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferung&id=".$lieferschein_filter, "Details");
         $this->app->User->SetParameter('versandpakete_lieferschein_filter',$lieferschein_filter);
         $this->versandpakete_status_select();
 
-        $sql = "SELECT 
+        $sql = "SELECT
                     belegnr,
                     l.name
-                FROM 
+                FROM
                     lieferschein l
                 WHERE l.id = ".$lieferschein_filter." LIMIT 1";
 
@@ -570,68 +570,68 @@ class Versandpakete {
                 $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
             }
         }
-   
+
         $this->app->Tpl->Set('FROMID', $lieferschein_filter);
 
         $this->app->YUI->TableSearch('TAB1', 'lieferung_versandpakete_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "versandpakete_lieferung.tpl");
-    }    
+    }
 
     public function versandpakete_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
-        
-        $this->app->DB->Delete("UPDATE `versandpakete` SET status='storniert' WHERE `id` = '{$id}' AND `status` IN ('neu', 'versendet')");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde storniert.</div>");        
+
+        $this->app->DB->Delete("UPDATE `versandpakete` SET status='storniert' WHERE `id` = '{$id}' AND `status` IN ('neu', 'versendet')");
+        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde storniert.</div>");
 
         $this->versandpakete_list();
-    } 
- 
+    }
+
     public function versandpakete_deletepos() {
         $id = (int) $this->app->Secure->GetGET('id');
         $pos = (int) $this->app->Secure->GetGET('pos');
-        
+
         $sql = "DELETE vlp FROM `versandpaket_lieferschein_position` vlp INNER JOIN versandpakete v ON vlp.versandpaket = v.id WHERE vlp.`id` = '{$pos}' AND v.status = 'neu'";
 
-        $this->app->DB->Delete($sql);        
+        $this->app->DB->Delete($sql);
         $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id);
-    } 
+    }
 
     /*
      * Edit versandpakete item
      * If id is empty, create a new one
      */
-        
+
     function versandpakete_edit() {
 
         $id = $this->app->Secure->GetGET('id');
         $lieferung = $this->app->Secure->GetGET('lieferung');
 
         if ($lieferung) {
-            $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferung&id=".$lieferung, "Zur&uuml;ck");        
+            $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=lieferung&id=".$lieferung, "Zur&uuml;ck");
         }
 
         $this->versandpakete_menu();
-        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");        
+        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");
 
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('versandpakete',$id))
         {
           return;
-        }   
-              
+        }
+
         $this->app->Tpl->Set('ID', $id);
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
-                
+
         if (empty($id)) {
             // New item
             $new_item = true;
             $id = 'NULL';
             $sql = "INSERT INTO versandpakete (status, versender) VALUES ('neu','".$this->app->User->GetName()."')";
             $this->app->DB->Insert($sql);
-            $id = $this->app->DB->GetInsertId();                
+            $id = $this->app->DB->GetInsertId();
             $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id);
-        } 
+        }
 
         // Check versandart
         $sql = "UPDATE versandpakete SET versandart = (SELECT versandart FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") v INNER JOIN lieferschein l ON v.lieferschein = l.id WHERE v.versandpaket = ".$id." LIMIT 1) WHERE id = ".$id;
@@ -639,15 +639,15 @@ class Versandpakete {
 
         switch ($submit) {
             case 'speichern':
-                // Write to database                
+                // Write to database
                 // Add checks here
 
                 $sql = "SELECT * FROM versandpakete WHERE id = ".$id;
                 $paket_db = $this->app->DB->SelectRow($sql);
                 $input['status'] = $paket_db['status']; // Status is not changeable
-                if ($input['status'] != 'neu') { 
+                if ($input['status'] != 'neu') {
                     $input = Array('bemerkung' => $input['bemerkung']);
-                } 
+                }
 
                 if (!empty($paket_db['tracking'])) { // Tracking is not changeable
                     unset($input['tracking']);
@@ -656,7 +656,7 @@ class Versandpakete {
 
                 $columns = "id, ";
                 $values = "$id, ";
-                $update = "";        
+                $update = "";
                 $fix = "";
                 foreach ($input as $key => $value) {
                     $columns = $columns.$fix.$key;
@@ -668,7 +668,7 @@ class Versandpakete {
                 $sql = "INSERT INTO versandpakete (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
                 $this->app->DB->Insert($sql);
                 $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
-            break;            
+            break;
             case 'absenden':
                 $sql = "UPDATE versandpakete SET status = 'versendet', versender = '".$this->app->User->GetName()."' WHERE id = ".$id;
                 $this->app->DB->Update($sql);
@@ -678,15 +678,15 @@ class Versandpakete {
                 $this->app->DB->Update($sql);
             break;
         }
-         
+
         // Load values again from database
 	    $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',v.id,'\" />') AS `auswahl`";
-        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS v.id, $dropnbox, ".$this->app->erp->FormatDate('datum')." as datum, v.versand, v.versandart, v.nr, v.tracking, v.tracking_link, v.versender, v.gewicht, v.bemerkung, v.status, v.id FROM versandpakete v"." WHERE id=$id");        
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS v.id, $dropnbox, ".$this->app->erp->FormatDate('datum')." as datum, v.versand, v.versandart, v.nr, v.tracking, v.tracking_link, v.versender, v.gewicht, v.bemerkung, v.status, v.id FROM versandpakete v"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
+            $this->app->Tpl->Set(strtoupper($key), $value);
         }
-       
+
         // Check for only one delivery adress
         $this->app->YUI->AutoComplete("lieferschein", "lieferschein");
         $sql = "SELECT DISTINCT a.name, l.adresse FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") vpl INNER JOIN lieferschein l ON vpl.lieferschein = l.id  INNER JOIN adresse a ON l.adresse = a.id WHERE vpl.versandpaket = ".$id;
@@ -695,48 +695,48 @@ class Versandpakete {
             if (count($adress_check) != 1) {
                 // More than one adress for the packet -> error
             } else {
-                $this->app->Tpl->Set('ADRESSE', $adress_check[0]['name']);   
+                $this->app->Tpl->Set('ADRESSE', $adress_check[0]['name']);
                 $this->app->YUI->AutoComplete("lieferschein", "kundenlieferschein",0,"&adresse=".$adress_check[0]['adresse']);
             }
-        } 
-        if ($new_item) {
-            $this->app->Tpl->Set('LIEFERSCHEIN_POS_HIDDEN', 'hidden');      
         }
-        $sql = "SELECT 
+        if ($new_item) {
+            $this->app->Tpl->Set('LIEFERSCHEIN_POS_HIDDEN', 'hidden');
+        }
+        $sql = "SELECT
                     lieferschein_ohne_pos,
                     l.belegnr,
                     lop.belegnr lieferschein_ohne_pos_belegnr,
                     GROUP_CONCAT(lieferschein_position) lieferschein_position,
                     l.versandart
-                FROM versandpakete v 
-                LEFT JOIN lieferschein l ON v.lieferschein_ohne_pos = l.id 
-                LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id 
+                FROM versandpakete v
+                LEFT JOIN lieferschein l ON v.lieferschein_ohne_pos = l.id
+                LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
                 LEFT JOIN lieferschein lop ON lop.id = v.lieferschein_ohne_pos
                 WHERE v.id = ".$id."
                 GROUP BY v.id
                 ";
-        $lieferschein_check = $this->app->DB->SelectArr($sql);  
+        $lieferschein_check = $this->app->DB->SelectArr($sql);
 
         if (empty($lieferschein_check[0]['lieferschein_position']) && empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {
-            $this->app->Tpl->Set('NO_ADDRESS_HIDDEN', 'hidden');                            
-            $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');  
+            $this->app->Tpl->Set('NO_ADDRESS_HIDDEN', 'hidden');
+            $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
         }
         if (empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {
-            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS_HIDDEN', 'hidden');                
+            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS_HIDDEN', 'hidden');
         }
-        if (!empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {         
-            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS', $lieferschein_check[0]['lieferschein_ohne_pos_belegnr']);      
-            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS_ID', $lieferschein_check[0]['lieferschein_ohne_pos']); 
-        } 
+        if (!empty($lieferschein_check[0]['lieferschein_ohne_pos'])) {
+            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS', $lieferschein_check[0]['lieferschein_ohne_pos_belegnr']);
+            $this->app->Tpl->Set('LIEFERSCHEIN_OHNE_POS_ID', $lieferschein_check[0]['lieferschein_ohne_pos']);
+        }
         if (empty($lieferschein_check[0]['lieferschein_position'])) {
-            $this->app->Tpl->Set('LIEFERSCHEIN_POS_HIDDEN', 'hidden');      
+            $this->app->Tpl->Set('LIEFERSCHEIN_POS_HIDDEN', 'hidden');
         }
         if ($result[0]['status'] != 'neu') {
             $this->app->Tpl->Set('LIEFERSCHEIN_ADD_POS_HIDDEN', 'hidden');
             $this->app->Tpl->Set('LIEFERSCHEIN_GEWICHT_DISABLED', 'disabled');
             $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
             $this->app->Tpl->Set('TRACKING_DISABLED', 'disabled');
-            $this->app->Tpl->Set('TRACKING_LINK_EDIT_HIDDEN', 'hidden');   
+            $this->app->Tpl->Set('TRACKING_LINK_EDIT_HIDDEN', 'hidden');
         }
         if ($result[0]['status'] != 'versendet') {
             $this->app->Tpl->Set('ABSCHLIESSEN_HIDDEN', 'hidden');
@@ -745,10 +745,10 @@ class Versandpakete {
         }
         if (!empty($result[0]['tracking'])) {
              $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
-        } else {         
+        } else {
              $this->app->Tpl->Set('ABSENDEN_HIDDEN', 'hidden');
         }
-        if (empty($result[0]['tracking_link'])) {        
+        if (empty($result[0]['tracking_link'])) {
              $this->app->Tpl->Set('TRACKING_LINK_HIDDEN', 'hidden');
         }
 
@@ -757,10 +757,10 @@ class Versandpakete {
             $this->app->Tpl->Set('PAKETMARKE_ADD_HIDDEN', 'hidden');
         } else {
             $this->app->Tpl->Set('TRACKING_DISABLED', 'disabled');
-            $this->app->Tpl->Set('TRACKING_LINK_EDIT_HIDDEN', 'hidden');    
-        }        
+            $this->app->Tpl->Set('TRACKING_LINK_EDIT_HIDDEN', 'hidden');
+        }
 
-        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('paketmarke','versandpaket',$id);         
+        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('paketmarke','versandpaket',$id);
         if (!empty($file_attachments)) {
           foreach ($file_attachments as $file_attachment) {
               $this->app->Tpl->Add('PAKETMARKE_LINK', "index.php?module=dateien&action=send&id=".$file_attachment);
@@ -770,25 +770,25 @@ class Versandpakete {
         }
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS
-                            ".$this->app->YUI->IconsSQL_versandpaket()." icons 
-                         FROM 
+                            ".$this->app->YUI->IconsSQL_versandpaket()." icons
+                         FROM
                             (
-                            SELECT      
+                            SELECT
                                 ".$this->app->erp->FormatMenge('SUM(lp.menge)')." as lmenge,
                                 ".$this->app->erp->FormatMenge('SUM(vlp.menge)')." AS vmenge,
                                 v.status,
                                 v.lieferschein_ohne_pos,
                                 GROUP_CONCAT(DISTINCT lieferschein SEPARATOR ', ') as lieferscheine,
                                 tracking
-                            FROM 
+                            FROM
                                 versandpakete v
-                            LEFT JOIN 
-                                versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id                       
                             LEFT JOIN
-                                lieferschein_position lp ON vlp.lieferschein_position = lp.id                                             
+                                versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
+                            LEFT JOIN
+                                lieferschein_position lp ON vlp.lieferschein_position = lp.id
                             WHERE v.id = ".$id."
                             GROUP BY v.id
-                        ) temp                        
+                        ) temp
                         ";
 
         $icons = $this->app->DB->SelectArr($sql);
@@ -806,38 +806,40 @@ class Versandpakete {
         $this->app->Tpl->Parse('PAGE', "versandpakete_edit.tpl");
     }
 
-    function versandpakete_add() {     
+    function versandpakete_add() {
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
 
-        $this->versandpakete_menu();
-        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");        
-        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Artikel hinzuf&uuml;gen');
-        if (empty($id)) { 
+        $msg = '';
 
-            $lieferschein = $this->app->Secure->GetGET('lieferschein'); 
-            if (empty($lieferschein)) {               
-                $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
+        $this->versandpakete_menu();
+        $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");
+        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Artikel hinzuf&uuml;gen');
+        if (empty($id)) {
+
+            $lieferschein = $this->app->Secure->GetGET('lieferschein');
+            if (empty($lieferschein)) {
+                $msg .= $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
                 $this->app->Location->execute("Location: index.php?module=versandpakete&action=list&msg=$msg");
             } else {
                 $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein, false); // Parameters: Target db?, value, from form?
 
                 if (empty($lieferschein_belegnr)) {
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Lieferschein ist nicht freigegeben.</div>");
-                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=list&msg=$msg");  
+                    $msg .= $this->app->erp->base64_url_encode("<div class=\"error\">Lieferschein ist nicht freigegeben.</div>");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=list&msg=$msg");
                 }
 
                 // Flag lieferschein for versand
                 $sql = "UPDATE lieferschein SET versand_status = 1 WHERE id = ".$lieferschein." AND versand_status = 0";
                 $this->app->DB->Update($sql);
 
-                // Check if there is an unused paket waiting... 
-                $sql = "SELECT 
+                // Check if there is an unused paket waiting...
+                $sql = "SELECT
                             v.id,
                             lieferschein_ohne_pos,
                             l.id AS lieferschein_mit_pos
                         FROM
-                            versandpakete v 
+                            versandpakete v
                         LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.versandpaket = v.id
                         LEFT JOIN lieferschein_position lp ON vlp.lieferschein_position = lp.id
                         LEFT JOIN lieferschein l on l.id = lp.lieferschein
@@ -851,87 +853,91 @@ class Versandpakete {
 
                 if (!empty($waiting_paket)) {
                     // Use existing
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$waiting_paket[0]['id']." wurde zugeordnet.</div>");
-                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&id=".$waiting_paket[0]['id']."&lieferschein=".$lieferschein."&msg=$msg");                    
+                    $msg .= $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$waiting_paket[0]['id']." wurde zugeordnet.</div>");
+                    $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&id=".$waiting_paket[0]['id']."&lieferschein=".$lieferschein."&msg=$msg");
                 }
                 else {
                     // Create new paket and add the given lieferschein
                     $sql = "INSERT INTO versandpakete (status, lieferschein_ohne_pos, versender) VALUES ('neu',".$lieferschein.",'".$this->app->User->GetName()."')";
                     $this->app->DB->Insert($sql);
-                    $id = $this->app->DB->GetInsertId();  
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$id." wurde erstellt.</div>");
+                    $id = $this->app->DB->GetInsertId();
+                    $msg .= $this->app->erp->base64_url_encode("<div class=\"success\">Versandpaket Paket Nr. ".$id." wurde erstellt.</div>");
                     $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&id=".$id."&lieferschein=".$lieferschein."&msg=$msg");
                 }
             }
         } else { // $id not empty
             $lieferschein_post = $this->app->Secure->GetPOST('lieferschein');
-            $lieferschein = $this->app->erp->ReplaceLieferschein(true, $lieferschein_post, true); // Parameters: Target db?, value, from form?           
+            $lieferschein = $this->app->erp->ReplaceLieferschein(true, $lieferschein_post, true); // Parameters: Target db?, value, from form?
             $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein_post, true); // Parameters: Target db?, value, from form?
-            if (empty($lieferschein)) {     
-                $lieferschein = $this->app->Secure->GetGET('lieferschein');          
-                if (empty($lieferschein)) {     
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
+            if (empty($lieferschein)) {
+                $lieferschein = $this->app->Secure->GetGET('lieferschein');
+                if (empty($lieferschein)) {
+                    $msg .= $this->app->erp->base64_url_encode("<div class=\"error\">Kein Lieferschein angegeben.</div>");
                     $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
-                }    
+                }
                 $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein, false); // Parameters: Target db?, value, from form?
                 $input['lieferschein'] = $lieferschein;
             } else {
 
             }
-        }      
+        }
 
         $this->app->erp->SeriennummernCheckLieferscheinWarnung(lieferschein_id: $lieferschein);
-        
+
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('versandpakete',$id))
         {
           return;
-        }           
+        }
 
     	$artikel_input = $this->app->Secure->GetPOST('artikel');
-        $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?   
-    	$menge = $this->app->Secure->GetPOST('menge');             
-        $this->app->Tpl->Set('ID', $id);      
-        $submit = $this->app->Secure->GetPOST('submit');                   
-   
+        $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?
+    	$menge = $this->app->Secure->GetPOST('menge');
+        $this->app->Tpl->Set('ID', $id);
+        $submit = $this->app->Secure->GetPOST('submit');
+
         // Check Status
         $sql = "SELECT status, lieferschein_ohne_pos FROM versandpakete WHERE id = ".$id." LIMIT 1";
         $result = $this->app->DB->SelectArr($sql);
         if ($result[0]['status'] != 'neu') {
             return;
-        }      
+        }
 
         switch ($submit) {
-            case 'hinzufuegen':    
+            case 'hinzufuegen':
 
-                if ($menge <= 0) {
-                    $msg = "<div class=\"error\">Falsche Mengenangabe.</div>";
+                if ($menge == '') {
+                    $menge = 1;
+                }
+
+                if ($menge < 0) {
+                    $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
                     break;
                 }
 
                 // Find a matching lieferschein_position
-                $sql = "SELECT 
-                            lp.id AS lp_id, 
+                $sql = "SELECT
+                            lp.id AS lp_id,
                             MAX(lp.menge) AS lp_menge,
                             SUM(vlp.menge) AS v_menge
-                        FROM lieferschein_position lp 
+                        FROM lieferschein_position lp
                         INNER JOIN artikel a ON lp.artikel = a.id
-                        LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id                         
+                        LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                         WHERE lp.lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel." AND a.lagerartikel
                         GROUP BY lp.id
                         ";
 
-                $lieferschein_positionen = $this->app->DB->SelectArr($sql);        
+                $lieferschein_positionen = $this->app->DB->SelectArr($sql);
                 if (empty($lieferschein_positionen)) {
-                    $msg = "<div class=\"error\">Keine passende Lieferscheinposition gefunden.</div>";
+                    $msg .= "<div class=\"error\">Keine passende Lieferscheinposition gefunden.</div>";
                     break;
                 }
 
-                $buchmenge_gesamt = 0;                                
+                $buchmenge_gesamt = 0;
                 $buchmenge = 0;
 
                 foreach($lieferschein_positionen as $lieferschein_position) {
-                    $restmenge = $lieferschein_position['lp_menge']-$lieferschein_position['v_menge'];                
+                    $restmenge = $lieferschein_position['lp_menge']-$lieferschein_position['v_menge'];
                     if ($restmenge <= 0 || $menge <= 0) {
                         continue;
                     }
@@ -939,59 +945,68 @@ class Versandpakete {
                         $buchmenge = $restmenge;
                     } else {
                         $buchmenge = $menge;
-                    }                   
+                    }
                     $buchmenge_gesamt += $buchmenge;
                     $menge -= $buchmenge;
 
                     $sql = "INSERT INTO versandpaket_lieferschein_position (versandpaket, lieferschein_position, menge) VALUES (".$id.",".$lieferschein_position['lp_id'].",".$buchmenge.") ON DUPLICATE KEY UPDATE menge = menge+".$buchmenge."";
-                    $this->app->DB->Insert($sql);      
+                    $this->app->DB->Insert($sql);
 
                     if ($menge <= 0) {
                         break;
                     }
 
-                }    
+                }
 
                 if ($menge > 0) {
-                    $msg = "<div class=\"error\">Menge wurde angepasst auf ".$buchmenge_gesamt.".</div>";
-                }   
+                    $msg .= "<div class=\"error\">Menge wurde angepasst auf ".$buchmenge_gesamt.".</div>";
+                }
+                if ($buchmenge > 0) {                
+                    $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                    $menge_in_paketen = $this->app->DB->Select($sql)+0;
+                    $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                    $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
+                    $menge_offen = $menge_im_lieferschein-$menge_in_paketen;
+                    $msg .= "<div class=\"info\">Artikel $artikel_input wurde ".$buchmenge." mal hinzugef&uuml;gt.<br>Menge in Paketen: ".$menge_in_paketen."<br>Menge offen: ".$menge_offen."</div>";
+                }
+
 
             break;
             case 'lieferschein_komplett_hinzufuegen':
                 // Find all lieferschein_position
-                $sql = "SELECT 
-                            lp.id AS lp_id, 
+                $sql = "SELECT
+                            lp.id AS lp_id,
                             MAX(lp.menge) AS lp_menge,
                             SUM(vlp.menge) AS v_menge
-                        FROM lieferschein_position lp 
+                        FROM lieferschein_position lp
                         INNER JOIN artikel a ON lp.artikel = a. id
-                        LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id 
+                        LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                         WHERE lp.lieferschein = ".$lieferschein." AND a.lagerartikel
                         GROUP BY lp.id
                         ";
 
-                $lieferschein_positionen = $this->app->DB->SelectArr($sql);        
+                $lieferschein_positionen = $this->app->DB->SelectArr($sql);
                 if (empty($lieferschein_positionen)) {
-                    $msg = "<div class=\"error\">Keine passende Lieferscheinposition gefunden.</div>";
+                    $msg .= "<div class=\"error\">Keine passende Lieferscheinposition gefunden.</div>";
                     break;
                 }
                 $buchmenge_gesamt = 0;
                 foreach($lieferschein_positionen as $lieferschein_position) {
-                    $buchmenge = $lieferschein_position['lp_menge']-$lieferschein_position['v_menge']; 
+                    $buchmenge = $lieferschein_position['lp_menge']-$lieferschein_position['v_menge'];
                     if ($buchmenge <= 0) {
                         continue;
                     }
                     $buchmenge_gesamt += $buchmenge;
                     $sql = "INSERT INTO versandpaket_lieferschein_position (versandpaket, lieferschein_position, menge) VALUES (".$id.",".$lieferschein_position['lp_id'].",".$buchmenge.") ON DUPLICATE KEY UPDATE menge = menge+'".$buchmenge."'";
-                    $this->app->DB->Insert($sql);      
-                }    
+                    $this->app->DB->Insert($sql);
+                }
 
                 if ($buchmenge_gesamt > 0) {
-                    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Lieferschein hinzugef&uuml;gt.</div>");
+                    $msg .= $this->app->erp->base64_url_encode("<div class=\"info\">Lieferschein hinzugef&uuml;gt.</div>");
                     $this->app->Location->execute("Location: index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
                 }
             break;
-        }                 
+        }
 
         $this->app->Tpl->Set('LIEFERSCHEIN', $lieferschein_belegnr);
         $this->app->Tpl->Set('LIEFERSCHEIN_ID', $lieferschein);
@@ -999,13 +1014,14 @@ class Versandpakete {
 
         $this->app->YUI->AutoComplete("artikel", "artikelnummerbeleg",0,"&doctype=lieferschein&doctypeid=".$lieferschein);
 
-        // For transfer to tablesearch    
+        // For transfer to tablesearch
         $this->app->User->SetParameter('versandpakete_lieferschein', $lieferschein);
         $this->app->User->SetParameter('versandpakete_versandpaket', $id);
 
         $complete = $this->versandpakete_check_completion($lieferschein,null);
         if ($complete === true) {
-            $this->app->Tpl->addMessage('success', 'Lieferung vollst&auml;ndig in Paketen.', false, 'MESSAGE');
+            $msg = $this->app->erp->base64_url_encode($msg);
+            $this->app->Location->execute("index.php?module=versandpakete&action=edit&id=".$id."&msg=$msg");
         }
         else {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
@@ -1022,7 +1038,7 @@ class Versandpakete {
 
         if (!empty($lieferung)) {
             $sql_where_lieferung = " AND l.id = ".$lieferung;
-        } else {   
+        } else {
             $sql_join_lieferschein = "
                 INNER JOIN (
                     SELECT DISTINCT
@@ -1035,9 +1051,9 @@ class Versandpakete {
                 ON lieferschein_filter.lieferschein = lp.lieferschein
             ";
         }
-       
+
         $sql_lieferschein_mengen = "
-            SELECT 
+            SELECT
                 belegnr,
                 lp.id lieferschein_position,
                 menge lmenge
@@ -1048,31 +1064,31 @@ class Versandpakete {
             INNER JOIN
                 lieferschein l on l.id = lp.lieferschein
             ".$sql_join_lieferschein."
-            WHERE 
+            WHERE
                 a.lagerartikel
             ".$sql_where_lieferung."
-            GROUP BY 
+            GROUP BY
                 lp.id
         ";
 
         // Check completion
         $sql_versandmengen = "
-                SELECT 
+                SELECT
                     v.id versandpaket,
-                    lieferschein_position, 
-                    SUM(menge) vmenge 
-                FROM 
+                    lieferschein_position,
+                    SUM(menge) vmenge
+                FROM
                     versandpaket_lieferschein_position vlp
                 INNER JOIN
                     versandpakete v ON v.id = vlp.versandpaket
                 WHERE
-                    v.status <> 'storniert'                
-                GROUP BY 
+                    v.status <> 'storniert'
+                GROUP BY
                     lieferschein_position
             ";
 
         $sql_intermediate = "
-            SELECT 
+            SELECT
                 vmengen.versandpaket,
                 GROUP_CONCAT(DISTINCT lmengen.belegnr SEPARATOR ', ') lieferscheine,
                 SUM(lmenge) lmenge,
@@ -1099,17 +1115,17 @@ class Versandpakete {
                 return(true);
             } else {
                 return(false);
-            }      
+            }
         } else {
             return(null);
         }
-    }    
+    }
 
     function versandpakete_minidetail() {
-        $id = $this->app->Secure->GetGET('id');        
+        $id = $this->app->Secure->GetGET('id');
         $table = new EasyTable($this->app);
         $table->Query("SELECT SQL_CALC_FOUND_ROWS
-                        l.belegnr as Lieferschein, 
+                        l.belegnr as Lieferschein,
                         lp.sort as Pos,
                         a.name_de as Artikel,
                         a.nummer as `Artikel-Nr.`,
@@ -1120,9 +1136,9 @@ class Versandpakete {
                     INNER JOIN versandpaket_lieferschein_position vlp ON
                         v.id = vlp.versandpaket
                     INNER JOIN lieferschein_position lp ON
-                        vlp.lieferschein_position = lp.id 
+                        vlp.lieferschein_position = lp.id
                     INNER JOIN lieferschein l ON
-                        lp.lieferschein = l.id                    
+                        lp.lieferschein = l.id
                     INNER JOIN artikel a ON
 	                    lp.artikel = a.id
                     WHERE vlp.versandpaket = ".$id."
@@ -1133,10 +1149,10 @@ class Versandpakete {
         $table->DisplayNew('TABLE', 'Menge Paket', 'noAction');
         $this->app->Tpl->Output('table.tpl');
         $this->app->ExitXentral();
-    }        
+    }
 
     function versandpakete_minidetaillieferschein() {
-        $id = $this->app->Secure->GetGET('id');        
+        $id = $this->app->Secure->GetGET('id');
         $table = new EasyTable($this->app);
 
         $paket_link = array(
@@ -1144,28 +1160,28 @@ class Versandpakete {
             ['sql' => 'versandpaket'],
             '">',
             ['sql' => 'versandpaket'],
-            '</a>'     
+            '</a>'
         );
 
         $table->Query("
-                            SELECT 
+                            SELECT
                                 lp.sort AS Pos,
                                 lp.bezeichnung,
                                 ".$this->app->erp->FormatMenge('lp.menge')." AS 'Menge',
                                 ".$this->app->erp->FormatMenge('SUM(vlp.menge)')." AS 'Menge in Versandpaketen',
                                 GROUP_CONCAT(DISTINCT ".$this->app->erp->ConcatSQL($paket_link)." SEPARATOR ', ')
-                            FROM 
-                                lieferschein l 
+                            FROM
+                                lieferschein l
                             INNER JOIN lieferschein_position lp ON lp.lieferschein = l.id
                             INNER JOIN artikel a ON lp.artikel = a.id
-                            LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id 
-                            WHERE l.id = ".$id." AND a.lagerartikel                            
+                            LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
+                            WHERE l.id = ".$id." AND a.lagerartikel
                             GROUP BY lp.id"
                     );
         $table->DisplayNew('TABLE', 'Paket', 'noAction');
         $this->app->Tpl->Output('table.tpl');
         $this->app->ExitXentral();
-    }        
+    }
 
 
     function versandpakete_paketmarke()
@@ -1183,9 +1199,9 @@ class Versandpakete {
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
         $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
-    
+
         $sql = "
-            SELECT 
+            SELECT
                 SUM(COALESCE(a.gewicht,0)*vlp.menge)
             FROM
                 artikel a
@@ -1197,7 +1213,7 @@ class Versandpakete {
             WHERE vlp.versandpaket = ".$id."
         ";
 
-        $gewicht = $this->app->DB->Select($sql);       
+        $gewicht = $this->app->DB->Select($sql);
         $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
@@ -1236,17 +1252,17 @@ class Versandpakete {
                             INNER JOIN lieferschein_position lp ON lp.lieferschein = l.id
                             LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                             LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
-                            LEFT JOIN versandpakete vop ON vop.lieferschein_ohne_pos = l.id                            
+                            LEFT JOIN versandpakete vop ON vop.lieferschein_ohne_pos = l.id
                             LEFT JOIN projekt p ON p.id = l.projekt
                             WHERE
                                 l.versand_status <> 0 AND
-                                l.belegnr <> '' AND 
+                                l.belegnr <> '' AND
                                 (v.status <> 'storniert' OR v.status IS NULL)
                             GROUP BY lp.id
                 ";
 
                 $sql_lieferschein = "
-                    SELECT 
+                    SELECT
                         id,
                         projekt,
                         belegnr,
@@ -1264,7 +1280,7 @@ class Versandpakete {
                     GROUP BY id
                 ";
 
-                $sql = "                        
+                $sql = "
                         SELECT SQL_CALC_FOUND_ROWS
                             id,
                             ".$dropnbox.",
@@ -1273,13 +1289,13 @@ class Versandpakete {
                             ".$app->erp->FormatMenge("lmenge").",
                             ".$app->erp->FormatMenge("vmenge").",
                             projekt,
-                            ".$app->YUI->IconsSQL_lieferung().",  
+                            ".$app->YUI->IconsSQL_lieferung().",
                             if(vmenge > 0 OR vop IS NOT NULL,CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>'),''),
                             id,
                             alle_abgeschlossen
                         FROM (
                             ".$sql_lieferschein."
-                        ) l                        
+                        ) l
                        ";
         return($sql);
     }
