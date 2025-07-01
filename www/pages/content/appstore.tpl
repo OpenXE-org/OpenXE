@@ -4,7 +4,6 @@
 		<div class="appstore-tabs">
 			<span class="appstore-tab [ACTIVEALL]" data-filter="all">{| App store |}</span>
 			<span class="appstore-tab [ACTIVEINSTALLED]" data-filter="installed">{| My Apps |}</span>
-			<a class="appstore-tab" href="update.php"><span class="tab-counter">[COUNTUPDATES]</span>{| Updates |}</a>
 		</div>
 
 		<h1 class="appstore-headline">{| Every business is unique.|}<br>{| Find the app that is right for yours. |}</h1>
@@ -59,20 +58,4 @@
 			</div>
 		</div>
 	</div>
-
-	<div id="anfragepopup">
-		<input type="hidden" value="" id="anfragemd5">
-		<p>{|Bitte best&auml;tigen Sie die Aktivierung der Testphase.|}</p>
-	</div>
-	<div id="anfrageokpopup">
-		<p id="anfrageoknachricht"></p>
-	</div>
-</div>
-<div id="modalbuy" data-updatekey="0">
-	<fieldset><legend>{|Freischalten|}</legend>
-		<label id="modulbuytext" for="newvalue">
-
-		</label>
-		<input type="text" value="0" id="newvalue" />
-	</fieldset>
 </div>

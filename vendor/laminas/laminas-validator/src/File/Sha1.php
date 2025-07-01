@@ -1,15 +1,18 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\File;
+
+use function array_keys;
+use function array_unique;
+use function hash_file;
+use function is_readable;
 
 /**
  * Validator for the sha1 hash of given files
+ *
+ * @deprecated Since 2.61.0 Use the {@link Hash} validator and specify `sha1` as the algorithm
+ *
+ * @final
  */
 class Sha1 extends Hash
 {
@@ -18,13 +21,11 @@ class Sha1 extends Hash
     /**
      * @const string Error constants
      */
-    const DOES_NOT_MATCH = 'fileSha1DoesNotMatch';
-    const NOT_DETECTED   = 'fileSha1NotDetected';
-    const NOT_FOUND      = 'fileSha1NotFound';
+    public const DOES_NOT_MATCH = 'fileSha1DoesNotMatch';
+    public const NOT_DETECTED   = 'fileSha1NotDetected';
+    public const NOT_FOUND      = 'fileSha1NotFound';
 
-    /**
-     * @var array Error message templates
-     */
+    /** @var array Error message templates */
     protected $messageTemplates = [
         self::DOES_NOT_MATCH => 'File does not match the given sha1 hashes',
         self::NOT_DETECTED   => 'A sha1 hash could not be evaluated for the given file',
@@ -44,6 +45,8 @@ class Sha1 extends Hash
     /**
      * Returns all set sha1 hashes
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getSha1()
@@ -53,6 +56,8 @@ class Sha1 extends Hash
 
     /**
      * Sets the sha1 hash for one or multiple files
+     *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
      *
      * @param  string|array $options
      * @return Hash Provides a fluent interface
@@ -66,6 +71,8 @@ class Sha1 extends Hash
     /**
      * Adds the sha1 hash for one or multiple files
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @param  string|array $options
      * @return Hash Provides a fluent interface
      */
@@ -78,8 +85,8 @@ class Sha1 extends Hash
     /**
      * Returns true if and only if the given file confirms the set hash
      *
-     * @param  string $value|array Filename to check for hash
-     * @param  array        $file  File data from \Laminas\File\Transfer\Transfer (optional)
+     * @param (int|string)[]|string $value Filename to check for hash
+     * @param array                 $file  File data from \Laminas\File\Transfer\Transfer (optional)
      * @return bool
      */
     public function isValid($value, $file = null)
