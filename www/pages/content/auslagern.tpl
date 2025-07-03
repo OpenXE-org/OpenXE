@@ -50,22 +50,16 @@ function countChecks(objCheck){
     </select></td></tr>
 
 
-  <tr><td><br></td><td></td></tr>
   <tr><td><b>{|Menge|}*:</b></td><td align="left"><input type="text" name="menge" [ONCHANGEMENGE] id="menge" value="[MENGE]"  size="27" style="width:200px" id="menge">[MSGMENGE]</td></tr>
   <tr valign="top"><td><b>{|Artikelnummer|}*:</b></td><td align="left">[NUMMERAUTOSTART]<input type="text" name="nummer" style="width:200px" id="nummer" value="[NUMMER]" [ARTIKELSTYLE]  size="27">[NUMMERAUTOEND][MSGARTIKEL]</td></tr>
 
+[ZWISCHENLAGERINFO]
 [STARTDISABLESTOCK]
-  <tr><td><br><br></td><td></td></tr>
   <tr><td>{|Projekt|}:</td><td align="left">[PROJEKTSTART]<input name="projekt" id="projekt" type="text" value="[PROJEKT]" size="27" style="width:200px">[PROJEKTENDE][MSGPROJEKT]</td></tr>
   <tr><td>{|Kunde|} / {|Lieferant|} / {|Mitarbeiter|}*:</td><td align="left">[ADRESSESTART]<input type="text" name="adresse" value="[ADRESSE]" style="width:200px" id="adresse"  size="27">[ADRESSEEND][MSGADRESSE]</td></tr>
 
 [ENDEDISABLESTOCK]
   <tr><td>{|Grund|}:</td><td><input type="text" id="grundreferenz" name="grundreferenz" value="[GRUNDREFERENZ]"  size="27" style="width:200px"></td></tr>
-  <tr><td><br><br></td><td></td></tr>
-
-[ZWISCHENLAGERINFO]
-<tr><td><br></td><td></td></tr>
-
 [BEZEICHNUNG]
 </table>
 <br>
