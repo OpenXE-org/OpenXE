@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -17,7 +17,7 @@ include __DIR__.'/_gen/lager.php';
 class Lager extends GenLager {
   /** @var Application $app */
   var $app;
-  
+
   /**
    * @param string $typ
    *
@@ -36,7 +36,7 @@ class Lager extends GenLager {
           return "if(ifnull(art.inventurekaktiv,0) <> 0,'EUR',if(ifnull(ek.waehrung,'')<>'',ek.waehrung,'EUR'))";
         break;
         default:
-          return "            
+          return "
             if(ifnull(art.verwendeberechneterek,0) <> 0,if(ifnull(art.berechneterekwaehrung,'')<>'',art.berechneterekwaehrung,'EUR')
               ,
               if(ifnull(ek.waehrung,'')<>'',ek.waehrung,'EUR')
@@ -53,14 +53,14 @@ class Lager extends GenLager {
    */
   public static function PreisTypErgebnis(string $typ = 'letzterek') : string {
       switch($typ)
-      {        
+      {
         case 'kalkulierterek':
             return("if (art.verwendeberechneterek,'K','E')");
         break;
         case 'inventurwert':
             return("if (art.inventurekaktiv,'I','E')");
         break;
-        default:       
+        default:
         case 'letzterek':
             return("'E'");
         break;
@@ -73,7 +73,7 @@ class Lager extends GenLager {
    * @return string
    */
   public static function EinzelPreis($typ = 'letzterek')
-  { 
+  {
     switch($typ)
     {
         case 'letzterek':
@@ -83,7 +83,7 @@ class Lager extends GenLager {
           return "if(ifnull(art.inventurekaktiv,0) <> 0,art.inventurek,ifnull(ek.preis,0))";
         break;
         default:
-          return "            
+          return "
             if(ifnull(art.verwendeberechneterek,0) <> 0,art.berechneterek
               ,
               ifnull(ek.preis,0)
@@ -119,9 +119,9 @@ class Lager extends GenLager {
         //$sql = "SELECT SQL_CALC_FOUND_ROWS l.id, a.nummer, a.name_de, CONCAT(la.bezeichnung,' / ',lp.kurzbezeichnung) , ".$this->app->erp->FormatMenge('l.menge').",FORMAT(IFNULL((SELECT e.preis FROM einkaufspreise e WHERE e.geloescht!=1 AND (e.gueltig_bis='0000-00-00' OR e.gueltig_bis <=NOW()) AND e.artikel=l.artikel ORDER by e.id DESC LIMIT 1),0),2{$extended_mysql55}) as preis, FORMAT(IFNULL((SELECT e.preis FROM einkaufspreise e WHERE e.geloescht!=1 AND (e.gueltig_bis='0000-00-00' OR e.gueltig_bis <=NOW()) AND e.artikel=l.artikel ORDER by e.id DESC LIMIT 1),0)*l.menge,2{$extended_mysql55}) as wert, a.id FROM lager_platz_inhalt l LEFT JOIN artikel a ON a.id=l.artikel LEFT JOIN lager_platz lp ON lp.id=l.lager_platz LEFT JOIN lager la ON la.id=lp.lager";
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, a.nummer, a.name_de, p.abkuerzung, CONCAT(la.bezeichnung,' / ',lp.kurzbezeichnung) ,".$app->erp->FormatMenge('l.menge').",
-        FORMAT(IFNULL(k.minpreis,0),2{$extended_mysql55}) as preis, 
-        FORMAT(IFNULL(k.minpreis,0)*l.menge,2{$extended_mysql55}) as wert,FORMAT(IFNULL(a.inventurek,0),2{$extended_mysql55}) as inv,FORMAT(IFNULL(a.inventurek,0)*l.menge,2{$extended_mysql55}) as invges, a.id 
-        FROM lager_platz_inhalt l LEFT JOIN artikel a ON a.id=l.artikel 
+        FORMAT(IFNULL(k.minpreis,0),2{$extended_mysql55}) as preis,
+        FORMAT(IFNULL(k.minpreis,0)*l.menge,2{$extended_mysql55}) as wert,FORMAT(IFNULL(a.inventurek,0),2{$extended_mysql55}) as inv,FORMAT(IFNULL(a.inventurek,0)*l.menge,2{$extended_mysql55}) as invges, a.id
+        FROM lager_platz_inhalt l LEFT JOIN artikel a ON a.id=l.artikel
         LEFT JOIN (SELECT  max( e.id ) AS maxid, artikel
           FROM einkaufspreise e
           WHERE e.geloescht !=1
@@ -131,8 +131,8 @@ class Lager extends GenLager {
             )
           GROUP BY artikel) k1 ON k1.artikel = a.id
         LEFT JOIN (SELECT id, preis as minpreis FROM einkaufspreise ) k ON k1.maxid = k.id
-        LEFT JOIN projekt p ON p.id=a.projekt 
-        LEFT JOIN lager_platz lp ON lp.id=l.lager_platz 
+        LEFT JOIN projekt p ON p.id=a.projekt
+        LEFT JOIN lager_platz lp ON lp.id=l.lager_platz
         LEFT JOIN lager la ON la.id=lp.lager";
 
 
@@ -160,8 +160,8 @@ class Lager extends GenLager {
         $menu = "<table><tr><td nowrap><a href=\"index.php?module=lager&action=platzeditpopup&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=deleteplatz&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=PrintDialog(\"index.php?module=lager&action=regaletiketten&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\"></a></td></tr></table>";
 
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, 
-          l.kurzbezeichnung, if(l.autolagersperre,'kein Versand aus diesem Lager','') as autolagersperre, 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id,
+          l.kurzbezeichnung, if(l.autolagersperre,'kein Versand aus diesem Lager','') as autolagersperre,
                 if(l.verbrauchslager,'ja','') as verbrauchslager,
                 if(l.poslager,'ja','') as poslager,
                 if(l.sperrlager,'ja','') as sperrlager,
@@ -174,7 +174,7 @@ class Lager extends GenLager {
         // fester filter
         $where = " l.geloescht=0 AND l.id!=0 AND l.lager='$id' ";
         $count = "SELECT COUNT(id) FROM lager_platz WHERE geloescht=0 AND lager='$id' ";
-        break;  
+        break;
       case 'lagertabelle':
         $allowed['lager'] = array('list');
         $defaultCountry = $app->erp->Firmendaten('land');
@@ -193,16 +193,16 @@ class Lager extends GenLager {
         // SQL statement
         $sql = "SELECT SQL_CALC_FOUND_ROWS l.id, l.bezeichnung, l.beschreibung, p.abkuerzung, a.name,
                            IF(a.land IS NULL OR a.land = '', '$defaultCountry', a.land),
-              l.id as menu 
+              l.id as menu
             FROM `lager` AS `l`
-            LEFT JOIN `projekt` AS `p` ON p.id=l.projekt 
+            LEFT JOIN `projekt` AS `p` ON p.id=l.projekt
             LEFT JOIN `adresse` AS `a` ON a.id=l.adresse ";
 
         // fester filter
         $where = " l.geloescht=0 AND l.id!=0 ".$app->erp->ProjektRechte(); // heute mal wieder projekt rein
-        $count = "SELECT COUNT(l.id) 
+        $count = "SELECT COUNT(l.id)
                   FROM `lager` AS `l`
-                  LEFT JOIN `projekt` AS `p` ON p.id=l.projekt 
+                  LEFT JOIN `projekt` AS `p` ON p.id=l.projekt
                   WHERE l.geloescht=0 ".$app->erp->ProjektRechte(); // heute mal wieder projekt rein
         break;
       case "lagerdifferenzenlagerplatz":
@@ -226,21 +226,21 @@ class Lager extends GenLager {
 
         // SQL statement
         $sql = "
-          SELECT 
-            SQL_CALC_FOUND_ROWS a.id, 
-            a.nummer, 
-            a.name_de, 
+          SELECT
+            SQL_CALC_FOUND_ROWS a.id,
+            a.nummer,
+            a.name_de,
             p.abkuerzung,
             ".$app->erp->FormatMenge('l.eingang').",
             ".$app->erp->FormatMenge('l.ausgang').",
             ".$app->erp->FormatMenge('l.berechnet').",
             ".$app->erp->FormatMenge('l.bestand').",
             if(l.bestand > l.berechnet, CONCAT('<font color=red>',".$app->erp->FormatMenge('l.berechnet').",'</font>'),
-            ".$app->erp->FormatMenge('l.differenz')."), 
+            ".$app->erp->FormatMenge('l.differenz')."),
             lp.kurzbezeichnung,
             CONCAT(a.id,'_',lp.id)
-          FROM 
-            lager_differenzen l 
+          FROM
+            lager_differenzen l
             LEFT JOIN artikel a ON a.id=l.artikel
             LEFT JOIN lager_platz lp ON lp.id = l.lager_platz
             LEFT JOIN projekt p ON a.projekt = p.id
@@ -272,7 +272,7 @@ class Lager extends GenLager {
         // SQL statement
         $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, a.nummer, a.name_de, ".$app->erp->FormatMenge('l.eingang').",".$app->erp->FormatMenge('l.ausgang').",
         ".$app->erp->FormatMenge('l.berechnet')."   ,".$app->erp->FormatMenge('l.bestand')." ,
-              if(l.bestand > l.berechnet, CONCAT('<font color=red>',".$app->erp->FormatMenge('l.differenz').",'</font>'),".$app->erp->FormatMenge('l.differenz')."), a.id FROM lager_differenzen l 
+              if(l.bestand > l.berechnet, CONCAT('<font color=red>',".$app->erp->FormatMenge('l.differenz').",'</font>'),".$app->erp->FormatMenge('l.differenz')."), a.id FROM lager_differenzen l
                 LEFT JOIN artikel a ON a.id=l.artikel";
 
         // fester filter
@@ -280,7 +280,7 @@ class Lager extends GenLager {
         $count = "SELECT COUNT(l.id) FROM lager_differenzen l WHERE l.user='" . $app->User->GetID() . "' AND l.lager_platz = 0 ";
         break;
       case "lager_wert":
-        $allowed['lager'] = array('wert');    
+        $allowed['lager'] = array('wert');
 
         // Get HTML form values
         $preisart = $app->User->GetParameter('preisart');
@@ -298,11 +298,11 @@ class Lager extends GenLager {
         }
 
         $colgewicht = "ifnull(art.gewicht,'0') * ifnull(lw.menge,0)";
-        $colvolumen = "ifnull(art.laenge,'0')*ifnull(art.breite,'0')*ifnull(art.hoehe,'0')* ifnull(lw.menge,0)";          
+        $colvolumen = "ifnull(art.laenge,'0')*ifnull(art.breite,'0')*ifnull(art.hoehe,'0')* ifnull(lw.menge,0)";
 
         if($datum == date('Y-m-d'))
         {
-          $live = true;       
+          $live = true;
         }else{
           $live = false;
           $_datum = $app->DB->Select("SELECT max(datum) FROM lagerwert WHERE datum <= '$datum' AND '$datum' < curdate() ");
@@ -317,14 +317,14 @@ class Lager extends GenLager {
         $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername','lageradressename', 'lagerplatzname','lagerplatz.sperrlager','lagerplatzadressename',$colmenge,$colgewicht,$colvolumen);
 
         if ($preiseineuro) {
-            $preisEUR = "((SELECT preisfinal)*if((SELECT waehrungfinal) = 'EUR' OR (SELECT waehrungfinal) = NULL,1,kurs))";                  
+            $preisEUR = "((SELECT preisfinal)*if((SELECT waehrungfinal) = 'EUR' OR (SELECT waehrungfinal) = NULL,1,kurs))";
             $gesamtcol = "(".$preisEUR."* lw.menge)";
             $kurs = $app->erp->FormatPreis('kurs',2);
         } else {
             $gesamtcol = "((SELECT preisfinal)*lw.menge)";
             $kurs = 1;
         }
-    
+
         if ($sperrlager_nicht_bewerten) {
             $gesamtcol = "if (lagerplatz.sperrlager,0,".$gesamtcol.")";
         }
@@ -333,13 +333,13 @@ class Lager extends GenLager {
             $gesamtcol = "if (lagerplatz.lagerplatzadresse OR lagerplatz.lageradresse,0,".$gesamtcol.")";
         }
 
-        $findcols[] = self::PreisTypErgebnis($preisart);        
+        $findcols[] = self::PreisTypErgebnis($preisart);
         $findcols[] = $preis;
         $findcols[] = 'waehrung';
         $findcols[] = 'kurs';
         $findcols[] = $gesamtcol;
         $findcols[] = 'art.id';
-        
+
         $searchsql = $findcols;
         $searchsql[0] = "date_format(lw.datum,'%d.%m.%Y')";
 
@@ -348,7 +348,7 @@ class Lager extends GenLager {
         $alignright = array(9,10,11,12,13,15,16);
         $sumcol = array(9,16);
         $numbercols = array(9,10,11,12,13,15);
-        $datecols = array(0);     
+        $datecols = array(0);
         $onequeryperuser = true;
 
         if (!$live)
@@ -363,7 +363,7 @@ class Lager extends GenLager {
                     NOW() as datum,
                     lager_platz_inhalt.artikel,
                     SUM(lager_platz_inhalt.menge) AS menge,
-                    lager_platz_inhalt.lager_platz AS lager_platz                 
+                    lager_platz_inhalt.lager_platz AS lager_platz
                 FROM
                     lager_platz_inhalt
                 GROUP BY
@@ -373,11 +373,11 @@ class Lager extends GenLager {
                 ) ";
 
           $where = "1 ";
-   
+
         } // LIVE
 
-        // Subselect to obtain the relevant (minimum) currency conversion rates for a given date       
-        $currency_sql = "       
+        // Subselect to obtain the relevant (minimum) currency conversion rates for a given date
+        $currency_sql = "
             SELECT
                 waehrung_umrechnung.waehrung_von,
                 waehrung_umrechnung.waehrung_nach,
@@ -416,10 +416,10 @@ class Lager extends GenLager {
                         )
                 ) >= DATE('".$datum."')
             )
-            GROUP BY 
+            GROUP BY
 	            waehrung_umrechnung.waehrung_von,
                 waehrung_umrechnung.waehrung_nach
-        "; 
+        ";
 
         // Subselect to obtain the relevant (minimum) prices per article
         $prices_sql = "
@@ -485,11 +485,11 @@ class Lager extends GenLager {
 
         $lagerplatz_sql = "(SELECT lager_platz.id, lager.bezeichnung lagername, lager_platz.kurzbezeichnung lagerplatzname, lager_platz.adresse lagerplatzadresse, lager_platz.sperrlager, lager.adresse lageradresse from lager INNER JOIN lager_platz on lager_platz.lager = lager.id) lagerplatz";
 
-        $sql = "SELECT DISTINCT SQL_CALC_FOUND_ROWS 
-                            art.id, 
-                            ".$app->erp->FormatDate('lw.datum')." as datum, 
-                            art.nummer, 
-                            art.name_de, 
+        $sql = "SELECT DISTINCT SQL_CALC_FOUND_ROWS
+                            art.id,
+                            ".$app->erp->FormatDate('lw.datum')." as datum,
+                            art.nummer,
+                            art.name_de,
                             (select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, 'kat', 1), '_', 1) as type from artikel where id=art.id)) as artikelkategorie,
                             lagerplatz.lagername,
                             lageradressename,
@@ -502,20 +502,20 @@ class Lager extends GenLager {
                             ".self::Waehrung($preisart)." AS waehrungfinal,
                             ".$kurs." AS kurs,
                             ".$app->erp->FormatPreis($gesamtcol,2)." as gesamt,
-                            art.id 
-                        FROM 
-                            artikel art 
-                        INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1                        
+                            art.id
+                        FROM
+                            artikel art
+                        INNER JOIN ".$lagermengen_sql." AS lw ON lw.artikel = art.id AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1
                         INNER JOIN ".$lagerplatz_sql." ON lw.lager_platz = lagerplatz.id
                         LEFT JOIN (SELECT id, name lageradressename FROM adresse) lageradr ON lageradr.id = lagerplatz.lageradresse
                         LEFT JOIN (SELECT id, name lagerplatzadressename FROM adresse) adr ON adr.id = lagerplatz.lagerplatzadresse
                         LEFT JOIN (".$prices_sql.") AS ek ON art.id = ek.artikel AND ".self::Waehrung($preisart)." = ek.waehrung
                         LEFT JOIN (".$currency_sql.") AS kurs ON kurs.waehrung_von = ".self::Waehrung($preisart)." AND kurs.waehrung_nach = 'EUR'
         ";
-   
-        $where .= " AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1 ";      
-        
-        $sql = $app->YUI->CodiereSQLForOneQuery($sql, $name);     
+
+        $where .= " AND (isnull(art.geloescht) OR art.geloescht = 0) AND art.lagerartikel = 1 ";
+
+        $sql = $app->YUI->CodiereSQLForOneQuery($sql, $name);
 
         $groupby = "";
         $count = "";
@@ -529,22 +529,22 @@ class Lager extends GenLager {
         $searchsql = array('a.name_de','a.nummer','a.ean','lp.kurzbezeichnung');
         $alignright = array(4);
         $hide767 = array(5,6,7);
-        $sql = "SELECT SQL_CALC_FOUND_ROWS z.id,a.name_de,a.nummer,a.ean,lp.kurzbezeichnung,trim(z.menge)+0,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z 
-        LEFT JOIN artikel a ON a.id=z.artikel 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS z.id,a.name_de,a.nummer,a.ean,lp.kurzbezeichnung,trim(z.menge)+0,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z
+        LEFT JOIN artikel a ON a.id=z.artikel
         LEFT JOIN lager_platz lp ON a.lager_platz = lp.id
-        LEFT JOIN projekt p ON p.id=z.projekt        
+        LEFT JOIN projekt p ON p.id=z.projekt
         ";
-        
+
         $delete = "";
-        if($app->erp->RechteVorhanden("lager", "buchenzwischenlagerdelete")){        
+        if($app->erp->RechteVorhanden("lager", "buchenzwischenlagerdelete")){
           $delete = "<a href=\"#\" onclick=\"DeleteZw(%value%);\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>";
         }
 
         $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"index.php?module=lager&action=bucheneinlagern&cmd=zwischenlager&id=%value%\"><img border=\"0\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\"></a>&nbsp;<a onclick=\"DialogZwischenlager(%value%);\" href=\"#\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>&nbsp;$delete</td></tr></table>";
-        
+
         $where = "z.richtung='eingang'";
         $count = "SELECT count(z.id) FROM zwischenlager z WHERE $where";
-      
+
       break;
       case "lager_zwischenlager_ausgang":
         $allowed['lager'] = array('buchenzwischenlager');
@@ -554,12 +554,12 @@ class Lager extends GenLager {
         $searchsql = array('a.name_de','a.nummer','a.ean','lp.kurzbezeichnung');
         $alignright = array(4);
         $hide767 = array(5,6,7);
-        $sql = "SELECT SQL_CALC_FOUND_ROWS z.id,a.name_de,a.nummer,a.ean,lp.kurzbezeichnung,trim(z.menge)+0,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z 
-        LEFT JOIN artikel a ON a.id=z.artikel 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS z.id,a.name_de,a.nummer,a.ean,lp.kurzbezeichnung,trim(z.menge)+0,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z
+        LEFT JOIN artikel a ON a.id=z.artikel
         LEFT JOIN lager_platz lp ON a.lager_platz = lp.id
-        LEFT JOIN projekt p ON p.id=z.projekt        
+        LEFT JOIN projekt p ON p.id=z.projekt
         ";
-        
+
         $delete = '';
         if($app->User->GetType()=="admin"){
           $delete = "<a href=\"#\" onclick=\"DeleteZw(%value%);\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>";
@@ -567,8 +567,8 @@ class Lager extends GenLager {
         $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap><a href=\"index.php?module=lager&action=bucheneinlagern&cmd=zwischenlager&id=%value%\"><img border=\"0\" src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\"></a>&nbsp;$delete</td></tr></table>";
         $where = "z.richtung='ausgang'";
         $count = "SELECT count(z.id) FROM zwischenlager z WHERE $where";
-      break;      
-      
+      break;
+
       case "lager_bestand":
         $allowed['lager'] = array('bestand');
         $app->Tpl->Add('JQUERYREADY', "$('#ohnebestand').click( function() { fnFilterColumn1( 0 ); } );");
@@ -602,16 +602,16 @@ class Lager extends GenLager {
         $searchsql = array('a.nummer','a.name_de');
         $width = array('10%','30%');
         $heading[] = 'Lagerplatz';
-               
+
         $width[] = '10%';
-        
+
         $findcols[] = 'lp.kurzbezeichnung';
         $searchsql[] = 'lp.kurzbezeichnung';
 
         $heading[] = 'Projekt';
-               
+
         $width[] = '10%';
-        
+
         $findcols[] = 'p.abkuerzung';
         $searchsql[] = 'p.abkuerzung';
 
@@ -648,27 +648,27 @@ class Lager extends GenLager {
           $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.nummer,'</a>'),a.name_de,";
         }else{
           $sql = "SELECT SQL_CALC_FOUND_ROWS lpi.id, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',a.id,'\" target=\"_blank\">',a.nummer,'</a>'),a.name_de,";
-        }        
+        }
 
-        
+
         if($more_data2)
         {
           $sql .= "lp.kurzbezeichnung,p.abkuerzung,
 
             ".$app->erp->FormatMenge("ifnull(lpi.menge,0)")." as fmenge ,
-            ".$app->erp->FormatMenge("IFNULL(lpi2.gmenge,0) - IFNULL(r.reserviert,0)")." as verkaufbare, 
+            ".$app->erp->FormatMenge("IFNULL(lpi2.gmenge,0) - IFNULL(r.reserviert,0)")." as verkaufbare,
             ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert,
             a.id ";
           $sql .= "
           FROM artikel a
           INNER JOIN (
-            SELECT artikel, sum(menge) as menge,lager_platz 
-            FROM lager_platz_inhalt 
+            SELECT artikel, sum(menge) as menge,lager_platz
+            FROM lager_platz_inhalt
             GROUP BY artikel, lager_platz
           ) AS lpi ON lpi.artikel = a.id
           INNER JOIN (
-            SELECT artikel, sum(menge) as gmenge 
-            FROM lager_platz_inhalt 
+            SELECT artikel, sum(menge) as gmenge
+            FROM lager_platz_inhalt
             GROUP BY artikel
           ) AS lpi2 ON a.id = lpi2.artikel
           INNER JOIN lager_platz lp ON lp.id = lpi.lager_platz
@@ -682,40 +682,40 @@ class Lager extends GenLager {
             GROUP BY artikel, lager_platz, IFNULL(charge,''), mhddatum
           ) AS m ON m.lager_platz = lpi.lager_platz AND m.artikel = a.id
           LEFT JOIN (
-            SELECT artikel, SUM(menge) as reserviert 
-            FROM lager_reserviert 
+            SELECT artikel, SUM(menge) as reserviert
+            FROM lager_reserviert
             GROUP BY artikel
-          ) r ON r.artikel=a.id 
-          LEFT JOIN lager l ON l.id=lp.lager 
+          ) r ON r.artikel=a.id
+          LEFT JOIN lager l ON l.id=lp.lager
           LEFT JOIN projekt p ON p.id=l.projekt
           ";
-          
+
         }else{
           $sql .= "lp.kurzbezeichnung,p.abkuerzung,
             ".$app->erp->FormatMenge("ifnull(lpi.menge,0)")." as fmenge ,
             ".$app->erp->FormatMenge("IFNULL(lpi2.gmenge,0) - IFNULL(r.reserviert,0)")." as verkaufbare, ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert, a.id ";
 
           $sql .= "
-          FROM lager_platz_inhalt lpi 
-          LEFT JOIN lager_platz lp ON lp.id=lpi.lager_platz 
-          LEFT JOIN lager l ON l.id=lp.lager 
+          FROM lager_platz_inhalt lpi
+          LEFT JOIN lager_platz lp ON lp.id=lpi.lager_platz
+          LEFT JOIN lager l ON l.id=lp.lager
           LEFT JOIN projekt p ON p.id=l.projekt
-          INNER JOIN artikel a ON a.id=lpi.artikel 
+          INNER JOIN artikel a ON a.id=lpi.artikel
           INNER JOIN (
             SELECT artikel, SUM(menge) as gmenge
             FROM lager_platz_inhalt
             GROUP BY artikel
           ) AS lpi2 ON lpi.artikel = lpi2.artikel
           LEFT JOIN (SELECT artikel, SUM(menge) as reserviert FROM lager_reserviert GROUP BY artikel) r ON r.artikel=a.id";
-        }        
+        }
         $subwhere = "";
         if($more_data1) {
           $sql = "SELECT SQL_CALC_FOUND_ROWS a.id, a.nummer,a.name_de,";
-        
-          $sql .= "'-',p.abkuerzung,'0' as menge, '0' as verkaufbare, ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert, a.id 
-          FROM artikel AS `a` 
+
+          $sql .= "'-',p.abkuerzung,'0' as menge, '0' as verkaufbare, ".$app->erp->FormatMenge("IFNULL(r.reserviert,0)")." as reserviert, a.id
+          FROM artikel AS `a`
           LEFT JOIN (SELECT lpi.artikel, lp.kurzbezeichnung FROM `lager_platz_inhalt` AS `lpi` LEFT JOIN `lager_platz` AS `lp` ON lp.id=lpi.lager_platz GROUP BY lpi.artikel) AS `lp` ON lp.artikel=a.id
-          LEFT JOIN (SELECT lr.artikel, SUM(lr.menge) AS `reserviert` FROM `lager_reserviert` AS `lr` GROUP BY lr.artikel) r ON r.artikel=a.id 
+          LEFT JOIN (SELECT lr.artikel, SUM(lr.menge) AS `reserviert` FROM `lager_reserviert` AS `lr` GROUP BY lr.artikel) r ON r.artikel=a.id
           LEFT JOIN `projekt` AS `p` ON p.id=a.projekt";
           $subwhere = " AND a.lagerartikel=1 AND ((SELECT SUM(lpi.menge) FROM lager_platz_inhalt lpi WHERE lpi.artikel=a.id) <=0 OR ISNULL((SELECT SUM(lpi.menge) FROM lager_platz_inhalt lpi WHERE lpi.artikel=a.id))) ";
 
@@ -735,10 +735,10 @@ class Lager extends GenLager {
             $count = "SELECT count(c.id) FROM lager_charge c INNER JOIN artikel a ON a.id=c.artikel WHERE ".$where;
           }else{
             $count = "SELECT count(lpi.id) FROM lager_platz_inhalt lpi LEFT JOIN artikel a ON a.id=lpi.artikel LEFT JOIN lager_platz lp ON lp.id=lpi.lager_platz WHERE ".$where;
-          }          
+          }
         }*/
-          
-                 
+
+
       break;
 
       case "lager_bewegunglist":
@@ -761,10 +761,10 @@ class Lager extends GenLager {
         $id = $app->Secure->GetGET("id");
         $sql = "SELECT SQL_CALC_FOUND_ROWS i.id, p.kurzbezeichnung as regal, a.nummer, a.name_de, IF(i.eingang, 'Eingang', 'Ausgang'), if(i.eingang, CONCAT('+',' ',".$app->erp->FormatMenge('i.menge')."), CONCAT('-',' ',".$app->erp->FormatMenge('i.menge').")) as menge, DATE_FORMAT(i.zeit,'%d.%m.%Y') as datum, i.referenz, i.id FROM lager_bewegung i LEFT JOIN lager_platz p ON p.id=i.lager_platz LEFT JOIN artikel a ON i.artikel=a.id";
 
-             
+
         $lagerplatz = $app->User->GetParameter("lager_bewegung_lagerplatz");
         $lagerplatzid = $app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung = '$lagerplatz' AND kurzbezeichnung != '' LIMIT 1");
-        
+
         $artikel = $app->User->GetParameter("lager_bewegung_artikel");
         $artikeldaten = explode(" ", $artikel, 2);
         $artikelnr = $artikeldaten[0];
@@ -795,12 +795,12 @@ class Lager extends GenLager {
         }
 
         $where = " i.id > 0 AND p.lager = '$id'".$lagerplatzwhere.$artikelwhere;
-        
+
         $count = "SELECT count(i.id) FROM lager_bewegung i LEFT JOIN lager_platz p ON p.id = i.lager_platz WHERE $where";
 
         $app->Tpl->Set("LAGER_PLATZ_BEWEGUNG", $lagerplatz);
         $app->Tpl->Set("ARTIKEL_BEWEGUNG", $artikel);
-      
+
 
       break;
 
@@ -820,7 +820,7 @@ class Lager extends GenLager {
 
         $datecols = array(6);
 
-        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
                     i.id,
                     l.bezeichnung,
                     lp.kurzbezeichnung as regal,
@@ -835,14 +835,14 @@ class Lager extends GenLager {
                     i.referenz,
                     i.bearbeiter,
                     p.abkuerzung AS projektbewegung,
-                    i.id 
+                    i.id
                     FROM lager_bewegung i LEFT JOIN lager_platz lp ON lp.id=i.lager_platz LEFT JOIN lager l ON lp.lager = l.id LEFT JOIN artikel a ON i.artikel=a.id LEFT JOIN projekt p ON l.projekt = p.id";
-   
-               
+
+
         $lager = $app->User->GetParameter("lager_bewegungalle_lager");
-        
+
         $lagerplatz = $app->User->GetParameter("lager_bewegungalle_lagerplatz");
-        $lagerplatzid = $app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung = '$lagerplatz' AND kurzbezeichnung != '' LIMIT 1"); 
+        $lagerplatzid = $app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung = '$lagerplatz' AND kurzbezeichnung != '' LIMIT 1");
 
         $artikel = $app->User->GetParameter("lager_bewegungalle_artikel");
         $artikeldaten = explode(" ", $artikel, 2);
@@ -870,7 +870,7 @@ class Lager extends GenLager {
 
 
         $where = " i.id > 0".$lagerwhere.$lagerplatzwhere.$artikelwhere.$app->erp->ProjektRechte();
-        
+
         $count = "SELECT count(i.id) FROM lager_bewegung i LEFT JOIN lager_platz lp ON lp.id = i.lager_platz LEFT JOIN lager l ON l.id=lp.lager LEFT JOIN projekt p ON l.projekt = p.id WHERE $where";
 
         $app->Tpl->Set("LAGER_BEWEGUNG_ALLE", $lager);
@@ -893,12 +893,12 @@ class Lager extends GenLager {
 
         $alignright = array(5,6,7);
         $numbercols = array(4,5,6);
-       
+
         $sql = "SELECT SQL_CALC_FOUND_ROWS t.artikel, IFNULL(p.kurzbezeichnung, ' '), t.artikelname, t.nummer, pro.abkuerzung, ".$app->erp->FormatMenge('t.menge').", ".$app->erp->FormatMenge('t.verkaufbare').", ".$app->erp->FormatMenge('t.reserviert').", t.artikel
-        FROM lager_platz p 
+        FROM lager_platz p
         JOIN (SELECT i.lager_platz, a.id as artikel, IFNULL(a.name_de, ' ') as artikelname, IFNULL(a.nummer, ' ') as nummer, a.projekt, IFNULL(SUM(i.menge), 0) as menge, IFNULL(SUM(i.menge),0) - IFNULL(SUM(r.menge),0) as verkaufbare, IFNULL(SUM(r.menge), 0) as reserviert FROM lager_platz_inhalt i
-        LEFT JOIN artikel a ON i.artikel=a.id 
-        LEFT JOIN (SELECT artikel, SUM(menge) as menge FROM lager_reserviert GROUP BY artikel) r ON r.artikel=a.id 
+        LEFT JOIN artikel a ON i.artikel=a.id
+        LEFT JOIN (SELECT artikel, SUM(menge) as menge FROM lager_reserviert GROUP BY artikel) r ON r.artikel=a.id
         GROUP BY a.id, i.lager_platz) t ON t.lager_platz= p.id LEFT JOIN projekt pro ON pro.id=t.projekt ";
 
         //$groupby = " GROUP BY p.kurzbezeichnung, a.id";
@@ -935,15 +935,15 @@ class Lager extends GenLager {
 
       break;
 
- 
+
       case "lager_reservierungen":
         $allowed['lager'] = array('reservierungen');
-               
+
         $heading = array('Kunde','Belegart','Belegnr','Status','Artikelnummer','Artikel','Menge','Projekt','Grund','Men&uuml;');
         $width = array('20%',   '10%',     '5%',      '5%',    '5%',          '20%',     '1%',    '10%',     '20%');
         $findcols = array('t.kunde', 't.typ', 't.belegnr', 't.status','t.Artikelnummer', 't.Artikel', 't.menge', 't.projekt', 't.grund', 't.rid');
         $searchsql = array('t.kunde', 't.typ', 't.belegnr', 't.status','t.Artikelnummer', 't.Artikel', $app->erp->FormatMenge('t.menge'), 't.projekt', 't.grund');
-        
+
         $defaultorder = 1; //Optional wenn andere Reihenfolge gewuenscht
         $defaultorderdesc = 1;
         //$sumcol = 9;
@@ -965,58 +965,58 @@ class Lager extends GenLager {
             t.projekt,
             t.grund,
             t.rid
-            
-          FROM 
+
+          FROM
           (
             (
-              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,if(auf.belegnr = '','ENTWURF',auf.belegnr) as belegnr ,if(auf.status = '','angelegt',auf.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,if(auf.belegnr = '','ENTWURF',auf.belegnr) as belegnr ,if(auf.status = '','angelegt',auf.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               INNER JOIN auftrag auf ON auf.id = r.parameter AND r.objekt = 'auftrag'
             )
-            UNION ALL 
+            UNION ALL
             (
-              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
-              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
+              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
+              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               INNER JOIN lieferschein l ON l.id = r.parameter AND r.objekt = 'lieferschein'
             )
-            UNION ALL 
+            UNION ALL
             (
-              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
-              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
+              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,if(l.belegnr = '','ENTWURF',l.belegnr) as belegnr ,if(l.status = '','angelegt',l.status) as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
+              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               INNER JOIN produktion l ON l.id = r.parameter AND r.objekt = 'produktion'
             )
-            UNION ALL 
+            UNION ALL
             (
-              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+              SELECT  r.id as rid, adr.name as kunde,'Auftrag' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
               p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               LEFT JOIN auftrag auf ON auf.id = r.parameter AND r.objekt = 'auftrag' WHERE isnull(auf.id) AND r.objekt = 'auftrag'
             )
-            UNION ALL 
+            UNION ALL
             (
-              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
-              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
+              SELECT  r.id as rid, adr.name as kunde,'Lieferschein' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
+              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               LEFT JOIN lieferschein l ON l.id = r.parameter AND r.objekt = 'lieferschein' WHERE isnull(l.id) AND r.objekt = 'lieferschein'
             )
-            UNION ALL 
+            UNION ALL
             (
-              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
-              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id        
+              SELECT  r.id as rid, adr.name as kunde,'Produktion' as typ,'GEL&Ouml;SCHT' as belegnr ,'GEL&Ouml;SCHT' as status, a.nummer as Artikelnummer, a.name_de as Artikel,r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
+              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id
               LEFT JOIN produktion l ON l.id = r.parameter AND r.objekt = 'produktion' WHERE isnull(l.id) AND r.objekt = 'produktion'
             )
-            UNION ALL 
+            UNION ALL
             (
-              SELECT  r.id as rid, adr.name as kunde,r.objekt as typ,'' as belegnr , '' as status, a.nummer as Artikelnummer, a.name_de as Artikel, r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
-              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id WHERE r.objekt <> 'auftrag' AND r.objekt <> 'lieferschein'  AND r.objekt <> 'produktion'          
+              SELECT  r.id as rid, adr.name as kunde,r.objekt as typ,'' as belegnr , '' as status, a.nummer as Artikelnummer, a.name_de as Artikel, r.menge,p.abkuerzung as projekt,r.grund, r.id FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
+              p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id WHERE r.objekt <> 'auftrag' AND r.objekt <> 'lieferschein'  AND r.objekt <> 'produktion'
             )
-        
-        ) t 
-        
+
+        ) t
+
         ";
-        
-        
+
+
         //$count = "select count(distinct ms.datum) FROM mitarbeiterzeiterfassung_sollstunden ms where ms.adresse = '$adresse' AND ms.datum >= '$von' AND ms.datum <= '$bis'";
         $count = "SELECT count(r.id) FROM lager_reserviert r";
-            
+
       break;
 
 
@@ -1039,20 +1039,20 @@ class Lager extends GenLager {
 
         $where = "s.is_replenishment = 1 AND vorschlag.is_replenishment = 0";
 
-        $sql = "SELECT SQL_CALC_FOUND_ROWS s.id, a.nummer, a.name_de, l.bezeichnung, lp.kurzbezeichnung, 
-        ".$app->erp->FormatMenge('s.amount').", 
+        $sql = "SELECT SQL_CALC_FOUND_ROWS s.id, a.nummer, a.name_de, l.bezeichnung, lp.kurzbezeichnung,
+        ".$app->erp->FormatMenge('s.amount').",
         ".$app->erp->FormatMenge('vorschlag.needed').",
-        lp2.kurzbezeichnung, 
-        ".$app->erp->FormatMenge('vorschlag.amount').", 
+        lp2.kurzbezeichnung,
+        ".$app->erp->FormatMenge('vorschlag.amount').",
         IF(vorschlag.storage_min_amount > 0, ".$app->erp->FormatMenge('vorschlag.storage_min_amount').",'-'),
         IF(vorschlag.storage_max_amount > 0,".$app->erp->FormatMenge('vorschlag.storage_max_amount').",'-'),
         ".$app->erp->FormatMenge(
           'IF(
-            vorschlag.storage_min_amount > 0 AND vorschlag.storage_min_amount >s.amount_to_relocate, 
+            vorschlag.storage_min_amount > 0 AND vorschlag.storage_min_amount >s.amount_to_relocate,
           IF(s.amount > vorschlag.storage_min_amount, vorschlag.storage_min_amount,s.amount),
           IF(s.amount >s.amount_to_relocate, s.amount_to_relocate,s.amount)
-          )').", s.id 
-        FROM stock_replenishment_list s 
+          )').", s.id
+        FROM stock_replenishment_list s
         LEFT JOIN artikel a ON s.article_id = a.id
         JOIN lager_platz lp ON lp.id = s.storage_area_id
         LEFT JOIN lager l ON l.id=lp.lager
@@ -1086,7 +1086,7 @@ class Lager extends GenLager {
                 lp.id,
                 $box,
                 l.bezeichnung,
-                lp.kurzbezeichnung, if(lp.autolagersperre,'kein Versand aus diesem Lager','') as autolagersperre, 
+                lp.kurzbezeichnung, if(lp.autolagersperre,'kein Versand aus diesem Lager','') as autolagersperre,
                 if(lp.verbrauchslager,'ja','') as verbrauchslager,
                 if(lp.poslager,'ja','') as poslager,
                 if(lp.sperrlager,'ja','') as sperrlager,
@@ -1102,9 +1102,9 @@ class Lager extends GenLager {
         $count = "SELECT COUNT(id) FROM lager_platz WHERE geloescht=0";
         break;
     }
-    
+
     $erg = [];
-   
+
     foreach($erlaubtevars as $k => $v)
     {
       if(isset($$v))
@@ -1122,7 +1122,7 @@ class Lager extends GenLager {
    * @param bool        $intern
    */
   public function __construct($app, $intern = false) {
-    
+
     $this->app = $app;
     if($intern) {
       return;
@@ -1160,7 +1160,7 @@ class Lager extends GenLager {
     $this->app->ActionHandler("wert2", "LagerWert2");
     $this->app->ActionHandler("schnellumlagern", "LagerSchnellUmlagern");
     $this->app->ActionHandler("schnellauslagern", "LagerSchnellAuslagern");
-    
+
     $this->app->ActionHandler("differenzen", "LagerDifferenzen");
     $this->app->ActionHandler("differenzenlagerplatz", "LagerDifferenzenLagerplatz");
 
@@ -1193,7 +1193,7 @@ class Lager extends GenLager {
     $this->app->Tpl->Set('UEBERSCHRIFT', 'Lager: ' . $lager);
     $this->app->ActionHandlerListen($app);
   }
-  
+
   public function Install()
   {
     $this->cleanUpInvalidStorages();
@@ -1253,7 +1253,7 @@ class Lager extends GenLager {
     $storageWithSameName = $this->app->DB->SelectFirstCols(
       "SELECT `bezeichnung`
       FROM `lager`
-      WHERE `geloescht` = 0 OR `geloescht` IS NULL 
+      WHERE `geloescht` = 0 OR `geloescht` IS NULL
       GROUP BY `bezeichnung`
       HAVING COUNT(`id`) > 1"
     );
@@ -1267,7 +1267,7 @@ class Lager extends GenLager {
       LEFT JOIN (
           SELECT `lager` FROM `lager_platz` WHERE `geloescht` = 0 OR `geloescht` IS NULL GROUP BY `lager`
       ) AS `lp` ON l.id = lp.lager
-      WHERE (l.geloescht IS NULL OR l.geloescht = 0) AND l.bezeichnung IN ('{$nameString}') 
+      WHERE (l.geloescht IS NULL OR l.geloescht = 0) AND l.bezeichnung IN ('{$nameString}')
       ORDER BY l.bezeichnung, lp.lager DESC"
     );
     if(empty($storageWithSameName)) {
@@ -1291,7 +1291,7 @@ class Lager extends GenLager {
     $storageLocationsWithSameName = $this->app->DB->SelectFirstCols(
       "SELECT `kurzbezeichnung`
       FROM `lager_platz`
-      WHERE `geloescht` = 0 OR `geloescht` IS NULL 
+      WHERE `geloescht` = 0 OR `geloescht` IS NULL
       GROUP BY `kurzbezeichnung`
       HAVING COUNT(`id`) > 1"
     );
@@ -1305,7 +1305,7 @@ class Lager extends GenLager {
       LEFT JOIN (
           SELECT `lager_platz` FROM `lager_platz_inhalt` GROUP BY `lager_platz`
       ) AS `lpi` ON lp.id = lpi.lager_platz
-      WHERE (lp.geloescht IS NULL OR lp.geloescht = 0) AND lp.kurzbezeichnung IN ('{$nameString}') 
+      WHERE (lp.geloescht IS NULL OR lp.geloescht = 0) AND lp.kurzbezeichnung IN ('{$nameString}')
       ORDER BY lp.kurzbezeichnung, lpi.lager_platz DESC"
     );
     if(empty($storageLocationsWithSameName)) {
@@ -1343,7 +1343,7 @@ class Lager extends GenLager {
     $this->app->YUI->AutoComplete('grundreferenz','lagergrund');
     $this->app->Tpl->Parse('TAB1',"lager_schnelleinlagern.tpl");
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
-  } 
+  }
 
 
   function LagerAbsolutInventur($artikel,$lager_platz = false)
@@ -1351,37 +1351,37 @@ class Lager extends GenLager {
 
     if ($lager_platz) {
       $query = "
-      SELECT 
+      SELECT
       menge,
       referenz
         FROM
         lager_bewegung
-        WHERE 
-        artikel='".$artikel."' 
-        AND 
-        eingang=1 
+        WHERE
+        artikel='".$artikel."'
+        AND
+        eingang=1
         AND
         permanenteinventur<=0
-        AND 
+        AND
         referenz LIKE 'Inventur%'
         ";
 
       $query .= " AND lager_platz = '" . $lager_platz . "' ";
     } else {
       $query = "
-      SELECT 
+      SELECT
       lb.menge,
       lb.referenz
         FROM
         lager_bewegung lb
         LEFT JOIN lager_platz l ON l.id=lb.lager_platz
-        WHERE 
-        lb.artikel='".$artikel."' 
-        AND 
-        lb.eingang=1 
+        WHERE
+        lb.artikel='".$artikel."'
+        AND
+        lb.eingang=1
         AND
         lb.permanenteinventur<=0
-        AND 
+        AND
         lb.referenz LIKE 'Inventur%'
         AND l.verbrauchslager!=1
         ";
@@ -1424,38 +1424,38 @@ class Lager extends GenLager {
 
    if ($lager_platz) {
     $query = "
-      SELECT 
-      SUM(menge) 
-      FROM 
-      lager_bewegung 
-      WHERE 
-      artikel='".$artikel."' 
-      AND 
-      eingang=1 
+      SELECT
+      SUM(menge)
+      FROM
+      lager_bewegung
+      WHERE
+      artikel='".$artikel."'
+      AND
+      eingang=1
       AND
       permanenteinventur<=0
-      AND 
-      referenz 
+      AND
+      referenz
       NOT LIKE 'Inventur%'
       ";
       $query .= " AND lager_platz = '" . $lager_platz . "' ";
     } else {
       $query = "
-      SELECT 
-      SUM(lb.menge) 
-      FROM 
+      SELECT
+      SUM(lb.menge)
+      FROM
       lager_bewegung lb
       LEFT JOIN lager_platz l ON l.id=lb.lager_platz
-      WHERE 
-      lb.artikel='".$artikel."' 
-      AND 
-      lb.eingang=1 
+      WHERE
+      lb.artikel='".$artikel."'
+      AND
+      lb.eingang=1
       AND
       lb.permanenteinventur<=0
-      AND 
-      lb.referenz 
+      AND
+      lb.referenz
       NOT LIKE 'Inventur%'
-      AND 
+      AND
       l.verbrauchslager!=1
       ";
     }
@@ -1473,18 +1473,18 @@ class Lager extends GenLager {
   {
     if ($lager_platz) {
       $query = "
-      SELECT 
-      SUM(menge) 
-      FROM 
-      lager_bewegung 
-      WHERE 
-      artikel='".$artikel."' 
-      AND 
-      eingang=0 
+      SELECT
+      SUM(menge)
+      FROM
+      lager_bewegung
+      WHERE
+      artikel='".$artikel."'
+      AND
+      eingang=0
       AND
       permanenteinventur<=0
-      AND 
-      referenz 
+      AND
+      referenz
       NOT LIKE 'Inventur%'
       ";
 
@@ -1493,21 +1493,21 @@ class Lager extends GenLager {
     } else {
 
   $query = "
-      SELECT 
-      SUM(lb.menge) 
-      FROM 
+      SELECT
+      SUM(lb.menge)
+      FROM
       lager_bewegung lb
       LEFT JOIN lager_platz l ON l.id=lb.lager_platz
-      WHERE 
-      lb.artikel='".$artikel."' 
-      AND 
+      WHERE
+      lb.artikel='".$artikel."'
+      AND
       lb.eingang=0
       AND
       lb.permanenteinventur<=0
-      AND 
-      lb.referenz 
+      AND
+      lb.referenz
       NOT LIKE 'Inventur%'
-      AND 
+      AND
       l.verbrauchslager!=1
       ";
 
@@ -1523,7 +1523,7 @@ class Lager extends GenLager {
       $this->app->Tpl->Set('VERS','Enterprise');
       $this->app->Tpl->Set('MODUL','Enterprise');
       $this->app->Tpl->Parse('PAGE', "only_version.tpl");
-  } 
+  }
 
   public function LagerDifferenzenLagerplatz() {
 
@@ -1553,11 +1553,11 @@ class Lager extends GenLager {
     }
 
 
-    $lager_platz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='$ziellager' AND kurzbezeichnung!='' LIMIT 1");     
+    $lager_platz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='$ziellager' AND kurzbezeichnung!='' LIMIT 1");
     if($lager_platz<=0 && $ziellager > 0)
     {
-      $lager_platz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$ziellager' LIMIT 1");      
-      $ziellager = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='$lager_platz' LIMIT 1");     
+      $lager_platz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$ziellager' LIMIT 1");
+      $ziellager = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='$lager_platz' LIMIT 1");
     }
 
     if($grundreferenz!='') {
@@ -1569,11 +1569,11 @@ class Lager extends GenLager {
 
     if($submit!='')
     {
-      $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND nummer!='' LIMIT 1");      
+      $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND nummer!='' LIMIT 1");
       if($artikelid <=0)
-        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht <> 1 LIMIT 1");     
+        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht <> 1 LIMIT 1");
       if($artikelid <=0)
-        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer='$nummer' AND herstellernummer!='' AND geloescht <> 1 LIMIT 1");     
+        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer='$nummer' AND herstellernummer!='' AND geloescht <> 1 LIMIT 1");
 
       $name_de = $this->app->DB->Select("SELECT CONCAT(nummer,' ',name_de) FROM artikel WHERE id='$artikelid' LIMIT 1");
       //$projekt = $this->app->DB->Select("SELECT projekt FROM artikel WHERE id='$artikelid' LIMIT 1");
@@ -1656,11 +1656,11 @@ class Lager extends GenLager {
 
     if($submit!='')
     {
-      $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND nummer!='' LIMIT 1");      
+      $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND nummer!='' LIMIT 1");
       if($artikelid <=0)
-        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht <> 1 LIMIT 1");     
+        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht <> 1 LIMIT 1");
       if($artikelid <=0)
-        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer='$nummer' AND herstellernummer!='' AND geloescht <> 1 LIMIT 1");     
+        $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer='$nummer' AND herstellernummer!='' AND geloescht <> 1 LIMIT 1");
 
       $name_de = $this->app->DB->Select("SELECT CONCAT(nummer,' ',name_de) FROM artikel WHERE id='$artikelid' LIMIT 1");
 
@@ -1679,12 +1679,12 @@ class Lager extends GenLager {
       }
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Artikel mit der Nummer $nummer wurde nicht gefunden!</div>");
       $this->app->Location->execute("index.php?module=lager&action=schnellauslagern&msg=$msg");
-    } 
+    }
     $msg = $this->app->Secure->GetGET('msg');
     if($msg==''){
       $this->app->Tpl->Set('MESSAGE', '<div class="info">Der Artikel wird wenn vorhanden aus dem Standardlager ausgelagert.</div>');
     }
-    
+
     if($grundreferenz=='')
     {
       $grundreferenz=$this->app->User->GetParameter('lager_schnellauslagern_grund');
@@ -1694,8 +1694,8 @@ class Lager extends GenLager {
     $this->app->YUI->AutoComplete('nummer','lagerartikelnummer',1);
     $this->app->YUI->AutoComplete('grundreferenz','lagergrund');
     $this->app->Tpl->Parse('PAGE','lager_schnellauslagern.tpl');
-  } 
-  
+  }
+
   public function LagerBestand()
   {
     $this->LagerHauptmenu();
@@ -1711,7 +1711,7 @@ class Lager extends GenLager {
       $this->LagerHauptmenu();
 /*      $this->app->Tpl->Set('VERS','Professional');
       $this->app->Tpl->Set('MODUL','Professional');
-      $this->app->Tpl->Parse('PAGE', 'only_version.tpl');    
+      $this->app->Tpl->Parse('PAGE', 'only_version.tpl');
 
     ROFLMAO
 
@@ -1722,7 +1722,7 @@ class Lager extends GenLager {
     $this->app->User->SetParameter('gruppierenlager', $gruppierenlager);
 
     $preiseineuro = $this->app->Secure->GetPOST('preiseineuro');
-    $this->app->User->SetParameter('preiseineuro', $preiseineuro);    
+    $this->app->User->SetParameter('preiseineuro', $preiseineuro);
 
     $datum = $this->app->Secure->GetPOST('datum');
     $this->app->User->SetParameter('datum', $datum);
@@ -1737,7 +1737,7 @@ class Lager extends GenLager {
     $this->app->User->SetParameter('konsignationslager_nicht_bewerten', $konsignationslager_nicht_bewerten);
 
     $this->app->YUI->DatePicker("datum");
- 
+
   	$this->app->Tpl->Set('DATUM', $datum);
   	$this->app->Tpl->Set('PREISEINEURO', $preiseineuro==1?"checked":"");
   	$this->app->Tpl->Set('SPERRLAGER_NICHT_BEWERTEN', $sperrlager_nicht_bewerten==1?"checked":"");
@@ -1749,7 +1749,7 @@ class Lager extends GenLager {
     $this->app->erp->MenuEintrag('index.php?module=lager&action=list','zur&uuml;ck zur &Uuml;bersicht');
     $this->app->erp->Headlines('','Bestand');
     $this->app->YUI->TableSearch('TAB1', 'lager_wert', 'show','','',basename(__FILE__), __CLASS__);
-    $this->app->Tpl->Parse('PAGE','lager_wert.tpl');  
+    $this->app->Tpl->Parse('PAGE','lager_wert.tpl');
   }
 
 
@@ -1811,7 +1811,7 @@ class Lager extends GenLager {
   public function LagerDelete()
   {
     $id = $this->app->Secure->GetGET('id');
-    
+
     $numberofarticles = $this->app->DB->Select(
       sprintf('SELECT id FROM lager_platz WHERE lager=%d LIMIT 1', (int)$id)
     );
@@ -1843,7 +1843,7 @@ class Lager extends GenLager {
     }
     $this->app->Location->execute('index.php?module=lager&action=reservierungen');
   }
-  
+
   function LagerBuchen() {;
     $this->LagerBuchenZwischenlager();
   }
@@ -1866,7 +1866,7 @@ class Lager extends GenLager {
     }
 
     /*$table = new EasyTable($this->app);
-    $table->Query("SELECT a.name_de as artikel,a.nummer as nummer,z.menge,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z LEFT JOIN artikel a ON a.id=z.artikel LEFT JOIN projekt p ON 
+    $table->Query("SELECT a.name_de as artikel,a.nummer as nummer,z.menge,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z LEFT JOIN artikel a ON a.id=z.artikel LEFT JOIN projekt p ON
         p.id=z.projekt WHERE  z.richtung='eingang'");
     $table->DisplayNew('INHALT', "<a href=\"index.php?module=lager&action=bucheneinlagern&cmd=zwischenlager&id=%value%\"><img border=\"0\" src=\"./themes/[THEME]/images/forward.svg\"></a>&nbsp;$delete");
     */
@@ -1876,20 +1876,20 @@ class Lager extends GenLager {
     $this->app->Tpl->Set('SUBSUBHEADING', '{|AUSGANG Zwischenlager Stand|} ' . date('d.m.Y'));
     // easy table mit arbeitspaketen YUI als template
     /*$table = new EasyTable($this->app);
-    $table->Query("SELECT a.name_de as artikel,z.menge,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z LEFT JOIN artikel a ON a.id=z.artikel LEFT JOIN projekt p ON 
+    $table->Query("SELECT a.name_de as artikel,z.menge,z.vpe,z.grund, p.abkuerzung as projekt, z.id FROM zwischenlager z LEFT JOIN artikel a ON a.id=z.artikel LEFT JOIN projekt p ON
         p.id=z.projekt WHERE z.richtung='ausgang' ORDER by z.id DESC");
     $table->DisplayNew('INHALT', "<a href=\"index.php?module=lager&action=bucheneinlagern&cmd=zwischenlager&id=%value%\"><img border=\"0\" src=\"./themes/[THEME]/images/forward.svg\"></a>&nbsp;$delete");
     */
     $this->app->YUI->TableSearch('INHALT', 'lager_zwischenlager_ausgang', 'show','','',basename(__FILE__), __CLASS__);
-    
+
     $this->app->Tpl->Parse('TAB1', 'rahmen70.tpl');
     $this->app->Tpl->Set('AKTIV_TAB1', 'selected');
     $this->app->Tpl->Add('TAB1','<script>
     function DeleteZw(zid)
     {
-       if(!confirm(\'Artikel wirklich aus dem Zwischenlager nehmen?\')) return false; else window.location.href=\'index.php?module=lager&action=buchenzwischenlagerdelete&id=\'+zid+\'\';      
+       if(!confirm(\'Artikel wirklich aus dem Zwischenlager nehmen?\')) return false; else window.location.href=\'index.php?module=lager&action=buchenzwischenlagerdelete&id=\'+zid+\'\';
     }
-    
+
     </script>');
     $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
   }
@@ -1905,12 +1905,11 @@ class Lager extends GenLager {
     $back = $this->app->Secure->GetGET('back');
     $vpeid = $this->app->Secure->GetGET('vpeid');
     $chargesnmhdbemerkung = $this->app->Secure->GetPOST('chargesnmhdbemerkung');
-
+    $adresse=$this->app->Secure->GetPOST('adresse');
+    $adresse = trim($adresse);
     $grund = $this->app->Secure->GetPOST('grund');
     $artikelid = $this->app->Secure->GetGET('artikelid');
-
     $artikelbeschreibung = $this->app->DB->Select("SELECT CONCAT(nummer,' ',name_de) FROM artikel WHERE id='$artikelid' AND lagerartikel=1 LIMIT 1");
-
 
     if($back==='artikel' && $artikelid!='')
     {
@@ -1922,6 +1921,7 @@ class Lager extends GenLager {
     $this->app->YUI->AutoComplete('projekt','projektname');
     $this->app->YUI->AutoComplete('nummer','lagerartikelnummer',1);
     $this->app->YUI->AutoComplete('regal','lagerplatz');
+    $this->app->YUI->AutoComplete('adresse','adresse');
     $this->app->YUI->AutoComplete('grundreferenz','lagergrund');
 
     if($cmd==='zwischenlager')
@@ -1943,7 +1943,7 @@ class Lager extends GenLager {
       {
         $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>Charge: ".$charge[$i-1]['charge']."</td></tr>");
       }
-/* XENTRAL Legacy 
+/* XENTRAL Legacy
       $srn = $this->app->DB->SelectArr("SELECT * FROM lager_seriennummern WHERE zwischenlagerid='$id'");
       $csrn = !empty($srn)?count($srn):0;
       for($i=1;$i<=$csrn;$i++)
@@ -1958,7 +1958,7 @@ class Lager extends GenLager {
         $this->app->Tpl->Set('SHOWMHDSTART','<!--');
         $this->app->Tpl->Set('SHOWMHDEND','-->');
       }
-/* XENTRAL Legacy 
+/* XENTRAL Legacy
       $this->app->Tpl->Set('SHOWSRNSTART','<!--');
       $this->app->Tpl->Set('SHOWSRNEND','-->');
 */
@@ -1973,9 +1973,12 @@ class Lager extends GenLager {
       $projekt = $this->app->Secure->GetPOST('projekt');
       $projekt = explode(' ', $projekt);
       $projekt = $projekt[0];
-      if(!is_numeric($projekt))
+      if(!is_numeric($projekt)) {
         $projekt = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='$projekt' LIMIT 1");
-
+      }
+      $_SESSION['projekt'] = $projekt;
+    } else {
+      $projekt = $this->app->DB->Select("SELECT standardprojekt  FROM firma WHERE id='" . $this->app->User->GetFirma() . "' LIMIT 1");
       $_SESSION['projekt'] = $projekt;
     }
 
@@ -2013,7 +2016,7 @@ class Lager extends GenLager {
     if((String)$regal!=='') {
       $regal_id = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='$regal' LIMIT 1");
     }
-    
+
     if(is_numeric($regal_id)){
       $regal = $regal_id;
     }
@@ -2023,16 +2026,16 @@ class Lager extends GenLager {
     //$nummer = $nummer[0];
 
     if ((String)$nummer === '' && $cmd !== 'zwischenlager' && $artikelid=='') {
-      $this->app->Tpl->Set('MSGARTIKEL', "<br>{|Jetzt Artikel abscannen!|}");
-      $this->app->Tpl->Set('ARTIKELSTYLE', "style=\"border: 2px solid red;width:200px;\"");
+//      $this->app->Tpl->Set('MSGARTIKEL', "<br>{|Jetzt Artikel abscannen!|}");
+//      $this->app->Tpl->Set('ARTIKELSTYLE', "style=\"border: 2px solid red;width:200px;\"");
     }
 
     $woher = $this->app->Secure->GetPOST('woher');
     $zwischenlagerid = $this->app->Secure->GetPOST('zwischenlager');
     $menge = str_replace(',','.',$this->app->Secure->GetPOST('menge'));
- 
+
     $grundreferenz = $this->app->Secure->GetPOST('grundreferenz');
-    // hier nur rein wenn artikel lager und projekt sinn machen sonst   
+    // hier nur rein wenn artikel lager und projekt sinn machen sonst
     //message ausgeben und artikel wirklich aus zwischenlager
     $alles_komplett = 0;
     if ($woher === 'Zwischenlager' && $zwischenlagerid <= 0) {
@@ -2042,8 +2045,8 @@ class Lager extends GenLager {
 
     $artikel_tmp = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND nummer!='' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
     $ean = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
-    if($artikel_tmp <=0 && $ean > 0) 
-    { 
+    if($artikel_tmp <=0 && $ean > 0)
+    {
       $artikel_tmp = $ean;
       $nummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='$ean' AND lagerartikel=1 LIMIT 1");
     }
@@ -2067,13 +2070,13 @@ class Lager extends GenLager {
       $alles_komplett++;
     }
 
-    if ($alles_komplett > 0 && $regal != '') {
-      $this->app->Tpl->Set('MESSAGELAGER', "<div class=\"error\">Artikel wurde nicht gebucht! Grund:<ul>$grund</ul> </div>");
+    if ($alles_komplett > 0 && !empty($regal)) {
+      $this->app->Tpl->Set('MESSAGELAGER', "<div class=\"error\">Artikel wurde nicht gebucht! Grund:<ul>$grund</ul></div>");
     } else {
       if ($artikel_quickcheck == 1 && (String)$nummer !== '') {
-        $this->app->Tpl->Set('MESSAGELAGER', "<div class=\"error\">Achtung! Artikelnummer  
+        $this->app->Tpl->Set('MESSAGELAGER', "<div class=\"error\">Achtung! Artikelnummer
             gibt es nicht, oder der Artikel ist kein Lagerartikel! </div>");
-        $nummer =""; 
+        $nummer ="";
       }
     }
     if ((String)$nummer === '' && $cmd == '' && $woher == '') {
@@ -2082,8 +2085,8 @@ class Lager extends GenLager {
 
     $artArr = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT chargenverwaltung,mindesthaltbarkeitsdatum, seriennummern 
-          FROM artikel 
+        'SELECT chargenverwaltung,mindesthaltbarkeitsdatum, seriennummern
+          FROM artikel
           WHERE id=%d LIMIT 1',
         (int)$artikel_tmp
       )
@@ -2106,7 +2109,7 @@ class Lager extends GenLager {
       $suggestedbatch = $suggestedbestbeforebatch;
     }
 
-/* XENTRAL Legacy 
+/* XENTRAL Legacy
     $seriennummern = $artArr['seriennummern'];
     if($seriennummern != '' && $seriennummern !== 'keine') {
       $menge = (int)$menge;
@@ -2124,7 +2127,7 @@ class Lager extends GenLager {
       $error++;
     }
 
-/* XENTRAL Legacy 
+/* XENTRAL Legacy
     if( ($seriennummern !=='keine' && $seriennummern !=='vomprodukt' && $seriennummern !=='eigene' && $seriennummern!='') && $cmd!=='zwischenlager') {
       $tmpcheck = $this->app->Secure->GetPOST("seriennummern");
       for($checkser=0;$checkser < $menge; $checkser++)  {
@@ -2153,11 +2156,11 @@ class Lager extends GenLager {
         $gesamt_alle = $this->app->DB->Select("SELECT SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel'");
         if(is_float($menge) || is_numeric($menge))
         {
-          $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Der Artikel $name wurde $menge mal eingelagert. Anzahl Regal: <b>".(float)$gesamt." $einheit</b>, Anzahl Komplettbestand alle Regale: <b>".(float)$gesamt_alle." $einheit</b></div>");
+          $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Artikel $name wurde $menge mal eingelagert. Anzahl Regal: <b>".(float)$gesamt." $einheit</b>, Anzahl Komplettbestand alle Regale: <b>".(float)$gesamt_alle." $einheit</b></div>");
         } else {
           $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Fehler: Unbekannte oder falsche Menge: $menge bei Artikel \"$name\". Der Artikel wurde nicht eingelagert! </div>");
         }
- 
+
         $this->app->Location->execute('index.php?module=lager&action=buchenzwischenlager&msg='.$msg);
       }
       if ($woher === 'Manuelle Lageranpassung'){
@@ -2173,12 +2176,12 @@ class Lager extends GenLager {
         $gesamt_alle = $this->app->DB->Select("SELECT SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel'");
         if(is_float($menge) || is_numeric($menge))
         {
-          $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Der Artikel $name wurde $menge mal eingelagert. Anzahl Regal: <b>".(float)$gesamt." $einheit</b>, Anzahl Komplettbestand alle Regale: <b>".(float)$gesamt_alle." $einheit</b></div>");
+          $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Artikel $name wurde $menge mal eingelagert. Anzahl Regal: <b>".(float)$gesamt." $einheit</b>, Anzahl Komplettbestand alle Regale: <b>".(float)$gesamt_alle." $einheit</b></div>");
         }
         else {
           $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Fehler: Unbekannte oder falsche Menge: $menge bei Artikel \"$name\". Der Artikel wurde nicht eingelagert! </div>");
         }
-        
+
         // Mindesthaltbarkeitsdatum buchen
         $chargemindest = $this->app->Secure->GetPOST('charge');
         $isInterim = $interimonconsumption && $this->app->DB->Select(
@@ -2192,12 +2195,12 @@ class Lager extends GenLager {
           $this->app->erp->AddMindesthaltbarkeitsdatumLagerOhneBewegung($artikel,$menge,$regal,$mhd,$chargemindest,'','','',trim($chargesnmhdbemerkung.' '.$grundreferenz),0,$isInterim);
         }
 
-        if($chargenverwaltung > 0) {  
+        if($chargenverwaltung > 0) {
           $datum = date('Y-m-d');
           $this->app->erp->AddChargeLagerOhneBewegung($artikel,$menge,$regal,$datum,$chargemindest,$chargesnmhdbemerkung,0,'',0,$isInterim);
         }
 
-/* XENTRAL Legacy 
+/* XENTRAL Legacy
         //Seriennummern buchen
         $tmpcheck = $this->app->Secure->GetPOST('seriennummern');
 */
@@ -2239,7 +2242,7 @@ class Lager extends GenLager {
 
       if($lagerbezeichnung!='')
       {
-        $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td></td><td><br></td></tr><tr ><td>Regalvorschlag:</td><td><font size=\"5\"><b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b></font></td></tr>");
+        $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td></td><td><br></td></tr><tr ><td>Regalvorschlag AAA:</td><td><font size=\"5\"><b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b></font></td></tr>");
       } else {
         $lagermeist = $this->app->DB->SelectRow("SELECT lager_platz, SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel' GROUP BY lager_platz ORDER by 2 DESC LIMIT 1");
         $lagerplatz = $lagermeist['lager_platz'];
@@ -2251,7 +2254,7 @@ class Lager extends GenLager {
           $lagerbezeichnung = 'Regal frei w&auml;hlen';
         }
 
-        $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td></td><td><br></td></tr><tr ><td>Regalvorschlag:</td><td><font size=\"5\"><b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b></font></td></tr>");
+        $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td></td><td><br></td></tr><tr ><td>Regalvorschlag BBB:</td><td><font size=\"5\"><b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b></font></td></tr>");
 
       }
       $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><br><br><b>Regal:</b></td><td><br><br><input type=\"text\" name=\"regal\" id=\"regal\" style=\"border: 2px solid;width:200px;\"><br>Jetzt Regal oder weitere gleiche Artikel scannen</td></tr>
@@ -2285,7 +2288,7 @@ class Lager extends GenLager {
         $artikel = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='$nummer' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
 
         $ean = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$nummer' AND ean!='' AND geloescht!=1 AND lagerartikel=1 LIMIT 1");
-        if($artikel <=0 && $ean > 0) { 
+        if($artikel <=0 && $ean > 0) {
           $artikel = $ean;
           $nummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='$ean' LIMIT 1");
         }
@@ -2299,15 +2302,14 @@ class Lager extends GenLager {
             )
           );
           $name_de = $articleRow['name_de'];
-          $lagermeist = $this->app->DB->SelectArr("SELECT lager_platz, SUM(menge) FROM lager_platz_inhalt WHERE artikel='$artikel' GROUP BY lager_platz ORDER by 2 DESC LIMIT 1");
-          $lagermeist = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='{$lagermeist[0]['lager_platz']}' LIMIT 1");
-          //$name_de = $articleRow['lager_platz'];
+          $lagermeist = $this->app->DB->SelectArr("SELECT lager_platz, SUM(menge) menge FROM lager_platz_inhalt WHERE artikel='$artikel' GROUP BY lager_platz ORDER by 2 DESC LIMIT 1");
+          if (!empty($lagermeist)) {
+              $mengeimregal = $lagermeist[0]['menge']+0;
+              $lagermeist = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='{$lagermeist[0]['lager_platz']}' LIMIT 1");
+          }
           $einheit = $articleRow['einheit'];
           $lagerplatz = $articleRow['lager_platz'];// $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='$artikel' LIMIT 1");
           $lagerbezeichnung = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='$lagerplatz' LIMIT 1");
-          if ($lagerplatz == '' || $lagerplatz == 0) {
-            $lagerbezeichnung = 'Regal frei w&auml;hlen';
-          }
           //$vpe  = $this->app->DB->Select("SELECT vpe FROM artikel WHERE id='$id' LIMIT 1");
           $vpe = 'einzeln';
           //$projekt = $this->app->DB->Select("SELECT projekt FROM zwischenlager WHERE id='$id' LIMIT 1");
@@ -2340,7 +2342,7 @@ class Lager extends GenLager {
             $this->app->Tpl->Set('MHDVALUE', $frmmhd);
           }
 
-          /* XENTRAL Legacy 
+          /* XENTRAL Legacy
           if($seriennummern === 'keine' || $seriennummern ==='vomprodukt' || $seriennummern ==='eigene' || $menge <= 0 ||  $seriennummern=='')
           {
             $this->app->Tpl->Set('SHOWSRNSTART','<!--');
@@ -2368,28 +2370,24 @@ class Lager extends GenLager {
           }
 
           $this->app->Tpl->Set('NAMEDE',$name_de);
-          if($lagermeist!="" || $lagermeist!=0){
-            $this->app->Tpl->Set('LAGERMEIST',"<b onclick=\"document.getElementById('regal').value='$lagermeist'\";>$lagermeist</b> ({|aktuell am meisten im Lager|})");
-            if($lagerbezeichnung!='' && $lagerbezeichnung!=='Regal frei w&auml;hlen')
-              $this->app->Tpl->Add('LAGERMEIST',"<br><b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b> ({|Standardlager|})");
-          } else {
-            $this->app->Tpl->Set('LAGERBEZEICHNUNG',"<b onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\";>$lagerbezeichnung</b>");
-
+          if(!empty($lagermeist)) {
+            $this->app->Tpl->Set('LAGERMEIST',"<input type=\"button\" onclick=\"document.getElementById('regal').value='$lagermeist'\" value=\"$lagermeist\" >$mengeimregal Stück");
           }
-
+          if($lagerbezeichnung!='') {
+            $this->app->Tpl->Add('LAGERMEIST',"<br><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung';\" value=\"$lagerbezeichnung\"> ({|Standard|})");
+          }
           $this->app->Tpl->Set('REGALVALUE',$frmRegal);
-
           $this->app->Tpl->Parse('ZWISCHENLAGERINFO', 'lager_regal.tpl');
         } else {
 
-          //falsche artikelnummer 
+          //falsche artikelnummer
           $nummer = '';
-          $this->app->Tpl->Set('MSGARTIKEL', '<br>{|Jetzt Artikel abscannen!|}');
-          $this->app->Tpl->Set('ARTIKELSTYLE', 'style="border: 2px solid red"');
+//          $this->app->Tpl->Set('MSGARTIKEL', '<br>{|Jetzt Artikel abscannen!|}');
+//          $this->app->Tpl->Set('ARTIKELSTYLE', 'style="border: 2px solid red"');
           $this->app->Tpl->Set('ZWISCHENLAGERINFO', '<script type="text/javascript">document.getElementById("nummer").focus();</script>');
           $this->app->Tpl->Set('SHOWCHRSTART','<!--');
           $this->app->Tpl->Set('SHOWCHREND','-->');
-          
+
           $this->app->Tpl->Set('SHOWMHDSTART','<!--');
           $this->app->Tpl->Set('SHOWMHDEND','-->');
           $this->app->Tpl->Set('SHOWSRNSTART','<!--');
@@ -2445,6 +2443,7 @@ class Lager extends GenLager {
 
     $this->app->Tpl->Set('MENGE', $this->app->erp->ReplaceMenge(0,(String)$menge,0));
     $this->app->Tpl->Set('GRUNDREFERENZ', $grundreferenz);
+    $this->app->Tpl->Set('ADRESSE', $adresse);
     $this->app->Tpl->Set('NUMMER', $nummer);
 
     $this->app->Tpl->Set('VPE', $vpe);
@@ -2537,6 +2536,8 @@ class Lager extends GenLager {
 
     if($projekt!=''){
       $_SESSION['projekt'] = $projekt;
+    } else {
+        $_SESSION['projekt'] = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id = (SELECT standardprojekt  FROM firma WHERE id='" . $this->app->User->GetFirma() . "' LIMIT 1)");
     }
 
     $projekt= $_SESSION['projekt'];
@@ -2630,16 +2631,6 @@ class Lager extends GenLager {
         $error++;
       }
 
-      // Artikel nochmal gescannt -> Menge + 1
-      if (($regal == $checkartikel) && !empty($regal)) {
-        if (empty($menge)) {
-          $menge = 2;
-        } else {
-            $menge = floatval($menge) + 1;
-        }
-        $regal = '';
-      }
-
       //z.B. es liegen 1 1 5 und man will 6 haben
       $checkregal = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$regal' LIMIT 1");
       $checkregalneu = $this->app->DB->Select("SELECT id FROM lager_platz WHERE id='$regalneu' LIMIT 1");
@@ -2660,9 +2651,9 @@ class Lager extends GenLager {
 /* XENTRAL Legacy
           $anzsrn = 0;
 */
-          $tmpmhd = $this->app->DB->SelectArr("SELECT *, replace(trim(menge)+0,'.',',')  as mhdmenge FROM lager_mindesthaltbarkeitsdatum WHERE 
+          $tmpmhd = $this->app->DB->SelectArr("SELECT *, replace(trim(menge)+0,'.',',')  as mhdmenge FROM lager_mindesthaltbarkeitsdatum WHERE
               lager_platz='$regal' AND artikel='$artikel' ORDER by mhddatum, id");
-          $tmpcharge = $this->app->DB->SelectArr("SELECT *, replace(trim(menge)+0,'.',',')  as cmenge FROM lager_charge WHERE 
+          $tmpcharge = $this->app->DB->SelectArr("SELECT *, replace(trim(menge)+0,'.',',')  as cmenge FROM lager_charge WHERE
               lager_platz='$regal' AND artikel='$artikel' ORDER by charge, id");
           if($tmpmhd) {
             foreach($tmpmhd as $v) {
@@ -2679,7 +2670,7 @@ class Lager extends GenLager {
           $this->app->Tpl->Set('ANZMHD', $anzmhd);
           $this->app->Tpl->Set('ANZCHARGEN', $anzchargen);
           $this->app->Tpl->Set('SUMME', $summe);
-          if($anzsrn > 0)  { 
+          if($anzsrn > 0)  {
             $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>{|MHD|}</td><td>{|Seriennummer|}</td><td>{|Charge|}</td></tr>");
           } else if ((!empty($tmpmhd)?count($tmpmhd):0) > 0) {
             $this->app->Tpl->Add('SRNINFO',"<tr><td></td><td>{|Mindesthalt.|}</td><td width=30></td><td>{|Charge|}</td></tr>");
@@ -2734,12 +2725,12 @@ class Lager extends GenLager {
                   <td>".$tmpsrn[$y]['seriennummer']."</td>
                   <td>".$tmpsrn[$y]['charge']."</td></tr>");
             }
-          } else 
+          } else
 */
           if ($check_mhd=="1")
           {
 
-            $this->app->Tpl->Add("JQUERYREADY","checklagermengen();"); 
+            $this->app->Tpl->Add("JQUERYREADY","checklagermengen();");
             $kommamodus = false;
             if($menge != round($menge) || $check_seriennummer == '' || $check_seriennummer === 'keine') {
               $kommamodus = true;
@@ -2764,7 +2755,7 @@ class Lager extends GenLager {
                 if($tmpmhd[$y]['charge']=='') {
                   $tmpmhd[$y]['charge'] = ' - ';
                 }
-                
+
                 if($menge - $tmenge <= 0){
                   $tm = 0;
                 }elseif($menge - $tmenge >= $tmpmhd[$y]['menge'])
@@ -2779,7 +2770,7 @@ class Lager extends GenLager {
                     <td>".$tmpmhd[$y]['mhddatum']."</td><td></td>
                     <td>".$tmpmhd[$y]['charge']."</td></tr>");
                 if($y == 0)$this->app->Tpl->Set('ONCHANGEMENGE',' onchange="checklagermengen();" ');
-              }            
+              }
             }else{
               for($y=0;$y<$ctmpmhd;$y++)
               {
@@ -2798,8 +2789,8 @@ class Lager extends GenLager {
 
           } else if ($check_charge=="2" || $check_charge == "1")
           {
-            $this->app->Tpl->Add("JQUERYREADY","checklagermengen();"); 
-            
+            $this->app->Tpl->Add("JQUERYREADY","checklagermengen();");
+
             $kommamodus = false;
             if($menge != round($menge) || $check_seriennummer == '' || $check_seriennummer === 'keine')$kommamodus = true;
             $ctmpcharge = !empty($tmpcharge)?count($tmpcharge):0;
@@ -2856,7 +2847,7 @@ class Lager extends GenLager {
           $allow = 0;
 
           if(
-/* XENTRAL Legacy $check_seriennummer!=="keine" || */ 
+/* XENTRAL Legacy $check_seriennummer!=="keine" || */
 $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           {
             if($this->app->Secure->GetPOST("abschluss_auslagern")=="1")
@@ -2902,10 +2893,10 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
                     while($chargenmenge > 0)
                     {
                       $checkcharge = $this->app->DB->SelectRow(
-                        "SELECT * 
-                        FROM `lager_charge` 
-                        WHERE `charge`='".$passende_charge."' 
-                        AND `lager_platz`='$passende_lager_platz' AND `artikel`='$passende_artikel' 
+                        "SELECT *
+                        FROM `lager_charge`
+                        WHERE `charge`='".$passende_charge."'
+                        AND `lager_platz`='$passende_lager_platz' AND `artikel`='$passende_artikel'
                         LIMIT 1"
                       );
                       if(!$checkcharge) {
@@ -2967,7 +2958,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
                 $passende_artikel = $passendArr['artikel'];
                 $passende_menge = $passendArr['menge'];
                 $this->app->DB->Delete("DELETE FROM lager_mindesthaltbarkeitsdatum WHERE id='".$lager_mhd_id[$q]."' LIMIT 1");
-                $this->app->DB->Delete("DELETE FROM lager_charge WHERE charge='".$passende_charge."' 
+                $this->app->DB->Delete("DELETE FROM lager_charge WHERE charge='".$passende_charge."'
                     AND lager_platz='$passende_lager_platz' AND artikel='$passende_artikel' LIMIT 1");
                 $this->app->erp->MHDLog($passende_artikel, $passende_lager_platz, 0, $passende_mhd,$passende_menge, 'manuell auslagern', "", 0, $passende_charge,0, $isInterim);
                 // umlagern3
@@ -3028,7 +3019,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
                     }
                   }
                 }
-              }              
+              }
             }else{
               $clager_charge_id = !empty($lager_charge_id)?count($lager_charge_id):0;
               for($q=0;$q<$clager_charge_id;$q++){
@@ -3075,7 +3066,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
             // wenn enticklung auf mitarbeiter buchen
             if ($grund === 'Entwicklungsmuster') {
-              $this->app->DB->Insert("INSERT INTO projekt_inventar (id,artikel,menge,bestellung, projekt,   
+              $this->app->DB->Insert("INSERT INTO projekt_inventar (id,artikel,menge,bestellung, projekt,
                 adresse,  mitarbeiter,   vpe,zeit) VALUES ('','$artikel','$menge','','$projekt','$adresse','" . $this->app->User->GetName() . "', 'einzeln',NOW())");
             }
             //ziehe menge ab von lager_platz_inhalt
@@ -3147,7 +3138,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $name_de .= " (Einheit: ".$einheit.")";
         }
 
-        $this->app->Tpl->Add('BEZEICHNUNG', "<tr valign=\"top\"><td>Aktueller Artikel:</td><td>$name_de</td></tr>"); //BENE
+        $this->app->Tpl->Add('BEZEICHNUNG', "<tr valign=\"top\"><td>Bezeichnung:</td><td>$name_de</td></tr>"); //BENE
         if ($standardbild > 0) {
           $this->app->Tpl->Add('BEZEICHNUNG', "<tr valign=\"top\"><td>Bild:</td><td><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
         }
@@ -3159,8 +3150,14 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $standard_lagerplatz = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='$artikel' LIMIT 1");
         $standard_lagerbezeichnung = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='$standard_lagerplatz' LIMIT 1");
 
-        if($lagerbezeichnung!=$standard_lagerbezeichnung && $standard_lagerbezeichnung!="")
-          $standardlageranzeigen = "<b onclick=\"document.getElementById('regal').value='$standard_lagerbezeichnung'\";>$standard_lagerbezeichnung</b> (Standardlager)";
+        if($lagerbezeichnung!=$standard_lagerbezeichnung && $standard_lagerbezeichnung!="") {
+            $mengeimstandardregal = $this->app->erp->ArtikelImLagerPlatz($artikel,$standard_lagerplatz)+0;
+            if ($mengeimstandardregal) {
+                $standardlageranzeigen = "<input type=\"button\" onclick=\"document.getElementById('regal').value='$standard_lagerbezeichnung'\" value=\"$standard_lagerbezeichnung\" >$mengeimstandardregal Stück (Standard)";
+            }
+            $standardlageranzeigenohnemenge = "<input type=\"button\" onclick=\"document.getElementById('regal').value='$standard_lagerbezeichnung'\" value=\"$standard_lagerbezeichnung\" > (Standard)";
+        }
+
 
         if($regaltreffer=="1") {
           $regalvalue=$this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='$regal' LIMIT 1");
@@ -3169,22 +3166,26 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         }
         if($regalvalue!='' && $cmd==='umlagern' && $regal > 0 && $regal==$checkregal)
         {
-          if($this->app->erp->Version()!=="stock")
-          {
-            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Entnahmeregal:</td><td align=\"left\">$regalvalue</td></tr>");
-            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" > (aktuell am meisten im Lager)<br>$standardlageranzeigen</td></tr>");
-          }
+          // Umlagern Entnahme
+          $mengeimregal = $this->app->erp->ArtikelImLagerPlatz($artikel,$lagermeist[0]['lager_platz'])+0;
+          $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Entnahmeregal:</td><td align=\"left\">$regalvalue</td></tr>");
+          $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" >$mengeimregal Stück<br>$standardlageranzeigenohnemenge</td></tr>");
+
           $this->app->Tpl->Set('FOCUSFIELD','document.getElementById("regal").focus();');
           if ($menge == 1) {
               $menge = $this->app->erp->ArtikelImLagerPlatz($artikel,$regal)+0;
               $mengecolor = "#FFAAAA";
               $mengereadonly = "false";
+              $mengefontsize = "document.getElementById('menge').style.fontSize = '200%';";
           } else {
               $mengecolor = "#ececec";
               $mengereadonly = "true";
           }
-          $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><b>Zielregal:</b></td><td align=\"left\"><input type=\"text\" style=\"width:200px;border: 2px solid red\" name=\"regalneu\" id=\"regal\" value=\"\"><br>Jetzt Regal abscannen!<script type=\"text/javascript\">
+
+          // Umlagern Zielregal
+          $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><b>Zielregal:</b></td><td align=\"left\"><input type=\"text\" style=\"width:200px;border: 2px solid red\" name=\"regalneu\" id=\"regal\" value=\"\"><script type=\"text/javascript\">
               document.getElementById('menge').style.backgroundColor='".$mengecolor."';
+              ".$mengefontsize."
               document.getElementById('nummer').style.backgroundColor='#ececec';
               document.getElementById('grundreferenz').style.backgroundColor='#ececec';
               document.getElementById('grundreferenz').readOnly=true;
@@ -3193,15 +3194,18 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
               </script>
               <input type=\"hidden\" name=\"regal\" value=\"$regalvalue\"></td></tr>");
         } else {
-          if($this->app->erp->Version()==="stock")
-          {
-            if($this->app->Secure->GetPOST('regal')=="" && $this->app->Secure->GetGET("regal")=="") //TODO
-              $regalvalue = $lagerbezeichnung; //TODO
-            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" > (Standardlager)<br>$standardlageranzeigen</td></tr>");
-          }
-          else {
-            $mengeimregal = $this->app->erp->ArtikelImLagerPlatz($artikel,$lagermeist[0]['lager_platz'])+0;
-            $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" > (aktuell am meisten im Lager, $mengeimregal Stück)<br>$standardlageranzeigen</td></tr>");
+
+          $mengeimregal = $this->app->erp->ArtikelImLagerPlatz($artikel,$lagermeist[0]['lager_platz'])+0;
+
+          if ($lagerbezeichnung != '') {
+              $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr><td>Regalvorschlag:</td><td align=\"left\">");
+              $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" >$mengeimregal Stück");
+              if ($standardlageranzeigen != '') {
+                $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<br>$standardlageranzeigen");
+              }
+              $this->app->Tpl->Add('ZWISCHENLAGERINFO', "</td></tr>");
+          } else {
+              $this->app->Tpl->Set('MESSAGELAGER', "<div class=\"error\">{|Artikel hat keinen Lagerbestand!|}</div>");
           }
 
           if($lagerbezeichnung!='' && empty($regalvaluestock) && $regal!='') {
@@ -3210,7 +3214,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           if($regal!='') {
             $regalvaluestock=$regalvalue;
           }
-          $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><b>Entnahmeregal:</b></td><td align=\"left\"><input type=\"text\" style=\"width:200px;border: 2px solid red;\" name=\"regal\" id=\"regal\" value=\"$regalvaluestock\"><br>Jetzt Regal abscannen!</td></tr>");
+          $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr valign=\"top\"><td><b>Entnahmeregal:</b></td><td align=\"left\"><input type=\"text\" style=\"width:200px;border: 2px solid red;\" name=\"regal\" id=\"regal\" value=\"$regalvaluestock\" onchange=\"regalchange();\"></td></tr>");
           $this->app->Tpl->Set('FOCUSFIELD','document.getElementById("regal").focus();');
         }
         // letzt einstellung von grad
@@ -3251,13 +3255,13 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
     //$this->app->YUI->AutoComplete(ADRESSEAUTO,"adresse",array('id','name','kundennummer'),"CONCAT(id,' ',name)");
     $this->app->Tpl->Set('PROJEKT', $pr_name);
     $this->app->Tpl->Parse('TAB1', 'auslagern.tpl');
-    $this->app->Tpl->Parse('PAGE', 'tabview.tpl');    
+    $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
   }
 
     function LagerBuchenUmlagernLieferschein() {
         $this->LagerBuchenMenu();
-        $this->app->Tpl->AddMessage('info',"Gesamten Lagerplatz in einen neuen Lieferschein zur Umlagerung geben.");   
-        $this->app->YUI->AutoComplete("quelllager", "lagerplatz");    
+        $this->app->Tpl->AddMessage('info',"Gesamten Lagerplatz in einen neuen Lieferschein zur Umlagerung geben.");
+        $this->app->YUI->AutoComplete("quelllager", "lagerplatz");
         $quelllager = $this->app->Secure->GetPOST('quelllager');
 
         $submit = $this->app->Secure->GetPOST('submit');
@@ -3266,7 +3270,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             if (empty($quellager_id)) {
                 $this->app->Tpl->AddMessage('error',"Bitte Quelllager angeben.");
             } else {
-                $sql = "SELECT artikel, SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$quellager_id AND menge > 0 GROUP BY artikel";   
+                $sql = "SELECT artikel, SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$quellager_id AND menge > 0 GROUP BY artikel";
           	    $positionen = $this->app->DB->SelectArr($sql);
 
                 if (empty($positionen)) {
@@ -3286,7 +3290,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
                     } else {
                         $this->app->Tpl->AddMessage('error',"Lieferschein konnte nicht erzeugt werden.");
                     }
-                }                
+                }
             }
         }
 
@@ -3299,7 +3303,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
     $this->LagerBuchenMenu();
     $this->app->YUI->TableSearch('TAB1', 'lager_allebewegungenlist','show','','',basename(__FILE__), __CLASS__);
     $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
-  } 
+  }
 
 
   function LagerBuchenMenu() {
@@ -3314,7 +3318,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       $this->app->erp->MenuEintrag('index.php?module=lager&action=buchen', 'Zur&uuml;ck zur &Uuml;bersicht');
       $this->app->erp->MenuEintrag('index.php?module=lager&action=schnellauslagern', 'Schnell-Auslagern');
     }
-    
+
     $this->app->erp->MenuEintrag('index.php?module=lager&action=schnellumlagern', 'Schnell-Umlagern');
     $this->app->erp->MenuEintrag('index.php?module=lager&action=letztebewegungen', 'Letzte Bewegungen');
   }
@@ -3326,7 +3330,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
     $this->app->Tpl->Set('AKTIV_TAB1', 'selected');
     $this->app->Tpl->Parse('PAGE', 'lager_reservierungen.tpl');
   }
-  
+
 
   public function LagerRegalEtiketten() {
     $id = (int)$this->app->Secure->GetGET('id');
@@ -3400,8 +3404,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
     $gesamtanzahlartikel = 0;
 
-    //TODO YUI Start  
- 
+    //TODO YUI Start
+
     $this->app->Tpl->Set('TAB1', "<table border=0 width=100% class=\"mkTable\">
         <tr><td><b>Produktion</b></td><td><b>Bezeichnung</b></td><td align=center><b>Auslagern</b></td></tr>");
     $cresult = !empty($result)?count($result):0;
@@ -3479,13 +3483,13 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
     }
 
     function LagerAuslagernReihenfolge($artikelliste,$projekt="")
-    { 
+    {
       return $artikelliste;
       // Reihenfolge abholen
       $orderarray = $this->LagerAuslagernArtikelliste($artikelliste,$projekt,true);
       $corderarray = !empty($orderarray)?count($orderarray):0;
       for($i=0;$i<$corderarray;$i++)
-      { 
+      {
         $artikel = $orderarray[$i]["artikel"];
         $kurzbezeichnung = $orderarray[$i]["kurzbezeichnung"];
         $tmparray[$artikel]=$kurzbezeichnung;
@@ -3501,7 +3505,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       // neu sortieren
       asort($tmparray);
       if((!empty($tmparray)?count($tmparray):0)>0)
-      { 
+      {
         foreach($tmparray as $key=>$value)
         {
           $newartikelliste[]=array("artikel"=>$key);
@@ -3532,20 +3536,20 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
         //$artikel_in_regalen = $this->app->DB->SelectArr("SELECT * FROM lager_platz_inhalt WHERE artikel='$artikel' AND projekt='$projekt'");
 
-        // standardlager artikel 
+        // standardlager artikel
         $standardlagerartikel = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='$artikel'");
         // Zeige nur Artikel an die im Lager sind!
 
-        $tmp_check_standardlager = $this->app->DB->Select("SELECT SUM(lpi.menge) FROM lager_platz_inhalt lpi LEFT JOIN lager_platz l ON l.id=lpi.lager_platz WHERE 
+        $tmp_check_standardlager = $this->app->DB->Select("SELECT SUM(lpi.menge) FROM lager_platz_inhalt lpi LEFT JOIN lager_platz l ON l.id=lpi.lager_platz WHERE
             lpi.artikel='$artikel' AND lpi.lager_platz='$standardlagerartikel' AND l.autolagersperre!='1' AND l.sperrlager!='1'");
 
         // erst standarlager ausraeumen bis zu wenig drin ist
         // und dann die lager an denene am wenigsten ist
         if($tmp_check_standardlager>=$gesamtbedarf)
-          $artikel_in_regalen = $this->app->DB->SelectArr("SELECT * FROM lager_platz_inhalt lpi LEFT JOIN lager_platz l ON l.id=lpi.lager_platz WHERE 
+          $artikel_in_regalen = $this->app->DB->SelectArr("SELECT * FROM lager_platz_inhalt lpi LEFT JOIN lager_platz l ON l.id=lpi.lager_platz WHERE
               lpi.artikel='$artikel' AND lager_platz='$standardlagerartikel' AND l.autolagersperre!='1' AND l.sperrlager!='1' ORDER by lpi.menge ASC");
         else
-          $artikel_in_regalen = $this->app->DB->SelectArr("SELECT * FROM lager_platz_inhalt lpi LEFT JOIN lager_platz l ON l.id=lpi.lager_platz WHERE 
+          $artikel_in_regalen = $this->app->DB->SelectArr("SELECT * FROM lager_platz_inhalt lpi LEFT JOIN lager_platz l ON l.id=lpi.lager_platz WHERE
               lpi.artikel='$artikel' AND l.autolagersperre!='1' AND l.sperrlager!='1' ORDER by lpi.menge ASC");
 
         $cartikel_in_regalen = !empty($artikel_in_regalen)?count($artikel_in_regalen):0;
@@ -3585,8 +3589,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       $colarr = array();
       foreach ($cols as $col => $order) {
         $colarr[$col] = array();
-        foreach ($array as $k => $row) { 
-          $colarr[$col]['_'.$k] = strtolower($row[$col]); 
+        foreach ($array as $k => $row) {
+          $colarr[$col]['_'.$k] = strtolower($row[$col]);
         }
       }
       //$eval = 'array_multisort(';
@@ -3620,8 +3624,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
       $tmpanzahl=1;
       foreach($orderarray as $row) {
-        if ($tmpanzahl == 1 && $this->erstes!=1) { 
-          $this->erstes=1; 
+        if ($tmpanzahl == 1 && $this->erstes!=1) {
+          $this->erstes=1;
           $erstes = 'erstes';
         }
         else {
@@ -3638,9 +3642,9 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $htmltable->AddCol($row['abkuerzung']);
         $htmltable->AddCol($row['kurzbezeichnung']);
 
-        $htmltable->AddCol("Regal: <input type=\"text\" size=\"10\" id=\"$erstes\"                 onchange=\"if(!confirm('Artikelnummer ".$row['nummer']." wurde ".$row['tmpmenge']." mal entnommen?')) return false; else window.location.href='index.php?module=lager&action=artikelfuerlieferungen&cmd=".$row['cmd']."&artikel=".$row['artikel']."&menge=".$row['tmpmenge']."&projekt=".$row['projekt']."&produktion=".$row['produktion']."&lagerplatzid=".$row['link_lagerplatzid']."&lager='+this.value;\">");            
+        $htmltable->AddCol("Regal: <input type=\"text\" size=\"10\" id=\"$erstes\"                 onchange=\"if(!confirm('Artikelnummer ".$row['nummer']." wurde ".$row['tmpmenge']." mal entnommen?')) return false; else window.location.href='index.php?module=lager&action=artikelfuerlieferungen&cmd=".$row['cmd']."&artikel=".$row['artikel']."&menge=".$row['tmpmenge']."&projekt=".$row['projekt']."&produktion=".$row['produktion']."&lagerplatzid=".$row['link_lagerplatzid']."&lager='+this.value;\">");
 
-        $htmltable->AddCol("<a href=\"#\" onclick=\"if(!confirm('Artikelnummer ".$row['nummer']." wurde ".$row['tmpmenge']." mal entnommen?')) return false; else window.location.href='index.php?module=lager&action=artikelfuerlieferungen&cmd=".$row['cmd']."&artikel=".$row['artikel']."&menge=".$row['tmpmenge']."&projekt=".$row['projekt']."&produktion=".$row['produktion']."&lagerplatzid=".$row['link_lagerplatzid']."&lager=".$row['link_lager']."';\"><img src=\"./themes/[THEME]/images/forward.svg\"></a>");            
+        $htmltable->AddCol("<a href=\"#\" onclick=\"if(!confirm('Artikelnummer ".$row['nummer']." wurde ".$row['tmpmenge']." mal entnommen?')) return false; else window.location.href='index.php?module=lager&action=artikelfuerlieferungen&cmd=".$row['cmd']."&artikel=".$row['artikel']."&menge=".$row['tmpmenge']."&projekt=".$row['projekt']."&produktion=".$row['produktion']."&lagerplatzid=".$row['link_lagerplatzid']."&lager=".$row['link_lager']."';\"><img src=\"./themes/[THEME]/images/forward.svg\"></a>");
 
         //        if ($this->app->User->GetType() == "admin") $htmltable->AddCol("<a href=\"#\" onclick=\"if(!confirm('Artikel aus Lieferungen und Reservierungen nehmen?')) return false; else window.location.href='index.php?module=lager&action=artikelentfernen&produktion=".$row['produktion']."&projekt=".$row['projekt']."&artikel=".$row['artikel']."&cmd=".$row['cmd']."';\"><img src=\"./themes/[THEME]/images/delete.svg\"></a>");
 
@@ -3661,9 +3665,9 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       $this->app->Tpl->Set('SUBSUBHEADING', 'Zwischenlager Stand ' . date('d.m.Y'));
       // easy table mit arbeitspaketen YUI als template
       $table = new EasyTable($this->app);
-      $table->Query("SELECT a.name_de,z.menge,z.vpe,z.grund,z.richtung, p.abkuerzung, z.id FROM zwischenlager z LEFT JOIN artikel a ON a.id=z.artikel LEFT JOIN projekt p ON 
+      $table->Query("SELECT a.name_de,z.menge,z.vpe,z.grund,z.richtung, p.abkuerzung, z.id FROM zwischenlager z LEFT JOIN artikel a ON a.id=z.artikel LEFT JOIN projekt p ON
           p.id=z.projekt ");
-      $table->DisplayNew('INHALT', "<a href=\"index.php?module=lager&action=bewegungpopup&frame=false&id=%value%\" 
+      $table->DisplayNew('INHALT', "<a href=\"index.php?module=lager&action=bewegungpopup&frame=false&id=%value%\"
           onclick=\"makeRequest(this);return false\">Info</a>");
       $this->app->Tpl->Parse('TAB1', 'rahmen70.tpl');
       $this->app->Tpl->Set('AKTIV_TAB1', 'selected');
@@ -3677,10 +3681,10 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       $this->app->Tpl->Set('SUBSUBHEADING', "Bewegungen Lager: $lager bis zum " . date('d.m.Y'));
       // easy table mit arbeitspaketen YUI als template
       $table = new EasyTable($this->app);
-      $table->Query("SELECT p.kurzbezeichnung as Regal, 
-          p.id FROM lager_platz p 
+      $table->Query("SELECT p.kurzbezeichnung as Regal,
+          p.id FROM lager_platz p
           WHERE lager='$id' ORDER by 1");
-      $table->DisplayNew('INHALT', "<a href=\"index.php?module=lager&action=bewegungpopup&frame=false&id=%value%\" 
+      $table->DisplayNew('INHALT', "<a href=\"index.php?module=lager&action=bewegungpopup&frame=false&id=%value%\"
           onclick=\"makeRequest(this);return false\">Info</a>");
       $this->app->Tpl->Parse('TAB1', "rahmen70.tpl");
       $this->app->Tpl->Set('AKTIV_TAB1', "selected");
@@ -3783,14 +3787,14 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $artikelwhere = '';
       }
 
-      
+
       $where = "l.lager = '$lagerid'".$lagerplatzwhere.$artikelwhere.' ORDER BY a.nummer';
 
       //$artikel = $this->app->DB->SelectArr("SELECT DISTINCT a.id as id, a.name_de as name_de, a.nummer as nummer FROM lager_mindesthaltbarkeitsdatum lm LEFT JOIN lager_platz l ON l.id=lm.lager_platz LEFT JOIN artikel a ON lm.artikel=a.id WHERE $where");
 
       $artikel = $this->app->DB->SelectArr("SELECT DISTINCT a.id as id, a.name_de as name_de, a.nummer as nummer FROM lager_platz_inhalt li LEFT JOIN lager_platz l ON l.id=li.lager_platz LEFT JOIN artikel a ON li.artikel = a.id WHERE $where");
-      
-      
+
+
       //Neue PDF Datei erstellen
       $pdf=new SuperFPDF('P','mm','A4',$this->app);
       $pdf->AddPage();
@@ -3811,7 +3815,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
 
         $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX()+190, $pdf->GetY());
-        
+
 
         $artikelid = $value['id'];
         $artikelnr = $value['nummer'];
@@ -3820,8 +3824,8 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         //$regale = $this->app->DB->SelectArr("SELECT DISTINCT l.id as id, l.kurzbezeichnung as kurzbezeichnung FROM lager_mindesthaltbarkeitsdatum lm LEFT JOIN lager_platz l ON l.id=lm.lager_platz LEFT JOIN artikel a ON lm.artikel=a.id WHERE l.lager = '$lagerid' AND lm.artikel = '".$value['id']."' $lagerplatzwhere ORDER BY l.id");
 
         $regale = $this->app->DB->SelectArr("SELECT DISTINCT l.id as id, l.kurzbezeichnung as kurzbezeichnung FROM lager_platz l LEFT JOIN lager_platz_inhalt li ON l.id = li.lager_platz LEFT JOIN artikel a ON a.id = li.artikel WHERE l.lager = '$lagerid' AND li.artikel = '".$value['id']."' $lagerplatzwhere ORDER BY l.id");
-        
-        
+
+
         foreach($regale as $key2=>$value2){
           $pdf->Ln(4);
           $pdf->SetFont('Arial','B',10);
@@ -3835,7 +3839,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
           $artikelvorhanden = $this->app->DB->Select("SELECT lm.id FROM lager_mindesthaltbarkeitsdatum lm LEFT JOIN lager_platz l ON l.id=lm.lager_platz LEFT JOIN artikel a ON lm.artikel = a.id WHERE l.lager = '$lagerid' AND lm.artikel = '".$value['id']."' AND lm.lager_platz = '".$value2['id']."' LIMIT 1");
 
-          
+
           if($artikelvorhanden != ''){
 
             $chargenmhd = $this->app->DB->SelectArr("SELECT ".$this->app->erp->FormatMenge('lm.menge')." as menge, lm.mhddatum as mhd, lm.charge as charge, lm.internebemerkung as internebemerkung, lm.artikel as artikel FROM lager_mindesthaltbarkeitsdatum lm LEFT JOIN lager_platz l ON l.id=lm.lager_platz LEFT JOIN artikel a ON lm.artikel=a.id WHERE l.lager = '$lagerid' AND lm.artikel = '".$value['id']."' AND lm.lager_platz = '".$value2['id']."'");
@@ -3918,7 +3922,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       }else{
         $artikelwhere = '';
       }
-      
+
       $where = "l.lager = '$lagerid'".$lagerplatzwhere.$artikelwhere." ORDER BY a.nummer";
 
       //$regale = $this->app->DB->SelectArr("SELECT DISTINCT l.id as id, l.kurzbezeichnung as kurzbezeichnung FROM lager_mindesthaltbarkeitsdatum lm LEFT JOIN lager_platz l ON l.id=lm.lager_platz LEFT JOIN artikel a ON lm.artikel=a.id WHERE l.lager = '$lagerid' $lagerplatzwhere ORDER BY l.id");
@@ -3961,7 +3965,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $pdf->Cell(40, 5, $value2['nummer'], 0, 0, 'L');
           $pdf->Cell(30, 5, $value2['name_de'], 0, 1, 'L');
           $pdf->SetFont('Arial','',10);
-          
+
           $gesamt = $this->app->DB->Select("SELECT ".$this->app->erp->FormatMenge('SUM(li.menge)')." as menge FROM lager_platz_inhalt li JOIN lager_platz l ON li.lager_platz = l.id WHERE li.artikel = '".$value2['id']."' AND li.lager_platz = '".$value['id']."'");
 
           $pdf->SetX($pdf->GetX()+40);
@@ -3987,7 +3991,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             $pdf->TableRow(array('Menge', 'MHD', 'Charge'));
             $pdf->SetFont('Arial','',10);
             $pdf->SetTableFonts(array(array('Arial','',10),array('Arial','',10),array('Arial','',10)));
-            
+
             foreach($chargenmhd as $key3=>$value3){
               $pdf->SetX($pdf->GetX()+40);
               $pdf->TableRow(array($value3['menge'], date('d.m.Y', strtotime($value3['mhd'])), $value3['charge']));
@@ -4026,7 +4030,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       $pdf->Output(date('Ymd').'_'.'Artikelbestandsliste.pdf','D');
       $this->app->ExitXentral();
     }
-    
+
     public function LagerPlatz() {
       $this->LagerMenu();
       $id = $this->app->Secure->GetGET('id');
@@ -4038,7 +4042,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       if($import!='' || $importcsv!='')
       {
         if($import!='')
-        {        
+        {
           $lagerimport = $this->app->Secure->GetPOST('lagerimport');
           $lagerimport = str_replace(['\\r\\n','"', ' '],["\r\n",'',''],$lagerimport);
           if (strpos($lagerimport, ',') !== false) {
@@ -4049,7 +4053,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         } else if ($importcsv!='') {
           $lagerimport = file_get_contents($_FILES['csv']['tmp_name']);
           $lagerimport = str_replace(['\\r\\n','"', ' ',','],["\r\n",'','',';'],$lagerimport);
-          
+
           if (strpos($lagerimport, ';') !== false) {
             $tmp2 = explode("\n",$lagerimport);
             foreach($tmp2 as $key=>$row)
@@ -4087,7 +4091,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           {
             // Anlegen
             $check = $this->app->erp->CreateLagerplatz($id,$lagerabkuerzung);
-                      
+
             $neue++;
           }
           if($check > 0 && $lagersort!="")
@@ -4097,7 +4101,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           }
         }
 
-      
+
 
         $this->app->Tpl->Set('IMPORT',$lagerimport);
 
@@ -4116,7 +4120,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         else{
           $this->app->Tpl->Set('MESSAGE3', "<div class=\"error\">Es wurden keine Lagerpl&auml;tze angegeben!</div>");
         }
-      } 
+      }
 
       $speichern = $this->app->Secure->GetPOST('speichern');
 
@@ -4139,9 +4143,9 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $kurzbezeichnung =  substr($kurzbezeichnung,0,50);
 
         $adresse=$this->app->Secure->GetPOST('adresse');
-        $adresse = trim($adresse);      
-        $rest = explode(' ',$adresse);      
-        $rest = $rest[0];      
+        $adresse = trim($adresse);
+        $rest = explode(' ',$adresse);
+        $rest = $rest[0];
         $adresseid =  $this->app->DB->Select("SELECT id FROM adresse WHERE id='$rest' AND geloescht=0 LIMIT 1");
 
         $check = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='$kurzbezeichnung' AND kurzbezeichnung!='' LIMIT 1");
@@ -4152,10 +4156,10 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
           $this->app->DB->Insert(
             sprintf(
-              "INSERT INTO lager_platz 
+              "INSERT INTO lager_platz
                 (lager,kurzbezeichnung,autolagersperre,verbrauchslager,sperrlager,
                  breite,laenge,hoehe,poslager,adresse,abckategorie,regalart,rownumber,allowproduction)
-              VALUES 
+              VALUES
                      (%d,'%s',%d,%d,%d,%f,%f,%f,%d,%d,'%s','%s', %d, %d)",
               $id, $kurzbezeichnung, $autolagersperre,$verbrauchslager,$sperrlager,
               $breite, $laenge, $hoehe,$poslager,$adresseid, $abckategorie,$regalart, $rownumber,$allowproduction
@@ -4169,7 +4173,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Das Regal wurde nicht angelegt! Bitte geben Sie einen Namen an!</div>");
         }
         else{
-          $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Das Regal wurde nicht angelegt! Der Name existiert bereits in diesem oder einem anderem Lager. 
+          $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Das Regal wurde nicht angelegt! Der Name existiert bereits in diesem oder einem anderem Lager.
               Bitte einen anderen w&auml;hlen!</div>");
         }
       }
@@ -4242,11 +4246,11 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $allowed = '/[^a-z0-9A-Z\-\_\.]/i';
         $kurzbezeichnung = preg_replace($allowed,'',$kurzbezeichnung);
         $kurzbezeichnung =  substr($kurzbezeichnung,0,50);
-  
+
         $adresse=$this->app->Secure->GetPOST('adresse');
-        $adresse = trim($adresse);      
-        $rest = explode(' ',$adresse);      
-        $rest = $rest[0];      
+        $adresse = trim($adresse);
+        $rest = explode(' ',$adresse);
+        $rest = $rest[0];
         $adresseid =  $this->app->DB->Select("SELECT id FROM adresse WHERE id='$rest' AND geloescht=0 LIMIT 1");
 
 
@@ -4259,10 +4263,10 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
           $this->app->DB->Update(
             sprintf(
-              "UPDATE lager_platz 
+              "UPDATE lager_platz
               SET kurzbezeichnung='%s',autolagersperre=%d,verbrauchslager=%d,sperrlager=%d,poslager=%d, adresse=%d,
               breite=%f,laenge=%f,hoehe=%f,abckategorie='%s',regalart='%s', rownumber = %d, allowproduction = %d
-              WHERE id=%d 
+              WHERE id=%d
               LIMIT 1",
               $kurzbezeichnung,$autolagersperre, $verbrauchslager,$sperrlager,$poslager,$adresseid,
               $breite,$laenge,$hoehe,$abckategorie,$regalart,$rownumber,$allowproduction,
@@ -4304,7 +4308,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
         $tmp = $this->app->DB->SelectRow(
           sprintf(
-            'SELECT * FROM lager_platz WHERE id=%d LIMIT 1', 
+            'SELECT * FROM lager_platz WHERE id=%d LIMIT 1',
             $id
           )
         );
@@ -4353,7 +4357,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         }
       }
 
-      $this->app->erp->MenuEintrag('index.php?module=lager&action=platzeditpopup&id='.$id,'Details'); 
+      $this->app->erp->MenuEintrag('index.php?module=lager&action=platzeditpopup&id='.$id,'Details');
       $this->app->YUI->AutoComplete('adresse','adresse');
       $this->app->YUI->HideFormular('sperrlager',['checked'=>'dummy','unchecked'=>'trsperrlager']);
       $this->app->Tpl->Parse('TAB1', 'lager_platz.tpl');
@@ -4395,7 +4399,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             echo json_encode(array('status'=>1, 'anzahl' => (!empty($tmp)?count($tmp):0), 'daten'=>$data));
             $this->app->ExitXentral();
           }
-          
+
           $error .= 'In diesem Bereich wurden keine Lagerplätze gefunden!';
           echo json_encode(array('status'=>0,'statusText'=>$error));
           $this->app->ExitXentral();
@@ -4452,7 +4456,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       $etiketten = $this->app->erp->GetSelectEtiketten("lagerplatz_klein",$etikettenauswahl);
       if($etiketten=="") $etiketten="<option>Standard</option>";
       $this->app->Tpl->Set('ETIKETTENOPTIONS',$etiketten);
-      
+
       $drucker = $this->app->erp->GetSelectEtikettenDrucker($etikettendrucker);
       $this->app->Tpl->Set('DRUCKEROPTIONS',$drucker);
 
@@ -4465,7 +4469,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         </form><br><br>");*/
 
       $this->app->YUI->TableSearch('TABELLE', 'lagerplatz_etiketten', 'show','','',basename(__FILE__), __CLASS__);
-       
+
       $this->app->Tpl->Parse('PAGE', 'lager_etikettenlist.tpl');
     }
 
@@ -4473,7 +4477,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
       if($this->app->Secure->GetGET('action')!=='list') {
         $this->app->erp->MenuEintrag('index.php?module=lager&action=list','zur&uuml;ck zur &Uuml;bersicht');
       }
-      
+
       $this->app->erp->MenuEintrag('index.php?module=lager&action=list', '&Uuml;bersicht');
       $this->app->erp->MenuEintrag('index.php?module=lager&action=etikettenlist', 'Lageretiketten');
       $this->app->erp->MenuEintrag('index.php?module=lager&action=create', 'Neues Lager anlegen');
@@ -4496,7 +4500,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
 
     function LagerDoppelteWarnung()
     {
-      $check_double_lager = $this->app->DB->SelectArr("SELECT bezeichnung, COUNT(bezeichnung) AS NumOccurrences FROM lager WHERE geloescht!=1 GROUP BY bezeichnung HAVING ( COUNT(bezeichnung) > 1 )");    
+      $check_double_lager = $this->app->DB->SelectArr("SELECT bezeichnung, COUNT(bezeichnung) AS NumOccurrences FROM lager WHERE geloescht!=1 GROUP BY bezeichnung HAVING ( COUNT(bezeichnung) > 1 )");
       $ccheck_double_lager = !empty($check_double_lager)?count($check_double_lager):0;
       if($ccheck_double_lager>0) {
         $bezeichnung = '';
@@ -4508,7 +4512,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         }*/
 
         //$gesamt_lager= $ccheck_double_lager;
-        $this->app->Tpl->Set('MESSAGE','<div class="error">Achtung! Doppelte Bezeichnungen: '.$bezeichnung.'</div>');      
+        $this->app->Tpl->Set('MESSAGE','<div class="error">Achtung! Doppelte Bezeichnungen: '.$bezeichnung.'</div>');
         //$this->app->erp->InternesEvent($this->app->User->GetID(),'Achtung! Doppelte Bezeichnungen: '.$bezeichnung,"warning",0);
       }
     }
