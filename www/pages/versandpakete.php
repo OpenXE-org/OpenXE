@@ -906,11 +906,44 @@ class Versandpakete {
         switch ($submit) {
             case 'hinzufuegen':
 
-                if ($menge == '') {
-                    $menge = 1;
+                if (empty($artikel_input)) {
+                    $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
+                    $artikel = $this->app->erp->ReplaceArtikel(true, $gescannterartikel,true); // Parameters: Target db?, value, from form?
                 }
 
-                if ($menge < 0) {
+                // Scan
+                if ($menge == '') {
+                    $gescannterartikel = $artikel_input;
+                    if (!empty($gescannterartikel)) {
+                        $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                        $menge_in_paketen = $this->app->DB->Select($sql)+0;
+                        $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                        $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
+
+                        if ($menge_im_lieferschein-$menge_in_paketen > 1) { // Restmenge -> Weiterscannen
+                            $this->app->Tpl->Set('GESCANNTERARTIKELRESTMENGE', $menge_im_lieferschein-$menge_in_paketen);
+                            $gescannterartikel = strtok($gescannterartikel,' ');
+                            $gescanntemenge = 1;
+                            $this->app->Tpl->Set('MENGE', $gescanntemenge);
+                            $this->app->Tpl->Set('GESCANNTEMENGE', $gescanntemenge);
+                            $artikelinfo = $this->app->DB->SelectRow("SELECT name_de, standardbild FROM artikel WHERE id = '".$artikel."'");
+                            $gescannterartikelname = $artikelinfo['name_de'];
+                            $standardbild = $artikelinfo['standardbild'];
+                            if ($standardbild == '') {
+                                $standardbild = $this->app->DB->Select("SELECT datei FROM datei_stichwoerter WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='$artikel' LIMIT 1");
+                                if ($standardbild > 0) {
+                                    $this->app->Tpl->Add('ARTIKELBILD', "<tr valign=\"top\"><td>Bild:</td><td align=\"left\"><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
+                                }
+                            }
+                            $this->app->Tpl->Set('GESCANNTERARTIKEL', $gescannterartikel);
+                            $this->app->Tpl->Set('GESCANNTERARTIKELTEXT', $gescannterartikel." - ".$gescannterartikelname);
+                            $this->app->Tpl->Set('ZOOMSTYLE', "font-size: 200%;");
+                        } else {
+                            $menge = 1; // Buchen
+                        }
+
+                    }
+                } else if ($menge < 0) {
                     $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
                     break;
                 }
@@ -961,7 +994,7 @@ class Versandpakete {
                 if ($menge > 0) {
                     $msg .= "<div class=\"error\">Menge wurde angepasst auf ".$buchmenge_gesamt.".</div>";
                 }
-                if ($buchmenge > 0) {                
+                if ($buchmenge > 0) {
                     $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
                     $menge_in_paketen = $this->app->DB->Select($sql)+0;
                     $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
