@@ -537,6 +537,28 @@ class Versandpakete {
         $this->versandpakete_menu();
         $this->app->YUI->TableSearch('TAB1', 'versandpakete_lieferscheine', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Lieferungen');
+
+        $submit = $this->app->Secure->GetPOST('submit');
+
+        switch ($submit) {
+            case 'lieferscheinscan':
+                $lieferschein_post = $this->app->Secure->GetPOST('lieferschein');
+                $lieferschein = $this->app->erp->ReplaceLieferschein(true, $lieferschein_post, true); // Parameters: Target db?, value, from form?
+                $lieferschein_belegnr = $this->app->erp->ReplaceLieferschein(false, $lieferschein_post, true); // Parameters: Target db?, value, from form?
+                if (!empty($lieferschein)) {
+                    $completion =  $this->versandpakete_check_completion($lieferschein, null);
+                    if ($completion === null) {
+                        $this->app->Location->execute("Location: index.php?module=versandpakete&action=add&lieferschein=".$lieferschein);
+                    } else {
+                        $this->app->Location->execute("Location: index.php?module=versandpakete&action=lieferung&id=".$lieferschein);
+                    }
+                }
+
+            break;
+        }
+
+        $this->app->YUI->AutoComplete("lieferschein", "lieferschein");
+
         $this->app->Tpl->Parse('PAGE', "versandpakete_lieferungen.tpl");
     }
 
