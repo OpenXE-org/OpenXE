@@ -1275,7 +1275,6 @@ class Versandpakete {
                                 l.name,
                                 lp.menge lmenge,
                                 SUM(vlp.menge) vmenge,
-                                GROUP_CONCAT(vop.id) vop,
                                 BIT_OR(COALESCE(v.status,0) IN ('versendet')) AS eins_versendet,
                                 BIT_AND(COALESCE(v.status,0) IN ('versendet')) AS alle_versendet,
                                 BIT_OR(COALESCE(v.status,0) IN ('abgeschlossen')) AS eins_abgeschlossen,
@@ -1285,12 +1284,13 @@ class Versandpakete {
                             INNER JOIN lieferschein_position lp ON lp.lieferschein = l.id
                             LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
                             LEFT JOIN versandpakete v ON vlp.versandpaket = v.id
-                            LEFT JOIN versandpakete vop ON vop.lieferschein_ohne_pos = l.id
                             LEFT JOIN projekt p ON p.id = l.projekt
+                            LEFT JOIN artikel a ON lp.artikel = a.id
                             WHERE
                                 l.versand_status <> 0 AND
                                 l.belegnr <> '' AND
                                 (v.status <> 'storniert' OR v.status IS NULL)
+                                AND a.lagerartikel
                             GROUP BY lp.id
                 ";
 
@@ -1305,8 +1305,7 @@ class Versandpakete {
                         eins_versendet,
                         alle_versendet,
                         eins_abgeschlossen,
-                        alle_abgeschlossen,
-                        vop
+                        alle_abgeschlossen
                     FROM (
                         ".$sql_lieferschein_position."
                     ) lp
@@ -1323,7 +1322,7 @@ class Versandpakete {
                             ".$app->erp->FormatMenge("vmenge").",
                             projekt,
                             ".$app->YUI->IconsSQL_lieferung().",
-                            if(vmenge > 0 OR vop IS NOT NULL,CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>'),''),
+                            if(vmenge > 0,CONCAT('<a href=\"index.php?module=versandpakete&action=lieferung&id=',id,'\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" title=\"Pakete anzeigen\" border=\"0\"></a>'),''),
                             id,
                             alle_abgeschlossen
                         FROM (
