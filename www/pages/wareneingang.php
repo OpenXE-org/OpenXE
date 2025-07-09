@@ -118,6 +118,11 @@ class Wareneingang {
                 $adresse = $this->app->DB->Select("SELECT adresse FROM paketannahme WHERE id='$id' LIMIT 1");
                 $wareneingangauftragzubestellung = $this->app->erp->Firmendaten('wareneingangauftragzubestellung');
 
+                $gescannterartikel = $app->User->GetParameter('wareneingang_gescannterartikel');
+                if ($gescannterartikel) {
+                    $artikelfilter = " AND (artikel = $gescannterartikel)";
+                }
+
                // Toggle filters
                 $this->app->Tpl->Add('JQUERYREADY', "$('#ausfuellen').click( function() { fnFilterColumn1( 0 ); } );");                
 
@@ -433,6 +438,7 @@ class Wareneingang {
                     b.belegnr != '' AND bp.geliefert < bp.menge AND 
                     (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0) AND 
                     (b.status='versendet' OR b.status='freigegeben')
+                    ".$artikelfilter."
                     " . $this->app->erp->ProjektRechte();
 
                 // gesamt anzahl
@@ -2162,7 +2168,7 @@ class Wareneingang {
                 break;
             case 'buchen':
                 
-            	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
+                $ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
  
                 $menge_input = $this->app->Secure->GetPOSTArray();
                 $mengen = array();
@@ -2250,11 +2256,120 @@ class Wareneingang {
                 break;
             case 'hinzufuegen':
 
-                $bestellposition_ids = $this->app->Secure->GetPOST('bestellposition_ids');
-                $mengen = $this->app->Secure->GetPOST('mengen');
-                $bemerkungen = $this->app->Secure->GetPOST('bemerkungen');             
-               
                 $msg = "";
+                $bestellposition_ids = array();
+                $mengen = array();
+                // Scanner
+                $this->app->User->SetParameter('wareneingang_gescannterartikel', 0);
+                $menge = $this->app->Secure->GetPOST('menge');
+                $artikel_input = $this->app->Secure->GetPOST('artikel');
+                $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?
+                if (empty($artikel_input)) {
+                    $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
+                    $artikel = $this->app->erp->ReplaceArtikel(true, $gescannterartikel,true); // Parameters: Target db?, value, from form?
+                }
+                if ($menge == '') {
+                    $gescannterartikel = $artikel_input;
+                    if (!empty($gescannterartikel)) {                       
+                        $bparr = $this->app->DB->SelectRow("SELECT SUM(bp.menge) menge, SUM(bp.geliefert) geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE a.id='$artikel' LIMIT 1");
+
+                        $sql = "SELECT SUM(menge) FROM paketdistribution WHERE paketannahme = ".$id." AND artikel = ".$artikel." AND vorlaeufig = 1 LIMIT 1";
+                        $vorlauefige_menge = $this->app->DB->Select($sql);
+
+                        $bestellmenge = $bparr['menge'];
+                        $geliefert = $bparr['geliefert'];
+
+                        $restmenge = $bestellmenge-$geliefert-$vorlauefige_menge;
+
+                        if ($restmenge > 1) { // Restmenge -> Weiterscannen
+                            $this->app->Tpl->Set('GESCANNTERARTIKELRESTMENGE', $restmenge);
+                            $gescannterartikel = strtok($gescannterartikel,' ');
+                            $gescanntemenge = 1;
+                            $this->app->Tpl->Set('MENGE', $gescanntemenge);
+                            $this->app->Tpl->Set('GESCANNTEMENGE', $gescanntemenge);
+                            $artikelinfo = $this->app->DB->SelectRow("SELECT name_de, standardbild FROM artikel WHERE id = '".$artikel."'");
+                            $gescannterartikelname = $artikelinfo['name_de'];
+                            $standardbild = $artikelinfo['standardbild'];
+                            if ($standardbild == '') {
+                                $standardbild = $this->app->DB->Select("SELECT datei FROM datei_stichwoerter WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='$artikel' LIMIT 1");
+                                if ($standardbild > 0) {
+                                    $this->app->Tpl->Add('ARTIKELBILD', "<tr valign=\"top\"><td>Bild:</td><td align=\"left\"><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
+                                }
+                            }
+                            $this->app->Tpl->Set('GESCANNTERARTIKEL', $gescannterartikel);
+                            $this->app->Tpl->Set('GESCANNTERARTIKELTEXT', $gescannterartikel." - ".$gescannterartikelname);
+                            $this->app->Tpl->Set('ZOOMSTYLE', "font-size: 200%;");
+
+                            // For transfer to tablesearch
+                            $this->app->User->SetParameter('wareneingang_gescannterartikel', $artikel);
+
+                        } else {
+                            $menge = 1; // Buchen
+                        }
+                    }
+                } else if ($menge < 0) {
+                    $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
+                    break;
+                }
+
+                if ($menge > 0) {
+                    // Bestellpositionen suchen und auffüllen
+                    $adresse = $this->app->DB->Select("SELECT adresse FROM paketannahme WHERE id = ".$id);
+
+                    $sql = "
+                        SELECT
+                            bp.id,
+                            bp.menge,
+                            bp.geliefert,
+                            vorlaeufig
+                        FROM bestellung b
+                        INNER JOIN bestellung_position bp ON bp.bestellung = b.id
+                        INNER JOIN artikel a ON bp.artikel = a.id
+                        LEFT JOIN
+                        (
+                            SELECT
+                                bp.id,
+                                SUM(pd.menge) vorlaeufig
+                            FROM paketdistribution pd
+                            INNER JOIN bestellung_position bp ON bp.id = pd.bestellung_position
+                            WHERE pd.paketannahme = ".$id." AND pd.artikel = ".$artikel." AND pd.vorlaeufig = 1
+                            GROUP BY bp.id
+                        ) vorlaeufige_pos
+                        ON vorlaeufige_pos.id = bp.id
+                        WHERE a.id='$artikel'
+                        AND b.belegnr <> ''
+                        AND (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0)
+                        AND (b.status='versendet' OR b.status='freigegeben')
+                        ORDER BY b.id ASC
+                    ";
+                    $bparr = $this->app->DB->SelectArr($sql);
+
+                    foreach ($bparr as $position) {
+                        $restmenge = $position['menge'] - $position['geliefert'] - $position['vorlaeufig'];
+                        $buchmenge = 0;
+                        if ($restmenge > 0) {
+                            if ($menge < $restmenge) {
+                                $buchmenge = $menge;
+                                $menge = 0;
+                            } else if ($menge >= $restmenge) {
+                                $buchmenge = $restmenge;
+                                $menge = $menge - $buchmenge;
+                            }
+                            if ($buchmenge) {
+                                $bestellposition_ids[] = $position['id'];
+                                $mengen[] = $buchmenge;
+                            }
+                        }
+                    }
+                }
+
+                // Table selection
+                $bestellposition_ids = array_merge($bestellposition_ids,$this->app->Secure->GetPOST('bestellposition_ids'));
+                $mengen = array_merge($mengen,$this->app->Secure->GetPOST('mengen'));
+                $bemerkungen = $this->app->Secure->GetPOST('bemerkungen');
+
+                $positionen = 0;
+                $menge_gesamt = 0;
 
                 foreach ($bestellposition_ids as $key => $bestellposition) {
                     $menge = $mengen[$key];
@@ -2263,6 +2378,8 @@ class Wareneingang {
                     if ($menge <= 0) {
                         continue;
                     }
+
+                    $positionen++;
 
                     // Gather info bestellung
                     $bparr = $this->app->DB->SelectRow("SELECT bp.artikel, a.nummer, b.projekt, b.belegnr, bp.vpe, bp.menge, bp.geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE bp.id='$bestellposition' LIMIT 1");
@@ -2282,6 +2399,8 @@ class Wareneingang {
                         $menge = $bparr['menge']-$bparr['geliefert'];
                         $this->app->YUI->Message('warning','Mengen wurden angepasst');
                     }      
+
+                    $menge_gesamt += $menge;
 
                     if (empty($preliminary)) {
                         $sql = "INSERT INTO paketdistribution(
@@ -2318,6 +2437,11 @@ class Wareneingang {
                         $this->app->DB->Insert($sql);          
                     }
                 }
+                
+                if ($positionen) {
+                    $msg .= '<div class="info">Menge '.$menge_gesamt.' auf '.$positionen.' Bestellposition(en) erfasst.</div>';
+                }
+                
                 break;
             case 'manuell_hinzufuegen':
 
@@ -2364,7 +2488,7 @@ class Wareneingang {
                 }
                 break;
             case 'vorlaeufige_buchen':            
-            	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form? 
+                $ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form? 
                 $sql = "SELECT * FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
                 $positionen = $this->app->DB->SelectArr($sql);               
                 foreach ($positionen as $position) {
@@ -2675,6 +2799,8 @@ class Wareneingang {
         $this->app->Tpl->Set('STATUS',$status);
         $this->app->YUI->AutoComplete("projekt", "projektname", 1);
         $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$projekt,false));
+
+        $this->app->YUI->AutoComplete('artikel', 'artikelnummer');
 
         if ($status == 'abgeschlossen') {
             $this->app->Tpl->Set('HINZUFUEGENHIDDEN','hidden');
