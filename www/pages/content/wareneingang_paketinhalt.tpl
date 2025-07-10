@@ -100,7 +100,9 @@
                                                             {|Artikel|}:
                                                         </td>
                                                         <td>
+                                                            <input type="checkbox" name="ignoreprefixpostfix" id="ignoreprefixpostfix" [IGNOREPREFIXPOSTFIXCHECKED] title="Sucht nach Nummern im Scantext">Teiltextsuche</input><br>
                                                             <input type="text" name="artikel" id="artikel" value="" size="22" autofocus onchange="artikelscan();" style="width:200px">
+                                                             <img src="./themes/new/images/tooltip_grau.png" title="Artikelnummer, EAN, Herstellernummer oder Bestellnummer bei Lieferant">
                                                             <p id="gescannterartikeltext">[GESCANNTERARTIKELTEXT]</p>
                                                             <input hidden type="text" name="gescannterartikel" id="gescannterartikel" value="[GESCANNTERARTIKEL]" form="hinzufuegen">
                                                         </td>

@@ -2023,9 +2023,8 @@ class Wareneingang {
     public function WareneingangPaketDistriInhalt() {
 
         $id = $this->app->Secure->GetGET('id');
+        $adresse = $this->app->DB->Select("SELECT adresse FROM paketannahme WHERE id = ".$id);
         $this->app->erp->MenuEintrag('index.php?module=wareneingang&action=distriinhalt&id='.$id, 'Details');
-        
-
         $this->app->Tpl->Add('KURZUEBERSCHRIFT', ' Paketannahme / Leistungserfassung');
         $cmd = $this->app->Secure->GetGET('cmd');
         $lsnr = $this->app->Secure->GetPOST('lsnr');
@@ -2259,109 +2258,115 @@ class Wareneingang {
                 $msg = "";
                 $bestellposition_ids = array();
                 $mengen = array();
+
                 // Scanner
                 $this->app->User->SetParameter('wareneingang_gescannterartikel', 0);
                 $menge = $this->app->Secure->GetPOST('menge');
                 $artikel_input = $this->app->Secure->GetPOST('artikel');
-                $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?
+                $ignoreprefixpostfixchecked = $this->app->Secure->GetPOST('ignoreprefixpostfix');
+                $this->app->Tpl->Set('IGNOREPREFIXPOSTFIXCHECKED',$ignoreprefixpostfixchecked?'checked':'');
+                $artikel = $this->app->erp->ArtikelScan(scan: $artikel_input, adresse: $adresse, ignoreprefixpostfix: $ignoreprefixpostfixchecked);
+
                 if (empty($artikel_input)) {
                     $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
                     $artikel = $this->app->erp->ReplaceArtikel(true, $gescannterartikel,true); // Parameters: Target db?, value, from form?
                 }
-                if ($menge == '') {
-                    $gescannterartikel = $artikel_input;
-                    if (!empty($gescannterartikel)) {                       
-                        $bparr = $this->app->DB->SelectRow("SELECT SUM(bp.menge) menge, SUM(bp.geliefert) geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE a.id='$artikel' LIMIT 1");
 
-                        $sql = "SELECT SUM(menge) FROM paketdistribution WHERE paketannahme = ".$id." AND artikel = ".$artikel." AND vorlaeufig = 1 LIMIT 1";
-                        $vorlauefige_menge = $this->app->DB->Select($sql);
+                if (!empty($artikel)) {
+                    if ($menge == '') {
+                        $gescannterartikel = $artikel_input;
+                        if (!empty($gescannterartikel)) {                       
+                            $bparr = $this->app->DB->SelectRow("SELECT SUM(bp.menge) menge, SUM(bp.geliefert) geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE a.id='$artikel' LIMIT 1");
 
-                        $bestellmenge = $bparr['menge'];
-                        $geliefert = $bparr['geliefert'];
+                            $sql = "SELECT SUM(menge) FROM paketdistribution WHERE paketannahme = ".$id." AND artikel = ".$artikel." AND vorlaeufig = 1 LIMIT 1";
+                            $vorlauefige_menge = $this->app->DB->Select($sql);
 
-                        $restmenge = $bestellmenge-$geliefert-$vorlauefige_menge;
+                            $bestellmenge = $bparr['menge'];
+                            $geliefert = $bparr['geliefert'];
 
-                        if ($restmenge > 1) { // Restmenge -> Weiterscannen
-                            $this->app->Tpl->Set('GESCANNTERARTIKELRESTMENGE', $restmenge);
-                            $gescannterartikel = strtok($gescannterartikel,' ');
-                            $gescanntemenge = 1;
-                            $this->app->Tpl->Set('MENGE', $gescanntemenge);
-                            $this->app->Tpl->Set('GESCANNTEMENGE', $gescanntemenge);
-                            $artikelinfo = $this->app->DB->SelectRow("SELECT name_de, standardbild FROM artikel WHERE id = '".$artikel."'");
-                            $gescannterartikelname = $artikelinfo['name_de'];
-                            $standardbild = $artikelinfo['standardbild'];
-                            if ($standardbild == '') {
-                                $standardbild = $this->app->DB->Select("SELECT datei FROM datei_stichwoerter WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='$artikel' LIMIT 1");
-                                if ($standardbild > 0) {
-                                    $this->app->Tpl->Add('ARTIKELBILD', "<tr valign=\"top\"><td>Bild:</td><td align=\"left\"><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
+                            $restmenge = $bestellmenge-$geliefert-$vorlauefige_menge;
+
+                            if ($restmenge > 1) { // Restmenge -> Weiterscannen
+                                $this->app->Tpl->Set('GESCANNTERARTIKELRESTMENGE', $restmenge);
+                                $gescannterartikel = strtok($gescannterartikel,' ');
+                                $gescanntemenge = 1;
+                                $this->app->Tpl->Set('MENGE', $gescanntemenge);
+                                $this->app->Tpl->Set('GESCANNTEMENGE', $gescanntemenge);
+                                $artikelinfo = $this->app->DB->SelectRow("SELECT name_de, standardbild, nummer FROM artikel WHERE id = '".$artikel."'");
+                                $gescannterartikelnummer = $artikelinfo['nummer'];
+                                $gescannterartikelname = $artikelinfo['name_de'];
+                                $standardbild = $artikelinfo['standardbild'];
+                                if ($standardbild == '') {
+                                    $standardbild = $this->app->DB->Select("SELECT datei FROM datei_stichwoerter WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='$artikel' LIMIT 1");
+                                    if ($standardbild > 0) {
+                                        $this->app->Tpl->Add('ARTIKELBILD', "<tr valign=\"top\"><td>Bild:</td><td align=\"left\"><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
+                                    }
                                 }
+                                $this->app->Tpl->Set('GESCANNTERARTIKEL', $gescannterartikel);
+                                $this->app->Tpl->Set('GESCANNTERARTIKELTEXT', $gescannterartikelnummer." - ".$gescannterartikelname);
+                                $this->app->Tpl->Set('ZOOMSTYLE', "font-size: 200%;");
+
+                                // For transfer to tablesearch
+                                $this->app->User->SetParameter('wareneingang_gescannterartikel', $artikel);
+
+                            } else {
+                                $menge = 1; // Buchen
                             }
-                            $this->app->Tpl->Set('GESCANNTERARTIKEL', $gescannterartikel);
-                            $this->app->Tpl->Set('GESCANNTERARTIKELTEXT', $gescannterartikel." - ".$gescannterartikelname);
-                            $this->app->Tpl->Set('ZOOMSTYLE', "font-size: 200%;");
-
-                            // For transfer to tablesearch
-                            $this->app->User->SetParameter('wareneingang_gescannterartikel', $artikel);
-
-                        } else {
-                            $menge = 1; // Buchen
                         }
+                    } else if ($menge < 0) {
+                        $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
+                        break;
                     }
-                } else if ($menge < 0) {
-                    $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
-                    break;
-                }
 
-                if ($menge > 0) {
-                    // Bestellpositionen suchen und auffüllen
-                    $adresse = $this->app->DB->Select("SELECT adresse FROM paketannahme WHERE id = ".$id);
-
-                    $sql = "
-                        SELECT
-                            bp.id,
-                            bp.menge,
-                            bp.geliefert,
-                            vorlaeufig
-                        FROM bestellung b
-                        INNER JOIN bestellung_position bp ON bp.bestellung = b.id
-                        INNER JOIN artikel a ON bp.artikel = a.id
-                        LEFT JOIN
-                        (
+                    if ($menge > 0) {
+                        // Bestellpositionen suchen und auffüllen
+                        $sql = "
                             SELECT
                                 bp.id,
-                                SUM(pd.menge) vorlaeufig
-                            FROM paketdistribution pd
-                            INNER JOIN bestellung_position bp ON bp.id = pd.bestellung_position
-                            WHERE pd.paketannahme = ".$id." AND pd.artikel = ".$artikel." AND pd.vorlaeufig = 1
-                            GROUP BY bp.id
-                        ) vorlaeufige_pos
-                        ON vorlaeufige_pos.id = bp.id
-                        WHERE a.id='$artikel'
-                        AND b.belegnr <> ''
-                        AND (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0)
-                        AND (b.status='versendet' OR b.status='freigegeben')
-                        ORDER BY b.id ASC
-                    ";
-                    $bparr = $this->app->DB->SelectArr($sql);
+                                bp.menge,
+                                bp.geliefert,
+                                vorlaeufig
+                            FROM bestellung b
+                            INNER JOIN bestellung_position bp ON bp.bestellung = b.id
+                            INNER JOIN artikel a ON bp.artikel = a.id
+                            LEFT JOIN
+                            (
+                                SELECT
+                                    bp.id,
+                                    SUM(pd.menge) vorlaeufig
+                                FROM paketdistribution pd
+                                INNER JOIN bestellung_position bp ON bp.id = pd.bestellung_position
+                                WHERE pd.paketannahme = ".$id." AND pd.artikel = ".$artikel." AND pd.vorlaeufig = 1
+                                GROUP BY bp.id
+                            ) vorlaeufige_pos
+                            ON vorlaeufige_pos.id = bp.id
+                            WHERE a.id='$artikel'
+                            AND b.belegnr <> ''
+                            AND (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0)
+                            AND (b.status='versendet' OR b.status='freigegeben')
+                            ORDER BY b.id ASC
+                        ";
+                        $bparr = $this->app->DB->SelectArr($sql);
 
-                    foreach ($bparr as $position) {
-                        $restmenge = $position['menge'] - $position['geliefert'] - $position['vorlaeufig'];
-                        $buchmenge = 0;
-                        if ($restmenge > 0) {
-                            if ($menge < $restmenge) {
-                                $buchmenge = $menge;
-                                $menge = 0;
-                            } else if ($menge >= $restmenge) {
-                                $buchmenge = $restmenge;
-                                $menge = $menge - $buchmenge;
-                            }
-                            if ($buchmenge) {
-                                $bestellposition_ids[] = $position['id'];
-                                $mengen[] = $buchmenge;
+                        foreach ($bparr as $position) {
+                            $restmenge = $position['menge'] - $position['geliefert'] - $position['vorlaeufig'];
+                            $buchmenge = 0;
+                            if ($restmenge > 0) {
+                                if ($menge < $restmenge) {
+                                    $buchmenge = $menge;
+                                    $menge = 0;
+                                } else if ($menge >= $restmenge) {
+                                    $buchmenge = $restmenge;
+                                    $menge = $menge - $buchmenge;
+                                }
+                                if ($buchmenge) {
+                                    $bestellposition_ids[] = $position['id'];
+                                    $mengen[] = $buchmenge;
+                                }
                             }
                         }
                     }
-                }
+                } // Artikelscan
 
                 // Table selection
                 $bestellposition_ids = array_merge($bestellposition_ids,$this->app->Secure->GetPOST('bestellposition_ids'));

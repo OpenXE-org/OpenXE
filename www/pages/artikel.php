@@ -9657,4 +9657,57 @@ padding: 10px;\">
 
     return "<br>Lagerbestand: $summe &nbsp;| &nbsp;Reserviert: $reserviert &nbsp;|&nbsp;Offene Auftr&auml;ge: $liefern&nbsp;| Verkaufte: $verkaufte | Berechneter Bestand: $berechnet | Verkaufbare: $verkaufbare | Berechneter Bestand mit offenen Bestellungen: $berechnetmitoffenebestellungen<br><br>";
   }
+
+
+  /*
+  Tries to find the correct article after a scan
+  */
+  function ArtikelScan(string $scan, int $adresse = 0, bool $fremdnummern = false, bool $ignoreprefixpostfix = false) {
+
+    $trimmedscan = $this->app->erp->FirstTillSpace($scan);
+    if (empty($scan)) {
+        return(0);
+    }
+    $trimmedscan = $this->app->DB->real_escape_string($trimmedscan);
+    $scan = $this->app->DB->real_escape_string($scan);
+
+    // Default
+    $sql = "SELECT id FROM artikel WHERE nummer='$trimmedscan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',nummer,'%')":"")." AND ifnull(geloescht,0) = 0 AND nummer != 'DEL' LIMIT 1";
+    $artikel = $this->app->DB->Select($sql);
+    if (!empty($artikel)) {
+        return($artikel);
+    }
+
+    // EAN/GTIN
+    $artikel = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',ean,'%')":"")." AND ifnull(geloescht,0) = 0 AND nummer != 'DEL' LIMIT 1");
+    if (!empty($artikel)) {
+        return($artikel);
+    }
+
+    // Hersteller
+    $artikel = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer='$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',herstellernummer,'%')":"")." AND ifnull(geloescht,0) = 0 AND nummer != 'DEL' LIMIT 1");
+    if (!empty($artikel)) {
+        return($artikel);
+    }
+
+    // Lieferantnummer
+    if (!empty($adresse)) {
+        $artikel = $this->app->DB->Select("SELECT artikel FROM einkaufspreise WHERE bestellnummer='$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',bestellnummer,'%')":"")." AND ifnull(geloescht,0) = 0 AND adresse = $adresse LIMIT 1");
+        if (!empty($artikel)) {
+            return($artikel);
+        }
+    }
+
+    // Fremdnummer
+    if($fremdnummern)
+    {
+        $artikel = $this->app->DB->Select("SELECT art.id FROM artikel art INNER JOIN artikelnummer_fremdnummern af ON art.id = af.artikel AND ifnull(art.geloescht,0) = 0 AND af.aktiv = 1 AND art.nummer <> 'DEL'
+        INNER JOIN shopexport s  ON af.shopid = s.id WHERE af.nummer = '$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE 'CONCAT('%',af.nummer,'%')":"")." LIMIT 1");
+        if (!empty($artikel)) {
+            return($artikel);
+        }
+    }
+
+    return($artikel);
+  }
 }

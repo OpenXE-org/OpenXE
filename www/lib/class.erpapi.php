@@ -3300,6 +3300,9 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
     }
   }
 
+/*
+    DEPRECATED, use ArtikelScan
+
   // @refactor in Artikel Modul
   function artikelnummerscan($artikel)
   {
@@ -3318,6 +3321,16 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
     $this->RunHook('artikelnummerscan',2, $artikel, $artikelid);
     return $artikelid;
   }
+*/
+
+    function ArtikelScan(string $scan, int $adresse = 0, bool $fremdnummern = false, bool $ignoreprefixpostfix = false) {
+        $obj = $this->app->loadModule('artikel');
+        if($obj !== null && method_exists($obj, 'ArtikelScan')) {
+          return($obj->ArtikelScan($scan, $adresse, $fremdnummern, $ignoreprefixpostfix));
+        } else {
+            throw new exception("Module not found: Artikel->ArtikelScan");
+        }
+    }
 
   // @refactor in TemplateMessge Komponente
   function AddTplMsg($message)
@@ -20045,6 +20058,10 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     return $check > 0;
   }
 
+/*
+
+    DEPRECATED, use ArtikelScan()
+
   function ArtikelIDWennEAN($artikelnummer, $fremdnummern = false)
   {
     if($artikelnummer!="")
@@ -20071,16 +20088,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         if($artikel)
           return $artikel;
       }
-/*
-      $id = $this->app->DB->Select("SELECT id FROM artikel WHERE id='$artikelnummer' LIMIT 1");
-      if($id > 0)
-        return $id;
-      else
-        return 0;
-*/
     }
     return 0;
-  }
+  } */
 
   function LagerEinlagern($artikel,$menge,$regal,$projekt,$grund="",$importer="",$paketannahme="",$doctype = "", $doctypeid = 0, $vpeid = 0, $permanenteinventur = 0, $adresse = 0)
   {
