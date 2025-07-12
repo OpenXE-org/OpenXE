@@ -2369,8 +2369,8 @@ class Wareneingang {
                 } // Artikelscan
 
                 // Table selection
-                $bestellposition_ids = array_merge($bestellposition_ids,$this->app->Secure->GetPOST('bestellposition_ids'));
-                $mengen = array_merge($mengen,$this->app->Secure->GetPOST('mengen'));
+                $bestellposition_ids = array_merge($bestellposition_ids,(array) $this->app->Secure->GetPOST('bestellposition_ids'));
+                $mengen = array_merge($mengen,(array) $this->app->Secure->GetPOST('mengen'));
                 $bemerkungen = $this->app->Secure->GetPOST('bemerkungen');
 
                 $positionen = 0;

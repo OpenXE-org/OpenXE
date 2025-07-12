@@ -88,6 +88,7 @@
                 <div class="row-height">
                     <div class="col-xs-12 col-md-10 col-md-height">
                         <div class="inside-white inside-full-height">
+                    	    [ISLIEFERANTSTART]
                             <div class="row">
                                 <div class="row-height">
 	                                <div class="col-xs-12 col-md-10 col-md-height">
@@ -130,6 +131,7 @@
 	                                </div>
                                 </div>
                             </div>
+						    [ISLIEFERANTENDE]
                             <div class="row" [HINZUFUEGENHIDDEN]>
                                 <div class="row-height">
                                     <div class="col-xs-12 col-md-10 col-md-height">
@@ -241,40 +243,42 @@
         [TAB1ENDE]
     </div> [AFTERTAB1] [BEFORETAB2]
     <div id="tabs-2"> [TAB2START] [MESSAGE2]
-	    <div class="row">
-		    <div class="row-height">
-			    <div class="col-xs-12 col-md-10 col-md-height">
-				    <div class="inside-white inside-full-height"> [TAB2]
-					    <div class="center">[BUTTONS2]</div>
-				    </div>
-			    </div>
-                <div class="col-xs-12 col-md-2 col-md-height">
-				    <div class="inside inside-full-height">
-					    <fieldset>
-						    <button name="submit" class="ui-button-icon" style="width:100%;" value="speichern" hidden="true"></button>
-						    <table width="100%" border="0" class="mkTableFormular">
-							    <legend>{|Aktionen|}</legend>
-                                <tr [HINZUFUEGENHIDDEN]>
-									<td>
-                                        {|Multifilter|}:&nbsp;<img src="./themes/new/images/tooltip_grau.png" border="0" style="position: relative; left: 1px; top: 3px; z-index: 8;" class="wawitooltipicon" title="Auswahl mehrerer Artikel &uuml;ber Name oder Nummer">
-                                    </td>
-                                </tr>
-                                <tr [HINZUFUEGENHIDDEN]>
-									<td>
-                                        <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">
-									</td>
-								</tr>
-							    <tr [HINZUFUEGENHIDDEN]>
-								    <td>
-									    <button name="submit" class="ui-button-icon" style="width:100%;" value="manuell_hinzufuegen">{|Hinzuf&uuml;gen|}</button>
-								    </td>
-							    </tr>
-						    </table>
-					    </fieldset>
-				    </div>
-                </div>
-		    </div>
-	    </div> [TAB2ENDE]
+        <form action="" method="post">
+	        <div class="row">
+		        <div class="row-height">
+			        <div class="col-xs-12 col-md-10 col-md-height">
+				        <div class="inside-white inside-full-height"> [TAB2]
+					        <div class="center">[BUTTONS2]</div>
+				        </div>
+			        </div>
+                    <div class="col-xs-12 col-md-2 col-md-height">
+				        <div class="inside inside-full-height">
+					        <fieldset>
+						        <button name="submit" class="ui-button-icon" style="width:100%;" value="speichern" hidden="true"></button>
+						        <table width="100%" border="0" class="mkTableFormular">
+							        <legend>{|Aktionen|}</legend>
+                                    <tr [HINZUFUEGENHIDDEN]>
+									    <td>
+                                            {|Multifilter|}:&nbsp;<img src="./themes/new/images/tooltip_grau.png" border="0" style="position: relative; left: 1px; top: 3px; z-index: 8;" class="wawitooltipicon" title="Auswahl mehrerer Artikel &uuml;ber Name oder Nummer">
+                                        </td>
+                                    </tr>
+                                    <tr [HINZUFUEGENHIDDEN]>
+									    <td>
+                                            <input type="text" name="multifilter" id="multifilter" value="[MULTIFILTER]" size="20" style="width:98%;" form="">
+									    </td>
+								    </tr>
+							        <tr [HINZUFUEGENHIDDEN]>
+								        <td>
+									        <button name="submit" class="ui-button-icon" style="width:100%;" value="manuell_hinzufuegen">{|Hinzuf&uuml;gen|}</button>
+								        </td>
+							        </tr>
+						        </table>
+					        </fieldset>
+				        </div>
+                    </div>
+		        </div>
+	        </div>
+	    </form> [TAB2ENDE]
     </div> [AFTERTAB2]
 </div>
 <form action="index.php?module=wareneingang&action=oeffnen" id="oeffnen" method="POST">
