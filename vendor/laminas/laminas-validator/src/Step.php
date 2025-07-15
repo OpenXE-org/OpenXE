@@ -1,49 +1,49 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator;
 
 use Traversable;
 
+use function array_shift;
+use function floor;
+use function func_get_args;
+use function is_array;
+use function is_numeric;
+use function iterator_to_array;
+use function round;
+use function strlen;
+use function strpos;
+use function substr;
+
+/** @final */
 class Step extends AbstractValidator
 {
-    const INVALID = 'typeInvalid';
-    const NOT_STEP = 'stepInvalid';
+    public const INVALID  = 'typeInvalid';
+    public const NOT_STEP = 'stepInvalid';
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $messageTemplates = [
-        self::INVALID => 'Invalid value given. Scalar expected',
+        self::INVALID  => 'Invalid value given. Scalar expected',
         self::NOT_STEP => 'The input is not a valid step',
     ];
 
-    /**
-     * @var mixed
-     */
+    /** @var numeric */
     protected $baseValue = 0;
 
-    /**
-     * @var mixed
-     */
+    /** @var numeric */
     protected $step = 1;
 
     /**
      * Set default options for this instance
      *
-     * @param array $options
+     * @param iterable<string, mixed> $options
      */
     public function __construct($options = [])
     {
         if ($options instanceof Traversable) {
             $options = iterator_to_array($options);
         } elseif (! is_array($options)) {
-            $options = func_get_args();
+            $options           = func_get_args();
             $temp['baseValue'] = array_shift($options);
             if (! empty($options)) {
                 $temp['step'] = array_shift($options);
@@ -65,10 +65,12 @@ class Step extends AbstractValidator
     /**
      * Sets the base value from which the step should be computed
      *
-     * @param mixed $baseValue
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in v3.0
+     *
+     * @param numeric $baseValue
      * @return $this
      */
-    public function setBaseValue($baseValue)
+    public function setBaseValue(mixed $baseValue)
     {
         $this->baseValue = $baseValue;
         return $this;
@@ -77,7 +79,9 @@ class Step extends AbstractValidator
     /**
      * Returns the base value from which the step should be computed
      *
-     * @return string
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in v3.0
+     *
+     * @return numeric
      */
     public function getBaseValue()
     {
@@ -87,10 +91,12 @@ class Step extends AbstractValidator
     /**
      * Sets the step value
      *
-     * @param mixed $step
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in v3.0
+     *
+     * @param numeric $step
      * @return $this
      */
-    public function setStep($step)
+    public function setStep(mixed $step)
     {
         $this->step = (float) $step;
         return $this;
@@ -99,7 +105,9 @@ class Step extends AbstractValidator
     /**
      * Returns the step value
      *
-     * @return string
+     * @deprecated Since 2.61.0 All option getters and setters will be removed in v3.0
+     *
+     * @return numeric
      */
     public function getStep()
     {
@@ -136,13 +144,13 @@ class Step extends AbstractValidator
     /**
      * replaces the internal fmod function which give wrong results on many cases
      *
-     * @param float $x
-     * @param float $y
+     * @param numeric $x
+     * @param numeric $y
      * @return float
      */
     protected function fmod($x, $y)
     {
-        if ($y == 0.0) {
+        if ($y === 0.0 || $y === 0) {
             return 1.0;
         }
 
@@ -155,8 +163,8 @@ class Step extends AbstractValidator
     /**
      * replaces the internal substraction operation which give wrong results on some cases
      *
-     * @param float $x
-     * @param float $y
+     * @param numeric $x
+     * @param numeric $y
      * @return float
      */
     private function sub($x, $y)
@@ -166,12 +174,15 @@ class Step extends AbstractValidator
     }
 
     /**
-     * @param  float $float
-     * @return int
+     * @param numeric $float
      */
-    private function getPrecision($float)
+    private function getPrecision($float): int
     {
-        $segment = substr($float, strpos($float, '.') + 1);
-        return $segment ? strlen($segment) : 0;
+        $position = strpos((string) $float, '.');
+        $segment  = $position === false
+            ? null
+            : substr((string) $float, $position + 1);
+
+        return $segment !== null ? strlen($segment) : 0;
     }
 }

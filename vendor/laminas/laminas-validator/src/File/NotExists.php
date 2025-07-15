@@ -1,15 +1,15 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\File;
+
+use function file_exists;
+
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Validator which checks if the destination file does not exist
+ *
+ * @final
  */
 class NotExists extends Exists
 {
@@ -18,11 +18,9 @@ class NotExists extends Exists
     /**
      * @const string Error constants
      */
-    const DOES_EXIST = 'fileNotExistsDoesExist';
+    public const DOES_EXIST = 'fileNotExistsDoesExist';
 
-    /**
-     * @var array Error message templates
-     */
+    /** @var array Error message templates */
     protected $messageTemplates = [
         self::DOES_EXIST => 'File exists',
     ];
@@ -40,7 +38,7 @@ class NotExists extends Exists
 
         $this->setValue($fileInfo['filename']);
 
-        $check = false;
+        $check       = false;
         $directories = $this->getDirectory(true);
         if (! isset($directories)) {
             $check = true;
