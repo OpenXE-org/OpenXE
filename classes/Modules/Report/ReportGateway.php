@@ -475,7 +475,7 @@ final class ReportGateway
      */
     public function getDocumentAddActionMenuData($doctype, $userId = 0)
     {
-        $sql = 'SELECT r.id, r.name, s.menu_doctype, s.menu_format, s.menu_label
+        $sql = 'SELECT DISTINCT r.id, r.name, s.menu_doctype, s.menu_format, s.menu_label
                 FROM `report` as `r`
                 JOIN `report_share` as `s` ON r.id = s.report_id
                 LEFT JOIN `report_user` as `u` ON r.id = u.report_id
