@@ -7688,6 +7688,12 @@ function fixDatabaseNullIDs($table)
   $this->CheckAlterTable("ALTER TABLE `$table` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=".$maxid);
 }
 
+function CheckBelegNummernDoppelt(string $table, string $field, $where = '1', string $group = "") {
+    $sql = "SELECT ".$field." FROM ".$table." WHERE ".$where." GROUP BY ".$field.($group != ""?",".$group:"")." HAVING COUNT(id) > 1";
+    $doppelte = $this->app->DB->SelectArr($sql);
+    return($doppelte);
+}
+
 // @refactor Changelog Komponente/Modul
 function StartChangeLog($table, $tableid = 0, $module = '', $action = '', $bearbeiter = ''){
   $this->Changelog = null;
