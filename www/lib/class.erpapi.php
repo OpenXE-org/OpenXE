@@ -2129,12 +2129,11 @@ public function NavigationHooks(&$menu)
 
     $this->BriefpapierHintergrundEnable();
 
-
     switch($typ)
     {
       case "angebot": $this->AngebotProtokoll($id,"Angebot versendet"); break;
       case "auftrag": $this->AuftragProtokoll($id,"Auftrag versendet"); break;
-      case "rechnung": $this->RechnungProtokoll($id,"Rechnung versendet"); break;
+      case "rechnung": $this->RechnungProtokoll($id,"Rechnung versendet".($email?(" an ".$email):"")); break;
       case "lieferschein": $this->LieferscheinProtokoll($id,"Lieferschein versendet"); break;
       case "gutschrift": $this->GutschriftProtokoll($id,"Gutschrift versendet"); break;
       case "reisekosten": $this->ReisekostenProtokoll($id,"Reisekosten versendet"); break;
@@ -15395,7 +15394,14 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       //$this->app->DB->Update("UPDATE rechnung SET status='versendet', versendet='1',schreibschutz='1' WHERE id='$id' LIMIT 1");
       if($result)
       {
-        $this->RechnungProtokoll($id,'Rechnung versendet');
+
+        if (is_array($to)) {
+            $to_empfaenger = implode(', ',$to);
+        } else {
+            $to_empfaenger = $to;
+        }
+
+        $this->RechnungProtokoll($id,'Rechnung versendet an '.$to_empfaenger);
 
         $betreff = $this->app->DB->real_escape_string($betreff);
         $text = $this->app->DB->real_escape_string($text);
@@ -23975,13 +23981,15 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       {
         if(!$intern)$this->app->Tpl->Set($parsetarget,"<div class=\"info\">Dokument wurde erfolgreich versendet</div>");
 
+        $mailinfo = $partnerinfo['email']?(" an ".$partnerinfo['email']):"";
+
         /* Status gezielt von Dokument aendern */
         if($typ=="bestellung")
         {
           $this->app->DB->Update("UPDATE bestellung SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE bestellung SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->BestellungProtokoll($id,"Bestellung versendet");
+          $this->BestellungProtokoll($id,"Bestellung versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if($typ=="angebot")
@@ -23989,7 +23997,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE angebot SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE angebot SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->AngebotProtokoll($id,"Angebot versendet");
+          $this->AngebotProtokoll($id,"Angebot versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if($typ=="lieferschein")
@@ -23997,7 +24005,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE lieferschein SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE lieferschein SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->LieferscheinProtokoll($id,"Lieferschein versendet");
+          $this->LieferscheinProtokoll($id,"Lieferschein versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if($typ=="retoure")
@@ -24005,7 +24013,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE retoure SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE retoure SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->RetoureProtokoll($id,"Retoure versendet");
+          $this->RetoureProtokoll($id,"Retoure versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if($typ=="arbeitsnachweis")
@@ -24013,7 +24021,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE arbeitsnachweis SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE arbeitsnachweis SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->ArbeitsnachweisProtokoll($id,"Arbeitsnachweis versendet");
+          $this->ArbeitsnachweisProtokoll($id,"Arbeitsnachweis versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if($typ=="reisekosten")
@@ -24021,7 +24029,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE reisekosten SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE reisekosten SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->ReisekostenProtokoll($id,"Reisekosten versendet");
+          $this->ReisekostenProtokoll($id,"Reisekosten versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
 
@@ -24030,7 +24038,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE auftrag SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           //$this->app->DB->Update("UPDATE auftrag SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->AuftragProtokoll($id,"Auftrag versendet");
+          $this->AuftragProtokoll($id,"Auftrag versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if ($typ=="rechnung")
@@ -24039,7 +24047,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->closeInvoice($id,'freigegeben');
           $this->app->DB->Update("UPDATE rechnung SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->RechnungProtokoll($id,"Rechnung versendet");
+          $this->RechnungProtokoll($id,"Rechnung versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if ($typ=="gutschrift")
@@ -24047,7 +24055,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE gutschrift SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE gutschrift SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->GutschriftProtokoll($id,"Gutschrift versendet");
+          $this->GutschriftProtokoll($id,"Gutschrift versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if ($typ=="proformarechnung")
@@ -24055,7 +24063,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE  proformarechnung SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE proformarechnung SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->ProformarechnungProtokoll($id,"Proformarechnung versendet");
+          $this->ProformarechnungProtokoll($id,"Proformarechnung versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }
         else if ($typ=="preisanfrage")
@@ -24063,7 +24071,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           $this->app->DB->Update("UPDATE preisanfrage SET versendet=1, versendet_am=NOW(),
               versendet_per='$art',versendet_durch='".$this->app->User->GetName()."',schreibschutz='1' WHERE id='$id' LIMIT 1");
           $this->app->DB->Update("UPDATE preisanfrage SET status='versendet' WHERE id='$id' AND status='freigegeben' LIMIT 1");
-          $this->PreisanfrageProtokoll($id,"Preisanfrage versendet");
+          $this->PreisanfrageProtokoll($id,"Preisanfrage versendet".$mailinfo);
           //TODO ARCHIVIEREN
         }else if ($typ=="spedition")
         {
@@ -24258,8 +24266,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
     if($sprache=="") $sprache="deutsch";
 
-
-
     switch($dokument)
     {
       case "bestellung":
@@ -24389,12 +24395,12 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   }
 
   if(!$intern && !empty($this->app->User) && method_exists($this->app->User, 'GetParameter') &&
-    $this->app->User->GetParameter('dokument_absenden_alleartikel')=='1')
+     $this->app->User->GetParameter('dokument_absenden_alleartikel')=='1')
   {
     $tabelle = strtolower($dokument);
     $dateianhaenge = $this->app->DB->SelectArr("SELECT DISTINCT ds.id, ds.datei, d.titel,ds.subjekt, ds.objekt, ds.sort FROM datei_stichwoerter ds INNER JOIN datei d on ds.datei = d.id where d.geloescht <> 1 AND (ds.parameter = '$id' AND ds.objekt like '$dokument') OR ((ds.parameter IN (SELECT DISTINCT artikel FROM ".$tabelle."_position WHERE ".$tabelle."='$id') ) AND ds.objekt like 'artikel') ORDER BY ds.objekt like '$dokument' DESC, ds.sort");
   } else {
-    $dateianhaenge = $this->app->DB->SelectArr("SELECT DISTINCT ds.id, ds.datei, d.titel,ds.subjekt, ds.objekt, ds.sort FROM datei_stichwoerter ds INNER JOIN datei d on ds.datei = d.id where d.geloescht <> 1 AND ds.parameter = '$id' AND ds.objekt like '$dokument' AND ds.subjekt!='$dokument' ORDER BY ds.sort");
+    $dateianhaenge = $this->app->DB->SelectArr("SELECT DISTINCT ds.id, ds.datei, d.titel,ds.subjekt, ds.objekt, ds.sort FROM datei_stichwoerter ds INNER JOIN datei d on ds.datei = d.id where d.geloescht <> 1 AND ds.parameter = '$id' AND ds.objekt like '$dokument' ORDER BY ds.sort");
     if($intern)$intern['dateianhaenge'] = $dateianhaenge;
   }
   if($intern)return $return;
@@ -24412,7 +24418,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     }
     foreach($dateianhaenge as $dk => $dv)
     {
-      if(strtolower($dv['subjekt'])=="anhang") $checked="checked"; else $checked="";
+      if(strtolower($dv['subjekt'])=="anhang" || strtolower($dv['subjekt']) == 'rechnung') $checked="checked"; else $checked="";
       $dateiname = $this->GetDateiName($dv['datei']);
 
       if($this->app->User->GetParameter("dokument_absenden_sammelpdf")=="1" && strtolower($dv['objekt']) == strtolower($dokument))
@@ -24504,7 +24510,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $this->app->Tpl->Set('TEXT',$tmp[0]['text']);
     }
 
-
     $tmp = new EasyTable($this->app);
     if($dokument == 'spedition'){
       $tmp->Query("SELECT zeit,bearbeiter,grund FROM ".$dokument."_protokoll WHERE avi='$id' ORDER by zeit DESC");
@@ -24524,8 +24529,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     {
       $this->app->Tpl->Set("SAMMELPDF","checked");
     }
-
-
 
     $this->app->YUI->CkEditor("text","internal",array("height"=>"450"));
     if(is_file('pages/content/dokument_absenden_vorlage.tpl'))
@@ -24555,10 +24558,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
     //$text = $this->ParseUserVars($dokument,$parameter,$text);
     //$betreff = $this->ParseUserVars($dokument,$parameter,$betreff);
 
-
     if($dokument!="" && $drucker!="")
       $this->app->User->SetParameter("drucker_dokumentmask_".$dokument,$drucker);
-
 
     switch($art)
     {
