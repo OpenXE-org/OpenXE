@@ -5976,6 +5976,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             )
           );
       }
+
       $autodruckrechnungstufe1 = 0;
       $autodruckrechnungstufe1menge = 0;
       $exportdruckrechnungstufe1 = 0;
@@ -6010,7 +6011,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $exportdruckrechnungstufe1 = $this->app->erp->Export($exportland);
       }
 
-      if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0)
+      // PDF / XML rechnung
+      $xmlrechnung = (string)$this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id='$rechnung' LIMIT 1");
+      if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0 &&!$xmlrechnung)
       {
         $this->app->DB->Update("UPDATE rechnung SET status='versendet', versendet='1',schreibschutz='1' WHERE id='$rechnung' LIMIT 1");
         $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
@@ -6049,8 +6052,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $Brief->ArchiviereDocument();
         unlink($tmpfile);
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-      }
-      
+      }    
+      // PDF / XML rechnung
+
       // Rechnungsmail was here, but now at the end to prioritise processing and printing over mail
 
       // auftrag abschliessen
