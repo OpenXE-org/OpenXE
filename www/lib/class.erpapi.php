@@ -25055,7 +25055,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
   // keine leeren email versenden
   if($text=="" && $betreff=="") {
      $this->mail_error =  "Mailer Error: " . "Empty mail.";
-     return 0;  
+     return 0;
   }
 
 /*  $isSystemTemplate = $system && is_file(dirname(__DIR__, 2) .'/classes/Modules/Company/templates/systemmail.tpl');
@@ -25254,6 +25254,11 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       // Put the mail in IMAP sent folder
       // Note that this is implemented with laminas-mail and only this
       // The created mail may differ from the sent one because it is created by different libraries 
+
+      $body = htmlspecialchars_decode(
+                  htmlentities($body, ENT_NOQUOTES, 'UTF-8', false),
+                  ENT_NOQUOTES
+      );
 
       $imap_aktiv = $this->app->DB->Select("SELECT imap_sentfolder_aktiv FROM emailbackup WHERE email='".$from."' AND imap_sentfolder!='' AND geloescht!=1 LIMIT 1");
       if($imap_aktiv=="1" && !preg_match("/Xentral Kopie/",$to_name_csv) && !preg_match("/WaWision Kopie/",$to_name_csv))
