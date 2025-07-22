@@ -574,6 +574,8 @@ class Verbindlichkeit {
 
         $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker());
 
+        $this->verbindlichkeit_check_belegnummern();
+        
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_list.tpl");
     }
 
@@ -581,7 +583,8 @@ class Verbindlichkeit {
         $id = (int) $this->app->Secure->GetGET('id');
 
         $this->app->DB->Delete("UPDATE `verbindlichkeit` SET status='storniert' WHERE `id` = '{$id}'");
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde storniert.</div>");
+        $this->app->DB->Delete("DELETE FROM `verbindlichkeit` WHERE belegnr = '' AND `id` = '{$id}'");
+        $this->app->YUI->Message('info','Der Eintrag wurde storniert.');
 
         $this->verbindlichkeit_list();
     }
@@ -608,6 +611,8 @@ class Verbindlichkeit {
           return;
         }
 
+        $this->verbindlichkeit_check_belegnummern();
+                
         $this->app->Tpl->Set('ID', $id);
 
         $this->verbindlichkeit_menu($id);
@@ -720,7 +725,7 @@ class Verbindlichkeit {
                     $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
                     header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg");
                 } else {
-                    $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                    $this->app->YUI->Message('success','Die Einstellungen wurden erfolgreich &uuml;bernommen.');
                 }
             break;
             case 'positionen_hinzufuegen':
@@ -1177,7 +1182,7 @@ class Verbindlichkeit {
                     WHERE id = ".$posid."
                 ";
                 $this->app->DB->Update($sql);
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                $this->app->YUI->Message('success','Die Einstellungen wurden erfolgreich &uuml;bernommen.');
                 header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg#tabs-2");
             }
         } else {
@@ -1193,7 +1198,7 @@ class Verbindlichkeit {
                 ";
                 $this->app->DB->Update($sql);
 
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                $this->app->YUI->Message('success', 'Die Einstellungen wurden erfolgreich &uuml;bernommen.');
                 header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg#tabs-2");
             }
         }
@@ -1881,6 +1886,13 @@ class Verbindlichkeit {
         $this->app->DB->Insert($sql);
         $id = $this->app->DB->GetInsertID();
         return($id);
+    }
+
+    function verbindlichkeit_check_belegnummern() {
+        $doppelte = $this->app->erp->CheckBelegNummernDoppelt(table: "verbindlichkeit", field: "rechnung", where: "status <> 'storniert' AND rechnungsdatum > CURDATE() - INTERVAL 6 MONTH", group: "adresse");
+        if (!empty($doppelte)) {
+            $this->app->YUI->Message('error','Rechnungsnummer(n) mehrfach vergeben: '.implode(', ',array_column($doppelte,'rechnung')));
+        }
     }
 
 }
