@@ -2,13 +2,13 @@
 
 /*
  * *** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
- * 
+ *
  * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
  *
- * This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+ * This file is licensed under the Embedded Projects General Public License *Version 3.1.
  *
- * You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
- * to obtain the text of the corresponding license version.  
+ * You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+ * to obtain the text of the corresponding license version.
  *
  * *** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
  */
@@ -47,9 +47,9 @@ class Wareneingang {
                       else
                       oMoreData' . $r . $name . ' = 1;
 
-                      $(\'#' . $name . '\').dataTable().fnFilter( 
+                      $(\'#' . $name . '\').dataTable().fnFilter(
                         \'\',
-                        i, 
+                        i,
                         0,0
                         );
                       }
@@ -88,7 +88,7 @@ class Wareneingang {
                     $groupby = " GROUP BY a.id ";
                 }
                 $sql = "
-                SELECT SQL_CALC_FOUND_ROWS 
+                SELECT SQL_CALC_FOUND_ROWS
                     a.id,
                     a.nummer as nummer,
                     CONCAT('<span style=display:none>',a.name_de,'</span>',if(a.intern_gesperrt,CONCAT('<strike>',
@@ -97,12 +97,12 @@ class Wareneingang {
                         ,'</strike>'),
                         if(a.variante AND a.variante_von > 0,CONCAT(name_de,' <font color=#848484>(Variante von ',ifnull((SELECT tmp.nummer FROM artikel tmp WHERE a.variante_von=tmp.id LIMIT 1),''),')</font>'),name_de)
                         )
-                    ) as name_de, 
-                    CONCAT('<span style=display:none>',a.name_de,'</span>',trim((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id))+0) as lagerbestand,  
+                    ) as name_de,
+                    CONCAT('<span style=display:none>',a.name_de,'</span>',trim((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id))+0) as lagerbestand,
                     p.abkuerzung as projekt,
-                    a.id as menu 
-                FROM 
-                    artikel a                    
+                    a.id as menu
+                FROM
+                    artikel a
                 LEFT JOIN projekt p ON p.id=a.projekt " . $addjoin;
 
                 $where = "a.geloescht=0 $subwhere " . $this->app->erp->ProjektRechte();
@@ -124,7 +124,7 @@ class Wareneingang {
                 }
 
                // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#ausfuellen').click( function() { fnFilterColumn1( 0 ); } );");                
+                $this->app->Tpl->Add('JQUERYREADY', "$('#ausfuellen').click( function() { fnFilterColumn1( 0 ); } );");
 
                 for ($r = 1;$r <= 1;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
@@ -135,9 +135,9 @@ class Wareneingang {
                                          else
                                          oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
                                            \'\',
-                                           i, 
+                                           i,
                                            0,0
                                            );
                                          }
@@ -148,8 +148,8 @@ class Wareneingang {
                 $maximalmenge = 'trim(bp.menge -  bp.geliefert)+0';
                 if ($more_data1 == 1) {
                     $ausfuellen = $maximalmenge;
-                } else {            
-                    $ausfuellen = "''";       
+                } else {
+                    $ausfuellen = "''";
                 }
                 // END Toggle filters
 
@@ -162,37 +162,37 @@ class Wareneingang {
                 );
 
                 $auswahl = array (
-                    '<input type=\"text\" name=\"bestellposition_ids[]\" value=\"',                   
+                    '<input type=\"text\" name=\"bestellposition_ids[]\" value=\"',
                     ['sql' => 'bp.id'],
                     '" hidden/>',
                     ['sql' => 'bp.bestellnummer']
-                );              
-                
+                );
+
                 $input_for_menge = array(
                     '<input type = \"number\" min=\"0\"',
-                    ' max=\"',                    
+                    ' max=\"',
                     ['sql' => $maximalmenge],
                     '\""',
-                    ' value=\"',                    
+                    ' value=\"',
                     ['sql' => $ausfuellen],
                     '\"',
                     ' name=\"mengen[]\"',
                     ' style=\"text-align:right; width:100%\">',
                     '</input>'
-                );      
+                );
 
                 $input_for_bemerkung = array(
-                    '<input type = \"text\"',                    
+                    '<input type = \"text\"',
                     ' name=\"bemerkungen[]\"',
                     ' style=\"text-align:right; width:100%\">',
                     '</input>'
-                );                    
+                );
 
-              /*  if ($wareneingangauftragzubestellung) {            
+              /*  if ($wareneingangauftragzubestellung) {
                     $heading = array('Lieferant-Art.-Nr.', 'Art.-Nummer', 'Bestellung', 'Beschreibung', 'Lieferdatum', 'Projekt', 'Menge', 'Geliefert', 'Offen', 'Auftrag', 'Menge', 'Eingabe', '');
                     $width = array('5%', '5%', '5%', '30%', '5%', '5%', '5%', '5%', '5%', '5%', '5%', '5%', '5%');
                     $findcols = array('bp.bestellnummer', 'art.nummer', 'b.belegnr',
-                        "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant, 
+                        "CONCAT(art.name_de,'<br>Bei Lieferant: ',bp.bezeichnunglieferant,
                                    IF(b.internebemerkung != '' AND b.internebemerkung IS NOT NULL, CONCAT('<br>Interne Bemerkung: ',b.internebemerkung),''),
                                    IF(b.internebezeichnung != '' AND b.internebezeichnung IS NOT NULL, CONCAT('<br>Interne Bezeichnung: ',b.internebezeichnung), ''),
                                    IF(b.bestellungbestaetigtabnummer != '' AND b.bestellungbestaetigtabnummer IS NOT NULL, CONCAT('<br>AB Nummer Lieferant: ',b.bestellungbestaetigtabnummer), ''),
@@ -206,7 +206,7 @@ class Wareneingang {
                                    IF(b.bestaetigteslieferdatum != '' AND b.bestaetigteslieferdatum IS NOT NULL AND b.bestaetigteslieferdatum != '0000-00-00', CONCAT('<br>Best. Lieferdatum: ',DATE_FORMAT(b.bestaetigteslieferdatum, '%d.%m.%Y')),'')
                                    )", "if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort')", 'p.abkuerzung', 'bp.menge', 'bp.geliefert', "if((SELECT COUNT(auf2.id) FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ) > 0,(SELECT auf2.belegnr FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ORDER BY belegnr LIMIT 1),'-' )");
                 } else */ {
-                    $heading = array(                        
+                    $heading = array(
                         'Art.-Nummer',
                         'Beschreibung',
                         'Bestellung',
@@ -282,7 +282,7 @@ class Wareneingang {
                             bp.lieferdatum,
                             bp.lieferdatum,
                             'sofort'
-                        )", 
+                        )",
                         'p.abkuerzung',
                         'bp.menge',
                         'bp.geliefert',
@@ -378,8 +378,8 @@ class Wareneingang {
                 if (!empty($receiptDocument)) {
                     $rdJoin = "  LEFT JOIN (
                   SELECT supplier_order_id, MAX(useredit_id) AS useredit, MAX(useredit_time) AS  useredit_time
-                  FROM receiptdocument 
-                  WHERE (status = 'angelegt' OR status = '') AND supplier_order_id > 0 
+                  FROM receiptdocument
+                  WHERE (status = 'angelegt' OR status = '') AND supplier_order_id > 0
                   AND useredit_time <> '0000-00-00 00:00:00' AND DATE_SUB(NOW(), INTERVAL 600 SECOND) < useredit_time
                   GROUP BY supplier_order_id
               ) AS rd ON b.id = rd.supplier_order_id ";
@@ -391,52 +391,52 @@ class Wareneingang {
                                    ,'</i>',
                                    IF(
                 IFNULL(rd.useredit,0) <= 0,'',
-                CONCAT('<br><font color=red><b>(in Bearbeitung von ', (SELECT a2.name FROM user u2 LEFT JOIN adresse a2 ON a2.id=u2.adresse WHERE u2.id=rd.useredit LIMIT 1),')</b></font>')  
+                CONCAT('<br><font color=red><b>(in Bearbeitung von ', (SELECT a2.name FROM user u2 LEFT JOIN adresse a2 ON a2.id=u2.adresse WHERE u2.id=rd.useredit LIMIT 1),')</b></font>')
               )
                                    )";
                 }
                 // SQL statement
                 $sql = "
-                    SELECT SQL_CALC_FOUND_ROWS 
+                    SELECT SQL_CALC_FOUND_ROWS
                         bp.id,
                         ".$this->app->erp->ConcatSQL($artikel_link).",
                         $colBeschreibung as beschreibung,
-                        b.belegnr as `Bestellung`, 
+                        b.belegnr as `Bestellung`,
                         ".$this->app->erp->ConcatSQL($auswahl).",
                         if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum,
-                        p.abkuerzung as projekt, 
+                        p.abkuerzung as projekt,
                         ".$this->app->erp->FormatMenge('bp.menge').",
-                        ".$this->app->erp->FormatMenge('bp.geliefert').", 
-                        ".$this->app->erp->FormatMenge('bp.menge-bp.geliefert')." as offen, 
+                        ".$this->app->erp->FormatMenge('bp.geliefert').",
+                        ".$this->app->erp->FormatMenge('bp.menge-bp.geliefert')." as offen,
                         ".$this->app->erp->ConcatSQL($input_for_menge).",
                         ".$this->app->erp->ConcatSQL($input_for_bemerkung).",
-                        bp.id 
+                        bp.id
                     FROM bestellung_position bp
                     INNER JOIN bestellung b ON bp.bestellung=b.id
                     $rdJoin
-                    INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel 
+                    INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel
                     LEFT JOIN projekt p ON b.projekt=p.id
                 ";
 
    /*             if ($wareneingangauftragzubestellung) {
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, art.nummer, b.belegnr as `Bestellung`, 
-                  $colBeschreibung as beschreibung,                                      
-                  if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum, p.abkuerzung as projekt, 
-                  trim(bp.menge)+0, trim(bp.geliefert)+0, trim(bp.menge -  bp.geliefert)+0 as offen, 
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, bp.bestellnummer, art.nummer, b.belegnr as `Bestellung`,
+                  $colBeschreibung as beschreibung,
+                  if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum, p.abkuerzung as projekt,
+                  trim(bp.menge)+0, trim(bp.geliefert)+0, trim(bp.menge -  bp.geliefert)+0 as offen,
                   if((SELECT COUNT(auf2.id) FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ) > 0,(SELECT auf2.belegnr FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ORDER BY belegnr LIMIT 1),'-' ) AS auftrag,
                   if((SELECT sum(ap2.menge) FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ) > 0,(SELECT TRIM(sum(ap2.menge))+0 FROM auftrag auf2 INNER JOIN auftrag_position ap2 ON auf2.id = ap2.auftrag WHERE bp.auftrag_position_id = ap2.id ),'-' ) AS auftragmenge,
-                  bp.id 
+                  bp.id
                   FROM bestellung_position bp
-                  INNER JOIN bestellung b ON bp.bestellung=b.id 
+                  INNER JOIN bestellung b ON bp.bestellung=b.id
                   $rdJoin
-                  INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel 
+                  INNER JOIN artikel art ON art.id=bp.artikel $lagerartikel
                   LEFT JOIN projekt p ON b.projekt=p.id ";
                 }*/
 
-                $where = " 
+                $where = "
                     b.adresse='$adresse' AND
-                    b.belegnr != '' AND bp.geliefert < bp.menge AND 
-                    (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0) AND 
+                    b.belegnr != '' AND bp.geliefert < bp.menge AND
+                    (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0) AND
                     (b.status='versendet' OR b.status='freigegeben')
                     ".$artikelfilter."
                     " . $this->app->erp->ProjektRechte();
@@ -447,10 +447,10 @@ class Wareneingang {
                 $moreinfo = false;
                 $this->app->erp->RunHook('warneingang_tablesearch_wareneingang_lieferant', 4, $id, $sql, $where, $count);
                 break;
-            
+
             case 'wareneingang_manuell':
                 $allowed['paketdistribution_list'] = array('list');
-         
+
                 $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Bemerkung','');
                 $width = array(  '5%',          '30%',          '5%',    '15%',      '1%');
 
@@ -460,32 +460,32 @@ class Wareneingang {
                 $alignright = array('5');
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
-                
+
                 $auswahl = array (
-                    '<input type=\"text\" name=\"manuell_artikel_ids[]\" value=\"',                   
+                    '<input type=\"text\" name=\"manuell_artikel_ids[]\" value=\"',
                     ['sql' => 'a.id'],
                     '" hidden/>',
                     ['sql' => 'a.nummer']
-                );              
-                
+                );
+
                 $input_for_menge = array(
                     '<input type = \"number\" min=\"0\"',
-                    ' value=\"',                    
+                    ' value=\"',
                     '\"',
                     ' name=\"manuell_mengen[]\"',
                     ' style=\"text-align:right; width:100%\">',
                     '</input>'
-                );      
+                );
 
                 $input_for_bemerkung = array(
-                    '<input type = \"text\"',                    
+                    '<input type = \"text\"',
                     ' name=\"manuell_bemerkungen[]\"',
                     ' style=\"text-align:right; width:100%\">',
                     '</input>'
-                );      
+                );
 
                 $sql = "
-                    SELECT SQL_CALC_FOUND_ROWS                       
+                    SELECT SQL_CALC_FOUND_ROWS
                         id,
                         ".$this->app->erp->ConcatSQL($auswahl).",
                         name_de,
@@ -495,7 +495,7 @@ class Wareneingang {
                     FROM
                         artikel a
                 ";
-                              
+
                 $where = "geloescht <> 1";
 
                 $multifilter = $this->app->YUI->TableSearchFilter($name, 8,'multifilter');
@@ -509,7 +509,7 @@ class Wareneingang {
                     $where .= ")";
                 }
                 $count = "";
-         
+
             break;
 
             case 'paketannahme_retoure':
@@ -535,38 +535,38 @@ class Wareneingang {
                 $this->app->DB->SelectRow(
                         'SELECT `return_order_id`, `id`, `useredit_time`, `status` FROM `receiptdocument` LIMIT 1'
                 );
-                $count = "SELECT COUNT(bp.id) 
+                $count = "SELECT COUNT(bp.id)
         FROM `retoure` as `b`
-        INNER JOIN `retoure_position` as `bp` ON b.id = bp.retoure 
-        LEFT JOIN `projekt` AS `p` ON b.projekt = p.id 
+        INNER JOIN `retoure_position` as `bp` ON b.id = bp.retoure
+        LEFT JOIN `projekt` AS `p` ON b.projekt = p.id
         ";
                 if (empty($this->app->DB->error())) {
 
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, art.nummer, 
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, art.nummer,
                            CONCAT(art.name_de,
                                IF(
                 IFNULL(rd.useredit,0) <= 0,'',
-                CONCAT('<br><font color=red><b>(in Bearbeitung von ',     
+                CONCAT('<br><font color=red><b>(in Bearbeitung von ',
                     (SELECT a2.name FROM user u2 LEFT JOIN adresse a2 ON a2.id=u2.adresse WHERE u2.id=rd.useredit LIMIT 1),')</b></font>')
-              ) 
+              )
                                ), b.belegnr,
                            DATE_FORMAT(b.datum,'%d.%m.%Y'),
-                           p.abkuerzung, 
-              trim(bp.menge)+0 AS menge, trim(bp.menge_eingang)+0 AS eingang, 
+                           p.abkuerzung,
+              trim(bp.menge)+0 AS menge, trim(bp.menge_eingang)+0 AS eingang,
                            trim(bp.menge -  bp.menge_eingang)+0 as offen,
                            bp.id
         FROM `retoure` AS `b`
         LEFT JOIN (
             SELECT `return_order_id`, MAX(`useredit_id`) AS `useredit`, MAX(`useredit_time`) AS  `useredit_time`
-            FROM `receiptdocument` 
-            WHERE (`status` = 'angelegt' OR `status` = '') AND `return_order_id` > 0 
+            FROM `receiptdocument`
+            WHERE (`status` = 'angelegt' OR `status` = '') AND `return_order_id` > 0
             AND `useredit_time` <> '0000-00-00 00:00:00' AND DATE_SUB(NOW(), INTERVAL 600 SECOND) < `useredit_time`
             GROUP BY `return_order_id`
         ) AS `rd` ON b.id = rd.return_order_id
         LEFT JOIN (
             SELECT `return_order_id`
-            FROM `receiptdocument` 
-            WHERE (`status` = 'fertiggestellt' OR `status` = 'abgeschlossen') AND `return_order_id` > 0 
+            FROM `receiptdocument`
+            WHERE (`status` = 'fertiggestellt' OR `status` = 'abgeschlossen') AND `return_order_id` > 0
             GROUP BY `return_order_id`
         ) AS `rd2` ON b.id = rd2.return_order_id
         INNER JOIN retoure_position as bp ON b.id = bp.retoure
@@ -577,25 +577,25 @@ class Wareneingang {
                     $count .= "
           LEFT JOIN (
             SELECT `return_order_id`, MAX(`useredit_id`) AS `useredit`, MAX(`useredit_time`) AS  `useredit_time`
-            FROM `receiptdocument` 
-            WHERE (`status` = 'angelegt' OR `status` = '') AND `return_order_id` > 0 
+            FROM `receiptdocument`
+            WHERE (`status` = 'angelegt' OR `status` = '') AND `return_order_id` > 0
             AND `useredit_time` <> '0000-00-00 00:00:00' AND DATE_SUB(NOW(), INTERVAL 600 SECOND) < `useredit_time`
             GROUP BY `return_order_id`
           ) AS `rd` ON b.id = rd.return_order_id
           LEFT JOIN (
               SELECT `return_order_id`
-              FROM `receiptdocument` 
-              WHERE (`status` = 'fertiggestellt' OR `status` = 'abgeschlossen') AND `return_order_id` > 0 
+              FROM `receiptdocument`
+              WHERE (`status` = 'fertiggestellt' OR `status` = 'abgeschlossen') AND `return_order_id` > 0
               GROUP BY `return_order_id`
           ) AS `rd2` ON b.id = rd2.return_order_id
           ";
                 } else {
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, art.nummer, 
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS bp.id, art.nummer,
                            art.name_de
                               , b.belegnr,
                            DATE_FORMAT(b.datum,'%d.%m.%Y'),
-                           p.abkuerzung, 
-              trim(bp.menge)+0 AS menge, trim(bp.menge_eingang)+0 AS eingang, 
+                           p.abkuerzung,
+              trim(bp.menge)+0 AS menge, trim(bp.menge_eingang)+0 AS eingang,
                            trim(bp.menge -  bp.menge_eingang)+0 as offen,
                            bp.id
         FROM retoure as b
@@ -635,9 +635,9 @@ class Wareneingang {
                   else
                   oMoreData' . $r . $name . ' = 1;
 
-                  $(\'#' . $name . '\').dataTable().fnFilter( 
+                  $(\'#' . $name . '\').dataTable().fnFilter(
                     \'\',
-                    i, 
+                    i,
                     0,0
                     );
                   }
@@ -650,9 +650,9 @@ class Wareneingang {
                   {
                   oMoreData' . $r . $name . ' = i;
 
-                  $(\'#' . $name . '\').dataTable().fnFilter( 
+                  $(\'#' . $name . '\').dataTable().fnFilter(
                     \'\',
-                    i, 
+                    i,
                     0,0
                     );
                   }
@@ -696,7 +696,7 @@ class Wareneingang {
                     if (!empty($more_data6))
                         $datumbis = $this->app->String->Convert($more_data6, "%1.%2.%3", "%3-%2-%1");
                     if ($more_data4 == 1) {
-                        
+
                     } else {
                         if ($more_data2 == 1 || $more_data1 != 1)
                             $tmpfrom4 = ' LEFT JOIN bestellung b on a.id = b.adresse ';
@@ -810,9 +810,9 @@ class Wareneingang {
                 $mCol = "CONCAT('<table cellpadding=0 cellspacing=0><tr><td nowrap>Menge:&nbsp;"
                         . "<input class=\"qty\" value=\"',IFNULL(
           (
-            SELECT " . $this->app->erp->FormatMenge('ra.quantity') . " 
-            FROM returnorder_quantity AS ra 
-            WHERE ra.delivery_note_id = lp.id 
+            SELECT " . $this->app->erp->FormatMenge('ra.quantity') . "
+            FROM returnorder_quantity AS ra
+            WHERE ra.delivery_note_id = lp.id
               AND ra.serialnumber = IFNULL(sn.seriennummer,'')
               AND ra.bestbefore = IFNULL(bbf.mhd,'')
               AND ra.batch = IFNULL(batch.charge,'')
@@ -838,7 +838,7 @@ class Wareneingang {
                 // SQL statement
 
                 $rmamengecol = "
-        if( 
+        if(
            ifnull(rma2.menge,0)+IFNULL(rma4.menge,0) > 0,
            concat(" . $this->app->erp->FormatMenge('ifnull(rma2.menge,0)+ifnull(rma4.menge,0)') . "),
            if(
@@ -851,36 +851,36 @@ class Wareneingang {
         ),
         ";
                 $rmajoin = "LEFT JOIN (
-            SELECT sum(menge) as menge,pos 
-            FROM rma_artikel WHERE seriennummer = '' 
+            SELECT sum(menge) as menge,pos
+            FROM rma_artikel WHERE seriennummer = ''
             GROUP BY pos
           ) rma ON lp.id = rma.pos ";
 
                 $rmajoin2 = "LEFT JOIN (
-            SELECT sum(menge) as menge,pos,seriennummer 
-            FROM rma_artikel WHERE seriennummer != '' 
+            SELECT sum(menge) as menge,pos,seriennummer
+            FROM rma_artikel WHERE seriennummer != ''
             GROUP BY pos,seriennummer
           ) rma2 ON lp.id = rma2.pos AND sn.seriennummer = rma2.seriennummer";
 
                 $rmajoin3 = "
             LEFT JOIN (
-              SELECT SUM(menge) AS menge, lieferschein_position_id 
-              FROM `retoure_position` 
+              SELECT SUM(menge) AS menge, lieferschein_position_id
+              FROM `retoure_position`
               WHERE `lieferschein_position_id` > 0
               GROUP BY lieferschein_position_id
-            ) AS rma3 ON lp.id = rma3.lieferschein_position_id 
+            ) AS rma3 ON lp.id = rma3.lieferschein_position_id
             AND (sn.seriennummer IS NULL OR sn.seriennummer = '')
         ";
 
                 $rmajoin4 = "
               LEFT JOIN (
-                SELECT count(bcr.id) as menge, bcr.wert as seriennummer, 
-                rop.lieferschein_position_id 
-                FROM `beleg_chargesnmhd` AS bcr 
+                SELECT count(bcr.id) as menge, bcr.wert as seriennummer,
+                rop.lieferschein_position_id
+                FROM `beleg_chargesnmhd` AS bcr
                 INNER JOIN retoure_position AS rop ON bcr.pos = rop.id
                 AND bcr.doctype = 'retoure' AND bcr.type='sn'
                 GROUP BY rop.lieferschein_position_id, bcr.wert
-              ) AS rma4 ON lp.id = rma4.lieferschein_position_id 
+              ) AS rma4 ON lp.id = rma4.lieferschein_position_id
               AND sn.seriennummer = rma4.seriennummer
         ";
 
@@ -890,9 +890,9 @@ class Wareneingang {
                         $kommname = 'Kommissions-/Konsignationslager';
                     }
 
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer, 
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer,
                concat(lp.bezeichnung, if(isnull(komm.menge),'',' <i>($kommname)</i>')) as beschreibung,
-                           
+
           if(
             sn.seriennummer IS NULL,
             IF(bbf.mhd IS NULL,
@@ -900,68 +900,68 @@ class Wareneingang {
                   '',
                   CONCAT('Charge: ',batch.charge)
                 ),
-                CONCAT('MHD: ', bbf.mhd)                  
+                CONCAT('MHD: ', bbf.mhd)
             ),
             CONCAT('SN: ', sn.seriennummer)
           ),
                 p.abkuerzung as projekt,
-                           
-                                trim(if(isnull(sn.menge), 
-                    if(isnull(bbf.menge), 
+
+                                trim(if(isnull(sn.menge),
+                    if(isnull(bbf.menge),
                         IF(isnull(batch.menge),lp.menge,batch.menge)
                         , bbf.menge)
-                    ,sn.menge))+0, 
-                           
-                           
+                    ,sn.menge))+0,
+
+
                 $rmamengecol
-                l.belegnr as lieferschein, 
+                l.belegnr as lieferschein,
                  DATE_FORMAT(l.datum,'%d.%m.%Y') as datum, if(isnull(sn.seriennummer),lp.id,
                 $mCol,
                      concat(lp.id,'-',sn.seriennummer)),
-                           
+
                 FROM lieferschein_position lp
                 $rmajoin
-                LEFT JOIN lieferschein l ON lp.lieferschein=l.id 
-                LEFT JOIN projekt p ON l.projekt=p.id 
-                LEFT JOIN artikel a ON a.id=lp.artikel 
+                LEFT JOIN lieferschein l ON lp.lieferschein=l.id
+                LEFT JOIN projekt p ON l.projekt=p.id
+                LEFT JOIN artikel a ON a.id=lp.artikel
                 LEFT JOIN (
                     (
-                      SELECT '1' as menge, wert as seriennummer, pos 
-                      FROM `beleg_chargesnmhd` 
-                      WHERE doctype = 'lieferschein' AND type='sn' 
+                      SELECT '1' as menge, wert as seriennummer, pos
+                      FROM `beleg_chargesnmhd`
+                      WHERE doctype = 'lieferschein' AND type='sn'
                     ) UNION ALL
                     (
-                        SELECT '1' as menge,seriennummer, lieferscheinpos as pos 
+                        SELECT '1' as menge,seriennummer, lieferscheinpos as pos
                         FROM seriennummern
                     )
                 ) sn ON sn.pos = lp.id
                 LEFT JOIN (
-                    SELECT SUM(menge) AS menge, 
+                    SELECT SUM(menge) AS menge,
                     IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd,
                     pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='mhd'
                     GROUP BY wert,pos,wert2
                 ) AS bbf ON bbf.pos = lp.id AND a.mindesthaltbarkeitsdatum = 1 AND sn.pos IS NULL
-                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')  
+                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')
                 LEFT JOIN (
                     SELECT SUM(menge) AS menge, wert AS charge, pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='charge'
                     GROUP BY wert,pos
-                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0 
-                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL 
-                LEFT JOIN 
+                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0
+                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL
+                LEFT JOIN
                  (SELECT lieferschein_position, sum(menge) as menge FROM kommissionskonsignationslager_positionen WHERE menge > ausgelagert GROUP BY lieferschein_position) komm ON lp.id = komm.lieferschein_position
-                 
-                $rmajoin2                 
-                $rmajoin3                 
-                $rmajoin4                 
+
+                $rmajoin2
+                $rmajoin3
+                $rmajoin4
                 ";
                 } else {
 
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer, lp.bezeichnung as beschreibung, 
-                           
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer, lp.bezeichnung as beschreibung,
+
           if(
             sn.seriennummer IS NULL,
             IF(bbf.mhd IS NULL,
@@ -969,57 +969,57 @@ class Wareneingang {
                   '',
                   CONCAT('Charge: ',batch.charge)
                 ),
-                CONCAT('MHD: ', bbf.mhd)                  
+                CONCAT('MHD: ', bbf.mhd)
             ),
             CONCAT('SN: ', sn.seriennummer)
           ),
-                           
+
           p.abkuerzung as projekt,
-                           
-                                trim(if(isnull(sn.menge), 
-                    if(isnull(bbf.menge), 
+
+                                trim(if(isnull(sn.menge),
+                    if(isnull(bbf.menge),
                         IF(isnull(batch.menge),lp.menge,batch.menge)
                         , bbf.menge)
-                    ,sn.menge))+0, 
-                $rmamengecol 
-                l.belegnr as lieferschein, 
+                    ,sn.menge))+0,
+                $rmamengecol
+                l.belegnr as lieferschein,
            DATE_FORMAT(l.datum,'%d.%m.%Y') as datum,
            $mCol,
-           if(isnull(sn.seriennummer),lp.id,concat(lp.id,'-',sn.seriennummer)) 
+           if(isnull(sn.seriennummer),lp.id,concat(lp.id,'-',sn.seriennummer))
                 FROM lieferschein_position lp
                 $rmajoin
-                LEFT JOIN lieferschein l ON lp.lieferschein=l.id 
-                LEFT JOIN projekt p ON l.projekt=p.id 
-                LEFT JOIN artikel a ON a.id=lp.artikel 
-                LEFT JOIN 
+                LEFT JOIN lieferschein l ON lp.lieferschein=l.id
+                LEFT JOIN projekt p ON l.projekt=p.id
+                LEFT JOIN artikel a ON a.id=lp.artikel
+                LEFT JOIN
                 (
                   (
-                    SELECT '1' as menge, wert as seriennummer, pos 
-                    FROM `beleg_chargesnmhd` 
-                    WHERE doctype = 'lieferschein' AND type='sn' 
-                  ) 
+                    SELECT '1' as menge, wert as seriennummer, pos
+                    FROM `beleg_chargesnmhd`
+                    WHERE doctype = 'lieferschein' AND type='sn'
+                  )
                   UNION ALL
                   (
-                    SELECT '1' as menge,seriennummer, lieferscheinpos as pos 
+                    SELECT '1' as menge,seriennummer, lieferscheinpos as pos
                     FROM seriennummern
                   )
                 ) sn ON sn.pos = lp.id
                 LEFT JOIN (
-                    SELECT SUM(menge) AS menge, 
+                    SELECT SUM(menge) AS menge,
                     IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd,
                     pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='mhd'
                     GROUP BY wert,pos,wert2
                 ) AS bbf ON bbf.pos = lp.id AND a.mindesthaltbarkeitsdatum = 1 AND sn.pos IS NULL
-                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')  
+                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')
                 LEFT JOIN (
                     SELECT SUM(menge) AS menge, wert AS charge, pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='charge'
                     GROUP BY wert,pos
-                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0 
-                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL 
+                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0
+                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL
                 $rmajoin2
                 $rmajoin3
                 $rmajoin4
@@ -1085,8 +1085,8 @@ class Wareneingang {
                         $kommname = 'Kommissions-/Konsignationslager';
                     }
 
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer, 
-                           concat(lp.bezeichnung, if(isnull(komm.menge),'',' <i>($kommname)</i>')) as beschreibung, 
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer,
+                           concat(lp.bezeichnung, if(isnull(komm.menge),'',' <i>($kommname)</i>')) as beschreibung,
           if(
             sn.seriennummer IS NULL,
             IF(bbf.mhd IS NULL,
@@ -1094,82 +1094,18 @@ class Wareneingang {
                   '',
                   CONCAT('Charge: ',batch.charge)
                 ),
-                CONCAT('MHD: ', bbf.mhd)                  
+                CONCAT('MHD: ', bbf.mhd)
             ),
             CONCAT('SN: ', sn.seriennummer)
           ),
           p.abkuerzung as projekt,
-                trim(if(isnull(sn.menge), 
-                    if(isnull(bbf.menge), 
-                        IF(isnull(batch.menge),lp.menge,batch.menge)
-                        , bbf.menge)
-                    ,sn.menge))+0, 
-                $rmamengecol
-                l.belegnr as lieferschein, DATE_FORMAT(l.datum,'%d.%m.%Y') as datum, 
-                           if(
-            sn.seriennummer IS NULL,
-            IF(bbf.mhd IS NULL,
-                IF(batch.charge IS NULL,
-                  lp.id,
-                  CONCAT(lp.id,'-',batch.charge)
-                ),
-                CONCAT(lp.id,'-', bbf.mhd)                  
-            ),
-            CONCAT(lp.id,'-', sn.seriennummer)
-          ) 
-                
-                FROM lieferschein_position lp
-                $rmajoin
-                LEFT JOIN lieferschein l ON lp.lieferschein=l.id 
-                LEFT JOIN projekt p ON l.projekt=p.id 
-                LEFT JOIN artikel a ON a.id=lp.artikel 
-                LEFT JOIN (
-                (SELECT '1' as menge, wert as seriennummer, pos FROM `beleg_chargesnmhd` WHERE doctype = 'lieferschein' AND type='sn' ) UNION ALL
-                (SELECT '1' as menge,seriennummer, lieferscheinpos as pos FROM seriennummern)
-                ) sn ON sn.pos = lp.id
-                LEFT JOIN (
-                    SELECT SUM(menge) AS menge, 
-                    IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd,
-                    pos
-                    FROM `beleg_chargesnmhd` 
-                    WHERE doctype = 'lieferschein' AND type='mhd'
-                    GROUP BY wert,pos,wert2
-                ) AS bbf ON bbf.pos = lp.id AND a.mindesthaltbarkeitsdatum = 1 AND sn.pos IS NULL
-                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')  
-                LEFT JOIN (
-                    SELECT SUM(menge) AS menge, wert AS charge, pos
-                    FROM `beleg_chargesnmhd` 
-                    WHERE doctype = 'lieferschein' AND type='charge'
-                    GROUP BY wert,pos
-                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0 
-                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL 
-                LEFT JOIN 
-                 (SELECT lieferschein_position, sum(menge) as menge FROM kommissionskonsignationslager_positionen WHERE menge > ausgelagert GROUP BY lieferschein_position) komm ON lp.id = komm.lieferschein_position
-                 
-                $rmajoin2                 
-                ";
-                } else {
-
-                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer, lp.bezeichnung as beschreibung, 
-          if(
-            sn.seriennummer IS NULL,
-            IF(bbf.mhd IS NULL,
-                IF(batch.charge IS NULL,
-                  '',
-                  CONCAT('Charge: ',batch.charge)
-                ),
-                CONCAT('MHD: ', bbf.mhd)                  
-            ),
-            CONCAT('SN: ', sn.seriennummer)
-          ),
-          p.abkuerzung as projekt,
-                trim(if(isnull(sn.menge), 
-                    if(isnull(bbf.menge), 
+                trim(if(isnull(sn.menge),
+                    if(isnull(bbf.menge),
                         IF(isnull(batch.menge),lp.menge,batch.menge)
                         , bbf.menge)
                     ,sn.menge))+0,
-                $rmamengecol 
-                l.belegnr as lieferschein, DATE_FORMAT(l.datum,'%d.%m.%Y') as datum, 
+                $rmamengecol
+                l.belegnr as lieferschein, DATE_FORMAT(l.datum,'%d.%m.%Y') as datum,
                            if(
             sn.seriennummer IS NULL,
             IF(bbf.mhd IS NULL,
@@ -1177,36 +1113,100 @@ class Wareneingang {
                   lp.id,
                   CONCAT(lp.id,'-',batch.charge)
                 ),
-                CONCAT(lp.id,'-', bbf.mhd)                  
+                CONCAT(lp.id,'-', bbf.mhd)
             ),
             CONCAT(lp.id,'-', sn.seriennummer)
           )
 
-                
                 FROM lieferschein_position lp
                 $rmajoin
-                LEFT JOIN lieferschein l ON lp.lieferschein=l.id 
-                LEFT JOIN projekt p ON l.projekt=p.id 
-                LEFT JOIN artikel a ON a.id=lp.artikel 
+                LEFT JOIN lieferschein l ON lp.lieferschein=l.id
+                LEFT JOIN projekt p ON l.projekt=p.id
+                LEFT JOIN artikel a ON a.id=lp.artikel
                 LEFT JOIN (
                 (SELECT '1' as menge, wert as seriennummer, pos FROM `beleg_chargesnmhd` WHERE doctype = 'lieferschein' AND type='sn' ) UNION ALL
                 (SELECT '1' as menge,seriennummer, lieferscheinpos as pos FROM seriennummern)
                 ) sn ON sn.pos = lp.id
                 LEFT JOIN (
-                    SELECT SUM(menge) AS menge, 
-                    IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd, 
+                    SELECT SUM(menge) AS menge,
+                    IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd,
                     pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='mhd'
                     GROUP BY wert,pos,wert2
                 ) AS bbf ON bbf.pos = lp.id AND a.mindesthaltbarkeitsdatum = 1 AND sn.pos IS NULL
-                    AND (a.seriennummern = 'keine' OR a.seriennummern = '') 
+                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')
                 LEFT JOIN (
                     SELECT SUM(menge) AS menge, wert AS charge, pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='charge'
                     GROUP BY wert,pos
-                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0 
+                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0
+                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL
+                LEFT JOIN
+                 (SELECT lieferschein_position, sum(menge) as menge FROM kommissionskonsignationslager_positionen WHERE menge > ausgelagert GROUP BY lieferschein_position) komm ON lp.id = komm.lieferschein_position
+
+                $rmajoin2
+                ";
+                } else {
+
+                    $sql = "SELECT SQL_CALC_FOUND_ROWS lp.id,lp.nummer, lp.bezeichnung as beschreibung,
+          if(
+            sn.seriennummer IS NULL,
+            IF(bbf.mhd IS NULL,
+                IF(batch.charge IS NULL,
+                  '',
+                  CONCAT('Charge: ',batch.charge)
+                ),
+                CONCAT('MHD: ', bbf.mhd)
+            ),
+            CONCAT('SN: ', sn.seriennummer)
+          ),
+          p.abkuerzung as projekt,
+                trim(if(isnull(sn.menge),
+                    if(isnull(bbf.menge),
+                        IF(isnull(batch.menge),lp.menge,batch.menge)
+                        , bbf.menge)
+                    ,sn.menge))+0,
+                $rmamengecol
+                l.belegnr as lieferschein, DATE_FORMAT(l.datum,'%d.%m.%Y') as datum,
+                           if(
+            sn.seriennummer IS NULL,
+            IF(bbf.mhd IS NULL,
+                IF(batch.charge IS NULL,
+                  lp.id,
+                  CONCAT(lp.id,'-',batch.charge)
+                ),
+                CONCAT(lp.id,'-', bbf.mhd)
+            ),
+            CONCAT(lp.id,'-', sn.seriennummer)
+          )
+
+
+                FROM lieferschein_position lp
+                $rmajoin
+                LEFT JOIN lieferschein l ON lp.lieferschein=l.id
+                LEFT JOIN projekt p ON l.projekt=p.id
+                LEFT JOIN artikel a ON a.id=lp.artikel
+                LEFT JOIN (
+                (SELECT '1' as menge, wert as seriennummer, pos FROM `beleg_chargesnmhd` WHERE doctype = 'lieferschein' AND type='sn' ) UNION ALL
+                (SELECT '1' as menge,seriennummer, lieferscheinpos as pos FROM seriennummern)
+                ) sn ON sn.pos = lp.id
+                LEFT JOIN (
+                    SELECT SUM(menge) AS menge,
+                    IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd,
+                    pos
+                    FROM `beleg_chargesnmhd`
+                    WHERE doctype = 'lieferschein' AND type='mhd'
+                    GROUP BY wert,pos,wert2
+                ) AS bbf ON bbf.pos = lp.id AND a.mindesthaltbarkeitsdatum = 1 AND sn.pos IS NULL
+                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')
+                LEFT JOIN (
+                    SELECT SUM(menge) AS menge, wert AS charge, pos
+                    FROM `beleg_chargesnmhd`
+                    WHERE doctype = 'lieferschein' AND type='charge'
+                    GROUP BY wert,pos
+                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0
                     AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL
                 $rmajoin2
                 ";
@@ -1244,16 +1244,16 @@ class Wareneingang {
                 $icon_kein_lagerplatz = "<img src=\"./themes/new/images/lagerplatzstop.png\" title=\"Der Artikel hat kein Standardlager\" style=\"margin-right:1px\" border=\"0\">";
                 $icon_lagerplatz = "<img src=\"./themes/new/images/lagerplatzgo.png\" title=\"Standardlager ok\" style=\"margin-right:1px\" border=\"0\">";
                 $icon_lagerplatz_eingelagert = "<img src=\"./themes/new/images/lagerplatzgo.png\" title=\"Eingelagert\" style=\"margin-right:1px\" border=\"0\">";
-                $icon_kein_lagerartikel = "<img src=\"./themes/new/images/lagerplatz_grau.png\" title=\"Kein Lagerartikel\" style=\"margin-right:1px\" border=\"0\">";                              
-              
+                $icon_kein_lagerartikel = "<img src=\"./themes/new/images/lagerplatz_grau.png\" title=\"Kein Lagerartikel\" style=\"margin-right:1px\" border=\"0\">";
+
                 $deletelink = array(
                     "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=deletepos&id=",
                     ['sql' => 'paketannahme'],
                     '&posid=',
                     ['sql' => 'paketdistribution.id'],
-                    "\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>&nbsp;</td></tr></table>"            
-                );                                
-                
+                    "\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>&nbsp;</td></tr></table>"
+                );
+
                 $artikel_link = array(
                    '<a href=\"index.php?module=artikel&action=edit&id=',
                    ['sql' => 'artikel.id'],
@@ -1261,14 +1261,14 @@ class Wareneingang {
                    ['sql' => 'artikel.nummer'],
                    '</a>',
                 );
-              
-                $sql = "SELECT SQL_CALC_FOUND_ROWS 
+
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
                             p.pos,
                             p.pos,
                             p.artikel,
                             p.name,
                             p.bestellbezug,
-                            p.lieferantnummer,                            
+                            p.lieferantnummer,
                             p.menge,
                             p.lagerplatz_bezeichnung,
                             p.bemerkung,
@@ -1278,7 +1278,7 @@ class Wareneingang {
                             p.vorlaeufig
                         FROM
                             (
-                                SELECT 
+                                SELECT
                                     paketdistribution.id as pos,
                                     bestellung.belegnr as bestellbezug,
                                     bestellung_position.bestellnummer as lieferantnummer,
@@ -1299,29 +1299,29 @@ class Wareneingang {
                                                         artikel.lager_platz = 0,
                                                         '$icon_kein_lagerplatz',
                                                         '$icon_lagerplatz'
-                                                    ),   
+                                                    ),
                                                     '$icon_kein_lagerartikel'
                                                 )
                                             ),
-                                            CONCAT(                                                
-                                                '$icon_eingelagert',                                                
+                                            CONCAT(
+                                                '$icon_eingelagert',
                                                 if (artikel.lagerartikel,
                                                     '$icon_lagerplatz_eingelagert',
                                                     '$icon_kein_lagerartikel'
                                                 )
                                             )
-                                        ),                                        
-                                        '</td></tr></table>' 
+                                        ),
+                                        '</td></tr></table>'
                                     )
                                     AS icon,
                                     if (paketdistribution.vorlaeufig,".$this->app->erp->ConcatSQL($deletelink).",'') as menu,
-                                    paketdistribution.vorlaeufig                                    
-                                FROM paketdistribution                                 
-                                LEFT JOIN artikel ON artikel.id = paketdistribution.artikel                     
+                                    paketdistribution.vorlaeufig
+                                FROM paketdistribution
+                                LEFT JOIN artikel ON artikel.id = paketdistribution.artikel
                                 LEFT JOIN lager_platz ON lager_platz.id = artikel.lager_platz
                                 LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
                                 LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
-                                WHERE paketannahme = $id 
+                                WHERE paketannahme = $id
                             ) AS p";
 
                 $where = "";
@@ -1329,7 +1329,7 @@ class Wareneingang {
 //                $groupby = "";
 
                 break;
-            case "paketannahme_list":              
+            case "paketannahme_list":
                 $allowed['paketannahme_list'] = array('list');
                 $heading = array('', 'Paket-Nr.', 'Datum', 'Status', 'Name', 'Kunde', 'Lieferant', 'Bestellung', 'LS-Nr.', 'RE-Nr.','Verbindlichkeit', 'Bearbeiter', 'Bemerkung', 'Men&uuml;');
                 $width = array('1%', '5%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%', '10%'); // Fill out manually later
@@ -1371,24 +1371,24 @@ class Wareneingang {
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=distriinhalt&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;</td></tr></table>";
 
-                $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
                     paketannahme.id,
-                    " . $drop . ", 
-                    paketannahme.id, 
-                    DATE_FORMAT(paketannahme.datum, '%d.%m.%Y %H:%i'), 
+                    " . $drop . ",
+                    paketannahme.id,
+                    DATE_FORMAT(paketannahme.datum, '%d.%m.%Y %H:%i'),
                     paketannahme.status,
-                    adresse.name, 
-                    adresse.kundennummer, 
+                    adresse.name,
+                    adresse.kundennummer,
                     adresse.lieferantennummer,
-                    GROUP_CONCAT(DISTINCT bestellung.belegnr), 
-                    paketannahme.lsnr, 
+                    GROUP_CONCAT(DISTINCT bestellung.belegnr),
+                    paketannahme.lsnr,
                     paketannahme.renr,
-                    GROUP_CONCAT(DISTINCT verbindlichkeit.belegnr), 
-                    paketannahme.bearbeiter, 
-                    paketannahme.bemerkung, 
-                    paketannahme.id 
-                    FROM paketannahme 
-                    INNER JOIN adresse 
+                    GROUP_CONCAT(DISTINCT verbindlichkeit.belegnr),
+                    paketannahme.bearbeiter,
+                    paketannahme.bemerkung,
+                    paketannahme.id
+                    FROM paketannahme
+                    INNER JOIN adresse
                     ON paketannahme.adresse = adresse.id
                     LEFT JOIN paketdistribution
                     ON paketannahme.id = paketdistribution.paketannahme
@@ -1396,7 +1396,7 @@ class Wareneingang {
                     ON paketdistribution.bestellung_position = bestellung_position.id
                     LEFT JOIN bestellung
                     ON bestellung.id = bestellung_position.bestellung
-                    LEFT JOIN verbindlichkeit_position 
+                    LEFT JOIN verbindlichkeit_position
                     ON verbindlichkeit_position.paketdistribution = paketdistribution.id
                     LEFT JOIN verbindlichkeit ON verbindlichkeit.id = verbindlichkeit_position.verbindlichkeit
                 ";
@@ -1404,7 +1404,7 @@ class Wareneingang {
                 $where = "1";
 
                 // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn1( 0 ); } );");                
+                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn1( 0 ); } );");
 
                 for ($r = 1;$r <= 1;$r++) {
                   $this->app->Tpl->Add('JAVASCRIPT', '
@@ -1415,9 +1415,9 @@ class Wareneingang {
                                          else
                                          oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter( 
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
                                            \'\',
-                                           i, 
+                                           i,
                                            0,0
                                            );
                                          }
@@ -1427,13 +1427,13 @@ class Wareneingang {
                 $more_data1 = $this->app->Secure->GetGET("more_data1");
                 if ($more_data1 == 1) {
                 } else {
-                   $where .= " AND paketannahme.status <> 'abgeschlossen'";                 
+                   $where .= " AND paketannahme.status <> 'abgeschlossen'";
                 }
 
                 // END Toggle filters
 
-                $count = "SELECT count(paketannahme.id) FROM paketannahme 
-                    INNER JOIN adresse 
+                $count = "SELECT count(paketannahme.id) FROM paketannahme
+                    INNER JOIN adresse
                     ON paketannahme.adresse = adresse.id WHERE ".$where;
                 $groupby = "GROUP BY paketannahme.id";
 
@@ -1547,9 +1547,9 @@ class Wareneingang {
 
         $result = $this->app->DB->SelectArr(
                 sprintf(
-                        "SELECT lp.id, CONCAT(l.bezeichnung,'->',lp.kurzbezeichnung) as kurzbezeichnung 
-        FROM lager_platz AS lp 
-        INNER JOIN lager AS l ON lp.lager=l.id 
+                        "SELECT lp.id, CONCAT(l.bezeichnung,'->',lp.kurzbezeichnung) as kurzbezeichnung
+        FROM lager_platz AS lp
+        INNER JOIN lager AS l ON lp.lager=l.id
         WHERE lp.kurzbezeichnung!='' AND lp.geloescht <> 1 AND l.geloescht <> 1 AND lp.id = %d
         ORDER BY l.bezeichnung,lp.kurzbezeichnung",
                         $lagerplatz
@@ -1646,46 +1646,46 @@ class Wareneingang {
       SELECT lp.*, IFNULL(sn.seriennummer, '') AS serialnumber,
              rq.bestbefore,rq.batch,
              rq.quantity, rq.id As rqid
-      
+
                 FROM lieferschein_position lp
-                
-                LEFT JOIN lieferschein l ON lp.lieferschein=l.id 
-                LEFT JOIN projekt p ON l.projekt=p.id 
-                LEFT JOIN artikel a ON a.id=lp.artikel 
+
+                LEFT JOIN lieferschein l ON lp.lieferschein=l.id
+                LEFT JOIN projekt p ON l.projekt=p.id
+                LEFT JOIN artikel a ON a.id=lp.artikel
                 LEFT JOIN
       (
         (
-        SELECT '1' as menge, wert as seriennummer, pos 
-                    FROM `beleg_chargesnmhd` 
-                    WHERE doctype = 'lieferschein' AND type='sn' 
-                  ) 
+        SELECT '1' as menge, wert as seriennummer, pos
+                    FROM `beleg_chargesnmhd`
+                    WHERE doctype = 'lieferschein' AND type='sn'
+                  )
                   UNION ALL
       (
-        SELECT '1' as menge,seriennummer, lieferscheinpos as pos 
+        SELECT '1' as menge,seriennummer, lieferscheinpos as pos
                     FROM seriennummern
                   )
                 ) sn ON sn.pos = lp.id
                 LEFT JOIN (
-                    SELECT SUM(menge) AS menge, 
+                    SELECT SUM(menge) AS menge,
                     IF(IFNULL(wert2,'') = '',wert ,CONCAT(wert,'-',IFNULL(wert2,''))) AS mhd,
                     pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='mhd'
                     GROUP BY wert,pos,wert2
                 ) AS bbf ON bbf.pos = lp.id AND a.mindesthaltbarkeitsdatum = 1 AND sn.pos IS NULL
-                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')  
+                   AND (a.seriennummern = 'keine' OR a.seriennummern = '')
                 LEFT JOIN (
                     SELECT SUM(menge) AS menge, wert AS charge, pos
-                    FROM `beleg_chargesnmhd` 
+                    FROM `beleg_chargesnmhd`
                     WHERE doctype = 'lieferschein' AND type='charge'
                     GROUP BY wert,pos
-                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0 
-                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL 
-                    
+                ) AS batch ON batch.pos = lp.id AND a.mindesthaltbarkeitsdatum = 0 AND a.chargenverwaltung > 0
+                    AND (a.seriennummern = 'keine' OR a.seriennummern = '')  AND sn.pos IS NULL
+
         INNER JOIN `returnorder_quantity` AS rq
-        ON lp.id = rq.delivery_note_id AND IFNULL(sn.seriennummer, '') = rq.serialnumber 
+        ON lp.id = rq.delivery_note_id AND IFNULL(sn.seriennummer, '') = rq.serialnumber
                AND IFNULL(rq.quantity,0) > 0 AND IFNULL(batch.charge,'') = rq.batch AND IFNULL(bbf.mhd,'') = rq.bestbefore
-        WHERE (l.adresse='$addressId' AND (l.status='versendet' OR l.status='freigegeben') 
+        WHERE (l.adresse='$addressId' AND (l.status='versendet' OR l.status='freigegeben')
                    AND a.lagerartikel=1) "
                 . $this->app->erp->ProjektRechte()
                 . "ORDER BY l.datum, l.id, lp.sort,sn.seriennummer";
@@ -1785,9 +1785,9 @@ class Wareneingang {
         }
         $check = $this->app->DB->SelectRow(
                 sprintf(
-                        "SELECT rq.* 
-          FROM `returnorder_quantity` AS `rq` 
-          WHERE rq.delivery_note_id = %d AND rq.serialnumber = '%s' 
+                        "SELECT rq.*
+          FROM `returnorder_quantity` AS `rq`
+          WHERE rq.delivery_note_id = %d AND rq.serialnumber = '%s'
             AND rq.bestbefore = '%s' AND rq.batch = '%s' ",
                         $dnpid, $serialnumber, $bestbefore, $batch
                 )
@@ -1795,8 +1795,8 @@ class Wareneingang {
         if (empty($check) && $qty !== '') {
             $this->app->DB->Insert(
                     sprintf(
-                            "INSERT INTO `returnorder_quantity` 
-            (`delivery_note_id`, `quantity`, `serialnumber`,`bestbefore`,`batch`) 
+                            "INSERT INTO `returnorder_quantity`
+            (`delivery_note_id`, `quantity`, `serialnumber`,`bestbefore`,`batch`)
             VALUES (%d, %f, '%s','%s','%s') ",
                             $dnpid, $qty, $serialnumber, $bestbefore, $batch
                     )
@@ -1825,7 +1825,7 @@ class Wareneingang {
         FROM `retoure_position` AS `rop`
         INNER JOIN `artikel` AS `art` ON rop.artikel = art.id AND (art.geloescht = 0 OR art.geloescht IS NULL)
         INNER JOIN `retoure` AS `ro` ON rop.retoure = ro.id AND ro.status <> 'storniert' AND ro.belegnr <> ''
-        WHERE `rop`.retoure = %d AND rop.menge_eingang < rop.menge %s 
+        WHERE `rop`.retoure = %d AND rop.menge_eingang < rop.menge %s
         ORDER BY rop.sort, rop.id
         LIMIT 1",
                                 $returnOrderId, $this->app->erp->ProjektRechte('ro.projekt')
@@ -1866,7 +1866,7 @@ class Wareneingang {
             $sns = $this->app->DB->SelectFirstCols(
                     sprintf(
                             "SELECT `wert`
-          FROM `beleg_chargesnmhd` AS `bc` 
+          FROM `beleg_chargesnmhd` AS `bc`
           WHERE bc.doctype = 'retoure' AND bc.`doctypeid` = %d AND bc.pos = %d AND `type` = 'sn' AND `wert` <> ''",
                             $returnOrderId, $rop['id']
                     )
@@ -1876,8 +1876,8 @@ class Wareneingang {
                 $serial = $sns[0];
                 $movements = $this->app->DB->SelectFirstCols(
                         sprintf(
-                                "SELECT sl.bezeichnung 
-            FROM `seriennummern_log` AS `sl` 
+                                "SELECT sl.bezeichnung
+            FROM `seriennummern_log` AS `sl`
             WHERE `doctype` = 'retoure' AND `doctypeid` = %d AND `artikel` = %d AND `eingang` = 1",
                                 $returnOrderId, $rop['artikel']
                         )
@@ -1896,8 +1896,8 @@ class Wareneingang {
             if ($isBatch) {
                 $sns = $this->app->DB->SelectPairs(
                         sprintf(
-                                "SELECT CONCAT(`wert`, IF(`type2` = 'charge',CONCAT('-', `wert2`),'')), `menge` 
-            FROM `beleg_chargesnmhd` AS `bc` 
+                                "SELECT CONCAT(`wert`, IF(`type2` = 'charge',CONCAT('-', `wert2`),'')), `menge`
+            FROM `beleg_chargesnmhd` AS `bc`
             WHERE bc.doctype = 'retoure' AND bc.`doctypeid` = %d AND bc.pos = %d AND `type` = 'mhd'",
                                 $returnOrderId, $rop['id']
                         )
@@ -1905,8 +1905,8 @@ class Wareneingang {
             } else {
                 $sns = $this->app->DB->SelectPairs(
                         sprintf(
-                                "SELECT `wert`, `menge` 
-            FROM `beleg_chargesnmhd` AS `bc` 
+                                "SELECT `wert`, `menge`
+            FROM `beleg_chargesnmhd` AS `bc`
             WHERE bc.doctype = 'retoure' AND bc.`doctypeid` = %d AND bc.pos = %d AND `type` = 'mhd'",
                                 $returnOrderId, $rop['id']
                         )
@@ -1915,7 +1915,7 @@ class Wareneingang {
             if (!empty($sns)) {
                 $movements = $this->app->DB->SelectFirstCols(
                         sprintf(
-                                "SELECT CONCAT(ml.mhddatum,'-',IFNULL(ml.charge,'')) 
+                                "SELECT CONCAT(ml.mhddatum,'-',IFNULL(ml.charge,''))
             FROM `mhd_log` AS `ml`
             WHERE `doctype` = 'retoure' AND `doctypeid` = %d AND `artikel` = %d AND `eingang` = 1",
                                 $returnOrderId, $rop['artikel']
@@ -1946,7 +1946,7 @@ class Wareneingang {
             $sns = $this->app->DB->SelectPairs(
                     sprintf(
                             "SELECT `bc`.wert, `bc`.menge
-          FROM `beleg_chargesnmhd` AS `bc` 
+          FROM `beleg_chargesnmhd` AS `bc`
           WHERE bc.doctype = 'retoure' AND bc.`doctypeid` = %d AND bc.pos = %d AND `type` = 'charge'",
                             $returnOrderId, $rop['id']
                     )
@@ -1954,7 +1954,7 @@ class Wareneingang {
             if (!empty($sns)) {
                 $movements = $this->app->DB->SelectFirstCols(
                         sprintf(
-                                "SELECT cl.bezeichnung 
+                                "SELECT cl.bezeichnung
             FROM `chargen_log` AS `cl`
             WHERE `doctype` = 'retoure' AND `doctypeid` = %d AND `artikel` = %d AND `eingang` = 1",
                                 $returnOrderId, $rop['artikel']
@@ -2029,10 +2029,17 @@ class Wareneingang {
         $cmd = $this->app->Secure->GetGET('cmd');
         $lsnr = $this->app->Secure->GetPOST('lsnr');
         $renr = $this->app->Secure->GetPOST('renr');
-        $bemerkung = $this->app->Secure->GetPOST('bemerkung');                        
+        $bemerkung = $this->app->Secure->GetPOST('bemerkung');
         $bemerkung = str_replace(array('\r\n', '\r', '\n'), "\n", $bemerkung);
         $projekt = $this->app->Secure->GetPOST('projekt');
         $projekt = $this->app->erp->ReplaceProjekt(true,$projekt,true);
+
+        if (empty($projekt)) {
+            $projekt = $this->app->DB->Select("SELECT projekt FROM paketannahme WHERE id = ".$id);
+        }
+        $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
+        $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
+        $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
 
         $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
                         wareneingang_id: $id,
@@ -2041,13 +2048,13 @@ class Wareneingang {
                         group_wareneingang: true);
 
         $seriennummern_aktiv = !empty($seriennummern);
-        
+
         if ($seriennummern_aktiv) {
             $this->app->erp->MenuEintrag('index.php?module=seriennummern&action=enter&wareneingang='.$id, 'Seriennummern');
             $seriennummern_check_result = $this->app->erp->SeriennummernCheckWareneingangWarnung($id, false);
             $seriennummern_ok = empty($seriennummern_check_result);
         }
-    
+
         $this->app->User->SetParameter('table_wareneingang_lieferant_ausfuellen', '');
 
         $isCmdFromReturnOrder = $cmd === 'fromreturnorder';
@@ -2120,7 +2127,7 @@ class Wareneingang {
                         $sql = "DELETE FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1";
                         $this->app->DB->Delete($sql);
 
-                        // Write paketdistribution                            
+                        // Write paketdistribution
                         $sql = "INSERT INTO paketdistribution(
                                             id,
                                             bearbeiter,
@@ -2138,23 +2145,23 @@ class Wareneingang {
                                         VALUES(
                                             '',
                                             '" . $this->app->User->GetName() . "',
-                                            NOW(), 
-                                            '$id', 
-                                            '', 
-                                            '$artikel', 
-                                            (SELECT menge-geliefert FROM bestellung_position WHERE id = ".$bestellposition."), 
-                                            '$vpe', 
-                                            '', 
-                                            '$bemerkung', 
+                                            NOW(),
+                                            '$id',
+                                            '',
+                                            '$artikel',
+                                            (SELECT menge-geliefert FROM bestellung_position WHERE id = ".$bestellposition."),
+                                            '$vpe',
+                                            '',
+                                            '$bemerkung',
                                             '$bestellposition',
                                             1
                                         )";
 
-                            $this->app->DB->Insert($sql);      
+                            $this->app->DB->Insert($sql);
 
                     }
                 }
-                
+
 
                 break;
             case 'leeren':
@@ -2166,12 +2173,12 @@ class Wareneingang {
                 $this->app->Location->execute('index.php?module=wareneingang&action=manuellerfassen&id=' . $id);
                 break;
             case 'buchen':
-                
+
                 $ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
- 
+
                 $menge_input = $this->app->Secure->GetPOSTArray();
                 $mengen = array();
-                
+
                 $msg = "";
 
                 foreach ($menge_input as $key => $menge) {
@@ -2184,7 +2191,7 @@ class Wareneingang {
 
                             // Gather info bestellung
                             $bparr = $this->app->DB->SelectRow("SELECT * FROM bestellung INNER JOIN bestellung_position ON bestellung_position.bestellung = bestellung.id INNER JOIN artikel ON bestellung_position.artikel = artikel.id WHERE bestellung_position.id='$bestellposition' LIMIT 1");
-                            $artikel = $bparr['artikel'];                            
+                            $artikel = $bparr['artikel'];
                             $artikel_nr = $bparr['nummer'];
                             $projekt = $bparr['projekt'];
                             $bestellung_belegnr = $bparr['belegnr'];
@@ -2196,7 +2203,7 @@ class Wareneingang {
                                 if (empty($ziellager_from_form)) {
                                     $lager = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='" . $artikel . "' LIMIT 1");
                                     if (empty($lager)) {
-                                        $msg .= '<div class="error">Kein Ziellagerplatz gefunden für Artikel: '.$artikel_nr.'</div>';   
+                                        $msg .= '<div class="error">Kein Ziellagerplatz gefunden für Artikel: '.$artikel_nr.'</div>';
                                         continue;
                                     }
                                 }
@@ -2208,14 +2215,14 @@ class Wareneingang {
                                 $this->app->erp->LagerEinlagern($artikel, $menge, $lager, '', "Wareneingang Paket $id, Bestellung $bestellung_belegnr", '', $id);
                                 $lagerplatz_name = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE lager_platz.id = $lager LIMIT 1");
                                 $bemerkung = $lagerplatz_name;
-                            } 
+                            }
 
                             // Increase bestellung_position geliefert_menge
-                            $geliefert = $this->app->DB->Select("SELECT ifnull(geliefert,0) FROM bestellung_position WHERE id='$bestellposition' LIMIT 1");                    
+                            $geliefert = $this->app->DB->Select("SELECT ifnull(geliefert,0) FROM bestellung_position WHERE id='$bestellposition' LIMIT 1");
                             $geliefert += $menge;
-                            $this->app->DB->Update("UPDATE bestellung_position SET geliefert='$geliefert' WHERE id='$bestellposition' LIMIT 1");                            
-                            
-                            // Write paketdistribution                            
+                            $this->app->DB->Update("UPDATE bestellung_position SET geliefert='$geliefert' WHERE id='$bestellposition' LIMIT 1");
+
+                            // Write paketdistribution
                             $sql = "INSERT INTO paketdistribution(
                                         id,
                                         bearbeiter,
@@ -2232,22 +2239,22 @@ class Wareneingang {
                                     VALUES(
                                         '',
                                         '" . $this->app->User->GetName() . "',
-                                        NOW(), 
-                                        '$id', 
-                                        '', 
-                                        '$artikel', 
-                                        '$menge', 
-                                        '$vpe', 
-                                        '', 
-                                        '$bemerkung', 
+                                        NOW(),
+                                        '$id',
+                                        '',
+                                        '$artikel',
+                                        '$menge',
+                                        '$vpe',
+                                        '',
+                                        '$bemerkung',
                                         '$bestellposition'
                                     )";
-                            $this->app->DB->Insert($sql);      
+                            $this->app->DB->Insert($sql);
 
                             // Remove existing preliminary value
                             $sql = "DELETE FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1";
                             $this->app->DB->Delete($sql);
-                      
+
                         }
                     }
                 }
@@ -2256,8 +2263,12 @@ class Wareneingang {
             case 'hinzufuegen':
 
                 $msg = "";
+                $positionen = array();
                 $bestellposition_ids = array();
                 $mengen = array();
+
+                $etikettendruckenhinzufuegen = $this->app->Secure->GetPOST('etikettendruckenhinzufuegen');
+                $this->app->User->SetParameter('wareneingang_lieferant_etikettendruckenhinzufuegen', $etikettendruckenhinzufuegen);
 
                 // Scanner
                 $this->app->User->SetParameter('wareneingang_gescannterartikel', 0);
@@ -2275,7 +2286,7 @@ class Wareneingang {
                 if (!empty($artikel)) {
                     if ($menge == '') {
                         $gescannterartikel = $artikel_input;
-                        if (!empty($gescannterartikel)) {                       
+                        if (!empty($gescannterartikel)) {
                             $bparr = $this->app->DB->SelectRow("SELECT SUM(bp.menge) menge, SUM(bp.geliefert) geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE a.id='$artikel' LIMIT 1");
 
                             $sql = "SELECT SUM(menge) FROM paketdistribution WHERE paketannahme = ".$id." AND artikel = ".$artikel." AND vorlaeufig = 1 LIMIT 1";
@@ -2365,6 +2376,10 @@ class Wareneingang {
                                 }
                             }
                         }
+
+                        // Für Etiketten
+                        $positionen[] = array('artikel' => $artikel, 'menge' => $menge);
+
                     }
                 } // Artikelscan
 
@@ -2373,7 +2388,7 @@ class Wareneingang {
                 $mengen = array_merge($mengen,(array) $this->app->Secure->GetPOST('mengen'));
                 $bemerkungen = $this->app->Secure->GetPOST('bemerkungen');
 
-                $positionen = 0;
+                $gebuchtepositionen = 0;
                 $menge_gesamt = 0;
 
                 foreach ($bestellposition_ids as $key => $bestellposition) {
@@ -2384,17 +2399,17 @@ class Wareneingang {
                         continue;
                     }
 
-                    $positionen++;
+                    $gebuchtepositionen++;
 
                     // Gather info bestellung
                     $bparr = $this->app->DB->SelectRow("SELECT bp.artikel, a.nummer, b.projekt, b.belegnr, bp.vpe, bp.menge, bp.geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE bp.id='$bestellposition' LIMIT 1");
-                    $artikel = $bparr['artikel'];                            
+                    $artikel = $bparr['artikel'];
                     $artikel_nr = $bparr['nummer'];
                     $projekt = $bparr['projekt'];
                     $bestellung_belegnr = $bparr['belegnr'];
                     $vpe = $bparr['vpe'];
                     $menge_bestellung = $bparr['menge'];
-                   
+
                     // Check existing preliminary value
                     $sql = "SELECT id, menge FROM paketdistribution WHERE paketannahme = ".$id." AND bestellung_position = ".$bestellposition." AND vorlaeufig = 1 LIMIT 1";
                     $preliminary = $this->app->DB->SelectRow($sql);
@@ -2403,7 +2418,7 @@ class Wareneingang {
                     if ($menge > $bparr['menge']-$bparr['geliefert']) {
                         $menge = $bparr['menge']-$bparr['geliefert'];
                         $this->app->YUI->Message('warning','Mengen wurden angepasst');
-                    }      
+                    }
 
                     $menge_gesamt += $menge;
 
@@ -2425,35 +2440,59 @@ class Wareneingang {
                                 VALUES(
                                     '',
                                     '" . $this->app->User->GetName() . "',
-                                    NOW(), 
-                                    '$id', 
-                                    '', 
-                                    '$artikel', 
-                                    '$menge', 
-                                    '$vpe', 
-                                    '', 
-                                    '".$this->app->DB->real_escape_string($bemerkung)."', 
+                                    NOW(),
+                                    '$id',
+                                    '',
+                                    '$artikel',
+                                    '$menge',
+                                    '$vpe',
+                                    '',
+                                    '".$this->app->DB->real_escape_string($bemerkung)."',
                                     '$bestellposition',
                                     1
                                 )";
-                        $this->app->DB->Insert($sql);                            
-                    } else {                                            
+                        $this->app->DB->Insert($sql);
+                    } else {
                         $sql = "UPDATE paketdistribution SET menge = ".$menge.", bemerkung = '".$this->app->DB->real_escape_string($bemerkung)."' WHERE id = ".$preliminary['id'];
-                        $this->app->DB->Insert($sql);          
+                        $this->app->DB->Insert($sql);
+                    }
+
+                    // Für Etiketten
+                    $positionen[] = array('artikel' => $artikel, 'menge' => $menge-$preliminary['menge']);
+
+                }
+
+                if ($gebuchtepositionen) {
+                    $msg .= '<div class="info">Menge '.$menge_gesamt.' auf '.$gebuchtepositionen.' Bestellposition(en) erfasst</div>';
+
+                    // Etiketten
+                    if ($etikettendruckenhinzufuegen) {
+
+                        $gedruckte_etiketten = 0;
+
+                        foreach ($positionen as $position) {
+                            $this->app->erp->EtikettenDrucker(
+                                kennung:  $etikettart,
+                                anzahl: $position['menge'],
+                                variables: $position,
+                                druckercode: $etikettendrucker,
+                                tabelle: 'artikel',
+                                id: $position['artikel']
+                            );
+                            $gedruckte_etiketten += $position['menge'];
+                        }
+
+                        $msg .= '<div class="info">'.$gedruckte_etiketten.' Etiketten wurden gedruckt auf Drucker \''.$etikettendruckername.'\'</div>';
                     }
                 }
-                
-                if ($positionen) {
-                    $msg .= '<div class="info">Menge '.$menge_gesamt.' auf '.$positionen.' Bestellposition(en) erfasst.</div>';
-                }
-                
+
                 break;
             case 'manuell_hinzufuegen':
 
                 $manuell_artikel_ids = $this->app->Secure->GetPOST('manuell_artikel_ids');
                 $manuell_mengen = $this->app->Secure->GetPOST('manuell_mengen');
                 $manuell_bemerkungen = $this->app->Secure->GetPOST('manuell_bemerkungen');
-              
+
                 foreach ($manuell_artikel_ids as $key => $artikel) {
                     $menge = $manuell_mengen[$key];
                     $bemerkung = $manuell_bemerkungen[$key];
@@ -2478,53 +2517,53 @@ class Wareneingang {
                             VALUES(
                                 '',
                                 '" . $this->app->User->GetName() . "',
-                                NOW(), 
-                                '$id', 
-                                '', 
-                                '$artikel', 
-                                '$menge', 
-                                '1', 
-                                '', 
-                                '".$this->app->DB->real_escape_string($bemerkung)."', 
+                                NOW(),
+                                '$id',
+                                '',
+                                '$artikel',
+                                '$menge',
+                                '1',
+                                '',
+                                '".$this->app->DB->real_escape_string($bemerkung)."',
                                 '',
                                 1
                             )";
-                    $this->app->DB->Insert($sql);                       
+                    $this->app->DB->Insert($sql);
                 }
                 break;
-            case 'vorlaeufige_buchen':            
-                $ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form? 
+            case 'vorlaeufige_buchen':
+                $ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
                 $sql = "SELECT * FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
-                $positionen = $this->app->DB->SelectArr($sql);               
+                $positionen = $this->app->DB->SelectArr($sql);
                 foreach ($positionen as $position) {
-                    $bemerkung = "";                    
+                    $bemerkung = "";
                     $artikel = $position['artikel'];
                     $menge = $position['menge'];
-                    $bestellposition = $position['bestellung_position'];                   
+                    $bestellposition = $position['bestellung_position'];
                     if ($menge > 0) {
 
                         if (!empty($bestellposition)) {
                             // Gather info bestellung
                             $bparr = $this->app->DB->SelectRow("
-                                SELECT 
-                                    * 
-                                FROM 
-                                    bestellung 
-                                INNER JOIN 
+                                SELECT
+                                    *
+                                FROM
+                                    bestellung
+                                INNER JOIN
                                     bestellung_position ON bestellung_position.bestellung = bestellung.id
-                                INNER JOIN 
-                                    artikel ON bestellung_position.artikel = artikel.id 
-                                WHERE 
-                                    bestellung_position.id='$bestellposition' 
+                                INNER JOIN
+                                    artikel ON bestellung_position.artikel = artikel.id
+                                WHERE
+                                    bestellung_position.id='$bestellposition'
                                 LIMIT 1
-                            ");        
+                            ");
 
                             if ($menge > $bparr['menge']-$bparr['geliefert']) {
                                 $this->app->YUI->Message('error','Mengen ung&uuml;ltig');
                                 break;
-                            }      
-                    
-                            $artikel = $bparr['artikel'];                            
+                            }
+
+                            $artikel = $bparr['artikel'];
                             $artikel_nr = $bparr['nummer'];
                             $projekt = $bparr['projekt'];
                             $bestellung_belegnr = $bparr['belegnr'];
@@ -2537,13 +2576,13 @@ class Wareneingang {
                             $lagerartikel = $artikelarr['lagerartikel'];
                             $artikel_nr = $artikelarr['nummer'];
                         }
-                        
+
                         if ($lagerartikel) {
                             // Get Lager_platz
                             if (empty($ziellager_from_form)) {
                                 $lager = $this->app->DB->Select("SELECT lager_platz FROM artikel WHERE id='" . $artikel . "' LIMIT 1");
                                 if (empty($lager)) {
-                                    $msg .= '<div class="error">Kein Ziellagerplatz gefunden für Artikel: '.$artikel_nr.'</div>';   
+                                    $msg .= '<div class="error">Kein Ziellagerplatz gefunden für Artikel: '.$artikel_nr.'</div>';
                                     continue;
                                 }
                             }
@@ -2560,16 +2599,16 @@ class Wareneingang {
                         }
 
                         // Increase bestellung_position geliefert_menge
-                        $geliefert = $this->app->DB->Select("SELECT ifnull(geliefert,0) FROM bestellung_position WHERE id='$bestellposition' LIMIT 1");                    
+                        $geliefert = $this->app->DB->Select("SELECT ifnull(geliefert,0) FROM bestellung_position WHERE id='$bestellposition' LIMIT 1");
                         $geliefert += $menge;
-                        
-                        $sql = "UPDATE bestellung_position SET geliefert='$geliefert' WHERE id='$bestellposition' LIMIT 1";
-                        $this->app->DB->Update($sql);                            
 
-                        // Write paketdistribution                            
-                        $sql = "UPDATE 
+                        $sql = "UPDATE bestellung_position SET geliefert='$geliefert' WHERE id='$bestellposition' LIMIT 1";
+                        $this->app->DB->Update($sql);
+
+                        // Write paketdistribution
+                        $sql = "UPDATE
                                     paketdistribution
-                                SET 
+                                SET
                                     bearbeiter = '". $this->app->User->GetName()."',
                                     zeit = NOW(),
                                     bemerkung = '".$bemerkung."',
@@ -2577,15 +2616,12 @@ class Wareneingang {
                                 WHERE
                                     id = ".$position['id']."
                                 ";
-                        $this->app->DB->Update($sql);                       
+                        $this->app->DB->Update($sql);
                     }
                 }
-               
+
             break;
             case 'etikettendrucken':
-
-                $result['etikettendrucker'] = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
-                $result['etikettart'] = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
 
                 $sql = "
                     SELECT
@@ -2609,22 +2645,27 @@ class Wareneingang {
 
                 $positionen = $this->app->DB->SelectArr($sql);
 
+                $gedruckte_etiketten = 0;
+
                 foreach ($positionen as $position) {
                     $this->app->erp->EtikettenDrucker(
-                        kennung:  $result['etikettart'],
+                        kennung:  $etikettart,
                         anzahl: $position['menge'],
                         variables: $position,
-                        druckercode: $result['etikettendrucker'],
+                        druckercode: $etikettendrucker,
                         tabelle: 'artikel',
                         id: $position['artikel']
                     );
+                    $gedruckte_etiketten += $position['menge'];
                 }
+
+                $msg .= '<div class="info">'.$gedruckte_etiketten.' Etiketten wurden gedruckt auf Drucker \''.$etikettendruckername.'\'</div>';
 
             break;
             case 'abschliessen':
 
                 $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
-    
+
                 $vorlaeufige = $this->app->DB->SelectArr($sql);
                 if (!empty($vorlaeufige)) {
                     break;
@@ -2704,7 +2745,7 @@ class Wareneingang {
 
         $sql = sprintf(
                 'SELECT `adresse`,projekt,status,%s,bearbeiter_abgeschlossen,%s FROM `paketannahme` WHERE `id` = %d LIMIT 1',
-                $this->app->erp->FormatDate('datum_abgeschlossen', 'datum_abgeschlossen'),                
+                $this->app->erp->FormatDate('datum_abgeschlossen', 'datum_abgeschlossen'),
                 $this->app->erp->FormatDate('datum', 'datum'),
                 $id
         );
@@ -2717,18 +2758,18 @@ class Wareneingang {
         $datum = $paketannahme['datum'];
         $datum_abgeschlossen = $paketannahme['datum_abgeschlossen'];
         $bearbeiter_abgeschlossen = $paketannahme['bearbeiter_abgeschlossen'];
-   
+
         $addressRow = empty($adresse) ? null : $this->app->DB->SelectRow(
                         sprintf(
-                                'SELECT `name`,`kundennummer`,`lieferantennummer` 
-        FROM `adresse` 
-        WHERE `id` = %d AND `geloescht` = 0 
+                                'SELECT `name`,`kundennummer`,`lieferantennummer`
+        FROM `adresse`
+        WHERE `id` = %d AND `geloescht` = 0
         LIMIT 1',
                                 $adresse
                         )
         );
 
-        // pruefe ob 
+        // pruefe ob
         $lieferant = empty($addressRow) ? null : $addressRow['lieferantennummer'];
         $kunde = empty($addressRow) ? null : $addressRow['kundennummer'];
 
@@ -2742,15 +2783,15 @@ class Wareneingang {
             //$this->app->Tpl->Set('TAB1START','<div id=\"tabs-1\">');
             //$this->app->Tpl->Set('TAB1ENDE','</div>');
             $this->app->Tpl->Set('ISNOTLIEFERANTSTART', '<!--');
-            $this->app->Tpl->Set('ISNOTLIEFERANTENDE', '-->');       
+            $this->app->Tpl->Set('ISNOTLIEFERANTENDE', '-->');
             $this->app->Tpl->Set('TAB1TEXT', 'Artikel aus Bestellungen');
-            $this->app->Tpl->Set('TAB2TEXT', 'Artikel manuell');                        
+            $this->app->Tpl->Set('TAB2TEXT', 'Artikel manuell');
             $this->app->Tpl->Add('TAB1', "<legend>Offene Artikel aus Bestellungen bei $name:</legend>");
             $this->app->YUI->TableSearch('TAB1', 'wareneingang_lieferant', 'show', '', '', basename(__FILE__), __CLASS__);
             $this->app->YUI->TableSearch('TAB2', 'wareneingang_manuell', "show", "", "", basename(__FILE__), __CLASS__);
         } else {
             $this->app->Tpl->Set('ISLIEFERANTSTART', '<!--');
-            $this->app->Tpl->Set('ISLIEFERANTENDE', '-->');       
+            $this->app->Tpl->Set('ISLIEFERANTENDE', '-->');
             $this->app->YUI->TableSearch('TAB1', 'wareneingang_manuell', "show", "", "", basename(__FILE__), __CLASS__);
 /*            $this->app->Tpl->Set('TAB1START', '');
             $this->app->Tpl->Set('TAB1ENDE', '');*/
@@ -2765,7 +2806,7 @@ class Wareneingang {
             $this->app->Tpl->Set('AFTERTAB1', '');
             $this->app->Tpl->Set(
                     'TAB1',
-                    '<div class="error">Die ausgew&auml;hlte Adresse hat noch keine Rolle Kunde oder Lieferant. 
+                    '<div class="error">Die ausgew&auml;hlte Adresse hat noch keine Rolle Kunde oder Lieferant.
           Bitte vergeben Sie diese, dann sehen Sie Bestellungen oder versendete Waren.</div>'
             );
         }
@@ -2817,27 +2858,36 @@ class Wareneingang {
                 $this->app->Tpl->Set('ABGESCHLOSSENHIDDEN','hidden');
             }
         } else {
-            $this->app->Tpl->Set('ABGESCHLOSSENHIDDEN','hidden');            
+            $this->app->Tpl->Set('ABGESCHLOSSENHIDDEN','hidden');
         }
-    
+
         $sql = "SELECT id FROM paketdistribution WHERE paketannahme = ".$id." AND vorlaeufig = 1";
         $vorlaeufige = $this->app->DB->SelectArr($sql);
         if (!empty($vorlaeufige)) {
             $this->app->YUI->Message('info','Nicht eingebuchte Positionen vorhanden');
             $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
         } else {
-            $this->app->Tpl->Set('BUCHENHIDDEN','hidden');            
+            $this->app->Tpl->Set('BUCHENHIDDEN','hidden');
             if ($status != 'abgeschlossen') {
                 $this->app->YUI->Message('info','Wareneingang noch nicht abgeschlossen');
-            }            
+            }
         }
-        
+
         if ($seriennummern_aktiv && !$seriennummern_ok) {
             $this->app->Tpl->Set('ABSCHLIESSENHIDDEN','hidden');
         }
-                              
+
+        if (empty($etikettendrucker) || empty($etikettart)) {
+            $etiketteninfo = "Einstellungen ungültig (Drucker: $etikettendruckername, Etikett $etikettart)";
+        } else {
+            $etiketteninfo = "(Drucker: $etikettendruckername, Etikett $etikettart)";
+        }
+
+        $this->app->Tpl->Set('ETIKETTENEINSTELLUNGEN',$etiketteninfo);
+        $this->app->Tpl->Set('ETIKETTENDRUCKENHINZUFUEGENCHECKED', $this->app->User->GetParameter('wareneingang_lieferant_etikettendruckenhinzufuegen')?'checked':'');
+
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketinhalt.tpl');
-       
+
     }
 
     // END WareneingangPaketDistriInhalt
@@ -2859,10 +2909,10 @@ class Wareneingang {
           WHERE lb.paketannahme='$id' ORDER by a.nummer");
          */
         /* See tablesearch... */
-        $table->Query("SELECT SQL_CALC_FOUND_ROWS p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from 
-                        (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, " . $this->app->erp->FormatMenge("paketdistribution.menge") . " as menge, paketdistribution.bemerkung 
-                        FROM paketdistribution 
-                        INNER JOIN artikel ON artikel.id = paketdistribution.artikel 
+        $table->Query("SELECT SQL_CALC_FOUND_ROWS p.nummer,p.lieferantnummer, p.nummer, p.bestellbezug, p.name, p.menge, p.bemerkung from
+                        (SELECT bestellung.belegnr as bestellbezug, bestellung_position.bestellnummer as lieferantnummer ,artikel.nummer as nummer, artikel.name_de as name, " . $this->app->erp->FormatMenge("paketdistribution.menge") . " as menge, paketdistribution.bemerkung
+                        FROM paketdistribution
+                        INNER JOIN artikel ON artikel.id = paketdistribution.artikel
                         LEFT JOIN bestellung_position ON bestellung_position = bestellung_position.id
                         LEFT JOIN bestellung on bestellung_position.bestellung = bestellung.id
                         where paketannahme = $id AND vorlaeufig IS NULL) as p");
@@ -2895,7 +2945,7 @@ class Wareneingang {
         if (empty($menge)) {
             $menge = 1;
         }
-        $artikel = reset(explode(' ',$artikel));           
+        $artikel = reset(explode(' ',$artikel));
 
         if ($artikel) {
             $artikelid = $this->app->DB->Select("SELECT a.id FROM artikel a LEFT JOIN projekt pr ON a.projekt = pr.id WHERE (a.nummer = '" . $artikel . "' OR a.herstellernummer = '" . $artikel . "' OR a.ean = '" . $artikel . "') AND a.geloescht = 0 " . $this->app->erp->ProjektRechte() . " LIMIT 1");
@@ -2956,10 +3006,10 @@ class Wareneingang {
             $lagerscan = $this->app->Secure->GetPOST('elagerscan');
             if ($lagerscan != '') {
                 $lagervorhanden = $this->app->DB->SelectRow(
-                        "SELECT lp.id, CONCAT(l.bezeichnung,'->',lp.kurzbezeichnung) AS kurzbezeichnung 
+                        "SELECT lp.id, CONCAT(l.bezeichnung,'->',lp.kurzbezeichnung) AS kurzbezeichnung
           FROM lager_platz AS lp
           INNER JOIN lager AS l ON lp.lager = l.id AND l.geloescht <> 1
-          WHERE lp.kurzbezeichnung = '$lagerscan' AND lp.geloescht <> 1 
+          WHERE lp.kurzbezeichnung = '$lagerscan' AND lp.geloescht <> 1
           LIMIT 1"
                 );
                 if (!empty($lagervorhanden)) {
@@ -3162,7 +3212,7 @@ class Wareneingang {
         $this->app->Tpl->Set('MENGE', $menge);
 
         if ($this->app->erp->Firmendaten('standardetikettendrucker') > 0) {
-            $this->app->Tpl->Set('ETIKETTENDRUCKEN', 'Etiketten drucken.');
+            $this->app->Tpl->Set('ETIKETTENDRUCKEN', 'Etiketten drucken');
             $this->app->Tpl->Set('ANZAHL', 0);
             $this->app->Tpl->Set('TEXTBUTTON', 'Artikel einlagern');
         } else {
@@ -3218,7 +3268,7 @@ class Wareneingang {
         //weiter mit paket bis fertig
 
         if ($rma === 'rma') {
-            
+
         } else {
             if ($lagerartikel && !$artikelcheckliste && !$funktionstest && !$endmontage) {
                 $this->app->erp->RunHook('wareneingang_display_hook_rma1', 3, $id, $pos, $menge);
@@ -3229,7 +3279,7 @@ class Wareneingang {
                 $this->app->YUI->AutoComplete('lager', 'lagerplatz', 0, '&zwischenlager=' . $withZwischenlager . '&withstandardlager=' . $withStandardlager);
                 $this->app->Tpl->Parse('TAB1', 'wareneingang_lager.tpl');
             } else if ($artikelcheckliste || $funktionstest || $endmontage) {
-                
+
             } else if (!$lagerartikel && !$artikelcheckliste && !$funktionstest && !$endmontage) {
                 $typ = 'mitarbeiter';
                 $this->app->erp->RunHook('wareneingang_display_hook_rma1', 3, $id, $pos, $menge);
@@ -3289,8 +3339,8 @@ class Wareneingang {
                         $frmLager = $lager;
                         $lager = $this->app->DB->Select(
                                 sprintf(
-                                        "SELECT id 
-                FROM lager_platz 
+                                        "SELECT id
+                FROM lager_platz
                 WHERE kurzbezeichnung <> '' AND kurzbezeichnung = '%s' AND geloescht <> 1",
                                         $frmLager
                                 )
@@ -3298,8 +3348,8 @@ class Wareneingang {
                         if (empty($lager) && is_numeric($frmLager)) {
                             $lager = $this->app->DB->Select(
                                     sprintf(
-                                            "SELECT id 
-                FROM lager_platz 
+                                            "SELECT id
+                FROM lager_platz
                 WHERE kurzbezeichnung <> '' AND id = %d AND geloescht <> 1",
                                             $frmLager
                                     )
@@ -3366,13 +3416,13 @@ class Wareneingang {
                             // falls BE für Auftrag
                             if (!empty($retoure)) {
                                 $auftragid = $this->app->DB->Select(
-                                        "SELECT a.id FROM retoure_position bp 
-                 LEFT JOIN auftrag_position ap ON bp.auftrag_position_id=ap.id 
+                                        "SELECT a.id FROM retoure_position bp
+                 LEFT JOIN auftrag_position ap ON bp.auftrag_position_id=ap.id
                 LEFT JOIN auftrag a ON a.id=ap.auftrag WHERE bp.retoure='$retoure' LIMIT 1");
 
                                 $data['retoure'] = $this->app->DB->Select("SELECT belegnr FROM bestellung WHERE id='$retoure' LIMIT 1");
                             } else {
-                                $auftragid = $this->app->DB->Select("SELECT a.id FROM bestellung_position bp LEFT JOIN auftrag_position ap ON bp.auftrag_position_id=ap.id 
+                                $auftragid = $this->app->DB->Select("SELECT a.id FROM bestellung_position bp LEFT JOIN auftrag_position ap ON bp.auftrag_position_id=ap.id
                 LEFT JOIN auftrag a ON a.id=ap.auftrag WHERE bp.bestellung='$bestellung' LIMIT 1");
 
                                 $data['bestellung'] = $this->app->DB->Select("SELECT belegnr FROM bestellung WHERE id='$bestellung' LIMIT 1");
@@ -3439,7 +3489,7 @@ class Wareneingang {
                     if ($doctype === '') {
                         $doctype = !empty($bestellung) ? 'bestellung' : 'paketannahme';
                     }
-                    // entweder ins zwischenlager 
+                    // entweder ins zwischenlager
                     if (strtolower($lager) === 'zwischenlager') {
                         if (!empty($retoure)) {
                             $this->app->DB->Insert("INSERT INTO zwischenlager (id,bearbeiter,projekt,artikel,menge,vpe,grund,lager_von,richtung,objekt,parameter,firma,paketannahme)
@@ -3531,7 +3581,7 @@ class Wareneingang {
             if ($typ !== 'rma' && $cmd !== 'manuell') {
 
                 // Distribution speichern!
-                $this->app->DB->Insert("INSERT INTO paketdistribution 
+                $this->app->DB->Insert("INSERT INTO paketdistribution
     (id,bearbeiter,zeit,paketannahme,adresse,artikel,menge,vpe,etiketten,bemerkung,bestellung_position)
             VALUES ('','" . $this->app->User->GetName() . "',NOW(),'$id','$adresse','$artikel','$menge','$vpe','$etiketten','$bemerkung','$pos')");
                 $pdId = $this->app->DB->GetInsertID();
@@ -3552,8 +3602,8 @@ class Wareneingang {
                     $this->app->DB->Update("UPDATE retoure_position SET menge_eingang='$geliefert' WHERE id='$retourepos' LIMIT 1");
                     $this->app->DB->Update(
                             sprintf(
-                                    "UPDATE retoure 
-              SET fortschritt = 'eingegangen' 
+                                    "UPDATE retoure
+              SET fortschritt = 'eingegangen'
               WHERE id = %d AND IFNULL(fortschritt,'') IN ('angekuenigt','angekuendigt','') ",
                                     $retoure
                             )
@@ -3566,7 +3616,7 @@ class Wareneingang {
                 }
             } else if ($cmd == 'manuell') {
                 // Save the manually added entries to paketdistribution
-                $this->app->DB->Insert("INSERT INTO paketdistribution 
+                $this->app->DB->Insert("INSERT INTO paketdistribution
                 (id,bearbeiter,zeit,paketannahme,adresse,artikel,menge,vpe,etiketten,bemerkung)
                 VALUES ('','" . $this->app->User->GetName() . "',NOW(),'$id','$adresse','$artikel','$menge','$vpe','$etiketten','$bemerkung')");
             }
@@ -3590,9 +3640,9 @@ class Wareneingang {
                     $actSort = !empty($sorts[$retourepos]) ? $sorts[$retourepos] : 0;
                     $positions = $this->app->DB->SelectArr(
                             $all['sql'] . ' WHERE ' . $all['where']
-                            . sprintf(' ORDER BY bp.menge -  bp.menge_eingang <= 0, 
-            bp.menge_eingang <> 0, 
-            bp.id = %d, 
+                            . sprintf(' ORDER BY bp.menge -  bp.menge_eingang <= 0,
+            bp.menge_eingang <> 0,
+            bp.id = %d,
             bp.sort <= %d ', $retourepos, $actSort)
                     );
 
@@ -3888,11 +3938,11 @@ class Wareneingang {
                     sprintf(
                             'SELECT bp.bestellung,MIN(bp.id) as pos, b.adresse, bp.artikel, b.projekt, art.lager_platz
           FROM bestellung AS b
-          INNER JOIN bestellung_position AS bp ON b.id = bp.bestellung AND bp.geliefert < bp.menge AND b.belegnr <> \'\' AND 
+          INNER JOIN bestellung_position AS bp ON b.id = bp.bestellung AND bp.geliefert < bp.menge AND b.belegnr <> \'\' AND
            (bp.abgeschlossen IS NULL OR bp.abgeschlossen=0)  AND (b.status=\'versendet\' OR b.status=\'freigegeben\')
           INNER JOIN artikel AS art ON bp.artikel = art.id
           LEFT JOIN `artikelnummer_fremdnummern` AS af ON art.id = af.artikel AND af.aktiv = 1 AND af.scannable = 1
-          WHERE art.nummer = \'%s\' OR art.ean = \'%s\' OR art.herstellernummer = \'%s\' OR af.nummer = \'%s\' 
+          WHERE art.nummer = \'%s\' OR art.ean = \'%s\' OR art.herstellernummer = \'%s\' OR af.nummer = \'%s\'
           GROUP BY b.id, art.id ',
                             $articlescan, $articlescan, $articlescan, $articlescan
                     )
@@ -3902,11 +3952,11 @@ class Wareneingang {
                 if ($this->app->erp->ModulVorhanden('retoure')) {
                     $retoure = $this->app->DB->SelectRow(
                             sprintf(
-                                    "SELECT ro.id, ro.adresse 
-            FROM retoure AS ro 
-            INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge 
+                                    "SELECT ro.id, ro.adresse
+            FROM retoure AS ro
+            INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge
                    AND ro.status <> 'storniert' AND ro.belegnr <> ''  AND ro.adresse > 0
-            WHERE ro.belegnr = '%s' 
+            WHERE ro.belegnr = '%s'
             LIMIT 1",
                                     $articlescan
                             )
@@ -3916,7 +3966,7 @@ class Wareneingang {
                                 sprintf(
                                         "SELECT ro.id , ro.adresse
               FROM retoure AS ro
-              INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge 
+              INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge
                    AND ro.status <> 'storniert' AND ro.belegnr <> '' AND ro.adresse > 0
               INNER JOIN lieferschein AS dn ON ro.lieferscheinid = dn.id
               WHERE dn.belegnr = '%s' AND dn.belegnr <> '' LIMIT 1",
@@ -3927,9 +3977,9 @@ class Wareneingang {
                     if (empty($retoure)) {
                         $retoure = $this->app->DB->SelectRow(
                                 sprintf(
-                                        "SELECT ro.id, ro.adresse 
+                                        "SELECT ro.id, ro.adresse
               FROM retoure AS ro
-              INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge 
+              INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge
                    AND ro.status <> 'storniert' AND ro.belegnr <> '' AND ro.adresse > 0
               INNER JOIN auftrag AS o ON ro.auftragid = o.id
               WHERE o.belegnr = '%s' AND o.belegnr <> '' LIMIT 1",
@@ -3942,7 +3992,7 @@ class Wareneingang {
                                 sprintf(
                                         "SELECT ro.id, ro.adresse
               FROM retoure AS ro
-              INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge 
+              INNER JOIN retoure_position AS rp on ro.id = rp.retoure AND rp.menge_eingang < rp.menge
                    AND ro.status <> 'storniert' AND ro.belegnr <> '' AND ro.adresse > 0
               INNER JOIN lieferschein AS dn ON ro.lieferscheinid = dn.id
               INNER JOIN versand AS v ON dn.id = v.lieferschein
@@ -4052,13 +4102,13 @@ class Wareneingang {
         $this->app->User->SetParameter('wareneingang_action', 'paketannahme');
         $this->app->Tpl->Parse('PAGE', 'wareneingang_paketannahme.tpl');
     }
-    
+
     function WareneingangPositionLoeschen() {
         $id = $this->app->Secure->GetGET('id');
-        $posid = $this->app->Secure->GetGET('posid');       
+        $posid = $this->app->Secure->GetGET('posid');
         $sql = "DELETE FROM paketdistribution WHERE id = ".$posid." AND vorlaeufig = 1";
-        $this->app->DB->Delete($sql);       
-        header('Location: index.php?module=wareneingang&wareneingang&action=distriinhalt&id='.$id);            
+        $this->app->DB->Delete($sql);
+        header('Location: index.php?module=wareneingang&wareneingang&action=distriinhalt&id='.$id);
     }
 }
 

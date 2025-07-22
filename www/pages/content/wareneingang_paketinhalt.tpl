@@ -163,6 +163,11 @@
 							    <table width="100%" border="0" class="mkTableFormular">
 								    <legend>{|Aktionen|}</legend>
 								    [ISLIEFERANTSTART]
+							        <tr [HINZUFUEGENHIDDEN]>
+								        <td>
+                                            <input type="checkbox" name="etikettendruckenhinzufuegen" id="etikettendruckenhinzufuegen" [ETIKETTENDRUCKENHINZUFUEGENCHECKED] form="hinzufuegen">Etiketten drucken</input>
+								        </td>
+							        </tr>
 								    <tr [HINZUFUEGENHIDDEN]>
 									    <td>
 										    <button name="submit" class="ui-button-icon" style="width:100%;" value="hinzufuegen" form="hinzufuegen">{|Erfassen|}</button>
@@ -205,7 +210,7 @@
 								    <legend>{|Aktionen|}</legend>
                                     <tr [ETIKETTENDRUCKENHIDDEN]>
 									    <td>
-										    <button name="submit" class="ui-button-icon" style="width:100%;" value="etikettendrucken" title="Etiketten gem&auml;&szlig; Projekteinstellungen drucken">{|Etiketten drucken|}</button>
+										    <button name="submit" class="ui-button-icon" style="width:100%;" value="etikettendrucken" title="Etiketten gem&auml;&szlig; Projekteinstellungen drucken [ETIKETTENEINSTELLUNGEN]">{|Etiketten drucken|}</button>
                                         </td>
 								    </tr>
 								    <tr [BUCHENHIDDEN]>
