@@ -22801,7 +22801,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
   function GetEtikettendrucker($id = 0)
   {
-    //$tpl .="<option value=\"0\">-- kein --</option>";
+    $id = (int) $id;
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='2' AND (id=$id OR $id=0)");
     for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
@@ -22813,6 +22813,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
 
   function GetDrucker($id = 0)
   {
+    $id = (int) $id;
     $drucker = $this->app->DB->SelectArr("SELECT id, name FROM  drucker WHERE aktiv='1' AND art='0' AND (id=$id OR $id=0)");
     for($i=0;$i<(!empty($drucker)?count($drucker):0);$i++)
     {
