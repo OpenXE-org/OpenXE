@@ -4135,9 +4135,11 @@ class Wareneingang {
     function WareneingangEtikettenNachdrucken() {
         $posid = $this->app->Secure->GetGET('posid');
         $menge = $this->app->Secure->GetGET('menge');
-        $projekt = $this->app->DB->Select("SELECT pa.projekt FROM paketannahme pa INNER JOIN paketdistribution pd WHERE pd.id = ".$posid." LIMIT 1");
-        $artikel = $this->app->DB->Select("SELECT pd.artikel FROM paketannahme pa INNER JOIN paketdistribution pd WHERE pd.id = ".$posid." LIMIT 1");
-        $paketannahme = $this->app->DB->Select("SELECT pa.id FROM paketannahme pa INNER JOIN paketdistribution pd WHERE pd.id = ".$posid." LIMIT 1");
+
+        $painfo = $this->app->DB->SelectRow("SELECT pa.id, pa.projekt, pd.artikel FROM paketannahme pa INNER JOIN paketdistribution pd ON pd.paketannahme = pa.id WHERE pd.id = ".$posid." LIMIT 1");
+        $paketannahme = $painfo['id'];
+        $projekt = $painfo['projekt'];
+        $artikel = $painfo['artikel'];
         $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
         $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
