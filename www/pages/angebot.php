@@ -1665,7 +1665,7 @@ class Angebot extends GenAngebot
         $hinweis = "<div class=\"info\">Zu diesem Angebot gibt es noch keinen Auftrag.</div>";
       }
 
-      $this->app->Tpl->Set(
+      $this->app->Tpl->Add(
         'MESSAGE',
         "<div class=\"warning\">Dieses Angebot ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r dieses Angebot wirklich entfernt werden?')) return false;else window.location.href='index.php?module=angebot&action=schreibschutz&id=$id';\">&nbsp;$optional</div>$hinweis"
       );
