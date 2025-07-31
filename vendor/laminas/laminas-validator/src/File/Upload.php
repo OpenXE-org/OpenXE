@@ -1,41 +1,44 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\File;
 
-use Countable;
 use Laminas\Validator\AbstractValidator;
 use Laminas\Validator\Exception;
 use Psr\Http\Message\UploadedFileInterface;
+use Traversable;
+
+use function array_key_exists;
+use function array_merge;
+use function count;
+use function is_array;
+use function is_countable;
+use function is_string;
+use function is_uploaded_file;
 
 /**
  * Validator for the maximum size of a file up to a max of 2GB
  *
+ * @deprecated Since 2.61.0 Use the {@link UploadFile} validator instead
+ *
+ * @final
  */
 class Upload extends AbstractValidator
 {
     /**
      * @const string Error constants
      */
-    const INI_SIZE       = 'fileUploadErrorIniSize';
-    const FORM_SIZE      = 'fileUploadErrorFormSize';
-    const PARTIAL        = 'fileUploadErrorPartial';
-    const NO_FILE        = 'fileUploadErrorNoFile';
-    const NO_TMP_DIR     = 'fileUploadErrorNoTmpDir';
-    const CANT_WRITE     = 'fileUploadErrorCantWrite';
-    const EXTENSION      = 'fileUploadErrorExtension';
-    const ATTACK         = 'fileUploadErrorAttack';
-    const FILE_NOT_FOUND = 'fileUploadErrorFileNotFound';
-    const UNKNOWN        = 'fileUploadErrorUnknown';
+    public const INI_SIZE       = 'fileUploadErrorIniSize';
+    public const FORM_SIZE      = 'fileUploadErrorFormSize';
+    public const PARTIAL        = 'fileUploadErrorPartial';
+    public const NO_FILE        = 'fileUploadErrorNoFile';
+    public const NO_TMP_DIR     = 'fileUploadErrorNoTmpDir';
+    public const CANT_WRITE     = 'fileUploadErrorCantWrite';
+    public const EXTENSION      = 'fileUploadErrorExtension';
+    public const ATTACK         = 'fileUploadErrorAttack';
+    public const FILE_NOT_FOUND = 'fileUploadErrorFileNotFound';
+    public const UNKNOWN        = 'fileUploadErrorUnknown';
 
-    /**
-     * @var array Error message templates
-     */
+    /** @var array<string, string> Error message templates */
     protected $messageTemplates = [
         self::INI_SIZE       => "File '%value%' exceeds upload_max_filesize directive in php.ini",
         self::FORM_SIZE      => "File '%value%' exceeds the MAX_FILE_SIZE directive that was "
@@ -50,6 +53,7 @@ class Upload extends AbstractValidator
         self::UNKNOWN        => "Unknown error while uploading file '%value%'",
     ];
 
+    /** @var array<string, mixed> */
     protected $options = [
         'files' => [],
     ];
@@ -61,7 +65,7 @@ class Upload extends AbstractValidator
      * If no files are given the $_FILES array will be used automatically.
      * NOTE: This validator will only work with HTTP POST uploads!
      *
-     * @param  array|\Traversable $options Array of files in syntax of \Laminas\File\Transfer\Transfer
+     * @param array|Traversable $options Array of files in syntax of \Laminas\File\Transfer\Transfer
      */
     public function __construct($options = [])
     {
@@ -75,9 +79,11 @@ class Upload extends AbstractValidator
     /**
      * Returns the array of set files
      *
-     * @param  string $file (Optional) The file to return in detail
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string $file (Optional) The file to return in detail
      * @return array
-     * @throws Exception\InvalidArgumentException If file is not found
+     * @throws Exception\InvalidArgumentException If file is not found.
      */
     public function getFiles($file = null)
     {
@@ -110,13 +116,16 @@ class Upload extends AbstractValidator
     /**
      * Sets the files to be checked
      *
-     * @param  array $files The files to check in syntax of \Laminas\File\Transfer\Transfer
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param array $files The files to check in syntax of \Laminas\File\Transfer\Transfer
      * @return $this Provides a fluent interface
      */
     public function setFiles($files = [])
     {
-        if (null === $files
-            || ((is_array($files) || $files instanceof Countable)
+        if (
+            null === $files
+            || ((is_countable($files))
                 && count($files) === 0)
         ) {
             $this->options['files'] = $_FILES;
@@ -129,7 +138,8 @@ class Upload extends AbstractValidator
         }
 
         foreach ($this->options['files'] as $file => $content) {
-            if (! $content instanceof UploadedFileInterface
+            if (
+                ! $content instanceof UploadedFileInterface
                 && ! isset($content['error'])
             ) {
                 unset($this->options['files'][$file]);
@@ -182,7 +192,7 @@ class Upload extends AbstractValidator
 
         foreach ($files as $file => $content) {
             $this->value = $file;
-            $error = $content instanceof UploadedFileInterface
+            $error       = $content instanceof UploadedFileInterface
                 ? $content->getError()
                 : $content['error'];
 

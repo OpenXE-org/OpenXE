@@ -227,7 +227,7 @@ class Player {
 
     $moduleClassName = strtoupper($module[0]) . substr($module, 1);
     $this->app->ModuleScriptCache->IncludeModule($moduleClassName);
-    $this->app->ModuleScriptCache->IncludeJavascriptModules('_theme_', ['www/themes/new/js/main.js']);
+    $this->app->ModuleScriptCache->IncludeJavascriptModules(['www/themes/new/js/entry.js']);
     $this->app->Tpl->Add('MODULESTYLESHEET', $this->app->ModuleScriptCache->GetStylesheetHtmlTags());
     $this->app->Tpl->Add('MODULEJAVASCRIPTHEAD', $this->app->ModuleScriptCache->GetJavascriptHtmlTags('head'));
     $this->app->Tpl->Add('MODULEJAVASCRIPTBODY', $this->app->ModuleScriptCache->GetJavascriptHtmlTags('body'));
