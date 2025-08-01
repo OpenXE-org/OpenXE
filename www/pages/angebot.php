@@ -1470,7 +1470,8 @@ class Angebot extends GenAngebot
     if($adresse <=0)
     {
       $this->app->Tpl->Add('JAVASCRIPT','$(document).ready(function() { if(document.getElementById("adresse"))document.getElementById("adresse").focus(); });');
-      $this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Achtung! Dieses Dokument ist mit keiner Kunden-Nr. verlinkt. Bitte geben Sie die Kundennummer an und klicken Sie &uuml;bernehmen oder Speichern!</div>");
+//      $this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Achtung! Dieses Dokument ist mit keiner Kunden-Nr. verlinkt. Bitte geben Sie die Kundennummer an und klicken Sie &uuml;bernehmen oder Speichern!</div>");
+      $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Achtung! Dieses Dokument ist mit keiner Adresse verknüpft.<input type=\"button\" value=\"Adresse anlegen\" onclick=\"if(!confirm('Neue Adresse mit den Daten aus dem Angebot anlegen?')) return false;else window.location.href='index.php?module=adresse&action=ausangebotanlegen&angebot=$id';\"></div>");
     }
     $kopievon= $this->app->DB->Select("SELECT kopievon FROM angebot WHERE id='$id' LIMIT 1");
     $kopienummer= $this->app->DB->Select("SELECT kopienummer FROM angebot WHERE id='$id' LIMIT 1");
