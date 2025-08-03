@@ -126,6 +126,9 @@ class Versandart_go extends Versanddienstleister
     $order->consigneeAddress->city = $json->city;
     $order->consigneeAddress->email = $json->email;
     $order->consigneeAddress->phoneNumber = $json->phone;
+    $order->packages[0]->length = ceil($json->length);
+    $order->packages[0]->width = ceil($json->width);
+    $order->packages[0]->height = ceil($json->height);
     $ret = new CreateShipmentResult();
     $result = $this->api->createOrder($order);
     if ($result instanceof CreateOrderResponse) {
