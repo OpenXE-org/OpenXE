@@ -824,6 +824,9 @@ class Versandpakete {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
 
+        $gewicht = $this->versandpakete_gewicht($id);
+        $this->app->Tpl->Set('GEWICHT', $gewicht);
+
         $this->app->YUI->TableSearch('PAKETINHALT', 'versandpakete_paketinhalt_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "versandpakete_edit.tpl");
     }
@@ -1084,6 +1087,16 @@ class Versandpakete {
 
         $this->app->YUI->TableSearch('LIEFERSCHEININHALT', 'versandpakete_lieferschein_paket_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->YUI->TableSearch('PAKETINHALT', 'versandpakete_paketinhalt_list', "show", "", "", basename(__FILE__), __CLASS__);
+
+        $gewicht = $this->versandpakete_gewicht($id);
+        $pakete_gewicht = $this->versandpakete_lieferung_gewicht($lieferschein);
+        $lieferschein_gewicht = $this->app->erp->LieferscheinNettoGewicht($id);
+
+        $this->app->Tpl->Set('DIESESPAKETGEWICHT', $gewicht);
+        $this->app->Tpl->Set('PAKETEGEWICHT', $pakete_gewicht);
+        $this->app->Tpl->Set('RESTGEWICHT', $lieferschein_gewicht-$pakete_gewicht);
+        $this->app->Tpl->Set('GESAMTGEWICHT', $lieferschein_gewicht);
+
         $this->app->Tpl->Add('MESSAGE', $msg);
         $this->app->Tpl->Parse('PAGE', "versandpakete_add.tpl");
     }
@@ -1253,22 +1266,8 @@ class Versandpakete {
             return;
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
-        $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
-
-        $sql = "
-            SELECT
-                SUM(COALESCE(a.gewicht,0)*vlp.menge)
-            FROM
-                artikel a
-            INNER JOIN lieferschein_position lp ON
-                a.id = lp.artikel
-            INNER JOIN
-                versandpaket_lieferschein_position vlp ON
-                vlp.lieferschein_position = lp.id
-            WHERE vlp.versandpaket = ".$id."
-        ";
-
-        $gewicht = $this->app->DB->Select($sql);
+        $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);     
+        $gewicht = $this->versandpakete_gewicht($id);
         $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
@@ -1352,6 +1351,42 @@ class Versandpakete {
                         ) l
                        ";
         return($sql);
+    }
+
+    function versandpakete_gewicht($id) {
+        $sql = "
+            SELECT
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE vlp.versandpaket = ".$id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);
+        return($gewicht);
+    }
+
+    function versandpakete_lieferung_gewicht($lieferschein_id) {
+        $sql = "
+            SELECT
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE lp.lieferschein = ".$lieferschein_id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);
+        return($gewicht);
     }
 
 }

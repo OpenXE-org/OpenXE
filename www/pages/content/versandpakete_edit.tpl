@@ -67,7 +67,7 @@
                                             {|Gewicht Kg|}:
                                         </td>
                                         <td>
-                                            <input type="number" name="" id="" value="[GEWICHT]" size="40" disabled>
+                                            <input type="text" name="" id="" value="[GEWICHT]" size="40" disabled>
                                         </td>
                                     </tr>
                                     <tr>
