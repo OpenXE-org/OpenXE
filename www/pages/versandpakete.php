@@ -283,7 +283,7 @@ class Versandpakete {
 
                 $allowed['versandpakete_lieferscheine'] = array('lieferscheine');
 
-                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Projekt','Monitor','Pakete','Paket hinzuf&uuml;gen');
+                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Projekt','Monitor','Pakete','Men&uuml;');
                 $width = array(  '1%','1%',     '10%',          '10%',    '10%',  '10%',                    '5%',      '1%',     '1%',    '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -300,7 +300,8 @@ class Versandpakete {
                 $moreinfo = true; // Allow drop down details
                 $aligncenter = [5,6,7,8,9,10];
 
-                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
+                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" title=\"Paket hinzuf&uuml;gen\" border=\"0\"></a>".
+                        "&nbsp;<a href=\"index.php?module=lieferschein&action=pdf&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>";
 
                 $sql = Versandpakete::versandpakete_lieferstatus_sql($app);
 
@@ -698,6 +699,21 @@ class Versandpakete {
             case 'abschliessen':
                 $sql = "UPDATE versandpakete SET status = 'abgeschlossen' WHERE id = ".$id;
                 $this->app->DB->Update($sql);
+            break;
+            case 'lieferscheinedrucken':
+
+                $sql = "SELECT DISTINCT lieferschein FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") tmp WHERE versandpaket = ".$id;
+                $lieferscheine = $this->app->DB->SelectArr($sql);
+
+                foreach ($lieferscheine as $lieferschein) {
+                    $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = ".$lieferschein['lieferschein']);
+                    $Brief = new LieferscheinPDF($this->app, $projekt);
+                    $Brief->GetLieferschein($lieferschein['lieferschein']);
+                    $tmpfile = $Brief->displayTMP();
+                    $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
+                    $this->app->printer->Drucken($druckercode,$tmpfile);
+                }
+
             break;
         }
 
@@ -1266,7 +1282,7 @@ class Versandpakete {
             return;
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
-        $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);     
+        $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
         $gewicht = $this->versandpakete_gewicht($id);
         $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
