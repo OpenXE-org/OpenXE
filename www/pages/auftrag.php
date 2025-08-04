@@ -7484,6 +7484,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     JOIN artikel art ON ap.artikel = art.id
                 WHERE
                     a.id = ".$auftragid."
+                ORDER BY ap.sort ASC
             ";
             $positionen = $this->app->DB->SelectArr($sql);
 
