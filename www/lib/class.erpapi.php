@@ -32021,9 +32021,9 @@ function Firmendaten($field,$projekt="")
 
         if($nurlagerartikel)
         {
-          $pos = $this->app->DB->SelectArr("SELECT ap.*,art.porto AS artikelporto FROM auftrag_position ap INNER JOIN artikel art ON ap.artikel = art.id AND (art.lagerartikel = 1 OR (art.stueckliste = 1 AND art.juststueckliste = 1)) WHERE ap.auftrag='$id' $poswheretmp order by ap.sort");
+          $pos = $this->app->DB->SelectArr("SELECT ap.*,art.porto AS artikelporto FROM auftrag_position ap INNER JOIN artikel art ON ap.artikel = art.id AND (art.lagerartikel = 1 OR (art.stueckliste = 1 AND art.juststueckliste = 1)) WHERE ap.auftrag='$id' AND ap.menge > 0 $poswheretmp ORDER BY ap.sort");
         }else{
-          $pos = $this->app->DB->SelectArr("SELECT ap.*,art.porto AS artikelporto FROM auftrag_position ap LEFT JOIN artikel art ON ap.artikel = art.id WHERE ap.auftrag='$id' $poswheretmp order by ap.sort");
+          $pos = $this->app->DB->SelectArr("SELECT ap.*,art.porto AS artikelporto FROM auftrag_position ap LEFT JOIN artikel art ON ap.artikel = art.id WHERE ap.auftrag='$id' AND ap.menge > 0 $poswheretmp ORDER BY ap.sort");
         }
 
         if(empty($pos))
