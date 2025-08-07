@@ -1811,6 +1811,13 @@ public function NavigationHooks(&$menu)
     return $sprache;
   }
 
+  public function GetSpracheBelegPosition($type, $id) {
+    $sql = "SELECT beleg.id FROM ".$type." beleg INNER JOIN ".$type."_position pos ON pos.".$type." = beleg.id WHERE pos.id = ".$id." LIMIT 1";
+    $beleg = $this->app->DB->Select($sql);
+    $sprache = $this->GetSpracheBeleg($type,$beleg);
+    return($sprache);
+  }
+
   public function GetSpracheBelegISO($type, $id)
   {
     $language = $this->GetSpracheBeleg($type, $id);
@@ -25568,7 +25575,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         }
       }
     }
-
     if($id){
       if(!empty($this->uebersetzungId[$field]) && isset($this->uebersetzungId[$field][$sprache])){
         return $this->uebersetzungId[$field][$sprache];
@@ -25578,7 +25584,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
         return $this->uebersetzungBeschriftung[$field][$sprache];
       }
     }
-
     return null;
   }
 
@@ -39225,7 +39230,7 @@ function Firmendaten($field,$projekt="")
 
 
 
-  function AnzeigeFreifelderPositionen($form = null)
+  function AnzeigeFreifelderPositionen($form = null, $language = null)
   {
 
     $module = $this->app->Secure->GetGET('module');
@@ -39252,7 +39257,13 @@ function Firmendaten($field,$projekt="")
       }
       elseif($this->Firmendaten('freifeld'.$i.'typ') === 'select') {
         $id = $this->app->Secure->GetGET('id');
-        $options = explode('|',$this->Firmendaten('freifeld'.$i));
+
+        if ($language != null && $language != 'deutsch') {
+            $freifeldwert = html_entity_decode($this->app->erp->getUebersetzung('artikel_freifeld'.$i,$language,id: false));
+        } else {
+            $freifeldwert =  $this->Firmendaten('freifeld'.$i);
+        }
+        $options = explode('|',$freifeldwert);
         unset($options[0]);
         if($form !== null) {
           $field = new HTMLSelect('freifeld'.$i,0,'freifeld'.$i,'','','0');

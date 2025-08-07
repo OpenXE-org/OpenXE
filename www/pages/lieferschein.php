@@ -1612,7 +1612,7 @@ class Lieferschein extends GenLieferschein
       }
 
       $this->app->erp->LieferscheinProtokoll($id,"Lieferschein storniert");
-      $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Das Lieferschein \"$name\" ($belegnr) wurde storniert!</div>");
+      $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Der Lieferschein \"$name\" ($belegnr) wurde storniert!</div>");
     }
     if($intern)return;
     header("Location: index.php?module=lieferschein&action=list&msg=$msg#tabs-1");
