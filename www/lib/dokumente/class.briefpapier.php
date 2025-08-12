@@ -2573,6 +2573,12 @@ class Briefpapier extends SuperFPDF {
     $itemNoWidth = $this->getStyleElement("breite_nummer");
     $einheitWidth    = $this->getStyleElement("breite_einheit");
     $descWidth    = $this->getStyleElement("breite_artikel");
+
+    if ($this->getStyleElement("mit_gewicht")) {
+        $weightWidth = 20;
+        $descWidth -= $weightWidth;
+    }
+
     $taxWidth    = $this->getStyleElement("breite_steuer");
     $belege_subpositionen = $this->getStyleElement("belege_subpositionen");
     $belege_subpositionenstuecklisten = $this->getStyleElement('belege_subpositionenstuecklisten') && in_array(($this->table?$this->table:$this->doctype),array('rechnung', 'auftrag','lieferschein','gutschrift','angebot'));
@@ -2698,6 +2704,11 @@ class Briefpapier extends SuperFPDF {
           $this->Cell_typed($descWidth, 6, $this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_artikel')));
         }
         $this->Cell_typed($amWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_menge')),0,0,'R');
+
+        if ($this->getStyleElement("mit_gewicht")) {
+            $this->Cell_typed($weightWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_gewicht')),0,0,'R');
+        }
+
       }
     } else {
       $this->Cell_typed($taxWidth,6,'Mitarbeiter');
@@ -2933,6 +2944,9 @@ class Briefpapier extends SuperFPDF {
       }
       else{
         $this->Cell_typed($amWidth, $cellhoehe, $item['amount'], 0, 0, 'R');
+        if ($this->getStyleElement("mit_gewicht")) {
+            $this->Cell_typed($weightWidth, $cellhoehe, (float) $item['gewicht'] * (float) $item['amount'], 0, 0, 'R');
+        }
       }
 
       if($this->doctype!=='lieferschein' && $this->doctype!=='arbeitsnachweis' && $this->doctype!=='produktion' && $this->doctype!=='preisanfrage') {

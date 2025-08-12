@@ -515,6 +515,8 @@ class Adresse extends GenAdresse {
     
     $this->app->ActionHandler("minidetaillieferadressen","AdresseMinidetailLieferadressen");
     $this->app->ActionHandler("minidetailansprechpartner","AdresseMinidetailAnsprechpartner");   
+
+    $this->app->ActionHandler("ausangebotanlegen","AdresseAnlegenAngebot");
     
     $id = $this->app->Secure->GetGET('id');
     //$nummer = $this->app->Secure->GetPOST("nummer");
@@ -1356,6 +1358,50 @@ class Adresse extends GenAdresse {
     parent::AdresseCreate();
   }
 
+  function AdresseAnlegenAngebot() {
+    $angebotid = $this->app->Secure->GetGET('angebot');
+    $angebot = $this->app->DB->SelectRow("SELECT * FROM angebot WHERE id = ".$angebotid);
+    $adressid = $this->app->erp->CreateAdresse($angebot['name'],$angebot['firma']);
+
+    if (empty($adressid)) {
+        throw new exception("Adresse anlegen fehlgeschlagen");
+    }
+
+    $angebotsdaten = array(
+        'projekt',
+        'titel',
+        'ansprechpartner',
+        'abteilung',
+        'unterabteilung',
+        'adresszusatz',
+        'strasse',
+        'plz',
+        'ort',
+        'bundesstaat',
+        'land',
+        'telefon',
+        'telefax',
+        'email',
+        'anschreiben'
+    );
+
+    $adressdaten = array_intersect_key($angebot, array_flip($angebotsdaten));
+
+    $komma = '';   
+    foreach ($adressdaten as $key => $value) {
+        $update .= $komma.$key." = '".$value."'";
+        $komma = ',';
+    }
+    $sql = "UPDATE adresse SET ".$update." WHERE id = ".$adressid;
+    $this->app->DB->Update($sql);
+    
+    $this->app->erp->AddRolleZuAdresse($adressid, 'Kunde', 'von', 'Projekt', $projekt);
+
+    $sql = "UPDATE angebot SET adresse = ".$adressid." WHERE id = ".$angebotid;
+    $this->app->DB->Update($sql);
+
+    $this->app->Location->execute("index.php?module=angebot&action=edit&id=$angebotid");
+  }
 
   function AdresseSuche()
   {

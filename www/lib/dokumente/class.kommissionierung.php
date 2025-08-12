@@ -176,10 +176,11 @@ class KommissionierungPDF extends BriefpapierCustom {
                 ks.id,
                 a.nummer as itemno,
                 ".$lagerplatztext." as `desc`,
-                ksp.menge as amount,
+                ".$this->app->erp->FormatMengeFuerFormular("ksp.menge")." as amount,
                 a.name_de AS name,
                 a.herstellernummer,
                 ksp.artikelnummerkunde,
+                a.gewicht,
                 '' as steuersatz_ermaessigt,
                 DATE_FORMAT(zeitstempel,'%%Y%%m%%d') as datum               
             FROM 
@@ -193,8 +194,11 @@ class KommissionierungPDF extends BriefpapierCustom {
         )
     );
 
+    $gewicht = 0;
+
     foreach($artikel as $key=>$value)  {
         $this->addItem($value);
+        $gewicht += (float) $value['gewicht'] * (float) $value['amount'];
     }
 
     $this->filename = $data['datum']."_KS".$id.".pdf";
@@ -223,6 +227,10 @@ class KommissionierungPDF extends BriefpapierCustom {
     } else {
         $corrDetails['Ausgelagert'] = "nein";
     }
+    if (!empty($gewicht)) {
+        $corrDetails['Gewicht'] = $gewicht;
+    }
+
     $this->setCorrDetails($corrDetails, true);
   }
 }

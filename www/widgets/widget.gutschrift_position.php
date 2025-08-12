@@ -14,17 +14,17 @@ class WidgetGutschrift_position extends WidgetGenGutschrift_position
 
   function ExtendsForm()
   {
-
-
     $id = (int)$this->app->Secure->GetGET('id');
+    $module = $this->app->Secure->GetGET('module');
+    $sprache = $this->app->erp->GetSpracheBelegPosition($module,$id);
+    $this->app->erp->AnzeigeFreifelderPositionen($this->form, $sprache);
+
     $projektabkuerzung = $this->app->DB->Select("SELECT p.abkuerzung FROM gutschrift_position ap LEFT JOIN gutschrift a ON a.id=ap.gutschrift 
       LEFT JOIN projekt p ON p.id=a.projekt WHERE ap.id='$id' LIMIT 1");
     $this->app->YUI->AutoComplete('erloese','sachkonto',1,"&sid=".$projektabkuerzung);
 
     $this->app->YUI->AutoComplete("einheit","artikeleinheit");
     $this->app->YUI->AutoComplete("zolltarifnummer","zolltarifnummer",1);
-
-    $this->app->erp->AnzeigeFreifelderPositionen($this->form);
 
     //$this->app->YUI->AutoComplete(AUTO,"artikel",array('nummer','name_de','warengruppe'),"nummer");
     $this->app->YUI->DatePicker("lieferdatum");

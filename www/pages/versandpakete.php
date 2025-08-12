@@ -283,7 +283,7 @@ class Versandpakete {
 
                 $allowed['versandpakete_lieferscheine'] = array('lieferscheine');
 
-                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Projekt','Monitor','Pakete','Paket hinzuf&uuml;gen');
+                $heading = array('',  '',       'Lieferschein', 'Adresse','Menge','Menge in Versandpaketen','Projekt','Monitor','Pakete','Men&uuml;');
                 $width = array(  '1%','1%',     '10%',          '10%',    '10%',  '10%',                    '5%',      '1%',     '1%',    '1%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -300,7 +300,8 @@ class Versandpakete {
                 $moreinfo = true; // Allow drop down details
                 $aligncenter = [5,6,7,8,9,10];
 
-                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" border=\"0\"></a>";
+                $menu = "<a href=\"index.php?module=versandpakete&action=add&lieferschein=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/add.png\" title=\"Paket hinzuf&uuml;gen\" border=\"0\"></a>".
+                        "&nbsp;<a href=\"index.php?module=lieferschein&action=pdf&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>";
 
                 $sql = Versandpakete::versandpakete_lieferstatus_sql($app);
 
@@ -699,6 +700,21 @@ class Versandpakete {
                 $sql = "UPDATE versandpakete SET status = 'abgeschlossen' WHERE id = ".$id;
                 $this->app->DB->Update($sql);
             break;
+            case 'lieferscheinedrucken':
+
+                $sql = "SELECT DISTINCT lieferschein FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") tmp WHERE versandpaket = ".$id;
+                $lieferscheine = $this->app->DB->SelectArr($sql);
+
+                foreach ($lieferscheine as $lieferschein) {
+                    $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = ".$lieferschein['lieferschein']);
+                    $Brief = new LieferscheinPDF($this->app, $projekt);
+                    $Brief->GetLieferschein($lieferschein['lieferschein']);
+                    $tmpfile = $Brief->displayTMP();
+                    $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
+                    $this->app->printer->Drucken($druckercode,$tmpfile);
+                }
+
+            break;
         }
 
         // Load values again from database
@@ -823,6 +839,9 @@ class Versandpakete {
         else if ($complete === false) {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
+
+        $gewicht = $this->versandpakete_gewicht($id);
+        $this->app->Tpl->Set('GEWICHT', $gewicht);
 
         $this->app->YUI->TableSearch('PAKETINHALT', 'versandpakete_paketinhalt_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "versandpakete_edit.tpl");
@@ -1084,6 +1103,16 @@ class Versandpakete {
 
         $this->app->YUI->TableSearch('LIEFERSCHEININHALT', 'versandpakete_lieferschein_paket_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->YUI->TableSearch('PAKETINHALT', 'versandpakete_paketinhalt_list', "show", "", "", basename(__FILE__), __CLASS__);
+
+        $gewicht = $this->versandpakete_gewicht($id);
+        $pakete_gewicht = $this->versandpakete_lieferung_gewicht($lieferschein);
+        $lieferschein_gewicht = $this->app->erp->LieferscheinNettoGewicht($id);
+
+        $this->app->Tpl->Set('DIESESPAKETGEWICHT', $gewicht);
+        $this->app->Tpl->Set('PAKETEGEWICHT', $pakete_gewicht);
+        $this->app->Tpl->Set('RESTGEWICHT', $lieferschein_gewicht-$pakete_gewicht);
+        $this->app->Tpl->Set('GESAMTGEWICHT', $lieferschein_gewicht);
+
         $this->app->Tpl->Add('MESSAGE', $msg);
         $this->app->Tpl->Parse('PAGE', "versandpakete_add.tpl");
     }
@@ -1254,21 +1283,7 @@ class Versandpakete {
         }
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
         $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
-
-        $sql = "
-            SELECT
-                SUM(COALESCE(a.gewicht,0)*vlp.menge)
-            FROM
-                artikel a
-            INNER JOIN lieferschein_position lp ON
-                a.id = lp.artikel
-            INNER JOIN
-                versandpaket_lieferschein_position vlp ON
-                vlp.lieferschein_position = lp.id
-            WHERE vlp.versandpaket = ".$id."
-        ";
-
-        $gewicht = $this->app->DB->Select($sql);
+        $gewicht = $this->versandpakete_gewicht($id);
         $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
@@ -1352,6 +1367,42 @@ class Versandpakete {
                         ) l
                        ";
         return($sql);
+    }
+
+    function versandpakete_gewicht($id) {
+        $sql = "
+            SELECT
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE vlp.versandpaket = ".$id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);
+        return($gewicht);
+    }
+
+    function versandpakete_lieferung_gewicht($lieferschein_id) {
+        $sql = "
+            SELECT
+                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+            FROM
+                artikel a
+            INNER JOIN lieferschein_position lp ON
+                a.id = lp.artikel
+            INNER JOIN
+                versandpaket_lieferschein_position vlp ON
+                vlp.lieferschein_position = lp.id
+            WHERE lp.lieferschein = ".$lieferschein_id."
+        ";
+
+        $gewicht = $this->app->DB->Select($sql);
+        return($gewicht);
     }
 
 }

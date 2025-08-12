@@ -166,6 +166,7 @@
 							        <tr [HINZUFUEGENHIDDEN]>
 								        <td>
                                             <input type="checkbox" name="etikettendruckenhinzufuegen" id="etikettendruckenhinzufuegen" [ETIKETTENDRUCKENHINZUFUEGENCHECKED] form="hinzufuegen">Etiketten drucken</input>
+                                            <p>[ETIKETTENEINSTELLUNGEN]<p>
 								        </td>
 							        </tr>
 								    <tr [HINZUFUEGENHIDDEN]>
@@ -210,7 +211,7 @@
 								    <legend>{|Aktionen|}</legend>
                                     <tr [ETIKETTENDRUCKENHIDDEN]>
 									    <td>
-										    <button name="submit" class="ui-button-icon" style="width:100%;" value="etikettendrucken" title="Etiketten gem&auml;&szlig; Projekteinstellungen drucken [ETIKETTENEINSTELLUNGEN]">{|Etiketten drucken|}</button>
+										    <button name="submit" class="ui-button-icon" style="width:100%;" value="etikettendrucken" title="Etiketten gem&auml;&szlig; Projekteinstellungen drucken [ETIKETTENEINSTELLUNGEN]">{|Alle Etiketten drucken|}</button>
                                         </td>
 								    </tr>
 								    <tr [BUCHENHIDDEN]>

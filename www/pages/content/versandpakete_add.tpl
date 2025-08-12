@@ -8,7 +8,7 @@
             [FORMHANDLEREVENT]
             <div class="row">
 	        	<div class="row-height">
-	        		<div class="col-xs-14 col-md-10 col-md-height">
+	        		<div class="col-xs-14 col-md-7 col-md-height">
 	        			<div class="inside inside-full-height">
 	        				<fieldset>
                                 <legend>{|Hinzuf&uuml;gen von Artikeln aus <a href="index.php?module=lieferschein&action=edit&id=[LIEFERSCHEIN_ID]"><b>Lieferschein [LIEFERSCHEIN]</b></a> zu Versandpaket <b>Nr. [ID]</b>|}</legend>
@@ -38,6 +38,56 @@
                                         </td>
                                         <td>
                                             <p id="restmenge" style="[ZOOMSTYLE]">[GESCANNTERARTIKELRESTMENGE]</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                        </div>
+               		</div>
+                    <div class="col-xs-14 col-md-3 col-md-height">
+	        			<div class="inside inside-full-height">
+	        				<fieldset>
+                                <legend>{|Gewichtsinformationen|}</legend>
+                                <table width="100%" border="0" class="mkTableFormular">
+                                    <tr>
+                                        <td colspan="2">
+                                            <h4>{|Dieses Paket|}</h4>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {|Gewicht|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" disabled value="[DIESESPAKETGEWICHT]">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <h4>{|Lieferschein [LIEFERSCHEIN]|}</h4>
+                                        </td>
+                                    </tr>
+                                        <td>
+                                            {|Bereits verpackt|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" disabled value="[PAKETEGEWICHT]">
+                                        </td>
+                                    </tr>
+                                    </tr>
+                                        <td>
+                                            {|Zu verpacken|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" disabled value="[RESTGEWICHT]">
+                                        </td>
+                                    </tr>
+                                    </tr>
+                                        <td>
+                                            {|Gesamt|}:
+                                        </td>
+                                        <td>
+                                            <input type="text" disabled value="[GESAMTGEWICHT]">
                                         </td>
                                     </tr>
                                 </table>

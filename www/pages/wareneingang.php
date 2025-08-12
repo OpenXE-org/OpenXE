@@ -1229,10 +1229,10 @@ class Wareneingang {
                  */
 
 
-                $heading = array('Pos.', 'Art.-Nummer', 'Beschreibung', 'Bestellung', 'Lieferant-Art.-Nr.', 'Menge','Standardlager', 'Bemerkung','Bearbeiter', '','','');
-                $width = array(  '1%',   '5%',          '30%',          '5%',         '5%',                 '5%',   '5%',            '15%',       '5%',        '1%','1%','1%');
+                $heading = array('Pos.', 'Art.-Nummer', 'Beschreibung', 'Bestellung', 'Lieferant-Art.-Nr.', 'Menge','Standardlager', 'Bemerkung','Bearbeiter', '', '','','');
+                $width = array(  '1%',   '5%',          '30%',          '5%',         '5%',                 '5%',   '5%',            '15%',       '5%'       ,'1%', '1%','1%','1%');
 
-                $findcols = array('p.pos', 'p.artikel', 'p.name', 'p.bestellbezug', 'p.lieferantnummer', 'p.menge', 'lagerplatz_bezeichnung', 'p.bemerkung','p.bearbeiter','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig');
+                $findcols = array('p.pos', 'p.artikel', 'p.name', 'p.bestellbezug', 'p.lieferantnummer', 'p.menge', 'lagerplatz_bezeichnung', 'p.bemerkung','p.bearbeiter','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
                 $alignright = array('5');
@@ -1246,12 +1246,27 @@ class Wareneingang {
                 $icon_lagerplatz_eingelagert = "<img src=\"./themes/new/images/lagerplatzgo.png\" title=\"Eingelagert\" style=\"margin-right:1px\" border=\"0\">";
                 $icon_kein_lagerartikel = "<img src=\"./themes/new/images/lagerplatz_grau.png\" title=\"Kein Lagerartikel\" style=\"margin-right:1px\" border=\"0\">";
 
-                $deletelink = array(
-                    "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=wareneingang&action=deletepos&id=",
+                $menu_link = array(
+                    "<table cellpadding=0 cellspacing=0><tr>",
+                    "<td nowrap>" . "<a href=\"index.php?module=wareneingang&action=deletepos&id=",
                     ['sql' => 'paketannahme'],
                     '&posid=',
                     ['sql' => 'paketdistribution.id'],
-                    "\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>&nbsp;</td></tr></table>"
+                    "\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>&nbsp;</td>",
+                    "</tr></table>"
+                );
+
+                $etiketten_link = array(
+                    "<table cellpadding=0 cellspacing=0><tr>",
+                    "<td nowrap>",
+                    "<img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\" title=\"Etiketten drucken\" onclick=\"var menge=prompt(\'Menge:\',",
+                    ['sql' => 'paketdistribution.menge'],
+                    ");",
+                    "if(menge > 0) window.location.href=\'index.php?module=wareneingang&action=etikettennachdrucken&posid=",
+                    ['sql' => 'paketdistribution.id'],
+                    "&menge=\'+menge;",
+                    "\"></td>",
+                    "</tr></table>"
                 );
 
                 $artikel_link = array(
@@ -1274,6 +1289,7 @@ class Wareneingang {
                             p.bemerkung,
                             p.bearbeiter,
                             p.icon,
+                            p.etiketten,
                             p.menu,
                             p.vorlaeufig
                         FROM
@@ -1314,7 +1330,8 @@ class Wareneingang {
                                         '</td></tr></table>'
                                     )
                                     AS icon,
-                                    if (paketdistribution.vorlaeufig,".$this->app->erp->ConcatSQL($deletelink).",'') as menu,
+                                    ".$this->app->erp->ConcatSQL($etiketten_link)." as etiketten,
+                                    if (paketdistribution.vorlaeufig,".$this->app->erp->ConcatSQL($menu_link).",'') as menu,
                                     paketdistribution.vorlaeufig
                                 FROM paketdistribution
                                 LEFT JOIN artikel ON artikel.id = paketdistribution.artikel
@@ -1491,6 +1508,8 @@ class Wareneingang {
 
         $this->app->ActionHandler("deletepos", "WareneingangPositionLoeschen");
         $this->app->ActionHandler("oeffnen", "WareneingangOeffnen");
+
+        $this->app->ActionHandler("etikettennachdrucken", "WareneingangEtikettenNachdrucken");
 
         $this->app->DefaultActionHandler("list");
         $this->app->erp->Headlines('Wareneingang');
@@ -2378,7 +2397,9 @@ class Wareneingang {
                         }
 
                         // Für Etiketten
-                        $positionen[] = array('artikel' => $artikel, 'menge' => $menge);
+                        if ($menge > 0) {
+                            $positionen[] = array('artikel' => $artikel, 'menge' => $menge);
+                        }
 
                     }
                 } // Artikelscan
@@ -4110,5 +4131,35 @@ class Wareneingang {
         $this->app->DB->Delete($sql);
         header('Location: index.php?module=wareneingang&wareneingang&action=distriinhalt&id='.$id);
     }
+
+    function WareneingangEtikettenNachdrucken() {
+        $posid = $this->app->Secure->GetGET('posid');
+        $menge = $this->app->Secure->GetGET('menge');
+
+        $painfo = $this->app->DB->SelectRow("SELECT pa.id, pa.projekt, pd.artikel FROM paketannahme pa INNER JOIN paketdistribution pd ON pd.paketannahme = pa.id WHERE pd.id = ".$posid." LIMIT 1");
+        $paketannahme = $painfo['id'];
+        $projekt = $painfo['projekt'];
+        $artikel = $painfo['artikel'];
+        $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
+        $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
+        $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+
+        $this->app->erp->EtikettenDrucker(
+            kennung:  $etikettart,
+            anzahl: $menge,
+            variables: array('artikel' => $artikel, 'menge' => $menge),
+            druckercode: $etikettendrucker,
+            tabelle: 'artikel',
+            id: $artikel
+        );
+
+        $msg .= '<div class="info">'.$menge.' Etiketten wurden gedruckt auf Drucker \''.$etikettendruckername.'\'</div>';
+        $this->app->Location->execute(
+            "index.php?module=wareneingang&action=distriinhalt&id=$paketannahme&msg=".$this->app->erp->base64_url_encode($msg)
+        );
+
+        $this->app->ExitXentral();
+    }
+
 }
 
