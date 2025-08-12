@@ -3235,27 +3235,29 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         // Check availability including reservations
         if ($doctype <> '')  {
 
-            $sql = "SELECT 
-                        artikel,
-                        SUM(if(!lp.autolagersperre,if($lagerwhere,menge,0),0)) AS autoversandmenge_lager,
-                        SUM(if(!lp.autolagersperre,menge,0)) AS autoversandmenge,
-                        SUM(if(lp.autolagersperre,menge,0)) AS nachschubmenge,
-                        SUM(menge) AS menge
-                    FROM
-                        lager_platz_inhalt lpi
-                    INNER JOIN
-                        lager_platz lp ON lp.id = lpi.lager_platz
-                    WHERE
-                        lp.sperrlager <> 1
-                            AND
-                        lp.kommissionierlager <> 1
-                            AND
-                        artikel IN (".implode(',',array_keys($items)).")
-                    GROUP BY
-                        artikel
-                    ";
+            if (!empty($items)) {
+                $sql = "SELECT 
+                            artikel,
+                            SUM(if(!lp.autolagersperre,if($lagerwhere,menge,0),0)) AS autoversandmenge_lager,
+                            SUM(if(!lp.autolagersperre,menge,0)) AS autoversandmenge,
+                            SUM(if(lp.autolagersperre,menge,0)) AS nachschubmenge,
+                            SUM(menge) AS menge
+                        FROM
+                            lager_platz_inhalt lpi
+                        INNER JOIN
+                            lager_platz lp ON lp.id = lpi.lager_platz
+                        WHERE
+                            lp.sperrlager <> 1
+                                AND
+                            lp.kommissionierlager <> 1
+                                AND
+                            artikel IN (".implode(',',array_keys($items)).")
+                        GROUP BY
+                            artikel
+                        ";
 
-            $artikel_im_lager = $this->app->DB->SelectArr($sql);
+                $artikel_im_lager = $this->app->DB->SelectArr($sql);
+            }
 
             $sql = "SELECT artikel, SUM(menge) AS menge FROM lager_reserviert WHERE objekt = '".$doctype."' AND parameter = ".$doctypeid." GROUP BY artikel";
             $artikel_reserviert_beleg = $this->app->DB->SelectArr($sql);
@@ -3415,7 +3417,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         $check = $this->app->DB->SelectRow($sql);
 
         if (!empty($check)) {
-            return($check[0]['k.id']);
+            return($check['id']);
         }
         else {
             return(0);

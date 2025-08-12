@@ -618,7 +618,6 @@ class Auftrag extends GenAuftrag
         a.zahlungsweise,
         ".$app->erp->FormatPreis("a.$summespalte",2).",
         CONCAT('<a href=\"index.php?module=kommissionierung&action=print&id=',(SELECT id FROM kommissionierung WHERE auftrag = a.id LIMIT 1),'\">',(SELECT id FROM kommissionierung WHERE auftrag = a.id LIMIT 1),'</a>') as kommissionierung,
-        (SELECT id FROM kommissionierung WHERE auftrag = a.id) as kommissionierung,
         (" . $this->app->YUI->IconsSQL() . ")  AS icons,
         a.id
         FROM
@@ -844,6 +843,7 @@ class Auftrag extends GenAuftrag
         auf.liefertermin_ok,
         auf.kreditlimit_ok,
         auf.liefersperre_ok,
+        auf.kommission_ok,
         auf.adresse,
    		CASE
                     WHEN auftrag_position.lieferdatum <> '0000-00-00' AND auftrag_position.lieferdatum > CURRENT_DATE THEN auftrag_position.lieferdatum
@@ -6738,6 +6738,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             INNER JOIN adresse ON adresse.id = auftrag.adresse
                             WHERE auftrag.id = '".$v."'"
                         );
+
+                        $check = $this->app->erp->GetAuftragKommissionierung($v);
 
                         if (!empty($this->app->erp->GetAuftragKommissionierung($v))) {
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$settings['belegnr']);
