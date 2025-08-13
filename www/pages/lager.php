@@ -150,9 +150,9 @@ class Lager extends GenLager {
 
         // headings
 
-        $heading = array('Bezeichnung', 'Nachschublager', 'Verbrauchslager','POS Lager', 'kein Auto-Versand','Volumen','Regalart','Kategorie','Kommissions- / Produktionslager','Sortierung','Men&uuml;');
+        $heading = array('Bezeichnung','Adresse', 'Nachschub', 'Kommissionierung','Sperrlager', 'Verbrauchslager','POS Lager','Volumen','Regalart','Kategorie','Sortierung','Men&uuml;');
         $width = array('15%', '10%', '10%','5%','5%','10%','10%','5%','10%','8%','1%');
-        $findcols = array('l.kurzbezeichnung', "IF(l.autolagersperre,'kein Versand aus diesem Lager','')", "IF(l.verbrauchslager,'ja','')","IF(l.poslager,'ja','')","IF(l.sperrlager,'ja','')",'breite','regalart','abckategorie','a.name','l.rownumber','id');
+        $findcols = array('l.kurzbezeichnung', 'a.name',"if(l.autolagersperre,'ja','')","if(l.kommissionierlager,'ja','')","if(l.sperrlager,'ja','')", "IF(l.verbrauchslager,'ja','')","IF(l.poslager,'ja','')",'breite','regalart','abckategorie','l.rownumber','id');
         $searchsql = array('l.kurzbezeichnung','regalart','abckategorie','a.name');
         $defaultorder = 4;
         $defaultorderdesc = 1;
@@ -160,14 +160,21 @@ class Lager extends GenLager {
         $menu = "<table><tr><td nowrap><a href=\"index.php?module=lager&action=platzeditpopup&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=deleteplatz&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=PrintDialog(\"index.php?module=lager&action=regaletiketten&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\"></a></td></tr></table>";
 
         // SQL statement
-        $sql = "SELECT SQL_CALC_FOUND_ROWS l.id,
-          l.kurzbezeichnung, if(l.autolagersperre,'kein Versand aus diesem Lager','') as autolagersperre,
-                if(l.verbrauchslager,'ja','') as verbrauchslager,
-                if(l.poslager,'ja','') as poslager,
-                if(l.sperrlager,'ja','') as sperrlager,
-                if(l.laenge!=0.0,CONCAT(l.laenge,'/',l.breite,'/',l.hoehe),'-') as volumen,
-                l.regalart,l.abckategorie, a.name, l.rownumber,
-                l.id as menu FROM lager_platz l LEFT JOIN adresse a ON a.id=l.adresse ";
+        $sql = "SELECT SQL_CALC_FOUND_ROWS
+                    l.id,
+                    l.kurzbezeichnung,
+                    a.name,
+                    if(l.autolagersperre,'ja','') as autolagersperre,
+                    if(l.kommissionierlager,'ja','') as kommissionierfrage,
+                    if(l.sperrlager,'ja','') as sperrlager,
+                    if(l.verbrauchslager,'ja','') as verbrauchslager,
+                    if(l.poslager,'ja','') as poslager,
+                    if(l.laenge!=0.0,CONCAT(l.laenge,'/',l.breite,'/',l.hoehe),'-') as volumen,
+                    l.regalart,
+                    l.abckategorie,
+                    l.rownumber,
+                    l.id as menu
+                FROM lager_platz l LEFT JOIN adresse a ON a.id=l.adresse ";
 
         $id = $app->Secure->GetGET('id');
 
@@ -4132,6 +4139,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
         $laenge=$this->app->Secure->GetPOST('laenge');
         $hoehe=$this->app->Secure->GetPOST('hoehe');
         $sperrlager=$this->app->Secure->GetPOST('sperrlager');
+        $kommissionierlager=$this->app->Secure->GetPOST('kommissionierlager');
         $poslager=$this->app->Secure->GetPOST('poslager');
         $abckategorie=$this->app->Secure->GetPOST('abckategorie');
         $regalart=$this->app->Secure->GetPOST('regalart');
@@ -4157,11 +4165,11 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $this->app->DB->Insert(
             sprintf(
               "INSERT INTO lager_platz
-                (lager,kurzbezeichnung,autolagersperre,verbrauchslager,sperrlager,
+                (lager,kurzbezeichnung,autolagersperre,verbrauchslager,sperrlager,kommissionierlager,
                  breite,laenge,hoehe,poslager,adresse,abckategorie,regalart,rownumber,allowproduction)
               VALUES
-                     (%d,'%s',%d,%d,%d,%f,%f,%f,%d,%d,'%s','%s', %d, %d)",
-              $id, $kurzbezeichnung, $autolagersperre,$verbrauchslager,$sperrlager,
+                     (%d,'%s',%d,%d,%d,%d,%f,%f,%f,%d,%d,'%s','%s', %d, %d)",
+              $id, $kurzbezeichnung, $autolagersperre,$verbrauchslager,$sperrlager,$kommissionierlager,
               $breite, $laenge, $hoehe,$poslager,$adresseid, $abckategorie,$regalart, $rownumber,$allowproduction
             )
           );
