@@ -4070,12 +4070,11 @@ class Wareneingang {
             if ($vorlage === 'bestellung') {
                 $vorlageid = $id;
                 $adresse = $this->app->DB->Select("SELECT adresse FROM bestellung WHERE id='$id' LIMIT 1");
-                $projekt = $this->app->DB->Select("SELECT projekt FROM bestellung WHERE id='$id' LIMIT 1");
+                $projekt = $this->app->erp->GetCreateProjekt($adresse);
             } else if ($vorlage === 'adresse') {
                 $adresse = $id;
                 $vorlageid = $adresse;
-                // standardprojekt von kunde
-                $projekt = $this->app->DB->Select("SELECT projekt FROM adresse WHERE id='$id' AND geloescht=0 LIMIT 1");
+                $projekt = $this->app->erp->GetCreateProjekt($adresse);
             } else {
                 $this->app->ExitXentral();
             }
