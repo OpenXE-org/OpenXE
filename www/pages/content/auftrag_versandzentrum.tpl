@@ -34,6 +34,13 @@
           </label>
           <label for="auftrag_lieferdatum">{|inkl. Auftr&auml;ge mit zukünftigem Lieferdatum|}</label>
         </li>
+        <li class="filter-item">
+          <label for="auftrag_kommissionierte" class="switch">
+            <input type="checkbox" id="auftrag_kommissionierte">
+            <span class="slider round"></span>
+          </label>
+          <label for="auftrag_kommissionierte">{|nur kommissionierte|}</label>
+        </li>
       </ul>
     </div>
   </div>

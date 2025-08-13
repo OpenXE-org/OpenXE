@@ -635,8 +635,9 @@ class Auftrag extends GenAuftrag
         $this->app->Tpl->Add('JQUERYREADY', "$('#fastlane').click( function() { fnFilterColumn1( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_kundemehrereauftraege').click( function() { fnFilterColumn2( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_lieferdatum').click( function() { fnFilterColumn3( 0 ); } );");
+        $this->app->Tpl->Add('JQUERYREADY', "$('#auftrag_kommissionierte').click( function() { fnFilterColumn4( 0 ); } );");
 
-        for ($r = 1;$r <= 3;$r++) {
+        for ($r = 1;$r <= 4;$r++) {
           $this->app->Tpl->Add('JAVASCRIPT', '
                                  function fnFilterColumn' . $r . ' ( i )
                                  {
@@ -655,11 +656,13 @@ class Auftrag extends GenAuftrag
         }
 
         $more_data1 = $this->app->Secure->GetGET("more_data1");
-
         if ($more_data1 == 1) {
            $where .= " AND a.fastlane=1";
         } else {
         }
+
+        $more_data2 = $this->app->Secure->GetGET("more_data2");
+        if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
 
         $more_data3 = $this->app->Secure->GetGET("more_data3");
         if ($more_data3 == 1) {
@@ -667,10 +670,13 @@ class Auftrag extends GenAuftrag
         else {
           $where .= " AND a.liefertermin_ok=1";
         }
+        $more_data4 = $this->app->Secure->GetGET("more_data4");
+        if ($more_data4 == 1) {
+          $where .= " AND a.kommission_ok=1";
+        }
+        else {
 
-        $more_data2 = $this->app->Secure->GetGET("more_data2");
-        if ($more_data2 == 1) $where .= " AND a.adresse in (SELECT adresse FROM `auftrag` a WHERE ".$where." GROUP BY adresse HAVING count(id) > 1)"; // More than 1 order per address
-
+        }
        // END Toggle filters
 
         $menu .= "<a href=\"index.php?module=auftrag&action=edit&id=%value%\">";
