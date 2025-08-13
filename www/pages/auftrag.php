@@ -5094,6 +5094,7 @@ class Auftrag extends GenAuftrag
     $zahlungszieltage= $orderRow['zahlungszieltage'];//$this->app->DB->Select("SELECT zahlungszieltage FROM auftrag WHERE id='$id' LIMIT 1");
 
     $status= $orderRow['status'];//$this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
+    $kommissioniert = $orderRow['kommission_ok'];
     $schreibschutz= $orderRow['schreibschutz'] || $orderRow['kommission_ok'];
 
     $adresse= $orderRow['adresse'];//$this->app->DB->Select("SELECT adresse FROM auftrag WHERE id='$id' LIMIT 1");
@@ -5266,21 +5267,26 @@ class Auftrag extends GenAuftrag
       }
 
       $projekt = $this->app->DB->Select("SELECT projekt from auftrag where id = '$id' LIMIT 1");
-    if($schreibschutz=='1' && $this->app->erp->RechteVorhanden('auftrag','schreibschutz')) {
-      $this->app->Tpl->Add(
-        'MESSAGE',
-        "<div class=\"warning\">Dieser Auftrag ist schreibgesch&uuml;tzt und darf daher nicht bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diesen Auftrag wirklich entfernt werden?')) return false;else window.location.href='index.php?module=auftrag&action=schreibschutz&id=$id';\">&nbsp;$optional</div>"
-      );
-      //      $this->app->erp->CommonReadonly();
+
+    if ($kommissioniert) {
+        $this->app->Tpl->AddMessage('warning',"Dieser Auftrag ist kommissioniert und darf daher nicht bearbeitet werden!");
+    } else {
+        if ($schreibschutz=='1' && $this->app->erp->RechteVorhanden('auftrag','schreibschutz')) {
+          $this->app->Tpl->Add(
+            'MESSAGE',
+            "<div class=\"warning\">Dieser Auftrag ist schreibgesch&uuml;tzt und darf daher nicht bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diesen Auftrag wirklich entfernt werden?')) return false;else window.location.href='index.php?module=auftrag&action=schreibschutz&id=$id';\">&nbsp;$optional</div>"
+          );
+        }
+        else {
+            if(isset($optional) && (string)$optional !== '') {
+                $this->app->Tpl->Add(
+                    'MESSAGE',
+                    "<div class=\"warning\">Zu diesem Auftrag gibt es folgende Dokumente. &nbsp;$optional</div>"
+                );
+            }
+        }
     }
-    else {
-      if(isset($optional) && (string)$optional !== '') {
-        $this->app->Tpl->Add(
-          'MESSAGE',
-          "<div class=\"warning\">Zu diesem Auftrag gibt es folgende Dokumente. &nbsp;$optional</div>"
-        );
-      }
-    }
+
     if($schreibschutz=='1') {
       $this->app->erp->CommonReadonly();
     }
