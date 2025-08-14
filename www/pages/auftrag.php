@@ -6728,11 +6728,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                 $kommissionierlagerplatz = $this->app->Secure->GetPOST('kommissionierlagerplatz');
                 $kommissionierlagerplatz = $this->app->erp->ReplaceLagerPlatz(true,$kommissionierlagerplatz,true); // Parameters: Target db?, value, from form?
 
-                if(empty($kommissionierlagerplatz)) {
-                    $this->app->Tpl->addMessage('error',"Kein Kommissionierlagerplatz angegeben");
-                    break;
-                }
-
                 if (!empty($auftraegemarkiert)) {
                     foreach ($auftraegemarkiert as $k => $v) {
 
@@ -6757,6 +6752,16 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$settings['belegnr']);
                         } else {
 
+                            $kommissionierlagerplatz_auftrag = $kommissionierlagerplatz;
+
+                            if (empty($kommissionierlagerplatz)) {
+                                $kommissionierlagerplatz_auftrag = $this->app->erp->Projektdaten($settings['projekt'],'standardkommissionierlagerplatz');
+                                if (empty($kommissionierlagerplatz_auftrag)) {
+                                    $msg .= '<div class="error">Kein Kommissionierlagerplatz f&uuml;r Auftrag '.$settings['belegnr']."!</div>";
+                                    continue;
+                                }
+                            }
+
                             $kid = $this->app->erp->GetNextKommissionierung();
 
                             $auslagernresult =
@@ -6773,7 +6778,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 throw new exception("Lagervorgang fehlgeschlagen");
                             }
 
-                            $lagerplatz = $this->app->DB->SelectRow("SELECT kurzbezeichnung, lager FROM lager_platz WHERE id = ".$kommissionierlagerplatz);
+                            $lagerplatz = $this->app->DB->SelectRow("SELECT kurzbezeichnung, lager FROM lager_platz WHERE id = ".$kommissionierlagerplatz_auftrag);
                             $this->app->erp->AuftragProtokoll($v,'Auftrag kommissioniert in '.$lagerplatz['kurzbezeichnung']);
                             $this->app->DB->Update("UPDATE auftrag SET standardlager = ".$lagerplatz['lager']." WHERE id = ".$v);
 
@@ -6785,7 +6790,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 lieferschein: 0,
                                 ausgelagert: false,
                                 lagerplatzliste: $auslagernresult,
-                                ziellagerplatz: $kommissionierlagerplatz?$kommissionierlagerplatz:null,
+                                ziellagerplatz: $kommissionierlagerplatz_auftrag,
                                 mengedruck: $settings['autodruckkommissionierscheinstufe1']?$settings['autodruckkommissionierscheinstufe1menge']:0,
                                 druckercode: $druckercode,
                                 kommentar: "Kommissioniert in ".$lagerplatz['kurzbezeichnung']);
@@ -6878,6 +6883,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
 	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
     $this->app->YUI->AutoComplete("kommissionierlagerplatz", "kommissionierlagerplatz");
+
+    if ($msg) {
+        $this->app->Tpl->Add("MESSAGE",$msg);
+    }
 
     $this->app->YUI->TableSearch('TAB1','auftraegeoffeneauto', 'show','','',basename(__FILE__), __CLASS__);
     $this->app->YUI->TableSearch('TAB2','auftraegeoffeneautowartend', 'show','','',basename(__FILE__), __CLASS__);
