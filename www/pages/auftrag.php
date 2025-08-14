@@ -6531,8 +6531,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->AuftraguebersichtMenu();
     $targetMessage = 'AUTOVERSANDBERECHNEN';
 
-    $this->app->Tpl->Add('MESSAGE','<div class="info">Auftr&auml;ge an Versand übergeben mit automatischem Druck und Mailversand. <a class="button" href="index.php?module=versandpakete&action=lieferungen">Zum Versand</a></div>');
-
     $autoshipmentEnabled = true;
     $this->app->erp->RunHook('OrderAutoShipment', 2, $targetMessage, $autoshipmentEnabled);
 
@@ -6576,13 +6574,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       }
     }
 
-    if($this->app->Secure->GetPOST('ausfuehren')){
+    if ($submit) {
 
-      $drucker = $this->app->Secure->GetPOST('seldruckerversand');
-      $aktion = $this->app->Secure->GetPOST('auftrag_versandauswahl');
-//      $auftraegemarkiert = $this->app->Secure->GetPOST('auftraegemarkiert');
       $auftraegemarkiert = $this->app->Secure->GetPOST('auswahl');
-      $bezeichnung = (string)$this->app->Secure->GetPOST('bezeichnung');
 
       $selectedIds = [];
       if(!empty($auftraegemarkiert)) {
@@ -6592,13 +6586,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $selectedIds[] = $selectedId;
           }
         }
-      }
-      if($drucker > 0) {
-        $this->app->erp->BriefpapierHintergrundDisable($drucker);
-      }
-      if(is_array($auftraegemarkiert)){
+      }      
 
-        switch($aktion){
+      if (is_array($auftraegemarkiert)) {
+
+        switch($submit){
           case 'versandstarten':
 
           /*
@@ -6685,9 +6677,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                   if($this->AuftragVersand($auftrag, true)) {
                     $processed_orders_num++;
                   }
-                }
-                $this->app->Tpl->Set('MESSAGE','<div class="info">'.$processed_orders_num.' Auftr&auml;ge wurden verarbeitet.</div>');
+                }                
               }
+
+              $this->app->Tpl->Set('MESSAGE','<div class="info">'.$processed_orders_num.' Auftr&auml;ge wurden verarbeitet.</div>');
+
             }
           break;
           case 'drucken':
@@ -6749,7 +6743,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         $check = $this->app->erp->GetAuftragKommissionierung($v);
 
                         if (!empty($this->app->erp->GetAuftragKommissionierung($v))) {
-                            $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$settings['belegnr']);
+                            $bereits_kommissioniert[] = $settings['belegnr'];
                         } else {
 
                             $kommissionierlagerplatz_auftrag = $kommissionierlagerplatz;
@@ -6757,7 +6751,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                             if (empty($kommissionierlagerplatz)) {
                                 $kommissionierlagerplatz_auftrag = $this->app->erp->Projektdaten($settings['projekt'],'standardkommissionierlagerplatz');
                                 if (empty($kommissionierlagerplatz_auftrag)) {
-                                    $msg .= '<div class="error">Kein Kommissionierlagerplatz f&uuml;r Auftrag '.$settings['belegnr']."!</div>";
+                                    $kein_kommissionierlagerplatz[] = $settings['belegnr'];
                                     continue;
                                 }
                             }
@@ -6797,9 +6791,20 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         }
                         $this->Kommissionieren_etiketten_drucken($v);
                     }
+
+                    if (!empty($kein_kommissionierlagerplatz)) {
+                        $this->app->Tpl->AddMessage('error', 'Kein Kommissionierlagerplatz angegeben: '.implode(', ', $kein_kommissionierlagerplatz));
+                    }
+
+                    if (!empty($bereits_kommissioniert)) {
+                        $this->app->Tpl->AddMessage('info', 'Bereits Kommissioniert: '.implode(', ', $bereits_kommissioniert));
+                    }
                 }
             break;
         }
+      }
+      else {
+        $this->app->Tpl->AddMessage('error','Keine Auftr&auml;ge markiert!');
       }
     }
 
@@ -6863,23 +6868,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $this->app->Tpl->Parse('PAGE','auftraguebersicht.tpl');
       return;
     }
-//    if($this->app->erp->RechteVorhanden('auftrag','berechnen'))
-    {
-      $this->app->Tpl->Set('AUTOBERECHNEN','<input type="button" class="btnGreen" value="Auto-Versand berechnen" onclick="window.location.href=\'index.php?module=auftrag&action=berechnen\'">');
-//    }else{
-//      $this->app->Tpl->Set('AUTOBERECHNEN2','');
-    }
-    $infolink = '<a href="https://xentral.biz/helpdesk/kurzanleitung-ablauf-des-versands-von-auftraegen#nav-autoversand-mit-prozessstarter-berechnen" target="_blank">(Information)</a>';
-
-/*
-    $last_order_calc = $this->app->erp->GetKonfiguration('last_order_calc');
-    if(!empty($last_order_calc)) {
-      $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln war am '.$last_order_calc.'. '.$infolink.' [AUTOBERECHNEN]</div>');
-    }
-    else{
-      $this->app->Tpl->Add('AUTOVERSANDBERECHNEN','<div class="info">Die letzte Berechnung der Auftragsampeln wurde noch nicht ermittelt. '.$infolink.' [AUTOBERECHNEN]</div>');
-    }
-*/
 
 	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
     $this->app->YUI->AutoComplete("kommissionierlagerplatz", "kommissionierlagerplatz");
