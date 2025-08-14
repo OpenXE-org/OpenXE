@@ -1101,6 +1101,25 @@ class Versandpakete {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
 
+        $sql = "SELECT
+                    GROUP_CONCAT(DISTINCT lp.kurzbezeichnung SEPARATOR ', ') kurzbezeichnung
+                FROM 
+                    lieferschein l
+                INNER JOIN auftrag a ON l.auftragid = a.id
+                INNER JOIN kommissionierung k ON k.auftrag = a.id
+                INNER JOIN kommissionierung_position ksp ON ksp.kommissionierung = k.id
+                INNER JOIN lager_platz lp ON lp.id = ksp.ziel_lager_platz
+                WHERE l.id = ".$lieferschein;
+
+        $kommissionierlagerplaetze = $this->app->DB->Select($sql);
+        if (!empty($kommissionierlagerplaetze)) {
+            $this->app->Tpl->Set('SCANFELD', 'Artikel oder Lagerplatz');
+        } else {
+            $this->app->Tpl->Set('SCANFELD', 'Artikel');
+        }
+                
+        $this->app->Tpl->Set('KOMMISSIONIERUNGINFO', $kommissionierlagerplaetze);
+
         $this->app->YUI->TableSearch('LIEFERSCHEININHALT', 'versandpakete_lieferschein_paket_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->YUI->TableSearch('PAKETINHALT', 'versandpakete_paketinhalt_list', "show", "", "", basename(__FILE__), __CLASS__);
 
