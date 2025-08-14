@@ -1,13 +1,12 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Exception;
 
+/**
+ * @deprecated Since 2.61.0 - This exception will be removed in 3.0
+ *
+ * @final
+ */
 class InvalidMagicMimeFileException extends InvalidArgumentException
 {
 }
