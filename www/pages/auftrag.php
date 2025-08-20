@@ -594,13 +594,18 @@ class Auftrag extends GenAuftrag
         $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
         $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Kommissionierung', 'Gewicht','Monitor','Men&uuml;');
+        $spalte_kommissionierung = "(SELECT id FROM kommissionierung WHERE auftrag = a.id)";
+        $spalte_gewicht = "(SELECT TRIM(ROUND(SUM(art.gewicht * kp.menge),3))+0 FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN artikel art ON art.id = kp.artikel WHERE k.auftrag = a.id LIMIT 1)";
+        $spalte_lager_plaetze = "(SELECT GROUP_CONCAT(lp.kurzbezeichnung SEPARATOR ', ') FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN lager_platz lp ON lp.id = kp.ziel_lager_platz WHERE k.auftrag = a.id)";
+
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Komm.','Lagerpl&auml;tze', 'Gewicht','Monitor','Men&uuml;');
         $width = array('1%','1%','1%',     '10%', '10%',     '27%', '10%',         '5%',  '5%',      '1%',      '1%',             '1%',              '1%');
-        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme','(SELECT id FROM kommissionierung WHERE auftrag = a.id)','(SELECT TRIM(ROUND(SUM(art.gewicht * kp.menge),3))+0 FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN artikel art ON art.id = kp.artikel WHERE k.auftrag = a.id LIMIT 1)','id','id');
+        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme',$spalte_kommissionierung,$spalte_lager_plaetze,$spalte_gewicht,'id','id');
 
         $defaultorder = 1;
         $defaultorderdesc = 0;
-        $alignright = array(11,12,13);
+        $alignright = array(11,12,14);
+        $aligncenter = array(12,13);
 
         $menu = "";
 
@@ -617,8 +622,9 @@ class Auftrag extends GenAuftrag
         p.abkuerzung,
         a.zahlungsweise,
         ".$app->erp->FormatPreis("a.$summespalte",2).",
-        CONCAT('<a href=\"index.php?module=kommissionierung&action=print&id=',(SELECT id FROM kommissionierung WHERE auftrag = a.id LIMIT 1),'\">',(SELECT id FROM kommissionierung WHERE auftrag = a.id LIMIT 1),'</a>') as kommissionierung,
-        (SELECT TRIM(ROUND(SUM(art.gewicht * kp.menge),3))+0 FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN artikel art ON art.id = kp.artikel WHERE k.auftrag = a.id LIMIT 1),
+        CONCAT('<a href=\"index.php?module=kommissionierung&action=print&id=',".$spalte_kommissionierung.",'\">',".$spalte_kommissionierung.",'</a>') as kommissionierung,
+        ".$spalte_lager_plaetze.",
+        ".$spalte_gewicht.",
         (" . $this->app->YUI->IconsSQL() . ")  AS icons,
         a.id
         FROM
