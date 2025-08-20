@@ -7595,8 +7595,8 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
         // Kommissionierschein
         if ($mengedruck > 0) {
-            $this->app->erp->BriefpapierHintergrunddisable = true; // Disable background
-            $Brief = new KommissionierungPDF($this->app, styleData: array('ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
+//            $this->app->erp->BriefpapierHintergrunddisable = true; // Disable background
+            $Brief = new KommissionierungPDF($this->app, styleData: array('mit_gewicht' => true, 'ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
             $Brief->GetKommissionierung($kommissionierung);
             $tmpfile = $Brief->displayTMP();
             for($drucklauf = 0; $drucklauf < $mengedruck;$drucklauf++) {
