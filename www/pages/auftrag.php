@@ -3173,6 +3173,10 @@ class Auftrag extends GenAuftrag
             $table = new EasyTable($this->app);
             foreach ($lagercheck['items'] as $artikelid => $item) {
 
+                if (strlen($item['artikel_name']) > 50) {
+                    $item['artikel_name'] = substr($item['artikel_name'],0,50)."...";
+                }
+
                 if ($item['menge'] <= $item['lagermenge_verfuegbar']) {
                     $mengefeld = $item['lagermenge_verfuegbar']+0;
                 } else {
