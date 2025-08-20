@@ -594,13 +594,13 @@ class Auftrag extends GenAuftrag
         $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
         $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Kommissionierung','Monitor','Men&uuml;');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Kommissionierung', 'Gewicht','Monitor','Men&uuml;');
         $width = array('1%','1%','1%',     '10%', '10%',     '27%', '10%',         '5%',  '5%',      '1%',      '1%',             '1%',              '1%');
-        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme','(SELECT id FROM kommissionierung WHERE auftrag = a.id)');
+        $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme','(SELECT id FROM kommissionierung WHERE auftrag = a.id)','(SELECT TRIM(ROUND(SUM(art.gewicht * kp.menge),3))+0 FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN artikel art ON art.id = kp.artikel WHERE k.auftrag = a.id LIMIT 1)','id','id');
 
         $defaultorder = 1;
         $defaultorderdesc = 0;
-        $alignright = array(11,12);
+        $alignright = array(11,12,13);
 
         $menu = "";
 
@@ -618,6 +618,7 @@ class Auftrag extends GenAuftrag
         a.zahlungsweise,
         ".$app->erp->FormatPreis("a.$summespalte",2).",
         CONCAT('<a href=\"index.php?module=kommissionierung&action=print&id=',(SELECT id FROM kommissionierung WHERE auftrag = a.id LIMIT 1),'\">',(SELECT id FROM kommissionierung WHERE auftrag = a.id LIMIT 1),'</a>') as kommissionierung,
+        (SELECT TRIM(ROUND(SUM(art.gewicht * kp.menge),3))+0 FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN artikel art ON art.id = kp.artikel WHERE k.auftrag = a.id LIMIT 1),
         (" . $this->app->YUI->IconsSQL() . ")  AS icons,
         a.id
         FROM
@@ -684,7 +685,7 @@ class Auftrag extends GenAuftrag
         $menu .= "</a>";
 
         $moreinfo = true; // Minidetail active
-        $menucol = 13; // For minidetail
+        $menucol = 14; // For minidetail
 
         break;
         case 'auftraegeoffeneautowartend':
