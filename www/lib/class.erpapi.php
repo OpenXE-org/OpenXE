@@ -25726,9 +25726,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['proformarechnung_lieferschein_anzahl']['deutsch'] = "Lieferschein Anzahl: {ANZAHL}";
     $uebersetzung['proformarechnung_ohnezolltarifnummer']['deutsch'] = "Ohne Zolltarifnummer";
 
-
-
-
     $uebersetzung['dokument_zahlungserinnerung']['deutsch'] = "Zahlungserinnerung";
 
     $uebersetzung['mahnwesen_betreff']['deutsch'] = "Buchhaltung: Ihre offene Rechnung";
@@ -25740,6 +25737,9 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
     $uebersetzung['zahlung_proformarechnung_sofort_de']['deutsch'] = "Proformarechnung zahlbar sofort";
     $uebersetzung['zahlung_auftrag_sofort_de']['deutsch'] = "Rechnung zahlbar sofort";
+
+    $uebersetzung['dokument_versandpaketschein']['deutsch'] = "Paketschein";
+    $uebersetzung['dokument_referenz']['deutsch'] = "Referenz";
 
     for($ifreifeld=1;$ifreifeld<=40;$ifreifeld++)
     {
@@ -25791,14 +25791,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $uebersetzung['freitext2inhalt']['englisch'] = '';
     }
 
-
     if($getvars) return $uebersetzung;
-
-
-
-    if(isset($uebersetzung[$field][$sprache]))
-      return $uebersetzung[$field][$sprache];
-
+    if(isset($uebersetzung[$field][$sprache])) {
+        return $uebersetzung[$field][$sprache];
+    }
     return "";
   }
 
@@ -25847,11 +25843,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $this->beschriftung_sprache = 'deutsch';
     } 
 
-  // wenn feld mit artikel_freifeld beginnt dann freifeld draus machen
-  //$field = str_replace('artikel_freifeld','freifeld',$field);
-
     // schaue ob es das wort in uebesetzungen gibt
-
     $check = $this->getUebersetzung($field, $this->beschriftung_sprache);
     $uebersetzung = '';
     if($check > 0){

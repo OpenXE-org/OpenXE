@@ -118,6 +118,7 @@
                                     <tr [LIEFERSCHEIN_ADD_POS_HIDDEN]><td><button form="add" name="submit" value="lieferschein_komplett_hinzufuegen" class="ui-button-icon" style="width:100%;">Alle Artikel hinzuf&uuml;gen</button></td></tr>
                                     <tr><td><button form="save" name="submit" value="lieferscheinedrucken" class="ui-button-icon" style="width:100%;">Lieferscheine drucken</button></td></tr>
                                     <tr [PAKETMARKE_ADD_HIDDEN]><td><button form="paketmarke" name="submit" value="paketmarke" class="ui-button-icon" style="width:100%;">Paketmarke drucken</button></td></tr>
+                                    <tr [PAKETSCHEINDRUCKEN_HIDDEN]><td><button name="submit" value="paketscheindrucken" class="ui-button-icon" style="width:100%;">Paketschein drucken</button></td></tr>
                                     <tr [ABSENDEN_HIDDEN]><td><button name="submit" value="absenden" class="ui-button-icon" style="width:100%;">Absenden</button></td></tr>
                                     <tr [ABSCHLIESSEN_HIDDEN]><td><button name="submit" value="abschliessen" class="ui-button-icon" style="width:100%;">Abschlie&szlig;en</button></td></tr>
                                 </table>

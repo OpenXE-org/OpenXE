@@ -2680,12 +2680,19 @@ class Briefpapier extends SuperFPDF {
     else {
       $this->Ln(8);
     }
-    $tabellenbeschriftung  = $this->getStyleElement('tabellenbeschriftung');
+    $tabellenbeschriftung = $this->getStyleElement('tabellenbeschriftung');
 
     $this->SetX($this->getStyleElement('abstand_seitenrandlinks')+1); // eventuell einstellbar per GUI
 
     $this->SetFont($this->GetFont(),'B',$tabellenbeschriftung);
     $this->Cell_typed($posWidth,6,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_position'),0,0,'C'));
+
+    if ($this->doctype=='versandpaketschein')
+    {
+        $descWidth -= $itemNoWidth;
+        $this->Cell_typed($itemNoWidth,6,$this->app->erp->ParseUserVars($this->doctype, $this->id,$this->app->erp->ReadyForPDF($this->app->erp->Beschriftung('dokument_referenz'))));
+    }
+
     if($this->doctype!='arbeitsnachweis')
     {
       if($this->doctype=='zahlungsavis')
@@ -2795,7 +2802,7 @@ class Briefpapier extends SuperFPDF {
     $anzeigeBelegNettoAdrese = $this->app->erp->AnzeigeBelegNettoAdresse($this->anrede, $this->doctype, $projekt, $adresse,$this->id);
     $docRow = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT * FROM `%s` WHERE id = %d', $this->doctype, $this->id
+        'SELECT * FROM `%s` WHERE id = %d', $this->table, $this->id
       )
     );
     foreach($this->items as $item){
@@ -2823,6 +2830,7 @@ class Briefpapier extends SuperFPDF {
       $item['artikelnummerkunde'] = $this->app->erp->ReadyForPDF($item['artikelnummerkunde']);
       $item['lieferdatum'] = $this->app->erp->ReadyForPDF($item['lieferdatum']);
       $item['hersteller'] = $this->app->erp->ReadyForPDF($item['hersteller']);
+      $item['ihrebestellnummer'] = $this->app->erp->ReadyForPDF($item['ihrebestellnummer']);
 
       //TODO Soll einstellbar werden: Zeilenabstand in Tabelle normal mittel
       $cellhoehe  = 3;
@@ -2864,6 +2872,17 @@ class Briefpapier extends SuperFPDF {
       $oldpostr = $posstr;
       $oldlvl = isset($item['lvl'])?(int)$item['lvl']:0;
       $this->Cell_typed($posWidth,$cellhoehe,$posstr,0,0,$belege_stuecklisteneinrueckenmm?'':'C');
+
+        if ($this->doctype=='versandpaketschein')
+        {
+            $this->Cell_typed(
+                $itemNoWidth,
+                $cellhoehe,
+                $item['ihrebestellnummer']?$item['ihrebestellnummer']:$item['auftrag'],
+                0
+            );
+        }
+
       //artikelnummer
       if($this->doctype==='arbeitsnachweis')
       {

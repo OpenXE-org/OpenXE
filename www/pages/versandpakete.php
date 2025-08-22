@@ -715,6 +715,22 @@ class Versandpakete {
                 }
 
             break;
+            case 'paketscheindrucken':
+
+                $sql = "SELECT DISTINCT lieferschein FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") tmp WHERE versandpaket = ".$id." LIMIT 1";
+                $lieferschein = $this->app->DB->SelectRow($sql);
+                $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = ".$lieferschein['lieferschein']);
+                $Brief = new VersandpaketscheinPDF(
+                    $this->app,
+                    $projekt,
+                    styleData: array('mit_gewicht' => true,'ohne_steuer' => true, 'artikeleinheit' => false, 'preise_ausblenden' => true)
+                );
+                $Brief->GetVersandpaketschein($id);
+                $tmpfile = $Brief->displayTMP();
+                $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
+                $this->app->printer->Drucken($druckercode,$tmpfile);
+
+            break;
         }
 
         // Load values again from database
