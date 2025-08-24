@@ -145,7 +145,7 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
             lp.nummer,
             lp.bezeichnung bezeichnung,
             TRIM(vlp.menge)+0 menge,
-            '' gewicht,
+            a.gewicht,
             lp.artikelnummerkunde,            
             '' as datum
         FROM
@@ -156,17 +156,18 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
             lieferschein_position lp ON vlp.lieferschein_position = lp.id
         INNER JOIN
             lieferschein l ON lp.lieferschein = l.id
+        INNER JOIN
+            artikel a ON lp.artikel = a.id
         LEFT JOIN
             auftrag auf ON l.auftragid = auf.id
         WHERE vp.id = ".$id
     );
 
-    print_r($artikel); exit();
-
     foreach($artikel as $key=>$value) {
         $this->addItem(array(
               'belegposition'=>$value['id'],
               'amount'=>$value['menge'],
+              'gewicht'=>$value['gewicht'],
               'lvl'=>$value['lvl'],
               'itemno'=>$value['nummer'],
               'pos_id'=>$value['id'],
@@ -233,6 +234,9 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
     if (!empty($data['versandpaketnummer'])) {
         $corrDetails['Paketnummer'] = $data['versandpaketnummer'];
     }   
+    if (!empty($data['gewicht'])) {
+        $corrDetails['Gewicht'] = $data['gewicht'];
+    }
     if (!empty($data['versandart'])) {
         $corrDetails['Versandart'] = $data['versandart'];
     }
