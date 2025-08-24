@@ -2875,12 +2875,15 @@ class Briefpapier extends SuperFPDF {
 
         if ($this->doctype=='versandpaketschein')
         {
-            $this->Cell_typed(
+            $tmpy = $this->GetY();
+            $tmpx = $this->GetX();
+            $this->MultiCell(
                 $itemNoWidth,
                 $cellhoehe,
-                $item['ihrebestellnummer']?$item['ihrebestellnummer']:$item['auftrag'],
+                $item['ihrebestellnummer']?$item['ihrebestellnummer']."\n".$item['auftrag']:$item['auftrag'],
                 0
             );
+            $this->SetXY($tmpx+$itemNoWidth,$tmpy);
         }
 
       //artikelnummer
