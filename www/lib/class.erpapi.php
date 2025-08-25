@@ -5691,6 +5691,14 @@ title: 'Abschicken',
     }
   }
 
+    // @refactor in Etiketten Modul
+    function VersandpaketscheinPositionenDrucken($versandpaketschein) {
+        /** @var Etiketten $obj */
+        $obj = $this->LoadModul('etiketten');
+        if(!empty($obj) && method_exists($obj, 'VersandpaketscheinPositionenDrucken')) {
+            $obj->VersandpaketscheinPositionenDrucken($versandpaketschein);
+        }
+    }
 
   // @refactor Document Komponente
   function MessageHandlerStandardForm()

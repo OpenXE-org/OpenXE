@@ -731,6 +731,11 @@ class Versandpakete {
                 $this->app->printer->Drucken($druckercode,$tmpfile);
 
             break;
+            case 'paketscheinetikettendrucken':
+            {
+                $this->app->erp->VersandpaketscheinPositionenDrucken($id);
+            }
+            break;
         }
 
         // Load values again from database
