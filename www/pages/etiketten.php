@@ -146,7 +146,8 @@ class Etiketten extends GenEtiketten {
           INNER JOIN lieferschein AS l ON lp.lieferschein = l.id
           LEFT JOIN auftrag a ON l.auftragid = a.id
           LEFT JOIN artikel AS art ON lp.artikel = art.id          
-          WHERE lp.lieferschein= %d ORDER BY %s',
+          WHERE lp.lieferschein= %d AND art.porto <> 1
+          ORDER BY %s',
         (int)$lieferschein, $etiketten_sort == 1?'lp.lagertext':'lp.sort'
       )
     );
@@ -248,7 +249,7 @@ class Etiketten extends GenEtiketten {
             artikel art ON lp.artikel = art.id
         LEFT JOIN
             auftrag a ON l.auftragid = a.id
-        WHERE vp.id = ".$versandpaketschein;
+        WHERE art.porto <> 1 AND vp.id = ".$versandpaketschein;
 
     $artikel = $this->app->DB->SelectArr($sql);
 
