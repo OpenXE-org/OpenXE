@@ -86,6 +86,14 @@ abstract class Versanddienstleister
 
       $ret['contact_name'] = $docArr['ansprechpartner'];
       
+      // Force contact_name
+      if (empty($ret['contact_name'])) {
+        $ret['contact_name'] = $docArr['abteilung'];
+        if (empty($ret['contact_name'])) {
+          $ret['contact_name'] = $ret['company_name'];
+        }
+      }
+
       $ret['company_division'] = join(
                         ';', 
                         array_filter(
@@ -380,7 +388,7 @@ abstract class Versanddienstleister
   public function Paketmarke(string $target, string $docType, int $docId, $gewicht = 0, $versandpaket = null): void
   {
     $address = $this->GetAdressdaten($docId, $docType);
-    $address['weight'] = $gewicht;
+    $address['weight'] = $gewicht;   
 
     if (isset($_SERVER['CONTENT_TYPE']) && ($_SERVER['CONTENT_TYPE'] === 'application/json')) {
       $json = json_decode(file_get_contents('php://input'));
