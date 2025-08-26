@@ -596,7 +596,7 @@ class Auftrag extends GenAuftrag
 
         $spalte_kommissionierung = "(SELECT id FROM kommissionierung WHERE auftrag = a.id)";
         $spalte_gewicht = "(SELECT TRIM(ROUND(SUM(art.gewicht * kp.menge),3))+0 FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN artikel art ON art.id = kp.artikel WHERE k.auftrag = a.id LIMIT 1)";
-        $spalte_lager_plaetze = "(SELECT GROUP_CONCAT(lp.kurzbezeichnung SEPARATOR ', ') FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN lager_platz lp ON lp.id = kp.ziel_lager_platz WHERE k.auftrag = a.id)";
+        $spalte_lager_plaetze = "(SELECT GROUP_CONCAT(DISTINCT lp.kurzbezeichnung SEPARATOR ', ') FROM kommissionierung k INNER JOIN kommissionierung_position kp ON k.id = kp.kommissionierung INNER JOIN lager_platz lp ON lp.id = kp.ziel_lager_platz WHERE k.auftrag = a.id)";
 
         $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Komm.','Lagerpl&auml;tze', 'Gewicht','Monitor','Men&uuml;');
         $width = array('1%','1%','1%',     '10%', '10%',     '27%', '10%',         '5%',  '5%',      '1%',      '1%',             '1%',              '1%');
