@@ -955,6 +955,7 @@ class Versandpakete {
 
     	$artikel_input = $this->app->Secure->GetPOST('artikel');
         $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?
+        $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
     	$menge = $this->app->Secure->GetPOST('menge');
         $this->app->Tpl->Set('ID', $id);
         $submit = $this->app->Secure->GetPOST('submit');
@@ -985,7 +986,7 @@ class Versandpakete {
         switch ($submit) {
             case 'hinzufuegen':
 
-                if (empty($artikel) && !empty($kommissionierlagerplaetze)) { // Kommissionierlagerplatz?
+                if (empty($artikel) && empty($gescannterartikel) && !empty($kommissionierlagerplaetze)) { // Kommissionierlagerplatz?
                     $sql = "SELECT id FROM lager_platz WHERE kurzbezeichnung IN ('".implode("', '",$kommissionierlagerplaetze)."') AND kurzbezeichnung = '".$artikel_input."'";
                     $lager_platz = $this->app->DB->Select($sql);
                     if (!empty($lager_platz)) {
@@ -1038,7 +1039,6 @@ class Versandpakete {
                     }
                 } else { // Einzelartikel
                     if (empty($artikel_input)) {
-                        $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
                         $artikel = $this->app->erp->ReplaceArtikel(true, $gescannterartikel,true); // Parameters: Target db?, value, from form?                          
                     }
                     // Scan
@@ -1440,7 +1440,7 @@ class Versandpakete {
     function versandpakete_lieferung_gewicht($lieferschein_id) {
         $sql = "
             SELECT
-                TRIM(SUM(COALESCE(a.gewicht,0)*vlp.menge))+0
+                TRIM(ROUND(SUM(COALESCE(a.gewicht,0)*vlp.menge),3))+0
             FROM
                 artikel a
             INNER JOIN lieferschein_position lp ON
@@ -1472,6 +1472,7 @@ class Versandpakete {
 
             // Find a matching lieferschein_position
             $sql = "SELECT
+                        a.nummer,
                         lp.id AS lp_id,
                         MAX(lp.menge) AS lp_menge,
                         SUM(vlp.menge) AS v_menge
@@ -1520,7 +1521,7 @@ class Versandpakete {
                 $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
                 $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
                 $menge_offen = $menge_im_lieferschein-$menge_in_paketen;
-                $messages[] = "<div class=\"info\">Artikel $artikel_input wurde ".$buchmenge." mal hinzugef&uuml;gt.<br>Menge in Paketen: ".$menge_in_paketen."<br>Menge offen: ".$menge_offen."</div>";
+                $messages[] = "<div class=\"info\">Artikel ".$lieferschein_position['nummer']." wurde ".$buchmenge." mal hinzugef&uuml;gt.<br>Menge in Paketen: ".$menge_in_paketen."<br>Menge offen: ".$menge_offen."</div>";
             }
         }
 

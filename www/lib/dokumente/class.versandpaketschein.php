@@ -145,6 +145,7 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
             lp.nummer,
             lp.bezeichnung bezeichnung,
             TRIM(vlp.menge)+0 menge,
+            TRIM(lp.menge)+0 lieferscheinmenge,
             a.gewicht,
             lp.artikelnummerkunde,            
             '' as datum
@@ -166,7 +167,7 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
     foreach($artikel as $key=>$value) {
         $this->addItem(array(
               'belegposition'=>$value['id'],
-              'amount'=>$value['menge'],
+              'amount'=> ($value['menge'] != $value['lieferscheinmenge'])?($value['menge']." / ".$value['lieferscheinmenge']):$value['menge'],
               'gewicht'=>$value['gewicht'],
               'lvl'=>$value['lvl'],
               'itemno'=>$value['nummer'],
