@@ -83,7 +83,7 @@ class Versandpakete {
                 // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('id','id','id','datum','name','lieferscheine','versandart','tracking','lmenge','vmenge','gewicht','versender','bemerkung','status','id','id');
-                $searchsql = array('name', 'if (lieferscheine IS NULL, lieferscheine_ohne_pos, lieferscheine)', 'tracking', 'bemerkung');
+                $searchsql = array('name', 'lieferscheine', 'tracking', 'bemerkung');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
