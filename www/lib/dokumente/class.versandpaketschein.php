@@ -45,6 +45,8 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
                         versandpaket_lieferschein_position vlp
                     INNER JOIN lieferschein_position lp ON
                         vlp.lieferschein_position = lp.id
+                    WHERE vlp.versandpaket = ".$id."
+                    ORDER BY vlp.id ASC
                     LIMIT 1                    
     ";
     $lieferschein = $this->app->DB->Select($sql);
