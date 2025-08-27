@@ -69,7 +69,7 @@ if($mutex){
     WHERE `mutex` = 1 AND (`parameter` = '".$cronjobname."')"
   );
 
-  file_append($debugfile,"MUTEX");
+//  file_append($debugfile,"MUTEX");
 
   return;
 }
