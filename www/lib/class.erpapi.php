@@ -21066,7 +21066,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $projekt = $docArr['projekt'];
       $auftrag = $parameter;
 
-      $standardlager = $this->GetBelegStandardlager($objekt, $parameter);        
+      $standardlager = $this->GetBelegStandardlager(doctype: $objekt, doctypeid: $parameter);
 
       if($objekt === 'lieferschein')
       {
@@ -21081,7 +21081,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
           )
         );
         $kommissionierverfahren= $projectArr['kommissionierverfahren'];
-        $projektbevorzugteslager = $projectArr['standardlager'];      
+        $projektbevorzugteslager = $projectArr['standardlager'];
       }
     }
 
