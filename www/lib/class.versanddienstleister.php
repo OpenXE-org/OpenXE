@@ -27,15 +27,19 @@ abstract class Versanddienstleister
   protected int $shippingMail;
   protected ?int $businessLetterTemplateId;
   protected ?object $settings;
+  protected array $errors; // To allow catching of exceptions in the constructor and evaluating them above
 
   protected Request $request;
 
   public function __construct(ApplicationCore $app, ?int $id)
   {
     $this->app = $app;
+    $this->errors = array();
     $this->request = $this->app->Container->get('Request');
-    if ($id === null || $id === 0)
-      return;
+    if ($id === null || $id === 0) {
+        $this->errors[] = "No ID given";
+        return;
+    }
     $this->id = $id;
     $row = $this->app->DB->SelectRow("SELECT * FROM versandarten WHERE id=$this->id");
     $this->type = $row['type'];
@@ -45,6 +49,11 @@ abstract class Versanddienstleister
     $this->shippingMail = $row['versandmail'];
     $this->businessLetterTemplateId = $row['geschaeftsbrief_vorlage'];
     $this->settings = json_decode($row['einstellungen_json']);
+  }
+
+  // Returns an array of errors if any occurred
+  public function getErrors() : array {
+    return($this->errors);
   }
 
   public function isEtikettenDrucker(): bool

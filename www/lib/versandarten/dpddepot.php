@@ -50,6 +50,7 @@ class Versandart_dpddepot extends Versanddienstleister
             $token = $this->GetAuthToken();
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
+            $this->errors[] = $e->getMessage();
         }
         $this->api = new ShipmentService(
             $this->logger,
@@ -219,6 +220,7 @@ class Versandart_dpddepot extends Versanddienstleister
             $ret->Label = $result->output->content;
         } catch (Exception $e) {
             $ret->Errors[] = $e->getMessage();
+            $ret->Errors[] = print_r($e->detail, true);
         }
         return $ret;
     }

@@ -54,8 +54,7 @@ class LoginService
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if (isset($response->status)) {
             throw new LoginServiceException(
-                "Login Error({$response->status->type}): {$response->status->message})",
-                $response->status->code,
+                "Login Error({$response->status->code}) {$response->status->type}: {$response->status->message}"
             );
         }
         $this->logger->error(
