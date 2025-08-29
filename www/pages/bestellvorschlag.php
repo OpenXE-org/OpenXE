@@ -596,6 +596,18 @@ FROM
                             }
                         }
                         $this->app->erp->BestellungNeuberechnen($bestellid);
+
+                        $ids_zum_loeschen = array();
+                        foreach ($bestelladresse['positionen'] as $pos) {
+                            $aid = (int)$pos['id'];
+                            if($aid > 0) {
+                                $ids_zum_loeschen[] = $aid;
+                            }
+                        }
+                        if(!empty($ids_zum_loeschen)) {
+                            $ids_sql = implode(',', $ids_zum_loeschen);
+                            $this->app->DB->Delete("DELETE FROM bestellvorschlag WHERE user = $user AND artikel IN ($ids_sql)");
+                        }
                     }
                 }
                 $msg .= "<div class=\"success\">Es wurden $angelegt Bestellungen angelegt.</div>";
