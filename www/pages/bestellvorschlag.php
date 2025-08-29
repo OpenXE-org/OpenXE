@@ -361,7 +361,18 @@ FROM
             SELECT 
                 aufp.id AS auftrag_position_id,
                 aufp.auftrag AS auftrag_id,
-                (aufp.menge - aufp.geliefert) AS restmenge,
+                GREATEST(
+                    (aufp.menge - aufp.geliefert) 
+                    - COALESCE((
+                        SELECT SUM(bp.menge - bp.geliefert)
+                        FROM bestellung_position bp
+                        INNER JOIN bestellung b ON b.id = bp.bestellung
+                        WHERE bp.artikel = aufp.artikel
+                        AND b.status IN ('angelegt','freigegeben','versendet')
+                        AND bp.beschreibung LIKE CONCAT('%[AP#', aufp.id, ']%')
+                    ), 0),
+                    0
+                ) AS restmenge,
                 COALESCE(aufp.beschreibung, '') AS beschreibung
             FROM
                 auftrag_position aufp
@@ -372,6 +383,8 @@ FROM
                 AND auf.status IN ('versendet','freigegeben','angelegt')
                 AND NOT (auf.zahlungsweise = 'vorkasse' AND auf.vorabbezahltmarkieren <> 1)
                 AND COALESCE(auf.nicht_reservieren, 0) <> 1
+            HAVING
+                restmenge > 0
             ORDER BY
                 auf.datum, auf.id, aufp.id
         ";
@@ -545,13 +558,21 @@ FROM
                                     }
 
                                     $beschreibung = trim((string)$bedarf['beschreibung']);
+                                    $apTag = ' [AP#' . (int)$bedarf['auftrag_position_id'] . ']';
+                                    if ($beschreibung === '') {
+                                        $beschreibungMitTag = $apTag;
+                                    } else {
+                                        $beschreibungMitTag = (strpos($beschreibung, $apTag) === false) 
+                                            ? $beschreibung . $apTag 
+                                            : $beschreibung; // falls schon vorhanden
+                                    }
 
                                     $this->app->erp->AddBestellungPosition(
                                         $bestellid,
                                         $preisid,
                                         $teilmenge,
                                         $datum,
-                                        $beschreibung,
+                                        $beschreibungMitTag,
                                         $artikelohnepreis
                                     );
 
