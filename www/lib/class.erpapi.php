@@ -33185,13 +33185,13 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-      function AddBestellungPosition($bestellung, $einkauf,$menge,$datum, $beschreibung = '',$artikel="",$einheit="", $waehrung = '')
+      function AddBestellungPosition($bestellung, $einkauf,$menge,$datum, $beschreibung = '',$artikel="",$einheit="", $waehrung = '', $auftrag_position_id = 0)
       {
         /** @var Bestellung $obj */
         $obj = $this->LoadModul('bestellung');
         if(!empty($obj) && method_exists($obj, 'AddBestellungPosition'))
         {
-          return $obj->AddBestellungPosition($bestellung, $einkauf,$menge,$datum, $beschreibung,$artikel,$einheit, $waehrung);
+          return $obj->AddBestellungPosition($bestellung, $einkauf,$menge,$datum, $beschreibung,$artikel,$einheit, $waehrung, $auftrag_position_id);
         }
       }
 

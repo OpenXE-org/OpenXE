@@ -369,7 +369,7 @@ FROM
                         INNER JOIN bestellung b ON b.id = bp.bestellung
                         WHERE bp.artikel = aufp.artikel
                         AND b.status IN ('angelegt','freigegeben','versendet')
-                        AND bp.beschreibung LIKE CONCAT('%[AP#', aufp.id, ']%')
+                        AND bp.auftrag_position_id = aufp.id
                     ), 0),
                     0
                 ) AS restmenge,
@@ -558,22 +558,18 @@ FROM
                                     }
 
                                     $beschreibung = trim((string)$bedarf['beschreibung']);
-                                    $apTag = ' [AP#' . (int)$bedarf['auftrag_position_id'] . ']';
-                                    if ($beschreibung === '') {
-                                        $beschreibungMitTag = $apTag;
-                                    } else {
-                                        $beschreibungMitTag = (strpos($beschreibung, $apTag) === false) 
-                                            ? $beschreibung . $apTag 
-                                            : $beschreibung; // falls schon vorhanden
-                                    }
+                                    $auftragpositionid = $bedarf['auftrag_position_id'];
 
                                     $this->app->erp->AddBestellungPosition(
                                         $bestellid,
                                         $preisid,
                                         $teilmenge,
                                         $datum,
-                                        $beschreibungMitTag,
-                                        $artikelohnepreis
+                                        $beschreibung,
+                                        $artikelohnepreis,
+                                        '',
+                                        '',
+                                        $auftragpositionid
                                     );
 
                                     $rest -= $teilmenge;
