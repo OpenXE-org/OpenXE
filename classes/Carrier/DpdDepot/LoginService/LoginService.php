@@ -13,7 +13,7 @@ use Xentral\Carrier\DpdDepot\LoginService\Data\Login;
 class LoginService
 {
     protected const BASEURL_SANDBOX = 'https://public-ws-stage.dpd.com/restservices/LoginService/V2_0/';
-    protected const BASEURL_LIVE = 'https://dpd.com/common/service/LoginService/2.0/';
+    protected const BASEURL_LIVE = 'https://public-ws.dpd.com/restservices/LoginService/V2_0/';
     protected string $baseUrl;
 
     public function __construct(protected LoggerInterface $logger, bool $sandbox = false)
@@ -25,7 +25,6 @@ class LoginService
         }
     }
 
-
     /**
      * @throws LoginServiceException
      */
@@ -36,6 +35,7 @@ class LoginService
         curl_setopt_array($ch, [
             CURLOPT_URL => $this->baseUrl . 'getAuth',
             CURLOPT_RETURNTRANSFER => true,
+            CURLINFO_HEADER_OUT => true,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $data,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
@@ -43,6 +43,7 @@ class LoginService
         $response = curl_exec($ch);
         curl_close($ch);
         $response = json_decode($response);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if (isset($response->getAuthResponse)) {
             $login = new Login();
             $login->delisId = $response->getAuthResponse->return->delisId;
@@ -51,8 +52,7 @@ class LoginService
             $login->depot = $response->getAuthResponse->return->depot;
             return $login;
         }
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if (isset($response->status)) {
+       if (isset($response->status)) {
             throw new LoginServiceException(
                 "Login Error({$response->status->code}) {$response->status->type}: {$response->status->message}"
             );

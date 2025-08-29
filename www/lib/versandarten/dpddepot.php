@@ -72,7 +72,7 @@ class Versandart_dpddepot extends Versanddienstleister
         $expire = $this->systemConfig->tryGetValue($ns, $key_expire);
         $now = new DateTime('now', $this->timeZone);
         if ($expire == null || DateTime::createFromFormat(DATE_ATOM, $expire) < $now) {
-            $loginApi = new LoginService($this->logger, true);
+            $loginApi = new LoginService($this->logger, $this->settings->useSandbox ?? true);
             $auth = new GetAuth();
             $auth->delisId = $this->settings->delisId;
             $auth->password = $this->settings->password;
