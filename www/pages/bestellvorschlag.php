@@ -354,6 +354,35 @@ FROM
         return $erg;
     }
 
+    function bestellvorschlag_offene_auftraege_mit_beschreibung($artikelId) {
+        $artikelId = (int)$artikelId;
+
+        $sql = "
+            SELECT 
+                aufp.id AS auftrag_position_id,
+                aufp.auftrag AS auftrag_id,
+                (aufp.menge - aufp.geliefert) AS restmenge,
+                COALESCE(aufp.beschreibung, '') AS beschreibung
+            FROM
+                auftrag_position aufp
+            INNER JOIN auftrag auf ON auf.id = aufp.auftrag
+            WHERE
+                aufp.artikel = $artikelId
+                AND (aufp.menge - aufp.geliefert) > 0
+                AND auf.status IN ('versendet','freigegeben','angelegt')
+                AND NOT (auf.zahlungsweise = 'vorkasse' AND auf.vorabbezahltmarkieren <> 1)
+                AND COALESCE(auf.nicht_reservieren, 0) <> 1
+            ORDER BY
+                auf.datum, auf.id, aufp.id
+        ";
+
+        $rows = $this->app->DB->SelectArr($sql);
+        if(!is_array($rows)) {
+            $rows = array();
+        }
+        return $rows;
+    }
+
     function bestellvorschlag_list() {
 
 
@@ -458,22 +487,88 @@ FROM
                         $this->app->erp->LoadBestellungStandardwerte($bestellid,$bestelladresse['adresse']);
                         $this->app->erp->BestellungProtokoll($bestellid,"Bestellung angelegt");
                         foreach ($bestelladresse['positionen'] as $position) {
-                            $preisid = $this->app->erp->Einkaufspreis($position['id'], $position['menge'], $bestelladresse['adresse']);
+                            $artikelId   = (int)$position['id'];
+                            $bestellMenge = (float)$position['menge'];
 
-                            if ($preisid == null) {
-                                $artikelohnepreis = $position['id'];
-                            } else {
-                                $artikelohnepreis = null;
+                            $bedarfe = $this->bestellvorschlag_offene_auftraege_mit_beschreibung($artikelId);
+                            
+                            if (empty($bedarfe)) {
+                                $preisid = $this->app->erp->Einkaufspreis($artikelId, $bestellMenge, $bestelladresse['adresse']);
+
+                                if ($preisid == null) {
+                                    $artikelohnepreis = $artikelId;
+                                } else {
+                                    $artikelohnepreis = null;
+                                }
+
+                                $this->app->erp->AddBestellungPosition(
+                                    $bestellid,
+                                    $preisid,
+                                    $bestellMenge,
+                                    $datum,
+                                    '',
+                                    $artikelohnepreis
+                                );
+                                continue;
                             }
 
-                            $this->app->erp->AddBestellungPosition(
-                                $bestellid,
-                                $preisid,
-                                $position['menge'],
-                                $datum,
-                                '',
-                                $artikelohnepreis
-                            );
+                            $rest = $bestellMenge;
+
+                            foreach ($bedarfe as $bedarf) {
+                                if ($rest <= 0) {
+                                    break;
+                                }
+
+                                $bedarfRest = (float)$bedarf['restmenge'];
+                                if ($bedarfRest <= 0) {
+                                    continue;
+                                }
+
+                                $teilmenge = $rest < $bedarfRest ? $rest : $bedarfRest;
+                                if ($teilmenge <= 0) {
+                                    continue;
+                                }
+
+                                $preisid = $this->app->erp->Einkaufspreis($artikelId, $teilmenge, $bestelladresse['adresse']);
+
+                                if ($preisid == null) {
+                                    $artikelohnepreis = $artikelId;
+                                } else {
+                                    $artikelohnepreis = null;
+                                }
+
+                                $beschreibung = trim((string)$bedarf['beschreibung']);
+
+                                $this->app->erp->AddBestellungPosition(
+                                    $bestellid,
+                                    $preisid,
+                                    $teilmenge,
+                                    $datum,
+                                    $beschreibung,
+                                    $artikelohnepreis
+                                );
+
+                                $rest -= $teilmenge;
+                            }
+
+                            if ($rest > 0) {
+                                $preisid = $this->app->erp->Einkaufspreis($artikelId, $rest, $bestelladresse['adresse']);
+
+                                if ($preisid == null) {
+                                    $artikelohnepreis = $artikelId;
+                                } else {
+                                    $artikelohnepreis = null;
+                                }
+
+                                $this->app->erp->AddBestellungPosition(
+                                    $bestellid,
+                                    $preisid,
+                                    $rest,
+                                    $datum,
+                                    '',
+                                    $artikelohnepreis
+                                );
+                            }
                         }
                         $this->app->erp->BestellungNeuberechnen($bestellid);
                     }
