@@ -12,12 +12,22 @@
                            <fieldset>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     <legend>{|Einstellungen|}</legend>
+                                    <tr>
                                         <td>{|Absatz ber&uuml;cksichtigen (Monate)|}:</td>
                                         <td><input type="number" min="0" name="monate_absatz" id="monate_absatz" value="[MONATE_ABSATZ]" size="20"></td>
                                     </tr>
                                     <tr>
                                         <td>{|Vorausplanen (Monate)|}:</td>
                                         <td><input type="number" min="0" name="monate_voraus" id="monate_voraus" value="[MONATE_VORAUS]" size="20"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{|Beschreibung aus Auftragsposition &uuml;bernehmen|}:</td>
+                                        <td>
+                                            <label for="beschreibung_aus_auftrag" class="switch">
+                                                <input type="checkbox" name="beschreibung_aus_auftrag" id="beschreibung_aus_auftrag" value="1" [BESCHREIBUNG_AUS_AUFTRAG]>
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </td>
                                     </tr>
                                 </table>
                             </fieldset>

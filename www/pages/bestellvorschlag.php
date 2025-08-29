@@ -417,6 +417,10 @@ FROM
             break;
             case 'speichern':
 
+                $beschreibung_aus_auftrag_post = $this->app->Secure->GetPOST('beschreibung_aus_auftrag');
+                $beschreibung_aus_auftrag_val = ($beschreibung_aus_auftrag_post == '1') ? 1 : 0;
+                $this->app->User->SetParameter('bestellvorschlag_beschreibung_aus_auftrag', $beschreibung_aus_auftrag_val);
+
                 $menge_input = $this->app->Secure->GetPOSTArray();
                 $mengen = array();
                 foreach ($menge_input as $key => $menge) {
@@ -478,6 +482,8 @@ FROM
 
                 $angelegt = 0;
 
+                $beschreibung_aus_auftrag = (int)$this->app->User->GetParameter('bestellvorschlag_beschreibung_aus_auftrag') === 1;
+
                 foreach ($mengen_pro_adresse as $bestelladresse) {
                     $bestellid = $this->app->erp->CreateBestellung($bestelladresse);
                     if (!empty($bestellid)) {
@@ -489,10 +495,88 @@ FROM
                         foreach ($bestelladresse['positionen'] as $position) {
                             $artikelId   = (int)$position['id'];
                             $bestellMenge = (float)$position['menge'];
-
-                            $bedarfe = $this->bestellvorschlag_offene_auftraege_mit_beschreibung($artikelId);
                             
-                            if (empty($bedarfe)) {
+                            if ($beschreibung_aus_auftrag) {
+                                $bedarfe = $this->bestellvorschlag_offene_auftraege_mit_beschreibung($artikelId);
+                                
+                                if (empty($bedarfe)) {
+                                    $preisid = $this->app->erp->Einkaufspreis($artikelId, $bestellMenge, $bestelladresse['adresse']);
+
+                                    if ($preisid == null) {
+                                        $artikelohnepreis = $artikelId;
+                                    } else {
+                                        $artikelohnepreis = null;
+                                    }
+
+                                    $this->app->erp->AddBestellungPosition(
+                                        $bestellid,
+                                        $preisid,
+                                        $bestellMenge,
+                                        $datum,
+                                        '',
+                                        $artikelohnepreis
+                                    );
+                                    continue;
+                                }
+
+                                $rest = $bestellMenge;
+
+                                foreach ($bedarfe as $bedarf) {
+                                    if ($rest <= 0) {
+                                        break;
+                                    }
+
+                                    $bedarfRest = (float)$bedarf['restmenge'];
+                                    if ($bedarfRest <= 0) {
+                                        continue;
+                                    }
+
+                                    $teilmenge = $rest < $bedarfRest ? $rest : $bedarfRest;
+                                    if ($teilmenge <= 0) {
+                                        continue;
+                                    }
+
+                                    $preisid = $this->app->erp->Einkaufspreis($artikelId, $teilmenge, $bestelladresse['adresse']);
+
+                                    if ($preisid == null) {
+                                        $artikelohnepreis = $artikelId;
+                                    } else {
+                                        $artikelohnepreis = null;
+                                    }
+
+                                    $beschreibung = trim((string)$bedarf['beschreibung']);
+
+                                    $this->app->erp->AddBestellungPosition(
+                                        $bestellid,
+                                        $preisid,
+                                        $teilmenge,
+                                        $datum,
+                                        $beschreibung,
+                                        $artikelohnepreis
+                                    );
+
+                                    $rest -= $teilmenge;
+                                }
+
+                                if ($rest > 0) {
+                                    $preisid = $this->app->erp->Einkaufspreis($artikelId, $rest, $bestelladresse['adresse']);
+
+                                    if ($preisid == null) {
+                                        $artikelohnepreis = $artikelId;
+                                    } else {
+                                        $artikelohnepreis = null;
+                                    }
+
+                                    $this->app->erp->AddBestellungPosition(
+                                        $bestellid,
+                                        $preisid,
+                                        $rest,
+                                        $datum,
+                                        '',
+                                        $artikelohnepreis
+                                    );
+                                }
+                            } else {
                                 $preisid = $this->app->erp->Einkaufspreis($artikelId, $bestellMenge, $bestelladresse['adresse']);
 
                                 if ($preisid == null) {
@@ -505,65 +589,6 @@ FROM
                                     $bestellid,
                                     $preisid,
                                     $bestellMenge,
-                                    $datum,
-                                    '',
-                                    $artikelohnepreis
-                                );
-                                continue;
-                            }
-
-                            $rest = $bestellMenge;
-
-                            foreach ($bedarfe as $bedarf) {
-                                if ($rest <= 0) {
-                                    break;
-                                }
-
-                                $bedarfRest = (float)$bedarf['restmenge'];
-                                if ($bedarfRest <= 0) {
-                                    continue;
-                                }
-
-                                $teilmenge = $rest < $bedarfRest ? $rest : $bedarfRest;
-                                if ($teilmenge <= 0) {
-                                    continue;
-                                }
-
-                                $preisid = $this->app->erp->Einkaufspreis($artikelId, $teilmenge, $bestelladresse['adresse']);
-
-                                if ($preisid == null) {
-                                    $artikelohnepreis = $artikelId;
-                                } else {
-                                    $artikelohnepreis = null;
-                                }
-
-                                $beschreibung = trim((string)$bedarf['beschreibung']);
-
-                                $this->app->erp->AddBestellungPosition(
-                                    $bestellid,
-                                    $preisid,
-                                    $teilmenge,
-                                    $datum,
-                                    $beschreibung,
-                                    $artikelohnepreis
-                                );
-
-                                $rest -= $teilmenge;
-                            }
-
-                            if ($rest > 0) {
-                                $preisid = $this->app->erp->Einkaufspreis($artikelId, $rest, $bestelladresse['adresse']);
-
-                                if ($preisid == null) {
-                                    $artikelohnepreis = $artikelId;
-                                } else {
-                                    $artikelohnepreis = null;
-                                }
-
-                                $this->app->erp->AddBestellungPosition(
-                                    $bestellid,
-                                    $preisid,
-                                    $rest,
                                     $datum,
                                     '',
                                     $artikelohnepreis
@@ -584,6 +609,17 @@ FROM
 
         $this->app->Tpl->Set('MONATE_ABSATZ',$monate_absatz);
         $this->app->Tpl->Set('MONATE_VORAUS',$monate_voraus);
+
+        $beschreibung_aus_auftrag = (int)$this->app->User->GetParameter('bestellvorschlag_beschreibung_aus_auftrag');
+        if ($beschreibung_aus_auftrag === null) {
+            $beschreibung_aus_auftrag = 1;
+            $this->app->User->SetParameter('bestellvorschlag_beschreibung_aus_auftrag', 1);
+        }
+
+        $this->app->Tpl->Set(
+            'BESCHREIBUNG_AUS_AUFTRAG',
+            ((int)$beschreibung_aus_auftrag === 1) ? 'checked="checked"' : ''
+        );
 
         $this->app->Tpl->Set('MESSAGE',$msg);
 
