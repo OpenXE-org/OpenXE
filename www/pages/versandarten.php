@@ -176,9 +176,15 @@ class Versandarten {
     $error = [];
     if($submit != '') { // handle form submit
       $form = $this->GetInput();
-      $obj = $this->loadModule($form['modul'], $id);
+
 /*      if ($obj === null)
         $error[] = sprintf('Versandart "%s" existiert nicht.', $form['selmodul']); */
+
+      $obj = $this->loadModule($form['modul'], $id);
+      $module_errors = $obj->getErrors();
+      foreach ($module_errors as $module_error) {
+          $this->app->Tpl->addMessage('error', $module_error);
+      }
 
       if(trim($form['bezeichnung']) == '')
         $error[] = 'Bitte eine Bezeichnung angeben!';
@@ -237,7 +243,12 @@ class Versandarten {
 
     $this->app->erp->Headlines('', $daten['bezeichnung']);
     $this->app->Tpl->Set('AKTMODUL', $daten['modul']);
+
     $obj = $this->loadModule($daten['modul'], $daten['id']);
+    $module_errors = $obj->getErrors();
+    foreach ($module_errors as $module_error) {
+        $this->app->Tpl->addMessage('error', $module_error);
+    }
 
     if (empty($error) || !isset($form)) { //overwrite form data from database if no validation error is present
       $form = json_decode($daten['einstellungen_json'],true);
@@ -836,7 +847,7 @@ class Versandarten {
       $obj = $this->loadModule($modul);
       if ($obj === null)
         continue;
-      $result[$modul] = $obj->name ?? ucfirst($modul);
+      $result[$modul] = $obj->GetName() ?? ucfirst($modul);
       unset($obj);
     }
 
