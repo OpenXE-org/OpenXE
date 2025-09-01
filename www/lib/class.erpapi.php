@@ -3144,7 +3144,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
           {
             $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert_menge='$geliefert', geliefert = 1 WHERE id='$subid' LIMIT 1");
           }else{
-
             if($belegtyp=="lieferschein")
             {
               $auftragposid=$this->app->DB->Select("SELECT auftrag_position_id FROM lieferschein_position WHERE id='$subid'");
@@ -3152,23 +3151,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               {
                 $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$geliefert' WHERE id='$auftragposid' LIMIT 1");
               }
-            }
-
-            if($seriennummernerfassen=='1' && ($artikelhatseriennummer=='vomprodukteinlagern' || $artikelhatseriennummer=='vomprodukt' || $artikelhatseriennummer=='eigene'))
-            {
-              // wenn Seriennummer erfasst werden soll
-              //if($anzeige_lagerplaetze_in_lieferschein)
-              //{
-                //$this->app->DB->Update("UPDATE ".$belegtyp."_position SET beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
-                //neue datenstruktur
-              //}
-              if($forceseriennummerngeliefertsetzen)$this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
-            } else {
-              //wenn nicht
-              //if($anzeige_lagerplaetze_in_lieferschein)
-              //  $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert',beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
-              //else
-              $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
             }
           }
        } // simulieren
