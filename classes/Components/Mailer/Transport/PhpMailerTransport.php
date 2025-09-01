@@ -36,7 +36,7 @@ final class PhpMailerTransport implements MailerTransportInterface
         if($config->getConfigValue('username', '') == '' && $config->getConfigValue('pasword', '') == '') {
             $this->phpMailer->SMTPAuth = false;
         } else {
-            $this->phpMailer->SMTPAuth = $config->getConfigValue('smtp_enabled', false);    
+            $this->phpMailer->SMTPAuth = $config->getConfigValue('smtp_enabled', false);
         }
 
         $this->phpMailer->Priority = $config->getConfigValue('priority', 3);
@@ -52,9 +52,12 @@ final class PhpMailerTransport implements MailerTransportInterface
         $this->phpMailer->Port = $config->getConfigValue('port', 25);
         $this->phpMailer->Helo = $config->getConfigValue('helo', '');
         $this->phpMailer->SMTPSecure = $config->getConfigValue('smtp_security', '');
+        $this->phpMailer->SMTPAuth = $config->getConfigValue('smtp_enabled', false);
         $this->phpMailer->AuthType = $config->getConfigValue('auth_type', 'smtp');
         $this->phpMailer->SMTPAutoTLS = $config->getConfigValue('smtp_autotls_enabled', false);
         $this->phpMailer->SMTPOptions = $config->getConfigValue('smtp_options', []);
+        $this->phpMailer->Username = $config->getConfigValue('username', '');
+        $this->phpMailer->Password = $config->getConfigValue('password', '');
         $this->phpMailer->Timeout = $config->getConfigValue('timeout', 30);
         $this->phpMailer->SMTPDebug = $config->getConfigValue('smtp_debug', 0);
         $this->phpMailer->SMTPKeepAlive = $config->getConfigValue('smtp_keepalive', false);
