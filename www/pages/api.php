@@ -753,6 +753,9 @@ if (!function_exists('getallheaders')) {
           'standard_benutzerlist',
           'standard_benutzergetrfid',
         ],
+        'import_csv' => [
+            'import_csv_file'
+        ],
         'custom' => [
           'standard_custom'
         ]

@@ -16108,6 +16108,18 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     return $result;
   }
 
+  function ImportvorlageImport(int $id, string $file_contents) {
+    $obj = $this->LoadModul('importvorlage');
+    if(!empty($obj) && method_exists($obj, 'ImportvorlageDo'))
+    {
+        $tmpdatei = $this->app->erp->GetTMP().'importvorlageimport'.microtime(true);
+        file_put_contents($tmpdatei, $file_contents);
+        $result = $obj->ImportvorlageDo(parameter: array('id' => $id, 'stueckliste_csv' => $tmpdatei));
+        return($result);
+    }
+    return 0;
+  }
+
   function ImportvorlageLog($importvorlage,$zeitstempel,$tabelle,$datensatz,$ersterdatensatz="0")
   {
     $this->app->DB->Insert("INSERT INTO importvorlage_log (id,importvorlage,zeitstempel,user,tabelle,datensatz,ersterdatensatz)
