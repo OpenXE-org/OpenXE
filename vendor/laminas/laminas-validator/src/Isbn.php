@@ -1,20 +1,24 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator;
 
+use function in_array;
+use function is_int;
+use function is_string;
+use function preg_match;
+use function quotemeta;
+use function str_replace;
+use function strlen;
+use function substr;
+
+/** @final */
 class Isbn extends AbstractValidator
 {
-    const AUTO    = 'auto';
-    const ISBN10  = '10';
-    const ISBN13  = '13';
-    const INVALID = 'isbnInvalid';
-    const NO_ISBN = 'isbnNoIsbn';
+    public const AUTO    = 'auto';
+    public const ISBN10  = '10';
+    public const ISBN13  = '13';
+    public const INVALID = 'isbnInvalid';
+    public const NO_ISBN = 'isbnNoIsbn';
 
     /**
      * Validation failure message template definitions.
@@ -26,15 +30,16 @@ class Isbn extends AbstractValidator
         self::NO_ISBN => 'The input is not a valid ISBN number',
     ];
 
+    /** @var array<string, mixed> */
     protected $options = [
         'type'      => self::AUTO, // Allowed type
-        'separator' => '',         // Separator character
+        'separator' => '', // Separator character
     ];
 
     /**
      * Detect input format.
      *
-     * @return string
+     * @return null|string
      */
     protected function detectFormat()
     {
@@ -45,7 +50,7 @@ class Isbn extends AbstractValidator
         $type     = $this->getType();
 
         // check for ISBN-10
-        if ($type == self::ISBN10 || $type == self::AUTO) {
+        if ($type === self::ISBN10 || $type === self::AUTO) {
             if (empty($sep)) {
                 $pattern = '/^[0-9]{9}[0-9X]{1}$/';
                 $length  = 10;
@@ -59,7 +64,7 @@ class Isbn extends AbstractValidator
         }
 
         // check for ISBN-13
-        if ($type == self::ISBN13 || $type == self::AUTO) {
+        if ($type === self::ISBN13 || $type === self::AUTO) {
             if (empty($sep)) {
                 $pattern = '/^[0-9]{13}$/';
                 $length  = 13;
@@ -67,7 +72,7 @@ class Isbn extends AbstractValidator
                 // @codingStandardsIgnoreStart
                 $pattern = "/^[0-9]{1,9}[{$sep}]{1}[0-9]{1,5}[{$sep}]{1}[0-9]{1,9}[{$sep}]{1}[0-9]{1,9}[{$sep}]{1}[0-9]{1}$/";
                 // @codingStandardsIgnoreEnd
-                $length  = 17;
+                $length = 17;
             }
 
             $patterns[$pattern] = self::ISBN13;
@@ -76,18 +81,18 @@ class Isbn extends AbstractValidator
 
         // check pattern list
         foreach ($patterns as $pattern => $type) {
-            if ((strlen($this->getValue()) == $lengths[$pattern]) && preg_match($pattern, $this->getValue())) {
+            if ((strlen($this->getValue()) === $lengths[$pattern]) && preg_match($pattern, $this->getValue())) {
                 return $type;
             }
         }
 
-        return;
+        return null;
     }
 
     /**
      * Returns true if and only if $value is a valid ISBN.
      *
-     * @param  string $value
+     * @param  mixed $value
      * @return bool
      */
     public function isValid($value)
@@ -97,7 +102,8 @@ class Isbn extends AbstractValidator
             return false;
         }
 
-        $value = (string) $value;
+        $value         = (string) $value;
+        $originalValue = $value;
         $this->setValue($value);
 
         switch ($this->detectFormat()) {
@@ -114,11 +120,11 @@ class Isbn extends AbstractValidator
                 return false;
         }
 
-        $value = str_replace($this->getSeparator(), '', $value);
+        $value    = str_replace($this->getSeparator(), '', $value);
         $checksum = $isbn->getChecksum($value);
 
         // validate
-        if (substr($this->getValue(), -1) != $checksum) {
+        if (substr($originalValue, -1) !== (string) $checksum) {
             $this->error(self::NO_ISBN);
             return false;
         }
@@ -130,9 +136,11 @@ class Isbn extends AbstractValidator
      *
      * It is allowed only empty string, hyphen and space.
      *
-     * @param  string $separator
-     * @throws Exception\InvalidArgumentException When $separator is not valid
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param string $separator
      * @return $this Provides a fluent interface
+     * @throws Exception\InvalidArgumentException When $separator is not valid.
      */
     public function setSeparator($separator)
     {
@@ -148,6 +156,8 @@ class Isbn extends AbstractValidator
     /**
      * Get separator characters.
      *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @return string
      */
     public function getSeparator()
@@ -158,9 +168,11 @@ class Isbn extends AbstractValidator
     /**
      * Set allowed ISBN type.
      *
-     * @param  string $type
-     * @throws Exception\InvalidArgumentException When $type is not valid
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param string $type
      * @return $this Provides a fluent interface
+     * @throws Exception\InvalidArgumentException When $type is not valid.
      */
     public function setType($type)
     {
@@ -175,6 +187,8 @@ class Isbn extends AbstractValidator
 
     /**
      * Get allowed ISBN type.
+     *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
      *
      * @return string
      */
