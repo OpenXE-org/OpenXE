@@ -68,16 +68,13 @@ class ImportCSVController extends AbstractController
             );
         }
 
-        if (empty($input['importvorlage'])) {
-            throw new BadRequestException('Required property "importvorlage" is missing.');
+        if (empty($input['importvorlage']) && empty($input['importvorlage_id'])) {
+            throw new BadRequestException('Required property "importvorlage_id" or "importvorlage" is missing.');
         }            
-        if (empty($input['file_content'])) {
-            throw new BadRequestException('Required property "file_content" is missing or file is empty.');
-        }
 
         $erp = $this->legacyApi->app->erp;
 
-        $legacyApiresult = $erp->ImportvorlageImport(id: $input['importvorlage'], file_contents: $input['file_content']);  
+        $legacyApiresult = $erp->ImportvorlageImport(id: $input['importvorlage_id'], importvorlage: $input['importvorlage'], file_contents: $input['file_content']);
 
         // Die angelegte Resource zurückliefern; mit Success-Flag
         /** @var FileResource $resource */
