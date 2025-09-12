@@ -2295,11 +2295,11 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         break;
 
       case "lager_produktion":
-        $arr = $this->app->DB->SelectArr("SELECT l.bezeichnung FROM lager l JOIN lager_platz lp ON l.id = lp.lager WHERE l.geloescht=0 AND l.bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("l.projekt")." AND lp.allowproduction = 1 ORDER BY 1");
+        $arr = $this->app->DB->SelectArr("SELECT DISTINCT l.bezeichnung FROM lager l JOIN lager_platz lp ON l.id = lp.lager WHERE l.geloescht=0 AND l.bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("l.projekt")." AND lp.allowproduction = 1 ORDER BY 1");
 
-        if(empty($arr)){
+/*        if(empty($arr)){
           $arr = $this->app->DB->SelectArr("SELECT l.bezeichnung FROM lager l WHERE l.geloescht=0 AND l.bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("l.projekt")." ORDER by 1");
-        }
+        }*/
 
         $carr = !empty($arr)?count($arr):0;
         for($i=0; $i < $carr; $i++)

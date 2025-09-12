@@ -111,6 +111,7 @@ class KommissionierungPDF extends BriefpapierCustom {
             k.ausgelagert,
             l.belegnr as lieferscheinnummer,
             ab.belegnr as auftragnummer,
+            p.belegnr as produktionsnummer,
             DATE_FORMAT(ab.tatsaechlicheslieferdatum,'%d.%m.%Y') as tatsaechlicheslieferdatum,
             a.name            
         FROM
@@ -123,6 +124,10 @@ class KommissionierungPDF extends BriefpapierCustom {
             auftrag ab
         ON
             l.auftragid = ab.id OR k.auftrag = ab.id
+        LEFT JOIN
+            produktion p
+        ON
+            k.produktion = p.id
         LEFT JOIN 
             adresse a 
         ON 
@@ -210,6 +215,9 @@ class KommissionierungPDF extends BriefpapierCustom {
         $corrDetails['Lagerplatz'] = $this->app->DB->Select("SELECT kurzbezeichnung FROM kommissionierung_position ksp INNER JOIN lager_platz lp ON lp.id = ksp.ziel_lager_platz WHERE ksp.kommissionierung = ".$id." LIMIT 1");
     }
 
+    if (!empty($data['produktionsnummer'])) {
+        $corrDetails['Produktion'] = $data['produktionsnummer'];
+    }   
     if (!empty($data['auftragnummer'])) {
         $corrDetails['Auftrag'] = $data['auftragnummer'];
     }   

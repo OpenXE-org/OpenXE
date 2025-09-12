@@ -45,11 +45,11 @@
 							<td><label for="sperrlager">{|Sperrlager|}:</label></td>
 							<td><input name="sperrlager" id="sperrlager" type="checkbox" value="1" [SPERRLAGER]><i>&nbsp;Nicht im verfügbaren Bestand, wird nicht f&uuml;r Auslagerung im Auto-Versand verwendet. (I.d.R. wertlos)</i></td>
 						</tr>
-<!--						<tr>
+						<tr>
     						<td><label for="allowproduction">{|Produktionslager|}:</label></td>
 							<td><input name="allowproduction" id="allowproduction" type="checkbox" value="1" [ALLOWPRODUCTION]></td>
 						</tr>
-						<tr class="trsperrlager">
+<!--						<tr class="trsperrlager">
 							<td><label for="poslager">{|POS Lager|}:</label></td>
 							<td><input name="poslager" id="poslager" type="checkbox" value="1" [POSLAGER]> <i>{|Die POS darf den Bestand f&uuml;r
 									diese Lager ver&auml;ndern.|}</i></td>

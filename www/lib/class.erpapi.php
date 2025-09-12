@@ -3180,7 +3180,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
     // Check available items for an array('artikel','menge') with additional check for reserversations on beleg
     // Returns Array
-    function LagerCheckBeleg(string $doctype, $doctypeid, $lager = 0, bool $incl_autolagersperre = false) {
+    function LagerCheckBeleg(string $doctype, $doctypeid, $lager = 0, bool $incl_autolagersperre = false, array $ignore_articles = array()) {
 
         $items = $this->app->DB->SelectArr("SELECT artikel, nummer, bezeichnung, menge FROM ".$doctype."_position WHERE ".$doctype." = ".$doctypeid." ORDER by sort ASC");
 
@@ -3258,6 +3258,11 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
             }
 
             foreach ($items as $artikel => $menge) {
+
+                if (in_array($artikel, $ignore_articles)) {
+                    unset($items[$artikel]);
+                    continue;
+                }
 
                 $lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id = ".$artikel);
                 if (!$lagerartikel) {

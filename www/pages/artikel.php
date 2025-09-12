@@ -782,7 +782,7 @@ class Artikel extends GenArtikel {
         $allowed['artikel'] = array('lager');
 
         $heading = array('Datum', 'Lager', 'Menge', 'VPE', 'Richtung', 'Referenz', 'Bearbeiter', 'Projekt', 'Inventur','Men&uuml;');
-        $width = array('1%', '5%', '5%', '5%', '5%', '40%', '20%', '5%','10%', '1%');
+        $width = array('5%', '5%', '5%', '5%', '5%', '40%', '20%', '5%','10%', '1%');
         $findcols = array('lpi.zeit', 'lp.kurzbezeichnung', 'lpi.menge', 'vpe', "if(lpi.eingang,'Eingang','Ausgang')", 'referenz', 'lpi.bearbeiter', 'p.abkuerzung', 'zeitstempel','id');
         $searchsql = array('DATE_FORMAT(lpi.zeit,\'%d.%m.%Y\')', 'lp.kurzbezeichnung', 'lpi.menge', 'vpe', "if(lpi.eingang,'Eingang','Ausgang')", 'lpi.referenz', 'lpi.bearbeiter', 'p.abkuerzung');
         $defaultorder = 10; //Optional wenn andere Reihenfolge gewuenscht
@@ -808,7 +808,8 @@ class Artikel extends GenArtikel {
         if($this->app->erp->GetKonfiguration('artikel_lager_bestandsanzeige')=='1')
         {
           $sql = "SELECT SQL_CALC_FOUND_ROWS lpi.id,
-                 DATE_FORMAT(lpi.zeit,'%d.%m.%Y') as datum, lp.kurzbezeichnung as lager,
+                 ".$this->app->erp->FormatDateTimeShort('lpi.zeit')." as datum,
+                  lp.kurzbezeichnung as lager,
                    ".$this->app->erp->FormatMenge('lpi.menge')." as menge, 
                    lpi.vpe as VPE, if(lpi.eingang,'Eingang','Ausgang') as Richtung, 
                    CONCAT(
@@ -862,7 +863,8 @@ class Artikel extends GenArtikel {
                  LEFT JOIN artikel_permanenteinventur api ON api.id=lpi.permanenteinventur";
         } else {
           $sql = "SELECT SQL_CALC_FOUND_ROWS lpi.id,
-                  DATE_FORMAT(lpi.zeit,'%d.%m.%Y') as datum, lp.kurzbezeichnung as lager,
+                 ".$this->app->erp->FormatDateTimeShort('lpi.zeit')." as datum,
+                    lp.kurzbezeichnung as lager,
                     ".$this->app->erp->FormatMenge("lpi.menge")." as menge,
                      lpi.vpe as VPE, if(lpi.eingang,'Eingang','Ausgang') as Richtung, 
                      CONCAT(

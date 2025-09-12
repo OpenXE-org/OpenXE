@@ -43,7 +43,6 @@ class Produktion {
             case "produktion_list":
                 $allowed['produktion_list'] = array('list');
 
-//                $heading = array('','','datum', 'art', 'projekt', 'belegnr', 'internet', 'bearbeiter', 'angebot', 'freitext', 'internebemerkung', 'status', 'adresse', 'name', 'abteilung', 'unterabteilung', 'strasse', 'adresszusatz', 'ansprechpartner', 'plz', 'ort', 'land', 'ustid', 'ust_befreit', 'ust_inner', 'email', 'telefon', 'telefax', 'betreff', 'kundennummer', 'versandart', 'vertrieb', 'zahlungsweise', 'zahlungszieltage', 'zahlungszieltageskonto', 'zahlungszielskonto', 'bank_inhaber', 'bank_institut', 'bank_blz', 'bank_konto', 'kreditkarte_typ', 'kreditkarte_inhaber', 'kreditkarte_nummer', 'kreditkarte_pruefnummer', 'kreditkarte_monat', 'kreditkarte_jahr', 'firma', 'versendet', 'versendet_am', 'versendet_per', 'versendet_durch', 'autoversand', 'keinporto', 'keinestornomail', 'abweichendelieferadresse', 'liefername', 'lieferabteilung', 'lieferunterabteilung', 'lieferland', 'lieferstrasse', 'lieferort', 'lieferplz', 'lieferadresszusatz', 'lieferansprechpartner', 'packstation_inhaber', 'packstation_station', 'packstation_ident', 'packstation_plz', 'packstation_ort', 'autofreigabe', 'freigabe', 'nachbesserung', 'gesamtsumme', 'inbearbeitung', 'abgeschlossen', 'nachlieferung', 'lager_ok', 'porto_ok', 'ust_ok', 'check_ok', 'vorkasse_ok', 'nachnahme_ok', 'reserviert_ok', 'bestellt_ok', 'zeit_ok', 'versand_ok', 'partnerid', 'folgebestaetigung', 'zahlungsmail', 'stornogrund', 'stornosonstiges', 'stornorueckzahlung', 'stornobetrag', 'stornobankinhaber', 'stornobankkonto', 'stornobankblz', 'stornobankbank', 'stornogutschrift', 'stornogutschriftbeleg', 'stornowareerhalten', 'stornomanuellebearbeitung', 'stornokommentar', 'stornobezahlt', 'stornobezahltam', 'stornobezahltvon', 'stornoabgeschlossen', 'stornorueckzahlungper', 'stornowareerhaltenretour', 'partnerausgezahlt', 'partnerausgezahltam', 'kennen', 'logdatei', 'bezeichnung', 'datumproduktion', 'anschreiben', 'usereditid', 'useredittimestamp', 'steuersatz_normal', 'steuersatz_zwischen', 'steuersatz_ermaessigt', 'steuersatz_starkermaessigt', 'steuersatz_dienstleistung', 'waehrung', 'schreibschutz', 'pdfarchiviert', 'pdfarchiviertversion', 'typ', 'reservierart', 'auslagerart', 'projektfiliale', 'datumauslieferung', 'datumbereitstellung', 'unterlistenexplodieren', 'charge', 'arbeitsschrittetextanzeigen', 'einlagern_ok', 'auslagern_ok', 'mhd', 'auftragmengenanpassen', 'internebezeichnung', 'mengeoriginal', 'teilproduktionvon', 'teilproduktionnummer', 'parent', 'parentnummer', 'bearbeiterid', 'mengeausschuss', 'mengeerfolgreich', 'abschlussbemerkung', 'auftragid', 'funktionstest', 'seriennummer_erstellen', 'unterseriennummern_erfassen', 'datumproduktionende', 'standardlager', 'Men&uuml;');
                 $heading = array('','','Produktion','Kd-Nr.','Kunde','Vom','Bezeichnung','Soll','Ist','Zeit geplant','Zeit gebucht','Projekt','Status','Monitor','Men&uuml;');
 
                 $alignright = array(8,9,10,11);
@@ -71,9 +70,6 @@ class Produktion {
                         "<a href=\"index.php?module=produktion&action=pdf&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>".
                         "</td></tr></table>";
 
-
-//                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.datum, p.art, p.projekt, p.belegnr, p.internet, p.bearbeiter, p.angebot, p.freitext, p.internebemerkung, p.status, p.adresse, p.name, p.abteilung, p.unterabteilung, p.strasse, p.adresszusatz, p.ansprechpartner, p.plz, p.ort, p.land, p.ustid, p.ust_befreit, p.ust_inner, p.email, p.telefon, p.telefax, p.betreff, p.kundennummer, p.versandart, p.vertrieb, p.zahlungsweise, p.zahlungszieltage, p.zahlungszieltageskonto, p.zahlungszielskonto, p.bank_inhaber, p.bank_institut, p.bank_blz, p.bank_konto, p.kreditkarte_typ, p.kreditkarte_inhaber, p.kreditkarte_nummer, p.kreditkarte_pruefnummer, p.kreditkarte_monat, p.kreditkarte_jahr, p.firma, p.versendet, p.versendet_am, p.versendet_per, p.versendet_durch, p.autoversand, p.keinporto, p.keinestornomail, p.abweichendelieferadresse, p.liefername, p.lieferabteilung, p.lieferunterabteilung, p.lieferland, p.lieferstrasse, p.lieferort, p.lieferplz, p.lieferadresszusatz, p.lieferansprechpartner, p.packstation_inhaber, p.packstation_station, p.packstation_ident, p.packstation_plz, p.packstation_ort, p.autofreigabe, p.freigabe, p.nachbesserung, p.gesamtsumme, p.inbearbeitung, p.abgeschlossen, p.nachlieferung, p.lager_ok, p.porto_ok, p.ust_ok, p.check_ok, p.vorkasse_ok, p.nachnahme_ok, p.reserviert_ok, p.bestellt_ok, p.zeit_ok, p.versand_ok, p.partnerid, p.folgebestaetigung, p.zahlungsmail, p.stornogrund, p.stornosonstiges, p.stornorueckzahlung, p.stornobetrag, p.stornobankinhaber, p.stornobankkonto, p.stornobankblz, p.stornobankbank, p.stornogutschrift, p.stornogutschriftbeleg, p.stornowareerhalten, p.stornomanuellebearbeitung, p.stornokommentar, p.stornobezahlt, p.stornobezahltam, p.stornobezahltvon, p.stornoabgeschlossen, p.stornorueckzahlungper, p.stornowareerhaltenretour, p.partnerausgezahlt, p.partnerausgezahltam, p.kennen, p.logdatei, p.bezeichnung, p.datumproduktion, p.anschreiben, p.usereditid, p.useredittimestamp, p.steuersatz_normal, p.steuersatz_zwischen, p.steuersatz_ermaessigt, p.steuersatz_starkermaessigt, p.steuersatz_dienstleistung, p.waehrung, p.schreibschutz, p.pdfarchiviert, p.pdfarchiviertversion, p.typ, p.reservierart, p.auslagerart, p.projektfiliale, p.datumauslieferung, p.datumbereitstellung, p.unterlistenexplodieren, p.charge, p.arbeitsschrittetextanzeigen, p.einlagern_ok, p.auslagern_ok, p.mhd, p.auftragmengenanpassen, p.internebezeichnung, p.mengeoriginal, p.teilproduktionvon, p.teilproduktionnummer, p.parent, p.parentnummer, p.bearbeiterid, p.mengeausschuss, p.mengeerfolgreich, p.abschlussbemerkung, p.auftragid, p.funktionstest, p.seriennummer_erstellen, p.unterseriennummern_erfassen, p.datumproduktionende, p.standardlager, p.id FROM produktion p";
-//                $sql = "SELECT SQL_CALC_FOUND_ROWS p.id, $dropnbox, p.belegnr, p.kundennummer, p.name, p.datum, \"SUBSELECT\", \"SUBSELECT\", p.mengeerfolgreich, \"-\", \"-\", p.projekt, p.status, p.status, p.id FROM produktion p";
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
 			            p.id,
 			            $dropnbox,
@@ -188,7 +184,7 @@ class Produktion {
                     $menu = "";
                 }
 
-                $alignright = array(6,7,8,9,10);
+                $alignright = array(6,7,8,9,10,11);
 
                 $findcols = array('','p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','stueckmenge','lageralle','lager','reserviert','menge','geliefert_menge');
                 $searchsql = array('p.artikel','nummer','name','projekt','lager','menge','reserviert','geliefert_menge');
@@ -198,10 +194,18 @@ class Produktion {
 
 		        $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',p.id,'\" />') AS `auswahl`";
 
+               $artikellink = array (
+                        '<a href="index.php?module=artikel&action=lager&id=',
+                        ['sql' => 'p.artikel'],
+                        '">',
+                        ['sql' => '(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)'],
+                        '</a>'
+                    );
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                     p.id,
                     $dropnbox,
-                    (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
+                    ".$this->app->erp->ConcatSQL($artikellink)." as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(p.menge/$produktionsmenge,0,'de_DE') as stueckmenge,
@@ -219,11 +223,11 @@ class Produktion {
                     ),'') as lageralle,
                     if (('$standardlager' != '0') && ((SELECT lagerartikel FROM artikel a WHERE a.id = p.artikel LIMIT 1) != 0),
                         CONCAT (
-                            FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
+                            FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE lp.lager = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                             ' (',
                             FORMAT (
-                                    IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
-                                    IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
+                                    IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE lp.lager = $standardlager AND lpi.artikel = p.artikel),0)-
+                                    IFNULL((SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE lp.lager = $standardlager AND r.artikel = p.artikel),0),
                                     0,
                                     'de_DE'
                             ),
@@ -231,7 +235,7 @@ class Produktion {
                         )
                         ,''
                     ) as lager,
-                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
+                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE lp.lager = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
                     FORMAT(p.menge,0,'de_DE'),
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id
@@ -256,7 +260,7 @@ class Produktion {
                 $heading = array('','Nummer', 'Artikel', 'Projekt','Planmenge pro St&uuml;ck', 'Lager alle (verf&uuml;gbar)' ,'Lager (verf&uuml;gbar)', 'Reserviert','Planmenge', 'Verbraucht','');
                 $width = array('1%','5%',     '30%',        '5%',      '1%',        '1%',      '1%',      '1%' ,         '1%',               '1%'            ,'1%');
 
-                $alignright = array(5,6,7,8,9);
+                $alignright = array(5,6,7,8,9,10);
 
                 $findcols = array('p.artikel','(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)','(SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1)','projekt','stueckmenge','lageralle','lager','reserviert','menge','geliefert_menge');
 
@@ -267,10 +271,18 @@ class Produktion {
 
 		        $drop = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`";
 
+                $artikellink = array (
+                        '<a href="index.php?module=artikel&action=lager&id=',
+                        ['sql' => 'p.artikel'],
+                        '">',
+                        ['sql' => '(SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1)'],
+                        '</a>'
+                );
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                     p.artikel,
     		        $drop,
-                    (SELECT a.nummer FROM artikel a WHERE a.id = p.artikel LIMIT 1) as nummer,
+                    ".$this->app->erp->ConcatSQL($artikellink)." as nummer,
                     (SELECT a.name_de FROM artikel a WHERE a.id = p.artikel LIMIT 1) as name,
                     (SELECT projekt.abkuerzung FROM projekt INNER JOIN artikel a WHERE a.projekt = projekt.id AND a.id = p.artikel LIMIT 1) as projekt,
                     FORMAT(SUM(p.menge)/$produktionsmenge,0,'de_DE') as stueckmenge,
@@ -288,10 +300,10 @@ class Produktion {
                     ),'') as lageralle,
                     if (('$standardlager' != '0') && ((SELECT lagerartikel FROM artikel a WHERE a.id = p.artikel LIMIT 1) != 0),
                         CONCAT (
-                            FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
+                            FORMAT (IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE lp.lager = $standardlager AND lpi.artikel = p.artikel),0),0,'de_DE'),
                             ' (',
                             FORMAT (
-                                    IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi WHERE lpi.lager_platz = $standardlager AND lpi.artikel = p.artikel),0)-
+                                    IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE lp.lager = $standardlager AND lpi.artikel = p.artikel),0)-
                                     IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
                                     0,
                                     'de_DE'
@@ -379,12 +391,13 @@ class Produktion {
         $input = $this->GetInput();
         $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));
 
-        $sql = "SELECT status, belegnr, projekt, standardlager FROM produktion WHERE id = '$id'";
+        $sql = "SELECT status, belegnr, projekt, standardlager, lagerplatz FROM produktion WHERE id = '$id'";
         $from_db = $this->app->DB->SelectArr($sql)[0];
         $global_status = $from_db['status'];
         $global_produktionsnummer = $from_db['belegnr'];
         $global_projekt = $from_db['projekt'];
         $global_standardlager = $from_db['standardlager'];
+        $global_lagerplatz = $from_db['lagerplatz'];
 
 //        foreach ($input as $key => $value) {
 //            echo($key." -> ".$value."<br>\n");
@@ -420,6 +433,10 @@ class Produktion {
                         $input['status'] = 'angelegt';
                     }
 
+                    if ($global_status != 'freigegeben') {
+                        unset($input['lagerplatz']);
+                    }
+
                     $input['datumauslieferung'] = $this->app->erp->ReplaceDatum(true,$input['datumauslieferung'],true);
                     $input['datumbereitstellung'] = $this->app->erp->ReplaceDatum(true,$input['datumbereitstellung'],true);
                     $input['datumproduktion'] = $this->app->erp->ReplaceDatum(true,$input['datumproduktion'],true);
@@ -429,6 +446,10 @@ class Produktion {
                     $input['auftragid'] = $this->app->erp->ReplaceAuftrag(true,$input['auftrag'],true);
                     unset($input['auftrag']);
                     $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
+
+                    if (empty($input['standardlager'])) {
+                        $input['standardlager'] = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE id = ".$input['lagerplatz']);
+                    }
 
                     $columns = "id, ";
                     $values = "$id, ";
@@ -515,6 +536,48 @@ class Produktion {
                     $this->app->erp->BelegFreigabe("produktion",$id);
                     $this->ProtokollSchreiben($id,'Produktion freigegeben');
                 break;
+                case 'starten':
+                  
+                    if ($global_status != 'freigegeben') {
+                        $msg .= "<div class=\"error\">Falscher Status!</div>";
+                        break;
+                    }
+
+                 	$sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1 LIMIT 1";
+            	    $produktionsartikel = $this->app->DB->Select($sql);
+                    
+                    $lagercheck = $this->app->erp->LagerCheckBeleg(doctype:  'produktion', doctypeid: $id, ignore_articles: array($produktionsartikel));                   
+                    if (!$lagercheck['success']) {
+                        $msg .= "<div class=\"error\">Lagerbestand nicht ausreichend!</div>";
+                        break;
+                    }
+                    
+                    $auslagernresult =
+                        $this->app->erp->LieferscheinAuslagern(
+                        belegtyp: 'produktion',
+                        lieferschein: $id,      
+                        ziellagerplatz: $global_lagerplatz,                  
+                        anzeige_lagerplaetze_in_lieferschein: true,
+                        text: 'Produktion '.$global_produktionsnummer
+                    );
+
+                    $kommissionierung = $this->app->erp->GetNextKommissionierung();
+                    $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
+                               
+                    $this->Kommissionieren(
+                        kommissionierung : $kommissionierung,
+                        produktion: $id,
+                        ausgelagert: true,
+                        lagerplatzliste: $auslagernresult,
+                        ziellagerplatz: $global_lagerplatz,                  
+                        mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
+                        druckercode: $druckercode
+                    );
+    
+                    $sql = "UPDATE produktion SET status = 'gestartet' WHERE id=$id";
+                    $this->app->DB->Update($sql);
+                    $this->ProtokollSchreiben($id,'Produktion gestartet');
+                break;
                 case 'reservieren':
 
                     // Check quantities and reserve for every position
@@ -523,7 +586,7 @@ class Produktion {
                         break;
                     }
 
-                    $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
+                    $fortschritt = $this->MengeFortschritt($id);
 
                     if (empty($fortschritt)) {
                         break;
@@ -583,18 +646,15 @@ class Produktion {
                         break;
                     }
 
-                    $menge_moeglich = $this->LagerCheckProduktion($id, $global_standardlager, false);
+                    $menge_moeglich = $this->LagerCheckProduktion(produktion_id: $id, lager: 0, lagerplatz: $global_lagerplatz, only_reservations: false);
 
                     if ($menge_auslagern > $menge_moeglich) {
                         $msg .= "<div class=\"error\">Lagermenge nicht ausreichend. ($menge_auslagern > $menge_moeglich)</div>";
                         break;
                     }
 
-                    $sql = "UPDATE produktion SET status = 'gestartet' WHERE id=$id";
-                    $this->app->DB->Update($sql);
-
-                	  $sql = "SELECT pp.id, pp.artikel, pp.menge, pp.geliefert_menge, pp.stuecklistestufe, a.lagerartikel FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id";
-            	     $material = $this->app->DB->SelectArr($sql);
+                    $sql = "SELECT pp.id, pp.artikel, pp.menge, pp.geliefert_menge, pp.stuecklistestufe, a.lagerartikel FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id";
+                    $material = $this->app->DB->SelectArr($sql);
 
                     foreach ($material as $material_position) {
 
@@ -603,7 +663,7 @@ class Produktion {
 
                         // Remove material from stock
                         if ($material_position['stuecklistestufe'] == 0 && $material_position['lagerartikel']) {
-                            $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_standardlager,$menge_artikel_auslagern,$global_projekt,'Produktion '.$global_produktionsnummer);
+                            $result = $this->app->erp->LagerAuslagernRegal($material_position['artikel'],$global_lagerplatz,$menge_artikel_auslagern,$global_projekt,'Produktion '.$global_produktionsnummer);
                             if ($result != 1) {
                                 $msg .= "<div class=\"error\">Kritischer Fehler beim Ausbuchen! (Position ".$material_position['id'].", Menge ".$menge_artikel_auslagern.").</div>".
                                 $error = true;
@@ -625,7 +685,6 @@ class Produktion {
 
                     // Insert produced parts into stock
                     // Check target stock, if not existing, use default stock of article, if not given use production stock
-
 
                 	$ziellager_from_form = $this->app->erp->ReplaceLagerPlatz(true,$this->app->Secure->GetPOST('ziellager'),true); // Parameters: Target db?, value, from form?
 
@@ -680,7 +739,7 @@ class Produktion {
 
                     $menge_abteilen = $this->app->Secure->GetPOST('menge_produzieren');
 
-                    $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
+                    $fortschritt = $this->MengeFortschritt($id);
 
                     if (empty($fortschritt)) {
                         break;
@@ -836,9 +895,9 @@ class Produktion {
                             break;
                         }
 
-                        $fortschritt = $this->MengeFortschritt($id,$global_standardlager);
+                        $fortschritt = $this->MengeFortschritt($id);
 
-                        $result = $this->MengeAnpassen($id,$menge_anpassen,$global_standardlager);
+                        $result = $this->MengeAnpassen($id,$menge_anpassen);
 
                         if ($result == -1) {
                               $msg .= "<div class=\"error\">Ung&uuml;ltige Planmenge.</div>";
@@ -1055,6 +1114,7 @@ class Produktion {
                 p.unterseriennummern_erfassen,
                 p.datumproduktionende,
                 p.standardlager,
+                p.lagerplatz,
                 p.id FROM produktion p"." WHERE id=$id";	
 
         $produktion_from_db = $this->app->DB->SelectArr($sql)[0];
@@ -1101,12 +1161,14 @@ class Produktion {
         $this->app->YUI->AutoComplete("artikel_planen", "stuecklistenartikel");
         $this->app->YUI->AutoComplete("artikel_hinzu", "artikelnummer");
 
-        $this->app->YUI->AutoComplete("standardlager", "lagerplatz");
+        $this->app->YUI->AutoComplete("standardlager", "lager_produktion");
+        $this->app->YUI->AutoComplete("lagerplatz", "lagerplatz");
         $this->app->YUI->AutoComplete("ziellager", "lagerplatz");
 
         $this->app->YUI->AutoComplete("artikel", "artikelnummer");
 
-        $this->app->Tpl->Set('STANDARDLAGER', $this->app->erp->ReplaceLagerPlatz(false,$produktion_from_db['standardlager'],false)); // Convert ID to form display
+        $this->app->Tpl->Set('STANDARDLAGER', $this->app->erp->ReplaceLager(false,$produktion_from_db['standardlager'],false)); // Convert ID to form display
+        $this->app->Tpl->Set('LAGERPLATZ', $this->app->erp->ReplaceLagerPlatz(false,$produktion_from_db['lagerplatz'],false)); // Convert ID to form display
 
         $this->app->YUI->DatePicker("datum");
         $this->app->Tpl->Set('DATUM',$this->app->erp->ReplaceDatum(false,$produktion_from_db['datum'],true));
@@ -1155,7 +1217,7 @@ class Produktion {
         } else {
         // Planned
 
-            $fortschritt = $this->MengeFortschritt((int) $id, 0);
+            $fortschritt = $this->MengeFortschritt((int) $id);
 
             if (!empty($fortschritt)) {
                 $this->app->Tpl->Set('MENGE_GEPLANT',$this->FormatMenge($fortschritt['geplant']));
@@ -1200,20 +1262,27 @@ class Produktion {
             $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', $produktion_from_db['belegnr']." ".$produktionsartikel_name." (<a href=\"index.php?module=artikel&action=edit&id=".$produktionsartikel_id."\">".$produktionsartikel_nummer."</a>)", html: true);
         }
 
+        $this->app->Tpl->Set('LAGERPLATZDISABLED','disabled');
+
         // Action menu
         switch ($produktion_from_db['status']) {
             case 'angelegt':
                 $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_STARTEN_VISIBLE','hidden');
             break;
             case 'freigegeben':
                 $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('LAGERPLATZDISABLED','');
             break;
             case 'gestartet':
+                $this->app->Tpl->Set('AKTION_RESERVIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_PLANEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_LEEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_STARTEN_VISIBLE','hidden');
             break;
             case 'abgeschlossen':
             case 'storniert':
@@ -1225,6 +1294,7 @@ class Produktion {
                 $this->app->Tpl->Set('AKTION_TEILEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_LEEREN_VISIBLE','hidden');
+                $this->app->Tpl->Set('AKTION_STARTEN_VISIBLE','hidden');
             break;
             default: // new item
                 $this->app->Tpl->Set('POSITIONEN_TAB_VISIBLE','hidden="hidden"');
@@ -1265,7 +1335,7 @@ class Produktion {
 
         $id = $this->app->Secure->GetGET('id');
 
-        $fortschritt = $this->MengeFortschritt((int) $id, 0);
+        $fortschritt = $this->MengeFortschritt((int) $id);
 
         if (!empty($fortschritt)) {
             $this->app->Tpl->Set('MINI_MENGE_GEPLANT',$this->FormatMenge($fortschritt['geplant']));
@@ -1303,7 +1373,9 @@ class Produktion {
 
         $input['datum'] = $this->app->Secure->GetPOST('datum');
     	$input['standardlager'] = $this->app->Secure->GetPOST('standardlager');
-        $input['standardlager'] = $this->app->erp->ReplaceLagerPlatz(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
+        $input['standardlager'] = $this->app->erp->ReplaceLager(true,$input['standardlager'],true); // Parameters: Target db?, value, from form?
+    	$input['lagerplatz'] = $this->app->Secure->GetPOST('lagerplatz');
+        $input['lagerplatz'] = $this->app->erp->ReplaceLagerPlatz(true,$input['lagerplatz'],true); // Parameters: Target db?, value, from form?
 
 	    $input['reservierart'] = $this->app->Secure->GetPOST('reservierart');
 	    $input['auslagerart'] = $this->app->Secure->GetPOST('auslagerart');
@@ -1325,9 +1397,15 @@ class Produktion {
 
     // Check stock situation and reservation
     // Return possible production quantity for all stock or just the reserved
-    function LagerCheckProduktion(int $produktion_id, int $lager, bool $only_reservations) : int {
+    function LagerCheckProduktion(int $produktion_id, int $lager, bool $only_reservations, int $lagerplatz = 0) : int {
 
         $menge_moeglich = PHP_INT_MAX;
+
+        if ($lagerplatz) {
+            $lager_where = "lp.id=$lagerplatz";
+        } else {
+            $lager_where = "lp.lager=$lager";
+        }
 
   	    $sql = "SELECT pp.id, artikel, SUM(menge) as menge, geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON pp.artikel = a.id WHERE pp.produktion=$produktion_id AND pp.stuecklistestufe=0 AND a.lagerartikel != 0 GROUP BY artikel";
 	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
@@ -1351,16 +1429,17 @@ class Produktion {
             $menge_plan_artikel = $materialbedarf_artikel['menge'];
             $menge_geliefert = $materialbedarf_artikel['menge_geliefert'];
 
-            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
+            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
+
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
 
             if ($only_reservations) {
                 $menge_verfuegbar = $menge_reserviert_diese;
             } else {
-                $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt WHERE lager_platz=$lager AND artikel = $artikel";
+                $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel";
         	    $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
-                $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE lager_platz=$lager AND artikel = $artikel";
+                $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel";
     	        $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
                 $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE artikel = $artikel";
@@ -1393,23 +1472,26 @@ class Produktion {
     // Returns amount that is reserved
     function ArtikelReservieren(int $artikel, $lager, int $menge_reservieren, int $menge_reservieren_limit, string $objekt, int $objekt_id, int $position_id, string $text) : int {
 
+        die("Not implemented");
+
         if($lager <= 0 || $artikel <= 0 || $position_id <= 0) {
             return 0;
         }
 
-    	$sql = "SELECT menge FROM lager_reserviert WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND lager_platz = $lager AND posid = $position_id";
+    	$sql = "SELECT menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND lp.lager = $lager AND posid = $position_id";
         $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
         if ($menge_reserviert_diese == null) {
             $menge_reserviert_diese = 0;
         }
 
-        $sql = "SELECT menge FROM lager_reserviert WHERE artikel = $artikel AND lager_platz = $lager";
-        $menge_reserviert_lager_platz = $this->app->DB->SelectArr($sql)[0]['menge'];
-        if ($menge_reserviert_lager_platz == null) {
-            $menge_reserviert_lager_platz = 0;
+        $sql = "SELECT menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE artikel = $artikel AND lp.lager = $lager";
+        $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
+        if ($menge_reserviert_lager == null) {
+            $menge_reserviert_lager = 0;
         }
     	
-    	$sql = "SELECT menge FROM lager_platz_inhalt WHERE artikel = $artikel AND lager_platz = $lager";
+    	$sql = "SELECT menge FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE artikel = $artikel AND lp.lager = $lager";
+
         $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
         if ($menge_lager == null) {
             $menge_lager = 0;
@@ -1429,7 +1511,7 @@ class Produktion {
             return(0);
         }
 
-        $menge_lager_reservierbar = $menge_lager - $menge_reserviert_lager_platz + $menge_reserviert_diese;
+        $menge_lager_reservierbar = $menge_lager - $menge_reserviert_lager + $menge_reserviert_diese;
 
         if ($menge_reservieren_limit > 0) {
             if ($menge_reserviert_diese > $menge_reservieren_limit) {
@@ -1459,7 +1541,7 @@ class Produktion {
                         $objekt_id.",".
                         $artikel.",".
                         $position_id.",".
-                        $lager.",".
+                        "'',".
                         "'$text'".
                         ")";
                 $this->app->DB->Update($sql);
@@ -1478,9 +1560,9 @@ class Produktion {
         Lower limit is the already produced quantity
         Return -1 if not possible, else 1
     */
-    function MengeAnpassen(int $produktion_id, int $menge_neu, int $lager) : int {
+    function MengeAnpassen(int $produktion_id, int $menge_neu) : int {
 
-        $fortschritt = $this->MengeFortschritt($produktion_id,$lager);
+        $fortschritt = $this->MengeFortschritt($produktion_id);
 
         $sql = "SELECT menge,geliefert_menge FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $produktionsmengen_alt = $this->app->DB->SelectArr($sql)[0];
@@ -1508,7 +1590,7 @@ class Produktion {
             // Free surplus reservations
             $restreservierung = $menge_pro_stueck * ($menge_neu+$fortschritt['ausschuss']-$fortschritt['produziert']);
 
-            $result = $this->ArtikelReservieren($position['artikel'],$lager,0,$restreservierung,'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
+            $result = $this->ArtikelReservieren($position['artikel'],$produktion_alt['standardlager'],0,$restreservierung,'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
         }
         return(1);
     }
@@ -1526,13 +1608,11 @@ class Produktion {
     If lager <= 0 -> use lager from database
 
     */
-    function MengeFortschritt(int $produktion_id, int $lager) : array {
+    function MengeFortschritt(int $produktion_id) : array {
         $result = array();
 
-        if ($lager <= 0) {
-            $sql = "SELECT standardlager FROM produktion WHERE id = $produktion_id";
-            $lager = $this->app->DB->SelectArr($sql)[0]['standardlager'];
-        }
+        $sql = "SELECT standardlager FROM produktion WHERE id = $produktion_id";
+        $lager = $this->app->DB->SelectArr($sql)[0]['standardlager'];
 
         $sql = "SELECT menge as geplant, geliefert_menge as produziert FROM produktion_position WHERE produktion = $produktion_id AND stuecklistestufe = 1";
         $position_values = $this->app->DB->SelectArr($sql)[0];
@@ -1541,11 +1621,17 @@ class Produktion {
             return($result);
         }
 
-        $sql = "SELECT mengeerfolgreich as erfolgreich, mengeausschuss as ausschuss FROM produktion WHERE id = $produktion_id";
+        $sql = "SELECT p.auslagern_ok, p.lagerplatz, p.mengeerfolgreich as erfolgreich, p.mengeausschuss as ausschuss, k.id kommissionierung FROM produktion p LEFT JOIN kommissionierung k ON k.produktion = p.id WHERE p.id = $produktion_id";
         $produktion_values = $this->app->DB->SelectArr($sql)[0];
 
         if (empty($produktion_values)) {
             return($result);
+        }      
+
+        if ($produktion_values['kommissionierung']) {
+            $lagerplatz = (int) $produktion_values['lagerplatz'];
+        } else {
+            $lagerplatz = 0;
         }
 
         $result['geplant'] = $position_values['geplant'];
@@ -1556,13 +1642,8 @@ class Produktion {
 
         $result['offen'] = $result['geplant']-$result['erfolgreich'];
 
-        if (empty($lager)) {
-            $result['reserviert'] = 0;
-            $result['produzierbar'] = 0;
-        } else {
-            $result['reserviert'] = $this->LagerCheckProduktion($produktion_id, $lager, true);
-            $result['produzierbar'] = $this->LagerCheckProduktion($produktion_id, $lager, false);
-        }
+        $result['reserviert'] = $this->LagerCheckProduktion(produktion_id: $produktion_id, lager: $lager, lagerplatz: $lagerplatz, only_reservations: true);
+        $result['produzierbar'] = $this->LagerCheckProduktion(produktion_id: $produktion_id, lager: $lager, lagerplatz: $lagerplatz, only_reservations: false);
 
         return($result);
     }
@@ -1577,14 +1658,14 @@ class Produktion {
             $where .= "AND id = $produktion_id";
         }
 
-        $sql = "SELECT id, lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok FROM produktion ".$where;
+        $sql = "SELECT id, lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok, standardlager, lagerplatz FROM produktion ".$where;
         $produktionen = $this->app->DB->SelectArr($sql);
 
         foreach ($produktionen as $produktion) {
 
             $produktion_id = $produktion['id'];
 
-            $fortschritt = $this->MengeFortschritt($produktion_id,-1);
+            $fortschritt = $this->MengeFortschritt($produktion_id);
 
             if (empty($fortschritt)) {
                 continue;
@@ -1608,7 +1689,7 @@ class Produktion {
                 $values['reserviert_ok'] = 0;
             }
 
-            // auslagern_ok
+/*            // auslagern_ok
             if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
                 $values['auslagern_ok'] = 1;
     //        } else if ($fortschritt['produziert'] > 0) {
@@ -1616,7 +1697,7 @@ class Produktion {
             } else {
                 $values['auslagern_ok'] = 0;
             }
-
+*/
             // einlagern_ok
             if ($fortschritt['erfolgreich'] >= $fortschritt['geplant']) {
                 $values['einlagern_ok'] = 1;
@@ -1624,15 +1705,6 @@ class Produktion {
     //            $values['einlagern_ok'] = 2;
             } else {
                 $values['einlagern_ok'] = 0;
-            }
-
-            // reserviert_ok
-            if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
-                $values['auslagern_ok'] = 1;
-    //        } else if ($fortschritt['produziert'] > 0) {
-    //            $values['auslagern_ok'] = 2;
-            } else {
-                $values['auslagern_ok'] = 0;
             }
 
             $fix = "";
@@ -1656,7 +1728,7 @@ class Produktion {
             return(-1);
         }
 
-        $fortschritt = $this->MengeFortschritt($produktion_id,0);
+        $fortschritt = $this->MengeFortschritt($produktion_id);
         if (empty($fortschritt)) {
             return(-2);
         }
@@ -1763,6 +1835,69 @@ class Produktion {
         $Brief->GetProduktion($id);
         $Brief->displayDocument(false);
         exit();
+    }
+
+    function Kommissionieren(int $kommissionierung, int $produktion, bool $ausgelagert, array $lagerplatzliste, $ziellagerplatz, int $mengedruck, $druckercode, $kommentar = '') {
+
+        $sql = sprintf(
+            "UPDATE kommissionierung SET produktion = %d, adresse = (SELECT adresse FROM produktion WHERE id = %d LIMIT 1), ausgelagert = %d, kommentar = CONCAT(kommentar, '%s') WHERE id = %d LIMIT 1",
+                $produktion,
+                $produktion,
+                $ausgelagert,
+                $kommentar,
+                $kommissionierung
+            );
+
+        $this->app->DB->Update(
+            $sql
+        );
+
+        $produktionarr = $this->app->DB->SelectRow("SELECT belegnr, adresse, projekt FROM produktion WHERE id = ".$produktion);
+
+        foreach ($lagerplatzliste['storageMovements'] as $storageMovement) {
+            $this->app->DB->Update(
+                sprintf(
+                    "INSERT INTO kommissionierung_position (kommissionierung, artikel, lager_platz, menge, ziel_lager_platz) VALUES (%d, %d, %d, %d, %d)",
+                    $kommissionierung,
+                    $storageMovement['artikel'],
+                    $storageMovement['lager_platz'],
+                    $storageMovement['menge'],
+                    $ziellagerplatz
+                )
+            );
+
+            $this->app->DB->Insert("
+                INSERT INTO
+                    lager_reserviert
+                (id,adresse,artikel,menge,grund,projekt,firma,bearbeiter,datum,objekt,parameter,lager_platz)
+                VALUES(
+                    '',
+                    ".$produktionarr['adresse'].",
+                    ".$storageMovement['artikel'].",
+                    ".$storageMovement['menge'].",
+                    'Produktion ".$produktionarr['belegnr'].", Kommissionierung ".$kommissionierung."',
+                    ".$produktionarr['projekt'].",
+                    '".$this->app->User->GetFirma()."',
+                    '".$this->app->User->GetName()."',
+                    'NOW(6)',
+                    'produktion',
+                    '$produktion',
+                    '$ziellagerplatz'
+                )");
+        }
+
+        // Kommissionierschein
+        if ($mengedruck > 0) {
+//            $this->app->erp->BriefpapierHintergrunddisable = true; // Disable background
+            $Brief = new KommissionierungPDF($this->app, styleData: array('mit_gewicht' => false, 'ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
+            $Brief->GetKommissionierung($kommissionierung);
+            $tmpfile = $Brief->displayTMP();
+            for($drucklauf = 0; $drucklauf < $mengedruck;$drucklauf++) {
+                $spooler_id = $this->app->printer->Drucken($druckercode, $tmpfile);
+            }
+            unlink($tmpfile);
+            $this->app->erp->BriefpapierHintergrundDisable($druckercode); // Restore default background from printersettings
+        }
     }
 
 }

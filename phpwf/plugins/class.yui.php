@@ -3693,8 +3693,8 @@ class YUI {
         $reserviert_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_bestellt.png\" style=\"margin-right:1px\" title=\"Artikel reserviert\" border=\"0\">";
         $reserviert_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ware_nicht_bestellt.png\" style=\"margin-right:1px\" title=\"Artikel nicht reserviert\" border=\"0\">";
 
-        $auslagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ausgelagert.png\" title=\"Produktion ausgelagert\" border=\"0\" style=\"margin-right:1px\">";
-        $auslagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_ausgelagert.png\" title=\"Produktion ausgelagert\" border=\"0\" style=\"margin-right:1px\">";
+        $auslagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/ausgelagert.png\" title=\"Produktion kommissioniert\" border=\"0\" style=\"margin-right:1px\">";
+        $auslagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_ausgelagert.png\" title=\"Produktion nicht kommissioniert\" border=\"0\" style=\"margin-right:1px\">";
 
         $einlagern_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/eingelagert.png\" title=\"Produktion eingelagert\" border=\"0\" style=\"margin-right:1px\">";
         $einlagern_nicht_ok = "<img src=\"./themes/{$this->app->Conf->WFconf['defaulttheme']}/images/nicht_eingelagert.png\" title=\"Produktion eingelagert\" border=\"0\" style=\"margin-right:1px\">";

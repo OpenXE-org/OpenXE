@@ -150,13 +150,13 @@ class Lager extends GenLager {
 
         // headings
 
-        $heading = array('Bezeichnung','Adresse', 'Nachschub', 'Kommissionierung','Sperrlager', 'Verbrauchslager','POS Lager','Volumen','Regalart','Kategorie','Sortierung','Men&uuml;');
-        $width = array('15%', '10%', '10%','5%','5%','10%','10%','5%','10%','8%','1%');
-        $findcols = array('l.kurzbezeichnung', 'a.name',"if(l.autolagersperre,'ja','')","if(l.kommissionierlager,'ja','')","if(l.sperrlager,'ja','')", "IF(l.verbrauchslager,'ja','')","IF(l.poslager,'ja','')",'breite','regalart','abckategorie','l.rownumber','id');
+        $heading = array('Bezeichnung','Adresse', 'Nachschub', 'Kommissionierung','Produktion','Sperrlager','Verbrauchslager','POS Lager','Volumen','Regalart','Kategorie','Sortierung','Men&uuml;');
+        $width = array('15%', '10%', '5%','5%','5%','10%','10%','5%','10%','8%','1%');
+        $findcols = array('l.kurzbezeichnung', 'a.name',"if(l.autolagersperre,'ja','')","if(l.kommissionierlager,'ja','')","if(l.allowproduction,'ja','')","if(l.sperrlager,'ja','')", "IF(l.verbrauchslager,'ja','')","IF(l.poslager,'ja','')",'breite','regalart','abckategorie','l.rownumber','id');
         $searchsql = array('l.kurzbezeichnung','regalart','abckategorie','a.name');
         $defaultorder = 4;
         $defaultorderdesc = 1;
-        $alignright = [10];
+        $alignright = [11];
         $menu = "<table><tr><td nowrap><a href=\"index.php?module=lager&action=platzeditpopup&id=%value%\"><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=lager&action=deleteplatz&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;<a href=\"#\" onclick=PrintDialog(\"index.php?module=lager&action=regaletiketten&id=%value%\");><img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/labelprinter.png\" border=\"0\"></a></td></tr></table>";
 
         // SQL statement
@@ -166,6 +166,7 @@ class Lager extends GenLager {
                     a.name,
                     if(l.autolagersperre,'ja','') as autolagersperre,
                     if(l.kommissionierlager,'ja','') as kommissionierfrage,
+                    if(l.allowproduction,'ja','') as produktioslager,                    
                     if(l.sperrlager,'ja','') as sperrlager,
                     if(l.verbrauchslager,'ja','') as verbrauchslager,
                     if(l.poslager,'ja','') as poslager,

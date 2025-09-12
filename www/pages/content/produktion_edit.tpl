@@ -44,6 +44,7 @@
                                     <tr><td>{|Status|}:</td><td><input disabled type="text" name="status" value="[STATUS]" size="20"></td></tr>
                                     <tr><td>{|Angelegt am|}:</td><td><input type="text" name="datum" id="datum" value="[DATUM]" size="10"></td></tr>
                                     <tr><td>{|Materiallager|}:</td><td><input type="text" name="standardlager" id="standardlager" value="[STANDARDLAGER]" size="20"></td></tr>
+                                    <tr><td>{|Produktionslagerplatz|}:</td><td><input type="text" name="lagerplatz" id="lagerplatz" value="[LAGERPLATZ]" size="20" [LAGERPLATZDISABLED]></td></tr>
                                 </table>
                             </fieldset>
                         </div>
@@ -55,6 +56,7 @@
                                     <legend>{|Aktionen|}</legend>
                                     <tr><td><button [AKTION_SPEICHERN_DISABLED] name="submit" value="speichern" class="ui-button-icon" style="width:100%;">Speichern</button></td></tr>
                                     <tr [AKTION_FREIGEBEN_VISIBLE]><td><button name="submit" value="freigeben" class="ui-button-icon" style="width:100%;">Freigeben</button></td></tr>
+                                    <tr [AKTION_STARTEN_VISIBLE]><td><button name="submit" value="starten" class="ui-button-icon" style="width:100%;" title="Lager alle Artikel in den Produktionslagerplatz">Starten</button></td></tr>
                                 </table>
                             </fieldset>
                         </div>
@@ -204,7 +206,7 @@
                                     <table width="100%" border="0" class="mkTableFormular">
                                         <legend>{|Anpassen|}</legend>
                                         <tr [AKTION_PLANEN_VISIBLE]><td><button name="submit" value="planen" class="ui-button-icon" style="width:100%;">Planen</button></td></tr>
-                                        <tr [AKTION_LEEREN_VISIBLE]><td><button name="submit" value="leeren" class="ui-button-icon" style="width:100%;">Leeren</button></td></tr>                                         
+                                        <tr [AKTION_LEEREN_VISIBLE]><td><button name="submit" value="leeren" class="ui-button-icon" style="width:100%;">Leeren</button></td></tr>
                                         <tr [AKTION_FREIGEBEN_VISIBLE]><td><button name="submit" value="freigeben" class="ui-button-icon" style="width:100%;">Freigeben</button></td></tr>
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="teilen" class="ui-button-icon" style="width:100%;">Teilen</button></td></tr>
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="anpassen" class="ui-button-icon" style="width:100%;">Anpassen</button></td></tr>
@@ -217,6 +219,7 @@
                                 <fieldset>
                                     <table width="100%" border="0" class="mkTableFormular">
                                         <legend>{|Produzieren|}</legend>
+                                    <tr [AKTION_STARTEN_VISIBLE]><td><button name="submit" value="starten" class="ui-button-icon" style="width:100%;" title="Lager alle Artikel in den Produktionslagerplatz">Starten</button></td></tr>
                                         <tr [AKTION_RESERVIEREN_VISIBLE]><td><button name="submit" value="reservieren" class="ui-button-icon" style="width:100%;">Reservieren</button></td></tr>
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="etikettendrucken" class="ui-button-icon" style="width:100%;" [AKTION_ETIKETTEN_DRUCKEN_DISABLED]>Etiketten drucken</button></td></tr>
                                         <tr [AKTION_PRODUZIEREN_VISIBLE]><td><button name="submit" value="produzieren" class="ui-button-icon" style="width:100%;">Produzieren</button></td></tr>
