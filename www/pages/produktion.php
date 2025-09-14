@@ -1534,21 +1534,19 @@ class Produktion {
         }
 
     	$sql = "SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND $lager_where AND posid = $position_id";
-    	   	
         $menge_reserviert_diese = $this->app->DB->Select($sql);
         if ($menge_reserviert_diese == null) {
             $menge_reserviert_diese = 0;
         }
 
         $sql = "SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE artikel = $artikel AND $lager_where";
-        $menge_reserviert_lager = $this->app->DB->SelectArr($sql);
+        $menge_reserviert_lager = $this->app->DB->Select($sql);
         if ($menge_reserviert_lager == null) {
             $menge_reserviert_lager = 0;
         }
     	
     	$sql = "SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE artikel = $artikel AND $lager_where";
-
-        $menge_lager = $this->app->DB->SelectArr($sql);
+        $menge_lager = $this->app->DB->Select($sql);
         if ($menge_lager == null) {
             $menge_lager = 0;
         }
