@@ -1481,7 +1481,7 @@ class Produktion {
             $menge_plan_artikel = $materialbedarf_artikel['menge'];
             $menge_geliefert = $materialbedarf_artikel['menge_geliefert'];
 
-            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
+            $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r LEFT JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
 
             if ($only_reservations) {
@@ -1490,7 +1490,7 @@ class Produktion {
                 $sql = "SELECT SUM(menge) as menge FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel";
         	    $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
-                $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel";
+                $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r LEFT JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel";
     	        $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
 
                 $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r WHERE artikel = $artikel";
@@ -1529,17 +1529,19 @@ class Produktion {
 
         if ($lagerplatz) {
             $lager_where = "lp.id=$lagerplatz";
-        } else {
+        } else if ($lager) {
             $lager_where = "lp.lager=$lager";
+        } else {
+            $lager_where = "1";
         }
 
-    	$sql = "SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND $lager_where AND posid = $position_id";
+    	$sql = "SELECT SUM(menge) FROM lager_reserviert r LEFT JOIN lager_platz lp ON r.lager_platz = lp.id WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND $lager_where AND posid = $position_id";
         $menge_reserviert_diese = $this->app->DB->Select($sql);
         if ($menge_reserviert_diese == null) {
             $menge_reserviert_diese = 0;
         }
 
-        $sql = "SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE artikel = $artikel AND $lager_where";
+        $sql = "SELECT SUM(menge) FROM lager_reserviert r LEFT JOIN lager_platz lp ON r.lager_platz = lp.id WHERE artikel = $artikel AND $lager_where";
         $menge_reserviert_lager = $this->app->DB->Select($sql);
         if ($menge_reserviert_lager == null) {
             $menge_reserviert_lager = 0;
