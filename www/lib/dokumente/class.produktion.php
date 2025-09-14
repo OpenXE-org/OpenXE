@@ -184,12 +184,13 @@ class ProduktionPDF extends BriefpapierCustom {
         $nlbr = "\n\n";
     }
 
-    $artikel = $this->app->DB->SelectArr(
+    $sql = 
         sprintf(
             "SELECT
                 p.id,
                 a.nummer as itemno,
                 a.name_de as name,
+                (SELECT GROUP_CONCAT(DISTINCT lp.kurzbezeichnung SEPARATOR ', ') FROM lager_platz lp INNER JOIN kommissionierung_position kp ON kp.lager_platz = lp.id INNER JOIN kommissionierung k ON kp.kommissionierung = k.id WHERE k.produktion = $id AND kp.artikel = a.id) as `desc`,
                 a.herstellernummer,
                 TRIM(pp.menge)+0 as amount,
                 '' as steuersatz_ermaessigt,
@@ -202,8 +203,8 @@ class ProduktionPDF extends BriefpapierCustom {
             AND pp.stuecklistestufe = 0
             ", 
             $id
-        )
-    );
+        );
+    $artikel = $this->app->DB->SelectArr($sql);
 
     /*
           $item['name'] = ($langeartikelnummern?"\r\n\r\n":'').$this->app->erp->ReadyForPDF($item['name']);

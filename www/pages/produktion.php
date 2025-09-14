@@ -433,7 +433,7 @@ class Produktion {
                         $input['status'] = 'angelegt';
                     }
 
-                    if ($global_status != 'freigegeben') {
+                    if ($global_status != 'freigegeben' && $global_status != 'angelegt') {
                         unset($input['lagerplatz']);
                     }
 
@@ -448,7 +448,7 @@ class Produktion {
                     $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true);
 
                     if (empty($input['standardlager'])) {
-                        $input['standardlager'] = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE id = ".$input['lagerplatz']);
+                        $input['standardlager'] = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE id = '".$input['lagerplatz']."'");
                     }
 
                     $columns = "id, ";
@@ -537,7 +537,7 @@ class Produktion {
                     $this->ProtokollSchreiben($id,'Produktion freigegeben');
                 break;
                 case 'starten':
-                  
+
                     if ($global_status != 'freigegeben') {
                         $msg .= "<div class=\"error\">Falscher Status!</div>";
                         break;
@@ -545,35 +545,35 @@ class Produktion {
 
                  	$sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1 LIMIT 1";
             	    $produktionsartikel = $this->app->DB->Select($sql);
-                    
-                    $lagercheck = $this->app->erp->LagerCheckBeleg(doctype:  'produktion', doctypeid: $id, ignore_articles: array($produktionsartikel));                   
+
+                    $lagercheck = $this->app->erp->LagerCheckBeleg(doctype:  'produktion', doctypeid: $id, ignore_articles: array($produktionsartikel));
                     if (!$lagercheck['success']) {
                         $msg .= "<div class=\"error\">Lagerbestand nicht ausreichend!</div>";
                         break;
                     }
-                    
+
                     $auslagernresult =
                         $this->app->erp->LieferscheinAuslagern(
                         belegtyp: 'produktion',
-                        lieferschein: $id,      
-                        ziellagerplatz: $global_lagerplatz,                  
+                        lieferschein: $id,
+                        ziellagerplatz: $global_lagerplatz,
                         anzeige_lagerplaetze_in_lieferschein: true,
                         text: 'Produktion '.$global_produktionsnummer
                     );
 
                     $kommissionierung = $this->app->erp->GetNextKommissionierung();
                     $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
-                               
+
                     $this->Kommissionieren(
                         kommissionierung : $kommissionierung,
                         produktion: $id,
                         ausgelagert: true,
                         lagerplatzliste: $auslagernresult,
-                        ziellagerplatz: $global_lagerplatz,                  
+                        ziellagerplatz: $global_lagerplatz,
                         mengedruck: $projektarr['autodruckkommissionierscheinstufe1']?$projektarr['autodruckkommissionierscheinstufe1menge']:0,
                         druckercode: $druckercode
                     );
-    
+
                     $sql = "UPDATE produktion SET status = 'gestartet' WHERE id=$id";
                     $this->app->DB->Update($sql);
                     $this->ProtokollSchreiben($id,'Produktion gestartet');
@@ -601,8 +601,18 @@ class Produktion {
 
                         // Calculate new needed quantity if there is scrap
                         $materialbedarf_position['menge'] = $materialbedarf_position['menge']*($fortschritt['ausschuss']+$fortschritt['geplant'])/$fortschritt['geplant'];
+                        $result = $this->ArtikelReservieren(
+                            artikel: $materialbedarf_position['artikel'],
+                            lager: $global_standardlager,
+                            lagerplatz: $global_lagerplatz,
+                            menge_reservieren: $materialbedarf_position['menge']-$materialbedarf_position['geliefert_menge'],
+                            menge_reservieren_limit: 0,
+                            objekt: 'produktion',
+                            objekt_id: $id,
+                            position_id: $materialbedarf_position['id'],
+                            text: "Produktion $global_produktionsnummer"
+                        );
 
-                        $result = $this->ArtikelReservieren($materialbedarf_position['artikel'], $global_standardlager, $materialbedarf_position['menge']-$materialbedarf_position['geliefert_menge'], 0, 'produktion', $id, $materialbedarf_position['id'],"Produktion $global_produktionsnummer");
                         if ($result > 0) {
                             $reservierung_durchgefuehrt = true;
                         }
@@ -646,7 +656,7 @@ class Produktion {
                         break;
                     }
 
-                    $menge_moeglich = $this->LagerCheckProduktion(produktion_id: $id, lager: 0, lagerplatz: $global_lagerplatz, only_reservations: false);
+                    $menge_moeglich = $this->LagerCheckProduktion(produktion_id: $id, lagerplatz: $global_lagerplatz, only_reservations: false);
 
                     if ($menge_auslagern > $menge_moeglich) {
                         $msg .= "<div class=\"error\">Lagermenge nicht ausreichend. ($menge_auslagern > $menge_moeglich)</div>";
@@ -670,7 +680,17 @@ class Produktion {
                                 break;
                             }
                             // Adjust reservation
-                            $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,-$menge_artikel_auslagern,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
+                            $result = $this->ArtikelReservieren(
+                                artikel: $material_position['artikel'],
+                                lager: $global_standardlager,
+                                lagerplatz: $global_lagerplatz,
+                                menge_reservieren: -$menge_artikel_auslagern,
+                                menge_reservieren_limit: 0,
+                                objekt: 'produktion',
+                                objekt_id: $id,
+                                position_id: $material_position['id'],
+                                text: "Produktion $global_produktionsnummer"
+                            );
                         }
 
                         // Update position
@@ -857,8 +877,17 @@ class Produktion {
 
                         // Free surplus reservations
                         $restreservierung = $menge_pro_stueck * $fortschritt['offen']-$menge_abteilen;
-                        $result = $this->ArtikelReservieren($position['artikel'],$global_standardlager,0,$restreservierung,'produktion',$id,$position['id'],"Produktion $global_produktionsnummer");
-
+                        $result = $this->ArtikelReservieren(
+                            artikel: $material_position['artikel'],
+                            lager: $global_standardlager,
+                            lagerplatz: $global_lagerplatz,
+                            menge_reservieren: $restreservierung,
+                            menge_reservieren_limit: 0,
+                            objekt: 'produktion',
+                            objekt_id: $id,
+                            position_id: $position['id'],
+                            text: "Produktion $global_produktionsnummer"
+                        );
                     }
 
                     $this->ProtokollSchreiben($id,"Teilproduktion erstellt: ".$produktion_neu['belegnr']." (Menge $menge_abteilen)");
@@ -874,7 +903,17 @@ class Produktion {
                 	    $material = $this->app->DB->SelectArr($sql);
                         foreach ($material as $material_position) {
                             // Remove reservation
-                            $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
+                            $result = $this->ArtikelReservieren(
+                                artikel: $material_position['artikel'],
+                                lager: $global_standardlager,
+                                lagerplatz: $global_lagerplatz,
+                                menge_reservieren: 0,
+                                menge_reservieren_limit: 0,
+                                objekt: 'produktion',
+                                objekt_id: $id,
+                                position_id: $material_position['id'],
+                                text: "Produktion $global_produktionsnummer"
+                            );
                         }
                         $sql = "DELETE FROM produktion_position WHERE produktion = $id";
                         $this->app->DB->Update($sql);
@@ -918,7 +957,17 @@ class Produktion {
 
                     foreach ($material as $material_position) {
                         // Remove reservation
-                        $result = $this->ArtikelReservieren($material_position['artikel'],$global_standardlager,0,0,'produktion',$id,$material_position['id'],"Produktion $global_produktionsnummer");
+                        $result = $this->ArtikelReservieren(
+                                artikel: $material_position['artikel'],
+                                lager: $global_standardlager,
+                                lagerplatz: $global_lagerplatz,
+                                menge_reservieren: 0,
+                                menge_reservieren_limit: 0,
+                                objekt: 'produktion',
+                                objekt_id: $id,
+                                position_id: $material_position['id'],
+                                text: "Produktion $global_produktionsnummer"
+                            );
                     }
 
                     $this->ProtokollSchreiben($id,'Produktion abgeschlossen');
@@ -1271,6 +1320,7 @@ class Produktion {
                 $this->app->Tpl->Set('AKTION_PRODUZIEREN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_ABSCHLIESSEN_VISIBLE','hidden');
                 $this->app->Tpl->Set('AKTION_STARTEN_VISIBLE','hidden');
+                $this->app->Tpl->Set('LAGERPLATZDISABLED','');
             break;
             case 'freigegeben':
                 $this->app->Tpl->Set('AKTION_FREIGEBEN_VISIBLE','hidden');
@@ -1397,14 +1447,16 @@ class Produktion {
 
     // Check stock situation and reservation
     // Return possible production quantity for all stock or just the reserved
-    function LagerCheckProduktion(int $produktion_id, int $lager, bool $only_reservations, int $lagerplatz = 0) : int {
+    function LagerCheckProduktion(int $produktion_id, int $lager = 0, int $lagerplatz = 0, bool $only_reservations = false) : int {
 
         $menge_moeglich = PHP_INT_MAX;
 
         if ($lagerplatz) {
             $lager_where = "lp.id=$lagerplatz";
-        } else {
+        } else if ($lager) {
             $lager_where = "lp.lager=$lager";
+        } else {
+            $lager_where = "1";
         }
 
   	    $sql = "SELECT pp.id, artikel, SUM(menge) as menge, geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON pp.artikel = a.id WHERE pp.produktion=$produktion_id AND pp.stuecklistestufe=0 AND a.lagerartikel != 0 GROUP BY artikel";
@@ -1430,7 +1482,6 @@ class Produktion {
             $menge_geliefert = $materialbedarf_artikel['menge_geliefert'];
 
             $sql = "SELECT SUM(menge) as menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE $lager_where AND artikel = $artikel AND r.objekt = 'produktion' AND r.parameter = $produktion_id";
-
     	    $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
 
             if ($only_reservations) {
@@ -1454,7 +1505,7 @@ class Produktion {
                 $menge_moeglich = $menge_moeglich_artikel;
             }
 
-//          echo("------------------------Lager $lager a $artikel menge_plan_artikel $menge_plan_artikel menge_geliefert $menge_geliefert menge_lager $menge_lager menge_reserviert_diese $menge_reserviert_diese menge_reserviert_gesamt $menge_reserviert_gesamt menge_verfuegbar $menge_verfuegbar menge_moeglich_artikel $menge_moeglich_artikel menge_moeglich $menge_moeglich<br>");
+          //echo("------------------------Lager $lager a $artikel menge_plan_artikel $menge_plan_artikel menge_geliefert $menge_geliefert menge_lager $menge_lager menge_reserviert_diese $menge_reserviert_diese menge_reserviert_gesamt $menge_reserviert_gesamt menge_verfuegbar $menge_verfuegbar menge_moeglich_artikel $menge_moeglich_artikel menge_moeglich $menge_moeglich<br>");
 
         }
 
@@ -1470,29 +1521,34 @@ class Produktion {
     // If quantity is negative, the existing reservation will be reduced
     // If current quantity is higher as menge_reservieren_limit, current quantity will be reduced
     // Returns amount that is reserved
-    function ArtikelReservieren(int $artikel, $lager, int $menge_reservieren, int $menge_reservieren_limit, string $objekt, int $objekt_id, int $position_id, string $text) : int {
-
-        die("Not implemented");
+    function ArtikelReservieren(int $artikel, $lager, $lagerplatz, int $menge_reservieren, int $menge_reservieren_limit, string $objekt, int $objekt_id, int $position_id, string $text) : int {
 
         if($lager <= 0 || $artikel <= 0 || $position_id <= 0) {
             return 0;
         }
 
-    	$sql = "SELECT menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND lp.lager = $lager AND posid = $position_id";
-        $menge_reserviert_diese = $this->app->DB->SelectArr($sql)[0]['menge'];
+        if ($lagerplatz) {
+            $lager_where = "lp.id=$lagerplatz";
+        } else {
+            $lager_where = "lp.lager=$lager";
+        }
+
+    	$sql = "SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE objekt='$objekt' AND parameter = $objekt_id AND artikel = $artikel AND $lager_where AND posid = $position_id";
+    	   	
+        $menge_reserviert_diese = $this->app->DB->Select($sql);
         if ($menge_reserviert_diese == null) {
             $menge_reserviert_diese = 0;
         }
 
-        $sql = "SELECT menge FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE artikel = $artikel AND lp.lager = $lager";
-        $menge_reserviert_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
+        $sql = "SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE artikel = $artikel AND $lager_where";
+        $menge_reserviert_lager = $this->app->DB->SelectArr($sql);
         if ($menge_reserviert_lager == null) {
             $menge_reserviert_lager = 0;
         }
     	
-    	$sql = "SELECT menge FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE artikel = $artikel AND lp.lager = $lager";
+    	$sql = "SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE artikel = $artikel AND $lager_where";
 
-        $menge_lager = $this->app->DB->SelectArr($sql)[0]['menge'];
+        $menge_lager = $this->app->DB->SelectArr($sql);
         if ($menge_lager == null) {
             $menge_lager = 0;
         }
@@ -1535,13 +1591,14 @@ class Produktion {
                 if ($menge_reservieren > $menge_lager_reservierbar) {
                     $menge_reservieren = $menge_lager_reservierbar; // Take all that is there
                 }
-                $sql = "INSERT INTO lager_reserviert (menge,objekt,parameter,artikel,posid,lager_platz,grund) VALUES (".
+                $sql = "INSERT INTO lager_reserviert (menge,objekt,parameter,artikel,posid,lager,lager_platz,grund) VALUES (".
                         $menge_reservieren.",".
                         "'$objekt',".
                         $objekt_id.",".
                         $artikel.",".
                         $position_id.",".
-                        "'',".
+                        $lager.",".
+                        $lagerplatz.",".
                         "'$text'".
                         ")";
                 $this->app->DB->Update($sql);
@@ -1589,8 +1646,17 @@ class Produktion {
 
             // Free surplus reservations
             $restreservierung = $menge_pro_stueck * ($menge_neu+$fortschritt['ausschuss']-$fortschritt['produziert']);
-
-            $result = $this->ArtikelReservieren($position['artikel'],$produktion_alt['standardlager'],0,$restreservierung,'produktion',$produktion_id,$position['id'],"Produktion ".$produktion_alt['belegnr']);
+            $result = $this->ArtikelReservieren(
+                artikel: $position['artikel'],
+                lager: $produktion_alt['standardlager'],
+                lagerplatz: $$produktion_alt['lagerplatz'],
+                menge_reservieren: 0,
+                menge_reservieren_limit: $restreservierung,
+                objekt: 'produktion',
+                objekt_id: $produktion_id,
+                position_id: $position['id'],
+                text: "Produktion ".$produktion_alt['belegnr']
+            );
         }
         return(1);
     }
@@ -1626,7 +1692,7 @@ class Produktion {
 
         if (empty($produktion_values)) {
             return($result);
-        }      
+        }
 
         if ($produktion_values['kommissionierung']) {
             $lagerplatz = (int) $produktion_values['lagerplatz'];
@@ -1642,7 +1708,7 @@ class Produktion {
 
         $result['offen'] = $result['geplant']-$result['erfolgreich'];
 
-        $result['reserviert'] = $this->LagerCheckProduktion(produktion_id: $produktion_id, lager: $lager, lagerplatz: $lagerplatz, only_reservations: true);
+        $result['reserviert'] = $this->LagerCheckProduktion(produktion_id: $produktion_id, only_reservations: true);
         $result['produzierbar'] = $this->LagerCheckProduktion(produktion_id: $produktion_id, lager: $lager, lagerplatz: $lagerplatz, only_reservations: false);
 
         return($result);
@@ -1655,10 +1721,10 @@ class Produktion {
         $where = "WHERE status IN ('freigegeben','gestartet') ";
 
         if ($produktion_id > 0) {
-            $where .= "AND id = $produktion_id";
+            $where .= "AND p.id = $produktion_id";
         }
 
-        $sql = "SELECT id, lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok, standardlager, lagerplatz FROM produktion ".$where;
+        $sql = "SELECT p.id, lager_ok, reserviert_ok, auslagern_ok, einlagern_ok, zeit_ok, versand_ok, p.standardlager, p.lagerplatz FROM produktion p ".$where;
         $produktionen = $this->app->DB->SelectArr($sql);
 
         foreach ($produktionen as $produktion) {
@@ -1689,20 +1755,17 @@ class Produktion {
                 $values['reserviert_ok'] = 0;
             }
 
-/*            // auslagern_ok
-            if ($fortschritt['produziert'] >= $fortschritt['geplant']) {
+            if ($this->app->DB->Select("SELECT id FROM kommissionierung WHERE produktion = ".$produktion_id)) {
                 $values['auslagern_ok'] = 1;
-    //        } else if ($fortschritt['produziert'] > 0) {
-    //            $values['auslagern_ok'] = 2;
             } else {
                 $values['auslagern_ok'] = 0;
             }
-*/
+
             // einlagern_ok
             if ($fortschritt['erfolgreich'] >= $fortschritt['geplant']) {
                 $values['einlagern_ok'] = 1;
-    //        } else if ($fortschritt['erfolgreich'] > 0) {
-    //            $values['einlagern_ok'] = 2;
+            } else if ($fortschritt['erfolgreich'] > 0) {
+                $values['einlagern_ok'] = 2;
             } else {
                 $values['einlagern_ok'] = 0;
             }
