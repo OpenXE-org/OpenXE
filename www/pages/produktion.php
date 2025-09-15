@@ -543,6 +543,11 @@ class Produktion {
                         break;
                     }
 
+                    if (empty($global_lagerplatz)) {
+                        $msg .= "<div class=\"error\">Kein Produktionslagerplatz angegeben!</div>";
+                        break;
+                    }
+
                  	$sql = "SELECT artikel FROM produktion_position pp WHERE produktion=$id AND stuecklistestufe=1 LIMIT 1";
             	    $produktionsartikel = $this->app->DB->Select($sql);
 
