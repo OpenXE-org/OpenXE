@@ -66,6 +66,8 @@ class Versandart_dpddepot extends Versanddienstleister
      */
     protected function GetAuthToken(): string
     {
+        if (empty($this->settings->delisId))
+            return '';
         $ns = 'dpd';
         $key_expire = 'auth_expire_' . $this->settings->delisId;
         $key_token = 'auth_token_' . $this->settings->delisId;
