@@ -37,30 +37,6 @@ class Versandart_go extends Versanddienstleister
         );
         $this->timeZone = new DateTimeZone('Europe/Berlin');
     }
-    $order->consigneeAddress->name3 = $json->address2;
-    $order->consigneeAddress->street = $json->street;
-    $order->consigneeAddress->houseNumber = $json->streetnumber;
-    $order->consigneeAddress->country = $json->country;
-    $order->consigneeAddress->zipCode = $json->zip;
-    $order->consigneeAddress->city = $json->city;
-    $order->consigneeAddress->email = $json->email;
-    $order->consigneeAddress->phoneNumber = $json->phone;
-    $order->packages[0]->length = ceil($json->length);
-    $order->packages[0]->width = ceil($json->width);
-    $order->packages[0]->height = ceil($json->height);
-    $ret = new CreateShipmentResult();
-    $result = $this->api->createOrder($order);
-    if ($result instanceof CreateOrderResponse) {
-      $ret->Success = true;
-      $ret->TrackingNumber = $result->hwbNumber;
-      $ret->TrackingUrl =  'https://www.general-overnight.com/deu_de/versenden/sendungsverfolgung.html?reference='.$result->hwbNumber;
-      $ret->Label = base64_decode($result->hwbOrPackageLabel);
-      $ret->AdditionalInfo = "Abholtag: ".$result->pickupDate->format('d.m.Y')." / Zustelltag: ".$result->deliveryDate->format('d.m.Y');
-    } else {
-      $ret->Errors[] = $result;
-    }
-    return $ret;
-  }
 
     public function GetName(): string
     {
@@ -171,6 +147,9 @@ class Versandart_go extends Versanddienstleister
         $order->consigneeAddress->city = $json->address->city;
         $order->consigneeAddress->email = $json->address->email;
         $order->consigneeAddress->phoneNumber = $json->address->phone;
+        $order->packages[0]->length = ceil($json->length);
+        $order->packages[0]->width = ceil($json->width);
+        $order->packages[0]->height = ceil($json->height);
         $result = $this->api->createOrder($order);
         if ($result instanceof CreateOrderResponse) {
             $ret->Success = true;
