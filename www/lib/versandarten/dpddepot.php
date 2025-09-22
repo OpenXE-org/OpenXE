@@ -216,13 +216,24 @@ class Versandart_dpddepot extends Versanddienstleister
         }
         try {
             $result = $this->api->storeOrders($printOption, [$order]);
-            $ret->Success = true;
-            $ret->TrackingNumber = $result->shipmentResponses[0]->parcelInformation[0]->parcelLabelNumber;
-            $ret->TrackingUrl = 'https://tracking.dpd.de/status/de_DE/parcel/' . $ret->TrackingNumber;
-            $ret->Label = $result->output->content;
+
+            if (empty($result->shipmentResponses[0]->faults)) {
+                $ret->Success = true;
+                $ret->TrackingNumber = $result->shipmentResponses[0]->parcelInformation[0]->parcelLabelNumber;
+                $ret->TrackingUrl = 'https://tracking.dpd.de/status/de_DE/parcel/' . $ret->TrackingNumber;
+                $ret->Label = $result->output->content;
+            } else {
+                $ret->Success = false;
+                foreach ($result->shipmentResponses[0]->faults as $fault) {
+                    $ret->Errors[] = $fault->faultCode.": ".$fault->message;
+                }
+            }
+
         } catch (Exception $e) {
             $ret->Errors[] = $e->getMessage();
-            $ret->Errors[] = print_r($e->detail, true);
+            if (!empty($e->detail)) {
+                $ret->Errors[] = print_r($e->detail, true);
+            }
         }
         return $ret;
     }
