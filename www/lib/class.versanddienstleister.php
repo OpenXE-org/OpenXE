@@ -327,7 +327,7 @@ abstract class Versanddienstleister
     $shipment = $this->GetShipmentDefaults($lieferscheinId);
     $shipment->package->weight = $gewicht;
 
-    if ($this->request->getMethod() === 'POST') {
+    if ($this->request->getMethod() === 'POST' && $this->request->getContentType() === 'application/json') {
       $json = $this->request->getJson();
       $ret = [];
       if ($json->submit == 'print') {
