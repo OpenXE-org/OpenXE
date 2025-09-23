@@ -29,6 +29,7 @@ class YUI {
   }
 
   function dateien_module_objekt_map($module) : string {
+
     $dateien_module_objekt_map_array = array(
         'adresse' => 'adressen',
         'ticket'  => 'ticket_header'
@@ -4195,7 +4196,9 @@ url:strUrl, success:function(html){strReturn = html;}, async:false
 
         parse_str(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_QUERY), $queries);
 
-        $objekt = $this->dateien_module_objekt_map($queries['module']);
+        if (!empty($queries['module'])) {
+            $objekt = $this->dateien_module_objekt_map($queries['module']);
+        }
 
         if(!preg_match('/[A-Za-z_]/', $objekt)) {
           $objekt='';
