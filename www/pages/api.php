@@ -10637,7 +10637,7 @@ XML;
       $xmldata['stueckliste_artikel']['artikel'][0] = $tmp;
     }
 
-    if(count($xmldata['stueckliste_artikel']['artikel']) > 0)
+    if(isset($xmldata['stueckliste_artikel']['artikel'])?count($xmldata['stueckliste_artikel']['artikel']):0 > 0)
       $this->app->DB->Delete("DELETE FROM stueckliste WHERE stuecklistevonartikel='".$id."'");
 
     $cartikel = isset($xmldata['stueckliste_artikel']['artikel'])?count($xmldata['stueckliste_artikel']['artikel']):0;
