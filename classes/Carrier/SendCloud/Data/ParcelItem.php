@@ -29,7 +29,7 @@ class ParcelItem
       'weight' => number_format($this->Weight / 1000, 3, '.', null),
       'quantity' => $this->Quantity,
       'description' => $this->Description,
-      'value' => $this->Price,
+      'value' => round($this->Price, 2),
       'origin_country' => $this->OriginCountry,
       'sku' => $this->Sku ?? '',
       'product_id' => $this->ProductId ?? '',

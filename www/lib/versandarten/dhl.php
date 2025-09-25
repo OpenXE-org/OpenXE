@@ -1,7 +1,7 @@
 <?php
 
 /*
- * SPDX-FileCopyrightText: 2022-2024 Andreas Palm
+ * SPDX-FileCopyrightText: 2022-2025 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -17,6 +17,7 @@ use Xentral\Carrier\Dhl\Data\ShipmentItem;
 use Xentral\Carrier\Dhl\DhlApi;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\ShipmentService;
 use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 require_once(dirname(__DIR__).'/class.versanddienstleister.php');
@@ -78,17 +79,17 @@ class Versandart_dhl extends Versanddienstleister{
     ];
   }
 
-  public function CreateShipment(object $json, array $address): CreateShipmentResult
+  protected function CreateShipment(object $json): CreateShipmentResult
   {
     $shipment = new Shipment();
-    $shipment->ShipmentDetails->product = $json->product;
-    $shipment->ShipmentDetails->accountNumber = $this->GetAccountNumber($json->product);
+    $shipment->ShipmentDetails->product = $json->productId;
+    $shipment->ShipmentDetails->accountNumber = $this->GetAccountNumber($json->productId);
     $shipment->ShipmentDetails->SetShipmentDate(new DateTimeImmutable('today'));
     $shipment->ShipmentDetails->ShipmentItem = new ShipmentItem();
-    $shipment->ShipmentDetails->ShipmentItem->weightInKG = $json->weight ?? 0;
-    $shipment->ShipmentDetails->ShipmentItem->lengthInCM = $json->length;
-    $shipment->ShipmentDetails->ShipmentItem->widthInCM = $json->width;
-    $shipment->ShipmentDetails->ShipmentItem->heightInCM = $json->height;
+    $shipment->ShipmentDetails->ShipmentItem->weightInKG = $json->package->weight ?? 0;
+    $shipment->ShipmentDetails->ShipmentItem->lengthInCM = $json->package->length;
+    $shipment->ShipmentDetails->ShipmentItem->widthInCM = $json->package->width;
+    $shipment->ShipmentDetails->ShipmentItem->heightInCM = $json->package->height;
     $shipment->Shipper->Name->name1 = $this->settings->sender_name1 ?? '';
     $shipment->Shipper->Address->streetName = $this->settings->sender_street ?? '';
     $shipment->Shipper->Address->streetNumber = $this->settings->sender_streetnumber;
@@ -99,65 +100,65 @@ class Versandart_dhl extends Versanddienstleister{
     $shipment->Shipper->Communication->phone = $this->settings->sender_phone;
     $shipment->Shipper->Communication->email = $this->settings->sender_email;
     $shipment->Shipper->Communication->contactPerson = $this->settings->sender_contact_person;
-    $shipment->Receiver->name1 = $json->name;
-    switch ($json->addresstype) {
+    $shipment->Receiver->name1 = $json->address->name;
+    switch ($json->address->addresstype) {
       case 0:
         $shipment->Receiver->Address = new ReceiverNativeAddress();
                 
-        $shipment->Receiver->name1 = $json->company_name;
+        $shipment->Receiver->name1 = $json->address->companyName;
         $shipment->Receiver->Address->name2 = join(
                         ';', 
                         array_filter(
                             [
-                                $json->contact_name,
-                                $json->company_division
+                                $json->address->contactName,
+                                $json->address->companyDivision
                             ],
                             fn(string $item) => !empty(trim($item))
                         )
                     );                        
                               
-        $shipment->Receiver->Address->streetName = $json->street ?? '';
-        $shipment->Receiver->Address->streetNumber = $json->streetnumber;
-        $shipment->Receiver->Address->city = $json->city ?? '';
-        $shipment->Receiver->Address->zip = $json->zip ?? '';
-        $shipment->Receiver->Address->Origin = Country::Create($json->country ?? 'DE', $json->state);
-        if (isset($json->address2) && !empty($json->address2))
-          $shipment->Receiver->Address->addressAddition[] = $json->address2;
+        $shipment->Receiver->Address->streetName = $json->address->street ?? '';
+        $shipment->Receiver->Address->streetNumber = $json->address->streetnumber;
+        $shipment->Receiver->Address->city = $json->address->city ?? '';
+        $shipment->Receiver->Address->zip = $json->address->zip ?? '';
+        $shipment->Receiver->Address->Origin = Country::Create($json->address->country ?? 'DE', $json->address->state);
+        if (isset($json->address->address2) && !empty($json->address->address2))
+          $shipment->Receiver->Address->addressAddition[] = $json->address->address2;
         break;
       case 1:
         $shipment->Receiver->Packstation = new PackStation();
-        $shipment->Receiver->Packstation->postNumber = $json->postnumber;
-        $shipment->Receiver->Packstation->packstationNumber = $json->parcelstationNumber;
-        $shipment->Receiver->Packstation->city = $json->city ?? '';
-        $shipment->Receiver->Packstation->zip = $json->zip ?? '';
-        $shipment->Receiver->Packstation->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        $shipment->Receiver->Packstation->postNumber = $json->address->postnumber;
+        $shipment->Receiver->Packstation->packstationNumber = $json->address->parcelstationNumber;
+        $shipment->Receiver->Packstation->city = $json->address->city ?? '';
+        $shipment->Receiver->Packstation->zip = $json->address->zip ?? '';
+        $shipment->Receiver->Packstation->Origin = Country::Create($json->address->country ?? 'DE', $json->address->state);
         break;
       case 2:
         $shipment->Receiver->Postfiliale = new Postfiliale();
-        $shipment->Receiver->Postfiliale->postNumber = $json->postnumber;
-        $shipment->Receiver->Postfiliale->postfilialeNumber = $json->postofficeNumber;
-        $shipment->Receiver->Postfiliale->city = $json->city ?? '';
-        $shipment->Receiver->Postfiliale->zip = $json->zip ?? '';
-        $shipment->Receiver->Postfiliale->Origin = Country::Create($json->country ?? 'DE', $json->state);
+        $shipment->Receiver->Postfiliale->postNumber = $json->address->postnumber;
+        $shipment->Receiver->Postfiliale->postfilialeNumber = $json->address->postofficeNumber;
+        $shipment->Receiver->Postfiliale->city = $json->address->city ?? '';
+        $shipment->Receiver->Postfiliale->zip = $json->address->zip ?? '';
+        $shipment->Receiver->Postfiliale->Origin = Country::Create($json->address->country ?? 'DE', $json->address->state);
         break;
       case 3:
         $shipment->Receiver->Address = new ReceiverNativeAddress();
                 
-        $shipment->Receiver->name1 = $json->name;
-        $shipment->Receiver->Address->name2 = $json->contact_name;
+        $shipment->Receiver->name1 = $json->address->name;
+        $shipment->Receiver->Address->name2 = $json->address->contactName;
                        
-        $shipment->Receiver->Address->streetName = $json->street ?? '';
-        $shipment->Receiver->Address->streetNumber = $json->streetnumber;
-        $shipment->Receiver->Address->city = $json->city ?? '';
-        $shipment->Receiver->Address->zip = $json->zip ?? '';
-        $shipment->Receiver->Address->Origin = Country::Create($json->country ?? 'DE', $json->state);
-        if (isset($json->address2) && !empty($json->address2))
-          $shipment->Receiver->Address->addressAddition[] = $json->address2;
+        $shipment->Receiver->Address->streetName = $json->address->street ?? '';
+        $shipment->Receiver->Address->streetNumber = $json->address->streetnumber;
+        $shipment->Receiver->Address->city = $json->address->city ?? '';
+        $shipment->Receiver->Address->zip = $json->address->zip ?? '';
+        $shipment->Receiver->Address->Origin = Country::Create($json->address->country ?? 'DE', $json->address->state);
+        if (isset($json->address->address2) && !empty($json->address->address2))
+          $shipment->Receiver->Address->addressAddition[] = $json->address->address2;
         break;
     }
     $shipment->Receiver->Communication = new Communication();
-    $shipment->Receiver->Communication->email = $json->email;
-    $shipment->Receiver->Communication->phone = $json->phone;
+    $shipment->Receiver->Communication->email = $json->address->email;
+    $shipment->Receiver->Communication->phone = $json->address->phone;
     $api = new DhlApi($this->settings->user, $this->settings->signature);
 
     $ret = new CreateShipmentResult();
@@ -185,7 +186,7 @@ class Versandart_dhl extends Versanddienstleister{
     return $ret;
   }
 
-  public function GetShippingProducts(): array
+  protected function GetShippingProducts(): array
   {
     $result = [];
     if ($this->settings->accountnumber) {
@@ -201,7 +202,7 @@ class Versandart_dhl extends Versanddienstleister{
           ->WithWidth(11, 60)
           ->WithHeight(1, 60)
           ->WithWeight(0.01, 31.5)
-          ->WithServices([Product::SERVICE_PREMIUM]);
+          ->WithServices([ShipmentService::SERVICE_PREMIUM]);
     }
     if ($this->settings->accountnumber_euro) {
       $result[] = Product::Create('V54EPAK', 'DHL Europaket')
@@ -230,7 +231,7 @@ class Versandart_dhl extends Versanddienstleister{
           ->WithWidth(7, 25)
           ->WithHeight(0.1, 10)
           ->WithWeight(0.01, 1)
-          ->WithServices([Product::SERVICE_PREMIUM]);
+          ->WithServices([ShipmentService::SERVICE_PREMIUM]);
     }
     return $result;
   }
@@ -251,6 +252,4 @@ class Versandart_dhl extends Versanddienstleister{
     {
         return null;
     }
-
-
 }

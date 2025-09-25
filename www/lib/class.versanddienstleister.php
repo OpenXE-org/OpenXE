@@ -6,10 +6,15 @@
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
 
+use Xentral\Components\Http\Request;
+use Xentral\Modules\ShippingMethod\Model\AddressType;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
-use Xentral\Modules\ShippingMethod\Model\CustomsInfo;
+use Xentral\Modules\ShippingMethod\Model\CustomsDeclaration;
+use Xentral\Modules\ShippingMethod\Model\CustomsDeclarationItem;
 use Xentral\Modules\ShippingMethod\Model\Product;
+use Xentral\Modules\ShippingMethod\Model\Shipment;
 use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
+use Xentral\Modules\ShippingMethod\Model\ShipmentType;
 
 abstract class Versanddienstleister
 {
@@ -22,12 +27,19 @@ abstract class Versanddienstleister
   protected int $shippingMail;
   protected ?int $businessLetterTemplateId;
   protected ?object $settings;
+  protected array $errors; // To allow catching of exceptions in the constructor and evaluating them above
+
+  protected Request $request;
 
   public function __construct(ApplicationCore $app, ?int $id)
   {
     $this->app = $app;
-    if ($id === null || $id === 0)
-      return;
+    $this->errors = array();
+    $this->request = $this->app->Container->get('Request');
+    if ($id === null || $id === 0) {
+        $this->errors[] = "No ID given";
+        return;
+    }
     $this->id = $id;
     $row = $this->app->DB->SelectRow("SELECT * FROM versandarten WHERE id=$this->id");
     $this->type = $row['type'];
@@ -39,125 +51,98 @@ abstract class Versanddienstleister
     $this->settings = json_decode($row['einstellungen_json']);
   }
 
+  // Returns an array of errors if any occurred
+  public function getErrors() : array {
+    return($this->errors);
+  }
+
   public function isEtikettenDrucker(): bool
   {
     return false;
   }
 
-  public abstract function GetName(): string;
-
-  public function GetAdressdaten($id, $sid): array
+  protected function GetAdressdaten(int $lieferscheinId): array
   {
-    $auftragId = $lieferscheinId = $rechnungId = $versandId = 0;
-    if ($sid === 'rechnung')
-      $rechnungId = $id;
-    if ($sid === 'lieferschein') {
-      $lieferscheinId = $id;
-      $auftragId = $this->app->DB->Select("SELECT auftragid FROM lieferschein WHERE id=$lieferscheinId LIMIT 1");
-      $rechnungId = $this->app->DB->Select("SELECT id FROM rechnung WHERE lieferschein = '$lieferscheinId' LIMIT 1");
-      if ($rechnungId <= 0)
-        $rechnungId = $this->app->DB->Select("SELECT rechnungid FROM lieferschein WHERE id='$lieferscheinId' LIMIT 1");
+    $docArr = $this->app->DB->SelectRow("SELECT * FROM lieferschein WHERE id = $lieferscheinId LIMIT 1");
+
+    $addressfields = ['name', 'adresszusatz', 'abteilung', 'ansprechpartner', 'unterabteilung', 'ort', 'plz',
+        'strasse', 'land'];
+
+    $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
+
+    if ($docArr['typ'] == "firma") {
+      $ret['companyName'] = $docArr['name'];
+      $ret['addresstype'] = AddressType::COMPANY;
+    } else {
+      $ret['addresstype'] = AddressType::PRIVATE;
     }
 
-    if ($auftragId <= 0 && $rechnungId > 0)
-      $auftragId = $this->app->DB->Select("SELECT auftragid FROM rechnung WHERE id=$rechnungId LIMIT 1");
+    $ret['contactName'] = $docArr['ansprechpartner'];
 
-    if ($sid === 'rechnung' || $sid === 'lieferschein' || $sid === 'adresse') {
-    
-      $ret['addresstype'] = 0; // 0 = firma, 1 = packstation, 2 = postfiliale, 3 = privatadresse
-    
-      $docArr = $this->app->DB->SelectRow("SELECT * FROM `$sid` WHERE id = $id LIMIT 1");
-      $ret['addressId'] = $docArr['adresse'];
-      $ret['auftragId'] = $auftragId;
-      $ret['rechnungId'] = $rechnungId;
-      $ret['lieferscheinId'] = $lieferscheinId;
-
-      $addressfields = ['name', 'adresszusatz', 'abteilung', 'ansprechpartner', 'unterabteilung', 'ort', 'plz',
-          'strasse', 'land'];       
-
-      $ret['original'] = array_filter($docArr, fn($key) => in_array($key, $addressfields), ARRAY_FILTER_USE_KEY);
-
-      if ($docArr['typ'] == "firma") {
-        $ret['company_name'] = $docArr['name'];
-        $ret['addresstype'] = 0;
-      } else {
-        $ret['addresstype'] = 3;
-      }
-
-      $ret['contact_name'] = $docArr['ansprechpartner'];
-      
-      $ret['company_division'] = join(
-                        ';', 
-                        array_filter(
-                            [
-                                $docArr['abteilung'],
-                                $docArr['unterabteilung']
-                            ],
-                            fn(string $item) => !empty(trim($item))
-                        )
-                    );
+    $ret['companyDivision'] = join(
+        ';',
+        array_filter(
+            [
+                $docArr['abteilung'],
+                $docArr['unterabteilung'],
+            ],
+            fn(string $item) => !empty(trim($item)),
+        ),
+    );
             
-      $ret['name'] = $docArr['name'];    
-      
-      $ret['address2'] = $docArr['adresszusatz'];
+    $ret['name'] = $docArr['name'];
+    $ret['address2'] = $docArr['adresszusatz'];
+    $ret['city'] = $docArr['ort'];
+    $ret['zip'] = $docArr['plz'];
+    $ret['country'] = $docArr['land'];
+    $ret['phone'] = $docArr['telefon'];
+    $ret['email'] = $docArr['email'];
 
-      $ret['city'] = $docArr['ort'];
-      $ret['zip'] = $docArr['plz'];
-      $ret['country'] = $docArr['land'];
-      $ret['phone'] = $docArr['telefon'];
-      $ret['email'] = $docArr['email'];
+    $strasse = trim($docArr['strasse']);
+    $ret['streetwithnumber'] = $strasse;
+    $hausnummer = trim($this->app->erp->ExtractStreetnumber($strasse));
+    $strasse = trim(str_replace($hausnummer, '', $strasse));
+    $strasse = str_replace('.', '', $strasse);
 
-      $strasse = trim($docArr['strasse']);
-      $ret['streetwithnumber'] = $strasse;
-      $hausnummer = trim($this->app->erp->ExtractStreetnumber($strasse));
-      $strasse = trim(str_replace($hausnummer, '', $strasse));
-      $strasse = str_replace('.', '', $strasse);
+    if ($strasse == '') {
+      $strasse = trim($hausnummer);
+      $hausnummer = '';
+    }
+    $ret['street'] = $strasse;
+    $ret['streetnumber'] = $hausnummer;
 
-      if ($strasse == '') {
-        $strasse = trim($hausnummer);
-        $hausnummer = '';
-      }
-      $ret['street'] = $strasse;
-      $ret['streetnumber'] = $hausnummer;
-
-      if (str_contains($docArr['strasse'], 'Packstation')) {
-        $ret['addresstype'] = 1;
-        $ret['parcelstationNumber'] = $hausnummer;
-      } else if (str_contains($docArr['strasse'], 'Postfiliale')) {
-        $ret['addresstype'] = 2;
-        $ret['postofficeNumber'] = $hausnummer;
-      }
-
-      $tmp = join(' ', [$docArr['ansprechpartner'], $docArr['abteilung'], $docArr['unterabteilung']]);
-      if (preg_match("/\d{6,10}/", $tmp, $match)) {
-        $ret['postnumber'] = $match[0];
-      }
-
-      if ($auftragId > 0) {
-        $internet = $this->app->DB->Select("SELECT internet FROM auftrag WHERE id = $auftragId LIMIT 1");
-        if (!empty($internet))
-          $orderNumberParts[] = $internet;
-      }
-      if (!empty($docArr['ihrebestellnummer'])) {
-        $orderNumberParts[] = $docArr['ihrebestellnummer'];
-      }
-      $orderNumberParts[] = ucfirst($sid)." ".$docArr['belegnr'];
-      $ret['order_number'] = implode(' / ', $orderNumberParts);
+    if (str_contains($docArr['strasse'], 'Packstation')) {
+      $ret['addresstype'] = AddressType::PARCELSTATION;
+      $ret['parcelstationNumber'] = $hausnummer;
+    } else if (str_contains($docArr['strasse'], 'Postfiliale')) {
+      $ret['addresstype'] = AddressType::SHOP;
+      $ret['postofficeNumber'] = $hausnummer;
     }
 
-    // wenn rechnung im spiel entweder durch versand oder direkt rechnung
-    if ($rechnungId > 0) {
-      $invoice_data = $this->app->DB->SelectRow("SELECT zahlungsweise, soll, belegnr FROM rechnung WHERE id='$rechnungId' LIMIT 1");
-      $ret['zahlungsweise'] = $invoice_data['zahlungsweise'];
-      $ret['betrag'] = $invoice_data['soll'];
-      $ret['invoice_number'] = $invoice_data['belegnr'];
-
-      if ($invoice_data['zahlungsweise'] === 'nachnahme') {
-        $ret['nachnahme'] = true;
-      }
+    $tmp = join(' ', [$docArr['ansprechpartner'], $docArr['abteilung'], $docArr['unterabteilung']]);
+    if (preg_match("/\d{6,10}/", $tmp, $match)) {
+      $ret['postnumber'] = $match[0];
     }
 
-    $sql = "SELECT
+    return $ret;
+  }
+
+  protected function GetCustomsDeclaration(int $lieferscheinId): CustomsDeclaration {
+      $ret = new CustomsDeclaration();
+      $ret->shipmentType = ShipmentType::GOODS;
+
+      $sql = "SELECT r.zahlungsweise, r.soll, r.belegnr
+              FROM rechnung r
+              JOIN lieferschein l on l.rechnungid = r.id
+              WHERE l.id=$lieferscheinId LIMIT 1";
+      $invoice_data = $this->app->DB->SelectRow($sql);
+//      $ret['zahlungsweise'] = $invoice_data['zahlungsweise'];
+//      $ret['betrag'] = $invoice_data['soll'];
+      $ret->invoiceNumber = $invoice_data['belegnr'] ?? '';
+
+
+
+      $sql = "SELECT
         lp.bezeichnung,
         lp.menge,
         coalesce(nullif(lp.zolltarifnummer, '0'), nullif(rp.zolltarifnummer, '0'), nullif(a.zolltarifnummer, '')) as zolltarifnummer,
@@ -174,29 +159,32 @@ abstract class Versanddienstleister
       AND a.lagerartikel = 1
       AND r.status != 'storniert'
       ORDER BY lp.sort";
-    $ret['positions'] = $this->app->DB->SelectArr($sql) ?? [];
-  
-    return $ret;
+      foreach ($this->app->DB->SelectArr($sql) as $row) {
+          $pos = new CustomsDeclarationItem();
+          $pos->description = $row['bezeichnung'];
+          $pos->quantity = $row['menge'];
+          $pos->hsCode = $row['zolltarifnummer'] ?? '';
+          $pos->originCountryCode = $row['herkunftsland'] ?? '';
+          $pos->itemValue = floatval($row['zolleinzelwert']);
+          $pos->itemWeight = floatval($row['zolleinzelgewicht']);
+          $ret->positions[] = $pos;
+      }
+      return $ret;
   }
 
-  /**
-   * Returns an array of additional field definitions to be stored for this module:
-   * [
-   *   'field_name' => [
-   *     'typ' => text(default)|textarea|checkbox|select
-   *     'default' => default value
-   *     'optionen' => just for selects [key=>value]
-   *     'size' => size attribute for text fields
-   *     'placeholder' => placeholder attribute for text fields
-   *   ]
-   * ]
-   *
-   * @return array
-   */
-  public function AdditionalSettings(): array
-  {
-    return [];
-  }
+  protected function GetShipmentDefaults(int $lieferscheinId) : Shipment {
+        $shipment = new Shipment();
+        $shipment->address = $this->GetAdressdaten($lieferscheinId);
+        $shipment->customsDeclaration = $this->GetCustomsDeclaration($lieferscheinId);
+
+        $sql = "SELECT l.belegnr 
+              FROM lieferschein l
+              WHERE l.id = $lieferscheinId";
+        $data = $this->app->DB->SelectRow($sql);
+        $shipment->reference = $data['belegnr'];
+
+        return $shipment;
+    }
 
   /**
    * Renders all additional settings as fields into $target
@@ -319,50 +307,6 @@ abstract class Versanddienstleister
 
   /**
    * @param string $tracking
-   * @param int $versand
-   * @param int $lieferschein
-   */
-  public function SetTracking($tracking, $versand = 0, $lieferschein = 0, $trackingLink = '')
-  {
-    //if($versand > 0) $this->app->DB->Update("UPDATE versand SET tracking=CONCAT(tracking,if(tracking!='',';',''),'".$tracking."') WHERE id='$versand' LIMIT 1");
-    $this->app->User->SetParameter('versand_lasttracking', $tracking);
-    $this->app->User->SetParameter('versand_lasttracking_link', $trackingLink);
-    $this->app->User->SetParameter('versand_lasttracking_versand', $versand);
-    $this->app->User->SetParameter('versand_lasttracking_lieferschein', $lieferschein);
-  }
-
-  /**
-   * @param string $tracking
-   */
-  public function deleteTrackingFromUserdata($tracking)
-  {
-    if (empty($tracking)) {
-      return;
-    }
-    $trackingUser = !empty($this->app->User) && method_exists($this->app->User, 'GetParameter') ?
-        $this->app->User->GetParameter('versand_lasttracking') : '';
-    if (empty($trackingUser) || $trackingUser !== $tracking) {
-      return;
-    }
-
-    $this->app->User->SetParameter('versand_lasttracking', '');
-    $this->app->User->SetParameter('versand_lasttracking_link', '');
-    $this->app->User->SetParameter('versand_lasttracking_versand', '');
-    $this->app->User->SetParameter('versand_lasttracking_lieferschein', '');
-  }
-
-  /**
-   * @param string $tracking
-   *
-   * @return string mixed
-   */
-  public function TrackingReplace($tracking)
-  {
-    return $tracking;
-  }
-
-  /**
-   * @param string $tracking
    * @param int $notsend
    * @param string $link
    * @param string $rawlink
@@ -377,16 +321,17 @@ abstract class Versanddienstleister
     return true;
   }
 
-  public function Paketmarke(string $target, string $docType, int $docId, $gewicht = 0, $versandpaket = null): void
+  public function Paketmarke(string $target, int $lieferscheinId, $gewicht = 0, $versandpaket = null): void
   {
-    $address = $this->GetAdressdaten($docId, $docType);
-    $address['weight'] = $gewicht;
+    $this->app->ModuleScriptCache->IncludeJavascriptModules('ShippingMethod', ['classes/Modules/ShippingMethod/www/js/shipment.entry.js']);
+    $shipment = $this->GetShipmentDefaults($lieferscheinId);
+    $shipment->package->weight = $gewicht;
 
-    if (isset($_SERVER['CONTENT_TYPE']) && ($_SERVER['CONTENT_TYPE'] === 'application/json')) {
-      $json = json_decode(file_get_contents('php://input'));
+    if ($this->request->getMethod() === 'POST' && $this->request->getContentType() === 'json') {
+      $json = $this->request->getJson();
       $ret = [];
       if ($json->submit == 'print') {
-        $result = $this->CreateShipment($json, $address);
+        $result = $this->CreateShipment($json);
         if ($result->Success) {
             if (empty($versandpaket)) {
                 $sql = "INSERT INTO versandpakete 
@@ -401,7 +346,7 @@ abstract class Versanddienstleister
                       ) 
                       VALUES 
                       (
-                        {$address['lieferscheinId']},
+                        $lieferscheinId,
                         '$json->weight',
                         '$result->TrackingNumber',
                         '$result->TrackingUrl',
@@ -456,10 +401,9 @@ abstract class Versanddienstleister
       $this->app->ExitXentral();
     }
 
-    $address['shipment_type'] = CustomsInfo::CUSTOMS_TYPE_GOODS;
     $products = $this->GetShippingProducts();
     $products = array_combine(array_column($products, 'Id'), $products);
-    $address['product'] = $products[0]->Id ?? '';
+    $shipment->productId = $products[0]->Id ?? '';
 
     $countries = $this->app->DB->SelectArr("SELECT iso, bezeichnung_de name, eu FROM laender ORDER BY bezeichnung_de");
     if(!empty($countries)) {
@@ -471,7 +415,7 @@ abstract class Versanddienstleister
     
     switch ($this->shippingMail) {
         case -1:
-            $address['email'] = '';
+            $shipment->address['email'] = '';
         break;
         case 1:
             // User text template (not implemented)
@@ -480,33 +424,37 @@ abstract class Versanddienstleister
         break;
     }
 
-    $json['form'] = $address;
+
+    $json['model'] = $shipment;
     $json['countries'] = $countries;
     $json['products'] = $products;
-    $json['customs_shipment_types'] = [
-        CustomsInfo::CUSTOMS_TYPE_GIFT => 'Geschenk',
-        CustomsInfo::CUSTOMS_TYPE_DOCUMENTS => 'Dokumente',
-        CustomsInfo::CUSTOMS_TYPE_GOODS => 'Handelswaren',
-        CustomsInfo::CUSTOMS_TYPE_SAMPLE => 'Erprobungswaren',
-        CustomsInfo::CUSTOMS_TYPE_RETURN => 'Rücksendung'
-    ];
     $json['messages'] = [];
-    $json['submitting'] = false;
-    $json['form']['services'] = [
-        Product::SERVICE_PREMIUM => false
-    ];
+    $json['carrier'] = $this->GetName();
 
     $this->app->Tpl->Set('JSON', json_encode($json));
-    $this->app->Tpl->Set('CARRIERNAME', $this->GetName());
     $this->app->Tpl->Parse($target, 'createshipment.tpl');
   }
 
-  public abstract function CreateShipment(object $json, array $address): CreateShipmentResult;
-
-  /**
+    public abstract function GetName(): string;
+    /**
+     * Returns an array of additional field definitions to be stored for this module:
+     * [
+     *   'field_name' => [
+     *     'typ' => text(default)|textarea|checkbox|select
+     *     'default' => default value
+     *     'optionen' => just for selects [key=>value]
+     *     'size' => size attribute for text fields
+     *     'placeholder' => placeholder attribute for text fields
+     *   ]
+     * ]
+     *
+     * @return array
+     */
+    public abstract function AdditionalSettings(): array;
+    protected abstract function CreateShipment(object $json): CreateShipmentResult;
+    /**
    * @return Product[]
    */
-  public abstract function GetShippingProducts(): array;
-
-  public abstract function GetShipmentStatus(string $tracking): ShipmentStatus|null;
+    protected abstract function GetShippingProducts(): array;
+    protected abstract function GetShipmentStatus(string $tracking): ShipmentStatus|null;
 }

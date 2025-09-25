@@ -1,0 +1,5 @@
+common:
+  description: Beschreibung
+  amount: Menge
+  totalValue: Gesamtwert
+  totalWeight: Gesamtgewicht

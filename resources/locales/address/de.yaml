@@ -1,0 +1,33 @@
+address:
+  recipient: Empfänger
+  addressType: Adresstyp
+  type:
+    company: Firma
+    parcelStation: Packstation
+    private: Privatadresse
+    shop: Filiale
+  name: Name
+  companyName: Firmenname
+  companyDivision: Abteilung
+  companySubdivision: Unterabteilung
+  line: Zeile
+  line1: '@:address.line 1'
+  line2: '@:address.line 2'
+  line3: '@:address.line 3'
+  postNumber: Postnummer
+  parcelStationNumber: Packstationsnummer
+  shopHumber: Postfilialnummer
+  zip: PLZ
+  city: Ort
+  zip_city: '@:address.zip / @:address.city'
+  street: Straße
+  streetNo: Hausnummer
+  streetAndNo: '@:address.street / @:address.streetNo'
+  addressLine2: Adresszeile 2
+  state: Bundesland
+  country: Land
+  contactName: Ansprechpartner
+  email: E-Mail
+  phone: Telefon
+  shippingAddress: Lieferadresse
+  additionalInfo: Adresszusatz

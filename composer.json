@@ -1,7 +1,9 @@
 {
   "require": {
-    "php": "^7.4|^8",
+    "php": "^8.1",
     "ext-gd": "*",
+    "ext-curl": "*",
+    "ext-soap": "*",
     "aura/sqlquery": "2.7.1",
     "aws/aws-sdk-php": "3.175.2",
     "container-interop/container-interop": "1.2.0",
