@@ -1383,7 +1383,7 @@ class Versandpakete {
             WHERE vlp.versandpaket = ".$id."
         ";
 
-        $gewicht = $this->app->DB->Select($sql);
+        $gewicht = round($this->app->DB->Select($sql),3);
         return($gewicht);
     }
 
