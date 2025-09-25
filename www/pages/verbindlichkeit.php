@@ -427,7 +427,7 @@ class Verbindlichkeit {
                         art.name_de,
                         pd.bemerkung,
                         vp.menge,
-                        vp.preis,
+                        TRIM(vp.preis)+0,
                         vp.steuersatz,
                         CONCAT(skv.sachkonto,' ',skv.beschriftung),
                         vp.id
@@ -827,6 +827,7 @@ class Verbindlichkeit {
                         $preis = $preis / (1+($steuersatz/100));
                     }
                     $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
+
                     $this->app->DB->Insert($sql);
 
                 }
@@ -1648,7 +1649,7 @@ class Verbindlichkeit {
                                                     art.name_de,
                                                     art.nummer,
                                                     vp.menge,
-                                                    vp.preis,
+                                                    TRIM(vp.preis)+0,
                                                     vp.steuersatz,
                                                     CONCAT(skv.sachkonto,' ',skv.beschriftung) AS sachkonto,
                                                     ''

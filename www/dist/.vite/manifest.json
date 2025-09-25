@@ -1,11 +1,58 @@
 {
+  "_vue-!~{003}~.js": {
+    "file": "assets/vue-CMXOvwpj.css",
+    "src": "_vue-!~{003}~.js"
+  },
+  "_vue-C8GNYUTc.js": {
+    "file": "vue-C8GNYUTc.js",
+    "name": "vue",
+    "css": [
+      "assets/vue-CMXOvwpj.css"
+    ],
+    "assets": [
+      "assets/primeicons-DMOk5skT.eot",
+      "assets/primeicons-C6QP2o4f.woff2",
+      "assets/primeicons-WjwUDZjB.woff",
+      "assets/primeicons-MpK4pl85.ttf",
+      "assets/primeicons-Dr5RGzOO.svg"
+    ]
+  },
   "classes/Modules/MatrixProduct/www/js/entry.js": {
-    "file": "modules/MatrixProduct-Cmg6dHLU.js",
+    "file": "modules/MatrixProduct-BAQ9apDq.js",
     "name": "modules/MatrixProduct",
     "src": "classes/Modules/MatrixProduct/www/js/entry.js",
     "isEntry": true,
-    "css": [
-      "assets/MatrixProduct-DCtGag1V.css"
+    "imports": [
+      "_vue-C8GNYUTc.js"
     ]
+  },
+  "classes/Modules/ShippingMethod/www/js/shipment.entry.js": {
+    "file": "modules/ShippingMethod-shipment-B_cxSgST.js",
+    "name": "modules/ShippingMethod-shipment",
+    "src": "classes/Modules/ShippingMethod/www/js/shipment.entry.js",
+    "isEntry": true,
+    "imports": [
+      "_vue-C8GNYUTc.js"
+    ]
+  },
+  "node_modules/primeicons/fonts/primeicons.eot": {
+    "file": "assets/primeicons-DMOk5skT.eot",
+    "src": "node_modules/primeicons/fonts/primeicons.eot"
+  },
+  "node_modules/primeicons/fonts/primeicons.svg": {
+    "file": "assets/primeicons-Dr5RGzOO.svg",
+    "src": "node_modules/primeicons/fonts/primeicons.svg"
+  },
+  "node_modules/primeicons/fonts/primeicons.ttf": {
+    "file": "assets/primeicons-MpK4pl85.ttf",
+    "src": "node_modules/primeicons/fonts/primeicons.ttf"
+  },
+  "node_modules/primeicons/fonts/primeicons.woff": {
+    "file": "assets/primeicons-WjwUDZjB.woff",
+    "src": "node_modules/primeicons/fonts/primeicons.woff"
+  },
+  "node_modules/primeicons/fonts/primeicons.woff2": {
+    "file": "assets/primeicons-C6QP2o4f.woff2",
+    "src": "node_modules/primeicons/fonts/primeicons.woff2"
   }
 }

@@ -1334,7 +1334,7 @@ class Versandpakete {
         $lieferschein = $this->app->DB->SelectRow("SELECT * FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") temp WHERE versandpaket = ".$id." LIMIT 1");
         $versandmodul = $this->app->erp->LoadVersandModul($versandart['modul'], $versandart['id']);
         $gewicht = $this->versandpakete_gewicht($id);
-        $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
+        $versandmodul->Paketmarke('TAB1', lieferscheinId: $lieferschein['lieferschein'], versandpaket: $id, gewicht: $gewicht);
         $this->app->Tpl->Parse('PAGE',"tabview.tpl");
       }
 
@@ -1433,7 +1433,7 @@ class Versandpakete {
             WHERE vlp.versandpaket = ".$id."
         ";
 
-        $gewicht = $this->app->DB->Select($sql);
+        $gewicht = round($this->app->DB->Select($sql),3);
         return($gewicht);
     }
 

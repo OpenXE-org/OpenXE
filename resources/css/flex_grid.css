@@ -1,0 +1,61 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Andreas Palm
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+/* Display */
+.flex {
+    display: flex;
+}
+
+.grid {
+    display: grid;
+}
+
+/* Basis */
+.basis-1\/3 {
+    flex-basis: 33.333333%;
+}
+.basis-2\/3 {
+    flex-basis: 66.666666%;
+}
+
+/* Flex Direction */
+.flex-row {
+    flex-direction: row;
+}
+
+/* Flex Options */
+.flex-none {
+    flex: none;
+}
+.flex-auto {
+    flex: 1 1 auto;
+}
+
+/* Grid Template Columns */
+.grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.grid-cols-classic-form {
+    grid-template-columns: 25% minmax(0, 1fr);
+}
+
+/* Grid Column Start/End */
+.col-span-2 {
+    grid-column: span 2 / span 2;
+}
+
+/* Align items */
+.flex-align-center, .items-center {
+    align-items: center;
+}
+
+/* Justify self */
+.justify-self-start {
+    justify-self: start;
+}
