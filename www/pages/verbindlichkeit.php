@@ -1076,6 +1076,9 @@ class Verbindlichkeit {
         $this->app->YUI->DatePicker("rechnungsdatum");
         $this->app->Tpl->Set('EINGANGSDATUM',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['eingangsdatum'],false));
         $this->app->YUI->DatePicker("eingangsdatum");
+
+        $this->app->Tpl->Set('ZAHLUNGSWEISESELECT',$this->app->erp->GetSelectAsso($this->app->erp->GetZahlungsweise(),$verbindlichkeit_from_db['zahlungsweise']));
+
         $this->app->Tpl->Set('SKONTOBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['skontobis'],false));
         $this->app->YUI->DatePicker("skontobis");
         $this->app->Tpl->Set('ZAHLBARBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['zahlbarbis'],false));
