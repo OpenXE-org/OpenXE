@@ -686,30 +686,7 @@ class Zahlungsweisen {
    */
   public function loadModule($module, $moduleId = 0)
   {
-    if(empty($module)) {
-      return null;
-    }
-    if(strpos($module,'zahlungsweise_') === 0) {
-      $module = substr($module, 14);
-      if(empty($module)) {
-        return null;
-      }
-    }
-    if(strpos($module, '.') !== false || strpos($module, '/') !== false || strpos($module, '\\')) {
-      return null;
-    }
-    $path = dirname(__DIR__).'/lib/zahlungsweisen/'.$module.'.php';
-    if(!is_file($path)) {
-      return null;
-    }
-
-    include_once $path ;
-    $classname = 'Zahlungsweise_'.$module;
-    if(!class_exists($classname)) {
-      return null;
-    }
-
-    return new $classname($this->app, $moduleId);
+        return($this->app->erp->LoadZahlungsweiseModul($module, $moduleId));
   }
 
   /**
@@ -1107,15 +1084,7 @@ class Zahlungsweisen {
 
     if(!empty($daten)) {
       $this->app->erp->Headlines('',$daten['bezeichnung']);
-      $this->app->Tpl->Set('AKTMODUL', $daten['modul']);
-      $pfad = dirname(__DIR__).'/lib/zahlungsweisen/'.$daten['modul'].'.php';
-      if($daten['modul'] && is_file($pfad)) {
-        include_once $pfad;
-        $classname = 'Zahlungsweise_'.$daten['modul'];
-        if(class_exists($classname)) {
-          $obj = new $classname($this->app, $daten['id']);
-        }
-      }
+      $this->app->Tpl->Set('AKTMODUL', $daten['modul']);               
       $bezeichnung = $daten['bezeichnung'];
       $type = $daten['type'];
       $projekt = $daten['projekt'];
@@ -1131,6 +1100,7 @@ class Zahlungsweisen {
           $projekt
         )
       );
+      $obj = $this->app->erp->LoadZahlungsweiseModul($daten['modul'], $daten['id']);
       if(isset($obj) && method_exists($obj, 'Einstellungen')) {
         $obj->Einstellungen('JSON');
       }

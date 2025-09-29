@@ -3625,6 +3625,35 @@ title: 'Abschicken',
     }
   }
 
+  function LoadZahlungsweiseModul($module, $moduleId) {
+
+    $module = preg_replace('/[^a-zA-Z0-9\_]/','',$module);
+
+    if(empty($module)) {
+      return null;
+    }
+    if(strpos($module,'zahlungsweise_') === 0) {
+      $module = substr($module, 14);
+      if(empty($module)) {
+        return null;
+      }
+    }
+    if(strpos($module, '.') !== false || strpos($module, '/') !== false || strpos($module, '\\')) {
+      return null;
+    }
+    $path = dirname(__DIR__).'/lib/zahlungsweisen/'.$module.'.php';
+    if(!is_file($path)) {
+      return null;
+    }
+
+    include_once $path ;
+    $classname = 'Zahlungsweise_'.$module;
+    if(!class_exists($classname)) {
+      return null;
+    }
+    return new $classname($this->app, $moduleId);
+  }
+
   // @refactor Document Komponente
   function Zahlungsweisetext($doctype,$doctypeid)
   {
@@ -3678,28 +3707,16 @@ title: 'Abschicken',
 
       if($zahlungsweiseid['modul'] != '')
       {
-        $zahlungsweiseid['modul'] = preg_replace('/[^a-zA-Z0-9\_]/','',$zahlungsweiseid['modul']);
-        $pfad = dirname(__DIR__).'/lib/zahlungsweisen/'.$zahlungsweiseid['modul'].'.php';
-        if($zahlungsweiseid['modul'] && @is_file($pfad))
+        $obj = $this->LoadZahlungsweiseModul($zahlungsweiseid['modul'], $zahlungsweiseid['id']);
+        if($obj && method_exists($obj, 'GetZahlungsweiseText'))
         {
-          $classname = 'Zahlungsweise_'.$zahlungsweiseid['modul'];
-          if(!class_exists($classname)){
-            include_once($pfad);
-          }
-          if(class_exists($classname))
-          {
-            $obj = new $classname($this->app, $zahlungsweiseid['id']);
-            if($obj && method_exists($obj, 'GetZahlungsweiseText'))
-            {
-              $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
-              if($zahlungsweisetexttmp!='') {
-                if($zahlungsweiseid['modul'] == 'tagxmonat'){
-                  $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
-                }
-                else{
-                  $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
-                }
-              }
+          $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
+          if($zahlungsweisetexttmp!='') {
+            if($zahlungsweiseid['modul'] == 'tagxmonat'){
+              $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
+            }
+            else{
+              $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
             }
           }
         }
@@ -15662,23 +15679,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       LIMIT 1
     ")){
         foreach ($zahlungsweisenmodule as $zahlungsweisenmodul) {
-          $_zahlungsweisenmodul = preg_replace('/[^a-zA-Z0-9\_]/', '', $zahlungsweisenmodul['modul']);
-          if(!$_zahlungsweisenmodul){
-            continue;
-          }
-          if(!file_exists(__DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php')){
-            continue;
-          }
-
-          $class = 'Zahlungsweise_' . $_zahlungsweisenmodul;
-          if(!class_exists($class)){
-            include_once __DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php';
-          }
-          if(!class_exists($class)){
-            continue;
-          }
-
-          $obj = new $class($this->app, $zahlungsweisenmodul['id']);
+          $obj = $this->LoadZahlungsweiseModul($zahlungsweisenmodul['modul'], $zahlungsweisenmodul['id']);
           if($obj && method_exists($obj, 'ZahlungFreigeben')){
             $obj->ZahlungFreigeben($auftrag, $id);
           }

@@ -548,13 +548,13 @@ class Verbindlichkeit {
                             $failed = array();
                             foreach ($selectedIds as $id) {
                                 $result = $this->verbindlichkeit_zahllauf($id);
-                                if (!$result) {
-                                    $failed[] = $id;
+                                if ($result['error']) {
+                                    $failed[] = array('id' => $id, 'error' => $result['error']);
                                 };
                             }
-                           if (!empty($failed)) {
-                               $belege = $this->app->DB->SelectArr("SELECT belegnr from verbindlichkeit WHERE id IN (".implode(', ',$failed).")");
-                               $this->app->Tpl->AddMessage('error',"Verbindlichkeiten konnten nicht zum Zahllauf gegeben werden: " .implode(', ',array_column($belege,'belegnr')));
+                            if (!empty($failed)) {
+                                $belege = $this->app->DB->SelectArr("SELECT belegnr from verbindlichkeit WHERE id IN (".implode(', ',array_column($failed,'id')).")");
+                                $this->app->Tpl->AddMessage('error',"Verbindlichkeiten konnten nicht zum Zahllauf gegeben werden: " .implode(', ',array_column($belege,'belegnr')));
                            }
                         break;
                     }
@@ -1598,7 +1598,7 @@ class Verbindlichkeit {
         $sql = "SELECT id FROM payment_transaction WHERE doc_typ = 'verbindlichkeit' AND doc_id = ".$id." LIMIT 1";
         $pm = $this->app->DB->Select($sql);
         if ($pm) {
-            return;
+            return (array('error' => 'Verbindlichkeit bereits im Zahllauf'));
         }
 
         $sql = "SELECT * FROM verbindlichkeit WHERE id = ".$id." LIMIT 1";
@@ -1608,9 +1608,26 @@ class Verbindlichkeit {
             $verb['status'] <> 'freigegeben' ||
             $verb['bezahlt']
         ) {
-            return;
+            return (array('error' => 'Verbindlichkeit hat falschen Status'));
         }
 
+        $paymentMethodService = $this->app->Container->get('PaymentMethodService');
+        try {
+            $zahlungsweiseData = $paymentMethodService->getFromShortname($verb['zahlungsweise']);
+            if ($zahlungsweiseData['modul'] != 'ueberweisung') {
+                return (array('error' => 'Verbindlichkeit hat falsche Zahlungsweise'));
+            }
+            if (empty($zahlungsweiseData)) {
+                return (array('error' => 'Verbindlichkeit hat keine Zahlungsweise'));
+            }
+        } catch (Exception $e) {
+            return (array('error' => 'Verbindlichkeit hat keine Zahlungsweise'));
+        }
+
+        $kontodaten = $this->app->DB->SelectRow("SELECT * FROM konten WHERE id = ".$zahlungsweiseData['einstellungen']['konto']." LIMIT 1");
+        $adressdaten = $this->app->DB->SelectRow("SELECT * FROM adresse WHERE id = ".$verb['adresse']);
+
+        // Skonto
         $skontobis = date_create_from_format('!Y-m-d+', $verb['skontobis']);
         $heute = new DateTime('midnight');
         $abstand = $skontobis->diff($heute)->format("%r%a"); // What a load of bullshit, WTF php...
@@ -1621,13 +1638,29 @@ class Verbindlichkeit {
             $betrag = $verb['betrag'];
         }
 
+        // Generate Dataset
+        $payment_details = array(
+            'sender' => $kontodaten['inhaber'],
+            'sender_iban' => $kontodaten['iban'],
+            'sender_bic' => $kontodaten['swift'],
+            'empfaenger' => $adressdaten['inhaber'],
+            'iban' => $adressdaten['iban'],
+            'bic' => $adressdaten['swift'],
+            'betrag' => $betrag,
+            'waehrung' => $verb['waehrung'],
+            'vz1' => $verb['rechnung'],
+            'datumueberweisung' => ''
+        );
+
+        // Save to DB
         $input = array(
             'doc_typ' => 'verbindlichkeit',
             'doc_id' => $id,
             'payment_status' => 'angelegt',
             'amount' => $betrag,
             'currency' => $verb['waehrung'],
-            'payment_reason' => $verb['rechnung']
+            'payment_reason' => $verb['rechnung'],
+            'payment_json ' => json_encode($payment_details)
         );
 
         $columns = "id, ";
