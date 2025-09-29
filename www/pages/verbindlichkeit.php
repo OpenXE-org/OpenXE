@@ -6,6 +6,8 @@
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
+use Xentral\Modules\SystemNotification\Service\NotificationMessageData;
+use Xentral\Modules\SystemNotification\Service\NotificationService;
 
 class Verbindlichkeit {
 
@@ -550,12 +552,16 @@ class Verbindlichkeit {
                                 $result = $this->verbindlichkeit_zahllauf($id);
                                 if ($result['error']) {
                                     $failed[] = array('id' => $id, 'error' => $result['error']);
+                                    $beleg = $this->app->DB->Select("SELECT belegnr from verbindlichkeit WHERE id = ".$id." LIMIT 1");
+                                    $this->verbindlichkeit_notification('Verbindlichkeit '.$beleg.' konnten nicht zum Zahllauf gegeben werden', $result['error']);
                                 };
                             }
                             if (!empty($failed)) {
                                 $belege = $this->app->DB->SelectArr("SELECT belegnr from verbindlichkeit WHERE id IN (".implode(', ',array_column($failed,'id')).")");
                                 $this->app->Tpl->AddMessage('error',"Verbindlichkeiten konnten nicht zum Zahllauf gegeben werden: " .implode(', ',array_column($belege,'belegnr')));
-                           }
+                            } else {
+                                $this->app->Tpl->AddMessage('success',"Verbindlichkeiten zum Zahllauf gegeben.");
+                            }
                         break;
                     }
                 }
@@ -1634,8 +1640,14 @@ class Verbindlichkeit {
 
         if ($abstand <= 0) {
             $betrag = round($verb['betrag']*(100-($verb['skonto']/100)),2);
+            $duedate = $verb['skontobis'];
         } else {
             $betrag = $verb['betrag'];
+            $duedate = $verb['zahlbarbis'];
+        }
+
+        if ($duedate == '0000-00-00') {
+            return (array('error' => 'Ung&uuml;ltiges Zahlungsziel'));
         }
 
         // Generate Dataset
@@ -1654,12 +1666,16 @@ class Verbindlichkeit {
 
         // Save to DB
         $input = array(
+            'payment_account_id' => $zahlungsweiseData['id'],
             'doc_typ' => 'verbindlichkeit',
             'doc_id' => $id,
+            'address_id' => $adressdaten['id'],
             'payment_status' => 'angelegt',
             'amount' => $betrag,
             'currency' => $verb['waehrung'],
-            'payment_reason' => $verb['rechnung'],
+            'duedate' => $duedate,
+            'payment_reason' => 'Verbindlichkeit '.$verb['belegnr'],
+            'payment_info' => $verb['rechnung'],
             'payment_json ' => json_encode($payment_details)
         );
 
@@ -2023,6 +2039,16 @@ class Verbindlichkeit {
         if (!empty($doppelte)) {
             $this->app->YUI->Message('error','Rechnungsnummer(n) mehrfach vergeben: '.implode(', ',array_column($doppelte,'rechnung')));
         }
+    }
+
+    function verbindlichkeit_notification($title, $text) {
+        // Notification erstellen
+        $notification_message = new NotificationMessageData('default', $title);
+        $notification_message->setMessage($text);
+        $notification_message->setPriority(true);
+        /** @var NotificationService $notification */
+        $notification = $this->app->Container->get('NotificationService');
+        $notification->createFromData($this->app->User->GetID(), $notification_message);
     }
 
 }
