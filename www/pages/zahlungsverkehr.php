@@ -15,7 +15,7 @@ class Zahlungsverkehr {
 
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "zahlungsverkehr_list");
-        $this->app->ActionHandler("ueberweisung", "zahlungsverkehr_list");
+        $this->app->ActionHandler("ueberweisung", "zahlungsverkehr_ueberweisung");
 //        $this->app->ActionHandler("create", "zahlungsverkehr_edit"); // This automatically adds a "New" button
 //        $this->app->ActionHandler("edit", "zahlungsverkehr_edit");
         $this->app->ActionHandler("delete", "zahlungsverkehr_delete");
@@ -27,8 +27,203 @@ class Zahlungsverkehr {
         /* Fill out manually later */
     }
 
-    static function TableSearch(&$app, $name, $erlaubtevars) {
+    function TableSearch(&$app, $name, $erlaubtevars) {  
+   
         switch ($name) {
+            case "zahlungsverkehr_ueberweisung":
+                $allowed['zahlungsverkehr_ueberweisung'] = array('list');
+                $heading = array('','','Typ','Belegnr','RE-Datum','Adresse', 'Nummer', 'RE-Nr', 'Betrag (brutto)', 'W&auml;hrung','Status', 'Ziel','Skonto','Skontoziel', 'Men&uuml;');
+                $width = array('1%','1%','10%'); // Fill out manually later
+
+                // columns that are aligned right (numbers etc)
+                // $alignright = array(4,5,6,7,8);
+
+                $findcols = array(
+                    'id',
+                    'id',
+                    'doc_typ',
+                    'belegnr',
+                    'datum',
+                    'name',
+                    'nummer',
+                    'rechnung',
+                    'cast(betrag AS decimal)',
+                    'waehrung',
+                    'status',
+                    'zahlbarbis',
+                    'skonto',
+                    'skontobis',
+                    'id'
+                );
+
+                $searchsql = array(
+                    'a.name',
+                    'a.lieferantennummer',
+                    'v.rechnung',
+                    'v.internebemerkung'
+                );
+
+                $defaultorder = 12;
+                $defaultorderdesc = 0;
+                $alignright = array(9);
+                $sumcol = array(9);
+
+        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',id,'\" />') AS `auswahl`";
+
+//                $moreinfo = true; // Allow drop down details
+//                $moreinfoaction = "lieferschein"; // specify suffix for minidetail-URL to allow different minidetails
+//                $menucol = 11; // Set id col for moredata/menu
+               
+                $columns = "
+                            id,
+                            $dropnbox,
+                            doc_typ,
+                            belegnr,
+                            ".$app->erp->FormatDate("datum").",
+                            name,
+                            nummer,
+                            rechnung,
+                            ".$app->erp->FormatMenge('v.betrag',2)." betrag,
+                            waehrung,
+                            status,
+                            ".$app->erp->FormatDate("v.zahlbarbis").",
+                            IF(skonto <> 0,CONCAT(".$app->erp->FormatMenge('skonto',0).",'%'),''),
+                            IF(skonto <> 0,".$app->erp->FormatDate("skontobis").",'')
+                        ";
+                $tables = "
+                            (
+                            SELECT 
+                                CONCAT('v',v.id) id,
+                                'Verbindlichkeit' doc_typ,
+                                v.belegnr,
+                                v.rechnungsdatum datum,
+                                a.name,
+                                CONCAT(a.kundennummer,' ',a.lieferantennummer) nummer,
+                                v.rechnung,
+                                v.betrag,
+                                v.waehrung,                        
+                                v.status,
+                                v.zahlbarbis,
+                                v.skonto,
+                                v.skontobis,
+                                v.bezahlt
+                            FROM verbindlichkeit v
+                            LEFT JOIN adresse a ON v.adresse = a.id                        
+                            UNION
+                            SELECT
+                                CONCAT('g',g.id) id,
+                                'Gutschrift' doc_typ,
+                                g.belegnr,
+                                datum,
+                                a.name,
+                                CONCAT(a.kundennummer,' ',a.lieferantennummer),
+                                if(g.rechnung <> 0,g.rechnung,''),
+                                g.soll,
+                                g.waehrung,                        
+                                g.status,
+                                DATE_ADD(g.datum, INTERVAL g.zahlungszieltage DAY),
+                                g.zahlungszielskonto,
+                                DATE_ADD(g.datum, INTERVAL g.zahlungszieltageskonto DAY),
+                                g.zahlungsstatus = 'bezahlt'
+                            FROM gutschrift g
+                            LEFT JOIN adresse a ON g.adresse = a.id
+                        ) v
+                        ";
+                        
+                $sql = "SELECT SQL_CALC_FOUND_ROWS ".$columns." FROM ".$tables;
+                        
+                $where = " v.bezahlt <> 1";
+
+                $where .= " AND v.belegnr <> ''";
+                $count = "SELECT count(DISTINCT id) FROM ".$tables." WHERE $where";
+                
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
+
+                for ($r = 1;$r <= 8;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
+                                           \'\',
+                                           i,
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= " AND datei_anzahl IS NULL";
+                } else {
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                   $where .= " AND v.freigabe <> '1'";
+                }
+                else {
+                }
+
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                   $where .= " AND v.rechnungsfreigabe <> '1'";
+                }
+                else {
+                }
+
+                $more_data4 = $this->app->Secure->GetGET("more_data4");
+                if ($more_data4 == 1) {
+                   $where .= " AND v.bezahlt <> 1";
+                }
+                else {
+                }
+
+                $more_data5 = $this->app->Secure->GetGET("more_data5");
+                if ($more_data5 == 1) {
+                }
+                else {
+                   $where .= " AND v.status <> 'storniert'";
+                }
+
+                $more_data6 = $this->app->Secure->GetGET("more_data6");
+                if ($more_data6 == 1) {
+                }
+                else {
+                    $where .= " AND v.status <> 'abgeschlossen'";
+                }
+
+                $this->app->YUI->DatePicker('zahlbarbis');
+                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
+                if (!empty($filterzahlbarbis)) {
+                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
+                }
+
+                $this->app->YUI->DatePicker('skontobis');
+                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
+                if (!empty($filterskontobis)) {
+                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND v.skontobis <= '".$filterskontobis."'";
+                }
+
+                $where .= " AND v.status <> 'angelegt'";
+                // END Toggle filters             
+
+                $moreinfo = true; // Allow drop down details
+                $menucol = 1; // For moredata
+            break;
             case "zahlungsverkehr_list":
                 $allowed['zahlungsverkehr_list'] = array('list');
                 $heading = array(
@@ -190,13 +385,23 @@ class Zahlungsverkehr {
     }
 
     function zahlungsverkehr_list() {
-        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "&Uuml;bersicht");
-        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=create", "Neu anlegen");
+        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "&Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "Transaktionen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
         $this->app->YUI->TableSearch('TAB1', 'zahlungsverkehr_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "zahlungsverkehr_list.tpl");
+    }
+
+    function zahlungsverkehr_ueberweisung() {
+        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "Offene");
+        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "Transaktionen");
+
+        $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
+
+        $this->app->YUI->TableSearch('TAB1', 'zahlungsverkehr_ueberweisung', "show", "", "", basename(__FILE__), __CLASS__);
+        $this->app->Tpl->Parse('PAGE', "zahlungsverkehr_ueberweisung.tpl");
     }
 
     public function zahlungsverkehr_delete() {
