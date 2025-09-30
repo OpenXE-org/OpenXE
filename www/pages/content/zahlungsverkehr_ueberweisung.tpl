@@ -69,8 +69,8 @@
 
     $('#autoalle').on('change',function(){
       var wert = $(this).prop('checked');
-      $('#zahlungsverkehr_list').find('input[type="checkbox"]').prop('checked',wert);
-      $('#zahlungsverkehr_list').find('input[type="checkbox"]').first().trigger('change');
+      $('#zahlungsverkehr_ueberweisung').find('input[type="checkbox"]').prop('checked',wert);
+      $('#zahlungsverkehr_ueberweisung').find('input[type="checkbox"]').first().trigger('change');
     });
 
 </script>

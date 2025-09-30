@@ -6,8 +6,6 @@
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
-use Xentral\Modules\SystemNotification\Service\NotificationMessageData;
-use Xentral\Modules\SystemNotification\Service\NotificationService;
 
 class Verbindlichkeit {
 
@@ -34,7 +32,6 @@ class Verbindlichkeit {
         $this->app->ActionHandler("ruecksetzeneinkauf", "verbindlichkeit_ruecksetzeneinkauf");
         $this->app->ActionHandler("ruecksetzenbuchhaltung", "verbindlichkeit_ruecksetzenbuchhaltung");
         $this->app->ActionHandler("ruecksetzenbezahlt", "verbindlichkeit_ruecksetzenbezahlt");
-        $this->app->ActionHandler("zahllauf", "verbindlichkeit_zahllauf");
         $this->app->ActionHandler("minidetail", "verbindlichkeit_minidetail");
 
         $this->app->DefaultActionHandler("list");
@@ -545,24 +542,7 @@ class Verbindlichkeit {
                                     }
                                 }
                             }
-                        break;
-                        case 'zahllauf':
-                            $failed = array();
-                            foreach ($selectedIds as $id) {
-                                $result = $this->verbindlichkeit_zahllauf($id);
-                                if ($result['error']) {
-                                    $failed[] = array('id' => $id, 'error' => $result['error']);
-                                    $beleg = $this->app->DB->Select("SELECT belegnr from verbindlichkeit WHERE id = ".$id." LIMIT 1");
-                                    $this->verbindlichkeit_notification('Verbindlichkeit '.$beleg.' konnten nicht zum Zahllauf gegeben werden', $result['error']);
-                                };
-                            }
-                            if (!empty($failed)) {
-                                $belege = $this->app->DB->SelectArr("SELECT belegnr from verbindlichkeit WHERE id IN (".implode(', ',array_column($failed,'id')).")");
-                                $this->app->Tpl->AddMessage('error',"Verbindlichkeiten konnten nicht zum Zahllauf gegeben werden: " .implode(', ',array_column($belege,'belegnr')));
-                            } else {
-                                $this->app->Tpl->AddMessage('success',"Verbindlichkeiten zum Zahllauf gegeben.");
-                            }
-                        break;
+                        break;                     
                     }
                 }
             break;
@@ -589,10 +569,6 @@ class Verbindlichkeit {
 
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabebezahlt')){
             $this->app->Tpl->Set('ALSBEZAHLTMARKIEREN', '<option value="bezahlt">{|als bezahlt markieren|}</option>');
-        }
-
-        if($this->app->erp->RechteVorhanden('verbindlichkeit', 'zahllauf')){
-            $this->app->Tpl->Set('ZAHLLAUF', '<option value="zahllauf">{|zum Zahllauf geben|}</option>');
         }
 
         $this->app->User->SetParameter('table_verbindlichkeit_list_zahlbarbis', '');
@@ -1585,123 +1561,7 @@ class Verbindlichkeit {
             $this->verbindlichkeit_edit();
         }
     }
-
-    function verbindlichkeit_zahllauf($id = null) {
-
-        /*
-            angelegt
-            fehlgeschlagen
-            verbucht
-            exportiert
-            abgeschlossen
-        */
-
-       if (empty($id)) {
-            $id = $this->app->Secure->GetGET('id');
-            $gotoedit = true;
-        }
-
-        $sql = "SELECT id FROM payment_transaction WHERE doc_typ = 'verbindlichkeit' AND doc_id = ".$id." LIMIT 1";
-        $pm = $this->app->DB->Select($sql);
-        if ($pm) {
-            return (array('error' => 'Verbindlichkeit bereits im Zahllauf'));
-        }
-
-        $sql = "SELECT * FROM verbindlichkeit WHERE id = ".$id." LIMIT 1";
-        $verb = $this->app->DB->SelectRow($sql);
-
-        if (
-            $verb['status'] <> 'freigegeben' ||
-            $verb['bezahlt']
-        ) {
-            return (array('error' => 'Verbindlichkeit hat falschen Status'));
-        }
-
-        $paymentMethodService = $this->app->Container->get('PaymentMethodService');
-        try {
-            $zahlungsweiseData = $paymentMethodService->getFromShortname($verb['zahlungsweise']);
-            if ($zahlungsweiseData['modul'] != 'ueberweisung') {
-                return (array('error' => 'Verbindlichkeit hat falsche Zahlungsweise'));
-            }
-            if (empty($zahlungsweiseData)) {
-                return (array('error' => 'Verbindlichkeit hat keine Zahlungsweise'));
-            }
-        } catch (Exception $e) {
-            return (array('error' => 'Verbindlichkeit hat keine Zahlungsweise'));
-        }
-
-        $kontodaten = $this->app->DB->SelectRow("SELECT * FROM konten WHERE id = ".$zahlungsweiseData['einstellungen']['konto']." LIMIT 1");
-        $adressdaten = $this->app->DB->SelectRow("SELECT * FROM adresse WHERE id = ".$verb['adresse']);
-
-        // Skonto
-        $skontobis = date_create_from_format('!Y-m-d+', $verb['skontobis']);
-        $heute = new DateTime('midnight');
-        $abstand = $skontobis->diff($heute)->format("%r%a"); // What a load of bullshit, WTF php...
-
-        if ($abstand <= 0) {
-            $betrag = round($verb['betrag']*(100-($verb['skonto']/100)),2);
-            $duedate = $verb['skontobis'];
-        } else {
-            $betrag = $verb['betrag'];
-            $duedate = $verb['zahlbarbis'];
-        }
-
-        if ($duedate == '0000-00-00') {
-            return (array('error' => 'Ung&uuml;ltiges Zahlungsziel'));
-        }
-
-        // Generate Dataset
-        $payment_details = array(
-            'sender' => $kontodaten['inhaber'],
-            'sender_iban' => $kontodaten['iban'],
-            'sender_bic' => $kontodaten['swift'],
-            'empfaenger' => $adressdaten['inhaber'],
-            'iban' => $adressdaten['iban'],
-            'bic' => $adressdaten['swift'],
-            'betrag' => $betrag,
-            'waehrung' => $verb['waehrung'],
-            'vz1' => $verb['rechnung'],
-            'datumueberweisung' => ''
-        );
-
-        // Save to DB
-        $input = array(
-            'payment_account_id' => $zahlungsweiseData['id'],
-            'doc_typ' => 'verbindlichkeit',
-            'doc_id' => $id,
-            'address_id' => $adressdaten['id'],
-            'payment_status' => 'angelegt',
-            'amount' => $betrag,
-            'currency' => $verb['waehrung'],
-            'duedate' => $duedate,
-            'payment_reason' => 'Verbindlichkeit '.$verb['belegnr'],
-            'payment_info' => $verb['rechnung'],
-            'payment_json ' => json_encode($payment_details)
-        );
-
-        $columns = "id, ";
-        $values = "$id, ";
-        $update = "";
-
-        $fix = "";
-
-        foreach ($input as $key => $value) {
-            $columns = $columns.$fix.$key;
-            $values = $values.$fix."'".$value."'";
-            $update = $update.$fix.$key." = '$value'";
-
-            $fix = ", ";
-        }
-        $sql = "INSERT INTO payment_transaction (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-        $this->app->DB->Update($sql);
-
-        $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit zum Zahllauf gegeben.");
-        if ($gotoedit) {
-            $this->verbindlichkeit_edit();
-        }
-        return(true);
-    }
-
+  
 /*    function verbindlichkeit_schreibschutz($id = null)
     {
         if (empty($id)) {
@@ -2039,16 +1899,6 @@ class Verbindlichkeit {
         if (!empty($doppelte)) {
             $this->app->YUI->Message('error','Rechnungsnummer(n) mehrfach vergeben: '.implode(', ',array_column($doppelte,'rechnung')));
         }
-    }
-
-    function verbindlichkeit_notification($title, $text) {
-        // Notification erstellen
-        $notification_message = new NotificationMessageData('default', $title);
-        $notification_message->setMessage($text);
-        $notification_message->setPriority(true);
-        /** @var NotificationService $notification */
-        $notification = $this->app->Container->get('NotificationService');
-        $notification->createFromData($this->app->User->GetID(), $notification_message);
     }
 
 }

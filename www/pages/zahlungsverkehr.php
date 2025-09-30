@@ -1,12 +1,61 @@
 <?php
 
 /*
- * Copyright (c) 2022 OpenXE project
+ * Copyright (c) 2024 OpenXE project
  */
 
 use Xentral\Components\Database\Exception\QueryFailureException;
+use Xentral\Modules\SystemNotification\Service\NotificationMessageData;
+use Xentral\Modules\SystemNotification\Service\NotificationService;
 
 class Zahlungsverkehr {
+
+    const UNIFIED_SQL_TABLES =  "
+                        (
+                            SELECT
+                                CONCAT('v',v.id) id,
+                                'Verbindlichkeit' doc_typ_name,
+                                'verbindlichkeit' doc_typ,
+                                v.belegnr,
+                                v.rechnungsdatum datum,
+                                a.name,
+                                CONCAT(a.kundennummer,' ',a.lieferantennummer) nummer,
+                                v.rechnung,
+                                v.betrag,
+                                v.waehrung,
+                                v.status,
+                                v.zahlbarbis,
+                                v.skonto,
+                                v.skontobis,
+                                v.bezahlt,
+                                v.zahlungsweise,
+                                v.adresse,
+                                v.id doc_id
+                            FROM verbindlichkeit v
+                            LEFT JOIN adresse a ON v.adresse = a.id
+                            UNION
+                            SELECT
+                                CONCAT('g',g.id) id,
+                                'Gutschrift' doc_typ_name,
+                                'gutschrift' doc_typ,
+                                g.belegnr,
+                                datum,
+                                a.name,
+                                CONCAT(a.kundennummer,' ',a.lieferantennummer),
+                                if(g.rechnung <> 0,g.rechnung,''),
+                                g.soll,
+                                g.waehrung,
+                                g.status,
+                                DATE_ADD(g.datum, INTERVAL g.zahlungszieltage DAY),
+                                g.zahlungszielskonto,
+                                DATE_ADD(g.datum, INTERVAL g.zahlungszieltageskonto DAY),
+                                g.zahlungsstatus = 'bezahlt',
+                                g.zahlungsweise,
+                                g.adresse,
+                                g.id doc_id
+                            FROM gutschrift g
+                            LEFT JOIN adresse a ON g.adresse = a.id
+                        ) tables";
 
     function __construct($app, $intern = false) {
         $this->app = $app;
@@ -27,8 +76,8 @@ class Zahlungsverkehr {
         /* Fill out manually later */
     }
 
-    function TableSearch(&$app, $name, $erlaubtevars) {  
-   
+    function TableSearch(&$app, $name, $erlaubtevars) {
+
         switch ($name) {
             case "zahlungsverkehr_ueberweisung":
                 $allowed['zahlungsverkehr_ueberweisung'] = array('list');
@@ -73,153 +122,34 @@ class Zahlungsverkehr {
 //                $moreinfo = true; // Allow drop down details
 //                $moreinfoaction = "lieferschein"; // specify suffix for minidetail-URL to allow different minidetails
 //                $menucol = 11; // Set id col for moredata/menu
-               
+
                 $columns = "
                             id,
                             $dropnbox,
-                            doc_typ,
+                            doc_typ_name,
                             belegnr,
                             ".$app->erp->FormatDate("datum").",
                             name,
                             nummer,
                             rechnung,
-                            ".$app->erp->FormatMenge('v.betrag',2)." betrag,
+                            ".$app->erp->FormatMenge('betrag',2)." betrag,
                             waehrung,
                             status,
-                            ".$app->erp->FormatDate("v.zahlbarbis").",
+                            ".$app->erp->FormatDate("zahlbarbis").",
                             IF(skonto <> 0,CONCAT(".$app->erp->FormatMenge('skonto',0).",'%'),''),
                             IF(skonto <> 0,".$app->erp->FormatDate("skontobis").",'')
                         ";
-                $tables = "
-                            (
-                            SELECT 
-                                CONCAT('v',v.id) id,
-                                'Verbindlichkeit' doc_typ,
-                                v.belegnr,
-                                v.rechnungsdatum datum,
-                                a.name,
-                                CONCAT(a.kundennummer,' ',a.lieferantennummer) nummer,
-                                v.rechnung,
-                                v.betrag,
-                                v.waehrung,                        
-                                v.status,
-                                v.zahlbarbis,
-                                v.skonto,
-                                v.skontobis,
-                                v.bezahlt
-                            FROM verbindlichkeit v
-                            LEFT JOIN adresse a ON v.adresse = a.id                        
-                            UNION
-                            SELECT
-                                CONCAT('g',g.id) id,
-                                'Gutschrift' doc_typ,
-                                g.belegnr,
-                                datum,
-                                a.name,
-                                CONCAT(a.kundennummer,' ',a.lieferantennummer),
-                                if(g.rechnung <> 0,g.rechnung,''),
-                                g.soll,
-                                g.waehrung,                        
-                                g.status,
-                                DATE_ADD(g.datum, INTERVAL g.zahlungszieltage DAY),
-                                g.zahlungszielskonto,
-                                DATE_ADD(g.datum, INTERVAL g.zahlungszieltageskonto DAY),
-                                g.zahlungsstatus = 'bezahlt'
-                            FROM gutschrift g
-                            LEFT JOIN adresse a ON g.adresse = a.id
-                        ) v
-                        ";
-                        
+                $tables = self::UNIFIED_SQL_TABLES;
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS ".$columns." FROM ".$tables;
-                        
-                $where = " v.bezahlt <> 1";
-
-                $where .= " AND v.belegnr <> ''";
-                $count = "SELECT count(DISTINCT id) FROM ".$tables." WHERE $where";
+                $where = " bezahlt <> 1";
+                $where .= " AND belegnr <> ''";
+                $where .= " AND status <> 'angelegt'";
+                $where .= " AND (SELECT id FROM payment_transaction pt WHERE pt.doc_typ = tables.doc_typ AND pt.doc_id = tables.doc_id) IS NULL";
                 
-                // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
+                $count = "SELECT count(DISTINCT id) FROM ".$tables." WHERE $where";
 
-                for ($r = 1;$r <= 8;$r++) {
-                  $this->app->Tpl->Add('JAVASCRIPT', '
-                                         function fnFilterColumn' . $r . ' ( i )
-                                         {
-                                         if(oMoreData' . $r . $name . '==1)
-                                         oMoreData' . $r . $name . ' = 0;
-                                         else
-                                         oMoreData' . $r . $name . ' = 1;
-
-                                         $(\'#' . $name . '\').dataTable().fnFilter(
-                                           \'\',
-                                           i,
-                                           0,0
-                                           );
-                                         }
-                                         ');
-                }
-
-                $more_data1 = $this->app->Secure->GetGET("more_data1");
-                if ($more_data1 == 1) {
-                   $where .= " AND datei_anzahl IS NULL";
-                } else {
-                }
-
-                $more_data2 = $this->app->Secure->GetGET("more_data2");
-                if ($more_data2 == 1) {
-                   $where .= " AND v.freigabe <> '1'";
-                }
-                else {
-                }
-
-                $more_data3 = $this->app->Secure->GetGET("more_data3");
-                if ($more_data3 == 1) {
-                   $where .= " AND v.rechnungsfreigabe <> '1'";
-                }
-                else {
-                }
-
-                $more_data4 = $this->app->Secure->GetGET("more_data4");
-                if ($more_data4 == 1) {
-                   $where .= " AND v.bezahlt <> 1";
-                }
-                else {
-                }
-
-                $more_data5 = $this->app->Secure->GetGET("more_data5");
-                if ($more_data5 == 1) {
-                }
-                else {
-                   $where .= " AND v.status <> 'storniert'";
-                }
-
-                $more_data6 = $this->app->Secure->GetGET("more_data6");
-                if ($more_data6 == 1) {
-                }
-                else {
-                    $where .= " AND v.status <> 'abgeschlossen'";
-                }
-
-                $this->app->YUI->DatePicker('zahlbarbis');
-                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
-                if (!empty($filterzahlbarbis)) {
-                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
-                    $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
-                }
-
-                $this->app->YUI->DatePicker('skontobis');
-                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
-                if (!empty($filterskontobis)) {
-                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
-                    $where .= " AND v.skontobis <= '".$filterskontobis."'";
-                }
-
-                $where .= " AND v.status <> 'angelegt'";
-                // END Toggle filters             
+                // END Toggle filters
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
@@ -258,7 +188,8 @@ class Zahlungsverkehr {
                      'z.payment_reason',
                      'z.payment_info',
                      'z.payment_json',
-                     'z.created_at'
+                     'z.created_at',
+                     'z.id'
                 ); // use 'null' for non-searchable columns
 
                 $searchsql = array('z.returnorder_id',
@@ -305,7 +236,7 @@ class Zahlungsverkehr {
                          ".$app->erp->ConcatSQL($beleglink).",
                          z.payment_info,
                          z.payment_json,
-                         z.created_at,
+                         ".$app->erp->FormatDateTime("z.created_at").",
                          z.id
                     FROM payment_transaction z
                     LEFT JOIN zahlungsweisen zw ON z.payment_account_id = zw.id
@@ -385,9 +316,8 @@ class Zahlungsverkehr {
     }
 
     function zahlungsverkehr_list() {
-        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "&Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "Offene Belege");
         $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "Transaktionen");
-
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
         $this->app->YUI->TableSearch('TAB1', 'zahlungsverkehr_list', "show", "", "", basename(__FILE__), __CLASS__);
@@ -395,13 +325,163 @@ class Zahlungsverkehr {
     }
 
     function zahlungsverkehr_ueberweisung() {
-        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "Offene");
+        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "Offene Belege");
         $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "Transaktionen");
-
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-
         $this->app->YUI->TableSearch('TAB1', 'zahlungsverkehr_ueberweisung', "show", "", "", basename(__FILE__), __CLASS__);
+
+        $auswahl = $this->app->Secure->GetPOST('auswahl');
+
+        // Process multi action
+        $submit = $this->app->Secure->GetPOST('submit');
+        switch($submit) {
+            case 'ausfuehren':
+                $selectedIds = [];
+                if(!empty($auswahl)) {
+                    foreach($auswahl as $selectedId) {
+                        if (str_starts_with($selectedId, 'v')) {
+                            $doc_typ = 'verbindlichkeit';
+                        } else if (str_starts_with($selectedId, 'g')) {
+                            $doc_typ = 'gutschrift';
+                        }
+                        $selectedId = (int) substr($selectedId,1);
+                        if($selectedId > 0) {
+                            $selectedIds[] = array('doc_typ' => $doc_typ,'doc_id' => $selectedId);
+                        }
+                    }
+                                       
+                    $result = $this->zahlungsverkehr_ausfuehren($selectedIds);
+                    if (empty($result['errors'])) {
+                        $this->app->Tpl->AddMessage('success',$result['success']." Belege zum Zahllauf gegeben.");
+                    } else {
+                        $this->app->Tpl->AddMessage('error',"Belege konnten nicht zum Zahllauf gegeben werden: " .implode(', ',array_column($result['errors'],'beleg')));
+                        foreach ($result['errors'] as $error) {
+                            $this->notification('Beleg konnte nicht zum Zahllauf gegeben werden', $error['beleg'].": ".$error['msg']);
+                        }
+                    }
+                }
+            break;
+        }
+
         $this->app->Tpl->Parse('PAGE', "zahlungsverkehr_ueberweisung.tpl");
+    }
+
+    function zahlungsverkehr_ausfuehren(array $items) {
+
+        $result = array();
+        $successcount = 0;
+
+        foreach ($items as $item) {
+            $doc_typ= $item['doc_typ'];
+            $id = $item['doc_id'];
+            $belegrow = $this->app->DB->SelectRow("SELECT * FROM ".self::UNIFIED_SQL_TABLES." WHERE doc_typ = '".$doc_typ."' AND doc_id = ".$id);
+            $doc_name = ucfirst($doc_typ)." ".$belegrow['belegnr'];
+
+            $sql = "SELECT id FROM payment_transaction WHERE doc_typ = '".$doc_typ."' AND doc_id = ".$id." LIMIT 1";
+            $pm = $this->app->DB->Select($sql);
+            if ($pm) {
+                $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Bereits im Zahllauf');
+                continue;
+            }
+
+            if ($belegrow['status'] <> 'freigegeben') {
+                $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Falscher Status');
+                continue;
+            }
+
+            if ($belegrow['bezahlt']) {
+                $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Bereits bezahlt');
+                continue;
+            }
+
+            $paymentMethodService = $this->app->Container->get('PaymentMethodService');
+            try {
+                $zahlungsweiseData = $paymentMethodService->getFromShortname($belegrow['zahlungsweise']);
+                if ($zahlungsweiseData['modul'] != 'ueberweisung') {
+                    $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => $doc_name.'Falsche Zahlungsweise');
+                    continue;
+                }
+                if (empty($zahlungsweiseData)) {
+                    $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => $doc_name.'Kein Zahlungsweisemodul');
+                    continue;
+                }
+            } catch (Exception $e) {
+                $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Kein Zahlungsweisemodul');
+                continue;
+            }
+
+            $kontodaten = $this->app->DB->SelectRow("SELECT * FROM konten WHERE id = ".$zahlungsweiseData['einstellungen']['konto']." LIMIT 1");
+            $adressdaten = $this->app->DB->SelectRow("SELECT * FROM adresse WHERE id = ".$belegrow['adresse']);
+
+            // Skonto
+            $skontobis = date_create_from_format('!Y-m-d+', $belegrow['skontobis']);
+            $heute = new DateTime('midnight');
+            $abstand = $skontobis->diff($heute)->format("%r%a"); // What a load of bullshit, WTF php...
+
+            if ($abstand <= 0) {
+                $betrag = round($belegrow['betrag']*(100-($belegrow['skonto']/100)),2);
+                $duedate = $belegrow['skontobis'];
+            } else {
+                $betrag = $belegrow['betrag'];
+                $duedate = $belegrow['zahlbarbis'];
+            }
+
+            if ($duedate == '0000-00-00') {
+                $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Ung&uuml;ltiges Zahlungsziel');
+                continue;
+            }
+
+            // Generate Dataset
+            $payment_details = array(
+                'sender' => $kontodaten['inhaber'],
+                'sender_iban' => $kontodaten['iban'],
+                'sender_bic' => $kontodaten['swift'],
+                'empfaenger' => $adressdaten['inhaber'],
+                'iban' => $adressdaten['iban'],
+                'bic' => $adressdaten['swift'],
+                'betrag' => $betrag,
+                'waehrung' => $belegrow['waehrung'],
+                'vz1' => $belegrow['rechnung'],
+                'datumueberweisung' => ''
+            );
+
+            // Save to DB
+            $input = array(
+                'payment_account_id' => $zahlungsweiseData['id'],
+                'doc_typ' => $doc_typ,
+                'doc_id' => $id,
+                'address_id' => $adressdaten['id'],
+                'payment_status' => 'angelegt',
+                'amount' => $betrag,
+                'currency' => $belegrow['waehrung'],
+                'duedate' => $duedate,
+                'payment_reason' => $doc_name.' '.$belegrow['belegnr'],
+                'payment_info' => $belegrow['rechnung'],
+                'payment_json ' => json_encode($payment_details)
+            );
+
+            $columns = "id, ";
+            $values = "NULL, ";
+            $update = "";
+
+            $fix = "";
+
+            foreach ($input as $key => $value) {
+                $columns = $columns.$fix.$key;
+                $values = $values.$fix."'".$value."'";
+                $update = $update.$fix.$key." = '$value'";
+                $fix = ", ";
+            }
+            $sql = "INSERT INTO payment_transaction (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+                       
+            $this->app->DB->Update($sql);
+            $this->app->erp->BelegProtokoll($doc_typ,$id,$doc_name." zum Zahllauf gegeben.");
+            $successcount++;
+        }
+
+        $result['success'] = $successcount;
+
+        return($result);
     }
 
     public function zahlungsverkehr_delete() {
@@ -411,136 +491,14 @@ class Zahlungsverkehr {
         $this->zahlungsverkehr_list();
     }
 
-    /*
-     * Edit zahlungsverkehr item
-     * If id is empty, create a new one
-     */
-
-    function zahlungsverkehr_edit() {
-        $id = $this->app->Secure->GetGET('id');
-
-        // Check if other users are editing this id
-        if($this->app->erp->DisableModul('zahlungsverkehr',$id))
-        {
-          return;
-        }
-
-        $this->app->Tpl->Set('ID', $id);
-
-        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=edit&id=$id", "Details");
-        $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "Zur&uuml;ck zur &Uuml;bersicht");
-        $id = $this->app->Secure->GetGET('id');
-        $input = $this->GetInput();
-
-        // Convert here
-    	// $input['prio'] = !empty($this->app->Secure->GetPOST('prio'))?"1":"0";
-
-        $submit = $this->app->Secure->GetPOST('submit');
-
-        if (empty($id)) {
-            // New item
-            $id = 'NULL';
-        }
-
-        if ($submit != '')
-        {
-
-            // Write to database
-
-            // Add checks here
-
-    //        $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
-
-            $columns = "id, ";
-            $values = "$id, ";
-            $update = "";
-
-            $fix = "";
-
-            foreach ($input as $key => $value) {
-                $columns = $columns.$fix.$key;
-                $values = $values.$fix."'".$value."'";
-                $update = $update.$fix.$key." = '$value'";
-
-                $fix = ", ";
-            }
-
-//            echo($columns."<br>");
-//            echo($values."<br>");
-//            echo($update."<br>");
-
-            $sql = "INSERT INTO payment_transaction (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-
-//            echo($sql);
-
-            $this->app->DB->Update($sql);
-
-            if ($id == 'NULL') {
-                $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
-                header("Location: index.php?module=zahlungsverkehr&action=list&msg=$msg");
-            } else {
-                $this->app->Tpl->addMessage('success', 'Die Einstellungen wurden erfolgreich &uuml;bernommen.');
-            }
-        }
-
-
-        // Load values again from database
-        if ($id != 'NULL') {
-
-        	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',z.id,'\" />') AS `auswahl`";
-            $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS z.id, $dropnbox, z.returnorder_id, z.payment_status, z.payment_account_id, z.address_id, z.amount, z.currency, z.payment_reason, z.payment_json, z.liability_id, z.payment_transaction_group_id, z.payment_info, z.created_at, z.doc_typ, z.doc_id, z.id FROM payment_transaction z"." WHERE id=$id");
-
-            foreach ($result[0] as $key => $value) {
-                $this->app->Tpl->Set(strtoupper($key), $value);
-            }
-
-            if (!empty($result)) {
-                $zahlungsverkehr_from_db = $result[0];
-            } else {
-                return;
-            }
-        }
-
-        /*
-         * Add displayed items later
-         *
-
-        $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
-        $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);
-
-        $this->app->YUI->AutoComplete("artikel", "artikelnummer");
-        $this->app->Tpl->Set('PROJEKT',$this->app->erp->ReplaceProjekt(false,$zahlungsverkehr_from_db['projekt'],false));
-      	$this->app->Tpl->Set('PRIO', $zahlungsverkehr_from_db['prio']==1?"checked":"");
-
-         */
-
-        $this->app->Tpl->Parse('PAGE', "zahlungsverkehr_edit.tpl");
+    function notification($title, $text) {
+        // Notification erstellen
+        $notification_message = new NotificationMessageData('default', $title);
+        $notification_message->setMessage($text);
+        $notification_message->setPriority(true);
+        /** @var NotificationService $notification */
+        $notification = $this->app->Container->get('NotificationService');
+        $notification->createFromData($this->app->User->GetID(), $notification_message);
     }
 
-    /**
-     * Get all paramters from html form and save into $input
-     */
-    public function GetInput(): array {
-        $input = array();
-        //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
-
-        $input['returnorder_id'] = $this->app->Secure->GetPOST('returnorder_id');
-	$input['payment_status'] = $this->app->Secure->GetPOST('payment_status');
-	$input['payment_account_id'] = $this->app->Secure->GetPOST('payment_account_id');
-	$input['address_id'] = $this->app->Secure->GetPOST('address_id');
-	$input['amount'] = $this->app->Secure->GetPOST('amount');
-	$input['currency'] = $this->app->Secure->GetPOST('currency');
-	$input['payment_reason'] = $this->app->Secure->GetPOST('payment_reason');
-	$input['payment_json'] = $this->app->Secure->GetPOST('payment_json');
-	$input['liability_id'] = $this->app->Secure->GetPOST('liability_id');
-	$input['payment_transaction_group_id'] = $this->app->Secure->GetPOST('payment_transaction_group_id');
-	$input['payment_info'] = $this->app->Secure->GetPOST('payment_info');
-	$input['created_at'] = $this->app->Secure->GetPOST('created_at');
-	$input['doc_typ'] = $this->app->Secure->GetPOST('doc_typ');
-	$input['doc_id'] = $this->app->Secure->GetPOST('doc_id');
-	
-
-        return $input;
-    }
  }
