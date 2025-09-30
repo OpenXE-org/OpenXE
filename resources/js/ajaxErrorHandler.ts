@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Andreas Palm
+// SPDX-FileCopyrightText: 2023-2025 Andreas Palm
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
@@ -10,6 +10,6 @@ export function AlertErrorHandler(error: AxiosError) {
         alert('Unerwarteter Fehler, weitere Hinweise ggf. in der JavaScript-Konsole');
     } else {
         console.log('ClientError on axios request', error);
-        alert(error.response.data);
+        alert(error.response.data.error);
     }
 }

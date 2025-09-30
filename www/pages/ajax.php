@@ -2,7 +2,7 @@
 
 /*
  * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
- * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2023-2025 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -3822,12 +3822,16 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         break;
 
         case "shopnameid":
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',bezeichnung) as bezeichnung FROM shopexport WHERE bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("projekt")."");
-        $carr = !empty($arr)?count($arr):0;
-        for($i = 0; $i < $carr; $i++) {
-          $newarr[] = $arr[$i]['bezeichnung'];
-        }
-        break;
+            $fields = $asObject ? 'id, bezeichnung' : "CONCAT(id,' ',bezeichnung) as bezeichnung";
+            $arr = $this->app->DB->SelectArr("SELECT $fields FROM shopexport WHERE bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("projekt")."");
+            if ($asObject) {
+                $newarr = $arr; break;
+            }
+            $carr = !empty($arr)?count($arr):0;
+            for($i = 0; $i < $carr; $i++) {
+                $newarr[] = $arr[$i]['bezeichnung'];
+            }
+            break;
 
         case "gruppekennziffer":
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(g.kennziffer,' ',g.name) as bezeichnung FROM gruppen g LEFT JOIN projekt p ON p.id=g.projekt  

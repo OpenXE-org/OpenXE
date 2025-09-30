@@ -1,20 +1,20 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Db;
 
 use Laminas\Validator\Exception;
 
 /**
  * Confirms a record does not exist in a table.
+ *
+ * @deprecated This class will be removed in version 3.0 of this component. There is no replacement.
  */
 class NoRecordExists extends AbstractDb
 {
+    /**
+     * @param mixed $value
+     * @return bool
+     */
     public function isValid($value)
     {
         /*

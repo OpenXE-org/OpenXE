@@ -1,7 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
- * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2023-2025 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -49,5 +49,10 @@ class JsonResponse extends Response
     public static function NotFound(array|JsonSerializable $data = [], array $headers = []): JsonResponse
     {
         return new JsonResponse($data, Response::HTTP_NOT_FOUND, $headers);
+    }
+
+    public static function Forbidden(array|JsonSerializable $data = [], array $headers = []): JsonResponse
+    {
+        return new JsonResponse($data, Response::HTTP_FORBIDDEN, $headers);
     }
 }
