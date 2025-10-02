@@ -55,7 +55,7 @@ class Zahlungsverkehr {
                                 g.id doc_id
                             FROM gutschrift g
                             LEFT JOIN adresse a ON g.adresse = a.id
-                        ) tables";
+                        ) belege";
 
     function __construct($app, $intern = false) {
         $this->app = $app;
@@ -81,7 +81,7 @@ class Zahlungsverkehr {
         switch ($name) {
             case "zahlungsverkehr_ueberweisung":
                 $allowed['zahlungsverkehr_ueberweisung'] = array('list');
-                $heading = array('','','Typ','Belegnr','RE-Datum','Adresse', 'Nummer', 'RE-Nr', 'Betrag (brutto)', 'W&auml;hrung','Status', 'Ziel','Skonto','Skontoziel', 'Men&uuml;');
+                $heading = array('','','Typ','Belegnr','RE-Datum','Adresse', 'Nummer', 'RE-Nr', 'Betrag (brutto)', 'W&auml;hrung', 'Bezahlt', 'Ziel', 'Skonto','Skontoziel','Status','Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -98,10 +98,11 @@ class Zahlungsverkehr {
                     'rechnung',
                     'cast(betrag AS decimal)',
                     'waehrung',
-                    'status',
+                    'if(bezahlt,\'ja\',\'nein\')',
                     'zahlbarbis',
                     'skonto',
                     'skontobis',
+                    'status',
                     'id'
                 );
 
@@ -134,22 +135,91 @@ class Zahlungsverkehr {
                             rechnung,
                             ".$app->erp->FormatMenge('betrag',2)." betrag,
                             waehrung,
-                            status,
+                            if(bezahlt,'ja','nein'),
                             ".$app->erp->FormatDate("zahlbarbis").",
                             IF(skonto <> 0,CONCAT(".$app->erp->FormatMenge('skonto',0).",'%'),''),
-                            IF(skonto <> 0,".$app->erp->FormatDate("skontobis").",'')
+                            IF(skonto <> 0,".$app->erp->FormatDate("skontobis").",''),
+                            status,
+                            id
                         ";
                 $tables = self::UNIFIED_SQL_TABLES;
 
                 $sql = "SELECT SQL_CALC_FOUND_ROWS ".$columns." FROM ".$tables;
-                $where = " bezahlt <> 1";
+                $where .= "1";
                 $where .= " AND belegnr <> ''";
-                $where .= " AND status <> 'angelegt'";
-                $where .= " AND (SELECT id FROM payment_transaction pt WHERE pt.doc_typ = tables.doc_typ AND pt.doc_id = tables.doc_id) IS NULL";
-                
-                $count = "SELECT count(DISTINCT id) FROM ".$tables." WHERE $where";
+
+                // Toggle filters
+                $app->Tpl->Add('JQUERYREADY', "$('#bezahlt').click( function() { fnFilterColumn1( 0 ); } );");
+                $app->Tpl->Add('JQUERYREADY', "$('#imzahllauf').click( function() { fnFilterColumn2( 0 ); } );");
+                $app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn3( 0 ); } );");
+                $app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn4( 0 ); } );");
+
+                for ($r = 1;$r <= 4;$r++) {
+                    $app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
+                                           \'\',
+                                           i,
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $statusfilter = array('freigegeben');
+
+                $more_data1 = $app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                } else {
+                    $where .= " AND belege.bezahlt <> 1";
+                }
+
+                $more_data2 = $app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                } else {
+                    $where .= " AND (SELECT id FROM payment_transaction pt WHERE pt.doc_typ = belege.doc_typ AND pt.doc_id = belege.doc_id) IS NULL";
+                }
+
+                $more_data3 = $app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                    $statusfilter[] = 'storniert';
+                } else {
+                }
+
+                $more_data4 = $app->Secure->GetGET("more_data4");
+                if ($more_data4 == 1) {
+                    $statusfilter[] = 'abgeschlossen';
+                } else {
+                }
+
+                if (!empty($statusfilter)) {
+                    $where .= " AND belege.status IN ('".implode("','",$statusfilter)."')";
+                }
+
+                $this->app->YUI->DatePicker('zahlbarbis');
+                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
+                if (!empty($filterzahlbarbis)) {
+                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND belege.zahlbarbis <= '".$filterzahlbarbis."'";
+                }
+
+                $this->app->YUI->DatePicker('skontobis');
+                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
+                if (!empty($filterskontobis)) {
+                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND belege.skontobis <= '".$filterskontobis."'";
+                }
 
                 // END Toggle filters
+                $count = "SELECT count(DISTINCT id) FROM ".$tables." WHERE $where";
+
+//                echo($sql." WHERE ".$where);
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
@@ -349,7 +419,7 @@ class Zahlungsverkehr {
                             $selectedIds[] = array('doc_typ' => $doc_typ,'doc_id' => $selectedId);
                         }
                     }
-                                       
+
                     $result = $this->zahlungsverkehr_ausfuehren($selectedIds);
                     if (empty($result['errors'])) {
                         $this->app->Tpl->AddMessage('success',$result['success']." Belege zum Zahllauf gegeben.");
@@ -473,7 +543,7 @@ class Zahlungsverkehr {
                 $fix = ", ";
             }
             $sql = "INSERT INTO payment_transaction (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-                       
+
             $this->app->DB->Update($sql);
             $this->app->erp->BelegProtokoll($doc_typ,$id,$doc_name." zum Zahllauf gegeben.");
             $successcount++;

@@ -4,50 +4,52 @@
     </ul>
     <div id="tabs-1">
         [MESSAGE]
-        <form action="#tabs-1" id="frmauto" name="frmauto" method="post">
-            <div class="filter-box filter-usersave">
-               <div class="filter-block filter-inline">
-                  <div class="filter-title">{|Filter|}</div>
-                  <ul class="filter-list">
-                     [STATUSFILTER]
-                     <li class="filter-item">
-                        <label for="offene" class="switch">
-                        <input type="checkbox" id="offene">
-                        <span class="slider round"></span>
-                        </label>
-                        <label for="offene">{|Offene|}</label>
-                     </li>
-                     <li class="filter-item">
-                        <label for="exportierte" class="switch">
-                        <input type="checkbox" id="exportierte">
-                        <span class="slider round"></span>
-                        </label>
-                        <label for="exportierte">{|Exportierte|}</label>
-                     </li>
-                     <li class="filter-item">
-                        <label for="fehlgeschlagene" class="switch">
-                        <input type="checkbox" id="fehlgeschlagene">
-                        <span class="slider round"></span>
-                        </label>
-                        <label for="fehlgeschlagene">{|Fehlgeschlagene|}</label>
-                     </li>
-                      <li class="filter-item">
-                        <label for="verbindlichkeiten" class="switch">
-                        <input type="checkbox" id="verbindlichkeiten">
-                        <span class="slider round"></span>
-                        </label>
-                        <label for="verbindlichkeiten">{|Verbindlichkeiten|}</label>
-                     </li>
-                     <li class="filter-item">
-                        <label for="gutschriften" class="switch">
-                        <input type="checkbox" id="gutschriften">
-                        <span class="slider round"></span>
-                        </label>
-                        <label for="gutschriften">{|Gutschriften|}</label>
-                     </li>
-                  </ul>
-               </div>
+
+        <div class="filter-box filter-usersave">
+            <div class="filter-block filter-inline">
+              <div class="filter-title">{|Filter|}</div>
+              <ul class="filter-list">
+                <li class="filter-item">
+                  <label for="bezahlt" class="switch">
+                    <input type="checkbox" id="bezahlt">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="bezahlt">{|Inkl. bezahlte|}</label>
+                </li>
+                <li class="filter-item">
+                  <label for="imzahllauf" class="switch">
+                    <input type="checkbox" id="imzahllauf">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="imzahllauf">{|Inkl. bereits im Zahllauf|}</label>
+                </li>
+                <li class="filter-item">
+                  <label for="stornierte" class="switch">
+                    <input type="checkbox" id="stornierte">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="stornierte">{|Inkl. stornierte|}</label>
+                </li>
+                <li class="filter-item">
+                  <label for="abgeschlossen" class="switch">
+                    <input type="checkbox" id="abgeschlossen">
+                    <span class="slider round"></span>
+                  </label>
+                  <label for="abgeschlossen">{|Inkl. abgeschlossene|}</label>
+                </li>
+                <li class="filter-item">
+                    <label for="zahlbarbis">{|Zahlbar bis|}:</label>
+                    <input type="text" name="zahlbarbis" id="zahlbarbis" size="10">
+                </li>
+                <li class="filter-item">
+                    <label for="skontobis">{|Skonto bis|}:</label>
+                    <input type="text" name="skontobis" id="skontobis" size="10">
+                </li>
+              </ul>
             </div>
+        </div>
+
+        <form action="#tabs-1" id="frmauto" name="frmauto" method="post">
             [TAB1]
             [TAB1NEXT]
             <table>

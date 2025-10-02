@@ -198,17 +198,16 @@ class Verbindlichkeit {
                     $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
                     if (!empty($filterzahlbarbis)) {
                         $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
-                        $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
+                        $where .= " AND tables.zahlbarbis <= '".$filterzahlbarbis."'";
                     }
 
                     $this->app->YUI->DatePicker('skontobis');
                     $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
                     if (!empty($filterskontobis)) {
                         $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
-                        $where .= " AND v.skontobis <= '".$filterskontobis."'";
+                        $where .= " AND tables.skontobis <= '".$filterskontobis."'";
                     }
 
-                    $where .= " AND v.status <> 'angelegt'";
                     // END Toggle filters
                 }
 
