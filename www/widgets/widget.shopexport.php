@@ -883,6 +883,9 @@ class WidgetShopexport extends WidgetGenShopexport
               }
             }
           break;
+          case 'hyperlink':
+            $aktcol .= '<a class = "button" href="'.$val['href'].'">'.$val['name'].'</a>';
+          break;
           case 'info':
             $aktcol .= $val['text'];
           break;

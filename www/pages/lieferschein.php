@@ -406,9 +406,7 @@ class Lieferschein extends GenLieferschein
       if($this->LieferscheinCheck($id))
       {
         // wenn alles lagernd ist und nicht ausgelagert ist
-        $standardlager = $this->app->DB->Select("SELECT standardlager FROM lieferschein WHERE id = '$id' LIMIT 1");
-        if($standardlager && $this->app->DB->Select("SELECT count(id) FROM lager") <= 1)$standardlager = 0;
-        $this->app->erp->LieferscheinAuslagern($id, true, $standardlager, 'lieferschein', 0, true);
+        $this->app->erp->LieferscheinAuslagern(lieferschein: $id, anzeige_lagerplaetze_in_lieferschein: true, forceseriennummerngeliefertsetzen: true);
         $this->app->erp->RunHook('lieferschein_auslagern', 1, $id);
         $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Der Lieferschein wurde ausgelagert!</div>");
       } else {
@@ -578,7 +576,7 @@ class Lieferschein extends GenLieferschein
 
     $gewicht = $this->app->erp->VersandartMindestgewicht($id, 'lieferschein');
 
-    $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $id, gewicht: $gewicht);
+    $versandmodul->Paketmarke('TAB1', $id, gewicht: $gewicht);
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
   
@@ -1614,7 +1612,7 @@ class Lieferschein extends GenLieferschein
       }
 
       $this->app->erp->LieferscheinProtokoll($id,"Lieferschein storniert");
-      $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Das Lieferschein \"$name\" ($belegnr) wurde storniert!</div>");
+      $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Der Lieferschein \"$name\" ($belegnr) wurde storniert!</div>");
     }
     if($intern)return;
     header("Location: index.php?module=lieferschein&action=list&msg=$msg#tabs-1");

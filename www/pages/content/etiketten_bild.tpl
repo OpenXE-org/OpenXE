@@ -7,9 +7,10 @@
 
 <!-- erstes tab -->
 <div id="tabs-1">
+[MESSAGE]
 <form action="" method="post" enctype="multipart/form-data">
 <fieldset><legend>{|Bild heraufladen|}</legend>
-<i>Hinweis: Es werden aktuell nur Monochrom PNG Dateien unterst&uuml;tzt. Die Bildbreite muss durch 8 teilbar sein! z.B. 520 Pixel oder 640 Pixel. 800 Pixel entsprechen 10 cm.</i>
+<i>Hinweis: Es werden aktuell nur JPG-Dateien unterst&uuml;tzt.</i>
 <table>
 <tr><td>Datei:</td><td><input type="file" name="image"></td><td><input type="submit" name="submit" value="Hochladen"></td>
 </tr></table>

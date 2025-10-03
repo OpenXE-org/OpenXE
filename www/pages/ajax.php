@@ -3069,12 +3069,6 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
 
         $adresse = $document['adresse'];// $this->app->DB->Select("SELECT adresse FROM $smodule WHERE id='$sid' LIMIT 1");
         $waehrung = $document['waehrung'];//$this->app->DB->Select("SELECT waehrung FROM $smodule WHERE id='$sid' LIMIT 1");
-        $posanz = (int)$this->app->DB->Select("SELECT count(id) FROM $smodule"."_position WHERE $smodule = '$sid'");
-        
-        if($posanz == 0)
-        {
-          $waehrung = '';
-        }
         
         $anzeigebrutto = false;
         if($smodule == 'auftrag' || $smodule == 'rechnung' || $smodule == 'gutschrift' || $smodule == 'angebot' || $smodule == 'proformarechnung')
@@ -3347,9 +3341,9 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
               LEFT(IFNULL(e.bezeichnunglieferant,'nicht vorhanden'),50),
               ' | ',
               ' ab Menge ',
-              ".$this->app->erp->FormatMenge("IFNULL(e.ab_menge,1)").", 
+              ".$this->app->erp->FormatMengeFuerFormular("IFNULL(e.ab_menge,1)").", 
               ' | Preis ',
-              ".$this->app->erp->FormatPreis("IFNULL(e.preis,0)").", 
+              ".$this->app->erp->FormatPreis("IFNULL(e.preis,0)").",
               ' | VPE ',
               ".$this->app->erp->FormatMenge("IF(IFNULL(e.vpe,1)='',1,IFNULL(e.vpe,1))")."
             ) as `name` 

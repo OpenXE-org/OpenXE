@@ -8,13 +8,13 @@
         		<div class="col-xs-12 col-md-12 col-md-height">
         			<div class="inside inside-full-height">
         				<fieldset>
-                            <legend>{|<b>Lieferung zu <font color="blue"><a href="index.php?module=lieferschein&action=edit&id=[BELEGID]">Lieferschein [BELEGNR]</a></font></b>|}</legend>                              
-                        </fieldset>            
+                            <legend>{|<b>Pakete zu <font color="blue"><a href="index.php?module=lieferschein&action=edit&id=[BELEGID]">Lieferschein [BELEGNR]</a></font></b>|}</legend>
+                        </fieldset>
                     </div>
            		</div>
            	</div>	
         </div>
-        [MESSAGE]        
+        [MESSAGE]
         <div class="row">
         	<div class="row-height">
         		<div class="col-xs-12 col-md-12 col-md-height">
@@ -46,5 +46,5 @@
       $('#versandpakete_list').find('input[type="checkbox"]').prop('checked',wert);
       $('#versandpakete_list').find('input[type="checkbox"]').first().trigger('change');
     });
-  
+
 </script>

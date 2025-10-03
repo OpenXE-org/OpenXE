@@ -44,7 +44,10 @@ class Verbindlichkeit {
 
     function TableSearch(&$app, $name, $erlaubtevars) {
         switch ($name) {
-            case "verbindlichkeit_list":
+            case 'verbindlichkeit_inbearbeitung':
+                $entwuerfe = true;
+                // break ommitted
+            case "verbindlichkeit_list":            
                 $allowed['verbindlichkeit_list'] = array('list');
                 $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
@@ -114,90 +117,98 @@ class Verbindlichkeit {
                         ) d ON d.parameter = v.id
                         ";
                 $where = "1";
-                $count = "SELECT count(DISTINCT id) FROM verbindlichkeit WHERE $where";
-//                $groupby = "";
 
-                // Toggle filters
-                $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
-                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
+                if ($entwuerfe) {
+                    $where .= " AND v.belegnr = '' OR v.belegnr IS NULL";
+                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";              
+                }
+                else {                
+                    $where .= " AND v.belegnr <> ''";
+                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";                
+                    // Toggle filters
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
 
-                for ($r = 1;$r <= 8;$r++) {
-                  $this->app->Tpl->Add('JAVASCRIPT', '
-                                         function fnFilterColumn' . $r . ' ( i )
-                                         {
-                                         if(oMoreData' . $r . $name . '==1)
-                                         oMoreData' . $r . $name . ' = 0;
-                                         else
-                                         oMoreData' . $r . $name . ' = 1;
+                    for ($r = 1;$r <= 8;$r++) {
+                      $this->app->Tpl->Add('JAVASCRIPT', '
+                                             function fnFilterColumn' . $r . ' ( i )
+                                             {
+                                             if(oMoreData' . $r . $name . '==1)
+                                             oMoreData' . $r . $name . ' = 0;
+                                             else
+                                             oMoreData' . $r . $name . ' = 1;
 
-                                         $(\'#' . $name . '\').dataTable().fnFilter(
-                                           \'\',
-                                           i,
-                                           0,0
-                                           );
-                                         }
-                                         ');
-                }
+                                             $(\'#' . $name . '\').dataTable().fnFilter(
+                                               \'\',
+                                               i,
+                                               0,0
+                                               );
+                                             }
+                                             ');
+                    }            
 
-                $more_data1 = $this->app->Secure->GetGET("more_data1");
-                if ($more_data1 == 1) {
-                   $where .= " AND datei_anzahl IS NULL";
-                } else {
-                }
+                    $more_data1 = $this->app->Secure->GetGET("more_data1");
+                    if ($more_data1 == 1) {
+                       $where .= " AND datei_anzahl IS NULL";
+                    } else {
+                    }
 
-                $more_data2 = $this->app->Secure->GetGET("more_data2");
-                if ($more_data2 == 1) {
-                   $where .= " AND v.freigabe <> '1'";
-                }
-                else {
-                }
+                    $more_data2 = $this->app->Secure->GetGET("more_data2");
+                    if ($more_data2 == 1) {
+                       $where .= " AND v.freigabe <> '1'";
+                    }
+                    else {
+                    }
 
-                $more_data3 = $this->app->Secure->GetGET("more_data3");
-                if ($more_data3 == 1) {
-                   $where .= " AND v.rechnungsfreigabe <> '1'";
-                }
-                else {
-                }
+                    $more_data3 = $this->app->Secure->GetGET("more_data3");
+                    if ($more_data3 == 1) {
+                       $where .= " AND v.rechnungsfreigabe <> '1'";
+                    }
+                    else {
+                    }
 
-                $more_data4 = $this->app->Secure->GetGET("more_data4");
-                if ($more_data4 == 1) {
-                   $where .= " AND v.bezahlt <> 1";
-                }
-                else {
-                }
+                    $more_data4 = $this->app->Secure->GetGET("more_data4");
+                    if ($more_data4 == 1) {
+                       $where .= " AND v.bezahlt <> 1";
+                    }
+                    else {
+                    }
 
-                $more_data5 = $this->app->Secure->GetGET("more_data5");
-                if ($more_data5 == 1) {
-                }
-                else {
-                   $where .= " AND v.status <> 'storniert'";
-                }
+                    $more_data5 = $this->app->Secure->GetGET("more_data5");
+                    if ($more_data5 == 1) {
+                    }
+                    else {
+                       $where .= " AND v.status <> 'storniert'";
+                    }
 
-                $more_data6 = $this->app->Secure->GetGET("more_data6");
-                if ($more_data6 == 1) {
-                }
-                else {
-                    $where .= " AND v.status <> 'abgeschlossen'";
-                }
+                    $more_data6 = $this->app->Secure->GetGET("more_data6");
+                    if ($more_data6 == 1) {
+                    }
+                    else {
+                        $where .= " AND v.status <> 'abgeschlossen'";
+                    }
 
-                $this->app->YUI->DatePicker('zahlbarbis');
-                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
-                if (!empty($filterzahlbarbis)) {
-                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
-                    $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
-                }
+                    $this->app->YUI->DatePicker('zahlbarbis');
+                    $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
+                    if (!empty($filterzahlbarbis)) {
+                        $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
+                        $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
+                    }
 
-                $this->app->YUI->DatePicker('skontobis');
-                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
-                if (!empty($filterskontobis)) {
-                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
-                    $where .= " AND v.skontobis <= '".$filterskontobis."'";
-                }
-                // END Toggle filters
+                    $this->app->YUI->DatePicker('skontobis');
+                    $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
+                    if (!empty($filterskontobis)) {
+                        $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
+                        $where .= " AND v.skontobis <= '".$filterskontobis."'";
+                    }
+                    
+                    $where .= " AND v.status <> 'angelegt'";
+                    // END Toggle filters
+                }                    
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
@@ -416,7 +427,7 @@ class Verbindlichkeit {
                         art.name_de,
                         pd.bemerkung,
                         vp.menge,
-                        vp.preis,
+                        TRIM(vp.preis)+0,
                         vp.steuersatz,
                         CONCAT(skv.sachkonto,' ',skv.beschriftung),
                         vp.id
@@ -539,9 +550,12 @@ class Verbindlichkeit {
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-
+        
+        $this->app->Tpl->Set('TABTEXT1','Verbindlichkeiten');
+        $this->app->Tpl->Set('TABTEXT2','In Bearbeitung');
+        
         $this->app->YUI->TableSearch('TAB1', 'verbindlichkeit_list', "show", "", "", basename(__FILE__), __CLASS__);
-
+        $this->app->YUI->TableSearch('TAB2', 'verbindlichkeit_inbearbeitung', "show", "", "", basename(__FILE__), __CLASS__);
 
         if($this->app->erp->RechteVorhanden('verbindlichkeit', 'freigabeeinkauf')){
             $this->app->Tpl->Set('MANUELLFREIGABEEINKAUF', '<option value="freigabeeinkauf">{|freigeben (Einkauf)|}</option>');
@@ -560,6 +574,8 @@ class Verbindlichkeit {
 
         $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker());
 
+        $this->verbindlichkeit_check_belegnummern();
+        
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_list.tpl");
     }
 
@@ -567,7 +583,8 @@ class Verbindlichkeit {
         $id = (int) $this->app->Secure->GetGET('id');
 
         $this->app->DB->Delete("UPDATE `verbindlichkeit` SET status='storniert' WHERE `id` = '{$id}'");
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde storniert.</div>");
+        $this->app->DB->Delete("DELETE FROM `verbindlichkeit` WHERE belegnr = '' AND `id` = '{$id}'");
+        $this->app->YUI->Message('info','Der Eintrag wurde storniert.');
 
         $this->verbindlichkeit_list();
     }
@@ -594,6 +611,8 @@ class Verbindlichkeit {
           return;
         }
 
+        $this->verbindlichkeit_check_belegnummern();
+                
         $this->app->Tpl->Set('ID', $id);
 
         $this->verbindlichkeit_menu($id);
@@ -706,7 +725,7 @@ class Verbindlichkeit {
                     $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Das Element wurde erfolgreich angelegt.</div>");
                     header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg");
                 } else {
-                    $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                    $this->app->YUI->Message('success','Die Einstellungen wurden erfolgreich &uuml;bernommen.');
                 }
             break;
             case 'positionen_hinzufuegen':
@@ -808,6 +827,7 @@ class Verbindlichkeit {
                         $preis = $preis / (1+($steuersatz/100));
                     }
                     $sql = "INSERT INTO verbindlichkeit_position (verbindlichkeit,paketdistribution, menge, preis, steuersatz, artikel, kontorahmen) VALUES ($id, $paketdistribution, $menge, $preis, $steuersatz, $einartikel, $kontorahmen)";
+
                     $this->app->DB->Insert($sql);
 
                 }
@@ -1099,6 +1119,14 @@ class Verbindlichkeit {
             $this->app->Tpl->Set('INLINEPDF', 'Keine Dateien vorhanden.');
         }
 
+        $tickets = $this->app->erp->GetBelegTickets('verbindlichkeit',$id);
+        if (!empty($tickets)) {
+            function ticketlink($ticket) {
+               return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+            }
+            $this->app->Tpl->AddMessage('info',"Zu dieser Verbindlichkeit geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+        }
+
         if (empty($verbindlichkeit_from_db['freigabe'])) {
             $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_paketdistribution_list', "show", "", "", basename(__FILE__), __CLASS__);
         }
@@ -1155,7 +1183,7 @@ class Verbindlichkeit {
                     WHERE id = ".$posid."
                 ";
                 $this->app->DB->Update($sql);
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                $this->app->YUI->Message('success','Die Einstellungen wurden erfolgreich &uuml;bernommen.');
                 header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg#tabs-2");
             }
         } else {
@@ -1171,7 +1199,7 @@ class Verbindlichkeit {
                 ";
                 $this->app->DB->Update($sql);
 
-                $this->app->Tpl->Set('MESSAGE', "<div class=\"success\">Die Einstellungen wurden erfolgreich &uuml;bernommen.</div>");
+                $this->app->YUI->Message('success', 'Die Einstellungen wurden erfolgreich &uuml;bernommen.');
                 header("Location: index.php?module=verbindlichkeit&action=edit&id=$id&msg=$msg#tabs-2");
             }
         }
@@ -1621,7 +1649,7 @@ class Verbindlichkeit {
                                                     art.name_de,
                                                     art.nummer,
                                                     vp.menge,
-                                                    vp.preis,
+                                                    TRIM(vp.preis)+0,
                                                     vp.steuersatz,
                                                     CONCAT(skv.sachkonto,' ',skv.beschriftung) AS sachkonto,
                                                     ''
@@ -1852,4 +1880,20 @@ class Verbindlichkeit {
 
         return($result);
     }
+
+    // ERPAPI
+    function createLiability($adresse="", $datum = null) {
+        $sql = "INSERT INTO verbindlichkeit (status, adresse, rechnungsdatum, eingangsdatum) VALUES ('angelegt','".$adresse."','".$datum."','".$datum."')";
+        $this->app->DB->Insert($sql);
+        $id = $this->app->DB->GetInsertID();
+        return($id);
+    }
+
+    function verbindlichkeit_check_belegnummern() {
+        $doppelte = $this->app->erp->CheckBelegNummernDoppelt(table: "verbindlichkeit", field: "rechnung", where: "status <> 'storniert' AND rechnungsdatum > CURDATE() - INTERVAL 6 MONTH", group: "adresse");
+        if (!empty($doppelte)) {
+            $this->app->YUI->Message('error','Rechnungsnummer(n) mehrfach vergeben: '.implode(', ',array_column($doppelte,'rechnung')));
+        }
+    }
+
 }

@@ -1110,6 +1110,14 @@ class lieferantengutschrift {
             $this->app->Tpl->Set('INLINEPDF', 'Keine Dateien vorhanden.');
         }
                
+        $tickets = $this->app->erp->GetBelegTickets('lieferantengutschrift',$id);
+        if (!empty($tickets)) {
+            function ticketlink($ticket) {
+               return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+            }
+            $this->app->Tpl->AddMessage('info',"Zu dieser Lieferantengutschrift geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+        }
+
         // -- POSITIONEN
         if (empty($lieferantengutschrift_from_db['freigabe'])) {
             $this->app->YUI->TableSearch('PAKETDISTRIBUTION', 'verbindlichkeit_positionen', "show", "", "", basename(__FILE__), __CLASS__);
@@ -1802,4 +1810,13 @@ class lieferantengutschrift {
              
         return($result);
     }
+
+    // ERPAPI
+    function createlieferantengutschrift($adresse="", $datum = null) {
+        $sql = "INSERT INTO lieferantengutschrift (status, adresse, rechnungsdatum, eingangsdatum) VALUES ('angelegt','".$adresse."','".$datum."','".$datum."')";
+        $this->app->DB->Insert($sql);
+        $id = $this->app->DB->GetInsertID();
+        return($id);
+    }
+
 }

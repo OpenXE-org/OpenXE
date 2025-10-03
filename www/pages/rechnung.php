@@ -2279,7 +2279,7 @@ class Rechnung extends GenRechnung
       $this->app->erp->RechnungNeuberechnen($invoiceId);
     }
     $projekt = $reArr['projekt'];
-    $this->app->erp->RechnungProtokoll($invoiceId,'Rechnung versendet');
+    $this->app->erp->RechnungProtokoll($invoiceId,'Rechnung geschlossen');
     $this->app->erp->closeInvoice($invoiceId);
     $this->app->DB->Update(
       sprintf(

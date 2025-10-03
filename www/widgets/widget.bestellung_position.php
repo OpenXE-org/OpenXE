@@ -14,7 +14,11 @@ class WidgetBestellung_position extends WidgetGenBestellung_position
 
   function ExtendsForm()
   {
-    $id = $this->app->Secure->GetGET('id');
+    $id = (int)$this->app->Secure->GetGET('id');
+    $module = $this->app->Secure->GetGET('module');
+    $sprache = $this->app->erp->GetSpracheBelegPosition($module,$id);
+    $this->app->erp->AnzeigeFreifelderPositionen($this->form, $sprache);
+
     if($_POST)
     {
       if($this->form->CallbackAndMandatorycheck(true))
@@ -26,8 +30,6 @@ class WidgetBestellung_position extends WidgetGenBestellung_position
     
     $this->app->YUI->AutoComplete("einheit","artikeleinheit");
     //$this->app->YUI->AutoComplete("zolltarifnummer","zolltarifnummer",1);
-
-    $this->app->erp->AnzeigeFreifelderPositionen($this->form);
 
     $this->app->YUI->AutoComplete("projekt","projektname",1);
     $this->app->YUI->AutoComplete("kostenstelle","kostenstelle",1);

@@ -15,10 +15,11 @@ class WidgetAuftrag_position extends WidgetGenAuftrag_position
   function ExtendsForm()
   {
     $id = (int)$this->app->Secure->GetGET('id');
+    $module = $this->app->Secure->GetGET('module');
+    $sprache = $this->app->erp->GetSpracheBelegPosition($module,$id);
+    $this->app->erp->AnzeigeFreifelderPositionen($this->form, $sprache);
+
     $this->app->YUI->AutoComplete("einheit","artikeleinheit");
-
-    $this->app->erp->AnzeigeFreifelderPositionen($this->form);
-
     //$this->app->YUI->AutoComplete(AUTO,"artikel",array('nummer','name_de','warengruppe'),"nummer");
     $this->form->ReplaceFunction("lieferdatum",$this,"ReplaceDatum");
     $this->app->YUI->AutoComplete("zolltarifnummer","zolltarifnummer",1);
@@ -36,6 +37,7 @@ class WidgetAuftrag_position extends WidgetGenAuftrag_position
         $id
       )
     );
+
     $projektabkuerzung = $position['abkuerzung'];
     $articleId = $position['artikel'];
     $this->app->YUI->AutoComplete('erloese','sachkonto',1,"&sid=".$projektabkuerzung);

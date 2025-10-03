@@ -173,20 +173,46 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     echo_out("--------------- OpenXE upgrade ---------------\n");
     echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
 
-    //require_once($directory.'/../cronjobs/githash.php');
-
-    if ($origin) {
-        $remote_info = array('host' => 'origin','branch' => 'master');    
-    } else {
-        $remote_info_contents = file_get_contents($remote_file_name);
-        if (!$remote_info_contents) {
-            abort("Unable to load $remote_file_name");
-            return(-1);
-        } 
-        $remote_info = json_decode($remote_info_contents, true);    
-    }
-
     if ($check_git || $do_git) {
+
+        if ($origin) {
+            $remote_info = array('host' => 'origin','branch' => 'master');    
+        } else {
+            $remote_info_contents = file_get_contents($remote_file_name);
+            if (!$remote_info_contents) {
+                abort("Unable to load $remote_file_name");
+                return(-1);
+            } 
+            $remote_info = json_decode($remote_info_contents, true);               
+            $remotes[] = $remote_info;
+            $config = file_get_contents($mainfolder."/conf/user.inc.php");
+            preg_match("/WFuserdata='(?<path>.*?)';/", $config, $matches);
+            $uhash = file_get_contents($matches['path']."/uhash.txt");
+            $ch = curl_init('https://upgrade.openxe-dev.org/remotes.php');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, array('uhash'=>$uhash));
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            $response = curl_exec($ch);
+            if (!$response) {
+                $error_msg = "Fetch additional remotes failed.";
+                if (!empty(curl_error($ch))) {
+                    $error_msg .= " ".curl_error($ch);
+                }
+                if (!empty(curl_getinfo($ch)['http_code'])) {
+                    $error_msg .= " (HTTP ".curl_getinfo($ch)['http_code'].")";
+                }
+                echo_out($error_msg."\n");
+            } else {
+                $additional_remotes = json_decode($response, true);
+                if (!empty($additional_remotes['success'])) {
+                    $remotes = array_merge($remotes, $additional_remotes['remotes']);
+                    echo_out("Fetched additional remotes.\n");
+                } else {
+                    echo_out("No additional remotes.\n".$additional_remotes['message']."\n");
+                }
+            }
+            $remotes = array_values(array_map("unserialize", array_unique(array_map("serialize", $remotes))));
+        }
 
         $retval = git("log HEAD --", $output,$verbose,false,"");
         // Not a git repository -> Create it and then go ahead

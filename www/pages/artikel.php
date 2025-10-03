@@ -22,6 +22,7 @@
 ?>
 <?php
 
+use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Widgets\SuperSearch\Result\ResultGroup;
 use Xentral\Widgets\SuperSearch\Result\ResultItem;
 
@@ -2873,9 +2874,9 @@ class Artikel extends GenArtikel {
              
         $remote_result = $this->app->remote->RemoteSendArticleList($shop, $artikel, $extartikelnummer);
 
-        if (is_array($remote_result)) {
-            $remote_status = $remote_result['status'];
-            $remote_message = $remote_result['message'];
+        if (is_array($remote_result) && $remote_result[0] instanceof ArticleExportResult) {
+            $remote_status = $remote_result[0]->success;
+            $remote_message = $remote_result[0]->message;
         } else if (is_numeric($remote_result)) {
             if ($remote_result == 1) {
                 $remote_status = true;
@@ -3699,8 +3700,8 @@ class Artikel extends GenArtikel {
 	      $adresse = $this->app->DB->Select("SELECT adresse FROM $smodule WHERE id='$sid' LIMIT 1");
 	}
 
-	if (!is_null($module)) {
-		if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'waehrung'")) {
+	if (!is_null($smodule)) {
+		if ($this->app->DB->Select("SHOW COLUMNS FROM `$smodule` LIKE 'waehrung'")) {
 		      $waehrung = $this->app->DB->Select("SELECT waehrung FROM $smodule WHERE id='$sid' LIMIT 1");
 		}
 	}
@@ -5422,7 +5423,7 @@ class Artikel extends GenArtikel {
       // easy table mit arbeitspaketen YUI als template 
       $table = new EasyTable($this->app);
       $table->Query("SELECT adr.name as kunde, trim(r.menge)+0 as menge, if(r.datum='0000-00-00','Kein Datum hinterlegt',r.datum) as bis,
-          p.abkuerzung as projekt,r.grund, IF(".$this->app->erp->RechteVorhanden("artikel","ausreservieren")."=1,CONCAT('<a onclick=\"var menge = prompt(\'Anzahl Artikel aus Reservierung entfernen:\',',(trim(r.menge)+0),'); if(parseFloat(menge.replace(\',\',\'.\')) > 0) window.location.href=\'index.php?module=artikel&action=ausreservieren&id=$id&lid=',r.id,'&menge=\'+menge;\" href=\"#\"><img src=\"./themes/[THEME]/images/delete.svg\" border=\"0\"></a>'),'') AS Aktion FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON 
+          p.abkuerzung as projekt,r.grund, IF('".$this->app->erp->RechteVorhanden("artikel","ausreservieren")."'=1,CONCAT('<a onclick=\"var menge = prompt(\'Anzahl Artikel aus Reservierung entfernen:\',',(trim(r.menge)+0),'); if(parseFloat(menge.replace(\',\',\'.\')) > 0) window.location.href=\'index.php?module=artikel&action=ausreservieren&id=$id&lid=',r.id,'&menge=\'+menge;\" href=\"#\"><img src=\"./themes/[THEME]/images/delete.svg\" border=\"0\"></a>'),'') AS Aktion FROM lager_reserviert r LEFT JOIN artikel a ON a.id=r.artikel LEFT JOIN projekt p ON
           p.id=r.projekt LEFT JOIN adresse adr ON r.adresse=adr.id WHERE  r.artikel='$id'");
       //$summe = round($this->app->DB->Select("SELECT SUM(menge) FROM lager_platz_inhalt WHERE artikel='$id'"),4);
       //$reserviert = round($this->app->DB->Select("SELECT SUM(menge) FROM lager_reserviert WHERE artikel='$id'"),4);// AND datum >= NOW()");
@@ -6111,7 +6112,7 @@ class Artikel extends GenArtikel {
   {
     $id = $this->app->Secure->GetGET('id');
     if($id > 0){
-      $sql = "SELECT avon.nummer as stuecklistevon, a.nummer, a.name_de, a.hersteller,a.herstellernummer,  REPLACE(TRIM(s.menge)+0,'.',',') as menge, s.referenz, s.place, s.layer, s.wert, s.bauform, s.zachse,s.xpos, s.ypos, s.art FROM stueckliste s LEFT JOIN artikel a ON a.id=s.artikel LEFT JOIN artikel avon ON avon.id=s.stuecklistevonartikel WHERE s.stuecklistevonartikel='$id'";
+      $sql = "SELECT avon.nummer as stuecklistevon, a.nummer, a.name_de, a.hersteller,a.herstellernummer,  REPLACE(TRIM(s.menge)+0,'.',',') as menge, s.referenz, s.place, s.layer, s.wert, s.bauform, s.zachse,s.xpos, s.ypos, s.art, s.rotation FROM stueckliste s LEFT JOIN artikel a ON a.id=s.artikel LEFT JOIN artikel avon ON avon.id=s.stuecklistevonartikel WHERE s.stuecklistevonartikel='$id'";
       $result = $this->app->DB->SelectArr($sql);
     }
     header('Content-type: text/csv');
@@ -6178,7 +6179,7 @@ class Artikel extends GenArtikel {
 
       $id = (int)$this->app->Secure->GetPOST('id');
         
-      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, trim(s.menge)+0 as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
+      $data = $this->app->DB->SelectRow("SELECT s.id, s.artikel, trim(s.menge)+0 as menge, s.art, s.referenz, s.layer, s.place, s.wert, s.bauform, s.zachse, s.xpos, s.ypos, s.rotation FROM stueckliste s WHERE s.id = '$id' LIMIT 1");
       
         if($data){
           if($data['artikel'] == 0){
@@ -6222,6 +6223,7 @@ class Artikel extends GenArtikel {
           $data['zachse'] = '';
           $data['xpos'] = '';
           $data['ypos'] = '';
+          $data['rotation'] = '';
 
         }
         echo json_encode($data);
@@ -6246,6 +6248,7 @@ class Artikel extends GenArtikel {
       $zachse = trim($this->app->Secure->GetPOST('ezachse'));
       $xpos = trim($this->app->Secure->GetPOST('expos'));
       $ypos = trim($this->app->Secure->GetPOST('eypos'));
+      $rotation = trim($this->app->Secure->GetPOST('erotation'));
 
       if($cmdsave === 'doppeltsave'){
         $einfuegen = trim($this->app->Secure->GetPOST('eeinfuegen'));
@@ -6304,12 +6307,12 @@ class Artikel extends GenArtikel {
           $this->app->ExitXentral();
         }
         if($id){
-          $this->app->DB->Update("UPDATE stueckliste SET artikel = '$artikelid', menge = '$menge', art = '$art', referenz = '$referenz', layer = '$layer', place = '$place', wert = '$wert', bauform = '$bauform', zachse = '$zachse', xpos = '$xpos', ypos = '$ypos' WHERE id = '$id'");
+          $this->app->DB->Update("UPDATE stueckliste SET artikel = '$artikelid', menge = '$menge', art = '$art', referenz = '$referenz', layer = '$layer', place = '$place', wert = '$wert', bauform = '$bauform', zachse = '$zachse', xpos = '$xpos', ypos = '$ypos', rotation = '$rotation' WHERE id = '$id'");
           echo json_encode(array('status'=>1));
           $this->app->ExitXentral();
         }
         if(($cmdsave === 'doppeltsave' && $einfuegen == 1) || $cmdsave === 'save'){
-          $this->app->DB->Insert("INSERT INTO stueckliste (sort, artikel, referenz, place, layer, stuecklistevonartikel, menge, art, firma, wert, bauform, zachse, xpos, ypos) VALUES (0, '$artikelid', '$referenz', '$place', '$layer', '$startikelid', '$menge', '$art', 1, '$wert', '$bauform', '$zachse', '$xpos', '$ypos')");
+          $this->app->DB->Insert("INSERT INTO stueckliste (sort, artikel, referenz, place, layer, stuecklistevonartikel, menge, art, firma, wert, bauform, zachse, xpos, ypos, rotation) VALUES (0, '$artikelid', '$referenz', '$place', '$layer', '$startikelid', '$menge', '$art', 1, '$wert', '$bauform', '$zachse', '$xpos', '$ypos', '$rotation')");
           echo json_encode(array('status'=>1));
           $this->app->ExitXentral();
         }
@@ -7707,9 +7710,16 @@ class Artikel extends GenArtikel {
     $mhd = $this->app->Secure->GetPOST('mhd');
     $charge = $this->app->Secure->GetPOST('charge');
     $speichern = $this->app->Secure->GetPOST('speichern');
+    $etikettendrucken = $this->app->Secure->GetPOST('etikettendrucken');
     $seriennummer = $this->app->Secure->GetPOST('seriennummer');
     $etikettenauswahl = $this->app->Secure->GetPOST('etikettenauswahl');
     $etikettendrucker = $this->app->Secure->GetPOST('etikettendrucker');
+    $etikettenartikel = $this->app->Secure->GetPOST('etikettenartikel');
+    $etikettenartikel = $this->app->erp->ReplaceArtikel(true, $etikettenartikel, true);
+    if (empty($etikettenartikel)) {
+        $etikettenartikel = $id;
+    }
+
     $this->ArtikelMenu();
 
     if($speichern!='')
@@ -7752,10 +7762,10 @@ class Artikel extends GenArtikel {
 
     $drucker = $this->app->erp->GetSelectEtikettenDrucker($etikettendrucker); 
 
-    $this->app->Tpl->Set('FORMULAR',"<form action=\"\" method=\"post\"><table class=\"mkTableFormular\">
-      <tr><td>Menge:</td><td><input type=\"text\" name=\"menge\" value=\"1\">&nbsp;<input type=\"submit\" value=\"Drucken\" class=\"btnBlue\"></td></tr>
-      <tr><td>Etikett:</td><td><select name=\"etikettenauswahl\">".$etiketten."</select></td></tr>
-      <tr><td>Drucker:</td><td><select name=\"etikettendrucker\">".$drucker."</select></td></tr>");
+    $this->app->Tpl->Set('ETIKETTENOPTION',$etiketten);
+    $this->app->Tpl->Set('DRUCKEROPTION',$drucker);
+    $this->app->YUI->AutoComplete('etikettenartikel', 'artikelnummer');
+
     $mhdartikel = $this->app->DB->Select("SELECT mindesthaltbarkeitsdatum FROM artikel WHERE id = '$id' LIMIT 1");
     if($mhdartikel)
     {
@@ -7776,7 +7786,6 @@ class Artikel extends GenArtikel {
       $this->app->Tpl->Add('FORMULAR',"<tr><td>Seriennummer:</td><td><input type=\"text\" id=\"seriennummer\" name=\"seriennummer\" value=\"\" size=\"40\"></td></tr>");
       $this->app->YUI->AutoComplete('seriennummer', 'lagerseriennummern',0,"&artikel=$id");
     }    
-    $this->app->Tpl->Add('FORMULAR',"</table></form><br><br>");
 
     $standardbild = $this->app->erp->GetEtikettenbild($id,true);
 
@@ -7797,7 +7806,7 @@ class Artikel extends GenArtikel {
     }    
 
 
-    if($menge!='')
+    if($menge!='' && ($etikettendrucken == 'Drucken' || $external == '1'))
     {
       //$nummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='$id' LIMIT 1");
       //$projekt = $this->app->DB->Select("SELECT projekt FROM artikel WHERE id='$id' LIMIT 1");
@@ -7820,7 +7829,7 @@ class Artikel extends GenArtikel {
       if($seriennummer){
         $variablen['seriennummer'] = $seriennummer;
       }
-      $this->app->erp->EtikettenDrucker($etikettenauswahl,$menge,'artikel',$id,$variablen,'',$etikettendrucker);
+      $this->app->erp->EtikettenDrucker($etikettenauswahl,$menge,'artikel',$etikettenartikel,$variablen,'',$etikettendrucker);
     }
 
     if($external=='1')
@@ -7934,9 +7943,9 @@ class Artikel extends GenArtikel {
     }
     $this->app->Tpl->Set("ARTICLELABELPRINTER", $articleLabelPrinterSelection);
 
+    $this->app->Tpl->Set("ETIKETTENMENGE", $menge);
+
     $this->app->YUI->TableSearch('TAB1','artikel_etiketten', "show","","",basename(__FILE__), __CLASS__);
-
-
     $this->app->Tpl->Parse('PAGE','artikel_etiketten.tpl');
   }
 
@@ -8078,7 +8087,7 @@ class Artikel extends GenArtikel {
       }
     }
   }
-
+/* DEPERECATED USE IMPORTVORLAGE
   function StuecklisteImport($fields, $preselected="",$startdelimititer=";",$parsetarget)
   {
 
@@ -8268,7 +8277,7 @@ padding: 10px;\">
       return $result;
     }
   }
-  
+*/  
   function getArtikelThumbnailDateiVersion($id)
   {
     $datei = $this->app->DB->SelectArr('
@@ -9653,5 +9662,58 @@ padding: 10px;\">
     $berechnetmitoffenebestellungen = round($berechnetmitoffenebestellungen ,$this->app->erp->GetLagerNachkommastellen());
 
     return "<br>Lagerbestand: $summe &nbsp;| &nbsp;Reserviert: $reserviert &nbsp;|&nbsp;Offene Auftr&auml;ge: $liefern&nbsp;| Verkaufte: $verkaufte | Berechneter Bestand: $berechnet | Verkaufbare: $verkaufbare | Berechneter Bestand mit offenen Bestellungen: $berechnetmitoffenebestellungen<br><br>";
+  }
+
+
+  /*
+  Tries to find the correct article after a scan
+  */
+  function ArtikelScan(string $scan, int $adresse = 0, bool $fremdnummern = false, bool $ignoreprefixpostfix = false) {
+
+    $trimmedscan = $this->app->erp->FirstTillSpace($scan);
+    if (empty($scan)) {
+        return(0);
+    }
+    $trimmedscan = $this->app->DB->real_escape_string($trimmedscan);
+    $scan = $this->app->DB->real_escape_string($scan);
+
+    // Default
+    $sql = "SELECT id FROM artikel WHERE nummer='$trimmedscan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',nummer,'%')":"")." AND ifnull(geloescht,0) = 0 AND nummer != 'DEL' LIMIT 1";
+    $artikel = $this->app->DB->Select($sql);
+    if (!empty($artikel)) {
+        return($artikel);
+    }
+
+    // EAN/GTIN
+    $artikel = $this->app->DB->Select("SELECT id FROM artikel WHERE ean='$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',ean,'%')":"")." AND ifnull(geloescht,0) = 0 AND nummer != 'DEL' LIMIT 1");
+    if (!empty($artikel)) {
+        return($artikel);
+    }
+
+    // Hersteller
+    $artikel = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer='$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',herstellernummer,'%')":"")." AND ifnull(geloescht,0) = 0 AND nummer != 'DEL' LIMIT 1");
+    if (!empty($artikel)) {
+        return($artikel);
+    }
+
+    // Lieferantnummer
+    if (!empty($adresse)) {
+        $artikel = $this->app->DB->Select("SELECT artikel FROM einkaufspreise WHERE bestellnummer='$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE CONCAT('%',bestellnummer,'%')":"")." AND ifnull(geloescht,0) = 0 AND adresse = $adresse LIMIT 1");
+        if (!empty($artikel)) {
+            return($artikel);
+        }
+    }
+
+    // Fremdnummer
+    if($fremdnummern)
+    {
+        $artikel = $this->app->DB->Select("SELECT art.id FROM artikel art INNER JOIN artikelnummer_fremdnummern af ON art.id = af.artikel AND ifnull(art.geloescht,0) = 0 AND af.aktiv = 1 AND art.nummer <> 'DEL'
+        INNER JOIN shopexport s  ON af.shopid = s.id WHERE af.nummer = '$scan' ".($ignoreprefixpostfix?"OR '$scan' LIKE 'CONCAT('%',af.nummer,'%')":"")." LIMIT 1");
+        if (!empty($artikel)) {
+            return($artikel);
+        }
+    }
+
+    return($artikel);
   }
 }

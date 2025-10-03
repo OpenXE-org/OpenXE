@@ -96,14 +96,16 @@ class Etiketten extends GenEtiketten {
     { 
       if(file_exists($pfad))
       {
-        $result = $this->app->erp->PNG2Etikett($pfad);
-        if($result['result']=="1")
-        {
-          $this->app->Tpl->Set('BILD',"<textarea rows=\"10\" cols=\"80\"><image x=\"1\" y=\"1\" width=\"".$result['width']."\" height=\"".$result['height']."\">".$result['stream']."</image></textarea>");
-          $this->app->Tpl->Set('BILD2',"<textarea rows=\"10\" cols=\"80\"><label><image x=\"1\" y=\"1\" width=\"".$result['width']."\" height=\"".$result['height']."\">".$result['stream']."</image></label></textarea>");
+        $result = getimagesize($pfad);
+        $stream = base64_encode(file_get_contents($pfad));
+        if($result !== false)
+        {           
+          $this->app->Tpl->Set('BILD',"<textarea rows=\"10\" cols=\"80\">\n<image x=\"1\" y=\"1\" width=\"".$result[0]."\" height=\"".$result[1]."\">\n".$stream."\n</image>\n</textarea>");
+          $this->app->Tpl->Set('BILD2',"<textarea rows=\"10\" cols=\"80\">\n<label>\n<image x=\"1\" y=\"1\" width=\"".$result[0]."\" height=\"".$result[1]."\">".$stream."</image>\n</label>\n</textarea>");
         } 
-        else
-          $this->app->Tpl->Set('BILD',"<div class=\"error\">".$result['message']."</div>");
+        else {
+          $this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Datei konnte nicht geladen werden</div>");
+        }
       }
     } 
 

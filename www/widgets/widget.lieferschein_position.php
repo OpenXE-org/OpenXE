@@ -14,8 +14,10 @@ class WidgetLieferschein_position extends WidgetGenLieferschein_position
 
   function ExtendsForm()
   {
-
-    $this->app->erp->AnzeigeFreifelderPositionen($this->form);
+    $id = (int)$this->app->Secure->GetGET('id');
+    $module = $this->app->Secure->GetGET('module');
+    $sprache = $this->app->erp->GetSpracheBelegPosition($module,$id);
+    $this->app->erp->AnzeigeFreifelderPositionen($this->form, $sprache);
 
     $this->app->YUI->AutoComplete("einheit","artikeleinheit");
     $this->app->YUI->AutoComplete("zolltarifnummer","zolltarifnummer",1);

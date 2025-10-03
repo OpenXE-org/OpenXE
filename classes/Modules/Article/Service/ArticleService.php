@@ -37,20 +37,13 @@ class ArticleService
             if($stueckliste==1)
             {
                 $artikelarr = $this->app->DB->SelectArr("SELECT * FROM stueckliste WHERE stuecklistevonartikel='$id'");
-                $cartikelarr = $artikelarr?count($artikelarr):0;
-                for($i=0;$i<$cartikelarr;$i++)
-                {
-                    $sort = $artikelarr[$i]['sort'];
-                    $artikel = $artikelarr[$i]['artikel'];
-                    $referenz = $artikelarr[$i]['referenz'];
-                    $place = $artikelarr[$i]['place'];
-                    $layer = $artikelarr[$i]['layer'];
-                    $stuecklistevonartikel = $idnew;
-                    $menge = $artikelarr[$i]['menge'];
-                    $firma = $artikelarr[$i]['firma'];
 
-                    $this->app->DB->Insert("INSERT INTO stueckliste (id,sort,artikel,referenz,place,layer,stuecklistevonartikel,menge,firma) VALUES
-            ('','$sort','$artikel','$referenz','$place','$layer','$stuecklistevonartikel','$menge','$firma')");
+                foreach($artikelarr as $artikel)
+                {
+                    $artikel['stuecklistevonartikel'] = $idnew;
+                    unset($artikel['id']);
+                    $sql = "INSERT INTO stueckliste (".implode(',',array_keys($artikel)).") VALUES ('".implode("','",array_values($artikel))."')";
+                    $this->app->DB->Insert($sql);
                 }
             }
         }

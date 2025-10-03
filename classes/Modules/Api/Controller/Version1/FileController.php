@@ -124,6 +124,33 @@ class FileController extends AbstractController
             throw new BadRequestException('Required property "file_content" is missing.');
         }
 
+        if (is_array($input['stichwoerter'])) {
+            $stichwoerter = array();
+            $erp = $this->legacyApi->app->erp;
+            $DB = $this->legacyApi->app->DB;
+            foreach ($input['stichwoerter'] as $stichwort_input) {
+                $modul = $DB->real_escape_string($stichwort_input['modul']);
+                $id = $DB->real_escape_string($stichwort_input['id']);
+                $stichwort = $DB->real_escape_string($stichwort_input['stichwort']);
+                $fileTypes = $erp->getDateiTypen($modul);
+                $found = false;
+                foreach($fileTypes as $fileType) {
+                    if (strtolower($fileType['wert']) == strtolower($stichwort)) {
+                        if (!empty($DB->Select("SELECT id FROM `".$modul."` WHERE id = '".$id."'"))) {
+                            $stichwoerter[] = array('modul' => $modul, 'id' => $id, 'stichwort' => $fileType['wert']);
+                            $found = true;
+                            break;
+                        } else {
+                            throw new ResourceNotFoundException('Failed to associate file, reference not found: '.$modul.' id '.$id.".");
+                        }
+                    }
+                }
+                if (!$found) {
+                    throw new BadRequestException('Failed to associate file as \''.$stichwort.'\'. Possible values: '.strtolower(implode(', ',array_column($fileTypes,'wert'))));
+                }
+            }
+        }
+
         $fileName = $input['dateiname']; // Pflichtfeld
         $fileTitle = $input['titel']; // Pflichtfeld
         $fileDescription = $input['beschreibung'] ?? '';
@@ -139,14 +166,17 @@ class FileController extends AbstractController
             $input['file_content'],
             $fileCreatorUserId
         );
-
         if ($fileId <= 0) {
             throw new ServerErrorException('Failed to create file.');
         }
-
-//        if (!empty($input['belegtyp'])) {
-//            $erp->AddDateiStichwort($fileId, 'Belege', $input['belegtyp'], $belegId); // @todo $belegId
-//        }
+        foreach ($stichwoerter as $stichwort) {
+            $erp->AddDateiStichwort(
+                id: $fileId,
+                subjekt: $stichwort['stichwort'],
+                objekt: $stichwort['modul'],
+                parameter: $stichwort['id']
+            );
+        }
 
         // Bei Erfolg die angelegte Resource zurückliefern; mit Success-Flag
         /** @var FileResource $resource */

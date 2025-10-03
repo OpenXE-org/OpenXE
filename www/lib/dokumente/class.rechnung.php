@@ -84,7 +84,7 @@ class RechnungPDF extends BriefpapierCustom {
 
 
     if ($data['xmlrechnung']) {
-        exit();
+        return;
     }
 
     extract($data,EXTR_OVERWRITE);

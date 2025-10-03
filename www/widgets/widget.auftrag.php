@@ -46,17 +46,14 @@ class WidgetAuftrag extends WidgetGenAuftrag
       $overwriteVersandart = null;
       if(!$schreibschutzbefore && $projektdanach != $projektabkuerzung){
         $projektdanach = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung = '$projektdanach' LIMIT 1");
-        $this->app->erp->LoadSteuersaetze($id, 'auftrag', $projektdanach);
         if(!empty($projektdanach)){
-          $standardlager = $this->app->DB->Select("SELECT l.id FROM projekt p INNER JOIN lager l ON p.standardlager = l.id WHERE p.id = '$projektdanach' LIMIT 1");
-          if($standardlager && $this->form->CallbackAndMandatorycheck(true)){
-            $this->form->HTMLList['standardlager']->htmlvalue = $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id = '$standardlager' LIMIT 1");
-            $this->form->HTMLList['standardlager']->dbvalue = $standardlager;
-          }
+          $this->app->erp->LoadSteuersaetze($id, 'auftrag', $projektdanach);
+          $this->form->HTMLList['standardlager']->htmlvalue = '';
+          $this->form->HTMLList['standardlager']->dbvalue = 0;
           $deactivateautoshipping = $this->app->erp->Projektdaten($projektdanach, 'deactivateautoshipping');
-          if($deactivateautoshipping && $this->form->CallbackAndMandatorycheck(true)) {
-            $this->form->HTMLList['autoversand']->htmlvalue = 0;
-            $this->form->HTMLList['autoversand']->dbvalue = 0;
+          if($this->form->CallbackAndMandatorycheck(true)) {
+            $this->form->HTMLList['autoversand']->htmlvalue = ($deactivateautoshipping == 0);
+            $this->form->HTMLList['autoversand']->dbvalue = ($deactivateautoshipping == 0);
           }
           $query = sprintf("SELECT zahlungsweise, zahlungsweiselieferant, versandart FROM projekt WHERE id='%s'",
             $projektdanach);
@@ -219,7 +216,7 @@ class WidgetAuftrag extends WidgetGenAuftrag
     //    $field->onchange="versand(this.form.versandart.options[this.form.versandart.selectedIndex].value);";
     $field->AddOptionsSimpleArray($versandart);
     $this->form->NewField($field);
-    if(!empty($overwriteZahlungsweise)){
+    if(!empty($overwriteVersandart)){
       $this->form->HTMLList['versandart']->htmlvalue = $overwriteVersandart;
       $this->form->HTMLList['versandart']->dbvalue = $overwriteVersandart;
     }

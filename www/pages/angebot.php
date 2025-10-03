@@ -1470,7 +1470,8 @@ class Angebot extends GenAngebot
     if($adresse <=0)
     {
       $this->app->Tpl->Add('JAVASCRIPT','$(document).ready(function() { if(document.getElementById("adresse"))document.getElementById("adresse").focus(); });');
-      $this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Achtung! Dieses Dokument ist mit keiner Kunden-Nr. verlinkt. Bitte geben Sie die Kundennummer an und klicken Sie &uuml;bernehmen oder Speichern!</div>");
+//      $this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Achtung! Dieses Dokument ist mit keiner Kunden-Nr. verlinkt. Bitte geben Sie die Kundennummer an und klicken Sie &uuml;bernehmen oder Speichern!</div>");
+      $this->app->Tpl->Add('MESSAGE',"<div class=\"info\">Achtung! Dieses Dokument ist mit keiner Adresse verknüpft.<input type=\"button\" value=\"Adresse anlegen\" onclick=\"if(!confirm('Neue Adresse mit den Daten aus dem Angebot anlegen?')) return false;else window.location.href='index.php?module=adresse&action=ausangebotanlegen&angebot=$id';\"></div>");
     }
     $kopievon= $this->app->DB->Select("SELECT kopievon FROM angebot WHERE id='$id' LIMIT 1");
     $kopienummer= $this->app->DB->Select("SELECT kopienummer FROM angebot WHERE id='$id' LIMIT 1");
@@ -1511,6 +1512,14 @@ class Angebot extends GenAngebot
         );
       }
     } 
+    
+    $tickets = $this->app->erp->GetBelegTickets('angebot',$id);
+    if (!empty($tickets)) {
+        function ticketlink($ticket) {
+           return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Angebot geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+    }
 
     $this->app->erp->InfoAuftragsErfassung('angebot',$id);
 
@@ -1657,7 +1666,7 @@ class Angebot extends GenAngebot
         $hinweis = "<div class=\"info\">Zu diesem Angebot gibt es noch keinen Auftrag.</div>";
       }
 
-      $this->app->Tpl->Set(
+      $this->app->Tpl->Add(
         'MESSAGE',
         "<div class=\"warning\">Dieses Angebot ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r dieses Angebot wirklich entfernt werden?')) return false;else window.location.href='index.php?module=angebot&action=schreibschutz&id=$id';\">&nbsp;$optional</div>$hinweis"
       );
