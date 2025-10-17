@@ -18,11 +18,11 @@
                         <label for="offene">{|Offene|}</label>
                      </li>
                      <li class="filter-item">
-                        <label for="exportierte" class="switch">
-                        <input type="checkbox" id="exportierte">
+                        <label for="ausgef&uuml;hrte" class="switch">
+                        <input type="checkbox" id="ausgef&uuml;hrte">
                         <span class="slider round"></span>
                         </label>
-                        <label for="exportierte">{|Exportierte|}</label>
+                        <label for="ausgef&uuml;hrte">{|Ausgef&uuml;hrte|}</label>
                      </li>
                      <li class="filter-item">
                         <label for="fehlgeschlagene" class="switch">
@@ -43,7 +43,7 @@
                         <input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
                     </td>
                     <td>
-                        <button name="submit" value="exportieren" class="ui-button-icon">{|Exportieren|}</button>
+                        <button name="submit" value="ausfuehren" class="ui-button-icon">{|Ausf&uuml;hren|}</button>
                     </td>
                 </tr>
             </table>

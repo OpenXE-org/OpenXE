@@ -59,6 +59,7 @@
                         <input type="checkbox" value="1" id="autoalle" />&nbsp;alle markieren&nbsp;
                     </td>
                     <td>
+                        <button name="submit" value="anlegen" class="ui-button-icon">{|Anlegen|}</button>
                         <button name="submit" value="ausfuehren" class="ui-button-icon">{|Ausf&uuml;hren|}</button>
                     </td>
                 </tr>
