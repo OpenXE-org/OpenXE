@@ -15,7 +15,7 @@ enum payment_object_types {
 
 class Zahlungsverkehr {
 
-  
+
     const UNIFIED_SQL_TABLES =  "
                         (
                             SELECT
@@ -71,8 +71,7 @@ class Zahlungsverkehr {
         $this->app->ActionHandlerInit($this);
         $this->app->ActionHandler("list", "zahlungsverkehr_list");
         $this->app->ActionHandler("ueberweisung", "zahlungsverkehr_ueberweisung");
-//        $this->app->ActionHandler("create", "zahlungsverkehr_edit"); // This automatically adds a "New" button
-//        $this->app->ActionHandler("edit", "zahlungsverkehr_edit");
+        $this->app->ActionHandler("minidetail", "zahlungsverkehr_minidetail");
         $this->app->ActionHandler("delete", "zahlungsverkehr_delete");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -298,9 +297,9 @@ class Zahlungsverkehr {
 
         		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',z.id,'\" />') AS `auswahl`";
 
-//                $moreinfo = true; // Allow drop down details
+                $moreinfo = true; // Allow drop down details
 //                $moreinfoaction = "lieferschein"; // specify suffix for minidetail-URL to allow different minidetails
-//                $menucol = 11; // Set id col for moredata/menu
+                $menucol = 1; // Set id col for moredata/menu
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"#\" onclick=DeleteDialog(\"index.php?module=zahlungsverkehr&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
@@ -405,9 +404,7 @@ class Zahlungsverkehr {
     }
 
     function zahlungsverkehr_menu() {
-    
         $offene = $this->app->DB->Select("SELECT COUNT(id) FROM payment_transaction WHERE payment_status = 'offen'");
-    
         $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=ueberweisung", "Offene Belege");
         $this->app->erp->MenuEintrag("index.php?module=zahlungsverkehr&action=list", "Transaktionen".($offene?(" (".$offene.")"):""));
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
@@ -436,7 +433,6 @@ class Zahlungsverkehr {
     }
 
     function zahlungsverkehr_ueberweisung() {
-      
         // Process multi action
         $auswahl = $this->app->Secure->GetPOST('auswahl');
         $submit = $this->app->Secure->GetPOST('submit');
@@ -475,7 +471,7 @@ class Zahlungsverkehr {
     }
 
     function zahlungsverkehr_anlegen(array $items) {
-       
+
         $result = array();
 
         foreach ($items as $item) {
@@ -535,7 +531,7 @@ class Zahlungsverkehr {
                 $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Keine Kontodaten');
                 continue;
             }
-                                     
+
             // Save to DB
             $db_data = array(
                  'payment_account_id' => $belegrow['zahlungsweise'],
@@ -560,28 +556,28 @@ class Zahlungsverkehr {
                 $fix = ", ";
             }
             $sql = "INSERT INTO payment_transaction (".$columns.") VALUES (".$values.")";
-            $this->app->DB->Update($sql);                       
+            $this->app->DB->Update($sql);
         }
-        
+
         return($result);
-        
+
     } // zahlungsverkehr_anlegen
-    
+
     // Execute all pending transactions
     function zahlungsverkehr_ausfuehren(array $payment_transaction_ids) {
-    
+
         $result = array();
         $prepared_items = array();
         $successcount = 0;
 
-        $payment_transactions = $this->app->DB->SelectArr("SELECT * FROM payment_transaction WHERE payment_status = 'offen' AND id IN (".implode(',',$payment_transaction_ids).")");       
+        $payment_transactions = $this->app->DB->SelectArr("SELECT * FROM payment_transaction WHERE payment_status = 'offen' AND id IN (".implode(',',$payment_transaction_ids).")");
 
         foreach ($payment_transactions as $item) {
             // Generate Dataset for payment service
             $doc_typ= $item['doc_typ'];
             $id = $item['doc_id'];
             $belegrow = $this->app->DB->SelectRow("SELECT * FROM ".self::UNIFIED_SQL_TABLES." WHERE doc_typ = '".$doc_typ."' AND doc_id = ".$id);
-            $doc_name = ucfirst($doc_typ)." ".$belegrow['belegnr'];                        
+            $doc_name = ucfirst($doc_typ)." ".$belegrow['belegnr'];
 
             $paymentMethodService = $this->app->Container->get('PaymentMethodService');
             try {
@@ -594,10 +590,10 @@ class Zahlungsverkehr {
                 $result['errors'][] = array('beleg' => $doc_name, 'doc_typ' => $doc_typ, 'doc_id' => $id, 'msg' => 'Kein Zahlungsweisemodul');
                 continue;
             }
-            
+
             $kontodaten = $this->app->DB->SelectRow("SELECT * FROM konten WHERE id = ".$zahlungsweiseData['einstellungen']['konto']." LIMIT 1");
             $adressdaten = $this->app->DB->SelectRow("SELECT * FROM adresse WHERE id = ".$belegrow['adresse']);
-            
+
             $dataset = array(
                 'doc_typ' => $doc_typ,
                 'doc_id' => $id,
@@ -610,7 +606,7 @@ class Zahlungsverkehr {
                 'doc_data' => $belegrow
             );
             $prepared_items[$zahlungsweiseData['id']][] = $dataset;
-        } 
+        }
 
         if (!empty($result['errors'])) {
             return($result);
@@ -620,9 +616,9 @@ class Zahlungsverkehr {
         $result['successcount'] = 0;
 
         // ----------------------------------------------
-        // Call PaymentMethodService to process            
-        // ----------------------------------------------       
-        // returns array(bool 'success', array successful_transactions, array failed_transactions , array 'payment_objects' (string 'id', string 'description', payment_object_types 'type', array 'payment_transaction_ids', array 'attachments' ('filename', 'contents') ) )            
+        // Call PaymentMethodService to process
+        // ----------------------------------------------
+        // returns array(bool 'success', array successful_transactions, array failed_transactions , array 'payment_objects' (string 'id', string 'description', payment_object_types 'type', array 'payment_transaction_ids', array 'attachments' ('filename', 'contents') ) )
         foreach ($prepared_items as $key => $prepared_item) {
 //            $payment_result = $paymentMethodService->ProcessPayment($prepared_item);
 
@@ -663,10 +659,10 @@ class Zahlungsverkehr {
             );
 
             if ($payment_result['success']) {
-                foreach ($payment_result['payment_objects'] as $payment_object) {               
+                foreach ($payment_result['payment_objects'] as $payment_object) {
                     switch ($payment_object['type']) {
-                        case payment_object_types::DOWNLOAD:                                                
-                            foreach ($payment_object['attachments'] as $attachment) {                                
+                        case payment_object_types::DOWNLOAD:
+                            foreach ($payment_object['attachments'] as $attachment) {
                                 $fileid = $this->app->erp->CreateDatei(
                                     name: $attachment['filename'],
                                     titel: $attachment['filename'],
@@ -676,25 +672,25 @@ class Zahlungsverkehr {
                                     ersteller: $this->app->User->GetName(),
                                     geschuetzt: true
                                 );
-                               
+
                                 foreach ($payment_object['payment_transaction_ids'] as $transaction) {
                                     $this->app->erp->AddDateiStichwort($fileid, "anhang", "payment_transaction", $transaction);
                                 }
-                            }                            
+                            }
                         break;
                     }
-                }            
-                $result['successcount'] += count($payment_result['successful_transactions']);                                              
-                $this->app->DB->Update("UPDATE payment_transaction SET payment_status = 'ausgefuehrt' WHERE id IN (".implode(', ',$payment_result['successful_transactions']).")");                
+                }
+                $result['successcount'] += count($payment_result['successful_transactions']);
+                $this->app->DB->Update("UPDATE payment_transaction SET payment_status = 'ausgefuehrt' WHERE id IN (".implode(', ',$payment_result['successful_transactions']).")");
             } else {
                 $result['success'] = false;
             }
-            
+
             $result[$key] = $payment_result;
         }
-             
-        return($result);       
-    }  
+
+        return($result);
+    }
 
     public function zahlungsverkehr_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
@@ -705,7 +701,7 @@ class Zahlungsverkehr {
         else {
             $this->app->Tpl->addMessage('error', 'Der Eintrag konnte nicht gel&ouml;scht werden!');
         }
-        
+
         $this->zahlungsverkehr_list();
     }
 
@@ -717,6 +713,31 @@ class Zahlungsverkehr {
         /** @var NotificationService $notification */
         $notification = $this->app->Container->get('NotificationService');
         $notification->createFromData($this->app->User->GetID(), $notification_message);
+    }
+
+    function zahlungsverkehr_minidetail() {
+        $id = $this->app->Secure->GetGET('id');
+
+        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('anhang','payment_transaction',$id);
+
+        if (!empty($file_attachments)) {
+
+            foreach ($file_attachments as $file_attachment) {
+
+                echo(
+                  "<a href=\"index.php?module=dateien&action=send&id=".$file_attachment.
+                  "\">".
+                  htmlentities($this->app->erp->GetDateiName($file_attachment)).
+                  " (".
+                  $this->app->erp->GetDateiDatumFormat($file_attachment).", ".
+                  $this->app->erp->GetDateiSize($file_attachment).
+                  ")".
+                  "</a> ".
+                  "<br>");
+          }
+        }
+
+        $this->app->ExitXentral();
     }
 
  }
