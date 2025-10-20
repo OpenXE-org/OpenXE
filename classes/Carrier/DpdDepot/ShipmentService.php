@@ -20,7 +20,7 @@ use Xentral\Carrier\DpdDepot\Data\StoreOrdersResponse;
 class ShipmentService
 {
     private const SOAP_BASE_SANDBOX = 'https://public-ws-stage.dpd.com/services/ShipmentService/V4_4/?wsdl';
-    private const SOAP_BASE_LIVE = 'https://public-ws.dpd.com/restservices/ShipmentService/V4_4/?wsdl';
+    private const SOAP_BASE_LIVE = 'https://public-ws.dpd.com/services/ShipmentService/V4_4/?wsdl';
 
     private string $wsdl;
 
