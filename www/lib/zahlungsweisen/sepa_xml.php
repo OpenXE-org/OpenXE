@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__).'/class.zahlungsweise.php';
+require_once dirname(__DIR__).'/../plugins/sepa/Sepa_credit_XML_Transfer_initation.class.php';
 class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
 {
   /** @var Application  */
@@ -47,7 +48,7 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
    * @return array
    */
   public function EinstellungenStruktur()
-  {   
+  {
     return [
         'konto' => [
             'typ'=>'select',
@@ -70,7 +71,7 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
    * @return string
    */
   public function GetZahlungsweiseText($doctype, $doctypeid)
-  {   
+  {
     return '';
   }
 
@@ -83,53 +84,54 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
 
     return $postData;
   }
-   
+
     public function ProcessPayment(array $transaction_block): array {
-/*        
-   $payment_result = array(
-                'success' => true,
-                'successful_transactions' => $payment_transaction_ids,
-                'payment_objects' => array(
-                    array(
-                        'id' => 'mipmap234',
-                        'description' => 'This is a nice payment, you got there',
-                        'type' => payment_object_types::DOWNLOAD,
-                        'payment_transaction_ids' => $payment_transaction_ids,
-                        'attachments' => array(
-                            array(
-                                'filename' => 'SEPA1.xml',
-                                'contents' => 'Hallo Hallo contents'
-                            )
-                        )
-                    ),
-                    array(
-                        'id' => 'knuffeldipupp',
-                        'description' => 'shame if someone would transfer it...',
-                        'type' => payment_object_types::DOWNLOAD,
-                        'payment_transaction_ids' => $payment_transaction_ids,
-                        'attachments' => array(
-                            array(
-                                'filename' => 'SEPA2.xml',
-                                'contents' => 'ADSLJFALÖJSDFLJASDLFJALSJDFLJASDLF '
-                            ),
-                            array(
-                                'filename' => 'SEPA3.xml',
-                                'contents' => 'Ein Mann ging in den Wald, dort war es kalt.'
-                            )
-                        )
-                    )
-                )
-            );*/
 
         $payment_result = array(
                 'success' => false,
                 'successful_transactions' => array(),
+                'errors' => array(),
                 'payment_objects' => array()
         );
 
-        $datetime = new DateTime();        
+        // Validate
+        if (!Sepa_credit_XML_Transfer_initation::validateIBAN($transaction_block['accountdata']['iban'])) {
+            $payment_result['errors'][] = "Sender-IBAN ung&uuml;ltig: ".$transaction_block['accountdata']['iban'];
+            return($payment_result);
+        };
+        if (!Sepa_credit_XML_Transfer_initation::validateBIC($transaction_block['accountdata']['swift'])) {
+            $payment_result['errors'][] = "Sender-BIC ung&uuml;ltig: ".$transaction_block['accountdata']['swift'];
+            return($payment_result);
+        }
 
-        $message_id = str_replace(' ','_',$this->data['bezeichnung']).'_'.$datetime->format('YmdHis');
+        foreach($transaction_block['transactions'] as $key => $transaction) {
+            if ($transaction['waehrung'] != 'EUR') {
+                $kurs = $this->app->erp->GetWaehrungUmrechnungskurs($transaction['waehrung'],'EUR');
+                if ($kurs > 0) {
+                    $transaction_block['transactions'][$key]['waehrung'] = 'EUR';
+                    $transaction_block['transactions'][$key]['betrag'] = $transaction['betrag']*$kurs;
+                } else {
+                    $payment_result['errors'][] = "Transaktionen ist nicht in EUR und es existiert kein Umrechnungskurs: ".$transaction['verwendungszweck'];
+                    return($payment_result);
+                }
+            }
+            if (!Sepa_credit_XML_Transfer_initation::validateIBAN($transaction['adresse']['iban'])) {
+                $payment_result['errors'][] = "Empf&auml;nger-IBAN ung&uuml;ltig: ".$$transaction['adresse']['iban']." (".$transaction['adresse']['name'].")";
+                return($payment_result);
+            };
+            if (!empty($transaction['adresse']['swift']) && !Sepa_credit_XML_Transfer_initation::validateBIC($transaction['adresse']['swift'])) {
+                $payment_result['errors'][] = "Empf&auml;nger-BIC ung&uuml;ltig: ".$transaction['adresse']['swift']." (".$transaction['adresse']['name'].")";
+                return($payment_result);
+            }
+            if (empty($transaction['adresse']['inhaber'])) {
+                $transaction_block['transactions'][$key]['adresse']['inhaber'] = $transaction['adresse']['name'];
+            }
+            $payment_result['successful_transactions'][] = $transaction['id'];
+        }
+
+        $datetime = new DateTime();
+
+        $message_id = preg_replace("/[^a-z0-9-]+/i", "", $this->data['bezeichnung']."-".$datetime->format('YmdHis'));
 
         $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = ".$this->einstellungen['smarty']." LIMIT 1");
 
@@ -138,12 +140,12 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.003.03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.001.003.03 pain.001.003.03.xsd">
     <CstmrCdtTrfInitn>
         <GrpHdr>
-            <MsgId><![CDATA[{$sepa_nachricht_id}]]></MsgId>
+            <MsgId><![CDATA[{$sepa_nachricht_id}|truncate:35]]></MsgId>
             <CreDtTm>{$zeit}</CreDtTm>
             <NbOfTxs>{$anzahl_transaktionen}</NbOfTxs>
             <CtrlSum>{$gesamt_betrag}</CtrlSum>
             <InitgPty>
-                <Nm><![CDATA[{$sender_konto.inhaber}]]></Nm>
+                <Nm><![CDATA[{$sender_konto.inhaber|truncate:70}]]></Nm>
             </InitgPty>
         </GrpHdr>
         <PmtInf>
@@ -152,7 +154,7 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
             <NbOfTxs>{$anzahl_transaktionen}</NbOfTxs>
             <ReqdExctnDt>{$datum}</ReqdExctnDt>
             <Dbtr>
-                <Nm><![CDATA[{$sender_konto.inhaber}]]></Nm>
+                <Nm><![CDATA[{$sender_konto.inhaber|truncate:35}]]></Nm>
             </Dbtr>
             <DbtrAcct>
                 <Id>
@@ -179,7 +181,7 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
                     </FinInstnId>
                 </CdtrAgt>
                 <Cdtr>
-                    <Nm><![CDATA[{$transaktion.adresse.inhaber}]]></Nm>
+                    <Nm><![CDATA[{$transaktion.adresse.inhaber|truncate:70}]]></Nm>
                 </Cdtr>
                 <CdtrAcct>
                     <Id>
@@ -187,7 +189,7 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
                     </Id>
                 </CdtrAcct>
                 <RmtInf>
-                    <Ustrd><![CDATA[{$transaktion.verwendungszweck}]]></Ustrd>
+                    <Ustrd><![CDATA[{$transaktion.verwendungszweck|truncate:140}]]></Ustrd>
                 </RmtInf>
             </CdtTrfTxInf>
  {/foreach}
@@ -195,8 +197,6 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
     </CstmrCdtTrfInitn>
 </Document>';
         }
-
-        print_r($transaction_block);
 
         try {
             $smarty = new Smarty;
@@ -216,16 +216,21 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
           throw $e;
         }
 
+        $payment_result['payment_objects'][] =
+            array(
+                'payment_transaction_ids' => $payment_result['successful_transactions'],
+                'attachments' => array(
+                    array(
+                        'filename' => $message_id.".xml",
+                        'description' => 'SEPA SCT PAIN.001.003.03 - Überweisung',
+                        'contents' => $output
+                    )
+                )
+            );
 
-        echo('<textarea style="width:100%; height:100%;">');
-        print_r($output);
-        echo("</textarea>");
+        $payment_result['success'] = true;
 
-        exit();
-
-        return($payment_result);        
-
+        return($payment_result);
     }
-
 }
 

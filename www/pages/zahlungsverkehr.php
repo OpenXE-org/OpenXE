@@ -8,11 +8,6 @@ use Xentral\Components\Database\Exception\QueryFailureException;
 use Xentral\Modules\SystemNotification\Service\NotificationMessageData;
 use Xentral\Modules\SystemNotification\Service\NotificationService;
 
-enum payment_object_types {
-    case DOWNLOAD;
-    case INTERFACE;
-}
-
 class Zahlungsverkehr {
 
 
@@ -422,10 +417,18 @@ class Zahlungsverkehr {
             case 'ausfuehren':
                 if(!empty($auswahl)) {
                     $result = $this->zahlungsverkehr_ausfuehren($auswahl);
+
                     if ($result['success']) {
                         $this->app->Tpl->AddMessage('success',$result['successcount']." Transaktionen im Zahllauf ausgef&uuml;hrt.");
                     } else {
-                        $this->app->Tpl->AddMessage('error',"Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden! ".print_r($result, true));
+                        $this->app->Tpl->AddMessage('error',"Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden!");
+
+                        foreach ($result['results'] as $blockresult) {
+                            if (!empty($blockresult['errors'])) {
+                                $this->notification('Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden!', implode(", ",$blockresult['errors']));
+                            }
+                        }
+
                     }
                 }
             break;
@@ -600,6 +603,7 @@ class Zahlungsverkehr {
             $adressdaten = $this->app->DB->SelectRow("SELECT * FROM adresse WHERE id = ".$belegrow['adresse']);
 
             $dataset = array(
+                'id' => $item['id'],
                 'beleg_typ' => $doc_typ,
                 'beleg_id' => $id,
                 'betrag' => $belegrow['betrag'],
@@ -639,62 +643,22 @@ class Zahlungsverkehr {
                 continue;
             }
 
-/*
-            $payment_result = array(
-                'success' => true,
-                'successful_transactions' => $payment_transaction_ids,
-                'payment_objects' => array(
-                    array(
-                        'id' => 'mipmap234',
-                        'description' => 'This is a nice payment, you got there',
-                        'type' => payment_object_types::DOWNLOAD,
-                        'payment_transaction_ids' => $payment_transaction_ids,
-                        'attachments' => array(
-                            array(
-                                'filename' => 'SEPA1.xml',
-                                'contents' => 'Hallo Hallo contents'
-                            )
-                        )
-                    ),
-                    array(
-                        'id' => 'knuffeldipupp',
-                        'description' => 'shame if someone would transfer it...',
-                        'type' => payment_object_types::DOWNLOAD,
-                        'payment_transaction_ids' => $payment_transaction_ids,
-                        'attachments' => array(
-                            array(
-                                'filename' => 'SEPA2.xml',
-                                'contents' => 'ADSLJFALÖJSDFLJASDLFJALSJDFLJASDLF '
-                            ),
-                            array(
-                                'filename' => 'SEPA3.xml',
-                                'contents' => 'Ein Mann ging in den Wald, dort war es kalt.'
-                            )
-                        )
-                    )
-                )
-            );*/
-
             if ($payment_result['success']) {
                 foreach ($payment_result['payment_objects'] as $payment_object) {
-                    switch ($payment_object['type']) {
-                        case payment_object_types::DOWNLOAD:
-                            foreach ($payment_object['attachments'] as $attachment) {
-                                $fileid = $this->app->erp->CreateDatei(
-                                    name: $attachment['filename'],
-                                    titel: $attachment['filename'],
-                                    beschreibung: $payment_object['description'],
-                                    nummer: "",
-                                    datei: $attachment['contents'],
-                                    ersteller: $this->app->User->GetName(),
-                                    geschuetzt: true
-                                );
+                    foreach ($payment_object['attachments'] as $attachment) {
+                        $fileid = $this->app->erp->CreateDatei(
+                            name: $attachment['filename'],
+                            titel: $attachment['filename'],
+                            beschreibung: $payment_object['description'],
+                            nummer: "",
+                            datei: $attachment['contents'],
+                            ersteller: $this->app->User->GetName(),
+                            geschuetzt: true
+                        );
 
-                                foreach ($payment_object['payment_transaction_ids'] as $transaction) {
-                                    $this->app->erp->AddDateiStichwort($fileid, "anhang", "payment_transaction", $transaction);
-                                }
-                            }
-                        break;
+                        foreach ($payment_object['payment_transaction_ids'] as $transaction) {
+                            $this->app->erp->AddDateiStichwort($fileid, "anhang", "payment_transaction", $transaction);
+                        }
                     }
                 }
                 $result['successcount'] += count($payment_result['successful_transactions']);
@@ -703,7 +667,7 @@ class Zahlungsverkehr {
                 $result['success'] = false;
             }
 
-            $result[$key] = $payment_result;
+            $result['results'][$key] = $payment_result;
         }
 
         return($result);
