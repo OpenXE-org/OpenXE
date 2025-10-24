@@ -1,5 +1,5 @@
 <?php 
-class Zahlungsweisenmodul {
+abstract class Zahlungsweisenmodul {
   public $id;
   public $app;
 
@@ -138,5 +138,8 @@ class Zahlungsweisenmodul {
     }
     $this->app->Tpl->Add($target, $html);
   }
+
+  // returns array(bool 'success', array successful_transactions, array failed_transactions , array 'payment_objects' (string 'id', string 'description', payment_object_types 'type', array 'payment_transaction_ids', array 'attachments' ('filename', 'contents') ) )
+  public abstract function ProcessPayment(array $transaction_block): array;
   
 }

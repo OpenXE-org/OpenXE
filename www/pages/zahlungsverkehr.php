@@ -35,10 +35,12 @@ class Zahlungsverkehr {
                                 v.skontobis,
                                 v.bezahlt,
                                 v.zahlungsweise,
+                                z.bezeichnung as zahlungsweisebezeichnung,
                                 v.adresse,
                                 v.id doc_id
                             FROM verbindlichkeit v
                             LEFT JOIN adresse a ON v.adresse = a.id
+                            LEFT JOIN zahlungsweisen z ON z.type = v.zahlungsweise
                             UNION
                             SELECT
                                 CONCAT('g',g.id) id,
@@ -57,10 +59,12 @@ class Zahlungsverkehr {
                                 DATE_ADD(g.datum, INTERVAL g.zahlungszieltageskonto DAY),
                                 g.zahlungsstatus = 'bezahlt',
                                 g.zahlungsweise,
+                                z.bezeichnung as zahlungsweisebezeichnung,
                                 g.adresse,
                                 g.id doc_id
                             FROM gutschrift g
                             LEFT JOIN adresse a ON g.adresse = a.id
+                            LEFT JOIN zahlungsweisen z ON z.type = g.zahlungsweise
                         ) belege";
 
     function __construct($app, $intern = false) {
@@ -103,7 +107,7 @@ class Zahlungsverkehr {
                     'rechnung',
                     'cast(betrag AS decimal)',
                     'waehrung',
-                    'zahlungsweise',
+                    'zahlungsweisebezeichnung',
                     'if(bezahlt,\'ja\',\'nein\')',
                     'zahlbarbis',
                     'skonto',
@@ -152,7 +156,7 @@ class Zahlungsverkehr {
                             rechnung,
                             ".$app->erp->FormatMenge('betrag',2)." betrag,
                             waehrung,
-                            zahlungsweise,
+                            zahlungsweisebezeichnung,
                             if(bezahlt,'ja','nein'),
                             ".$app->erp->FormatDate("zahlbarbis").",
                             IF(skonto <> 0,CONCAT(".$app->erp->FormatMenge('skonto',0).",'%'),''),
@@ -534,10 +538,10 @@ class Zahlungsverkehr {
 
             // Save to DB
             $db_data = array(
-                 'payment_account_id' => $belegrow['zahlungsweise'],
+                 'payment_account_id' => $zahlungsweiseData['id'],
                  'doc_typ' => $doc_typ,
                  'doc_id' => $id,
-                 'address_id' => $$belegrow['adresse'],
+                 'address_id' => $belegrow['adresse'],
                  'payment_status' => 'offen',
                  'amount' => $betrag,
                  'currency' => $belegrow['waehrung'],
@@ -567,7 +571,8 @@ class Zahlungsverkehr {
     function zahlungsverkehr_ausfuehren(array $payment_transaction_ids) {
 
         $result = array();
-        $prepared_items = array();
+        $prepared_transaction_blocks = array();
+        $prepared_headers = array();
         $successcount = 0;
 
         $payment_transactions = $this->app->DB->SelectArr("SELECT * FROM payment_transaction WHERE payment_status = 'offen' AND id IN (".implode(',',$payment_transaction_ids).")");
@@ -595,17 +600,20 @@ class Zahlungsverkehr {
             $adressdaten = $this->app->DB->SelectRow("SELECT * FROM adresse WHERE id = ".$belegrow['adresse']);
 
             $dataset = array(
-                'doc_typ' => $doc_typ,
-                'doc_id' => $id,
-                'amount' => $betrag,
-                'currency' => $belegrow['waehrung'],
-                'duedate' => $duedate,
-                'payment_reason' => $doc_name.' '.$belegrow['belegnr'],
-                'address_data' => $adressdaten,
-                'payment_account_data' => $kontodaten,
-                'doc_data' => $belegrow
+                'beleg_typ' => $doc_typ,
+                'beleg_id' => $id,
+                'betrag' => $belegrow['betrag'],
+                'waehrung' => $belegrow['waehrung'],
+                'datum_faellig' => $duedate,
+                'verwendungszweck' => $item['payment_info'],
+                'adresse' => $adressdaten,
+                'belegdaten' => $belegrow
             );
-            $prepared_items[$zahlungsweiseData['id']][] = $dataset;
+            $prepared_transaction_blocks[$zahlungsweiseData['id']]['transactions'][] = $dataset;
+            $prepared_transaction_blocks[$zahlungsweiseData['id']]['accountdata'] = $kontodaten;
+            $prepared_transaction_blocks[$zahlungsweiseData['id']]['paymenttype']['name'] = $zahlungsweiseData['bezeichnung'];
+            $prepared_transaction_blocks[$zahlungsweiseData['id']]['paymenttype']['type'] = $zahlungsweiseData['type'];
+            $prepared_transaction_blocks[$zahlungsweiseData['id']]['paymenttype']['module'] = $zahlungsweiseData['modul'];
         }
 
         if (!empty($result['errors'])) {
@@ -618,11 +626,20 @@ class Zahlungsverkehr {
         // ----------------------------------------------
         // Call PaymentMethodService to process
         // ----------------------------------------------
-        // returns array(bool 'success', array successful_transactions, array failed_transactions , array 'payment_objects' (string 'id', string 'description', payment_object_types 'type', array 'payment_transaction_ids', array 'attachments' ('filename', 'contents') ) )
-        foreach ($prepared_items as $key => $prepared_item) {
-//            $payment_result = $paymentMethodService->ProcessPayment($prepared_item);
+        foreach ($prepared_transaction_blocks as $key => $prepared_transaction_block) {
 
-            // TEST
+            $result[$key]['bezeichnung'] = $prepared_transaction_block['paymenttype']['name'];
+            $module = $this->app->erp->LoadZahlungsweiseModul($prepared_transaction_block['paymenttype']['module'], $key);
+
+            if ($module) {
+                $payment_result = $module->ProcessPayment($prepared_transaction_block);
+            } else {
+                $result[$key]['errors'] = 'Zahlungsweisemodul \''.$prepared_transaction_block['paymenttype']['module'].'\' nicht gefunden';
+                $result['success'] = false;
+                continue;
+            }
+
+/*
             $payment_result = array(
                 'success' => true,
                 'successful_transactions' => $payment_transaction_ids,
@@ -656,7 +673,7 @@ class Zahlungsverkehr {
                         )
                     )
                 )
-            );
+            );*/
 
             if ($payment_result['success']) {
                 foreach ($payment_result['payment_objects'] as $payment_object) {
