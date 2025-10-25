@@ -140,7 +140,7 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.003.03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.001.003.03 pain.001.003.03.xsd">
     <CstmrCdtTrfInitn>
         <GrpHdr>
-            <MsgId><![CDATA[{$sepa_nachricht_id}|truncate:35]]></MsgId>
+            <MsgId><![CDATA[{$sepa_nachricht_id|truncate:35}]]></MsgId>
             <CreDtTm>{$zeit}</CreDtTm>
             <NbOfTxs>{$anzahl_transaktionen}</NbOfTxs>
             <CtrlSum>{$gesamt_betrag}</CtrlSum>
