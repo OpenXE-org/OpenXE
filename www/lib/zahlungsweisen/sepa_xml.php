@@ -52,13 +52,13 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
     return [
         'konto' => [
             'typ'=>'select',
-            'optionen' => $this->app->DB->SelectPairs("SELECT id, CONCAT(kurzbezeichnung,' ',bezeichnung) kurzbezeichnung FROM konten"),
+            'optionen' => $this->app->DB->SelectPairs("SELECT 0 id, '' kurzbezeichnung UNION SELECT id, CONCAT(kurzbezeichnung,' ',bezeichnung) kurzbezeichnung FROM konten"),
             'bezeichnung'=>'Gesch&auml;ftskonto',
             'replace' => 'konto'
           ],
         'smarty' => [
             'typ'=>'select',
-            'optionen' => $this->app->DB->SelectPairs("SELECT id, name FROM smarty_templates"),
+            'optionen' => $this->app->DB->SelectPairs("SELECT 0 id, '' kurzbezeichnung UNION SELECT id, name FROM smarty_templates"),
             'bezeichnung' => 'Smarty Template für SEPA-XML'
         ]
     ];
