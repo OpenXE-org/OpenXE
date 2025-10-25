@@ -131,9 +131,9 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
 
         $datetime = new DateTime();
 
-        $message_id = preg_replace("/[^a-z0-9-]+/i", "", $this->data['bezeichnung']."-".$datetime->format('YmdHis'));
+        $message_id = preg_replace("/[^a-z0-9-]+/i", "", $datetime->format('YmdHis')."-".$this->data['bezeichnung']);
 
-        $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = ".$this->einstellungen['smarty']." LIMIT 1");
+        $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '".$this->einstellungen['smarty']."' LIMIT 1");
 
         if (empty($template)) {
             $template = '<?xml version="1.0" encoding="UTF-8"?>

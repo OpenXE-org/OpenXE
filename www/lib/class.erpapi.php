@@ -37056,6 +37056,13 @@ function Firmendaten($field,$projekt="")
         $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDate("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
         return ($date);
       }
+      
+      function GetDateiDatumZeitFormat($id)
+      {
+        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
+        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDateTime("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
+        return ($date);
+      }
 
     /*
     * Retrieve files from stichwoerter and provide them in tmp for access

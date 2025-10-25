@@ -85,14 +85,13 @@ class Zahlungsverkehr {
         switch ($name) {
             case "zahlungsverkehr_ueberweisung":
                 $allowed['zahlungsverkehr_ueberweisung'] = array('list');
-                $heading = array('','','Typ','Belegnr','RE-Datum','Adresse', 'Nummer', 'RE-Nr', 'Betrag (brutto)', 'W&auml;hrung',' Zahlungsweise', 'Bezahlt', 'Ziel', 'Skonto','Skontoziel','Status','Men&uuml;');
+                $heading = array('','Typ','Belegnr','RE-Datum','Adresse', 'Nummer', 'RE-Nr', 'Betrag (brutto)', 'W&auml;hrung',' Zahlungsweise', 'Bezahlt', 'Ziel', 'Skonto','Skontoziel','Status','Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
                 // $alignright = array(4,5,6,7,8);
 
                 $findcols = array(
-                    'id',
                     'id',
                     'doc_typ',
                     'belegnr',
@@ -123,7 +122,7 @@ class Zahlungsverkehr {
                 $alignright = array(9);
                 $sumcol = array(9);
 
-        		$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',id,'\" />') AS `auswahl`";
+        		$dropnbox = "CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',id,'\" />') AS `auswahl`";
 
 //                $moreinfo = true; // Allow drop down details
 //                $moreinfoaction = "lieferschein"; // specify suffix for minidetail-URL to allow different minidetails
@@ -416,20 +415,7 @@ class Zahlungsverkehr {
         switch($submit) {
             case 'ausfuehren':
                 if(!empty($auswahl)) {
-                    $result = $this->zahlungsverkehr_ausfuehren($auswahl);
-
-                    if ($result['success']) {
-                        $this->app->Tpl->AddMessage('success',$result['successcount']." Transaktionen im Zahllauf ausgef&uuml;hrt.");
-                    } else {
-                        $this->app->Tpl->AddMessage('error',"Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden!");
-
-                        foreach ($result['results'] as $blockresult) {
-                            if (!empty($blockresult['errors'])) {
-                                $this->notification('Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden!', implode(", ",$blockresult['errors']));
-                            }
-                        }
-
-                    }
+                    $this->zahlungsverkehr_ausfuehren_und_meldung($auswahl);
                 }
             break;
         }
@@ -444,6 +430,9 @@ class Zahlungsverkehr {
         $auswahl = $this->app->Secure->GetPOST('auswahl');
         $submit = $this->app->Secure->GetPOST('submit');
         switch($submit) {
+            case 'ausfuehren':
+                $ausfuehren = true;
+                // break omitted
             case 'anlegen':
                 $selectedIds = [];
                 if(!empty($auswahl)) {
@@ -463,12 +452,18 @@ class Zahlungsverkehr {
                     if (empty($result['errors'])) {
                         $this->app->Tpl->AddMessage('success',$result['success']." Belege zum Zahllauf gegeben.");
                     } else {
+                        $ausfuehren = false;
                         $this->app->Tpl->AddMessage('error',"Belege konnten nicht zum Zahllauf gegeben werden: " .implode(', ',array_column($result['errors'],'beleg')));
                         foreach ($result['errors'] as $error) {
                             $this->notification('Beleg konnte nicht zum Zahllauf gegeben werden', $error['beleg'].": ".$error['msg']);
                         }
                     }
                 }
+
+                if ($ausfuehren) {
+                    $this->zahlungsverkehr_ausfuehren_und_meldung($result['payment_transaction_ids']);
+                }
+
             break;
         }
 
@@ -563,7 +558,9 @@ class Zahlungsverkehr {
                 $fix = ", ";
             }
             $sql = "INSERT INTO payment_transaction (".$columns.") VALUES (".$values.")";
-            $this->app->DB->Update($sql);
+            $this->app->DB->Insert($sql);
+            $newid = $this->app->DB->GetInsertID();
+            $result['payment_transaction_ids'][] = $newid;
         }
 
         return($result);
@@ -630,26 +627,23 @@ class Zahlungsverkehr {
         // ----------------------------------------------
         // Call PaymentMethodService to process
         // ----------------------------------------------
-        foreach ($prepared_transaction_blocks as $key => $prepared_transaction_block) {
-
-            $result[$key]['bezeichnung'] = $prepared_transaction_block['paymenttype']['name'];
-            $module = $this->app->erp->LoadZahlungsweiseModul($prepared_transaction_block['paymenttype']['module'], $key);
-
+        foreach ($prepared_transaction_blocks as $blockkey => $prepared_transaction_block) {
+            $module = $this->app->erp->LoadZahlungsweiseModul($prepared_transaction_block['paymenttype']['module'], $blockkey);
             if ($module) {
                 $payment_result = $module->ProcessPayment($prepared_transaction_block);
             } else {
-                $result[$key]['errors'] = 'Zahlungsweisemodul \''.$prepared_transaction_block['paymenttype']['module'].'\' nicht gefunden';
+                $result['results'][$blockkey]['errors'] = 'Zahlungsweisemodul \''.$prepared_transaction_block['paymenttype']['module'].'\' nicht gefunden';
                 $result['success'] = false;
                 continue;
             }
 
             if ($payment_result['success']) {
-                foreach ($payment_result['payment_objects'] as $payment_object) {
-                    foreach ($payment_object['attachments'] as $attachment) {
+                foreach ($payment_result['payment_objects'] as $payment_object_key => $payment_object) {
+                    foreach ($payment_object['attachments'] as $attachment_key => $attachment) {
                         $fileid = $this->app->erp->CreateDatei(
                             name: $attachment['filename'],
                             titel: $attachment['filename'],
-                            beschreibung: $payment_object['description'],
+                            beschreibung: $attachment['description'],
                             nummer: "",
                             datei: $attachment['contents'],
                             ersteller: $this->app->User->GetName(),
@@ -659,6 +653,8 @@ class Zahlungsverkehr {
                         foreach ($payment_object['payment_transaction_ids'] as $transaction) {
                             $this->app->erp->AddDateiStichwort($fileid, "anhang", "payment_transaction", $transaction);
                         }
+
+                        $payment_result['payment_objects'][$payment_object_key]['attachments'][$attachment_key]['file'] = $fileid;
                     }
                 }
                 $result['successcount'] += count($payment_result['successful_transactions']);
@@ -667,10 +663,39 @@ class Zahlungsverkehr {
                 $result['success'] = false;
             }
 
-            $result['results'][$key] = $payment_result;
+            $result['results'][$blockkey] = $payment_result;
         }
 
         return($result);
+    }
+
+    function zahlungsverkehr_ausfuehren_und_meldung(array $auswahl) {
+        $attachments = array();
+        $result = $this->zahlungsverkehr_ausfuehren($auswahl);
+
+        if ($result['success']) {
+            $this->app->Tpl->AddMessage('success',$result['successcount']." Transaktionen im Zahllauf ausgef&uuml;hrt.");
+        } else {
+            $this->app->Tpl->AddMessage('error',"Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden!");
+
+            foreach ($result['results'] as $blockresult) {
+                if (!empty($blockresult['errors'])) {
+                    $this->notification('Belege konnten nicht im Zahllauf ausgef&uuml;hrt werden!', implode(", ",$blockresult['errors']));
+                }
+            }
+        }
+
+        foreach ($result['results'] as $blockresult) {
+            foreach ($blockresult['payment_objects'] as $payment_object) {
+                foreach ($payment_object['attachments'] as $attachment) {
+                    $attachments[] = $attachment;
+                }
+            }
+        }
+
+        if (!empty($attachments)) {
+            $this->notification('Anh&auml;nge zu Zahllauf','Anh&auml;nge k&ouml;nnen heruntergeladen werden.', $attachments);
+        }
     }
 
     public function zahlungsverkehr_delete() {
@@ -686,11 +711,20 @@ class Zahlungsverkehr {
         $this->zahlungsverkehr_list();
     }
 
-    function notification($title, $text) {
+    function notification($title, $text, $attachments = array()) {
         // Notification erstellen
         $notification_message = new NotificationMessageData('default', $title);
+
+        if (!empty($attachments)) {
+            foreach ($attachments as $attachment) {
+                $linktext .= '<br><a href="'.sprintf('index.php?module=dateien&action=send&id=%d', $attachment['file']).'">'.$attachment['filename'].'</a>';
+            }
+            $text .= $linktext;
+        }
+
         $notification_message->setMessage($text);
         $notification_message->setPriority(true);
+
         /** @var NotificationService $notification */
         $notification = $this->app->Container->get('NotificationService');
         $notification->createFromData($this->app->User->GetID(), $notification_message);
@@ -710,7 +744,7 @@ class Zahlungsverkehr {
                   "\">".
                   htmlentities($this->app->erp->GetDateiName($file_attachment)).
                   " (".
-                  $this->app->erp->GetDateiDatumFormat($file_attachment).", ".
+                  $this->app->erp->GetDateiDatumZeitFormat($file_attachment).", ".
                   $this->app->erp->GetDateiSize($file_attachment).
                   ")".
                   "</a> ".
