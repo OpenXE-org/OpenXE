@@ -1,35 +1,42 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator;
 
-use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Config;
 use Laminas\ServiceManager\FactoryInterface;
 use Laminas\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\ServiceManager;
+use Psr\Container\ContainerInterface;
 
+use function is_array;
+
+/**
+ * @link ServiceManager
+ *
+ * @psalm-import-type ServiceManagerConfiguration from ServiceManager
+ *
+ * @final
+ */
 class ValidatorPluginManagerFactory implements FactoryInterface
 {
     /**
      * laminas-servicemanager v2 support for invocation options.
      *
-     * @param array
+     * @var null|ServiceManagerConfiguration
      */
     protected $creationOptions;
 
     /**
      * {@inheritDoc}
      *
+     * @param string $name
+     * @param ServiceManagerConfiguration|null $options
      * @return ValidatorPluginManager
+     * @psalm-suppress MoreSpecificImplementedParamType
      */
-    public function __invoke(ContainerInterface $container, $name, array $options = null)
+    public function __invoke(ContainerInterface $container, $name, ?array $options = null)
     {
-        $pluginManager = new ValidatorPluginManager($container, $options ?: []);
+        $pluginManager = new ValidatorPluginManager($container, $options ?? []);
 
         // If this is in a laminas-mvc application, the ServiceListener will inject
         // merged configuration during bootstrap.
@@ -58,17 +65,19 @@ class ValidatorPluginManagerFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
+     * @param string|null $name
+     * @param string|null $requestedName
      * @return ValidatorPluginManager
      */
     public function createService(ServiceLocatorInterface $container, $name = null, $requestedName = null)
     {
-        return $this($container, $requestedName ?: ValidatorPluginManager::class, $this->creationOptions);
+        return $this($container, $requestedName ?? ValidatorPluginManager::class, $this->creationOptions);
     }
 
     /**
      * laminas-servicemanager v2 support for invocation options.
      *
-     * @param array $options
+     * @param ServiceManagerConfiguration $options
      * @return void
      */
     public function setCreationOptions(array $options)

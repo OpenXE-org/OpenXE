@@ -1,22 +1,31 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator;
 
+use Laminas\Stdlib\ArrayUtils;
+use Laminas\Validator\Barcode\AdapterInterface;
+use Laminas\Validator\Exception\InvalidArgumentException;
 use Traversable;
 
+use function assert;
+use function class_exists;
+use function get_debug_type;
+use function is_array;
+use function is_string;
+use function sprintf;
+use function strtolower;
+use function substr;
+use function ucfirst;
+
+/** @final */
 class Barcode extends AbstractValidator
 {
-    const INVALID        = 'barcodeInvalid';
-    const FAILED         = 'barcodeFailed';
-    const INVALID_CHARS  = 'barcodeInvalidChars';
-    const INVALID_LENGTH = 'barcodeInvalidLength';
+    public const INVALID        = 'barcodeInvalid';
+    public const FAILED         = 'barcodeFailed';
+    public const INVALID_CHARS  = 'barcodeInvalidChars';
+    public const INVALID_LENGTH = 'barcodeInvalidLength';
 
+    /** @var array<string, string> */
     protected $messageTemplates = [
         self::FAILED         => 'The input failed checksum validation',
         self::INVALID_CHARS  => 'The input contains invalid characters',
@@ -27,15 +36,22 @@ class Barcode extends AbstractValidator
     /**
      * Additional variables available for validation failure messages
      *
-     * @var array
+     * @var array<string, array<string, string>>
      */
     protected $messageVariables = [
         'length' => ['options' => 'length'],
     ];
-
+    /**
+     * @var array{
+     *     adapter: null|AdapterInterface,
+     *     options: null|array<string, mixed>,
+     *     length: null|int|array,
+     *     useChecksum: null|bool,
+     * }
+     */
     protected $options = [
-        'adapter'     => null,  // Barcode adapter Laminas\Validator\Barcode\AbstractAdapter
-        'options'     => null,  // Options for this adapter
+        'adapter'     => null, // Barcode adapter Laminas\Validator\Barcode\AbstractAdapter
+        'options'     => null, // Options for this adapter
         'length'      => null,
         'useChecksum' => null,
     ];
@@ -43,24 +59,28 @@ class Barcode extends AbstractValidator
     /**
      * Constructor for barcodes
      *
-     * @param array|string $options Options to use
+     * @param iterable<string, mixed>|null|string|AdapterInterface $options Options to use
      */
     public function __construct($options = null)
     {
+        if ($options instanceof Traversable) {
+            $options = ArrayUtils::iteratorToArray($options);
+        }
+
         if ($options === null) {
             $options = [];
         }
 
-        if (is_array($options)) {
-            if (array_key_exists('options', $options)) {
-                $options['options'] = ['options' => $options['options']];
-            }
-        } elseif ($options instanceof Traversable) {
-            if (property_exists($options, 'options')) {
-                $options['options'] = ['options' => $options['options']];
-            }
-        } else {
+        if (is_string($options) || $options instanceof AdapterInterface) {
             $options = ['adapter' => $options];
+        }
+
+        if (! is_array($options)) {
+            throw new InvalidArgumentException(sprintf(
+                'Options should be an array, a string representing the name of an adapter, or an adapter instance. '
+                . 'Received "%s"',
+                get_debug_type($options),
+            ));
         }
 
         parent::__construct($options);
@@ -69,7 +89,9 @@ class Barcode extends AbstractValidator
     /**
      * Returns the set adapter
      *
-     * @return Barcode\AbstractAdapter
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @return AdapterInterface
      */
     public function getAdapter()
     {
@@ -77,16 +99,20 @@ class Barcode extends AbstractValidator
             $this->setAdapter('Ean13');
         }
 
+        assert($this->options['adapter'] instanceof Barcode\AdapterInterface);
+
         return $this->options['adapter'];
     }
 
     /**
      * Sets a new barcode adapter
      *
-     * @param  string|Barcode\AbstractAdapter $adapter Barcode adapter to use
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @param  string|AdapterInterface $adapter Barcode adapter to use
      * @param  array  $options Options for this adapter
      * @return $this
-     * @throws Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setAdapter($adapter, $options = null)
     {
@@ -95,17 +121,17 @@ class Barcode extends AbstractValidator
             $adapter = 'Laminas\\Validator\\Barcode\\' . $adapter;
 
             if (! class_exists($adapter)) {
-                throw new Exception\InvalidArgumentException('Barcode adapter matching "' . $adapter . '" not found');
+                throw new InvalidArgumentException('Barcode adapter matching "' . $adapter . '" not found');
             }
 
             $adapter = new $adapter($options);
         }
 
         if (! $adapter instanceof Barcode\AdapterInterface) {
-            throw new Exception\InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf(
                     'Adapter %s does not implement Laminas\\Validator\\Barcode\\AdapterInterface',
-                    is_object($adapter) ? get_class($adapter) : gettype($adapter)
+                    get_debug_type($adapter)
                 )
             );
         }
@@ -118,7 +144,9 @@ class Barcode extends AbstractValidator
     /**
      * Returns the checksum option
      *
-     * @return string
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @return string|null
      */
     public function getChecksum()
     {
@@ -128,8 +156,10 @@ class Barcode extends AbstractValidator
     /**
      * Sets if checksum should be validated, if no value is given the actual setting is returned
      *
-     * @param  bool $checksum
-     * @return bool
+     * @deprecated Since 2.60.0 all option setters and getters are deprecated for removal in 3.0
+     *
+     * @param null|bool $checksum
+     * @return AdapterInterface|bool
      */
     public function useChecksum($checksum = null)
     {
@@ -157,7 +187,7 @@ class Barcode extends AbstractValidator
         $result                  = $adapter->hasValidLength($value);
         if (! $result) {
             if (is_array($this->options['length'])) {
-                $temp = $this->options['length'];
+                $temp                    = $this->options['length'];
                 $this->options['length'] = '';
                 foreach ($temp as $length) {
                     $this->options['length'] .= '/';
