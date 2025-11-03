@@ -2058,7 +2058,9 @@ class Wareneingang {
         }
         $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
-        $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+        if (!empty($etikettendrucker)) {
+            $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+        }
 
         $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
                         wareneingang_id: $id,
@@ -4141,7 +4143,9 @@ class Wareneingang {
         $artikel = $painfo['artikel'];
         $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
-        $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+        if (!empty($etikettendrucker)) {
+            $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+        }
 
         $this->app->erp->EtikettenDrucker(
             kennung:  $etikettart,

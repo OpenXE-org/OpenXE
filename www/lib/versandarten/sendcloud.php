@@ -27,10 +27,9 @@ class Versandart_sendcloud extends Versanddienstleister
 {
   protected SendCloudApi $api;
   protected array $options;
-  protected $versandart_id;
- 
+
   /** @var Logger $logger */
-  public $logger;
+  public Logger $logger;
 
   public function __construct(ApplicationCore $app, ?int $id)
   {
@@ -38,7 +37,6 @@ class Versandart_sendcloud extends Versanddienstleister
     if (!isset($this->id))
       return;
     $this->api = new SendCloudApi($this->settings->public_key, $this->settings->private_key);
-    $this->versandart_id = $id;
     $this->logger = $app->Container->get('Logger');
   }
 
@@ -47,7 +45,7 @@ class Versandart_sendcloud extends Versanddienstleister
     return "SendCloud";
   }
 
-  protected function FetchOptionsFromApi()
+  protected function FetchOptionsFromApi() : void
   {
     if (isset($this->options))
       return;
@@ -84,80 +82,80 @@ class Versandart_sendcloud extends Versanddienstleister
     ];
   }
 
-  public function CreateShipment(object $json, array $address): CreateShipmentResult
+  protected function CreateShipment(object $json): CreateShipmentResult
   {
     $parcel = new ParcelCreation();
     $parcel->SenderAddressId = $this->settings->sender_address;
-    $parcel->ShippingMethodId = $json->product;
-    $parcel->Name = $json->name;
-    switch ($json->addresstype) {
+    $parcel->ShippingMethodId = $json->productId;
+    $parcel->Name = $json->address->name;
+    switch ($json->address->addresstype) {
       case 0:     
-        $parcel->CompanyName = $json->company_name;                
+        $parcel->CompanyName = $json->address->companyName;
         $parcel->Name = join(
                         ';', 
                         array_filter(
                             [
-                                $json->contact_name,
-                                $json->company_division
+                                $json->address->contactName,
+                                $json->address->companyDivision
                             ],
                             fn(string $item) => !empty(trim($item))
                         )
                     );                
-        $parcel->Address = $json->street;
-        $parcel->Address2 = $json->address2;
-        $parcel->HouseNumber = $json->streetnumber;
+        $parcel->Address = $json->address->street;
+        $parcel->Address2 = $json->address->address2;
+        $parcel->HouseNumber = $json->address->streetnumber;
         break;
       case 1:
-        $parcel->CompanyName = $json->postnumber;
+        $parcel->CompanyName = $json->address->postnumber;
         $parcel->Address = "Packstation";
-        $parcel->HouseNumber = $json->parcelstationNumber;
+        $parcel->HouseNumber = $json->address->parcelstationNumber;
         break;
       case 2:
-        $parcel->CompanyName = $json->postnumber;
+        $parcel->CompanyName = $json->address->postnumber;
         $parcel->Address = "Postfiliale";
-        $parcel->HouseNumber = $json->postofficeNumber;
+        $parcel->HouseNumber = $json->address->postofficeNumber;
         break;
       case 3:           
         $parcel->Name = join(
                         ';', 
                         array_filter(
                             [
-                                $json->name,
-                                $json->contact_name
+                                $json->address->name,
+                                $json->address->contactName
                             ],
                             fn(string $item) => !empty(trim($item))
                         )
                     );
                 
-        $parcel->Address = $json->street;
-        $parcel->Address2 = $json->address2;
-        $parcel->HouseNumber = $json->streetnumber;
+        $parcel->Address = $json->address->street;
+        $parcel->Address2 = $json->address->address2;
+        $parcel->HouseNumber = $json->address->streetnumber;
         break;
 
     }
-    $parcel->Country = $json->country;
-    $parcel->PostalCode = $json->zip;
-    $parcel->City = $json->city;
-    $parcel->EMail = $json->email;
-    $parcel->Telephone = $json->phone;
-    $parcel->CountryState = $json->state;
-    $parcel->TotalInsuredValue = $json->total_insured_value;
-    $parcel->OrderNumber = $json->order_number;
-    if (!$this->app->erp->IsEU($json->country)) {
-      $parcel->CustomsInvoiceNr = $json->invoice_number;
-      $parcel->CustomsShipmentType = $json->shipment_type;
-      foreach ($json->positions as $pos) {
+    $parcel->Country = $json->address->country;
+    $parcel->PostalCode = $json->address->zip;
+    $parcel->City = $json->address->city;
+    $parcel->EMail = $json->address->email;
+    $parcel->Telephone = $json->address->phone;
+    $parcel->CountryState = $json->address->state;
+    $parcel->TotalInsuredValue = $json->insuranceValue;
+    $parcel->OrderNumber = $json->reference;
+    if (!$this->app->erp->IsEU($json->address->country)) {
+      $parcel->CustomsInvoiceNr = $json->customsDeclaration->invoiceNumber;
+      $parcel->CustomsShipmentType = $json->customsDeclaration->shipmentType;
+      foreach ($json->customsDeclaration->positions as $pos) {
         $item = new ParcelItem();
-        $item->HsCode = $pos->zolltarifnummer ?? '';
-        $item->Description = $pos->bezeichnung;
-        $item->Quantity = $pos->menge;
-        $item->OriginCountry = $pos->herkunftsland ?? '';
-        $item->Price = $pos->zolleinzelwert;
-        $item->Weight = $pos->zolleinzelgewicht * 1000;
+        $item->HsCode = $pos->hsCode ?? '';
+        $item->Description = $pos->description;
+        $item->Quantity = $pos->quantity;
+        $item->OriginCountry = $pos->originCountryCode ?? '';
+        $item->Price = $pos->itemValue;
+        $item->Weight = $pos->itemWeight * 1000;
         $parcel->ParcelItems[] = $item;
       }
     }
-    $parcel->Weight = floatval($json->weight) * 1000;
+    $parcel->Weight = floatval($json->package->weight) * 1000;
     $ret = new CreateShipmentResult();
     try {
       $result = $this->api->CreateParcel($parcel);
@@ -181,7 +179,7 @@ class Versandart_sendcloud extends Versanddienstleister
     return $ret;
   }
 
-  public function GetShippingProducts(): array
+  protected function GetShippingProducts(): array
   {
     $this->FetchOptionsFromApi();
     /** @var ShippingProduct $product */
@@ -201,21 +199,21 @@ class Versandart_sendcloud extends Versanddienstleister
 
     public function GetShipmentStatus(string $tracking): ShipmentStatus|null
     {
-        $this->logger->debug("Sendcloud tracking status request ".$this->versandart_id,
+        $this->logger->debug("Sendcloud tracking status request ".$this->id,
             [
                 'trackingCode' => $tracking
             ]
         );
         try {
             $result = $this->api->GetTrackingStatus($tracking);
-            $this->logger->debug("Sendcloud tracking status result ".$this->versandart_id,
+            $this->logger->debug("Sendcloud tracking status result ".$this->id,
                 [
                     'result' => $result
                 ]
             );
             return ($result);
         } catch (SendcloudApiException $e) {
-            $this->logger->debug("Sendcloud tracking status error ".$this->versandart_id,
+            $this->logger->debug("Sendcloud tracking status error ".$this->id,
                 [
                     'exception' => $e
                 ]
@@ -223,6 +221,4 @@ class Versandart_sendcloud extends Versanddienstleister
             return null;
         }
     }
-
-
 }
