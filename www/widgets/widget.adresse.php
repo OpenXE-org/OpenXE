@@ -62,6 +62,18 @@ class WidgetAdresse extends WidgetGenAdresse
 
     $id = $this->app->Secure->GetGET("id");
     $this->app->erp->RunHook('address_widget',1, $id);
+
+    $bank = $this->app->DB->SelectRow("SELECT swift, iban FROM adresse WHERE id='$id' LIMIT 1");
+    if (!empty($bank['iban']) || !empty($bank['swift'])) {
+        require_once dirname(__DIR__).'/plugins/sepa/Sepa_credit_XML_Transfer_initation.class.php';
+        if (!Sepa_credit_XML_Transfer_initation::validateBIC($bank['swift'])) {
+            $this->app->Tpl->AddMessage('error',"BIC ung&uuml;ltig.");
+        }
+        if (!Sepa_credit_XML_Transfer_initation::validateIBAN($bank['iban'])) {
+            $this->app->Tpl->AddMessage('error',"IBAN ung&uuml;ltig.");
+        }
+    }
+
     $kassierernummer = $this->app->Secure->GetPOST("kassierernummer");
     $submit = $this->app->Secure->GetPOST("speichern");
     /* pruefung Artikel nummer doppel */
