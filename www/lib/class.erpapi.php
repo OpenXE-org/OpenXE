@@ -16288,8 +16288,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       {
         $val = $this->app->DB->real_escape_string(${$key});
         $this->app->DB->Update("UPDATE adresse SET $key='$val' WHERE id='$adresse' LIMIT 1");
-        $logfile = $this->app->DB->Select("SELECT `logfile` FROM adresse WHERE id='$adresse' LIMIT 1");
-        $this->app->DB->Update("UPDATE adresse SET `logfile`='".$logfile." Update Feld $key alt:$check neu:".$val.";' WHERE id='$adresse' LIMIT 1");
+        $check = $this->app->DB->real_escape_string($check);
+        $this->app->DB->Update("UPDATE adresse SET `logfile`=CONCAT(logfile, ' Update Feld $key alt:$check neu:".$val.";') WHERE id='$adresse' LIMIT 1");
       }
 
     }
