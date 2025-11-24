@@ -1,11 +1,5 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-mail for the canonical source repository
- * @copyright https://github.com/laminas/laminas-mail/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-mail/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Mail\Header;
 
 use Laminas\Loader\PluginClassLoader;
@@ -15,9 +9,7 @@ use Laminas\Loader\PluginClassLoader;
  */
 class HeaderLoader extends PluginClassLoader
 {
-    /**
-     * @var array Pre-aliased Header plugins
-     */
+    /** @var array Pre-aliased Header plugins */
     protected $plugins = [
         'bcc'                       => Bcc::class,
         'cc'                        => Cc::class,

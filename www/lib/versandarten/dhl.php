@@ -17,7 +17,7 @@ use Xentral\Carrier\Dhl\Data\ShipmentItem;
 use Xentral\Carrier\Dhl\DhlApi;
 use Xentral\Modules\ShippingMethod\Model\CreateShipmentResult;
 use Xentral\Modules\ShippingMethod\Model\Product;
-use Xentral\Modules\ShippingMethod\Model\ShipmentService;
+use Xentral\Modules\ShippingMethod\Model\Service;
 use Xentral\Modules\ShippingMethod\Model\ShipmentStatus;
 
 require_once(dirname(__DIR__).'/class.versanddienstleister.php');
@@ -202,7 +202,7 @@ class Versandart_dhl extends Versanddienstleister{
           ->WithWidth(11, 60)
           ->WithHeight(1, 60)
           ->WithWeight(0.01, 31.5)
-          ->WithServices([ShipmentService::SERVICE_PREMIUM]);
+          ->WithServices([Service::SERVICE_PREMIUM]);
     }
     if ($this->settings->accountnumber_euro) {
       $result[] = Product::Create('V54EPAK', 'DHL Europaket')
@@ -231,7 +231,7 @@ class Versandart_dhl extends Versanddienstleister{
           ->WithWidth(7, 25)
           ->WithHeight(0.1, 10)
           ->WithWeight(0.01, 1)
-          ->WithServices([ShipmentService::SERVICE_PREMIUM]);
+          ->WithServices([Service::SERVICE_PREMIUM]);
     }
     return $result;
   }

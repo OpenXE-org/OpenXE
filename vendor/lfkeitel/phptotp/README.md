@@ -32,7 +32,7 @@ echo Base32::encode($secret);
 
 # Generate the current TOTP key
 # Note: GenerateToken takes a base32 decoded string of bytes.
-$key = (new Totp())->GenerateToken($secret)
+$key = (new Totp())->GenerateToken($secret);
 
 # Check if user submitted correct key
 if ($user_submitted_key !== $key) {

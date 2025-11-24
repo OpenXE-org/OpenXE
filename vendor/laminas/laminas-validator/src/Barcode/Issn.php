@@ -1,13 +1,13 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Barcode;
 
+use function str_contains;
+use function str_split;
+use function strlen;
+use function substr;
+
+/** @final */
 class Issn extends AbstractAdapter
 {
     /**
@@ -28,8 +28,8 @@ class Issn extends AbstractAdapter
      */
     public function hasValidCharacters($value)
     {
-        if (strlen($value) != 8) {
-            if (strpos($value, 'X') !== false) {
+        if (strlen($value) !== 8) {
+            if (str_contains($value, 'X')) {
                 return false;
             }
         }
@@ -45,7 +45,7 @@ class Issn extends AbstractAdapter
      */
     public function hasValidChecksum($value)
     {
-        if (strlen($value) == 8) {
+        if (strlen($value) === 8) {
             $this->setChecksum('issn');
         } else {
             $this->setChecksum('gtin');
@@ -68,7 +68,7 @@ class Issn extends AbstractAdapter
         $check    = 0;
         $multi    = 8;
         foreach ($values as $token) {
-            if ($token == 'X') {
+            if ($token === 'X') {
                 $token = 10;
             }
 
@@ -78,9 +78,12 @@ class Issn extends AbstractAdapter
 
         $check %= 11;
         $check  = $check === 0 ? 0 : 11 - $check;
-        if ($check == $checksum) {
+
+        if ((string) $check === $checksum) {
             return true;
-        } elseif (($check == 10) && ($checksum == 'X')) {
+        }
+
+        if (($check === 10) && ($checksum === 'X')) {
             return true;
         }
 

@@ -1,36 +1,36 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-stdlib for the canonical source repository
- * @copyright https://github.com/laminas/laminas-stdlib/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-stdlib/blob/master/LICENSE.md New BSD License
- */
+declare(strict_types=1);
 
 namespace Laminas\Stdlib;
 
+/**
+ * @template TKey of string
+ * @template TValue
+ */
 interface ParameterObjectInterface
 {
     /**
-     * @param string $key
-     * @param mixed $value
+     * @param TKey $key
+     * @param TValue|null $value
      * @return void
      */
-    public function __set($key, $value);
+    public function __set($key, mixed $value);
 
     /**
-     * @param string $key
-     * @return mixed
+     * @param TKey $key
+     * @return TValue
      */
     public function __get($key);
 
     /**
-     * @param string $key
+     * @param TKey $key
      * @return bool
      */
     public function __isset($key);
 
     /**
-     * @param string $key
+     * @param TKey $key
      * @return void
      */
     public function __unset($key);

@@ -9,7 +9,7 @@ class CustomsDeclaration {
     /**
      * @var CustomsDeclarationItem[]
      */
-    public array $positions;
+    public array $positions = [];
 }
 
 class CustomsDeclarationItem {

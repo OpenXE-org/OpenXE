@@ -1,10 +1,17 @@
 {
-  "_vue-!~{003}~.js": {
-    "file": "assets/vue-CMXOvwpj.css",
-    "src": "_vue-!~{003}~.js"
+  "_AutoComplete-CD2Jtc1x.js": {
+    "file": "AutoComplete-CD2Jtc1x.js",
+    "name": "AutoComplete",
+    "imports": [
+      "_vue-DSfpzftO.js"
+    ]
   },
-  "_vue-C8GNYUTc.js": {
-    "file": "vue-C8GNYUTc.js",
+  "_vue-!~{004}~.js": {
+    "file": "assets/vue-CMXOvwpj.css",
+    "src": "_vue-!~{004}~.js"
+  },
+  "_vue-DSfpzftO.js": {
+    "file": "vue-DSfpzftO.js",
     "name": "vue",
     "css": [
       "assets/vue-CMXOvwpj.css"
@@ -17,22 +24,33 @@
       "assets/primeicons-Dr5RGzOO.svg"
     ]
   },
+  "classes/Modules/CrossSelling/www/js/entry.js": {
+    "file": "modules/CrossSelling-MixHCe52.js",
+    "name": "modules/CrossSelling",
+    "src": "classes/Modules/CrossSelling/www/js/entry.js",
+    "isEntry": true,
+    "imports": [
+      "_vue-DSfpzftO.js",
+      "_AutoComplete-CD2Jtc1x.js"
+    ]
+  },
   "classes/Modules/MatrixProduct/www/js/entry.js": {
-    "file": "modules/MatrixProduct-BAQ9apDq.js",
+    "file": "modules/MatrixProduct-CUf6MXlE.js",
     "name": "modules/MatrixProduct",
     "src": "classes/Modules/MatrixProduct/www/js/entry.js",
     "isEntry": true,
     "imports": [
-      "_vue-C8GNYUTc.js"
+      "_vue-DSfpzftO.js",
+      "_AutoComplete-CD2Jtc1x.js"
     ]
   },
   "classes/Modules/ShippingMethod/www/js/shipment.entry.js": {
-    "file": "modules/ShippingMethod-shipment-B_cxSgST.js",
+    "file": "modules/ShippingMethod-shipment-BCRK0ltB.js",
     "name": "modules/ShippingMethod-shipment",
     "src": "classes/Modules/ShippingMethod/www/js/shipment.entry.js",
     "isEntry": true,
     "imports": [
-      "_vue-C8GNYUTc.js"
+      "_vue-DSfpzftO.js"
     ]
   },
   "node_modules/primeicons/fonts/primeicons.eot": {

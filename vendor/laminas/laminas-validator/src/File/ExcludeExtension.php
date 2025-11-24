@@ -1,15 +1,17 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\File;
+
+use function in_array;
+use function is_readable;
+use function strrpos;
+use function strtolower;
+use function substr;
 
 /**
  * Validator for the excluding file extensions
+ *
+ * @final
  */
 class ExcludeExtension extends Extension
 {
@@ -18,12 +20,10 @@ class ExcludeExtension extends Extension
     /**
      * @const string Error constants
      */
-    const FALSE_EXTENSION = 'fileExcludeExtensionFalse';
-    const NOT_FOUND       = 'fileExcludeExtensionNotFound';
+    public const FALSE_EXTENSION = 'fileExcludeExtensionFalse';
+    public const NOT_FOUND       = 'fileExcludeExtensionNotFound';
 
-    /**
-     * @var array Error message templates
-     */
+    /** @var array Error message templates */
     protected $messageTemplates = [
         self::FALSE_EXTENSION => 'File has an incorrect extension',
         self::NOT_FOUND       => 'File is not readable or does not exist',
@@ -42,11 +42,10 @@ class ExcludeExtension extends Extension
         $fileInfo = $this->getFileInfo($value, $file);
 
         // Is file readable ?
-        if (! $this->getAllowNonExistentFile()
+        if (
+            ! $this->getAllowNonExistentFile()
             && (empty($fileInfo['file']) || false === is_readable($fileInfo['file']))
         ) {
-            if (preg_match('/nofile\.mo$/', $fileInfo['file'])) {
-            }
             $this->error(self::NOT_FOUND);
             return false;
         }
@@ -60,9 +59,7 @@ class ExcludeExtension extends Extension
             return true;
         } elseif (! $this->getCase()) {
             foreach ($extensions as $ext) {
-                if (strtolower($ext) == strtolower($extension)) {
-                    if (preg_match('/nofile\.mo$/', $fileInfo['file'])) {
-                    }
+                if (strtolower($ext) === strtolower($extension)) {
                     $this->error(self::FALSE_EXTENSION);
                     return false;
                 }

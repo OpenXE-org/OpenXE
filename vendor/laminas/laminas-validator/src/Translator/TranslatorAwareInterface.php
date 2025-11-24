@@ -1,11 +1,5 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Translator;
 
 interface TranslatorAwareInterface
@@ -19,7 +13,7 @@ interface TranslatorAwareInterface
      *             Default is null, which skips setTranslatorTextDomain
      * @return self
      */
-    public function setTranslator(TranslatorInterface $translator = null, $textDomain = null);
+    public function setTranslator(?TranslatorInterface $translator = null, $textDomain = null);
 
     /**
      * Returns translator used in object
@@ -31,6 +25,8 @@ interface TranslatorAwareInterface
     /**
      * Checks if the object has a translator
      *
+     * @deprecated since 2.61.0 This method will be removed in 3.0
+     *
      * @return bool
      */
     public function hasTranslator();
@@ -38,14 +34,19 @@ interface TranslatorAwareInterface
     /**
      * Sets whether translator is enabled and should be used
      *
-     * @param  bool $enabled [optional] whether translator should be used.
-     *                  Default is true.
+     * @deprecated since 2.61.0 This method will be removed in 3.0 disable translation via the
+     *            `translatorEnabled` option
+     *
+     * @param bool $enabled [optional] whether translator should be used.
+     *                      Default is true.
      * @return self
      */
     public function setTranslatorEnabled($enabled = true);
 
     /**
      * Returns whether translator is enabled and should be used
+     *
+     * @deprecated since 2.61.0 This method will be removed in 3.0
      *
      * @return bool
      */
@@ -54,13 +55,18 @@ interface TranslatorAwareInterface
     /**
      * Set translation text domain
      *
-     * @param  string $textDomain
+     * @deprecated since 2.61.0 This method will be removed in 3.0 Use the `translatorTextDomain` option, or set
+     *             the text domain at the same time as the translator via `setTranslator()`
+     *
+     * @param string $textDomain
      * @return TranslatorAwareInterface
      */
     public function setTranslatorTextDomain($textDomain = 'default');
 
     /**
      * Return the translation text domain
+     *
+     * @deprecated since 2.61.0 This method will be removed in 3.0
      *
      * @return string
      */
