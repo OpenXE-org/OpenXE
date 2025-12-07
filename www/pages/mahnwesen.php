@@ -225,7 +225,25 @@ class Mahnwesen {
 
                 $mails = 0;
                 $drucke = 0;
+                $mahnwesenStufen = $this->getMahnwesenStufen();
                 foreach ($auswahl as $rechnung_id) {
+                    $rechnungForStage = $this->app->DB->SelectRow("
+                        SELECT
+                            id,
+                            mahnwesen,
+                            versendet_mahnwesen,
+                            mahnwesen_datum,
+                            DATEDIFF(CURRENT_DATE, DATE_ADD(datum, INTERVAL zahlungszieltage DAY)) AS overdue_days
+                        FROM rechnung
+                        WHERE id = ".$rechnung_id."
+                        LIMIT 1
+                    ");
+                    if (!empty($rechnungForStage)) {
+                        $targetMahnwesen = $this->determineSequentialMahnwesenId($rechnungForStage, $mahnwesenStufen);
+                        if ($targetMahnwesen !== null && $targetMahnwesen != $rechnungForStage['mahnwesen']) {
+                            $this->app->DB->Update("UPDATE rechnung SET mahnwesen = ".$targetMahnwesen.", versendet_mahnwesen = 0 WHERE id = ".$rechnung_id);
+                        }
+                    }
                     $mahnung = $this->MahnwesenMessage($rechnung_id);
 
                     // Check first
@@ -313,64 +331,31 @@ class Mahnwesen {
         }
      
         // Create tabs
-        $sql = "
+        $mahnwesenStufen = $this->getMahnwesenStufen();
+        if (!empty($mahnwesenStufen)) {
+            $offene_rechnungen = $this->app->DB->SelectArr("
                 SELECT
                     r.id,
                     r.mahnwesen,
                     r.versendet_mahnwesen,
-                    rid_mid.mahnwesen_neu,
-                    rid_mid.name
+                    r.mahnwesen_datum,
+                    DATEDIFF(CURRENT_DATE, DATE_ADD(r.datum, INTERVAL r.zahlungszieltage DAY)) AS overdue_days
                 FROM
                     rechnung r
-                INNER JOIN 
-                    (
-                    SELECT
-                        id_tage.id,
-                        m.id AS mahnwesen_neu,
-                        m.name,
-                        m.tage
-                    FROM
-                        mahnwesen m
-                    INNER JOIN(
-                        SELECT
-                            id,
-                            MAX(tage) AS tage
-                        FROM
-                            (
-                            SELECT
-                                r.id,
-                                m.tage                                    
-                            FROM
-                                rechnung r
-                            INNER JOIN mahnwesen m ON
-                                DATEDIFF(
-                                    CURRENT_DATE,
-                                    DATE_ADD(
-                                        r.datum,
-                                        INTERVAL r.zahlungszieltage DAY
-                                    )
-                                ) > m.tage
-                            WHERE
-                                r.zahlungsstatus = 'offen'
-                            ORDER BY
-                                `r`.`id` ASC
-                        ) temp
-                    GROUP BY
-                        id
-                    ) id_tage
-                ON
-                    m.tage = id_tage.tage
-                ) rid_mid
-                ON r.id = rid_mid.id                
-                ORDER BY rid_mid.tage
-                ";
-        $offene_rechnungen = $this->app->DB->SelectArr($sql);         
-                   
-        foreach ($offene_rechnungen as $offene_rechnung) {
-            if ($offene_rechnung['mahnwesen'] != $offene_rechnung['mahnwesen_neu']) {
-                $sql = "UPDATE rechnung set mahnwesen = ".$offene_rechnung['mahnwesen_neu'].", versendet_mahnwesen = 0 WHERE id = ".$offene_rechnung['id'];
-                $this->app->DB->Update($sql);               
-            }             
+                WHERE
+                    r.zahlungsstatus = 'offen'
+            ");
+
+            foreach ($offene_rechnungen as $offene_rechnung) {
+                $targetMahnwesen = $this->determineSequentialMahnwesenId($offene_rechnung, $mahnwesenStufen);
+                if ($targetMahnwesen === null) {
+                    continue;
+                }
+                if ($offene_rechnung['mahnwesen'] != $targetMahnwesen) {
+                    $sql = "UPDATE rechnung set mahnwesen = ".$targetMahnwesen.", versendet_mahnwesen = 0 WHERE id = ".$offene_rechnung['id'];
+                    $this->app->DB->Update($sql);
+                }
+            }
         }
 
         $menus = $this->app->DB->SelectArr("
@@ -773,5 +758,68 @@ class Mahnwesen {
         $this->app->erp->AddDateiStichwort($fileid,'anhang','dokument',$crm_id);
 
     }       
+
+    /**
+     * Return all dunning levels ordered by their configured day threshold.
+     */
+    private function getMahnwesenStufen(): array {
+        return $this->app->DB->SelectArr("SELECT id, tage FROM mahnwesen ORDER BY tage ASC");
+    }
+
+    /**
+     * Find the index of a mahnwesen id inside the ordered level list.
+     */
+    private function getMahnwesenIndexById(array $stufen, $id): ?int {
+        foreach ($stufen as $index => $stufe) {
+            if ((string)$stufe['id'] === (string)$id) {
+                return $index;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Determine the next reminder level that should be sent without skipping unsent levels.
+     */
+    private function determineSequentialMahnwesenId(array $rechnung, array $stufen): ?int {
+        if (empty($stufen) || !isset($rechnung['overdue_days'])) {
+            return null;
+        }
+
+        $overdueDays = (int)$rechnung['overdue_days'];
+        $highestEligibleIndex = null;
+        foreach ($stufen as $index => $stufe) {
+            if ($overdueDays > (int)$stufe['tage']) {
+                $highestEligibleIndex = $index;
+            }
+        }
+
+        if ($highestEligibleIndex === null) {
+            return null;
+        }
+
+        $currentIndex = $this->getMahnwesenIndexById($stufen, $rechnung['mahnwesen']);
+        $levelsCount = count($stufen);
+
+        // Determine how many reminders have definitely been sent so far.
+        $sentCount = 0;
+        if (!empty($rechnung['mahnwesen_datum']) && $rechnung['mahnwesen_datum'] !== '0000-00-00') {
+            $sentCount = 1;
+        }
+        if (!empty($rechnung['versendet_mahnwesen']) && $currentIndex !== null) {
+            $sentCount = max($sentCount, $currentIndex + 1);
+        }
+
+        // Next level is the one that follows the last definitely sent reminder.
+        $nextSequentialIndex = min($sentCount, $levelsCount - 1);
+        $targetIndex = min($highestEligibleIndex, $nextSequentialIndex);
+
+        // If nothing was sent yet but the invoice is overdue, always start with the first level.
+        if ($sentCount === 0) {
+            $targetIndex = 0;
+        }
+
+        return $stufen[$targetIndex]['id'] ?? null;
+    }
 
 }
