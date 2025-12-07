@@ -1419,7 +1419,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           {
             if(stripos($key, $_term) !== false || stripos($value, $_term) !== false)
             {
-              $newarr[] = $key.' '.$value;
+              if ($asObject)
+                $newarr[] = ['isoAlpha2' => $key, 'nameGerman' => $value];
+              else
+                $newarr[] = $key.' '.$value;
             }
           }
         }
