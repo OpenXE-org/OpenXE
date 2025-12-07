@@ -86,7 +86,15 @@ class Ticket {
                         CONCAT('<a href=\"index.php?module=ticket&action=edit&id=',t.id,'\">',t.schluessel,'</a>'),".
                         $app->erp->FormatDateTimeShort('zeit')." as aktion,
                         CONCAT(COALESCE(CONCAT(a.name,'<br>'),''),COALESCE((SELECT mail FROM ticket_nachricht tn WHERE tn.ticket = t.schluessel AND tn.versendet <> 1 LIMIT 1),'')) as combiadresse,
-                        CONCAT('<b>',".$priobetreff.",'</b><br/><i>',replace(substring(ifnull(t.notiz,''),1,500),'\n','<br/>'),'</i>'),
+                        CONCAT(
+                            '<b>',
+                            ".$priobetreff.",
+                            '</b>',
+                            ".$app->erp->MarkerUseredit('t.schluessel', 't.useredittimestamp').",
+                            '<br/><i>',
+                            REPLACE(SUBSTRING(IFNULL(t.notiz,''),1,500),'\n','<br/>'),
+                            '</i>'
+                        ),
                         CONCAT('<div class=\"ticketoffene\"><ul class=\"tag-editor\">'\n,'".$tagstart."',replace(t.tags,',','".$tagend."<div class=\"tag-editor-spacer\">&nbsp;</div>".$tagstart."'),'".$tagend."','</ul></div>'),
                         w.warteschlange,
                         ".$anzahlnachrichten." as `nachrichten_anz`,
@@ -123,6 +131,40 @@ class Ticket {
                                          }
                                          ');
                 }
+
+                // --- Automatischer "Meine Tickets" Filter für Gruppe ext. Vertrieb ---
+                // Adresse des angemeldeten Benutzers ermitteln
+                $adresseUserId = (int)$this->app->DB->Select(
+                    "SELECT adresse FROM user WHERE id = '{$this->app->User->GetID()}' LIMIT 1"
+                );
+
+                // Prüfen, ob Benutzer über adresse_rolle der Gruppe ext. Vertrieb (ID = 1) zugeordnet ist
+                $istExtVertrieb = (bool)$this->app->DB->Select("
+                    SELECT 1
+                    FROM adresse_rolle ar
+                    INNER JOIN user u ON u.adresse = ar.adresse
+                    WHERE u.id = '{$this->app->User->GetID()}'
+                        AND ar.objekt = 'Gruppe'
+                        AND ar.parameter = 1
+                        AND (ar.bis = '0000-00-00' OR ar.bis >= CURDATE())
+                        AND (ar.von = '0000-00-00' OR ar.von <= CURDATE())
+                    LIMIT 1
+                ");
+
+                // Wenn Benutzer in Gruppe 'ext. Vertrieb'
+                if ($istExtVertrieb) {
+                    // „Meine Tickets" automatisch aktivieren (muss VOR Secure->GetGET stehen!)
+                    $_GET['more_data1'] = 1;
+                    $_REQUEST['more_data1'] = 1;
+
+                    // Slider ausblenden
+                    $this->app->Tpl->Set('HIDE_MEINE_SLIDER', 1);
+                    // JS-Absicherung, falls Tabelle nachlädt
+                    $this->app->Tpl->Add('JQUERYREADY', "$('#meinetickets').closest('li').hide();");
+                } else {
+                    $this->app->Tpl->Set('HIDE_MEINE_SLIDER', 0);
+                }
+                // ENDE Automatischer "Meine Tickets" Filter für Gruppe ext. Vertrieb
 
 
                 $more_data1 = $this->app->Secure->GetGET("more_data1");
@@ -165,64 +207,212 @@ class Ticket {
                 break;
                 case 'adddoc':
 
-                    $heading = array('Typ','Belegnr.','Datum','Name', 'Men&uuml;','');
-                    $width = array(  '10%',  '10%',   '10%',  '80%',   '1%');
+                    // Tabellenkopf und Spaltenbreiten
+                    $heading = array('Typ','Belegnr.','Datum','Name','Menü','');
+                    $width   = array('10%','20%','15%','45%','8%','2%');
+                    $findcols  = array('typ','belegnr','datum','name','menue');
+                    $searchsql = array('belegnr','name');
 
-                    $findcols = array('typ','belegnr','datum','name');
-                    $searchsql = array('belegnr');
-
-//                    $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=ticket&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/forward.svg\" border=\"0\"></a>" . "</td></tr></table>";
-
-                    $fileid = $this->app->User->GetParameter('ticket_adddoc_fileid');
+                    // Benutzerparameter abrufen
+                    $fileid   = $this->app->User->GetParameter('ticket_adddoc_fileid');
                     $ticketid = $this->app->User->GetParameter('ticket_adddoc_ticketid');
 
-                    $beleglink = array (
+                    if (empty($fileid) || (int)$fileid <= 0) {
+                        $fileid = $this->app->Secure->GetGET('fileid');
+                        if (empty($fileid)) $fileid = 0;
+                    }
+
+                    if (empty($ticketid) || (int)$ticketid <= 0) {
+                        $ticketid = $this->app->Secure->GetGET('id');
+                    }
+
+                    $this->app->User->SetParameter('ticket_adddoc_ticketid', (int)$ticketid);
+                    $this->app->User->SetParameter('ticket_adddoc_fileid', (int)$fileid);
+
+                    // ============================================================
+                    // 1️⃣ VERKNÜPFUNG HERSTELLEN
+                    // ============================================================
+                    if (isset($_GET['docid']) && isset($_GET['doctype']) && empty($_GET['unlink'])) {
+                        $docid   = (int)$_GET['docid'];
+                        $doctype = strtolower($_GET['doctype']);
+
+                        if ($ticketid > 0 && $docid > 0) {
+                            // Ticket-Schlüssel + Nachricht-ID ermitteln
+                            $schluessel = $this->app->DB->Select("SELECT schluessel FROM ticket WHERE id=".(int)$ticketid);
+                            $ticketnachricht = $this->app->DB->Select("SELECT id FROM ticket_nachricht WHERE ticket='".$schluessel."' ORDER BY id ASC LIMIT 1");
+
+                            // Datei künstlich erzeugen, wenn keine vorhanden ist
+                            if ((int)$fileid <= 0) {
+                                $titel = "Verknüpfung Ticket ".$schluessel." → ".$doctype." ".$docid;
+                                $this->app->DB->Insert("
+                                    INSERT INTO datei (titel, beschreibung, nummer, geloescht, logdatei, firma, geschuetzt)
+                                    VALUES ('".$this->app->DB->real_escape_string($titel)."','Automatische Ticket-Beleg-Verknüpfung','',0,NOW(),1,0)
+                                ");
+                                $fileid = $this->app->DB->GetInsertID();
+                            }
+
+                            // Ticket-Anhang-Verknüpfung
+                            $this->app->DB->Insert("
+                                INSERT INTO datei_stichwoerter (datei, subjekt, objekt, parameter, logdatei)
+                                VALUES (".$fileid.", 'Anhang', 'Ticket', ".(int)$ticketnachricht.", NOW())
+                            ");
+
+                            // Beleg-Verknüpfung
+                            $this->app->DB->Insert("
+                                INSERT INTO datei_stichwoerter (datei, subjekt, objekt, parameter, parameter2, logdatei)
+                                VALUES (".$fileid.", 'Anhang', '".$doctype."', ".(int)$docid.", ".(int)$docid.", NOW())
+                            ");
+                        }
+
+                        header("Location: index.php?module=ticket&action=edit&id=".(int)$ticketid);
+                        exit;
+                    }
+
+                    // ============================================================
+                    // 2️⃣ VERKNÜPFUNG LÖSCHEN
+                    // ============================================================
+                    if (isset($_GET['unlink']) && $_GET['unlink'] == 1 && isset($_GET['docid']) && isset($_GET['doctype'])) {
+                        $docid   = (int)$_GET['docid'];
+                        $doctype = strtolower($_GET['doctype']);
+                        $fid     = (int)$_GET['fileid'];
+
+                        // Datei-ID ermitteln, falls leer
+                        if ($fid <= 0) {
+                            $fid = (int)$this->app->DB->Select("
+                                SELECT b.datei 
+                                  FROM datei_stichwoerter t
+                                  JOIN datei_stichwoerter b ON b.datei = t.datei AND b.id <> t.id
+                                 WHERE t.subjekt='Anhang' 
+                                   AND LOWER(t.objekt)='ticket'
+                                   AND t.parameter IN (
+                                       SELECT id FROM ticket_nachricht WHERE ticket = (
+                                           SELECT schluessel FROM ticket WHERE id=".(int)$ticketid."
+                                       )
+                                   )
+                                   AND b.objekt='".$doctype."' 
+                                   AND b.parameter=".(int)$docid."
+                                 LIMIT 1
+                            ");
+                        }
+
+                        if ($fid > 0) {
+                            // Beide Richtungen löschen
+                            $this->app->DB->Delete("
+                                DELETE FROM datei_stichwoerter
+                                 WHERE datei=".(int)$fid."
+                                   AND (
+                                       (subjekt='Anhang' AND objekt='".$doctype."' AND parameter=".(int)$docid.")
+                                       OR
+                                       (subjekt='Anhang' AND objekt='Ticket' AND parameter IN (
+                                           SELECT id FROM ticket_nachricht WHERE ticket = (
+                                               SELECT schluessel FROM ticket WHERE id=".(int)$ticketid."
+                                           )
+                                       ))
+                                   )
+                            ");
+                        }
+
+                        header("Location: index.php?module=ticket&action=adddoc&id=".(int)$ticketid);
+                        exit;
+                    }
+
+                    // ============================================================
+                    // 3️⃣ DATEN AUSGEBEN
+                    // ============================================================
+
+                    $adresse = (int)$this->app->DB->Select("SELECT adresse FROM ticket WHERE id=".(int)$ticketid);
+
+                    $beleglink = array(
                         '<a href="index.php?module=',
-                        ['sql' => 'LOWER(typ)'],
+                        ['sql'=>'LOWER(typ)'],
                         '&action=edit&id=',
-                        ['sql' => 'belegid'],
+                        ['sql'=>'belegid'],
                         '">',
-                        ['sql' => 'belegnr'],
+                        ['sql'=>"CONCAT(UPPER(typ),' #',belegid)"],
                         '</a>'
                     );
 
-                    $addlink = array (
+                    $addlink = array(
                         '<a href="index.php?module=ticket&action=adddoc&docid=',
-                        ['sql' => 'belegid'],
+                        ['sql'=>'belegid'],
                         '&doctype=',
-                        ['sql' => 'LOWER(typ)'],
+                        ['sql'=>'LOWER(typ)'],
                         '&fileid='.$fileid,
                         '&id='.$ticketid,
-                        '">',
-                        '<img src=\"./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg\" border=\"0\">',
+                        '"><img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/forward.svg" border="0" title="Beleg zuordnen"></a>'
+                    );
+
+                    $dellink = array(
+                        '<a href="index.php?module=ticket&action=adddoc&unlink=1&docid=',
+                        ['sql'=>'belegid'],
+                        '&doctype=',
+                        ['sql'=>'LOWER(typ)'],
+                        '&fileid=',
+                        ['sql'=>'IFNULL(fileid,0)'],
+                        '&id='.$ticketid,
+                        '" onclick="return confirm(&quot;Verknüpfung wirklich löschen?&quot;);">',
+                        '<img src="./themes/'.$app->Conf->WFconf['defaulttheme'].'/images/delete.svg" border="0" title="Verknüpfung löschen">',
                         '</a>'
                     );
+
+                    // 1️⃣ Belege über Adresse
+                    if ($adresse > 0) {
+                        $parts[] = "
+                            SELECT id AS belegid, 'Angebot' AS typ, belegnr, datum, name, NULL AS fileid, 'addr' AS quelle FROM angebot WHERE adresse=".$adresse."
+                            UNION ALL
+                            SELECT id AS belegid, 'Auftrag' AS typ, belegnr, datum, name, NULL AS fileid, 'addr' AS quelle FROM auftrag WHERE adresse=".$adresse."
+                            UNION ALL
+                            SELECT id AS belegid, 'Rechnung' AS typ, belegnr, datum, name, NULL AS fileid, 'addr' AS quelle FROM rechnung WHERE adresse=".$adresse."
+                        ";
+                    }
+
+                    // 2️⃣ Verknüpfte Belege über Ticket-Dateien
+                    $parts[] = "
+                        SELECT b.parameter AS belegid, b.objekt AS typ, b.datei AS fileid, NULL AS belegnr, NULL AS datum, '' AS name, 'link' AS quelle
+                          FROM datei_stichwoerter t
+                          JOIN datei_stichwoerter b ON b.datei = t.datei AND b.id <> t.id
+                         WHERE t.subjekt='Anhang' AND LOWER(t.objekt)='ticket'
+                           AND t.parameter IN (
+                               SELECT id FROM ticket_nachricht WHERE ticket = (
+                                   SELECT schluessel FROM ticket WHERE id = ".$ticketid."
+                               )
+                           )
+                    ";
+
+                    $union = implode("\nUNION ALL\n", $parts);
 
                     $sql = "
                         SELECT SQL_CALC_FOUND_ROWS
-                        belegid,
-                        typ,
-                        ".$this->app->erp->ConcatSQL($beleglink).",
-                        ".$app->erp->FormatDate('datum').",
-                        name,
-                        ".$this->app->erp->ConcatSQL($addlink)."
-                        FROM
-                        (
-                            SELECT 'Angebot' typ, id belegid, CONCAT(belegnr,' (',anfrage,')') belegnr, datum, name FROM angebot
-                            UNION
-                            SELECT 'Auftrag' typ, id belegid, CONCAT(belegnr,' (',ihrebestellnummer,')'), datum, name FROM auftrag
-                            UNION
-                            SELECT 'Verbindlichkeit', v.id, CONCAT(v.belegnr,' (',v.rechnung,')'), v.datum, a.name FROM verbindlichkeit v INNER JOIN adresse a ON v.adresse = a.id WHERE (v.belegnr <> '' OR v.rechnung <> '')
-                            UNION
-                            SELECT 'Lieferantengutschrift', lg.id, CONCAT(lg.belegnr,' (',lg.rechnung,')'), lg.datum, a.name FROM lieferantengutschrift lg JOIN adresse a ON lg.adresse = a.id WHERE (lg.belegnr <> '' OR lg.rechnung <> '')
-                        ) belege
+                               x.belegid,
+                               x.typ,
+                               ".$this->app->erp->ConcatSQL($beleglink)." AS belegnr,
+                               ".$app->erp->FormatDate('datum')." AS datum,
+                               x.name,
+                               CASE WHEN x.quelle='addr' THEN ".$this->app->erp->ConcatSQL($addlink)."
+                                    ELSE ".$this->app->erp->ConcatSQL($dellink)."
+                               END AS menue
+                          FROM (".$union.") x
                     ";
 
-                    $where = "(belegnr <> '')";
+                    $where = "1";
+                    $count = "SELECT FOUND_ROWS()";
 
-//                    echo($sql);
+                    $probe = (int)$this->app->DB->Select("SELECT COUNT(*) FROM (".$union.") tmp");
+                    if ($probe === 0) {
+                        $sql = "
+                            SELECT 'Info' AS typ,
+                                   'Keine Belegverknüpfungen vorhanden' AS belegnr,
+                                   '' AS datum,
+                                   '' AS name,
+                                   '' AS menue
+                        ";
+                        $where = "1";
+                        $count = "SELECT 1";
+                    }
 
-                break;
+                    break;
+
+
         }
 
         $erg = false;
@@ -734,6 +924,18 @@ class Ticket {
         $this->ticket_set_self_assigned_status(array($id));
         $this->ticket_log_changes($id, old_values: $old);
 
+        // --- Sync: Anhang-Einträge mit Ticket-ID auf ticket_nachricht.id umsetzen ---
+        $this->app->DB->Update("
+        UPDATE datei_stichwoerter ds
+        JOIN ticket_nachricht tn ON tn.ticket = (
+            SELECT schluessel FROM ticket WHERE id = ".(int)$id."
+        )
+        SET ds.parameter = tn.id
+        WHERE ds.subjekt='Anhang' 
+        AND ds.objekt='Ticket' 
+        AND ds.parameter = ".(int)$id."
+        ");
+
         return($id);
     }
 
@@ -813,6 +1015,10 @@ class Ticket {
 
         if (empty($id)) {
             return;
+        }
+
+        if($this->app->erp->DisableModul('ticket', $id)) {
+         return;
         }
 
         $this->ticket_menu($id);
@@ -947,8 +1153,31 @@ class Ticket {
             // break omitted
           case 'neue_email':
 
+            // --- Standard (Fallback) ---
             $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
             $senderAddress = $this->app->erp->GetFirmaMail();
+
+            // --- Queue aus aktuellem Ticket holen ---
+            $queueLabel = $this->app->DB->Select("SELECT warteschlange FROM ticket WHERE id=".(int)$id." LIMIT 1");
+
+            // --- Passendes E-Mailkonto aus emailbackup prüfen ---
+            //   Bedingungen: ticket = 1  UND  ticketqueue entspricht aktueller Queue
+            $emailbackup = $this->app->DB->SelectRow("
+                SELECT email, angezeigtername
+                FROM emailbackup
+                WHERE ticket = 1
+                    AND LOWER(TRIM('".$this->app->DB->real_escape_string($queueLabel)."'))
+                    LIKE CONCAT('%', LOWER(TRIM(ticketqueue)), '%')
+                LIMIT 1
+            ");
+
+            // --- Wenn gefunden, E-Mailadresse übernehmen ---
+            if (!empty($emailbackup['email'])) {
+                $senderAddress = $emailbackup['email'];
+                $senderName = !empty($emailbackup['angezeigtername'])
+                    ? $emailbackup['angezeigtername']
+                    : $this->app->User->GetName()." (".$emailbackup['email'].")";
+            }
 
             if (empty($drafted_messages)) {
                 // Create new message and save it for editing
@@ -1071,26 +1300,46 @@ class Ticket {
               $cc = null;
             }
 
-            $senderName = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
-            $senderAddress = $this->app->erp->GetFirmaMail();
+            // --- Standard-Absender als Fallback ---
+            $senderName   = $this->app->User->GetName()." (".$this->app->erp->GetFirmaAbsender().")";
+            $senderAddress= $this->app->erp->GetFirmaMail();
 
-            //   function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
+            // --- Warteschlange (Queue) aus Ticket ermitteln ---
+            $queueLabel = $this->app->DB->Select("SELECT warteschlange FROM ticket WHERE id=".(int)$id." LIMIT 1");
 
+            // --- Passendes E-Mailkonto aus emailbackup suchen (flexibles Matching) ---
+            $emailbackup = $this->app->DB->SelectRow("
+                SELECT email, angezeigtername
+                FROM emailbackup
+                WHERE ticket = 1
+                    AND LOWER(TRIM('".$this->app->DB->real_escape_string($queueLabel)."'))
+                    LIKE CONCAT('%', LOWER(TRIM(ticketqueue)), '%')
+                LIMIT 1
+            ");
+
+            if (!empty($emailbackup['email'])) {
+                $senderAddress = $emailbackup['email'];
+                $senderName    = !empty($emailbackup['angezeigtername'])
+                    ? $emailbackup['angezeigtername']
+                    : $this->app->User->GetName()." (".$emailbackup['email'].")";
+            }
+
+            // WICHTIG: hier wieder ein richtiges if ( ... ) { }
             if (
                 $this->app->erp->MailSend(
-                  $senderAddress,
-                  $senderName,
-                  $to,
-                  $to,
-                  htmlentities($drafted_messages[0]['betreff']),
-                  htmlentities($drafted_messages[0]['text']),
-                  $files,
-                  0,
-                  true,
-                  $cc,
-                  '',
-                  true
-              ) != 0
+                    $senderAddress,
+                    $senderName,
+                    $to,
+                    $to,
+                    htmlentities($drafted_messages[0]['betreff']),
+                    htmlentities($drafted_messages[0]['text']),
+                    $files,
+                    0,
+                    true,
+                    $cc,
+                    '',
+                    false // <— nicht system=true, sonst immer Firma/Info
+                ) != 0
             ) {
 
                 // Update message in ticket_nachricht
@@ -1124,12 +1373,77 @@ class Ticket {
 
         $belege = $this->app->erp->GetTicketBelege($id);
 
+
+        // ======================================================
+        // BELEGVERKNÜPFUNGEN (neue beidseitige Logik)
+        // ======================================================
+
+        // Alte Logik deaktiviert, da jetzt nur echte AddDoc-Verknüpfungen ausgewertet werden
+        /*
         if (!empty($belege)) {
             function beleglink($beleg) {
-               return "<a href=index.php?module=".$beleg['doctype']."&action=edit&id=".$beleg['id'].">".(empty($beleg['belegnr'])?'ENTWURF':$beleg['belegnr']).(empty($beleg['externenr'])?"":" (".$beleg['externenr'].")")."</a>";
+               return "<a href=index.php?module=".$beleg['doctype']."&action=edit&id=".$beleg['id'].">"
+                      .(empty($beleg['belegnr'])?'ENTWURF':$beleg['belegnr'])
+                      .(empty($beleg['externenr'])?"":" (".$beleg['externenr'].")")
+                      ."</a>";
             }
-            $this->app->Tpl->AddMessage('info',"Zu diesem Ticket geh&ouml;ren Belege: ".implode(', ',array_map('beleglink', $belege)), html: true);
+            $this->app->Tpl->AddMessage(
+                'info',
+                "Zu diesem Ticket geh&ouml;ren Belege: "
+                .implode(', ',array_map('beleglink', $belege)),
+                html: true
+            );
         }
+        */
+
+        // Neue Logik: zeige Belege, die über AddDoc oder Anhänge verknüpft sind
+        $verknuepfte_belege = $this->app->DB->SelectArr("
+            SELECT DISTINCT b.objekt AS doctype,
+                   b.parameter AS belegid,
+                   IFNULL(r.belegnr, '') AS belegnr,
+                   IFNULL(r.externenr, '') AS externenr
+              FROM datei_stichwoerter t
+              JOIN datei_stichwoerter b ON b.datei = t.datei AND b.id <> t.id
+              LEFT JOIN (
+                  SELECT id, belegnr, '' AS externenr, 'angebot' AS typ FROM angebot
+                  UNION ALL
+                  SELECT id, belegnr, '' AS externenr, 'auftrag' FROM auftrag
+                  UNION ALL
+                  SELECT id, belegnr, '' AS externenr, 'rechnung' FROM rechnung
+                  UNION ALL
+                  SELECT id, belegnr, '' AS externenr, 'gutschrift' FROM gutschrift
+                  UNION ALL
+                  SELECT id, belegnr, '' AS externenr, 'verbindlichkeit' FROM verbindlichkeit
+                  UNION ALL
+                  SELECT id, belegnr, '' AS externenr, 'lieferantengutschrift' FROM lieferantengutschrift
+              ) r ON r.id = b.parameter AND r.typ = b.objekt
+             WHERE t.subjekt = 'Anhang'
+               AND LOWER(t.objekt) = 'ticket'
+               AND t.parameter IN (
+                   SELECT id FROM ticket_nachricht WHERE ticket = (
+                       SELECT schluessel FROM ticket WHERE id = ".(int)$id."
+                   )
+               )
+        ");
+
+        // Anzeige erzeugen, falls Belege existieren
+        if (!empty($verknuepfte_belege)) {
+            $links = array();
+            foreach ($verknuepfte_belege as $vb) {
+                $belegnr = empty($vb['belegnr']) ? 'ENTWURF' : $vb['belegnr'];
+                $links[] = '<a href="index.php?module='.$vb['doctype'].'&action=edit&id='.$vb['belegid'].'">'.$belegnr.'</a>';
+            }
+            $this->app->Tpl->AddMessage(
+                'info',
+                "Zu diesem Ticket geh&ouml;ren Belege: ".implode(', ', $links),
+                html: true
+            );
+        }
+
+        // ======================================================
+        // ENDE: BELEGVERKNÜPFUNGEN
+        // ======================================================
+
         $this->app->Tpl->Parse('PAGE', "ticket_edit.tpl");
     }
 
@@ -1352,6 +1666,3 @@ class Ticket {
 
   }
 }
-
-
-
