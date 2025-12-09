@@ -1635,7 +1635,7 @@ class Auftrag extends GenAuftrag
       $teillieferungen
       $auswahlentsprechendkommissionierung
       $zertifikatoption
-      <option value=\"paidlock\">als bezahlt markieren</option>
+      <option value=\"paidlock\">bezahlt markieren (mit Schreibschutz-Reset)</option>
       $artikeleinlagern
       $artikelauslagern
       $shopexport
