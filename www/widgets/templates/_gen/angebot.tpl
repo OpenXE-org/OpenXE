@@ -108,41 +108,6 @@
     </div>
 
     <div class="col-xs-12 col-sm-6 col-sm-height">
-      <div class="inside_turkey inside-full-height">
-
-        <div id="abweichendelieferadressestyle">
-        <fieldset class="turkey"><legend>{|Abweichende Lieferadresse|}</legend>
-          <table class="tableabweichend">
-            <tr><td width="200">{|Abweichende Lieferadresse|}:</td><td>[ABWEICHENDELIEFERADRESSE][MSGABWEICHENDELIEFERADRESSE]</td></tr>
-            <tr><td>{|Name|}:</td><td>[LIEFERNAME][MSGLIEFERNAME]</td></tr>
-            <tr><td>{|Titel|}:</td><td>[LIEFERTITEL][MSGLIEFERTITEL]</td></tr>
-            <tr><td>{|Ansprechpartner|}:</td><td>[LIEFERANSPRECHPARTNER][MSGLIEFERANSPRECHPARTNER]</td></tr>
-            <tr><td>{|Abteilung|}:</td><td>[LIEFERABTEILUNG][MSGLIEFERABTEILUNG]</td></tr>
-            <tr><td>{|Unterabteilung|}:</td><td>[LIEFERUNTERABTEILUNG][MSGLIEFERUNTERABTEILUNG]</td></tr>
-            <tr><td>{|Adresszusatz|}:</td><td>[LIEFERADRESSZUSATZ][MSGLIEFERADRESSZUSATZ]</td></tr>
-            <tr><td>{|Stra&szlig;e|}:</td><td>[LIEFERSTRASSE][MSGLIEFERSTRASSE]</td><td>&nbsp;</td></tr>
-            <tr><td>{|PLZ/Ort|}:</td><td>[LIEFERPLZ][MSGLIEFERPLZ]&nbsp;[LIEFERORT][MSGLIEFERORT]</td>
-            </tr>
-            [VORBUNDESSTAAT]<tr valign="top"><td><label for="lieferbundesstaat">{|Bundesstaat|}:</label></td><td colspan="2">[EPROO_SELECT_LIEFERBUNDESSTAAT]</td></tr>[NACHBUNDESSTAAT]
-            <tr><td>{|Land|}:</td><td>[EPROO_SELECT_LIEFERLAND]</td>
-            <tr><td>{|GLN|}:</td><td>[LIEFERGLN][MSGLIEFERGLN]</td><td>&nbsp;</td></tr>
-            <tr><td>{|E-Mail|}:</td><td>[LIEFEREMAIL][MSGLIEFEREMAIL]</td></tr>
-            <tr><td></td><td>[LIEFERADRESSEPOPUP]&nbsp;[ANSPRECHPARTNERLIEFERADRESSEPOPUP]&nbsp;[ADRESSELIEFERADRESSEPOPUP]</td></tr>
-        </table>
-        </fieldset>
-        </div>
-
-
-      </div>
-    </div>
-  </div>
-</div> <!-- spalte 2 zu -->
-
-
-
-<div class="row">
-  <div class="row-height">
-    <div class="col-xs-12 col-md-9 col-md-height">
       <div class="inside inside-full-height">
 
         <fieldset><legend>{|Stammdaten|}</legend>
@@ -170,6 +135,41 @@
 
 
         </fieldset>
+
+
+      </div>
+    </div>
+  </div>
+</div> <!-- spalte 2 zu -->
+
+
+
+<div class="row">
+  <div class="row-height">
+    <div class="col-xs-12 col-md-9 col-md-height">
+      <div class="inside_turkey inside-full-height">
+
+        <div id="abweichendelieferadressestyle">
+        <fieldset class="turkey"><legend>{|Abweichende Lieferadresse|}</legend>
+          <table class="tableabweichend">
+            <tr><td width="200">{|Abweichende Lieferadresse|}:</td><td>[ABWEICHENDELIEFERADRESSE][MSGABWEICHENDELIEFERADRESSE]</td></tr>
+            <tr><td>{|Name|}:</td><td>[LIEFERNAME][MSGLIEFERNAME]</td></tr>
+            <tr><td>{|Titel|}:</td><td>[LIEFERTITEL][MSGLIEFERTITEL]</td></tr>
+            <tr><td>{|Ansprechpartner|}:</td><td>[LIEFERANSPRECHPARTNER][MSGLIEFERANSPRECHPARTNER]</td></tr>
+            <tr><td>{|Abteilung|}:</td><td>[LIEFERABTEILUNG][MSGLIEFERABTEILUNG]</td></tr>
+            <tr><td>{|Unterabteilung|}:</td><td>[LIEFERUNTERABTEILUNG][MSGLIEFERUNTERABTEILUNG]</td></tr>
+            <tr><td>{|Adresszusatz|}:</td><td>[LIEFERADRESSZUSATZ][MSGLIEFERADRESSZUSATZ]</td></tr>
+            <tr><td>{|Stra&szlig;e|}:</td><td>[LIEFERSTRASSE][MSGLIEFERSTRASSE]</td><td>&nbsp;</td></tr>
+            <tr><td>{|PLZ/Ort|}:</td><td>[LIEFERPLZ][MSGLIEFERPLZ]&nbsp;[LIEFERORT][MSGLIEFERORT]</td>
+            </tr>
+            [VORBUNDESSTAAT]<tr valign="top"><td><label for="lieferbundesstaat">{|Bundesstaat|}:</label></td><td colspan="2">[EPROO_SELECT_LIEFERBUNDESSTAAT]</td></tr>[NACHBUNDESSTAAT]
+            <tr><td>{|Land|}:</td><td>[EPROO_SELECT_LIEFERLAND]</td>
+            <tr><td>{|GLN|}:</td><td>[LIEFERGLN][MSGLIEFERGLN]</td><td>&nbsp;</td></tr>
+            <tr><td>{|E-Mail|}:</td><td>[LIEFEREMAIL][MSGLIEFEREMAIL]</td></tr>
+            <tr><td></td><td>[LIEFERADRESSEPOPUP]&nbsp;[ANSPRECHPARTNERLIEFERADRESSEPOPUP]&nbsp;[ADRESSELIEFERADRESSEPOPUP]</td></tr>
+        </table>
+        </fieldset>
+        </div>
 
 
       </div>
