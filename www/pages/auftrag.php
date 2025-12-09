@@ -1884,17 +1884,25 @@ class Auftrag extends GenAuftrag
   /**
    * Entfernt kurzzeitig den Schreibschutz, markiert den Auftrag als bezahlt und setzt den Schreibschutz erneut.
    */
-  public function AuftragPaidAndLock()
+  public function AuftragPaidAndLock($id = null, bool $redirect = true)
   {
-    $id = (int)$this->app->Secure->GetGET('id');
+    if($id === null){
+      $id = (int)$this->app->Secure->GetGET('id');
+    }
 
     if($id <= 0){
-      $this->app->Location->execute('index.php?module=auftrag&action=list');
+      if($redirect){
+        $this->app->Location->execute('index.php?module=auftrag&action=list');
+      }
+      return;
     }
 
     if(!$this->app->erp->RechteVorhanden('auftrag','edit')) {
       $this->app->erp->RunHook('permission_denied', 4, 'auftrag', 'edit');
-      $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
+      if($redirect){
+        $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
+      }
+      return;
     }
 
     $this->app->DB->Update(
@@ -1912,7 +1920,9 @@ class Auftrag extends GenAuftrag
     );
     $this->app->erp->AuftragProtokoll($id,'Schreibschutz nach Bezahlmarkierung gesetzt');
 
-    $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
+    if($redirect){
+      $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
+    }
   }
 
   /**
@@ -6867,6 +6877,11 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           case 'versandfreigeben':
             if(!empty($selectedIds)) {
               $this->app->DB->Update('UPDATE auftrag SET autoversand = 1 WHERE id IN ('. implode(', ', $selectedIds) . ')');
+            }
+          break;
+          case 'paidlock':
+            foreach($selectedIds as $v){
+              $this->AuftragPaidAndLock($v,false);
             }
           break;
           case 'versandentfernen':
