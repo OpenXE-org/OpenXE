@@ -6880,9 +6880,14 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             }
           break;
           case 'paidlock':
+            if(empty($selectedIds)){
+              break;
+            }
             foreach($selectedIds as $v){
               $this->AuftragPaidAndLock($v,false);
             }
+            $msg = $this->app->erp->base64_url_encode('<div class="success">Ausgewählte Aufträge wurden als bezahlt markiert und wieder gesperrt.</div>');
+            $this->app->Location->execute('index.php?module=auftrag&action=list&msg='.$msg);
           break;
           case 'versandentfernen':
             if(!empty($selectedIds)) {
