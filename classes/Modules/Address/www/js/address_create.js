@@ -10,6 +10,7 @@ var AddressDuplicates = (function ($) {
         },
 
         init: function () {
+            me.registerZipcodeSanitizer();
             me.registerEvents();
         },
 
@@ -30,6 +31,40 @@ var AddressDuplicates = (function ($) {
                     }
 
                 });
+            });
+        },
+
+        registerZipcodeSanitizer: function () {
+            var $zipcodeFields = $('#plz, #rechnung_plz');
+
+            if(!$zipcodeFields.length){
+                return;
+            }
+
+            me.sanitizeZipcodeField($zipcodeFields);
+
+            $zipcodeFields.on('blur change', function () {
+                me.sanitizeZipcodeField($(this));
+            });
+        },
+
+        sanitizeZipcodeField: function ($field) {
+            if(!$field || !$field.length){
+                return;
+            }
+
+            $field.each(function () {
+                var $currentField = $(this);
+                var currentValue = $currentField.val();
+                if(typeof currentValue !== 'string'){
+                    return;
+                }
+
+                // Entfernt Leerzeichen am Anfang oder Ende, die keine eigentlichen Zeichen flankieren
+                var sanitizedValue = currentValue.replace(/^\s+|\s+$/g, '');
+                if(sanitizedValue !== currentValue){
+                    $currentField.val(sanitizedValue);
+                }
             });
         },
 
