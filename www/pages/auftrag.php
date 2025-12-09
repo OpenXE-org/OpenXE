@@ -951,6 +951,7 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("proforma","AuftragProforma");
     $this->app->ActionHandler("versand","AuftragVersand");
     $this->app->ActionHandler("zahlungsmail","AuftragZahlungsmail");
+    $this->app->ActionHandler("paidlock","AuftragPaidAndLock");
     $this->app->ActionHandler("reservieren","AuftragReservieren");
     $this->app->ActionHandler("nachlieferung","AuftragNachlieferung");
     $this->app->ActionHandler("protokoll","AuftragProtokoll");
@@ -1580,6 +1581,7 @@ class Auftrag extends GenAuftrag
           case 'freigabe':  window.location.href='index.php?module=auftrag&action=freigabe&id=%value%'; break;
           case 'abschluss': if(!confirm('Wirklich manuell ohne erstellen von Lieferschein und/oder Rechnung als abgeschlossen markieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=abschluss&id=%value%&abschluss=%value%'; break;
           case 'alsfreigegeben': if(!confirm('Wirklich als freigegeben markieren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=alsfreigegeben&id=%value%&alsfreigegeben=%value%'; break;
+          case 'paidlock': if(!confirm('Schreibschutz kurz entfernen, Auftrag als bezahlt markieren und wieder sperren?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrag&action=paidlock&id=%value%'; break;
           $menueinlagern
           $menuauslagern
 
@@ -1616,6 +1618,7 @@ class Auftrag extends GenAuftrag
       $teillieferungen
       $auswahlentsprechendkommissionierung
       $zertifikatoption
+      <option value=\"paidlock\">bezahlt markieren (mit Schreibschutz-Reset)</option>
       $artikeleinlagern
       $artikelauslagern
       $shopexport
@@ -1876,6 +1879,40 @@ class Auftrag extends GenAuftrag
       )
     );
     return ['status' => 1];
+  }
+
+  /**
+   * Entfernt kurzzeitig den Schreibschutz, markiert den Auftrag als bezahlt und setzt den Schreibschutz erneut.
+   */
+  public function AuftragPaidAndLock()
+  {
+    $id = (int)$this->app->Secure->GetGET('id');
+
+    if($id <= 0){
+      $this->app->Location->execute('index.php?module=auftrag&action=list');
+    }
+
+    if(!$this->app->erp->RechteVorhanden('auftrag','edit')) {
+      $this->app->erp->RunHook('permission_denied', 4, 'auftrag', 'edit');
+      $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
+    }
+
+    $this->app->DB->Update(
+      sprintf("UPDATE auftrag SET schreibschutz = 0 WHERE id = %d LIMIT 1", $id)
+    );
+    $this->app->erp->AuftragProtokoll($id,'Schreibschutz fuer Bezahlmarkierung entfernt');
+
+    $this->app->DB->Update(
+      sprintf("UPDATE auftrag SET vorabbezahltmarkieren = 1, saldogeprueft = 1 WHERE id = %d LIMIT 1", $id)
+    );
+    $this->app->erp->AuftragProtokoll($id,'Auftrag manuell als bezahlt markiert');
+
+    $this->app->DB->Update(
+      sprintf("UPDATE auftrag SET schreibschutz = 1 WHERE id = %d LIMIT 1", $id)
+    );
+    $this->app->erp->AuftragProtokoll($id,'Schreibschutz nach Bezahlmarkierung gesetzt');
+
+    $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
   }
 
   /**
