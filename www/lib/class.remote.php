@@ -2487,6 +2487,7 @@ class Remote {
         $modulename = trim($this->app->DB->Select("SELECT modulename FROM shopexport WHERE id='$id' LIMIT 1"), '.');
         $isActionAuth = $action === 'auth';
         $exception = null;
+        $error = '';
         
         $this->logger->debug(
                 'RemoteCommand (Shop '.$id.") ".$action,
