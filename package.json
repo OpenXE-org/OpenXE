@@ -6,6 +6,7 @@
     "api-docs:build": "./node_modules/raml2html/bin/raml2html --validate --theme raml2html-werk-theme --input www/api/docs.raml --output www/api/docs-tmp.html && cat www/api/docs-tmp.html | sed -e 's/<\\/head>/<link rel=\\\"stylesheet\\\" href=\\\"\\.\\/assets\\/docs_custom\\.css\\\"><\\/head>/' > www/api/docs.html && rm www/api/docs-tmp.html",
     "dev": "vite -d --cors --host ::",
     "build": "vite build",
+    "test:zipcode": "node --test tests/address_zipcode_sanitizer.test.js",
     "preview": "vite preview"
   },
   "devDependencies": {
