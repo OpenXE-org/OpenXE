@@ -530,6 +530,16 @@ class Einstellungen  {
       }
     }
 
+    if($categoryFromParam === 'System' || $categoryFromParam === '{|System|}') {
+      $custom = [
+        'key' => 'einstellungen',
+        'Link' => 'index.php?module=einstellungen&action=uilayout',
+        'Bezeichnung' => 'UI &Auml;nderung',
+        'md5' => md5('ui_aenderung'.$categoryFromParam),
+      ];
+      $html .= $this->createIconHtmlForCategory($custom, $categoryFromParam, $iconTag);
+    }
+
     $this->app->Tpl->Set('HTML', $html);
 
     $this->app->Tpl->Parse('STANDARDMODULE', 'einstellungen_apptile.tpl');
