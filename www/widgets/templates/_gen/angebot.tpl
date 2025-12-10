@@ -83,7 +83,39 @@
     <div class="col-xs-12 col-sm-6 col-sm-height">
       <div class="inside inside-full-height">
 
-      <fieldset><legend>{|Allgemein|}</legend>
+      <fieldset><legend>{|Stammdaten|}</legend>
+      <table border="0" class="mkTableFormular">
+              <tr><td width="200">{|Typ|}:</td><td width="200">[TYP][MSGTYP]</td></tr>
+              <tr><td>{|Name|}:</td><td>[NAME][MSGNAME]</td></tr>
+              <tr><td>{|Titel|}:</td><td>[TITEL][MSGTITEL]</td></tr>
+              <tr><td>{|Ansprechpartner|}:</td><td>[ANSPRECHPARTNER][MSGANSPRECHPARTNER]</td></tr>
+              <tr><td>{|Abteilung|}:</td><td>[ABTEILUNG][MSGABTEILUNG]</td></tr>
+              <tr><td>{|Unterabteilung|}:</td><td>[UNTERABTEILUNG][MSGUNTERABTEILUNG]</td></tr>
+              <tr><td>{|Adresszusatz|}:</td><td>[ADRESSZUSATZ][MSGADRESSZUSATZ]</td></tr>
+              <tr><td>{|Stra&szlig;e|}:</td><td>[STRASSE][MSGSTRASSE]</td></tr>
+              <tr><td>{|PLZ/Ort|}:</td><td>[PLZ][MSGPLZ]&nbsp;[ORT][MSGORT]</td></tr>
+              [VORBUNDESSTAAT]<tr valign="top"><td><label for="bundesstaat">{|Bundesstaat|}:</label></td><td colspan="2">[EPROO_SELECT_BUNDESSTAAT]</td></tr>[NACHBUNDESSTAAT]
+              <tr><td>{|Land|}:</td><td>[EPROO_SELECT_LAND]</td></tr>
+    </table>
+
+      <table class="mkTableFormular">
+                <tr><td>{|Telefon|}:</td><td>[TELEFON][MSGTELEFON]</td></tr>
+                <tr><td>{|Telefax|}:</td><td>[TELEFAX][MSGTELEFAX]</td></tr>
+              <tr><td>{|E-Mail|}:</td><td>[EMAIL][MSGEMAIL]</td></tr>
+               <tr><td>{|Anschreiben|}:</td><td>[ANSCHREIBEN][MSGANSCHREIBEN]</td></tr>
+                <tr><td></td><td>[ANSPRECHPARTNERPOPUP]&nbsp;</td></tr>
+    </table>
+
+
+    </fieldset>
+
+      </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-6 col-sm-height">
+      <div class="inside inside-full-height">
+
+        <fieldset><legend>{|Allgemein|}</legend>
       <table class="mkTableFormular">
         <tr><td>{|Kunde|}:</td><td>[ADRESSE][MSGADRESSE]
       [BUTTON_UEBERNEHMEN]
@@ -103,38 +135,6 @@
       </table>
 
       </fieldset>
-
-      </div>
-    </div>
-
-    <div class="col-xs-12 col-sm-6 col-sm-height">
-      <div class="inside inside-full-height">
-
-        <fieldset><legend>{|Stammdaten|}</legend>
-          <table border="0" class="mkTableFormular">
-                  <tr><td width="200">{|Typ|}:</td><td width="200">[TYP][MSGTYP]</td></tr>
-                  <tr><td>{|Name|}:</td><td>[NAME][MSGNAME]</td></tr>
-                  <tr><td>{|Titel|}:</td><td>[TITEL][MSGTITEL]</td></tr>
-                  <tr><td>{|Ansprechpartner|}:</td><td>[ANSPRECHPARTNER][MSGANSPRECHPARTNER]</td></tr>
-                  <tr><td>{|Abteilung|}:</td><td>[ABTEILUNG][MSGABTEILUNG]</td></tr>
-                  <tr><td>{|Unterabteilung|}:</td><td>[UNTERABTEILUNG][MSGUNTERABTEILUNG]</td></tr>
-                  <tr><td>{|Adresszusatz|}:</td><td>[ADRESSZUSATZ][MSGADRESSZUSATZ]</td></tr>
-                  <tr><td>{|Stra&szlig;e|}:</td><td>[STRASSE][MSGSTRASSE]</td></tr>
-                  <tr><td>{|PLZ/Ort|}:</td><td>[PLZ][MSGPLZ]&nbsp;[ORT][MSGORT]</td></tr>
-                  [VORBUNDESSTAAT]<tr valign="top"><td><label for="bundesstaat">{|Bundesstaat|}:</label></td><td colspan="2">[EPROO_SELECT_BUNDESSTAAT]</td></tr>[NACHBUNDESSTAAT]
-                  <tr><td>{|Land|}:</td><td>[EPROO_SELECT_LAND]</td></tr>
-        </table>
-
-          <table class="mkTableFormular">
-                    <tr><td>{|Telefon|}:</td><td>[TELEFON][MSGTELEFON]</td></tr>
-                    <tr><td>{|Telefax|}:</td><td>[TELEFAX][MSGTELEFAX]</td></tr>
-                  <tr><td>{|E-Mail|}:</td><td>[EMAIL][MSGEMAIL]</td></tr>
-                   <tr><td>{|Anschreiben|}:</td><td>[ANSCHREIBEN][MSGANSCHREIBEN]</td></tr>
-                    <tr><td></td><td>[ANSPRECHPARTNERPOPUP]&nbsp;</td></tr>
-        </table>
-
-
-        </fieldset>
 
 
       </div>
