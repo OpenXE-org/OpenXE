@@ -47,6 +47,7 @@ class Einstellungen  {
     $this->app->ActionHandler("edit","EinstellungenEdit");
     $this->app->ActionHandler("list","EinstellungenList");
     $this->app->ActionHandler("betaprogram", "EinstellungenBetaProgram");
+    $this->app->ActionHandler("uilayout", "EinstellungenUiLayout");
     $this->app->ActionHandler("category","SettingsCategoryApps");
     $this->app->ActionHandlerListen($app);
 
@@ -136,6 +137,35 @@ class Einstellungen  {
     }
     $this->app->erp->Headlines('Beta Programm');
     $this->app->Tpl->Parse('PAGE', 'einstellungen_betaprogram.tpl');
+  }
+
+  /**
+   * UI Layout toggle
+   *
+   * @return void
+   */
+  public function EinstellungenUiLayout()
+  {
+    $this->app->erp->MenuEintrag('index.php?module=einstellungen&action=list', 'Zur&uuml;ck');
+    $this->app->erp->MenuEintrag('index.php?module=einstellungen&action=uilayout', 'UI &Auml;nderung');
+
+    $mode = (string)$this->app->erp->GetKonfiguration('ui_layout_mode');
+    if($mode === '') {
+      $mode = 'new';
+    }
+
+    if($this->app->Secure->GetPOST('speichern') !== '') {
+      $modePost = $this->app->Secure->GetPOST('ui_layout_mode');
+      $mode = $modePost === 'standard' ? 'standard' : 'new';
+      $this->app->erp->SetKonfigurationValue('ui_layout_mode', $mode);
+      $this->app->Tpl->Add('MESSAGE', '<div class="success">Die UI-Einstellung wurde gespeichert.</div>');
+    }
+
+    $this->app->Tpl->Set('UI_LAYOUT_SELECTED_NEW', $mode === 'new' ? 'selected="selected"' : '');
+    $this->app->Tpl->Set('UI_LAYOUT_SELECTED_STANDARD', $mode === 'standard' ? 'selected="selected"' : '');
+
+    $this->app->erp->Headlines('UI &Auml;nderung');
+    $this->app->Tpl->Parse('PAGE', 'einstellungen_uilayout.tpl');
   }
 
   /**
@@ -249,6 +279,11 @@ class Einstellungen  {
           'name' => 'Support',
           'icon' => 'Icons_dunkel_23.gif',
           'link' => 'index.php?module=support&action=list',
+        ],
+        'ui_aenderung' => [
+          'name' => 'UI &Auml;nderung',
+          'icon' => 'Icons_dunkel_22.gif',
+          'link' => 'index.php?module=einstellungen&action=uilayout',
         ],
         'api_account' => [
           'name' => 'API-Account',

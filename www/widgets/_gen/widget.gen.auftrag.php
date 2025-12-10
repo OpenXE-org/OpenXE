@@ -65,7 +65,12 @@ class WidgetGenauftrag
   {
     $this->form = $this->app->FormHandler->CreateNew("auftrag");
     $this->form->UseTable("auftrag");
-    $this->form->UseTemplate("auftrag.tpl",$this->parsetarget);
+    $template = 'auftrag.tpl';
+    $uiLayout = $this->app->erp->GetKonfiguration('ui_layout_mode');
+    if($uiLayout === 'standard') {
+      $template = 'auftrag_default.tpl';
+    }
+    $this->form->UseTemplate($template,$this->parsetarget);
 
     $field = new HTMLInput("lieferid","hidden","","","","","","","","","","0","","");
     $this->form->NewField($field);

@@ -65,7 +65,12 @@ class WidgetGenangebot
   {
     $this->form = $this->app->FormHandler->CreateNew("angebot");
     $this->form->UseTable("angebot");
-    $this->form->UseTemplate("angebot.tpl",$this->parsetarget);
+    $template = 'angebot.tpl';
+    $uiLayout = $this->app->erp->GetKonfiguration('ui_layout_mode');
+    if($uiLayout === 'standard') {
+      $template = 'angebot_default.tpl';
+    }
+    $this->form->UseTemplate($template,$this->parsetarget);
 
     $field = new HTMLInput("lieferid","hidden","","","","","","","","","","0","","");
     $this->form->NewField($field);
