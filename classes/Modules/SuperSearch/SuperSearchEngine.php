@@ -48,7 +48,55 @@ final class SuperSearchEngine
             throw new InvalidArgumentException('Parameter value $resultLimit is invalid.');
         }
 
-        $searchTerm = $this->searchTermParser->parse($searchTerm);
+        $rawSearchTerm = trim((string)$searchTerm);
+        $searchTerm = $this->searchTermParser->parse($rawSearchTerm);
+
+        $result = $this->runFulltextSearch($searchTerm, $projectIds, $moduleNames, $resultLimit);
+
+        $canRunFuzzy = $result->isEmpty() && $rawSearchTerm !== '' && strlen($rawSearchTerm) >= 3;
+        if ($canRunFuzzy) {
+            $result = $this->runFuzzySearch($rawSearchTerm, $projectIds, $moduleNames, $resultLimit);
+            $result->setFuzzy(true);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return ResultCollection
+     */
+    private function buildResultCollection($data)
+    {
+        $lastIndexUpdate = $this->getRecentIndexTime();
+        $results = new ResultCollection([], $lastIndexUpdate);
+
+        foreach ($data as $item) {
+            if (!$results->hasGroup($item['index_name'])) {
+                $results->addGroup(new ResultGroup($item['index_name'], $item['index_title']));
+            }
+            /** @var ResultGroup $group */
+            $group = $results->getGroup($item['index_name']);
+            $group->addItem(ResultItem::fromDbState($item));
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param string     $searchTerm
+     * @param array|null $projectIds
+     * @param array|null $moduleNames
+     * @param int        $resultLimit
+     *
+     * @return ResultCollection
+     */
+    private function runFulltextSearch($searchTerm, array $projectIds = null, array $moduleNames = null, $resultLimit = 30)
+    {
+        if ($searchTerm === '') {
+            return $this->buildResultCollection([]);
+        }
 
         // Ergebnisse mit Projekt-ID 0 immer anzeigen (z.b. Appstore-Ergebnisse)
         if (is_array($projectIds) && !in_array(0, $projectIds, true)) {
@@ -90,25 +138,74 @@ final class SuperSearchEngine
     }
 
     /**
-     * @param array $data
+     * @param string     $searchTerm
+     * @param array|null $projectIds
+     * @param array|null $moduleNames
+     * @param int        $resultLimit
      *
      * @return ResultCollection
      */
-    private function buildResultCollection($data)
+    private function runFuzzySearch($searchTerm, array $projectIds = null, array $moduleNames = null, $resultLimit = 30)
     {
-        $lastIndexUpdate = $this->getRecentIndexTime();
-        $results = new ResultCollection([], $lastIndexUpdate);
+        $words = preg_split('/\s+/u', $searchTerm, -1, PREG_SPLIT_NO_EMPTY);
+        if ($words === false) {
+            $words = [];
+        }
+        $words = array_values(array_unique(array_filter($words, static function ($word) {
+            return strlen($word) >= 3;
+        })));
 
-        foreach ($data as $item) {
-            if (!$results->hasGroup($item['index_name'])) {
-                $results->addGroup(new ResultGroup($item['index_name'], $item['index_title']));
-            }
-            /** @var ResultGroup $group */
-            $group = $results->getGroup($item['index_name']);
-            $group->addItem(ResultItem::fromDbState($item));
+        if (empty($words)) {
+            return $this->buildResultCollection([]);
         }
 
-        return $results;
+        // Ergebnisse mit Projekt-ID 0 immer anzeigen (z.b. Appstore-Ergebnisse)
+        if (is_array($projectIds) && !in_array(0, $projectIds, true)) {
+            $projectIds[] = 0;
+        }
+        if (is_array($moduleNames) && !in_array('appstore', $moduleNames, true)) {
+            $moduleNames[] = 'appstore';
+        }
+
+        $sqlProjects = '';
+        $sqlModules = '';
+        $bindValues = [
+            'result_limit' => $resultLimit,
+        ];
+
+        if ($projectIds !== null) {
+            $sqlProjects = ' AND sii.project_id IN (:project_ids) ';
+            $bindValues['project_ids'] = (array)$projectIds;
+        }
+        if ($moduleNames !== null) {
+            $sqlModules = ' AND (sig.module IN (:module_names) OR sig.module IS NULL) ';
+            $bindValues['module_names'] = (array)$moduleNames;
+        }
+
+        $likeParts = [];
+        foreach ($words as $index => $word) {
+            $key = 'fuzzy_word_' . $index;
+            $likeParts[] = "LOWER(sii.search_words) LIKE :{$key}";
+            $bindValues[$key] = '%' . strtolower($word) . '%';
+        }
+
+        $likeClause = implode(' AND ', $likeParts);
+
+        $sql =
+            "SELECT 
+                 sii.index_name, sii.index_id, sig.title AS `index_title`, sii.project_id, 
+                 sii.title, sii.subtitle, sii.additional_infos, sii.link, sii.search_words
+             FROM `supersearch_index_item` AS `sii`
+             INNER JOIN `supersearch_index_group` AS `sig` ON sii.index_name = sig.name
+             WHERE {$likeClause}
+             {$sqlProjects}
+             {$sqlModules}
+             AND sii.outdated = 0 AND sig.active = 1
+             LIMIT 0, :result_limit";
+
+        $data = $this->db->fetchAll($sql, $bindValues);
+
+        return $this->buildResultCollection($data);
     }
 
     /**
