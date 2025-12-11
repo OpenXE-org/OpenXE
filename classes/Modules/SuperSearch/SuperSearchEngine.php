@@ -170,8 +170,8 @@ final class SuperSearchEngine
         $sqlProjects = '';
         $sqlModules = '';
         $bindValues = [
-            // Kandidatenpool f�r die unscharfe Nachbearbeitung bewusst gr��er halten
-            'result_limit' => max($resultLimit * 5, 100),
+            // Kandidatenpool für die unscharfe Nachbearbeitung bewusst größer halten
+            'result_limit' => max($resultLimit * 10, 400),
         ];
 
         if ($projectIds !== null) {
@@ -190,15 +190,37 @@ final class SuperSearchEngine
             $bindValues[$key] = '%' . strtolower($word) . '%';
         }
 
-        $likeClause = '(' . implode(' OR ', $likeParts) . ')';
+        $charParts = [];
+        $characters = array_values(array_unique(preg_split('//u', strtolower($searchTerm), -1, PREG_SPLIT_NO_EMPTY)));
+        foreach ($characters as $index => $char) {
+            if (!preg_match('/[a-z0-9]/', $char)) {
+                continue;
+            }
+            $key = 'fuzzy_char_' . $index;
+            $charParts[] = "LOWER(sii.search_words) LIKE :{$key}";
+            $bindValues[$key] = '%' . $char . '%';
+        }
+
+        $filterClauses = [];
+        if (!empty($likeParts)) {
+            $filterClauses[] = '(' . implode(' OR ', $likeParts) . ')';
+        }
+        if (!empty($charParts)) {
+            $filterClauses[] = '(' . implode(' AND ', $charParts) . ')';
+        }
+
+        $filterClause = '';
+        if (!empty($filterClauses)) {
+            $filterClause = ' AND (' . implode(' OR ', $filterClauses) . ')';
+        }
 
         $sql =
-            "SELECT 
+             "SELECT 
                  sii.index_name, sii.index_id, sig.title AS `index_title`, sii.project_id, 
                  sii.title, sii.subtitle, sii.additional_infos, sii.link, sii.search_words
              FROM `supersearch_index_item` AS `sii`
              INNER JOIN `supersearch_index_group` AS `sig` ON sii.index_name = sig.name
-             WHERE {$likeClause}
+             WHERE 1=1 {$filterClause}
              {$sqlProjects}
              {$sqlModules}
              AND sii.outdated = 0 AND sig.active = 1
