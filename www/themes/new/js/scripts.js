@@ -134,18 +134,20 @@ $(function() {
     }); 
 
     /* Toggle background for rows that are marked via checkboxes */
-    var markedRowTables = [
-        "#angebote",
-        "#angeboteinbearbeitung",
-        "#auftraege",
-        "#auftraegeoffene",
-        "#auftraegeinbearbeitung",
-        "#rechnungen",
-        "#rechnungenoffene",
-        "#rechnungeninbearbeitung",
-        "#lieferscheine",
-        "#lieferscheineinbearbeitung",
-        "#mahnwesen_list"
+    var markedRowTableIds = [
+        "angebote",
+        "angeboteinbearbeitung",
+        "auftraege",
+        "auftraegeoffene",
+        "auftraegeoffeneauto",
+        "auftraegeinbearbeitung",
+        "rechnungen",
+        "rechnungenoffene",
+        "rechnungeninbearbeitung",
+        "lieferscheine",
+        "lieferscheineoffene",
+        "lieferscheineinbearbeitung",
+        "mahnwesen_list"
     ];
 
     function markSelectedRows($table) {
@@ -156,10 +158,15 @@ $(function() {
         });
     }
 
-    function bindMarkedRowHighlight(selector) {
-        var $table = $(selector);
+    function isMarkedTable($table){
+        var id = $table.attr("id");
+        return id && markedRowTableIds.indexOf(id) !== -1;
+    }
 
-        if(!$table.length){
+    function bindMarkedRowHighlight(selector) {
+        var $table = selector instanceof jQuery ? selector : $(selector);
+
+        if(!$table.length || !isMarkedTable($table)){
             return;
         }
 
@@ -180,12 +187,16 @@ $(function() {
     }
 
     function refreshMarkedRowTables(){
-        markedRowTables.forEach(function(selector){
-            bindMarkedRowHighlight(selector);
+        markedRowTableIds.forEach(function(id){
+            bindMarkedRowHighlight("#" + id);
         });
     }
 
     refreshMarkedRowTables();
+
+    $(document).on("init.dt", function(e, settings){
+        bindMarkedRowHighlight($(settings.nTable));
+    });
 
     $(document).on("change", "#auswahlalle", function(){
         window.setTimeout(refreshMarkedRowTables, 0);
@@ -193,6 +204,5 @@ $(function() {
 
     
 });
-
 
 
