@@ -495,3 +495,14 @@
     color: #DDD;
     background-color: #222;
 }
+
+/* Highlight rows that are marked via the checkbox column */
+table.dataTable tbody tr.row-marked,
+table.display tbody tr.row-marked {
+    background-color: #e8f2ff !important;
+}
+
+table.dataTable tbody tr.row-marked td,
+table.display tbody tr.row-marked td {
+    background-color: #e8f2ff !important;
+}

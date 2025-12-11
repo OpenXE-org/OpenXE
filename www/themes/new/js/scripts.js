@@ -133,9 +133,66 @@ $(function() {
 	   $("body").css("overflow", "visible");
     }); 
 
+    /* Toggle background for rows that are marked via checkboxes */
+    var markedRowTables = [
+        "#angebote",
+        "#angeboteinbearbeitung",
+        "#auftraege",
+        "#auftraegeoffene",
+        "#auftraegeinbearbeitung",
+        "#rechnungen",
+        "#rechnungenoffene",
+        "#rechnungeninbearbeitung",
+        "#lieferscheine",
+        "#lieferscheineinbearbeitung",
+        "#mahnwesen_list"
+    ];
+
+    function markSelectedRows($table) {
+        $table.find("tbody tr").each(function(){
+            var $row = $(this);
+            var isChecked = $row.find('input[type="checkbox"]:checked').length > 0;
+            $row.toggleClass("row-marked", isChecked);
+        });
+    }
+
+    function bindMarkedRowHighlight(selector) {
+        var $table = $(selector);
+
+        if(!$table.length){
+            return;
+        }
+
+        if($table.data("rowMarkedBound")){
+            markSelectedRows($table);
+            return;
+        }
+
+        $table.data("rowMarkedBound", true);
+
+        var refresh = function(){
+            markSelectedRows($table);
+        };
+
+        $table.on("change", "tbody input[type=\"checkbox\"]", refresh);
+        $table.on("draw.dt", refresh);
+        refresh();
+    }
+
+    function refreshMarkedRowTables(){
+        markedRowTables.forEach(function(selector){
+            bindMarkedRowHighlight(selector);
+        });
+    }
+
+    refreshMarkedRowTables();
+
+    $(document).on("change", "#auswahlalle", function(){
+        window.setTimeout(refreshMarkedRowTables, 0);
+    });
+
     
 });
-
 
 
 
