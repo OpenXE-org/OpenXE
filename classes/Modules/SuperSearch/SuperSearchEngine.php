@@ -170,7 +170,8 @@ final class SuperSearchEngine
         $sqlProjects = '';
         $sqlModules = '';
         $bindValues = [
-            'result_limit' => $resultLimit,
+            // Kandidatenpool f�r die unscharfe Nachbearbeitung bewusst gr��er halten
+            'result_limit' => max($resultLimit * 5, 100),
         ];
 
         if ($projectIds !== null) {
@@ -189,7 +190,7 @@ final class SuperSearchEngine
             $bindValues[$key] = '%' . strtolower($word) . '%';
         }
 
-        $likeClause = implode(' AND ', $likeParts);
+        $likeClause = '(' . implode(' OR ', $likeParts) . ')';
 
         $sql =
             "SELECT 
@@ -204,8 +205,9 @@ final class SuperSearchEngine
              LIMIT 0, :result_limit";
 
         $data = $this->db->fetchAll($sql, $bindValues);
+        $filtered = $this->filterFuzzyResults($data, $words, 2);
 
-        return $this->buildResultCollection($data);
+        return $this->buildResultCollection(array_slice($filtered, 0, $resultLimit));
     }
 
     /**
@@ -231,5 +233,105 @@ final class SuperSearchEngine
         }
 
         return $dateTime;
+    }
+
+    /**
+     * Filtert Kandidaten �ber eine Levenshtein-Distanz je Suchwort und sortiert nach Passgenauigkeit.
+     *
+     * @param array $data
+     * @param array $searchWords
+     * @param int   $maxDistance
+     *
+     * @return array
+     */
+    private function filterFuzzyResults(array $data, array $searchWords, $maxDistance = 2)
+    {
+        $results = [];
+
+        foreach ($data as $item) {
+            $tokens = $this->collectSearchTokens($item);
+            if (empty($tokens)) {
+                continue;
+            }
+
+            $score = 0;
+            $matchesAll = true;
+            foreach ($searchWords as $word) {
+                $distance = $this->minimumDistance($word, $tokens);
+                if ($distance === null || $distance > $maxDistance) {
+                    $matchesAll = false;
+                    break;
+                }
+                $score += $distance;
+            }
+
+            if ($matchesAll) {
+                $item['_fuzzy_score'] = $score;
+                $results[] = $item;
+            }
+        }
+
+        usort($results, static function ($a, $b) {
+            if ($a['_fuzzy_score'] === $b['_fuzzy_score']) {
+                return strcmp($a['title'], $b['title']);
+            }
+            return $a['_fuzzy_score'] <=> $b['_fuzzy_score'];
+        });
+
+        return array_map(static function ($item) {
+            unset($item['_fuzzy_score']);
+            return $item;
+        }, $results);
+    }
+
+    /**
+     * @param array $item
+     *
+     * @return array
+     */
+    private function collectSearchTokens(array $item)
+    {
+        $tokens = [];
+        $fields = ['title', 'subtitle', 'additional_infos', 'search_words'];
+        foreach ($fields as $field) {
+            if (!isset($item[$field]) || $item[$field] === null || $item[$field] === '') {
+                continue;
+            }
+            $value = strtolower((string)$item[$field]);
+            $parts = $field === 'additional_infos'
+                ? explode(' ## ', $value)
+                : preg_split('/[\s,;]+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+
+            if ($parts !== false) {
+                foreach ($parts as $part) {
+                    $part = trim($part);
+                    if ($part !== '') {
+                        $tokens[] = $part;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($tokens));
+    }
+
+    /**
+     * @param string $word
+     * @param array  $tokens
+     *
+     * @return int|null
+     */
+    private function minimumDistance($word, array $tokens)
+    {
+        $word = strtolower($word);
+        $min = null;
+        foreach ($tokens as $token) {
+            $distance = levenshtein($word, $token);
+            if ($min === null || $distance < $min) {
+                $min = $distance;
+            }
+        }
+
+        return $min;
     }
 }
