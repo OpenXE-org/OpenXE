@@ -41,7 +41,7 @@
 
 #supersearch-overlay .result-wrapper {
     overflow-y: auto;
-    width: 100%;
+    width: 65%;
     height: auto;
     max-height: calc(100vh - 140px);
     background-color: var(--body-background);
@@ -62,8 +62,8 @@
     display: none;
     position: absolute;
     top: 0;
-    left: 40%;
-    width: 60%;
+    left: 65%;
+    width: 35%;
     height: 100%;
     overflow-y: auto;
     background-color: var(--fieldset);
@@ -72,7 +72,7 @@
     display: block;
 }
 #supersearch-overlay.has-detail .result-wrapper {
-    width: 40%;
+    width: 65%;
 }
 
 #supersearch-overlay .search {
