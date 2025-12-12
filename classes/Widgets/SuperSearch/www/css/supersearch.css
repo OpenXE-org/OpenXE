@@ -8,7 +8,7 @@
 	top: 55px;
 	left: 18px;
     width: calc(100vw - 60px);
-    max-width: 1300px;
+    max-width: none;
     min-width: 960px;
     height: auto;
     max-height: calc(100vh - 80px);
@@ -49,14 +49,14 @@
     box-sizing: border-box;
 }
 #supersearch-overlay .result-columns {
-    display: flex;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    align-items: start;
     width: 100%;
     gap: 16px;
 }
 #supersearch-overlay .result-column {
-    flex: 1 1 33%;
-    min-width: 280px;
+    min-width: 0;
 }
 #supersearch-overlay .detail-wrapper {
     display: none;
