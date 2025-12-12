@@ -18,6 +18,9 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
 }
 
 #supersearch-overlay.has-detail {
@@ -41,7 +44,9 @@
 
 #supersearch-overlay .result-wrapper {
     overflow-y: auto;
-    width: 65%;
+    flex: 0 1 70%;
+    min-width: 900px;
+    max-width: 1300px;
     height: auto;
     max-height: calc(100vh - 140px);
     background-color: var(--body-background);
@@ -60,10 +65,10 @@
 }
 #supersearch-overlay .detail-wrapper {
     display: none;
-    position: absolute;
+    position: relative;
     top: 0;
-    left: 65%;
-    width: 35%;
+    left: 0;
+    flex: 1 1 auto;
     height: 100%;
     overflow-y: auto;
     background-color: var(--fieldset);
@@ -72,7 +77,7 @@
     display: block;
 }
 #supersearch-overlay.has-detail .result-wrapper {
-    width: 65%;
+    flex: 0 1 65%;
 }
 
 #supersearch-overlay .search {
