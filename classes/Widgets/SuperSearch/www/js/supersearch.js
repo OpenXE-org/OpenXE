@@ -323,7 +323,7 @@ var SuperSearch = (function ($) {
             var prioritizedColumns = [
                 {slot: 'left', keys: ['offer', 'order']},
                 {slot: 'middle', keys: ['deliverynote', 'invoice']},
-                {slot: 'right', keys: ['app']}
+                {slot: 'right', keys: ['app', 'apps']}
             ];
 
             var columns = {left: [], middle: [], right: []};
@@ -349,7 +349,7 @@ var SuperSearch = (function ($) {
             });
 
             remaining.forEach(function (groupResult) {
-                if (groupResult.key === 'app') {
+                if (groupResult.key === 'app' || groupResult.key === 'apps') {
                     columns.right.push(groupResult);
                     return;
                 }
