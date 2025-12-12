@@ -349,10 +349,12 @@ var SuperSearch = (function ($) {
             });
 
             remaining.forEach(function (groupResult) {
-                var sortedSlots = Object.keys(columns).sort(function (a, b) {
-                    return columns[a].length - columns[b].length;
-                });
-                columns[sortedSlots[0]].push(groupResult);
+                if (groupResult.key === 'app') {
+                    columns.right.push(groupResult);
+                    return;
+                }
+                var targetSlot = columns.left.length <= columns.middle.length ? 'left' : 'middle';
+                columns[targetSlot].push(groupResult);
             });
 
             return ['left', 'middle', 'right']
