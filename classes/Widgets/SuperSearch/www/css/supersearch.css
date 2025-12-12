@@ -52,11 +52,11 @@
     display: flex;
     align-items: flex-start;
     width: 100%;
-    gap: 12px;
+    gap: 16px;
 }
 #supersearch-overlay .result-column {
-    flex: 1 1 0;
-    min-width: 220px;
+    flex: 1 1 33%;
+    min-width: 280px;
 }
 #supersearch-overlay .detail-wrapper {
     display: none;
