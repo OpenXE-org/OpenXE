@@ -174,7 +174,8 @@ final class LexwareOfficeService
 
         $payload = [
             'contactId' => $contactId,
-            'voucherDate' => $voucherDateTime->format(DATE_ATOM),
+            // Lexware expects a pure date (YYYY-MM-DD) without timezone.
+            'voucherDate' => $voucherDateTime->format('Y-m-d'),
             'title' => $title,
             'remark' => $invoice['freitext'] ?? '',
             'useContactAddress' => false,
