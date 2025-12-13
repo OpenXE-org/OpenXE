@@ -6651,6 +6651,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
+        $menu .= "<td>";
+        $menu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
+        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
+        $menu .= "</a>";
+        $menu .= "</td>";
         $menu .= "</tr>";
         $menu .= "</table>";
         $menucol = 11;
@@ -6707,6 +6712,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\">";
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu  .= "</a>";
+        $menu .= "</td>";
+        $menu .= "<td>";
+        $menu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
+        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
+        $menu .= "</a>";
         $menu .= "</td>";
         $menu .= "</tr>";
         $menu .= "</table>";
@@ -6792,6 +6802,11 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<td>";
         $menu .= "<a href=\"#\" onclick=CopyDialog(\"index.php?module=rechnung&action=copy&id=%value%\");>";
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\">";
+        $menu .= "</a>";
+        $menu .= "</td>";
+        $menu .= "<td>";
+        $menu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
+        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
 /*        $menu .= "<td>";
