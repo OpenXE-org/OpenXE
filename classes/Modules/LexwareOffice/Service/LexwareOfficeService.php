@@ -266,18 +266,19 @@ final class LexwareOfficeService
 
         foreach ($positions as $position) {
             $tax = $position['steuersatz'] ?? $defaultTax;
+            $unitPrice = [
+                'currency' => $position['waehrung'] ?: $defaultCurrency,
+                'netAmount' => (float)$position['preis'],
+                'taxRatePercentage' => (float)$tax,
+            ];
             $items[] = array_filter([
                 'type' => 'custom',
                 'name' => $position['bezeichnung'] ?? $position['nummer'] ?? 'Position',
                 'description' => $position['beschreibung'] ?? '',
                 'quantity' => (float)$position['menge'],
                 'unitName' => $position['einheit'] ?: 'Stück',
-                'unitPrice' => [
-                    'currency' => $position['waehrung'] ?: $defaultCurrency,
-                    'netAmount' => (float)$position['preis'],
-                ],
+                'unitPrice' => $unitPrice,
                 'discountPercentage' => $this->getDiscount($position),
-                'taxRatePercentage' => (float)$tax,
             ], static fn($value) => $value !== null && $value !== '');
         }
 
