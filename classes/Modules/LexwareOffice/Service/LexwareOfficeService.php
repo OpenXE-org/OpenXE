@@ -206,6 +206,7 @@ final class LexwareOfficeService
         $voucherDate = $invoice['datum'] ?? date('Y-m-d');
         $voucherDateTime = new DateTimeImmutable($voucherDate . ' 00:00:00');
         $countryCode = $this->normalizeCountry($invoice['land'] ?? '');
+        $defaultCurrency = $this->normalizeCurrency($invoice['waehrung'] ?? 'EUR');
         $paymentTerm = (int)($invoice['zahlungszieltage'] ?? 0);
         $discountDays = (int)($invoice['zahlungszieltageskonto'] ?? 0);
         $discountPercent = (float)($invoice['zahlungszielskonto'] ?? 0);
@@ -269,13 +270,14 @@ final class LexwareOfficeService
     private function mapLineItems(array $positions, array $invoice): array
     {
         $items = [];
-        $defaultCurrency = $invoice['waehrung'] ?? 'EUR';
+        $defaultCurrency = $this->normalizeCurrency($invoice['waehrung'] ?? 'EUR');
         $defaultTax = (float)($invoice['steuersatz_normal'] ?? 19);
 
         foreach ($positions as $position) {
             $tax = $position['steuersatz'] ?? $defaultTax;
+            $currency = $this->normalizeCurrency($position['waehrung'] ?? $defaultCurrency);
             $unitPrice = [
-                'currency' => $position['waehrung'] ?: $defaultCurrency,
+                'currency' => $currency,
                 'netAmount' => (float)$position['preis'],
                 'taxRatePercentage' => (float)$tax,
             ];
@@ -361,6 +363,16 @@ final class LexwareOfficeService
             'SELECT * FROM `rechnung_position` WHERE `rechnung` = :id ORDER BY `sort`',
             ['id' => $invoiceId]
         );
+    }
+
+    private function normalizeCurrency(?string $currency): string
+    {
+        $currency = trim((string)$currency);
+        if ($currency === '') {
+            return 'EUR';
+        }
+
+        return strtoupper($currency);
     }
 
     private function formatNumber(float $value): string
