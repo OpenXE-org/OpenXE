@@ -49,6 +49,17 @@ final class LexwareOfficeConfigService
         return $this->config->isKeyExisting(self::NAMESPACE, self::KEY_API);
     }
 
+    public function deleteApiKey(): void
+    {
+        try {
+            $this->config->deleteKey(self::NAMESPACE, self::KEY_API);
+            // Salt is optional; remove to enforce fresh encryption material on next save.
+            $this->config->deleteKey(self::NAMESPACE, self::KEY_SALT);
+        } catch (\Throwable $exception) {
+            throw new LexwareOfficeException('API-Schlüssel konnte nicht gelöscht werden.', 0, $exception);
+        }
+    }
+
     private function encrypt(string $value, string $salt): string
     {
         $cipher = 'AES-256-CBC';

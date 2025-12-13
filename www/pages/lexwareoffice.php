@@ -53,11 +53,23 @@ class Lexwareoffice
 
     $service = $this->getService();
     $message = '';
+    $hasApiKey = $service->hasApiKey();
+
+    if($this->app->Secure->GetPOST('delete') !== '') {
+      try {
+        $service->deleteApiKey();
+        $hasApiKey = false;
+        $message = '<div class="info">API-Schl&uuml;ssel wurde gel&ouml;scht.</div>';
+      } catch (LexwareOfficeException $exception) {
+        $message = '<div class="error">'.htmlspecialchars($exception->getMessage()).'</div>';
+      }
+    }
 
     if($this->app->Secure->GetPOST('save') !== '') {
       try {
         $apiKey = (string)$this->app->Secure->GetPOST('api_key');
         $service->saveApiKey($apiKey);
+        $hasApiKey = true;
         $message = '<div class="success">API-Schl&uuml;ssel wurde gespeichert.</div>';
       } catch (LexwareOfficeException $exception) {
         $message = '<div class="error">'.htmlspecialchars($exception->getMessage()).'</div>';
@@ -68,9 +80,24 @@ class Lexwareoffice
       $this->app->Tpl->Set('MESSAGE',$message);
     }
 
-    $apiKeyPlaceholder = $service->hasApiKey() ? '******** (gespeichert)' : '';
+    $apiKeyPlaceholder = $hasApiKey ? '******** (gespeichert)' : '';
     $this->app->Tpl->Set('API_KEY_PLACEHOLDER', $apiKeyPlaceholder);
     $this->app->Tpl->Set('API_KEY_HINT', 'Der API-Schl&uuml;ssel wird verschl&uuml;sselt in der Systemkonfiguration abgelegt.');
+    $deleteSection = '';
+    if($hasApiKey) {
+      $deleteSection = '
+        <form method="post" action="" onsubmit="return confirm(\'API-Schlüssel wirklich löschen?\');">
+          <fieldset>
+            <legend>API-Schl&uuml;ssel entfernen</legend>
+            <p>Entfernt den hinterlegten API-Schl&uuml;ssel aus der Systemkonfiguration.</p>
+            <p>
+              <input type="submit" class="btnGrey" name="delete" value="API-Schl&uuml;ssel l&ouml;schen">
+            </p>
+          </fieldset>
+        </form>
+      ';
+    }
+    $this->app->Tpl->Set('DELETE_SECTION', $deleteSection);
 
     $this->app->Tpl->Parse('PAGE','lexwareoffice_settings.tpl');
   }

@@ -16,5 +16,7 @@
         </p>
       </fieldset>
     </form>
+
+    [DELETE_SECTION]
   </div>
 </div>
