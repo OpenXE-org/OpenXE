@@ -230,7 +230,10 @@ final class LexwareOfficeService
             'taxConditions' => [
                 'taxType' => 'net',
             ],
-            'shippingConditions' => new \stdClass(),
+            'shippingConditions' => [
+                'shippingType' => 'delivery',
+                'shippingDate' => $voucherDateTime->format(DATE_RFC3339_EXTENDED),
+            ],
             'paymentConditions' => [
                 'paymentTermDuration' => $paymentTerm,
             ],
