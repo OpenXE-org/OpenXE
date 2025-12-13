@@ -232,7 +232,6 @@ final class LexwareOfficeService
             'lineItems' => $this->mapLineItems($positions, $invoice),
             'totalPrice' => [
                 'currency' => $defaultCurrency,
-                'netAmount' => (float)($invoice['umsatz_netto'] ?? $invoice['soll'] ?? 0.0),
             ],
             'taxConditions' => [
                 'taxType' => 'net',
