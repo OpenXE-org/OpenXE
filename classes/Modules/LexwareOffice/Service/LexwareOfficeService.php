@@ -211,11 +211,13 @@ final class LexwareOfficeService
         $discountDays = (int)($invoice['zahlungszieltageskonto'] ?? 0);
         $discountPercent = (float)($invoice['zahlungszielskonto'] ?? 0);
         $title = !empty($invoice['belegnr']) ? sprintf('Rechnung %s', $invoice['belegnr']) : 'Rechnung';
+        $voucherNumber = $invoice['belegnr'] ?? '';
 
         $payload = [
             'contactId' => $contactId,
             // Lexware voucherDate: RFC3339 extended (mit Millisekunden & Zeitzone)
             'voucherDate' => $voucherDateTime->format(DATE_RFC3339_EXTENDED),
+            'voucherNumber' => $voucherNumber !== '' ? $voucherNumber : null,
             'title' => $title,
             'remark' => $invoice['freitext'] ?? '',
             'useContactAddress' => false,
