@@ -63,6 +63,19 @@ final class LexwareOfficeService
         $invoiceResponse = $this->client->createInvoice($apiKey, $payload, true);
 
         $lexwareInvoiceId = $invoiceResponse['id'] ?? $invoiceResponse['voucherId'] ?? null;
+        if ($lexwareInvoiceId === null || $lexwareInvoiceId === '') {
+            $message = $invoiceResponse['message'] ?? $invoiceResponse['error'] ?? '';
+            if ($message === '' && !empty($invoiceResponse)) {
+                $message = json_encode($invoiceResponse, JSON_UNESCAPED_UNICODE);
+            }
+            throw new LexwareOfficeException(
+                sprintf(
+                    'Rechnung wurde nicht in Lexware Office angelegt. %s',
+                    $message !== '' ? $message : 'Keine Beleg-ID erhalten.'
+                )
+            );
+        }
+
         $this->logger->notice(
             'Rechnung an Lexware Office gesendet',
             [
