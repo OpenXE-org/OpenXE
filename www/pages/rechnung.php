@@ -288,8 +288,16 @@ class Rechnung extends GenRechnung
   private function hasLexwareOfficeApiKey(): bool
   {
     try {
-      $config = new LexwareOfficeConfigService($this->app->Container->get('SystemConfigModule'));
-      return $config->hasApiKey();
+      if($this->app->Container->has('SystemConfigModule')) {
+        /** @var \Xentral\Modules\SystemConfig\SystemConfigModule $config */
+        $config = $this->app->Container->get('SystemConfigModule');
+        return $config->isKeyExisting('lexwareoffice', 'api_key');
+      }
+
+      $count = (int)$this->app->DB->Select(
+        "SELECT COUNT(*) FROM system_config WHERE namespace = 'lexwareoffice' AND name = 'api_key' LIMIT 1"
+      );
+      return $count > 0;
     }
     catch (\Throwable) {
       return false;

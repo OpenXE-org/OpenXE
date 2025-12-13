@@ -14,7 +14,6 @@
 ?>
 <?php
 
-use Xentral\Modules\LexwareOffice\Service\LexwareOfficeConfigService;
 use Xentral\Modules\SystemConfig\SystemConfigModule;
 
 class YUI {
@@ -31,16 +30,17 @@ class YUI {
 
   private function hasLexwareOfficeApiKey(): bool
   {
-    if(!class_exists(LexwareOfficeConfigService::class)) {
-      return false;
-    }
-
     try {
-      /** @var SystemConfigModule $systemConfig */
-      $systemConfig = $this->app->Container->get('SystemConfigModule');
-      $config = new LexwareOfficeConfigService($systemConfig);
+      if($this->app->Container->has('SystemConfigModule')) {
+        /** @var SystemConfigModule $systemConfig */
+        $systemConfig = $this->app->Container->get('SystemConfigModule');
+        return $systemConfig->isKeyExisting('lexwareoffice', 'api_key');
+      }
 
-      return $config->hasApiKey();
+      $count = (int)$this->app->DB->Select(
+        "SELECT COUNT(*) FROM system_config WHERE namespace = 'lexwareoffice' AND name = 'api_key' LIMIT 1"
+      );
+      return $count > 0;
     }
     catch (\Throwable) {
       return false;
