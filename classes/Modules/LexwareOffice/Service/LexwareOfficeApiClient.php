@@ -6,6 +6,7 @@ namespace Xentral\Modules\LexwareOffice\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use Xentral\Modules\LexwareOffice\Exception\LexwareOfficeException;
 
 final class LexwareOfficeApiClient
@@ -76,9 +77,29 @@ final class LexwareOfficeApiClient
         try {
             $response = $this->client->request($method, ltrim($path, '/'), $options);
         } catch (GuzzleException $exception) {
+            $statusCode = (int)$exception->getCode();
+            $errorText = '';
+            if ($exception instanceof RequestException && $exception->hasResponse()) {
+                $statusCode = $exception->getResponse()->getStatusCode();
+                $body = (string)$exception->getResponse()->getBody();
+                $decoded = json_decode($body, true);
+                if (is_array($decoded)) {
+                    $errorText = $decoded['message'] ?? $decoded['error_description'] ?? $decoded['error'] ?? '';
+                }
+                if ($errorText === '' && $body !== '') {
+                    $errorText = substr($body, 0, 400);
+                }
+            }
+            if ($errorText === '') {
+                $errorText = $exception->getMessage();
+            }
             throw new LexwareOfficeException(
-                sprintf('Lexware Office API Fehler: %s', $exception->getMessage()),
-                (int)$exception->getCode(),
+                sprintf(
+                    'Lexware Office API Fehler%s: %s',
+                    $statusCode > 0 ? sprintf(' (HTTP %d)', $statusCode) : '',
+                    $errorText
+                ),
+                $statusCode,
                 $exception
             );
         }
