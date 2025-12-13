@@ -40,7 +40,7 @@ final class LexwareOfficeService
     {
         $apiKey = $this->config->getApiKey();
         if (empty($apiKey)) {
-            throw new LexwareOfficeException('Es ist kein Lexware Office API-Key hinterlegt.');
+            throw new LexwareOfficeException('Es ist kein Lexware Office API-Schlüssel hinterlegt.');
         }
 
         $invoice = $this->fetchInvoice($invoiceId);

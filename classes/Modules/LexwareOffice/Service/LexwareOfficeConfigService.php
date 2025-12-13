@@ -21,7 +21,7 @@ final class LexwareOfficeConfigService
     {
         $apiKey = trim($apiKey);
         if ($apiKey === '') {
-            throw new LexwareOfficeException('Der Lexware Office API-Key darf nicht leer sein.');
+            throw new LexwareOfficeException('Der Lexware Office API-Schlüssel darf nicht leer sein.');
         }
 
         $salt = $this->getOrCreateSalt();
@@ -58,7 +58,7 @@ final class LexwareOfficeConfigService
 
         $ciphertext = openssl_encrypt($value, $cipher, $key, OPENSSL_RAW_DATA, $iv);
         if ($ciphertext === false) {
-            throw new LexwareOfficeException('API-Key konnte nicht verschlüsselt werden.');
+            throw new LexwareOfficeException('API-Schlüssel konnte nicht verschlüsselt werden.');
         }
 
         $hmac = hash_hmac('sha256', $ciphertext, $key, true);

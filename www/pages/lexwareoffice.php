@@ -56,7 +56,7 @@ class Lexwareoffice
       try {
         $apiKey = (string)$this->app->Secure->GetPOST('api_key');
         $service->saveApiKey($apiKey);
-        $message = '<div class="success">API-Key wurde gespeichert.</div>';
+        $message = '<div class="success">API-Schl&uuml;ssel wurde gespeichert.</div>';
       } catch (LexwareOfficeException $exception) {
         $message = '<div class="error">'.htmlspecialchars($exception->getMessage()).'</div>';
       }
@@ -68,7 +68,7 @@ class Lexwareoffice
 
     $apiKeyPlaceholder = $service->hasApiKey() ? '******** (gespeichert)' : '';
     $this->app->Tpl->Set('API_KEY_PLACEHOLDER', $apiKeyPlaceholder);
-    $this->app->Tpl->Set('API_KEY_HINT', 'Der Schl&uuml;ssel wird verschl&uuml;sselt in der Systemkonfiguration abgelegt.');
+    $this->app->Tpl->Set('API_KEY_HINT', 'Der API-Schl&uuml;ssel wird verschl&uuml;sselt in der Systemkonfiguration abgelegt.');
 
     $this->app->Tpl->Parse('PAGE','lexwareoffice_settings.tpl');
   }
