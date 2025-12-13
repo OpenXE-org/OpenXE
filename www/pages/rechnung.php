@@ -15,12 +15,19 @@
 <?php
 use Xentral\Components\Pdf\Exception\PdfComponentExceptionInterface;
 use Xentral\Components\Pdf\PdfMerger;
+use Xentral\Modules\LexwareOffice\Exception\LexwareOfficeException;
+use Xentral\Modules\LexwareOffice\Service\LexwareOfficeApiClient;
+use Xentral\Modules\LexwareOffice\Service\LexwareOfficeConfigService;
+use Xentral\Modules\LexwareOffice\Service\LexwareOfficeService;
 
 include_once __DIR__.'/_gen/rechnung.php';
 //require_once("Payment/DTA.php"); //PEAR
 
 class Rechnung extends GenRechnung
 {
+  /** @var LexwareOfficeService|null */
+  private $lexwareOfficeService = null;
+
   /**
    * Rechnung constructor.
    *
@@ -77,6 +84,7 @@ class Rechnung extends GenRechnung
     $this->app->ActionHandler("pdffromarchive","RechnungPDFfromArchiv");
     $this->app->ActionHandler("archivierepdf","RechnungArchivierePDF");
     $this->app->ActionHandler("archivierexml","RechnungArchiviereXML");
+    $this->app->ActionHandler("lexwareofficeupload","RechnungLexwareOfficeUpload");
 
     $this->app->ActionHandler("summe","RechnungSumme"); // nur fuer rechte
     $this->app->ActionHandler("belegnredit","belegnredit"); // nur fuer rechte
@@ -202,7 +210,7 @@ class Rechnung extends GenRechnung
     $this->app->ExitXentral();
   }
 
-    function RechnungArchiviereXML($id = null) {
+  function RechnungArchiviereXML($id = null) {
         if ($id === null) {
             $id = (int)$this->app->Secure->GetGET('id');
             $redirect = true;
@@ -260,6 +268,57 @@ class Rechnung extends GenRechnung
     $this->app->erp->PDFArchivieren('rechnung', $id, true);
     $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1' WHERE id='$id'");
     $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id);
+  }
+
+  private function getLexwareOfficeService(): LexwareOfficeService
+  {
+    if($this->lexwareOfficeService === null) {
+      $this->lexwareOfficeService = new LexwareOfficeService(
+        $this->app->Container->get('Database'),
+        new LexwareOfficeConfigService($this->app->Container->get('SystemConfigModule')),
+        new LexwareOfficeApiClient(),
+        $this->app->Container->get('Logger'),
+        $this->app->erp
+      );
+    }
+
+    return $this->lexwareOfficeService;
+  }
+
+  public function RechnungLexwareOfficeUpload()
+  {
+    $id = (int)$this->app->Secure->GetGET('id');
+    if($id <= 0) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Rechnung wurde nicht gefunden.</div>');
+      $this->app->Location->execute('index.php?module=rechnung&action=list&msg='.$msg);
+      return;
+    }
+
+    if(!$this->app->erp->RechteVorhanden('rechnung','edit')) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung f&uuml;r diese Aktion.</div>');
+      $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id.'&msg='.$msg);
+      return;
+    }
+
+    try {
+      $result = $this->getLexwareOfficeService()->pushInvoice($id);
+      $lexwareId = !empty($result['invoiceId']) ? $result['invoiceId'] : '';
+      $contactId = !empty($result['contactId']) ? $result['contactId'] : '';
+      $text = 'Rechnung wurde an Lexware Office &uuml;bergeben.';
+      if($lexwareId !== '') {
+        $text .= ' Beleg-ID: '.htmlspecialchars($lexwareId);
+      }
+      if($contactId !== '') {
+        $text .= ' Kontakt-ID: '.htmlspecialchars($contactId);
+      }
+      $message = '<div class="success">'.$text.'</div>';
+    }
+    catch (LexwareOfficeException $exception) {
+      $message = '<div class="error">'.htmlspecialchars($exception->getMessage()).'</div>';
+    }
+
+    $msg = $this->app->erp->base64_url_encode($message);
+    $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id.'&msg='.$msg);
   }
 
   function RechnungUpdateVerband()
@@ -496,6 +555,9 @@ class Rechnung extends GenRechnung
     $this->app->erp->RunHook('Rechnung_Aktion_option',3, $id, $status, $hookoption);
     $this->app->erp->RunHook('Rechnung_Aktion_case',3, $id, $status, $hookcase);
 
+    $lexwareOption = '<option value="lexwareofficeupload">An Lexware Office senden</option>';
+    $lexwareCase = "case 'lexwareofficeupload': if(!confirm('Rechnung an Lexware Office senden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%'; break;";
+
 /*
     //TODO das muss dann später in den Hook
     $RechnungzuVerbindlichkeitOption = "<option value=\"rechnungzuverbindlichkeit\">Rechnung zu Verbindlichkeit</option>";
@@ -550,6 +612,7 @@ class Rechnung extends GenRechnung
           case 'freigabe': window.location.href='index.php?module=rechnung&action=freigabe&id=%value%'; break;
           $zertifikatcase
           $casebelegeimport
+          $lexwareCase
           $casecustom
           $hookcase 
           $casehook
@@ -572,6 +635,7 @@ class Rechnung extends GenRechnung
       <option value=\"pdf\">PDF &ouml;ffnen</option>
       $bezahlt
       $zertifikatoption
+      $lexwareOption
       $optioncustom
       $optionhook
       $hookoption

@@ -290,6 +290,11 @@ class Einstellungen  {
           'icon' => 'Icons_dunkel_25.gif',
           'link' => 'index.php?module=api_account&action=list',
         ],
+        'lexwareoffice' => [
+          'name' => 'Lexware Office',
+          'icon' => 'Icons_dunkel_25.gif',
+          'link' => 'index.php?module=lexwareoffice&action=edit',
+        ],
       ],
       'Lager und Logistik' => [
         'zolltarifnummer' => [
