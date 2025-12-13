@@ -230,6 +230,7 @@ final class LexwareOfficeService
             'taxConditions' => [
                 'taxType' => 'net',
             ],
+            'shippingConditions' => new \stdClass(),
             'paymentConditions' => [
                 'paymentTermDuration' => $paymentTerm,
             ],
