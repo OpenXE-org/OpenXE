@@ -12,6 +12,7 @@ use Xentral\Modules\LexwareOffice\Exception\LexwareOfficeException;
 final class LexwareOfficeApiClient
 {
     private const BASE_URI = 'https://api.lexware.io/v1/';
+    private const MAX_ERROR_DETAILS = 5;
 
     public function __construct(private ?Client $client = null)
     {
@@ -85,6 +86,10 @@ final class LexwareOfficeApiClient
                 $decoded = json_decode($body, true);
                 if (is_array($decoded)) {
                     $errorText = $decoded['message'] ?? $decoded['error_description'] ?? $decoded['error'] ?? '';
+                    $detailText = $this->formatErrorDetails($decoded);
+                    if ($detailText !== '') {
+                        $errorText = $errorText !== '' ? ($errorText.' | '.$detailText) : $detailText;
+                    }
                 }
                 if ($errorText === '' && $body !== '') {
                     $errorText = substr($body, 0, 400);
@@ -112,5 +117,40 @@ final class LexwareOfficeApiClient
         }
 
         return $decoded;
+    }
+
+    private function formatErrorDetails(array $decoded): string
+    {
+        $parts = [];
+        $details = [];
+        if (isset($decoded['details']) && is_array($decoded['details'])) {
+            $details = $decoded['details'];
+        } elseif (isset($decoded['errors']) && is_array($decoded['errors'])) {
+            $details = $decoded['errors'];
+        }
+
+        $count = 0;
+        foreach ($details as $detail) {
+            if ($count >= self::MAX_ERROR_DETAILS) {
+                $parts[] = sprintf('... (%d weitere)', count($details) - self::MAX_ERROR_DETAILS);
+                break;
+            }
+            if (is_string($detail)) {
+                $parts[] = $detail;
+            } elseif (is_array($detail)) {
+                $msg = $detail['message'] ?? $detail['detail'] ?? '';
+                $field = $detail['field'] ?? $detail['path'] ?? '';
+                if ($field !== '' && $msg !== '') {
+                    $parts[] = sprintf('%s: %s', $field, $msg);
+                } elseif ($msg !== '') {
+                    $parts[] = $msg;
+                } elseif ($field !== '') {
+                    $parts[] = $field;
+                }
+            }
+            $count++;
+        }
+
+        return implode('; ', array_filter($parts, static fn($p) => $p !== ''));
     }
 }
