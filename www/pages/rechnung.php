@@ -331,9 +331,12 @@ class Rechnung extends GenRechnung
         $text .= ' Kontakt-ID: '.htmlspecialchars($contactId);
       }
       $message = '<div class="success">'.$text.'</div>';
+      $this->app->erp->RechnungProtokoll($id, 'Lexware Office: '.$text);
     }
     catch (LexwareOfficeException $exception) {
-      $message = '<div class="error">'.htmlspecialchars($exception->getMessage()).'</div>';
+      $errorText = htmlspecialchars($exception->getMessage());
+      $message = '<div class="error">'.$errorText.'</div>';
+      $this->app->erp->RechnungProtokoll($id, 'Lexware Office Fehler: '.$errorText);
     }
 
     $msg = $this->app->erp->base64_url_encode($message);
