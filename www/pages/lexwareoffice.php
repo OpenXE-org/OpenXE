@@ -34,6 +34,8 @@ class Lexwareoffice
       return;
     }
 
+    $this->ensureSuperSearchIndex();
+
     $this->app->ActionHandlerInit($this);
     $this->app->ActionHandler('edit','LexwareOfficeEdit');
     $this->app->DefaultActionHandler('edit');
@@ -86,5 +88,32 @@ class Lexwareoffice
     }
 
     return $this->service;
+  }
+
+  private function ensureSuperSearchIndex(): void
+  {
+    if(!$this->app->Container->has('SuperSearchService') || !$this->app->Container->has('SuperSearchIndexer')) {
+      return;
+    }
+
+    /** @var \Xentral\Modules\SuperSearch\SuperSearchService $service */
+    $service = $this->app->Container->get('SuperSearchService');
+    /** @var \Xentral\Modules\SuperSearch\SuperSearchIndexer $indexer */
+    $indexer = $this->app->Container->get('SuperSearchIndexer');
+
+    $indexName = 'lexwareoffice';
+    if(!$service->existsIndex($indexName)) {
+      $service->createIndex($indexName, 'Lexware Office', 'lexwareoffice');
+    }
+
+    $count = (int)$this->app->DB->Select(
+      sprintf(
+        "SELECT COUNT(id) FROM supersearch_index_item WHERE index_name = '%s' AND outdated = 0",
+        $indexName
+      )
+    );
+    if($count === 0) {
+      $indexer->updateIndexFull($indexName);
+    }
   }
 }
