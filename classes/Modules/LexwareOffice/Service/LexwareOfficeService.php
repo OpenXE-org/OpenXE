@@ -213,8 +213,8 @@ final class LexwareOfficeService
 
         $payload = [
             'contactId' => $contactId,
-            // Lexware expects a timestamp without timezone; use ISO date+time.
-            'voucherDate' => $voucherDateTime->format('Y-m-d\TH:i:s'),
+            // Lexware voucherDate: ISO datetime with milliseconds and timezone
+            'voucherDate' => $voucherDateTime->format('Y-m-d\TH:i:s.vP'),
             'title' => $title,
             'remark' => $invoice['freitext'] ?? '',
             'useContactAddress' => false,
