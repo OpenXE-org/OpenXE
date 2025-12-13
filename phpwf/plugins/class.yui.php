@@ -14,6 +14,7 @@
 ?>
 <?php
 
+use Xentral\Modules\LexwareOffice\Service\LexwareOfficeConfigService;
 use Xentral\Modules\SystemConfig\SystemConfigModule;
 
 class YUI {
@@ -26,6 +27,24 @@ class YUI {
   function __construct($app) {
 
     $this->app = $app;
+  }
+
+  private function hasLexwareOfficeApiKey(): bool
+  {
+    if(!class_exists(LexwareOfficeConfigService::class)) {
+      return false;
+    }
+
+    try {
+      /** @var SystemConfigModule $systemConfig */
+      $systemConfig = $this->app->Container->get('SystemConfigModule');
+      $config = new LexwareOfficeConfigService($systemConfig);
+
+      return $config->hasApiKey();
+    }
+    catch (\Throwable) {
+      return false;
+    }
   }
 
   function dateien_module_objekt_map($module) : string {
@@ -6634,6 +6653,15 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
         if($this->app->erp->RechteVorhanden('rechnung','summe'))
           $sumcol = 9;
+        $lexwareMenu = '';
+        if($this->hasLexwareOfficeApiKey()) {
+          $lexwareMenu .= "<td>";
+          $lexwareMenu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
+          $lexwareMenu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
+          $lexwareMenu .= "</a>";
+          $lexwareMenu .= "</td>";
+        }
+
         $menu = "<table class=\"nopadding\" cellpadding=0 cellspacing=0>";
         $menu .= "<tr>";
         $menu .= "<td>";
@@ -6651,11 +6679,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
-        $menu .= "<td>";
-        $menu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
-        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
-        $menu .= "</a>";
-        $menu .= "</td>";
+        $menu .= $lexwareMenu;
         $menu .= "</tr>";
         $menu .= "</table>";
         $menucol = 11;
@@ -6696,6 +6720,14 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         if($this->app->erp->RechteVorhanden('rechnung','summe')){
           $sumcol = 9;
         }
+        $lexwareMenu = '';
+        if($this->hasLexwareOfficeApiKey()) {
+          $lexwareMenu .= "<td>";
+          $lexwareMenu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
+          $lexwareMenu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
+          $lexwareMenu .= "</a>";
+          $lexwareMenu .= "</td>";
+        }
         $menu = "<table class=\"nopadding\" cellpadding=\"0\" cellspacing=\"0\">";
         $menu .= "<tr>";
         $menu .= "<td>";
@@ -6713,11 +6745,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu  .= "</a>";
         $menu .= "</td>";
-        $menu .= "<td>";
-        $menu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
-        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
-        $menu .= "</a>";
-        $menu .= "</td>";
+        $menu .= $lexwareMenu;
         $menu .= "</tr>";
         $menu .= "</table>";
         $menucol = 11;
@@ -6787,6 +6815,15 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         'r.zahlungsweise', array("FORMAT(r.soll,2{$extended_mysql55})", "if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus)"), 'r.waehrung', "if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus)"
         , "FORMAT(r.ist-r.soll+r.skonto_gegeben,2{$extended_mysql55})", "if(r.status = 'storniert' AND r.teilstorno = 1,'Teilstorno',r.status)", 'r.id', 'adr.freifeld1', 'r.ihrebestellnummer', 'r.internebezeichnung', 'au.internet');
 
+        $lexwareMenu = '';
+        if($this->hasLexwareOfficeApiKey()) {
+          $lexwareMenu .= "<td>";
+          $lexwareMenu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
+          $lexwareMenu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
+          $lexwareMenu .= "</a>";
+          $lexwareMenu .= "</td>";
+        }
+
         $menu = "<table class=\"nopadding\" cellpadding=0 cellspacing=0>";
         $menu .= "<tr>";
         $menu .= "<td>";
@@ -6804,11 +6841,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
-        $menu .= "<td>";
-        $menu .= "<a href=\"#\" title=\"An Lexware Office senden\" onclick=\"if(!confirm('Rechnung an Lexware Office senden?')) return false; window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%';\">";
-        $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/exportable@1x.svg\" border=\"0\">";
-        $menu .= "</a>";
-        $menu .= "</td>";
+        $menu .= $lexwareMenu;
 /*        $menu .= "<td>";
         $menu .= "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\">";
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";

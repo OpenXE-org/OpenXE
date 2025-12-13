@@ -285,6 +285,17 @@ class Rechnung extends GenRechnung
     return $this->lexwareOfficeService;
   }
 
+  private function hasLexwareOfficeApiKey(): bool
+  {
+    try {
+      $config = new LexwareOfficeConfigService($this->app->Container->get('SystemConfigModule'));
+      return $config->hasApiKey();
+    }
+    catch (\Throwable) {
+      return false;
+    }
+  }
+
   public function RechnungLexwareOfficeUpload()
   {
     $id = (int)$this->app->Secure->GetGET('id');
@@ -555,8 +566,12 @@ class Rechnung extends GenRechnung
     $this->app->erp->RunHook('Rechnung_Aktion_option',3, $id, $status, $hookoption);
     $this->app->erp->RunHook('Rechnung_Aktion_case',3, $id, $status, $hookcase);
 
-    $lexwareOption = '<option value="lexwareofficeupload">An Lexware Office senden</option>';
-    $lexwareCase = "case 'lexwareofficeupload': if(!confirm('Rechnung an Lexware Office senden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%'; break;";
+    $lexwareOption = '';
+    $lexwareCase = '';
+    if($this->hasLexwareOfficeApiKey()) {
+      $lexwareOption = '<option value="lexwareofficeupload">An Lexware Office senden</option>';
+      $lexwareCase = "case 'lexwareofficeupload': if(!confirm('Rechnung an Lexware Office senden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=rechnung&action=lexwareofficeupload&id=%value%'; break;";
+    }
 
 /*
     //TODO das muss dann später in den Hook
