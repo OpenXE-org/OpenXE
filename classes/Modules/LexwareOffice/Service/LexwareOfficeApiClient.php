@@ -12,7 +12,7 @@ final class LexwareOfficeApiClient
 {
     private const BASE_URI = 'https://api.lexware.io/v1/';
 
-    public function __construct(private Client $client = null)
+    public function __construct(private ?Client $client = null)
     {
         $this->client ??= new Client([
             'base_uri' => self::BASE_URI,
