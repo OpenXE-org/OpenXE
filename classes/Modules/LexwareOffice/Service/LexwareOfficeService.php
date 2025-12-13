@@ -31,6 +31,11 @@ final class LexwareOfficeService
         $this->config->saveApiKey($apiKey);
     }
 
+    public function deleteApiKey(): void
+    {
+        $this->config->deleteApiKey();
+    }
+
     /**
      * @param int $invoiceId
      *

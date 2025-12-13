@@ -54,7 +54,9 @@ final class LexwareOfficeConfigService
         try {
             $this->config->deleteKey(self::NAMESPACE, self::KEY_API);
             // Salt is optional; remove to enforce fresh encryption material on next save.
-            $this->config->deleteKey(self::NAMESPACE, self::KEY_SALT);
+            if ($this->config->isKeyExisting(self::NAMESPACE, self::KEY_SALT)) {
+                $this->config->deleteKey(self::NAMESPACE, self::KEY_SALT);
+            }
         } catch (\Throwable $exception) {
             throw new LexwareOfficeException('API-Schlüssel konnte nicht gelöscht werden.', 0, $exception);
         }
