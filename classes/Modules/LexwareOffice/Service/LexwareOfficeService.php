@@ -62,7 +62,7 @@ final class LexwareOfficeService
         $payload = $this->mapInvoicePayload($invoice, $positions, $contactId);
         $invoiceResponse = $this->client->createInvoice($apiKey, $payload, true);
 
-        $lexwareInvoiceId = $invoiceResponse['id'] ?? $invoiceResponse['voucherId'] ?? null;
+        $lexwareInvoiceId = $this->extractInvoiceId($invoiceResponse);
         if ($lexwareInvoiceId === null || $lexwareInvoiceId === '') {
             $message = $invoiceResponse['message'] ?? $invoiceResponse['error'] ?? '';
             if ($message === '' && !empty($invoiceResponse)) {
@@ -82,6 +82,8 @@ final class LexwareOfficeService
                 'invoice_id' => $invoiceId,
                 'lexware_invoice_id' => $lexwareInvoiceId,
                 'contact_id' => $contactId,
+                'lexware_response' => $invoiceResponse,
+                'lexware_payload' => $payload,
             ]
         );
 
@@ -90,6 +92,30 @@ final class LexwareOfficeService
             'contactId' => $contactId,
             'response' => $invoiceResponse,
         ];
+    }
+
+    private function extractInvoiceId(array $invoiceResponse): ?string
+    {
+        $ids = [
+            $invoiceResponse['id'] ?? null,
+            $invoiceResponse['voucherId'] ?? null,
+        ];
+
+        if (isset($invoiceResponse['content']) && is_array($invoiceResponse['content'])) {
+            $first = reset($invoiceResponse['content']);
+            if (is_array($first)) {
+                $ids[] = $first['id'] ?? null;
+                $ids[] = $first['voucherId'] ?? null;
+            }
+        }
+
+        foreach ($ids as $id) {
+            if ($id !== null && $id !== '') {
+                return (string)$id;
+            }
+        }
+
+        return null;
     }
 
     /**
