@@ -263,7 +263,8 @@ class BestellungPDF extends BriefpapierCustom {
       //	if(!$this->app->erp->BestellungMitUmsatzeuer($id)) $value[umsatzsteuer] = ""; 
 
       if($keineartikelnummern==1) {
-        $value['bestellnummer'] = $this->app->erp->Beschriftung('dokument_bestellung_keineartikelnummer');
+        $value['artnummer'] = $value['bestellnummer'];
+        $value['bestellnummer'] = "";
       }
 
       $ohne_artikeltext = $this->app->DB->Select("SELECT ohne_artikeltext FROM ".$this->table." WHERE id='".$this->id."' LIMIT 1");
