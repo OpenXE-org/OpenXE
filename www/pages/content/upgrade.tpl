@@ -19,6 +19,8 @@
 .banner-error {background:#b52b27;color:#fff;}
 .banner-warning {background:#d89216;color:#fff;}
 .banner-info {background:#0b3c68;color:#fff;}
+.guidance-box {border:1px dashed #b5c7de;border-radius:6px;padding:10px;margin:12px 0;background:#f9fbff;}
+.guidance-title {font-weight:700;margin-bottom:4px;}
 </style>
 
 <div id="tabs">
@@ -52,6 +54,10 @@
                                     Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen.
                                     Für lange Läufe kannst du das Protokoll mit "Anzeige auffrischen" neu laden. Bei hartnäckigen Fehlern
                                     hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.
+                                </div>
+                                <div class="guidance-box">
+                                    <div class="guidance-title">[GUIDANCE_TITLE]</div>
+                                    <div>[GUIDANCE_MESSAGE]</div>
                                 </div>
                             </fieldset>
                             <fieldset>
