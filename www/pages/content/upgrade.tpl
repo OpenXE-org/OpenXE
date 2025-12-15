@@ -54,11 +54,11 @@
                                     <tr><td colspan=2><button name="submit" value="refresh" class="ui-button-icon action-btn">Anzeige auffrischen</button></td></tr>
                                     <tr><td colspan=2><button name="submit" value="check_upgrade" class="ui-button-icon action-btn">Upgrades prüfen</button></td></tr>
                                     <tr><td>{|Upgrade-Details anzeigen|}:</td><td><input type="checkbox" name="details_anzeigen" value=1 [DETAILS_ANZEIGEN] size="20"></td></tr>
-                                    <tr [UPGRADE_VISIBLE]><td colspan=2><button name="submit" formtarget="_blank" value="do_upgrade" class="ui-button-icon action-btn">Upgrade jetzt starten</button></td></tr>
+                                    <tr [UPGRADE_VISIBLE]><td colspan=2><button name="submit" value="do_upgrade" class="ui-button-icon action-btn">Upgrade jetzt starten</button></td></tr>
                                     <tr [UPGRADE_VISIBLE]><td>{|Erzwingen (-f)|}:</td><td><input type="checkbox" name="erzwingen" value=1 [ERZWINGEN] size="20"></td></tr>
                                     <tr><td colspan=2><button name="submit" value="check_db" class="ui-button-icon action-btn">Datenbank prüfen</button></td></tr>
                                     <tr><td>{|Datenbank-Details anzeigen|}:</td><td><input type="checkbox" name="db_details_anzeigen" value=1 [DB_DETAILS_ANZEIGEN] size="20"></td></tr>
-                                    <tr [UPGRADE_DB_VISIBLE]><td colspan=2><button name="submit" formtarget="_blank" value="do_db_upgrade" class="ui-button-icon action-btn">Datenbank-Upgrade</button></td></tr>
+                                    <tr [UPGRADE_DB_VISIBLE]><td colspan=2><button name="submit" value="do_db_upgrade" class="ui-button-icon action-btn">Datenbank-Upgrade</button></td></tr>
                                 </table>
                             </fieldset>
                             <fieldset>
