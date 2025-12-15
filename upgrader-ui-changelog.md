@@ -7,3 +7,6 @@
 - Ergebnisanzeige pro Lauf (erfolgreich/Fehler/alles aktuell), Log-Fallback wenn noch kein Protokoll existiert.
 - Checkboxen für Details und Erzwingen bleiben nach Requests erhalten.
 - Nächster Schritt: Änderungen nach `local_test_branch` kopieren (Cherry-Pick geplant).
+- Upgrade-Abläufe laufen im selben Tab (keine neuen Fenster).
+- Versionsvergleich hinzugefügt (Installiert, lokaler Branch/Commit, Upgrade-Ziel).
+- Status-Banner und farbige Karten je Ergebniszustand ergänzen; geführte Hinweise mit nächstem Schritt abhängig vom Lauf (z.B. „Upgrade empfohlen“ bei Differenzen, „Alles aktuell“ bei 0 Differenzen).
