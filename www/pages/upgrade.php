@@ -55,6 +55,14 @@ class upgrade {
         $remote_branch = "";
         $remote_errors = array();
 
+        $project_root = dirname(__DIR__, 2);
+        $git_branch = "";
+        $git_commit = "";
+        if (is_dir($project_root."/.git")) {
+            $git_branch = trim((string)@shell_exec('cd '.escapeshellarg($project_root).' && git rev-parse --abbrev-ref HEAD'));
+            $git_commit = trim((string)@shell_exec('cd '.escapeshellarg($project_root).' && git log -1 --date=short --pretty="%h | %cd"'));
+        }
+
         if (is_readable($remote_config_file)) {
             $remote_data_raw = file_get_contents($remote_config_file);
             $remote_data = json_decode($remote_data_raw, true) ?: array();
@@ -105,6 +113,8 @@ class upgrade {
 
         $this->app->Tpl->Set('REMOTE_HOST', htmlspecialchars($remote_host));
         $this->app->Tpl->Set('REMOTE_BRANCH', htmlspecialchars($remote_branch));
+        $this->app->Tpl->Set('LOCAL_BRANCH', htmlspecialchars($git_branch));
+        $this->app->Tpl->Set('LOCAL_COMMIT', htmlspecialchars($git_commit));
 
         $directory = dirname(getcwd())."/upgrade";
         $result_code = null;
