@@ -47,6 +47,10 @@
                                 <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
                                 <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
                                 <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
+                                <div class="guidance-box" style="margin-top:12px;">
+                                    <div class="guidance-title">[GUIDANCE_TITLE]</div>
+                                    <div>[GUIDANCE_MESSAGE]</div>
+                                </div>
                             </fieldset>
                             <fieldset>
                                 <legend>{|Hinweise zum Upgrade|}</legend>
@@ -54,10 +58,6 @@
                                     Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen.
                                     Für lange Läufe kannst du das Protokoll mit "Anzeige auffrischen" neu laden. Bei hartnäckigen Fehlern
                                     hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.
-                                </div>
-                                <div class="guidance-box">
-                                    <div class="guidance-title">[GUIDANCE_TITLE]</div>
-                                    <div>[GUIDANCE_MESSAGE]</div>
                                 </div>
                             </fieldset>
                             <fieldset>
