@@ -5,11 +5,20 @@
 .status-success {background:#e6f4ea;color:#1b6e30;}
 .status-error {background:#fdecea;color:#b52b27;}
 .status-warning {background:#fff4e5;color:#8a4b0f;}
+.card-success {border-color:#1b6e30;background:#e9f7ef;}
+.card-error {border-color:#b52b27;background:#fdeceb;}
+.card-warning {border-color:#d89216;background:#fff7e9;}
+.card-info {border-color:#0b3c68;background:#eef4ff;}
 .status-meta {color:#555;margin-top:4px;font-size:13px;}
 .log-box {background:#0f1720;color:#e5e7eb;border-radius:6px;padding:10px;max-height:420px;overflow:auto;font-family:Consolas,monospace;font-size:13px;}
 .hint {color:#555;font-size:13px;}
 .input-inline {width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;}
 .action-btn {width:100%;margin-bottom:6px;}
+.result-banner {border-radius:6px;padding:12px;margin-bottom:12px;font-weight:700;}
+.banner-success {background:#1b6e30;color:#fff;}
+.banner-error {background:#b52b27;color:#fff;}
+.banner-warning {background:#d89216;color:#fff;}
+.banner-info {background:#0b3c68;color:#fff;}
 </style>
 
 <div id="tabs">
@@ -24,7 +33,11 @@
                 <div class="row-height">
                     <div class="col-xs-14 col-md-10 col-md-height">
                         <div class="inside inside-full-height">
-                            <fieldset class="upgrade-status-card">
+                            <div class="result-banner banner-[STATUS_LEVEL]">
+                                <div style="font-size:16px;">[STATUS_HEADLINE]</div>
+                                <div style="font-weight:400;">[STATUS_MESSAGE]</div>
+                            </div>
+                            <fieldset class="upgrade-status-card card-[STATUS_LEVEL]">
                                 <div class="status-pill status-[STATUS_LEVEL]">[STATUS_HEADLINE]</div>
                                 <div><strong>Status:</strong> [STATUS_MESSAGE]</div>
                                 <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
