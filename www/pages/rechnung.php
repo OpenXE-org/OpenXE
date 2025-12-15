@@ -319,19 +319,15 @@ class Rechnung extends GenRechnung
       return;
     }
 
-    try {
-      $result = $this->getLexwareOfficeService()->pushInvoice($id);
-      $lexwareId = !empty($result['invoiceId']) ? $result['invoiceId'] : '';
-      $contactId = !empty($result['contactId']) ? $result['contactId'] : '';
-      $text = 'Rechnung wurde an Lexware Office &uuml;bergeben.';
-      if($lexwareId !== '') {
-        $text .= ' Beleg-ID: '.htmlspecialchars($lexwareId);
-      }
-      if($contactId !== '') {
-        $text .= ' Kontakt-ID: '.htmlspecialchars($contactId);
-      }
-      $message = '<div class="success">'.$text.'</div>';
-      $this->app->erp->RechnungProtokoll($id, 'Lexware Office: '.$text);
+      try {
+        $result = $this->getLexwareOfficeService()->pushInvoice($id);
+        $fileId = !empty($result['fileId']) ? $result['fileId'] : '';
+        $text = 'Rechnungs-PDF wurde an Lexware Office &uuml;bertragen.';
+        if($fileId !== '') {
+          $text .= ' File-ID: '.htmlspecialchars($fileId);
+        }
+        $message = '<div class="success">'.$text.'</div>';
+        $this->app->erp->RechnungProtokoll($id, 'Lexware Office Upload: '.$text);
     }
     catch (LexwareOfficeException $exception) {
       $errorText = htmlspecialchars($exception->getMessage());
