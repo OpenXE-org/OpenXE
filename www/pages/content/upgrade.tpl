@@ -29,8 +29,9 @@
                                 <div><strong>Status:</strong> [STATUS_MESSAGE]</div>
                                 <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
                                 <div class="status-meta"><strong>Letzter Durchlauf:</strong> [LAST_RUN]</div>
-                                <div class="status-meta"><strong>Aktuelle Version:</strong> OpenXE [CURRENT]</div>
-                                <div class="status-meta"><strong>Upgrade-Quelle:</strong> [REMOTE_HOST] ([REMOTE_BRANCH])</div>
+                                <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
+                                <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
+                                <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
                             </fieldset>
                             <fieldset>
                                 <legend>{|Hinweise zum Upgrade|}</legend>
@@ -39,6 +40,14 @@
                                     Für lange Läufe kannst du das Protokoll mit "Anzeige auffrischen" neu laden. Bei hartnäckigen Fehlern
                                     hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.
                                 </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>{|Versionsvergleich|}</legend>
+                                <table width="100%" border="0" class="mkTableFormular">
+                                    <tr><td><strong>Installiert</strong></td><td>OpenXE [CURRENT]</td></tr>
+                                    <tr><td><strong>Lokaler Branch</strong></td><td>[LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></td></tr>
+                                    <tr><td><strong>Upgrade-Ziel</strong></td><td>[REMOTE_BRANCH] @ [REMOTE_HOST]</td></tr>
+                                </table>
                             </fieldset>
                             <fieldset>
                                 <legend>{|Protokoll|}</legend>
