@@ -48,6 +48,8 @@ class upgrade {
         $status_headline = "Bereit";
         $status_level = "info";
         $status_message = "Wähle eine Aktion, um den Upgrader zu starten.";
+        $guidance_title = "Nächste Schritte";
+        $guidance_message = "Aktion auswählen und starten.";
         $last_action = "Noch keine Aktion ausgeführt";
         $last_run = "";
 
@@ -217,6 +219,14 @@ class upgrade {
         }
 
         if ($submit && $submit !== 'refresh' && $submit !== 'save_remote') {
+
+            $diff_count = null;
+            if (preg_match('/(\\d+) differences\\./', $result, $matches)) {
+                $diff_count = (int)$matches[1];
+            }
+
+            $has_modified_files = str_contains($result, "There are modified files");
+
             if ($result_code === 0) {
                 $status_headline = "Aktion erfolgreich";
                 $status_level = "success";
@@ -225,14 +235,60 @@ class upgrade {
                 } else {
                     $status_message = "Der Durchlauf wurde ohne Fehler abgeschlossen.";
                 }
+
+                switch ($submit) {
+                    case 'check_upgrade':
+                        if ($diff_count === 0) {
+                            $guidance_title = "Alles aktuell";
+                            $guidance_message = "Keine DB-Differenzen erkannt. Code wurde nicht aktualisiert. Kein Upgrade nötig.";
+                        } elseif ($diff_count !== null && $diff_count > 0) {
+                            $guidance_title = "Upgrade empfohlen";
+                            $guidance_message = "Es wurden Unterschiede festgestellt. Starte jetzt \"Upgrade jetzt starten\", um Dateien und DB zu aktualisieren.";
+                        } else {
+                            $guidance_title = "Prüfung abgeschlossen";
+                            $guidance_message = "Protokoll prüfen. Wenn Änderungen gewünscht sind, starte das Upgrade.";
+                        }
+                        if ($has_modified_files) {
+                            $guidance_message .= " Achtung: Lokale Änderungen vorhanden – entweder bereinigen oder mit '-f/Erzwingen' arbeiten.";
+                        }
+                        break;
+                    case 'do_upgrade':
+                        $guidance_title = "Upgrade abgeschlossen";
+                        $guidance_message = "System und Datenbank wurden aktualisiert. Nächster Schritt: Funktionstest durchführen.";
+                        break;
+                    case 'check_db':
+                        if ($diff_count === 0) {
+                            $guidance_title = "Datenbank ist aktuell";
+                            $guidance_message = "Keine Differenzen gefunden. Kein DB-Upgrade erforderlich.";
+                        } elseif ($diff_count !== null && $diff_count > 0) {
+                            $guidance_title = "DB-Upgrade möglich";
+                            $guidance_message = "Es wurden Datenbankunterschiede gefunden. Starte \"Datenbank-Upgrade\".";
+                        } else {
+                            $guidance_title = "Prüfung abgeschlossen";
+                            $guidance_message = "Protokoll ansehen und bei Bedarf das DB-Upgrade auslösen.";
+                        }
+                        break;
+                    case 'do_db_upgrade':
+                        $guidance_title = "Datenbank aktualisiert";
+                        $guidance_message = "DB-Upgrade ausgeführt. Prüfe das Protokoll und teste Funktionen.";
+                        break;
+                    default:
+                        $guidance_title = "Ergebnis vorliegend";
+                        $guidance_message = "Siehe Protokoll für Details.";
+                }
+
             } elseif ($result_code === -1) {
                 $status_headline = "Fehlgeschlagen";
                 $status_level = "error";
                 $status_message = "Upgrade hat Fehler gemeldet. Protokoll prüfen.";
+                $guidance_title = "Fehlerbehebung";
+                $guidance_message = "Siehe Protokoll, bereinige Fehler (z.B. lokale Änderungen, Verbindungsprobleme) und starte erneut.";
             } else {
                 $status_headline = "Abgeschlossen";
                 $status_level = "info";
                 $status_message = "Ergebnis siehe Protokoll.";
+                $guidance_title = "Protokoll prüfen";
+                $guidance_message = "Bitte Protokoll ansehen und ggf. nächsten Schritt manuell wählen.";
             }
         }
 
@@ -246,6 +302,8 @@ class upgrade {
         $this->app->Tpl->Set('STATUS_HEADLINE', $status_headline);
         $this->app->Tpl->Set('STATUS_LEVEL', $status_level);
         $this->app->Tpl->Set('STATUS_MESSAGE', $status_message);
+        $this->app->Tpl->Set('GUIDANCE_TITLE', $guidance_title);
+        $this->app->Tpl->Set('GUIDANCE_MESSAGE', $guidance_message);
         $this->app->Tpl->Set('LAST_ACTION', $last_action);
         $this->app->Tpl->Set('LAST_RUN', $last_run);
 
