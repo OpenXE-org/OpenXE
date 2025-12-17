@@ -1,5 +1,5 @@
 <style>
-.status-banner {border-radius:6px;padding:14px;margin-bottom:12px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.status-banner {border-radius:6px;padding:14px;margin-bottom:12px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;height:100%;}
 .banner-success {background:#1b6e30;}
 .banner-error {background:#b52b27;}
 .banner-warning {background:#d89216;}
@@ -9,15 +9,18 @@
 .banner-sub {font-size:14px;margin-top:4px;}
 .banner-guidance {margin-top:8px;font-weight:700;}
 .banner-guidance small {display:block;font-weight:400;}
+.banner-hint {margin-top:8px;font-size:13px;opacity:0.9;}
 .banner-actions {display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;}
 .banner-btn {background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:5px;padding:8px 14px;font-weight:700;cursor:pointer;min-height:40px;}
 .banner-btn:hover {background:rgba(255,255,255,0.18);}
 .icon-btn {width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:20px;padding:0;}
 .hidden-force {display:block;width:100%;margin-top:6px;}
 .hidden-force label {display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:rgba(255,255,255,0.9);}
-.top-row {display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px;}
+.top-row {display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;margin-bottom:16px;}
 .status-col {flex:2;min-width:420px;display:flex;}
-.steps-col {flex:1;min-width:320px;}
+.steps-col {flex:1;min-width:320px;display:flex;}
+.steps-stack {display:flex;flex-direction:column;gap:12px;width:100%;}
+.info-row {display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
 .step-head {display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -55,6 +58,7 @@
                             <div class="banner-headline">[STATUS_HEADLINE]</div>
                             <div class="banner-sub">[STATUS_MESSAGE]</div>
                             <div class="banner-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
+                            <div class="banner-hint">Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen. Für lange Läufe kannst du das Protokoll mit "Neu laden" aktualisieren. Bei hartnäckigen Fehlern hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.</div>
                         </div>
                         <div class="banner-actions">
                             <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
@@ -62,27 +66,27 @@
                     </div>
                 </div>
                 <div class="steps-col">
-                    <div class="stepper">
-                        <div class="step-card">
+                    <div class="steps-stack">
+                        <div class="step-card" style="height:100%;">
                             <div class="step-head">
                                 <div>
                                     <div class="pill pill-[STATUS_LEVEL]">Dateien</div>
                                     <div><strong>Code & Repo</strong></div>
                                 </div>
                                 <div class="step-actions">
-                                    <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="step-btn">[UPGRADE_BUTTON_LABEL]</button>
+                                    <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="step-btn" style="width:100%;">[UPGRADE_BUTTON_LABEL]</button>
                                 </div>
                             </div>
                             <div class="force-wrap" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label></div>
                         </div>
-                        <div class="step-card">
+                        <div class="step-card" style="height:100%;">
                             <div class="step-head">
                                 <div>
                                     <div class="pill pill-[STATUS_LEVEL]">Datenbank</div>
                                     <div><strong>DB-Check & Upgrade</strong></div>
                                 </div>
                                 <div class="step-actions">
-                                    <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="step-btn">[UPGRADE_DB_BUTTON_LABEL]</button>
+                                    <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="step-btn" style="width:100%;">[UPGRADE_DB_BUTTON_LABEL]</button>
                                 </div>
                             </div>
                         </div>
@@ -90,9 +94,9 @@
                 </div>
             </div>
 
-            <div class="top-row" style="margin-bottom:12px;flex-wrap:wrap;">
-                <div class="status-col" style="flex:1;max-width:50%;min-width:320px;">
-                    <div class="card">
+            <div class="info-row">
+                <div class="status-col" style="flex:1;min-width:320px;">
+                    <div class="card" style="height:100%;">
                         <legend><strong>{|Systeminfo|}</strong></legend>
                         <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
                         <div class="status-meta"><strong>Letzter Durchlauf:</strong> [LAST_RUN]</div>
@@ -101,8 +105,8 @@
                         <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
                     </div>
                 </div>
-                <div class="steps-col" style="flex:1;max-width:50%;min-width:320px;">
-                    <div class="card">
+                <div class="status-col" style="flex:1;min-width:320px;">
+                    <div class="card" style="height:100%;">
                         <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
                         <table width="100%" border="0" class="mkTableFormular">
                             <tr><td colspan=2><div class="hint">Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.</div></td></tr>
@@ -111,14 +115,6 @@
                             <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">Quelle speichern</button></td></tr>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <legend><strong>{|Hinweise zum Upgrade|}</strong></legend>
-                <div class="hint">
-                    Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen.
-                    Für lange Läufe kannst du das Protokoll mit "Neu laden" aktualisieren. Bei hartnäckigen Fehlern hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.
                 </div>
             </div>
 
