@@ -23,9 +23,10 @@
 .status-guidance small {font-weight:400;display:block;margin-top:2px;}
 .status-bar {display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
 .status-text {flex:1;min-width:0;}
-.banner-actions {display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:flex-start;max-width:40%;}
-.banner-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:6px 10px;font-weight:600;cursor:pointer;}
+.banner-actions {display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:flex-start;max-width:45%;}
+.banner-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-weight:600;cursor:pointer;}
 .banner-btn:hover {opacity:0.9;}
+.icon-btn {width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;padding:0;}
 </style>
 
 <div id="tabs">
@@ -49,11 +50,11 @@
                                     <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
                                 </div>
                                 <div class="banner-actions">
-                                    <button name="submit" value="refresh" class="banner-btn" title="Anzeige neu laden">Neu laden</button>
                                     <button name="submit" value="check_upgrade" class="banner-btn" title="Code & DB prüfen">Upgrades prüfen</button>
                                     <button name="submit" value="do_upgrade" class="banner-btn" [UPGRADE_VISIBLE] title="Code & DB aktualisieren">Upgrade starten</button>
                                     <button name="submit" value="check_db" class="banner-btn" title="Datenbank prüfen">DB prüfen</button>
                                     <button name="submit" value="do_db_upgrade" class="banner-btn" [UPGRADE_DB_VISIBLE] title="Nur DB aktualisieren">DB-Upgrade</button>
+                                    <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
                                 </div>
                             </div>
                             <fieldset class="upgrade-status-card card-[STATUS_LEVEL]">
@@ -88,7 +89,11 @@
                             </fieldset>
                         </div>
                     </div>
-                    <div class="col-xs-14 col-md-4 col-md-height">
+                </div>
+            </div>
+            <div class="row">
+                <div class="row-height">
+                    <div class="col-xs-14 col-md-10 col-md-height">
                         <div class="inside inside-full-height">
                             <fieldset>
                                 <legend>{|Upgrade-Quelle (Git)|}</legend>
