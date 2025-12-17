@@ -19,8 +19,8 @@
 .banner-error {background:#b52b27;color:#fff;}
 .banner-warning {background:#d89216;color:#fff;}
 .banner-info {background:#0b3c68;color:#fff;}
-.guidance-box {border:1px dashed #b5c7de;border-radius:6px;padding:10px;margin:12px 0;background:#f9fbff;}
-.guidance-title {font-weight:700;margin-bottom:4px;}
+.status-guidance {margin-top:8px;font-weight:600;}
+.status-guidance small {font-weight:400;display:block;margin-top:2px;}
 </style>
 
 <div id="tabs">
@@ -38,19 +38,17 @@
                             <div class="result-banner banner-[STATUS_LEVEL]">
                                 <div style="font-size:16px;">[STATUS_HEADLINE]</div>
                                 <div style="font-weight:400;">[STATUS_MESSAGE]</div>
+                                <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
                             </div>
                             <fieldset class="upgrade-status-card card-[STATUS_LEVEL]">
                                 <div class="status-pill status-[STATUS_LEVEL]">[STATUS_HEADLINE]</div>
                                 <div><strong>Status:</strong> [STATUS_MESSAGE]</div>
+                                <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
                                 <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
                                 <div class="status-meta"><strong>Letzter Durchlauf:</strong> [LAST_RUN]</div>
                                 <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
                                 <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
                                 <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
-                                <div class="guidance-box" style="margin-top:12px;">
-                                    <div class="guidance-title">[GUIDANCE_TITLE]</div>
-                                    <div>[GUIDANCE_MESSAGE]</div>
-                                </div>
                             </fieldset>
                             <fieldset>
                                 <legend>{|Hinweise zum Upgrade|}</legend>
