@@ -68,6 +68,8 @@ class upgrade {
             $git_branch = trim((string)@shell_exec('cd '.escapeshellarg($project_root).' && git rev-parse --abbrev-ref HEAD'));
             $git_commit = trim((string)@shell_exec('cd '.escapeshellarg($project_root).' && git log -1 --date=short --pretty="%h | %cd"'));
         }
+        $branch_alignment_text = "Lokaler Branch entspricht der Upgrade-Quelle.";
+        $branch_alignment_class = "pill-success";
 
         if (is_readable($remote_config_file)) {
             $remote_data_raw = file_get_contents($remote_config_file);
@@ -78,6 +80,11 @@ class upgrade {
             $status_headline = "Hinweis";
             $status_level = "warning";
             $status_message = "Konfiguration der Upgrade-Quelle konnte nicht geladen werden.";
+        }
+
+        if ($git_branch !== "" && $remote_branch !== "" && $git_branch !== $remote_branch) {
+            $branch_alignment_text = "Achtung: Lokaler Branch (".$git_branch.") weicht von Upgrade-Quelle (".$remote_branch.") ab.";
+            $branch_alignment_class = "pill-warning";
         }
 
         if ($submit === 'save_remote') {
@@ -121,6 +128,8 @@ class upgrade {
         $this->app->Tpl->Set('REMOTE_BRANCH', htmlspecialchars($remote_branch));
         $this->app->Tpl->Set('LOCAL_BRANCH', htmlspecialchars($git_branch));
         $this->app->Tpl->Set('LOCAL_COMMIT', htmlspecialchars($git_commit));
+        $this->app->Tpl->Set('BRANCH_ALIGNMENT', htmlspecialchars($branch_alignment_text));
+        $this->app->Tpl->Set('BRANCH_ALIGNMENT_CLASS', $branch_alignment_class);
 
         $directory = dirname(getcwd())."/upgrade";
         $result_code = null;

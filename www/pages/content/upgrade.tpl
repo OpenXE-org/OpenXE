@@ -104,6 +104,7 @@
                         <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
                         <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
                         <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
+                        <div class="status-meta"><strong>Abgleich:</strong> <span class="pill [BRANCH_ALIGNMENT_CLASS]">[BRANCH_ALIGNMENT]</span></div>
                     </div>
                 </div>
                 <div class="status-col" style="flex:1;min-width:320px;">
