@@ -77,6 +77,8 @@ class upgrade {
             $remote_data = json_decode($remote_data_raw, true) ?: array();
             $remote_host = $remote_data['host'] ?? "";
             $remote_branch = $remote_data['branch'] ?? "";
+            $original_remote_host = $remote_data['original_host'] ?? "";
+            $original_remote_branch = $remote_data['original_branch'] ?? "";
         } else {
             $status_headline = "Hinweis";
             $status_level = "warning";
@@ -107,7 +109,12 @@ class upgrade {
 
             if (empty($remote_errors)) {
                 $payload = json_encode(
-                    array('host' => $remote_host_input, 'branch' => $remote_branch_input),
+                    array(
+                        'host' => $remote_host_input,
+                        'branch' => $remote_branch_input,
+                        'original_host' => $remote_host_input,
+                        'original_branch' => $remote_branch_input
+                    ),
                     JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
                 );
                 if (file_put_contents($remote_config_file, $payload) === false) {
@@ -115,6 +122,8 @@ class upgrade {
                 } else {
                     $remote_host = $remote_host_input;
                     $remote_branch = $remote_branch_input;
+                    $original_remote_host = $remote_host_input;
+                    $original_remote_branch = $remote_branch_input;
                     $status_headline = "Upgrade-Quelle gespeichert";
                     $status_level = "success";
                     $status_message = "Remote und Branch wurden übernommen.";
@@ -152,10 +161,43 @@ class upgrade {
                 $status_level = "error";
                 $status_message = implode(" ", $remote_errors);
             }
+        } elseif ($submit === 'reset_remote_origin') {
+            if ($original_remote_host === "" || $original_remote_branch === "") {
+                $remote_errors[] = "Kein Original-Remote hinterlegt.";
+            }
+            if (empty($remote_errors)) {
+                $payload = json_encode(
+                    array(
+                        'host' => $original_remote_host,
+                        'branch' => $original_remote_branch,
+                        'original_host' => $original_remote_host,
+                        'original_branch' => $original_remote_branch
+                    ),
+                    JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+                );
+                if (file_put_contents($remote_config_file, $payload) === false) {
+                    $remote_errors[] = "Upgrade-Quelle konnte nicht zurückgesetzt werden.";
+                } else {
+                    $remote_host = $original_remote_host;
+                    $remote_branch = $original_remote_branch;
+                    $branch_alignment_text = "Upgrade-Quelle auf Original zurückgesetzt (".$remote_branch.").";
+                    $branch_alignment_class = "pill-info";
+                    $status_headline = "Upgrade-Quelle zurückgesetzt";
+                    $status_level = "info";
+                    $status_message = "Remote/Branch auf Originalwerte gestellt.";
+                    $show_sync_remote = ($git_branch !== "" && $remote_branch !== "" && $git_branch !== $remote_branch);
+                }
+            } else {
+                $status_headline = "Eingabefehler";
+                $status_level = "error";
+                $status_message = implode(" ", $remote_errors);
+            }
         }
 
         $this->app->Tpl->Set('REMOTE_HOST', htmlspecialchars($remote_host));
         $this->app->Tpl->Set('REMOTE_BRANCH', htmlspecialchars($remote_branch));
+        $this->app->Tpl->Set('REMOTE_ORIGINAL_HOST', htmlspecialchars($original_remote_host));
+        $this->app->Tpl->Set('REMOTE_ORIGINAL_BRANCH', htmlspecialchars($original_remote_branch));
         $this->app->Tpl->Set('LOCAL_BRANCH', htmlspecialchars($git_branch));
         $this->app->Tpl->Set('LOCAL_COMMIT', htmlspecialchars($git_commit));
         $this->app->Tpl->Set('BRANCH_ALIGNMENT', htmlspecialchars($branch_alignment_text));
