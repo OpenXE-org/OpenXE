@@ -108,6 +108,9 @@
                         <div class="status-meta" [SHOW_SYNC_REMOTE] style="margin-top:6px;">
                             <button name="submit" value="sync_remote_to_local" class="ui-button-icon action-btn" style="width:100%;">Upgrade-Quelle auf lokalen Branch setzen</button>
                         </div>
+                        <div class="status-meta" style="margin-top:6px;">
+                            <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">Upgrade-Quelle auf Original zurücksetzen</button>
+                        </div>
                     </div>
                 </div>
                 <div class="status-col" style="flex:1;min-width:320px;">
