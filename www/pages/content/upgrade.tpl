@@ -21,6 +21,7 @@
 .steps-col {display:flex;}
 .steps-stack {display:flex;flex-direction:column;gap:12px;width:100%;}
 .info-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
+.log-section {margin-top:16px;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
 .step-head {display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -118,9 +119,11 @@
                 </div>
             </div>
 
-            <div class="card">
-                <legend><strong>{|Protokoll|}</strong></legend>
-                <div class="log-box">[OUTPUT_FROM_CLI]</div>
+            <div class="log-section">
+                <div class="card">
+                    <legend><strong>{|Protokoll|}</strong></legend>
+                    <div class="log-box">[OUTPUT_FROM_CLI]</div>
+                </div>
             </div>
         </form>
     </div>
