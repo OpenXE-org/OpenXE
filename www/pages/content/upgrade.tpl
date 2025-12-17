@@ -15,9 +15,9 @@
 .icon-btn {width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:20px;padding:0;}
 .hidden-force {display:block;width:100%;margin-top:6px;}
 .hidden-force label {display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:rgba(255,255,255,0.9);}
-.top-row {display:flex;gap:12px;align-items:flex-start;}
-.status-col {flex:2;min-width:0;}
-.steps-col {flex:1;min-width:280px;}
+.top-row {display:flex;gap:12px;align-items:stretch;}
+.status-col {flex:2;min-width:0;display:flex;}
+.steps-col {flex:1;min-width:320px;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
 .step-head {display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -50,7 +50,7 @@
 
             <div class="top-row">
                 <div class="status-col">
-                    <div class="status-banner banner-[STATUS_LEVEL]">
+                    <div class="status-banner banner-[STATUS_LEVEL]" style="width:100%;height:100%;">
                         <div class="banner-text">
                             <div class="banner-headline">[STATUS_HEADLINE]</div>
                             <div class="banner-sub">[STATUS_MESSAGE]</div>
@@ -90,24 +90,28 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="status-pill status-[STATUS_LEVEL]">[STATUS_HEADLINE]</div>
-                <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
-                <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
-                <div class="status-meta"><strong>Letzter Durchlauf:</strong> [LAST_RUN]</div>
-                <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
-                <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
-                <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
-            </div>
-
-            <div class="card">
-                <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
-                <table width="100%" border="0" class="mkTableFormular">
-                    <tr><td colspan=2><div class="hint">Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.</div></td></tr>
-                    <tr><td>Remote-URL:</td><td><input class="input-inline" type="text" name="remote_host" value="[REMOTE_HOST]" autocomplete="off"></td></tr>
-                    <tr><td>Branch:</td><td><input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off"></td></tr>
-                    <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">Quelle speichern</button></td></tr>
-                </table>
+            <div class="top-row" style="margin-bottom:12px;">
+                <div class="status-col" style="flex:1;max-width:50%;">
+                    <div class="card" style="height:100%;">
+                        <legend><strong>{|Systeminfo|}</strong></legend>
+                        <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
+                        <div class="status-meta"><strong>Letzter Durchlauf:</strong> [LAST_RUN]</div>
+                        <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
+                        <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
+                        <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
+                    </div>
+                </div>
+                <div class="steps-col" style="flex:1;max-width:50%;">
+                    <div class="card" style="height:100%;">
+                        <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
+                        <table width="100%" border="0" class="mkTableFormular">
+                            <tr><td colspan=2><div class="hint">Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.</div></td></tr>
+                            <tr><td>Remote-URL:</td><td><input class="input-inline" type="text" name="remote_host" value="[REMOTE_HOST]" autocomplete="off"></td></tr>
+                            <tr><td>Branch:</td><td><input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off"></td></tr>
+                            <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">Quelle speichern</button></td></tr>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
