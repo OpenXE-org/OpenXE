@@ -35,6 +35,8 @@
 .step-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-weight:700;cursor:pointer;}
 .step-btn:hover {opacity:0.9;}
 .force-wrap {margin-top:6px;font-size:12px;color:#0b3c68;}
+.force-highlight {border:2px solid #b52b27;background:#fff4e5;border-radius:6px;padding:8px;}
+.force-highlight label {font-weight:700;}
 .card {border:1px solid #dbe3ef;border-radius:6px;background:#fff;padding:12px;margin-bottom:12px;}
 .log-box {background:#0f1720;color:#e5e7eb;border-radius:6px;padding:10px;max-height:420px;overflow:auto;font-family:Consolas,monospace;font-size:13px;}
 .hint {color:#555;font-size:13px;}
@@ -79,7 +81,7 @@
                                     <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="step-btn" style="width:100%;">[UPGRADE_BUTTON_LABEL]</button>
                                 </div>
                             </div>
-                            <div class="force-wrap" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label></div>
+                            <div class="force-wrap [FORCE_HIGHLIGHT_CLASS]" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label></div>
                         </div>
                         <div class="step-card">
                             <div class="step-head">

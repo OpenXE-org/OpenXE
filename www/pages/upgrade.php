@@ -300,6 +300,7 @@ class upgrade {
 
         // Read results
         $result = file_exists($logfile) ? file_get_contents($logfile) : "";
+        $highlight_force = (!$force && str_contains($result, "Clear modified files or use -f"));
 
         if ($result_code === 0 && $result !== "") {
             if (str_contains($result, "Aborted")) {
@@ -381,6 +382,14 @@ class upgrade {
             }
         }
 
+        if ($highlight_force && $result_code === -1) {
+            $status_level = "warning";
+            $status_headline = "Lokale Dateien verändert";
+            $status_message = "Es gibt lokale Änderungen im Repo. Bitte 'Erzwingen (-f)' aktivieren oder Änderungen bereinigen.";
+            $guidance_title = "Hinweis";
+            $guidance_message = "Aktiviere unten 'Erzwingen (-f)' und starte das Upgrade erneut (oder setze die Änderungen zurück).";
+        }
+
         if ($result !== "") {
             $last_run = date('d.m.Y H:i', filemtime($logfile));
         } else {
@@ -397,7 +406,8 @@ class upgrade {
         $this->app->Tpl->Set('LAST_RUN', $last_run);
         $this->app->Tpl->Set('UPGRADE_BUTTON_ACTION', $upgrade_available ? "do_upgrade" : "check_upgrade");
         $this->app->Tpl->Set('UPGRADE_BUTTON_LABEL', $upgrade_available ? "Upgrade starten" : "Upgrades prüfen");
-        $this->app->Tpl->Set('UPGRADE_FORCE_VISIBLE', $upgrade_available ? "" : "hidden");
+        $this->app->Tpl->Set('UPGRADE_FORCE_VISIBLE', ($upgrade_available || $highlight_force) ? "" : "hidden");
+        $this->app->Tpl->Set('FORCE_HIGHLIGHT_CLASS', $highlight_force ? "force-highlight" : "");
         $this->app->Tpl->Set('UPGRADE_DB_BUTTON_ACTION', $upgrade_db_available ? "do_db_upgrade" : "check_db");
         $this->app->Tpl->Set('UPGRADE_DB_BUTTON_LABEL', $upgrade_db_available ? "DB-Upgrade" : "DB prüfen");
         $this->app->Tpl->Set('UPGRADE_DB_FORCE_VISIBLE', "hidden");
