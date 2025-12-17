@@ -21,6 +21,7 @@
 .steps-col {display:flex;}
 .steps-stack {display:flex;flex-direction:column;gap:12px;width:100%;}
 .info-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:24px;margin-top:16px;}
+.compare-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
 .log-section {margin-top:24px;clear:both;position:relative;z-index:0;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
@@ -95,21 +96,19 @@
                 </div>
             </div>
 
-            <div class="info-row">
+            <div class="compare-row">
                 <div class="status-col" style="flex:1;min-width:320px;">
                     <div class="card" style="height:100%;">
-                        <legend><strong>{|Systeminfo|}</strong></legend>
-                        <div class="status-meta"><strong>Letzte Aktion:</strong> [LAST_ACTION]</div>
-                        <div class="status-meta"><strong>Letzter Durchlauf:</strong> [LAST_RUN]</div>
+                        <legend><strong>{|Versionsabgleich|}</strong></legend>
                         <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
                         <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
-                        <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
-                        <div class="status-meta"><strong>Abgleich:</strong> <span class="pill [BRANCH_ALIGNMENT_CLASS]">[BRANCH_ALIGNMENT]</span></div>
+                        <div class="status-meta"><strong>Upgrade-Quelle:</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
+                        <div class="status-meta"><strong>Status:</strong> <span class="pill [BRANCH_ALIGNMENT_CLASS]">[BRANCH_ALIGNMENT]</span></div>
                         <div class="status-meta" [SHOW_SYNC_REMOTE] style="margin-top:6px;">
-                            <button name="submit" value="sync_remote_to_local" class="ui-button-icon action-btn" style="width:100%;">Upgrade-Quelle auf lokalen Branch setzen</button>
+                            <button name="submit" value="sync_remote_to_local" class="ui-button-icon action-btn" style="width:100%;">Quelle auf lokalen Branch setzen</button>
                         </div>
                         <div class="status-meta" style="margin-top:6px;">
-                            <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">Upgrade-Quelle auf Original zurücksetzen</button>
+                            <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">Quelle auf Original zurücksetzen</button>
                         </div>
                     </div>
                 </div>
