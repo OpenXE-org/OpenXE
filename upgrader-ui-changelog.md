@@ -10,3 +10,4 @@
 - Upgrade-Abläufe laufen im selben Tab (keine neuen Fenster).
 - Versionsvergleich hinzugefügt (Installiert, lokaler Branch/Commit, Upgrade-Ziel).
 - Status-Banner und farbige Karten je Ergebniszustand ergänzen; geführte Hinweise mit nächstem Schritt abhängig vom Lauf (z.B. „Upgrade empfohlen“ bei Differenzen, „Alles aktuell“ bei 0 Differenzen).
+- Guided-Hinweise aus eigenem Feld entfernt; Hinweise erscheinen direkt im farbigen Statusbereich (Banner + Karte).
