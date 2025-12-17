@@ -24,9 +24,9 @@
 .status-bar {display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
 .status-text {flex:1;min-width:0;}
 .banner-actions {display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:flex-start;max-width:45%;}
-.banner-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-weight:600;cursor:pointer;}
+.banner-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:8px 14px;font-weight:600;cursor:pointer;min-height:36px;}
 .banner-btn:hover {opacity:0.9;}
-.icon-btn {width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;padding:0;}
+.icon-btn {width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;padding:0;align-self:center;}
 </style>
 
 <div id="tabs">
@@ -50,10 +50,16 @@
                                     <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
                                 </div>
                                 <div class="banner-actions">
-                                    <button name="submit" value="check_upgrade" class="banner-btn" title="Code & DB prüfen">Upgrades prüfen</button>
-                                    <button name="submit" value="do_upgrade" class="banner-btn" [UPGRADE_VISIBLE] title="Code & DB aktualisieren">Upgrade starten</button>
-                                    <button name="submit" value="check_db" class="banner-btn" title="Datenbank prüfen">DB prüfen</button>
-                                    <button name="submit" value="do_db_upgrade" class="banner-btn" [UPGRADE_DB_VISIBLE] title="Nur DB aktualisieren">DB-Upgrade</button>
+                                    <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="banner-btn" title="Code & DB prüfen/aktualisieren">[UPGRADE_BUTTON_LABEL]</button>
+                                    <div [UPGRADE_FORCE_VISIBLE] style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f0f6ff;">
+                                        <input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]>
+                                        <label style="margin:0;padding:0;">Erzwingen (-f)</label>
+                                    </div>
+                                    <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="banner-btn" title="Datenbank prüfen/aktualisieren">[UPGRADE_DB_BUTTON_LABEL]</button>
+                                    <div [UPGRADE_DB_FORCE_VISIBLE] style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f0f6ff;">
+                                        <input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]>
+                                        <label style="margin:0;padding:0;">Erzwingen (-f)</label>
+                                    </div>
                                     <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
                                 </div>
                             </div>
