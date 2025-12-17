@@ -318,7 +318,7 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_FORCE_VISIBLE', $upgrade_available ? "" : "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_BUTTON_ACTION', $upgrade_db_available ? "do_db_upgrade" : "check_db");
         $this->app->Tpl->Set('UPGRADE_DB_BUTTON_LABEL', $upgrade_db_available ? "DB-Upgrade" : "DB prüfen");
-        $this->app->Tpl->Set('UPGRADE_DB_FORCE_VISIBLE', $upgrade_db_available ? "" : "hidden");
+        $this->app->Tpl->Set('UPGRADE_DB_FORCE_VISIBLE', "hidden");
 
         $this->app->Tpl->Set('CURRENT', $this->app->erp->Revision());
         $this->app->Tpl->Set('OUTPUT_FROM_CLI',nl2br($result));
