@@ -105,6 +105,9 @@
                         <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
                         <div class="status-meta"><strong>Ziel (Upgrade-Quelle):</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
                         <div class="status-meta"><strong>Abgleich:</strong> <span class="pill [BRANCH_ALIGNMENT_CLASS]">[BRANCH_ALIGNMENT]</span></div>
+                        <div class="status-meta" [SHOW_SYNC_REMOTE] style="margin-top:6px;">
+                            <button name="submit" value="sync_remote_to_local" class="ui-button-icon action-btn" style="width:100%;">Upgrade-Quelle auf lokalen Branch setzen</button>
+                        </div>
                     </div>
                 </div>
                 <div class="status-col" style="flex:1;min-width:320px;">
