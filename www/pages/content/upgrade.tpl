@@ -51,15 +51,13 @@
                                 </div>
                                 <div class="banner-actions">
                                     <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="banner-btn" title="Code & DB prüfen/aktualisieren">[UPGRADE_BUTTON_LABEL]</button>
-                                    <div [UPGRADE_FORCE_VISIBLE] style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f0f6ff;">
-                                        <input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]>
-                                        <label style="margin:0;padding:0;">Erzwingen (-f)</label>
+                                    <div [UPGRADE_FORCE_VISIBLE] style="display:block;width:100%;font-size:12px;color:#f0f6ff;margin-left:2px;">
+                                        <label style="display:flex;align-items:center;gap:6px;margin:4px 0 0 0;">
+                                            <input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]>
+                                            <span>Erzwingen (-f)</span>
+                                        </label>
                                     </div>
                                     <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="banner-btn" title="Datenbank prüfen/aktualisieren">[UPGRADE_DB_BUTTON_LABEL]</button>
-                                    <div [UPGRADE_DB_FORCE_VISIBLE] style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f0f6ff;">
-                                        <input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]>
-                                        <label style="margin:0;padding:0;">Erzwingen (-f)</label>
-                                    </div>
                                     <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
                                 </div>
                             </div>
