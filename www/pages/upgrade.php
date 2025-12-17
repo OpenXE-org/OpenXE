@@ -26,8 +26,10 @@ class upgrade {
     function upgrade_overview() {  
     
         $submit = $this->app->Secure->GetPOST('submit');
-        $verbose = $this->app->Secure->GetPOST('details_anzeigen') === '1';
-        $db_verbose = $this->app->Secure->GetPOST('db_details_anzeigen') === '1';
+        $details_post = $this->app->Secure->GetPOST('details_anzeigen');
+        $db_details_post = $this->app->Secure->GetPOST('db_details_anzeigen');
+        $verbose = $details_post === null ? true : $details_post === '1';
+        $db_verbose = $db_details_post === null ? true : $db_details_post === '1';
         $force = $this->app->Secure->GetPOST('erzwingen') === '1';
         $remote_host_input = trim((string)$this->app->Secure->GetPOST('remote_host'));
         $remote_branch_input = trim((string)$this->app->Secure->GetPOST('remote_branch'));
