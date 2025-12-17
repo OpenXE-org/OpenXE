@@ -70,6 +70,7 @@ class upgrade {
         }
         $branch_alignment_text = "Lokaler Branch entspricht der Upgrade-Quelle.";
         $branch_alignment_class = "pill-success";
+        $show_sync_remote = false;
 
         if (is_readable($remote_config_file)) {
             $remote_data_raw = file_get_contents($remote_config_file);
@@ -85,6 +86,7 @@ class upgrade {
         if ($git_branch !== "" && $remote_branch !== "" && $git_branch !== $remote_branch) {
             $branch_alignment_text = "Achtung: Lokaler Branch (".$git_branch.") weicht von Upgrade-Quelle (".$remote_branch.") ab.";
             $branch_alignment_class = "pill-warning";
+            $show_sync_remote = true;
         }
 
         if ($submit === 'save_remote') {
@@ -122,6 +124,34 @@ class upgrade {
                 $status_level = "error";
                 $status_message = implode(" ", $remote_errors);
             }
+        } elseif ($submit === 'sync_remote_to_local') {
+            if ($remote_host === "") {
+                $remote_errors[] = "Keine Upgrade-Quelle geladen.";
+            }
+            if ($git_branch === "") {
+                $remote_errors[] = "Lokaler Branch unbekannt.";
+            }
+            if (empty($remote_errors)) {
+                $payload = json_encode(
+                    array('host' => $remote_host, 'branch' => $git_branch),
+                    JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+                );
+                if (file_put_contents($remote_config_file, $payload) === false) {
+                    $remote_errors[] = "Upgrade-Quelle konnte nicht gespeichert werden.";
+                } else {
+                    $remote_branch = $git_branch;
+                    $branch_alignment_text = "Upgrade-Quelle auf lokalen Branch gesetzt (".$git_branch.").";
+                    $branch_alignment_class = "pill-success";
+                    $status_headline = "Upgrade-Quelle aktualisiert";
+                    $status_level = "success";
+                    $status_message = "Branch aus der Arbeitskopie übernommen.";
+                    $show_sync_remote = false;
+                }
+            } else {
+                $status_headline = "Eingabefehler";
+                $status_level = "error";
+                $status_message = implode(" ", $remote_errors);
+            }
         }
 
         $this->app->Tpl->Set('REMOTE_HOST', htmlspecialchars($remote_host));
@@ -130,6 +160,7 @@ class upgrade {
         $this->app->Tpl->Set('LOCAL_COMMIT', htmlspecialchars($git_commit));
         $this->app->Tpl->Set('BRANCH_ALIGNMENT', htmlspecialchars($branch_alignment_text));
         $this->app->Tpl->Set('BRANCH_ALIGNMENT_CLASS', $branch_alignment_class);
+        $this->app->Tpl->Set('SHOW_SYNC_REMOTE', $show_sync_remote ? "" : "hidden");
 
         $directory = dirname(getcwd())."/upgrade";
         $result_code = null;
