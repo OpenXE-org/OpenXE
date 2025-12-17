@@ -46,6 +46,8 @@ class upgrade {
 
         $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
+        $upgrade_available = false;
+        $upgrade_db_available = false;
 
         $status_headline = "Bereit";
         $status_level = "info";
@@ -127,6 +129,7 @@ class upgrade {
             case 'check_upgrade':
                 $last_action = "System-Check (Dateien & Datenbank)";
                 $this->app->Tpl->Set('UPGRADE_VISIBLE', "");
+                $upgrade_available = true;
                 if (file_exists($logfile)) {
                     unlink($logfile);
                 }
@@ -166,6 +169,7 @@ class upgrade {
             case 'check_db':
                 $last_action = "Datenbank-Check";
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
+                $upgrade_db_available = true;
                 if (file_exists($logfile)) {
                     unlink($logfile);
                 }
@@ -186,6 +190,7 @@ class upgrade {
             case 'do_db_upgrade':
                 $last_action = "Datenbank-Upgrade";
                 $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "");
+                $upgrade_db_available = true;
                 if (file_exists($logfile)) {
                     unlink($logfile);
                 }
@@ -308,6 +313,12 @@ class upgrade {
         $this->app->Tpl->Set('GUIDANCE_MESSAGE', $guidance_message);
         $this->app->Tpl->Set('LAST_ACTION', $last_action);
         $this->app->Tpl->Set('LAST_RUN', $last_run);
+        $this->app->Tpl->Set('UPGRADE_BUTTON_ACTION', $upgrade_available ? "do_upgrade" : "check_upgrade");
+        $this->app->Tpl->Set('UPGRADE_BUTTON_LABEL', $upgrade_available ? "Upgrade starten" : "Upgrades prüfen");
+        $this->app->Tpl->Set('UPGRADE_FORCE_VISIBLE', $upgrade_available ? "" : "hidden");
+        $this->app->Tpl->Set('UPGRADE_DB_BUTTON_ACTION', $upgrade_db_available ? "do_db_upgrade" : "check_db");
+        $this->app->Tpl->Set('UPGRADE_DB_BUTTON_LABEL', $upgrade_db_available ? "DB-Upgrade" : "DB prüfen");
+        $this->app->Tpl->Set('UPGRADE_DB_FORCE_VISIBLE', $upgrade_db_available ? "" : "hidden");
 
         $this->app->Tpl->Set('CURRENT', $this->app->erp->Revision());
         $this->app->Tpl->Set('OUTPUT_FROM_CLI',nl2br($result));
