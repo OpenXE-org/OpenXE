@@ -16,11 +16,11 @@
 .icon-btn {width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:20px;padding:0;}
 .hidden-force {display:block;width:100%;margin-top:6px;}
 .hidden-force label {display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:rgba(255,255,255,0.9);}
-.top-row {display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;margin-bottom:16px;}
-.status-col {flex:2;min-width:420px;display:flex;}
-.steps-col {flex:1;min-width:320px;display:flex;}
+.top-row {display:grid;grid-template-columns: minmax(420px, 2fr) minmax(320px, 1fr);gap:16px;align-items:stretch;margin-bottom:16px;}
+.status-col {display:flex;}
+.steps-col {display:flex;}
 .steps-stack {display:flex;flex-direction:column;gap:12px;width:100%;}
-.info-row {display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px;}
+.info-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:12px;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
 .step-head {display:flex;align-items:center;justify-content:space-between;gap:8px;}
