@@ -21,6 +21,11 @@
 .banner-info {background:#0b3c68;color:#fff;}
 .status-guidance {margin-top:8px;font-weight:600;}
 .status-guidance small {font-weight:400;display:block;margin-top:2px;}
+.status-bar {display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.status-text {flex:1;min-width:0;}
+.banner-actions {display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:flex-start;max-width:40%;}
+.banner-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:6px 10px;font-weight:600;cursor:pointer;}
+.banner-btn:hover {opacity:0.9;}
 </style>
 
 <div id="tabs">
@@ -31,14 +36,25 @@
         [MESSAGE]
         <form action="" method="post">
             [FORMHANDLEREVENT]
+            <input type="hidden" name="details_anzeigen" value="1">
+            <input type="hidden" name="db_details_anzeigen" value="1">
             <div class="row">
                 <div class="row-height">
                     <div class="col-xs-14 col-md-10 col-md-height">
                         <div class="inside inside-full-height">
-                            <div class="result-banner banner-[STATUS_LEVEL]">
-                                <div style="font-size:16px;">[STATUS_HEADLINE]</div>
-                                <div style="font-weight:400;">[STATUS_MESSAGE]</div>
-                                <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
+                            <div class="result-banner banner-[STATUS_LEVEL] status-bar">
+                                <div class="status-text">
+                                    <div style="font-size:16px;">[STATUS_HEADLINE]</div>
+                                    <div style="font-weight:400;">[STATUS_MESSAGE]</div>
+                                    <div class="status-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
+                                </div>
+                                <div class="banner-actions">
+                                    <button name="submit" value="refresh" class="banner-btn" title="Anzeige neu laden">Neu laden</button>
+                                    <button name="submit" value="check_upgrade" class="banner-btn" title="Code & DB prüfen">Upgrades prüfen</button>
+                                    <button name="submit" value="do_upgrade" class="banner-btn" [UPGRADE_VISIBLE] title="Code & DB aktualisieren">Upgrade starten</button>
+                                    <button name="submit" value="check_db" class="banner-btn" title="Datenbank prüfen">DB prüfen</button>
+                                    <button name="submit" value="do_db_upgrade" class="banner-btn" [UPGRADE_DB_VISIBLE] title="Nur DB aktualisieren">DB-Upgrade</button>
+                                </div>
                             </div>
                             <fieldset class="upgrade-status-card card-[STATUS_LEVEL]">
                                 <div class="status-pill status-[STATUS_LEVEL]">[STATUS_HEADLINE]</div>
@@ -74,19 +90,6 @@
                     </div>
                     <div class="col-xs-14 col-md-4 col-md-height">
                         <div class="inside inside-full-height">
-                            <fieldset>
-                                <legend>{|Aktionen|}</legend>
-                                <table width="100%" border="0" class="mkTableFormular">
-                                    <tr><td colspan=2><button name="submit" value="refresh" class="ui-button-icon action-btn">Anzeige auffrischen</button></td></tr>
-                                    <tr><td colspan=2><button name="submit" value="check_upgrade" class="ui-button-icon action-btn">Upgrades prüfen</button></td></tr>
-                                    <tr><td>{|Upgrade-Details anzeigen|}:</td><td><input type="checkbox" name="details_anzeigen" value=1 [DETAILS_ANZEIGEN] size="20"></td></tr>
-                                    <tr [UPGRADE_VISIBLE]><td colspan=2><button name="submit" value="do_upgrade" class="ui-button-icon action-btn">Upgrade jetzt starten</button></td></tr>
-                                    <tr [UPGRADE_VISIBLE]><td>{|Erzwingen (-f)|}:</td><td><input type="checkbox" name="erzwingen" value=1 [ERZWINGEN] size="20"></td></tr>
-                                    <tr><td colspan=2><button name="submit" value="check_db" class="ui-button-icon action-btn">Datenbank prüfen</button></td></tr>
-                                    <tr><td>{|Datenbank-Details anzeigen|}:</td><td><input type="checkbox" name="db_details_anzeigen" value=1 [DB_DETAILS_ANZEIGEN] size="20"></td></tr>
-                                    <tr [UPGRADE_DB_VISIBLE]><td colspan=2><button name="submit" value="do_db_upgrade" class="ui-button-icon action-btn">Datenbank-Upgrade</button></td></tr>
-                                </table>
-                            </fieldset>
                             <fieldset>
                                 <legend>{|Upgrade-Quelle (Git)|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
