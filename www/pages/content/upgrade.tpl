@@ -15,7 +15,10 @@
 .icon-btn {width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:20px;padding:0;}
 .hidden-force {display:block;width:100%;margin-top:6px;}
 .hidden-force label {display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:rgba(255,255,255,0.9);}
-.stepper {display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px;}
+.top-row {display:flex;gap:12px;align-items:flex-start;}
+.status-col {flex:2;min-width:0;}
+.steps-col {flex:1;min-width:280px;}
+.stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
 .step-head {display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .pill {display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700;}
@@ -45,43 +48,43 @@
             <input type="hidden" name="details_anzeigen" value="1">
             <input type="hidden" name="db_details_anzeigen" value="1">
 
-            <div class="status-banner banner-[STATUS_LEVEL]">
-                <div class="banner-text">
-                    <div class="banner-headline">[STATUS_HEADLINE]</div>
-                    <div class="banner-sub">[STATUS_MESSAGE]</div>
-                    <div class="banner-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
-                </div>
-                <div class="banner-actions">
-                    <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="banner-btn" title="Code & DB prüfen/aktualisieren">[UPGRADE_BUTTON_LABEL]</button>
-                    <div [UPGRADE_FORCE_VISIBLE] class="hidden-force">
-                        <label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label>
-                    </div>
-                    <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="banner-btn" title="Datenbank prüfen/aktualisieren">[UPGRADE_DB_BUTTON_LABEL]</button>
-                    <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
-                </div>
-            </div>
-
-            <div class="stepper">
-                <div class="step-card">
-                    <div class="step-head">
-                        <div>
-                            <div class="pill pill-[STATUS_LEVEL]">Dateien</div>
-                            <div><strong>Code & Repo</strong></div>
+            <div class="top-row">
+                <div class="status-col">
+                    <div class="status-banner banner-[STATUS_LEVEL]">
+                        <div class="banner-text">
+                            <div class="banner-headline">[STATUS_HEADLINE]</div>
+                            <div class="banner-sub">[STATUS_MESSAGE]</div>
+                            <div class="banner-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
                         </div>
-                        <div class="step-actions">
-                            <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="step-btn">[UPGRADE_BUTTON_LABEL]</button>
+                        <div class="banner-actions">
+                            <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
                         </div>
                     </div>
-                    <div class="force-wrap" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label></div>
                 </div>
-                <div class="step-card">
-                    <div class="step-head">
-                        <div>
-                            <div class="pill pill-[STATUS_LEVEL]">Datenbank</div>
-                            <div><strong>DB-Check & Upgrade</strong></div>
+                <div class="steps-col">
+                    <div class="stepper">
+                        <div class="step-card">
+                            <div class="step-head">
+                                <div>
+                                    <div class="pill pill-[STATUS_LEVEL]">Dateien</div>
+                                    <div><strong>Code & Repo</strong></div>
+                                </div>
+                                <div class="step-actions">
+                                    <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="step-btn">[UPGRADE_BUTTON_LABEL]</button>
+                                </div>
+                            </div>
+                            <div class="force-wrap" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label></div>
                         </div>
-                        <div class="step-actions">
-                            <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="step-btn">[UPGRADE_DB_BUTTON_LABEL]</button>
+                        <div class="step-card">
+                            <div class="step-head">
+                                <div>
+                                    <div class="pill pill-[STATUS_LEVEL]">Datenbank</div>
+                                    <div><strong>DB-Check & Upgrade</strong></div>
+                                </div>
+                                <div class="step-actions">
+                                    <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="step-btn">[UPGRADE_DB_BUTTON_LABEL]</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
