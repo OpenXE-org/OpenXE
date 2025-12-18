@@ -22,7 +22,7 @@
 .steps-stack {display:flex;flex-direction:column;gap:12px;width:100%;}
 .info-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:24px;margin-top:16px;}
 .compare-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
-.log-section {margin-top:24px;clear:both;position:relative;z-index:0;}
+.log-section {margin-top:50px;clear:both;position:relative;z-index:0;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
 .step-head {display:flex;align-items:center;justify-content:space-between;gap:8px;}
