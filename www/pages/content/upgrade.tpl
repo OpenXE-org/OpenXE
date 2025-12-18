@@ -103,12 +103,9 @@
                     <div class="card" style="height:100%;">
                         <legend><strong>{|Versionsabgleich|}</strong></legend>
                         <div class="status-meta"><strong>Installiert:</strong> OpenXE [CURRENT]</div>
-                        <div class="status-meta"><strong>Lokaler Branch:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_COMMIT]</span></div>
-                        <div class="status-meta"><strong>Upgrade-Quelle:</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>)</div>
-                        <div class="status-meta"><strong>Status:</strong> <span class="pill [BRANCH_ALIGNMENT_CLASS]">[BRANCH_ALIGNMENT]</span></div>
-                        <div class="status-meta" [SHOW_SYNC_REMOTE] style="margin-top:6px;">
-                            <button name="submit" value="sync_remote_to_local" class="ui-button-icon action-btn" style="width:100%;">Quelle auf lokalen Branch setzen</button>
-                        </div>
+                        <div class="status-meta"><strong>Arbeitskopie:</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
+                        <div class="status-meta"><strong>Upgrade-Quelle:</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
+                        <div class="status-meta"><strong>Status:</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
                         <div class="status-meta" style="margin-top:6px;">
                             <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">Quelle auf Original zurücksetzen</button>
                         </div>
