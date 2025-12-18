@@ -60,17 +60,39 @@ class upgrade {
         $remote_host = "";
         $remote_branch = "";
         $remote_errors = array();
+        $original_remote_host = "";
+        $original_remote_branch = "";
 
-        $project_root = dirname(__DIR__, 2);
+        $git_root = __DIR__;
+        for ($i = 0; $i < 6; $i++) {
+            if (is_dir($git_root."/.git")) {
+                break;
+            }
+            $parent = dirname($git_root);
+            if ($parent === $git_root) {
+                break;
+            }
+            $git_root = $parent;
+        }
+        if (!is_dir($git_root."/.git")) {
+            $git_root = "";
+        }
+
         $git_branch = "";
         $git_commit = "";
-        if (is_dir($project_root."/.git")) {
-            $git_branch = trim((string)@shell_exec('cd '.escapeshellarg($project_root).' && git rev-parse --abbrev-ref HEAD'));
-            $git_commit = trim((string)@shell_exec('cd '.escapeshellarg($project_root).' && git log -1 --date=short --pretty="%h | %cd"'));
+        $local_hash = "";
+        $local_hash_short = "";
+        if ($git_root !== "") {
+            $git_branch = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --abbrev-ref HEAD'));
+            $git_commit = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' log -1 --date=short --pretty="%h | %cd"'));
+            $local_hash = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse HEAD'));
+            $local_hash_short = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --short=8 HEAD'));
         }
-        $branch_alignment_text = "Lokaler Branch entspricht der Upgrade-Quelle.";
-        $branch_alignment_class = "pill-success";
-        $show_sync_remote = false;
+
+        $update_status_text = "Remote-Stand nicht geprüft.";
+        $update_status_class = "pill-info";
+        $remote_hash = "";
+        $remote_hash_short = "";
 
         if (is_readable($remote_config_file)) {
             $remote_data_raw = file_get_contents($remote_config_file);
@@ -83,12 +105,6 @@ class upgrade {
             $status_headline = "Hinweis";
             $status_level = "warning";
             $status_message = "Konfiguration der Upgrade-Quelle konnte nicht geladen werden.";
-        }
-
-        if ($git_branch !== "" && $remote_branch !== "" && $git_branch !== $remote_branch) {
-            $branch_alignment_text = "Achtung: Lokaler Branch (".$git_branch.") weicht von Upgrade-Quelle (".$remote_branch.") ab.";
-            $branch_alignment_class = "pill-warning";
-            $show_sync_remote = true;
         }
 
         if ($submit === 'save_remote') {
@@ -130,36 +146,8 @@ class upgrade {
                 }
             } else {
                 $status_headline = "Eingabefehler";
-                $status_level = "error";
-                $status_message = implode(" ", $remote_errors);
-            }
-        } elseif ($submit === 'sync_remote_to_local') {
-            if ($remote_host === "") {
-                $remote_errors[] = "Keine Upgrade-Quelle geladen.";
-            }
-            if ($git_branch === "") {
-                $remote_errors[] = "Lokaler Branch unbekannt.";
-            }
-            if (empty($remote_errors)) {
-                $payload = json_encode(
-                    array('host' => $remote_host, 'branch' => $git_branch),
-                    JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-                );
-                if (file_put_contents($remote_config_file, $payload) === false) {
-                    $remote_errors[] = "Upgrade-Quelle konnte nicht gespeichert werden.";
-                } else {
-                    $remote_branch = $git_branch;
-                    $branch_alignment_text = "Upgrade-Quelle auf lokalen Branch gesetzt (".$git_branch.").";
-                    $branch_alignment_class = "pill-success";
-                    $status_headline = "Upgrade-Quelle aktualisiert";
-                    $status_level = "success";
-                    $status_message = "Branch aus der Arbeitskopie übernommen.";
-                    $show_sync_remote = false;
-                }
-            } else {
-                $status_headline = "Eingabefehler";
-                $status_level = "error";
-                $status_message = implode(" ", $remote_errors);
+                    $status_level = "error";
+                    $status_message = implode(" ", $remote_errors);
             }
         } elseif ($submit === 'reset_remote_origin') {
             if ($original_remote_host === "" || $original_remote_branch === "") {
@@ -180,17 +168,39 @@ class upgrade {
                 } else {
                     $remote_host = $original_remote_host;
                     $remote_branch = $original_remote_branch;
-                    $branch_alignment_text = "Upgrade-Quelle auf Original zurückgesetzt (".$remote_branch.").";
-                    $branch_alignment_class = "pill-info";
                     $status_headline = "Upgrade-Quelle zurückgesetzt";
                     $status_level = "info";
                     $status_message = "Remote/Branch auf Originalwerte gestellt.";
-                    $show_sync_remote = ($git_branch !== "" && $remote_branch !== "" && $git_branch !== $remote_branch);
                 }
             } else {
                 $status_headline = "Eingabefehler";
                 $status_level = "error";
                 $status_message = implode(" ", $remote_errors);
+            }
+        }
+
+        // Calculate version alignment (local vs. upgrade source)
+        if ($git_root !== "" && $remote_host !== "" && $remote_branch !== "") {
+            $remote_ref = "refs/heads/".$remote_branch;
+            $remote_line = trim((string)@shell_exec(
+                'git -C '.escapeshellarg($git_root).' ls-remote '.escapeshellarg($remote_host).' '.escapeshellarg($remote_ref)
+            ));
+            if ($remote_line !== "") {
+                $remote_hash = trim(strtok($remote_line, "\t "));
+                $remote_hash_short = substr($remote_hash, 0, 8);
+                if ($local_hash !== "" && $local_hash === $remote_hash) {
+                    $update_status_text = "Alles aktuell";
+                    $update_status_class = "pill-success";
+                } elseif ($local_hash !== "" && $local_hash !== $remote_hash) {
+                    $update_status_text = "Update verfügbar";
+                    $update_status_class = "pill-warning";
+                } else {
+                    $update_status_text = "Lokaler Stand unbekannt";
+                    $update_status_class = "pill-warning";
+                }
+            } else {
+                $update_status_text = "Remote nicht erreichbar";
+                $update_status_class = "pill-warning";
             }
         }
 
@@ -200,9 +210,11 @@ class upgrade {
         $this->app->Tpl->Set('REMOTE_ORIGINAL_BRANCH', htmlspecialchars($original_remote_branch));
         $this->app->Tpl->Set('LOCAL_BRANCH', htmlspecialchars($git_branch));
         $this->app->Tpl->Set('LOCAL_COMMIT', htmlspecialchars($git_commit));
-        $this->app->Tpl->Set('BRANCH_ALIGNMENT', htmlspecialchars($branch_alignment_text));
-        $this->app->Tpl->Set('BRANCH_ALIGNMENT_CLASS', $branch_alignment_class);
-        $this->app->Tpl->Set('SHOW_SYNC_REMOTE', $show_sync_remote ? "" : "hidden");
+        $this->app->Tpl->Set('LOCAL_HASH_SHORT', htmlspecialchars($local_hash_short));
+        $this->app->Tpl->Set('REMOTE_HASH_SHORT', htmlspecialchars($remote_hash_short));
+        $this->app->Tpl->Set('UPDATE_STATUS', htmlspecialchars($update_status_text));
+        $this->app->Tpl->Set('UPDATE_STATUS_CLASS', $update_status_class);
+        $this->app->Tpl->Set('SHOW_SYNC_REMOTE', "hidden");
 
         $directory = dirname(getcwd())."/upgrade";
         $result_code = null;
