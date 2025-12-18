@@ -62,7 +62,7 @@
                             <div class="banner-headline">[STATUS_HEADLINE]</div>
                             <div class="banner-sub">[STATUS_MESSAGE]</div>
                             <div class="banner-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
-                            <div class="banner-hint">Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen. Für lange Läufe kannst du das Protokoll mit "Neu laden" aktualisieren. Bei hartnäckigen Fehlern hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.</div>
+                            <div class="banner-hint">Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen. Für lange Läufe kannst du das Protokoll über das Aktualisieren-Symbol neu laden. Bei hartnäckigen Fehlern hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.</div>
                         </div>
                         <div class="banner-actions">
                             <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
