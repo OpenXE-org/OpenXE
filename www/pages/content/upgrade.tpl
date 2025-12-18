@@ -102,7 +102,7 @@
                 <div class="status-col" style="flex:1;min-width:320px;">
                     <div class="card" style="height:100%;">
                         <legend><strong>{|Versionsabgleich|}</strong></legend>
-                        <div class="status-meta"><strong>Installiert:</strong> [APP_VERSION]</div>
+                        <div class="status-meta"><strong>OpenXE-Version:</strong> [APP_VERSION]</div>
                         <div class="status-meta"><strong>Code-Stand (Git):</strong> [LOCAL_BRANCH] <span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
                         <div class="status-meta"><strong>Upgrade-Quelle:</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
                         <div class="status-meta"><strong>Status:</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
