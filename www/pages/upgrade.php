@@ -215,6 +215,8 @@ class upgrade {
         $this->app->Tpl->Set('UPDATE_STATUS', htmlspecialchars($update_status_text));
         $this->app->Tpl->Set('UPDATE_STATUS_CLASS', $update_status_class);
         $this->app->Tpl->Set('SHOW_SYNC_REMOTE', "hidden");
+        $show_local_branch = ($git_branch !== "" && $remote_branch !== "" && $git_branch === $remote_branch);
+        $this->app->Tpl->Set('LOCAL_BRANCH_VISIBLE', $show_local_branch ? "" : "hidden");
 
         $directory = dirname(getcwd())."/upgrade";
         $result_code = null;
