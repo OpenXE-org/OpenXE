@@ -3318,7 +3318,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
     if($payload !== null && $payload !== ''){
       $decoded = json_decode($payload, true);
       if(!is_array($decoded)){
-        $this->app->Tpl->Set('MESSAGE', $this->app->erp->Fehlermeldung('Men&uuml;konfiguration konnte nicht gespeichert werden. Eingaben waren nicht g&uuml;ltig.'));
+        $this->app->Tpl->Set('MESSAGE', '<div class="error">Men&uuml;konfiguration konnte nicht gespeichert werden. Eingaben waren nicht g&uuml;ltig.</div>');
         return;
       }
       $config['applyCustomStructure'] = !empty($decoded['applyCustomStructure']);
@@ -3352,7 +3352,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       $this->app->Tpl->Set('MESSAGE', $this->app->erp->Meldung('Men&uuml;konfiguration gespeichert.'));
     }
     catch(Exception $e){
-      $this->app->Tpl->Set('MESSAGE', $this->app->erp->Fehlermeldung('Men&uuml;konfiguration konnte nicht gespeichert werden.'));
+      $this->app->Tpl->Set('MESSAGE', '<div class="error">Men&uuml;konfiguration konnte nicht gespeichert werden.</div>');
     }
   }
 
