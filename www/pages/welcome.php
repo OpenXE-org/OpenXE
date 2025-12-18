@@ -3349,7 +3349,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       /** @var \Xentral\Modules\User\Service\UserConfigService $userConfig */
       $userConfig = $this->app->Container->get('UserConfigService');
       $userConfig->set('menu_configurator', json_encode($config), $this->app->User->GetID());
-      $this->app->Tpl->Set('MESSAGE', $this->app->erp->Meldung('Men&uuml;konfiguration gespeichert.'));
+      $this->app->Tpl->Set('MESSAGE', '<div class="success">Men&uuml;konfiguration gespeichert.</div>');
     }
     catch(Exception $e){
       $this->app->Tpl->Set('MESSAGE', '<div class="error">Men&uuml;konfiguration konnte nicht gespeichert werden.</div>');
