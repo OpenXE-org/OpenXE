@@ -1700,6 +1700,10 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       case 'totp_regenerate':
         $this->HandleTOTPRegenerate();
         break;
+
+      case 'menu-configurator-save':
+        $this->HandleMenuConfiguratorSave();
+        break;
     }
 
     // Einstellungen laden
@@ -1778,6 +1782,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
 
     $this->renderGoogleCalendarSettings();
     $this->renderGoogleMailSettings();
+    $this->renderMenuConfigurator();
 
     $this->app->erp->Headlines('Mein Bereich', 'Pers&ouml;nliche Einstellungen');
     $this->app->erp->MenuEintrag('index.php?module=welcome&action=settings','&Uuml;bersicht');
@@ -3299,7 +3304,60 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
   }
 
   /**
-   * Vorhandenes Profilbild löschen
+   * Speichert die Men&uuml;konfiguration
+   *
+   * @return void
+   */
+  protected function HandleMenuConfiguratorSave()
+  {
+    $payload = $this->app->Secure->GetPOST('menu_configurator_payload');
+    $menu = $this->app->erp->Navigation(false);
+    $allowedKeys = $this->collectMenuConfiguratorKeys($menu);
+    $config = ['applyCustomStructure' => false, 'items' => []];
+
+    if($payload !== null && $payload !== ''){
+      $decoded = json_decode($payload, true);
+      if(!is_array($decoded)){
+        $this->app->Tpl->Set('MESSAGE', $this->app->erp->Fehlermeldung('Men&uuml;konfiguration konnte nicht gespeichert werden. Eingaben waren nicht g&uuml;ltig.'));
+        return;
+      }
+      $config['applyCustomStructure'] = !empty($decoded['applyCustomStructure']);
+      if(isset($decoded['items']) && is_array($decoded['items'])){
+        foreach($decoded['items'] as $key => $item){
+          if(!in_array($key, $allowedKeys, true) || !is_array($item)){
+            continue;
+          }
+          $visible = array_key_exists('visible', $item)?(bool)$item['visible']:true;
+          $order = isset($item['order']) && $item['order'] !== ''?$item['order']:null;
+          if($order !== null && !is_numeric($order)){
+            $order = null;
+          }
+          elseif($order !== null){
+            $order = (float)$order;
+          }
+          $customTitle = isset($item['customTitle'])?trim((string)$item['customTitle']):'';
+          $config['items'][$key] = [
+            'visible' => $visible,
+            'order' => $order,
+            'customTitle' => $customTitle !== ''?$customTitle:null,
+          ];
+        }
+      }
+    }
+
+    try{
+      /** @var \Xentral\Modules\User\Service\UserConfigService $userConfig */
+      $userConfig = $this->app->Container->get('UserConfigService');
+      $userConfig->set('menu_configurator', json_encode($config), $this->app->User->GetID());
+      $this->app->Tpl->Set('MESSAGE', $this->app->erp->Meldung('Men&uuml;konfiguration gespeichert.'));
+    }
+    catch(Exception $e){
+      $this->app->Tpl->Set('MESSAGE', $this->app->erp->Fehlermeldung('Men&uuml;konfiguration konnte nicht gespeichert werden.'));
+    }
+  }
+
+  /**
+   * Vorhandenes Profilbild l&ouml;schen
    *
    * @return void
    */
@@ -3683,6 +3741,176 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       $redirect = RedirectResponse::createFromUrl($url);
       $redirect->send();
       $this->app->ExitXentral();
+  }
+
+  protected function renderMenuConfigurator()
+  {
+      $menu = $this->app->erp->Navigation(false);
+      $config = $this->app->erp->GetMenuConfiguratorConfig();
+      $configItems = is_array($config['items'])?$config['items']:[];
+      $applyCustomStructure = !empty($config['applyCustomStructure']);
+
+      if(empty($menu)){
+          $this->app->Tpl->Set('MENU_CONFIGURATOR', '<div class="info">Keine Men&uuml;eintr&auml;ge gefunden.</div>');
+          $this->app->Tpl->Set('MENU_CONFIGURATOR_SCRIPT', '');
+          return;
+      }
+
+      $rows = [];
+      foreach($menu as $entry){
+          if(!isset($entry['first'][0])){
+              continue;
+          }
+          $firstTitle = $entry['first'][0];
+          $firstKey = $this->app->erp->GetMenuConfiguratorKey($firstTitle);
+          $firstConfig = isset($configItems[$firstKey]) && is_array($configItems[$firstKey])?$configItems[$firstKey]:[];
+          $rows[] = $this->buildMenuConfiguratorRow($firstKey, $firstTitle, $firstConfig, 'Hauptmenü');
+          if(isset($entry['sec']) && is_array($entry['sec'])){
+              foreach($entry['sec'] as $sec){
+                  $secKey = $this->app->erp->GetMenuConfiguratorKey($firstTitle, $sec);
+                  $secConfig = isset($configItems[$secKey]) && is_array($configItems[$secKey])?$configItems[$secKey]:[];
+                  $rows[] = $this->buildMenuConfiguratorRow($secKey, $sec[0], $secConfig, $firstTitle);
+              }
+          }
+      }
+
+      $rowsHtml = implode('', $rows);
+      $applyChecked = $applyCustomStructure?' checked="checked" ':'';
+      $html = '<style>
+.menu-configurator-table{width:100%;border-collapse:collapse;}
+.menu-configurator-table th,.menu-configurator-table td{padding:6px 8px;border-bottom:1px solid #e5e5e5;}
+.menu-configurator-table th{background:#f5f5f5;text-align:left;}
+.menu-configurator-row.menu-configurator-child td:first-child{padding-left:16px;}
+.menu-configurator__hint{margin-bottom:8px;}
+.menu-configurator__buttons{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+.menu-configurator__actions{margin:8px 0;}
+.menu-configurator-center{text-align:center;}
+</style>';
+      $html .= '<fieldset><legend>Men&uuml;konfigurator</legend>';
+      $html .= '<form id="menu-configurator-form" action="index.php?module=welcome&action=settings&cmd=menu-configurator-save" method="post">';
+      $html .= '<div class="menu-configurator__hint">Passe die Men&uuml;anzeige an. Deaktiviere einen Punkt, um ihn in der Sidebar auszublenden. Optional kannst du eigene Titel und Reihenfolgen vergeben.</div>';
+      $html .= '<div class="menu-configurator__actions"><label><input type="checkbox" id="menu-configurator-apply-structure"'.$applyChecked.'> Eigene Struktur anwenden (Sortierung)</label></div>';
+      $html .= '<table class="menu-configurator-table"><thead><tr><th>Bereich</th><th>Men&uuml;punkt</th><th class="menu-configurator-center">Sichtbar</th><th>Sortierung (optional)</th><th>Eigener Titel</th></tr></thead><tbody>'.$rowsHtml.'</tbody></table>';
+      $html .= '<div class="menu-configurator__buttons"><button type="button" class="button button-secondary" id="menu-configurator-reset">Zur&uuml;cksetzen</button><button type="submit" class="button button-primary">Men&uuml; speichern</button></div>';
+      $html .= '<input type="hidden" id="menu-configurator-payload" name="menu_configurator_payload" value="">';
+      $html .= '</form>';
+      $html .= '</fieldset>';
+
+      $script = '<script>
+(function(){
+  var form = document.getElementById("menu-configurator-form");
+  if(!form){return;}
+  var payloadInput = document.getElementById("menu-configurator-payload");
+  var applyStructure = document.getElementById("menu-configurator-apply-structure");
+  var resetButton = document.getElementById("menu-configurator-reset");
+  var forEachRow = function(callback){
+    Array.prototype.forEach.call(form.querySelectorAll(".menu-configurator-row"), callback);
+  };
+  form.addEventListener("submit", function(){
+    var payload = {applyCustomStructure: applyStructure ? applyStructure.checked : false, items:{}};
+    forEachRow(function(row){
+      var key = row.getAttribute("data-menu-key");
+      if(!key){return;}
+      var visibleInput = row.querySelector(".menu-config-visible");
+      var orderInput = row.querySelector(".menu-config-order");
+      var titleInput = row.querySelector(".menu-config-title");
+      var item = {};
+      item.visible = visibleInput ? visibleInput.checked : true;
+      item.order = orderInput && orderInput.value !== "" ? orderInput.value : null;
+      item.customTitle = titleInput ? titleInput.value : "";
+      payload.items[key] = item;
+    });
+    if(payloadInput){
+      payloadInput.value = JSON.stringify(payload);
+    }
+  });
+  if(resetButton){
+    resetButton.addEventListener("click", function(evt){
+      evt.preventDefault();
+      forEachRow(function(row){
+        var defaultVisible = row.getAttribute("data-default-visible") === "1";
+        var defaultTitle = row.getAttribute("data-default-title") || "";
+        var visibleInput = row.querySelector(".menu-config-visible");
+        var orderInput = row.querySelector(".menu-config-order");
+        var titleInput = row.querySelector(".menu-config-title");
+        if(visibleInput){ visibleInput.checked = defaultVisible; }
+        if(orderInput){ orderInput.value = ""; }
+        if(titleInput){ titleInput.value = defaultTitle; }
+      });
+      if(applyStructure){ applyStructure.checked = false; }
+    });
+  }
+})();
+</script>';
+
+      $this->app->Tpl->Set('MENU_CONFIGURATOR', $html);
+      $this->app->Tpl->Set('MENU_CONFIGURATOR_SCRIPT', $script);
+  }
+
+  /**
+   * @param string $key
+   * @param string $title
+   * @param array  $config
+   * @param string $parentTitle
+   *
+   * @return string
+   */
+  protected function buildMenuConfiguratorRow($key, $title, array $config, $parentTitle)
+  {
+      $visible = array_key_exists('visible', $config)?(bool)$config['visible']:true;
+      $order = isset($config['order']) && $config['order'] !== null?$config['order']:'';
+      $customTitle = isset($config['customTitle']) && $config['customTitle'] !== ''?$config['customTitle']:$title;
+
+      $rowClasses = 'menu-configurator-row';
+      if($parentTitle !== 'Hauptmenü'){
+          $rowClasses .= ' menu-configurator-child';
+      }
+
+      $escapedKey = htmlspecialchars($key, ENT_QUOTES);
+      $escapedParent = htmlspecialchars($parentTitle, ENT_QUOTES);
+      $escapedTitle = htmlspecialchars($title, ENT_QUOTES);
+      $escapedCustomTitle = htmlspecialchars($customTitle, ENT_QUOTES);
+      $escapedOrder = $order !== ''?htmlspecialchars((string)$order, ENT_QUOTES):'';
+
+      $checked = $visible?' checked="checked" ':'';
+
+      $row  = '<tr class="'.$rowClasses.'" data-menu-key="'.$escapedKey.'" data-default-visible="1" data-default-title="'.$escapedTitle.'" data-default-order="">';
+      $row .= '<td>'.$escapedParent.'</td>';
+      $row .= '<td>'.$escapedTitle.'</td>';
+      $row .= '<td class="menu-configurator-center"><input type="checkbox" class="menu-config-visible"'.$checked.'></td>';
+      $row .= '<td><input type="number" class="menu-config-order" value="'.$escapedOrder.'" step="1"></td>';
+      $row .= '<td><input type="text" class="menu-config-title" value="'.$escapedCustomTitle.'" data-default-title="'.$escapedTitle.'"></td>';
+      $row .= '</tr>';
+
+      return $row;
+  }
+
+  /**
+   * @param array $menu
+   *
+   * @return array
+   */
+  protected function collectMenuConfiguratorKeys($menu)
+  {
+      $keys = [];
+      if(!is_array($menu)){
+          return $keys;
+      }
+
+      foreach($menu as $entry){
+          if(!isset($entry['first'][0])){
+              continue;
+          }
+          $firstTitle = $entry['first'][0];
+          $keys[] = $this->app->erp->GetMenuConfiguratorKey($firstTitle);
+          if(isset($entry['sec']) && is_array($entry['sec'])){
+              foreach($entry['sec'] as $sec){
+                  $keys[] = $this->app->erp->GetMenuConfiguratorKey($firstTitle, $sec);
+              }
+          }
+      }
+
+      return $keys;
   }
 
   protected function renderGoogleCalendarSettings()
