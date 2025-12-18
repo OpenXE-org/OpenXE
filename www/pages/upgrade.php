@@ -84,7 +84,7 @@ class upgrade {
         $local_hash_short = "";
         if ($git_root !== "") {
             $git_branch = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --abbrev-ref HEAD'));
-            $git_commit = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' log -1 --date=short --pretty="%h | %cd"'));
+            $git_commit = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' log -1 --date=short --pretty="%cd"'));
             $local_hash = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse HEAD'));
             $local_hash_short = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --short=8 HEAD'));
         }
