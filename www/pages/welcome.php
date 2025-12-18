@@ -3310,7 +3310,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
    */
   protected function HandleMenuConfiguratorSave()
   {
-    $payload = $this->app->Secure->GetPOST('menu_configurator_payload');
+    $payload = $this->app->Secure->GetPOST('menu_configurator_payload', '', '', 'noescape');
     $menu = $this->app->erp->Navigation(false);
     $allowedKeys = $this->collectMenuConfiguratorKeys($menu);
     $config = ['applyCustomStructure' => false, 'items' => []];
