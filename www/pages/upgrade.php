@@ -425,6 +425,12 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_DB_FORCE_VISIBLE', "hidden");
 
         $this->app->Tpl->Set('CURRENT', $this->app->erp->Revision());
+        $revision_raw = (string)$this->app->erp->Revision();
+        $app_version = trim((string)preg_replace('/\\s*\\([^)]*\\)\\s*$/', '', $revision_raw));
+        if ($app_version === '') {
+            $app_version = $revision_raw;
+        }
+        $this->app->Tpl->Set('APP_VERSION', htmlspecialchars($app_version));
         $this->app->Tpl->Set('OUTPUT_FROM_CLI',nl2br($result));
         $this->app->Tpl->Parse('PAGE', "upgrade.tpl");
     }   
