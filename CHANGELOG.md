@@ -22,3 +22,4 @@
 - Added status change email templates and auto-sync from internal ticket status to customer status (with notifications).
 - Added ticket actions to create customers/offers and show tickets in the address CRM history.
 - Added ticket action button to generate and show portal tokens for testing.
+- Added portal comment inputs to the ticket edit view for staff messages.

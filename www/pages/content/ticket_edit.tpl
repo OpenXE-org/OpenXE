@@ -59,8 +59,9 @@
                             </fieldset>
                         </div>
                		</div>
-               	</div>	
+				</div>
             </div>
+            [PORTAL_COMMENTS_BLOCK]
             [NEW_MESSAGE]          
         </form>            
        [MESSAGES]

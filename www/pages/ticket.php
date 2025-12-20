@@ -867,9 +867,37 @@ class Ticket {
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
         $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));
+        $portalPublicNote = trim((string)$this->app->Secure->GetPOST('portal_public_note'));
+        $portalInternalNote = trim((string)$this->app->Secure->GetPOST('portal_internal_note'));
+        $portalNoteRequested = ($submit === 'portal_note');
 
         if ($input['neue_notiz'] != '') {
             $input['notiz'] = $this->app->User->GetName()." ".date("d.m.Y H:i").": ".$input['neue_notiz']."\r\n".$input['notiz'];
+        }
+
+        if ($portalNoteRequested) {
+            if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+                $msg = '<div class="error">Portal ist deaktiviert.</div>';
+            } elseif ($portalPublicNote === '' && $portalInternalNote === '') {
+                $msg = '<div class="error">Bitte einen Kommentar eingeben.</div>';
+            } else {
+                $ticket = $this->portalGetTicketForPortal((int)$id);
+                if (!$ticket) {
+                    $msg = '<div class="error">Ticket nicht gefunden.</div>';
+                } else {
+                    $userId = (int)$this->app->User->GetID();
+                    if ($portalPublicNote !== '') {
+                        $this->portalInsertPortalMessage($ticket, 'staff', $userId, $portalPublicNote, true);
+                    }
+                    if ($portalInternalNote !== '') {
+                        $this->portalInsertPortalMessage($ticket, 'staff', $userId, $portalInternalNote, false);
+                    }
+                    $msg = '<div class="info">Portal-Kommentar gespeichert.</div>';
+                }
+            }
+            $msg = $this->app->erp->base64_url_encode($msg);
+            header("Location: index.php?module=ticket&action=edit&id=$id&msg=$msg");
+            $this->app->ExitXentral();
         }
 
         // Always save
@@ -907,6 +935,7 @@ class Ticket {
         $createCustomerButton = '';
         $createOfferButton = '';
         $portalTokenButton = '';
+        $portalCommentsBlock = '';
         if ($this->app->erp->RechteVorhanden('adresse', 'edit') && $addressId <= 0) {
             $createCustomerButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_customer&id='.$ticketId.'\';">Kunde anlegen</button></td></tr>';
         }
@@ -945,10 +974,28 @@ class Ticket {
                   });
               });
             ");
+            $portalCommentsBlock = '
+              <div class="row">
+                <div class="row-height">
+                  <div class="col-xs-14 col-md-12 col-md-height">
+                    <div class="inside inside-full-height">
+                      <fieldset>
+                        <legend>Portal Kommentare</legend>
+                        <table width="100%" border="0" class="mkTableFormular">
+                          <tr><td>{|Kommentar fuer Kunden|}:</td><td><textarea name="portal_public_note" rows="3" style="width:100%;"></textarea></td></tr>
+                          <tr><td>{|Interne Notiz|}:</td><td><textarea name="portal_internal_note" rows="3" style="width:100%;"></textarea></td></tr>
+                          <tr><td></td><td><button name="submit" value="portal_note" class="ui-button-icon">Portal-Kommentar speichern</button></td></tr>
+                        </table>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>';
         }
         $this->app->Tpl->Set('CREATE_CUSTOMER_BUTTON', $createCustomerButton);
         $this->app->Tpl->Set('CREATE_OFFER_BUTTON', $createOfferButton);
         $this->app->Tpl->Set('PORTAL_TOKEN_BUTTON', $portalTokenButton);
+        $this->app->Tpl->Set('PORTAL_COMMENTS_BLOCK', $portalCommentsBlock);
 
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("status","ticketstatus",1);
