@@ -7,6 +7,10 @@
       Portal aktivieren
     </label>
     <br>
+    <label>Portal URL (WordPress)<br>
+      <input type="text" name="ticketportal_portal_url" value="[PORTAL_URL]" size="80">
+    </label>
+    <br>
     <label>
       <input type="checkbox" name="ticketportal_allow_offer_confirm" value="1" [PORTAL_ALLOW_OFFER]>
       Angebotsbestaetigung im Portal erlauben

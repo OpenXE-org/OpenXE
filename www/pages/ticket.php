@@ -935,6 +935,7 @@ class Ticket {
         $createCustomerButton = '';
         $createOfferButton = '';
         $portalTokenButton = '';
+        $portalLinkButton = '';
         $portalCommentsBlock = '';
         if ($this->app->erp->RechteVorhanden('adresse', 'edit') && $addressId <= 0) {
             $createCustomerButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_customer&id='.$ticketId.'\';">Kunde anlegen</button></td></tr>';
@@ -943,8 +944,50 @@ class Ticket {
             $createOfferButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_offer&id='.$ticketId.'\';">Angebot anlegen</button></td></tr>';
         }
         if ($this->app->erp->RechteVorhanden('ticket', 'edit') && $this->portalGetSettingBool('ticketportal_enabled')) {
-            $portalTokenButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-token-btn" data-ticket="'.$ticketId.'">Portal-Token anzeigen</button></td></tr>';
+            $portalUrl = trim((string)$this->app->erp->Firmendaten('ticketportal_portal_url'));
+            $verifierType = '';
+            $verifierValue = '';
+            $portalTicket = $this->portalGetTicketForPortal($ticketId);
+            if (!empty($portalTicket)) {
+                $portalEmail = $this->portalNormalizeEmail($portalTicket['mailadresse'] ?? '');
+                if ($portalEmail === '') {
+                    $portalEmail = $this->portalNormalizeEmail($portalTicket['customer_email'] ?? '');
+                }
+                $portalPlz = $this->portalNormalizePlz($portalTicket['customer_plz'] ?? '');
+                if ($portalPlz !== '') {
+                    $verifierType = 'plz';
+                    $verifierValue = $portalPlz;
+                } elseif ($portalEmail !== '') {
+                    $verifierType = 'email';
+                    $verifierValue = $portalEmail;
+                }
+            }
+            $portalTokenButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-token-btn" data-ticket="'.$ticketId.'">Portal-Hash kopieren</button></td></tr>';
+            $portalLinkButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-link-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'" data-verifier-type="'.htmlentities($verifierType).'" data-verifier-value="'.htmlentities($verifierValue).'">Portal-Link kopieren (mit Login)</button></td></tr>';
             $this->app->Tpl->Add('JQUERYREADY', "
+              function portalCopyText(text, label) {
+                if (!text) {
+                  return;
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).catch(function() {});
+                }
+                window.prompt(label, text);
+              }
+              function portalFetchToken(ticketId, done) {
+                $.getJSON('index.php?module=ticket&action=portal_token&id=' + ticketId)
+                  .done(function(resp) {
+                    if (resp && resp.token) {
+                      done(null, resp.token);
+                      return;
+                    }
+                    var msg = (resp && resp.error) ? resp.error : 'Token konnte nicht geladen werden.';
+                    done(msg, null);
+                  })
+                  .fail(function() {
+                    done('Token konnte nicht geladen werden.', null);
+                  });
+              }
               $('#ticket-portal-token-btn').on('click', function(e) {
                 e.preventDefault();
                 var btn = $(this);
@@ -954,24 +997,48 @@ class Ticket {
                   return;
                 }
                 btn.prop('disabled', true);
-                $.getJSON('index.php?module=ticket&action=portal_token&id=' + ticketId)
-                  .done(function(resp) {
-                    if (resp && resp.token) {
-                      if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(resp.token).catch(function() {});
-                      }
-                      window.prompt('Portal-Token (kopieren):', resp.token);
-                      return;
-                    }
-                    var msg = (resp && resp.error) ? resp.error : 'Token konnte nicht geladen werden.';
-                    alert(msg);
-                  })
-                  .fail(function() {
-                    alert('Token konnte nicht geladen werden.');
-                  })
-                  .always(function() {
-                    btn.prop('disabled', false);
-                  });
+                portalFetchToken(ticketId, function(err, token) {
+                  if (err) {
+                    alert(err);
+                  } else {
+                    portalCopyText(token, 'Portal-Hash (kopieren):');
+                  }
+                  btn.prop('disabled', false);
+                });
+              });
+              $('#ticket-portal-link-btn').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ticketId = btn.data('ticket');
+                var portalUrl = btn.data('portal-url') || '';
+                var verifierType = btn.data('verifier-type') || '';
+                var verifierValue = btn.data('verifier-value') || '';
+                if (!ticketId) {
+                  alert('Ticket ID fehlt.');
+                  return;
+                }
+                if (!portalUrl) {
+                  alert('Portal URL fehlt. Bitte in den Portal-Einstellungen setzen.');
+                  return;
+                }
+                if (!verifierType || !verifierValue) {
+                  alert('Keine Verifikation gefunden (PLZ oder E-Mail).');
+                  return;
+                }
+                btn.prop('disabled', true);
+                portalFetchToken(ticketId, function(err, token) {
+                  if (err) {
+                    alert(err);
+                  } else {
+                    var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
+                    var params = 'token=' + encodeURIComponent(token)
+                      + '&verifier_type=' + encodeURIComponent(verifierType)
+                      + '&verifier_value=' + encodeURIComponent(verifierValue);
+                    var link = portalUrl + separator + params;
+                    portalCopyText(link, 'Portal-Link (kopieren):');
+                  }
+                  btn.prop('disabled', false);
+                });
               });
             ");
             $portalCommentsBlock = '
@@ -995,6 +1062,7 @@ class Ticket {
         $this->app->Tpl->Set('CREATE_CUSTOMER_BUTTON', $createCustomerButton);
         $this->app->Tpl->Set('CREATE_OFFER_BUTTON', $createOfferButton);
         $this->app->Tpl->Set('PORTAL_TOKEN_BUTTON', $portalTokenButton);
+        $this->app->Tpl->Set('PORTAL_LINK_BUTTON', $portalLinkButton);
         $this->app->Tpl->Set('PORTAL_COMMENTS_BLOCK', $portalCommentsBlock);
 
         $this->app->YUI->AutoComplete("projekt","projektname",1);
@@ -1675,6 +1743,7 @@ class Ticket {
   {
     $defaults = [
       'ticketportal_enabled' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_portal_url' => ['varchar', '255', '', '', '', 0, 0],
       'ticketportal_allow_offer_confirm' => ['tinyint', '1', '', '0', '0', 0, 0],
       'ticketportal_allow_customer_comments' => ['tinyint', '1', '', '0', '0', 0, 0],
       'ticketportal_notify_all_status' => ['tinyint', '1', '', '1', '1', 0, 0],
@@ -2611,6 +2680,7 @@ class Ticket {
     $this->portalEnsureFirmendatenDefaults();
     if ($this->app->Secure->GetPOST('save')) {
       $this->app->erp->FirmendatenSet('ticketportal_enabled', !empty($this->app->Secure->GetPOST('ticketportal_enabled')) ? 1 : 0);
+      $this->app->erp->FirmendatenSet('ticketportal_portal_url', (string)$this->app->Secure->GetPOST('ticketportal_portal_url'));
       $this->app->erp->FirmendatenSet('ticketportal_allow_offer_confirm', !empty($this->app->Secure->GetPOST('ticketportal_allow_offer_confirm')) ? 1 : 0);
       $this->app->erp->FirmendatenSet('ticketportal_allow_customer_comments', !empty($this->app->Secure->GetPOST('ticketportal_allow_customer_comments')) ? 1 : 0);
       $this->app->erp->FirmendatenSet('ticketportal_notify_all_status', !empty($this->app->Secure->GetPOST('ticketportal_notify_all_status')) ? 1 : 0);
@@ -2657,6 +2727,7 @@ class Ticket {
     }
 
     $this->app->Tpl->Set('PORTAL_ENABLED', $this->portalGetSettingBool('ticketportal_enabled') ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_URL', $this->app->erp->Firmendaten('ticketportal_portal_url'));
     $this->app->Tpl->Set('PORTAL_ALLOW_OFFER', $this->portalGetSettingBool('ticketportal_allow_offer_confirm') ? 'checked' : '');
     $this->app->Tpl->Set('PORTAL_ALLOW_COMMENTS', $this->portalGetSettingBool('ticketportal_allow_customer_comments') ? 'checked' : '');
     $this->app->Tpl->Set('PORTAL_NOTIFY_ALL', $this->portalGetSettingBool('ticketportal_notify_all_status', true) ? 'checked' : '');

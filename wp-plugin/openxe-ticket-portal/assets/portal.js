@@ -102,6 +102,8 @@
     var params = new URLSearchParams(window.location.search || '');
     var urlToken = params.get('token') || params.get('ticket_token') || '';
     var urlOffer = params.get('offer_id') || params.get('angebot_id') || '';
+    var urlVerifierType = params.get('verifier_type') || params.get('verifierType') || '';
+    var urlVerifierValue = params.get('verifier_value') || params.get('verifierValue') || '';
 
     if (urlToken) {
       tokenInput.value = urlToken;
@@ -113,6 +115,12 @@
       if (offerToggle) {
         offerToggle.textContent = 'Angebot verbergen';
       }
+    }
+    if (urlVerifierType) {
+      verifierSelect.value = urlVerifierType;
+    }
+    if (urlVerifierValue) {
+      verifierInput.value = urlVerifierValue;
     }
 
     var sessionKey = null;
@@ -369,6 +377,10 @@
     });
 
     tryAutoLogin();
+
+    if (urlToken && urlVerifierType && urlVerifierValue && loginButton) {
+      loginButton.click();
+    }
   }
 
   function initAll() {

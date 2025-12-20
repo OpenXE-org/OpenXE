@@ -55,6 +55,7 @@
                                     [CREATE_CUSTOMER_BUTTON]
                                     [CREATE_OFFER_BUTTON]
                                     [PORTAL_TOKEN_BUTTON]
+                                    [PORTAL_LINK_BUTTON]
                                 </table>
                             </fieldset>
                         </div>

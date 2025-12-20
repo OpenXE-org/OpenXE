@@ -23,3 +23,4 @@
 - Added ticket actions to create customers/offers and show tickets in the address CRM history.
 - Added ticket action button to generate and show portal tokens for testing.
 - Added portal comment inputs to the ticket edit view for staff messages.
+- Added portal URL setting and ticket buttons to copy portal link (with login data) or token.
