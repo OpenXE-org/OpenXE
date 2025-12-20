@@ -9930,6 +9930,29 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
                 )
                 ';
 
+            $sql .= 'UNION ALL
+                 (
+                   SELECT
+                     t.id,
+                     "<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
+                     t.zeit,
+                     t.betreff,
+                     IF(t.kunde != \'\', t.kunde, t.mailadresse) as ansprechpartner,
+                     p.abkuerzung,
+                     t.bearbeiter,
+                     \'Ticket\' as art,
+                     CONCAT("<a data-type=ticket data-id=", t.id, "></a>") as gesendet,
+                     \'\' as pdf,
+                     concat("7","-",t.id) as did,
+                     CONCAT(t.betreff, " ", t.notiz, " ", t.kommentar) as suchtext,
+                     IF(t.status != \'\', CONCAT("Status: ", t.status), \'\') as internebezeichnung
+                  FROM
+                      ticket t
+                  LEFT JOIN projekt p on t.projekt = p.id
+                  WHERE t.adresse = '.$adresseId.'
+                )
+                ';
+
         $sql .= ') a ';
 
         $moreinfo = true;
@@ -10053,6 +10076,29 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
 
               )';
             }
+            $count .= '
+            UNION ALL
+
+            (
+              SELECT
+                COUNT(tn.id) as anzahl
+              FROM
+                ticket_nachricht tn
+              INNER JOIN ticket t ON tn.ticket = t.schluessel
+              WHERE
+                t.adresse = ' . $adresseId . ' AND !(tn.versendet = 1 AND tn.zeitausgang IS NULL)
+            )
+
+            UNION ALL
+
+            (
+              SELECT
+                COUNT(t.id) as anzahl
+              FROM
+                ticket t
+              WHERE
+                t.adresse = ' . $adresseId . '
+            )';
             $count .= '
           ) a
         ';

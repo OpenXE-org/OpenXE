@@ -1,0 +1,152 @@
+.openxe-portal {
+  max-width: 720px;
+  margin: 24px auto;
+}
+
+.openxe-portal .oxp-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fff;
+}
+
+.openxe-portal .oxp-row {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.openxe-portal label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.openxe-portal input[type="text"],
+.openxe-portal textarea,
+.openxe-portal select {
+  border: 1px solid #cfd4d9;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.openxe-portal button,
+.openxe-portal a.oxp-print,
+.openxe-portal a.oxp-download {
+  display: inline-block;
+  border: 1px solid #222;
+  background: #222;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.openxe-portal a.oxp-print,
+.openxe-portal a.oxp-download {
+  background: #f7f7f7;
+  color: #222;
+  border-color: #cfd4d9;
+}
+
+.openxe-portal .oxp-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.openxe-portal .oxp-status {
+  padding: 12px;
+  border: 1px dashed #d7d7d7;
+  border-radius: 8px;
+}
+
+.openxe-portal .oxp-status-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666;
+}
+
+.openxe-portal .oxp-status-value {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.openxe-portal .oxp-status-updated {
+  font-size: 12px;
+  color: #666;
+}
+
+.openxe-portal .oxp-messages {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 80px;
+  background: #fafafa;
+  margin-bottom: 12px;
+}
+
+.openxe-portal .oxp-notifications {
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fcfcfc;
+}
+
+.openxe-portal .oxp-notification-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.openxe-portal .oxp-message {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.openxe-portal .oxp-message:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.openxe-portal .oxp-message-meta {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.openxe-portal .oxp-error {
+  background: #fff3f3;
+  border: 1px solid #f2b8b8;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  color: #8b0000;
+}
+
+.openxe-portal .oxp-login-msg,
+.openxe-portal .oxp-message-msg,
+.openxe-portal .oxp-offer-msg {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #444;
+}
+
+.openxe-portal .oxp-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .openxe-portal .oxp-actions {
+    flex-direction: column;
+  }
+}
