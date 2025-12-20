@@ -241,7 +241,7 @@ var ersterEintrag = [TABELLEFLAG];
         window.open(link,'_blank');
         return;
       }
-      else if(entryDataDokument == 'ticket_nachricht')
+      else if(entryDataDokument == 'ticket_nachricht' || entryDataDokument == 'ticket')
       {
         window.open('index.php?module=ticket&action=edit&id='+entryDataId,'_blank');
         return;
