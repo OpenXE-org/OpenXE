@@ -80,6 +80,13 @@ function openxe_ticket_portal_settings_page(): void
           </td>
         </tr>
         <tr>
+          <th scope="row">Verbindungstest</th>
+          <td>
+            <button type="button" class="button" id="openxe-ticket-portal-test">Verbindung testen</button>
+            <span id="openxe-ticket-portal-test-result" style="margin-left:8px;"></span>
+          </td>
+        </tr>
+        <tr>
           <th scope="row"><label for="openxe_ticket_portal_default_verifier">Standard Verifikation</label></th>
           <td>
             <select id="openxe_ticket_portal_default_verifier" name="openxe_ticket_portal_default_verifier">
@@ -93,6 +100,45 @@ function openxe_ticket_portal_settings_page(): void
       <?php submit_button(); ?>
     </form>
   </div>
+  <script>
+  (function () {
+    var btn = document.getElementById('openxe-ticket-portal-test');
+    var result = document.getElementById('openxe-ticket-portal-test-result');
+    if (!btn) {
+      return;
+    }
+    btn.addEventListener('click', function () {
+      if (result) {
+        result.textContent = 'Teste...';
+      }
+      var data = new FormData();
+      data.append('action', 'openxe_ticket_portal_test');
+      data.append('nonce', '<?php echo esc_js(wp_create_nonce('openxe_ticket_portal')); ?>');
+      fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: data
+      })
+        .then(function (response) { return response.json(); })
+        .then(function (resp) {
+          if (!result) {
+            return;
+          }
+          if (resp && resp.success) {
+            result.textContent = (resp.data && resp.data.message) ? resp.data.message : 'Verbindung ok.';
+            return;
+          }
+          var message = (resp && resp.data && resp.data.message) ? resp.data.message : 'Verbindung fehlgeschlagen.';
+          result.textContent = message;
+        })
+        .catch(function () {
+          if (result) {
+            result.textContent = 'Verbindung fehlgeschlagen.';
+          }
+        });
+    });
+  })();
+  </script>
   <?php
 }
 
@@ -263,6 +309,38 @@ function openxe_ticket_portal_proxy(string $action, array $payload): void
   wp_send_json_success($data);
 }
 
+function openxe_ticket_portal_ajax_test(): void
+{
+  check_ajax_referer('openxe_ticket_portal', 'nonce');
+  $result = openxe_ticket_portal_remote('portal_session', [
+    'token' => 'test-connection',
+    'verifier_type' => 'plz',
+    'verifier_value' => '00000',
+  ]);
+  if (is_wp_error($result)) {
+    wp_send_json_error(['message' => $result->get_error_message()], 500);
+  }
+  $code = (int)$result['code'];
+  $data = $result['data'];
+  $error = '';
+  if (is_array($data) && isset($data['error'])) {
+    $error = (string)$data['error'];
+  }
+  if ($code >= 200 && $code < 300) {
+    wp_send_json_success(['message' => 'Verbindung ok.']);
+  }
+  if ($error === 'token_not_found') {
+    wp_send_json_success(['message' => 'Verbindung ok. Portal erreichbar (Token nicht gefunden).']);
+  }
+  if ($error === 'portal_disabled') {
+    wp_send_json_error(['message' => 'OpenXE Portal ist deaktiviert.'], 503);
+  }
+  if ($error !== '') {
+    wp_send_json_error(['message' => 'Antwort von OpenXE: '.$error], $code ?: 500);
+  }
+  wp_send_json_error(['message' => 'Verbindung fehlgeschlagen.'], $code ?: 500);
+}
+
 function openxe_ticket_portal_ajax_session(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
@@ -375,3 +453,4 @@ add_action('wp_ajax_nopriv_openxe_ticket_portal_notifications_get', 'openxe_tick
 add_action('wp_ajax_openxe_ticket_portal_notifications_get', 'openxe_ticket_portal_ajax_notifications_get');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_notifications_set', 'openxe_ticket_portal_ajax_notifications_set');
 add_action('wp_ajax_openxe_ticket_portal_notifications_set', 'openxe_ticket_portal_ajax_notifications_set');
+add_action('wp_ajax_openxe_ticket_portal_test', 'openxe_ticket_portal_ajax_test');
