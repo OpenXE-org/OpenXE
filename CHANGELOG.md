@@ -7,7 +7,7 @@
 - Extended status model and portal behavior requirements (auto-order on offer confirmation, chat history, local VTT/OCR).
 - Added system settings toggles and double opt-in/AGB confirmation notes in portal concept.
 - Documented portal message mirroring into `ticket_nachricht` and removed spam from customer status mapping.
-- Expanded portal concept with detailed data model, DOI/AGB offer flow, and WP plugin proxy endpoints.
+- Expanded portal concept with detailed data model, Double Opt-In/AGB offer flow, and WP plugin proxy endpoints.
 - Added SQL migration sketch and API draft for the portal.
 - Documented technical hook for offer confirmation to create orders via ERP API.
 - Added ticket portal tables, settings defaults, and portal endpoints in `www/pages/ticket.php`.

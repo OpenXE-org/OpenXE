@@ -20,7 +20,7 @@
   - Bei Bestaetigung wird automatisch ein Auftrag erzeugt.
   - Ergebnis wird im Ticket protokolliert und im Angebot vermerkt.
   - Jede Bestaetigung wird nachvollziehbar dokumentiert (Zeit, Kunde, IP, Inhalt).
-  - Optional: Double-Opt-In inkl. AGB-Bestaetigung (Verifikation + AGB-Checkbox im Portal).
+  - Optional: Double Opt-In inkl. AGB-Bestaetigung (Verifikation + AGB-Checkbox im Portal).
 - Sichtbare Kommentare vom Team: Mitarbeiter koennen "Kommentar fuer Kunden" hinterlegen, der im Portal sichtbar ist.
 
 ## Mitarbeiter-Portal (Funktionen)
@@ -63,7 +63,7 @@ Zusaetzliche kundenorientierte Stati (optional):
   - Variante A: Token-Link + Eingabe von PLZ oder E-Mail.
   - Variante B: Token-Link + Einmalcode per E-Mail.
   - Beide Varianten sollen verfuegbar sein.
-  - Optional: Double-Opt-In fuer Angebotsbestaetigung inkl. AGB-Zustimmung.
+  - Optional: Double Opt-In fuer Angebotsbestaetigung inkl. AGB-Zustimmung.
 - Tokens gehasht speichern, zeitlich begrenzen, revoke moeglich.
 - Rate-Limit und Audit-Log fuer Portalzugriffe.
 - Mitarbeiterzugriff nur mit Login, QR ist nur ein Shortcut.
@@ -125,18 +125,18 @@ Zusaetzliche kundenorientierte Stati (optional):
 - ticket_nachricht.medium = 'portal'
 - ticket_nachricht.versendet = 0
 
-## Angebotsbestaetigung (Flow + DOI/AGB)
+## Angebotsbestaetigung (Flow + Double Opt-In/AGB)
 1) Kunde klickt "Angebot bestaetigen/ablehnen" und akzeptiert AGB (Checkbox).
 2) System erstellt `ticket_offer_confirmation` mit action + comment und setzt doi_token.
-3) E-Mail mit DOI-Link/Code (Variante B) wird versendet.
-4) Kunde bestaetigt DOI; AGB-Version + Timestamp werden gespeichert.
+3) E-Mail mit Double Opt-In-Link/Code (Variante B) wird versendet.
+4) Kunde bestaetigt Double Opt-In; AGB-Version + Timestamp werden gespeichert.
 5) Bei accept: Auftrag wird automatisch angelegt (angebot -> auftrag).
 6) Ticketstatus und Kundenstatus werden aktualisiert; Logeintrag im Ticket.
 7) E-Mail Bestaetigung an Kunde (optional).
 
 ## Auftragserstellung (technischer Hook)
 - Bestehende Logik: `erpapi::WeiterfuehrenAngebotZuAuftrag($angebotId)` erzeugt Auftrag und setzt Angebot auf "beauftragt".
-- Ablauf bei DOI-Confirm:
+- Ablauf bei Double Opt-In-Bestaetigung:
   1) Lade Angebot by `angebot_id`.
   2) Abbruch wenn `angebot.auftragid` bereits gesetzt oder Status bereits "beauftragt".
   3) Aufruf `WeiterfuehrenAngebotZuAuftrag($angebotId)` -> liefert `order_id`.
@@ -155,7 +155,7 @@ Zusaetzliche kundenorientierte Stati (optional):
   - OpenXE API Base URL
   - Shared Secret / API Key
   - Default Portal Mode (status/chat/offer)
-  - AGB URL + Version (fuer DOI)
+  - AGB URL + Version (fuer Double Opt-In)
 - API-Endpoints (Beispiel):
   - POST /portal/session (token + verifier -> session_token)
   - GET /portal/status (session_token)

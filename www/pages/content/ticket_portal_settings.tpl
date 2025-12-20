@@ -33,7 +33,7 @@
   </fieldset>
 
   <fieldset>
-    <legend>AGB / DOI</legend>
+    <legend>AGB / Double Opt-In</legend>
     <label>AGB URL<br>
       <input type="text" name="ticketportal_agb_url" value="[PORTAL_AGB_URL]" size="80">
     </label>
@@ -53,7 +53,7 @@
       <input type="number" name="ticketportal_code_ttl_min" value="[PORTAL_CODE_TTL]" min="1">
     </label>
     <br>
-    <label>DOI TTL<br>
+    <label>Double Opt-In TTL<br>
       <input type="number" name="ticketportal_doi_ttl_min" value="[PORTAL_DOI_TTL]" min="1">
     </label>
   </fieldset>

@@ -19,7 +19,7 @@
 - Customer status uses "Paket eingegangen" instead of a generic "Eingegangen"; "Testdruck" is part of quality check.
 - Portal features must be optional via system settings.
 - Portal messages must be mirrored into `ticket_nachricht` (medium='portal').
-- Offer confirmation should create an order and store AGB version + DOI audit trail.
+- Offer confirmation should create an order and store AGB version + Double Opt-In audit trail.
 - WP integration should use a plugin/shortcode acting as a server-side proxy to OpenXE.
 - Next concept work: SQL migration sketch and API draft are documented in `doc/ticket-portal-concept.md`.
 - Offer confirmation should call `erpapi::WeiterfuehrenAngebotZuAuftrag` and handle duplicate/failed creation cases.
