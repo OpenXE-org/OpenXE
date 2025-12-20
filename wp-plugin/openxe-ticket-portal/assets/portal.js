@@ -89,6 +89,14 @@
     var offerSubmit = qs('.oxp-offer-submit', root);
     var offerMsg = qs('.oxp-offer-msg', root);
 
+    if (offerToggle) {
+      offerToggle.addEventListener('click', function () {
+        var isVisible = offerBox.style.display !== 'none';
+        setVisible(offerBox, !isVisible);
+        offerToggle.textContent = isVisible ? 'Angebot bestaetigen' : 'Angebot verbergen';
+      });
+    }
+
     verifierSelect.value = defaultVerifier;
 
     var params = new URLSearchParams(window.location.search || '');
@@ -376,10 +384,3 @@
     initAll();
   }
 })();
-    if (offerToggle) {
-      offerToggle.addEventListener('click', function () {
-        var isVisible = offerBox.style.display !== 'none';
-        setVisible(offerBox, !isVisible);
-        offerToggle.textContent = isVisible ? 'Angebot bestaetigen' : 'Angebot verbergen';
-      });
-    }
