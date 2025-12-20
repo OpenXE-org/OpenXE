@@ -1589,6 +1589,43 @@ class Ticket {
     return $value > 0 ? $value : $default;
   }
 
+  private function portalEnsureFirmendatenDefaults(): void
+  {
+    $defaults = [
+      'ticketportal_enabled' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_allow_offer_confirm' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_allow_customer_comments' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_notify_all_status' => ['tinyint', '1', '', '1', '1', 0, 0],
+      'ticketportal_agb_url' => ['varchar', '255', '', '', '', 0, 0],
+      'ticketportal_agb_version' => ['varchar', '64', '', '', '', 0, 0],
+      'ticketportal_session_ttl_min' => ['int', '11', '', '60', '60', 0, 0],
+      'ticketportal_code_ttl_min' => ['int', '11', '', '15', '15', 0, 0],
+      'ticketportal_doi_ttl_min' => ['int', '11', '', '120', '120', 0, 0],
+      'ticketportal_status_labels' => ['text', '', '', json_encode($this->portalDefaultStatusLabels()), '', 0, 0],
+      'ticketportal_status_map' => ['text', '', '', json_encode($this->portalDefaultStatusMap()), '', 0, 0],
+      'ticketportal_notify_subject' => ['varchar', '255', '', 'Ticket #{ticket_number} Statusaenderung', 'Ticket #{ticket_number} Statusaenderung', 0, 0],
+      'ticketportal_notify_body' => ['text', '', '', "Der Status Ihres Tickets #{ticket_number} wurde aktualisiert.\nStatus: {status_label}\n\n{public_note}\n\nViele Gruesse\n{company_name}", '', 0, 0],
+    ];
+    foreach ($defaults as $name => $data) {
+      $exists = $this->app->DB->Select(
+        "SELECT id FROM firmendaten_werte WHERE name = '".$this->app->DB->real_escape_string($name)."' LIMIT 1"
+      );
+      if ($exists) {
+        continue;
+      }
+      $this->app->erp->AddNeuenFirmendatenWert(
+        $name,
+        $data[0],
+        $data[1],
+        $data[2],
+        $data[3],
+        $data[4],
+        $data[5],
+        $data[6]
+      );
+    }
+  }
+
   private function portalHashToken(string $token): string
   {
     return hash('sha256', $token);
@@ -2489,6 +2526,7 @@ class Ticket {
       $this->app->Tpl->Set('PAGE', '<div class="error">Keine Berechtigung.</div>');
       return;
     }
+    $this->portalEnsureFirmendatenDefaults();
     if ($this->app->Secure->GetPOST('save')) {
       $this->app->erp->FirmendatenSet('ticketportal_enabled', !empty($this->app->Secure->GetPOST('ticketportal_enabled')) ? 1 : 0);
       $this->app->erp->FirmendatenSet('ticketportal_allow_offer_confirm', !empty($this->app->Secure->GetPOST('ticketportal_allow_offer_confirm')) ? 1 : 0);
