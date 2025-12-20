@@ -8989,10 +8989,15 @@ function AddNeuenFirmendatenWert($name, $typ, $typ1, $typ2, $wert, $default_valu
   }
   $check = $this->app->DB->Select("SELECT id FROM firmendaten_werte WHERE name = '".$this->app->DB->real_escape_string($name)."' LIMIT 1");
   if($check)return false;
-  $wert_alt = $this->app->DB->Select("SELECT $name FROM firmendaten LIMIT 1");
-  if(!$this->app->DB->error())
-  {
-    $wert = $wert_alt;
+  $column_exists = $this->app->DB->Select(
+    "SHOW COLUMNS FROM firmendaten WHERE field = '".$this->app->DB->real_escape_string($name)."'"
+  );
+  if ($column_exists) {
+    $wert_alt = $this->app->DB->Select("SELECT `$name` FROM firmendaten LIMIT 1");
+    if(!$this->app->DB->error())
+    {
+      $wert = $wert_alt;
+    }
   }
   $this->app->DB->Insert("INSERT INTO firmendaten_werte (name, typ, typ1, typ2, wert, default_value, default_null, darf_null)
   values ('".$this->app->DB->real_escape_string($name)."','".$this->app->DB->real_escape_string($typ)."','".$this->app->DB->real_escape_string($typ1)."','".$this->app->DB->real_escape_string($typ2)."','".$this->app->DB->real_escape_string($wert)."','".$this->app->DB->real_escape_string($default_value)."','".(int)($default_null)."','".(int)($darf_null)."')
