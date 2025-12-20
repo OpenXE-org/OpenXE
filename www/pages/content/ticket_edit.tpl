@@ -54,6 +54,7 @@
                                     <td><button name="submit" formaction="index.php?module=ticketregeln&action=create" value="regel" class="ui-button-icon" style="width:100%;">Ticketregel erstellen</button><input hidden type="text" name="ticketid" value="[ID]"></td></tr>
                                     [CREATE_CUSTOMER_BUTTON]
                                     [CREATE_OFFER_BUTTON]
+                                    [PORTAL_TOKEN_BUTTON]
                                 </table>
                             </fieldset>
                         </div>

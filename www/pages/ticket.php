@@ -906,14 +906,49 @@ class Ticket {
         $ticketId = (int)$id;
         $createCustomerButton = '';
         $createOfferButton = '';
+        $portalTokenButton = '';
         if ($this->app->erp->RechteVorhanden('adresse', 'edit') && $addressId <= 0) {
             $createCustomerButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_customer&id='.$ticketId.'\';">Kunde anlegen</button></td></tr>';
         }
         if ($this->app->erp->RechteVorhanden('angebot', 'edit') && $addressId > 0) {
             $createOfferButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_offer&id='.$ticketId.'\';">Angebot anlegen</button></td></tr>';
         }
+        if ($this->app->erp->RechteVorhanden('ticket', 'edit') && $this->portalGetSettingBool('ticketportal_enabled')) {
+            $portalTokenButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-token-btn" data-ticket="'.$ticketId.'">Portal-Token anzeigen</button></td></tr>';
+            $this->app->Tpl->Add('JQUERYREADY', "
+              $('#ticket-portal-token-btn').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ticketId = btn.data('ticket');
+                if (!ticketId) {
+                  alert('Ticket ID fehlt.');
+                  return;
+                }
+                btn.prop('disabled', true);
+                $.getJSON('index.php?module=ticket&action=portal_token&id=' + ticketId)
+                  .done(function(resp) {
+                    if (resp && resp.token) {
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(resp.token).catch(function() {});
+                      }
+                      window.prompt('Portal-Token (kopieren):', resp.token);
+                      return;
+                    }
+                    var msg = (resp && resp.error) ? resp.error : 'Token konnte nicht geladen werden.';
+                    alert(msg);
+                  })
+                  .fail(function() {
+                    alert('Token konnte nicht geladen werden.');
+                  })
+                  .always(function() {
+                    btn.prop('disabled', false);
+                  });
+              });
+            ");
+        }
         $this->app->Tpl->Set('CREATE_CUSTOMER_BUTTON', $createCustomerButton);
         $this->app->Tpl->Set('CREATE_OFFER_BUTTON', $createOfferButton);
+        $this->app->Tpl->Set('PORTAL_TOKEN_BUTTON', $portalTokenButton);
 
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("status","ticketstatus",1);
