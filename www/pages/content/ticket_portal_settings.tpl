@@ -74,6 +74,10 @@
     <button type="button" id="portal-secret-generate">Generieren</button>
     <button type="button" id="portal-secret-copy">Kopieren</button>
     <p>Wenn gesetzt, muss das WordPress Plugin den gleichen Wert senden.</p>
+    <label>
+      <input type="checkbox" name="ticketportal_log_enabled" value="1" [PORTAL_LOG_ENABLED]>
+      Portal-Log aktivieren
+    </label>
     <br>
     <label>Max. Fehlversuche<br>
       <input type="number" name="ticketportal_max_attempts" value="[PORTAL_MAX_ATTEMPTS]" min="1">

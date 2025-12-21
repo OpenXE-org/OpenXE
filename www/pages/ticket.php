@@ -1730,6 +1730,16 @@ class Ticket {
 
   private function portalJsonResponse(array $payload, int $statusCode = 200): void
   {
+    if ($statusCode >= 400) {
+      $action = (string)($_GET['action'] ?? '');
+      $this->portalLog('warning', 'portal_error', [
+        'action' => $action,
+        'status' => $statusCode,
+        'payload' => $payload,
+        'method' => (string)($_SERVER['REQUEST_METHOD'] ?? ''),
+        'ip' => $this->portalGetRequestIp(),
+      ]);
+    }
     http_response_code($statusCode);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($payload);
@@ -1763,6 +1773,69 @@ class Ticket {
     return $value > 0 ? $value : $default;
   }
 
+  private function portalLogEnabled(): bool
+  {
+    return $this->portalGetSettingBool('ticketportal_log_enabled', false);
+  }
+
+  private function portalMaskValue(string $value): string
+  {
+    $value = (string)$value;
+    $len = strlen($value);
+    if ($len <= 4) {
+      return '****';
+    }
+    return substr($value, 0, 2).'***'.substr($value, -2);
+  }
+
+  private function portalSanitizeLogContext($value)
+  {
+    if (is_array($value)) {
+      $sanitized = [];
+      foreach ($value as $key => $item) {
+        $keyLower = strtolower((string)$key);
+        if (in_array($keyLower, ['token', 'magic_token', 'session_token', 'verifier_value', 'shared_secret', 'x-openxe-portal-secret'], true)) {
+          $sanitized[$key] = $this->portalMaskValue((string)$item);
+        } else {
+          $sanitized[$key] = $this->portalSanitizeLogContext($item);
+        }
+      }
+      return $sanitized;
+    }
+    if (is_scalar($value)) {
+      return (string)$value;
+    }
+    return $value;
+  }
+
+  private function portalLog(string $level, string $message, array $context = []): void
+  {
+    if (!$this->portalLogEnabled()) {
+      return;
+    }
+    $context = $this->portalSanitizeLogContext($context);
+    try {
+      if (isset($this->app->Container)) {
+        $logger = $this->app->Container->get('Logger');
+        if ($logger && method_exists($logger, $level)) {
+          $logger->$level($message, $context);
+          return;
+        }
+      }
+    } catch (Exception $e) {
+    }
+    $payload = [
+      'time' => gmdate('c'),
+      'level' => $level,
+      'message' => $message,
+      'context' => $context,
+    ];
+    $line = json_encode($payload);
+    if ($line !== false) {
+      error_log($line);
+    }
+  }
+
   private function portalRequireSharedSecret(): void
   {
     $secret = trim((string)$this->app->erp->Firmendaten('ticketportal_shared_secret'));
@@ -1786,6 +1859,7 @@ class Ticket {
       'ticketportal_agb_url' => ['varchar', '255', '', '', '', 0, 0],
       'ticketportal_agb_version' => ['varchar', '64', '', '', '', 0, 0],
       'ticketportal_shared_secret' => ['varchar', '255', '', '', '', 0, 0],
+      'ticketportal_log_enabled' => ['tinyint', '1', '', '0', '0', 0, 0],
       'ticketportal_session_ttl_min' => ['int', '11', '', '60', '60', 0, 0],
       'ticketportal_code_ttl_min' => ['int', '11', '', '15', '15', 0, 0],
       'ticketportal_magic_ttl_min' => ['int', '11', '', '30', '30', 0, 0],
@@ -2933,6 +3007,7 @@ class Ticket {
       $this->app->erp->FirmendatenSet('ticketportal_agb_url', (string)$this->app->Secure->GetPOST('ticketportal_agb_url'));
       $this->app->erp->FirmendatenSet('ticketportal_agb_version', (string)$this->app->Secure->GetPOST('ticketportal_agb_version'));
       $this->app->erp->FirmendatenSet('ticketportal_shared_secret', (string)$this->app->Secure->GetPOST('ticketportal_shared_secret'));
+      $this->app->erp->FirmendatenSet('ticketportal_log_enabled', !empty($this->app->Secure->GetPOST('ticketportal_log_enabled')) ? 1 : 0);
       $this->app->erp->FirmendatenSet('ticketportal_notify_subject', (string)$this->app->Secure->GetPOST('ticketportal_notify_subject'));
       $this->app->erp->FirmendatenSet('ticketportal_notify_body', (string)$this->app->Secure->GetPOST('ticketportal_notify_body'));
       $sessionTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_session_ttl_min'));
@@ -2987,6 +3062,7 @@ class Ticket {
     $this->app->Tpl->Set('PORTAL_AGB_URL', $this->app->erp->Firmendaten('ticketportal_agb_url'));
     $this->app->Tpl->Set('PORTAL_AGB_VERSION', $this->app->erp->Firmendaten('ticketportal_agb_version'));
     $this->app->Tpl->Set('PORTAL_SHARED_SECRET', $this->app->erp->Firmendaten('ticketportal_shared_secret'));
+    $this->app->Tpl->Set('PORTAL_LOG_ENABLED', $this->portalLogEnabled() ? 'checked' : '');
     $this->app->Tpl->Set('PORTAL_NOTIFY_SUBJECT', $this->app->erp->Firmendaten('ticketportal_notify_subject'));
     $this->app->Tpl->Set('PORTAL_NOTIFY_BODY', $this->app->erp->Firmendaten('ticketportal_notify_body'));
     $this->app->Tpl->Set('PORTAL_SESSION_TTL', $this->portalGetSettingInt('ticketportal_session_ttl_min', 60));

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.4
+ * Version: 0.1.5
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.4');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.5');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -24,6 +24,11 @@ function openxe_ticket_portal_register_settings(): void
     'type' => 'string',
     'sanitize_callback' => 'sanitize_text_field',
     'default' => '',
+  ]);
+  register_setting('openxe_ticket_portal', 'openxe_ticket_portal_log_enabled', [
+    'type' => 'boolean',
+    'sanitize_callback' => 'absint',
+    'default' => 0,
   ]);
   register_setting('openxe_ticket_portal', 'openxe_ticket_portal_default_verifier', [
     'type' => 'string',
@@ -108,6 +113,69 @@ function openxe_ticket_portal_get_shared_secret(): string
   return (string)get_option('openxe_ticket_portal_shared_secret', '');
 }
 
+function openxe_ticket_portal_log_enabled(): bool
+{
+  return (int)get_option('openxe_ticket_portal_log_enabled', 0) === 1;
+}
+
+function openxe_ticket_portal_get_log_path(): string
+{
+  $upload = wp_upload_dir();
+  $base = rtrim((string)($upload['basedir'] ?? ''), '/\\');
+  if ($base === '') {
+    $base = WP_CONTENT_DIR;
+  }
+  return $base . DIRECTORY_SEPARATOR . 'openxe-ticket-portal.log';
+}
+
+function openxe_ticket_portal_mask_value(string $value): string
+{
+  $value = (string)$value;
+  $len = strlen($value);
+  if ($len <= 4) {
+    return '****';
+  }
+  return substr($value, 0, 2) . '***' . substr($value, -2);
+}
+
+function openxe_ticket_portal_sanitize_log_context($value)
+{
+  if (is_array($value)) {
+    $sanitized = [];
+    foreach ($value as $key => $item) {
+      $keyLower = strtolower((string)$key);
+      if (in_array($keyLower, ['token', 'magic_token', 'session_token', 'verifier_value', 'shared_secret', 'x-openxe-portal-secret'], true)) {
+        $sanitized[$key] = openxe_ticket_portal_mask_value((string)$item);
+      } else {
+        $sanitized[$key] = openxe_ticket_portal_sanitize_log_context($item);
+      }
+    }
+    return $sanitized;
+  }
+  if (is_scalar($value)) {
+    return (string)$value;
+  }
+  return $value;
+}
+
+function openxe_ticket_portal_log(string $message, array $context = []): void
+{
+  if (!openxe_ticket_portal_log_enabled()) {
+    return;
+  }
+  $path = openxe_ticket_portal_get_log_path();
+  $payload = [
+    'time' => gmdate('c'),
+    'message' => $message,
+    'context' => openxe_ticket_portal_sanitize_log_context($context),
+  ];
+  $line = wp_json_encode($payload);
+  if ($line === false) {
+    return;
+  }
+  @file_put_contents($path, $line . PHP_EOL, FILE_APPEND);
+}
+
 function openxe_ticket_portal_admin_menu(): void
 {
   add_options_page(
@@ -125,6 +193,8 @@ function openxe_ticket_portal_settings_page(): void
   $baseUrl = esc_attr(openxe_ticket_portal_get_base_url());
   $sharedSecret = esc_attr(openxe_ticket_portal_get_shared_secret());
   $defaultVerifier = esc_attr((string)get_option('openxe_ticket_portal_default_verifier', 'auto'));
+  $logEnabled = openxe_ticket_portal_log_enabled();
+  $logPath = esc_html(openxe_ticket_portal_get_log_path());
   ?>
   <div class="wrap">
     <h1>OpenXE Ticket Portal</h1>
@@ -143,6 +213,16 @@ function openxe_ticket_portal_settings_page(): void
           <td>
             <input type="text" id="openxe_ticket_portal_shared_secret" name="openxe_ticket_portal_shared_secret" value="<?php echo $sharedSecret; ?>" class="regular-text" autocomplete="off">
             <p class="description">Muss mit dem Wert in OpenXE uebereinstimmen, wenn aktiviert.</p>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row"><label for="openxe_ticket_portal_log_enabled">Debug Log aktivieren</label></th>
+          <td>
+            <label>
+              <input type="checkbox" id="openxe_ticket_portal_log_enabled" name="openxe_ticket_portal_log_enabled" value="1" <?php checked($logEnabled); ?>>
+              Fehler in Datei schreiben
+            </label>
+            <p class="description">Logdatei: <?php echo $logPath; ?></p>
           </td>
         </tr>
         <tr>
@@ -372,12 +452,23 @@ function openxe_ticket_portal_proxy(string $action, array $payload): void
 {
   $result = openxe_ticket_portal_remote($action, $payload);
   if (is_wp_error($result)) {
+    openxe_ticket_portal_log('remote_error', [
+      'action' => $action,
+      'error' => $result->get_error_message(),
+    ]);
     wp_send_json_error(['message' => $result->get_error_message()], 500);
   }
   $code = (int)$result['code'];
   $data = $result['data'];
   if ($code < 200 || $code >= 300) {
     $message = is_array($data) && !empty($data['error']) ? (string)$data['error'] : 'request_failed';
+    openxe_ticket_portal_log('remote_response_error', [
+      'action' => $action,
+      'status' => $code,
+      'message' => $message,
+      'payload' => $payload,
+      'response' => $data,
+    ]);
     wp_send_json_error(['message' => $message, 'data' => $data], $code ?: 500);
   }
   wp_send_json_success($data);
@@ -405,6 +496,12 @@ function openxe_ticket_portal_apply_rate_limit(string $action): void
   $data['count'] = (int)$data['count'] + 1;
   set_transient($key, $data, $window);
   if ($data['count'] > $limit) {
+    openxe_ticket_portal_log('rate_limited', [
+      'action' => $action,
+      'ip' => $ip,
+      'count' => $data['count'],
+      'limit' => $limit,
+    ]);
     wp_send_json_error(['message' => 'rate_limited'], 429);
   }
 }
