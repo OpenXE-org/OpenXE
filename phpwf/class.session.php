@@ -91,6 +91,18 @@ class Session
      */
     $whitelist = [
       'snapaddy' => 'single',
+      'ticket' => [
+        'portal_session',
+        'portal_magic',
+        'portal_status',
+        'portal_messages',
+        'portal_message',
+        'portal_notifications',
+        'portal_notification',
+        'portal_offer',
+        'portal_offer_confirm',
+        'portal_print',
+      ],
     ];
 
     if (array_key_exists($this->module, $whitelist)) {
@@ -198,4 +210,3 @@ class Session
   }
 
 }
-
