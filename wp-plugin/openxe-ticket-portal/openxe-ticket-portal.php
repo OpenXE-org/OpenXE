@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.5
+ * Version: 0.1.6
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.5');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.6');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -128,6 +128,38 @@ function openxe_ticket_portal_get_log_path(): string
   return $base . DIRECTORY_SEPARATOR . 'openxe-ticket-portal.log';
 }
 
+function openxe_ticket_portal_read_log_tail(string $path, int $maxLines = 200, int $maxBytes = 20000): string
+{
+  if (!is_file($path) || !is_readable($path)) {
+    return '';
+  }
+  $size = filesize($path);
+  if ($size === false || $size <= 0) {
+    return '';
+  }
+  $bytes = min($maxBytes, (int)$size);
+  $handle = fopen($path, 'rb');
+  if ($handle === false) {
+    return '';
+  }
+  if ($bytes < $size) {
+    fseek($handle, -$bytes, SEEK_END);
+  }
+  $data = fread($handle, $bytes);
+  fclose($handle);
+  if ($data === false || $data === '') {
+    return '';
+  }
+  $lines = preg_split('/\\r\\n|\\r|\\n/', $data);
+  if ($bytes < $size && !empty($lines)) {
+    array_shift($lines);
+  }
+  if (count($lines) > $maxLines) {
+    $lines = array_slice($lines, -$maxLines);
+  }
+  return implode("\n", $lines);
+}
+
 function openxe_ticket_portal_mask_value(string $value): string
 {
   $value = (string)$value;
@@ -194,7 +226,9 @@ function openxe_ticket_portal_settings_page(): void
   $sharedSecret = esc_attr(openxe_ticket_portal_get_shared_secret());
   $defaultVerifier = esc_attr((string)get_option('openxe_ticket_portal_default_verifier', 'auto'));
   $logEnabled = openxe_ticket_portal_log_enabled();
-  $logPath = esc_html(openxe_ticket_portal_get_log_path());
+  $logPath = openxe_ticket_portal_get_log_path();
+  $logPathEsc = esc_html($logPath);
+  $logContent = esc_textarea(openxe_ticket_portal_read_log_tail($logPath));
   ?>
   <div class="wrap">
     <h1>OpenXE Ticket Portal</h1>
@@ -222,7 +256,18 @@ function openxe_ticket_portal_settings_page(): void
               <input type="checkbox" id="openxe_ticket_portal_log_enabled" name="openxe_ticket_portal_log_enabled" value="1" <?php checked($logEnabled); ?>>
               Fehler in Datei schreiben
             </label>
-            <p class="description">Logdatei: <?php echo $logPath; ?></p>
+            <p class="description">Logdatei: <?php echo $logPathEsc; ?></p>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Logauszug</th>
+          <td>
+            <textarea readonly rows="8" class="large-text"><?php echo $logContent; ?></textarea>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+              <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
+              <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
+              <button type="submit" class="button">Log leeren</button>
+            </form>
           </td>
         </tr>
         <tr>
@@ -681,3 +726,18 @@ add_action('wp_ajax_openxe_ticket_portal_notifications_get', 'openxe_ticket_port
 add_action('wp_ajax_nopriv_openxe_ticket_portal_notifications_set', 'openxe_ticket_portal_ajax_notifications_set');
 add_action('wp_ajax_openxe_ticket_portal_notifications_set', 'openxe_ticket_portal_ajax_notifications_set');
 add_action('wp_ajax_openxe_ticket_portal_test', 'openxe_ticket_portal_ajax_test');
+
+function openxe_ticket_portal_clear_log_action(): void
+{
+  if (!current_user_can('manage_options')) {
+    wp_die('forbidden');
+  }
+  check_admin_referer('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce');
+  $path = openxe_ticket_portal_get_log_path();
+  if (is_file($path)) {
+    @unlink($path);
+  }
+  wp_safe_redirect(admin_url('options-general.php?page=openxe-ticket-portal'));
+  exit;
+}
+add_action('admin_post_openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_action');

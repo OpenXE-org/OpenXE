@@ -35,3 +35,4 @@
 - Added ticket number login support in portal (token still supported for compatibility).
 - Added shared secret generator and copy buttons in portal settings.
 - Added debug logging for portal requests in WordPress and OpenXE (opt-in).
+- Added log viewers in OpenXE portal settings and WordPress plugin settings.

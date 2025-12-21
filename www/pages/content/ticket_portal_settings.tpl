@@ -78,6 +78,10 @@
       <input type="checkbox" name="ticketportal_log_enabled" value="1" [PORTAL_LOG_ENABLED]>
       Portal-Log aktivieren
     </label>
+    <p>Logdatei: <code>[PORTAL_LOG_PATH]</code></p>
+    <label>Letzte Eintraege</label>
+    <textarea readonly rows="8" style="width:100%;">[PORTAL_LOG_CONTENT]</textarea>
+    <button type="submit" name="clear_log" value="1" class="btn">Log leeren</button>
     <br>
     <label>Max. Fehlversuche<br>
       <input type="number" name="ticketportal_max_attempts" value="[PORTAL_MAX_ATTEMPTS]" min="1">

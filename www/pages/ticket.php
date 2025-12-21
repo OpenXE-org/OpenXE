@@ -1778,6 +1778,48 @@ class Ticket {
     return $this->portalGetSettingBool('ticketportal_log_enabled', false);
   }
 
+  private function portalGetLogPath(): string
+  {
+    $dir = sys_get_temp_dir();
+    if ($dir === '' || !is_dir($dir)) {
+      $dir = dirname(__DIR__, 2);
+    }
+    return rtrim($dir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'openxe-ticket-portal.log';
+  }
+
+  private function portalReadLogTail(int $maxLines = 200, int $maxBytes = 20000): string
+  {
+    $path = $this->portalGetLogPath();
+    if (!is_file($path) || !is_readable($path)) {
+      return '';
+    }
+    $size = filesize($path);
+    if ($size === false || $size <= 0) {
+      return '';
+    }
+    $bytes = min($maxBytes, (int)$size);
+    $fp = fopen($path, 'rb');
+    if ($fp === false) {
+      return '';
+    }
+    if ($bytes < $size) {
+      fseek($fp, -$bytes, SEEK_END);
+    }
+    $data = fread($fp, $bytes);
+    fclose($fp);
+    if ($data === false || $data === '') {
+      return '';
+    }
+    $lines = preg_split('/\\r\\n|\\r|\\n/', $data);
+    if ($bytes < $size && !empty($lines)) {
+      array_shift($lines);
+    }
+    if (count($lines) > $maxLines) {
+      $lines = array_slice($lines, -$maxLines);
+    }
+    return implode("\n", $lines);
+  }
+
   private function portalMaskValue(string $value): string
   {
     $value = (string)$value;
@@ -1832,6 +1874,7 @@ class Ticket {
     ];
     $line = json_encode($payload);
     if ($line !== false) {
+      @file_put_contents($this->portalGetLogPath(), $line.PHP_EOL, FILE_APPEND);
       error_log($line);
     }
   }
@@ -2998,6 +3041,15 @@ class Ticket {
       return;
     }
     $this->portalEnsureFirmendatenDefaults();
+    if ($this->app->Secure->GetPOST('clear_log')) {
+      $logPath = $this->portalGetLogPath();
+      if (is_file($logPath)) {
+        @unlink($logPath);
+      }
+      $msg = $this->app->erp->base64_url_encode('<div class="info">Portal Log geleert.</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_settings&msg='.$msg);
+      return;
+    }
     if ($this->app->Secure->GetPOST('save')) {
       $this->app->erp->FirmendatenSet('ticketportal_enabled', !empty($this->app->Secure->GetPOST('ticketportal_enabled')) ? 1 : 0);
       $this->app->erp->FirmendatenSet('ticketportal_portal_url', (string)$this->app->Secure->GetPOST('ticketportal_portal_url'));
@@ -3063,6 +3115,8 @@ class Ticket {
     $this->app->Tpl->Set('PORTAL_AGB_VERSION', $this->app->erp->Firmendaten('ticketportal_agb_version'));
     $this->app->Tpl->Set('PORTAL_SHARED_SECRET', $this->app->erp->Firmendaten('ticketportal_shared_secret'));
     $this->app->Tpl->Set('PORTAL_LOG_ENABLED', $this->portalLogEnabled() ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_LOG_PATH', htmlentities($this->portalGetLogPath()));
+    $this->app->Tpl->Set('PORTAL_LOG_CONTENT', htmlentities($this->portalReadLogTail()));
     $this->app->Tpl->Set('PORTAL_NOTIFY_SUBJECT', $this->app->erp->Firmendaten('ticketportal_notify_subject'));
     $this->app->Tpl->Set('PORTAL_NOTIFY_BODY', $this->app->erp->Firmendaten('ticketportal_notify_body'));
     $this->app->Tpl->Set('PORTAL_SESSION_TTL', $this->portalGetSettingInt('ticketportal_session_ttl_min', 60));
