@@ -69,8 +69,10 @@
   <fieldset>
     <legend>Sicherheit</legend>
     <label>Shared Secret (optional)<br>
-      <input type="text" name="ticketportal_shared_secret" value="[PORTAL_SHARED_SECRET]" size="60" autocomplete="off">
+      <input type="text" id="ticketportal_shared_secret" name="ticketportal_shared_secret" value="[PORTAL_SHARED_SECRET]" size="60" autocomplete="off">
     </label>
+    <button type="button" id="portal-secret-generate">Generieren</button>
+    <button type="button" id="portal-secret-copy">Kopieren</button>
     <p>Wenn gesetzt, muss das WordPress Plugin den gleichen Wert senden.</p>
     <br>
     <label>Max. Fehlversuche<br>
@@ -123,3 +125,49 @@
 
   <input type="submit" name="save" value="Speichern" class="btnBlue">
 </form>
+
+<script>
+(function () {
+  var input = document.getElementById('ticketportal_shared_secret');
+  var btnGenerate = document.getElementById('portal-secret-generate');
+  var btnCopy = document.getElementById('portal-secret-copy');
+  if (!input || !btnGenerate || !btnCopy) {
+    return;
+  }
+
+  function toHex(buffer) {
+    return Array.prototype.map.call(buffer, function (b) {
+      return ('00' + b.toString(16)).slice(-2);
+    }).join('');
+  }
+
+  function generateSecret() {
+    if (window.crypto && window.crypto.getRandomValues) {
+      var bytes = new Uint8Array(32);
+      window.crypto.getRandomValues(bytes);
+      return toHex(bytes);
+    }
+    var fallback = '';
+    for (var i = 0; i < 64; i++) {
+      fallback += Math.floor(Math.random() * 16).toString(16);
+    }
+    return fallback;
+  }
+
+  btnGenerate.addEventListener('click', function () {
+    input.value = generateSecret();
+    input.focus();
+    input.select();
+  });
+
+  btnCopy.addEventListener('click', function () {
+    input.focus();
+    input.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).catch(function () {});
+      return;
+    }
+    document.execCommand('copy');
+  });
+})();
+</script>

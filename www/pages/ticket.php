@@ -948,8 +948,9 @@ class Ticket {
         }
         if ($this->app->erp->RechteVorhanden('ticket', 'edit') && $this->portalGetSettingBool('ticketportal_enabled')) {
             $portalUrl = trim((string)$this->app->erp->Firmendaten('ticketportal_portal_url'));
+            $portalTicketNumber = (string)$ticket_from_db['schluessel'];
             $portalTokenButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-token-btn" data-ticket="'.$ticketId.'">Portal-Hash kopieren</button></td></tr>';
-            $portalLinkButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-link-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'">Portal-Link kopieren</button></td></tr>';
+            $portalLinkButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-link-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'" data-ticket-number="'.htmlentities($portalTicketNumber).'">Portal-Link kopieren</button></td></tr>';
             $portalMagicButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-magic-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'">Magic Link kopieren</button></td></tr>';
             $this->app->Tpl->Add('JQUERYREADY', "
               function portalCopyText(text, label) {
@@ -1012,6 +1013,7 @@ class Ticket {
                 var btn = $(this);
                 var ticketId = btn.data('ticket');
                 var portalUrl = btn.data('portal-url') || '';
+                var ticketNumber = btn.data('ticket-number') || '';
                 if (!ticketId) {
                   alert('Ticket ID fehlt.');
                   return;
@@ -1020,18 +1022,16 @@ class Ticket {
                   alert('Portal URL fehlt. Bitte in den Portal-Einstellungen setzen.');
                   return;
                 }
+                if (!ticketNumber) {
+                  alert('Ticketnummer fehlt.');
+                  return;
+                }
                 btn.prop('disabled', true);
-                portalFetchToken(ticketId, function(err, token) {
-                  if (err) {
-                    alert(err);
-                  } else {
-                    var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
-                    var params = 'token=' + encodeURIComponent(token);
-                    var link = portalUrl + separator + params;
-                    portalCopyText(link, 'Portal-Link (kopieren):');
-                  }
-                  btn.prop('disabled', false);
-                });
+                var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
+                var params = 'ticket_number=' + encodeURIComponent(ticketNumber);
+                var link = portalUrl + separator + params;
+                portalCopyText(link, 'Portal-Link (kopieren):');
+                btn.prop('disabled', false);
               });
               $('#ticket-portal-magic-btn').on('click', function(e) {
                 e.preventDefault();
@@ -1870,6 +1870,28 @@ class Ticket {
     return !empty($row) ? $row : null;
   }
 
+  private function portalGetOrCreateLookupAccess(int $ticketId, string $ticketNumber): array
+  {
+    $ticketId = (int)$ticketId;
+    $scope = 'lookup';
+    $row = $this->app->DB->SelectRow(
+      "SELECT * FROM ticket_portal_access
+       WHERE ticket_id = $ticketId AND scope = '$scope' AND revoked_at IS NULL
+       LIMIT 1"
+    );
+    if (!empty($row)) {
+      return $row;
+    }
+    $tokenHash = $this->app->DB->real_escape_string($this->portalHashToken($ticketNumber));
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at)
+       VALUES ($ticketId, '$tokenHash', '$scope', NOW())"
+    );
+    $newId = (int)$this->app->DB->GetInsertID();
+    $row = $this->app->DB->SelectRow("SELECT * FROM ticket_portal_access WHERE id = $newId LIMIT 1");
+    return !empty($row) ? $row : [];
+  }
+
   private function portalIsAccessLocked(array $access): bool
   {
     if (empty($access['locked_until'])) {
@@ -1959,6 +1981,24 @@ class Ticket {
             FROM ticket t
             LEFT JOIN adresse a ON t.adresse = a.id
             WHERE t.id = $ticketId
+            LIMIT 1";
+    $row = $this->app->DB->SelectRow($sql);
+    return !empty($row) ? $row : null;
+  }
+
+  private function portalGetTicketByNumber(string $ticketNumber): ?array
+  {
+    $ticketNumber = trim($ticketNumber);
+    if ($ticketNumber === '') {
+      return null;
+    }
+    $ticketNumberEsc = $this->app->DB->real_escape_string($ticketNumber);
+    $sql = "SELECT t.id, t.schluessel, t.status, t.mailadresse, t.adresse,
+                   t.betreff, t.notiz, t.kommentar,
+                   a.name AS customer_name, a.email AS customer_email, a.plz AS customer_plz
+            FROM ticket t
+            LEFT JOIN adresse a ON t.adresse = a.id
+            WHERE t.schluessel = '$ticketNumberEsc'
             LIMIT 1";
     $row = $this->app->DB->SelectRow($sql);
     return !empty($row) ? $row : null;
@@ -2357,24 +2397,38 @@ class Ticket {
     }
     $data = $this->portalReadJsonInput();
     $token = trim((string)($data['token'] ?? ''));
+    $ticketNumber = trim((string)($data['ticket_number'] ?? $data['ticket'] ?? ''));
     $verifierType = trim((string)($data['verifier_type'] ?? ''));
     $verifierValue = trim((string)($data['verifier_value'] ?? ''));
-    if ($token === '') {
+    if ($token === '' && $ticketNumber === '') {
       $this->portalJsonResponse(['error' => 'invalid_request'], 400);
     }
-    $access = $this->portalGetAccessByToken($token, 'customer');
-    if (!$access) {
-      $this->portalJsonResponse(['error' => 'token_not_found'], 404);
+    $access = null;
+    $ticket = null;
+    if ($token !== '') {
+      $access = $this->portalGetAccessByToken($token, 'customer');
+      if (!$access) {
+        $this->portalJsonResponse(['error' => 'token_not_found'], 404);
+      }
+      $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+      if (!$ticket) {
+        $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+      }
+    } else {
+      $ticket = $this->portalGetTicketByNumber($ticketNumber);
+      if (!$ticket) {
+        $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+      }
+      $access = $this->portalGetOrCreateLookupAccess((int)$ticket['id'], (string)$ticket['schluessel']);
+      if (empty($access)) {
+        $this->portalJsonResponse(['error' => 'access_failed'], 500);
+      }
     }
     if ($this->portalIsAccessLocked($access)) {
       $this->portalJsonResponse([
         'error' => 'access_locked',
         'locked_until' => $access['locked_until'] ?? null,
       ], 429);
-    }
-    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
-    if (!$ticket) {
-      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
     }
 
     $email = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');

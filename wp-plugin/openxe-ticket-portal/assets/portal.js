@@ -87,8 +87,8 @@
     var notificationsSave = qs('.oxp-notifications-save', root);
     var notificationsMsg = qs('.oxp-notifications-msg', root);
 
-    var tokenInput = qs('.oxp-token', root);
-    var tokenRow = qs('.oxp-token-row', root);
+    var ticketInput = qs('.oxp-ticket-number', root);
+    var ticketRow = qs('.oxp-token-row', root);
     var verifierSelect = qs('.oxp-verifier', root);
     var verifierInput = qs('.oxp-verifier-value', root);
     var loginButton = qs('.oxp-login-btn', root);
@@ -119,12 +119,25 @@
 
     var params = new URLSearchParams(window.location.search || '');
     var urlToken = params.get('token') || params.get('ticket_token') || '';
+    var urlTicket = params.get('ticket') || params.get('ticket_number') || '';
     var urlOffer = params.get('offer_id') || params.get('angebot_id') || '';
     var urlMagic = params.get('magic_token') || params.get('magicToken') || '';
 
-    if (urlToken) {
-      tokenInput.value = urlToken;
-      setVisible(tokenRow, false);
+    var tokenMode = false;
+    if (urlTicket) {
+      ticketInput.value = urlTicket;
+      tokenMode = false;
+      setVisible(ticketRow, true);
+    } else if (urlToken) {
+      ticketInput.value = urlToken;
+      tokenMode = true;
+      setVisible(ticketRow, true);
+    }
+
+    if (ticketInput) {
+      ticketInput.addEventListener('input', function () {
+        tokenMode = false;
+      });
     }
     if (urlOffer) {
       offerIdInput.value = urlOffer;
@@ -140,14 +153,14 @@
     var sessionKey = null;
     var sessionToken = '';
 
-    function setSession(token, ticketToken) {
+    function setSession(token, key, mode) {
       sessionToken = token;
-      sessionKey = 'openxe_ticket_portal_session_' + ticketToken;
+      sessionKey = 'openxe_ticket_portal_session_' + mode + '_' + key;
       sessionStorage.setItem(sessionKey, JSON.stringify({ token: token }));
     }
 
-    function restoreSession(ticketToken) {
-      sessionKey = 'openxe_ticket_portal_session_' + ticketToken;
+    function restoreSession(key, mode) {
+      sessionKey = 'openxe_ticket_portal_session_' + mode + '_' + key;
       var stored = sessionStorage.getItem(sessionKey);
       if (!stored) {
         return '';
@@ -211,6 +224,12 @@
       }
       if (raw === 'token_not_found') {
         return 'Token nicht gefunden.';
+      }
+      if (raw === 'ticket_not_found') {
+        return 'Ticket nicht gefunden.';
+      }
+      if (raw === 'access_failed') {
+        return 'Zugriff konnte nicht erstellt werden.';
       }
       if (raw === 'forbidden') {
         return 'Zugriff verweigert. Shared Secret pruefen.';
@@ -357,11 +376,12 @@
       if (urlMagic) {
         return;
       }
-      var token = tokenInput.value.trim();
-      if (!token) {
+      var loginValue = ticketInput.value.trim();
+      if (!loginValue) {
         return;
       }
-      var storedToken = restoreSession(token);
+      var mode = tokenMode ? 'token' : 'ticket';
+      var storedToken = restoreSession(loginValue, mode);
       if (storedToken) {
         sessionToken = storedToken;
         showMain();
@@ -371,18 +391,23 @@
     loginButton.addEventListener('click', function () {
       showMessage(loginMsg, '');
       showError('');
-      var token = tokenInput.value.trim();
+      var loginValue = ticketInput.value.trim();
       var verifierType = verifierSelect.value;
       var verifierValue = verifierInput.value.trim();
-      if (!token) {
-        showMessage(loginMsg, 'Token fehlt.');
+      if (!loginValue) {
+        showMessage(loginMsg, 'Ticketnummer fehlt.');
         return;
       }
-      portalAjax(config, 'openxe_ticket_portal_session', {
-        token: token,
+      var payload = {
         verifier_type: verifierType,
         verifier_value: verifierValue
-      }).then(function (resp) {
+      };
+      if (tokenMode) {
+        payload.token = loginValue;
+      } else {
+        payload.ticket_number = loginValue;
+      }
+      portalAjax(config, 'openxe_ticket_portal_session', payload).then(function (resp) {
         if (!resp || !resp.success) {
           showMessage(loginMsg, formatError(resp, 'Login fehlgeschlagen.'));
           return;
@@ -392,7 +417,7 @@
           return;
         }
         if (resp.data && resp.data.session_token) {
-          setSession(resp.data.session_token, token);
+          setSession(resp.data.session_token, loginValue, tokenMode ? 'token' : 'ticket');
           showMain();
           return;
         }

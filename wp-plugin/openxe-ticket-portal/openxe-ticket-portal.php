@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.3
+ * Version: 0.1.4
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.3');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.4');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -254,8 +254,8 @@ function openxe_ticket_portal_shortcode($atts): string
   $html .= '<div class="oxp-login">';
   $html .= '<h2>Ticket Portal</h2>';
   $html .= '<div class="oxp-row oxp-token-row">';
-  $html .= '<label for="oxp-token">Token</label>';
-  $html .= '<input id="oxp-token" class="oxp-token" type="text" autocomplete="off">';
+  $html .= '<label for="oxp-ticket-number">Ticketnummer</label>';
+  $html .= '<input id="oxp-ticket-number" class="oxp-ticket-number" type="text" autocomplete="off">';
   $html .= '</div>';
   $html .= '<div class="oxp-row">';
   $html .= '<label for="oxp-verifier">Verifikation</label>';
@@ -447,16 +447,23 @@ function openxe_ticket_portal_ajax_session(): void
   check_ajax_referer('openxe_ticket_portal', 'nonce');
   openxe_ticket_portal_apply_rate_limit('session');
   $token = sanitize_text_field(wp_unslash($_POST['token'] ?? ''));
+  $ticketNumber = sanitize_text_field(wp_unslash($_POST['ticket_number'] ?? ''));
   $verifierType = sanitize_text_field(wp_unslash($_POST['verifier_type'] ?? ''));
   $verifierValue = sanitize_text_field(wp_unslash($_POST['verifier_value'] ?? ''));
-  if ($token === '' || $verifierType === '') {
+  if (($token === '' && $ticketNumber === '') || $verifierType === '') {
     wp_send_json_error(['message' => 'invalid_request'], 400);
   }
-  openxe_ticket_portal_proxy('portal_session', [
-    'token' => $token,
+  $payload = [
     'verifier_type' => $verifierType,
     'verifier_value' => $verifierValue,
-  ]);
+  ];
+  if ($token !== '') {
+    $payload['token'] = $token;
+  }
+  if ($ticketNumber !== '') {
+    $payload['ticket_number'] = $ticketNumber;
+  }
+  openxe_ticket_portal_proxy('portal_session', $payload);
 }
 
 function openxe_ticket_portal_ajax_magic(): void
