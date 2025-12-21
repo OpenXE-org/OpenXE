@@ -24,3 +24,10 @@
 - Added ticket action button to generate and show portal tokens for testing.
 - Added portal comment inputs to the ticket edit view for staff messages.
 - Added portal URL setting and ticket buttons to copy portal link (with login data) or token.
+- Replaced portal link generation with token-only links and added magic link support for one-time access.
+- Added login rate limiting (failed attempts + lockout) and new portal settings for magic link TTL and lockout behavior.
+- Extended WordPress portal to support magic links and automatic verifier selection.
+- Added schema fields for portal access lockout tracking.
+- Added shared secret support between WordPress and OpenXE portal endpoints.
+- Added WordPress rate limiting for portal AJAX proxies and enforced HTTPS base URLs.
+- Improved portal UI error handling for failed status/message/notification requests.

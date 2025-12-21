@@ -41,13 +41,17 @@
       credentials: 'same-origin',
       body: data
     }).then(function (response) {
-      return response.json();
+      return response.json().catch(function () {
+        return { success: false, data: { message: 'invalid_response' } };
+      });
+    }).catch(function () {
+      return { success: false, data: { message: 'request_failed' } };
     });
   }
 
   function initPortal(root) {
     var baseUrl = (OpenXETwitterPortal && OpenXETwitterPortal.baseUrl) || '';
-    var defaultVerifier = (OpenXETwitterPortal && OpenXETwitterPortal.defaultVerifier) || 'plz';
+    var defaultVerifier = (OpenXETwitterPortal && OpenXETwitterPortal.defaultVerifier) || 'auto';
 
     var errorEl = qs('.oxp-error', root);
     if (!baseUrl) {
@@ -97,13 +101,10 @@
       });
     }
 
-    verifierSelect.value = defaultVerifier;
-
     var params = new URLSearchParams(window.location.search || '');
     var urlToken = params.get('token') || params.get('ticket_token') || '';
     var urlOffer = params.get('offer_id') || params.get('angebot_id') || '';
-    var urlVerifierType = params.get('verifier_type') || params.get('verifierType') || '';
-    var urlVerifierValue = params.get('verifier_value') || params.get('verifierValue') || '';
+    var urlMagic = params.get('magic_token') || params.get('magicToken') || '';
 
     if (urlToken) {
       tokenInput.value = urlToken;
@@ -116,11 +117,8 @@
         offerToggle.textContent = 'Angebot verbergen';
       }
     }
-    if (urlVerifierType) {
-      verifierSelect.value = urlVerifierType;
-    }
-    if (urlVerifierValue) {
-      verifierInput.value = urlVerifierValue;
+    if (defaultVerifier && verifierSelect) {
+      verifierSelect.value = defaultVerifier;
     }
 
     var sessionKey = null;
@@ -159,14 +157,67 @@
       }
     }
 
+    function showError(message) {
+      if (!errorEl) {
+        return;
+      }
+      if (message) {
+        showMessage(errorEl, message);
+        setVisible(errorEl, true);
+        return;
+      }
+      showMessage(errorEl, '');
+      setVisible(errorEl, false);
+    }
+
+    function formatError(resp, fallback) {
+      var raw = resp && resp.data && (resp.data.message || (resp.data.data && resp.data.data.error));
+      if (!raw) {
+        return fallback || 'Aktion fehlgeschlagen.';
+      }
+      if (raw === 'access_locked') {
+        return 'Zu viele Fehlversuche. Bitte spaeter erneut versuchen.';
+      }
+      if (raw === 'rate_limited') {
+        return 'Zu viele Anfragen. Bitte spaeter erneut versuchen.';
+      }
+      if (raw === 'verification_failed') {
+        return 'Verifikation fehlgeschlagen.';
+      }
+      if (raw === 'verification_expired') {
+        return 'Code abgelaufen. Bitte erneut anfordern.';
+      }
+      if (raw === 'email_required') {
+        return 'E-Mail fehlt im Ticket. Bitte andere Verifikation nutzen.';
+      }
+      if (raw === 'plz_required') {
+        return 'PLZ fehlt im Ticket. Bitte andere Verifikation nutzen.';
+      }
+      if (raw === 'token_not_found') {
+        return 'Token nicht gefunden.';
+      }
+      if (raw === 'forbidden') {
+        return 'Zugriff verweigert. Shared Secret pruefen.';
+      }
+      if (raw === 'invalid_response') {
+        return 'Ungueltige Antwort vom Server.';
+      }
+      if (raw === 'request_failed') {
+        return 'Server nicht erreichbar.';
+      }
+      return raw;
+    }
+
     function loadStatus() {
       if (!sessionToken) {
         return;
       }
       portalAjax('openxe_ticket_portal_status', { session_token: sessionToken }).then(function (resp) {
         if (!resp || !resp.success) {
+          showError(formatError(resp, 'Status konnte nicht geladen werden.'));
           return;
         }
+        showError('');
         var data = resp.data || {};
         statusValue.textContent = data.status_label || data.status_key || '';
         statusUpdated.textContent = data.updated_at ? ('Aktualisiert: ' + formatDate(data.updated_at)) : '';
@@ -223,8 +274,10 @@
       }
       portalAjax('openxe_ticket_portal_messages', { session_token: sessionToken }).then(function (resp) {
         if (!resp || !resp.success) {
+          showError(formatError(resp, 'Nachrichten konnten nicht geladen werden.'));
           return;
         }
+        showError('');
         renderMessages(resp.data && resp.data.messages ? resp.data.messages : []);
       });
     }
@@ -235,8 +288,10 @@
       }
       portalAjax('openxe_ticket_portal_notifications_get', { session_token: sessionToken }).then(function (resp) {
         if (!resp || !resp.success) {
+          showError(formatError(resp, 'Benachrichtigungen konnten nicht geladen werden.'));
           return;
         }
+        showError('');
         renderNotifications(resp.data && resp.data.statuses ? resp.data.statuses : []);
       });
     }
@@ -250,7 +305,42 @@
       loadNotifications();
     }
 
+    function stripMagicToken() {
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.delete('magic_token');
+        url.searchParams.delete('magicToken');
+        history.replaceState(null, '', url.toString());
+      } catch (e) {
+        return;
+      }
+    }
+
+    function loginWithMagicToken(magicToken) {
+      if (!magicToken) {
+        return;
+      }
+      showMessage(loginMsg, 'Magic Link wird geprueft...');
+      showError('');
+      portalAjax('openxe_ticket_portal_magic', { magic_token: magicToken }).then(function (resp) {
+        if (!resp || !resp.success) {
+          showMessage(loginMsg, formatError(resp, 'Magic Link ungueltig.'));
+          return;
+        }
+        if (resp.data && resp.data.session_token) {
+          sessionToken = resp.data.session_token;
+          stripMagicToken();
+          showMain();
+          return;
+        }
+        showMessage(loginMsg, 'Login fehlgeschlagen.');
+      });
+    }
+
     function tryAutoLogin() {
+      if (urlMagic) {
+        return;
+      }
       var token = tokenInput.value.trim();
       if (!token) {
         return;
@@ -264,6 +354,7 @@
 
     loginButton.addEventListener('click', function () {
       showMessage(loginMsg, '');
+      showError('');
       var token = tokenInput.value.trim();
       var verifierType = verifierSelect.value;
       var verifierValue = verifierInput.value.trim();
@@ -277,8 +368,7 @@
         verifier_value: verifierValue
       }).then(function (resp) {
         if (!resp || !resp.success) {
-          var message = (resp && resp.data && (resp.data.message || (resp.data.data && resp.data.data.error))) || 'Login fehlgeschlagen.';
-          showMessage(loginMsg, message);
+          showMessage(loginMsg, formatError(resp, 'Login fehlgeschlagen.'));
           return;
         }
         if (resp.data && resp.data.status === 'verification_sent') {
@@ -311,7 +401,7 @@
         text: text
       }).then(function (resp) {
         if (!resp || !resp.success) {
-          showMessage(messageMsg, 'Nachricht konnte nicht gesendet werden.');
+          showMessage(messageMsg, formatError(resp, 'Nachricht konnte nicht gesendet werden.'));
           return;
         }
         messageText.value = '';
@@ -333,7 +423,7 @@
           selected: JSON.stringify(selected)
         }).then(function (resp) {
           if (!resp || !resp.success) {
-            showMessage(notificationsMsg, 'Speichern fehlgeschlagen.');
+            showMessage(notificationsMsg, formatError(resp, 'Speichern fehlgeschlagen.'));
             return;
           }
           showMessage(notificationsMsg, 'Benachrichtigungen gespeichert.');
@@ -363,8 +453,7 @@
         agb_version: agbVersion
       }).then(function (resp) {
         if (!resp || !resp.success) {
-          var message = (resp && resp.data && resp.data.message) || 'Aktion fehlgeschlagen.';
-          showMessage(offerMsg, message);
+          showMessage(offerMsg, formatError(resp, 'Aktion fehlgeschlagen.'));
           return;
         }
         if (resp.data && resp.data.status === 'pending_doi') {
@@ -378,8 +467,8 @@
 
     tryAutoLogin();
 
-    if (urlToken && urlVerifierType && urlVerifierValue && loginButton) {
-      loginButton.click();
+    if (urlMagic) {
+      loginWithMagicToken(urlMagic);
     }
   }
 

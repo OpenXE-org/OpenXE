@@ -56,6 +56,7 @@
                                     [CREATE_OFFER_BUTTON]
                                     [PORTAL_TOKEN_BUTTON]
                                     [PORTAL_LINK_BUTTON]
+                                    [PORTAL_MAGIC_BUTTON]
                                 </table>
                             </fieldset>
                         </div>

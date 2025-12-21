@@ -35,6 +35,8 @@ class Ticket {
         $this->app->ActionHandler("portal_offer", "ticket_portal_offer");
         $this->app->ActionHandler("portal_offer_confirm", "ticket_portal_offer_confirm");
         $this->app->ActionHandler("portal_token", "ticket_portal_token");
+        $this->app->ActionHandler("portal_magic", "ticket_portal_magic");
+        $this->app->ActionHandler("portal_magic_token", "ticket_portal_magic_token");
         $this->app->ActionHandler("portal_print", "ticket_portal_print");
         $this->app->ActionHandler("portal_staff", "ticket_portal_staff");
         $this->app->ActionHandler("portal_plugin_download", "ticket_portal_plugin_download");
@@ -936,6 +938,7 @@ class Ticket {
         $createOfferButton = '';
         $portalTokenButton = '';
         $portalLinkButton = '';
+        $portalMagicButton = '';
         $portalCommentsBlock = '';
         if ($this->app->erp->RechteVorhanden('adresse', 'edit') && $addressId <= 0) {
             $createCustomerButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_customer&id='.$ticketId.'\';">Kunde anlegen</button></td></tr>';
@@ -945,25 +948,9 @@ class Ticket {
         }
         if ($this->app->erp->RechteVorhanden('ticket', 'edit') && $this->portalGetSettingBool('ticketportal_enabled')) {
             $portalUrl = trim((string)$this->app->erp->Firmendaten('ticketportal_portal_url'));
-            $verifierType = '';
-            $verifierValue = '';
-            $portalTicket = $this->portalGetTicketForPortal($ticketId);
-            if (!empty($portalTicket)) {
-                $portalEmail = $this->portalNormalizeEmail($portalTicket['mailadresse'] ?? '');
-                if ($portalEmail === '') {
-                    $portalEmail = $this->portalNormalizeEmail($portalTicket['customer_email'] ?? '');
-                }
-                $portalPlz = $this->portalNormalizePlz($portalTicket['customer_plz'] ?? '');
-                if ($portalPlz !== '') {
-                    $verifierType = 'plz';
-                    $verifierValue = $portalPlz;
-                } elseif ($portalEmail !== '') {
-                    $verifierType = 'email';
-                    $verifierValue = $portalEmail;
-                }
-            }
             $portalTokenButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-token-btn" data-ticket="'.$ticketId.'">Portal-Hash kopieren</button></td></tr>';
-            $portalLinkButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-link-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'" data-verifier-type="'.htmlentities($verifierType).'" data-verifier-value="'.htmlentities($verifierValue).'">Portal-Link kopieren (mit Login)</button></td></tr>';
+            $portalLinkButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-link-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'">Portal-Link kopieren</button></td></tr>';
+            $portalMagicButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-magic-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'">Magic Link kopieren</button></td></tr>';
             $this->app->Tpl->Add('JQUERYREADY', "
               function portalCopyText(text, label) {
                 if (!text) {
@@ -986,6 +973,20 @@ class Ticket {
                   })
                   .fail(function() {
                     done('Token konnte nicht geladen werden.', null);
+                  });
+              }
+              function portalFetchMagicToken(ticketId, done) {
+                $.getJSON('index.php?module=ticket&action=portal_magic_token&id=' + ticketId)
+                  .done(function(resp) {
+                    if (resp && resp.token) {
+                      done(null, resp.token, resp.expires_at || '');
+                      return;
+                    }
+                    var msg = (resp && resp.error) ? resp.error : 'Magic Link konnte nicht geladen werden.';
+                    done(msg, null, '');
+                  })
+                  .fail(function() {
+                    done('Magic Link konnte nicht geladen werden.', null, '');
                   });
               }
               $('#ticket-portal-token-btn').on('click', function(e) {
@@ -1011,8 +1012,6 @@ class Ticket {
                 var btn = $(this);
                 var ticketId = btn.data('ticket');
                 var portalUrl = btn.data('portal-url') || '';
-                var verifierType = btn.data('verifier-type') || '';
-                var verifierValue = btn.data('verifier-value') || '';
                 if (!ticketId) {
                   alert('Ticket ID fehlt.');
                   return;
@@ -1021,21 +1020,45 @@ class Ticket {
                   alert('Portal URL fehlt. Bitte in den Portal-Einstellungen setzen.');
                   return;
                 }
-                if (!verifierType || !verifierValue) {
-                  alert('Keine Verifikation gefunden (PLZ oder E-Mail).');
-                  return;
-                }
                 btn.prop('disabled', true);
                 portalFetchToken(ticketId, function(err, token) {
                   if (err) {
                     alert(err);
                   } else {
                     var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
-                    var params = 'token=' + encodeURIComponent(token)
-                      + '&verifier_type=' + encodeURIComponent(verifierType)
-                      + '&verifier_value=' + encodeURIComponent(verifierValue);
+                    var params = 'token=' + encodeURIComponent(token);
                     var link = portalUrl + separator + params;
                     portalCopyText(link, 'Portal-Link (kopieren):');
+                  }
+                  btn.prop('disabled', false);
+                });
+              });
+              $('#ticket-portal-magic-btn').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ticketId = btn.data('ticket');
+                var portalUrl = btn.data('portal-url') || '';
+                if (!ticketId) {
+                  alert('Ticket ID fehlt.');
+                  return;
+                }
+                if (!portalUrl) {
+                  alert('Portal URL fehlt. Bitte in den Portal-Einstellungen setzen.');
+                  return;
+                }
+                btn.prop('disabled', true);
+                portalFetchMagicToken(ticketId, function(err, token, expiresAt) {
+                  if (err) {
+                    alert(err);
+                  } else {
+                    var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
+                    var params = 'magic_token=' + encodeURIComponent(token);
+                    var link = portalUrl + separator + params;
+                    var label = 'Magic Link (kopieren):';
+                    if (expiresAt) {
+                      label = 'Magic Link (gueltig bis ' + expiresAt + '):';
+                    }
+                    portalCopyText(link, label);
                   }
                   btn.prop('disabled', false);
                 });
@@ -1063,6 +1086,7 @@ class Ticket {
         $this->app->Tpl->Set('CREATE_OFFER_BUTTON', $createOfferButton);
         $this->app->Tpl->Set('PORTAL_TOKEN_BUTTON', $portalTokenButton);
         $this->app->Tpl->Set('PORTAL_LINK_BUTTON', $portalLinkButton);
+        $this->app->Tpl->Set('PORTAL_MAGIC_BUTTON', $portalMagicButton);
         $this->app->Tpl->Set('PORTAL_COMMENTS_BLOCK', $portalCommentsBlock);
 
         $this->app->YUI->AutoComplete("projekt","projektname",1);
@@ -1739,6 +1763,18 @@ class Ticket {
     return $value > 0 ? $value : $default;
   }
 
+  private function portalRequireSharedSecret(): void
+  {
+    $secret = trim((string)$this->app->erp->Firmendaten('ticketportal_shared_secret'));
+    if ($secret === '') {
+      return;
+    }
+    $header = (string)($_SERVER['HTTP_X_OPENXE_PORTAL_SECRET'] ?? '');
+    if ($header === '' || !hash_equals($secret, $header)) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+  }
+
   private function portalEnsureFirmendatenDefaults(): void
   {
     $defaults = [
@@ -1749,9 +1785,13 @@ class Ticket {
       'ticketportal_notify_all_status' => ['tinyint', '1', '', '1', '1', 0, 0],
       'ticketportal_agb_url' => ['varchar', '255', '', '', '', 0, 0],
       'ticketportal_agb_version' => ['varchar', '64', '', '', '', 0, 0],
+      'ticketportal_shared_secret' => ['varchar', '255', '', '', '', 0, 0],
       'ticketportal_session_ttl_min' => ['int', '11', '', '60', '60', 0, 0],
       'ticketportal_code_ttl_min' => ['int', '11', '', '15', '15', 0, 0],
+      'ticketportal_magic_ttl_min' => ['int', '11', '', '30', '30', 0, 0],
       'ticketportal_doi_ttl_min' => ['int', '11', '', '120', '120', 0, 0],
+      'ticketportal_max_attempts' => ['int', '11', '', '5', '5', 0, 0],
+      'ticketportal_lockout_min' => ['int', '11', '', '15', '15', 0, 0],
       'ticketportal_status_labels' => ['text', '', '', json_encode($this->portalDefaultStatusLabels()), '', 0, 0],
       'ticketportal_status_map' => ['text', '', '', json_encode($this->portalDefaultStatusMap()), '', 0, 0],
       'ticketportal_notify_subject' => ['varchar', '255', '', 'Ticket #{ticket_number} Statusaenderung', 'Ticket #{ticket_number} Statusaenderung', 0, 0],
@@ -1830,6 +1870,48 @@ class Ticket {
     return !empty($row) ? $row : null;
   }
 
+  private function portalIsAccessLocked(array $access): bool
+  {
+    if (empty($access['locked_until'])) {
+      return false;
+    }
+    $lockedUntil = strtotime((string)$access['locked_until']);
+    if ($lockedUntil !== false && $lockedUntil <= time()) {
+      $this->portalResetAccessFailures((int)$access['id']);
+      return false;
+    }
+    return true;
+  }
+
+  private function portalRegisterAccessFailure(int $accessId, int $currentAttempts): array
+  {
+    $maxAttempts = $this->portalGetSettingInt('ticketportal_max_attempts', 5);
+    $lockoutMin = $this->portalGetSettingInt('ticketportal_lockout_min', 15);
+    $nextAttempts = max(0, $currentAttempts) + 1;
+    $lockedUntil = null;
+    if ($nextAttempts >= $maxAttempts) {
+      $lockedUntil = date('Y-m-d H:i:s', time() + ($lockoutMin * 60));
+    }
+    $lockedSql = $lockedUntil !== null ? "'".$this->app->DB->real_escape_string($lockedUntil)."'" : 'NULL';
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET failed_attempts = ".(int)$nextAttempts.",
+           last_failed_at = NOW(),
+           locked_until = ".$lockedSql."
+       WHERE id = ".(int)$accessId." LIMIT 1"
+    );
+    return ['attempts' => $nextAttempts, 'locked_until' => $lockedUntil];
+  }
+
+  private function portalResetAccessFailures(int $accessId): void
+  {
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET failed_attempts = 0, last_failed_at = NULL, locked_until = NULL
+       WHERE id = ".(int)$accessId." LIMIT 1"
+    );
+  }
+
   private function portalTouchAccess(int $accessId): void
   {
     $ip = $this->app->DB->real_escape_string($this->portalGetRequestIp());
@@ -1891,6 +1973,24 @@ class Ticket {
     $this->app->DB->Insert(
       "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at, expires_at)
        VALUES (".(int)$ticketId.", '$hash', 'session', NOW(), '".$this->app->DB->real_escape_string($expiresAt)."')"
+    );
+    return ['token' => $token, 'expires_at' => $expiresAt];
+  }
+
+  private function portalCreateMagicAccess(int $ticketId): array
+  {
+    $ttl = $this->portalGetSettingInt('ticketportal_magic_ttl_min', 30);
+    $expiresAt = date('Y-m-d H:i:s', time() + ($ttl * 60));
+    $token = $this->portalGenerateToken(24);
+    $hash = $this->app->DB->real_escape_string($this->portalHashToken($token));
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET revoked_at = NOW()
+       WHERE ticket_id = ".(int)$ticketId." AND scope = 'magic' AND revoked_at IS NULL"
+    );
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at, expires_at)
+       VALUES (".(int)$ticketId.", '$hash', 'magic', NOW(), '".$this->app->DB->real_escape_string($expiresAt)."')"
     );
     return ['token' => $token, 'expires_at' => $expiresAt];
   }
@@ -2251,6 +2351,7 @@ class Ticket {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
       $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
     }
@@ -2258,12 +2359,18 @@ class Ticket {
     $token = trim((string)($data['token'] ?? ''));
     $verifierType = trim((string)($data['verifier_type'] ?? ''));
     $verifierValue = trim((string)($data['verifier_value'] ?? ''));
-    if ($token === '' || $verifierType === '') {
+    if ($token === '') {
       $this->portalJsonResponse(['error' => 'invalid_request'], 400);
     }
     $access = $this->portalGetAccessByToken($token, 'customer');
     if (!$access) {
       $this->portalJsonResponse(['error' => 'token_not_found'], 404);
+    }
+    if ($this->portalIsAccessLocked($access)) {
+      $this->portalJsonResponse([
+        'error' => 'access_locked',
+        'locked_until' => $access['locked_until'] ?? null,
+      ], 429);
     }
     $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
     if (!$ticket) {
@@ -2276,14 +2383,32 @@ class Ticket {
     }
     $plz = $this->portalNormalizePlz($ticket['customer_plz'] ?? '');
 
+    if ($verifierType === '' || $verifierType === 'auto') {
+      $verifierType = $email !== '' ? 'code' : 'plz';
+    }
+
     switch ($verifierType) {
       case 'email':
+        if ($email === '') {
+          $this->portalJsonResponse(['error' => 'email_required'], 400);
+        }
         if ($email === '' || $this->portalNormalizeEmail($verifierValue) !== $email) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
           $this->portalJsonResponse(['error' => 'verification_failed'], 401);
         }
         break;
       case 'plz':
+        if ($plz === '') {
+          $this->portalJsonResponse(['error' => 'plz_required'], 400);
+        }
         if ($plz === '' || $this->portalNormalizePlz($verifierValue) !== $plz) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
           $this->portalJsonResponse(['error' => 'verification_failed'], 401);
         }
         break;
@@ -2306,14 +2431,26 @@ class Ticket {
           $this->portalJsonResponse(['status' => 'verification_sent']);
         }
         if (empty($access['verifier_hash']) || empty($access['verifier_expires_at'])) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
           $this->portalJsonResponse(['error' => 'verification_failed'], 401);
         }
         if (strtotime($access['verifier_expires_at']) < time()) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
           $this->portalJsonResponse(['error' => 'verification_expired'], 401);
         }
         $expectedHash = (string)$access['verifier_hash'];
         $providedHash = $this->portalHashToken($verifierValue);
         if (!hash_equals($expectedHash, $providedHash)) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
           $this->portalJsonResponse(['error' => 'verification_failed'], 401);
         }
         $this->app->DB->Update(
@@ -2326,6 +2463,7 @@ class Ticket {
         $this->portalJsonResponse(['error' => 'invalid_verifier'], 400);
     }
 
+    $this->portalResetAccessFailures((int)$access['id']);
     $session = $this->portalCreateSession((int)$ticket['id']);
     $this->portalTouchAccess((int)$access['id']);
     $this->portalJsonResponse(['session_token' => $session['token'], 'expires_at' => $session['expires_at']]);
@@ -2355,11 +2493,60 @@ class Ticket {
     $this->portalJsonResponse(['token' => $token]);
   }
 
+  public function ticket_portal_magic()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
+    }
+    $data = $this->portalReadJsonInput();
+    $magicToken = trim((string)($data['magic_token'] ?? ''));
+    if ($magicToken === '') {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $access = $this->portalGetAccessByToken($magicToken, 'magic');
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'token_not_found'], 404);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $this->portalTouchAccess((int)$access['id']);
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access SET revoked_at = NOW()
+       WHERE id = ".(int)$access['id']." LIMIT 1"
+    );
+    $session = $this->portalCreateSession((int)$ticket['id']);
+    $this->portalJsonResponse(['session_token' => $session['token'], 'expires_at' => $session['expires_at']]);
+  }
+
+  public function ticket_portal_magic_token()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $data = $this->portalReadJsonInput();
+    $ticketId = (int)($data['ticket_id'] ?? $this->app->Secure->GetGET('id'));
+    if ($ticketId <= 0) {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $magic = $this->portalCreateMagicAccess($ticketId);
+    $this->portalJsonResponse(['token' => $magic['token'], 'expires_at' => $magic['expires_at']]);
+  }
+
   public function ticket_portal_status()
   {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     $data = $this->portalReadJsonInput();
     $access = $this->portalGetSessionAccess($data);
     if (!$access) {
@@ -2398,6 +2585,7 @@ class Ticket {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     $data = $this->portalReadJsonInput();
     $access = $this->portalGetSessionAccess($data);
     if (!$access) {
@@ -2417,6 +2605,7 @@ class Ticket {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     if (!$this->portalGetSettingBool('ticketportal_allow_customer_comments')) {
       $this->portalJsonResponse(['error' => 'comments_disabled'], 403);
     }
@@ -2449,6 +2638,7 @@ class Ticket {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     $data = $this->portalReadJsonInput();
     $access = $this->portalGetSessionAccess($data);
     if (!$access) {
@@ -2481,6 +2671,7 @@ class Ticket {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
       $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
     }
@@ -2539,6 +2730,7 @@ class Ticket {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
       $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
     }
+    $this->portalRequireSharedSecret();
     if (!$this->portalGetSettingBool('ticketportal_allow_offer_confirm')) {
       $this->portalJsonResponse(['error' => 'offer_disabled'], 403);
     }
@@ -2686,14 +2878,21 @@ class Ticket {
       $this->app->erp->FirmendatenSet('ticketportal_notify_all_status', !empty($this->app->Secure->GetPOST('ticketportal_notify_all_status')) ? 1 : 0);
       $this->app->erp->FirmendatenSet('ticketportal_agb_url', (string)$this->app->Secure->GetPOST('ticketportal_agb_url'));
       $this->app->erp->FirmendatenSet('ticketportal_agb_version', (string)$this->app->Secure->GetPOST('ticketportal_agb_version'));
+      $this->app->erp->FirmendatenSet('ticketportal_shared_secret', (string)$this->app->Secure->GetPOST('ticketportal_shared_secret'));
       $this->app->erp->FirmendatenSet('ticketportal_notify_subject', (string)$this->app->Secure->GetPOST('ticketportal_notify_subject'));
       $this->app->erp->FirmendatenSet('ticketportal_notify_body', (string)$this->app->Secure->GetPOST('ticketportal_notify_body'));
       $sessionTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_session_ttl_min'));
       $codeTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_code_ttl_min'));
+      $magicTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_magic_ttl_min'));
       $doiTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_doi_ttl_min'));
+      $maxAttempts = max(1, (int)$this->app->Secure->GetPOST('ticketportal_max_attempts'));
+      $lockoutMin = max(1, (int)$this->app->Secure->GetPOST('ticketportal_lockout_min'));
       $this->app->erp->FirmendatenSet('ticketportal_session_ttl_min', $sessionTtl);
       $this->app->erp->FirmendatenSet('ticketportal_code_ttl_min', $codeTtl);
+      $this->app->erp->FirmendatenSet('ticketportal_magic_ttl_min', $magicTtl);
       $this->app->erp->FirmendatenSet('ticketportal_doi_ttl_min', $doiTtl);
+      $this->app->erp->FirmendatenSet('ticketportal_max_attempts', $maxAttempts);
+      $this->app->erp->FirmendatenSet('ticketportal_lockout_min', $lockoutMin);
       $labelsInput = $_POST['status_label'] ?? [];
       $mapInput = $_POST['status_map'] ?? [];
       $defaultLabels = $this->portalDefaultStatusLabels();
@@ -2733,11 +2932,15 @@ class Ticket {
     $this->app->Tpl->Set('PORTAL_NOTIFY_ALL', $this->portalGetSettingBool('ticketportal_notify_all_status', true) ? 'checked' : '');
     $this->app->Tpl->Set('PORTAL_AGB_URL', $this->app->erp->Firmendaten('ticketportal_agb_url'));
     $this->app->Tpl->Set('PORTAL_AGB_VERSION', $this->app->erp->Firmendaten('ticketportal_agb_version'));
+    $this->app->Tpl->Set('PORTAL_SHARED_SECRET', $this->app->erp->Firmendaten('ticketportal_shared_secret'));
     $this->app->Tpl->Set('PORTAL_NOTIFY_SUBJECT', $this->app->erp->Firmendaten('ticketportal_notify_subject'));
     $this->app->Tpl->Set('PORTAL_NOTIFY_BODY', $this->app->erp->Firmendaten('ticketportal_notify_body'));
     $this->app->Tpl->Set('PORTAL_SESSION_TTL', $this->portalGetSettingInt('ticketportal_session_ttl_min', 60));
     $this->app->Tpl->Set('PORTAL_CODE_TTL', $this->portalGetSettingInt('ticketportal_code_ttl_min', 15));
+    $this->app->Tpl->Set('PORTAL_MAGIC_TTL', $this->portalGetSettingInt('ticketportal_magic_ttl_min', 30));
     $this->app->Tpl->Set('PORTAL_DOI_TTL', $this->portalGetSettingInt('ticketportal_doi_ttl_min', 120));
+    $this->app->Tpl->Set('PORTAL_MAX_ATTEMPTS', $this->portalGetSettingInt('ticketportal_max_attempts', 5));
+    $this->app->Tpl->Set('PORTAL_LOCKOUT_MIN', $this->portalGetSettingInt('ticketportal_lockout_min', 15));
     $statusOptions = $this->portalCustomerStatusOptions();
     $labels = $this->portalGetStatusLabels();
     $labelRows = '';

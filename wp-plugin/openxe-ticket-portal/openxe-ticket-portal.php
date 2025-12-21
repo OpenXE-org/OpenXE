@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.0
+ * Version: 0.1.2
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.0');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.2');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -20,13 +20,49 @@ function openxe_ticket_portal_register_settings(): void
     'sanitize_callback' => 'openxe_ticket_portal_sanitize_url',
     'default' => '',
   ]);
+  register_setting('openxe_ticket_portal', 'openxe_ticket_portal_shared_secret', [
+    'type' => 'string',
+    'sanitize_callback' => 'sanitize_text_field',
+    'default' => '',
+  ]);
   register_setting('openxe_ticket_portal', 'openxe_ticket_portal_default_verifier', [
     'type' => 'string',
     'sanitize_callback' => 'openxe_ticket_portal_sanitize_verifier',
-    'default' => 'plz',
+    'default' => 'auto',
   ]);
 }
 add_action('admin_init', 'openxe_ticket_portal_register_settings');
+
+function openxe_ticket_portal_ends_with(string $value, string $suffix): bool
+{
+  if ($suffix === '') {
+    return true;
+  }
+  return substr($value, -strlen($suffix)) === $suffix;
+}
+
+function openxe_ticket_portal_is_private_host(string $host): bool
+{
+  $host = strtolower($host);
+  if ($host === 'localhost' || $host === '127.0.0.1' || $host === '::1') {
+    return true;
+  }
+  if (openxe_ticket_portal_ends_with($host, '.local') || openxe_ticket_portal_ends_with($host, '.lan')) {
+    return true;
+  }
+  if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+    return !filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+  }
+  if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+    if (strpos($host, 'fe80') === 0) {
+      return true;
+    }
+    if (strpos($host, 'fc') === 0 || strpos($host, 'fd') === 0) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function openxe_ticket_portal_sanitize_url($value): string
 {
@@ -34,20 +70,42 @@ function openxe_ticket_portal_sanitize_url($value): string
   if ($value === '') {
     return '';
   }
-  return rtrim($value, '/');
+  if (strpos($value, '://') === false) {
+    $value = 'https://' . $value;
+  }
+  $parts = wp_parse_url($value);
+  if (!is_array($parts) || empty($parts['host'])) {
+    return '';
+  }
+  $scheme = strtolower((string)($parts['scheme'] ?? ''));
+  if ($scheme !== 'http' && $scheme !== 'https') {
+    return '';
+  }
+  $host = (string)$parts['host'];
+  if ($scheme === 'http' && !openxe_ticket_portal_is_private_host($host)) {
+    $scheme = 'https';
+  }
+  $port = isset($parts['port']) ? ':' . (int)$parts['port'] : '';
+  $path = (string)($parts['path'] ?? '');
+  return rtrim($scheme . '://' . $host . $port . $path, '/');
 }
 
 function openxe_ticket_portal_sanitize_verifier($value): string
 {
   $value = trim((string)$value);
-  $allowed = ['plz', 'email', 'code'];
-  return in_array($value, $allowed, true) ? $value : 'plz';
+  $allowed = ['auto', 'plz', 'email', 'code'];
+  return in_array($value, $allowed, true) ? $value : 'auto';
 }
 
 function openxe_ticket_portal_get_base_url(): string
 {
   $url = (string)get_option('openxe_ticket_portal_base_url', '');
   return rtrim(trim($url), '/');
+}
+
+function openxe_ticket_portal_get_shared_secret(): string
+{
+  return (string)get_option('openxe_ticket_portal_shared_secret', '');
 }
 
 function openxe_ticket_portal_admin_menu(): void
@@ -65,7 +123,8 @@ add_action('admin_menu', 'openxe_ticket_portal_admin_menu');
 function openxe_ticket_portal_settings_page(): void
 {
   $baseUrl = esc_attr(openxe_ticket_portal_get_base_url());
-  $defaultVerifier = esc_attr((string)get_option('openxe_ticket_portal_default_verifier', 'plz'));
+  $sharedSecret = esc_attr(openxe_ticket_portal_get_shared_secret());
+  $defaultVerifier = esc_attr((string)get_option('openxe_ticket_portal_default_verifier', 'auto'));
   ?>
   <div class="wrap">
     <h1>OpenXE Ticket Portal</h1>
@@ -76,7 +135,14 @@ function openxe_ticket_portal_settings_page(): void
           <th scope="row"><label for="openxe_ticket_portal_base_url">OpenXE Base URL</label></th>
           <td>
             <input type="text" id="openxe_ticket_portal_base_url" name="openxe_ticket_portal_base_url" value="<?php echo $baseUrl; ?>" class="regular-text">
-            <p class="description">Beispiel: https://openxe.example.com</p>
+            <p class="description">Beispiel: https://openxe.example.com (https erforderlich, http nur fuer lokale Hosts)</p>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row"><label for="openxe_ticket_portal_shared_secret">Shared Secret (optional)</label></th>
+          <td>
+            <input type="text" id="openxe_ticket_portal_shared_secret" name="openxe_ticket_portal_shared_secret" value="<?php echo $sharedSecret; ?>" class="regular-text" autocomplete="off">
+            <p class="description">Muss mit dem Wert in OpenXE uebereinstimmen, wenn aktiviert.</p>
           </td>
         </tr>
         <tr>
@@ -90,6 +156,7 @@ function openxe_ticket_portal_settings_page(): void
           <th scope="row"><label for="openxe_ticket_portal_default_verifier">Standard Verifikation</label></th>
           <td>
             <select id="openxe_ticket_portal_default_verifier" name="openxe_ticket_portal_default_verifier">
+              <option value="auto" <?php selected($defaultVerifier, 'auto'); ?>>Automatisch</option>
               <option value="plz" <?php selected($defaultVerifier, 'plz'); ?>>PLZ</option>
               <option value="email" <?php selected($defaultVerifier, 'email'); ?>>E-Mail</option>
               <option value="code" <?php selected($defaultVerifier, 'code'); ?>>Code</option>
@@ -166,7 +233,7 @@ function openxe_ticket_portal_shortcode($atts): string
   wp_enqueue_script('openxe-ticket-portal');
 
   $baseUrl = openxe_ticket_portal_get_base_url();
-  $defaultVerifier = (string)get_option('openxe_ticket_portal_default_verifier', 'plz');
+  $defaultVerifier = (string)get_option('openxe_ticket_portal_default_verifier', 'auto');
 
   $config = [
     'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -192,6 +259,7 @@ function openxe_ticket_portal_shortcode($atts): string
   $html .= '<div class="oxp-row">';
   $html .= '<label for="oxp-verifier">Verifikation</label>';
   $html .= '<select id="oxp-verifier" class="oxp-verifier">';
+  $html .= '<option value="auto">Automatisch</option>';
   $html .= '<option value="plz">PLZ</option>';
   $html .= '<option value="email">E-Mail</option>';
   $html .= '<option value="code">Code</option>';
@@ -277,8 +345,13 @@ function openxe_ticket_portal_remote(string $action, array $payload): array|WP_E
     return new WP_Error('openxe_portal_missing_base_url', 'OpenXE base URL is not configured.');
   }
   $url = $baseUrl . '/index.php?module=ticket&action=' . rawurlencode($action);
+  $headers = ['Content-Type' => 'application/json'];
+  $sharedSecret = openxe_ticket_portal_get_shared_secret();
+  if ($sharedSecret !== '') {
+    $headers['X-OpenXE-Portal-Secret'] = $sharedSecret;
+  }
   $response = wp_remote_post($url, [
-    'headers' => ['Content-Type' => 'application/json'],
+    'headers' => $headers,
     'body' => wp_json_encode($payload),
     'timeout' => 20,
   ]);
@@ -309,9 +382,36 @@ function openxe_ticket_portal_proxy(string $action, array $payload): void
   wp_send_json_success($data);
 }
 
+function openxe_ticket_portal_get_client_ip(): string
+{
+  return (string)($_SERVER['REMOTE_ADDR'] ?? '');
+}
+
+function openxe_ticket_portal_apply_rate_limit(string $action): void
+{
+  $limit = (int)apply_filters('openxe_ticket_portal_rate_limit', 60, $action);
+  $window = (int)apply_filters('openxe_ticket_portal_rate_window', 60, $action);
+  if ($limit <= 0 || $window <= 0) {
+    return;
+  }
+  $ip = openxe_ticket_portal_get_client_ip();
+  $key = 'oxp_rl_' . md5($action . '|' . $ip);
+  $now = time();
+  $data = get_transient($key);
+  if (!is_array($data) || empty($data['start']) || ($now - (int)$data['start']) >= $window) {
+    $data = ['count' => 0, 'start' => $now];
+  }
+  $data['count'] = (int)$data['count'] + 1;
+  set_transient($key, $data, $window);
+  if ($data['count'] > $limit) {
+    wp_send_json_error(['message' => 'rate_limited'], 429);
+  }
+}
+
 function openxe_ticket_portal_ajax_test(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('test');
   $result = openxe_ticket_portal_remote('portal_session', [
     'token' => 'test-connection',
     'verifier_type' => 'plz',
@@ -344,6 +444,7 @@ function openxe_ticket_portal_ajax_test(): void
 function openxe_ticket_portal_ajax_session(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('session');
   $token = sanitize_text_field(wp_unslash($_POST['token'] ?? ''));
   $verifierType = sanitize_text_field(wp_unslash($_POST['verifier_type'] ?? ''));
   $verifierValue = sanitize_text_field(wp_unslash($_POST['verifier_value'] ?? ''));
@@ -357,9 +458,23 @@ function openxe_ticket_portal_ajax_session(): void
   ]);
 }
 
+function openxe_ticket_portal_ajax_magic(): void
+{
+  check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('magic');
+  $magicToken = sanitize_text_field(wp_unslash($_POST['magic_token'] ?? ''));
+  if ($magicToken === '') {
+    wp_send_json_error(['message' => 'invalid_request'], 400);
+  }
+  openxe_ticket_portal_proxy('portal_magic', [
+    'magic_token' => $magicToken,
+  ]);
+}
+
 function openxe_ticket_portal_ajax_status(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('status');
   $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
   if ($sessionToken === '') {
     wp_send_json_error(['message' => 'invalid_request'], 400);
@@ -370,6 +485,7 @@ function openxe_ticket_portal_ajax_status(): void
 function openxe_ticket_portal_ajax_messages(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('messages');
   $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
   if ($sessionToken === '') {
     wp_send_json_error(['message' => 'invalid_request'], 400);
@@ -380,6 +496,7 @@ function openxe_ticket_portal_ajax_messages(): void
 function openxe_ticket_portal_ajax_message(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('message');
   $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
   $text = sanitize_textarea_field(wp_unslash($_POST['text'] ?? ''));
   if ($sessionToken === '' || $text === '') {
@@ -394,6 +511,7 @@ function openxe_ticket_portal_ajax_message(): void
 function openxe_ticket_portal_ajax_offer(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('offer');
   $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
   $offerId = sanitize_text_field(wp_unslash($_POST['angebot_id'] ?? ''));
   $action = sanitize_text_field(wp_unslash($_POST['offer_action'] ?? ''));
@@ -414,6 +532,7 @@ function openxe_ticket_portal_ajax_offer(): void
 function openxe_ticket_portal_ajax_notifications_get(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('notifications_get');
   $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
   if ($sessionToken === '') {
     wp_send_json_error(['message' => 'invalid_request'], 400);
@@ -424,6 +543,7 @@ function openxe_ticket_portal_ajax_notifications_get(): void
 function openxe_ticket_portal_ajax_notifications_set(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('notifications_set');
   $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
   $selectedRaw = wp_unslash($_POST['selected'] ?? '');
   if ($sessionToken === '') {
@@ -441,6 +561,8 @@ function openxe_ticket_portal_ajax_notifications_set(): void
 
 add_action('wp_ajax_nopriv_openxe_ticket_portal_session', 'openxe_ticket_portal_ajax_session');
 add_action('wp_ajax_openxe_ticket_portal_session', 'openxe_ticket_portal_ajax_session');
+add_action('wp_ajax_nopriv_openxe_ticket_portal_magic', 'openxe_ticket_portal_ajax_magic');
+add_action('wp_ajax_openxe_ticket_portal_magic', 'openxe_ticket_portal_ajax_magic');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_status', 'openxe_ticket_portal_ajax_status');
 add_action('wp_ajax_openxe_ticket_portal_status', 'openxe_ticket_portal_ajax_status');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_messages', 'openxe_ticket_portal_ajax_messages');

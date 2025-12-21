@@ -57,8 +57,28 @@
       <input type="number" name="ticketportal_code_ttl_min" value="[PORTAL_CODE_TTL]" min="1">
     </label>
     <br>
+    <label>Magic Link TTL<br>
+      <input type="number" name="ticketportal_magic_ttl_min" value="[PORTAL_MAGIC_TTL]" min="1">
+    </label>
+    <br>
     <label>Double Opt-In TTL<br>
       <input type="number" name="ticketportal_doi_ttl_min" value="[PORTAL_DOI_TTL]" min="1">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sicherheit</legend>
+    <label>Shared Secret (optional)<br>
+      <input type="text" name="ticketportal_shared_secret" value="[PORTAL_SHARED_SECRET]" size="60" autocomplete="off">
+    </label>
+    <p>Wenn gesetzt, muss das WordPress Plugin den gleichen Wert senden.</p>
+    <br>
+    <label>Max. Fehlversuche<br>
+      <input type="number" name="ticketportal_max_attempts" value="[PORTAL_MAX_ATTEMPTS]" min="1">
+    </label>
+    <br>
+    <label>Sperrzeit nach Fehlversuchen (Minuten)<br>
+      <input type="number" name="ticketportal_lockout_min" value="[PORTAL_LOCKOUT_MIN]" min="1">
     </label>
   </fieldset>
 
