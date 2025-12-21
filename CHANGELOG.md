@@ -31,3 +31,4 @@
 - Added shared secret support between WordPress and OpenXE portal endpoints.
 - Added WordPress rate limiting for portal AJAX proxies and enforced HTTPS base URLs.
 - Improved portal UI error handling for failed status/message/notification requests.
+- Added portal config fallback via data attribute to avoid missing inline config issues.

@@ -29,14 +29,14 @@
     el.textContent = text || '';
   }
 
-  function portalAjax(action, payload) {
+  function portalAjax(config, action, payload) {
     var data = new FormData();
     data.append('action', action);
-    data.append('nonce', OpenXETwitterPortal.nonce);
+    data.append('nonce', config.nonce || '');
     Object.keys(payload || {}).forEach(function (key) {
       data.append(key, payload[key]);
     });
-    return fetch(OpenXETwitterPortal.ajaxUrl, {
+    return fetch(config.ajaxUrl, {
       method: 'POST',
       credentials: 'same-origin',
       body: data
@@ -50,10 +50,26 @@
   }
 
   function initPortal(root) {
-    var baseUrl = (OpenXETwitterPortal && OpenXETwitterPortal.baseUrl) || '';
-    var defaultVerifier = (OpenXETwitterPortal && OpenXETwitterPortal.defaultVerifier) || 'auto';
+    var config = window.OpenXETwitterPortal || null;
+    if (!config) {
+      var rawConfig = root.getAttribute('data-openxe-config') || '';
+      if (rawConfig) {
+        try {
+          config = JSON.parse(rawConfig);
+        } catch (e) {
+          config = null;
+        }
+      }
+    }
+    var baseUrl = (config && config.baseUrl) || '';
+    var defaultVerifier = (config && config.defaultVerifier) || 'auto';
 
     var errorEl = qs('.oxp-error', root);
+    if (!config || !config.ajaxUrl || !config.nonce) {
+      setVisible(errorEl, true);
+      showMessage(errorEl, 'Portal Konfiguration fehlt. Bitte Plugin aktualisieren oder Cache leeren.');
+      return;
+    }
     if (!baseUrl) {
       setVisible(errorEl, true);
       showMessage(errorEl, 'Portal ist nicht konfiguriert. Bitte OpenXE Base URL setzen.');
@@ -212,7 +228,7 @@
       if (!sessionToken) {
         return;
       }
-      portalAjax('openxe_ticket_portal_status', { session_token: sessionToken }).then(function (resp) {
+      portalAjax(config, 'openxe_ticket_portal_status', { session_token: sessionToken }).then(function (resp) {
         if (!resp || !resp.success) {
           showError(formatError(resp, 'Status konnte nicht geladen werden.'));
           return;
@@ -272,7 +288,7 @@
       if (!sessionToken) {
         return;
       }
-      portalAjax('openxe_ticket_portal_messages', { session_token: sessionToken }).then(function (resp) {
+      portalAjax(config, 'openxe_ticket_portal_messages', { session_token: sessionToken }).then(function (resp) {
         if (!resp || !resp.success) {
           showError(formatError(resp, 'Nachrichten konnten nicht geladen werden.'));
           return;
@@ -286,7 +302,7 @@
       if (!sessionToken) {
         return;
       }
-      portalAjax('openxe_ticket_portal_notifications_get', { session_token: sessionToken }).then(function (resp) {
+      portalAjax(config, 'openxe_ticket_portal_notifications_get', { session_token: sessionToken }).then(function (resp) {
         if (!resp || !resp.success) {
           showError(formatError(resp, 'Benachrichtigungen konnten nicht geladen werden.'));
           return;
@@ -322,7 +338,7 @@
       }
       showMessage(loginMsg, 'Magic Link wird geprueft...');
       showError('');
-      portalAjax('openxe_ticket_portal_magic', { magic_token: magicToken }).then(function (resp) {
+      portalAjax(config, 'openxe_ticket_portal_magic', { magic_token: magicToken }).then(function (resp) {
         if (!resp || !resp.success) {
           showMessage(loginMsg, formatError(resp, 'Magic Link ungueltig.'));
           return;
@@ -362,7 +378,7 @@
         showMessage(loginMsg, 'Token fehlt.');
         return;
       }
-      portalAjax('openxe_ticket_portal_session', {
+      portalAjax(config, 'openxe_ticket_portal_session', {
         token: token,
         verifier_type: verifierType,
         verifier_value: verifierValue
@@ -396,7 +412,7 @@
         showMessage(messageMsg, 'Bitte Nachricht eingeben.');
         return;
       }
-      portalAjax('openxe_ticket_portal_message', {
+      portalAjax(config, 'openxe_ticket_portal_message', {
         session_token: sessionToken,
         text: text
       }).then(function (resp) {
@@ -418,7 +434,7 @@
             selected.push(input.value);
           }
         });
-        portalAjax('openxe_ticket_portal_notifications_set', {
+        portalAjax(config, 'openxe_ticket_portal_notifications_set', {
           session_token: sessionToken,
           selected: JSON.stringify(selected)
         }).then(function (resp) {
@@ -445,7 +461,7 @@
         showMessage(offerMsg, 'Bitte AGB akzeptieren.');
         return;
       }
-      portalAjax('openxe_ticket_portal_offer', {
+      portalAjax(config, 'openxe_ticket_portal_offer', {
         session_token: sessionToken,
         angebot_id: offerId,
         offer_action: action,
@@ -473,9 +489,6 @@
   }
 
   function initAll() {
-    if (!window.OpenXETwitterPortal) {
-      return;
-    }
     qsa('.openxe-portal').forEach(initPortal);
   }
 

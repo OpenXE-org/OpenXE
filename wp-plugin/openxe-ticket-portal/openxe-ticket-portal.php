@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.2
+ * Version: 0.1.3
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.2');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.3');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -247,7 +247,8 @@ function openxe_ticket_portal_shortcode($atts): string
     'before'
   );
 
-  $html = '<div class="openxe-portal" data-openxe-portal="1">';
+  $configJson = esc_attr(wp_json_encode($config));
+  $html = '<div class="openxe-portal" data-openxe-portal="1" data-openxe-config="'.$configJson.'">';
   $html .= '<div class="oxp-card">';
   $html .= '<div class="oxp-error" style="display:none"></div>';
   $html .= '<div class="oxp-login">';
