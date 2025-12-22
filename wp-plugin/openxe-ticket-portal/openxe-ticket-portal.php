@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.6
+ * Version: 0.1.7
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.6');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.7');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -263,11 +263,7 @@ function openxe_ticket_portal_settings_page(): void
           <th scope="row">Logauszug</th>
           <td>
             <textarea readonly rows="8" class="large-text"><?php echo $logContent; ?></textarea>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-              <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
-              <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
-              <button type="submit" class="button">Log leeren</button>
-            </form>
+            <button type="submit" class="button" form="openxe-ticket-portal-clear-log-form">Log leeren</button>
           </td>
         </tr>
         <tr>
@@ -290,6 +286,10 @@ function openxe_ticket_portal_settings_page(): void
         </tr>
       </table>
       <?php submit_button(); ?>
+    </form>
+    <form id="openxe-ticket-portal-clear-log-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+      <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
+      <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
     </form>
   </div>
   <script>
