@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.7
+ * Version: 0.1.8
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.7');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.8');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -113,6 +113,20 @@ function openxe_ticket_portal_get_shared_secret(): string
   return (string)get_option('openxe_ticket_portal_shared_secret', '');
 }
 
+function openxe_ticket_portal_get_settings_url(): string
+{
+  return admin_url('options-general.php?page=openxe-ticket-portal');
+}
+
+function openxe_ticket_portal_get_plugin_download_url(): string
+{
+  $baseUrl = openxe_ticket_portal_get_base_url();
+  if ($baseUrl === '') {
+    return '';
+  }
+  return $baseUrl . '/index.php?module=ticket&action=portal_plugin_download';
+}
+
 function openxe_ticket_portal_log_enabled(): bool
 {
   return (int)get_option('openxe_ticket_portal_log_enabled', 0) === 1;
@@ -208,6 +222,25 @@ function openxe_ticket_portal_log(string $message, array $context = []): void
   @file_put_contents($path, $line . PHP_EOL, FILE_APPEND);
 }
 
+function openxe_ticket_portal_get_update_notice(): ?array
+{
+  $status = sanitize_text_field(wp_unslash($_GET['openxe_ticket_portal_update'] ?? ''));
+  if ($status === '') {
+    return null;
+  }
+  if (!in_array($status, ['success', 'error'], true)) {
+    return null;
+  }
+  $message = sanitize_text_field(wp_unslash($_GET['openxe_ticket_portal_update_msg'] ?? ''));
+  if ($message === '') {
+    $message = $status === 'success' ? 'Plugin wurde aktualisiert.' : 'Update fehlgeschlagen.';
+  }
+  return [
+    'status' => $status,
+    'message' => $message,
+  ];
+}
+
 function openxe_ticket_portal_admin_menu(): void
 {
   add_options_page(
@@ -220,18 +253,44 @@ function openxe_ticket_portal_admin_menu(): void
 }
 add_action('admin_menu', 'openxe_ticket_portal_admin_menu');
 
+function openxe_ticket_portal_action_links(array $links): array
+{
+  $settingsUrl = openxe_ticket_portal_get_settings_url();
+  array_unshift($links, '<a href="' . esc_url($settingsUrl) . '">Einstellungen</a>');
+  return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'openxe_ticket_portal_action_links');
+
 function openxe_ticket_portal_settings_page(): void
 {
-  $baseUrl = esc_attr(openxe_ticket_portal_get_base_url());
-  $sharedSecret = esc_attr(openxe_ticket_portal_get_shared_secret());
+  $baseUrlRaw = openxe_ticket_portal_get_base_url();
+  $sharedSecretRaw = openxe_ticket_portal_get_shared_secret();
+  $baseUrl = esc_attr($baseUrlRaw);
+  $sharedSecret = esc_attr($sharedSecretRaw);
   $defaultVerifier = esc_attr((string)get_option('openxe_ticket_portal_default_verifier', 'auto'));
   $logEnabled = openxe_ticket_portal_log_enabled();
   $logPath = openxe_ticket_portal_get_log_path();
   $logPathEsc = esc_html($logPath);
   $logContent = esc_textarea(openxe_ticket_portal_read_log_tail($logPath));
+  $updateNotice = openxe_ticket_portal_get_update_notice();
+  $downloadUrl = openxe_ticket_portal_get_plugin_download_url();
+  $canUpdate = $downloadUrl !== '' && $sharedSecretRaw !== '';
+  if ($downloadUrl === '') {
+    $updateHint = 'Bitte eine gueltige OpenXE Base URL hinterlegen.';
+  } elseif ($sharedSecretRaw === '') {
+    $updateHint = 'Shared Secret in OpenXE und hier setzen, damit das Update geladen werden kann.';
+  } else {
+    $updateHint = 'Das Update wird direkt aus OpenXE geladen.';
+  }
   ?>
   <div class="wrap">
     <h1>OpenXE Ticket Portal</h1>
+    <?php if ($updateNotice) { ?>
+      <?php $noticeClass = $updateNotice['status'] === 'success' ? 'notice notice-success' : 'notice notice-error'; ?>
+      <div class="<?php echo esc_attr($noticeClass); ?>">
+        <p><?php echo esc_html($updateNotice['message']); ?></p>
+      </div>
+    <?php } ?>
     <form method="post" action="options.php">
       <?php settings_fields('openxe_ticket_portal'); ?>
       <table class="form-table" role="presentation">
@@ -291,6 +350,14 @@ function openxe_ticket_portal_settings_page(): void
       <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
       <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
     </form>
+    <h2>Plugin Update</h2>
+    <p>Aktuelle Version: <?php echo esc_html(OPENXE_TICKET_PORTAL_VERSION); ?></p>
+    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+      <?php wp_nonce_field('openxe_ticket_portal_update', 'openxe_ticket_portal_update_nonce'); ?>
+      <input type="hidden" name="action" value="openxe_ticket_portal_update">
+      <button type="submit" class="button button-secondary" <?php disabled(!$canUpdate); ?>>Update aus OpenXE holen</button>
+    </form>
+    <p class="description"><?php echo esc_html($updateHint); ?></p>
   </div>
   <script>
   (function () {
@@ -741,3 +808,137 @@ function openxe_ticket_portal_clear_log_action(): void
   exit;
 }
 add_action('admin_post_openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_action');
+
+function openxe_ticket_portal_download_plugin_zip(string $url, string $sharedSecret): string|WP_Error
+{
+  $headers = [];
+  if ($sharedSecret !== '') {
+    $headers['X-OpenXE-Portal-Secret'] = $sharedSecret;
+  }
+  $response = wp_remote_get($url, [
+    'timeout' => 60,
+    'headers' => $headers,
+  ]);
+  if (is_wp_error($response)) {
+    return $response;
+  }
+  $status = (int)wp_remote_retrieve_response_code($response);
+  if ($status !== 200) {
+    $message = 'Update-Download fehlgeschlagen (HTTP ' . $status . ').';
+    return new WP_Error('openxe_ticket_portal_update_http', $message);
+  }
+  $body = (string)wp_remote_retrieve_body($response);
+  if ($body === '' || strlen($body) < 10) {
+    return new WP_Error('openxe_ticket_portal_update_empty', 'Update-Download leer oder ungueltig.');
+  }
+  if (substr($body, 0, 2) !== 'PK') {
+    return new WP_Error('openxe_ticket_portal_update_invalid', 'Update-Download ist kein ZIP-Archiv.');
+  }
+  $tmp = wp_tempnam('openxe-ticket-portal.zip');
+  if ($tmp === false) {
+    return new WP_Error('openxe_ticket_portal_update_tmp', 'Temporaere Datei konnte nicht erstellt werden.');
+  }
+  if (@file_put_contents($tmp, $body) === false) {
+    @unlink($tmp);
+    return new WP_Error('openxe_ticket_portal_update_write', 'ZIP konnte nicht gespeichert werden.');
+  }
+  return $tmp;
+}
+
+function openxe_ticket_portal_update_from_openxe(): void
+{
+  if (!current_user_can('manage_options')) {
+    wp_die('forbidden');
+  }
+  check_admin_referer('openxe_ticket_portal_update', 'openxe_ticket_portal_update_nonce');
+  $redirect = openxe_ticket_portal_get_settings_url();
+  $baseUrl = openxe_ticket_portal_get_base_url();
+  $sharedSecret = openxe_ticket_portal_get_shared_secret();
+  if ($baseUrl === '') {
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => 'OpenXE Base URL fehlt.',
+    ], $redirect);
+    wp_safe_redirect($redirect);
+    exit;
+  }
+  if ($sharedSecret === '') {
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => 'Shared Secret fehlt.',
+    ], $redirect);
+    wp_safe_redirect($redirect);
+    exit;
+  }
+  $downloadUrl = openxe_ticket_portal_get_plugin_download_url();
+  if ($downloadUrl === '') {
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => 'Plugin-Download URL ist ungueltig.',
+    ], $redirect);
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  $tmp = openxe_ticket_portal_download_plugin_zip($downloadUrl, $sharedSecret);
+  if (is_wp_error($tmp)) {
+    openxe_ticket_portal_log('plugin_update_download_failed', [
+      'message' => $tmp->get_error_message(),
+    ]);
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => $tmp->get_error_message(),
+    ], $redirect);
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  require_once ABSPATH . 'wp-admin/includes/file.php';
+  require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+  if (!WP_Filesystem()) {
+    @unlink($tmp);
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => 'WP Filesystem konnte nicht initialisiert werden.',
+    ], $redirect);
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  $skin = new WP_Upgrader_Skin();
+  $upgrader = new Plugin_Upgrader($skin);
+  $result = $upgrader->install($tmp, [
+    'clear_destination' => true,
+    'overwrite_package' => true,
+  ]);
+  @unlink($tmp);
+
+  if (is_wp_error($result) || $result === false) {
+    $errorMessage = 'Update fehlgeschlagen.';
+    if (is_wp_error($result)) {
+      $errorMessage = $result->get_error_message();
+    } elseif ($skin->get_errors() && $skin->get_errors()->has_errors()) {
+      $errorMessage = $skin->get_errors()->get_error_message();
+    }
+    openxe_ticket_portal_log('plugin_update_failed', [
+      'message' => $errorMessage,
+    ]);
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => $errorMessage,
+    ], $redirect);
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  openxe_ticket_portal_log('plugin_update_success', [
+    'version' => OPENXE_TICKET_PORTAL_VERSION,
+  ]);
+  $redirect = add_query_arg([
+    'openxe_ticket_portal_update' => 'success',
+    'openxe_ticket_portal_update_msg' => 'Plugin aktualisiert.',
+  ], $redirect);
+  wp_safe_redirect($redirect);
+  exit;
+}
+add_action('admin_post_openxe_ticket_portal_update', 'openxe_ticket_portal_update_from_openxe');

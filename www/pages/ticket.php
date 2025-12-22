@@ -3163,10 +3163,14 @@ class Ticket {
   public function ticket_portal_plugin_download()
   {
     if (!$this->app->erp->RechteVorhanden('firmendaten', 'edit')) {
-      http_response_code(403);
-      $this->app->Tpl->Set('TEXT', '<div class="error">Keine Berechtigung.</div>');
-      $this->app->Tpl->Output('ticket_text.tpl');
-      $this->app->ExitXentral();
+      $secret = trim((string)$this->app->erp->Firmendaten('ticketportal_shared_secret'));
+      $header = (string)($_SERVER['HTTP_X_OPENXE_PORTAL_SECRET'] ?? '');
+      if ($secret === '' || $header === '' || !hash_equals($secret, $header)) {
+        http_response_code(403);
+        $this->app->Tpl->Set('TEXT', '<div class="error">Keine Berechtigung.</div>');
+        $this->app->Tpl->Output('ticket_text.tpl');
+        $this->app->ExitXentral();
+      }
     }
     $pluginDir = dirname(__DIR__, 2).'/wp-plugin/openxe-ticket-portal';
     if (!is_dir($pluginDir)) {

@@ -37,3 +37,5 @@
 - Added debug logging for portal requests in WordPress and OpenXE (opt-in).
 - Added log viewers in OpenXE portal settings and WordPress plugin settings.
 - Whitelisted ticket portal endpoints to allow public access without OpenXE login.
+- Added OpenXE plugin download authentication via shared secret and allowed public access for the download endpoint.
+- Added WordPress plugin update button (pull from OpenXE) and settings link in the plugin list.

@@ -102,6 +102,7 @@ class Session
         'portal_offer',
         'portal_offer_confirm',
         'portal_print',
+        'portal_plugin_download',
       ],
     ];
 
