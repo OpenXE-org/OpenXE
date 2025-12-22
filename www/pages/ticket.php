@@ -1891,6 +1891,22 @@ class Ticket {
     }
   }
 
+  private function portalDefaultNotifySubject(): string
+  {
+    return 'OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}';
+  }
+
+  private function portalDefaultNotifyBody(): string
+  {
+    return "Guten Tag {customer_name},\n\n".
+      "wir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.\n\n".
+      "Aktueller Status: {status_label}\n".
+      "Hinweis: {public_note}\n\n".
+      "Falls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.\n\n".
+      "Mit freundlichen Gruessen\n".
+      "{company_name}";
+  }
+
   private function portalEnsureFirmendatenDefaults(): void
   {
     $defaults = [
@@ -1911,8 +1927,8 @@ class Ticket {
       'ticketportal_lockout_min' => ['int', '11', '', '15', '15', 0, 0],
       'ticketportal_status_labels' => ['text', '', '', json_encode($this->portalDefaultStatusLabels()), '', 0, 0],
       'ticketportal_status_map' => ['text', '', '', json_encode($this->portalDefaultStatusMap()), '', 0, 0],
-      'ticketportal_notify_subject' => ['varchar', '255', '', 'OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}', 'OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}', 0, 0],
-      'ticketportal_notify_body' => ['text', '', '', "Guten Tag {customer_name},\n\nwir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.\n\nAktueller Status: {status_label}\nHinweis: {public_note}\n\nFalls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.\n\nMit freundlichen Gruessen\n{company_name}", '', 0, 0],
+      'ticketportal_notify_subject' => ['varchar', '255', '', $this->portalDefaultNotifySubject(), $this->portalDefaultNotifySubject(), 0, 0],
+      'ticketportal_notify_body' => ['text', '', '', $this->portalDefaultNotifyBody(), '', 0, 0],
     ];
     foreach ($defaults as $name => $data) {
       $exists = $this->app->DB->Select(
@@ -3117,8 +3133,16 @@ class Ticket {
     $this->app->Tpl->Set('PORTAL_LOG_ENABLED', $this->portalLogEnabled() ? 'checked' : '');
     $this->app->Tpl->Set('PORTAL_LOG_PATH', htmlentities($this->portalGetLogPath()));
     $this->app->Tpl->Set('PORTAL_LOG_CONTENT', htmlentities($this->portalReadLogTail()));
-    $this->app->Tpl->Set('PORTAL_NOTIFY_SUBJECT', $this->app->erp->Firmendaten('ticketportal_notify_subject'));
-    $this->app->Tpl->Set('PORTAL_NOTIFY_BODY', $this->app->erp->Firmendaten('ticketportal_notify_body'));
+    $notifySubject = trim((string)$this->app->erp->Firmendaten('ticketportal_notify_subject'));
+    if ($notifySubject === '') {
+      $notifySubject = $this->portalDefaultNotifySubject();
+    }
+    $notifyBody = trim((string)$this->app->erp->Firmendaten('ticketportal_notify_body'));
+    if ($notifyBody === '') {
+      $notifyBody = $this->portalDefaultNotifyBody();
+    }
+    $this->app->Tpl->Set('PORTAL_NOTIFY_SUBJECT', $notifySubject);
+    $this->app->Tpl->Set('PORTAL_NOTIFY_BODY', $notifyBody);
     $this->app->Tpl->Set('PORTAL_SESSION_TTL', $this->portalGetSettingInt('ticketportal_session_ttl_min', 60));
     $this->app->Tpl->Set('PORTAL_CODE_TTL', $this->portalGetSettingInt('ticketportal_code_ttl_min', 15));
     $this->app->Tpl->Set('PORTAL_MAGIC_TTL', $this->portalGetSettingInt('ticketportal_magic_ttl_min', 30));
