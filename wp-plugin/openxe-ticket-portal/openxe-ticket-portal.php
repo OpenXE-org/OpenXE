@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.9
+ * Version: 0.2.0
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.9');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.2.0');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -845,29 +845,61 @@ function openxe_ticket_portal_download_plugin_zip(string $url, string $sharedSec
   return $tmp;
 }
 
-if (!class_exists('OpenXE_Ticket_Portal_Silent_Upgrader_Skin')) {
-  class OpenXE_Ticket_Portal_Silent_Upgrader_Skin extends WP_Upgrader_Skin
-  {
-    public function header()
-    {
-    }
+function openxe_ticket_portal_prepare_update_dir(): string|WP_Error
+{
+  $tmp = wp_tempnam('openxe-ticket-portal-update');
+  if ($tmp === false) {
+    return new WP_Error('openxe_ticket_portal_update_tmp', 'Temporaeres Update-Verzeichnis konnte nicht erstellt werden.');
+  }
+  @unlink($tmp);
+  if (!wp_mkdir_p($tmp)) {
+    return new WP_Error('openxe_ticket_portal_update_tmp', 'Temporaeres Update-Verzeichnis konnte nicht erstellt werden.');
+  }
+  return $tmp;
+}
 
-    public function footer()
-    {
-    }
+function openxe_ticket_portal_find_extracted_dir(string $baseDir): string|WP_Error
+{
+  $expected = $baseDir . DIRECTORY_SEPARATOR . 'openxe-ticket-portal' . DIRECTORY_SEPARATOR . 'openxe-ticket-portal.php';
+  if (is_file($expected)) {
+    return dirname($expected);
+  }
+  $rootFile = $baseDir . DIRECTORY_SEPARATOR . 'openxe-ticket-portal.php';
+  if (is_file($rootFile)) {
+    return $baseDir;
+  }
+  $matches = glob($baseDir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'openxe-ticket-portal.php');
+  if (!empty($matches)) {
+    return dirname($matches[0]);
+  }
+  return new WP_Error('openxe_ticket_portal_update_invalid', 'Plugin-Dateien konnten im Update nicht gefunden werden.');
+}
 
-    public function feedback($data, ...$args)
-    {
+function openxe_ticket_portal_cleanup_dir(string $dir): void
+{
+  global $wp_filesystem;
+  if ($wp_filesystem instanceof WP_Filesystem_Base) {
+    if ($wp_filesystem->exists($dir)) {
+      $wp_filesystem->delete($dir, true);
+      return;
     }
-
-    public function error($errors)
-    {
-      if (is_wp_error($errors)) {
-        $this->errors = $errors;
-        return;
+  }
+  if (is_dir($dir)) {
+    $items = scandir($dir);
+    if (is_array($items)) {
+      foreach ($items as $item) {
+        if ($item === '.' || $item === '..') {
+          continue;
+        }
+        $path = $dir . DIRECTORY_SEPARATOR . $item;
+        if (is_dir($path)) {
+          openxe_ticket_portal_cleanup_dir($path);
+        } else {
+          @unlink($path);
+        }
       }
-      parent::error($errors);
     }
+    @rmdir($dir);
   }
 }
 
@@ -885,6 +917,11 @@ function openxe_ticket_portal_update_from_openxe(): void
       'openxe_ticket_portal_update' => 'error',
       'openxe_ticket_portal_update_msg' => 'OpenXE Base URL fehlt.',
     ], $redirect);
+    if (headers_sent()) {
+      echo esc_html($errorMessage);
+      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+      exit;
+    }
     wp_safe_redirect($redirect);
     exit;
   }
@@ -920,40 +957,75 @@ function openxe_ticket_portal_update_from_openxe(): void
   }
 
   require_once ABSPATH . 'wp-admin/includes/file.php';
-  require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
   if (!WP_Filesystem()) {
     @unlink($tmp);
     $redirect = add_query_arg([
       'openxe_ticket_portal_update' => 'error',
       'openxe_ticket_portal_update_msg' => 'WP Filesystem konnte nicht initialisiert werden.',
     ], $redirect);
+    if (headers_sent()) {
+      echo 'WP Filesystem konnte nicht initialisiert werden.';
+      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+      exit;
+    }
     wp_safe_redirect($redirect);
     exit;
   }
 
-  $buffered = false;
-  if (ob_get_level() === 0) {
-    ob_start();
-    $buffered = true;
-  }
-  $skin = new OpenXE_Ticket_Portal_Silent_Upgrader_Skin();
-  $upgrader = new Plugin_Upgrader($skin);
-  $result = $upgrader->install($tmp, [
-    'clear_destination' => true,
-    'overwrite_package' => true,
-  ]);
-  if ($buffered && ob_get_level() > 0) {
-    ob_end_clean();
-  }
-  @unlink($tmp);
-
-  if (is_wp_error($result) || $result === false) {
-    $errorMessage = 'Update fehlgeschlagen.';
-    if (is_wp_error($result)) {
-      $errorMessage = $result->get_error_message();
-    } elseif ($skin->get_errors() && $skin->get_errors()->has_errors()) {
-      $errorMessage = $skin->get_errors()->get_error_message();
+  $workDir = openxe_ticket_portal_prepare_update_dir();
+  if (is_wp_error($workDir)) {
+    @unlink($tmp);
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => $workDir->get_error_message(),
+    ], $redirect);
+    if (headers_sent()) {
+      echo esc_html($workDir->get_error_message());
+      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+      exit;
     }
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  $unzip = unzip_file($tmp, $workDir);
+  @unlink($tmp);
+  if (is_wp_error($unzip)) {
+    openxe_ticket_portal_cleanup_dir($workDir);
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => $unzip->get_error_message(),
+    ], $redirect);
+    if (headers_sent()) {
+      echo esc_html($unzip->get_error_message());
+      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+      exit;
+    }
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  $sourceDir = openxe_ticket_portal_find_extracted_dir($workDir);
+  if (is_wp_error($sourceDir)) {
+    openxe_ticket_portal_cleanup_dir($workDir);
+    $redirect = add_query_arg([
+      'openxe_ticket_portal_update' => 'error',
+      'openxe_ticket_portal_update_msg' => $sourceDir->get_error_message(),
+    ], $redirect);
+    if (headers_sent()) {
+      echo esc_html($sourceDir->get_error_message());
+      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+      exit;
+    }
+    wp_safe_redirect($redirect);
+    exit;
+  }
+
+  $targetDir = rtrim(plugin_dir_path(__FILE__), '/\\');
+  $copyResult = copy_dir($sourceDir, $targetDir);
+  openxe_ticket_portal_cleanup_dir($workDir);
+  if (is_wp_error($copyResult)) {
+    $errorMessage = $copyResult->get_error_message();
     openxe_ticket_portal_log('plugin_update_failed', [
       'message' => $errorMessage,
     ]);
@@ -961,11 +1033,6 @@ function openxe_ticket_portal_update_from_openxe(): void
       'openxe_ticket_portal_update' => 'error',
       'openxe_ticket_portal_update_msg' => $errorMessage,
     ], $redirect);
-    if (headers_sent()) {
-      echo esc_html($errorMessage);
-      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
-      exit;
-    }
     wp_safe_redirect($redirect);
     exit;
   }

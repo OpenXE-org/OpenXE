@@ -40,3 +40,4 @@
 - Added OpenXE plugin download authentication via shared secret and allowed public access for the download endpoint.
 - Added WordPress plugin update button (pull from OpenXE) and settings link in the plugin list.
 - Silenced WordPress updater output to prevent headers-already-sent warnings after updates.
+- Updated the OpenXE-to-WordPress update flow to overwrite the existing plugin directory instead of installing a new copy.
