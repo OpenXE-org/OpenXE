@@ -2,14 +2,14 @@
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.1.8
+ * Version: 0.1.9
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.1.8');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.1.9');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -845,6 +845,32 @@ function openxe_ticket_portal_download_plugin_zip(string $url, string $sharedSec
   return $tmp;
 }
 
+if (!class_exists('OpenXE_Ticket_Portal_Silent_Upgrader_Skin')) {
+  class OpenXE_Ticket_Portal_Silent_Upgrader_Skin extends WP_Upgrader_Skin
+  {
+    public function header()
+    {
+    }
+
+    public function footer()
+    {
+    }
+
+    public function feedback($data, ...$args)
+    {
+    }
+
+    public function error($errors)
+    {
+      if (is_wp_error($errors)) {
+        $this->errors = $errors;
+        return;
+      }
+      parent::error($errors);
+    }
+  }
+}
+
 function openxe_ticket_portal_update_from_openxe(): void
 {
   if (!current_user_can('manage_options')) {
@@ -905,12 +931,20 @@ function openxe_ticket_portal_update_from_openxe(): void
     exit;
   }
 
-  $skin = new WP_Upgrader_Skin();
+  $buffered = false;
+  if (ob_get_level() === 0) {
+    ob_start();
+    $buffered = true;
+  }
+  $skin = new OpenXE_Ticket_Portal_Silent_Upgrader_Skin();
   $upgrader = new Plugin_Upgrader($skin);
   $result = $upgrader->install($tmp, [
     'clear_destination' => true,
     'overwrite_package' => true,
   ]);
+  if ($buffered && ob_get_level() > 0) {
+    ob_end_clean();
+  }
   @unlink($tmp);
 
   if (is_wp_error($result) || $result === false) {
@@ -927,6 +961,11 @@ function openxe_ticket_portal_update_from_openxe(): void
       'openxe_ticket_portal_update' => 'error',
       'openxe_ticket_portal_update_msg' => $errorMessage,
     ], $redirect);
+    if (headers_sent()) {
+      echo esc_html($errorMessage);
+      echo '<br><a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+      exit;
+    }
     wp_safe_redirect($redirect);
     exit;
   }
@@ -938,6 +977,11 @@ function openxe_ticket_portal_update_from_openxe(): void
     'openxe_ticket_portal_update' => 'success',
     'openxe_ticket_portal_update_msg' => 'Plugin aktualisiert.',
   ], $redirect);
+  if (headers_sent()) {
+    echo 'Plugin aktualisiert. ';
+    echo '<a href="' . esc_url($redirect) . '">Zurueck zu den Einstellungen</a>';
+    exit;
+  }
   wp_safe_redirect($redirect);
   exit;
 }
