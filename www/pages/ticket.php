@@ -1911,8 +1911,8 @@ class Ticket {
       'ticketportal_lockout_min' => ['int', '11', '', '15', '15', 0, 0],
       'ticketportal_status_labels' => ['text', '', '', json_encode($this->portalDefaultStatusLabels()), '', 0, 0],
       'ticketportal_status_map' => ['text', '', '', json_encode($this->portalDefaultStatusMap()), '', 0, 0],
-      'ticketportal_notify_subject' => ['varchar', '255', '', 'Ticket #{ticket_number} Statusaenderung', 'Ticket #{ticket_number} Statusaenderung', 0, 0],
-      'ticketportal_notify_body' => ['text', '', '', "Der Status Ihres Tickets #{ticket_number} wurde aktualisiert.\nStatus: {status_label}\n\n{public_note}\n\nViele Gruesse\n{company_name}", '', 0, 0],
+      'ticketportal_notify_subject' => ['varchar', '255', '', 'OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}', 'OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}', 0, 0],
+      'ticketportal_notify_body' => ['text', '', '', "Guten Tag {customer_name},\n\nwir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.\n\nAktueller Status: {status_label}\nHinweis: {public_note}\n\nFalls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.\n\nMit freundlichen Gruessen\n{company_name}", '', 0, 0],
     ];
     foreach ($defaults as $name => $data) {
       $exists = $this->app->DB->Select(

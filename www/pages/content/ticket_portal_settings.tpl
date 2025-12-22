@@ -33,7 +33,29 @@
     <label>Benachrichtigung Text<br>
       <textarea name="ticketportal_notify_body" rows="6" style="width:100%;">[PORTAL_NOTIFY_BODY]</textarea>
     </label>
-    <p>Platzhalter: {ticket_number}, {ticket_id}, {status_key}, {status_label}, {customer_name}, {public_note}, {company_name}</p>
+    <p>Platzhalter (Beispiele):</p>
+    <ul>
+      <li>{ticket_number} -> 4711</li>
+      <li>{ticket_id} -> 123</li>
+      <li>{status_key} -> in_bearbeitung</li>
+      <li>{status_label} -> In Bearbeitung</li>
+      <li>{customer_name} -> Max Mustermann</li>
+      <li>{public_note} -> Druckkopf wird ersetzt</li>
+      <li>{company_name} -> OpenXE Service</li>
+    </ul>
+    <p><strong>Beispiel Betreff:</strong> OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}</p>
+    <p><strong>Beispiel Text:</strong></p>
+    <pre>Guten Tag {customer_name},
+
+wir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.
+
+Aktueller Status: {status_label}
+Hinweis: {public_note}
+
+Falls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.
+
+Mit freundlichen Gruessen
+{company_name}</pre>
   </fieldset>
 
   <fieldset>
