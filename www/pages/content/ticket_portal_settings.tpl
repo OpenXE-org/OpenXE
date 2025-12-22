@@ -27,11 +27,11 @@
     </label>
     <br>
     <label>Benachrichtigung Betreff<br>
-      <input type="text" name="ticketportal_notify_subject" value="[PORTAL_NOTIFY_SUBJECT]" size="80">
+      <input type="text" name="ticketportal_notify_subject" value="[PORTAL_NOTIFY_SUBJECT]" size="80" placeholder="OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}">
     </label>
     <br>
     <label>Benachrichtigung Text<br>
-      <textarea name="ticketportal_notify_body" rows="6" style="width:100%;">[PORTAL_NOTIFY_BODY]</textarea>
+      <textarea name="ticketportal_notify_body" rows="6" style="width:100%;" placeholder="Guten Tag {customer_name},&#10;&#10;wir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.&#10;&#10;Aktueller Status: {status_label}&#10;Hinweis: {public_note}&#10;&#10;Falls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.&#10;&#10;Mit freundlichen Gruessen&#10;{company_name}">[PORTAL_NOTIFY_BODY]</textarea>
     </label>
     <p>Platzhalter (Beispiele):</p>
     <ul>
@@ -43,19 +43,6 @@
       <li>{public_note} -> Druckkopf wird ersetzt</li>
       <li>{company_name} -> OpenXE Service</li>
     </ul>
-    <p><strong>Beispiel Betreff:</strong> OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}</p>
-    <p><strong>Beispiel Text:</strong></p>
-    <pre>Guten Tag {customer_name},
-
-wir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.
-
-Aktueller Status: {status_label}
-Hinweis: {public_note}
-
-Falls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.
-
-Mit freundlichen Gruessen
-{company_name}</pre>
   </fieldset>
 
   <fieldset>
