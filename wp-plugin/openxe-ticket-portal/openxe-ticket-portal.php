@@ -1,15 +1,16 @@
+{"time":"2025-12-22T23:12:56+00:00","message":"plugin_update_failed","context":{"message":"Die Auflistung des Verzeichnisinhaltes ist fehlgeschlagen."}}
 <?php
 /**
  * Plugin Name: OpenXE Ticket Portal
  * Description: Customer portal shortcode for OpenXE tickets.
- * Version: 0.2.0
+ * Version: 0.2.1
  */
 
 if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OPENXE_TICKET_PORTAL_VERSION', '0.2.0');
+define('OPENXE_TICKET_PORTAL_VERSION', '0.2.1');
 define('OPENXE_TICKET_PORTAL_DIR', plugin_dir_path(__FILE__));
 define('OPENXE_TICKET_PORTAL_URL', plugin_dir_url(__FILE__));
 
@@ -847,15 +848,16 @@ function openxe_ticket_portal_download_plugin_zip(string $url, string $sharedSec
 
 function openxe_ticket_portal_prepare_update_dir(): string|WP_Error
 {
-  $tmp = wp_tempnam('openxe-ticket-portal-update');
-  if ($tmp === false) {
-    return new WP_Error('openxe_ticket_portal_update_tmp', 'Temporaeres Update-Verzeichnis konnte nicht erstellt werden.');
+  $base = rtrim(WP_CONTENT_DIR, '/\\') . DIRECTORY_SEPARATOR . 'upgrade';
+  if (!is_dir($base) && !wp_mkdir_p($base)) {
+    return new WP_Error('openxe_ticket_portal_update_tmp', 'Update-Verzeichnis konnte nicht erstellt werden.');
   }
-  @unlink($tmp);
-  if (!wp_mkdir_p($tmp)) {
-    return new WP_Error('openxe_ticket_portal_update_tmp', 'Temporaeres Update-Verzeichnis konnte nicht erstellt werden.');
+  $suffix = gmdate('YmdHis') . '-' . wp_generate_password(6, false, false);
+  $dir = $base . DIRECTORY_SEPARATOR . 'openxe-ticket-portal-' . $suffix;
+  if (!wp_mkdir_p($dir)) {
+    return new WP_Error('openxe_ticket_portal_update_tmp', 'Update-Verzeichnis konnte nicht erstellt werden.');
   }
-  return $tmp;
+  return $dir;
 }
 
 function openxe_ticket_portal_find_extracted_dir(string $baseDir): string|WP_Error

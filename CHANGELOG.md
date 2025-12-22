@@ -41,3 +41,4 @@
 - Added WordPress plugin update button (pull from OpenXE) and settings link in the plugin list.
 - Silenced WordPress updater output to prevent headers-already-sent warnings after updates.
 - Updated the OpenXE-to-WordPress update flow to overwrite the existing plugin directory instead of installing a new copy.
+- Store the update extraction under `wp-content/upgrade` to avoid directory listing failures.
