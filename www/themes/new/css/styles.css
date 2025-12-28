@@ -2728,7 +2728,7 @@ ul.tag-editor {
 
 .chat-content iframe {
     width: 100%;
-    min-height: 200px;
+    height: auto;
     border: none;
     border-radius: 4px;
     background: white;
