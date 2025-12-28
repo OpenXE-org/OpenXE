@@ -1,15 +1,28 @@
-<div class="ticket-chat-message [NACHRICHT_FLOAT]-aligned">
-  <div class="chat-bubble">
-    <div class="chat-meta">
-      <div class="chat-sender">[NACHRICHT_SENDER]</div>
-      <div class="chat-time">[NACHRICHT_ZEIT]</div>
+<div class="chat-bubble [BUBBLE_DIRECTION]">
+  <div class="bubble-avatar" title="[SENDER_NAME]">
+    <span class="avatar-icon">[SENDER_ICON]</span>
+  </div>
+  
+  <div class="bubble-content">
+    <div class="bubble-header">
+      <span class="bubble-sender">[SENDER_NAME]</span>
+      <span class="bubble-time">[MESSAGE_TIME]</span>
     </div>
-    <div class="chat-subject">[NACHRICHT_BETREFF]</div>
-    <div class="chat-content">[NACHRICHT_TEXT]</div>
-    <div class="chat-recipients">
-      <div><strong>An:</strong> [NACHRICHT_RECIPIENTS]</div>
-      <div class="chat-cc">[NACHRICHT_CC_RECIPIENTS]</div>
+    
+    <div class="bubble-subject">
+      [NACHRICHT_BETREFF]
     </div>
-    <div class="chat-attachments">[NACHRICHT_ANHANG]</div>
+    
+    <div class="bubble-text">
+      [NACHRICHT_TEXT]
+    </div>
+    
+    <div class="bubble-attachments">
+      [NACHRICHT_ANHANG]
+    </div>
+    
+    <div class="bubble-cc">
+      [NACHRICHT_CC]
+    </div>
   </div>
 </div>

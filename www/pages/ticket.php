@@ -531,84 +531,110 @@ class Ticket {
 
     function add_messages_tpl($ticket_id, $messages, $showdrafts) {
 
+        // Chat-Container Start
+        echo '<div class="ticket-chat-container">';
+        echo '<div class="chat-messages-wrapper" id="chatMessagesWrapper">';
+
+        $lastDate = null;
+
         // Add Messages now
         foreach ($messages as $message) {
 
-            $message['betreff'] = strip_tags($message['betreff']); //+ #20230916 XSS
+            $message['betreff'] = strip_tags($message['betreff'] ?? ''); //+ #20230916 XSS
 
             // Clear this first
             $this->app->Tpl->Set('NACHRICHT_ANHANG',"");
+            $this->app->Tpl->Set('NACHRICHT_CC',"");
 
             if (empty($message['betreff'])) {
                 $message['betreff'] = "...";
             }
 
-            // Xentral 20 compatibility
-            if ($message['textausgang'] != '') {
-              // Sent message
+            // Direction & Alignment Logic (King-Mode: Customer Left / Team Right)
+            $isOutgoing = ($message['versendet'] == '1' || !empty($message['textausgang']));
+            $direction = $isOutgoing ? 'outgoing' : 'incoming';
+            $senderName = $isOutgoing ? ($message['bearbeiter'] ?: 'Team') : ($message['verfasser'] ?: 'Kunde');
+            $senderIcon = $isOutgoing ? '👤' : '📧';
+            
+            $rawTime = $isOutgoing ? ($message['zeitausgang'] ?: $message['zeit']) : $message['zeit'];
+            $messageTime = date('H:i', strtotime($rawTime));
+            $messageDate = date('Y-m-d', strtotime($rawTime));
 
-              $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
-              $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);
-              $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
-              $this->app->Tpl->Set("META_FLOAT","left");
-              $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
-              $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['bearbeiter']));
-              $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['verfasser']." <".$message['mail'].">"));
-
-//              $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
-              $this->app->Tpl->Set("NACHRICHT_TEXT",'<iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>');
-
-              $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
+            // Date Separator
+            if ($lastDate !== $messageDate) {
+                $dateLabel = date('d.m.Y', strtotime($messageDate));
+                $today = date('Y-m-d');
+                $yesterday = date('Y-m-d', strtotime('-1 day'));
+                
+                if ($messageDate === $today) $dateLabel = 'Heute';
+                elseif ($messageDate === $yesterday) $dateLabel = 'Gestern';
+                
+                echo '<div class="chat-date-separator"><span>' . $dateLabel . '</span></div>';
+                $lastDate = $messageDate;
             }
 
-            if ($message['versendet'] == '1' && empty($message['textausgang'])) { //  textausgang is always empty, except for old Xentral 20 tickets
+            $this->app->Tpl->Set("BUBBLE_DIRECTION", $direction);
+            $this->app->Tpl->Set("SENDER_NAME", htmlentities($senderName));
+            $this->app->Tpl->Set("SENDER_ICON", $senderIcon);
+            $this->app->Tpl->Set("MESSAGE_TIME", $messageTime);
 
-               // Sent message
+            // CC Information
+            $cc = $isOutgoing ? ($message['mail_cc'] ?? '') : ($message['mail_cc_recipients'] ?? '');
+            if (!empty($cc)) {
+                $this->app->Tpl->Set("NACHRICHT_CC", "CC: " . htmlentities($cc));
+            }
 
-                if (is_null($message['zeitausgang'])) {
-                    if (!$showdrafts) {
-                        continue;
-                    }
-                    $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']." (Entwurf)"));
-                } else {
-                  $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).'</a>');
-                }
-                $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail_replyto'].">"));
-                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail']));
-                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc']));
-                $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
-                $this->app->Tpl->Set("META_FLOAT","left");
-                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);
-                $this->app->Tpl->Set("NACHRICHT_NAME",htmlentities($message['verfasser']));
+            // Xentral 20 compatibility & Message Rendering
+            if (!empty($message['textausgang'])) {
+              $this->app->Tpl->Set("NACHRICHT_BETREFF", '<a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
+              $this->app->Tpl->Set("NACHRICHT_TEXT", '<iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>');
             } else {
-
-                // Received message
-
-                $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail'].">"));
-
-                if ($message['mail_recipients'] != '') {
-                  $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail_recipients']));
-                }
-                else {
-                  // Xentral 20 compatibility
-                  $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['quelle']));
-                }
-                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
-                $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).'</a>');
-                $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
-                $this->app->Tpl->Set("META_FLOAT","right");
-                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);
+              $betreffPrefix = (is_null($message['zeitausgang']) && $isOutgoing) ? " (Entwurf)" : "";
+              $action = $isOutgoing ? 'text' : 'text'; // Simplified for modern OpenXE
+              $this->app->Tpl->Set("NACHRICHT_BETREFF", '<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).$betreffPrefix.'</a>');
+              $this->app->Tpl->Set("NACHRICHT_TEXT", '<iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>');
             }
 
-//            $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
-            $this->app->Tpl->Set("NACHRICHT_TEXT",'<iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>');
-
-
-            $this->add_attachments_html($ticket_id,$message['id'],'NACHRICHT_ANHANG',false);
-
+            $this->add_attachments_html($ticket_id, $message['id'], 'NACHRICHT_ANHANG', false);
             $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
-
         }
+
+        // Chat-Container End + Floating Button
+        echo '</div>'; // .chat-messages-wrapper
+        echo '<button class="chat-scroll-bottom" id="chatScrollBtn" onclick="document.getElementById(\'chatMessagesWrapper\').scrollTop = document.getElementById(\'chatMessagesWrapper\').scrollHeight">↓</button>';
+        echo '</div>'; // .ticket-chat-container
+
+        // Inline JS for Scroll Visibility and iFrame resizing
+        echo '<script>
+            (function() {
+                var w = document.getElementById("chatMessagesWrapper");
+                var b = document.getElementById("chatScrollBtn");
+                if (w && b) {
+                    w.scrollTop = w.scrollHeight;
+                    w.onscroll = function() {
+                        if (w.scrollHeight - w.scrollTop > w.clientHeight + 100) b.classList.add("visible");
+                        else b.classList.remove("visible");
+                    };
+                }
+                
+                // iFrame Auto-Height - Premium execution
+                window.addEventListener("message", function(e) {
+                    // Handle height updates if cross-domain isn\'t an issue 
+                    // or just use a robust interval/observer approach for local frames
+                });
+
+                // Periodic check for local frames
+                setInterval(function() {
+                    var frames = document.querySelectorAll(".ticket_text");
+                    frames.forEach(function(f) {
+                        try {
+                            var h = f.contentWindow.document.body.scrollHeight;
+                            if (h > 0 && Math.abs(f.offsetHeight - h) > 5) f.style.height = h + "px";
+                        } catch(e) {}
+                    });
+                }, 1000);
+            })();
+        </script>';
     }
 
     function ticket_text() {
