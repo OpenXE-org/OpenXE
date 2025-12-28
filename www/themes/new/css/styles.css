@@ -2661,7 +2661,7 @@ ul.tag-editor {
 /* WhatsApp-Style Chat for Backend Messages */
 .ticket-chat-message {
     display: flex;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     animation: slideIn 0.2s ease-out;
 }
 
