@@ -2431,16 +2431,24 @@ class Ticket {
 
   private function portalGetStatusLabels(): array
   {
-    $default = $this->portalDefaultStatusLabels();
-    $raw = (string)$this->app->erp->Firmendaten('ticketportal_status_labels');
-    $decoded = json_decode($raw, true);
-    if (!is_array($decoded)) {
-      return $default;
+    $labels = $this->portalDefaultStatusLabels();
+    $rawLabels = (string)$this->app->erp->Firmendaten('ticketportal_status_labels');
+    $decodedLabels = json_decode($rawLabels, true);
+    if (is_array($decodedLabels)) {
+      foreach ($labels as $k => $v) {
+        if (isset($decodedLabels[$k]) && trim((string)$decodedLabels[$k]) !== '') {
+          $labels[$k] = trim((string)$decodedLabels[$k]);
+        }
+      }
     }
-    $labels = [];
-    foreach ($default as $key => $fallback) {
-      $value = trim((string)($decoded[$key] ?? $fallback));
-      $labels[$key] = $value !== '' ? $value : $fallback;
+    $rawCustom = (string)$this->app->erp->Firmendaten('ticketportal_custom_statuses');
+    $custom = json_decode($rawCustom, true);
+    if (is_array($custom)) {
+      foreach ($custom as $item) {
+        if (!empty($item['key']) && !empty($item['label']) && !empty($item['enabled'])) {
+          $labels[(string)$item['key']] = (string)$item['label'];
+        }
+      }
     }
     return $labels;
   }
@@ -2476,22 +2484,22 @@ class Ticket {
     return $result;
   }
 
-  private function portalDefaultCustomerStatusKey(string $ticketStatus): string
+  private function portalDefaultCustomerStatusKey(string $ticketStatus, int $projectId = 0): string
   {
+    if ($projectId > 0) {
+      $rawProjectMap = (string)$this->app->erp->Firmendaten('ticketportal_status_map_projects');
+      $projectMap = json_decode($rawProjectMap, true);
+      if (is_array($projectMap) && isset($projectMap[$projectId][$ticketStatus])) {
+        return (string)$projectMap[$projectId][$ticketStatus];
+      }
+    }
     $map = $this->portalGetStatusMap();
     return $map[$ticketStatus] ?? 'in_bearbeitung';
   }
 
   private function portalCustomerStatusOptions(): array
   {
-    $labels = $this->portalGetStatusLabels();
-    $ordered = [];
-    foreach (array_keys($this->portalDefaultStatusLabels()) as $key) {
-      if (isset($labels[$key])) {
-        $ordered[$key] = $labels[$key];
-      }
-    }
-    return $ordered;
+    return $this->portalGetStatusLabels();
   }
 
   private function portalHandleInternalStatusChange(int $ticketId, string $oldStatus, string $newStatus, ?int $userId = null): void
@@ -2499,13 +2507,15 @@ class Ticket {
     if ($oldStatus === '' || $newStatus === '' || $oldStatus === $newStatus || $newStatus === 'spam') {
       return;
     }
-    $map = $this->portalGetStatusMap();
-    $labels = $this->portalGetStatusLabels();
-    $oldKey = $map[$oldStatus] ?? $this->portalDefaultCustomerStatusKey($oldStatus);
-    $newKey = $map[$newStatus] ?? $this->portalDefaultCustomerStatusKey($newStatus);
+    $ticket = $this->app->DB->SelectRow("SELECT projekt FROM ticket WHERE id = ".(int)$ticketId." LIMIT 1");
+    $projectId = (int)($ticket['projekt'] ?? 0);
+
+    $oldKey = $this->portalDefaultCustomerStatusKey($oldStatus, $projectId);
+    $newKey = $this->portalDefaultCustomerStatusKey($newStatus, $projectId);
     if ($oldKey === $newKey) {
       return;
     }
+    $labels = $this->portalGetStatusLabels();
     $existing = $this->app->DB->SelectRow(
       "SELECT status_key FROM ticket_customer_status WHERE ticket_id = ".(int)$ticketId." LIMIT 1"
     );
@@ -2912,6 +2922,38 @@ class Ticket {
     $this->portalJsonResponse(['saved' => true]);
   }
 
+  public function ticket_portal_offers()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if (!$this->portalGetSettingBool('ticketportal_allow_offer_confirm')) {
+      $this->portalJsonResponse(['error' => 'offer_disabled'], 403);
+    }
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $adresseId = (int)($ticket['adresse'] ?? 0);
+    if ($adresseId <= 0) {
+      $this->portalJsonResponse(['offers' => []]);
+    }
+    $offers = $this->app->DB->SelectArr(
+      "SELECT id, belegnr, datum, gesamtsumme, waehrung, status
+       FROM angebot
+       WHERE adresse = $adresseId
+         AND status = 'freigegeben'
+       ORDER BY datum DESC, id DESC"
+    );
+    $this->portalJsonResponse(['offers' => $offers ?? []]);
+  }
+
   public function ticket_portal_offer()
   {
     if (!$this->portalGetSettingBool('ticketportal_enabled')) {
@@ -2988,6 +3030,58 @@ class Ticket {
     $this->portalSetCustomerStatus((int)$ticket['id'], 'angebot_abgelehnt', 'Angebot abgelehnt', null);
     $this->portalLogStatus((int)$ticket['id'], null, 'angebot_abgelehnt', null, 'Angebot abgelehnt', null);
     $this->portalJsonResponse(['status' => 'decline_recorded', 'doi_sent' => false]);
+  }
+
+  public function ticket_portal_media()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $media = $this->app->DB->SelectArr(
+      "SELECT id, filename, mime_type, file_size, created_at
+       FROM ticket_repair_media
+       WHERE ticket_id = ".(int)$access['ticket_id']."
+         AND is_public = 1
+       ORDER BY created_at DESC"
+    );
+    $this->portalJsonResponse(['media' => $media ?? []]);
+  }
+
+  public function ticket_portal_media_download()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    $mediaId = (int)($data['media_id'] ?? 0);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $row = $this->app->DB->SelectRow(
+      "SELECT * FROM ticket_repair_media WHERE id = $mediaId AND ticket_id = ".(int)$access['ticket_id']." AND is_public = 1 LIMIT 1"
+    );
+    if (empty($row)) {
+      $this->portalJsonResponse(['error' => 'not_found'], 404);
+    }
+    $uploadDir = dirname(__DIR__, 1).DIRECTORY_SEPARATOR.'userfiles'.DIRECTORY_SEPARATOR.'ticket_media';
+    $extension = pathinfo($row['filename'], PATHINFO_EXTENSION);
+    $path = $uploadDir.DIRECTORY_SEPARATOR.$row['file_hash'].'.'.$extension;
+    if (!is_file($path)) {
+      $this->portalJsonResponse(['error' => 'file_missing'], 404);
+    }
+    header('Content-Type: '.$row['mime_type']);
+    header('Content-Length: '.$row['file_size']);
+    header('Content-Disposition: attachment; filename=\"'.addslashes($row['filename']).'\"');
+    readfile($path);
+    $this->app->ExitXentral();
   }
 
   public function ticket_portal_offer_confirm()
@@ -3118,6 +3212,23 @@ class Ticket {
       }
       $this->app->erp->FirmendatenSet('ticketportal_status_labels', json_encode($labels));
       $this->app->erp->FirmendatenSet('ticketportal_status_map', json_encode($map));
+
+      $customInput = $_POST['custom_status'] ?? [];
+      $customStatuses = [];
+      if (is_array($customInput)) {
+        foreach ($customInput as $c) {
+          if (!empty($c['key']) && !empty($c['label'])) {
+            $customStatuses[] = [
+              'key' => trim((string)$c['key']),
+              'label' => trim((string)$c['label']),
+              'enabled' => !empty($c['enabled']) ? 1 : 0
+            ];
+          }
+        }
+      }
+      $this->app->erp->FirmendatenSet('ticketportal_custom_statuses', json_encode($customStatuses));
+      $this->app->erp->FirmendatenSet('ticketportal_status_map_projects', (string)$this->app->Secure->GetPOST('ticketportal_status_map_projects'));
+
       $msg = $this->app->erp->base64_url_encode('<div class="info">Portal Einstellungen gespeichert.</div>');
       $this->app->Location->execute('index.php?module=ticket&action=portal_settings&msg='.$msg);
     }
@@ -3173,6 +3284,27 @@ class Ticket {
         htmlentities($internal).']">'.$optionsHtml.'</select></td></tr>';
     }
     $this->app->Tpl->Set('STATUS_MAP_ROWS', $mapRows);
+
+    $customRaw = (string)$this->app->erp->Firmendaten('ticketportal_custom_statuses');
+    $customList = json_decode($customRaw, true) ?: [];
+    $customRows = '';
+    $idx = 0;
+    foreach ($customList as $c) {
+      $enabledChecked = !empty($c['enabled']) ? 'checked' : '';
+      $customRows .= '<tr><td><input type="text" name="custom_status['.$idx.'][key]" value="'.htmlentities($c['key']).'" placeholder="key"></td>';
+      $customRows .= '<td><input type="text" name="custom_status['.$idx.'][label]" value="'.htmlentities($c['label']).'" placeholder="Label" size="40"></td>';
+      $customRows .= '<td><input type="checkbox" name="custom_status['.$idx.'][enabled]" value="1" '.$enabledChecked.'></td>';
+      $customRows .= '<td><button type="button" onclick=\"this.closest(\'tr\').remove();\">Entfernen</button></td></tr>';
+      $idx++;
+    }
+    // Add one empty row for new entry
+    $customRows .= '<tr><td><input type="text" name="custom_status['.$idx.'][key]" value="" placeholder="neuer_key"></td>';
+    $customRows .= '<td><input type="text" name="custom_status['.$idx.'][label]" value="" placeholder="Neues Label" size="40"></td>';
+    $customRows .= '<td><input type="checkbox" name="custom_status['.$idx.'][enabled]" value="1" checked></td><td></td></tr>';
+    $this->app->Tpl->Set('CUSTOM_STATUS_ROWS', $customRows);
+
+    $projectMap = (string)$this->app->erp->Firmendaten('ticketportal_status_map_projects');
+    $this->app->Tpl->Set('STATUS_MAP_PROJECTS', htmlentities($projectMap));
     $pluginUrl = $this->portalGetServerUrl().'/index.php?module=ticket&action=portal_plugin_download';
     $this->app->Tpl->Set('PORTAL_PLUGIN_URL', $pluginUrl);
     $msg = $this->app->Secure->GetGET('msg');
@@ -3332,16 +3464,133 @@ class Ticket {
       $optionsHtml .= '<option value="'.htmlentities($key).'"'.$selected.'>'.htmlentities($label).'</option>';
     }
 
+    $mediaFiles = $this->app->DB->SelectArr(
+      "SELECT id, filename, mime_type, file_size, created_at, is_public FROM ticket_repair_media WHERE ticket_id = $ticketId ORDER BY created_at DESC"
+    );
+    $mediaHtml = '';
+    if (!empty($mediaFiles)) {
+      $mediaHtml .= '<table class="list" style="width:100%;"><tr><th>Datei</th><th>Groesse</th><th>Datum</th><th>Sichtbar</th><th>Menue</th></tr>';
+      foreach ($mediaFiles as $row) {
+        $size = round($row['file_size'] / 1024, 1).' KB';
+        $publicChecked = $row['is_public'] ? 'checked' : '';
+        $mediaHtml .= '<tr><td><a href="index.php?module=ticket&action=portal_staff_download&id='.$row['id'].'" target="_blank">'.htmlentities($row['filename']).'</a></td>';
+        $mediaHtml .= '<td>'.$size.'</td><td>'.htmlentities($row['created_at']).'</td>';
+        $mediaHtml .= '<td><input type="checkbox" disabled '.$publicChecked.'></td>';
+        $mediaHtml .= '<td><a href="index.php?module=ticket&action=portal_staff_media_delete&id='.$row['id'].'&ticket_id='.$ticketId.'" onclick=\"return confirm(\'Datei wirklich loeschen?\');\">Loeschen</a></td></tr>';
+      }
+      $mediaHtml .= '</table>';
+    } else {
+      $mediaHtml = '<p>Keine Medien hochgeladen.</p>';
+    }
+
     $msg = $this->app->Secure->GetGET('msg');
     if ($msg) {
       $this->app->Tpl->Set('MESSAGE', $this->app->erp->base64_url_decode($msg));
     } else {
       $this->app->Tpl->Set('MESSAGE', '');
     }
+    $this->app->Tpl->Set('ID', $ticketId);
     $this->app->Tpl->Set('TICKETNUMMER', htmlentities((string)$ticket['schluessel']));
     $this->app->Tpl->Set('BETREFF', htmlentities((string)($ticket['betreff'] ?? '')));
     $this->app->Tpl->Set('STATUS_OPTIONS', $optionsHtml);
+    $this->app->Tpl->Set('MEDIA_LIST', $mediaHtml);
     $this->app->Tpl->Parse('PAGE', 'ticket_portal_staff.tpl');
+  }
+
+  public function ticket_portal_staff_upload()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+    $ticketId = (int)$this->app->Secure->GetGET('id');
+    if ($ticketId <= 0 || empty($_FILES['file'])) {
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId);
+      return;
+    }
+    $file = $_FILES['file'];
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Upload fehlgeschlagen (Fehler '.$file['error'].').</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+    $maxSize = 10 * 1024 * 1024; // 10MB
+    if ($file['size'] > $maxSize) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Datei zu gross (max. 10MB).</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+    $allowedMime = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($file['tmp_name']);
+    if (!in_array($mimeType, $allowedMime, true)) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Dateityp nicht erlaubt (nur JPG, PNG, WebP, PDF).</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+
+    $uploadDir = dirname(__DIR__, 1).DIRECTORY_SEPARATOR.'userfiles'.DIRECTORY_SEPARATOR.'ticket_media';
+    if (!is_dir($uploadDir)) {
+      @mkdir($uploadDir, 0775, true);
+    }
+    $fileHash = hash_file('sha256', $file['tmp_name']);
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $targetName = $fileHash.'.'.$extension;
+    $targetPath = $uploadDir.DIRECTORY_SEPARATOR.$targetName;
+
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+      $fileNameEsc = $this->app->DB->real_escape_string($file['name']);
+      $mimeTypeEsc = $this->app->DB->real_escape_string($mimeType);
+      $isPublic = (int)$this->app->Secure->GetPOST('is_public');
+      $userId = (int)$this->app->User->GetID();
+      $this->app->DB->Insert(
+        "INSERT INTO ticket_repair_media (ticket_id, filename, mime_type, file_size, file_hash, created_at, created_by, is_public)
+         VALUES ($ticketId, '$fileNameEsc', '$mimeTypeEsc', ".(int)$file['size'].", '$fileHash', NOW(), $userId, $isPublic)"
+      );
+      $msg = $this->app->erp->base64_url_encode('<div class="info">Datei hochgeladen.</div>');
+    } else {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Datei konnte nicht gespeichert werden.</div>');
+    }
+    $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+  }
+
+  public function ticket_portal_staff_download()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->app->ExitXentral();
+    }
+    $id = (int)$this->app->Secure->GetGET('id');
+    $row = $this->app->DB->SelectRow("SELECT * FROM ticket_repair_media WHERE id = $id LIMIT 1");
+    if (empty($row)) {
+      $this->app->ExitXentral();
+    }
+    $uploadDir = dirname(__DIR__, 1).DIRECTORY_SEPARATOR.'userfiles'.DIRECTORY_SEPARATOR.'ticket_media';
+    $extension = pathinfo($row['filename'], PATHINFO_EXTENSION);
+    $path = $uploadDir.DIRECTORY_SEPARATOR.$row['file_hash'].'.'.$extension;
+
+    if (!is_file($path)) {
+      echo "Datei nicht gefunden.";
+      $this->app->ExitXentral();
+    }
+
+    header('Content-Type: '.$row['mime_type']);
+    header('Content-Length: '.$row['file_size']);
+    header('Content-Disposition: inline; filename=\"'.addslashes($row['filename']).'\"');
+    readfile($path);
+    $this->app->ExitXentral();
+  }
+
+  public function ticket_portal_staff_media_delete()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->app->ExitXentral();
+    }
+    $id = (int)$this->app->Secure->GetGET('id');
+    $ticketId = (int)$this->app->Secure->GetGET('ticket_id');
+    if ($id > 0) {
+      $this->app->DB->Update("DELETE FROM ticket_repair_media WHERE id = $id LIMIT 1");
+    }
+    $msg = $this->app->erp->base64_url_encode('<div class="info">Datei geloescht.</div>');
+    $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
   }
 
   public function ticket_portal_print()

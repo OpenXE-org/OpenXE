@@ -49,6 +49,24 @@
   border-color: #cfd4d9;
 }
 
+.openxe-portal .oxp-offer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.oxp-btn-tts {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.oxp-btn-tts:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .openxe-portal .oxp-actions {
   display: flex;
   gap: 10px;
@@ -149,4 +167,60 @@
   .openxe-portal .oxp-actions {
     flex-direction: column;
   }
+}
+
+.openxe-portal .oxp-offer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.openxe-portal .oxp-offer-card {
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.openxe-portal .oxp-offer-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #ddd;
+}
+
+.openxe-portal .oxp-offer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.openxe-portal .oxp-offer-header strong {
+  font-weight: 700;
+  color: #222;
+}
+
+.openxe-portal .oxp-offer-header span {
+  font-size: 12px;
+  color: #999;
+}
+
+.openxe-portal .oxp-offer-body {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.openxe-portal .oxp-btn-small {
+  padding: 4px 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }

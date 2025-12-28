@@ -19578,3 +19578,20 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2020-12-07  8:56:21
+
+--
+-- Table structure for table \	icket_repair_media\ (Appended)
+--
+CREATE TABLE \	icket_repair_media\ (
+  \id\ int(11) NOT NULL AUTO_INCREMENT,
+  \	icket_id\ int(11) NOT NULL,
+  \ilename\ varchar(255) NOT NULL,
+  \mime_type\ varchar(128) NOT NULL,
+  \ile_size\ int(11) NOT NULL,
+  \ile_hash\ varchar(64) NOT NULL,
+  \is_public\ tinyint(1) NOT NULL DEFAULT 0,
+  \created_at\ datetime NOT NULL,
+  \created_by\ int(11) DEFAULT NULL,
+  PRIMARY KEY (\id\),
+  KEY \	icket_id\ (\	icket_id\)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;

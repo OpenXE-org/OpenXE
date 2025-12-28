@@ -485,6 +485,10 @@ function openxe_ticket_portal_shortcode($atts): string
   $html .= '<button type="button" class="oxp-notifications-save">Speichern</button>';
   $html .= '<div class="oxp-notifications-msg"></div>';
   $html .= '</div>';
+  $html .= '<div class="oxp-media">';
+  $html .= '<h3>Dokumente & Bilder</h3>';
+  $html .= '<div class="oxp-media-list"></div>';
+  $html .= '</div>';
   $html .= '<div class="oxp-chat">';
   $html .= '<h3>Nachrichten</h3>';
   $html .= '<div class="oxp-messages"></div>';
@@ -497,6 +501,8 @@ function openxe_ticket_portal_shortcode($atts): string
   $html .= '</div>';
 
   $html .= '<div class="oxp-offer" style="display:none">';
+  $html .= '<h3>Offene Angebote</h3>';
+  $html .= '<div class="oxp-offer-list"></div>';
   $html .= '<h3>Angebot bestaetigen</h3>';
   $html .= '<div class="oxp-row">';
   $html .= '<label for="oxp-offer-id">Angebot ID</label>';
@@ -585,6 +591,44 @@ function openxe_ticket_portal_proxy(string $action, array $payload): void
     wp_send_json_error(['message' => $message, 'data' => $data], $code ?: 500);
   }
   wp_send_json_success($data);
+}
+
+function openxe_ticket_portal_proxy_binary(string $action, array $payload): void
+{
+  $url = openxe_ticket_portal_get_base_url();
+  if ($url === '') {
+    wp_die('Base URL not set');
+  }
+  $url = add_query_arg('action', $action, $url);
+  $sharedSecret = (string)get_option('openxe_ticket_portal_shared_secret', '');
+  $headers = ['Content-Type' => 'application/json'];
+  if ($sharedSecret !== '') {
+    $headers['X-OpenXE-Portal-Secret'] = $sharedSecret;
+  }
+  $response = wp_remote_post($url, [
+    'headers' => $headers,
+    'body' => wp_json_encode($payload),
+    'timeout' => 60,
+  ]);
+  if (is_wp_error($response)) {
+    wp_die($response->get_error_message());
+  }
+  $code = (int)wp_remote_retrieve_response_code($response);
+  if ($code !== 200) {
+    wp_die('Download failed (HTTP ' . $code . ')');
+  }
+  $contentType = wp_remote_retrieve_header($response, 'content-type');
+  $contentDisposition = wp_remote_retrieve_header($response, 'content-disposition');
+  $body = wp_remote_retrieve_body($response);
+
+  if ($contentType) {
+    header('Content-Type: ' . $contentType);
+  }
+  if ($contentDisposition) {
+    header('Content-Disposition: ' . $contentDisposition);
+  }
+  echo $body;
+  exit;
 }
 
 function openxe_ticket_portal_get_client_ip(): string
@@ -726,6 +770,17 @@ function openxe_ticket_portal_ajax_message(): void
   ]);
 }
 
+function openxe_ticket_portal_ajax_offers(): void
+{
+  check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('offers');
+  $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
+  if ($sessionToken === '') {
+    wp_send_json_error(['message' => 'invalid_request'], 400);
+  }
+  openxe_ticket_portal_proxy('portal_offers', ['session_token' => $sessionToken]);
+}
+
 function openxe_ticket_portal_ajax_offer(): void
 {
   check_ajax_referer('openxe_ticket_portal', 'nonce');
@@ -777,6 +832,32 @@ function openxe_ticket_portal_ajax_notifications_set(): void
   ]);
 }
 
+function openxe_ticket_portal_ajax_media(): void
+{
+  check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('media');
+  $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
+  if ($sessionToken === '') {
+    wp_send_json_error(['message' => 'invalid_request'], 400);
+  }
+  openxe_ticket_portal_proxy('portal_media', ['session_token' => $sessionToken]);
+}
+
+function openxe_ticket_portal_ajax_media_download(): void
+{
+  check_ajax_referer('openxe_ticket_portal', 'nonce');
+  openxe_ticket_portal_apply_rate_limit('media_download');
+  $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
+  $mediaId = sanitize_text_field(wp_unslash($_POST['media_id'] ?? ''));
+  if ($sessionToken === '' || $mediaId === '') {
+    wp_send_json_error(['message' => 'invalid_request'], 400);
+  }
+  openxe_ticket_portal_proxy_binary('portal_media_download', [
+    'session_token' => $sessionToken,
+    'media_id' => $mediaId,
+  ]);
+}
+
 add_action('wp_ajax_nopriv_openxe_ticket_portal_session', 'openxe_ticket_portal_ajax_session');
 add_action('wp_ajax_openxe_ticket_portal_session', 'openxe_ticket_portal_ajax_session');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_magic', 'openxe_ticket_portal_ajax_magic');
@@ -789,10 +870,16 @@ add_action('wp_ajax_nopriv_openxe_ticket_portal_message', 'openxe_ticket_portal_
 add_action('wp_ajax_openxe_ticket_portal_message', 'openxe_ticket_portal_ajax_message');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_offer', 'openxe_ticket_portal_ajax_offer');
 add_action('wp_ajax_openxe_ticket_portal_offer', 'openxe_ticket_portal_ajax_offer');
+add_action('wp_ajax_nopriv_openxe_ticket_portal_offers', 'openxe_ticket_portal_ajax_offers');
+add_action('wp_ajax_openxe_ticket_portal_offers', 'openxe_ticket_portal_ajax_offers');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_notifications_get', 'openxe_ticket_portal_ajax_notifications_get');
 add_action('wp_ajax_openxe_ticket_portal_notifications_get', 'openxe_ticket_portal_ajax_notifications_get');
 add_action('wp_ajax_nopriv_openxe_ticket_portal_notifications_set', 'openxe_ticket_portal_ajax_notifications_set');
 add_action('wp_ajax_openxe_ticket_portal_notifications_set', 'openxe_ticket_portal_ajax_notifications_set');
+add_action('wp_ajax_nopriv_openxe_ticket_portal_media', 'openxe_ticket_portal_ajax_media');
+add_action('wp_ajax_openxe_ticket_portal_media', 'openxe_ticket_portal_ajax_media');
+add_action('wp_ajax_nopriv_openxe_ticket_portal_media_download', 'openxe_ticket_portal_ajax_media_download');
+add_action('wp_ajax_openxe_ticket_portal_media_download', 'openxe_ticket_portal_ajax_media_download');
 add_action('wp_ajax_openxe_ticket_portal_test', 'openxe_ticket_portal_ajax_test');
 
 function openxe_ticket_portal_clear_log_action(): void

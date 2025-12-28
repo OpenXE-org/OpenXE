@@ -18,7 +18,28 @@
     <label>Interne Notiz<br>
       <textarea name="internal_note" rows="4" style="width:100%;"></textarea>
     </label>
+    <br>
+    <input type="submit" name="save" value="Status/Kommentar Speichern" class="btnBlue">
   </fieldset>
-
-  <input type="submit" name="save" value="Speichern" class="btnBlue">
 </form>
+
+<hr>
+
+<form method="post" action="index.php?module=ticket&action=portal_staff_upload&id=[ID]" enctype="multipart/form-data">
+  <fieldset>
+    <legend>Medien Upload (Bilder/PDF)</legend>
+    <p>Dateiformate: JPG, PNG, WebP, PDF (max. 10MB)</p>
+    <input type="file" name="file" required>
+    <br><br>
+    <label>
+      <input type="checkbox" name="is_public" value="1"> F&uuml;r Kunden im Portal sichtbar
+    </label>
+    <br><br>
+    <input type="submit" value="Datei Hochladen" class="btnBlue">
+  </fieldset>
+</form>
+
+<fieldset>
+  <legend>Hochgeladene Medien</legend>
+  [MEDIA_LIST]
+</fieldset>

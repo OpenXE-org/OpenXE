@@ -103,19 +103,36 @@
 
   <fieldset>
     <legend>Statusmodell</legend>
-    <p><strong>Kundenstatus Texte</strong></p>
+    <p><strong>Standard Kundenstatus Texte</strong></p>
     <table>
       <thead>
         <tr>
           <th>Status Key</th>
-          <th>Bezeichnung</th>
+          <th>Bezeichnung (Umbenennen)</th>
         </tr>
       </thead>
       <tbody>
         [STATUS_LABEL_ROWS]
       </tbody>
     </table>
-    <p><strong>Mapping: Interner Status -&gt; Kundenstatus</strong></p>
+
+    <p><strong>Zusaetzliche / Custom Kundenstatus</strong></p>
+    <p><small>(Eigene Keys definieren, um sie im Mapping zu verwenden)</small></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Bezeichnung</th>
+          <th>Aktiv</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        [CUSTOM_STATUS_ROWS]
+      </tbody>
+    </table>
+
+    <p><strong>Mapping: Intern -> Kundenstatus (Standard)</strong></p>
     <table>
       <thead>
         <tr>
@@ -127,6 +144,10 @@
         [STATUS_MAP_ROWS]
       </tbody>
     </table>
+
+    <p><strong>Multiplex / Projekt-spezifisches Mapping</strong> (Fortgeschritten)</p>
+    <p><small>JSON-Konfiguration: <code>{ "PROJECT_ID": { "internal_status": "customer_key" } }</code></small></p>
+    <textarea name="ticketportal_status_map_projects" rows="6" style="width:100%; font-family:monospace;">[STATUS_MAP_PROJECTS]</textarea>
   </fieldset>
 
   <fieldset>

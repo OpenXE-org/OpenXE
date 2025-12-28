@@ -271,7 +271,23 @@
         var meta = document.createElement('div');
         meta.className = 'oxp-message-meta';
         var author = msg.author_type === 'customer' ? 'Kunde' : 'Team';
-        meta.textContent = author + (msg.created_at ? ' · ' + formatDate(msg.created_at) : '');
+        meta.innerHTML = '<span>' + author + (msg.created_at ? ' · ' + formatDate(msg.created_at) : '') + '</span>';
+
+        if (window.speechSynthesis) {
+          var speakBtn = document.createElement('button');
+          speakBtn.textContent = 'Vorlesen';
+          speakBtn.className = 'oxp-btn-tts';
+          speakBtn.style.padding = '2px 6px';
+          speakBtn.style.fontSize = '10px';
+          speakBtn.style.marginLeft = '8px';
+          speakBtn.addEventListener('click', function () {
+            var utterance = new SpeechSynthesisUtterance(msg.text);
+            utterance.lang = 'de-DE';
+            window.speechSynthesis.speak(utterance);
+          });
+          meta.appendChild(speakBtn);
+        }
+
         var body = document.createElement('div');
         body.textContent = msg.text || '';
         item.appendChild(meta);
@@ -331,6 +347,132 @@
       });
     }
 
+    function renderOffers(list) {
+      if (!offerBox) {
+        return;
+      }
+      var listContainer = qs('.oxp-offer-list', offerBox);
+      if (!listContainer) {
+        return;
+      }
+      listContainer.innerHTML = '';
+      if (!list || !list.length) {
+        setVisible(offerBox, false);
+        if (offerToggle) {
+          setVisible(offerToggle, false);
+        }
+        return;
+      }
+      setVisible(offerToggle, true);
+      list.forEach(function (offer) {
+        var card = document.createElement('div');
+        card.className = 'oxp-offer-card';
+        card.innerHTML =
+          '<div class=\"oxp-offer-header\">' +
+          '<strong>Angebot #' + (offer.belegnr || offer.id) + '</strong>' +
+          '<span>' + formatDate(offer.datum) + '</span>' +
+          '</div>' +
+          '<div class=\"oxp-offer-body\">' +
+          'Summe: ' + parseFloat(offer.gesamtsumme).toFixed(2) + ' ' + (offer.waehrung || 'EUR') +
+          '</div>' +
+          '<div class=\"oxp-offer-actions\">' +
+          '<button class=\"oxp-btn oxp-btn-small oxp-offer-select\" data-id=\"' + offer.id + '\">Auswaehlen</button>' +
+          '</div>';
+        listContainer.appendChild(card);
+      });
+
+      qsa('.oxp-offer-select', listContainer).forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          offerIdInput.value = btn.getAttribute('data-id');
+          setVisible(offerBox, true);
+          offerBox.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    }
+
+    function loadOffers() {
+      if (!sessionToken) {
+        return;
+      }
+      portalAjax(config, 'openxe_ticket_portal_offers', { session_token: sessionToken }).then(function (resp) {
+        if (!resp || !resp.success) {
+          return;
+        }
+        renderOffers(resp.data && resp.data.offers ? resp.data.offers : []);
+      });
+    }
+
+    function renderMedia(list) {
+      if (!mainBox) {
+        return;
+      }
+      var container = qs('.oxp-media-list', mainBox);
+      if (!container) {
+        return;
+      }
+      container.innerHTML = '';
+      if (!list || !list.length) {
+        setVisible(qs('.oxp-media', mainBox), false);
+        return;
+      }
+      setVisible(qs('.oxp-media', mainBox), true);
+      list.forEach(function (m) {
+        var size = Math.round(m.file_size / 1024) + ' KB';
+        var item = document.createElement('div');
+        item.className = 'oxp-media-item';
+        item.style.marginBottom = '8px';
+        item.innerHTML =
+          '<a href=\"#\" class=\"oxp-media-download\" data-id=\"' + m.id + '\">' +
+          '<strong>' + (m.filename || 'Datei') + '</strong></a> ' +
+          '<small>(' + size + ', ' + formatDate(m.created_at) + ')</small>';
+        container.appendChild(item);
+      });
+
+      qsa('.oxp-media-download', container).forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          var mediaId = link.getAttribute('data-id');
+          downloadMedia(mediaId, link.querySelector('strong').textContent);
+        });
+      });
+    }
+
+    function downloadMedia(mediaId, filename) {
+      var body = 'session_token=' + encodeURIComponent(sessionToken) +
+        '&media_id=' + encodeURIComponent(mediaId) +
+        '&nonce=' + encodeURIComponent(config.nonce) +
+        '&action=openxe_ticket_portal_media_download';
+
+      fetch(config.ajaxUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+      })
+        .then(function (resp) { return resp.blob(); })
+        .then(function (blob) {
+          var url = window.URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        });
+    }
+
+    function loadMedia() {
+      if (!sessionToken) {
+        return;
+      }
+      portalAjax(config, 'openxe_ticket_portal_media', { session_token: sessionToken }).then(function (resp) {
+        if (!resp || !resp.success) {
+          return;
+        }
+        renderMedia(resp.data && resp.data.media ? resp.data.media : []);
+      });
+    }
+
     function showMain() {
       setVisible(loginBox, false);
       setVisible(mainBox, true);
@@ -338,6 +480,8 @@
       loadStatus();
       loadMessages();
       loadNotifications();
+      loadOffers();
+      loadMedia();
     }
 
     function stripMagicToken() {
