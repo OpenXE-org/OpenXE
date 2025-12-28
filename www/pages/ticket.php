@@ -1478,7 +1478,12 @@ class Ticket {
             $this->app->DB->Update("UPDATE angebot SET ".implode(', ', $updates)." WHERE id = ".$angebotId." LIMIT 1");
         }
 
-        $this->app->erp->TicketProtokoll($ticketId, 'Angebot angelegt (#'.$angebotId.')');
+        // Automatic Status Change for Portal
+        $this->portalSetCustomerStatus($ticketId, 'warten_kd', 'Angebot erstellt', null);
+        $this->portalLogStatus($ticketId, null, 'warten_kd', null, 'Angebot #' . $angebotId . ' erstellt', null);
+        $this->portalInsertPortalMessage($ticket, 'system', 0, 'Ein Angebot (#'.$angebotId.') wurde für Sie erstellt.', true);
+
+        $this->app->erp->TicketProtokoll($ticketId, 'Angebot angelegt (#'.$angebotId.') - Portal Status: Warten auf Kunde');
         header("Location: index.php?module=angebot&action=edit&id=$angebotId");
         $this->app->ExitXentral();
     }
@@ -2789,10 +2794,12 @@ class Ticket {
       $this->portalJsonResponse(['error' => 'session_invalid'], 401);
     }
     $messages = $this->app->DB->SelectArr(
-      "SELECT id, author_type, text, created_at
-       FROM ticket_portal_message
-       WHERE ticket_id = ".(int)$access['ticket_id']." AND is_public = 1
-       ORDER BY created_at ASC"
+      "SELECT m.id, m.author_type, m.text, m.created_at, 
+              REPLACE(COALESCE(NULLIF(m.source, ''), n.medium, 'portal'), 'telefon', 'phone') as source
+       FROM ticket_portal_message m
+       LEFT JOIN ticket_nachricht n ON n.id = m.mirrored_message_id
+       WHERE m.ticket_id = ".(int)$access['ticket_id']." AND m.is_public = 1
+       ORDER BY m.created_at ASC"
     );
     $this->portalJsonResponse(['messages' => $messages ?? []]);
   }
@@ -2940,15 +2947,15 @@ class Ticket {
     if (!$ticket) {
       $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
     }
-    $adresseId = (int)($ticket['adresse'] ?? 0);
-    if ($adresseId <= 0) {
+    $ticketKey = $this->app->DB->real_escape_string((string)($ticket['schluessel'] ?? ''));
+    if ($ticketKey === '') {
       $this->portalJsonResponse(['offers' => []]);
     }
     $offers = $this->app->DB->SelectArr(
       "SELECT id, belegnr, datum, gesamtsumme, waehrung, status
        FROM angebot
-       WHERE adresse = $adresseId
-         AND status = 'freigegeben'
+       WHERE anfrage = '$ticketKey'
+         AND status IN ('freigegeben', 'beauftragt')
        ORDER BY datum DESC, id DESC"
     );
     $this->portalJsonResponse(['offers' => $offers ?? []]);
@@ -3136,11 +3143,17 @@ class Ticket {
       );
       $this->portalSetCustomerStatus((int)$ticket['id'], 'angebot_bestaetigt', 'Angebot bestaetigt', null);
       $this->portalLogStatus((int)$ticket['id'], null, 'angebot_bestaetigt', null, 'Angebot bestaetigt', null);
+      
+      $this->portalInsertPortalMessage($ticket, 'system', 0, 'Angebot #'.($offer['belegnr'] ?? $record['angebot_id']).' wurde bestaetigt. Auftrag #'.$orderId.' wurde erstellt.', true);
+      
       $this->portalJsonResponse(['status' => 'confirmed', 'order_id' => (int)$orderId]);
     }
 
     $this->portalSetCustomerStatus((int)$ticket['id'], 'angebot_abgelehnt', 'Angebot abgelehnt', null);
     $this->portalLogStatus((int)$ticket['id'], null, 'angebot_abgelehnt', null, 'Angebot abgelehnt', null);
+    
+    $this->portalInsertPortalMessage($ticket, 'system', 0, 'Angebot #'.$record['angebot_id'].' wurde abgelehnt.', true);
+    
     $this->portalJsonResponse(['status' => 'declined']);
   }
 
@@ -3639,28 +3652,45 @@ class Ticket {
       $email = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');
     }
 
-    $errorDescription = '';
-    $ticketNumber = $this->app->DB->real_escape_string((string)$ticket['schluessel']);
-    $firstMessage = $this->app->DB->SelectRow(
-      "SELECT text, textausgang
-       FROM ticket_nachricht
-       WHERE ticket = '$ticketNumber'
-         AND (text <> '' OR textausgang <> '')
-         AND (versendet IS NULL OR versendet <> 1)
-       ORDER BY zeit ASC, id ASC
-       LIMIT 1"
+    // Message History
+    $messages = $this->app->DB->SelectArr(
+      "SELECT author_type, text, created_at, source
+       FROM ticket_portal_message
+       WHERE ticket_id = ".(int)$ticket['id']." AND is_public = 1
+       ORDER BY created_at ASC"
     );
-    if (!empty($firstMessage)) {
-      $errorDescription = trim((string)$firstMessage['text']);
-      if ($errorDescription === '') {
-        $errorDescription = trim((string)$firstMessage['textausgang']);
+    $messagesHtml = '';
+    if (!empty($messages)) {
+      foreach ($messages as $msg) {
+        $author = ($msg['author_type'] === 'customer') ? 'Kunde' : (($msg['author_type'] === 'system') ? 'System' : 'Team');
+        $date = date('d.m.Y H:i', strtotime($msg['created_at']));
+        $messagesHtml .= '<div class="message ' . $msg['author_type'] . '">';
+        $messagesHtml .= '<div class="meta"><strong>' . $author . '</strong> (' . $date . ')</div>';
+        $messagesHtml .= '<div class="text">' . nl2br(htmlentities($msg['text'])) . '</div>';
+        $messagesHtml .= '</div>';
       }
     }
-    if ($errorDescription === '') {
-      $errorDescription = $ticket['notiz'] ?? '';
-    }
-    if ($errorDescription === '') {
-      $errorDescription = $ticket['kommentar'] ?? '';
+
+    // Offers
+    $offers = $this->app->DB->SelectArr(
+      "SELECT belegnr, datum, gesamtsumme, waehrung, status
+       FROM angebot
+       WHERE anfrage = '".$this->app->DB->real_escape_string($ticket['schluessel'])."'
+         AND status IN ('freigegeben', 'beauftragt')
+       ORDER BY datum DESC"
+    );
+    $offersHtml = '';
+    if (!empty($offers)) {
+      $offersHtml .= '<table><tr><th>Belegnr</th><th>Datum</th><th>Summe</th><th>Status</th></tr>';
+      foreach ($offers as $offer) {
+        $offersHtml .= '<tr>';
+        $offersHtml .= '<td>' . htmlentities($offer['belegnr']) . '</td>';
+        $offersHtml .= '<td>' . date('d.m.Y', strtotime($offer['datum'])) . '</td>';
+        $offersHtml .= '<td>' . number_format($offer['gesamtsumme'], 2, ',', '.') . ' ' . $offer['waehrung'] . '</td>';
+        $offersHtml .= '<td>' . htmlentities($offer['status']) . '</td>';
+        $offersHtml .= '</tr>';
+      }
+      $offersHtml .= '</table>';
     }
 
     $ticketStaffUrl = $this->portalGetServerUrl().'/index.php?module=ticket&action=portal_staff&id='.(int)$ticket['id'];
@@ -3674,6 +3704,8 @@ class Ticket {
     $this->app->Tpl->Set('KUNDENADRESSE', nl2br(htmlentities(implode("\n", $addressLines))));
     $this->app->Tpl->Set('EMAIL', htmlentities((string)$email));
     $this->app->Tpl->Set('QR_HTML', $qrHtml);
+    $this->app->Tpl->Set('MESSAGES_HTML', $messagesHtml);
+    $this->app->Tpl->Set('OFFERS_HTML', $offersHtml);
     $this->app->Tpl->Set('STAFF_URL', htmlentities($ticketStaffUrl));
 
     $downloadUrl = '';

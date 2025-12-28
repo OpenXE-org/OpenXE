@@ -101,12 +101,23 @@
     var verifierSelect = qs('.oxp-verifier', root);
     var verifierInput = qs('.oxp-verifier-value', root);
     var messageText = qs('.oxp-message-text', root);
+    var printLink = qs('.oxp-print', root);
+    var downloadLink = qs('.oxp-download', root);
     var sessionToken = '';
 
     function showError(msg) {
       if (!errorEl) return;
       showMessage(errorEl, msg);
       setVisible(errorEl, !!msg);
+    }
+
+    function getSourceIcon(source) {
+      var icons = {
+        'email': '<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>',
+        'portal': '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+        'phone': '<svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>'
+      };
+      return icons[source] || icons['portal'];
     }
 
     function formatError(resp, fallback) {
@@ -132,31 +143,142 @@
       });
     }
 
+    function renderMessages(list) {
+      messagesBox.innerHTML = '';
+      if (!list || !list.length) {
+        messagesBox.textContent = 'Keine Nachrichten.';
+        return;
+      }
+
+      var sorted = list.slice().reverse();
+      var limit = 4;
+      var displayed = sorted.slice(0, limit);
+      var hasMore = sorted.length > limit;
+
+      displayed.forEach(function (msg) {
+        var isCustomer = msg.author_type === 'customer';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'oxp-chat-message ' + (isCustomer ? 'customer' : 'staff');
+
+        var preview = document.createElement('div');
+        preview.className = 'oxp-message-preview';
+        preview.innerHTML = '<div class="oxp-message-header"><span class="oxp-message-author">' + (isCustomer ? 'Ich' : 'Team') + '</span><div class="oxp-message-meta"><span class="oxp-message-source" title="' + (msg.source || 'portal') + '">' + getSourceIcon(msg.source) + '</span><span class="oxp-message-date">' + formatDate(msg.created_at) + '</span></div></div><div class="oxp-message-snippet">' + msg.text + '</div>';
+
+        var full = document.createElement('div');
+        full.className = 'oxp-message-full';
+        full.style.display = 'none';
+        full.textContent = msg.text;
+
+        preview.addEventListener('click', function () {
+          var isExpanded = full.style.display !== 'none';
+          full.style.display = isExpanded ? 'none' : '';
+          preview.classList.toggle('expanded', !isExpanded);
+        });
+
+        wrapper.appendChild(preview);
+        wrapper.appendChild(full);
+        messagesBox.appendChild(wrapper);
+      });
+
+      if (hasMore) {
+        var showMore = document.createElement('button');
+        showMore.className = 'oxp-show-more';
+        showMore.textContent = 'Alle Nachrichten anzeigen (' + sorted.length + ')';
+        showMore.onclick = function () {
+          renderMessagesFull(sorted);
+        };
+        messagesBox.insertBefore(showMore, messagesBox.firstChild);
+      }
+    }
+
+    function renderMessagesFull(list) {
+      messagesBox.innerHTML = '';
+      list.forEach(function (msg) {
+        // ... same bubble logic but simplified or as above ...
+        var isCustomer = msg.author_type === 'customer';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'oxp-chat-message ' + (isCustomer ? 'customer' : 'staff');
+        var full = document.createElement('div');
+        full.className = 'oxp-message-full';
+        full.style.display = 'block';
+        full.innerHTML = '<div class="oxp-message-header"><span class="oxp-message-author">' + (isCustomer ? 'Ich' : 'Team') + '</span><div class="oxp-message-meta"><span class="oxp-message-source">' + getSourceIcon(msg.source) + '</span><span class="oxp-message-date">' + formatDate(msg.created_at) + '</span></div></div>' + msg.text;
+        wrapper.appendChild(full);
+        messagesBox.appendChild(wrapper);
+      });
+    }
+
     function loadMessages() {
       if (!sessionToken) return;
       portalAjax(config, 'openxe_ticket_portal_messages', { session_token: sessionToken }).then(function (resp) {
         if (!resp.success) return;
-        var list = resp.data && resp.data.messages ? resp.data.messages : [];
-        messagesBox.innerHTML = '';
-        if (!list.length) {
-          messagesBox.textContent = 'Keine Nachrichten.';
-          return;
-        }
-        list.forEach(function (msg) {
-          var item = document.createElement('div');
-          item.className = 'oxp-message';
-          item.innerHTML = '<div class="oxp-message-meta">' + (msg.author_type === 'customer' ? 'Ich' : 'Team') + ' · ' + formatDate(msg.created_at) + '</div><div>' + msg.text + '</div>';
-          messagesBox.appendChild(item);
-        });
+        renderMessages(resp.data && resp.data.messages ? resp.data.messages : []);
+      });
+    }
+
+    function updatePrintLinks() {
+      if (!sessionToken || !config.baseUrl) return;
+      var printUrl = config.baseUrl + '/index.php?module=ticket&action=portal_print&session_token=' + encodeURIComponent(sessionToken);
+      if (printLink) {
+        printLink.href = printUrl;
+        setVisible(printLink, true);
+      }
+      if (downloadLink) {
+        downloadLink.href = printUrl + '&download=1';
+        setVisible(downloadLink, true);
+      }
+    }
+
+    function renderOfferCards(offers) {
+      var container = qs('.oxp-offer-list', root);
+      if (!container) return;
+      container.innerHTML = '';
+      if (!offers || !offers.length) {
+        setVisible(qs('.oxp-offer', root), false);
+        return;
+      }
+      setVisible(qs('.oxp-offer', root), true);
+      offers.forEach(function (offer) {
+        var card = document.createElement('div');
+        card.className = 'oxp-offer-card';
+        card.innerHTML = '<div class="oxp-offer-header"><strong>Angebot #' + offer.belegnr + '</strong><span>' + formatDate(offer.datum) + '</span></div><div class="oxp-offer-body">Summe: ' + parseFloat(offer.gesamtsumme).toFixed(2) + ' ' + (offer.waehrung || 'EUR') + '</div><div class="oxp-offer-actions"><button class="oxp-btn-accept" data-id="' + offer.id + '">Bestätigen</button><button class="oxp-btn-decline" data-id="' + offer.id + '">Ablehnen</button></div>';
+        container.appendChild(card);
+      });
+
+      qsa('.oxp-btn-accept', container).forEach(function (btn) {
+        btn.onclick = function () { confirmOffer(btn.dataset.id, 'accept'); };
+      });
+      qsa('.oxp-btn-decline', container).forEach(function (btn) {
+        btn.onclick = function () { confirmOffer(btn.dataset.id, 'decline'); };
+      });
+    }
+
+    function confirmOffer(id, action) {
+      var comment = prompt(action === 'accept' ? 'Optionaler Kommentar:' : 'Grund für Ablehnung:');
+      if (comment === null) return;
+      portalAjax(config, 'openxe_ticket_portal_offer', { session_token: sessionToken, angebot_id: id, offer_action: action, comment: comment }).then(function (resp) {
+        if (!resp.success) return alert(formatError(resp));
+        alert(action === 'accept' ? 'Angebot bestätigt.' : 'Angebot abgelehnt.');
+        cache.clear();
+        loadStatus();
+        loadOffers();
+      });
+    }
+
+    function loadOffers() {
+      if (!sessionToken) return;
+      portalAjax(config, 'openxe_ticket_portal_offers', { session_token: sessionToken }).then(function (resp) {
+        if (resp.success) renderOfferCards(resp.data && resp.data.offers ? resp.data.offers : []);
       });
     }
 
     function showMain() {
       setVisible(loginBox, false);
       setVisible(mainBox, true);
+      updatePrintLinks();
       loadStatus();
       loadMessages();
       loadMedia();
+      loadOffers();
     }
 
     function loadMedia() {
@@ -196,6 +318,7 @@
       cache.clear();
       loadStatus();
       loadMessages();
+      loadOffers();
     }, 300));
 
     qs('.oxp-send', root).addEventListener('click', function () {
