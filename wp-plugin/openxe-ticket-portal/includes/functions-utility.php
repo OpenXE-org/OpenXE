@@ -123,3 +123,11 @@ function openxe_ticket_portal_apply_rate_limit(string $action): void {
         wp_send_json_error(['message' => 'rate_limited'], 429);
     }
 }
+
+function openxe_ticket_portal_get_base_url(): string {
+    return OpenXE_Ticket_Portal_Settings::get_base_url();
+}
+
+function openxe_ticket_portal_get_shared_secret(): string {
+    return OpenXE_Ticket_Portal_Settings::get_shared_secret();
+}
