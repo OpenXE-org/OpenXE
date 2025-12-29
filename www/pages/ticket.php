@@ -3799,52 +3799,6 @@ class Ticket {
   }
 
   /**
-   * Download WordPress plugin as ZIP for auto-update
-   */
-  function ticket_portal_plugin_download() {
-    // Security check
-    $sharedSecret = $this->app->erp->Firmendaten('ticketportal_sharedsecret');
-    $requestSecret = $_SERVER['HTTP_X_OPENXE_PORTAL_SECRET'] ?? '';
-    
-    if ($sharedSecret !== '' && $requestSecret !== $sharedSecret) {
-      http_response_code(403);
-      echo json_encode(['error' => 'forbidden']);
-      $this->app->ExitXentral();
-    }
-
-    $pluginDir = realpath(__DIR__ . '/../../wp-plugin/openxe-ticket-portal');
-    
-    if (!is_dir($pluginDir)) {
-      http_response_code(404);
-      echo json_encode(['error' => 'plugin_not_found']);
-      $this->app->ExitXentral();
-    }
-
-    // Create temporary ZIP file
-    $tempZip = tempnam(sys_get_temp_dir(), 'oxp_');
-    $zip = new ZipArchive();
-    
-    if ($zip->open($tempZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-      http_response_code(500);
-      echo json_encode(['error' => 'zip_create_failed']);
-      $this->app->ExitXentral();
-    }
-
-    // Add all plugin files to ZIP
-    $this->addDirectoryToZip($zip, $pluginDir, 'openxe-ticket-portal');
-    $zip->close();
-
-    // Send ZIP file
-    header('Content-Type: application/zip');
-    header('Content-Disposition: attachment; filename="openxe-ticket-portal.zip"');
-    header('Content-Length: ' . filesize($tempZip));
-    readfile($tempZip);
-    
-    @unlink($tempZip);
-    $this->app->ExitXentral();
-  }
-
-  /**
    * Helper function to recursively add directory to ZIP
    */
   private function addDirectoryToZip($zip, $dir, $zipPath) {
@@ -3864,6 +3818,3 @@ class Ticket {
     }
   }
 }
-
-
-
