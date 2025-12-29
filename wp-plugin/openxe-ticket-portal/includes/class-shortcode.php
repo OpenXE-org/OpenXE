@@ -79,6 +79,22 @@ class OpenXE_Ticket_Portal_Shortcode {
                         <div class="oxp-status-value" aria-live="polite"></div>
                         <div class="oxp-status-updated"></div>
                     </section>
+
+                    <section class="oxp-ticket-details" aria-labelledby="oxp-ticket-details-title">
+                        <h3 id="oxp-ticket-details-title"><?php _e('Ticket-Details', 'openxe-ticket-portal'); ?></h3>
+                        <div class="oxp-detail-row">
+                            <span class="oxp-detail-label"><?php _e('Ticketnummer:', 'openxe-ticket-portal'); ?></span>
+                            <span class="oxp-ticket-number-display"></span>
+                        </div>
+                        <div class="oxp-detail-row">
+                            <span class="oxp-detail-label"><?php _e('Kunde:', 'openxe-ticket-portal'); ?></span>
+                            <span class="oxp-customer-name"></span>
+                        </div>
+                        <div class="oxp-detail-row">
+                            <span class="oxp-detail-label"><?php _e('Adresse:', 'openxe-ticket-portal'); ?></span>
+                            <span class="oxp-customer-address"></span>
+                        </div>
+                    </section>
                     
                     <div class="oxp-actions" role="toolbar" aria-label="<?php esc_attr_e('Portal Aktionen', 'openxe-ticket-portal'); ?>">
                         <button type="button" class="oxp-refresh"><?php _e('Aktualisieren', 'openxe-ticket-portal'); ?></button>

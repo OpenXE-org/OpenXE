@@ -125,6 +125,42 @@
   color: var(--oxp-text-muted);
 }
 
+/* Ticket Details Section */
+.oxp-ticket-details {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.oxp-ticket-details h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #333;
+}
+
+.oxp-detail-row {
+  display: flex;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.oxp-detail-label {
+  font-weight: 600;
+  color: #666;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.oxp-customer-name,
+.oxp-customer-address,
+.oxp-ticket-number-display {
+  color: #333;
+  flex: 1;
+}
+
 .openxe-portal .oxp-messages {
   border: 1px solid var(--oxp-border);
   border-radius: var(--oxp-radius);

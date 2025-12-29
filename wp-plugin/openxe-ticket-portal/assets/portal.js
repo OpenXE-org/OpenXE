@@ -144,8 +144,26 @@
         if (!resp.success) return showError(formatError(resp));
         showError('');
         var data = resp.data || {};
-        statusValue.textContent = data.status_label || data.status_key || '';
-        statusUpdated.textContent = data.updated_at ? ('Stand: ' + formatDate(data.updated_at)) : '';
+
+        // Update status
+        if (statusValue) statusValue.textContent = data.status_label || data.status_key || '';
+        if (statusUpdated) statusUpdated.textContent = data.updated_at ? ('Stand: ' + formatDate(data.updated_at)) : '';
+
+        // Update ticket details
+        var ticketNumberEl = qs('.oxp-ticket-number-display', root);
+        var customerNameEl = qs('.oxp-customer-name', root);
+        var customerAddressEl = qs('.oxp-customer-address', root);
+
+        if (ticketNumberEl) ticketNumberEl.textContent = data.ticket_number || data.ticket_key || '';
+        if (customerNameEl) customerNameEl.textContent = data.customer_name || '';
+        if (customerAddressEl) {
+          var addressParts = [];
+          if (data.customer_street) addressParts.push(data.customer_street);
+          if (data.customer_zip || data.customer_city) {
+            addressParts.push((data.customer_zip || '') + ' ' + (data.customer_city || ''));
+          }
+          customerAddressEl.textContent = addressParts.join(', ') || '-';
+        }
       });
     }
 
