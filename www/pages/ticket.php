@@ -550,6 +550,11 @@ class Ticket {
                 $message['betreff'] = "...";
             }
 
+            // Skip drafts if not requested
+            if (!$showdrafts && $message['versendet'] == '1' && is_null($message['zeitausgang'])) {
+                continue;
+            }
+
             // Direction & Alignment Logic (King-Mode: Customer Left / Team Right)
             $isOutgoing = ($message['versendet'] == '1' || !empty($message['textausgang']));
             $direction = $isOutgoing ? 'outgoing' : 'incoming';
@@ -590,7 +595,6 @@ class Ticket {
               $this->app->Tpl->Set("NACHRICHT_TEXT", '<iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>');
             } else {
               $betreffPrefix = (is_null($message['zeitausgang']) && $isOutgoing) ? " (Entwurf)" : "";
-              $action = $isOutgoing ? 'text' : 'text'; // Simplified for modern OpenXE
               $this->app->Tpl->Set("NACHRICHT_BETREFF", '<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).$betreffPrefix.'</a>');
               $this->app->Tpl->Set("NACHRICHT_TEXT", '<iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>');
             }
