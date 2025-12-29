@@ -12,17 +12,30 @@ class OpenXE_Ticket_Portal_AJAX {
      * Register AJAX actions
      */
     public static function register(): void {
-        $actions = [
-            'session', 'magic', 'status', 'messages', 'message',
-            'offer', 'offers', 'notifications_get', 'notifications_set',
-            'media', 'media_download', 'test'
-        ];
-
-        foreach ($actions as $action) {
-            $callback = [self::class, 'ajax_' . $action];
-            add_action('wp_ajax_nopriv_openxe_ticket_portal_' . $action, $callback);
-            add_action('wp_ajax_openxe_ticket_portal_' . $action, $callback);
-        }
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_session', [self::class, 'ajax_session']);
+        add_action('wp_ajax_openxe_ticket_portal_session', [self::class, 'ajax_session']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_magic', [self::class, 'ajax_magic']);
+        add_action('wp_ajax_openxe_ticket_portal_magic', [self::class, 'ajax_magic']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_status', [self::class, 'ajax_status']);
+        add_action('wp_ajax_openxe_ticket_portal_status', [self::class, 'ajax_status']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_messages', [self::class, 'ajax_messages']);
+        add_action('wp_ajax_openxe_ticket_portal_messages', [self::class, 'ajax_messages']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_message', [self::class, 'ajax_message']);
+        add_action('wp_ajax_openxe_ticket_portal_message', [self::class, 'ajax_message']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_offers', [self::class, 'ajax_offers']);
+        add_action('wp_ajax_openxe_ticket_portal_offers', [self::class, 'ajax_offers']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_offer', [self::class, 'ajax_offer']);
+        add_action('wp_ajax_openxe_ticket_portal_offer', [self::class, 'ajax_offer']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_notifications', [self::class, 'ajax_notifications']);
+        add_action('wp_ajax_openxe_ticket_portal_notifications', [self::class, 'ajax_notifications']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_notification_save', [self::class, 'ajax_notification_save']);
+        add_action('wp_ajax_openxe_ticket_portal_notification_save', [self::class, 'ajax_notification_save']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_media', [self::class, 'ajax_media']);
+        add_action('wp_ajax_openxe_ticket_portal_media', [self::class, 'ajax_media']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_media_download', [self::class, 'ajax_media_download']);
+        add_action('wp_ajax_openxe_ticket_portal_media_download', [self::class, 'ajax_media_download']);
+        add_action('wp_ajax_nopriv_openxe_ticket_portal_test', [self::class, 'ajax_test']);
+        add_action('wp_ajax_openxe_ticket_portal_test', [self::class, 'ajax_test']);
     }
 
     public static function ajax_session(): void {
@@ -169,6 +182,32 @@ class OpenXE_Ticket_Portal_AJAX {
             return;
         }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_media', ['session_token' => $sessionToken]);
+    }
+
+    public static function ajax_notifications(): void {
+        check_ajax_referer('openxe_ticket_portal', 'nonce');
+        openxe_ticket_portal_apply_rate_limit('notifications');
+        $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
+        if ($sessionToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
+        OpenXE_Ticket_Portal_Remote_API::proxy('portal_notifications', ['session_token' => $sessionToken]);
+    }
+
+    public static function ajax_notification_save(): void {
+        check_ajax_referer('openxe_ticket_portal', 'nonce');
+        openxe_ticket_portal_apply_rate_limit('notification_save');
+        $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
+        $selected = wp_unslash($_POST['selected'] ?? '');
+        if ($sessionToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
+        OpenXE_Ticket_Portal_Remote_API::proxy('portal_notification', [
+            'session_token' => $sessionToken,
+            'selected' => $selected,
+        ]);
     }
 
     public static function ajax_media_download(): void {
