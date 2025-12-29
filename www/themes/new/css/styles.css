@@ -2795,7 +2795,20 @@ ul.tag-editor {
 .bubble-sender {
     font-size: 11px;
     font-weight: 700;
-    color: var(--chat-accent);
+    color: white;
+    background: var(--chat-accent);
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+
+.chat-bubble.incoming .bubble-sender {
+    background: #dc3545;
+    color: white;
+}
+
+.chat-bubble.outgoing .bubble-sender {
+    background: #28a745;
+    color: white;
 }
 
 .bubble-time {
