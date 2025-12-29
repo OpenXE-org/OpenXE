@@ -93,13 +93,6 @@ if ($logClearStatus !== '' && in_array($logClearStatus, ['success', 'error', 'in
                     <th scope="row">Logauszug</th>
                     <td>
                         <textarea readonly rows="8" class="large-text"><?php echo $logContent; ?></textarea>
-                        <p class="description">
-                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;" onsubmit="return confirm('Log wirklich löschen?');">
-                                <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
-                                <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
-                                <button type="submit" class="button button-secondary">Log löschen</button>
-                            </form>
-                        </p>
                     </td>
                 </tr>
                 <tr>
@@ -158,6 +151,13 @@ if ($logClearStatus !== '' && in_array($logClearStatus, ['success', 'error', 'in
     </form>
 
     <?php if ($activeTab === 'general') : ?>
+        <h2>Log Verwaltung</h2>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" onsubmit="return confirm('Log wirklich löschen?');">
+            <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
+            <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
+            <button type="submit" class="button button-secondary">Log löschen</button>
+        </form>
+        
         <h2>Plugin Update</h2>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <?php wp_nonce_field('openxe_ticket_portal_update', 'openxe_ticket_portal_update_nonce'); ?>
