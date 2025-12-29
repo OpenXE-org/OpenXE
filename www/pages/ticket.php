@@ -664,7 +664,7 @@ class Ticket {
                     frames.forEach(function(f) {
                         try {
                             var h = f.contentWindow.document.body.scrollHeight;
-                            if (h > 0 && Math.abs(f.offsetHeight - h) > 5) f.style.height = h + "px";
+                            if (h > 0 && Math.abs(f.offsetHeight - h) > 5) f.style.height = (h + 20) + "px"; // +20px padding
                         } catch(e) {}
                     });
                 }, 1000);
