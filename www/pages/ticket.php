@@ -532,8 +532,8 @@ class Ticket {
     function add_messages_tpl($ticket_id, $messages, $showdrafts) {
 
         // Chat-Container Start
-        echo '<div class="ticket-chat-container">';
-        echo '<div class="chat-messages-wrapper" id="chatMessagesWrapper">';
+        $html = '<div class="ticket-chat-container">';
+        $html .= '<div class="chat-messages-wrapper" id="chatMessagesWrapper">';
 
         $lastDate = null;
 
@@ -541,10 +541,6 @@ class Ticket {
         foreach ($messages as $message) {
 
             $message['betreff'] = strip_tags($message['betreff'] ?? ''); //+ #20230916 XSS
-
-            // Clear this first
-            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");
-            $this->app->Tpl->Set('NACHRICHT_CC',"");
 
             if (empty($message['betreff'])) {
                 $message['betreff'] = "...";
@@ -574,42 +570,70 @@ class Ticket {
                 if ($messageDate === $today) $dateLabel = 'Heute';
                 elseif ($messageDate === $yesterday) $dateLabel = 'Gestern';
                 
-                echo '<div class="chat-date-separator"><span>' . $dateLabel . '</span></div>';
+                $html .= '<div class="chat-date-separator"><span>' . $dateLabel . '</span></div>';
                 $lastDate = $messageDate;
             }
 
-            $this->app->Tpl->Set("BUBBLE_DIRECTION", $direction);
-            $this->app->Tpl->Set("SENDER_NAME", htmlentities($senderName));
-            $this->app->Tpl->Set("SENDER_ICON", $senderIcon);
-            $this->app->Tpl->Set("MESSAGE_TIME", $messageTime);
+            // Build message HTML directly
+            $html .= '<div class="chat-bubble ' . $direction . '">';
+            $html .= '  <div class="bubble-avatar" title="' . htmlentities($senderName) . '">';
+            $html .= '    <span class="avatar-icon">' . $senderIcon . '</span>';
+            $html .= '  </div>';
+            $html .= '  <div class="bubble-content">';
+            $html .= '    <div class="bubble-header">';
+            $html .= '      <span class="bubble-sender">' . htmlentities($senderName) . '</span>';
+            $html .= '      <span class="bubble-time">' . $messageTime . '</span>';
+            $html .= '    </div>';
 
-            // CC Information
+            // Subject/Betreff
+            $betreffPrefix = (is_null($message['zeitausgang']) && $isOutgoing) ? " (Entwurf)" : "";
+            if (!empty($message['textausgang'])) {
+                $html .= '    <div class="bubble-subject">';
+                $html .= '      <a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>';
+                $html .= '    </div>';
+            } else {
+                $html .= '    <div class="bubble-subject">';
+                $html .= '      <a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).$betreffPrefix.'</a>';
+                $html .= '    </div>';
+            }
+
+            // Message Text (iframe)
+            $html .= '    <div class="bubble-text">';
+            if (!empty($message['textausgang'])) {
+                $html .= '      <iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>';
+            } else {
+                $html .= '      <iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>';
+            }
+            $html .= '    </div>';
+
+            // Attachments
+            ob_start();
+            $this->add_attachments_html($ticket_id, $message['id'], 'NACHRICHT_ANHANG', false);
+            $attachmentsHtml = $this->app->Tpl->Get('NACHRICHT_ANHANG');
+            $this->app->Tpl->Set('NACHRICHT_ANHANG', ''); // Clear for next iteration
+            ob_end_clean();
+            
+            if (!empty($attachmentsHtml)) {
+                $html .= '    <div class="bubble-attachments">' . $attachmentsHtml . '</div>';
+            }
+
+            // CC Info
             $cc = $isOutgoing ? ($message['mail_cc'] ?? '') : ($message['mail_cc_recipients'] ?? '');
             if (!empty($cc)) {
-                $this->app->Tpl->Set("NACHRICHT_CC", "CC: " . htmlentities($cc));
+                $html .= '    <div class="bubble-cc">CC: ' . htmlentities($cc) . '</div>';
             }
 
-            // Xentral 20 compatibility & Message Rendering
-            if (!empty($message['textausgang'])) {
-              $this->app->Tpl->Set("NACHRICHT_BETREFF", '<a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
-              $this->app->Tpl->Set("NACHRICHT_TEXT", '<iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>');
-            } else {
-              $betreffPrefix = (is_null($message['zeitausgang']) && $isOutgoing) ? " (Entwurf)" : "";
-              $this->app->Tpl->Set("NACHRICHT_BETREFF", '<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).$betreffPrefix.'</a>');
-              $this->app->Tpl->Set("NACHRICHT_TEXT", '<iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>');
-            }
-
-            $this->add_attachments_html($ticket_id, $message['id'], 'NACHRICHT_ANHANG', false);
-            $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
+            $html .= '  </div>'; // .bubble-content
+            $html .= '</div>'; // .chat-bubble
         }
 
         // Chat-Container End + Floating Button
-        echo '</div>'; // .chat-messages-wrapper
-        echo '<button class="chat-scroll-bottom" id="chatScrollBtn" onclick="document.getElementById(\'chatMessagesWrapper\').scrollTop = document.getElementById(\'chatMessagesWrapper\').scrollHeight">↓</button>';
-        echo '</div>'; // .ticket-chat-container
+        $html .= '</div>'; // .chat-messages-wrapper
+        $html .= '<button class="chat-scroll-bottom" id="chatScrollBtn" onclick="document.getElementById(\'chatMessagesWrapper\').scrollTop = document.getElementById(\'chatMessagesWrapper\').scrollHeight">↓</button>';
+        $html .= '</div>'; // .ticket-chat-container
 
         // Inline JS for Scroll Visibility and iFrame resizing
-        echo '<script>
+        $html .= '<script>
             (function() {
                 var w = document.getElementById("chatMessagesWrapper");
                 var b = document.getElementById("chatScrollBtn");
@@ -621,13 +645,7 @@ class Ticket {
                     };
                 }
                 
-                // iFrame Auto-Height - Premium execution
-                window.addEventListener("message", function(e) {
-                    // Handle height updates if cross-domain isn\'t an issue 
-                    // or just use a robust interval/observer approach for local frames
-                });
-
-                // Periodic check for local frames
+                // iFrame Auto-Height
                 setInterval(function() {
                     var frames = document.querySelectorAll(".ticket_text");
                     frames.forEach(function(f) {
@@ -639,6 +657,9 @@ class Ticket {
                 }, 1000);
             })();
         </script>';
+
+        // Output the complete HTML to the MESSAGES placeholder
+        $this->app->Tpl->Set('MESSAGES', $html);
     }
 
     function ticket_text() {
