@@ -39,6 +39,7 @@ class OpenXE_Ticket_Portal_AJAX {
 
         if (($token === '' && $ticketNumber === '') || $verifierType === '') {
             wp_send_json_error(['message' => 'invalid_request_params'], 400);
+            return;
         }
 
         $payload = [
@@ -55,7 +56,10 @@ class OpenXE_Ticket_Portal_AJAX {
         check_ajax_referer('openxe_ticket_portal', 'nonce');
         openxe_ticket_portal_apply_rate_limit('magic');
         $magicToken = sanitize_text_field(wp_unslash($_POST['magic_token'] ?? ''));
-        if ($magicToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($magicToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_magic', ['magic_token' => $magicToken]);
     }
 
@@ -63,7 +67,10 @@ class OpenXE_Ticket_Portal_AJAX {
         check_ajax_referer('openxe_ticket_portal', 'nonce');
         openxe_ticket_portal_apply_rate_limit('status');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
-        if ($sessionToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_status', ['session_token' => $sessionToken]);
     }
 
@@ -71,7 +78,10 @@ class OpenXE_Ticket_Portal_AJAX {
         check_ajax_referer('openxe_ticket_portal', 'nonce');
         openxe_ticket_portal_apply_rate_limit('messages');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
-        if ($sessionToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_messages', ['session_token' => $sessionToken]);
     }
 
@@ -80,7 +90,10 @@ class OpenXE_Ticket_Portal_AJAX {
         openxe_ticket_portal_apply_rate_limit('message');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
         $text = sanitize_textarea_field(wp_unslash($_POST['text'] ?? ''));
-        if ($sessionToken === '' || $text === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '' || $text === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_message', [
             'session_token' => $sessionToken,
             'text' => $text,
@@ -91,7 +104,10 @@ class OpenXE_Ticket_Portal_AJAX {
         check_ajax_referer('openxe_ticket_portal', 'nonce');
         openxe_ticket_portal_apply_rate_limit('offers');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
-        if ($sessionToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_offers', ['session_token' => $sessionToken]);
     }
 
@@ -103,7 +119,10 @@ class OpenXE_Ticket_Portal_AJAX {
         $action = sanitize_text_field(wp_unslash($_POST['offer_action'] ?? ''));
         $comment = sanitize_textarea_field(wp_unslash($_POST['comment'] ?? ''));
         $agbVersion = sanitize_text_field(wp_unslash($_POST['agb_version'] ?? ''));
-        if ($sessionToken === '' || $offerId === '' || $action === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '' || $offerId === '' || $action === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_offer', [
             'session_token' => $sessionToken,
             'angebot_id' => $offerId,
@@ -117,7 +136,10 @@ class OpenXE_Ticket_Portal_AJAX {
         check_ajax_referer('openxe_ticket_portal', 'nonce');
         openxe_ticket_portal_apply_rate_limit('notifications_get');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
-        if ($sessionToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_notifications', ['session_token' => $sessionToken]);
     }
 
@@ -126,7 +148,10 @@ class OpenXE_Ticket_Portal_AJAX {
         openxe_ticket_portal_apply_rate_limit('notifications_set');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
         $selectedRaw = wp_unslash($_POST['selected'] ?? '');
-        if ($sessionToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken ===  '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         $selected = json_decode((string)$selectedRaw, true);
         if (!is_array($selected)) $selected = [];
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_notification', [
@@ -139,7 +164,10 @@ class OpenXE_Ticket_Portal_AJAX {
         check_ajax_referer('openxe_ticket_portal', 'nonce');
         openxe_ticket_portal_apply_rate_limit('media');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
-        if ($sessionToken === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken ===  '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy('portal_media', ['session_token' => $sessionToken]);
     }
 
@@ -148,7 +176,10 @@ class OpenXE_Ticket_Portal_AJAX {
         openxe_ticket_portal_apply_rate_limit('media_download');
         $sessionToken = sanitize_text_field(wp_unslash($_POST['session_token'] ?? ''));
         $mediaId = sanitize_text_field(wp_unslash($_POST['media_id'] ?? ''));
-        if ($sessionToken === '' || $mediaId === '') wp_send_json_error(['message' => 'invalid_request'], 400);
+        if ($sessionToken === '' || $mediaId === '') {
+            wp_send_json_error(['message' => 'invalid_request'], 400);
+            return;
+        }
         OpenXE_Ticket_Portal_Remote_API::proxy_binary('portal_media_download', [
             'session_token' => $sessionToken,
             'media_id' => $mediaId,
