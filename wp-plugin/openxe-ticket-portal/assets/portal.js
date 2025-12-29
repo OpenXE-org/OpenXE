@@ -65,12 +65,18 @@
       body: data
     }).then(function (response) {
       return response.json().then(function (json) {
-        if (json.success) cache.set(cacheKey, json);
+        if (json.success) {
+          cache.set(cacheKey, json);
+        } else {
+          console.error('[OpenXE Portal] AJAX Error:', action, json);
+        }
         return json;
-      }).catch(function () {
+      }).catch(function (err) {
+        console.error('[OpenXE Portal] JSON Parse Error:', action, err);
         return { success: false, data: { message: 'invalid_response' } };
       });
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error('[OpenXE Portal] Fetch Error:', action, err);
       return { success: false, data: { message: 'request_failed' } };
     });
   }
