@@ -303,6 +303,62 @@
       loadMessages();
       loadMedia();
       loadOffers();
+      loadNotifications();
+    }
+
+    function loadNotifications() {
+      if (!sessionToken) return;
+      portalAjax(config, 'openxe_ticket_portal_notifications', { session_token: sessionToken }).then(function (resp) {
+        if (!resp.success) return;
+        var container = qs('.oxp-notifications-list', root);
+        if (!container) return;
+
+        var data = resp.data || {};
+        var statuses = data.statuses || [];
+        var defaultAll = data.default_all || false;
+
+        container.innerHTML = '';
+        if (!statuses.length) {
+          container.innerHTML = '<p>Keine Benachrichtigungsoptionen verfügbar.</p>';
+          return;
+        }
+
+        statuses.forEach(function (status) {
+          var label = document.createElement('label');
+          label.className = 'oxp-notification-item';
+          var checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = status.key;
+          checkbox.checked = status.enabled || defaultAll;
+          checkbox.className = 'oxp-notification-checkbox';
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(' ' + status.label));
+          container.appendChild(label);
+        });
+      });
+    }
+
+    function saveNotifications() {
+      if (!sessionToken) return;
+      var checkboxes = qsa('.oxp-notification-checkbox', root);
+      var selected = checkboxes.filter(function (cb) { return cb.checked; }).map(function (cb) { return cb.value; });
+
+      var notifyMsg = qs('.oxp-notifications-msg', root);
+      if (notifyMsg) notifyMsg.textContent = 'Speichere...';
+
+      portalAjax(config, 'openxe_ticket_portal_notification_save', {
+        session_token: sessionToken,
+        selected: JSON.stringify(selected)
+      }).then(function (resp) {
+        if (!resp.success) {
+          if (notifyMsg) notifyMsg.textContent = 'Fehler beim Speichern.';
+          return;
+        }
+        if (notifyMsg) {
+          notifyMsg.textContent = 'Gespeichert.';
+          setTimeout(function () { notifyMsg.textContent = ''; }, 2000);
+        }
+      });
     }
 
     function loadMedia() {
@@ -338,12 +394,18 @@
       });
     });
 
-    qs('.oxp-refresh', root).addEventListener('click', debounce(function () {
+    qs('.oxp-refresh', root).addEventListener('click', function () {
       cache.clear();
       loadStatus();
       loadMessages();
       loadOffers();
-    }, 300));
+      loadNotifications();
+    });
+
+    var notificationsSaveBtn = qs('.oxp-notifications-save', root);
+    if (notificationsSaveBtn) {
+      notificationsSaveBtn.addEventListener('click', saveNotifications);
+    }
 
     qs('.oxp-send', root).addEventListener('click', function () {
       var text = messageText.value.trim();

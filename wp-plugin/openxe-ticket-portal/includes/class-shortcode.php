@@ -80,21 +80,30 @@ class OpenXE_Ticket_Portal_Shortcode {
                         <div class="oxp-status-updated"></div>
                     </section>
 
-                    <section class="oxp-ticket-details" aria-labelledby="oxp-ticket-details-title">
-                        <h3 id="oxp-ticket-details-title"><?php _e('Ticket-Details', 'openxe-ticket-portal'); ?></h3>
-                        <div class="oxp-detail-row">
-                            <span class="oxp-detail-label"><?php _e('Ticketnummer:', 'openxe-ticket-portal'); ?></span>
-                            <span class="oxp-ticket-number-display"></span>
-                        </div>
-                        <div class="oxp-detail-row">
-                            <span class="oxp-detail-label"><?php _e('Kunde:', 'openxe-ticket-portal'); ?></span>
-                            <span class="oxp-customer-name"></span>
-                        </div>
-                        <div class="oxp-detail-row">
-                            <span class="oxp-detail-label"><?php _e('Adresse:', 'openxe-ticket-portal'); ?></span>
-                            <span class="oxp-customer-address"></span>
-                        </div>
-                    </section>
+                    <div class="oxp-details-grid">
+                        <section class="oxp-ticket-details" aria-labelledby="oxp-ticket-details-title">
+                            <h3 id="oxp-ticket-details-title"><?php _e('Ticket-Details', 'openxe-ticket-portal'); ?></h3>
+                            <div class="oxp-detail-row">
+                                <span class="oxp-detail-label"><?php _e('Ticketnummer:', 'openxe-ticket-portal'); ?></span>
+                                <span class="oxp-ticket-number-display"></span>
+                            </div>
+                            <div class="oxp-detail-row">
+                                <span class="oxp-detail-label"><?php _e('Kunde:', 'openxe-ticket-portal'); ?></span>
+                                <span class="oxp-customer-name"></span>
+                            </div>
+                            <div class="oxp-detail-row">
+                                <span class="oxp-detail-label"><?php _e('Adresse:', 'openxe-ticket-portal'); ?></span>
+                                <span class="oxp-customer-address"></span>
+                            </div>
+                        </section>
+                        
+                        <section class="oxp-notifications" aria-labelledby="oxp-notify-title">
+                            <h3 id="oxp-notify-title"><?php _e('Benachrichtigungen', 'openxe-ticket-portal'); ?></h3>
+                            <div class="oxp-notifications-list" role="group"></div>
+                            <button type="button" class="oxp-notifications-save"><?php _e('Speichern', 'openxe-ticket-portal'); ?></button>
+                            <div class="oxp-notifications-msg" role="status"></div>
+                        </section>
+                    </div>
                     
                     <div class="oxp-actions" role="toolbar" aria-label="<?php esc_attr_e('Portal Aktionen', 'openxe-ticket-portal'); ?>">
                         <button type="button" class="oxp-refresh"><?php _e('Aktualisieren', 'openxe-ticket-portal'); ?></button>
@@ -103,13 +112,6 @@ class OpenXE_Ticket_Portal_Shortcode {
                         <button type="button" class="oxp-offer-toggle"><?php _e('Angebot bestätigen', 'openxe-ticket-portal'); ?></button>
                     </div>
 
-                    <section class="oxp-notifications" aria-labelledby="oxp-notify-title">
-                        <h3 id="oxp-notify-title"><?php _e('Benachrichtigungen', 'openxe-ticket-portal'); ?></h3>
-                        <div class="oxp-notifications-list" role="group"></div>
-                        <button type="button" class="oxp-notifications-save"><?php _e('Speichern', 'openxe-ticket-portal'); ?></button>
-                        <div class="oxp-notifications-msg" role="status"></div>
-                    </section>
-                    
                     <section class="oxp-media" aria-labelledby="oxp-media-title">
                         <h3 id="oxp-media-title"><?php _e('Dokumente & Bilder', 'openxe-ticket-portal'); ?></h3>
                         <div class="oxp-media-list"></div>

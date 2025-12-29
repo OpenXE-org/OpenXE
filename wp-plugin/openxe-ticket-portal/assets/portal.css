@@ -161,6 +161,62 @@
   flex: 1;
 }
 
+/* Two-Column Grid Layout */
+.oxp-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .oxp-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Notifications Section */
+.oxp-notifications {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.oxp-notifications h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #333;
+}
+
+.oxp-notifications-list {
+  margin-bottom: 16px;
+}
+
+.oxp-notification-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.oxp-notification-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.oxp-notifications-save {
+  margin-top: 12px;
+}
+
+.oxp-notifications-msg {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
 .openxe-portal .oxp-messages {
   border: 1px solid var(--oxp-border);
   border-radius: var(--oxp-radius);
