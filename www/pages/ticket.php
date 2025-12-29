@@ -554,7 +554,13 @@ class Ticket {
             // Direction & Alignment Logic (King-Mode: Customer Left / Team Right)
             // Portal messages FROM customer = incoming (left)
             // Team messages TO customer = outgoing (right)
-            $isOutgoing = ($message['versendet'] == '1' || !empty($message['textausgang']));
+            // KEY: verfasser="Portal" means it's a TEAM message created in backend
+            $isOutgoing = (
+                $message['versendet'] == '1' || 
+                !empty($message['textausgang']) ||
+                ($message['verfasser'] ?? '') === 'Portal' ||
+                !empty($message['bearbeiter'])
+            );
             $direction = $isOutgoing ? 'outgoing' : 'incoming';
             $senderName = $isOutgoing ? ($message['bearbeiter'] ?: 'Team') : ($message['verfasser'] ?: 'Kunde');
             $senderIcon = $isOutgoing ? '👤' : '📧';
