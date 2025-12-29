@@ -2844,11 +2844,34 @@ class Ticket {
       $statusLabel = $labels[$statusKey] ?? $statusKey;
       $updatedAt = null;
     }
+    
+    // Get customer address details
+    $customerName = '';
+    $customerStreet = '';
+    $customerZip = '';
+    $customerCity = '';
+    if (!empty($ticket['adresse'])) {
+      $addressId = (int)$ticket['adresse'];
+      $addressData = $this->app->DB->SelectRow(
+        "SELECT name, strasse, plz, ort FROM adresse WHERE id = $addressId LIMIT 1"
+      );
+      if ($addressData) {
+        $customerName = $addressData['name'] ?? '';
+        $customerStreet = $addressData['strasse'] ?? '';
+        $customerZip = $addressData['plz'] ?? '';
+        $customerCity = $addressData['ort'] ?? '';
+      }
+    }
+    
     $this->portalJsonResponse([
       'ticket_number' => $ticket['schluessel'],
       'status_key' => $statusKey,
       'status_label' => $statusLabel,
       'updated_at' => $updatedAt,
+      'customer_name' => $customerName,
+      'customer_street' => $customerStreet,
+      'customer_zip' => $customerZip,
+      'customer_city' => $customerCity,
     ]);
   }
 
