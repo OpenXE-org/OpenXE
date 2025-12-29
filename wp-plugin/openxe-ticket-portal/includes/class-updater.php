@@ -69,7 +69,8 @@ class OpenXE_Ticket_Portal_Updater {
             self::redirect_error($redirect, $sourceDir->get_error_message());
         }
 
-        $targetDir = rtrim(plugin_dir_path(OPENXE_TICKET_PORTAL_DIR), '/\\');
+        // Target is the current plugin directory
+        $targetDir = rtrim(OPENXE_TICKET_PORTAL_DIR, '/\\');
         $copyResult = copy_dir($sourceDir, $targetDir);
         self::cleanup_dir($workDir);
 
@@ -161,7 +162,7 @@ class OpenXE_Ticket_Portal_Updater {
         }
         check_admin_referer('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce');
 
-        $redirect = admin_url('options-general.php?page=openxe-ticket-portal');
+        $redirect = admin_url('options-general.php?page=openxe-ticket-portal&tab=general');
         $logPath = openxe_ticket_portal_get_log_path();
 
         if (file_exists($logPath)) {
