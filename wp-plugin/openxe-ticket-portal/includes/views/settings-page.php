@@ -32,6 +32,14 @@ $updateNotice = openxe_ticket_portal_get_update_notice();
 $downloadUrl = OpenXE_Ticket_Portal_Settings::get_base_url() . '/index.php?module=ticket&action=portal_plugin_download';
 $canUpdate = $downloadUrl !== '' && $sharedSecret !== '';
 
+// Log clear notice
+$logClearStatus = sanitize_text_field(wp_unslash($_GET['openxe_ticket_portal_log_cleared'] ?? ''));
+$logClearMsg = sanitize_text_field(wp_unslash($_GET['openxe_ticket_portal_log_msg'] ?? ''));
+$logClearNotice = null;
+if ($logClearStatus !== '' && in_array($logClearStatus, ['success', 'error', 'info'], true)) {
+    $logClearNotice = ['status' => $logClearStatus, 'message' => $logClearMsg];
+}
+
 ?>
 <div class="wrap">
     <h1>OpenXE Ticket Portal</h1>
@@ -44,6 +52,12 @@ $canUpdate = $downloadUrl !== '' && $sharedSecret !== '';
     <?php if ($updateNotice) : ?>
         <div class="notice notice-<?php echo $updateNotice['status'] === 'success' ? 'success' : 'error'; ?> is-dismissible">
             <p><?php echo esc_html($updateNotice['message']); ?></p>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($logClearNotice) : ?>
+        <div class="notice notice-<?php echo $logClearNotice['status'] === 'error' ? 'error' : ($logClearNotice['status'] === 'info' ? 'info' : 'success'); ?> is-dismissible">
+            <p><?php echo esc_html($logClearNotice['message']); ?></p>
         </div>
     <?php endif; ?>
 
@@ -79,6 +93,13 @@ $canUpdate = $downloadUrl !== '' && $sharedSecret !== '';
                     <th scope="row">Logauszug</th>
                     <td>
                         <textarea readonly rows="8" class="large-text"><?php echo $logContent; ?></textarea>
+                        <p class="description">
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;" onsubmit="return confirm('Log wirklich löschen?');">
+                                <?php wp_nonce_field('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce'); ?>
+                                <input type="hidden" name="action" value="openxe_ticket_portal_clear_log">
+                                <button type="submit" class="button button-secondary">Log löschen</button>
+                            </form>
+                        </p>
                     </td>
                 </tr>
                 <tr>

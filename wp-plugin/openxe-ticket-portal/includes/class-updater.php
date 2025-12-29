@@ -13,6 +13,7 @@ class OpenXE_Ticket_Portal_Updater {
      */
     public static function register(): void {
         add_action('admin_post_openxe_ticket_portal_update', [self::class, 'handle_update']);
+        add_action('admin_post_openxe_ticket_portal_clear_log', [self::class, 'handle_clear_log']);
     }
 
     /**
@@ -148,6 +149,33 @@ class OpenXE_Ticket_Portal_Updater {
 
     private static function redirect_error(string $url, string $msg): void {
         wp_safe_redirect(add_query_arg(['openxe_ticket_portal_update' => 'error', 'openxe_ticket_portal_update_msg' => $msg], $url));
+        exit;
+    }
+
+    /**
+     * Handle log clearing
+     */
+    public static function handle_clear_log(): void {
+        if (!current_user_can('manage_options')) {
+            wp_die('forbidden');
+        }
+        check_admin_referer('openxe_ticket_portal_clear_log', 'openxe_ticket_portal_clear_log_nonce');
+
+        $redirect = admin_url('options-general.php?page=openxe-ticket-portal');
+        $logPath = openxe_ticket_portal_get_log_path();
+
+        if (file_exists($logPath)) {
+            if (@unlink($logPath)) {
+                $msg = 'Log gelöscht.';
+                wp_safe_redirect(add_query_arg(['openxe_ticket_portal_log_cleared' => 'success', 'openxe_ticket_portal_log_msg' => $msg], $redirect));
+            } else {
+                $msg = 'Log konnte nicht gelöscht werden.';
+                wp_safe_redirect(add_query_arg(['openxe_ticket_portal_log_cleared' => 'error', 'openxe_ticket_portal_log_msg' => $msg], $redirect));
+            }
+        } else {
+            $msg = 'Keine Log-Datei vorhanden.';
+            wp_safe_redirect(add_query_arg(['openxe_ticket_portal_log_cleared' => 'info', 'openxe_ticket_portal_log_msg' => $msg], $redirect));
+        }
         exit;
     }
 }
