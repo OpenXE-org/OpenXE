@@ -2728,7 +2728,7 @@ ul.tag-editor {
 .chat-bubble {
     display: flex;
     gap: 12px;
-    max-width: 95%;
+    width: 100%;
     margin-bottom: 4px;
     animation: slideUpFade 0.3s ease-out forwards;
 }
@@ -2763,13 +2763,13 @@ ul.tag-editor {
 }
 
 .bubble-content {
+    flex: 1;
     background: var(--chat-bubble-in);
     padding: 12px 16px;
     border-radius: 18px;
     box-shadow: var(--chat-shadow);
     border: 1px solid var(--chat-border);
     position: relative;
-    max-width: 100%;
 }
 
 .chat-bubble.incoming .bubble-content {
