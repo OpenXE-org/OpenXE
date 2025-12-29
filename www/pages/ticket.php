@@ -588,7 +588,11 @@ class Ticket {
             $html .= '    </div>';
 
             // DEBUG: Visible debug info
-            $debugInfo = 'versendet=' . ($message['versendet'] ?? 'NULL') . ' | textausgang=' . (empty($message['textausgang']) ? 'EMPTY' : 'SET') . ' | dir=' . $direction;
+            $debugInfo = 'versendet=' . ($message['versendet'] ?? 'NULL') . 
+                         ' | textausgang=' . (empty($message['textausgang']) ? 'EMPTY' : 'SET') . 
+                         ' | bearbeiter=' . ($message['bearbeiter'] ?? 'NULL') . 
+                         ' | verfasser=' . ($message['verfasser'] ?? 'NULL') .
+                         ' | dir=' . $direction;
             $html .= '    <div style="font-size: 9px; color: #666; background: #ffffcc; padding: 3px 6px; border-radius: 3px; margin-bottom: 6px; border: 1px solid #ffcc00;">' . $debugInfo . '</div>';
             
             // Subject/Betreff - Skip "Portal Nachricht" default
