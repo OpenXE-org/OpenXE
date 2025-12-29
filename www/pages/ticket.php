@@ -3454,7 +3454,7 @@ class Ticket {
       }
       $path = $file->getPathname();
       $relative = substr($path, $pluginDirLength);
-      $zip->addFile($path, $relative);
+      $zip->addFile($path, 'openxe-ticket-portal/' . $relative);
     }
     $zip->close();
 
