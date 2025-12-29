@@ -93,11 +93,6 @@ function openxe_ticket_portal_sanitize_log_context($value) {
 }
 
 function openxe_ticket_portal_log(string $message, array $context = []): void {
-    // Always use error_log for critical errors
-    if (in_array($message, ['remote_error', 'remote_response_error'], true)) {
-        error_log('[OpenXE Portal Log] ' . $message . ': ' . json_encode($context));
-    }
-    
     if (!OpenXE_Ticket_Portal_Settings::is_log_enabled()) {
         return;
     }

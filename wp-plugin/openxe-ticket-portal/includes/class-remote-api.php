@@ -53,16 +53,12 @@ class OpenXE_Ticket_Portal_Remote_API {
         $result = self::remote($action, $payload);
 
         if (is_wp_error($result)) {
-            $errorMsg = $result->get_error_message();
-            $logContext = [
+            openxe_ticket_portal_log('remote_error', [
                 'action' => $action,
-                'error' => $errorMsg,
+                'error' => $result->get_error_message(),
                 'payload_keys' => array_keys($payload),
-            ];
-            // Always log errors, regardless of settings
-            error_log('[OpenXE Portal] Remote Error: ' . $errorMsg . ' | Action: ' . $action);
-            openxe_ticket_portal_log('remote_error', $logContext);
-            wp_send_json_error(['message' => $errorMsg], 500);
+            ]);
+            wp_send_json_error(['message' => $result->get_error_message()], 500);
         }
 
         $code = (int)$result['code'];
@@ -70,16 +66,13 @@ class OpenXE_Ticket_Portal_Remote_API {
 
         if ($code < 200 || $code >= 300) {
             $message = is_array($data) && !empty($data['error']) ? (string)$data['error'] : 'request_failed';
-            $logContext = [
+            openxe_ticket_portal_log('remote_response_error', [
                 'action' => $action,
                 'status' => $code,
                 'message' => $message,
                 'payload_keys' => array_keys($payload),
                 'response' => $data,
-            ];
-            // Always log HTTP errors
-            error_log('[OpenXE Portal] HTTP Error ' . $code . ': ' . $message . ' | Action: ' . $action);
-            openxe_ticket_portal_log('remote_response_error', $logContext);
+            ]);
             wp_send_json_error(['message' => $message, 'data' => $data], $code ?: 500);
         }
 
