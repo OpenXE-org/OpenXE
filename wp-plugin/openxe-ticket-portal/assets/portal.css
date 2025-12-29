@@ -102,27 +102,35 @@
   margin: 16px 0;
 }
 
-.openxe-portal .oxp-status {
-  padding: 12px;
-  border: 1px dashed var(--oxp-border);
-  border-radius: var(--oxp-radius);
+/* Status Section */
+.oxp-status {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  padding: 28px 32px;
+  margin-bottom: 32px;
 }
 
-.openxe-portal .oxp-status-label {
-  font-size: 12px;
+.oxp-status h3 {
+  margin-top: 0;
+  color: white;
+}
+
+.oxp-status-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--oxp-text-muted);
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
-.openxe-portal .oxp-status-value {
-  font-size: 18px;
+.oxp-status-value {
+  font-size: 24px;
   font-weight: 700;
-  margin-top: 6px;
-}
-
-color: white;
-margin-bottom: 8px;
+  color: white;
+  margin-bottom: 8px;
 }
 
 .oxp-status-updated {
