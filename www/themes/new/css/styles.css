@@ -2728,7 +2728,7 @@ ul.tag-editor {
 .chat-bubble {
     display: flex;
     gap: 12px;
-    max-width: 85%;
+    max-width: 95%;
     margin-bottom: 4px;
     animation: slideUpFade 0.3s ease-out forwards;
 }
@@ -4198,8 +4198,7 @@ b.red {
 }
 
 a.ui-tabs-anchor:hover {
-    color: #6d6d6f;
-    !important;
+    color: #6d6d6f !important;
 }
 
 
