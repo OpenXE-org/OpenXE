@@ -552,6 +552,8 @@ class Ticket {
             }
 
             // Direction & Alignment Logic (King-Mode: Customer Left / Team Right)
+            // Portal messages FROM customer = incoming (left)
+            // Team messages TO customer = outgoing (right)
             $isOutgoing = ($message['versendet'] == '1' || !empty($message['textausgang']));
             $direction = $isOutgoing ? 'outgoing' : 'incoming';
             $senderName = $isOutgoing ? ($message['bearbeiter'] ?: 'Team') : ($message['verfasser'] ?: 'Kunde');
@@ -585,16 +587,27 @@ class Ticket {
             $html .= '      <span class="bubble-time">' . $messageTime . '</span>';
             $html .= '    </div>';
 
-            // Subject/Betreff
+            // DEBUG: Add message data info (temporary)
+            $debugInfo = 'versendet=' . ($message['versendet'] ?? 'null') . ' | textausgang=' . (empty($message['textausgang']) ? 'empty' : 'set');
+            
+            // Subject/Betreff - Skip "Portal Nachricht" default
+            $displayBetreff = $message['betreff'];
+            if ($displayBetreff === 'Portal Nachricht') {
+                $displayBetreff = ''; // Skip default portal subject
+            }
+            
             $betreffPrefix = (is_null($message['zeitausgang']) && $isOutgoing) ? " (Entwurf)" : "";
-            if (!empty($message['textausgang'])) {
-                $html .= '    <div class="bubble-subject">';
-                $html .= '      <a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>';
-                $html .= '    </div>';
-            } else {
-                $html .= '    <div class="bubble-subject">';
-                $html .= '      <a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).$betreffPrefix.'</a>';
-                $html .= '    </div>';
+            
+            if (!empty($displayBetreff)) {
+                if (!empty($message['textausgang'])) {
+                    $html .= '    <div class="bubble-subject">';
+                    $html .= '      <a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($displayBetreff).'</a>';
+                    $html .= '    </div>';
+                } else {
+                    $html .= '    <div class="bubble-subject">';
+                    $html .= '      <a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($displayBetreff).$betreffPrefix.'</a>';
+                    $html .= '    </div>';
+                }
             }
 
             // Message Text (iframe)
