@@ -133,6 +133,20 @@
                 </div>
             </div>
 
+            <div class="compare-row" [ROLLBACK_VISIBLE]>
+                <div class="status-col" style="flex:1;min-width:320px;">
+                    <div class="card" style="height:100%;border:2px solid #d89216;">
+                        <legend><strong>{|Rollback & Wiederherstellung|}</strong></legend>
+                        <div class="hint" style="margin-bottom:12px;color:#8a4b0f;">
+                            ⚠️ <strong>Vorsicht:</strong> Rollback setzt nur den Code zurück. Datenbank-Änderungen werden NICHT rückgängig gemacht!
+                        </div>
+                        <div style="margin-bottom:8px;"><strong>Verfügbare Wiederherstellungspunkte:</strong></div>
+                        [ROLLBACK_TAGS_SELECT]
+                        <button name="submit" value="rollback_to_tag" class="ui-button-icon action-btn" style="background:#d89216;border-color:#8a4b0f;" onclick="return confirm('Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!');">🔙 Rollback durchführen</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="log-section">
                 <div class="card">
                     <legend><strong>{|Protokoll|}</strong></legend>
