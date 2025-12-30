@@ -523,6 +523,12 @@ class upgrade {
         $this->app->Tpl->Set('STATUS_LEVEL', $status_level);
         $this->app->Tpl->Set('STATUS_MESSAGE', $status_message);
         $this->app->Tpl->Set('GUIDANCE_TITLE', $guidance_title);
+        $this->app->Tpl->Set('LOCAL_HASH', $local_hash);
+        $this->app->Tpl->Set('LOCAL_HASH_SHORT', $local_hash_short);
+        $this->app->Tpl->Set('LOCAL_COMMIT', $local_commit);
+        $this->app->Tpl->Set('REMOTE_HASH_SHORT', $remote_hash_short);
+        $this->app->Tpl->Set('LOCAL_BRANCH', $local_branch);
+        $this->app->Tpl->Set('LOCAL_BRANCH_VISIBLE', $show_local_branch ? "" : "hidden");
         $this->app->Tpl->Set('GUIDANCE_MESSAGE', $guidance_message);
         $this->app->Tpl->Set('LAST_ACTION', $last_action);
         $this->app->Tpl->Set('LAST_RUN', $last_run);
