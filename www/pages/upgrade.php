@@ -248,6 +248,26 @@ class upgrade {
                 if (file_exists($logfile)) {
                     unlink($logfile);
                 }
+                
+                // Erstelle Rollback-Tag vor Upgrade
+                if ($git_root !== "") {
+                    $tag_name = 'pre-upgrade-'.date('Y-m-d-H-i-s');
+                    $tag_cmd = 'git -C '.escapeshellarg($git_root).' tag '.escapeshellarg($tag_name).' 2>&1';
+                    $tag_output = shell_exec($tag_cmd);
+                    if ($tag_output === null || trim($tag_output) === "") {
+                        // Tag erfolgreich erstellt
+                        $_SESSION['last_rollback_tag'] = $tag_name;
+                    } else {
+                        // Tag-Erstellung fehlgeschlagen - loggen aber fortfahren
+                        $this->app->erp->LogFile(
+                            'Rollback tag creation failed',
+                            ['tag_name' => $tag_name, 'output' => $tag_output],
+                            'upgrade',
+                            'rollback_tag_error'
+                        );
+                    }
+                }
+                
                 $result_code = upgrade_main(   directory: $directory,
                                                verbose: $verbose,
                                                check_git: true,
@@ -309,6 +329,43 @@ class upgrade {
             break;
             case 'save_remote':
                 $last_action = "Upgrade-Quelle speichern";
+            break;
+            case 'rollback_to_tag':
+                $last_action = "Rollback durchgeführt";
+                $rollback_tag = $this->app->Secure->GetPOST('rollback_tag');
+                
+                if ($git_root !== "" && !empty($rollback_tag)) {
+                    // Validiere Tag-Name (nur pre-upgrade-* Tags erlauben)
+                    if (preg_match('/^pre-upgrade-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/', $rollback_tag)) {
+                        if (file_exists($logfile)) {
+                            unlink($logfile);
+                        }
+                        
+                        // Checkout zum Tag
+                        $checkout_cmd = 'git -C '.escapeshellarg($git_root).' checkout '.escapeshellarg($rollback_tag).' -f 2>&1';
+                        $checkout_output = shell_exec($checkout_cmd);
+                        
+                        file_put_contents($logfile, "=== Rollback to tag: $rollback_tag ===\n");
+                        file_put_contents($logfile, $checkout_output, FILE_APPEND);
+                        
+                        $this->app->erp->LogFile(
+                            'Rollback performed',
+                            ['tag' => $rollback_tag, 'user' => $this->app->User->GetName()],
+                            'upgrade',
+                            'rollback'
+                        );
+                        
+                        $status_headline = "Rollback durchgeführt";
+                        $status_level = "info";
+                        $status_message = "System auf Stand von Tag $rollback_tag zurückgesetzt.";
+                        $guidance_title = "Wichtig";
+                        $guidance_message = "Code wurde zurückgesetzt. DB-Änderungen wurden NICHT rückgängig gemacht!";
+                    } else {
+                        $status_headline = "Ungültiger Tag";
+                        $status_level = "error";
+                        $status_message = "Nur pre-upgrade-* Tags können für Rollback verwendet werden.";
+                    }
+                }
             break;
         }
 
@@ -425,6 +482,30 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_DB_BUTTON_ACTION', $upgrade_db_available ? "do_db_upgrade" : "check_db");
         $this->app->Tpl->Set('UPGRADE_DB_BUTTON_LABEL', $upgrade_db_available ? "DB-Upgrade" : "DB prüfen");
         $this->app->Tpl->Set('UPGRADE_DB_FORCE_VISIBLE', "hidden");
+
+        // Rollback-Tags laden
+        $rollback_tags = [];
+        $rollback_tags_html = "";
+        if ($git_root !== "") {
+            $tags_output = shell_exec('git -C '.escapeshellarg($git_root).' tag -l "pre-upgrade-*" --sort=-creatordate 2>&1');
+            if ($tags_output !== null) {
+                $tags = array_filter(explode("\n", trim($tags_output)));
+                $rollback_tags = array_slice($tags, 0, 10); // Nur letzte 10 Tags
+                
+                if (!empty($rollback_tags)) {
+                    $rollback_tags_html .= '<select name="rollback_tag" class="input-inline" style="margin-bottom:8px;">';
+                    foreach ($rollback_tags as $tag) {
+                        $rollback_tags_html .= '<option value="'.htmlspecialchars($tag).'">'.htmlspecialchars($tag).'</option>';
+                    }
+                    $rollback_tags_html .= '</select>';
+                }
+            }
+        }
+        
+        $has_rollback_tags = !empty($rollback_tags);
+        $this->app->Tpl->Set('ROLLBACK_TAGS_SELECT', $rollback_tags_html);
+        $this->app->Tpl->Set('ROLLBACK_VISIBLE', $has_rollback_tags ? "" : "hidden");
+        $this->app->Tpl->Set('LAST_ROLLBACK_TAG', $_SESSION['last_rollback_tag'] ?? '');
 
         $this->app->Tpl->Set('CURRENT', $this->app->erp->Revision());
         $revision_raw = (string)$this->app->erp->Revision();
