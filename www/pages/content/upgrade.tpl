@@ -140,10 +140,96 @@
 
             <div class="log-section">
                 <div class="card">
-                    <legend><strong>{|Protokoll|}</strong></legend>
-                    <div class="log-box">[OUTPUT_FROM_CLI]</div>
+                    <legend>
+                        <strong>{|Protokoll|}</strong>
+                        <a href="?module=upgrade&action=list&ajax=download_log" class="banner-btn" style="float:right;margin-left:10px;padding:4px 10px;font-size:12px;" download>📥 Log herunterladen</a>
+                        <input type="text" id="log-search" placeholder="Log durchsuchen..." style="float:right;width:200px;padding:4px 8px;margin-left:10px;border:1px solid #ccc;border-radius:4px;" />
+                    </legend>
+                    <div id="upgrade-lock-status" style="display:none;background:#fff4e5;border:1px solid #d89216;border-radius:4px;padding:8px;margin-bottom:8px;color:#8a4b0f;">
+                        <strong>⚠️ Upgrade läuft gerade:</strong> Gestartet von <span id="lock-user">-</span> um <span id="lock-time">-</span>
+                    </div>
+                    <div class="log-box" id="log-box">[OUTPUT_FROM_CLI]</div>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+(function() {
+    var logBox = document.getElementById('log-box');
+    var logSearch = document.getElementById('log-search');
+    var lockStatus = document.getElementById('upgrade-lock-status');
+    var lockUser = document.getElementById('lock-user');
+    var lockTime = document.getElementById('lock-time');
+    var pollingInterval = null;
+    var lastModified = 0;
+    var allLogLines = [];
+    
+    // Log-Search Funktionalität
+    if (logSearch) {
+        logSearch.addEventListener('input', function() {
+            var searchTerm = this.value.toLowerCase();
+            if (searchTerm === '') {
+                logBox.innerHTML = allLogLines.join('<br>');
+            } else {
+                var filtered = allLogLines.filter(function(line) {
+                    return line.toLowerCase().indexOf(searchTerm) !== -1;
+                });
+                logBox.innerHTML = filtered.length > 0 ? filtered.join('<br>') : '<span style="color:#999;">Keine Treffer</span>';
+            }
+        });
+    }
+    
+    // AJAX-Polling-Funktion
+    function pollLogStatus() {
+        fetch('?module=upgrade&action=list&ajax=get_log_status')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Update Log wenn geändert
+                    if (data.last_modified > lastModified) {
+                        lastModified = data.last_modified;
+                        allLogLines = data.log_lines;
+                        
+                        // Nur updaten wenn kein Search aktiv
+                        if (!logSearch || logSearch.value === '') {
+                            logBox.innerHTML = allLogLines.join('<br>');
+                            // Auto-scroll zum Ende
+                            logBox.scrollTop = logBox.scrollHeight;
+                        }
+                    }
+                    
+                    // Lock-Status anzeigen
+                    if (data.is_locked && data.lock_info) {
+                        lockUser.textContent = data.lock_info.user;
+                        lockTime.textContent = data.lock_info.timestamp;
+                        lockStatus.style.display = 'block';
+                    } else {
+                        lockStatus.style.display = 'none';
+                        // Upgrade fertig - Polling stoppen
+                        if (pollingInterval) {
+                            clearInterval(pollingInterval);
+                            pollingInterval = null;
+                        }
+                    }
+                }
+            })
+            .catch(function(err) {
+                console.error('Log polling failed:', err);
+            });
+    }
+    
+    // Starte Polling wenn Seite geladen wird
+    // Prüfe initial, dann alle 2 Sekunden
+    pollLogStatus();
+    pollingInterval = setInterval(pollLogStatus, 2000);
+    
+    // Cleanup beim Verlassen
+    window.addEventListener('beforeunload', function() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+        }
+    });
+})();
+</script>
