@@ -27,10 +27,8 @@
 @media (min-width: 768px) {
   .info-row {grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));}
 }
-.compare-row {display:grid;grid-template-columns:1fr;gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
-@media (min-width: 768px) {
-  .compare-row {grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));}
-}
+.compare-row {display:flex;flex-wrap:wrap;gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
+.compare-row > .card {flex:1;min-width:280px;box-sizing:border-box;}
 .log-section {margin-top:50px;clear:both;position:relative;z-index:0;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
@@ -108,42 +106,33 @@
             </div>
 
             <div class="compare-row">
-                <div class="status-col" style="flex:1;min-width:320px;">
-                    <div class="card" style="height:100%;">
-                        <legend><strong>{|Versionsabgleich|}</strong></legend>
-                        <div class="status-meta"><strong>{|OpenXE-Version:|}</strong> [APP_VERSION]</div>
-                        <div class="status-meta"><strong>{|Code-Stand (Git):|}</strong> <span [LOCAL_BRANCH_VISIBLE]>[LOCAL_BRANCH]&nbsp;</span><span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
-                        <div class="status-meta"><strong>{|Upgrade-Quelle:|}</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
-                        <div class="status-meta"><strong>{|Status:|}</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
-                        <div class="status-meta" style="margin-top:6px;">
-                            <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">{|Quelle auf Original zurücksetzen|}</button>
-                        </div>
+                <div class="card" style="flex:1;min-width:280px;">
+                    <legend><strong>{|Versionsabgleich|}</strong></legend>
+                    <div class="status-meta"><strong>{|OpenXE-Version:|}</strong> [APP_VERSION]</div>
+                    <div class="status-meta"><strong>{|Code-Stand (Git):|}</strong> <span [LOCAL_BRANCH_VISIBLE]>[LOCAL_BRANCH]&nbsp;</span><span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
+                    <div class="status-meta"><strong>{|Upgrade-Quelle:|}</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
+                    <div class="status-meta"><strong>{|Status:|}</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
+                    <div class="status-meta" style="margin-top:6px;">
+                        <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">{|Quelle auf Original zurücksetzen|}</button>
                     </div>
                 </div>
-                <div class="status-col" style="flex:1;min-width:320px;">
-                    <div class="card" style="height:100%;">
-                        <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
-                        <table width="100%" border="0" class="mkTableFormular">
-                            <tr><td colspan=2><div class="hint">{|Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.|}</div></td></tr>
-                            <tr><td>{|Remote-URL:|}</td><td><input class="input-inline" type="text" name="remote_host" value="[REMOTE_HOST]" autocomplete="off"></td></tr>
-                            <tr><td>{|Branch:|}</td><td><input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off"></td></tr>
-                            <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">{|Quelle speichern|}</button></td></tr>
-                        </table>
-                    </div>
+                <div class="card" style="flex:1;min-width:280px;">
+                    <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
+                    <table width="100%" border="0" class="mkTableFormular">
+                        <tr><td colspan=2><div class="hint">{|Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.|}</div></td></tr>
+                        <tr><td>{|Remote-URL:|}</td><td><input class="input-inline" type="text" name="remote_host" value="[REMOTE_HOST]" autocomplete="off"></td></tr>
+                        <tr><td>{|Branch:|}</td><td><input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off"></td></tr>
+                        <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">{|Quelle speichern|}</button></td></tr>
+                    </table>
                 </div>
-            </div>
-
-            <div class="compare-row" [ROLLBACK_VISIBLE]>
-                <div class="status-col" style="flex:1;min-width:320px;">
-                    <div class="card" style="height:100%;border:2px solid #d89216;">
-                        <legend><strong>{|Rollback & Wiederherstellung|}</strong></legend>
-                        <div class="hint" style="margin-bottom:12px;color:#8a4b0f;">
-                            ⚠️ <strong>{|Vorsicht:|}</strong> {|Rollback setzt nur den Code zurück. Datenbank-Änderungen werden NICHT rückgängig gemacht!|}
-                        </div>
-                        <div style="margin-bottom:8px;"><strong>{|Verfügbare Wiederherstellungspunkte:|}</strong></div>
-                        [ROLLBACK_TAGS_SELECT]
-                        <button name="submit" value="rollback_to_tag" class="ui-button-icon action-btn" style="background:#d89216;border-color:#8a4b0f;" onclick="return confirm('{|Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!|}');">🔙 {|Rollback durchführen|}</button>
+                <div class="card" [ROLLBACK_VISIBLE] style="flex:1;min-width:280px;border:2px solid #d89216;">
+                    <legend><strong>{|Rollback & Wiederherstellung|}</strong></legend>
+                    <div class="hint" style="margin-bottom:12px;color:#8a4b0f;">
+                        ⚠️ <strong>{|Vorsicht:|}</strong> {|Rollback setzt nur den Code zurück. Datenbank-Änderungen werden NICHT rückgängig gemacht!|}
                     </div>
+                    <div style="margin-bottom:8px;"><strong>{|Verfügbare Wiederherstellungspunkte:|}</strong></div>
+                    [ROLLBACK_TAGS_SELECT]
+                    <button name="submit" value="rollback_to_tag" class="ui-button-icon action-btn" style="background:#d89216;border-color:#8a4b0f;width:100%;" onclick="return confirm('{|Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!|}');">🔙 {|Rollback durchführen|}</button>
                 </div>
             </div>
 
