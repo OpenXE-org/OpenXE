@@ -10,18 +10,27 @@
 .banner-guidance {margin-top:8px;font-weight:700;}
 .banner-guidance small {display:block;font-weight:400;}
 .banner-hint {margin-top:8px;font-size:13px;opacity:0.9;}
-.banner-actions {display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;}
+.banner-actions {display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;min-width:0;}
 .banner-btn {background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:5px;padding:8px 14px;font-weight:700;cursor:pointer;min-height:40px;}
 .banner-btn:hover {background:rgba(255,255,255,0.18);}
 .icon-btn {width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:20px;padding:0;}
 .hidden-force {display:block;width:100%;margin-top:6px;}
 .hidden-force label {display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:rgba(255,255,255,0.9);}
-.top-row {display:grid;grid-template-columns: minmax(420px, 2fr) minmax(320px, 1fr);gap:16px;align-items:stretch;margin-bottom:32px;position:relative;z-index:1;box-sizing:border-box;}
+.top-row {display:grid;grid-template-columns:1fr;gap:16px;align-items:stretch;margin-bottom:32px;position:relative;z-index:1;box-sizing:border-box;}
+@media (min-width: 768px) {
+  .top-row {grid-template-columns:2fr 1fr;}
+}
 .status-col {display:flex;}
 .steps-col {display:flex;}
 .steps-stack {display:flex;flex-direction:column;gap:12px;width:100%;}
-.info-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:24px;margin-top:16px;}
-.compare-row {display:grid;grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
+.info-row {display:grid;grid-template-columns:1fr;gap:16px;align-items:stretch;margin-bottom:24px;margin-top:16px;}
+@media (min-width: 768px) {
+  .info-row {grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));}
+}
+.compare-row {display:grid;grid-template-columns:1fr;gap:16px;align-items:stretch;margin-bottom:16px;margin-top:8px;}
+@media (min-width: 768px) {
+  .compare-row {grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));}
+}
 .log-section {margin-top:50px;clear:both;position:relative;z-index:0;}
 .stepper {display:flex;flex-direction:column;gap:12px;margin-bottom:12px;}
 .step-card {border:1px solid #dbe3ef;border-radius:6px;background:#f6f8fb;padding:12px;}
@@ -32,7 +41,7 @@
 .pill-warning {background:#fff4e5;color:#8a4b0f;}
 .pill-info {background:#e8f1ff;color:#0b3c68;}
 .step-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
-.step-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-weight:700;cursor:pointer;}
+.step-btn {background:#0b3c68;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-weight:700;cursor:pointer;min-width:120px;}
 .step-btn:hover {opacity:0.9;}
 .force-wrap {margin-top:6px;font-size:12px;color:#0b3c68;}
 .force-highlight {border:2px solid #b52b27;background:#fff4e5;border-radius:6px;padding:8px;}
