@@ -63,6 +63,7 @@ class upgrade {
         $original_remote_host = "";
         $original_remote_branch = "";
 
+        // Git-Root finden mit Path-Validation
         $git_root = __DIR__;
         for ($i = 0; $i < 6; $i++) {
             if (is_dir($git_root."/.git")) {
@@ -77,16 +78,56 @@ class upgrade {
         if (!is_dir($git_root."/.git")) {
             $git_root = "";
         }
+        
+        // Path-Validation: Git-Root muss unter Document-Root liegen
+        if ($git_root !== "") {
+            $realpath = realpath($git_root);
+            $doc_root = realpath(__DIR__);
+            if ($realpath === false || strpos($realpath, $doc_root) !== 0) {
+                $this->app->erp->LogFile(
+                    'Git root validation failed: Path outside allowed directory',
+                    ['git_root' => $git_root, 'realpath' => $realpath, 'doc_root' => $doc_root],
+                    'upgrade',
+                    'security_check'
+                );
+                $git_root = "";
+            }
+        }
 
         $git_branch = "";
         $git_commit = "";
         $local_hash = "";
         $local_hash_short = "";
         if ($git_root !== "") {
-            $git_branch = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --abbrev-ref HEAD'));
-            $git_commit = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' log -1 --date=short --pretty="%cd"'));
-            $local_hash = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse HEAD'));
-            $local_hash_short = trim((string)@shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --short=8 HEAD'));
+            // Prüfe Git-Verfügbarkeit
+            $git_test = shell_exec('git --version 2>&1');
+            if ($git_test === null || strpos($git_test, 'git version') === false) {
+                $this->app->erp->LogFile(
+                    'Git not found in PATH',
+                    ['test_output' => $git_test],
+                    'upgrade',
+                    'git_check'
+                );
+                $status_headline = "Git nicht verfügbar";
+                $status_level = "error";
+                $status_message = "Git ist nicht installiert oder nicht im PATH verfügbar.";
+                $git_root = "";
+            } else {
+                $git_branch = trim((string)shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --abbrev-ref HEAD 2>&1'));
+                $git_commit = trim((string)shell_exec('git -C '.escapeshellarg($git_root).' log -1 --date=short --pretty="%cd" 2>&1'));
+                $local_hash = trim((string)shell_exec('git -C '.escapeshellarg($git_root).' rev-parse HEAD 2>&1'));
+                $local_hash_short = trim((string)shell_exec('git -C '.escapeshellarg($git_root).' rev-parse --short=8 HEAD 2>&1'));
+                
+                // Wenn Git-Befehle fehlschlagen, loggen
+                if (empty($git_branch) || empty($local_hash)) {
+                    $this->app->erp->LogFile(
+                        'Git commands failed',
+                        ['git_root' => $git_root, 'branch' => $git_branch, 'hash' => $local_hash],
+                        'upgrade',
+                        'git_error'
+                    );
+                }
+            }
         }
 
         $update_status_text = "Remote-Stand nicht geprüft.";
@@ -113,6 +154,13 @@ class upgrade {
             }
             if ($remote_branch_input === '') {
                 $remote_errors[] = "Branch darf nicht leer sein.";
+            }
+            // Längen-Limits
+            if (strlen($remote_host_input) > 255) {
+                $remote_errors[] = "Git-Remote darf maximal 255 Zeichen lang sein.";
+            }
+            if (strlen($remote_branch_input) > 100) {
+                $remote_errors[] = "Branch darf maximal 100 Zeichen lang sein.";
             }
             $allowed_host_pattern = '/^[\\w@.:\\/-]+$/';
             if ($remote_host_input !== '' && !preg_match($allowed_host_pattern, $remote_host_input)) {
@@ -145,9 +193,22 @@ class upgrade {
                     $status_message = "Remote und Branch wurden übernommen.";
                 }
             } else {
+                // Log security event
+                $this->app->erp->LogFile(
+                    'Invalid remote configuration submitted',
+                    [
+                        'errors' => $remote_errors,
+                        'remote_host_input' => $remote_host_input,
+                        'remote_branch_input' => $remote_branch_input,
+                        'user' => $this->app->User->GetName(),
+                        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+                    ],
+                    'upgrade',
+                    'validation_error'
+                );
                 $status_headline = "Eingabefehler";
-                    $status_level = "error";
-                    $status_message = implode(" ", $remote_errors);
+                $status_level = "error";
+                $status_message = implode(" ", $remote_errors);
             }
         } elseif ($submit === 'reset_remote_origin') {
             if ($original_remote_host === "" || $original_remote_branch === "") {
