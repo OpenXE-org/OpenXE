@@ -307,7 +307,15 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         if ($do_git) {     
 
             if ($modified_files && !$force) {
-                abort("Clear modified files or use -f");
+                // Detaillierte File-Liste anzeigen
+                $file_list = implode("\n  ", array_slice($output, 0, 10)); // Erste 10 Dateien
+                $total_files = count($output);
+                $more_info = $total_files > 10 ? "\n  ... und ".($total_files - 10)." weitere Datei(en)" : "";
+                
+                abort(
+                    "Modified files detected:\n  ".$file_list.$more_info.
+                    "\n\nPlease commit or stash your changes, or use -f/force flag to overwrite."
+                );
                 return(-1);
             }
       

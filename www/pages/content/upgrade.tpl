@@ -71,10 +71,10 @@
                             <div class="banner-headline">[STATUS_HEADLINE]</div>
                             <div class="banner-sub">[STATUS_MESSAGE]</div>
                             <div class="banner-guidance">[GUIDANCE_TITLE]<small>[GUIDANCE_MESSAGE]</small></div>
-                            <div class="banner-hint">Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen. Für lange Läufe kannst du das Protokoll über das Aktualisieren-Symbol neu laden. Bei hartnäckigen Fehlern hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.</div>
+                            <div class="banner-hint">{|Das Upgrade läuft in zwei Schritten: Dateien aktualisieren und Datenbank auffrischen. Für lange Läufe kannst du das Protokoll über das Aktualisieren-Symbol neu laden. Bei hartnäckigen Fehlern hilft der Konsolen-Run: <code>./upgrade.sh -do</code> im Unterordner <code>upgrade</code>.|}</div>
                         </div>
                         <div class="banner-actions">
-                            <button name="submit" value="refresh" class="banner-btn icon-btn" title="Anzeige neu laden">&#x21bb;</button>
+                            <button name="submit" value="refresh" class="banner-btn icon-btn" title="{|Anzeige neu laden|}">&#x21bb;</button>
                         </div>
                     </div>
                 </div>
@@ -83,20 +83,20 @@
                         <div class="step-card">
                             <div class="step-head">
                                 <div>
-                                    <div class="pill pill-[STATUS_LEVEL]">Dateien</div>
-                                    <div><strong>Code & Repo</strong></div>
+                                    <div class="pill pill-[STATUS_LEVEL]">{|Dateien|}</div>
+                                    <div><strong>{|Code & Repo|}</strong></div>
                                 </div>
                                 <div class="step-actions">
                                     <button name="submit" value="[UPGRADE_BUTTON_ACTION]" class="step-btn" style="width:100%;">[UPGRADE_BUTTON_LABEL]</button>
                                 </div>
                             </div>
-                            <div class="force-wrap [FORCE_HIGHLIGHT_CLASS]" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> Erzwingen (-f)</label></div>
+                            <div class="force-wrap [FORCE_HIGHLIGHT_CLASS]" [UPGRADE_FORCE_VISIBLE]><label><input type="checkbox" name="erzwingen" value="1" [ERZWINGEN]> {|Erzwingen (-f)|}</label></div>
                         </div>
                         <div class="step-card">
                             <div class="step-head">
                                 <div>
-                                    <div class="pill pill-[STATUS_LEVEL]">Datenbank</div>
-                                    <div><strong>DB-Check & Upgrade</strong></div>
+                                    <div class="pill pill-[STATUS_LEVEL]">{|Datenbank|}</div>
+                                    <div><strong>{|DB-Check & Upgrade|}</strong></div>
                                 </div>
                                 <div class="step-actions">
                                     <button name="submit" value="[UPGRADE_DB_BUTTON_ACTION]" class="step-btn" style="width:100%;">[UPGRADE_DB_BUTTON_LABEL]</button>
@@ -111,12 +111,12 @@
                 <div class="status-col" style="flex:1;min-width:320px;">
                     <div class="card" style="height:100%;">
                         <legend><strong>{|Versionsabgleich|}</strong></legend>
-                        <div class="status-meta"><strong>OpenXE-Version:</strong> [APP_VERSION]</div>
-                        <div class="status-meta"><strong>Code-Stand (Git):</strong> <span [LOCAL_BRANCH_VISIBLE]>[LOCAL_BRANCH]&nbsp;</span><span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
-                        <div class="status-meta"><strong>Upgrade-Quelle:</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
-                        <div class="status-meta"><strong>Status:</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
+                        <div class="status-meta"><strong>{|OpenXE-Version:|}</strong> [APP_VERSION]</div>
+                        <div class="status-meta"><strong>{|Code-Stand (Git):|}</strong> <span [LOCAL_BRANCH_VISIBLE]>[LOCAL_BRANCH]&nbsp;</span><span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
+                        <div class="status-meta"><strong>{|Upgrade-Quelle:|}</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
+                        <div class="status-meta"><strong>{|Status:|}</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
                         <div class="status-meta" style="margin-top:6px;">
-                            <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">Quelle auf Original zurücksetzen</button>
+                            <button name="submit" value="reset_remote_origin" class="ui-button-icon action-btn" style="width:100%;">{|Quelle auf Original zurücksetzen|}</button>
                         </div>
                     </div>
                 </div>
@@ -124,10 +124,10 @@
                     <div class="card" style="height:100%;">
                         <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
                         <table width="100%" border="0" class="mkTableFormular">
-                            <tr><td colspan=2><div class="hint">Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.</div></td></tr>
-                            <tr><td>Remote-URL:</td><td><input class="input-inline" type="text" name="remote_host" value="[REMOTE_HOST]" autocomplete="off"></td></tr>
-                            <tr><td>Branch:</td><td><input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off"></td></tr>
-                            <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">Quelle speichern</button></td></tr>
+                            <tr><td colspan=2><div class="hint">{|Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.|}</div></td></tr>
+                            <tr><td>{|Remote-URL:|}</td><td><input class="input-inline" type="text" name="remote_host" value="[REMOTE_HOST]" autocomplete="off"></td></tr>
+                            <tr><td>{|Branch:|}</td><td><input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off"></td></tr>
+                            <tr><td colspan=2><button name="submit" value="save_remote" class="ui-button-icon action-btn">{|Quelle speichern|}</button></td></tr>
                         </table>
                     </div>
                 </div>
@@ -138,11 +138,11 @@
                     <div class="card" style="height:100%;border:2px solid #d89216;">
                         <legend><strong>{|Rollback & Wiederherstellung|}</strong></legend>
                         <div class="hint" style="margin-bottom:12px;color:#8a4b0f;">
-                            ⚠️ <strong>Vorsicht:</strong> Rollback setzt nur den Code zurück. Datenbank-Änderungen werden NICHT rückgängig gemacht!
+                            ⚠️ <strong>{|Vorsicht:|}</strong> {|Rollback setzt nur den Code zurück. Datenbank-Änderungen werden NICHT rückgängig gemacht!|}
                         </div>
-                        <div style="margin-bottom:8px;"><strong>Verfügbare Wiederherstellungspunkte:</strong></div>
+                        <div style="margin-bottom:8px;"><strong>{|Verfügbare Wiederherstellungspunkte:|}</strong></div>
                         [ROLLBACK_TAGS_SELECT]
-                        <button name="submit" value="rollback_to_tag" class="ui-button-icon action-btn" style="background:#d89216;border-color:#8a4b0f;" onclick="return confirm('Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!');">🔙 Rollback durchführen</button>
+                        <button name="submit" value="rollback_to_tag" class="ui-button-icon action-btn" style="background:#d89216;border-color:#8a4b0f;" onclick="return confirm('{|Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!|}');">🔙 {|Rollback durchführen|}</button>
                     </div>
                 </div>
             </div>
@@ -151,11 +151,11 @@
                 <div class="card">
                     <legend>
                         <strong>{|Protokoll|}</strong>
-                        <a href="?module=upgrade&action=list&ajax=download_log" class="banner-btn" style="float:right;margin-left:10px;padding:4px 10px;font-size:12px;" download>📥 Log herunterladen</a>
-                        <input type="text" id="log-search" placeholder="Log durchsuchen..." style="float:right;width:200px;padding:4px 8px;margin-left:10px;border:1px solid #ccc;border-radius:4px;" />
+                        <a href="?module=upgrade&action=list&ajax=download_log" class="banner-btn" style="float:right;margin-left:10px;padding:4px 10px;font-size:12px;" download>📥 {|Log herunterladen|}</a>
+                        <input type="text" id="log-search" placeholder="{|Log durchsuchen...|}" style="float:right;width:200px;padding:4px 8px;margin-left:10px;border:1px solid #ccc;border-radius:4px;" />
                     </legend>
                     <div id="upgrade-lock-status" style="display:none;background:#fff4e5;border:1px solid #d89216;border-radius:4px;padding:8px;margin-bottom:8px;color:#8a4b0f;">
-                        <strong>⚠️ Upgrade läuft gerade:</strong> Gestartet von <span id="lock-user">-</span> um <span id="lock-time">-</span>
+                        <strong>⚠️ {|Upgrade läuft gerade:|}</strong> {|Gestartet von|} <span id="lock-user">-</span> {|um|} <span id="lock-time">-</span>
                     </div>
                     <div class="log-box" id="log-box">[OUTPUT_FROM_CLI]</div>
                 </div>
@@ -185,7 +185,7 @@
                 var filtered = allLogLines.filter(function(line) {
                     return line.toLowerCase().indexOf(searchTerm) !== -1;
                 });
-                logBox.innerHTML = filtered.length > 0 ? filtered.join('<br>') : '<span style="color:#999;">Keine Treffer</span>';
+                logBox.innerHTML = filtered.length > 0 ? filtered.join('<br>') : '<span style="color:#999;">{|Keine Treffer|}</span>';
             }
         });
     }
