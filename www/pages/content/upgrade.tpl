@@ -1,8 +1,9 @@
 <style>
 .status-banner {border-radius:6px;padding:14px;margin-bottom:12px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;height:100%;}
-.banner-success {background:#1b6e30;}
-.banner-error {background:#b52b27;}
-.banner-warning {background:#d89216;}
+.banner-neutral {background:linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);border-left:6px solid #2196f3;}
+.banner-success {background:linear-gradient(135deg, #c8e6c9 0%, #66bb6a 100%);border-left:6px solid #2e7d32;}
+.banner-error {background:linear-gradient(135deg, #ffebee 0%, #ef5350 100%);border-left:6px solid #b52b27;}
+.banner-warning {background:linear-gradient(135deg, #fff9e5 0%, #ffc107 100%);border-left:6px solid #d89216;}
 .banner-info {background:#0b3c68;}
 .banner-text {flex:1;min-width:0;}
 .banner-headline {font-size:18px;font-weight:700;}
@@ -44,7 +45,8 @@
 .force-wrap {margin-top:6px;font-size:12px;color:#0b3c68;}
 .force-highlight {border:2px solid #b52b27;background:#fff4e5;border-radius:6px;padding:8px;}
 .force-highlight label {font-weight:700;}
-.card {border:1px solid #dbe3ef;border-radius:6px;background:#fff;padding:12px;margin-bottom:12px;}
+.card {border:1px solid #dbe3ef;border-radius:6px;background:#fff;padding:12px;margin-bottom:12px;position:relative;min-height:250px;display:flex;flex-direction:column;}
+.card-button-wrapper {position:absolute;bottom:12px;left:12px;right:12px;}
 .log-box {background:#0f1720;color:#e5e7eb;border-radius:6px;padding:10px;max-height:420px;overflow:auto;font-family:Consolas,monospace;font-size:13px;}
 .hint {color:#555;font-size:13px;}
 .input-inline {width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;}
@@ -106,17 +108,17 @@
             </div>
 
             <div class="compare-row">
-                <div class="card" style="flex:1;min-width:280px;height:100%;">
+                <div class="card" style="flex:1;min-width:280px;">
                     <legend><strong>{|Versionsabgleich|}</strong></legend>
                     <div class="status-meta"><strong>{|OpenXE-Version:|}</strong> [APP_VERSION]</div>
-                    <div class="status-meta"><strong>{|Code-Stand (Git):|}</strong> <span [LOCAL_BRANCH_VISIBLE]>[LOCAL_BRANCH]&nbsp;</span><span class="hint">[LOCAL_HASH_SHORT]</span> <span class="hint">[LOCAL_COMMIT]</span></div>
+                    <div class="status-meta"><strong>{|Code-Stand (Git):|}</strong> <span [LOCAL_BRANCH_VISIBLE]>[LOCAL_BRANCH]&nbsp;</span><span class="hint">[LOCAL_HASH_SHORT]</span></div>
                     <div class="status-meta"><strong>{|Upgrade-Quelle:|}</strong> [REMOTE_HOST] (<strong>[REMOTE_BRANCH]</strong>) <span class="hint">[REMOTE_HASH_SHORT]</span></div>
                     <div class="status-meta"><strong>{|Status:|}</strong> <span class="pill [UPDATE_STATUS_CLASS]">[UPDATE_STATUS]</span></div>
-                    <div style="margin-top:auto;padding-top:12px;">
+                    <div class="card-button-wrapper">
                         <button name="submit" value="reset_remote_origin" class="ui-button-icon" style="width:100%;background:#28a745;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;">{|Quelle auf Original zurücksetzen|}</button>
                     </div>
                 </div>
-                <div class="card" style="flex:1;min-width:280px;height:100%;display:flex;flex-direction:column;">
+                <div class="card" style="flex:1;min-width:280px;">
                     <legend><strong>{|Upgrade-Quelle (Git)|}</strong></legend>
                     <div class="hint" style="margin-bottom:8px;">{|Passe Remote-URL und Branch an, wenn du auf einen anderen Stand updaten willst.|}</div>
                     <div style="margin-bottom:8px;">
@@ -127,22 +129,24 @@
                         <label style="display:block;margin-bottom:4px;font-weight:600;">{|Branch:|}</label>
                         <input class="input-inline" type="text" name="remote_branch" value="[REMOTE_BRANCH]" autocomplete="off">
                     </div>
-                    <div style="margin-top:auto;">
+                    <div class="card-button-wrapper">
                         <button name="submit" value="save_remote" class="ui-button-icon" style="width:100%;background:#28a745;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;">{|Quelle speichern|}</button>
                     </div>
                 </div>
-                <div class="card" style="flex:1;min-width:280px;height:100%;border:2px solid #d89216;display:flex;flex-direction:column;">
+                <div class="card" style="flex:1;min-width:280px;border:2px solid #d89216;">
                     <legend><strong>{|Rollback & Wiederherstellung|}</strong></legend>
                     <div class="hint" style="margin-bottom:12px;color:#8a4b0f;">
                         ⚠️ <strong>{|Vorsicht:|}</strong> {|Rollback setzt nur den Code zurück. Datenbank-Änderungen werden NICHT rückgängig gemacht!|}
                     </div>
-                    <div [ROLLBACK_VISIBLE]>
+                    <div style="margin-bottom:60px;" [ROLLBACK_VISIBLE]>
                         <div style="margin-bottom:8px;"><strong>{|Verfügbare Wiederherstellungspunkte:|}</strong></div>
                         [ROLLBACK_TAGS_SELECT]
-                        <button name="submit" value="rollback_to_tag" class="ui-button-icon" style="width:100%;background:#d89216;border-color:#8a4b0f;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;margin-top:8px;" onclick="return confirm('{|Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!|}');">🔙 {|Rollback durchführen|}</button>
                     </div>
-                    <div [ROLLBACK_VISIBLE]="hidden" style="color:#999;font-style:italic;">
+                    <div style="margin-bottom:60px;color:#999;font-style:italic;" [ROLLBACK_VISIBLE]="hidden">
                         {|Keine Rollback-Punkte verfügbar. Führe zuerst ein Upgrade durch.|}
+                    </div>
+                    <div class="card-button-wrapper" [ROLLBACK_VISIBLE]>
+                        <button name="submit" value="rollback_to_tag" class="ui-button-icon" style="width:100%;background:#d89216;color:#fff;border:2px solid #8a4b0f;padding:10px;border-radius:4px;font-weight:700;" onclick="return confirm('{|Wirklich auf diesen Stand zurücksetzen? Code wird überschrieben!|}');">{|🔙 Rollback durchführen|}</button>
                     </div>
                 </div>
             </div>

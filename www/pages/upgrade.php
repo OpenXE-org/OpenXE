@@ -98,13 +98,56 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
         $upgrade_available = false;
-        $upgrade_db_available = false;
+        // Default status and messages
+        $status_headline = "Upgrade-Manager";
+        $status_level = "warning";
+        $status_message = "Bereit zum Prüfen oder Aktualisieren.";
+        $guidance_title = "";
+        $guidance_message = "";
 
-        $status_headline = "Bereit";
-        $status_level = "info";
-        $status_message = "Wähle eine Aktion, um den Upgrader zu starten.";
-        $guidance_title = "Nächste Schritte";
-        $guidance_message = "Aktion auswählen und starten.";
+        // Check if system is up-to-date (before any actions)
+        if ($local_hash !== "" && $remote_hash !== "" && $local_hash === $remote_hash) {
+            $status_headline = "Alles aktuell";
+            $status_level = "neutral";
+            $status_message = "Dein System ist auf dem neuesten Stand!";
+        }
+
+        // Result-based status after actions
+        if ($last_action) {
+            $guidance_by_action = [
+                'check_for_updates' => [
+                    'title' => 'Update-Prüfung abgeschlossen',
+                    'message' => 'Ergebnisse siehe oben.'
+                ],
+                'upgrade_system' => [
+                    'title' => 'System-Upgrade abgeschlossen',
+                    'message' => 'Bitte prüfe das Log auf Fehler.'
+                ],
+                'upgrade_database' => [
+                    'title' => 'Datenbank-Upgrade abgeschlossen',
+                    'message' => 'Bitte prüfe das Log auf Fehler.'
+                ],
+                'reset_remote_origin' => [
+                    'title' => 'Remote-Einstellungen zurückgesetzt',
+                    'message' => 'Die Standard-Remote-Quelle wurde wiederhergestellt.'
+                ],
+                'save_remote' => [
+                    'title' => 'Remote-Einstellungen gespeichert',
+                    'message' => 'Die neue Remote-Quelle wurde übernommen.'
+                ],
+                'clear_log' => [
+                    'title' => 'Log gelöscht',
+                    'message' => 'Das Upgrade-Log wurde geleert.'
+                ]
+            ];
+            $guidance_title = $guidance_by_action[$last_action]['title'] ?? "Aktion abgeschlossen";
+            $guidance_message = $guidance_by_action[$last_action]['message'] ?? "Details siehe Log.";
+        } else {
+            $guidance_title = "Nächste Schritte";
+            $guidance_message = "Aktion auswählen und starten.";
+        }
+
+        $upgrade_db_available = false;
         $last_action = "Noch keine Aktion ausgeführt";
         $last_run = "";
 
