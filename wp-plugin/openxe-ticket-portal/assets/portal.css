@@ -11,9 +11,28 @@
 }
 
 .openxe-portal {
-  width: 100%;
-  margin: 24px 0;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 24px 0 !important;
+  padding: 0 !important;
   color: var(--oxp-text);
+}
+
+/* Override WordPress theme containers */
+.openxe-portal,
+.openxe-portal * {
+  box-sizing: border-box;
+}
+
+/* Force full width on common WordPress container classes */
+.entry-content .openxe-portal,
+.site-content .openxe-portal,
+.content-area .openxe-portal {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  padding: 24px 40px !important;
 }
 
 .openxe-portal .oxp-card {
