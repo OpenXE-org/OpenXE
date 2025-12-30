@@ -233,12 +233,21 @@ class upgrade {
         // Calculate version alignment (local vs. upgrade source)
         if ($git_root !== "" && $remote_host !== "" && $remote_branch !== "") {
             $remote_ref = "refs/heads/".$remote_branch;
-            $remote_line = trim((string)@shell_exec(
-                'git -C '.escapeshellarg($git_root).' ls-remote '.escapeshellarg($remote_host).' '.escapeshellarg($remote_ref)
-            ));
+            $remote_cmd = 'git -C '.escapeshellarg($git_root).' ls-remote '.escapeshellarg($remote_host).' '.escapeshellarg($remote_ref).' 2>&1';
+            $remote_line = trim((string)shell_exec($remote_cmd));
+            
             if ($remote_line !== "") {
                 $remote_hash = trim(strtok($remote_line, "\t "));
                 $remote_hash_short = substr($remote_hash, 0, 8);
+                
+                // Logging für Debug
+                $this->app->erp->LogFile(
+                    'Remote hash retrieved',
+                    ['remote_hash_short' => $remote_hash_short, 'local_hash_short' => $local_hash_short],
+                    'upgrade',
+                    'remote_check'
+                );
+                
                 if ($local_hash !== "" && $local_hash === $remote_hash) {
                     $update_status_text = "Alles aktuell";
                     $update_status_class = "pill-success";
@@ -250,6 +259,13 @@ class upgrade {
                     $update_status_class = "pill-warning";
                 }
             } else {
+                // Log Fehler
+                $this->app->erp->LogFile(
+                    'Remote check failed',
+                    ['command' => $remote_cmd, 'output' => $remote_line, 'remote_host' => $remote_host, 'remote_branch' => $remote_branch],
+                    'upgrade',
+                    'remote_check_error'
+                );
                 $update_status_text = "Remote nicht erreichbar";
                 $update_status_class = "pill-warning";
             }
