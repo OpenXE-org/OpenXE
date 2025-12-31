@@ -322,15 +322,26 @@ class upgrade {
                 if ($git_root !== "") {
                     $tag_name = 'pre-upgrade-'.date('Y-m-d-H-i-s');
                     $tag_cmd = 'git -C '.escapeshellarg($git_root).' tag '.escapeshellarg($tag_name).' 2>&1';
-                    $tag_output = shell_exec($tag_cmd);
-                    if ($tag_output === null || trim($tag_output) === "") {
+                    
+                    // Verwende exec() statt shell_exec() um Exit-Code zu prüfen
+                    $tag_output = [];
+                    $tag_exit_code = 0;
+                    exec($tag_cmd, $tag_output, $tag_exit_code);
+                    
+                    if ($tag_exit_code === 0) {
                         // Tag erfolgreich erstellt
                         $_SESSION['last_rollback_tag'] = $tag_name;
+                        $this->app->erp->LogFile(
+                            'Rollback tag created successfully',
+                            ['tag_name' => $tag_name],
+                            'upgrade',
+                            'rollback_tag_created'
+                        );
                     } else {
                         // Tag-Erstellung fehlgeschlagen - loggen aber fortfahren
                         $this->app->erp->LogFile(
                             'Rollback tag creation failed',
-                            ['tag_name' => $tag_name, 'output' => $tag_output],
+                            ['tag_name' => $tag_name, 'exit_code' => $tag_exit_code, 'output' => implode("\n", $tag_output)],
                             'upgrade',
                             'rollback_tag_error'
                         );
