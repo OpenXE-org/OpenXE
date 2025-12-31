@@ -1,9 +1,9 @@
 <style>
 .status-banner {border-radius:6px;padding:14px;margin-bottom:12px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;height:100%;}
-.banner-neutral {background:linear-gradient(135deg, #90caf9 0%, #64b5f6 100%);border-left:6px solid #2196f3;}
-.banner-success {background:linear-gradient(135deg, #81c784 0%, #66bb6a 100%);border-left:6px solid #2e7d32;}
-.banner-error {background:linear-gradient(135deg, #e57373 0%, #ef5350 100%);border-left:6px solid #b52b27;}
-.banner-warning {background:linear-gradient(135deg, #ffd54f 0%, #ffca28 100%);border-left:6px solid #d89216;}
+.banner-neutral {background:linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%);border-left:6px solid #2196f3;}
+.banner-success {background:linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);border-left:6px solid #2e7d32;}
+.banner-error {background:linear-gradient(135deg, #ef5350 0%, #e53935 100%);border-left:6px solid #b52b27;}
+.banner-warning {background:linear-gradient(135deg, #ffca28 0%, #ffa000 100%);border-left:6px solid #d89216;}
 .banner-info {background:#0b3c68;}
 .banner-text {flex:1;min-width:0;}
 .banner-headline {font-size:18px;font-weight:700;}
