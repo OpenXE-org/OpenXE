@@ -173,13 +173,24 @@ class upgrade {
             $git_root = "";
         }
         
-        // Path-Validation: Git-Root muss unter Document-Root liegen
+        // Path-Validation: Git-Root muss sicher sein (doc_root innerhalb git_root ODER bekannter Web-Server-Pfad)
         if ($git_root !== "") {
             $realpath = realpath($git_root);
             $doc_root = realpath(__DIR__);
-            if ($realpath === false || strpos($realpath, $doc_root) !== 0) {
+            $is_valid = false;
+            
+            // Check if doc_root is within git_root (git root is parent)
+            if ($realpath !== false && strpos($doc_root, $realpath) === 0) {
+                $is_valid = true;
+            }
+            // OR check if git_root is within git_root is, doc_root (nested git repo)
+            elseif ($realpath !== false && strpos($realpath, $doc_root) === 0) {
+                $is_valid = true;
+            }
+            
+            if (!$is_valid) {
                 $this->app->erp->LogFile(
-                    'Git root validation failed: Path outside allowed directory',
+                    'Git root validation failed: Invalid path relationship',
                     ['git_root' => $git_root, 'realpath' => $realpath, 'doc_root' => $doc_root],
                     'upgrade',
                     'security_check'
