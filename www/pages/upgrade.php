@@ -337,6 +337,27 @@ class upgrade {
                             'upgrade',
                             'rollback_tag_created'
                         );
+                        
+                        // Cleanup: Behalte nur die neuesten 10 pre-upgrade Tags
+                        $list_tags_cmd = 'git -C '.escapeshellarg($git_root).' tag -l "pre-upgrade-*" --sort=-creatordate 2>&1';
+                        $all_tags_output = [];
+                        exec($list_tags_cmd, $all_tags_output, $list_exit_code);
+                        
+                        if ($list_exit_code === 0 && count($all_tags_output) > 10) {
+                            // Lösche alle Tags ab Index 10 (die ältesten)
+                            $tags_to_delete = array_slice($all_tags_output, 10);
+                            foreach ($tags_to_delete as $old_tag) {
+                                $delete_cmd = 'git -C '.escapeshellarg($git_root).' tag -d '.escapeshellarg(trim($old_tag)).' 2>&1';
+                                exec($delete_cmd);
+                            }
+                            
+                            $this->app->erp->LogFile(
+                                'Cleaned up old rollback tags',
+                                ['deleted_count' => count($tags_to_delete), 'kept' => 10],
+                                'upgrade',
+                                'rollback_cleanup'
+                            );
+                        }
                     } else {
                         // Tag-Erstellung fehlgeschlagen - loggen aber fortfahren
                         $this->app->erp->LogFile(
