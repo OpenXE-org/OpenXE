@@ -223,14 +223,23 @@ var SuperSearch = (function ($) {
                 return;
             }
 
-            // Anzeigen wann der Such-Index das letzte Mal aktualisiert wurde
-            if (rawResult.data.hasOwnProperty('last_index_update_formatted')) {
-                if (rawResult.data.last_index_update_formatted !== null) {
-                    var lastIndexUpdate = rawResult.data.last_index_update_formatted;
-                    me.storage.$lastUpdate.text('Such-Index vom ' + lastIndexUpdate).show();
-                } else {
-                    me.storage.$lastUpdate.text('').hide();
-                }
+            var fuzzyMode = rawResult.data.hasOwnProperty('fuzzy') && rawResult.data.fuzzy === true;
+            var metaInfo = [];
+
+            if (fuzzyMode) {
+                metaInfo.push('Fuzzy search aktiv');
+            }
+
+            if (rawResult.data.hasOwnProperty('last_index_update_formatted') &&
+                rawResult.data.last_index_update_formatted !== null) {
+                var lastIndexUpdate = rawResult.data.last_index_update_formatted;
+                metaInfo.push('Such-Index vom ' + lastIndexUpdate);
+            }
+
+            if (metaInfo.length > 0) {
+                me.storage.$lastUpdate.text(metaInfo.join(' | ')).show();
+            } else {
+                me.storage.$lastUpdate.text('').hide();
             }
 
             var resultCount = rawResult.data.count;
@@ -242,11 +251,23 @@ var SuperSearch = (function ($) {
             }
 
             me.storage.$details.html('');
-            Object.keys(searchResults).forEach(function (group) {
-                var groupResult = searchResults[group];
-                var $groupHtml = me.buildGroupResult(groupResult.key, groupResult.title, groupResult.items);
-                $resultContainer.append($groupHtml);
+            var columns = me.buildResultColumns(searchResults);
+            var $columnsWrapper = $('<div class="result-columns">');
+
+            columns.forEach(function (column) {
+                var $column = $('<div class="result-column">');
+                column.forEach(function (groupResult) {
+                    var $groupHtml = me.buildGroupResult(groupResult.key, groupResult.title, groupResult.items);
+                    if (typeof $groupHtml !== 'undefined') {
+                        $column.append($groupHtml);
+                    }
+                });
+                if ($column.children().length > 0) {
+                    $columnsWrapper.append($column);
+                }
             });
+
+            $resultContainer.append($columnsWrapper);
 
             me.storage.hasResults = true;
             me.showResults();
@@ -290,6 +311,59 @@ var SuperSearch = (function ($) {
             $resultWrapper.append($resultList);
 
             return $resultWrapper;
+        },
+
+        /**
+         * Ordnet Suchergebnis-Gruppen dynamisch in Spalten an.
+         *
+         * @param {object} searchResults
+         * @returns {Array}
+         */
+        buildResultColumns: function (searchResults) {
+            var prioritizedColumns = [
+                {slot: 'left', keys: ['offer', 'order']},
+                {slot: 'middle', keys: ['deliverynote', 'invoice']},
+                {slot: 'right', keys: ['app', 'apps']}
+            ];
+
+            var columns = {left: [], middle: [], right: []};
+            var remaining = [];
+
+            Object.keys(searchResults).forEach(function (group) {
+                var groupResult = searchResults[group];
+                var assigned = false;
+
+                prioritizedColumns.forEach(function (config) {
+                    if (assigned) {
+                        return;
+                    }
+                    if (config.keys.indexOf(groupResult.key) !== -1) {
+                        columns[config.slot].push(groupResult);
+                        assigned = true;
+                    }
+                });
+
+                if (!assigned) {
+                    remaining.push(groupResult);
+                }
+            });
+
+            remaining.forEach(function (groupResult) {
+                if (groupResult.key === 'app' || groupResult.key === 'apps') {
+                    columns.right.push(groupResult);
+                    return;
+                }
+                var targetSlot = columns.left.length <= columns.middle.length ? 'left' : 'middle';
+                columns[targetSlot].push(groupResult);
+            });
+
+            return ['left', 'middle', 'right']
+                .map(function (slot) {
+                    return columns[slot];
+                })
+                .filter(function (column) {
+                    return column.length > 0;
+                });
         },
 
         /**

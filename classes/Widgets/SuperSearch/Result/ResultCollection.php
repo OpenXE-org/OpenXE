@@ -8,10 +8,13 @@ use JsonSerializable as JsonSerializableAlias;
 final class ResultCollection implements JsonSerializableAlias
 {
     /** @var ResultGroup[]|array $groups */
-    private $groups;
+    private $groups = [];
 
     /** @var DateTimeInterface|null $lastIndexUpdateTime */
     private $lastIndexUpdateTime;
+
+    /** @var bool */
+    private $fuzzy = false;
 
     /**
      * @param ResultGroup[]|array     $resultGroups
@@ -30,7 +33,7 @@ final class ResultCollection implements JsonSerializableAlias
      */
     public function isEmpty()
     {
-        return (empty($this->groups)?0:(count($this->groups) === 0));
+        return empty($this->groups);
     }
 
     /**
@@ -84,6 +87,24 @@ final class ResultCollection implements JsonSerializableAlias
     }
 
     /**
+     * @param bool $fuzzy
+     *
+     * @return void
+     */
+    public function setFuzzy($fuzzy)
+    {
+        $this->fuzzy = (bool)$fuzzy;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFuzzy()
+    {
+        return $this->fuzzy;
+    }
+
+    /**
      * @return array
      */
     public function jsonSerialize()
@@ -99,6 +120,7 @@ final class ResultCollection implements JsonSerializableAlias
         return [
             'count'                       => $itemCount,
             'results'                     => $results,
+            'fuzzy'                       => $this->fuzzy,
             'last_index_update_rfc2822'   =>
                 $this->lastIndexUpdateTime !== null ? $this->lastIndexUpdateTime->format(DATE_RFC2822) : null,
             'last_index_update_formatted' =>

@@ -809,7 +809,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $preferences = json_decode($preferences_json,true);
     }
 
-    $this->protokoll = $preferences['felder']['protokoll'];
+    // Default: Protokollierung aktiv, falls nicht explizit konfiguriert
+    $this->protokoll = $preferences['felder']['protokoll'] ?? '1';
     $this->ssl_ignore = $preferences['felder']['ssl_ignore'];
     $ImportWooCommerceApiSecret = $preferences['felder']['ImportWoocommerceApiSecret'];
     $ImportWooCommerceApiKey = $preferences['felder']['ImportWoocommerceApiKey'];
@@ -975,7 +976,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'ausblenden'=>array('abholmodus'=>array('zeitbereich')),
         'archiv'=>array('ab_nummer'),
         'felder'=>array(
-//          'protokoll'=>array('typ'=>'checkbox','bezeichnung'=>'Protokollierung im Logfile:'),
+          'protokoll'=>array('typ'=>'checkbox','bezeichnung'=>'Protokollierung im Logfile:','default'=>'1'),
           'ssl_ignore'=>array('typ'=>'checkbox','bezeichnung'=>'SSL-Prüfung abschalten:','info' => 'Nur für Testzwecke!'),
           'ImportWoocommerceApiKey'=>array('typ'=>'text','bezeichnung'=>'{|API Key:','size'=>60),
           'ImportWoocommerceApiSecret'=>array('typ'=>'text','bezeichnung'=>'{|API Secret|}:','size'=>60),

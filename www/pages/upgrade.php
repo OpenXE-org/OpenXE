@@ -98,13 +98,56 @@ class upgrade {
         $this->app->Tpl->Set('UPGRADE_VISIBLE', "hidden");
         $this->app->Tpl->Set('UPGRADE_DB_VISIBLE', "hidden");
         $upgrade_available = false;
-        $upgrade_db_available = false;
+        // Default status and messages
+        $status_headline = "Upgrade-Manager";
+        $status_level = "warning";
+        $status_message = "Bereit zum Prüfen oder Aktualisieren.";
+        $guidance_title = "";
+        $guidance_message = "";
 
-        $status_headline = "Bereit";
-        $status_level = "info";
-        $status_message = "Wähle eine Aktion, um den Upgrader zu starten.";
-        $guidance_title = "Nächste Schritte";
-        $guidance_message = "Aktion auswählen und starten.";
+        // Check if system is up-to-date (before any actions)
+        if ($local_hash !== "" && $remote_hash !== "" && $local_hash === $remote_hash) {
+            $status_headline = "Alles aktuell";
+            $status_level = "neutral";
+            $status_message = "Dein System ist auf dem neuesten Stand!";
+        }
+
+        // Result-based status after actions
+        if ($last_action) {
+            $guidance_by_action = [
+                'check_for_updates' => [
+                    'title' => 'Update-Prüfung abgeschlossen',
+                    'message' => 'Ergebnisse siehe oben.'
+                ],
+                'upgrade_system' => [
+                    'title' => 'System-Upgrade abgeschlossen',
+                    'message' => 'Bitte prüfe das Log auf Fehler.'
+                ],
+                'upgrade_database' => [
+                    'title' => 'Datenbank-Upgrade abgeschlossen',
+                    'message' => 'Bitte prüfe das Log auf Fehler.'
+                ],
+                'reset_remote_origin' => [
+                    'title' => 'Remote-Einstellungen zurückgesetzt',
+                    'message' => 'Die Standard-Remote-Quelle wurde wiederhergestellt.'
+                ],
+                'save_remote' => [
+                    'title' => 'Remote-Einstellungen gespeichert',
+                    'message' => 'Die neue Remote-Quelle wurde übernommen.'
+                ],
+                'clear_log' => [
+                    'title' => 'Log gelöscht',
+                    'message' => 'Das Upgrade-Log wurde geleert.'
+                ]
+            ];
+            $guidance_title = $guidance_by_action[$last_action]['title'] ?? "Aktion abgeschlossen";
+            $guidance_message = $guidance_by_action[$last_action]['message'] ?? "Details siehe Log.";
+        } else {
+            $guidance_title = "Nächste Schritte";
+            $guidance_message = "Aktion auswählen und starten.";
+        }
+
+        $upgrade_db_available = false;
         $last_action = "Noch keine Aktion ausgeführt";
         $last_run = "";
 
@@ -130,13 +173,24 @@ class upgrade {
             $git_root = "";
         }
         
-        // Path-Validation: Git-Root muss unter Document-Root liegen
+        // Path-Validation: Git-Root muss sicher sein (doc_root innerhalb git_root ODER bekannter Web-Server-Pfad)
         if ($git_root !== "") {
             $realpath = realpath($git_root);
             $doc_root = realpath(__DIR__);
-            if ($realpath === false || strpos($realpath, $doc_root) !== 0) {
+            $is_valid = false;
+            
+            // Check if doc_root is within git_root (git root is parent)
+            if ($realpath !== false && strpos($doc_root, $realpath) === 0) {
+                $is_valid = true;
+            }
+            // OR check if git_root is within git_root is, doc_root (nested git repo)
+            elseif ($realpath !== false && strpos($realpath, $doc_root) === 0) {
+                $is_valid = true;
+            }
+            
+            if (!$is_valid) {
                 $this->app->erp->LogFile(
-                    'Git root validation failed: Path outside allowed directory',
+                    'Git root validation failed: Invalid path relationship',
                     ['git_root' => $git_root, 'realpath' => $realpath, 'doc_root' => $doc_root],
                     'upgrade',
                     'security_check'
@@ -294,12 +348,21 @@ class upgrade {
         // Calculate version alignment (local vs. upgrade source)
         if ($git_root !== "" && $remote_host !== "" && $remote_branch !== "") {
             $remote_ref = "refs/heads/".$remote_branch;
-            $remote_line = trim((string)@shell_exec(
-                'git -C '.escapeshellarg($git_root).' ls-remote '.escapeshellarg($remote_host).' '.escapeshellarg($remote_ref)
-            ));
+            $remote_cmd = 'git -C '.escapeshellarg($git_root).' ls-remote '.escapeshellarg($remote_host).' '.escapeshellarg($remote_ref).' 2>&1';
+            $remote_line = trim((string)shell_exec($remote_cmd));
+            
             if ($remote_line !== "") {
                 $remote_hash = trim(strtok($remote_line, "\t "));
                 $remote_hash_short = substr($remote_hash, 0, 8);
+                
+                // Logging für Debug
+                $this->app->erp->LogFile(
+                    'Remote hash retrieved',
+                    ['remote_hash_short' => $remote_hash_short, 'local_hash_short' => $local_hash_short],
+                    'upgrade',
+                    'remote_check'
+                );
+                
                 if ($local_hash !== "" && $local_hash === $remote_hash) {
                     $update_status_text = "Alles aktuell";
                     $update_status_class = "pill-success";
@@ -311,6 +374,13 @@ class upgrade {
                     $update_status_class = "pill-warning";
                 }
             } else {
+                // Log Fehler
+                $this->app->erp->LogFile(
+                    'Remote check failed',
+                    ['command' => $remote_cmd, 'output' => $remote_line, 'remote_host' => $remote_host, 'remote_branch' => $remote_branch],
+                    'upgrade',
+                    'remote_check_error'
+                );
                 $update_status_text = "Remote nicht erreichbar";
                 $update_status_class = "pill-warning";
             }
@@ -320,12 +390,14 @@ class upgrade {
         $this->app->Tpl->Set('REMOTE_BRANCH', htmlspecialchars($remote_branch));
         $this->app->Tpl->Set('REMOTE_ORIGINAL_HOST', htmlspecialchars($original_remote_host));
         $this->app->Tpl->Set('REMOTE_ORIGINAL_BRANCH', htmlspecialchars($original_remote_branch));
-        $this->app->Tpl->Set('LOCAL_BRANCH', htmlspecialchars($git_branch));
-        $this->app->Tpl->Set('LOCAL_COMMIT', htmlspecialchars($git_commit));
-        $this->app->Tpl->Set('LOCAL_HASH_SHORT', htmlspecialchars($local_hash_short));
-        $this->app->Tpl->Set('REMOTE_HASH_SHORT', htmlspecialchars($remote_hash_short));
-        $this->app->Tpl->Set('UPDATE_STATUS', htmlspecialchars($update_status_text));
+        $this->app->Tpl->Set('UPDATE_STATUS', $update_status_text);
         $this->app->Tpl->Set('UPDATE_STATUS_CLASS', $update_status_class);
+        $this->app->Tpl->Set('LOCAL_HASH', $local_hash);
+        $this->app->Tpl->Set('LOCAL_HASH_SHORT', $local_hash_short);
+        $this->app->Tpl->Set('REMOTE_HASH_SHORT', $remote_hash_short);
+        $this->app->Tpl->Set('LOCAL_COMMIT', $git_commit);
+        $this->app->Tpl->Set('LOCAL_BRANCH', $git_branch);
+        $this->app->Tpl->Set('LOCAL_BRANCH_VISIBLE', !empty($git_branch) ? "" : "hidden");
         $this->app->Tpl->Set('SHOW_SYNC_REMOTE', "hidden");
         $show_local_branch = ($git_branch !== "" && $remote_branch !== "" && $git_branch === $remote_branch);
         $this->app->Tpl->Set('LOCAL_BRANCH_VISIBLE', $show_local_branch ? "" : "hidden");
@@ -365,15 +437,26 @@ class upgrade {
                 if ($git_root !== "") {
                     $tag_name = 'pre-upgrade-'.date('Y-m-d-H-i-s');
                     $tag_cmd = 'git -C '.escapeshellarg($git_root).' tag '.escapeshellarg($tag_name).' 2>&1';
-                    $tag_output = shell_exec($tag_cmd);
-                    if ($tag_output === null || trim($tag_output) === "") {
+                    
+                    // Verwende exec() statt shell_exec() um Exit-Code zu prüfen
+                    $tag_output = [];
+                    $tag_exit_code = 0;
+                    exec($tag_cmd, $tag_output, $tag_exit_code);
+                    
+                    if ($tag_exit_code === 0) {
                         // Tag erfolgreich erstellt
                         $_SESSION['last_rollback_tag'] = $tag_name;
+                        $this->app->erp->LogFile(
+                            'Rollback tag created successfully',
+                            ['tag_name' => $tag_name],
+                            'upgrade',
+                            'rollback_tag_created'
+                        );
                     } else {
                         // Tag-Erstellung fehlgeschlagen - loggen aber fortfahren
                         $this->app->erp->LogFile(
                             'Rollback tag creation failed',
-                            ['tag_name' => $tag_name, 'output' => $tag_output],
+                            ['tag_name' => $tag_name, 'exit_code' => $tag_exit_code, 'output' => implode("\n", $tag_output)],
                             'upgrade',
                             'rollback_tag_error'
                         );
