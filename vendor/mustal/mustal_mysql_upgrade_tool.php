@@ -355,9 +355,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                                 $compare_difference = array();
                                 $compare_difference['type'] = "Key definition";
                                 $compare_difference['table'] = $database_table['name'];
-                                if  ($sql_index['Key_name'] == 'PRI') {
-                                    $compare_difference['key'] = 'PRI';
-                                }
+                                $compare_difference['key'] = $sql_index['Key_name'];
                                 $compare_difference['property'] = $key;
                                 $compare_difference[$nominal_name] = $value;
                                 $compare_difference[$actual_name] = $found_sql_index[$key];
@@ -716,11 +714,14 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
-
                         $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;";
                         $upgrade_sql[] = $sql;
-
-                        $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
+                        if ($key['Key_name'] == 'PRIMARY') {
+                            $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ";
+                        }
+                        else {
+                            $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
+                        }
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;

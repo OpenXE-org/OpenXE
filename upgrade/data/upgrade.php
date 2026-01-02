@@ -494,16 +494,21 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 $number_of_statements = count($upgrade_sql);
 
                 foreach ($upgrade_sql as $sql) {
-
                     $counter++;
                     echo_out("\rUpgrade step $counter of $number_of_statements... ");
-
                     if ($verbose) {
                         echo_out("\n".$sql."\n");
                     }
-
                     try {
                         $query_result = mysqli_query($mysqli, $sql);
+                        if (!$query_result) {
+                            $error = " not ok: ". mysqli_error($mysqli);
+                            echo_out($error);
+                            echo_out("\n");
+                            $error_counter++;
+                        } else {
+                            echo_out("ok.\r");
+                        }
                     }
                     catch (Exception $e) {
                         $error = " not ok: ". mysqli_error($mysqli);
@@ -511,16 +516,6 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                         echo_out("\n");
                         $error_counter++;
                     }
-                    if (!$query_result) {
-                        $error = " not ok: ". mysqli_error($mysqli);
-                        echo_out($error);
-                        echo_out("\n");
-//                        file_put_contents("./errors.txt",date()." ".$error.$sql."\n",FILE_APPEND);
-                        $error_counter++;
-                    } else {
-                        echo_out("ok.\r");
-                    }
-
                 }
 
                 echo_out("\n");
