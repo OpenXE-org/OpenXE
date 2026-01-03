@@ -47,7 +47,7 @@ class Verbindlichkeit {
             case 'verbindlichkeit_inbearbeitung':
                 $entwuerfe = true;
                 // break ommitted
-            case "verbindlichkeit_list":            
+            case "verbindlichkeit_list":
                 $allowed['verbindlichkeit_list'] = array('list');
                 $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
@@ -94,6 +94,8 @@ class Verbindlichkeit {
 
                 $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>" . "<a href=\"index.php?module=verbindlichkeit&action=edit&id=%value%\"><img src=\"./themes/{$app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>&nbsp;<a href=\"#\" onclick=DeleteDialog(\"index.php?module=verbindlichkeit&action=delete&id=%value%\");>" . "<img src=\"themes/{$app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "</td></tr></table>";
 
+                $payment_status = "(SELECT payment_status FROM payment_transaction WHERE doc_typ = 'verbindlichkeit' AND doc_id = v.id)";
+
                 $sql = "SELECT SQL_CALC_FOUND_ROWS
                             v.id,
                             $dropnbox,
@@ -104,7 +106,7 @@ class Verbindlichkeit {
                             ".$app->erp->FormatDate("v.rechnungsdatum").",
                             ".$app->erp->FormatMenge('v.betrag',2).",
                             v.waehrung,
-                            if(v.bezahlt,'bezahlt','offen'),
+                            if(v.bezahlt,'bezahlt',COALESCE(".$payment_status.",'offen')),
                             ".$app->erp->FormatDate("v.zahlbarbis").",
                             IF(v.skonto <> 0,".$app->erp->FormatDate("v.skontobis").",''),
                             IF(v.skonto <> 0,CONCAT(".$app->erp->FormatMenge('v.skonto',0).",'%'),''),
@@ -120,11 +122,11 @@ class Verbindlichkeit {
 
                 if ($entwuerfe) {
                     $where .= " AND v.belegnr = '' OR v.belegnr IS NULL";
-                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";              
+                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
                 }
-                else {                
+                else {
                     $where .= " AND v.belegnr <> ''";
-                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";                
+                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
                     // Toggle filters
                     $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
                     $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
@@ -149,7 +151,7 @@ class Verbindlichkeit {
                                                );
                                              }
                                              ');
-                    }            
+                    }
 
                     $more_data1 = $this->app->Secure->GetGET("more_data1");
                     if ($more_data1 == 1) {
@@ -196,19 +198,18 @@ class Verbindlichkeit {
                     $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
                     if (!empty($filterzahlbarbis)) {
                         $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
-                        $where .= " AND v.zahlbarbis <= '".$filterzahlbarbis."'";
+                        $where .= " AND tables.zahlbarbis <= '".$filterzahlbarbis."'";
                     }
 
                     $this->app->YUI->DatePicker('skontobis');
                     $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
                     if (!empty($filterskontobis)) {
                         $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
-                        $where .= " AND v.skontobis <= '".$filterskontobis."'";
+                        $where .= " AND tables.skontobis <= '".$filterskontobis."'";
                     }
-                    
-                    $where .= " AND v.status <> 'angelegt'";
+
                     // END Toggle filters
-                }                    
+                }
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
@@ -540,7 +541,7 @@ class Verbindlichkeit {
                                     }
                                 }
                             }
-                        break;
+                        break;                     
                     }
                 }
             break;
@@ -550,10 +551,10 @@ class Verbindlichkeit {
         $this->app->erp->MenuEintrag("index.php?module=verbindlichkeit&action=create", "Neu anlegen");
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-        
+
         $this->app->Tpl->Set('TABTEXT1','Verbindlichkeiten');
         $this->app->Tpl->Set('TABTEXT2','In Bearbeitung');
-        
+
         $this->app->YUI->TableSearch('TAB1', 'verbindlichkeit_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->YUI->TableSearch('TAB2', 'verbindlichkeit_inbearbeitung', "show", "", "", basename(__FILE__), __CLASS__);
 
@@ -575,7 +576,7 @@ class Verbindlichkeit {
         $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker());
 
         $this->verbindlichkeit_check_belegnummern();
-        
+
         $this->app->Tpl->Parse('PAGE', "verbindlichkeit_list.tpl");
     }
 
@@ -612,7 +613,7 @@ class Verbindlichkeit {
         }
 
         $this->verbindlichkeit_check_belegnummern();
-                
+
         $this->app->Tpl->Set('ID', $id);
 
         $this->verbindlichkeit_menu($id);
@@ -1076,6 +1077,9 @@ class Verbindlichkeit {
         $this->app->YUI->DatePicker("rechnungsdatum");
         $this->app->Tpl->Set('EINGANGSDATUM',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['eingangsdatum'],false));
         $this->app->YUI->DatePicker("eingangsdatum");
+
+        $this->app->Tpl->Set('ZAHLUNGSWEISESELECT',$this->app->erp->GetSelectAsso($this->app->erp->GetZahlungsweise(),$verbindlichkeit_from_db['zahlungsweise']));
+
         $this->app->Tpl->Set('SKONTOBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['skontobis'],false));
         $this->app->YUI->DatePicker("skontobis");
         $this->app->Tpl->Set('ZAHLBARBIS',$this->app->erp->ReplaceDatum(false,$verbindlichkeit_from_db['zahlbarbis'],false));
@@ -1556,7 +1560,7 @@ class Verbindlichkeit {
             $this->verbindlichkeit_edit();
         }
     }
-
+  
 /*    function verbindlichkeit_schreibschutz($id = null)
     {
         if (empty($id)) {
@@ -1835,9 +1839,9 @@ class Verbindlichkeit {
                 Befreit: umsatzsteuer befreit, steursatz = -1
                 Individuell: umsatzsteuer leer, steuersatz = wert
             */
-            
+
             $betrag_brutto_pro_steuersatz = array();
-            
+
             foreach ($positionen as $position) {
 
                 $tmpsteuersatz = null;
@@ -1865,7 +1869,7 @@ class Verbindlichkeit {
             foreach ($betrag_netto_pro_steuersatz as $steuersatz => $betrag_netto) {
                 $betrag_brutto_alternativ += round($betrag_netto*(1+($steuersatz/100)),2);
             }
-            
+
             if ($bruttobetrag_verbindlichkeit == round($betrag_brutto,2)) {
                 $result['pos_ok'] = true;
             }

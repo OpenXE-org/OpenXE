@@ -14,7 +14,7 @@ class Waehrungumrechnung {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "waehrung_umrechnung_list");        
+        $this->app->ActionHandler("list", "waehrung_umrechnung_list");
         $this->app->ActionHandler("create", "waehrung_umrechnung_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "waehrung_umrechnung_edit");
         $this->app->ActionHandler("delete", "waehrung_umrechnung_delete");
@@ -34,7 +34,7 @@ class Waehrungumrechnung {
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('id','id','w.waehrung_von', 'w.waehrung_nach', 'w.kurs', 'w.gueltig_bis', 'w.zeitstempel', 'w.bearbeiter', 'w.kommentar');
                 $searchsql = array('w.waehrung_von', 'w.waehrung_nach', 'w.kurs', 'w.gueltig_bis', 'w.zeitstempel', 'w.bearbeiter', 'w.kommentar');
@@ -64,7 +64,7 @@ class Waehrungumrechnung {
         }
         return $erg;
     }
-    
+
     function waehrung_umrechnung_list() {
 
         $this->app->erp->MenuEintrag("index.php?module=waehrungumrechnung&action=list", "&Uuml;bersicht");
@@ -74,31 +74,31 @@ class Waehrungumrechnung {
 
         $this->app->YUI->TableSearch('TAB1', 'waehrung_umrechnung_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "waehrungumrechnung_list.tpl");
-    }    
+    }
 
     public function waehrung_umrechnung_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
-        
-        $this->app->DB->Delete("DELETE FROM `waehrung_umrechnung` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
+
+        $this->app->DB->Delete("DELETE FROM `waehrung_umrechnung` WHERE `id` = '{$id}'");
+        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");
 
         $this->waehrung_umrechnung_list();
-    } 
+    }
 
     /*
      * Edit waehrung_umrechnung item
      * If id is empty, create a new one
      */
-        
+
     function waehrung_umrechnung_edit() {
         $id = $this->app->Secure->GetGET('id');
-        
+
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('artikel',$id))
         {
           return;
-        }   
-              
+        }
+
         $this->app->Tpl->Set('ID', $id);
 
         $this->app->erp->MenuEintrag("index.php?module=waehrungumrechnung&action=edit&id=$id", "Details");
@@ -108,17 +108,17 @@ class Waehrungumrechnung {
         $submit = $this->app->Secure->GetPOST('submit');
 
         $input['gueltig_bis'] = $this->app->erp->ReplaceDatum(true,$input['gueltig_bis'],true);
-                
+
         if (empty($id)) {
             // New item
             $id = 'NULL';
-        } 
+        }
 
         if ($submit != '')
         {
 
             // Write to database
-            
+
             // Add checks here
 
             $input['bearbeiter'] = $this->app->DB->real_escape_string($this->app->User->GetName());
@@ -127,7 +127,7 @@ class Waehrungumrechnung {
             $columns = "id, ";
             $values = "$id, ";
             $update = "";
-    
+
             $fix = "";
 
             foreach ($input as $key => $value) {
@@ -156,29 +156,29 @@ class Waehrungumrechnung {
             }
         }
 
-    
+
         // Load values again from database
 	$dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',w.id,'\" />') AS `auswahl`";
         $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS w.id, $dropnbox, w.waehrung_von, w.waehrung_nach, w.kurs, w.gueltig_bis, w.zeitstempel, w.bearbeiter, w.kommentar, w.id FROM waehrung_umrechnung w"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
+            $this->app->Tpl->Set(strtoupper($key), $value);
         }
-             
+
         /*
          * Add displayed items later
-         * 
+         *
 
         $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
         $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
+        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);
          */
 
-//        $this->SetInput($input);          
+//        $this->SetInput($input);
 
         $this->app->YUI->DatePicker("gueltig_bis");
         $this->app->Tpl->Set('GUELTIG_BIS',$this->app->erp->ReplaceDatum(false,$result[0]['gueltig_bis'],true));
-    
+
         $this->app->Tpl->Set('WAEHRUNG_VON',$this->app->erp->getSelectAsso($this->app->erp->GetWaehrung(), $result[0]['waehrung_von']));
         $this->app->Tpl->Set('WAEHRUNG_NACH',$this->app->erp->getSelectAsso($this->app->erp->GetWaehrung(), $result[0]['waehrung_nach']));
 
@@ -191,7 +191,7 @@ class Waehrungumrechnung {
     public function GetInput(): array {
         $input = array();
         //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
-        
+
         $input['waehrung_von'] = $this->app->Secure->GetPOST('waehrung_von');
 	$input['waehrung_nach'] = $this->app->Secure->GetPOST('waehrung_nach');
 	$input['kurs'] = $this->app->Secure->GetPOST('kurs');
@@ -208,8 +208,8 @@ class Waehrungumrechnung {
      * Set all fields in the page corresponding to $input
      */
     function SetInput($input) {
-        // $this->app->Tpl->Set('EMAIL', $input['email']);        
-        
+        // $this->app->Tpl->Set('EMAIL', $input['email']);
+
         $this->app->Tpl->Set('WAEHRUNG_VON', $input['waehrung_von']);
 	$this->app->Tpl->Set('WAEHRUNG_NACH', $input['waehrung_nach']);
 	$this->app->Tpl->Set('KURS', $input['kurs']);
@@ -221,7 +221,7 @@ class Waehrungumrechnung {
     }
 
     public function GetWaehrungUmrechnungskurs($von, $nach, $onlytable) {
-        $result = $this->app->DB->Select("SELECT kurs FROM waehrung_umrechnung WHERE waehrung_von = '$von' AND waehrung_nach = '$nach' AND gueltig_bis is NULL");
+        $result = $this->app->DB->Select("SELECT kurs FROM waehrung_umrechnung WHERE waehrung_von = '$von' AND waehrung_nach = '$nach' AND gueltig_bis is NULL OR gueltig_bis = '0000-00-00 00:00:00'");
         if (!is_null($result)) {
             return $result;
         }

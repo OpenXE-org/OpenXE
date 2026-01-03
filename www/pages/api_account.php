@@ -265,13 +265,9 @@ class Api_account
       return $this->HandleSaveAjaxAction();
     }
 
+    $api = $this->app->loadModule('api');
+    $api->fillApiPermissions();
     $apiPermissions = $this->app->DB->SelectArr("SELECT * FROM `api_permission`");
-
-    if (empty($apiPermissions)) {
-        $api = $this->app->loadModule('api');
-        $api->fillApiPermissions();
-        $apiPermissions = $this->app->DB->SelectArr("SELECT * FROM `api_permission`");
-    }
 
     $groupedApiPermissions = [];
     foreach ($apiPermissions as $apiPermission){
