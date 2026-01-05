@@ -15,7 +15,24 @@
 <div class="inside inside-full-height">
 
 <fieldset><legend>{|Auswahl Etiketten|}</legend>
-[FORMULAR]
+    <form action="" method="post">
+        <table class="mkTableFormular">
+            <tr>
+                <td>Schnelldruck anderer Artikel:</td>
+                <td>
+                    <input type="text" id="etikettenartikel" name="etikettenartikel" value="[ETIKETTENARTIKEL]" autofocus>
+                </td>
+            </tr>
+            <tr>
+                <td>Menge:</td>
+                <td>
+                    <input type="text" name="menge" value="[ETIKETTENMENGE]">&nbsp;<input type="submit" name="etikettendrucken" value="Drucken" class="btnBlue">
+                </td>
+            </tr>
+            <tr><td>Etikett:</td><td><select name="etikettenauswahl">[ETIKETTENOPTION]</select></td></tr>
+            <tr><td>Drucker:</td><td><select name="etikettendrucker">[DRUCKEROPTION]</select></td></tr>
+        </table>    
+    </form>
 </fieldset>
 
 </div>

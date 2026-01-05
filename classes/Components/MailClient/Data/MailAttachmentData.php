@@ -165,7 +165,7 @@ class MailAttachmentData implements MailAttachmentInterface
             }
         }
         if ($attachmenttype == 'inline' && $cid != null) {
-            $filename = "cid:".$cid;
+            $filename = $cid;
         }
 
         $content = $part->getContent();

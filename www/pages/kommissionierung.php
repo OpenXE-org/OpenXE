@@ -226,7 +226,7 @@ class Kommissionierung {
 
     public function kommissionierung_print() {
         $id = $this->app->Secure->GetGET('id');
-        $Brief = new KommissionierungPDF($this->app, styleData: array('ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true, 'hintergrund' => 'none'));
+        $Brief = new KommissionierungPDF($this->app, styleData: array('mit_gewicht' => true,'ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true, 'hintergrund' => 'none'));
         $Brief->GetKommissionierung($id);
         $Brief->displayDocument(false);
         exit();

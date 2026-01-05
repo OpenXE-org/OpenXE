@@ -80,7 +80,7 @@
                                             {|Seriennummer scannen|}:
                                         </td>
                                         <td>
-                                            <input type="text" name="eingabescan" id="eingabescan" value="[EINGABESCAN]" size="40" autofocus />
+                                            <input type="text" name="eingabescanwe" id="eingabescanwe" value="[EINGABESCAN]" size="40" autofocus />
                                         </td>
                                     </tr>
                                     <tr [LIEFERSCHEIN_HIDDEN] [EINGABE_HIDDEN]>

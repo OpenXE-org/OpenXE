@@ -151,13 +151,16 @@
                   <td>{|Bauform|}:</td><td colspan="4"><input type="text" size="70" id="bauform" name="bauform"></td>
                 </tr>
                 <tr>
-                  <td>{|Z-Achse|}:</td><td colspan="4"><input type="text" size="70" id="zachse" name="zachse"></td>
-                </tr>
-                <tr>
                   <td>{|X-Position|}:</td><td colspan="4"><input type="text" size="70" id="xpos" name="xpos"></td>
                 </tr>
                 <tr>
                   <td>{|Y-Position|}:</td><td colspan="4"><input type="text" size="70" id="ypos" name="ypos"></td>
+                </tr>
+                <tr>
+                  <td>{|Z-Achse|}:</td><td colspan="4"><input type="text" size="70" id="zachse" name="zachse"></td>
+                </tr>
+                <tr>
+                  <td>{|Rotation|}:</td><td colspan="4"><input type="text" size="70" id="rotation" name="rotation"></td>
                 </tr>
 <!--<tr><td>{|Interner Kommentar|}:</td><td colspan="4"><textarea name="internerkommentar" rows="3" cols="70"></textarea></td></tr>-->
 
@@ -326,6 +329,7 @@ function StuecklisteArtikeldoppeltEditSave(){
       ezachse: document.getElementById('zachse').value,
       expos: document.getElementById('xpos').value,
       eypos: document.getElementById('ypos').value,
+      erotation: document.getElementById('rotation').value,
       eeinfuegen: $('#einfuegen').prop("checked")?1:0,
       emengeerhoehen: $('#mengeerhoehen').prop("checked")?1:0,
                       
@@ -369,6 +373,7 @@ function StuecklisteNeuePositionReset()
   $('#editStuecklisteNeuePosition').find('#zachse').val('');
   $('#editStuecklisteNeuePosition').find('#xpos').val('');
   $('#editStuecklisteNeuePosition').find('#ypos').val('');
+  $('#editStuecklisteNeuePosition').find('#rotation').val('');
   $("#partslist_button_addalternative").button("disable");
 }
 
@@ -391,6 +396,7 @@ function StuecklisteNeuePositionEditSave() {
       ezachse: $('#zachse').val(),
       expos: $('#xpos').val(),
       eypos: $('#ypos').val(),
+      erotation: $('#rotation').val(),
                       
     },
     method: 'post',
@@ -449,7 +455,7 @@ function StuecklisteNeuePositionEdit(id) {
         $('#editStuecklisteNeuePosition').find('#zachse').val(data.zachse);
         $('#editStuecklisteNeuePosition').find('#xpos').val(data.xpos);
         $('#editStuecklisteNeuePosition').find('#ypos').val(data.ypos);
-
+        $('#editStuecklisteNeuePosition').find('#rotation').val(data.rotation);
                 
         App.loading.close();
         $("#editStuecklisteNeuePosition").dialog('open');

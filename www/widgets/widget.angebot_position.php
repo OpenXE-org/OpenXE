@@ -14,10 +14,13 @@ class WidgetAngebot_position extends WidgetGenAngebot_position
 
   function ExtendsForm()
   {
+    $id = (int)$this->app->Secure->GetGET('id');
+    $module = $this->app->Secure->GetGET('module');
+    $sprache = $this->app->erp->GetSpracheBelegPosition($module,$id);
+    $this->app->erp->AnzeigeFreifelderPositionen($this->form, $sprache);
+
     $this->app->YUI->AutoComplete("einheit","artikeleinheit");
 
-    $this->app->erp->AnzeigeFreifelderPositionen($this->form);
-    $id = (int)$this->app->Secure->GetGET('id');
     if($this->app->DB->Select("SELECT explodiert_parent FROM angebot_position WHERE id = '$id' LIMIT 1"))
     {
       $this->app->Tpl->Set('VORPREISBERECHNEN','<!--');

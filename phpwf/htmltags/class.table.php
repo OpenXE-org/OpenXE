@@ -34,7 +34,8 @@ class HTMLTable
 
   var $hidecols;
   var $headings;
-  var $width_headings;
+  var $headings_align;
+  var $width_headings;  
   var $widths;
 
   var $CompleteRow;
@@ -113,16 +114,16 @@ class HTMLTable
     }
   }
   /// fuegt eine komplette Zeile an der aktuellen Zeigerpostion ein
-  function AddRowAsHeading($cols)
+  function AddRowAsHeading($cols, $align = array())
   {
     $this->NewRow();
     $cell=0;
-    foreach($cols as $value)
+    foreach($cols as $key => $value)
     {
       if(isset($this->width_headings[$cell]))
-        $this->AddCol("<div style=\"font-weight:bold;width:".$this->width_headings[$cell].";\">".ucfirst($value)."</div>","",$this->width_headings[$cell]);
+        $this->AddCol("<div style=\"font-weight:bold;width:".$this->width_headings[$cell].";\">".ucfirst($value)."</div>","",$this->width_headings[$cell],$align[$key]);
       else
-        $this->AddCol("<b>".ucfirst($value)."</b>");
+        $this->AddCol("<b>".ucfirst($value)."</b>",$align[$key]);
 
       $cell++;
     }

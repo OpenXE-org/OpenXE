@@ -846,14 +846,21 @@ class Seriennummern {
                 }
             break;
             case 'hinzufuegen':
+
+                $eingabe = $this->app->Secure->GetPOST('eingabe');
                 $eingabescan = $this->app->Secure->GetPOST('eingabescan');
-                $eingabe = $this->app->Secure->GetPOST('eingabe');                
+                $eingabescanwe = $this->app->Secure->GetPOST('eingabescanwe');
+
                 if (!empty($eingabe)) {
                    $seriennummern[] = $eingabe;                          
                 }
                 if (!empty($eingabescan)) {
-                   $seriennummern[] = $eingabescan;                          
+                   $seriennummern[] = $eingabescan;
                 }
+                if (!empty($eingabescanwe)) {
+                   $seriennummern[] = $eingabescanwe;
+                }
+
             break;
             case 'einlagern':
                 $seriennummern_not_written = array();

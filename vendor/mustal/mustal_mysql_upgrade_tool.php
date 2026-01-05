@@ -3,7 +3,7 @@
 /*
 MUSTAL Mysql Upgrade Schema Tool by Alex Ledis
 Helper to compare database structures from JSON files vs. database and upgrade database
-Copyright (c) 2022 Alex Ledis 
+Copyright (c) 2022 Alex Ledis
 Licensed under AGPL v3
 
 Version 1.0
@@ -44,7 +44,7 @@ Data structure in Array and JSON
                     "Extra": "",
                     "Privileges": "",
                     "Comment": ""
-                }                
+                }
             ],
             "keys": [
                 {
@@ -83,11 +83,11 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
 
     // Get db_def and views
-    $sql = "SHOW TABLE STATUS WHERE engine IS NOT NULL"; 
+    $sql = "SHOW TABLE STATUS WHERE engine IS NOT NULL";
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
-    } 
+    }
     while ($row = mysqli_fetch_assoc($query_result)) {
         $table = array();
         $table['name'] = $row['Name'];
@@ -97,7 +97,7 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
 
     // Get and add columns of the table
-    foreach ($tables as &$table) {    
+    foreach ($tables as &$table) {
 
         $sql = "SHOW FULL COLUMNS FROM ".$table['name'];
         $query_result = mysqli_query($mysqli, $sql);
@@ -113,10 +113,10 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
             if ($column['Default'] !== NULL) {
                 mustal_sql_replace_reserved_functions($column,$replacers);
                 $column['Default'] = mustal_mysql_put_text_type_in_quotes($column['Type'],$column['Default']);
-            } 
+            }
 
             if (empty($column['Collation']) && mustal_is_string_type($column['Type'])) {
-                $column['Collation'] = $table['collation'];                
+                $column['Collation'] = $table['collation'];
             }
 
             $columns[] = $column; // Add column to list of columns
@@ -164,11 +164,11 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     }
     unset($table);
 
-    $sql = "SHOW FULL tables WHERE Table_type = 'VIEW'"; 
+    $sql = "SHOW FULL tables WHERE Table_type = 'VIEW'";
     $query_result = mysqli_query($mysqli, $sql);
     if (!$query_result) {
         return(array());
-    } 
+    }
     while ($row = mysqli_fetch_assoc($query_result)) {
         $view = array();
         $view['name'] = $row['Tables_in_'.$schema];
@@ -176,7 +176,7 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
         $views[] = $view; // Add view to list of views
     }
 
-    foreach ($views as &$view) {    
+    foreach ($views as &$view) {
         $sql = "SHOW CREATE VIEW ".$view['name'];
 
         try {
@@ -187,10 +187,10 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
         }
         if (!$query_result) {
             $view['Create'] = '';
-            continue;    
+            continue;
         }
         $viewdef = mysqli_fetch_assoc($query_result);
-        
+
         // Remove the security info from view definition
         $view['Create'] = "CREATE ".stristr($viewdef['Create View'],"VIEW");
     }
@@ -201,11 +201,11 @@ function mustal_load_tables_from_db(string $host, string $schema, string $user, 
     $result['user'] = $user;
     $result['tables'] = $tables;
     $result['views'] = $views;
-    return($result);   
+    return($result);
 }
 
 function mustal_save_tables_to_json(array $db_def, string $path, string $tables_file_name, bool $force) : int {
-  
+
     // Prepare db_def file
     if (!is_dir($path)) {
         mkdir($path);
@@ -227,7 +227,7 @@ function mustal_save_tables_to_json(array $db_def, string $path, string $tables_
 
 // Load all db_def from JSON file
 function mustal_load_tables_from_json(string $path, string $tables_file_name) : array {
-    
+
     $db_def = array();
 
     $contents = file_get_contents($path."/".$tables_file_name);
@@ -253,7 +253,6 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 
     $compare_differences = array();
 
-
     if($utf8fix) {
         $column_collation_aliases = array(
             ['utf8mb3_general_ci','utf8_general_ci'],
@@ -265,8 +264,8 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
     }
 
     foreach ($nominal['tables'] as $database_table) {
-        
-        $found_table = array(); 
+
+        $found_table = array();
         foreach ($actual['tables'] as $compare_table) {
             if ($database_table['name'] == $compare_table['name']) {
                 $found_table = $compare_table;
@@ -278,7 +277,6 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
         if ($found_table) {
 
             // Check type table vs view
-
             if ($database_table['type'] != $found_table['type']) {
                 $compare_difference = array();
                 $compare_difference['type'] = "Table type";
@@ -287,7 +285,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                 $compare_difference[$actual_name] = $found_table['type'];
                 $compare_differences[] = $compare_difference;
             }
-          
+
             // Only BASE TABLE supported now
             if ($found_table['type'] != 'BASE TABLE') {
                 continue;
@@ -296,29 +294,27 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
             // Check columns
             $compare_table_columns = array_column($found_table['columns'],'Field');
             foreach ($database_table['columns'] as $column) {
-
                 $column_name_to_find = $column['Field'];
                 $column_key = array_search($column_name_to_find,$compare_table_columns,true);
                 if ($column_key !== false) {
-                        
                     // Compare the properties of the columns
                     if ($check_column_definitions) {
                         $found_column = $found_table['columns'][$column_key];
-                        foreach ($column as $key => $value) {                            
+                        foreach ($column as $key => $value) {
 
-                            // Apply aliases                                
+                            // Apply aliases
                             if (!empty($column_collation_aliases)) {
                                 foreach($column_collation_aliases as $column_collation_alias) {
                                     if ($value == $column_collation_alias[0]) {
                                         $value = $column_collation_alias[1];
                                     }
-                                    if ($found_column[$key] == $column_collation_alias[0]) {                              
+                                    if ($found_column[$key] == $column_collation_alias[0]) {
                                         $found_column[$key] = $column_collation_alias[1];
                                     }
                                 }
-                            } 
+                            }
                             if ($found_column[$key] != $value) {
-                                if ($key != 'Key') { // Keys will be handled separately
+                                if ($key != 'Key' || ($key == 'Key' && ($value == 'PRI' || $found_column[$key] == 'PRI'))) { // Keys will be handled separately, except primary
                                     $compare_difference = array();
                                     $compare_difference['type'] = "Column definition";
                                     $compare_difference['table'] = $database_table['name'];
@@ -330,7 +326,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                                 }
                             }
                         }
-                        unset($value);                          
+                        unset($value);
                     } // $check_column_definitions
                 } else {
                     $compare_difference = array();
@@ -339,9 +335,8 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                     $compare_difference[$nominal_name] = $column['Field'];
                     $compare_differences[] = $compare_difference;
                 }
-            } 
-            unset($column); 
-
+            }
+            unset($column);
 
             // Check keys
             $compare_table_sql_indexs = array_column($found_table['keys'],'Key_name');
@@ -350,12 +345,12 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                 $sql_index_name_to_find = $sql_index['Key_name'];
                 $sql_index_key = array_search($sql_index_name_to_find,$compare_table_sql_indexs,true);
                 if ($sql_index_key !== false) {
-                        
+
                     // Compare the properties of the sql_indexs
                     if ($check_column_definitions) {
                         $found_sql_index = $found_table['keys'][$sql_index_key];
 
-                        foreach ($sql_index as $key => $value) {                            
+                        foreach ($sql_index as $key => $value) {
                             if ($found_sql_index[$key] != $value) {
                                 $compare_difference = array();
                                 $compare_difference['type'] = "Key definition";
@@ -367,7 +362,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                                 $compare_differences[] = $compare_difference;
                             }
                         }
-                        unset($value);                          
+                        unset($value);
                     } // $check_sql_index_definitions
                 } else {
                     $compare_difference = array();
@@ -376,8 +371,8 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
                     $compare_difference[$nominal_name] = $sql_index['Key_name'];
                     $compare_differences[] = $compare_difference;
                 }
-            } 
-            unset($sql_index); 
+            }
+            unset($sql_index);
 
 
         } else {
@@ -390,7 +385,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
     unset($database_table);
 
     foreach ($nominal['views'] as $database_view) {
-        $found_view = array(); 
+        $found_view = array();
         foreach ($actual['views'] as $compare_view) {
             if ($database_view['name'] == $compare_view['name']) {
                 $found_view = $compare_view;
@@ -421,7 +416,7 @@ function mustal_compare_table_array(array $nominal, string $nominal_name, array 
 
 
 // Generate SQL to create or modify column
-function mustal_column_sql_definition(string $table_name, array $column, array $reserved_words_without_quote) : string {    
+function mustal_column_sql_definition(string $table_name, array $column, array $reserved_words_without_quote) : string {
 
     $column_is_string_type = mustal_is_string_type($column['Type']);
 
@@ -435,11 +430,18 @@ function mustal_column_sql_definition(string $table_name, array $column, array $
         $column['Default'] = "";
     }
 
-    $sql =                             
+    if (str_contains($column['Extra'],'auto_increment') && $column['Key'] == '') {
+        $primary = " PRIMARY KEY ";
+    } else {
+        $primary = "";
+    }
+
+    $sql =
         $column['Type'].
         $column['Null'].
         $column['Default'].
         $column['Extra'].
+        $column['Key'].
         $column['Collation'];
 
     return($sql);
@@ -469,7 +471,7 @@ function mustal_column_sql_create_property_definition(string $property, string $
                 $property_value = trim($property_value,"'");
                 $quote = "'";
             }
-            $property_value = " DEFAULT $quote".$property_value."$quote"; 
+            $property_value = " DEFAULT $quote".$property_value."$quote";
         break;
         case 'Extra':
             if ($property_value != '')  {
@@ -483,7 +485,14 @@ function mustal_column_sql_create_property_definition(string $property, string $
                 $property_value = "";
             }
         break;
-        default: 
+        case 'Key':
+            if ($property_value == 'PRI') {
+                $property_value = " PRIMARY KEY";
+            } else {
+                $property_value = "";
+            }
+        break;
+        default:
             $property_value = "";
         break;
     }
@@ -498,7 +507,7 @@ function mustal_sql_replace_reserved_functions(array &$column, array $replacers)
     foreach ($replacers as $replace) {
         if (strtolower($column['Default']) == $replace[0]) {
             $result = $replace[1];
-        } 
+        }
     }
     $column['Default'] = $result;
 
@@ -506,7 +515,7 @@ function mustal_sql_replace_reserved_functions(array &$column, array $replacers)
     foreach ($replacers as $replace) {
         if ($result == $replace[0]) {
             $result = $replace[1];
-        } 
+        }
     }
     $column['Extra'] = $result;
 }
@@ -548,7 +557,7 @@ function mustal_implode_with_quote(string $quote, string $delimiter, array $arra
 function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$upgrade_sql, array $replacers, bool $strict, bool $drop_keys) : array {
 
     $result = array();
-    $upgrade_sql = array();    
+    $upgrade_sql = array();
 
     if ($drop_keys) {
         foreach ($db_def['tables'] as $table_id => $table) {
@@ -572,7 +581,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 
                 // Get table definition from JSON
 
-                $table_name = $compare_difference['in JSON']; 
+                $table_name = $compare_difference['in JSON'];
 
                 $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
 
@@ -584,7 +593,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 
                             // Create table in DB
                             $sql = "";
-                            $sql = "CREATE TABLE `".$table['name']."` (";                                   
+                            $sql = "CREATE TABLE `".$table['name']."` (";
                             $comma = "";
 
                             foreach ($table['columns'] as $column) {
@@ -595,12 +604,10 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                             // Add keys
                             $comma = ", ";
                             foreach ($table['keys'] as $key) {
-                                if ($key['Key_name'] == 'PRIMARY') {
-                                    $keystring = "PRIMARY KEY ";
-                                } else {
+                                if ($key['Key_name'] !== 'PRIMARY') {
                                     $keystring = mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
+                                    $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                                 }
-                                $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                             }
                             $sql .= ")";
                             $upgrade_sql[] = $sql;
@@ -615,19 +622,19 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 
             break;
             case 'Column existence':
-                $table_name = $compare_difference['table']; 
-                $column_name = $compare_difference['in JSON']; 
+                $table_name = $compare_difference['table'];
+                $column_name = $compare_difference['in JSON'];
                 $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
                 if ($table_key !== false) {
                     $table = $compare_def['tables'][$table_key];
-                    $columns = $table['columns'];                  
+                    $columns = $table['columns'];
                     $column_key = array_search($column_name,array_column($columns,'Field'));
                     if ($column_key !== false) {
                         $column = $table['columns'][$column_key];
-                        $sql = "ALTER TABLE `$table_name` ADD COLUMN `".$column_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` ADD COLUMN `".$column_name."` ";
                         $sql .= mustal_column_sql_definition($table_name, $column, array_column($replacers,1));
-                        $sql .= ";";                                                  
-                        $upgrade_sql[] = $sql;                       
+                        $sql .= ";";
+                        $upgrade_sql[] = $sql;
                     }
                     else {
                         $result[] = array(3,"Error column_key while creating column '$column_name' in table '".$table['name']."'.");
@@ -639,20 +646,20 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                 // Add Column in DB
             break;
             case 'Column definition':
-                $table_name = $compare_difference['table']; 
-                $column_name = $compare_difference['column']; 
+                $table_name = $compare_difference['table'];
+                $column_name = $compare_difference['column'];
                 $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
                 if ($table_key !== false) {
                     $table = $compare_def['tables'][$table_key];
-                    $columns = $table['columns'];   
+                    $columns = $table['columns'];
 
-                    $column_names = array_column($columns,'Field');              
-                    $column_key = array_search($column_name,$column_names); 
+                    $column_names = array_column($columns,'Field');
+                    $column_key = array_search($column_name,$column_names);
 
                     if ($column_key !== false) {
                         $column = $table['columns'][$column_key];
 
-                        $sql = "ALTER TABLE `$table_name` MODIFY COLUMN `".$column_name."` "; 
+                        $sql = "ALTER TABLE `$table_name` MODIFY COLUMN `".$column_name."` ";
                         $sql .= mustal_column_sql_definition($table_name, $column,array_column($replacers,1));
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
@@ -666,23 +673,25 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                     return(6);
                 }
                 // Modify Column in DB
-            break;         
+            break;
             case 'Key existence':
 
-                $table_name = $compare_difference['table']; 
-                $key_name = $compare_difference['in JSON']; 
+                $table_name = $compare_difference['table'];
+                $key_name = $compare_difference['in JSON'];
                 $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
                 if ($table_key !== false) {
                     $table = $compare_def['tables'][$table_key];
-                    $keys = $table['keys'];   
+                    $keys = $table['keys'];
 
                     $key_names = array_column($keys,'Key_name');
-                    $key_key = array_search($key_name,$key_names); 
+                    $key_key = array_search($key_name,$key_names);
 
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
-                        $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` "."(`".implode("`,`",$key['columns'])."`)",$key['Index_type']).";";
-                        $upgrade_sql[] = $sql;
+                        if ($key['Key_name'] != 'PRIMARY') {
+                            $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` "."(`".implode("`,`",$key['columns'])."`)",$key['Index_type']).";";
+                            $upgrade_sql[] = $sql;
+                        }
                     }
                     else {
                         $result[] = array(7,"Error key_key while adding key '$key_name' in table '".$table['name']."'.");
@@ -693,23 +702,26 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                 }
             break;
             case "Key definition":
-                $table_name = $compare_difference['table']; 
-                $key_name = $compare_difference['key']; 
+                $table_name = $compare_difference['table'];
+                $key_name = $compare_difference['key'];
                 $table_key = array_search($table_name,array_column($compare_def['tables'],'name'));
                 if ($table_key !== false) {
                     $table = $compare_def['tables'][$table_key];
-                    $keys = $table['keys'];   
+                    $keys = $table['keys'];
 
                     $key_names = array_column($keys,'Key_name');
-                    $key_key = array_search($key_name,$key_names); 
+                    $key_key = array_search($key_name,$key_names);
 
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
-
-                        $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;"; 
+                        $sql = "ALTER TABLE `$table_name` DROP KEY `".$key_name."`;";
                         $upgrade_sql[] = $sql;
-
-                        $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
+                        if ($key['Key_name'] == 'PRIMARY') {
+                            $sql = "ALTER TABLE `$table_name` ADD PRIMARY KEY ";
+                        }
+                        else {
+                            $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
+                        }
                         $sql .= "(`".implode("`,`",$key['columns'])."`)";
                         $sql .= ";";
                         $upgrade_sql[] = $sql;
@@ -729,10 +741,10 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                 $result[] = array(11,"Upgrade type '".$compare_difference['type']."' on table '".$compare_difference['table']."' not supported.");
             break;
             case 'View definition':
-                $drop_view = true;            
+                $drop_view = true;
             // intentionally omitted break;
             case 'View existence':
-                $view_name = $compare_difference['in JSON']; 
+                $view_name = $compare_difference['in JSON'];
                 $view_key = array_search($view_name,array_column($compare_def['views'],'name'));
 
                 if ($view_key !== false) {
@@ -763,7 +775,7 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
         }
     }
 
-    $upgrade_sql = array_unique($upgrade_sql);  
+    $upgrade_sql = array_unique($upgrade_sql);
 
     if (count($upgrade_sql) > 0) {
         array_unshift($upgrade_sql,"SET SQL_MODE='ALLOW_INVALID_DATES';");
@@ -782,7 +794,7 @@ function mustal_is_string_type(string $type) {
         if (stripos($type,$string_type) === 0) {
             return(true);
         }
-    }   
+    }
     return(false);
 }
 
@@ -791,7 +803,7 @@ function mustal_key_type(string $key_definition_string, string $key_type) {
 
     // Key types with using syntax
     $mustal_key_types_using_mapping = [
-        'BTREE', 
+        'BTREE',
         'HASH'
     ];
 

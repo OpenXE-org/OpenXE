@@ -33,6 +33,7 @@ class ObjGenStueckliste
   private  $xpos;
   private  $ypos;
   private  $art;
+  private  $rotation;
 
   public $app;            //application object 
 
@@ -66,12 +67,13 @@ $result = $result[0];
     $this->xpos=$result['xpos'];
     $this->ypos=$result['ypos'];
     $this->art=$result['art'];
+    $this->art=$result['rotation'];
   }
 
   public function Create()
   {
-    $sql = "INSERT INTO stueckliste (id,sort,artikel,referenz,place,layer,stuecklistevonartikel,menge,firma,wert,bauform,alternative,zachse,xpos,ypos,art)
-      VALUES('','{$this->sort}','{$this->artikel}','{$this->referenz}','{$this->place}','{$this->layer}','{$this->stuecklistevonartikel}','{$this->menge}','{$this->firma}','{$this->wert}','{$this->bauform}','{$this->alternative}','{$this->zachse}','{$this->xpos}','{$this->ypos}','{$this->art}')"; 
+    $sql = "INSERT INTO stueckliste (id,sort,artikel,referenz,place,layer,stuecklistevonartikel,menge,firma,wert,bauform,alternative,zachse,xpos,ypos,art,rotation)
+      VALUES('','{$this->sort}','{$this->artikel}','{$this->referenz}','{$this->place}','{$this->layer}','{$this->stuecklistevonartikel}','{$this->menge}','{$this->firma}','{$this->wert}','{$this->bauform}','{$this->alternative}','{$this->zachse}','{$this->xpos}','{$this->ypos}','{$this->art}','{$this->rotation}')"; 
 
     $this->app->DB->Insert($sql);
     $this->id = $this->app->DB->GetInsertID();
@@ -97,7 +99,8 @@ $result = $result[0];
       zachse='{$this->zachse}',
       xpos='{$this->xpos}',
       ypos='{$this->ypos}',
-      art='{$this->art}'
+      art='{$this->art}',
+      rotation='{$this->rotation}'
       WHERE (id='{$this->id}')";
 
     $this->app->DB->Update($sql);
@@ -131,6 +134,7 @@ $result = $result[0];
     $this->xpos="";
     $this->ypos="";
     $this->art="";
+    $this->rotation="";
   }
 
   public function Copy()
@@ -203,6 +207,8 @@ $result = $result[0];
   function GetYpos() { return $this->ypos; }
   function SetArt($value) { $this->art=$value; }
   function GetArt() { return $this->art; }
+  function SetRotation($value) { $this->rotation=$value; }
+  function GetRotation() { return $this->rotation; }
 
 }
 

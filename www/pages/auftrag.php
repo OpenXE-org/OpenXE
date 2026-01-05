@@ -104,11 +104,13 @@ class Auftrag extends GenAuftrag
         // ENDE EXTRA checkboxen
 
         // headings
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
 
         $zusatzcols = array();
         $auftragzusatzfelder = $this->app->erp->getZusatzfelderAuftrag();
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)');
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'));
         $width = array('1%','1%', '10%', '10%', '10%', '31%', '5%', '1%', '1%', '1%', '1%', '1%');
         $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum'
         ,$useAddr? 'if(a.lieferantenauftrag=1,adr.lieferantennummer,adr.kundennummer)':'a.lieferantkdrnummer',
@@ -289,7 +291,7 @@ class Auftrag extends GenAuftrag
                 ''
           )."
           a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." AS `zahlungsweise`,  
-          ".$app->erp->FormatPreis('a.gesamtsumme',2)." AS `betrag`,
+          ".$app->erp->FormatPreis("a.$summespalte",2)." AS `betrag`,
           ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')."
           (" . $this->app->YUI->IconsSQL() . ")  AS icons, 
           a.id
@@ -589,7 +591,10 @@ class Auftrag extends GenAuftrag
 
         $allowed['auftraegeoffeneauto'] = array('list');
 
-        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag (brutto)','Kommissionierung','Monitor','Men&uuml;');
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
+
+        $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land','Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Kommissionierung','Monitor','Men&uuml;');
         $width = array('1%','1%','1%',     '10%', '10%',     '27%', '10%',         '5%',  '5%',      '1%',      '1%',             '1%',              '1%');
         $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme','(SELECT id FROM kommissionierung WHERE auftrag = a.id)');
 
@@ -611,7 +616,7 @@ class Auftrag extends GenAuftrag
         a.land,
         p.abkuerzung,
         a.zahlungsweise,
-        a.gesamtsumme,
+        ".$app->erp->FormatPreis("a.$summespalte",2).",
         (SELECT id FROM kommissionierung WHERE auftrag = a.id) as kommissionierung,
         (" . $this->app->YUI->IconsSQL() . ")  AS icons,
         a.id
@@ -681,7 +686,10 @@ class Auftrag extends GenAuftrag
           // Show list for cronjob commissioning
           $allowed['auftraegeoffeneautowartend'] = array('list');
 
-          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Projekt', 'Zahlung', 'Betrag (brutto)','Monitor','Men&uuml;');
+          $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+          $summespalte = $kleinunternehmer?'umsatz_netto':'gesamtsumme';
+
+          $heading = array('','', 'Auftrag', 'Vom', 'Kd-Nr.', 'Kunde','Lieferdatum', 'Land', 'Projekt', 'Zahlung', 'Betrag '.($kleinunternehmer?'netto':'brutto'),'Monitor','Men&uuml;');
           $width = array('1%','1%','1%', '10%', '10%', '10%', '27%', '5%', '5%', '1%', '1%', '1%', '1%', '1%','0%','0%');
           $findcols = array('open','a.belegnr', 'a.belegnr', 'a.datum', 'a.lieferantkdrnummer', 'a.name','a.tatsaechlicheslieferdatum', 'a.land', 'p.abkuerzung', 'a.zahlungsweise', 'a.gesamtsumme');
 
@@ -702,7 +710,7 @@ class Auftrag extends GenAuftrag
                 a.land,
                 p.abkuerzung,
                 a.zahlungsweise,
-                a.gesamtsumme,
+                ".$app->erp->FormatPreis("a.$summespalte",2).",
                 (" . $this->app->YUI->IconsSQL() . ")  AS icons,
                 a.id
                 FROM
@@ -775,7 +783,11 @@ class Auftrag extends GenAuftrag
         break;
       case "offenepositionen":
     	$allowed['offenepositionen'] = array('list');
-	    $heading = array('Erwartetes Lieferdatum','Urspr&uumlngliches Lieferdatum','Kunde','Auftrag','Position','ArtikelNr.','Artikel','Menge','Auftragsvolumen','Lagermenge','Monitor','Men&uuml');
+
+        $kleinunternehmer = (bool) $this->app->erp->Firmendaten('kleinunternehmer')==1;
+        $summespalte = $kleinunternehmer?'umsatz_netto_gesamt':'umsatz_brutto_gesamt';
+
+	    $heading = array('Erwartetes Lieferdatum','Urspr&uumlngliches Lieferdatum','Kunde','Auftrag','Position','ArtikelNr.','Artikel','Menge','Betrag '.($kleinunternehmer?'netto':'brutto'),'Lagermenge','Monitor','Men&uuml');
         //	$width = array('10%','10%','10%','10%','30%','30%');
 
 	    // Spalten für die Sortierfunktion in der Liste, muss identisch mit SQL-Ergebnis sein, erste Spalte weglassen,Spalten- Alias funktioniert nicht
@@ -853,7 +865,7 @@ class Auftrag extends GenAuftrag
 		artikel.id artikel_id,
 		auftrag_position.bezeichnung bezeichnung, 
 		round(auftrag_position.menge,0) menge, 
-		round(auftrag_position.menge*auftrag_position.preis,2) umsatz,
+        ".$app->erp->FormatPreis("$summespalte",2)." umsatz,
 	        (SELECT SUM(menge) FROM lager_platz_inhalt INNER JOIN lager_platz ON lager_platz_inhalt.lager_platz = lager_platz.id WHERE lager_platz_inhalt.artikel = artikel.id AND lager_platz.sperrlager <> 1) as lager,
 		auf.autoversand autoversand,
 		auf.id auftrag_id         
@@ -864,7 +876,7 @@ class Auftrag extends GenAuftrag
                 ORDER BY urspruengliches_lieferdatum ASC, auf.belegnr ASC, auftrag_position.sort ASC
                 ) a";
 
-	$where = "";
+	$where = "menge <> 0";
 
 	$groupby = "";
 
@@ -1372,7 +1384,7 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop 
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren 
          FROM auftrag 
          WHERE id = %d 
          LIMIT 1',
@@ -1445,8 +1457,10 @@ class Auftrag extends GenAuftrag
     }   
 
     if($status==='freigegeben') {
-      $alleartikelreservieren = "<option value=\"reservieren\">alle Artikel reservieren</option>";
-
+    
+      if (!$auftragArr['nicht_reservieren']) {
+            $alleartikelreservieren = "<option value=\"reservieren\">Artikel reservieren</option>";
+      }
 
       if($kommissionierart === "zweistufig" || $kommissionierart === "lieferscheinlagerscan" || $kommissionierart==="lieferscheinscan") {
         if($art==="rechnung"){
@@ -1499,7 +1513,7 @@ class Auftrag extends GenAuftrag
       $menuauslagern = " case 'artikelauslagern': if(!confirm('Artikel wirklich auslagern?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrageinauslagern&action=auslagern&id=%value%'; break;";
     }
     
-    if($status === 'abgeschlossen' && $this->app->erp->RechteVorhanden('auftrag','shopexport'))
+    if($status !== 'angelegt' && $this->app->erp->RechteVorhanden('auftrag','shopexport'))
     {
       if($shop > 0 && $shopexportstatus != 'abgeschlossen') {
         $shopexport = '<option value="shopexport">Status an Shop zur&uuml;ckmelden</option>';
@@ -2503,11 +2517,19 @@ class Auftrag extends GenAuftrag
       $anzahllager = $this->app->DB->Select("SELECT count(id) FROM lager WHERE geloescht = 0");
       $standardlager = $auftragRow['standardlager'];//$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1");
       $projektlager = 0;
-      if(!$standardlager){
-        $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
-      }
-      if($projektlager){
-        $projektlager = $auftragArr[0]['projekt'];
+      if(!$standardlager)
+      {
+        if (!$standardlager) {
+          $projektbevorzugteslager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+          if ($projektbevorzugteslager) {
+              $standardlager = $projektbevorzugteslager;
+          }
+        } else {
+          $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id = '".$auftragArr[0]['projekt']."' LIMIT 1");
+          if($projektlager){
+            $projektlager = $auftragArr[0]['projekt'];
+          }
+        }
       }
       $standardlagertext = '';
       if($standardlager){
@@ -3769,7 +3791,7 @@ class Auftrag extends GenAuftrag
       $this->app->DB->Update("UPDATE lieferschein SET belegnr='$belegnr', status='freigegeben' WHERE id='$newid' LIMIT 1");
       $this->app->erp->LieferscheinProtokoll($newid,'Lieferschein freigegeben');
 
-      $this->app->erp->LieferscheinAuslagern($newid,true, (int)$this->app->DB->Select("SELECT standardlager FROM auftrag WHERE id = '$id' LIMIT 1"),'lieferschein',true);
+      $this->app->erp->LieferscheinAuslagern(lieferschein: $newid, anzeige_lagerplaetze_in_lieferschein: true, belegtyp: 'lieferschein', chargenmhdnachprojekt: true);
       $Brief = new LieferscheinPDF($this->app,$projekt);
       $Brief->GetLieferschein($newid);
       $tmpfile = $Brief->displayTMP();
@@ -4869,6 +4891,13 @@ class Auftrag extends GenAuftrag
       );
     }       
 
+    $tickets = $this->app->erp->GetBelegTickets('auftrag',$id);
+    if (!empty($tickets)) {
+        function ticketlink($ticket) {
+           return "<a href=index.php?module=ticket&action=edit&id=".$ticket['id'].">".$ticket['ticket']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Auftrag geh&ouml;ren Tickets: ".implode(', ',array_map('ticketlink', $tickets)), html: true);
+    }
 
     $check = $this->app->DB->SelectPairs(
       "SELECT b.id, b.belegnr
@@ -5474,8 +5503,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
   {
     $id = $this->app->Secure->GetGET('id');
     $this->app->erp->AuftragEinzelnBerechnen($id,true);
-    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Artilel f&uuml;r diesen Auftrag reserviert!</div>  ");
-
+    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Artikel f&uuml;r diesen Auftrag reserviert!</div>");
     $this->app->Location->execute("index.php?module=auftrag&action=edit&id=$id&msg=$msg");
   }
 
@@ -5804,13 +5832,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
             $auslagernresult =            
             $this->app->erp->LieferscheinAuslagern(
-              $lieferschein,
-              true,
-              (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $id)),
-              'lieferschein',
-              true,
-              false,
-              $nurRestmenge
+              lieferschein: $lieferschein,
+              anzeige_lagerplaetze_in_lieferschein: true,
+              chargenmhdnachprojekt: true,
+              nurrestmenge: $nurRestmenge
             );
             
             $this->app->erp->SeriennummernCheckLieferscheinBenachrichtigung($lieferschein);
@@ -5951,6 +5976,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             )
           );
       }
+
       $autodruckrechnungstufe1 = 0;
       $autodruckrechnungstufe1menge = 0;
       $exportdruckrechnungstufe1 = 0;
@@ -5985,7 +6011,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $exportdruckrechnungstufe1 = $this->app->erp->Export($exportland);
       }
 
-      if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0)
+      // PDF / XML rechnung
+      $xmlrechnung = (string)$this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id='$rechnung' LIMIT 1");
+      if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0 &&!$xmlrechnung)
       {
         $this->app->DB->Update("UPDATE rechnung SET status='versendet', versendet='1',schreibschutz='1' WHERE id='$rechnung' LIMIT 1");
         $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
@@ -6024,8 +6052,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
         $Brief->ArchiviereDocument();
         unlink($tmpfile);
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
-      }
-      
+      }    
+      // PDF / XML rechnung
+
       // Rechnungsmail was here, but now at the end to prioritise processing and printing over mail
 
       // auftrag abschliessen
@@ -6542,7 +6571,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                                 $this->app->erp->LieferscheinAuslagern(
                                   lieferschein: $v,
                                   anzeige_lagerplaetze_in_lieferschein: true,
-                                  standardlager: (int)$this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', $v)),
                                   belegtyp: 'auftrag',
                                   chargenmhdnachprojekt: true,
                                   forceseriennummerngeliefertsetzen: false,
@@ -6592,6 +6620,41 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         if (!empty($check)) {
                             $this->app->Tpl->addMessage('info',"Bereits Kommissioniert: ".$check['belegnr']);
                         } else {
+                            $auslagernresult =
+                                $this->app->erp->LieferscheinAuslagern(
+                                  lieferschein: $v,
+                                  anzeige_lagerplaetze_in_lieferschein: true,
+                                  belegtyp: 'auftrag',
+                                  chargenmhdnachprojekt: true,
+                                  simulieren: $kommissionierlagerplatz?false:true,
+                                  ziellagerplatz: $kommissionierlagerplatz
+                                );
+
+                            if (count($auslagernresult['storageMovements']) == 0) {
+                                throw new exception("Lagervorgang fehlgeschlagen");
+                            }
+
+                            if ($kommissionierlagerplatz) {
+                                $lagerplatz = $this->app->DB->SelectRow("SELECT kurzbezeichnung, lager FROM lager_platz WHERE id = ".$kommissionierlagerplatz);
+                                $kommentar = "Kommissioniert in ".$lagerplatz['kurzbezeichnung'];
+                                $this->app->erp->AuftragProtokoll($v,'Auftrag kommissioniert in '.$lagerplatz['kurzbezeichnung']);
+                                $this->app->DB->Update("UPDATE auftrag SET standardlager = ".$lagerplatz['lager']." WHERE id = ".$v);
+                            }
+
+                            $settings = $this->app->DB->SelectRow("
+                                SELECT
+                                    projekt.autodruckkommissionierscheinstufe1,
+                                    projekt.autodruckkommissionierscheinstufe1menge,
+                                    adresse.etikett,
+                                    adresse.etikettautodruck,
+                                    projekt.id as projekt,
+                                    auftrag.adresse
+                                FROM projekt
+                                INNER JOIN auftrag ON projekt.id = auftrag.projekt
+                                INNER JOIN adresse ON adresse.id = auftrag.adresse
+                                WHERE auftrag.id = '".$v."'"
+                            );
+
                             $kid = $this->app->erp->GetNextKommissionierung();
                             $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$v' LIMIT 1");
                             $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
@@ -7421,6 +7484,9 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                     JOIN artikel art ON ap.artikel = art.id
                 WHERE
                     a.id = ".$auftragid."
+                    AND
+                    ap.menge > 0
+                ORDER BY ap.sort ASC
             ";
             $positionen = $this->app->DB->SelectArr($sql);
 

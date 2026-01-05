@@ -17886,6 +17886,14 @@ INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `ho
 (0, 'ImportAuftragBeforeHook', 1, 1, (SELECT id FROM hook WHERE name = 'ImportAuftragBefore' LIMIT 1), 'onlineshops', 0);
 /* OpenXE 2024-08-11 für Smarty shopimport */
 
+/* OpenXE 2025-06-03 Reportfreigabe */
+INSERT INTO `hook` (`name`, `aktiv`, `parametercount`, `alias`, `description`) VALUES
+('ajax_filter_hook1', 1, 5, '', '');
+
+INSERT INTO `hook_register` (`hook_action`, `function`, `aktiv`, `position`, `hook`, `module`, `module_parameter`) VALUES
+(0, 'AjaxAutocompleteFilterUser', 1, 5, (SELECT id FROM hook WHERE name = 'ajax_filter_hook1' LIMIT 1), 'report', 0);
+/* OpenXE 2025-06-03 Reportfreigabe */
+
 /*
 BelegPositionenButtons
 

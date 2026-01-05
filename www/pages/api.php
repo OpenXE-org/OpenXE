@@ -753,6 +753,9 @@ if (!function_exists('getallheaders')) {
           'standard_benutzerlist',
           'standard_benutzergetrfid',
         ],
+        'import_csv' => [
+            'import_csv_file'
+        ],
         'custom' => [
           'standard_custom'
         ]
@@ -10637,7 +10640,7 @@ XML;
       $xmldata['stueckliste_artikel']['artikel'][0] = $tmp;
     }
 
-    if(count($xmldata['stueckliste_artikel']['artikel']) > 0)
+    if(isset($xmldata['stueckliste_artikel']['artikel'])?count($xmldata['stueckliste_artikel']['artikel']):0 > 0)
       $this->app->DB->Delete("DELETE FROM stueckliste WHERE stuecklistevonartikel='".$id."'");
 
     $cartikel = isset($xmldata['stueckliste_artikel']['artikel'])?count($xmldata['stueckliste_artikel']['artikel']):0;

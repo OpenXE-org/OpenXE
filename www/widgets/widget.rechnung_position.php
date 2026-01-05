@@ -14,12 +14,13 @@ class WidgetRechnung_position extends WidgetGenRechnung_position
 
   function ExtendsForm()
   {
-    $this->app->erp->AnzeigeFreifelderPositionen($this->form);
-
     $id = (int)$this->app->Secure->GetGET('id');
+    $module = $this->app->Secure->GetGET('module');
+    $sprache = $this->app->erp->GetSpracheBelegPosition($module,$id);
+    $this->app->erp->AnzeigeFreifelderPositionen($this->form, $sprache);
+
     $projektabkuerzung = $this->app->DB->Select("SELECT p.abkuerzung FROM rechnung_position ap LEFT JOIN rechnung a ON a.id=ap.rechnung LEFT JOIN projekt p ON p.id=a.projekt WHERE ap.id='$id' LIMIT 1");
     $this->app->YUI->AutoComplete('erloese','sachkonto',1,"&sid=".$projektabkuerzung);
-
 
     $this->app->YUI->DatePicker("lieferdatum");
     $this->app->YUI->AutoComplete("einheit","artikeleinheit");

@@ -2,7 +2,7 @@
 
 /*
  * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
- * SPDX-FileCopyrightText: 2023 Andreas Palm
+ * SPDX-FileCopyrightText: 2023-2025 Andreas Palm
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
@@ -1419,7 +1419,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           {
             if(stripos($key, $_term) !== false || stripos($value, $_term) !== false)
             {
-              $newarr[] = $key.' '.$value;
+              if ($asObject)
+                $newarr[] = ['isoAlpha2' => $key, 'nameGerman' => $value];
+              else
+                $newarr[] = $key.' '.$value;
             }
           }
         }
@@ -3341,9 +3344,9 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
               LEFT(IFNULL(e.bezeichnunglieferant,'nicht vorhanden'),50),
               ' | ',
               ' ab Menge ',
-              ".$this->app->erp->FormatMenge("IFNULL(e.ab_menge,1)").", 
+              ".$this->app->erp->FormatMengeFuerFormular("IFNULL(e.ab_menge,1)").", 
               ' | Preis ',
-              ".$this->app->erp->FormatPreis("IFNULL(e.preis,0)").", 
+              ".$this->app->erp->FormatPreis("IFNULL(e.preis,0)").",
               ' | VPE ',
               ".$this->app->erp->FormatMenge("IF(IFNULL(e.vpe,1)='',1,IFNULL(e.vpe,1))")."
             ) as `name` 
@@ -3822,12 +3825,16 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         break;
 
         case "shopnameid":
-        $arr = $this->app->DB->SelectArr("SELECT CONCAT(id,' ',bezeichnung) as bezeichnung FROM shopexport WHERE bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("projekt")."");
-        $carr = !empty($arr)?count($arr):0;
-        for($i = 0; $i < $carr; $i++) {
-          $newarr[] = $arr[$i]['bezeichnung'];
-        }
-        break;
+            $fields = $asObject ? 'id, bezeichnung' : "CONCAT(id,' ',bezeichnung) as bezeichnung";
+            $arr = $this->app->DB->SelectArr("SELECT $fields FROM shopexport WHERE bezeichnung LIKE '%$term%' ".$this->app->erp->ProjektRechte("projekt")."");
+            if ($asObject) {
+                $newarr = $arr; break;
+            }
+            $carr = !empty($arr)?count($arr):0;
+            for($i = 0; $i < $carr; $i++) {
+                $newarr[] = $arr[$i]['bezeichnung'];
+            }
+            break;
 
         case "gruppekennziffer":
         $arr = $this->app->DB->SelectArr("SELECT CONCAT(g.kennziffer,' ',g.name) as bezeichnung FROM gruppen g LEFT JOIN projekt p ON p.id=g.projekt  
