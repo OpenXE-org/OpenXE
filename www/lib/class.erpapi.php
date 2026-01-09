@@ -849,11 +849,11 @@ public function NavigationHooks(&$menu)
     if($v['sec'] !== '' || !isset($first[$v['first']])) {
       if($v['sec'] == '') {
         $menu[] = array('first'=>array($v['first'], $v['module'],$v['action']));
-        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
+        $first[$v['first']] = (!empty($menu)?count($menu):0);
       }
       elseif($v['sec'] != '' && !isset($first[$v['first']])){
         $menu[] = array('first'=>array($v['first'], '',''),'sec'=>array(array($v['sec'],$v['module'],$v['action'])));
-        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
+        $first[$v['first']] = (!empty($menu)?count($menu):0);
       }
       else{
         if(isset($menu[$first[$v['first']]])) {
