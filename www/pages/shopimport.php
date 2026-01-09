@@ -1358,124 +1358,125 @@ class Shopimport {
                         for ($i = 0; $i < $gesamtanzahl; $i++) {
                             //import au
                             $result = $this->app->remote->RemoteGetAuftrag($id);
-
                             if (is_array($result)) {
-                                $auftrag = $result[0]['id'];
-                                if (isset($result[0]['warenkorbjson'])) {
-                                    $isjson = true;
-                                    $tmpwarenkorb = json_decode(base64_decode($result[0]['warenkorbjson']), true);
-                                } else {
-                                    $isjson = false;
-                                    $tmpwarenkorb = unserialize(base64_decode($result[0]['warenkorb']));
-                                }
-                                $onlinebestellnummer = $tmpwarenkorb['onlinebestellnummer'];
-                                if (!empty($tmpwarenkorb['useorderid']) || (!is_numeric($onlinebestellnummer) && trim((String) $onlinebestellnummer) !== '')) {
-                                    $onlinebestellnummer = $tmpwarenkorb['auftrag'];
-                                }
-                                if ($holealle && $onlinebestellnummer) {
-                                    $neue_nummer = (int) $onlinebestellnummer + 1;
-                                    $this->app->DB->Update("UPDATE shopexport SET ab_nummer = '$neue_nummer' WHERE id = '$id'");
-                                }
-                                $sessionid = $result[0]['sessionid'];
-                                if ($isjson) {
-                                    $warenkorb = $result[0]['warenkorbjson'];
-                                } else {
-                                    $warenkorb = $result[0]['warenkorb'];
-                                }
-                                $logdatei = $result[0]['logdatei'];
-                                if (empty($logdatei)) {
-                                    $logdatei = date('Y-m-d H:i:s');
-                                }
-                                $projekt = $this->app->DB->Select("SELECT projekt FROM shopexport WHERE id = '$id' LIMIT 1");
-                                if (!empty($tmpwarenkorb['projekt']) && $this->app->DB->Select("SELECT id FROM projekt WHERE id = '" . (int) $tmpwarenkorb['projekt'] . "' LIMIT 1")) {
-                                    $projekt = (int) $tmpwarenkorb['projekt'];
-                                }
-                                if (isset($tmpwarenkorb['subshop']) && $tmpwarenkorb['subshop']) {
-                                    $subshopprojekt = $this->app->DB->Select("SELECT projekt FROM shopexport_subshop WHERE shop = '$id' AND aktiv = 1 AND subshopkennung = '" . $this->app->DB->real_escape_string($tmpwarenkorb['subshop']) . "' LIMIT 1");
-                                    if ($subshopprojekt) {
-                                        $projekt = $subshopprojekt;
+                                foreach ($result as $cart) {
+                                    $auftrag = $cart['id'];
+                                    if (isset($cart['warenkorbjson'])) {
+                                        $isjson = true;
+                                        $tmpwarenkorb = json_decode(base64_decode($cart['warenkorbjson']), true);
+                                    } else {
+                                        $isjson = false;
+                                        $tmpwarenkorb = unserialize(base64_decode($cart['warenkorb']));
                                     }
-                                }
-                                unset($tmpwarenkorb);
-
-                                $standardcheck = true;
-                                $modulename = $this->app->DB->Select(
-                                        sprintf(
-                                                "SELECT modulename FROM shopexport WHERE id = %d AND modulename <> '' AND (shoptyp = 'intern')",
-                                                $id
-                                        )
-                                );
-                                $shopIds = [$id];
-                                $otherModules = empty($modulename) ? null :
-                                        $this->app->DB->SelectFirstCols(
-                                                sprintf(
-                                                        "SELECT id
-                  FROM shopexport
-                  WHERE modulename = '%s' AND id <> %d",
-                                                        $this->app->DB->real_escape_string($modulename), $id
-                                                )
-                                );
-                                if (!empty($otherModules) && $this->app->erp->ModulVorhanden($modulename)) {
-                                    $obj = $this->app->erp->LoadModul($modulename);
-                                    if (!empty($obj) && method_exists($obj, 'EinstellungenStruktur')) {
-                                        $konfiguration = $obj->EinstellungenStruktur();
-                                        if ($konfiguration && isset($konfiguration['globalerauftragsnummernkreis']) && $konfiguration['globalerauftragsnummernkreis']) {
-                                            $shopIds = array_merge([$id], $otherModules);
-                                            $standardcheck = false;
-                                            /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '".$this->app->DB->real_escape_string($auftrag)."' and ((modulename = '".$this->app->DB->real_escape_string($modulename)."' AND shoptyp = 'intern') OR shopid = '$id') and warenkorb = '".$this->app->DB->real_escape_string($warenkorb)."' AND trash = 0
-                                              AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
-                                              LIMIT 1"); */
-                                            /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '".$this->app->DB->real_escape_string($auftrag)."' and ((modulename = '".$this->app->DB->real_escape_string($modulename)."' AND shoptyp = 'intern') OR shopid = '$id') AND trash = 0
-                                              AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
-                                              LIMIT 1"); */
+                                    $onlinebestellnummer = $tmpwarenkorb['onlinebestellnummer'];
+                                    if (!empty($tmpwarenkorb['useorderid']) || (!is_numeric($onlinebestellnummer) && trim((String) $onlinebestellnummer) !== '')) {
+                                        $onlinebestellnummer = $tmpwarenkorb['auftrag'];
+                                    }
+                                    if ($holealle && $onlinebestellnummer) {
+                                        $neue_nummer = (int) $onlinebestellnummer + 1;
+                                        $this->app->DB->Update("UPDATE shopexport SET ab_nummer = '$neue_nummer' WHERE id = '$id'");
+                                    }
+                                    $sessionid = $cart['sessionid'];
+                                    if ($isjson) {
+                                        $warenkorb = $cart['warenkorbjson'];
+                                    } else {
+                                        $warenkorb = $cart['warenkorb'];
+                                    }
+                                    $logdatei = $cart['logdatei'];
+                                    if (empty($logdatei)) {
+                                        $logdatei = date('Y-m-d H:i:s');
+                                    }
+                                    $projekt = $this->app->DB->Select("SELECT projekt FROM shopexport WHERE id = '$id' LIMIT 1");
+                                    if (!empty($tmpwarenkorb['projekt']) && $this->app->DB->Select("SELECT id FROM projekt WHERE id = '" . (int) $tmpwarenkorb['projekt'] . "' LIMIT 1")) {
+                                        $projekt = (int) $tmpwarenkorb['projekt'];
+                                    }
+                                    if (isset($tmpwarenkorb['subshop']) && $tmpwarenkorb['subshop']) {
+                                        $subshopprojekt = $this->app->DB->Select("SELECT projekt FROM shopexport_subshop WHERE shop = '$id' AND aktiv = 1 AND subshopkennung = '" . $this->app->DB->real_escape_string($tmpwarenkorb['subshop']) . "' LIMIT 1");
+                                        if ($subshopprojekt) {
+                                            $projekt = $subshopprojekt;
                                         }
                                     }
-                                }
-                                $checkdoppeltimported = $this->app->DB->Select(
-                                        sprintf(
-                                                "SELECT id
-                  FROM shopimport_auftraege
-                  WHERE extid = '%s' and shopid IN (%s) AND trash = 0
-                  AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
-                  LIMIT 1",
-                                                $this->app->DB->real_escape_string($auftrag), implode(',', $shopIds)
-                                        )
-                                );
+                                    unset($tmpwarenkorb);
 
-                                /* if($standardcheck){ */
-                                /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '" . $this->app->DB->real_escape_string($auftrag) . "' and shopid = '$id' and warenkorb = '" . $this->app->DB->real_escape_string($warenkorb) . "' AND trash = 0
-                                  AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
-                                  LIMIT 1"); */
-                                /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '" . $this->app->DB->real_escape_string($auftrag) . "' and shopid = '$id' AND trash = 0
-                                  AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
-                                  LIMIT 1");
-                                  } */
-
-                                $insid = null;
-                                if ($demomodus == '1') {
-                                    $checkdoppeltimported = null;
-                                }
-                                if (!$checkdoppeltimported) {
-                                    $this->app->DB->Insert("INSERT INTO shopimport_auftraege (id,extid,sessionid,warenkorb,imported,projekt,bearbeiter,logdatei)
-                      VALUES('','$auftrag','$sessionid','$warenkorb','0','$projekt','" . $this->app->User->GetName() . "','$logdatei')");
-                                    $insid = $this->app->DB->GetInsertID();
-                                    if ($insid) {
-                                        $this->app->DB->Update("UPDATE shopimport_auftraege set shopid = '$id' where id = '$insid'");
-                                        $this->app->DB->Update("UPDATE shopimport_auftraege set logdatei = now() where id = '$insid' AND logdatei = '0000-00-00' OR logdatei > now()");
-                                        if ($isjson) {
-                                            $this->app->DB->Update("UPDATE shopimport_auftraege set jsonencoded = 1 where id = '$insid'");
+                                    $standardcheck = true;
+                                    $modulename = $this->app->DB->Select(
+                                            sprintf(
+                                                    "SELECT modulename FROM shopexport WHERE id = %d AND modulename <> '' AND (shoptyp = 'intern')",
+                                                    $id
+                                            )
+                                    );
+                                    $shopIds = [$id];
+                                    $otherModules = empty($modulename) ? null :
+                                            $this->app->DB->SelectFirstCols(
+                                                    sprintf(
+                                                            "SELECT id
+                      FROM shopexport
+                      WHERE modulename = '%s' AND id <> %d",
+                                                            $this->app->DB->real_escape_string($modulename), $id
+                                                    )
+                                    );
+                                    if (!empty($otherModules) && $this->app->erp->ModulVorhanden($modulename)) {
+                                        $obj = $this->app->erp->LoadModul($modulename);
+                                        if (!empty($obj) && method_exists($obj, 'EinstellungenStruktur')) {
+                                            $konfiguration = $obj->EinstellungenStruktur();
+                                            if ($konfiguration && isset($konfiguration['globalerauftragsnummernkreis']) && $konfiguration['globalerauftragsnummernkreis']) {
+                                                $shopIds = array_merge([$id], $otherModules);
+                                                $standardcheck = false;
+                                                /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '".$this->app->DB->real_escape_string($auftrag)."' and ((modulename = '".$this->app->DB->real_escape_string($modulename)."' AND shoptyp = 'intern') OR shopid = '$id') and warenkorb = '".$this->app->DB->real_escape_string($warenkorb)."' AND trash = 0
+                                                  AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
+                                                  LIMIT 1"); */
+                                                /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '".$this->app->DB->real_escape_string($auftrag)."' and ((modulename = '".$this->app->DB->real_escape_string($modulename)."' AND shoptyp = 'intern') OR shopid = '$id') AND trash = 0
+                                                  AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
+                                                  LIMIT 1"); */
+                                            }
                                         }
                                     }
-                                }
+                                    $checkdoppeltimported = $this->app->DB->Select(
+                                            sprintf(
+                                                    "SELECT id
+                      FROM shopimport_auftraege
+                      WHERE extid = '%s' and shopid IN (%s) AND trash = 0
+                      AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
+                      LIMIT 1",
+                                                    $this->app->DB->real_escape_string($auftrag), implode(',', $shopIds)
+                                            )
+                                    );
 
-                                if ($demomodus != '1') {
-                                    $this->app->remote->RemoteDeleteAuftrag($id, $auftrag);
-                                } elseif ($demomodus == '1') {
-                                    $i = $gesamtanzahl;
-                                }
-                            }
-                        }
-                    }
+                                    /* if($standardcheck){ */
+                                    /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '" . $this->app->DB->real_escape_string($auftrag) . "' and shopid = '$id' and warenkorb = '" . $this->app->DB->real_escape_string($warenkorb) . "' AND trash = 0
+                                      AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
+                                      LIMIT 1"); */
+                                    /* $checkdoppeltimported = $this->app->DB->Select("SELECT id FROM shopimport_auftraege WHERE extid = '" . $this->app->DB->real_escape_string($auftrag) . "' and shopid = '$id' AND trash = 0
+                                      AND (imported = 0 OR (imported = 1 AND DATE_SUB(NOW(),INTERVAL 10 MINUTE)>logdatei ))
+                                      LIMIT 1");
+                                      } */
+
+                                    $insid = null;
+                                    if ($demomodus == '1') {
+                                        $checkdoppeltimported = null;
+                                    }
+                                    if (!$checkdoppeltimported) {
+                                        $this->app->DB->Insert("INSERT INTO shopimport_auftraege (id,extid,sessionid,warenkorb,imported,projekt,bearbeiter,logdatei)
+                          VALUES('','$auftrag','$sessionid','$warenkorb','0','$projekt','" . $this->app->User->GetName() . "','$logdatei')");
+                                        $insid = $this->app->DB->GetInsertID();
+                                        if ($insid) {
+                                            $this->app->DB->Update("UPDATE shopimport_auftraege set shopid = '$id' where id = '$insid'");
+                                            $this->app->DB->Update("UPDATE shopimport_auftraege set logdatei = now() where id = '$insid' AND logdatei = '0000-00-00' OR logdatei > now()");
+                                            if ($isjson) {
+                                                $this->app->DB->Update("UPDATE shopimport_auftraege set jsonencoded = 1 where id = '$insid'");
+                                            }
+                                        }
+                                    }
+
+                                    if ($demomodus != '1') {
+                                        $this->app->remote->RemoteDeleteAuftrag($id, $auftrag);
+                                    } elseif ($demomodus == '1') {
+                                        $i = $gesamtanzahl;
+                                    }                                
+                                } // foreach
+                            } // is_array
+                        } // for
+                    } // gesamtanzahl
                 }
             } else {
                 if (!$returncount) {
