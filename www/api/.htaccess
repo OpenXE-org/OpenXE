@@ -1,0 +1,15 @@
+# Redirect documentation files through authenticated PHP handler
+RewriteEngine On
+RewriteRule ^(swagger\.html|docs\.html|openapi\.json|docs\.raml|docs\.generated\.raml)$ docs.php?file=$1 [L,QSA]
+
+# Allow PHP files
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Deny direct access to static documentation files (force through docs.php)
+<FilesMatch "\.(html|json|raml|yaml|yml)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
