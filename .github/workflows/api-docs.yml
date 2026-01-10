@@ -2,13 +2,13 @@ name: Generate API Documentation
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, swagger]
     paths:
       - 'classes/Modules/Api/**'
       - 'www/api/**'
       - 'tools/generate-api-docs.php'
   pull_request:
-    branches: [main, master]
+    branches: [main, master, swagger]
     paths:
       - 'classes/Modules/Api/**'
       - 'www/api/**'
