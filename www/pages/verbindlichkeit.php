@@ -49,7 +49,7 @@ class Verbindlichkeit {
                 // break ommitted
             case "verbindlichkeit_list":
                 $allowed['verbindlichkeit_list'] = array('list');
-                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
+                $heading = array('','','Belegnr','Adresse', 'Lieferant', 'RE-Nr', 'RE-Datum', 'Betrag (brutto)', 'W&auml;hrung','Zahlungsweise','Zahlstatus', 'Ziel','Skontoziel','Skonto','Status','Monitor', 'Men&uuml;');
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
@@ -65,6 +65,7 @@ class Verbindlichkeit {
                     'v.rechnungsdatum',
                     'v.betrag',
                     'v.waehrung',
+                    'v.zahlungsweise',
                     'v.bezahlt',
                     'v.zahlbarbis',
                     'v.skontobis',
@@ -106,6 +107,7 @@ class Verbindlichkeit {
                             ".$app->erp->FormatDate("v.rechnungsdatum").",
                             ".$app->erp->FormatMenge('v.betrag',2).",
                             v.waehrung,
+                            v.zahlungsweise,
                             if(v.bezahlt,'bezahlt',COALESCE(".$payment_status.",'offen')),
                             ".$app->erp->FormatDate("v.zahlbarbis").",
                             IF(v.skonto <> 0,".$app->erp->FormatDate("v.skontobis").",''),
@@ -121,95 +123,95 @@ class Verbindlichkeit {
                 $where = "1";
 
                 if ($entwuerfe) {
-                    $where .= " AND v.belegnr = '' OR v.belegnr IS NULL";
-                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
+                    $where .= " AND (v.belegnr = '' OR v.belegnr IS NULL)";
                 }
                 else {
                     $where .= " AND v.belegnr <> ''";
-                    $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
-                    // Toggle filters
-                    $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
-                    $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
-                    $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
-                    $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
-                    $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
-                    $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
-
-                    for ($r = 1;$r <= 8;$r++) {
-                      $this->app->Tpl->Add('JAVASCRIPT', '
-                                             function fnFilterColumn' . $r . ' ( i )
-                                             {
-                                             if(oMoreData' . $r . $name . '==1)
-                                             oMoreData' . $r . $name . ' = 0;
-                                             else
-                                             oMoreData' . $r . $name . ' = 1;
-
-                                             $(\'#' . $name . '\').dataTable().fnFilter(
-                                               \'\',
-                                               i,
-                                               0,0
-                                               );
-                                             }
-                                             ');
-                    }
-
-                    $more_data1 = $this->app->Secure->GetGET("more_data1");
-                    if ($more_data1 == 1) {
-                       $where .= " AND datei_anzahl IS NULL";
-                    } else {
-                    }
-
-                    $more_data2 = $this->app->Secure->GetGET("more_data2");
-                    if ($more_data2 == 1) {
-                       $where .= " AND v.freigabe <> '1'";
-                    }
-                    else {
-                    }
-
-                    $more_data3 = $this->app->Secure->GetGET("more_data3");
-                    if ($more_data3 == 1) {
-                       $where .= " AND v.rechnungsfreigabe <> '1'";
-                    }
-                    else {
-                    }
-
-                    $more_data4 = $this->app->Secure->GetGET("more_data4");
-                    if ($more_data4 == 1) {
-                       $where .= " AND v.bezahlt <> 1";
-                    }
-                    else {
-                    }
-
-                    $more_data5 = $this->app->Secure->GetGET("more_data5");
-                    if ($more_data5 == 1) {
-                    }
-                    else {
-                       $where .= " AND v.status <> 'storniert'";
-                    }
-
-                    $more_data6 = $this->app->Secure->GetGET("more_data6");
-                    if ($more_data6 == 1) {
-                    }
-                    else {
-                        $where .= " AND v.status <> 'abgeschlossen'";
-                    }
-
-                    $this->app->YUI->DatePicker('zahlbarbis');
-                    $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
-                    if (!empty($filterzahlbarbis)) {
-                        $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
-                        $where .= " AND tables.zahlbarbis <= '".$filterzahlbarbis."'";
-                    }
-
-                    $this->app->YUI->DatePicker('skontobis');
-                    $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
-                    if (!empty($filterskontobis)) {
-                        $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
-                        $where .= " AND tables.skontobis <= '".$filterskontobis."'";
-                    }
-
-                    // END Toggle filters
                 }
+
+                $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
+                // Toggle filters
+                $this->app->Tpl->Add('JQUERYREADY', "$('#anhang').click( function() { fnFilterColumn1( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#wareneingang').click( function() { fnFilterColumn2( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#rechnungsfreigabe').click( function() { fnFilterColumn3( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#nichtbezahlt').click( function() { fnFilterColumn4( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#stornierte').click( function() { fnFilterColumn5( 0 ); } );");
+                $this->app->Tpl->Add('JQUERYREADY', "$('#abgeschlossen').click( function() { fnFilterColumn6( 0 ); } );");
+
+                for ($r = 1;$r <= 8;$r++) {
+                  $this->app->Tpl->Add('JAVASCRIPT', '
+                                         function fnFilterColumn' . $r . ' ( i )
+                                         {
+                                         if(oMoreData' . $r . $name . '==1)
+                                         oMoreData' . $r . $name . ' = 0;
+                                         else
+                                         oMoreData' . $r . $name . ' = 1;
+
+                                         $(\'#' . $name . '\').dataTable().fnFilter(
+                                           \'\',
+                                           i,
+                                           0,0
+                                           );
+                                         }
+                                         ');
+                }
+
+                $more_data1 = $this->app->Secure->GetGET("more_data1");
+                if ($more_data1 == 1) {
+                   $where .= " AND datei_anzahl IS NULL";
+                } else {
+                }
+
+                $more_data2 = $this->app->Secure->GetGET("more_data2");
+                if ($more_data2 == 1) {
+                   $where .= " AND v.freigabe <> '1'";
+                }
+                else {
+                }
+
+                $more_data3 = $this->app->Secure->GetGET("more_data3");
+                if ($more_data3 == 1) {
+                   $where .= " AND v.rechnungsfreigabe <> '1'";
+                }
+                else {
+                }
+
+                $more_data4 = $this->app->Secure->GetGET("more_data4");
+                if ($more_data4 == 1) {
+                   $where .= " AND v.bezahlt <> 1";
+                }
+                else {
+                }
+
+                $more_data5 = $this->app->Secure->GetGET("more_data5");
+                if ($more_data5 == 1) {
+                }
+                else {
+                   $where .= " AND v.status <> 'storniert'";
+                }
+
+                $more_data6 = $this->app->Secure->GetGET("more_data6");
+                if ($more_data6 == 1) {
+                }
+                else {
+                    $where .= " AND v.status <> 'abgeschlossen'";
+                }
+
+                $this->app->YUI->DatePicker('zahlbarbis');
+                $filterzahlbarbis = $this->app->YUI->TableSearchFilter($name, 7,'zahlbarbis');
+                if (!empty($filterzahlbarbis)) {
+                    $filterzahlbarbis = $this->app->String->Convert($filterzahlbarbis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND tables.zahlbarbis <= '".$filterzahlbarbis."'";
+                }
+
+                $this->app->YUI->DatePicker('skontobis');
+                $filterskontobis = $this->app->YUI->TableSearchFilter($name, 8,'skontobis');
+                if (!empty($filterskontobis)) {
+                    $filterskontobis = $this->app->String->Convert($filterskontobis,'%1.%2.%3','%3-%2-%1');
+                    $where .= " AND tables.skontobis <= '".$filterskontobis."'";
+                }
+
+                $count = "SELECT count(DISTINCT id) FROM verbindlichkeit v WHERE $where";
 
                 $moreinfo = true; // Allow drop down details
                 $menucol = 1; // For moredata
