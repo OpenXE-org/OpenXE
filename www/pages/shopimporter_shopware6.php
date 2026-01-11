@@ -1019,13 +1019,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $deliveryTimeId = $this->getDeliveryTimeId($article['lieferzeitmanuell']);
             }
 
-            if (empty($systemFieldsToAdd['visibilities']) && !empty($this->shopwareDefaultSalesChannel)) {
-                $systemFieldsToAdd['visibilities'] = $this->modifySalesChannel(
-                    explode(',', $this->shopwareDefaultSalesChannel),
-                    $articleIdShopware,
-                );
-            }
-
             if (empty($systemFieldsToAdd['unitId']) && !empty($article['einheit'])) {
                 $systemFieldsToAdd['unitId'] = $this->unitToAdd($article['einheit']);
             }
@@ -2637,6 +2630,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function modifySalesChannel($salesChannelNames, $articleIdInShopware)
     {
+        if (empty($salesChannelNames) && !empty($this->shopwareDefaultSalesChannel))
+            $salesChannelNames = [$this->shopwareDefaultSalesChannel];
+
         $salesChannelInXentralIds = [];
         foreach ($salesChannelNames as $salesChannelName) {
             $salesChannelInfo = $this->shopwareRequest(
