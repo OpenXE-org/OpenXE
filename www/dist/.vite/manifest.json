@@ -13,9 +13,9 @@
       "_vue-9Z3BxQCl.js"
     ]
   },
-  "_vue-!~{005}~.js": {
+  "_vue-!~{006}~.js": {
     "file": "assets/vue-CMXOvwpj.css",
-    "src": "_vue-!~{005}~.js"
+    "src": "_vue-!~{006}~.js"
   },
   "_vue-9Z3BxQCl.js": {
     "file": "vue-9Z3BxQCl.js",
@@ -29,6 +29,15 @@
       "assets/primeicons-WjwUDZjB.woff",
       "assets/primeicons-MpK4pl85.ttf",
       "assets/primeicons-Dr5RGzOO.svg"
+    ]
+  },
+  "classes/Modules/Appstore/www/js/entry.js": {
+    "file": "modules/Appstore-7MmwZc_b.js",
+    "name": "modules/Appstore",
+    "src": "classes/Modules/Appstore/www/js/entry.js",
+    "isEntry": true,
+    "css": [
+      "assets/Appstore-DQlBPe5p.css"
     ]
   },
   "classes/Modules/CrossSelling/www/js/entry.js": {

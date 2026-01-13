@@ -3029,6 +3029,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\Api\\Controller\\Version1\\DocumentScannerController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/DocumentScannerController.php',
         'Xentral\\Modules\\Api\\Controller\\Version1\\FileController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/FileController.php',
         'Xentral\\Modules\\Api\\Controller\\Version1\\GenericController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/GenericController.php',
+        'Xentral\\Modules\\Api\\Controller\\Version1\\ImportCSVController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/ImportCSVController.php',
         'Xentral\\Modules\\Api\\Controller\\Version1\\ReportsController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/ReportsController.php',
         'Xentral\\Modules\\Api\\Controller\\Version1\\StartController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/StartController.php',
         'Xentral\\Modules\\Api\\Controller\\Version1\\TrackingNumberController' => __DIR__ . '/../..' . '/classes/Modules/Api/Controller/Version1/TrackingNumberController.php',

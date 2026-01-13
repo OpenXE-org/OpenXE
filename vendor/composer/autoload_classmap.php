@@ -2727,6 +2727,7 @@ return array(
     'Xentral\\Modules\\Api\\Controller\\Version1\\DocumentScannerController' => $baseDir . '/classes/Modules/Api/Controller/Version1/DocumentScannerController.php',
     'Xentral\\Modules\\Api\\Controller\\Version1\\FileController' => $baseDir . '/classes/Modules/Api/Controller/Version1/FileController.php',
     'Xentral\\Modules\\Api\\Controller\\Version1\\GenericController' => $baseDir . '/classes/Modules/Api/Controller/Version1/GenericController.php',
+    'Xentral\\Modules\\Api\\Controller\\Version1\\ImportCSVController' => $baseDir . '/classes/Modules/Api/Controller/Version1/ImportCSVController.php',
     'Xentral\\Modules\\Api\\Controller\\Version1\\ReportsController' => $baseDir . '/classes/Modules/Api/Controller/Version1/ReportsController.php',
     'Xentral\\Modules\\Api\\Controller\\Version1\\StartController' => $baseDir . '/classes/Modules/Api/Controller/Version1/StartController.php',
     'Xentral\\Modules\\Api\\Controller\\Version1\\TrackingNumberController' => $baseDir . '/classes/Modules/Api/Controller/Version1/TrackingNumberController.php',
