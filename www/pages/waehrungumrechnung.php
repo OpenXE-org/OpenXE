@@ -221,7 +221,7 @@ class Waehrungumrechnung {
     }
 
     public function GetWaehrungUmrechnungskurs($von, $nach, $onlytable) {
-        $result = $this->app->DB->Select("SELECT kurs FROM waehrung_umrechnung WHERE waehrung_von = '$von' AND waehrung_nach = '$nach' AND gueltig_bis is NULL OR gueltig_bis = '0000-00-00 00:00:00'");
+        $result = $this->app->DB->Select("SELECT kurs FROM waehrung_umrechnung WHERE waehrung_von = '$von' AND waehrung_nach = '$nach' AND gueltig_bis is NULL OR gueltig_bis = '0000-00-00 00:00:00' LIMIT 1");
         if (!is_null($result)) {
             return $result;
         }
