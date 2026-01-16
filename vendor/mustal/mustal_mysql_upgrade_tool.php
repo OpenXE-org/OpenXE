@@ -485,13 +485,6 @@ function mustal_column_sql_create_property_definition(string $property, string $
                 $property_value = "";
             }
         break;
-        case 'Key':
-            if ($property_value == 'PRI') {
-                $property_value = " PRIMARY KEY";
-            } else {
-                $property_value = "";
-            }
-        break;
         default:
             $property_value = "";
         break;
@@ -604,10 +597,12 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
                             // Add keys
                             $comma = ", ";
                             foreach ($table['keys'] as $key) {
-                                if ($key['Key_name'] !== 'PRIMARY') {
-                                    $keystring = mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
-                                    $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
+                                if ($key['Key_name'] == 'PRIMARY') {
+                                    $key['Non_unique'] = 'PRIMARY';
+                                    $key['Key_name'] = '';
                                 }
+                                $keystring = mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` ",$key['Index_type']);
+                                $sql .= $comma.$keystring."(`".implode("`,`",$key['columns'])."`) ";
                             }
                             $sql .= ")";
                             $upgrade_sql[] = $sql;
@@ -688,10 +683,12 @@ function mustal_calculate_db_upgrade(array $compare_def, array $db_def, array &$
 
                     if ($key_key !== false) {
                         $key = $table['keys'][$key_key];
-                        if ($key['Key_name'] != 'PRIMARY') {
-                            $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` "."(`".implode("`,`",$key['columns'])."`)",$key['Index_type']).";";
-                            $upgrade_sql[] = $sql;
+                        if ($key['Key_name'] == 'PRIMARY') {
+                            $key['Non_unique'] = 'PRIMARY';
+                            $key['Key_name'] = '';
                         }
+                        $sql = "ALTER TABLE `$table_name` ADD ".mustal_key_type(" ".$key['Non_unique']." KEY `".$key['Key_name']."` "."(`".implode("`,`",$key['columns'])."`)",$key['Index_type']).";";
+                        $upgrade_sql[] = $sql;
                     }
                     else {
                         $result[] = array(7,"Error key_key while adding key '$key_name' in table '".$table['name']."'.");
