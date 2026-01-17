@@ -26,6 +26,23 @@ class Ticket {
         $this->app->ActionHandler("dateien", "ticket_dateien");
         $this->app->ActionHandler("adddoc", "ticket_beleg_hinzufuegen");
         $this->app->ActionHandler("protokoll", "ticket_protokoll");
+        $this->app->ActionHandler("portal_session", "ticket_portal_session");
+        $this->app->ActionHandler("portal_status", "ticket_portal_status");
+        $this->app->ActionHandler("portal_messages", "ticket_portal_messages");
+        $this->app->ActionHandler("portal_message", "ticket_portal_message");
+        $this->app->ActionHandler("portal_notifications", "ticket_portal_notifications");
+        $this->app->ActionHandler("portal_notification", "ticket_portal_notification");
+        $this->app->ActionHandler("portal_offer", "ticket_portal_offer");
+        $this->app->ActionHandler("portal_offer_confirm", "ticket_portal_offer_confirm");
+        $this->app->ActionHandler("portal_token", "ticket_portal_token");
+        $this->app->ActionHandler("portal_magic", "ticket_portal_magic");
+        $this->app->ActionHandler("portal_magic_token", "ticket_portal_magic_token");
+        $this->app->ActionHandler("portal_print", "ticket_portal_print");
+        $this->app->ActionHandler("portal_staff", "ticket_portal_staff");
+        $this->app->ActionHandler("portal_plugin_download", "ticket_portal_plugin_download");
+        $this->app->ActionHandler("create_customer", "ticket_create_customer");
+        $this->app->ActionHandler("create_offer", "ticket_create_offer");
+        $this->app->ActionHandler("portal_settings", "ticket_portal_settings");
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
     }
@@ -299,6 +316,9 @@ class Ticket {
                 case 'zuordnen':
                     $status = $this->app->Secure->GetPOST('status');
                     $warteschlange = $this->app->Secure->GetPOST('warteschlange');
+                    $oldStatuses = $this->app->DB->SelectArr(
+                      "SELECT id, status FROM ticket WHERE id IN (".implode(",", $selectedIds).")"
+                    );
 
                     $sql = "UPDATE ticket SET status = '".$status."', zeit = NOW()";
                     if ($warteschlange != '') {
@@ -308,6 +328,23 @@ class Ticket {
                     $sql .= " WHERE id IN (".implode(",",$selectedIds).")";
                     $this->app->DB->Update($sql);
                     $this->ticket_set_self_assigned_status($selectedIds);
+                    if (!empty($oldStatuses)) {
+                      $currentStatuses = $this->app->DB->SelectArr(
+                        "SELECT id, status FROM ticket WHERE id IN (".implode(",", $selectedIds).")"
+                      );
+                      $oldMap = [];
+                      foreach ($oldStatuses as $row) {
+                        $oldMap[(int)$row['id']] = (string)$row['status'];
+                      }
+                      $userId = (int)$this->app->User->GetID();
+                      foreach ($currentStatuses as $row) {
+                        $ticketId = (int)$row['id'];
+                        if (!isset($oldMap[$ticketId])) {
+                          continue;
+                        }
+                        $this->portalHandleInternalStatusChange($ticketId, $oldMap[$ticketId], (string)$row['status'], $userId);
+                      }
+                    }
                 break;
                 case 'spam_filter':
                     if($this->app->erp->RechteVorhanden('ticketregeln','create')) {
@@ -368,6 +405,9 @@ class Ticket {
 
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=ticket&action=create", "Neu anlegen");
+        if ($this->app->erp->RechteVorhanden('firmendaten', 'edit')) {
+            $this->app->erp->MenuEintrag("index.php?module=ticket&action=portal_settings", "Portal Einstellungen");
+        }
 
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
 
@@ -491,84 +531,154 @@ class Ticket {
 
     function add_messages_tpl($ticket_id, $messages, $showdrafts) {
 
+        // Reverse messages so newest appear at bottom
+        $messages = array_reverse($messages);
+
+        // Chat-Container Start
+        $html = '<div class="ticket-chat-container">';
+        $html .= '<div class="chat-messages-wrapper" id="chatMessagesWrapper">';
+
+        $lastDate = null;
+
         // Add Messages now
         foreach ($messages as $message) {
 
-            $message['betreff'] = strip_tags($message['betreff']); //+ #20230916 XSS
-
-            // Clear this first
-            $this->app->Tpl->Set('NACHRICHT_ANHANG',"");
+            $message['betreff'] = strip_tags($message['betreff'] ?? ''); //+ #20230916 XSS
 
             if (empty($message['betreff'])) {
                 $message['betreff'] = "...";
             }
 
-            // Xentral 20 compatibility
-            if ($message['textausgang'] != '') {
-              // Sent message
-
-              $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($message['betreff']).'</a>');
-              $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);
-              $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
-              $this->app->Tpl->Set("META_FLOAT","left");
-              $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
-              $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['bearbeiter']));
-              $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['verfasser']." <".$message['mail'].">"));
-
-//              $this->app->Tpl->Set("NACHRICHT_TEXT",$message['textausgang']);
-              $this->app->Tpl->Set("NACHRICHT_TEXT",'<iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>');
-
-              $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
+            // Skip drafts if not requested
+            if (!$showdrafts && $message['versendet'] == '1' && is_null($message['zeitausgang'])) {
+                continue;
             }
 
-            if ($message['versendet'] == '1' && empty($message['textausgang'])) { //  textausgang is always empty, except for old Xentral 20 tickets
+            // Direction & Alignment Logic (King-Mode: Customer Left / Team Right)
+            // Portal messages FROM customer = incoming (left)
+            // Team messages TO customer = outgoing (right)
+            // KEY: verfasser="Portal" means it's a TEAM message created in backend
+            $isOutgoing = (
+                $message['versendet'] == '1' || 
+                !empty($message['textausgang']) ||
+                ($message['verfasser'] ?? '') === 'Portal' ||
+                !empty($message['bearbeiter'])
+            );
+            $direction = $isOutgoing ? 'outgoing' : 'incoming';
+            $senderName = $isOutgoing ? ($message['bearbeiter'] ?: 'Team') : ($message['verfasser'] ?: 'Kunde');
+            $senderIcon = $isOutgoing ? '👤' : '📧';
+            
+            $rawTime = $isOutgoing ? ($message['zeitausgang'] ?: $message['zeit']) : $message['zeit'];
+            $messageTime = date('H:i', strtotime($rawTime));
+            $messageDate = date('Y-m-d', strtotime($rawTime));
 
-               // Sent message
+            // Date Separator
+            if ($lastDate !== $messageDate) {
+                $dateLabel = date('d.m.Y', strtotime($messageDate));
+                $today = date('Y-m-d');
+                $yesterday = date('Y-m-d', strtotime('-1 day'));
+                
+                if ($messageDate === $today) $dateLabel = 'Heute';
+                elseif ($messageDate === $yesterday) $dateLabel = 'Gestern';
+                
+                $html .= '<div class="chat-date-separator"><span>' . $dateLabel . '</span></div>';
+                $lastDate = $messageDate;
+            }
 
-                if (is_null($message['zeitausgang'])) {
-                    if (!$showdrafts) {
-                        continue;
-                    }
-                    $this->app->Tpl->Set("NACHRICHT_BETREFF",htmlentities($message['betreff']." (Entwurf)"));
+            // Build message HTML directly
+            $html .= '<div class="chat-bubble ' . $direction . '">';
+            $html .= '  <div class="bubble-avatar" title="' . htmlentities($senderName) . '">';
+            $html .= '    <span class="avatar-icon">' . $senderIcon . '</span>';
+            $html .= '  </div>';
+            $html .= '  <div class="bubble-content">';
+            $html .= '    <div class="bubble-header">';
+            $html .= '      <span class="bubble-sender">' . htmlentities($senderName) . '</span>';
+            $html .= '      <span class="bubble-time">' . $messageTime . '</span>';
+            $html .= '    </div>';
+            
+            // Subject/Betreff - Skip "Portal Nachricht" default
+            $displayBetreff = $message['betreff'];
+            if ($displayBetreff === 'Portal Nachricht') {
+                $displayBetreff = ''; // Skip default portal subject
+            }
+            
+            $betreffPrefix = (is_null($message['zeitausgang']) && $isOutgoing) ? " (Entwurf)" : "";
+            
+            if (!empty($displayBetreff)) {
+                if (!empty($message['textausgang'])) {
+                    $html .= '    <div class="bubble-subject">';
+                    $html .= '      <a href="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'" target="_blank">'.htmlentities($displayBetreff).'</a>';
+                    $html .= '    </div>';
                 } else {
-                  $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).'</a>');
+                    $html .= '    <div class="bubble-subject">';
+                    $html .= '      <a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($displayBetreff).$betreffPrefix.'</a>';
+                    $html .= '    </div>';
                 }
-                $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail_replyto'].">"));
-                $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail']));
-                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc']));
-                $this->app->Tpl->Set("NACHRICHT_FLOAT","right");
-                $this->app->Tpl->Set("META_FLOAT","left");
-                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeitausgang']);
-                $this->app->Tpl->Set("NACHRICHT_NAME",htmlentities($message['verfasser']));
-            } else {
-
-                // Received message
-
-                $this->app->Tpl->Set("NACHRICHT_SENDER",htmlentities($message['verfasser']." <".$message['mail'].">"));
-
-                if ($message['mail_recipients'] != '') {
-                  $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['mail_recipients']));
-                }
-                else {
-                  // Xentral 20 compatibility
-                  $this->app->Tpl->Set("NACHRICHT_RECIPIENTS",htmlentities($message['quelle']));
-                }
-                $this->app->Tpl->Set("NACHRICHT_CC_RECIPIENTS",htmlentities($message['mail_cc_recipients']));
-                $this->app->Tpl->Set("NACHRICHT_BETREFF",'<a href="index.php?module=ticket&action=text&mid='.$message['id'].'&insecure=1" target="_blank">'.htmlentities($message['betreff']).'</a>');
-                $this->app->Tpl->Set("NACHRICHT_FLOAT","left");
-                $this->app->Tpl->Set("META_FLOAT","right");
-                $this->app->Tpl->Set("NACHRICHT_ZEIT",$message['zeit']);
             }
 
-//            $this->app->Tpl->Set("NACHRICHT_TEXT",$message['text']);
-            $this->app->Tpl->Set("NACHRICHT_TEXT",'<iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>');
+            // Message Text (iframe)
+            $html .= '    <div class="bubble-text">';
+            if (!empty($message['textausgang'])) {
+                $html .= '      <iframe class="ticket_text" src="index.php?module=ticket&action=text_ausgang&mid='.$message['id'].'"></iframe>';
+            } else {
+                $html .= '      <iframe class="ticket_text" src="index.php?module=ticket&action=text&mid='.$message['id'].'"></iframe>';
+            }
+            $html .= '    </div>';
 
+            // Attachments
+            ob_start();
+            $this->add_attachments_html($ticket_id, $message['id'], 'NACHRICHT_ANHANG', false);
+            $attachmentsHtml = $this->app->Tpl->Get('NACHRICHT_ANHANG');
+            $this->app->Tpl->Set('NACHRICHT_ANHANG', ''); // Clear for next iteration
+            ob_end_clean();
+            
+            if (!empty($attachmentsHtml)) {
+                $html .= '    <div class="bubble-attachments">' . $attachmentsHtml . '</div>';
+            }
 
-            $this->add_attachments_html($ticket_id,$message['id'],'NACHRICHT_ANHANG',false);
+            // CC Info
+            $cc = $isOutgoing ? ($message['mail_cc'] ?? '') : ($message['mail_cc_recipients'] ?? '');
+            if (!empty($cc)) {
+                $html .= '    <div class="bubble-cc">CC: ' . htmlentities($cc) . '</div>';
+            }
 
-            $this->app->Tpl->Parse('MESSAGES', "ticket_nachricht.tpl");
-
+            $html .= '  </div>'; // .bubble-content
+            $html .= '</div>'; // .chat-bubble
         }
+
+        // Chat-Container End + Floating Button
+        $html .= '</div>'; // .chat-messages-wrapper
+        $html .= '<button class="chat-scroll-bottom" id="chatScrollBtn" onclick="document.getElementById(\'chatMessagesWrapper\').scrollTop = document.getElementById(\'chatMessagesWrapper\').scrollHeight">↓</button>';
+        $html .= '</div>'; // .ticket-chat-container
+
+        // Inline JS for Scroll Visibility and iFrame resizing
+        $html .= '<script>
+            (function() {
+                var w = document.getElementById("chatMessagesWrapper");
+                var b = document.getElementById("chatScrollBtn");
+                if (w && b) {
+                    w.scrollTop = w.scrollHeight;
+                    w.onscroll = function() {
+                        if (w.scrollHeight - w.scrollTop > w.clientHeight + 100) b.classList.add("visible");
+                        else b.classList.remove("visible");
+                    };
+                }
+                
+                // iFrame Auto-Height
+                setInterval(function() {
+                    var frames = document.querySelectorAll(".ticket_text");
+                    frames.forEach(function(f) {
+                        try {
+                            var h = f.contentWindow.document.body.scrollHeight;
+                            if (h > 0 && Math.abs(f.offsetHeight - h) > 5) f.style.height = (h + 20) + "px"; // +20px padding
+                        } catch(e) {}
+                    });
+                }, 1000);
+            })();
+        </script>';
+
+        // Output the complete HTML to the MESSAGES placeholder
+        $this->app->Tpl->Set('MESSAGES', $html);
     }
 
     function ticket_text() {
@@ -727,14 +837,19 @@ class Ticket {
           }
         }
 
-        $old = $this->ticket_log_changes($id, onlyread: true);
-        $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
-        $this->app->DB->Update($sql);
-        $id = $this->app->DB->GetInsertID();
-        $this->ticket_set_self_assigned_status(array($id));
-        $this->ticket_log_changes($id, old_values: $old);
+    $old = $this->ticket_log_changes($id, onlyread: true);
+    $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
+    $this->app->DB->Update($sql);
+    $id = $this->app->DB->GetInsertID();
+    $this->ticket_set_self_assigned_status(array($id));
+    $this->ticket_log_changes($id, old_values: $old);
+    $oldStatus = is_array($old) ? (string)($old['status'] ?? '') : '';
+    $currentStatus = (string)$this->app->DB->Select("SELECT status FROM ticket WHERE id = ".$id);
+    if ($oldStatus !== '' && $currentStatus !== '' && $oldStatus !== $currentStatus) {
+      $this->portalHandleInternalStatusChange((int)$id, $oldStatus, $currentStatus, (int)$this->app->User->GetID());
+    }
 
-        return($id);
+    return($id);
     }
 
     function save_draft($id, $input) {
@@ -824,9 +939,37 @@ class Ticket {
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
         $msg = $this->app->erp->base64_url_decode($this->app->Secure->GetGET('msg'));
+        $portalPublicNote = trim((string)$this->app->Secure->GetPOST('portal_public_note'));
+        $portalInternalNote = trim((string)$this->app->Secure->GetPOST('portal_internal_note'));
+        $portalNoteRequested = ($submit === 'portal_note');
 
         if ($input['neue_notiz'] != '') {
             $input['notiz'] = $this->app->User->GetName()." ".date("d.m.Y H:i").": ".$input['neue_notiz']."\r\n".$input['notiz'];
+        }
+
+        if ($portalNoteRequested) {
+            if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+                $msg = '<div class="error">Portal ist deaktiviert.</div>';
+            } elseif ($portalPublicNote === '' && $portalInternalNote === '') {
+                $msg = '<div class="error">Bitte einen Kommentar eingeben.</div>';
+            } else {
+                $ticket = $this->portalGetTicketForPortal((int)$id);
+                if (!$ticket) {
+                    $msg = '<div class="error">Ticket nicht gefunden.</div>';
+                } else {
+                    $userId = (int)$this->app->User->GetID();
+                    if ($portalPublicNote !== '') {
+                        $this->portalInsertPortalMessage($ticket, 'staff', $userId, $portalPublicNote, true);
+                    }
+                    if ($portalInternalNote !== '') {
+                        $this->portalInsertPortalMessage($ticket, 'staff', $userId, $portalInternalNote, false);
+                    }
+                    $msg = '<div class="info">Portal-Kommentar gespeichert.</div>';
+                }
+            }
+            $msg = $this->app->erp->base64_url_encode($msg);
+            header("Location: index.php?module=ticket&action=edit&id=$id&msg=$msg");
+            $this->app->ExitXentral();
         }
 
         // Always save
@@ -859,6 +1002,162 @@ class Ticket {
         }
 
         $this->app->Tpl->Set('ADRESSE_ID',$ticket_from_db['adresse']);
+        $addressId = (int)$ticket_from_db['adresse'];
+        $ticketId = (int)$id;
+        $createCustomerButton = '';
+        $createOfferButton = '';
+        $portalTokenButton = '';
+        $portalLinkButton = '';
+        $portalMagicButton = '';
+        $portalCommentsBlock = '';
+        if ($this->app->erp->RechteVorhanden('adresse', 'edit') && $addressId <= 0) {
+            $createCustomerButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_customer&id='.$ticketId.'\';">Kunde anlegen</button></td></tr>';
+        }
+        if ($this->app->erp->RechteVorhanden('angebot', 'edit') && $addressId > 0) {
+            $createOfferButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" onclick="window.location.href=\'index.php?module=ticket&action=create_offer&id='.$ticketId.'\';">Angebot anlegen</button></td></tr>';
+        }
+        if ($this->app->erp->RechteVorhanden('ticket', 'edit') && $this->portalGetSettingBool('ticketportal_enabled')) {
+            $portalUrl = trim((string)$this->app->erp->Firmendaten('ticketportal_portal_url'));
+            $portalTicketNumber = (string)$ticket_from_db['schluessel'];
+            $portalTokenButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-token-btn" data-ticket="'.$ticketId.'">Portal-Hash kopieren</button></td></tr>';
+            $portalLinkButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-link-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'" data-ticket-number="'.htmlentities($portalTicketNumber).'">Portal-Link kopieren</button></td></tr>';
+            $portalMagicButton = '<td><button type="button" class="ui-button-icon" style="width:100%;" id="ticket-portal-magic-btn" data-ticket="'.$ticketId.'" data-portal-url="'.htmlentities($portalUrl).'">Magic Link kopieren</button></td></tr>';
+            $this->app->Tpl->Add('JQUERYREADY', "
+              function portalCopyText(text, label) {
+                if (!text) {
+                  return;
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).catch(function() {});
+                }
+                window.prompt(label, text);
+              }
+              function portalFetchToken(ticketId, done) {
+                $.getJSON('index.php?module=ticket&action=portal_token&id=' + ticketId)
+                  .done(function(resp) {
+                    if (resp && resp.token) {
+                      done(null, resp.token);
+                      return;
+                    }
+                    var msg = (resp && resp.error) ? resp.error : 'Token konnte nicht geladen werden.';
+                    done(msg, null);
+                  })
+                  .fail(function() {
+                    done('Token konnte nicht geladen werden.', null);
+                  });
+              }
+              function portalFetchMagicToken(ticketId, done) {
+                $.getJSON('index.php?module=ticket&action=portal_magic_token&id=' + ticketId)
+                  .done(function(resp) {
+                    if (resp && resp.token) {
+                      done(null, resp.token, resp.expires_at || '');
+                      return;
+                    }
+                    var msg = (resp && resp.error) ? resp.error : 'Magic Link konnte nicht geladen werden.';
+                    done(msg, null, '');
+                  })
+                  .fail(function() {
+                    done('Magic Link konnte nicht geladen werden.', null, '');
+                  });
+              }
+              $('#ticket-portal-token-btn').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ticketId = btn.data('ticket');
+                if (!ticketId) {
+                  alert('Ticket ID fehlt.');
+                  return;
+                }
+                btn.prop('disabled', true);
+                portalFetchToken(ticketId, function(err, token) {
+                  if (err) {
+                    alert(err);
+                  } else {
+                    portalCopyText(token, 'Portal-Hash (kopieren):');
+                  }
+                  btn.prop('disabled', false);
+                });
+              });
+              $('#ticket-portal-link-btn').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ticketId = btn.data('ticket');
+                var portalUrl = btn.data('portal-url') || '';
+                var ticketNumber = btn.data('ticket-number') || '';
+                if (!ticketId) {
+                  alert('Ticket ID fehlt.');
+                  return;
+                }
+                if (!portalUrl) {
+                  alert('Portal URL fehlt. Bitte in den Portal-Einstellungen setzen.');
+                  return;
+                }
+                if (!ticketNumber) {
+                  alert('Ticketnummer fehlt.');
+                  return;
+                }
+                btn.prop('disabled', true);
+                var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
+                var params = 'ticket_number=' + encodeURIComponent(ticketNumber);
+                var link = portalUrl + separator + params;
+                portalCopyText(link, 'Portal-Link (kopieren):');
+                btn.prop('disabled', false);
+              });
+              $('#ticket-portal-magic-btn').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ticketId = btn.data('ticket');
+                var portalUrl = btn.data('portal-url') || '';
+                if (!ticketId) {
+                  alert('Ticket ID fehlt.');
+                  return;
+                }
+                if (!portalUrl) {
+                  alert('Portal URL fehlt. Bitte in den Portal-Einstellungen setzen.');
+                  return;
+                }
+                btn.prop('disabled', true);
+                portalFetchMagicToken(ticketId, function(err, token, expiresAt) {
+                  if (err) {
+                    alert(err);
+                  } else {
+                    var separator = portalUrl.indexOf('?') === -1 ? '?' : '&';
+                    var params = 'magic_token=' + encodeURIComponent(token);
+                    var link = portalUrl + separator + params;
+                    var label = 'Magic Link (kopieren):';
+                    if (expiresAt) {
+                      label = 'Magic Link (gueltig bis ' + expiresAt + '):';
+                    }
+                    portalCopyText(link, label);
+                  }
+                  btn.prop('disabled', false);
+                });
+              });
+            ");
+            $portalCommentsBlock = '
+              <div class="row">
+                <div class="row-height">
+                  <div class="col-xs-14 col-md-12 col-md-height">
+                    <div class="inside inside-full-height">
+                      <fieldset>
+                        <legend>Portal Kommentare</legend>
+                        <table width="100%" border="0" class="mkTableFormular">
+                          <tr><td>{|Kommentar fuer Kunden|}:</td><td><textarea name="portal_public_note" rows="3" style="width:100%;"></textarea></td></tr>
+                          <tr><td>{|Interne Notiz|}:</td><td><textarea name="portal_internal_note" rows="3" style="width:100%;"></textarea></td></tr>
+                          <tr><td></td><td><button name="submit" value="portal_note" class="ui-button-icon">Portal-Kommentar speichern</button></td></tr>
+                        </table>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              </div>';
+        }
+        $this->app->Tpl->Set('CREATE_CUSTOMER_BUTTON', $createCustomerButton);
+        $this->app->Tpl->Set('CREATE_OFFER_BUTTON', $createOfferButton);
+        $this->app->Tpl->Set('PORTAL_TOKEN_BUTTON', $portalTokenButton);
+        $this->app->Tpl->Set('PORTAL_LINK_BUTTON', $portalLinkButton);
+        $this->app->Tpl->Set('PORTAL_MAGIC_BUTTON', $portalMagicButton);
+        $this->app->Tpl->Set('PORTAL_COMMENTS_BLOCK', $portalCommentsBlock);
 
         $this->app->YUI->AutoComplete("projekt","projektname",1);
         $this->app->YUI->AutoComplete("status","ticketstatus",1);
@@ -1133,6 +1432,132 @@ class Ticket {
         $this->app->Tpl->Parse('PAGE', "ticket_edit.tpl");
     }
 
+    public function ticket_create_customer()
+    {
+        $ticketId = (int)$this->app->Secure->GetGET('id');
+        if ($ticketId <= 0) {
+            return;
+        }
+        if (!$this->app->erp->RechteVorhanden('adresse', 'edit')) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung um Kunden anzulegen.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+
+        $ticket = $this->app->DB->SelectRow(
+            "SELECT id, schluessel, adresse, kunde, mailadresse, projekt
+             FROM ticket
+             WHERE id = $ticketId
+             LIMIT 1"
+        );
+        if (empty($ticket)) {
+            return;
+        }
+        if (!empty($ticket['adresse']) && (int)$ticket['adresse'] > 0) {
+            $msg = $this->app->erp->base64_url_encode('<div class="info">Ticket hat bereits eine Adresse.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+
+        $name = trim((string)$ticket['kunde']);
+        $email = trim((string)$ticket['mailadresse']);
+        if ($name === '') {
+            $name = $email;
+        }
+        if ($name === '') {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Kein Name oder E-Mail im Ticket gefunden.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+
+        $adresseId = (int)$this->app->erp->CreateAdresse($this->app->DB->real_escape_string($name));
+        if ($adresseId <= 0) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Kunde konnte nicht angelegt werden.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+
+        $updateParts = [];
+        if ($email !== '') {
+            $updateParts[] = "email = '".$this->app->DB->real_escape_string($email)."'";
+        }
+        if (!empty($ticket['projekt']) && (int)$ticket['projekt'] > 0) {
+            $updateParts[] = "projekt = ".(int)$ticket['projekt'];
+        }
+        if (!empty($updateParts)) {
+            $this->app->DB->Update("UPDATE adresse SET ".implode(', ', $updateParts)." WHERE id = ".$adresseId." LIMIT 1");
+        }
+        if (!empty($ticket['projekt']) && (int)$ticket['projekt'] > 0) {
+            $this->app->erp->AddRolleZuAdresse($adresseId, 'Kunde', 'von', 'Projekt', (int)$ticket['projekt']);
+        }
+
+        $this->app->DB->Update("UPDATE ticket SET adresse = ".$adresseId." WHERE id = ".$ticketId." LIMIT 1");
+        $this->app->erp->TicketProtokoll($ticketId, 'Kunde angelegt (Adresse #'.$adresseId.')');
+
+        $link = 'index.php?module=adresse&action=edit&id='.$adresseId;
+        $msg = $this->app->erp->base64_url_encode('<div class="success">Kunde angelegt: <a href="'.$link.'">Adresse #'.$adresseId.'</a></div>');
+        header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+        $this->app->ExitXentral();
+    }
+
+    public function ticket_create_offer()
+    {
+        $ticketId = (int)$this->app->Secure->GetGET('id');
+        if ($ticketId <= 0) {
+            return;
+        }
+        if (!$this->app->erp->RechteVorhanden('angebot', 'edit')) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung um Angebote anzulegen.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+
+        $ticket = $this->app->DB->SelectRow(
+            "SELECT id, schluessel, adresse, betreff
+             FROM ticket
+             WHERE id = $ticketId
+             LIMIT 1"
+        );
+        if (empty($ticket)) {
+            return;
+        }
+        $addressId = (int)$ticket['adresse'];
+        if ($addressId <= 0) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Adresse am Ticket hinterlegt.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+
+        $angebotId = (int)$this->app->erp->CreateAngebot($addressId);
+        if ($angebotId <= 0) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Angebot konnte nicht angelegt werden.</div>');
+            header("Location: index.php?module=ticket&action=edit&id=$ticketId&msg=$msg");
+            $this->app->ExitXentral();
+        }
+        $this->app->erp->LoadAngebotStandardwerte($angebotId, $addressId);
+
+        $updates = [];
+        if (!empty($ticket['schluessel'])) {
+            $updates[] = "anfrage = '".$this->app->DB->real_escape_string($ticket['schluessel'])."'";
+        }
+        $betreff = trim(strip_tags((string)$ticket['betreff']));
+        if ($betreff !== '') {
+            $updates[] = "betreff = '".$this->app->DB->real_escape_string($betreff)."'";
+        }
+        if (!empty($updates)) {
+            $this->app->DB->Update("UPDATE angebot SET ".implode(', ', $updates)." WHERE id = ".$angebotId." LIMIT 1");
+        }
+
+        // Automatic Status Change for Portal
+        $this->portalSetCustomerStatus($ticketId, 'warten_kd', 'Angebot erstellt', null);
+        $this->portalLogStatus($ticketId, null, 'warten_kd', null, 'Angebot #' . $angebotId . ' erstellt', null);
+        $this->portalInsertPortalMessage($ticket, 'system', 0, 'Ein Angebot (#'.$angebotId.') wurde für Sie erstellt.', true);
+
+        $this->app->erp->TicketProtokoll($ticketId, 'Angebot angelegt (#'.$angebotId.') - Portal Status: Warten auf Kunde');
+        header("Location: index.php?module=angebot&action=edit&id=$angebotId");
+        $this->app->ExitXentral();
+    }
+
     function ticket_dateien()
     {
         $id = $this->app->Secure->GetGET("id");
@@ -1278,6 +1703,9 @@ class Ticket {
     $confirmed = $this->app->Secure->GetGET('confirmed');
 
     if ($confirmed == "yes") {
+      $oldStatuses = $this->app->DB->SelectArr(
+        "SELECT id, status FROM ticket WHERE status = 'neu'"
+      );
 
       $sql = "UPDATE
                   ticket
@@ -1306,6 +1734,29 @@ class Ticket {
               WHERE ticket.status = 'neu'";
 
       $this->app->DB->Update($sql);
+      if (!empty($oldStatuses)) {
+        $ids = array_map(static function ($row) {
+          return (int)$row['id'];
+        }, $oldStatuses);
+        $ids = array_filter($ids);
+        if (!empty($ids)) {
+          $currentStatuses = $this->app->DB->SelectArr(
+            "SELECT id, status FROM ticket WHERE id IN (".implode(",", $ids).")"
+          );
+          $oldMap = [];
+          foreach ($oldStatuses as $row) {
+            $oldMap[(int)$row['id']] = (string)$row['status'];
+          }
+          $userId = (int)$this->app->User->GetID();
+          foreach ($currentStatuses as $row) {
+            $ticketId = (int)$row['id'];
+            if (!isset($oldMap[$ticketId])) {
+              continue;
+            }
+            $this->portalHandleInternalStatusChange($ticketId, $oldMap[$ticketId], (string)$row['status'], $userId);
+          }
+        }
+      }
 
       $this->app->Tpl->Set('TEXT', "Status fix abgeschlossen.");
       $this->app->Tpl->Parse('PAGE','ticket_text.tpl');
@@ -1351,7 +1802,2042 @@ class Ticket {
     }
 
   }
+
+  private function portalJsonResponse(array $payload, int $statusCode = 200): void
+  {
+    if ($statusCode >= 400) {
+      $action = (string)($_GET['action'] ?? '');
+      $this->portalLog('warning', 'portal_error', [
+        'action' => $action,
+        'status' => $statusCode,
+        'payload' => $payload,
+        'method' => (string)($_SERVER['REQUEST_METHOD'] ?? ''),
+        'ip' => $this->portalGetRequestIp(),
+      ]);
+    }
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload);
+    $this->app->ExitXentral();
+  }
+
+  private function portalReadJsonInput(): array
+  {
+    $raw = file_get_contents('php://input');
+    if (!empty($raw)) {
+      $decoded = json_decode($raw, true);
+      if (is_array($decoded)) {
+        return $decoded;
+      }
+    }
+    return $_POST ?? [];
+  }
+
+  private function portalGetSettingBool(string $name, bool $default = false): bool
+  {
+    $value = (string)$this->app->erp->Firmendaten($name);
+    if ($value === '') {
+      return $default;
+    }
+    return $value === '1';
+  }
+
+  private function portalGetSettingInt(string $name, int $default): int
+  {
+    $value = (int)$this->app->erp->Firmendaten($name);
+    return $value > 0 ? $value : $default;
+  }
+
+  private function portalLogEnabled(): bool
+  {
+    return $this->portalGetSettingBool('ticketportal_log_enabled', false);
+  }
+
+  private function portalGetLogPath(): string
+  {
+    $dir = sys_get_temp_dir();
+    if ($dir === '' || !is_dir($dir)) {
+      $dir = dirname(__DIR__, 2);
+    }
+    return rtrim($dir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'openxe-ticket-portal.log';
+  }
+
+  private function portalReadLogTail(int $maxLines = 200, int $maxBytes = 20000): string
+  {
+    $path = $this->portalGetLogPath();
+    if (!is_file($path) || !is_readable($path)) {
+      return '';
+    }
+    $size = filesize($path);
+    if ($size === false || $size <= 0) {
+      return '';
+    }
+    $bytes = min($maxBytes, (int)$size);
+    $fp = fopen($path, 'rb');
+    if ($fp === false) {
+      return '';
+    }
+    if ($bytes < $size) {
+      fseek($fp, -$bytes, SEEK_END);
+    }
+    $data = fread($fp, $bytes);
+    fclose($fp);
+    if ($data === false || $data === '') {
+      return '';
+    }
+    $lines = preg_split('/\\r\\n|\\r|\\n/', $data);
+    if ($bytes < $size && !empty($lines)) {
+      array_shift($lines);
+    }
+    if (count($lines) > $maxLines) {
+      $lines = array_slice($lines, -$maxLines);
+    }
+    return implode("\n", $lines);
+  }
+
+  private function portalMaskValue(string $value): string
+  {
+    $value = (string)$value;
+    $len = strlen($value);
+    if ($len <= 4) {
+      return '****';
+    }
+    return substr($value, 0, 2).'***'.substr($value, -2);
+  }
+
+  private function portalSanitizeLogContext($value)
+  {
+    if (is_array($value)) {
+      $sanitized = [];
+      foreach ($value as $key => $item) {
+        $keyLower = strtolower((string)$key);
+        if (in_array($keyLower, ['token', 'magic_token', 'session_token', 'verifier_value', 'shared_secret', 'x-openxe-portal-secret'], true)) {
+          $sanitized[$key] = $this->portalMaskValue((string)$item);
+        } else {
+          $sanitized[$key] = $this->portalSanitizeLogContext($item);
+        }
+      }
+      return $sanitized;
+    }
+    if (is_scalar($value)) {
+      return (string)$value;
+    }
+    return $value;
+  }
+
+  private function portalLog(string $level, string $message, array $context = []): void
+  {
+    if (!$this->portalLogEnabled()) {
+      return;
+    }
+    $context = $this->portalSanitizeLogContext($context);
+    try {
+      if (isset($this->app->Container)) {
+        $logger = $this->app->Container->get('Logger');
+        if ($logger && method_exists($logger, $level)) {
+          $logger->$level($message, $context);
+          return;
+        }
+      }
+    } catch (Exception $e) {
+    }
+    $payload = [
+      'time' => gmdate('c'),
+      'level' => $level,
+      'message' => $message,
+      'context' => $context,
+    ];
+    $line = json_encode($payload);
+    if ($line !== false) {
+      @file_put_contents($this->portalGetLogPath(), $line.PHP_EOL, FILE_APPEND);
+      error_log($line);
+    }
+  }
+
+  private function portalRequireSharedSecret(): void
+  {
+    $secret = trim((string)$this->app->erp->Firmendaten('ticketportal_shared_secret'));
+    if ($secret === '') {
+      return;
+    }
+    $header = (string)($_SERVER['HTTP_X_OPENXE_PORTAL_SECRET'] ?? '');
+    if ($header === '' || !hash_equals($secret, $header)) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+  }
+
+  private function portalDefaultNotifySubject(): string
+  {
+    return 'OpenXE Service - Statusaktualisierung zu Ticket #{ticket_number}';
+  }
+
+  private function portalDefaultNotifyBody(): string
+  {
+    return "Guten Tag {customer_name},\n\n".
+      "wir informieren Sie ueber den aktuellen Stand Ihres Reparaturtickets #{ticket_number}.\n\n".
+      "Aktueller Status: {status_label}\n".
+      "Hinweis: {public_note}\n\n".
+      "Falls Sie Fragen haben, antworten Sie bitte auf diese Nachricht und nennen Sie die Ticketnummer.\n\n".
+      "Mit freundlichen Gruessen\n".
+      "{company_name}";
+  }
+
+  private function portalEnsureFirmendatenDefaults(): void
+  {
+    $defaults = [
+      'ticketportal_enabled' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_portal_url' => ['varchar', '255', '', '', '', 0, 0],
+      'ticketportal_allow_offer_confirm' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_allow_customer_comments' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_notify_all_status' => ['tinyint', '1', '', '1', '1', 0, 0],
+      'ticketportal_agb_url' => ['varchar', '255', '', '', '', 0, 0],
+      'ticketportal_agb_version' => ['varchar', '64', '', '', '', 0, 0],
+      'ticketportal_shared_secret' => ['varchar', '255', '', '', '', 0, 0],
+      'ticketportal_log_enabled' => ['tinyint', '1', '', '0', '0', 0, 0],
+      'ticketportal_session_ttl_min' => ['int', '11', '', '60', '60', 0, 0],
+      'ticketportal_code_ttl_min' => ['int', '11', '', '15', '15', 0, 0],
+      'ticketportal_magic_ttl_min' => ['int', '11', '', '30', '30', 0, 0],
+      'ticketportal_doi_ttl_min' => ['int', '11', '', '120', '120', 0, 0],
+      'ticketportal_max_attempts' => ['int', '11', '', '5', '5', 0, 0],
+      'ticketportal_lockout_min' => ['int', '11', '', '15', '15', 0, 0],
+      'ticketportal_status_labels' => ['text', '', '', json_encode($this->portalDefaultStatusLabels()), '', 0, 0],
+      'ticketportal_status_map' => ['text', '', '', json_encode($this->portalDefaultStatusMap()), '', 0, 0],
+      'ticketportal_notify_subject' => ['varchar', '255', '', $this->portalDefaultNotifySubject(), $this->portalDefaultNotifySubject(), 0, 0],
+      'ticketportal_notify_body' => ['text', '', '', $this->portalDefaultNotifyBody(), '', 0, 0],
+    ];
+    foreach ($defaults as $name => $data) {
+      $exists = $this->app->DB->Select(
+        "SELECT id FROM firmendaten_werte WHERE name = '".$this->app->DB->real_escape_string($name)."' LIMIT 1"
+      );
+      if ($exists) {
+        continue;
+      }
+      $this->app->erp->AddNeuenFirmendatenWert(
+        $name,
+        $data[0],
+        $data[1],
+        $data[2],
+        $data[3],
+        $data[4],
+        $data[5],
+        $data[6]
+      );
+    }
+  }
+
+  private function portalHashToken(string $token): string
+  {
+    return hash('sha256', $token);
+  }
+
+  private function portalGenerateToken(int $bytes = 32): string
+  {
+    return bin2hex(random_bytes($bytes));
+  }
+
+  private function portalGenerateCode(): string
+  {
+    return (string)random_int(100000, 999999);
+  }
+
+  private function portalNormalizeEmail(string $email): string
+  {
+    return strtolower(trim($email));
+  }
+
+  private function portalNormalizePlz(string $plz): string
+  {
+    return preg_replace('/\\s+/', '', trim($plz));
+  }
+
+  private function portalGetRequestIp(): string
+  {
+    return (string)($_SERVER['REMOTE_ADDR'] ?? '');
+  }
+
+  private function portalGetRequestUa(): string
+  {
+    return substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
+  }
+
+  private function portalGetAccessByToken(string $token, string $scope): ?array
+  {
+    if ($token === '') {
+      return null;
+    }
+    $hash = $this->portalHashToken($token);
+    $hashEsc = $this->app->DB->real_escape_string($hash);
+    $scopeEsc = $this->app->DB->real_escape_string($scope);
+    $sql = "SELECT * FROM ticket_portal_access
+            WHERE token_hash = '$hashEsc'
+              AND scope = '$scopeEsc'
+              AND revoked_at IS NULL
+              AND (expires_at IS NULL OR expires_at > NOW())
+            LIMIT 1";
+    $row = $this->app->DB->SelectRow($sql);
+    return !empty($row) ? $row : null;
+  }
+
+  private function portalGetOrCreateLookupAccess(int $ticketId, string $ticketNumber): array
+  {
+    $ticketId = (int)$ticketId;
+    $scope = 'lookup';
+    $row = $this->app->DB->SelectRow(
+      "SELECT * FROM ticket_portal_access
+       WHERE ticket_id = $ticketId AND scope = '$scope' AND revoked_at IS NULL
+       LIMIT 1"
+    );
+    if (!empty($row)) {
+      return $row;
+    }
+    $tokenHash = $this->app->DB->real_escape_string($this->portalHashToken($ticketNumber));
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at)
+       VALUES ($ticketId, '$tokenHash', '$scope', NOW())"
+    );
+    $newId = (int)$this->app->DB->GetInsertID();
+    $row = $this->app->DB->SelectRow("SELECT * FROM ticket_portal_access WHERE id = $newId LIMIT 1");
+    return !empty($row) ? $row : [];
+  }
+
+  private function portalIsAccessLocked(array $access): bool
+  {
+    if (empty($access['locked_until'])) {
+      return false;
+    }
+    $lockedUntil = strtotime((string)$access['locked_until']);
+    if ($lockedUntil !== false && $lockedUntil <= time()) {
+      $this->portalResetAccessFailures((int)$access['id']);
+      return false;
+    }
+    return true;
+  }
+
+  private function portalRegisterAccessFailure(int $accessId, int $currentAttempts): array
+  {
+    $maxAttempts = $this->portalGetSettingInt('ticketportal_max_attempts', 5);
+    $lockoutMin = $this->portalGetSettingInt('ticketportal_lockout_min', 15);
+    $nextAttempts = max(0, $currentAttempts) + 1;
+    $lockedUntil = null;
+    if ($nextAttempts >= $maxAttempts) {
+      $lockedUntil = date('Y-m-d H:i:s', time() + ($lockoutMin * 60));
+    }
+    $lockedSql = $lockedUntil !== null ? "'".$this->app->DB->real_escape_string($lockedUntil)."'" : 'NULL';
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET failed_attempts = ".(int)$nextAttempts.",
+           last_failed_at = NOW(),
+           locked_until = ".$lockedSql."
+       WHERE id = ".(int)$accessId." LIMIT 1"
+    );
+    return ['attempts' => $nextAttempts, 'locked_until' => $lockedUntil];
+  }
+
+  private function portalResetAccessFailures(int $accessId): void
+  {
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET failed_attempts = 0, last_failed_at = NULL, locked_until = NULL
+       WHERE id = ".(int)$accessId." LIMIT 1"
+    );
+  }
+
+  private function portalTouchAccess(int $accessId): void
+  {
+    $ip = $this->app->DB->real_escape_string($this->portalGetRequestIp());
+    $ua = $this->app->DB->real_escape_string($this->portalGetRequestUa());
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET last_access_at = NOW(), last_access_ip = '$ip', last_access_ua = '$ua'
+       WHERE id = ".(int)$accessId." LIMIT 1"
+    );
+  }
+
+  private function portalReadSessionToken(array $data): string
+  {
+    if (!empty($data['session_token'])) {
+      return trim((string)$data['session_token']);
+    }
+    if ($this->app->Secure->GetGET('session_token')) {
+      return trim((string)$this->app->Secure->GetGET('session_token'));
+    }
+    if (!empty($_SERVER['HTTP_AUTHORIZATION']) && stripos($_SERVER['HTTP_AUTHORIZATION'], 'Bearer ') === 0) {
+      return trim(substr($_SERVER['HTTP_AUTHORIZATION'], 7));
+    }
+    return '';
+  }
+
+  private function portalGetSessionAccess(array $data): ?array
+  {
+    $sessionToken = $this->portalReadSessionToken($data);
+    $access = $this->portalGetAccessByToken($sessionToken, 'session');
+    if ($access) {
+      $this->portalTouchAccess((int)$access['id']);
+    }
+    return $access;
+  }
+
+  private function portalGetTicketForPortal(int $ticketId): ?array
+  {
+    $ticketId = (int)$ticketId;
+    if ($ticketId <= 0) {
+      return null;
+    }
+    $sql = "SELECT t.id, t.schluessel, t.status, t.mailadresse, t.adresse,
+                   t.betreff, t.notiz, t.kommentar,
+                   a.name AS customer_name, a.email AS customer_email, a.plz AS customer_plz
+            FROM ticket t
+            LEFT JOIN adresse a ON t.adresse = a.id
+            WHERE t.id = $ticketId
+            LIMIT 1";
+    $row = $this->app->DB->SelectRow($sql);
+    return !empty($row) ? $row : null;
+  }
+
+  private function portalGetTicketByNumber(string $ticketNumber): ?array
+  {
+    $ticketNumber = trim($ticketNumber);
+    if ($ticketNumber === '') {
+      return null;
+    }
+    $ticketNumberEsc = $this->app->DB->real_escape_string($ticketNumber);
+    $sql = "SELECT t.id, t.schluessel, t.status, t.mailadresse, t.adresse,
+                   t.betreff, t.notiz, t.kommentar,
+                   a.name AS customer_name, a.email AS customer_email, a.plz AS customer_plz
+            FROM ticket t
+            LEFT JOIN adresse a ON t.adresse = a.id
+            WHERE t.schluessel = '$ticketNumberEsc'
+            LIMIT 1";
+    $row = $this->app->DB->SelectRow($sql);
+    return !empty($row) ? $row : null;
+  }
+
+  private function portalCreateSession(int $ticketId): array
+  {
+    $ttl = $this->portalGetSettingInt('ticketportal_session_ttl_min', 60);
+    $expiresAt = date('Y-m-d H:i:s', time() + ($ttl * 60));
+    $token = $this->portalGenerateToken();
+    $hash = $this->app->DB->real_escape_string($this->portalHashToken($token));
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at, expires_at)
+       VALUES (".(int)$ticketId.", '$hash', 'session', NOW(), '".$this->app->DB->real_escape_string($expiresAt)."')"
+    );
+    return ['token' => $token, 'expires_at' => $expiresAt];
+  }
+
+  private function portalCreateMagicAccess(int $ticketId): array
+  {
+    $ttl = $this->portalGetSettingInt('ticketportal_magic_ttl_min', 30);
+    $expiresAt = date('Y-m-d H:i:s', time() + ($ttl * 60));
+    $token = $this->portalGenerateToken(24);
+    $hash = $this->app->DB->real_escape_string($this->portalHashToken($token));
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET revoked_at = NOW()
+       WHERE ticket_id = ".(int)$ticketId." AND scope = 'magic' AND revoked_at IS NULL"
+    );
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at, expires_at)
+       VALUES (".(int)$ticketId.", '$hash', 'magic', NOW(), '".$this->app->DB->real_escape_string($expiresAt)."')"
+    );
+    return ['token' => $token, 'expires_at' => $expiresAt];
+  }
+
+  private function portalSendVerificationCodeMail(array $ticket, string $email, string $code): void
+  {
+    $subject = 'Ticket Portal Zugriffscode';
+    $body = "Ihr Zugriffscode fuer Ticket #".$ticket['schluessel'].": ".$code;
+    $this->app->erp->MailSend(
+      $this->app->erp->GetFirmaMail(),
+      $this->app->erp->GetFirmaName(),
+      $email,
+      $ticket['customer_name'] ?? '',
+      $subject,
+      $body
+    );
+  }
+
+  private function portalSendOfferDoiMail(array $ticket, string $email, string $doiToken): void
+  {
+    $link = rtrim($this->portalGetServerUrl(), '/').'/index.php?module=ticket&action=portal_offer_confirm&doi_token='.$doiToken;
+    $subject = 'Angebotsbestaetigung bestaetigen';
+    $body = "Bitte bestaetigen Sie Ihre Entscheidung:\n".$link;
+    $agbUrl = (string)$this->app->erp->Firmendaten('ticketportal_agb_url');
+    if ($agbUrl !== '') {
+      $body .= "\nAGB: ".$agbUrl;
+    }
+    $this->app->erp->MailSend(
+      $this->app->erp->GetFirmaMail(),
+      $this->app->erp->GetFirmaName(),
+      $email,
+      $ticket['customer_name'] ?? '',
+      $subject,
+      $body
+    );
+  }
+
+  private function portalGetServerUrl(): string
+  {
+    $serverUrl = (string)$this->app->erp->Firmendaten('server_url');
+    if ($serverUrl === '') {
+      $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+      $host = (string)($_SERVER['HTTP_HOST'] ?? '');
+      $serverUrl = $scheme.'://'.$host;
+    }
+    return rtrim($serverUrl, '/');
+  }
+
+  private function portalMirrorMessageToTicket(array $ticket, string $text, string $authorType): int
+  {
+    $ticketNumber = $this->app->DB->real_escape_string($ticket['schluessel']);
+    $verfasser = $authorType === 'customer' ? ($ticket['customer_name'] ?? '') : 'Portal';
+    $verfasser = $this->app->DB->real_escape_string($verfasser);
+    $mail = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');
+    if ($mail === '') {
+      $mail = $this->portalNormalizeEmail($ticket['customer_email'] ?? '');
+    }
+    $mailEsc = $this->app->DB->real_escape_string($mail);
+    $textEsc = $this->app->DB->real_escape_string($text);
+    $statusEsc = $this->app->DB->real_escape_string($ticket['status'] ?? '');
+    $this->app->DB->Insert("INSERT INTO ticket_nachricht (
+      ticket, verfasser, bearbeiter, mail, zeit, text, textausgang, betreff, bemerkung,
+      medium, versendet, status, mail_cc, verfasser_replyto, mail_replyto
+    ) VALUES (
+      '$ticketNumber', '$verfasser', '', '$mailEsc', NOW(), '$textEsc', '', 'Portal Nachricht', '',
+      'portal', '0', '$statusEsc', '', '', ''
+    )");
+    return (int)$this->app->DB->GetInsertID();
+  }
+
+  private function portalGetNotificationPreferences(int $ticketId, int $customerId): array
+  {
+    $ticketId = (int)$ticketId;
+    $customerId = (int)$customerId;
+    if ($ticketId <= 0 || $customerId <= 0) {
+      return [];
+    }
+    $rows = $this->app->DB->SelectArr(
+      "SELECT status_key, enabled
+       FROM ticket_notification_pref
+       WHERE ticket_id = $ticketId AND customer_id = $customerId"
+    );
+    $prefs = [];
+    if (!empty($rows)) {
+      foreach ($rows as $row) {
+        if (!isset($row['status_key'])) {
+          continue;
+        }
+        $prefs[(string)$row['status_key']] = (int)$row['enabled'] === 1;
+      }
+    }
+    return $prefs;
+  }
+
+  private function portalShouldNotifyStatus(int $ticketId, int $customerId, string $statusKey): bool
+  {
+    $prefs = $this->portalGetNotificationPreferences($ticketId, $customerId);
+    if (empty($prefs)) {
+      return $this->portalGetSettingBool('ticketportal_notify_all_status', true);
+    }
+    if (array_key_exists($statusKey, $prefs)) {
+      return (bool)$prefs[$statusKey];
+    }
+    return false;
+  }
+
+  private function portalRenderTemplate(string $template, array $replacements): string
+  {
+    foreach ($replacements as $key => $value) {
+      $template = str_replace($key, $value, $template);
+    }
+    return $template;
+  }
+
+  private function portalSendStatusNotification(array $ticket, string $statusKey, string $statusLabel, ?string $publicNote = null): void
+  {
+    $email = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');
+    if ($email === '') {
+      $email = $this->portalNormalizeEmail($ticket['customer_email'] ?? '');
+    }
+    if ($email === '') {
+      return;
+    }
+    $subjectTemplate = (string)$this->app->erp->Firmendaten('ticketportal_notify_subject');
+    $bodyTemplate = (string)$this->app->erp->Firmendaten('ticketportal_notify_body');
+    if ($subjectTemplate === '') {
+      $subjectTemplate = 'Ticket #{ticket_number} Statusaenderung';
+    }
+    if ($bodyTemplate === '') {
+      $bodyTemplate = "Der Status Ihres Tickets #{ticket_number} wurde aktualisiert.\nStatus: {status_label}\n\n{public_note}\n\nViele Gruesse\n{company_name}";
+    }
+    $replacements = [
+      '{ticket_number}' => (string)$ticket['schluessel'],
+      '{ticket_id}' => (string)$ticket['id'],
+      '{status_key}' => $statusKey,
+      '{status_label}' => $statusLabel,
+      '{customer_name}' => (string)($ticket['customer_name'] ?? ''),
+      '{public_note}' => $publicNote !== null ? $publicNote : '',
+      '{company_name}' => (string)$this->app->erp->GetFirmaName(),
+    ];
+    $subject = $this->portalRenderTemplate($subjectTemplate, $replacements);
+    $body = $this->portalRenderTemplate($bodyTemplate, $replacements);
+    $this->app->erp->MailSend(
+      $this->app->erp->GetFirmaMail(),
+      $this->app->erp->GetFirmaName(),
+      $email,
+      $ticket['customer_name'] ?? '',
+      $subject,
+      $body
+    );
+  }
+
+  private function portalMaybeNotifyCustomer(int $ticketId, string $statusKey, string $statusLabel, ?string $publicNote = null): void
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      return;
+    }
+    $ticket = $this->portalGetTicketForPortal($ticketId);
+    if (!$ticket) {
+      return;
+    }
+    $customerId = (int)($ticket['adresse'] ?? 0);
+    if ($customerId <= 0) {
+      return;
+    }
+    if (!$this->portalShouldNotifyStatus($ticketId, $customerId, $statusKey)) {
+      return;
+    }
+    $this->portalSendStatusNotification($ticket, $statusKey, $statusLabel, $publicNote);
+  }
+
+  private function portalInsertPortalMessage(array $ticket, string $authorType, int $authorId, string $text, bool $isPublic): array
+  {
+    $textEsc = $this->app->DB->real_escape_string($text);
+    $authorTypeEsc = $this->app->DB->real_escape_string($authorType);
+    $isPublicValue = $isPublic ? 1 : 0;
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_message (ticket_id, author_type, author_id, text, is_public, created_at)
+       VALUES (".(int)$ticket['id'].", '$authorTypeEsc', ".(int)$authorId.", '$textEsc', $isPublicValue, NOW())"
+    );
+    $portalMessageId = (int)$this->app->DB->GetInsertID();
+    $mirroredId = $this->portalMirrorMessageToTicket($ticket, $text, $authorType);
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_message SET mirrored_message_id = ".(int)$mirroredId."
+       WHERE id = $portalMessageId LIMIT 1"
+    );
+    return ['portal_message_id' => $portalMessageId, 'mirrored_message_id' => $mirroredId];
+  }
+
+  private function portalSetCustomerStatus(int $ticketId, string $statusKey, string $statusLabel, ?int $userId = null, ?string $publicNote = null): bool
+  {
+    $ticketId = (int)$ticketId;
+    $statusKeyEsc = $this->app->DB->real_escape_string($statusKey);
+    $statusLabelEsc = $this->app->DB->real_escape_string($statusLabel);
+    $updatedBy = $userId !== null ? (int)$userId : 'NULL';
+    $existing = $this->app->DB->SelectRow(
+      "SELECT status_key, status_label FROM ticket_customer_status WHERE ticket_id = $ticketId LIMIT 1"
+    );
+    $hasRecord = !empty($existing);
+    $changed = !$hasRecord || $existing['status_key'] !== $statusKey;
+    $labelChanged = !$hasRecord || $existing['status_label'] !== $statusLabel;
+    if (!$changed && !$labelChanged) {
+      return false;
+    }
+    if ($hasRecord) {
+      $this->app->DB->Update(
+        "UPDATE ticket_customer_status
+         SET status_key = '$statusKeyEsc', status_label = '$statusLabelEsc', updated_at = NOW(), updated_by = $updatedBy
+         WHERE ticket_id = $ticketId LIMIT 1"
+      );
+    } else {
+      $this->app->DB->Insert(
+        "INSERT INTO ticket_customer_status (ticket_id, status_key, status_label, updated_at, updated_by)
+         VALUES ($ticketId, '$statusKeyEsc', '$statusLabelEsc', NOW(), $updatedBy)"
+      );
+    }
+    if ($changed) {
+      $this->portalMaybeNotifyCustomer($ticketId, $statusKey, $statusLabel, $publicNote);
+    }
+    return $changed;
+  }
+
+  private function portalLogStatus(int $ticketId, ?string $from, string $to, ?int $userId = null, ?string $publicNote = null, ?string $internalNote = null): void
+  {
+    $fromEsc = $from !== null ? "'".$this->app->DB->real_escape_string($from)."'" : "NULL";
+    $toEsc = $this->app->DB->real_escape_string($to);
+    $userIdSql = $userId !== null ? (int)$userId : 'NULL';
+    $publicEsc = $publicNote !== null ? "'".$this->app->DB->real_escape_string($publicNote)."'" : "NULL";
+    $internalEsc = $internalNote !== null ? "'".$this->app->DB->real_escape_string($internalNote)."'" : "NULL";
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_status_log (ticket_id, status_from, status_to, changed_by, changed_at, note_public, note_internal)
+       VALUES (".(int)$ticketId.", $fromEsc, '$toEsc', $userIdSql, NOW(), $publicEsc, $internalEsc)"
+    );
+  }
+
+  private function portalDefaultStatusLabels(): array
+  {
+    return [
+      'paket_eingegangen' => 'Paket eingegangen',
+      'versandschaden_klaeren' => 'Versandschaden zu klaeren',
+      'warte_ersatzteile' => 'Warte auf Ersatzteile',
+      'in_bearbeitung' => 'In Bearbeitung',
+      'qualitaetspruefung' => 'Qualitaetspruefung',
+      'rueckfrage' => 'Rueckfrage',
+      'warten_auf_rueckmeldung' => 'Warten auf Ihre Rueckmeldung',
+      'angebot_erstellt' => 'Angebot erstellt',
+      'angebot_bestaetigt' => 'Angebot bestaetigt',
+      'angebot_abgelehnt' => 'Angebot abgelehnt',
+      'versandbereit' => 'Versandbereit',
+      'abgeschlossen' => 'Abgeschlossen',
+    ];
+  }
+
+  private function portalDefaultStatusMap(): array
+  {
+    return [
+      'neu' => 'paket_eingegangen',
+      'offen' => 'paket_eingegangen',
+      'warten_e' => 'in_bearbeitung',
+      'klaeren' => 'rueckfrage',
+      'warten_kd' => 'warten_auf_rueckmeldung',
+      'abgeschlossen' => 'abgeschlossen',
+    ];
+  }
+
+  private function portalGetStatusLabels(): array
+  {
+    $labels = $this->portalDefaultStatusLabels();
+    $rawLabels = (string)$this->app->erp->Firmendaten('ticketportal_status_labels');
+    $decodedLabels = json_decode($rawLabels, true);
+    if (is_array($decodedLabels)) {
+      foreach ($labels as $k => $v) {
+        if (isset($decodedLabels[$k]) && trim((string)$decodedLabels[$k]) !== '') {
+          $labels[$k] = trim((string)$decodedLabels[$k]);
+        }
+      }
+    }
+    $rawCustom = (string)$this->app->erp->Firmendaten('ticketportal_custom_statuses');
+    $custom = json_decode($rawCustom, true);
+    if (is_array($custom)) {
+      foreach ($custom as $item) {
+        if (!empty($item['key']) && !empty($item['label']) && !empty($item['enabled'])) {
+          $labels[(string)$item['key']] = (string)$item['label'];
+        }
+      }
+    }
+    return $labels;
+  }
+
+  private function portalGetStatusMap(): array
+  {
+    $default = $this->portalDefaultStatusMap();
+    $labels = $this->portalGetStatusLabels();
+    $raw = (string)$this->app->erp->Firmendaten('ticketportal_status_map');
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+      $decoded = [];
+    }
+    $map = [];
+    foreach ($default as $key => $fallback) {
+      $value = $decoded[$key] ?? $fallback;
+      if (!isset($labels[$value])) {
+        $value = $fallback;
+      }
+      $map[$key] = $value;
+    }
+    return $map;
+  }
+
+  private function portalStatusMap(): array
+  {
+    $labels = $this->portalGetStatusLabels();
+    $map = $this->portalGetStatusMap();
+    $result = [];
+    foreach ($map as $internal => $statusKey) {
+      $result[$internal] = $labels[$statusKey] ?? $statusKey;
+    }
+    return $result;
+  }
+
+  private function portalDefaultCustomerStatusKey(string $ticketStatus, int $projectId = 0): string
+  {
+    if ($projectId > 0) {
+      $rawProjectMap = (string)$this->app->erp->Firmendaten('ticketportal_status_map_projects');
+      $projectMap = json_decode($rawProjectMap, true);
+      if (is_array($projectMap) && isset($projectMap[$projectId][$ticketStatus])) {
+        return (string)$projectMap[$projectId][$ticketStatus];
+      }
+    }
+    $map = $this->portalGetStatusMap();
+    return $map[$ticketStatus] ?? 'in_bearbeitung';
+  }
+
+  private function portalCustomerStatusOptions(): array
+  {
+    return $this->portalGetStatusLabels();
+  }
+
+  private function portalHandleInternalStatusChange(int $ticketId, string $oldStatus, string $newStatus, ?int $userId = null): void
+  {
+    if ($oldStatus === '' || $newStatus === '' || $oldStatus === $newStatus || $newStatus === 'spam') {
+      return;
+    }
+    $ticket = $this->app->DB->SelectRow("SELECT projekt FROM ticket WHERE id = ".(int)$ticketId." LIMIT 1");
+    $projectId = (int)($ticket['projekt'] ?? 0);
+
+    $oldKey = $this->portalDefaultCustomerStatusKey($oldStatus, $projectId);
+    $newKey = $this->portalDefaultCustomerStatusKey($newStatus, $projectId);
+    if ($oldKey === $newKey) {
+      return;
+    }
+    $labels = $this->portalGetStatusLabels();
+    $existing = $this->app->DB->SelectRow(
+      "SELECT status_key FROM ticket_customer_status WHERE ticket_id = ".(int)$ticketId." LIMIT 1"
+    );
+    if (!empty($existing) && (string)$existing['status_key'] !== $oldKey) {
+      return;
+    }
+    $label = $labels[$newKey] ?? $newKey;
+    $changed = $this->portalSetCustomerStatus($ticketId, $newKey, $label, $userId, null);
+    if ($changed) {
+      $this->portalLogStatus($ticketId, $oldKey, $newKey, $userId, null, null);
+    }
+  }
+
+  public function ticket_portal_session()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
+    }
+    $data = $this->portalReadJsonInput();
+    $token = trim((string)($data['token'] ?? ''));
+    $ticketNumber = trim((string)($data['ticket_number'] ?? $data['ticket'] ?? ''));
+    $verifierType = trim((string)($data['verifier_type'] ?? ''));
+    $verifierValue = trim((string)($data['verifier_value'] ?? ''));
+    if ($token === '' && $ticketNumber === '') {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $access = null;
+    $ticket = null;
+    if ($token !== '') {
+      $access = $this->portalGetAccessByToken($token, 'customer');
+      if (!$access) {
+        $this->portalJsonResponse(['error' => 'token_not_found'], 404);
+      }
+      $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+      if (!$ticket) {
+        $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+      }
+    } else {
+      $ticket = $this->portalGetTicketByNumber($ticketNumber);
+      if (!$ticket) {
+        $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+      }
+      $access = $this->portalGetOrCreateLookupAccess((int)$ticket['id'], (string)$ticket['schluessel']);
+      if (empty($access)) {
+        $this->portalJsonResponse(['error' => 'access_failed'], 500);
+      }
+    }
+    if ($this->portalIsAccessLocked($access)) {
+      $this->portalJsonResponse([
+        'error' => 'access_locked',
+        'locked_until' => $access['locked_until'] ?? null,
+      ], 429);
+    }
+
+    $email = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');
+    if ($email === '') {
+      $email = $this->portalNormalizeEmail($ticket['customer_email'] ?? '');
+    }
+    $plz = $this->portalNormalizePlz($ticket['customer_plz'] ?? '');
+
+    if ($verifierType === '' || $verifierType === 'auto') {
+      $verifierType = $email !== '' ? 'code' : 'plz';
+    }
+
+    switch ($verifierType) {
+      case 'email':
+        if ($email === '') {
+          $this->portalJsonResponse(['error' => 'email_required'], 400);
+        }
+        if ($email === '' || $this->portalNormalizeEmail($verifierValue) !== $email) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
+          $this->portalJsonResponse(['error' => 'verification_failed'], 401);
+        }
+        break;
+      case 'plz':
+        if ($plz === '') {
+          $this->portalJsonResponse(['error' => 'plz_required'], 400);
+        }
+        if ($plz === '' || $this->portalNormalizePlz($verifierValue) !== $plz) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
+          $this->portalJsonResponse(['error' => 'verification_failed'], 401);
+        }
+        break;
+      case 'code':
+        if ($email === '') {
+          $this->portalJsonResponse(['error' => 'email_required'], 400);
+        }
+        if ($verifierValue === '') {
+          $code = $this->portalGenerateCode();
+          $codeHash = $this->app->DB->real_escape_string($this->portalHashToken($code));
+          $ttl = $this->portalGetSettingInt('ticketportal_code_ttl_min', 15);
+          $expiresAt = date('Y-m-d H:i:s', time() + ($ttl * 60));
+          $expiresEsc = $this->app->DB->real_escape_string($expiresAt);
+          $this->app->DB->Update(
+            "UPDATE ticket_portal_access
+             SET verifier_type = 'code', verifier_hash = '$codeHash', verifier_expires_at = '$expiresEsc'
+             WHERE id = ".(int)$access['id']." LIMIT 1"
+          );
+          $this->portalSendVerificationCodeMail($ticket, $email, $code);
+          $this->portalJsonResponse(['status' => 'verification_sent']);
+        }
+        if (empty($access['verifier_hash']) || empty($access['verifier_expires_at'])) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
+          $this->portalJsonResponse(['error' => 'verification_failed'], 401);
+        }
+        if (strtotime($access['verifier_expires_at']) < time()) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
+          $this->portalJsonResponse(['error' => 'verification_expired'], 401);
+        }
+        $expectedHash = (string)$access['verifier_hash'];
+        $providedHash = $this->portalHashToken($verifierValue);
+        if (!hash_equals($expectedHash, $providedHash)) {
+          $result = $this->portalRegisterAccessFailure((int)$access['id'], (int)($access['failed_attempts'] ?? 0));
+          if (!empty($result['locked_until'])) {
+            $this->portalJsonResponse(['error' => 'access_locked', 'locked_until' => $result['locked_until']], 429);
+          }
+          $this->portalJsonResponse(['error' => 'verification_failed'], 401);
+        }
+        $this->app->DB->Update(
+          "UPDATE ticket_portal_access
+           SET verifier_hash = NULL, verifier_expires_at = NULL
+           WHERE id = ".(int)$access['id']." LIMIT 1"
+        );
+        break;
+      default:
+        $this->portalJsonResponse(['error' => 'invalid_verifier'], 400);
+    }
+
+    $this->portalResetAccessFailures((int)$access['id']);
+    $session = $this->portalCreateSession((int)$ticket['id']);
+    $this->portalTouchAccess((int)$access['id']);
+    $this->portalJsonResponse(['session_token' => $session['token'], 'expires_at' => $session['expires_at']]);
+  }
+
+  public function ticket_portal_token()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+    $data = $this->portalReadJsonInput();
+    $ticketId = (int)($data['ticket_id'] ?? $this->app->Secure->GetGET('id'));
+    if ($ticketId <= 0) {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $token = $this->portalGenerateToken();
+    $hash = $this->app->DB->real_escape_string($this->portalHashToken($token));
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access
+       SET revoked_at = NOW()
+       WHERE ticket_id = $ticketId AND scope = 'customer' AND revoked_at IS NULL"
+    );
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_portal_access (ticket_id, token_hash, scope, created_at)
+       VALUES ($ticketId, '$hash', 'customer', NOW())"
+    );
+    $this->portalJsonResponse(['token' => $token]);
+  }
+
+  public function ticket_portal_magic()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
+    }
+    $data = $this->portalReadJsonInput();
+    $magicToken = trim((string)($data['magic_token'] ?? ''));
+    if ($magicToken === '') {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $access = $this->portalGetAccessByToken($magicToken, 'magic');
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'token_not_found'], 404);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $this->portalTouchAccess((int)$access['id']);
+    $this->app->DB->Update(
+      "UPDATE ticket_portal_access SET revoked_at = NOW()
+       WHERE id = ".(int)$access['id']." LIMIT 1"
+    );
+    $session = $this->portalCreateSession((int)$ticket['id']);
+    $this->portalJsonResponse(['session_token' => $session['token'], 'expires_at' => $session['expires_at']]);
+  }
+
+  public function ticket_portal_magic_token()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $data = $this->portalReadJsonInput();
+    $ticketId = (int)($data['ticket_id'] ?? $this->app->Secure->GetGET('id'));
+    if ($ticketId <= 0) {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $magic = $this->portalCreateMagicAccess($ticketId);
+    $this->portalJsonResponse(['token' => $magic['token'], 'expires_at' => $magic['expires_at']]);
+  }
+
+  public function ticket_portal_status()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $customerStatus = $this->app->DB->SelectRow(
+      "SELECT status_key, status_label, updated_at
+       FROM ticket_customer_status
+       WHERE ticket_id = ".(int)$ticket['id']." LIMIT 1"
+    );
+    $labels = $this->portalGetStatusLabels();
+    if (!empty($customerStatus)) {
+      $statusKey = $customerStatus['status_key'];
+      $statusLabel = $labels[$statusKey] ?? $customerStatus['status_label'];
+      $updatedAt = $customerStatus['updated_at'];
+    } else {
+      $map = $this->portalGetStatusMap();
+      $statusKey = $map[$ticket['status']] ?? $this->portalDefaultCustomerStatusKey((string)$ticket['status']);
+      $statusLabel = $labels[$statusKey] ?? $statusKey;
+      $updatedAt = null;
+    }
+    
+    // Get customer address details
+    $customerName = '';
+    $customerStreet = '';
+    $customerZip = '';
+    $customerCity = '';
+    if (!empty($ticket['adresse'])) {
+      $addressId = (int)$ticket['adresse'];
+      $addressData = $this->app->DB->SelectRow(
+        "SELECT name, strasse, plz, ort FROM adresse WHERE id = $addressId LIMIT 1"
+      );
+      if ($addressData) {
+        $customerName = $addressData['name'] ?? '';
+        $customerStreet = $addressData['strasse'] ?? '';
+        $customerZip = $addressData['plz'] ?? '';
+        $customerCity = $addressData['ort'] ?? '';
+      }
+    }
+    
+    $this->portalJsonResponse([
+      'ticket_number' => $ticket['schluessel'],
+      'status_key' => $statusKey,
+      'status_label' => $statusLabel,
+      'updated_at' => $updatedAt,
+      'customer_name' => $customerName,
+      'customer_street' => $customerStreet,
+      'customer_zip' => $customerZip,
+      'customer_city' => $customerCity,
+    ]);
+  }
+
+  public function ticket_portal_messages()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $messages = $this->app->DB->SelectArr(
+      "SELECT m.id, m.author_type, m.text, m.created_at, 
+              REPLACE(COALESCE(NULLIF(m.source, ''), n.medium, 'portal'), 'telefon', 'phone') as source
+       FROM ticket_portal_message m
+       LEFT JOIN ticket_nachricht n ON n.id = m.mirrored_message_id
+       WHERE m.ticket_id = ".(int)$access['ticket_id']." AND m.is_public = 1
+       ORDER BY m.created_at ASC"
+    );
+    $this->portalJsonResponse(['messages' => $messages ?? []]);
+  }
+
+  public function ticket_portal_message()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if (!$this->portalGetSettingBool('ticketportal_allow_customer_comments')) {
+      $this->portalJsonResponse(['error' => 'comments_disabled'], 403);
+    }
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
+    }
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $text = trim((string)($data['text'] ?? ''));
+    if ($text === '') {
+      $this->portalJsonResponse(['error' => 'empty_message'], 400);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $authorId = (int)($ticket['adresse'] ?? 0);
+    $result = $this->portalInsertPortalMessage($ticket, 'customer', $authorId, $text, true);
+    $this->portalJsonResponse([
+      'id' => $result['portal_message_id'],
+      'mirrored_message_id' => $result['mirrored_message_id'],
+    ]);
+  }
+
+  public function ticket_portal_notifications()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $customerId = (int)($ticket['adresse'] ?? 0);
+    $prefs = $this->portalGetNotificationPreferences((int)$ticket['id'], $customerId);
+    $defaultAll = $this->portalGetSettingBool('ticketportal_notify_all_status', true);
+    $statuses = [];
+    foreach ($this->portalCustomerStatusOptions() as $key => $label) {
+      $enabled = array_key_exists($key, $prefs) ? (bool)$prefs[$key] : $defaultAll;
+      $statuses[] = [
+        'key' => $key,
+        'label' => $label,
+        'enabled' => $enabled,
+      ];
+    }
+    $this->portalJsonResponse([
+      'default_all' => $defaultAll,
+      'statuses' => $statuses,
+    ]);
+  }
+
+  public function ticket_portal_notification()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
+    }
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $statusOptions = $this->portalCustomerStatusOptions();
+    $selected = [];
+    if (!empty($data['selected']) && !is_array($data['selected'])) {
+      $decoded = json_decode((string)$data['selected'], true);
+      if (is_array($decoded)) {
+        $data['selected'] = $decoded;
+      }
+    }
+    if (!empty($data['selected']) && is_array($data['selected'])) {
+      foreach ($data['selected'] as $key) {
+        $key = trim((string)$key);
+        if ($key !== '') {
+          $selected[$key] = true;
+        }
+      }
+    } elseif (!empty($data['statuses']) && is_array($data['statuses'])) {
+      foreach ($data['statuses'] as $key => $value) {
+        $selected[$key] = (bool)$value;
+      }
+    } else {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+
+    $ticketId = (int)$ticket['id'];
+    $customerId = (int)($ticket['adresse'] ?? 0);
+    $this->app->DB->Update(
+      "DELETE FROM ticket_notification_pref WHERE ticket_id = $ticketId AND customer_id = $customerId"
+    );
+
+    foreach ($statusOptions as $key => $label) {
+      $enabled = !empty($selected[$key]) ? 1 : 0;
+      $keyEsc = $this->app->DB->real_escape_string($key);
+      $this->app->DB->Insert(
+        "INSERT INTO ticket_notification_pref (ticket_id, customer_id, status_key, enabled)
+         VALUES ($ticketId, $customerId, '$keyEsc', $enabled)"
+      );
+    }
+
+    $this->portalJsonResponse(['saved' => true]);
+  }
+
+  public function ticket_portal_offers()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if (!$this->portalGetSettingBool('ticketportal_allow_offer_confirm')) {
+      $this->portalJsonResponse(['error' => 'offer_disabled'], 403);
+    }
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $ticketKey = $this->app->DB->real_escape_string((string)($ticket['schluessel'] ?? ''));
+    if ($ticketKey === '') {
+      $this->portalJsonResponse(['offers' => []]);
+    }
+    $offers = $this->app->DB->SelectArr(
+      "SELECT id, belegnr, datum, gesamtsumme, waehrung, status
+       FROM angebot
+       WHERE anfrage = '$ticketKey'
+         AND status IN ('freigegeben', 'beauftragt')
+       ORDER BY datum DESC, id DESC"
+    );
+    $this->portalJsonResponse(['offers' => $offers ?? []]);
+  }
+
+  public function ticket_portal_offer()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    if (!$this->portalGetSettingBool('ticketportal_allow_offer_confirm')) {
+      $this->portalJsonResponse(['error' => 'offer_disabled'], 403);
+    }
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      $this->portalJsonResponse(['error' => 'method_not_allowed'], 405);
+    }
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $angebotId = (int)($data['angebot_id'] ?? 0);
+    $action = trim((string)($data['action'] ?? ''));
+    $comment = trim((string)($data['comment'] ?? ''));
+    $agbVersion = trim((string)($data['agb_version'] ?? ''));
+    if ($angebotId <= 0 || !in_array($action, ['accept', 'decline'], true)) {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    if ($action === 'accept' && $agbVersion === '') {
+      $agbVersion = (string)$this->app->erp->Firmendaten('ticketportal_agb_version');
+      if ($agbVersion === '') {
+        $this->portalJsonResponse(['error' => 'agb_required'], 400);
+      }
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+    $offer = $this->app->DB->SelectRow("SELECT id, adresse, status FROM angebot WHERE id = $angebotId LIMIT 1");
+    if (empty($offer)) {
+      $this->portalJsonResponse(['error' => 'offer_not_found'], 404);
+    }
+    if ((int)$offer['adresse'] !== (int)$ticket['adresse']) {
+      $this->portalJsonResponse(['error' => 'offer_mismatch'], 403);
+    }
+    $commentEsc = $this->app->DB->real_escape_string($comment);
+    $agbVersionEsc = $this->app->DB->real_escape_string($agbVersion);
+    $doiToken = '';
+    $doiHashSql = "NULL";
+    $doiRequestedSql = "NULL";
+    if ($action === 'accept') {
+      $doiToken = $this->portalGenerateToken(24);
+      $doiHashSql = "'".$this->app->DB->real_escape_string($this->portalHashToken($doiToken))."'";
+      $doiRequestedSql = "NOW()";
+    }
+    $ip = $this->app->DB->real_escape_string($this->portalGetRequestIp());
+    $ua = $this->app->DB->real_escape_string($this->portalGetRequestUa());
+    $this->app->DB->Insert(
+      "INSERT INTO ticket_offer_confirmation (
+        ticket_id, angebot_id, action, comment, agb_version, doi_token_hash, doi_requested_at,
+        created_at, created_by_type, created_by_id, ip, user_agent
+      ) VALUES (
+        ".(int)$ticket['id'].", $angebotId, '".$this->app->DB->real_escape_string($action)."', '$commentEsc',
+        '$agbVersionEsc', $doiHashSql, $doiRequestedSql, NOW(), 'customer', ".(int)$ticket['adresse'].", '$ip', '$ua'
+      )"
+    );
+    if ($action === 'accept') {
+      $email = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');
+      if ($email === '') {
+        $email = $this->portalNormalizeEmail($ticket['customer_email'] ?? '');
+      }
+      if ($email === '') {
+        $this->portalJsonResponse(['error' => 'email_required'], 400);
+      }
+      $this->portalSendOfferDoiMail($ticket, $email, $doiToken);
+      $this->portalJsonResponse(['status' => 'pending_doi', 'doi_sent' => true]);
+    }
+    $this->portalSetCustomerStatus((int)$ticket['id'], 'angebot_abgelehnt', 'Angebot abgelehnt', null);
+    $this->portalLogStatus((int)$ticket['id'], null, 'angebot_abgelehnt', null, 'Angebot abgelehnt', null);
+    $this->portalJsonResponse(['status' => 'decline_recorded', 'doi_sent' => false]);
+  }
+
+  public function ticket_portal_media()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $media = $this->app->DB->SelectArr(
+      "SELECT id, filename, mime_type, file_size, created_at
+       FROM ticket_repair_media
+       WHERE ticket_id = ".(int)$access['ticket_id']."
+         AND is_public = 1
+       ORDER BY created_at DESC"
+    );
+    $this->portalJsonResponse(['media' => $media ?? []]);
+  }
+
+  public function ticket_portal_media_download()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    $this->portalRequireSharedSecret();
+    $data = $this->portalReadJsonInput();
+    $access = $this->portalGetSessionAccess($data);
+    $mediaId = (int)($data['media_id'] ?? 0);
+    if (!$access) {
+      $this->portalJsonResponse(['error' => 'session_invalid'], 401);
+    }
+    $row = $this->app->DB->SelectRow(
+      "SELECT * FROM ticket_repair_media WHERE id = $mediaId AND ticket_id = ".(int)$access['ticket_id']." AND is_public = 1 LIMIT 1"
+    );
+    if (empty($row)) {
+      $this->portalJsonResponse(['error' => 'not_found'], 404);
+    }
+    $uploadDir = dirname(__DIR__, 1).DIRECTORY_SEPARATOR.'userfiles'.DIRECTORY_SEPARATOR.'ticket_media';
+    $extension = pathinfo($row['filename'], PATHINFO_EXTENSION);
+    $path = $uploadDir.DIRECTORY_SEPARATOR.$row['file_hash'].'.'.$extension;
+    if (!is_file($path)) {
+      $this->portalJsonResponse(['error' => 'file_missing'], 404);
+    }
+    header('Content-Type: '.$row['mime_type']);
+    header('Content-Length: '.$row['file_size']);
+    header('Content-Disposition: attachment; filename=\"'.addslashes($row['filename']).'\"');
+    readfile($path);
+    $this->app->ExitXentral();
+  }
+
+  public function ticket_portal_offer_confirm()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      $this->portalJsonResponse(['error' => 'portal_disabled'], 403);
+    }
+    if (!$this->portalGetSettingBool('ticketportal_allow_offer_confirm')) {
+      $this->portalJsonResponse(['error' => 'offer_disabled'], 403);
+    }
+    $data = $this->portalReadJsonInput();
+    $doiToken = trim((string)($data['doi_token'] ?? $this->app->Secure->GetGET('doi_token')));
+    if ($doiToken === '') {
+      $this->portalJsonResponse(['error' => 'invalid_request'], 400);
+    }
+    $doiHash = $this->app->DB->real_escape_string($this->portalHashToken($doiToken));
+    $record = $this->app->DB->SelectRow(
+      "SELECT * FROM ticket_offer_confirmation
+       WHERE doi_token_hash = '$doiHash' AND doi_confirmed_at IS NULL
+       ORDER BY id DESC LIMIT 1"
+    );
+    if (empty($record)) {
+      $this->portalJsonResponse(['error' => 'doi_invalid'], 404);
+    }
+    $ttl = $this->portalGetSettingInt('ticketportal_doi_ttl_min', 120);
+    if (!empty($record['doi_requested_at']) && strtotime($record['doi_requested_at']) < (time() - ($ttl * 60))) {
+      $this->portalJsonResponse(['error' => 'doi_expired'], 401);
+    }
+    $this->app->DB->Update(
+      "UPDATE ticket_offer_confirmation
+       SET doi_confirmed_at = NOW(), agb_accepted_at = IF(agb_accepted_at IS NULL, NOW(), agb_accepted_at)
+       WHERE id = ".(int)$record['id']." LIMIT 1"
+    );
+
+    $ticket = $this->portalGetTicketForPortal((int)$record['ticket_id']);
+    if (!$ticket) {
+      $this->portalJsonResponse(['error' => 'ticket_not_found'], 404);
+    }
+
+    if ($record['action'] === 'accept') {
+      $offer = $this->app->DB->SelectRow("SELECT id, auftragid, status FROM angebot WHERE id = ".(int)$record['angebot_id']." LIMIT 1");
+      if (!empty($offer['auftragid']) || $offer['status'] === 'beauftragt') {
+        $this->portalJsonResponse(['error' => 'offer_already_ordered'], 409);
+      }
+      $orderId = $this->app->erp->WeiterfuehrenAngebotZuAuftrag((int)$record['angebot_id']);
+      if (empty($orderId)) {
+        $this->portalJsonResponse(['error' => 'order_failed'], 500);
+      }
+      $this->app->DB->Update(
+        "UPDATE ticket_offer_confirmation SET order_id = ".(int)$orderId."
+         WHERE id = ".(int)$record['id']." LIMIT 1"
+      );
+      $this->portalSetCustomerStatus((int)$ticket['id'], 'angebot_bestaetigt', 'Angebot bestaetigt', null);
+      $this->portalLogStatus((int)$ticket['id'], null, 'angebot_bestaetigt', null, 'Angebot bestaetigt', null);
+      
+      $this->portalInsertPortalMessage($ticket, 'system', 0, 'Angebot #'.($offer['belegnr'] ?? $record['angebot_id']).' wurde bestaetigt. Auftrag #'.$orderId.' wurde erstellt.', true);
+      
+      $this->portalJsonResponse(['status' => 'confirmed', 'order_id' => (int)$orderId]);
+    }
+
+    $this->portalSetCustomerStatus((int)$ticket['id'], 'angebot_abgelehnt', 'Angebot abgelehnt', null);
+    $this->portalLogStatus((int)$ticket['id'], null, 'angebot_abgelehnt', null, 'Angebot abgelehnt', null);
+    
+    $this->portalInsertPortalMessage($ticket, 'system', 0, 'Angebot #'.$record['angebot_id'].' wurde abgelehnt.', true);
+    
+    $this->portalJsonResponse(['status' => 'declined']);
+  }
+
+  public function ticket_portal_settings()
+  {
+    if (!$this->app->erp->RechteVorhanden('firmendaten', 'edit')) {
+      $this->app->Tpl->Set('PAGE', '<div class="error">Keine Berechtigung.</div>');
+      return;
+    }
+    $this->portalEnsureFirmendatenDefaults();
+    if ($this->app->Secure->GetPOST('clear_log')) {
+      $logPath = $this->portalGetLogPath();
+      if (is_file($logPath)) {
+        @unlink($logPath);
+      }
+      $msg = $this->app->erp->base64_url_encode('<div class="info">Portal Log geleert.</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_settings&msg='.$msg);
+      return;
+    }
+    if ($this->app->Secure->GetPOST('save')) {
+      $this->app->erp->FirmendatenSet('ticketportal_enabled', !empty($this->app->Secure->GetPOST('ticketportal_enabled')) ? 1 : 0);
+      $this->app->erp->FirmendatenSet('ticketportal_portal_url', (string)$this->app->Secure->GetPOST('ticketportal_portal_url'));
+      $this->app->erp->FirmendatenSet('ticketportal_allow_offer_confirm', !empty($this->app->Secure->GetPOST('ticketportal_allow_offer_confirm')) ? 1 : 0);
+      $this->app->erp->FirmendatenSet('ticketportal_allow_customer_comments', !empty($this->app->Secure->GetPOST('ticketportal_allow_customer_comments')) ? 1 : 0);
+      $this->app->erp->FirmendatenSet('ticketportal_notify_all_status', !empty($this->app->Secure->GetPOST('ticketportal_notify_all_status')) ? 1 : 0);
+      $this->app->erp->FirmendatenSet('ticketportal_agb_url', (string)$this->app->Secure->GetPOST('ticketportal_agb_url'));
+      $this->app->erp->FirmendatenSet('ticketportal_agb_version', (string)$this->app->Secure->GetPOST('ticketportal_agb_version'));
+      $this->app->erp->FirmendatenSet('ticketportal_shared_secret', (string)$this->app->Secure->GetPOST('ticketportal_shared_secret'));
+      $this->app->erp->FirmendatenSet('ticketportal_log_enabled', !empty($this->app->Secure->GetPOST('ticketportal_log_enabled')) ? 1 : 0);
+      $this->app->erp->FirmendatenSet('ticketportal_notify_subject', (string)$this->app->Secure->GetPOST('ticketportal_notify_subject'));
+      $this->app->erp->FirmendatenSet('ticketportal_notify_body', (string)$this->app->Secure->GetPOST('ticketportal_notify_body'));
+      $sessionTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_session_ttl_min'));
+      $codeTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_code_ttl_min'));
+      $magicTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_magic_ttl_min'));
+      $doiTtl = max(1, (int)$this->app->Secure->GetPOST('ticketportal_doi_ttl_min'));
+      $maxAttempts = max(1, (int)$this->app->Secure->GetPOST('ticketportal_max_attempts'));
+      $lockoutMin = max(1, (int)$this->app->Secure->GetPOST('ticketportal_lockout_min'));
+      $this->app->erp->FirmendatenSet('ticketportal_session_ttl_min', $sessionTtl);
+      $this->app->erp->FirmendatenSet('ticketportal_code_ttl_min', $codeTtl);
+      $this->app->erp->FirmendatenSet('ticketportal_magic_ttl_min', $magicTtl);
+      $this->app->erp->FirmendatenSet('ticketportal_doi_ttl_min', $doiTtl);
+      $this->app->erp->FirmendatenSet('ticketportal_max_attempts', $maxAttempts);
+      $this->app->erp->FirmendatenSet('ticketportal_lockout_min', $lockoutMin);
+      $labelsInput = $_POST['status_label'] ?? [];
+      $mapInput = $_POST['status_map'] ?? [];
+      $defaultLabels = $this->portalDefaultStatusLabels();
+      $labels = [];
+      foreach ($defaultLabels as $key => $fallback) {
+        $value = $fallback;
+        if (is_array($labelsInput) && array_key_exists($key, $labelsInput)) {
+          $candidate = trim((string)$labelsInput[$key]);
+          if ($candidate !== '') {
+            $value = $candidate;
+          }
+        }
+        $labels[$key] = $value;
+      }
+      $defaultMap = $this->portalDefaultStatusMap();
+      $map = [];
+      foreach ($defaultMap as $internal => $fallback) {
+        $selected = $fallback;
+        if (is_array($mapInput) && array_key_exists($internal, $mapInput)) {
+          $candidate = trim((string)$mapInput[$internal]);
+          if (isset($labels[$candidate])) {
+            $selected = $candidate;
+          }
+        }
+        $map[$internal] = $selected;
+      }
+      $this->app->erp->FirmendatenSet('ticketportal_status_labels', json_encode($labels));
+      $this->app->erp->FirmendatenSet('ticketportal_status_map', json_encode($map));
+
+      $customInput = $_POST['custom_status'] ?? [];
+      $customStatuses = [];
+      if (is_array($customInput)) {
+        foreach ($customInput as $c) {
+          if (!empty($c['key']) && !empty($c['label'])) {
+            $customStatuses[] = [
+              'key' => trim((string)$c['key']),
+              'label' => trim((string)$c['label']),
+              'enabled' => !empty($c['enabled']) ? 1 : 0
+            ];
+          }
+        }
+      }
+      $this->app->erp->FirmendatenSet('ticketportal_custom_statuses', json_encode($customStatuses));
+      $this->app->erp->FirmendatenSet('ticketportal_status_map_projects', (string)$this->app->Secure->GetPOST('ticketportal_status_map_projects'));
+
+      $msg = $this->app->erp->base64_url_encode('<div class="info">Portal Einstellungen gespeichert.</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_settings&msg='.$msg);
+    }
+
+    $this->app->Tpl->Set('PORTAL_ENABLED', $this->portalGetSettingBool('ticketportal_enabled') ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_URL', $this->app->erp->Firmendaten('ticketportal_portal_url'));
+    $this->app->Tpl->Set('PORTAL_ALLOW_OFFER', $this->portalGetSettingBool('ticketportal_allow_offer_confirm') ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_ALLOW_COMMENTS', $this->portalGetSettingBool('ticketportal_allow_customer_comments') ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_NOTIFY_ALL', $this->portalGetSettingBool('ticketportal_notify_all_status', true) ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_AGB_URL', $this->app->erp->Firmendaten('ticketportal_agb_url'));
+    $this->app->Tpl->Set('PORTAL_AGB_VERSION', $this->app->erp->Firmendaten('ticketportal_agb_version'));
+    $this->app->Tpl->Set('PORTAL_SHARED_SECRET', $this->app->erp->Firmendaten('ticketportal_shared_secret'));
+    $this->app->Tpl->Set('PORTAL_LOG_ENABLED', $this->portalLogEnabled() ? 'checked' : '');
+    $this->app->Tpl->Set('PORTAL_LOG_PATH', htmlentities($this->portalGetLogPath()));
+    $this->app->Tpl->Set('PORTAL_LOG_CONTENT', htmlentities($this->portalReadLogTail()));
+    $notifySubject = trim((string)$this->app->erp->Firmendaten('ticketportal_notify_subject'));
+    if ($notifySubject === '') {
+      $notifySubject = $this->portalDefaultNotifySubject();
+    }
+    $notifyBody = trim((string)$this->app->erp->Firmendaten('ticketportal_notify_body'));
+    if ($notifyBody === '') {
+      $notifyBody = $this->portalDefaultNotifyBody();
+    }
+    $this->app->Tpl->Set('PORTAL_NOTIFY_SUBJECT', $notifySubject);
+    $this->app->Tpl->Set('PORTAL_NOTIFY_BODY', $notifyBody);
+    $this->app->Tpl->Set('PORTAL_SESSION_TTL', $this->portalGetSettingInt('ticketportal_session_ttl_min', 60));
+    $this->app->Tpl->Set('PORTAL_CODE_TTL', $this->portalGetSettingInt('ticketportal_code_ttl_min', 15));
+    $this->app->Tpl->Set('PORTAL_MAGIC_TTL', $this->portalGetSettingInt('ticketportal_magic_ttl_min', 30));
+    $this->app->Tpl->Set('PORTAL_DOI_TTL', $this->portalGetSettingInt('ticketportal_doi_ttl_min', 120));
+    $this->app->Tpl->Set('PORTAL_MAX_ATTEMPTS', $this->portalGetSettingInt('ticketportal_max_attempts', 5));
+    $this->app->Tpl->Set('PORTAL_LOCKOUT_MIN', $this->portalGetSettingInt('ticketportal_lockout_min', 15));
+    $statusOptions = $this->portalCustomerStatusOptions();
+    $labels = $this->portalGetStatusLabels();
+    $labelRows = '';
+    foreach ($statusOptions as $key => $label) {
+      $labelRows .= '<tr><td>'.htmlentities($key).'</td><td><input type="text" name="status_label['.
+        htmlentities($key).']" value="'.htmlentities($labels[$key] ?? $label).'" size="40"></td></tr>';
+    }
+    $this->app->Tpl->Set('STATUS_LABEL_ROWS', $labelRows);
+
+    $internalKeys = array_keys($this->portalDefaultStatusMap());
+    $internalLabels = $this->app->erp->GetTicketStatusValues();
+    $map = $this->portalGetStatusMap();
+    $mapRows = '';
+    foreach ($internalKeys as $internal) {
+      $internalLabel = $internalLabels[$internal] ?? $internal;
+      $optionsHtml = '';
+      foreach ($statusOptions as $key => $label) {
+        $selected = ($map[$internal] ?? '') === $key ? ' selected' : '';
+        $optionsHtml .= '<option value="'.htmlentities($key).'"'.$selected.'>'.htmlentities($label).'</option>';
+      }
+      $mapRows .= '<tr><td>'.htmlentities($internalLabel).'</td><td><select name="status_map['.
+        htmlentities($internal).']">'.$optionsHtml.'</select></td></tr>';
+    }
+    $this->app->Tpl->Set('STATUS_MAP_ROWS', $mapRows);
+
+    $customRaw = (string)$this->app->erp->Firmendaten('ticketportal_custom_statuses');
+    $customList = json_decode($customRaw, true) ?: [];
+    $customRows = '';
+    $idx = 0;
+    foreach ($customList as $c) {
+      $enabledChecked = !empty($c['enabled']) ? 'checked' : '';
+      $customRows .= '<tr><td><input type="text" name="custom_status['.$idx.'][key]" value="'.htmlentities($c['key']).'" placeholder="key"></td>';
+      $customRows .= '<td><input type="text" name="custom_status['.$idx.'][label]" value="'.htmlentities($c['label']).'" placeholder="Label" size="40"></td>';
+      $customRows .= '<td><input type="checkbox" name="custom_status['.$idx.'][enabled]" value="1" '.$enabledChecked.'></td>';
+      $customRows .= '<td><button type="button" onclick=\"this.closest(\'tr\').remove();\">Entfernen</button></td></tr>';
+      $idx++;
+    }
+    // Add one empty row for new entry
+    $customRows .= '<tr><td><input type="text" name="custom_status['.$idx.'][key]" value="" placeholder="neuer_key"></td>';
+    $customRows .= '<td><input type="text" name="custom_status['.$idx.'][label]" value="" placeholder="Neues Label" size="40"></td>';
+    $customRows .= '<td><input type="checkbox" name="custom_status['.$idx.'][enabled]" value="1" checked></td><td></td></tr>';
+    $this->app->Tpl->Set('CUSTOM_STATUS_ROWS', $customRows);
+
+    $projectMap = (string)$this->app->erp->Firmendaten('ticketportal_status_map_projects');
+    $this->app->Tpl->Set('STATUS_MAP_PROJECTS', htmlentities($projectMap));
+    $pluginUrl = $this->portalGetServerUrl().'/index.php?module=ticket&action=portal_plugin_download';
+    $this->app->Tpl->Set('PORTAL_PLUGIN_URL', $pluginUrl);
+    $msg = $this->app->Secure->GetGET('msg');
+    if ($msg) {
+      $this->app->Tpl->Set('MESSAGE', $this->app->erp->base64_url_decode($msg));
+    } else {
+      $this->app->Tpl->Set('MESSAGE', '');
+    }
+    $this->app->Tpl->Parse('PAGE', 'ticket_portal_settings.tpl');
+  }
+
+  public function ticket_portal_plugin_download()
+  {
+    if (!$this->app->erp->RechteVorhanden('firmendaten', 'edit')) {
+      $secret = trim((string)$this->app->erp->Firmendaten('ticketportal_shared_secret'));
+      $header = (string)($_SERVER['HTTP_X_OPENXE_PORTAL_SECRET'] ?? '');
+      if ($secret === '' || $header === '' || !hash_equals($secret, $header)) {
+        http_response_code(403);
+        $this->app->Tpl->Set('TEXT', '<div class="error">Keine Berechtigung.</div>');
+        $this->app->Tpl->Output('ticket_text.tpl');
+        $this->app->ExitXentral();
+      }
+    }
+    $pluginDir = dirname(__DIR__, 2).'/wp-plugin/openxe-ticket-portal';
+    if (!is_dir($pluginDir)) {
+      http_response_code(404);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Plugin nicht gefunden.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+    if (!class_exists('ZipArchive')) {
+      http_response_code(500);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Zip-Erweiterung nicht verfuegbar.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+
+    $tmpBase = tempnam(sys_get_temp_dir(), 'openxe-portal-');
+    if ($tmpBase === false) {
+      http_response_code(500);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Temporaere Datei konnte nicht erstellt werden.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+    $zipPath = $tmpBase.'.zip';
+    @unlink($tmpBase);
+
+    $zip = new ZipArchive();
+    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+      http_response_code(500);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Zip konnte nicht erstellt werden.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+
+    $iterator = new RecursiveIteratorIterator(
+      new RecursiveDirectoryIterator($pluginDir, FilesystemIterator::SKIP_DOTS),
+      RecursiveIteratorIterator::SELF_FIRST
+    );
+    $pluginDirLength = strlen($pluginDir) + 1;
+    foreach ($iterator as $file) {
+      if (!$file->isFile()) {
+        continue;
+      }
+      $path = $file->getPathname();
+      $relative = substr($path, $pluginDirLength);
+      $zip->addFile($path, 'openxe-ticket-portal/' . $relative);
+    }
+    $zip->close();
+
+    $filename = 'openxe-ticket-portal.zip';
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="'.$filename.'"');
+    header('Content-Length: '.filesize($zipPath));
+    readfile($zipPath);
+    @unlink($zipPath);
+    $this->app->ExitXentral();
+  }
+
+  public function ticket_portal_staff()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->app->Tpl->Set('PAGE', '<div class="error">Keine Berechtigung.</div>');
+      return;
+    }
+    $ticketId = (int)$this->app->Secure->GetGET('id');
+    if ($ticketId <= 0) {
+      $this->app->Tpl->Set('PAGE', '<div class="error">Ticket nicht gefunden.</div>');
+      return;
+    }
+    $ticket = $this->portalGetTicketForPortal($ticketId);
+    if (!$ticket) {
+      $this->app->Tpl->Set('PAGE', '<div class="error">Ticket nicht gefunden.</div>');
+      return;
+    }
+
+    $statusOptions = $this->portalCustomerStatusOptions();
+    $currentStatus = $this->app->DB->SelectRow(
+      "SELECT status_key, status_label FROM ticket_customer_status WHERE ticket_id = $ticketId LIMIT 1"
+    );
+    $currentKey = $currentStatus['status_key'] ?? $this->portalDefaultCustomerStatusKey((string)$ticket['status']);
+    if (!isset($statusOptions[$currentKey]) && !empty($currentStatus['status_label'])) {
+      $statusOptions = [$currentKey => $currentStatus['status_label']] + $statusOptions;
+    } elseif (!isset($statusOptions[$currentKey])) {
+      $currentKey = 'in_bearbeitung';
+    }
+
+    if ($this->app->Secure->GetPOST('save')) {
+      $statusKey = trim((string)$this->app->Secure->GetPOST('status_key'));
+      $publicNote = trim((string)$this->app->Secure->GetPOST('public_note'));
+      $internalNote = trim((string)$this->app->Secure->GetPOST('internal_note'));
+      if ($statusKey === '' || !isset($statusOptions[$statusKey])) {
+        $msg = $this->app->erp->base64_url_encode('<div class="error">Bitte gueltigen Status waehlen.</div>');
+        $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+        return;
+      }
+      $statusLabel = $statusOptions[$statusKey];
+      $userId = (int)$this->app->User->GetID();
+      $changed = $this->portalSetCustomerStatus(
+        $ticketId,
+        $statusKey,
+        $statusLabel,
+        $userId,
+        $publicNote !== '' ? $publicNote : null
+      );
+      if ($changed) {
+        $this->portalLogStatus(
+          $ticketId,
+          $currentKey,
+          $statusKey,
+          $userId,
+          $publicNote !== '' ? $publicNote : null,
+          $internalNote !== '' ? $internalNote : null
+        );
+      }
+      if ($publicNote !== '') {
+        $this->portalInsertPortalMessage($ticket, 'staff', $userId, $publicNote, true);
+      }
+      if ($internalNote !== '') {
+        $this->portalInsertPortalMessage($ticket, 'staff', $userId, $internalNote, false);
+      }
+      if (!$changed && $publicNote === '' && $internalNote === '') {
+        $messageText = 'Keine Aenderung gespeichert.';
+      } elseif ($changed) {
+        $messageText = 'Status gespeichert.';
+      } else {
+        $messageText = 'Kommentar gespeichert.';
+      }
+      $msg = $this->app->erp->base64_url_encode('<div class="info">'.$messageText.'</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+
+    $optionsHtml = '';
+    foreach ($statusOptions as $key => $label) {
+      $selected = $key === $currentKey ? ' selected' : '';
+      $optionsHtml .= '<option value="'.htmlentities($key).'"'.$selected.'>'.htmlentities($label).'</option>';
+    }
+
+    $mediaFiles = $this->app->DB->SelectArr(
+      "SELECT id, filename, mime_type, file_size, created_at, is_public FROM ticket_repair_media WHERE ticket_id = $ticketId ORDER BY created_at DESC"
+    );
+    $mediaHtml = '';
+    if (!empty($mediaFiles)) {
+      $mediaHtml .= '<table class="list" style="width:100%;"><tr><th>Datei</th><th>Groesse</th><th>Datum</th><th>Sichtbar</th><th>Menue</th></tr>';
+      foreach ($mediaFiles as $row) {
+        $size = round($row['file_size'] / 1024, 1).' KB';
+        $publicChecked = $row['is_public'] ? 'checked' : '';
+        $mediaHtml .= '<tr><td><a href="index.php?module=ticket&action=portal_staff_download&id='.$row['id'].'" target="_blank">'.htmlentities($row['filename']).'</a></td>';
+        $mediaHtml .= '<td>'.$size.'</td><td>'.htmlentities($row['created_at']).'</td>';
+        $mediaHtml .= '<td><input type="checkbox" disabled '.$publicChecked.'></td>';
+        $mediaHtml .= '<td><a href="index.php?module=ticket&action=portal_staff_media_delete&id='.$row['id'].'&ticket_id='.$ticketId.'" onclick=\"return confirm(\'Datei wirklich loeschen?\');\">Loeschen</a></td></tr>';
+      }
+      $mediaHtml .= '</table>';
+    } else {
+      $mediaHtml = '<p>Keine Medien hochgeladen.</p>';
+    }
+
+    $msg = $this->app->Secure->GetGET('msg');
+    if ($msg) {
+      $this->app->Tpl->Set('MESSAGE', $this->app->erp->base64_url_decode($msg));
+    } else {
+      $this->app->Tpl->Set('MESSAGE', '');
+    }
+    $this->app->Tpl->Set('ID', $ticketId);
+    $this->app->Tpl->Set('TICKETNUMMER', htmlentities((string)$ticket['schluessel']));
+    $this->app->Tpl->Set('BETREFF', htmlentities((string)($ticket['betreff'] ?? '')));
+    $this->app->Tpl->Set('STATUS_OPTIONS', $optionsHtml);
+    $this->app->Tpl->Set('MEDIA_LIST', $mediaHtml);
+    $this->app->Tpl->Parse('PAGE', 'ticket_portal_staff.tpl');
+  }
+
+  public function ticket_portal_staff_upload()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->portalJsonResponse(['error' => 'forbidden'], 403);
+    }
+    $ticketId = (int)$this->app->Secure->GetGET('id');
+    if ($ticketId <= 0 || empty($_FILES['file'])) {
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId);
+      return;
+    }
+    $file = $_FILES['file'];
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Upload fehlgeschlagen (Fehler '.$file['error'].').</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+    $maxSize = 10 * 1024 * 1024; // 10MB
+    if ($file['size'] > $maxSize) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Datei zu gross (max. 10MB).</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+    $allowedMime = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($file['tmp_name']);
+    if (!in_array($mimeType, $allowedMime, true)) {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Dateityp nicht erlaubt (nur JPG, PNG, WebP, PDF).</div>');
+      $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+      return;
+    }
+
+    $uploadDir = dirname(__DIR__, 1).DIRECTORY_SEPARATOR.'userfiles'.DIRECTORY_SEPARATOR.'ticket_media';
+    if (!is_dir($uploadDir)) {
+      @mkdir($uploadDir, 0775, true);
+    }
+    $fileHash = hash_file('sha256', $file['tmp_name']);
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $targetName = $fileHash.'.'.$extension;
+    $targetPath = $uploadDir.DIRECTORY_SEPARATOR.$targetName;
+
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+      $fileNameEsc = $this->app->DB->real_escape_string($file['name']);
+      $mimeTypeEsc = $this->app->DB->real_escape_string($mimeType);
+      $isPublic = (int)$this->app->Secure->GetPOST('is_public');
+      $userId = (int)$this->app->User->GetID();
+      $this->app->DB->Insert(
+        "INSERT INTO ticket_repair_media (ticket_id, filename, mime_type, file_size, file_hash, created_at, created_by, is_public)
+         VALUES ($ticketId, '$fileNameEsc', '$mimeTypeEsc', ".(int)$file['size'].", '$fileHash', NOW(), $userId, $isPublic)"
+      );
+      $msg = $this->app->erp->base64_url_encode('<div class="info">Datei hochgeladen.</div>');
+    } else {
+      $msg = $this->app->erp->base64_url_encode('<div class="error">Datei konnte nicht gespeichert werden.</div>');
+    }
+    $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+  }
+
+  public function ticket_portal_staff_download()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->app->ExitXentral();
+    }
+    $id = (int)$this->app->Secure->GetGET('id');
+    $row = $this->app->DB->SelectRow("SELECT * FROM ticket_repair_media WHERE id = $id LIMIT 1");
+    if (empty($row)) {
+      $this->app->ExitXentral();
+    }
+    $uploadDir = dirname(__DIR__, 1).DIRECTORY_SEPARATOR.'userfiles'.DIRECTORY_SEPARATOR.'ticket_media';
+    $extension = pathinfo($row['filename'], PATHINFO_EXTENSION);
+    $path = $uploadDir.DIRECTORY_SEPARATOR.$row['file_hash'].'.'.$extension;
+
+    if (!is_file($path)) {
+      echo "Datei nicht gefunden.";
+      $this->app->ExitXentral();
+    }
+
+    header('Content-Type: '.$row['mime_type']);
+    header('Content-Length: '.$row['file_size']);
+    header('Content-Disposition: inline; filename=\"'.addslashes($row['filename']).'\"');
+    readfile($path);
+    $this->app->ExitXentral();
+  }
+
+  public function ticket_portal_staff_media_delete()
+  {
+    if (!$this->app->erp->RechteVorhanden('ticket', 'edit')) {
+      $this->app->ExitXentral();
+    }
+    $id = (int)$this->app->Secure->GetGET('id');
+    $ticketId = (int)$this->app->Secure->GetGET('ticket_id');
+    if ($id > 0) {
+      $this->app->DB->Update("DELETE FROM ticket_repair_media WHERE id = $id LIMIT 1");
+    }
+    $msg = $this->app->erp->base64_url_encode('<div class="info">Datei geloescht.</div>');
+    $this->app->Location->execute('index.php?module=ticket&action=portal_staff&id='.$ticketId.'&msg='.$msg);
+  }
+
+  public function ticket_portal_print()
+  {
+    if (!$this->portalGetSettingBool('ticketportal_enabled')) {
+      http_response_code(403);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Portal deaktiviert.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+    $data = $this->portalReadJsonInput();
+    $sessionToken = $this->portalReadSessionToken($data);
+    $access = $this->portalGetSessionAccess($data);
+    if (!$access) {
+      http_response_code(401);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Sitzung ung&uuml;ltig.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+    $ticket = $this->portalGetTicketForPortal((int)$access['ticket_id']);
+    if (!$ticket) {
+      http_response_code(404);
+      $this->app->Tpl->Set('TEXT', '<div class="error">Ticket nicht gefunden.</div>');
+      $this->app->Tpl->Output('ticket_text.tpl');
+      $this->app->ExitXentral();
+    }
+
+    $adresse = $this->app->DB->SelectRow(
+      "SELECT name, abteilung, unterabteilung, strasse, adresszusatz, plz, ort, land, email
+       FROM adresse WHERE id = ".(int)$ticket['adresse']." LIMIT 1"
+    );
+
+    $addressLines = [];
+    foreach (['name','abteilung','unterabteilung','strasse','adresszusatz'] as $field) {
+      if (!empty($adresse[$field])) {
+        $addressLines[] = $adresse[$field];
+      }
+    }
+    $cityLine = trim(($adresse['land'] ?? '').'-'.($adresse['plz'] ?? '').' '.($adresse['ort'] ?? ''));
+    if ($cityLine !== '-') {
+      $addressLines[] = $cityLine;
+    }
+
+    $email = $this->portalNormalizeEmail($adresse['email'] ?? '');
+    if ($email === '') {
+      $email = $this->portalNormalizeEmail($ticket['mailadresse'] ?? '');
+    }
+
+    // Message History
+    $messages = $this->app->DB->SelectArr(
+      "SELECT author_type, text, created_at, source
+       FROM ticket_portal_message
+       WHERE ticket_id = ".(int)$ticket['id']." AND is_public = 1
+       ORDER BY created_at ASC"
+    );
+    $messagesHtml = '';
+    if (!empty($messages)) {
+      foreach ($messages as $msg) {
+        $author = ($msg['author_type'] === 'customer') ? 'Kunde' : (($msg['author_type'] === 'system') ? 'System' : 'Team');
+        $date = date('d.m.Y H:i', strtotime($msg['created_at']));
+        $messagesHtml .= '<div class="message ' . $msg['author_type'] . '">';
+        $messagesHtml .= '<div class="meta"><strong>' . $author . '</strong> (' . $date . ')</div>';
+        $messagesHtml .= '<div class="text">' . nl2br(htmlentities($msg['text'])) . '</div>';
+        $messagesHtml .= '</div>';
+      }
+    }
+
+    // Offers
+    $offers = $this->app->DB->SelectArr(
+      "SELECT belegnr, datum, gesamtsumme, waehrung, status
+       FROM angebot
+       WHERE anfrage = '".$this->app->DB->real_escape_string($ticket['schluessel'])."'
+         AND status IN ('freigegeben', 'beauftragt')
+       ORDER BY datum DESC"
+    );
+    $offersHtml = '';
+    if (!empty($offers)) {
+      $offersHtml .= '<table><tr><th>Belegnr</th><th>Datum</th><th>Summe</th><th>Status</th></tr>';
+      foreach ($offers as $offer) {
+        $offersHtml .= '<tr>';
+        $offersHtml .= '<td>' . htmlentities($offer['belegnr']) . '</td>';
+        $offersHtml .= '<td>' . date('d.m.Y', strtotime($offer['datum'])) . '</td>';
+        $offersHtml .= '<td>' . number_format($offer['gesamtsumme'], 2, ',', '.') . ' ' . $offer['waehrung'] . '</td>';
+        $offersHtml .= '<td>' . htmlentities($offer['status']) . '</td>';
+        $offersHtml .= '</tr>';
+      }
+      $offersHtml .= '</table>';
+    }
+
+    $ticketStaffUrl = $this->portalGetServerUrl().'/index.php?module=ticket&action=portal_staff&id='.(int)$ticket['id'];
+    /** @var \Xentral\Components\Barcode\BarcodeFactory $barcodeFactory */
+    $barcodeFactory = $this->app->Container->get('BarcodeFactory');
+    $qrHtml = $barcodeFactory->createQrCode($ticketStaffUrl, 'M')->toHtml(2, 2);
+
+    $this->app->Tpl->Set('TICKETNUMMER', htmlentities((string)$ticket['schluessel']));
+    $this->app->Tpl->Set('BETREFF', htmlentities((string)$ticket['betreff']));
+    $this->app->Tpl->Set('FEHLERBESCHREIBUNG', nl2br(htmlentities((string)$errorDescription)));
+    $this->app->Tpl->Set('KUNDENADRESSE', nl2br(htmlentities(implode("\n", $addressLines))));
+    $this->app->Tpl->Set('EMAIL', htmlentities((string)$email));
+    $this->app->Tpl->Set('QR_HTML', $qrHtml);
+    $this->app->Tpl->Set('MESSAGES_HTML', $messagesHtml);
+    $this->app->Tpl->Set('OFFERS_HTML', $offersHtml);
+    $this->app->Tpl->Set('STAFF_URL', htmlentities($ticketStaffUrl));
+
+    $downloadUrl = '';
+    if ($sessionToken !== '') {
+      $downloadUrl = $this->portalGetServerUrl().'/index.php?module=ticket&action=portal_print&session_token='.
+        rawurlencode($sessionToken).'&download=1';
+    }
+    $this->app->Tpl->Set('DOWNLOAD_URL', $downloadUrl);
+
+    if ($downloadUrl === '') {
+      $this->app->Tpl->Set('DOWNLOAD_URL', '#');
+    }
+
+    if ($this->app->Secure->GetGET('download')) {
+      $filename = 'ticket-'.$ticket['schluessel'].'.html';
+      header('Content-Type: text/html; charset=utf-8');
+      header('Content-Disposition: attachment; filename="'.$filename.'"');
+    }
+    $this->app->Tpl->Output('ticket_portal_print.tpl');
+    $this->app->ExitXentral();
+  }
+
+  /**
+   * Helper function to recursively add directory to ZIP
+   */
+  private function addDirectoryToZip($zip, $dir, $zipPath) {
+    $iterator = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+    $files = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+
+    foreach ($files as $file) {
+      $filePath = $file->getRealPath();
+      $relativePath = $zipPath . '/' . substr($filePath, strlen($dir) + 1);
+      $relativePath = str_replace('\\', '/', $relativePath);
+
+      if ($file->isDir()) {
+        $zip->addEmptyDir($relativePath);
+      } else {
+        $zip->addFile($filePath, $relativePath);
+      }
+    }
+  }
 }
-
-
-

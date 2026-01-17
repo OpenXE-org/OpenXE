@@ -1,0 +1,490 @@
+:root {
+  --oxp-primary: #2271b1;
+  --oxp-primary-hover: #135e96;
+  --oxp-bg: #f0f0f1;
+  --oxp-card-bg: #ffffff;
+  --oxp-text: #3c434a;
+  --oxp-text-muted: #666;
+  --oxp-border: #c3c4c7;
+  --oxp-radius: 6px;
+  --oxp-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.openxe-portal {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 24px 0 !important;
+  padding: 0 !important;
+  color: var(--oxp-text);
+}
+
+/* Override WordPress theme containers */
+.openxe-portal,
+.openxe-portal * {
+  box-sizing: border-box;
+}
+
+/* Force full width on common WordPress container classes */
+.entry-content .openxe-portal,
+.site-content .openxe-portal,
+.content-area .openxe-portal {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  padding: 24px 40px !important;
+}
+
+.openxe-portal .oxp-card {
+  border: 1px solid var(--oxp-border);
+  border-radius: var(--oxp-radius);
+  padding: 20px;
+  background: var(--oxp-card-bg);
+  box-shadow: var(--oxp-shadow);
+}
+
+.openxe-portal .oxp-row {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.openxe-portal label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.openxe-portal input[type="text"],
+.openxe-portal textarea,
+.openxe-portal select {
+  border: 1px solid var(--oxp-border);
+  border-radius: var(--oxp-radius);
+  padding: 8px 10px;
+  background: var(--oxp-card-bg);
+  color: var(--oxp-text);
+}
+
+.openxe-portal button,
+.openxe-portal a.oxp-print,
+.openxe-portal a.oxp-download {
+  display: inline-block;
+  border: 1px solid var(--oxp-primary);
+  background: var(--oxp-primary);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: var(--oxp-radius);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.openxe-portal button:hover {
+  background: var(--oxp-primary-hover);
+  border-color: var(--oxp-primary-hover);
+}
+
+.openxe-portal a.oxp-print,
+.openxe-portal a.oxp-download {
+  background: var(--oxp-bg);
+  color: var(--oxp-text);
+  border-color: var(--oxp-border);
+}
+
+.openxe-portal a.oxp-print:hover,
+.openxe-portal a.oxp-download:hover {
+  background: var(--oxp-border);
+}
+
+.openxe-portal .oxp-offer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.oxp-btn-tts {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--oxp-border);
+  color: var(--oxp-text);
+  border-radius: var(--oxp-radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.oxp-btn-tts:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.openxe-portal .oxp-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+/* Status Section */
+.oxp-status {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  padding: 28px 32px;
+  margin-bottom: 32px;
+}
+
+.oxp-status h3 {
+  margin-top: 0;
+  color: white;
+}
+
+.oxp-status-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.oxp-status-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.oxp-status-updated {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Ticket Details Section */
+.oxp-ticket-details {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+}
+
+.oxp-ticket-details h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.oxp-detail-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.oxp-detail-label {
+  font-weight: 600;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.oxp-customer-name,
+.oxp-customer-address,
+.oxp-ticket-number-display {
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+/* Two-Column Grid Layout */
+.oxp-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+  .oxp-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Notifications Section */
+.oxp-notifications {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+}
+
+.oxp-notifications h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.oxp-notifications-list {
+  margin-bottom: 16px;
+}
+
+.oxp-notification-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.oxp-notification-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.oxp-notifications-save {
+  margin-top: 12px;
+}
+
+.oxp-notifications-msg {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.openxe-portal .oxp-messages {
+  border: 1px solid var(--oxp-border);
+  border-radius: var(--oxp-radius);
+  padding: 16px;
+  min-height: 80px;
+  background: var(--oxp-bg);
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+}
+
+.openxe-portal .oxp-chat-message {
+  max-width: 85%;
+  animation: slideIn 0.2s ease-out;
+}
+
+.openxe-portal .oxp-chat-message.customer {
+  align-self: flex-end;
+}
+
+.openxe-portal .oxp-chat-message.staff {
+  align-self: flex-start;
+}
+
+.openxe-portal .oxp-message-preview {
+  background: var(--oxp-card-bg);
+  border: 1px solid var(--oxp-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.openxe-portal .oxp-chat-message.customer .oxp-message-preview {
+  background: #e7f3ff;
+  border-color: #2271b1;
+}
+
+.openxe-portal .oxp-message-preview:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.openxe-portal .oxp-message-preview.expanded {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.openxe-portal .oxp-message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.openxe-portal .oxp-message-author {
+  font-weight: 600;
+  color: var(--oxp-text);
+}
+
+.openxe-portal .oxp-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--oxp-text-muted);
+}
+
+.openxe-portal .oxp-message-source {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+}
+
+.openxe-portal .oxp-message-source svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.openxe-portal .oxp-message-date {
+  font-size: 11px;
+}
+
+.openxe-portal .oxp-message-snippet {
+  color: var(--oxp-text);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.openxe-portal .oxp-message-full {
+  background: var(--oxp-card-bg);
+  border: 1px solid var(--oxp-border);
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.openxe-portal .oxp-chat-message.customer .oxp-message-full {
+  background: #e7f3ff;
+  border-color: #2271b1;
+}
+
+.openxe-portal .oxp-show-more {
+  background: var(--oxp-card-bg);
+  border: 1px solid var(--oxp-border);
+  border-radius: var(--oxp-radius);
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background 0.2s;
+  font-size: 13px;
+  color: var(--oxp-primary);
+  font-weight: 600;
+}
+
+.openxe-portal .oxp-show-more:hover {
+  background: var(--oxp-bg);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.openxe-portal .oxp-notifications {
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid var(--oxp-border);
+  border-radius: var(--oxp-radius);
+  background: var(--oxp-bg);
+}
+
+.openxe-portal .oxp-notification-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.openxe-portal .oxp-error {
+  background: #fff3f3;
+  border: 1px solid #f2b8b8;
+  padding: 10px;
+  border-radius: var(--oxp-radius);
+  margin-bottom: 12px;
+  color: #8b0000;
+}
+
+.openxe-portal .oxp-login-msg,
+.openxe-portal .oxp-message-msg,
+.openxe-portal .oxp-offer-msg {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .openxe-portal .oxp-actions {
+    flex-direction: column;
+  }
+
+  .openxe-portal .oxp-actions button,
+  .openxe-portal .oxp-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.openxe-portal .oxp-offer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.openxe-portal .oxp-offer-card {
+  padding: 16px;
+  border: 1px solid var(--oxp-border);
+  border-radius: var(--oxp-radius);
+  background: var(--oxp-card-bg);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.openxe-portal .oxp-offer-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.openxe-portal .oxp-offer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.openxe-portal .oxp-offer-header strong {
+  font-weight: 700;
+}
+
+.openxe-portal .oxp-offer-header span {
+  font-size: 12px;
+  color: var(--oxp-text-muted);
+}
+
+.openxe-portal .oxp-offer-body {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.openxe-portal .oxp-btn-small {
+  padding: 4px 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

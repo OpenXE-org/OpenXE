@@ -6724,14 +6724,178 @@ title: 'Abschicken',
     return $navarray['menu']['tmp'];
   }
 
-  // @refactor Navigation Widget
-  function NavigationENT()
+  /**
+   * @param string     $firstTitle
+   * @param array|null $secnav
+   *
+   * @return string
+   */
+  public function GetMenuConfiguratorKey($firstTitle, $secnav = null)
   {
-    return $this->Navigation();
+    $firstTitle = (string)$firstTitle;
+    if($secnav === null){
+      return 'first|'.$firstTitle;
+    }
+    $secTitle = isset($secnav[0])?(string)$secnav[0]:'';
+    $module = isset($secnav[1])?(string)$secnav[1]:'';
+    $action = isset($secnav[2])?(string)$secnav[2]:'';
+    return 'sec|'.$firstTitle.'|'.$module.'|'.$action.'|'.$secTitle;
+  }
+
+  /**
+   * @param int|null $userId
+   *
+   * @return array
+   */
+  public function GetMenuConfiguratorConfig($userId = null)
+  {
+    $default = ['items' => [], 'applyCustomStructure' => false];
+    if(empty($userId)){
+      $userId = $this->app->User->GetID();
+    }
+    if((int)$userId <= 0){
+      return $default;
+    }
+    try{
+      /** @var \Xentral\Modules\User\Service\UserConfigService $userConfig */
+      $userConfig = $this->app->Container->get('UserConfigService');
+    }
+    catch(Exception $e){
+      return $default;
+    }
+    try{
+      $stored = $userConfig->tryGet('menu_configurator', $userId);
+    }
+    catch(Exception $e){
+      $stored = null;
+    }
+    if(is_string($stored)){
+      $decoded = json_decode($stored, true);
+      if(is_array($decoded)){
+        $stored = $decoded;
+      }
+    }
+    if(!is_array($stored)){
+      return $default;
+    }
+    return array_merge($default, $stored);
+  }
+
+  /**
+   * @param array      $menu
+   * @param array|null $config
+   *
+   * @return array
+   */
+  public function ApplyMenuConfigurator(array $menu, array $config = null)
+  {
+    if(empty($menu)){
+      return $menu;
+    }
+    if($config === null){
+      $config = $this->GetMenuConfiguratorConfig();
+    }
+    $config = array_merge(['items' => [], 'applyCustomStructure' => false], is_array($config)?$config:[]);
+    $configItems = is_array($config['items'])?$config['items']:[];
+    $applyCustomStructure = !empty($config['applyCustomStructure']);
+    $result = [];
+    $defaultTopOrder = 0;
+
+    foreach($menu as $entry){
+      $firstTitle = isset($entry['first'][0])?(string)$entry['first'][0]:'';
+      $firstKey = $this->GetMenuConfiguratorKey($firstTitle);
+      $firstConfig = isset($configItems[$firstKey]) && is_array($configItems[$firstKey])?$configItems[$firstKey]:[];
+      if(array_key_exists('visible', $firstConfig) && $firstConfig['visible'] === false){
+        continue;
+      }
+      $entry['_default_order'] = $defaultTopOrder++;
+      $entry['_custom_order'] = isset($firstConfig['order']) && $firstConfig['order'] !== '' && $firstConfig['order'] !== null?(float)$firstConfig['order']:null;
+      if(!empty($firstConfig['customTitle'])){
+        $entry['first'][0] = $firstConfig['customTitle'];
+      }
+
+      $secList = [];
+      if(isset($entry['sec']) && is_array($entry['sec'])){
+        $defaultSecOrder = 0;
+        foreach($entry['sec'] as $sec){
+          $secKey = $this->GetMenuConfiguratorKey($firstTitle, $sec);
+          $secConfig = isset($configItems[$secKey]) && is_array($configItems[$secKey])?$configItems[$secKey]:[];
+          if(array_key_exists('visible', $secConfig) && $secConfig['visible'] === false){
+            continue;
+          }
+          $sec['_default_order'] = $defaultSecOrder++;
+          $sec['_custom_order'] = isset($secConfig['order']) && $secConfig['order'] !== '' && $secConfig['order'] !== null?(float)$secConfig['order']:null;
+          if(!empty($secConfig['customTitle'])){
+            $sec[0] = $secConfig['customTitle'];
+          }
+          $secList[] = $sec;
+        }
+      }
+
+      if($applyCustomStructure && count($secList) > 1){
+        usort(
+          $secList,
+          static function($a, $b){
+            $orderA = array_key_exists('_custom_order', $a) && $a['_custom_order'] !== null?$a['_custom_order']:$a['_default_order'];
+            $orderB = array_key_exists('_custom_order', $b) && $b['_custom_order'] !== null?$b['_custom_order']:$b['_default_order'];
+            if($orderA == $orderB){
+              return 0;
+            }
+            return $orderA < $orderB?-1:1;
+          }
+        );
+      }
+
+      if(!empty($secList)){
+        foreach($secList as &$secEntry){
+          if(isset($secEntry['_default_order'])){
+            unset($secEntry['_default_order']);
+          }
+          if(isset($secEntry['_custom_order'])){
+            unset($secEntry['_custom_order']);
+          }
+        }
+        unset($secEntry);
+      }
+      $entry['sec'] = $secList;
+      $result[] = $entry;
+    }
+
+    if($applyCustomStructure && count($result) > 1){
+      usort(
+        $result,
+        static function($a, $b){
+          $orderA = array_key_exists('_custom_order', $a) && $a['_custom_order'] !== null?$a['_custom_order']:$a['_default_order'];
+          $orderB = array_key_exists('_custom_order', $b) && $b['_custom_order'] !== null?$b['_custom_order']:$b['_default_order'];
+          if($orderA == $orderB){
+            return 0;
+          }
+          return $orderA < $orderB?-1:1;
+        }
+      );
+    }
+
+    foreach($result as &$entry){
+      if(isset($entry['_default_order'])){
+        unset($entry['_default_order']);
+      }
+      if(isset($entry['_custom_order'])){
+        unset($entry['_custom_order']);
+      }
+    }
+    unset($entry);
+
+    return $result;
   }
 
   // @refactor Navigation Widget
-  function Navigation()
+  function NavigationENT($applyUserConfig = true)
+  {
+    return $this->Navigation($applyUserConfig);
+  }
+
+  // @refactor Navigation Widget
+  function Navigation($applyUserConfig = true)
   {
     // admin menu
     $menu = 0;
@@ -6883,7 +7047,12 @@ title: 'Abschicken',
     // Always the last entry
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abmelden','welcome','logout');
 
-    return $this->CalculateNavigation($navarray);
+    $calculatedMenu = $this->CalculateNavigation($navarray);
+    if($applyUserConfig){
+      $calculatedMenu = $this->ApplyMenuConfigurator($calculatedMenu);
+    }
+
+    return $calculatedMenu;
   }
 
 
@@ -7992,6 +8161,19 @@ function StandardFirmendatenWerte()
   $this->AddNeuenFirmendatenWert( 'api_cleanutf8', 'tinyint', '1', '', '1', '1', 0, 0);
   $this->AddNeuenFirmendatenWert( 'api_importwarteschlange', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'api_importwarteschlange_name', 'varchar', '64', '', '', '', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_enabled', 'tinyint', '1', '', '0', '0', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_allow_offer_confirm', 'tinyint', '1', '', '0', '0', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_allow_customer_comments', 'tinyint', '1', '', '0', '0', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_notify_all_status', 'tinyint', '1', '', '1', '1', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_agb_url', 'varchar', '255', '', '', '', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_agb_version', 'varchar', '64', '', '', '', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_session_ttl_min', 'int', '11', '', '60', '60', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_code_ttl_min', 'int', '11', '', '15', '15', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_doi_ttl_min', 'int', '11', '', '120', '120', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_status_labels', 'text', '', '', '{"paket_eingegangen":"Paket eingegangen","versandschaden_klaeren":"Versandschaden zu klaeren","warte_ersatzteile":"Warte auf Ersatzteile","in_bearbeitung":"In Bearbeitung","qualitaetspruefung":"Qualitaetspruefung","rueckfrage":"Rueckfrage","warten_auf_rueckmeldung":"Warten auf Ihre Rueckmeldung","angebot_erstellt":"Angebot erstellt","angebot_bestaetigt":"Angebot bestaetigt","angebot_abgelehnt":"Angebot abgelehnt","versandbereit":"Versandbereit","abgeschlossen":"Abgeschlossen"}', '', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_status_map', 'text', '', '', '{"neu":"paket_eingegangen","offen":"paket_eingegangen","warten_e":"in_bearbeitung","klaeren":"rueckfrage","warten_kd":"warten_auf_rueckmeldung","abgeschlossen":"abgeschlossen"}', '', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_notify_subject', 'varchar', '255', '', 'Ticket #{ticket_number} Statusaenderung', 'Ticket #{ticket_number} Statusaenderung', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'ticketportal_notify_body', 'text', '', '', "Der Status Ihres Tickets #{ticket_number} wurde aktualisiert.\nStatus: {status_label}\n\n{public_note}\n\nViele Gruesse\n{company_name}", '', 0, 0);
   $this->AddNeuenFirmendatenWert( 'wareneingang_zwischenlager', 'int', '1', '', '0', '1', 0, 0);
   $this->AddNeuenFirmendatenWert( 'modul_mlm', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'modul_verband', 'int', '1', '', '0', '0', 0, 0);
@@ -8824,10 +9006,15 @@ function AddNeuenFirmendatenWert($name, $typ, $typ1, $typ2, $wert, $default_valu
   }
   $check = $this->app->DB->Select("SELECT id FROM firmendaten_werte WHERE name = '".$this->app->DB->real_escape_string($name)."' LIMIT 1");
   if($check)return false;
-  $wert_alt = $this->app->DB->Select("SELECT $name FROM firmendaten LIMIT 1");
-  if(!$this->app->DB->error())
-  {
-    $wert = $wert_alt;
+  $column_exists = $this->app->DB->Select(
+    "SHOW COLUMNS FROM firmendaten WHERE field = '".$this->app->DB->real_escape_string($name)."'"
+  );
+  if ($column_exists) {
+    $wert_alt = $this->app->DB->Select("SELECT `$name` FROM firmendaten LIMIT 1");
+    if(!$this->app->DB->error())
+    {
+      $wert = $wert_alt;
+    }
   }
   $this->app->DB->Insert("INSERT INTO firmendaten_werte (name, typ, typ1, typ2, wert, default_value, default_null, darf_null)
   values ('".$this->app->DB->real_escape_string($name)."','".$this->app->DB->real_escape_string($typ)."','".$this->app->DB->real_escape_string($typ1)."','".$this->app->DB->real_escape_string($typ2)."','".$this->app->DB->real_escape_string($wert)."','".$this->app->DB->real_escape_string($default_value)."','".(int)($default_null)."','".(int)($darf_null)."')
@@ -33337,6 +33524,68 @@ function Firmendaten($field,$projekt="")
         else {
           $steuersatz_normal = $this->Firmendaten('steuersatz_normal');
           $steuersatz_ermaessigt = $this->Firmendaten('steuersatz_ermaessigt');
+        }
+
+        $projektId = is_array($projekt) && isset($projekt['id']) ? (int)$projekt['id'] : (int)$projekt;
+
+        if(in_array($typ, ['angebot','auftrag','rechnung','gutschrift','proformarechnung'], true)) {
+          $docRow = $this->app->DB->SelectRow(
+            sprintf(
+              "SELECT land, ust_befreit, ustid%s FROM `%s` WHERE id = %d LIMIT 1",
+              $typ === 'auftrag' ? ', lieferland' : '',
+              $typ,
+              (int)$id
+            )
+          );
+
+          if(!empty($docRow)) {
+            $ustBefreit = (int)$docRow['ust_befreit'];
+            $ustid = trim((string)$docRow['ustid']);
+            $targetCountry = $docRow['land'];
+            if($typ === 'auftrag' && !empty($docRow['lieferland'])) {
+              $targetCountry = $docRow['lieferland'];
+            }
+
+            $firmCountry = strtoupper((string)$this->Firmendaten('land'));
+            $targetCountry = strtoupper(trim((string)$targetCountry));
+            $isEuB2C = $ustBefreit === 1 && ($ustid === '' || $ustid === '0');
+
+            if($isEuB2C && $targetCountry !== '' && $targetCountry !== $firmCountry) {
+              $countryTaxes = [];
+              $countryTaxRows = $this->app->DB->SelectArr(
+                sprintf(
+                  "SELECT `type`,`satz`
+                    FROM `steuersaetze`
+                    WHERE `aktiv` = 1
+                      AND (`project_id` = %d OR `project_id` = 0)
+                      AND (`country_code` = '%s' OR (`bezeichnung` = '%s' AND `country_code` = ''))
+                    AND (`type` = 'normal' OR `type` = 'ermaessigt')
+                    AND (valid_from IS NULL OR valid_from = '0000-00-00' OR valid_from <= CURDATE())
+                    AND (valid_to IS NULL OR valid_to = '0000-00-00' OR valid_to >= CURDATE())
+                    ORDER BY `project_id` = %d DESC, valid_from DESC, id DESC",
+                  $projektId,
+                  $this->app->DB->real_escape_string($targetCountry),
+                  $this->app->DB->real_escape_string($targetCountry),
+                  $projektId
+                )
+              );
+
+              if(!empty($countryTaxRows)) {
+                foreach($countryTaxRows as $taxRow) {
+                  if(($taxRow['type'] === 'normal' || $taxRow['type'] === 'ermaessigt') && !isset($countryTaxes[$taxRow['type']])) {
+                    $countryTaxes[$taxRow['type']] = (float)$taxRow['satz'];
+                  }
+                }
+              }
+
+              if(array_key_exists('normal', $countryTaxes)) {
+                $steuersatz_normal = $countryTaxes['normal'];
+              }
+              if(array_key_exists('ermaessigt', $countryTaxes)) {
+                $steuersatz_ermaessigt = $countryTaxes['ermaessigt'];
+              }
+            }
+          }
         }
 
         $this->app->DB->Update("UPDATE $typ SET steuersatz_normal='$steuersatz_normal',steuersatz_ermaessigt='$steuersatz_ermaessigt' WHERE id='$id' LIMIT 1");
