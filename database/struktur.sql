@@ -15317,6 +15317,148 @@ CREATE TABLE `ticket_vorlage` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ticket_portal_access`
+--
+
+DROP TABLE IF EXISTS `ticket_portal_access`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ticket_portal_access` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ticket_id` int(11) NOT NULL,
+  `token_hash` varchar(255) NOT NULL,
+  `scope` varchar(32) NOT NULL,
+  `verifier_type` varchar(32) DEFAULT NULL,
+  `verifier_hash` varchar(255) DEFAULT NULL,
+  `verifier_expires_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  `revoked_at` datetime DEFAULT NULL,
+  `last_access_at` datetime DEFAULT NULL,
+  `last_access_ip` varchar(64) DEFAULT NULL,
+  `last_access_ua` varchar(255) DEFAULT NULL,
+  `failed_attempts` int(11) NOT NULL DEFAULT 0,
+  `last_failed_at` datetime DEFAULT NULL,
+  `locked_until` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ticket_id` (`ticket_id`),
+  KEY `token_hash` (`token_hash`),
+  KEY `scope` (`scope`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ticket_portal_message`
+--
+
+DROP TABLE IF EXISTS `ticket_portal_message`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ticket_portal_message` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ticket_id` int(11) NOT NULL,
+  `author_type` varchar(16) NOT NULL,
+  `author_id` int(11) DEFAULT NULL,
+  `text` text NOT NULL,
+  `is_public` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL,
+  `source` varchar(32) NOT NULL DEFAULT 'portal',
+  `mirrored_message_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ticket_id` (`ticket_id`),
+  KEY `is_public` (`is_public`),
+  KEY `mirrored_message_id` (`mirrored_message_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ticket_customer_status`
+--
+
+DROP TABLE IF EXISTS `ticket_customer_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ticket_customer_status` (
+  `ticket_id` int(11) NOT NULL,
+  `status_key` varchar(64) NOT NULL,
+  `status_label` varchar(255) NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`ticket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ticket_status_log`
+--
+
+DROP TABLE IF EXISTS `ticket_status_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ticket_status_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ticket_id` int(11) NOT NULL,
+  `status_from` varchar(64) DEFAULT NULL,
+  `status_to` varchar(64) NOT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `changed_at` datetime NOT NULL,
+  `note_public` text DEFAULT NULL,
+  `note_internal` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ticket_id` (`ticket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ticket_offer_confirmation`
+--
+
+DROP TABLE IF EXISTS `ticket_offer_confirmation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ticket_offer_confirmation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ticket_id` int(11) NOT NULL,
+  `angebot_id` int(11) NOT NULL,
+  `action` varchar(16) NOT NULL,
+  `comment` text DEFAULT NULL,
+  `agb_version` varchar(64) DEFAULT NULL,
+  `agb_accepted_at` datetime DEFAULT NULL,
+  `doi_token_hash` varchar(255) DEFAULT NULL,
+  `doi_requested_at` datetime DEFAULT NULL,
+  `doi_confirmed_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `created_by_type` varchar(16) NOT NULL,
+  `created_by_id` int(11) DEFAULT NULL,
+  `ip` varchar(64) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ticket_id` (`ticket_id`),
+  KEY `angebot_id` (`angebot_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ticket_notification_pref`
+--
+
+DROP TABLE IF EXISTS `ticket_notification_pref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ticket_notification_pref` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ticket_id` int(11) NOT NULL,
+  `customer_id` int(11) NOT NULL,
+  `status_key` varchar(64) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `ticket_id` (`ticket_id`),
+  KEY `customer_id` (`customer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `transfer_account_label`
 --
 
@@ -19436,3 +19578,20 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2020-12-07  8:56:21
+
+--
+-- Table structure for table \	icket_repair_media\ (Appended)
+--
+CREATE TABLE \	icket_repair_media\ (
+  \id\ int(11) NOT NULL AUTO_INCREMENT,
+  \	icket_id\ int(11) NOT NULL,
+  \ilename\ varchar(255) NOT NULL,
+  \mime_type\ varchar(128) NOT NULL,
+  \ile_size\ int(11) NOT NULL,
+  \ile_hash\ varchar(64) NOT NULL,
+  \is_public\ tinyint(1) NOT NULL DEFAULT 0,
+  \created_at\ datetime NOT NULL,
+  \created_by\ int(11) DEFAULT NULL,
+  PRIMARY KEY (\id\),
+  KEY \	icket_id\ (\	icket_id\)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;

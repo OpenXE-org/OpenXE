@@ -4144,6 +4144,23 @@ function AdresseBriefPreview($type = '', $id = '', $json = true) {
             id = ' . $id . '
             ';
         break;
+      case 'ticket':
+        $query .= '
+          SELECT
+          id,
+          DATE_FORMAT(zeit, "%d.%m.%Y") as datum,
+          IF(betreff = "", CONCAT("Ticket #", schluessel), CONCAT("Ticket #", schluessel, " - ", betreff)) as betreff,
+          CONCAT(
+            "Status: ", status,
+            IF(IFNULL(notiz, "") != "", CONCAT("\n", notiz), ""),
+            IF(IFNULL(kommentar, "") != "", CONCAT("\n", kommentar), "")
+          ) as content
+            FROM
+            ticket
+            WHERE
+            id = ' . $id . '
+            ';
+        break;
       case 'wiedervorlage':
         $query .= '
           SELECT
@@ -5042,6 +5059,7 @@ function AdresseBrief() {
   $count += $this->app->DB->Select('SELECT count(id) FROM wiedervorlage WHERE adresse = ' . $id);
   $count += $this->app->DB->Select('SELECT count(id) FROM kalender_event WHERE adresse = '.$id);
   $count += $this->app->DB->Select('SELECT count(tn.id) FROM ticket_nachricht tn INNER JOIN ticket t ON tn.ticket = t.schluessel WHERE t.adresse = '.$id);
+  $count += $this->app->DB->Select('SELECT count(id) FROM ticket WHERE adresse = '.$id);
 
   if ($count > 0) {
     $this->app->YUI->TableSearch('TABELLE', 'adresse_brief');
@@ -6604,6 +6622,28 @@ function AdresseVerein()
                   INNER JOIN adresse a ON t.adresse = a.id
                   LEFT JOIN projekt p ON t.projekt = p.id
                   WHERE t.adresse = '.$adresseId.' AND !(tn.versendet = 1 AND tn.zeitausgang IS NULL)  
+                )
+                ';
+
+    $sql .= 'UNION ALL
+                 (
+                   SELECT
+                     t.id,
+                     t.zeit,
+                     t.betreff,
+                     IF(t.kunde != \'\', t.kunde, t.mailadresse) as ansprechpartner,
+                     p.abkuerzung,
+                     t.bearbeiter,
+                     \'Ticket\' as art,
+                     CONCAT("<a data-type=ticket data-id=", t.id, "></a>") as gesendet,
+                     \'\' as PDF,
+                     concat("7","-",t.id) as did,
+                     CONCAT(t.betreff, " ", t.notiz, " ", t.kommentar) as suchtext,
+                     IF(t.status != \'\', CONCAT("Status: ", t.status), \'\') as internebezeichnung
+                  FROM
+                      ticket t
+                  LEFT JOIN projekt p ON t.projekt = p.id
+                  WHERE t.adresse = '.$adresseId.'
                 )
                 ';
 

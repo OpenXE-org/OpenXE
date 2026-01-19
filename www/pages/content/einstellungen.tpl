@@ -231,6 +231,21 @@
                 <td><a href="index.php?module=api_account&action=list">{|API-Account|}</a></td>
                 <td><a href="index.php?module=adapterbox&action=list">{|Adapterbox|}</a></td>
             </tr>
+            <tr align="center">
+                <td width="25%">
+                    <a href="index.php?module=lexwareoffice&action=edit"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%" /></a>
+                </td>
+                <td width="25%"></td>
+                <td width="25%"></td>
+                <td width="25%"></td>
+            </tr>
+
+            <tr align="center">
+                <td><a href="index.php?module=lexwareoffice&action=edit">Lexware Office</a></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
         </table>
     </fieldset>
 </div>
@@ -238,4 +253,3 @@
 
 <br />
 <br />
-
