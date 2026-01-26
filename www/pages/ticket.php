@@ -245,7 +245,7 @@ class Ticket {
         $this->app->DB->Update($sql);
     }
 
-    function ticket_log_changes($id, bool $onlyread = false, array $old_values = null) {
+    function ticket_log_changes($id, bool $onlyread = false, ?array $old_values = null) {
         $sql = "SELECT status, warteschlange, adresse, name, tags FROM ticket LEFT JOIN adresse ON adresse.id = ticket.adresse WHERE ticket.id = ".$id;
         $values = $this->app->DB->SelectRow($sql);
         if ($onlyread) {

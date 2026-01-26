@@ -38,10 +38,10 @@ final class EmailMessage
     public function __construct(
         $subject,
         $body,
-        array $recipients = null,
-        array $ccRecipients = null,
-        array $bccRecipients = null,
-        array $attachments = null
+        ?array $recipients = null,
+        ?array $ccRecipients = null,
+        ?array $bccRecipients = null,
+        ?array $attachments = null
     ) {
         $this->recipients = [];
         $this->setRecipients($recipients);
@@ -257,7 +257,7 @@ final class EmailMessage
      *
      * @return void
      */
-    private function setRecipients(array $recipients = null): void
+    private function setRecipients(?array $recipients = null): void
     {
         $this->recipients = [];
         if ($recipients === null) {
@@ -273,7 +273,7 @@ final class EmailMessage
      *
      * @return void
      */
-    private function setCcRecipients(array $ccRecipients = null): void
+    private function setCcRecipients(?array $ccRecipients = null): void
     {
         $this->ccRecipients = [];
         if ($ccRecipients === null) {
@@ -289,7 +289,7 @@ final class EmailMessage
      *
      * @return void
      */
-    private function setBccRecipients(array $bccRecipients = null): void
+    private function setBccRecipients(?array $bccRecipients = null): void
     {
         $this->bccRecipients = [];
         if ($bccRecipients === null) {
@@ -305,7 +305,7 @@ final class EmailMessage
      *
      * @return void
      */
-    private function setAttachments(array $attachments = null): void
+    private function setAttachments(?array $attachments = null): void
     {
         $this->attachments = [];
         if ($attachments === null) {

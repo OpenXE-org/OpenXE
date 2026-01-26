@@ -29,7 +29,7 @@ final class MimeMessageFormatter implements MimeMessageFormatterInterface
      *
      * @return string
      */
-    public function formatMessage(EmailMessage $email, EmailRecipient $from, string $messageId = null): string
+    public function formatMessage(EmailMessage $email, EmailRecipient $from, ?string $messageId = null): string
     {
         if ($messageId !== null && !preg_match('/^<.*@.*>$/', $messageId)) {
             throw new InvalidArgumentException('message id must be RFC 5322 conform');

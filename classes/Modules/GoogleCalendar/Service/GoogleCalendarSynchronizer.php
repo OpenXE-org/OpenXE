@@ -258,8 +258,8 @@ final class GoogleCalendarSynchronizer
      */
     public function importAbsoluteEvents(
         GoogleCalendarClientInterface $client,
-        DateTimeInterface $from = null,
-        DateTimeInterface $to = null
+        ?DateTimeInterface $from = null,
+        ?DateTimeInterface $to = null
     ): void {
         $now = new DateTimeImmutable('now');
         if ($from === null) {
@@ -301,7 +301,7 @@ final class GoogleCalendarSynchronizer
     public function importGoogleEvent(
         GoogleCalendarEventData $googleEvent,
         int $addressId,
-        GoogleCalendarColorCollection $colors = null
+        ?GoogleCalendarColorCollection $colors = null
     ): void {
         if (strtolower($googleEvent->getStatus()) === 'cancelled') {
             $this->importDeletedGoogleEvent($googleEvent, $addressId);
@@ -396,7 +396,7 @@ final class GoogleCalendarSynchronizer
     public function importGoogleEvents(
         array $googleEvents,
         int $addressId,
-        GoogleCalendarColorCollection $colors = null
+        ?GoogleCalendarColorCollection $colors = null
     ): void {
         $this->logger->debug(
             'import {count} events on addressId {address}',

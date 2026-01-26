@@ -9,6 +9,7 @@
  * @property string WFuserdata Absolute path to userdata directory
  * @property array WFconf
  */
+#[AllowDynamicProperties]
 class Config
 {
     /** @var string  */

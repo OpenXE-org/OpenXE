@@ -23,7 +23,7 @@ abstract class AbstractResult
      * @param array $collection
      * @param array $pagination
      */
-    abstract public function __construct(array $collection, array $pagination = null);
+    abstract public function __construct(array $collection, ?array $pagination = null);
 
     /**
      * Ergebnis als Array zurückgeben

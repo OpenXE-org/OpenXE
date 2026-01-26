@@ -12,10 +12,14 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise activateKeySigningKeyAsync(array $args = [])
  * @method \Aws\Result associateVPCWithHostedZone(array $args = [])
  * @method \GuzzleHttp\Promise\Promise associateVPCWithHostedZoneAsync(array $args = [])
+ * @method \Aws\Result changeCidrCollection(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise changeCidrCollectionAsync(array $args = [])
  * @method \Aws\Result changeResourceRecordSets(array $args = [])
  * @method \GuzzleHttp\Promise\Promise changeResourceRecordSetsAsync(array $args = [])
  * @method \Aws\Result changeTagsForResource(array $args = [])
  * @method \GuzzleHttp\Promise\Promise changeTagsForResourceAsync(array $args = [])
+ * @method \Aws\Result createCidrCollection(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise createCidrCollectionAsync(array $args = [])
  * @method \Aws\Result createHealthCheck(array $args = [])
  * @method \GuzzleHttp\Promise\Promise createHealthCheckAsync(array $args = [])
  * @method \Aws\Result createHostedZone(array $args = [])
@@ -36,6 +40,8 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise createVPCAssociationAuthorizationAsync(array $args = [])
  * @method \Aws\Result deactivateKeySigningKey(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deactivateKeySigningKeyAsync(array $args = [])
+ * @method \Aws\Result deleteCidrCollection(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise deleteCidrCollectionAsync(array $args = [])
  * @method \Aws\Result deleteHealthCheck(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteHealthCheckAsync(array $args = [])
  * @method \Aws\Result deleteHostedZone(array $args = [])
@@ -94,6 +100,12 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise getTrafficPolicyInstanceAsync(array $args = [])
  * @method \Aws\Result getTrafficPolicyInstanceCount(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getTrafficPolicyInstanceCountAsync(array $args = [])
+ * @method \Aws\Result listCidrBlocks(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise listCidrBlocksAsync(array $args = [])
+ * @method \Aws\Result listCidrCollections(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise listCidrCollectionsAsync(array $args = [])
+ * @method \Aws\Result listCidrLocations(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise listCidrLocationsAsync(array $args = [])
  * @method \Aws\Result listGeoLocations(array $args = [])
  * @method \GuzzleHttp\Promise\Promise listGeoLocationsAsync(array $args = [])
  * @method \Aws\Result listHealthChecks(array $args = [])
@@ -132,6 +144,8 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise updateHealthCheckAsync(array $args = [])
  * @method \Aws\Result updateHostedZoneComment(array $args = [])
  * @method \GuzzleHttp\Promise\Promise updateHostedZoneCommentAsync(array $args = [])
+ * @method \Aws\Result updateHostedZoneFeatures(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise updateHostedZoneFeaturesAsync(array $args = [])
  * @method \Aws\Result updateTrafficPolicyComment(array $args = [])
  * @method \GuzzleHttp\Promise\Promise updateTrafficPolicyCommentAsync(array $args = [])
  * @method \Aws\Result updateTrafficPolicyInstance(array $args = [])
@@ -148,7 +162,7 @@ class Route53Client extends AwsClient
     private function cleanIdFn()
     {
         return function (callable $handler) {
-            return function (CommandInterface $c, RequestInterface $r = null) use ($handler) {
+            return function (CommandInterface $c, ?RequestInterface $r = null) use ($handler) {
                 foreach (['Id', 'HostedZoneId', 'DelegationSetId'] as $clean) {
                     if ($c->hasParam($clean)) {
                         $c[$clean] = $this->cleanId($c[$clean]);

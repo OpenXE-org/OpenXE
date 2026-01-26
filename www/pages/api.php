@@ -8186,7 +8186,7 @@ XML;
     {
       if(!isset($xml_inside->status))$status = $xml_inside->AddChild('status','');
       if(!isset($xml_inside->status->action))$xml_inside->status->AddChild('action',$action);
-      if(!isset($xml_inside->status->message))$xml_inside->status->AddChild('message',utf8_encode($this->MessageCode($messagecode)));
+      if(!isset($xml_inside->status->message))$xml_inside->status->AddChild('message',mb_convert_encoding($this->MessageCode($messagecode, 'UTF-8', 'ISO-8859-1')));
       if(!isset($xml_inside->status->messageCode))$xml_inside->status->AddChild('messageCode',$messagecode);
       if($return)
       {
@@ -8226,7 +8226,7 @@ XML;
       <response>
       <status>
       <action>$action</action>
-      <message>" . utf8_encode($this->MessageCode($messagecode)) . "</message>
+      <message>" . mb_convert_encoding($this->MessageCode($messagecode, 'UTF-8', 'ISO-8859-1')) . "</message>
       <messageCode>" . $messagecode . "</messageCode>
       </status>
       " . $append . "
@@ -8240,7 +8240,7 @@ XML;
       <response>
       <status>
       <action>$action</action>
-      <message>" . utf8_encode($this->MessageCode($messagecode)) . "</message>
+      <message>" . mb_convert_encoding($this->MessageCode($messagecode, 'UTF-8', 'ISO-8859-1')) . "</message>
       <messageCode>" . $messagecode . "</messageCode>
       </status>
       " . $append . "

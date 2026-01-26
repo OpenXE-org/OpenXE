@@ -16,7 +16,7 @@ class WebserverMisconfigurationException extends HttpException
     public function __construct(
         $message = 'Webserver configuration incorrect',
         $code = ApiError::CODE_WEBSERVER_MISCONFIGURED,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         parent::__construct(500, $message, $code, $previous);
     }

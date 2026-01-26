@@ -42,11 +42,11 @@ final class GoogleCalenderSyncValue
     public function __construct(
         int $id = 0,
         int $eventId = 0,
-        string $googleId = null,
+        ?string $googleId = null,
         int $owner = 0,
         bool $isFromGoogle = false,
-        DateTimeInterface $eventDate = null,
-        string $htmlLink = null
+        ?DateTimeInterface $eventDate = null,
+        ?string $htmlLink = null
     ) {
         $this->id = $id;
         $this->eventId = $eventId;

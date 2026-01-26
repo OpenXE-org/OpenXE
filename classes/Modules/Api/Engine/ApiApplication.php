@@ -54,7 +54,7 @@ class ApiApplication
      *
      * @return Response
      */
-    public function handle(Request $request = null)
+    public function handle(?Request $request = null)
     {
         $this->request = $request ?: Request::createFromGlobals();
         $this->container->add('Request', $this->request);
