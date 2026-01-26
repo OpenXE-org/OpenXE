@@ -1,13 +1,11 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Barcode;
 
+use function strpbrk;
+use function substr;
+
+/** @final */
 class Codabar extends AbstractAdapter
 {
     /**
@@ -22,33 +20,37 @@ class Codabar extends AbstractAdapter
 
     /**
      * Checks for allowed characters
+     *
      * @see Laminas\Validator\Barcode.AbstractAdapter::checkChars()
+     *
+     * @param string $value
+     * @return bool
      */
     public function hasValidCharacters($value)
     {
-        if (strpbrk($value, 'ABCD')) {
+        if (strpbrk($value, 'ABCD') !== false) {
             $first = $value[0];
-            if (! strpbrk($first, 'ABCD')) {
+            if (strpbrk($first, 'ABCD') === false) {
                 // Missing start char
                 return false;
             }
 
             $last = substr($value, -1, 1);
-            if (! strpbrk($last, 'ABCD')) {
+            if (strpbrk($last, 'ABCD') === false) {
                 // Missing stop char
                 return false;
             }
 
             $value = substr($value, 1, -1);
-        } elseif (strpbrk($value, 'TN*E')) {
+        } elseif (strpbrk($value, 'TN*E') !== false) {
             $first = $value[0];
-            if (! strpbrk($first, 'TN*E')) {
+            if (strpbrk($first, 'TN*E') === false) {
                 // Missing start char
                 return false;
             }
 
             $last = substr($value, -1, 1);
-            if (! strpbrk($last, 'TN*E')) {
+            if (strpbrk($last, 'TN*E') === false) {
                 // Missing stop char
                 return false;
             }
@@ -56,7 +58,7 @@ class Codabar extends AbstractAdapter
             $value = substr($value, 1, -1);
         }
 
-        $chars  = $this->getCharacters();
+        $chars = $this->getCharacters();
         $this->setCharacters('0123456789-$:/.+');
         $result = parent::hasValidCharacters($value);
         $this->setCharacters($chars);

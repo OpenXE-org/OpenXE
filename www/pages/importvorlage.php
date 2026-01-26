@@ -273,9 +273,15 @@ class Importvorlage extends GenImportvorlage {
       $parameter['importmasterdata_id'] = $job['id'];
       $result = $this->ImportvorlageDo($parameter['charset'], $parameter);
 
+        if ($result['success']) {
+            $status = 'done';
+        } else {
+            $status = 'error';
+        }
+
       $this->app->DB->Update(
         sprintf(
-          "UPDATE `importmasterdata` SET `status` = '".((int) $result['success'])."', `message` = '".$result['message']."' WHERE `id` = %d ",
+          "UPDATE `importmasterdata` SET `status` = '".$status."', `message` = '".$result['message']."' WHERE `id` = %d ",
           $job['id']
         )
       );
@@ -1376,7 +1382,7 @@ class Importvorlage extends GenImportvorlage {
    * @param string     $charset
    * @param array|null $parameter
    *
-   * @return void|array|int
+   * @return array('success', 'message', 'ids', 'rows')
    */
   public function ImportvorlageDo($charset = '', $parameter = null)
   {

@@ -1,17 +1,16 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Isbn;
 
+/**
+ * @deprecated Since 2.61.0 - This class will be inlined in v3.0
+ *
+ * @final
+ */
 class Isbn13
 {
     /**
-     * @param int|string $value
+     * @param string $value
      * @return int|string
      */
     public function getChecksum($value)
@@ -23,7 +22,7 @@ class Isbn13
     /**
      * Calculate the value sum.
      *
-     * @param int|string $value
+     * @param string $value
      * @return int
      */
     private function sum($value)
@@ -31,12 +30,12 @@ class Isbn13
         $sum = 0;
 
         for ($i = 0; $i < 12; $i++) {
-            if ($i % 2 == 0) {
-                $sum += $value[$i];
+            if ($i % 2 === 0) {
+                $sum += (int) $value[$i];
                 continue;
             }
 
-            $sum += 3 * $value[$i];
+            $sum += 3 * (int) $value[$i];
         }
 
         return $sum;
@@ -52,7 +51,7 @@ class Isbn13
     {
         $checksum = 10 - ($sum % 10);
 
-        if ($checksum == 10) {
+        if ($checksum === 10) {
             return '0';
         }
 

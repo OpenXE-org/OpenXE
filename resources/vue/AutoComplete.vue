@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023 Andreas Palm
+SPDX-FileCopyrightText: 2023-2025 Andreas Palm
 
 SPDX-License-Identifier: AGPL-3.0-only
 -->
@@ -15,6 +15,7 @@ const props = defineProps({
   modelValue: null,
   forceSelection: Boolean,
   inputId: String,
+  optionLabel: String
 });
 const emit = defineEmits(['update:modelValue']);
 
@@ -44,6 +45,7 @@ async function search(event) {
       :forceSelection="forceSelection"
       dropdown
       :input-id="inputId"
+      :option-label="optionLabel"
   >
     <template #dropdownicon>
       <SearchIcon />

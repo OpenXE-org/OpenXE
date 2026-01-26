@@ -555,10 +555,6 @@ body.module-appstore #page_container > div > div.ui-tabs-panel {
     background-color: #42b8c4;
 }
 
-#anfragepopup{
-    display: none;
-}
-
 a.dropdown-link.activated span.caret {
     background-image: url('../themes/new/images/caret_light.png');
 }

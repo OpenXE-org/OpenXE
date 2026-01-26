@@ -331,7 +331,7 @@ abstract class Versanddienstleister
 
   public function Paketmarke(string $target, int $lieferscheinId, $gewicht = 0, $versandpaket = null): void
   {
-    $this->app->ModuleScriptCache->IncludeJavascriptModules('ShippingMethod', ['classes/Modules/ShippingMethod/www/js/shipment.entry.js']);
+    $this->app->ModuleScriptCache->IncludeJavascriptModules(['classes/Modules/ShippingMethod/www/js/shipment.entry.js']);
     $shipment = $this->GetShipmentDefaults($lieferscheinId);
     $shipment->package->weight = $gewicht;
 

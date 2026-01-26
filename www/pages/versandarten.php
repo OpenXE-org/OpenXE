@@ -181,7 +181,7 @@ class Versandarten {
         $error[] = sprintf('Versandart "%s" existiert nicht.', $form['selmodul']); */
 
       $obj = $this->loadModule($form['modul'], $id);
-      $module_errors = $obj->getErrors();
+      $module_errors = $obj?->getErrors();
       foreach ($module_errors as $module_error) {
           $this->app->Tpl->addMessage('error', $module_error);
       }
@@ -245,7 +245,7 @@ class Versandarten {
     $this->app->Tpl->Set('AKTMODUL', $daten['modul']);
 
     $obj = $this->loadModule($daten['modul'], $daten['id']);
-    $module_errors = $obj->getErrors();
+    $module_errors = $obj?->getErrors();
     foreach ($module_errors as $module_error) {
         $this->app->Tpl->addMessage('error', $module_error);
     }

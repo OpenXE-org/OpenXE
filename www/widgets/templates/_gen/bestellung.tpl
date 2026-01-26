@@ -201,7 +201,7 @@ function abweichend2()
 <tr><td>{|Bearbeiter|}:</td><td>[BEARBEITER][MSGBEARBEITER]</td></tr>
           <tr><td><label for="lieferbedingung">{|Lieferbedingung|}:</label></td><td>[LIEFERBEDINGUNG][MSGLIEFERBEDINGUNG]</td></tr>
 <tr><td>{|Bestellbest&auml;tigung|}:</td><td>[BESTELLBESTAETIGUNG][MSGBESTELLBESTAETIGUNG]</td></tr>
-<tr><td>{|Keine Artikelnummern|}:</td><td>[KEINEARTIKELNUMMERN][MSGKEINEARTIKELNUMMERN]</td></tr>
+<tr><td>{|Artikelnummern des Lieferanten verwenden|}:</td><td>[KEINEARTIKELNUMMERN][MSGKEINEARTIKELNUMMERN]</td></tr>
 <tr><td>{|Keine Preise anzeigen|}:</td><td>[BESTELLUNGOHNEPREIS][MSGBESTELLUNGOHNEPREIS]</td></tr>
 <tr><td>{|Eigene Artikelnummer in erste Spalte|}:</td><td>[ARTIKELNUMMERNINFOTEXT][MSGARTIKELNUMMERNINFOTEXT]</td></tr>
 <tr><td>{|Lange Artikelnummern|}:</td><td>[LANGEARTIKELNUMMERN][MSGLANGEARTIKELNUMMERN]</td></tr>

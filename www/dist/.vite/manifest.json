@@ -1,10 +1,24 @@
 {
-  "_vue-!~{003}~.js": {
-    "file": "assets/vue-CMXOvwpj.css",
-    "src": "_vue-!~{003}~.js"
+  "_AutoComplete-CkJCahnF.js": {
+    "file": "AutoComplete-CkJCahnF.js",
+    "name": "AutoComplete",
+    "imports": [
+      "_vue-9Z3BxQCl.js"
+    ]
   },
-  "_vue-C8GNYUTc.js": {
-    "file": "vue-C8GNYUTc.js",
+  "_index-DhxMc7A9.js": {
+    "file": "index-DhxMc7A9.js",
+    "name": "index",
+    "imports": [
+      "_vue-9Z3BxQCl.js"
+    ]
+  },
+  "_vue-!~{006}~.js": {
+    "file": "assets/vue-CMXOvwpj.css",
+    "src": "_vue-!~{006}~.js"
+  },
+  "_vue-9Z3BxQCl.js": {
+    "file": "vue-9Z3BxQCl.js",
     "name": "vue",
     "css": [
       "assets/vue-CMXOvwpj.css"
@@ -17,22 +31,55 @@
       "assets/primeicons-Dr5RGzOO.svg"
     ]
   },
+  "classes/Modules/Appstore/www/js/entry.js": {
+    "file": "modules/Appstore-7MmwZc_b.js",
+    "name": "modules/Appstore",
+    "src": "classes/Modules/Appstore/www/js/entry.js",
+    "isEntry": true,
+    "css": [
+      "assets/Appstore-DQlBPe5p.css"
+    ]
+  },
+  "classes/Modules/CrossSelling/www/js/entry.js": {
+    "file": "modules/CrossSelling-YhKr7DSR.js",
+    "name": "modules/CrossSelling",
+    "src": "classes/Modules/CrossSelling/www/js/entry.js",
+    "isEntry": true,
+    "imports": [
+      "_vue-9Z3BxQCl.js",
+      "_AutoComplete-CkJCahnF.js",
+      "_index-DhxMc7A9.js"
+    ]
+  },
+  "classes/Modules/Lieferschwelle/www/js/entry.js": {
+    "file": "modules/Lieferschwelle-laU6OL8u.js",
+    "name": "modules/Lieferschwelle",
+    "src": "classes/Modules/Lieferschwelle/www/js/entry.js",
+    "isEntry": true,
+    "imports": [
+      "_vue-9Z3BxQCl.js",
+      "_AutoComplete-CkJCahnF.js"
+    ]
+  },
   "classes/Modules/MatrixProduct/www/js/entry.js": {
-    "file": "modules/MatrixProduct-BAQ9apDq.js",
+    "file": "modules/MatrixProduct-CsI2-fEN.js",
     "name": "modules/MatrixProduct",
     "src": "classes/Modules/MatrixProduct/www/js/entry.js",
     "isEntry": true,
     "imports": [
-      "_vue-C8GNYUTc.js"
+      "_vue-9Z3BxQCl.js",
+      "_AutoComplete-CkJCahnF.js",
+      "_index-DhxMc7A9.js"
     ]
   },
   "classes/Modules/ShippingMethod/www/js/shipment.entry.js": {
-    "file": "modules/ShippingMethod-shipment-B_cxSgST.js",
+    "file": "modules/ShippingMethod-shipment-DkuSczd2.js",
     "name": "modules/ShippingMethod-shipment",
     "src": "classes/Modules/ShippingMethod/www/js/shipment.entry.js",
     "isEntry": true,
     "imports": [
-      "_vue-C8GNYUTc.js"
+      "_vue-9Z3BxQCl.js",
+      "_index-DhxMc7A9.js"
     ]
   },
   "node_modules/primeicons/fonts/primeicons.eot": {

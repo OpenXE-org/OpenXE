@@ -1525,8 +1525,7 @@ class Auftrag extends GenAuftrag
       $artikelauslagern = '<option value="artikelauslagern">Artikel auslagern</option>';
       $menuauslagern = " case 'artikelauslagern': if(!confirm('Artikel wirklich auslagern?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=auftrageinauslagern&action=auslagern&id=%value%'; break;";
     }
-
-    if($status === 'abgeschlossen' && $this->app->erp->RechteVorhanden('auftrag','shopexport'))
+    if($status !== 'angelegt' && $this->app->erp->RechteVorhanden('auftrag','shopexport'))
     {
       if($shop > 0 && $shopexportstatus != 'abgeschlossen') {
         $shopexport = '<option value="shopexport">Status an Shop zur&uuml;ckmelden</option>';

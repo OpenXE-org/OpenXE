@@ -1,4 +1,10 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2019 Xentral ERP Software GmbH, Fuggerstrasse 11, D-86150 Augsburg
+ * SPDX-FileCopyrightText: 2025 Andreas Palm
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ */
 
 namespace Xentral\Components\Database\Adapter;
 
@@ -809,6 +815,11 @@ final class MysqliAdapter implements AdapterInterface
             }
             if (is_float($bindValue)) {
                 $bindTypes .= 'd'; // double
+                continue;
+            }
+            if ($bindValue instanceof \BackedEnum) {
+                $bindTypes .= 's';
+                $bindValue = $bindValue->value;
                 continue;
             }
             if (is_array($bindValue)) {

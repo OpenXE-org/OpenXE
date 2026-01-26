@@ -24,7 +24,7 @@ function echo_out(string $text) {
         echo($text);
     } else {
         file_put_contents($upgrade_echo_out_file_name,$text, FILE_APPEND);
-    }  
+    }
 }
 
 function echo_output(array $output) {
@@ -58,7 +58,7 @@ function git(string $command, &$output, bool $show_command, bool $show_output, s
 
 // Check for correct call method
 if (php_sapi_name() == "cli") {
- 
+
     $directory = getcwd();
     if (basename($directory) != 'upgrade') {
         abort("Must be executed from 'upgrade' directory.");
@@ -71,59 +71,59 @@ if (php_sapi_name() == "cli") {
     $do_db = false;
     $do = false;
 
-    if ($argc > 1) {        
+    if ($argc > 1) {
 
         if (in_array('-v', $argv)) {
           $verbose = true;
         } else {
           $verbose = false;
-        } 
+        }
 
         if (in_array('-e', $argv)) {
           $export_db = true;
         } else {
           $export_db = false;
-        } 
+        }
 
         if (in_array('-f', $argv)) {
           $force = true;
         } else {
           $force = false;
-        } 
+        }
 
         if (in_array('-o', $argv)) {
           $origin = true;
         } else {
           $origin = false;
-        } 
+        }
 
         if (in_array('-connection', $argv)) {
           $connection = true;
         } else {
           $connection = false;
-        } 
+        }
 
         if (in_array('-s', $argv)) {
           $check_git = true;
         } else {
-        } 
+        }
 
         if (in_array('-db', $argv)) {
           $check_db = true;
         } else {
-        } 
+        }
 
         if (in_array('-strict', $argv)) {
           $strict_db = true;
         } else {
           $strict_db = false;
-        } 
-        
+        }
+
         if (in_array('-drop_keys', $argv)) {
           $drop_keys = true;
         } else {
           $drop_keys = false;
-        } 
+        }
 
         if (in_array('-do', $argv)) {
             if (!$check_git && !$check_db) {
@@ -159,11 +159,11 @@ if (php_sapi_name() == "cli") {
         info();
     }
 
-} 
+}
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin, bool $drop_keys) {  
-  
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin, bool $drop_keys) {
+
     $mainfolder = dirname($directory);
     $datafolder = $directory."/data";
     $lockfile_name = $datafolder."/.in_progress.flag";
@@ -176,14 +176,14 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     if ($check_git || $do_git) {
 
         if ($origin) {
-            $remote_info = array('host' => 'origin','branch' => 'master');    
+            $remote_info = array('host' => 'origin','branch' => 'master');
         } else {
             $remote_info_contents = file_get_contents($remote_file_name);
             if (!$remote_info_contents) {
                 abort("Unable to load $remote_file_name");
                 return(-1);
-            } 
-            $remote_info = json_decode($remote_info_contents, true);               
+            }
+            $remote_info = json_decode($remote_info_contents, true);
             $remotes[] = $remote_info;
             $config = file_get_contents($mainfolder."/conf/user.inc.php");
             preg_match("/WFuserdata='(?<path>.*?)';/", $config, $matches);
@@ -216,10 +216,10 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
 
         $retval = git("log HEAD --", $output,$verbose,false,"");
         // Not a git repository -> Create it and then go ahead
-        if ($retval == 128) {         
+        if ($retval == 128) {
             if (!$do_git) {
                 abort("Git not initialized, use -do to initialize.");
-                return(-1);               
+                return(-1);
             }
 
             echo_out("Setting up git...");
@@ -228,7 +228,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 abort("");
                 return(-1);
             }
-            $retval = git("add $mainfolder", $output,$verbose,$verbose,"Error while initializing git!");   
+            $retval = git("add $mainfolder", $output,$verbose,$verbose,"Error while initializing git!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
@@ -239,7 +239,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 return(-1);
             }
 
-            $retval = git("checkout FETCH_HEAD -f --", $output,$verbose,$verbose,"Error while initializing git!");   
+            $retval = git("checkout FETCH_HEAD -f --", $output,$verbose,$verbose,"Error while initializing git!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
@@ -248,7 +248,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             abort("Error while executing git!");
             return(-1);
         }
-    
+
         // Get changed files on system -> Should be empty
         $modified_files = false;
         $output = array();
@@ -258,7 +258,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             echo_out("There are modified files:\n");
             echo_output($output);
         }
- 
+
         if ($verbose) {
             echo_out("--------------- Upgrade history ---------------\n");
             $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" HEAD --not HEAD~5 --",$output,$verbose,$verbose,"Error while showing history!");
@@ -274,13 +274,13 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             }
         }
 
-        if ($do_git) {     
+        if ($do_git) {
 
             if ($modified_files && !$force) {
                 abort("Clear modified files or use -f");
                 return(-1);
             }
-      
+
             echo_out("--------------- Pulling files... ---------------\n");
 
             if ($force) {
@@ -288,8 +288,8 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 if ($retval != 0) {
                      abort("");
                     return(-1);
-                }       
-            } 
+                }
+            }
 
             $retval = git("pull ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while pulling files!");
             if ($retval != 0) {
@@ -301,7 +301,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             if ($retval != 0) {
                  abort("");
                 return(-1);
-            }       
+            }
 
             echo_out("--------------- Files upgrade completed ---------------\n");
             $retval = git("log -1 ",$output,$verbose,$verbose,"Error while checking files!");
@@ -310,36 +310,36 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 return(-1);
             }
             echo_output($output);
-                      
+
             // Remove files cache
-            echo_out("--------------- Cleaning Filescache ---------------\n");  
+            echo_out("--------------- Cleaning Filescache ---------------\n");
             class UserdataInfo {
                 function __construct($dir) {
                     require($dir."/../conf/user.inc.php");
                 }
             }
 
-            $udi = new UserdataInfo($directory);     
+            $udi = new UserdataInfo($directory);
 
             $cache_files = array('cache_javascript.php','cache_services.php');
-          
+
             $delete_cache_result = true;
-            
+
             foreach ($cache_files as $cache_file) {
                 $filename = $udi->WFuserdata."/tmp/".$udi->WFdbname."/".$cache_file;
-                $delete_cache_file_result = @unlink($filename);            
+                $delete_cache_file_result = @unlink($filename);
                 if (!$delete_cache_file_result) {
                     echo_out("Failed to delete ".$filename."! Please delete manually...\n");
                     $delete_cache_result = false;
                 }
             }
-            
+
             if ($delete_cache_result) {
                 echo_out("--------------- Cleaning Filescache completed ---------------\n");
             } else {
                 echo_out("--------------- Cleaning Filescache failed! ---------------\n");
-            }                      
-            
+            }
+
         } // $do_git
         else { // Dry run
             echo_out("--------------- Dry run, use -do to upgrade ---------------\n");
@@ -370,7 +370,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             if (!$connection_file_contents) {
                 abort("Unable to load $connection_file_name");
                 return(-1);
-            } 
+            }
             $connection_info = json_decode($connection_file_contents, true);
 
             $host = $connection_info['host'];
@@ -424,7 +424,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             return(-1);
         }
         echo_out("Table count database ".count($db_def['tables'])." vs. JSON ".count($compare_def['tables'])."\n");
-        echo_out("--------------- Comparing JSON '".$compare_def['database']."@".$compare_def['host']."' vs. database '$schema@$host' ---------------\n");    
+        echo_out("--------------- Comparing JSON '".$compare_def['database']."@".$compare_def['host']."' vs. database '$schema@$host' ---------------\n");
         $compare_differences = mustal_compare_table_array($db_def,"in DB",$compare_def,"in JSON",false,true);
         if ($verbose) {
             foreach ($compare_differences as $compare_difference) {
@@ -434,11 +434,12 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                     $comma = ", ";
                 }
                 echo_out("\n");
-            }           
+            }
         }
         echo_out((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
-        echo_out("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");    
+        echo_out("--------------- Comparing database '$schema@$host' vs. JSON '".$compare_def['database']."@".$compare_def['host']."' ---------------\n");
+
         $compare_differences = mustal_compare_table_array($compare_def,"in JSON",$db_def,"in DB",true,true);
         if ($verbose) {
             foreach ($compare_differences as $compare_difference) {
@@ -451,7 +452,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                     $comma = ", ";
                 }
                 echo_out("\n");
-            }           
+            }
         }
         echo_out((empty($compare_differences)?0:count($compare_differences))." differences.\n");
 
@@ -474,12 +475,12 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             foreach($upgrade_sql as $statement) {
                 echo_out($statement."\n");
             }
-        }       
+        }
 
         echo_out(count($upgrade_sql)." upgrade statements\n");
 
         if ($do_db) {
-            echo_out("--------------- Executing database upgrade for '$schema@$host' database... ---------------\n");            
+            echo_out("--------------- Executing database upgrade for '$schema@$host' database... ---------------\n");
              // First get the contents of the database table structure
             $mysqli = mysqli_connect($host, $user, $passwd, $schema);
 
@@ -493,25 +494,28 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 $number_of_statements = count($upgrade_sql);
 
                 foreach ($upgrade_sql as $sql) {
-
                     $counter++;
                     echo_out("\rUpgrade step $counter of $number_of_statements... ");
-
                     if ($verbose) {
                         echo_out("\n".$sql."\n");
                     }
-
-                    $query_result = mysqli_query($mysqli, $sql);
-                    if (!$query_result) {        
-                        $error = " not ok: ". mysqli_error($mysqli);            
+                    try {
+                        $query_result = mysqli_query($mysqli, $sql);
+                        if (!$query_result) {
+                            $error = " not ok: ". mysqli_error($mysqli);
+                            echo_out($error);
+                            echo_out("\n");
+                            $error_counter++;
+                        } else {
+                            echo_out("ok.\r");
+                        }
+                    }
+                    catch (Exception $e) {
+                        $error = " not ok: ". mysqli_error($mysqli);
                         echo_out($error);
                         echo_out("\n");
-//                        file_put_contents("./errors.txt",date()." ".$error.$sql."\n",FILE_APPEND);
                         $error_counter++;
-                    } else {
-                        echo_out("ok.\r");
                     }
-
                 }
 
                 echo_out("\n");
