@@ -84,7 +84,7 @@ class FileResponse extends Response
      * @param DateTimeInterface|null $sendTime  leave empty
      * @param int                    $chunkSize output content will be chunked
      */
-    public function send(DateTimeInterface $sendTime = null, $chunkSize = 65536)
+    public function send(?DateTimeInterface $sendTime = null, $chunkSize = 65536)
     {
         if ($this->file === null) {
             throw new FileNotFoundException('No content File Available');

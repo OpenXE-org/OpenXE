@@ -8,7 +8,7 @@ class CollectionResult extends AbstractResult
      * @param array      $collection
      * @param array|null $pagination
      */
-    public function __construct(array $collection, array $pagination = null)
+    public function __construct(array $collection, ?array $pagination = null)
     {
         if (empty($pagination)) {
             //throw new \CountryInvalidArgumentException('CollectionResult must contain pagination'); // @todo für GetIDs

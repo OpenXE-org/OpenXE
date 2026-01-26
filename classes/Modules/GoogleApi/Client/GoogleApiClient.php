@@ -55,7 +55,7 @@ final class GoogleApiClient implements GoolgeApiClientInterface
     public function sendRequest(
         string $method,
         string $uri,
-        array $data = null,
+        ?array $data = null,
         array $headers = []
     ): array {
         $requestBody = null;

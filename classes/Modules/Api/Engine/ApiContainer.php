@@ -101,7 +101,7 @@ final class ApiContainer
      *
      * @return AbstractController
      */
-    public function getApiController($contollerClass, Request $request = null)
+    public function getApiController($contollerClass, ?Request $request = null)
     {
         // @todo
         /*$interfaces = class_implements($contollerClass, true);

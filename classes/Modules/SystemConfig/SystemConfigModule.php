@@ -119,7 +119,7 @@ final class SystemConfigModule
      *
      * @return string|null
      */
-    public function tryGetValue(string $namespace, string $key, string $default = null): ?string
+    public function tryGetValue(string $namespace, string $key, ?string $default = null): ?string
     {
         return $this->gateway->tryGetValue($namespace, $key, $default);
     }

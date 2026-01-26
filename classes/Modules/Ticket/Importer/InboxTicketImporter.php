@@ -49,7 +49,7 @@ class InboxTicketImporter
      *
      * @return string[]|array
      */
-    public function searchImportableEmails(MailClientInterface $client, DateTimeInterface $fromDate = null): array
+    public function searchImportableEmails(MailClientInterface $client, ?DateTimeInterface $fromDate = null): array
     {
         if ($fromDate !== null) {
             $criteria = sprintf('UNSEEN SINCE %s', $fromDate->format('d-M-Y'));

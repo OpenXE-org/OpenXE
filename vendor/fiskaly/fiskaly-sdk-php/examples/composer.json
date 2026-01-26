@@ -1,0 +1,12 @@
+{
+    "name": "fiskaly-sdk-php-example",
+    "description": "fiskaly Cloud-TSE SDK for PHP",
+    "keywords": ["fiskaly", "php", "src", "example"],
+    "type": "project",
+    "license": "MIT",
+    "version": "1.0.0",
+    "require": {
+        "php": ">=7.1",
+        "fiskaly/fiskaly-sdk-php": "*"
+    }
+}

@@ -17,7 +17,7 @@ final class ResultCollection implements JsonSerializableAlias
      * @param ResultGroup[]|array     $resultGroups
      * @param DateTimeInterface|null $lastIndexUpdate
      */
-    public function __construct(array $resultGroups = [], DateTimeInterface $lastIndexUpdate = null)
+    public function __construct(array $resultGroups = [], ?DateTimeInterface $lastIndexUpdate = null)
     {
         foreach ($resultGroups as $resultGroup) {
             $this->addGroup($resultGroup);

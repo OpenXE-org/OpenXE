@@ -28,7 +28,7 @@ final class PhpMailerTransport implements MailerTransportInterface
     /**
      * @inheritDoc
      */
-    public function __construct(PHPMailer $mailer, MailerConfigInterface $config, LoggerInterface $logger = null)
+    public function __construct(PHPMailer $mailer, MailerConfigInterface $config, ?LoggerInterface $logger = null)
     {
         $this->config = $config;
         $this->phpMailer = $mailer;

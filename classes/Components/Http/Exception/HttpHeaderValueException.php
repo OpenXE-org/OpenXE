@@ -7,7 +7,7 @@ use Throwable;
 
 class HttpHeaderValueException extends RuntimeException implements HttpComponentExceptionInterface
 {
-    public function __construct($message = '', $code = 0, Throwable $previous = null, $headerValue = null)
+    public function __construct($message = '', $code = 0, ?Throwable $previous = null, $headerValue = null)
     {
         $headerString = '';
         if ($headerValue === null) {

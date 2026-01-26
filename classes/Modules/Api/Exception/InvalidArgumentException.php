@@ -11,7 +11,7 @@ class InvalidArgumentException extends HttpException
     public function __construct(
         $message = 'Invalid argument',
         $code = ApiError::CODE_INVALID_ARGUMENT,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         parent::__construct(400, $message, $code, $previous);
     }

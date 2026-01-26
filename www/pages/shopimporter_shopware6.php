@@ -1,16 +1,16 @@
 <?php
 /*
-**** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
-* Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
-*
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
-*
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
-*
-**** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-*/
+ **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
+ * 
+ * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
+ *
+ * This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+ *
+ * You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
+ * to obtain the text of the corresponding license version.  
+ *
+ **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
+ */
 
 ?>
 <?php
@@ -215,7 +215,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 ['url' => $url, 'method' => $method, 'request' => $data, 'response' => $response],
             );
         }
-        curl_close($ch);
+
 
         return json_decode($response, true);
     }
@@ -249,7 +249,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        curl_setopt(
+            $ch,
+            CURLOPT_HTTPHEADER,
+            [
                 'Accept: application/json',
                 'Content-Type: application/json',
                 'Cache-Control: no-cache',
@@ -257,7 +260,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         );
         $response = json_decode(curl_exec($ch), true);
 
-        if (!empty((string)$response['title'])) {
+        if (!empty((string) $response['title'])) {
             $result['message'] = $response['title'];
         }
 
@@ -295,9 +298,11 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             return;
         }
         $articleIdInShop = $articleInfo['data'][0]['id'];
-        if (empty($articleInfo['data'][0]['customFields'])
-            || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])) {
-            $this->addSyncCustomFieldToProduct((string)$articleIdInShop);
+        if (
+            empty($articleInfo['data'][0]['customFields'])
+            || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])
+        ) {
+            $this->addSyncCustomFieldToProduct((string) $articleIdInShop);
         }
 
         $articleInfo = $this->shopwareRequest(
@@ -450,8 +455,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         $optionInfo[$includedInfo['id']] = $includedInfo['attributes'];
                         if (empty($optionGroupInfo[$includedInfo['attributes']['groupId']])) {
                             $optionGroupInfo[$includedInfo['attributes']['groupId']] = (!empty($optionGroupInfo) ? count(
-                                    $optionGroupInfo,
-                                ) : 0) + 1;
+                                $optionGroupInfo,
+                            ) : 0) + 1;
                         }
                     }
                 }
@@ -590,7 +595,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         );
         $importerSettings = reset($importerSettings);
 
-        $this->exportCategories = (bool)$importerSettings['kategorienuebertragen'];
+        $this->exportCategories = (bool) $importerSettings['kategorienuebertragen'];
 
         $einstellungen = [];
         if (!empty($importerSettings['einstellungen_json'])) {
@@ -889,9 +894,11 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $this->Shopware6Log('Artikel wurde nicht im Shop gefunden: ' . $nummer, $articleInfo);
                 continue;
             }
-            if (empty($articleInfo['data'][0]['customFields'])
-                || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])) {
-                $this->addSyncCustomFieldToProduct((string)$articleInfo['data'][0]['id']);
+            if (
+                empty($articleInfo['data'][0]['customFields'])
+                || empty($articleInfo['data'][0]['customFields']['wawision_shopimporter_syncstate'])
+            ) {
+                $this->addSyncCustomFieldToProduct((string) $articleInfo['data'][0]['id']);
             }
 
             $active = true;
@@ -903,7 +910,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             if (!empty($article['pseudolager'])) {
                 $stock = $article['pseudolager'];
             }
-            $stock = $this->getCorrectedStockFromAvailable($active, (int)$stock, $articleInfo);
+            $stock = $this->getCorrectedStockFromAvailable($active, (int) $stock, $articleInfo);
             $data = [
                 'stock' => $stock,
                 'active' => $active,
@@ -937,8 +944,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (!isset($articleInfo['data'][0]['attributes']['availableStock'])) {
             return $stock;
         }
-        $reserved = (int)$articleInfo['data'][0]['attributes']['stock']
-            - (int)$articleInfo['data'][0]['attributes']['availableStock'];
+        $reserved = (int) $articleInfo['data'][0]['attributes']['stock']
+            - (int) $articleInfo['data'][0]['attributes']['availableStock'];
         if ($reserved <= 0) {
             return $stock;
         }
@@ -988,8 +995,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             if (!empty($inaktiv)) {
                 $active = false;
             }
-            $quantity = $this->getCorrectedStockFromAvailable($active, (int)$quantity, $articleInfo);
-            $taxRate = (float)$article['steuersatz'];
+            $quantity = $this->getCorrectedStockFromAvailable($active, (int) $quantity, $articleInfo);
+            $taxRate = (float) $article['steuersatz'];
 
             if (!empty($this->normalTaxId) && $article['umsatzsteuer'] == 'normal') {
                 $taxId = $this->normalTaxId;
@@ -1061,12 +1068,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $manufacturerNumber = '';
             }
 
-            $weight = (float)$article['gewicht'];
-            $length = (float)$article['laenge'] * 10;
-            $height = (float)$article['hoehe'] * 10;
-            $width = (float)$article['breite'] * 10;
+            $weight = (float) $article['gewicht'];
+            $length = (float) $article['laenge'] * 10;
+            $height = (float) $article['hoehe'] * 10;
+            $width = (float) $article['breite'] * 10;
 
-            $purchasePrice = (float)$article['einkaufspreis'];
+            $purchasePrice = (float) $article['einkaufspreis'];
 
             $currencyId = $this->findCurrencyId($article['waehrung']);
             $price = [
@@ -1090,7 +1097,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 'isCloseout' => $isCloseOut,
                 'productNumber' => $number,
                 'manufacturerId' => $manufacturerId,
-                'stock' => (int)$quantity,
+                'stock' => (int) $quantity,
                 'taxId' => $taxId,
                 'active' => $active,
                 'description' => $description,
@@ -1117,8 +1124,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             $data = array_merge($data, $systemFieldsToAdd);
-            if (empty($data['customFields'])
-                || empty($data['customFields']['wawision_shopimporter_syncstate'])) {
+            if (
+                empty($data['customFields'])
+                || empty($data['customFields']['wawision_shopimporter_syncstate'])
+            ) {
                 $data['customFields']['wawision_shopimporter_syncstate'] = 1;
             }
 
@@ -1257,7 +1266,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             '/&amp;/' => '&',
         ];
 
-        return (string)preg_replace(array_keys($markupSubstitute), array_values($markupSubstitute), $description);
+        return (string) preg_replace(array_keys($markupSubstitute), array_values($markupSubstitute), $description);
     }
 
     /**
@@ -1483,8 +1492,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             unset($filename[(!empty($filename) ? count($filename) : 0) - 1]);
             $filename = $internalFile['id'] . '_' . implode($filename);
             $extension = $internalFile['extension'];
-            $imageTitle = (string)$internalFile['titel'];
-            $imageAltText = (string)$internalFile['beschreibung'];
+            $imageTitle = (string) $internalFile['titel'];
+            $imageAltText = (string) $internalFile['beschreibung'];
             $accessToken = $this->shopwareToken();
 
             $searchdata = [
@@ -1500,8 +1509,10 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $mediaData = $this->shopwareRequest('POST', 'search/media', $searchdata);
             if (!empty($mediaData['data'][0]['id'])) {
                 $internalMediaIds[] = $mediaData['data'][0]['id'];
-                if ($mediaData['data'][0]['attributes']['title'] !== $imageTitle
-                    || $mediaData['data'][0]['attributes']['alt'] !== $imageAltText) {
+                if (
+                    $mediaData['data'][0]['attributes']['title'] !== $imageTitle
+                    || $mediaData['data'][0]['attributes']['alt'] !== $imageAltText
+                ) {
                     $this->setMediaTitleAndAltText($mediaData['data'][0]['id'], $imageTitle, $imageAltText);
                 }
                 continue;
@@ -1600,7 +1611,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     protected function setMediaTitleAndAltText(string $mediaId, string $title, string $altText): void
     {
         $this->shopwareRequest(
-            'PATCH', 'media/' . $mediaId,
+            'PATCH',
+            'media/' . $mediaId,
             [
                 'title' => $title,
                 'alt' => $altText,
@@ -2124,10 +2136,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 if ($translatedProperty['language_to'] === 'EN') {
                     $translatedProperty['language_to'] = 'GB';
                 }
-                if ($this->propertyMustBeIgnored(
-                    $translatedProperty['property_to'],
-                    $translatedProperty['property_value_to'],
-                )) {
+                if (
+                    $this->propertyMustBeIgnored(
+                        $translatedProperty['property_to'],
+                        $translatedProperty['property_value_to'],
+                    )
+                ) {
                     continue;
                 }
                 if (strpos($translatedProperty['property_to'], 'property_') === 0) {
@@ -2260,17 +2274,17 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                                 'Warnung: Freifelder vom Type "medium" werden nicht unterstützt.',
                             );
                         } else {
-                            $customFields[$countryIsoCode][$name] = (string)$value;
+                            $customFields[$countryIsoCode][$name] = (string) $value;
                         }
                         break;
                     case 'bool':
                         $customFields[$countryIsoCode][$name] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                         break;
                     case 'int':
-                        $customFields[$countryIsoCode][$name] = (int)$value;
+                        $customFields[$countryIsoCode][$name] = (int) $value;
                         break;
                     case 'float':
-                        $customFields[$countryIsoCode][$name] = (float)$value;
+                        $customFields[$countryIsoCode][$name] = (float) $value;
                         break;
                     case 'select':
                         $options = $customFieldDefinition['data'][0]['attributes']['config']['options'];
@@ -2360,10 +2374,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         }
         if (!empty($articleInXentral['eigenschaftenuebersetzungen'])) {
             foreach ($articleInXentral['eigenschaftenuebersetzungen'] as $translatedProperty) {
-                if ($this->customFieldMustBeIgnored(
-                    $translatedProperty['property_to'],
-                    $translatedProperty['property_value_to'],
-                )) {
+                if (
+                    $this->customFieldMustBeIgnored(
+                        $translatedProperty['property_to'],
+                        $translatedProperty['property_value_to'],
+                    )
+                ) {
                     continue;
                 }
                 if (strpos($translatedProperty['property_to'], 'customField_') === 0) {
@@ -2409,10 +2425,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     continue;
                 }
                 foreach ($freeFieldTranslations as $freeFieldTranslation) {
-                    if ($this->customFieldMustBeIgnored(
-                        $freeFieldTranslation['mapping'],
-                        $freeFieldTranslation['wert'],
-                    )) {
+                    if (
+                        $this->customFieldMustBeIgnored(
+                            $freeFieldTranslation['mapping'],
+                            $freeFieldTranslation['wert'],
+                        )
+                    ) {
                         continue;
                     }
                     if ($countryIsoCode === 'EN') {
@@ -2606,22 +2624,22 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                     );
                     break;
                 case 'shopware6_purchase_unit':
-                    $systemFields['purchaseUnit'] = (float)str_replace(',', '.', $fieldValue);
+                    $systemFields['purchaseUnit'] = (float) str_replace(',', '.', $fieldValue);
                     break;
                 case 'shopware6_reference_unit':
-                    $systemFields['referenceUnit'] = (float)str_replace(',', '.', $fieldValue);
+                    $systemFields['referenceUnit'] = (float) str_replace(',', '.', $fieldValue);
                     break;
                 case 'shopware6_unit':
                     $systemFields['unitId'] = $this->unitToAdd($fieldValue);
                     break;
                 case 'shopware6_pack_unit':
-                    $systemFields['packUnit'] = (string)$fieldValue;
+                    $systemFields['packUnit'] = (string) $fieldValue;
                     break;
                 case 'shopware6_restock_time':
-                    $systemFields['restockTime'] = (int)$fieldValue;
+                    $systemFields['restockTime'] = (int) $fieldValue;
                     break;
                 case 'shopware6_pack_unit_plural':
-                    $systemFields['packUnitPlural'] = (string)$fieldValue;
+                    $systemFields['packUnitPlural'] = (string) $fieldValue;
                     break;
             }
         }
@@ -2885,12 +2903,14 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             }
 
             foreach ($internalPropertyGroupValues as $internalPropertyGroupValue => $valueNotNeeded) {
-                if (!array_key_exists(
-                    $internalPropertyGroupValue,
-                    $internalGroupPropertiesToShopwareId[$propertyGroupName] ?? [],
-                )) {
+                if (
+                    !array_key_exists(
+                        $internalPropertyGroupValue,
+                        $internalGroupPropertiesToShopwareId[$propertyGroupName] ?? [],
+                    )
+                ) {
                     $newOptionData = [
-                        'name' => (string)$internalPropertyGroupValue,
+                        'name' => (string) $internalPropertyGroupValue,
                     ];
                     $optionData = $this->shopwareRequest(
                         'POST',
@@ -2948,7 +2968,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $name = $variant['name_de'];
             $stock = $variant['lag'];
             $ean = $variant['ean'];
-            $weight = (float)$variant['gewicht'];
+            $weight = (float) $variant['gewicht'];
             $pseudoPrice = $variant['pseudopreis'];
             if (empty($pseudoPrice)) {
                 $pseudoPrice = 0;
@@ -2995,7 +3015,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         ],
                     ],
                 ],
-                'stock' => (int)$stock,
+                'stock' => (int) $stock,
                 'ean' => null,
                 'taxId' => $taxId,
             ];
@@ -3012,11 +3032,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $renewVariant = false;
             $options = [];
             foreach ($internalVariantMatrixData as $expression) {
-                if (!in_array(
-                    $internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']],
-                    $existingCombinationsByNumber[$productNumber]['options'] ?? [],
-                    false,
-                )) {
+                if (
+                    !in_array(
+                        $internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']],
+                        $existingCombinationsByNumber[$productNumber]['options'] ?? [],
+                        false,
+                    )
+                ) {
                     $renewVariant = true;
                 } else {
                     unset($existingCombinationsByNumber[$productNumber]['options'][$internalGroupPropertiesToShopwareId[$expression['name']][$expression['values']]]);
@@ -3172,12 +3194,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         for ($i = 0; $i < $c; $i++) {
             $end = null;
             if ($i + 1 < $c && ($priceArray[$i + 1]['gruppeextern'] ?? '') == ($priceArray[$i]['gruppeextern'] ?? '')) {
-                $end = (int)$priceArray[$i + 1]['ab_menge'] - 1;
+                $end = (int) $priceArray[$i + 1]['ab_menge'] - 1;
             }
             $result[] = new PriceData(
-                (int)$priceArray[$i]['ab_menge'],
-                (float)$priceArray[$i]['preis'],
-                (float)$priceArray[$i]['bruttopreis'],
+                (int) $priceArray[$i]['ab_menge'],
+                (float) $priceArray[$i]['preis'],
+                (float) $priceArray[$i]['bruttopreis'],
                 $priceArray[$i]['waehrung'],
                 $priceArray[$i]['gruppeextern'] ?? '',
                 $end,
@@ -3213,7 +3235,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
     public function getOrderSearchLimit(): int
     {
         if (in_array($this->orderSearchLimit, ['50', '75', '100'])) {
-            return (int)$this->orderSearchLimit;
+            return (int) $this->orderSearchLimit;
         }
 
         return 25;
@@ -3354,7 +3376,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if (empty($this->statesToFetch)) {
             return false;
         }
-        $expectOrderArray = !empty($dataToGet['anzgleichzeitig']) && (int)$dataToGet['anzgleichzeitig'] > 1;
+        $expectOrderArray = !empty($dataToGet['anzgleichzeitig']) && (int) $dataToGet['anzgleichzeitig'] > 1;
         $expectNumber = !empty($dataToGet['nummer']);
         $order = null;
         if ($expectNumber) {
@@ -3375,8 +3397,8 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         }
 
         $fetchedOrders = [];
-        if (isset($ordersToFetch['data']['id']) && !isset($ordersToFetch['data'][0])) {
-            $ordersToFetch['data'] = [$ordersToFetch['data']];
+        if (isset($ordersToProcess['data']['id']) && !isset($ordersToProcess['data'][0])) {
+            $ordersToProcess['data'] = [$ordersToProcess['data']];
         }
         foreach ($ordersToProcess['data'] as $currentlyOpenOrder) {
             $orderIdToFetch = $currentlyOpenOrder['id'];
@@ -3503,7 +3525,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 $cart['transaktionsnummer'] = $transactionData['data'][0]['attributes']['customFields']['swag_paypal_pui_payment_instruction']['reference_number'];
             }
             if (empty($cart['transaktionsnummer'] && !empty($transactionData['data'][0]['attributes']['customFields']['swag_paypal_order_id']))) {
-                $cart['transaktionsnummer'] = (string)$transactionData['data'][0]['attributes']['customFields']['swag_paypal_order_id'];
+                $cart['transaktionsnummer'] = (string) $transactionData['data'][0]['attributes']['customFields']['swag_paypal_order_id'];
             }
             if (empty($cart['transaktionsnummer'] && !empty($transactionData['data'][0]['attributes']['customFields']['swag_paypal_transaction_id']))) {
                 $livePayPalData = $this->shopwareRequest(
@@ -3611,7 +3633,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $auftrag = $tmp['auftrag'];
 
         $this->shopwareRequest('POST', '_action/order/' . $auftrag . '/state/process');
-        $this->addCustomFieldToOrder((string)$auftrag);
+        $this->addCustomFieldToOrder((string) $auftrag);
     }
 
     /**
@@ -3655,7 +3677,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $auftrag = $tmp['auftrag'];
 
         $this->shopwareRequest('POST', '_action/order/' . $auftrag . '/state/cancel');
-        $this->addCustomFieldToOrder((string)$auftrag);
+        $this->addCustomFieldToOrder((string) $auftrag);
     }
 
     /**
@@ -3736,7 +3758,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $response = json_decode(curl_exec($ch), true);
-            curl_close($ch);
+
             if (!empty($response['errors'])) {
                 $this->Shopware6Log(
                     'Fehler bei Rechnugnsübertragung für ' . $documentNumber,
@@ -3793,7 +3815,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             return $categoryTree;
         }
         $categoryInfo = $shopwareCategory['data'][0]['attributes'];
-        $categories[] = [(int)$categoryInfo['level'], $shopwareCategory['data'][0]['id']];
+        $categories[] = [(int) $categoryInfo['level'], $shopwareCategory['data'][0]['id']];
         $path = $categoryInfo['path'];
         if (!empty($path)) {
             $pathArray = explode('|', $path);
@@ -3803,7 +3825,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 }
                 $nodeCategory = $this->shopwareRequest('GET', 'category/' . $nodeId);
                 if (isset($nodeCategory['data']['id'])) {
-                    $categories[] = [(int)$nodeCategory['data']['attributes']['level'], $nodeId];
+                    $categories[] = [(int) $nodeCategory['data']['attributes']['level'], $nodeId];
                     unset($nodeCategory);
                 }
             }
@@ -3857,11 +3879,13 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $shopwareUrl = $this->app->Secure->GetPOST('shopwareUrl');
         $shopwareUserName = $this->app->Secure->GetPOST('shopwareUserName');
         $shopwarePassword = $this->app->Secure->GetPOST('shopwarePassword');
-        $step = (int)$this->app->Secure->GetPOST('step');
+        $step = (int) $this->app->Secure->GetPOST('step');
 
         if ($step <= 1) {
             if (empty($shopwareUrl)) {
-                return new JsonResponse(['error' => 'Bitte die URL des Shops angeben.'], JsonResponse::HTTP_BAD_REQUEST,
+                return new JsonResponse(
+                    ['error' => 'Bitte die URL des Shops angeben.'],
+                    JsonResponse::HTTP_BAD_REQUEST,
                 );
             }
             if (empty($shopwareUserName)) {
@@ -4041,9 +4065,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $this->updateArticleCacheToSync($articleIds);
         $this->updateArticleOnlineShopCache($articleIds);
 
-        $isStorageSyncCronjobActive = (int)$this->app->DB->Select(
-                "SELECT COUNT(`id`) FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'lagerzahlen'",
-            ) > 0;
+        $isStorageSyncCronjobActive = (int) $this->app->DB->Select(
+            "SELECT COUNT(`id`) FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'lagerzahlen'",
+        ) > 0;
         if (!$isStorageSyncCronjobActive) {
             return;
         }
@@ -4069,7 +4093,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $textlines = [];
 
         if (isset($bogxdata['ordercode'])) {
-            $textlines[] = "Order-Code: ${bogxdata['ordercode']}";
+            $textlines[] = "Order-Code: {$bogxdata['ordercode']}";
         }
 
         foreach ($bogxdata['optionsGroups'] as $bogxposition) {

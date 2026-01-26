@@ -95,7 +95,7 @@ class Mailausgang {
   function MailausgangMiniDetail()
   {
     $id = $this->app->Secure->GetGET("id");
-    echo utf8_encode($this->app->DB->Select("SELECT body FROM mailausgang WHERE id = '$id' LIMIT 1"));
+    echo mb_convert_encoding($this->app->DB->Select("SELECT body FROM mailausgang WHERE id = '$id' LIMIT 1", 'UTF-8', 'ISO-8859-1'));
     exit;
   }
 

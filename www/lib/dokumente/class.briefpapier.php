@@ -1068,7 +1068,7 @@ class Briefpapier extends SuperFPDF {
       $footerarr = $footerarr[0];
 
       foreach($footerarr as $key=>$value)
-        $footerarr[$key] = utf8_decode($value);
+        $footerarr[$key] = mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
 
       $this->SetXY(10,-26);
       $this->SetDrawColor($this->getStyleElement("footer_farbe"));
@@ -1079,15 +1079,15 @@ class Briefpapier extends SuperFPDF {
 
       if($this->getStyleElement("footer_zentriert")!=1)
       {
-      $this->MultiCell($footerarr['footer_breite1'],3,utf8_encode("  ".$footerarr['footer_0_0']."\n  ".$footerarr['footer_0_1']."\n  ".$footerarr['footer_0_2']."\n  ".$footerarr['footer_0_3']."\n  ".$footerarr['footer_0_4']."\n  ".$footerarr['footer_0_5'].""),'','L');
+      $this->MultiCell($footerarr['footer_breite1'],3,mb_convert_encoding("  ".$footerarr['footer_0_0']."\n  ".$footerarr['footer_0_1']."\n  ".$footerarr['footer_0_2']."\n  ".$footerarr['footer_0_3']."\n  ".$footerarr['footer_0_4']."\n  ".$footerarr['footer_0_5']."", 'UTF-8', 'ISO-8859-1'),'','L');
       $this->SetXY($footerarr['footer_breite1'] + 10,-26); // Breite 1 + 10
-      $this->MultiCell($footerarr['footer_breite2'],3,utf8_encode("  ".$footerarr['footer_1_0']."\n  ".$footerarr['footer_1_1']."\n  ".$footerarr['footer_1_2']."\n  ".$footerarr['footer_1_3']."\n  ".$footerarr['footer_1_4']."\n  ".$footerarr['footer_1_5'].""),'','L');
+      $this->MultiCell($footerarr['footer_breite2'],3,mb_convert_encoding("  ".$footerarr['footer_1_0']."\n  ".$footerarr['footer_1_1']."\n  ".$footerarr['footer_1_2']."\n  ".$footerarr['footer_1_3']."\n  ".$footerarr['footer_1_4']."\n  ".$footerarr['footer_1_5']."", 'UTF-8', 'ISO-8859-1'),'','L');
       $this->SetXY($footerarr['footer_breite1'] + $footerarr['footer_breite2'] + 10,-26); //breite 1 + breite 2 + 10
-      $this->MultiCell($footerarr['footer_breite3'],3,utf8_encode("  ".$footerarr['footer_2_0']."\n  ".$footerarr['footer_2_1']."\n  ".$footerarr['footer_2_2']."\n  ".$footerarr['footer_2_3']."\n  ".$footerarr['footer_2_4']."\n  ".$footerarr['footer_2_5'].""),'','L');
+      $this->MultiCell($footerarr['footer_breite3'],3,mb_convert_encoding("  ".$footerarr['footer_2_0']."\n  ".$footerarr['footer_2_1']."\n  ".$footerarr['footer_2_2']."\n  ".$footerarr['footer_2_3']."\n  ".$footerarr['footer_2_4']."\n  ".$footerarr['footer_2_5']."", 'UTF-8', 'ISO-8859-1'),'','L');
       $this->SetXY($footerarr['footer_breite1'] + $footerarr['footer_breite2'] + $footerarr['footer_breite3'] + 10,-26); //breite 1 + breite 2 + breite 3 + 10
-      $this->MultiCell($footerarr['footer_breite4'],3,utf8_encode("  ".$footerarr['footer_3_0']."\n  ".$footerarr['footer_3_1']."\n  ".$footerarr['footer_3_2']."\n  ".$footerarr['footer_3_3']."\n  ".$footerarr['footer_3_4']."\n  ".$footerarr['footer_3_5'].""),'','L');
+      $this->MultiCell($footerarr['footer_breite4'],3,mb_convert_encoding("  ".$footerarr['footer_3_0']."\n  ".$footerarr['footer_3_1']."\n  ".$footerarr['footer_3_2']."\n  ".$footerarr['footer_3_3']."\n  ".$footerarr['footer_3_4']."\n  ".$footerarr['footer_3_5']."", 'UTF-8', 'ISO-8859-1'),'','L');
       } else {
-        $this->MultiCell(0,3,utf8_encode("  ".$footerarr['footer_0_0']."\n  ".$footerarr['footer_0_1']."\n  ".$footerarr['footer_0_2']."\n  ".$footerarr['footer_0_3']."\n  ".$footerarr['footer_0_4']."\n  ".$footerarr['footer_0_5'].""),'','C');
+        $this->MultiCell(0,3,mb_convert_encoding("  ".$footerarr['footer_0_0']."\n  ".$footerarr['footer_0_1']."\n  ".$footerarr['footer_0_2']."\n  ".$footerarr['footer_0_3']."\n  ".$footerarr['footer_0_4']."\n  ".$footerarr['footer_0_5']."", 'UTF-8', 'ISO-8859-1'),'','C');
 
 
       }
@@ -2209,12 +2209,12 @@ class Briefpapier extends SuperFPDF {
       }
 
       $this->SetXY($xOffset,$this->GetY());
-      $this->Cell_typed(30,$lineHeight,utf8_encode("Gesch�ftsf�hrung: "),0,0,'R');
+      $this->Cell_typed(30,$lineHeight,mb_convert_encoding("Gesch�ftsf�hrung: ", 'UTF-8', 'ISO-8859-1'),0,0,'R');
       $this->Cell_typed(60,$lineHeight,$this->sender['firstname'].' '.$this->sender['familyname'],0,2);
 
       //$this->SetXY($xOffset, $this->GetY()+$absatz+2); //abstand
       //$this->Cell_typed(30,$lineHeight,"Datum: ",0,0,'R');
-      //$this->Cell_typed(60,$lineHeight,utf8_encode($date),0,2);
+      //$this->Cell_typed(60,$lineHeight,mb_convert_encoding($date, 'UTF-8', 'ISO-8859-1'),0,2);
     }
   }
 

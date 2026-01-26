@@ -42,7 +42,7 @@ final class RequestOptions
      *
      * @return self
      */
-    public function setHeaders(array $headers = null): self
+    public function setHeaders(?array $headers = null): self
     {
         $this->options[GuzzleOptionKeys::HEADERS] = $headers;
 
@@ -351,7 +351,7 @@ final class RequestOptions
      *
      * @return self
      */
-    public function setSslKey(string $path, string $passphrase = null): self
+    public function setSslKey(string $path, ?string $passphrase = null): self
     {
         if ($passphrase !== null) {
             $this->options[GuzzleOptionKeys::SSL_KEY] = [$path, $passphrase];

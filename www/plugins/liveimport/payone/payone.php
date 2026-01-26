@@ -793,7 +793,7 @@ class payone
 
       $vorgangUtf8 = iconv('UTF-8', 'UTF-8', $vorgang);
       if(md5($vorgangUtf8) !== md5($vorgang)){
-        $vorgang = utf8_encode($vorgang);
+        $vorgang = mb_convert_encoding($vorgang, 'UTF-8', 'ISO-8859-1');
       }
       $vorgang = $this->app->DB->real_escape_string($vorgang);
       $vorgang = str_replace('"','',$vorgang);

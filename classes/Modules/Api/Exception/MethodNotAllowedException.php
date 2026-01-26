@@ -12,7 +12,7 @@ class MethodNotAllowedException extends HttpException
         array $allowedMethods,
         $message = 'Method not allowed',
         $code = ApiError::CODE_METHOD_NOT_ALLOWED,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         $message = sprintf('Method is not allowed. Allowed: %s', implode(', ', $allowedMethods));
 
