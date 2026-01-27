@@ -5363,9 +5363,8 @@ class Artikel extends GenArtikel {
         $submenu .= "<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel in dieses Regal legen:',1); var grund =  prompt('Einlagerungsgrund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=artikel&action=einlagern&id=$id&lid=%value%&menge='+menge+'&grund='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/einlagern.png\" border=\"0\"></a>";
       }
 
-
       if($this->app->erp->RechteVorhanden('artikel','umlagern')){
-        $submenu .="<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel in dieses Regal umlagern:',%field1%); var grund =  prompt('Grund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=artikel&action=umlagern&id=$id&lid=%value%&menge='+menge+'&grund='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/forward.svg\" border=\"0\"></a>";
+        $submenu .="<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel die aus diesem Regal umgelagert werden sollen:',%field1%); var grund =  prompt('Grund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=lager&action=buchenauslagern&cmd=umlagern&back=artikel&artikelid=$id&back=artikel&lagerplatzinhalt=%value%&menge='+menge+'&comment='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/forward.svg\" border=\"0\"></a>";
       }
 
       if($this->app->erp->RechteVorhanden('artikel','auslagern') || $this->app->erp->RechteVorhanden('artikel','einlagern') 
