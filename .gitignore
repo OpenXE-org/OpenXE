@@ -6,3 +6,11 @@ node_modules/
 www/themes/new/css/custom.css
 docker-compose.override.yml
 .idea
+
+# macOS
+.DS_Store
+
+# Auto-generated API documentation
+www/api/openapi.json
+www/api/docs.generated.raml
+www/api/docs.html
