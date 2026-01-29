@@ -244,6 +244,13 @@ class Logfile {
     if(!$this->isLoggingActive()) {
       return 0;
     }
+    // Falls kein Dump übergeben wurde, die Aufruf-Argumente mitschreiben
+    if($dump === '' && function_exists('debug_backtrace')) {
+      $backtrace = debug_backtrace();
+      if(isset($backtrace[1]['args']) && !empty($backtrace[1]['args'])) {
+        $dump = print_r($backtrace[1]['args'], true);
+      }
+    }
     if($functionname=='') {
       if (strnatcmp(phpversion(),'5.0.0') >= 0) {
         $backtrace = debug_backtrace();

@@ -171,7 +171,37 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     $schema_file_name = "db_schema.json";
 
     echo_out("--------------- OpenXE upgrade ---------------\n");
-    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
+    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
+
+    // Lock-Mechanismus: nur bei tatsächlichen Änderungen ($do_git oder $do_db)
+    $lock_acquired = false;
+    if ($do_git || $do_db) {
+        echo_out("--------------- Checking lock file ---------------\n");
+        if (file_exists($lockfile_name)) {
+            $lock_age = time() - filemtime($lockfile_name);
+            $lock_data = @json_decode(file_get_contents($lockfile_name), true);
+            
+            if ($lock_age > 3600) { // 1 Stunde Timeout
+                echo_out("Warning: Stale lock file detected (age: ".$lock_age."s). Removing...\n");
+                unlink($lockfile_name);
+            } else {
+                $started_by = $lock_data['user'] ?? 'unknown';
+                $started_at = $lock_data['timestamp'] ?? 'unknown';
+                abort("System is already locked. Upgrade running since $started_at by user $started_by");
+                return(-1);
+            }
+        }
+        
+        // Lock-File erstellen
+        echo_out("--------------- Locking system ---------------\n");
+        $lock_data = json_encode([
+            'user' => get_current_user(),
+            'timestamp' => date('Y-m-d H:i:s'),
+            'pid' => getmypid()
+        ]);
+        file_put_contents($lockfile_name, $lock_data);
+        $lock_acquired = true;
+    }
 
     if ($check_git || $do_git) {
 
@@ -277,7 +307,15 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         if ($do_git) {
 
             if ($modified_files && !$force) {
-                abort("Clear modified files or use -f");
+                // Detaillierte File-Liste anzeigen
+                $file_list = implode("\n  ", array_slice($output, 0, 10)); // Erste 10 Dateien
+                $total_files = count($output);
+                $more_info = $total_files > 10 ? "\n  ... und ".($total_files - 10)." weitere Datei(en)" : "";
+                
+                abort(
+                    "Modified files detected:\n  ".$file_list.$more_info.
+                    "\n\nPlease commit or stash your changes, or use -f/force flag to overwrite."
+                );
                 return(-1);
             }
 
@@ -534,20 +572,15 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
         } // $do_db
     } // $check_db
 
-/*
-    echo_out("--------------- Locking system ---------------\n");
-    if (file_exists($lockfile_name)) {
-        echo_out("System is already locked.\n");
-    } else {
-        file_put_contents($lockfile_name," ");
-    }
-
-    echo_out("--------------- Unlocking system ---------------\n");
-    unlink($lockfile_name);
-*/
-
     echo_out("--------------- Done! ---------------\n");
-    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
+    echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
+    
+    // Lock-File entfernen falls gesetzt
+    if ($lock_acquired && file_exists($lockfile_name)) {
+        echo_out("--------------- Unlocking system ---------------\n");
+        unlink($lockfile_name);
+    }
+    
     return(0);
 }
 

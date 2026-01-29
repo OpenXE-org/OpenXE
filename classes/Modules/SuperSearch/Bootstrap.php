@@ -10,6 +10,7 @@ use Xentral\Modules\SuperSearch\SearchIndex\Provider\AddressProvider;
 use Xentral\Modules\SuperSearch\SearchIndex\Provider\AppProvider;
 use Xentral\Modules\SuperSearch\SearchIndex\Provider\ArticleProvider;
 use Xentral\Modules\SuperSearch\SearchIndex\Provider\CreditNoteProvider;
+use Xentral\Modules\SuperSearch\SearchIndex\Provider\LexwareOfficeProvider;
 use Xentral\Modules\SuperSearch\SearchIndex\Provider\InvoiceProvider;
 use Xentral\Modules\SuperSearch\SearchIndex\Provider\OfferProvider;
 use Xentral\Modules\SuperSearch\SearchIndex\Provider\OrderProvider;
@@ -121,6 +122,12 @@ final class Bootstrap
                 $appstoreModule = $app->erp->LoadModul('appstore');
 
                 return new AppProvider($appstoreModule);
+            }
+        );
+        $factory->registerProviderFactory(
+            'lexwareoffice',
+            static function () {
+                return new LexwareOfficeProvider();
             }
         );
 

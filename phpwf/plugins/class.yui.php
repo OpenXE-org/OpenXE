@@ -28,6 +28,25 @@ class YUI {
     $this->app = $app;
   }
 
+  private function hasLexwareOfficeApiKey(): bool
+  {
+    try {
+      if($this->app->Container->has('SystemConfigModule')) {
+        /** @var SystemConfigModule $systemConfig */
+        $systemConfig = $this->app->Container->get('SystemConfigModule');
+        return $systemConfig->isKeyExisting('lexwareoffice', 'api_key');
+      }
+
+      $count = (int)$this->app->DB->Select(
+        "SELECT COUNT(*) FROM system_config WHERE namespace = 'lexwareoffice' AND name = 'api_key' LIMIT 1"
+      );
+      return $count > 0;
+    }
+    catch (\Throwable) {
+      return false;
+    }
+  }
+
   function dateien_module_objekt_map($module) : string {
 
     $dateien_module_objekt_map_array = array(
@@ -6634,6 +6653,8 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
 
         if($this->app->erp->RechteVorhanden('rechnung','summe'))
           $sumcol = 9;
+        $lexwareMenu = '';
+
         $menu = "<table class=\"nopadding\" cellpadding=0 cellspacing=0>";
         $menu .= "<tr>";
         $menu .= "<td>";
@@ -6651,6 +6672,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
+        $menu .= $lexwareMenu;
         $menu .= "</tr>";
         $menu .= "</table>";
         $menucol = 11;
@@ -6691,6 +6713,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         if($this->app->erp->RechteVorhanden('rechnung','summe')){
           $sumcol = 9;
         }
+        $lexwareMenu = '';
         $menu = "<table class=\"nopadding\" cellpadding=\"0\" cellspacing=\"0\">";
         $menu .= "<tr>";
         $menu .= "<td>";
@@ -6708,6 +6731,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
         $menu  .= "</a>";
         $menu .= "</td>";
+        $menu .= $lexwareMenu;
         $menu .= "</tr>";
         $menu .= "</table>";
         $menucol = 11;
@@ -6777,6 +6801,8 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         'r.zahlungsweise', array("FORMAT(r.soll,2{$extended_mysql55})", "if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus)"), 'r.waehrung', "if(r.soll-r.ist+r.skonto_gegeben!=0 AND r.ist > 0 AND r.zahlungsstatus!='bezahlt','teilbezahlt',r.zahlungsstatus)"
         , "FORMAT(r.ist-r.soll+r.skonto_gegeben,2{$extended_mysql55})", "if(r.status = 'storniert' AND r.teilstorno = 1,'Teilstorno',r.status)", 'r.id', 'adr.freifeld1', 'r.ihrebestellnummer', 'r.internebezeichnung', 'au.internet');
 
+        $lexwareMenu = '';
+
         $menu = "<table class=\"nopadding\" cellpadding=0 cellspacing=0>";
         $menu .= "<tr>";
         $menu .= "<td>";
@@ -6794,6 +6820,7 @@ r.land as land, p.abkuerzung as projekt, r.zahlungsweise as zahlungsweise,
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\">";
         $menu .= "</a>";
         $menu .= "</td>";
+        $menu .= $lexwareMenu;
 /*        $menu .= "<td>";
         $menu .= "<a href=\"index.php?module=rechnung&action=pdf&id=%value%\">";
         $menu .= "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\">";
@@ -9930,6 +9957,29 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
                 )
                 ';
 
+            $sql .= 'UNION ALL
+                 (
+                   SELECT
+                     t.id,
+                     "<img src=./themes/' . $this->app->Conf->WFconf['defaulttheme'] . '/images/details_open.png class=details>" as open,
+                     t.zeit,
+                     t.betreff,
+                     IF(t.kunde != \'\', t.kunde, t.mailadresse) as ansprechpartner,
+                     p.abkuerzung,
+                     t.bearbeiter,
+                     \'Ticket\' as art,
+                     CONCAT("<a data-type=ticket data-id=", t.id, "></a>") as gesendet,
+                     \'\' as pdf,
+                     concat("7","-",t.id) as did,
+                     CONCAT(t.betreff, " ", t.notiz, " ", t.kommentar) as suchtext,
+                     IF(t.status != \'\', CONCAT("Status: ", t.status), \'\') as internebezeichnung
+                  FROM
+                      ticket t
+                  LEFT JOIN projekt p on t.projekt = p.id
+                  WHERE t.adresse = '.$adresseId.'
+                )
+                ';
+
         $sql .= ') a ';
 
         $moreinfo = true;
@@ -10053,6 +10103,29 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
 
               )';
             }
+            $count .= '
+            UNION ALL
+
+            (
+              SELECT
+                COUNT(tn.id) as anzahl
+              FROM
+                ticket_nachricht tn
+              INNER JOIN ticket t ON tn.ticket = t.schluessel
+              WHERE
+                t.adresse = ' . $adresseId . ' AND !(tn.versendet = 1 AND tn.zeitausgang IS NULL)
+            )
+
+            UNION ALL
+
+            (
+              SELECT
+                COUNT(t.id) as anzahl
+              FROM
+                ticket t
+              WHERE
+                t.adresse = ' . $adresseId . '
+            )';
             $count .= '
           ) a
         ';
