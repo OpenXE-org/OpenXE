@@ -25748,6 +25748,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['zahlung_auftrag_sofort_de']['deutsch'] = "Rechnung zahlbar sofort";
 
     $uebersetzung['dokument_versandpaketschein']['deutsch'] = "Paketschein";
+    $uebersetzung['dokument_paketnummer']['deutsch'] = "Paketnummer";
+    $uebersetzung['dokument_gewicht']['deutsch'] = "Gewicht";
+    $uebersetzung['dokument_versandart']['deutsch'] = "Versandart";
+    $uebersetzung['dokument_tracking']['deutsch'] = "Tracking";
     $uebersetzung['dokument_referenz']['deutsch'] = "Referenz";
 
     for($ifreifeld=1;$ifreifeld<=40;$ifreifeld++)

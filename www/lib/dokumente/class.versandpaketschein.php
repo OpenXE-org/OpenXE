@@ -51,6 +51,14 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
     ";
     $lieferschein = $this->app->DB->Select($sql);
 
+    $lieferscheindata = $this->app->DB->SelectRow("SELECT sprache, adresse FROM lieferschein WHERE id='$lieferschein' LIMIT 1");
+    $sprache = $lieferscheindata['sprache'];
+    $adresse = $lieferscheindata['adresse'];
+    if(empty($sprache)) {
+      $sprache = $this->app->DB->Select("SELECT sprache FROM adresse WHERE id='$adresse' LIMIT 1");
+    }
+    $this->app->erp->BeschriftungSprache($sprache);
+
     $this->setRecipientLieferadresse($lieferschein,"lieferschein");
 
     $sql = "
@@ -67,35 +75,6 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
     ";
 
     $data = $this->app->DB->SelectRow($sql);
-
-/*
-    $data = $this->app->DB->SelectRow("
-        SELECT 
-            k.kommentar,
-            k.bezeichnung,
-            k.bearbeiter,
-            DATE_FORMAT(k.zeitstempel,'%Y%m%d') as datum,
-            k.ausgelagert,
-            l.belegnr as lieferscheinnummer,
-            ab.belegnr as auftragnummer,
-            DATE_FORMAT(ab.tatsaechlicheslieferdatum,'%d.%m.%Y') as tatsaechlicheslieferdatum,
-            a.name            
-        FROM
-            kommissionierung k
-        LEFT JOIN 
-            lieferschein l
-        ON
-            k.lieferschein = l.id
-        LEFT JOIN
-            auftrag ab
-        ON
-            l.auftragid = ab.id OR k.auftrag = ab.id
-        LEFT JOIN 
-            adresse a 
-        ON 
-            a.id = k.adresse
-        WHERE k.id='$id'
-    ");*/
 
     $this->zusatzfooter = " (PS$id)";
 
@@ -234,21 +213,17 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
 
     $corrDetails = array();
 
-    if (!empty($data['versandpaketnummer'])) {
-        $corrDetails['Paketnummer'] = $data['versandpaketnummer'];
-    }   
+    $corrDetails[$this->app->erp->Beschriftung("dokument_paketnummer")] = $data['versandpaketnummer'];
+
     if (!empty($data['gewicht'])) {
-        $corrDetails['Gewicht'] = $data['gewicht'];
+        $corrDetails[$this->app->erp->Beschriftung("dokument_gewicht")] = $data['gewicht'];
     }
     if (!empty($data['versandart'])) {
-        $corrDetails['Versandart'] = $data['versandart'];
+        $corrDetails[$this->app->erp->Beschriftung("dokument_versandart")] = $data['versandart'];
     }
     if (!empty($data['tracking'])) {
-        $corrDetails['Tracking'] = $data['tracking'];
+        $corrDetails[$this->app->erp->Beschriftung("dokument_tracking")] = $data['tracking'];
     }       
-    if (!empty($data['gewicht'])) {
-        $corrDetails['Gewicht'] = $data['gewicht'];
-    }
 
     $this->setCorrDetails($corrDetails, true);
   }
