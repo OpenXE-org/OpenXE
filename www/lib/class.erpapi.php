@@ -2698,10 +2698,10 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
   // @refactor LagerBeleg Modul
   // Returns Array:
   // storageMovements => array('lager_platz', 'artikel', 'menge');
-  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false, $ziellagerplatz = null)
+  function LieferscheinAuslagern($lieferschein,$anzeige_lagerplaetze_in_lieferschein=false, $belegtyp = 'lieferschein', $chargenmhdnachprojekt = 0, $forceseriennummerngeliefertsetzen = false,$nurrestmenge = false, $lager_platz_vpe = 0, $lpiid = 0, $simulieren = false, $ziellagerplatz = null,$text = null)
   {
     if($lieferschein <= 0) {
-      return;
+      throw new exception("Kein Beleg angegeben");
     }
     if(!$anzeige_lagerplaetze_in_lieferschein) {
       $anzeige_lagerplaetze_in_lieferschein = true;
@@ -2719,10 +2719,13 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         $belegtyp, (int)$lieferschein
       )
     );
-    $standardlager = $belegarr['standardlager'];
+    $standardlager = $this->GetBelegStandardlager($lieferschein, $belegtyp);
+
     $kommissionskonsignationslager = 0;
     if($belegtyp === 'lieferschein'){
       $kommissionskonsignationslager = $belegarr['kommissionskonsignationslager'];
+      $auftragid = $this->app->DB->Select("SELECT auftragid FROM $belegtyp WHERE id='$lieferschein'");
+      $auftragnummer = $this->app->DB->Select("SELECT belegnr FROM auftrag WHERE id = '$auftragid'");
     }
     $chargenerfassen = 0;
     $mhderfassen = 0;
@@ -2769,53 +2772,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
       $sortreihenfolge = 'DESC';
     }
 
-    if($belegtyp === 'produktion') {
-      if($standardlager > 0 && !$this->app->DB->Select(
-        sprintf(
-          "SELECT id FROM lager WHERE id = %d AND bezeichnung <> '' AND IFNULL(geloescht,0) = 0 LIMIT 1",
-          (int)$standardlager)
-        )
-      ) {
-        $standardlager = (int)$this->app->DB->Select(
-          sprintf(
-            "SELECT l.id 
-            FROM projekt AS p 
-            INNER JOIN lager AS l ON p.standardlagerproduktion = l.id 
-            WHERE p.id = %d AND l.bezeichnung <> '' AND IFNULL(l.geloescht,0) = 0 
-            LIMIT 1",
-            (int)$projekt
-          )
-        );
-      }
-    }
-    else{
-      if($standardlager > 0 && !$this->app->DB->Select(
-        sprintf(
-            "SELECT id FROM lager WHERE id = %d AND bezeichnung <> '' AND IFNULL(geloescht,0) = 0 LIMIT 1",
-            (int)$standardlager)
-        )){
-        $standardlager = (int)$this->app->DB->Select(
-          sprintf(
-            "SELECT l.id 
-            FROM projekt AS p 
-            INNER JOIN lager AS l ON p.standardlager = l.id 
-            WHERE p.id = %d AND l.bezeichnung <> '' AND IFNULL(l.geloescht,0) = 0
-            LIMIT 1",
-            $projekt
-          )
-        );
-      }
-    }
-
-    if($standardlager == 0) {
-      if($projekt > 0){
-        $standardlager = $this->app->DB->Select("SELECT standardlager FROM projekt WHERE id='$projekt'");
-        if($standardlager == 0) {
-           $projektlager = $this->app->DB->Select("SELECT projektlager FROM projekt WHERE id='$projekt'");
-        }
-      }
-    }
-
     $storageLocations = [];
     $storageMovements = [];
     $cartikel = $artikelarr?count($artikelarr):0;
@@ -2830,20 +2786,20 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
       $subid = $artikelarr[$i]['id'];
       $lager_string = '';
 
-      $arcticleRow = $this->app->DB->SelectRow(
+      $articleRow = $this->app->DB->SelectRow(
         sprintf(
           "SELECT lagerartikel, mindesthaltbarkeitsdatum, chargenverwaltung, seriennummern 
           FROM artikel WHERE id=%d LIMIT 1",
           (int)$artikel
         )
       );
-      $lagerartikel = $arcticleRow['lagerartikel'];
-      $seriennummern = $arcticleRow['seriennummern'] === 'keine'?'':$arcticleRow['seriennummern'];
+      $lagerartikel = $articleRow['lagerartikel'];
+      $seriennummern = $articleRow['seriennummern'] === 'keine'?'':$articleRow['seriennummern'];
       $regal = 0;
 
-      $sperrlagerWhere = ' lp.sperrlager <> 1 ';
+      $sperrlagerWhere = ' (lp.sperrlager <> 1 AND lp.kommissionierlager <> 1)';
       if($belegtyp=='produktion') {
-        $sperrlagerWhere = ' (lp.sperrlager <> 1 OR lp.allowproduction = 1) ';
+        $sperrlagerWhere = ' ((lp.sperrlager <> 1 AND lp.kommissionierlager <> 1) OR lp.allowproduction = 1) ';
       }
 
       if($lagerartikel > 0)
@@ -2855,8 +2811,8 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
         $timeout=0;
         $restmenge = $menge;
         $lager_string = '';
-        $mindesthaltbarkeitsdatum = $arcticleRow['mindesthaltbarkeitsdatum'];
-        $chargenverwaltung = $arcticleRow['chargenverwaltung'];
+        $mindesthaltbarkeitsdatum = $articleRow['mindesthaltbarkeitsdatum'];
+        $chargenverwaltung = $articleRow['chargenverwaltung'];
         while($restmenge > 0)
         {
           $timeout++;
@@ -2998,7 +2954,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               }
             }
           }
-          else {
+          else { // ! MHD
             if($chargenverwaltung) {
               if($standardlager > 0) {
                 $lager_max = $this->app->DB->SelectArr(
@@ -3091,7 +3047,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
                 }
               }
             }
-            else{
+            else{ // ! Chargen NORMAL PROCESS HERE
               if($standardlager > 0) {
                 $lager_max = $this->app->DB->SelectArr(
                   "SELECT lpi.lager_platz, lpi.menge,lpi.id 
@@ -3129,6 +3085,7 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               }
             }
           }
+
           if(!$lager_max){
             break;
           }
@@ -3146,9 +3103,15 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
           $storageMovements[] = array('lager_platz' => $lager_max[0]['lager_platz'], 'artikel' => $artikel,'menge' => $menge_auslagern);
 
-
           if (!$simulieren) {
-              $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
+
+              if (empty($text)) {
+                $grund = ucfirst($belegtyp)." $belegnr";
+              } else {
+                $grund = $text;
+              }
+
+              $this->LagerAuslagernRegal($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,$grund,"",$belegtyp,$lieferschein, $lager_max[0]['lager_platz_vpe'], $lager_max[0]['id']);
               $storageLocations[] = $lager_max[0]['lager_platz'];
               if($anzeige_lagerplaetze_in_lieferschein){
                   $this->LagerAuslagernText($artikel, $subid, $lager_max[0]['lager_platz'], $menge_auslagern, $belegtyp);
@@ -3160,6 +3123,11 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               if(!$nurrestmenge){
                   $this->LagerAuslagernRegalMHDCHARGESRN($artikel,$lager_max[0]['lager_platz'],$menge_auslagern,$projekt,ucfirst($belegtyp)." $belegnr","",$belegtyp,$lieferschein,$subid, $chargenauslagern, $mhdauslagern, $seriennummernauslagern);
               }
+
+              if ($ziellagerplatz) {
+                $this->LagerEinlagern(artikel: $artikel, menge: $menge_auslagern, regal: $ziellagerplatz, projekt: $projekt, grund: $grund, doctype: $belegtyp, doctypeid: $lieferschein);
+              }
+
           }
           $restmenge = round($restmenge - $menge_auslagern, 8);
         }
@@ -3176,7 +3144,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
           {
             $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert_menge='$geliefert', geliefert = 1 WHERE id='$subid' LIMIT 1");
           }else{
-
             if($belegtyp=="lieferschein")
             {
               $auftragposid=$this->app->DB->Select("SELECT auftrag_position_id FROM lieferschein_position WHERE id='$subid'");
@@ -3184,23 +3151,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
               {
                 $this->app->DB->Update("UPDATE auftrag_position SET geliefert_menge='$geliefert' WHERE id='$auftragposid' LIMIT 1");
               }
-            }
-
-            if($seriennummernerfassen=='1' && ($artikelhatseriennummer=='vomprodukteinlagern' || $artikelhatseriennummer=='vomprodukt' || $artikelhatseriennummer=='eigene'))
-            {
-              // wenn Seriennummer erfasst werden soll
-              //if($anzeige_lagerplaetze_in_lieferschein)
-              //{
-                //$this->app->DB->Update("UPDATE ".$belegtyp."_position SET beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
-                //neue datenstruktur
-              //}
-              if($forceseriennummerngeliefertsetzen)$this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
-            } else {
-              //wenn nicht
-              //if($anzeige_lagerplaetze_in_lieferschein)
-              //  $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert',beschreibung='$beschreibung' WHERE id='$subid' LIMIT 1");
-              //else
-              $this->app->DB->Update("UPDATE ".$belegtyp."_position SET geliefert='$geliefert' WHERE id='$subid' LIMIT 1");
             }
           }
        } // simulieren
@@ -3215,7 +3165,6 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
         if($belegtyp == '' || $belegtyp === 'lieferschein')
         {
-            $auftragid = $this->app->DB->Select("SELECT auftragid FROM $belegtyp WHERE id='$lieferschein'");
             if($auftragid){
               $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE objekt = 'auftrag' AND parameter = '$auftragid'");
             }
@@ -3228,6 +3177,259 @@ function LieferscheinEinlagern($id,$grund="Lieferschein Einlagern", $lpiids = nu
 
     return(array('storageMovements' => $storageMovements));
   }
+
+    // Check available items for an array('artikel','menge') with additional check for reserversations on beleg
+    // Returns Array
+    function LagerCheckBeleg(string $doctype, $doctypeid, $lager = 0, bool $incl_autolagersperre = false) {
+
+        $items = $this->app->DB->SelectArr("SELECT artikel, nummer, bezeichnung, menge FROM ".$doctype."_position WHERE ".$doctype." = ".$doctypeid." ORDER by sort ASC");
+
+        // only one line per article
+    	$unique_items = array();
+        foreach ($items as $key => $item) {
+        	if (!isset($unique_items[$item['artikel']])) {
+        		$unique_items[$item['artikel']] = array('artikel_nummer' => $item['nummer'], 'artikel_name' => $item['bezeichnung']);
+        	}
+  			$unique_items[$item['artikel']]['menge'] += $item['menge'];
+        }
+        $items = $unique_items;
+
+        $result = array('success' => true, 'storageMovements' => array());
+
+        // SQL conditions
+        if ($incl_autolagersperre) {
+            $mengefeld = "menge";
+        } else {
+            $mengefeld = "autoversandmenge";
+        }
+
+        $standardlager = $this->GetBelegStandardlager($doctypeid, $doctype);
+        if ($standardlager) {
+            $lager = $standardlager;
+        }
+        if ($lager) {
+            $lagerwhere = "(lp.lager = ".$lager.")";
+            $result['lager'] = $this->app->DB->SelectRow("SELECT id lager_id, bezeichnung lager_name FROM lager WHERE id = ".$lager);
+        } else {
+            $lagerwhere = '1';
+        }
+
+        // Check availability including reservations
+        if ($doctype <> '')  {
+
+            if (!empty($items)) {
+                $sql = "SELECT 
+                            artikel,
+                            SUM(if(!lp.autolagersperre,if($lagerwhere,menge,0),0)) AS autoversandmenge_lager,
+                            SUM(if(!lp.autolagersperre,menge,0)) AS autoversandmenge,
+                            SUM(if(lp.autolagersperre,menge,0)) AS nachschubmenge,
+                            SUM(menge) AS menge
+                        FROM
+                            lager_platz_inhalt lpi
+                        INNER JOIN
+                            lager_platz lp ON lp.id = lpi.lager_platz
+                        WHERE
+                            lp.sperrlager <> 1
+                                AND
+                            lp.kommissionierlager <> 1
+                                AND
+                            artikel IN (".implode(',',array_keys($items)).")
+                        GROUP BY
+                            artikel
+                        ";
+
+                $artikel_im_lager = $this->app->DB->SelectArr($sql);
+            }
+
+            $sql = "SELECT artikel, SUM(menge) AS menge FROM lager_reserviert WHERE objekt = '".$doctype."' AND parameter = ".$doctypeid." GROUP BY artikel";
+            $artikel_reserviert_beleg = $this->app->DB->SelectArr($sql);
+
+            $sql = "SELECT artikel, SUM(menge) AS menge FROM lager_reserviert WHERE objekt <> '".$doctype."' OR parameter <> ".$doctypeid." GROUP BY artikel";
+            $artikel_reserviert_andere = $this->app->DB->SelectArr($sql);
+
+            if (!empty($artikel_im_lager)) {
+                $artikel_im_lager = array_combine(array_column($artikel_im_lager,'artikel'),$artikel_im_lager);
+            }
+            if (!empty($artikel_reserviert_beleg)) {
+                $artikel_reserviert_beleg = array_combine(array_column($artikel_reserviert_beleg,'artikel'),array_column($artikel_reserviert_beleg,'menge'));
+            }
+            if (!empty($artikel_reserviert_andere)) {
+                $artikel_reserviert_andere = array_combine(array_column($artikel_reserviert_andere,'artikel'),array_column($artikel_reserviert_andere,'menge'));
+            }
+
+            foreach ($items as $artikel => $menge) {
+
+                $lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id = ".$artikel);
+                if (!$lagerartikel) {
+                    $items[$artikel]['lagerartikel'] = false;
+                    $items[$artikel]['ok'] = true;
+                    continue;
+                } else {
+                    $items[$artikel]['lagerartikel'] = true;
+                }
+
+                $items[$artikel]['restmenge'] = $items[$artikel]['menge'];
+                $items[$artikel]['lagermenge_autoversand_lager'] = $artikel_im_lager[$artikel]['autoversandmenge_lager'];
+                $items[$artikel]['lagermenge_autoversand'] = $artikel_im_lager[$artikel]['autoversandmenge'];
+                $items[$artikel]['lagermenge_nachschub'] = $artikel_im_lager[$artikel]['nachschubmenge'];
+                if ($incl_autolagersperre) {
+                    $items[$artikel]['lagermenge'] = $artikel_im_lager[$artikel]['menge'];
+                } else {
+                    $items[$artikel]['lagermenge'] = $artikel_im_lager[$artikel]['autoversandmenge'];
+                }
+
+                $items[$artikel]['lagermenge_verfuegbar'] = $artikel_im_lager[$artikel]['autoversandmenge']-$artikel_reserviert_andere[$artikel];
+                if($items[$artikel]['lagermenge_verfuegbar'] < 0) {
+                    $items[$artikel]['lagermenge_verfuegbar'] = 0;
+                }
+
+                $items[$artikel]['reserviert_beleg'] = $artikel_reserviert_beleg[$artikel];
+                $items[$artikel]['reserviert_andere'] = $artikel_reserviert_andere[$artikel];
+                $items[$artikel]['reserviert'] = $artikel_reserviert_beleg[$artikel]+$artikel_reserviert_andere[$artikel];
+
+                if (($items[$artikel]['menge'] <= $items[$artikel]['lagermenge_verfuegbar']) && ($items[$artikel]['menge'] <= $items[$artikel]['lagermenge_autoversand_lager'])) {
+                    $items[$artikel]['ok'] = true;
+                } else {
+                    $items[$artikel]['ok'] = false;
+                    $result['success'] = false;
+                }
+            }
+        }
+
+        $result['items'] = $items;
+
+        // Check available stock locations
+        foreach ($items as $artikel => $artikeldata) {
+
+            $lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id = ".$artikel);
+            if (!$lagerartikel) {
+                continue;
+            }
+
+            $this->LagerArtikelZusammenfassen($artikel);
+
+            $sql = "
+                SELECT
+                    lpi.artikel,
+                    a.name_de artikel_name,
+                    a.nummer artikel_nummer,
+                    l.bezeichnung AS lager_name,
+                    lpi.lager_platz,
+                    lp.kurzbezeichnung lager_platz_name,
+                    lp.autolagersperre AS nachschublager,
+                    SUM(if(!lp.autolagersperre,if($lagerwhere,menge,0),0)) AS autoversandmenge_lager,
+                    SUM(if(!lp.autolagersperre,menge,0)) AS autoversandmenge,
+                    SUM(if(lp.autolagersperre,menge,0)) AS nachschubmenge,
+                    menge
+                FROM
+                    lager_platz_inhalt lpi
+                INNER JOIN
+                    lager_platz lp ON lp.id = lpi.lager_platz
+                INNER JOIN
+                    artikel a ON a.id = lpi.artikel
+                INNER JOIN
+                    lager l ON l.id = lp.lager
+                WHERE
+                    lp.sperrlager <> 1
+                        AND
+                    lp.kommissionierlager <> 1
+                        AND
+                    lpi.artikel = ".$artikel."
+                        AND
+                    ".$lagerwhere."
+                ORDER BY
+                    lpi.menge ASC
+            ";
+
+            $stockitems = $this->app->DB->SelectArr($sql);
+
+            foreach ($stockitems as $stockitem_key => $stockitem) {
+                if ($stockitem['autoversandmenge_lager'] >= $items[$artikel]['restmenge']) {
+                    $menge = $items[$artikel]['restmenge'];
+                } else {
+                    $menge = $stockitem['autoversandmenge_lager'];
+                }
+
+                if ($menge) {
+                    $result['storageMovements'][] = array('artikel' => $artikel,'lager_platz' => $stockitem['lager_platz'], 'menge' => $menge);
+                    $stockitems[$stockitem_key]['menge'] -= $menge;
+                    $items[$artikel]['restmenge'] -= $menge;
+                }
+            }
+            if ($items[$artikel]['restmenge']) { // Not enough stock
+                $result['success'] = false;
+                $result['missing'][$artikel] = array('artikel' => $artikel, 'restmenge' => $items[$artikel]['restmenge']);
+            }
+
+            // Stock overview
+            $result['available stock'][$artikel] = $stockitems;
+        }
+
+        if (!$result['success']) {
+            unset($result['storageMovements']);
+        }
+
+        return($result);
+    }
+
+    function GetAuftragKommissionierung(int $auftragid) {
+        $sql = "
+            SELECT
+                k.id,
+                a.belegnr,
+                a.adresse
+            FROM
+               kommissionierung k
+            LEFT JOIN
+                lieferschein l
+            ON
+                l.id = k.lieferschein
+            LEFT JOIN
+                auftrag al
+            ON
+                al.id = l.auftrag
+            LEFT JOIN
+                auftrag a
+            ON
+                a.id = k.auftrag
+            WHERE
+                a.id = $auftragid OR al.id = $auftragid
+            LIMIT 1
+        ";
+        $check = $this->app->DB->SelectRow($sql);
+
+        if (!empty($check)) {
+            return($check['id']);
+        }
+        else {
+            return(0);
+        }
+    }
+
+    function Kommissionierungauslagern(int $kommissionierungid, int $lieferscheinid) {
+
+        $sql = "SELECT belegnr, projekt FROM lieferschein WHERE id = ".$lieferscheinid;
+        $lieferschein = $this->app->DB->SelectRow($sql);
+
+        $sql = "SELECT * FROM kommissionierung k INNER JOIN kommissionierung_position kp ON kp.kommissionierung = k.id WHERE k.id = ".$kommissionierungid;
+        $positionen = $this->app->DB->SelectArr($sql);
+
+        $sql = "SELECT a.belegnr FROM auftrag a INNER JOIN kommissionierung k ON k.auftrag = a.id WHERE k.id = ".$kommissionierungid;
+        $auftragsnummer = $this->app->DB->Select($sql);
+
+        foreach ($positionen as $position) {
+            $this->LagerAuslagernRegal(
+                artikel: $position['artikel'],
+                regal: $position['ziel_lager_platz'],
+                menge: $position['menge'],
+                projekt: $lieferschein['projekt'],
+                grund: 'Auftrag '.$auftragsnummer.', Lieferschein '.$lieferschein['belegnr'],
+                doctype: 'lieferschein',
+                doctypeid: $lieferschein
+            );
+        }
+
+    }
 
   /**
    * @param string $doctype
@@ -5452,6 +5654,32 @@ title: 'Abschicken',
     }
   }
 
+    function GetBelegStandardlager(int $doctypeid, string $doctype) : int {
+        
+        $sql = "
+            SELECT
+                l.id standardlager_beleg,
+                p.standardlager standardlager_projekt
+            FROM
+                $doctype b
+            LEFT JOIN
+                lager l ON (l.id = b.standardlager) AND (IFNULL(l.geloescht,0) = 0)
+            LEFT JOIN
+                projekt p ON p.id = b.projekt
+            WHERE
+                b.id = ".$doctypeid."
+            LIMIT 1
+        ";
+
+        $result = $this->app->DB->SelectRow($sql);
+
+        if (empty($result['standardlager_beleg'])) {
+            return((int) $result['standardlager_projekt']);
+        } else {
+            return((int) $result['standardlager_beleg']);
+        }
+    }
+
   // @refactor in Etiketten Modul
   function LieferscheinPositionenDrucken($lieferschein,$etiketten_drucker,$etiketten_art,$etiketten_sort=0)
   {
@@ -5462,6 +5690,14 @@ title: 'Abschicken',
     }
   }
 
+    // @refactor in Etiketten Modul
+    function VersandpaketscheinPositionenDrucken($versandpaketschein) {
+        /** @var Etiketten $obj */
+        $obj = $this->LoadModul('etiketten');
+        if(!empty($obj) && method_exists($obj, 'VersandpaketscheinPositionenDrucken')) {
+            $obj->VersandpaketscheinPositionenDrucken($versandpaketschein);
+        }
+    }
 
   // @refactor Document Komponente
   function MessageHandlerStandardForm()
@@ -11217,6 +11453,10 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     }
   }
 
+  public function makemodulelink(string $text, string $module, string $action, int $id, string $additional_text = '') {
+    return("<a href=\"index.php?module=".$module."&action=".$action."&id=".$id.$additional_text."\">".$text."</a>");
+  }
+
   // @refactor Menu Widget
   public function formatmenulink($link, $beschreibung, $mark = false)
   {
@@ -12180,55 +12420,70 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
       $this->app->DB->Update("UPDATE auftrag SET ust_ok='1' WHERE id='$auftrag' LIMIT 1");
     }
 
+/*
     // Lager Check
-    $positionen_vorhanden = 0;
-    $artikelzaehlen=0;
-    $cartikelarr = $artikelarr?count($artikelarr):0;
-    for($k=0;$k<$cartikelarr; $k++)  {
-      $menge = $artikelarr[$k]['menge'] - $artikelarr[$k]['geliefert_menge'];
-      $artikel = $artikelarr[$k]['artikel'];
-      $artikel_position_id = $artikelarr[$k]['id'];
-      $lagerartikel = $artikelarr[$k]['artlagerartikel'];
-      if($lagerartikel==1) {
-        // wenn artikel oefters im Auftrag nehme gesamte summe her
+    if (!$auftraege[0]['kommission_ok']) {
+        $positionen_vorhanden = 0;
+        $artikelzaehlen=0;
+        $cartikelarr = $artikelarr?count($artikelarr):0;
+        for($k=0;$k<$cartikelarr; $k++)  {
+          $menge = $artikelarr[$k]['menge'] - $artikelarr[$k]['geliefert_menge'];
+          $artikel = $artikelarr[$k]['artikel'];
+          $artikel_position_id = $artikelarr[$k]['id'];
+          $lagerartikel = $artikelarr[$k]['artlagerartikel'];
+          if($lagerartikel==1) {
+            // wenn artikel oefters im Auftrag nehme gesamte summe her
 
-        $gesamte_menge_im_auftrag= $this->app->DB->Select("SELECT SUM(menge-geliefert_menge) FROM auftrag_position WHERE auftrag='$auftrag' AND artikel='$artikel'");
-        if($gesamte_menge_im_auftrag > $menge) {
-          $menge = $gesamte_menge_im_auftrag;
-        }
-        $artikelzaehlen++;
-        if($this->LagerCheck($adresse,$artikel,$menge,"auftrag",$auftrag)>0) {
-          $positionen_vorhanden++;
-        }
-        elseif($positionen_vorhanden > 0) {
-          break;
-        }
-        //else { if($auftrag==314) {echo "Artikel $artikel Menge $menge";exit;} }
+            $gesamte_menge_im_auftrag= $this->app->DB->Select("SELECT SUM(menge-geliefert_menge) FROM auftrag_position WHERE auftrag='$auftrag' AND artikel='$artikel'");
+            if($gesamte_menge_im_auftrag > $menge) {
+              $menge = $gesamte_menge_im_auftrag;
+            }
+            $artikelzaehlen++;
+            if($this->LagerCheck($adresse,$artikel,$menge,"auftrag",$auftrag)>0) {
+              $positionen_vorhanden++;
+            }
+            elseif($positionen_vorhanden > 0) {
+              break;
+            }
+            //else { if($auftrag==314) {echo "Artikel $artikel Menge $menge";exit;} }
 
-      }
-    }
-    $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$auftrag' LIMIT 1");
+          }
+        }
+        $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id='$auftrag' LIMIT 1");
 
-    $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='0' WHERE id='$auftrag' LIMIT 1");
-    //echo "$positionen_vorhanden $artikelzaehlen<hr>";
-    if($positionen_vorhanden==$artikelzaehlen){
-      $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
-    }
-    else {
-      $kommissionierverfahren = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id = '$projekt' LIMIT 1");
-      if($kommissionierverfahren == 'rechnungsmail')
-      {
+        $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='0' WHERE id='$auftrag' LIMIT 1");
+        //echo "$positionen_vorhanden $artikelzaehlen<hr>";
+        if($positionen_vorhanden==$artikelzaehlen){
+          $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+        }
+        else {
+          $kommissionierverfahren = $this->app->DB->Select("SELECT kommissionierverfahren FROM projekt WHERE id = '$projekt' LIMIT 1");
+          if($kommissionierverfahren == 'rechnungsmail')
+          {
+            $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+          }else{
+            $this->app->DB->Update("UPDATE auftrag SET lager_ok='0' WHERE id='$auftrag' LIMIT 1");
+          }
+          if($positionen_vorhanden > 0 && $artikelzaehlen > 0)
+          {
+            $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='1' WHERE id='$auftrag' LIMIT 1");
+          }
+        }
+    } else {
         $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
-      }else{
-        $this->app->DB->Update("UPDATE auftrag SET lager_ok='0' WHERE id='$auftrag' LIMIT 1");
-      }
-      if($positionen_vorhanden > 0 && $artikelzaehlen > 0)
-      {
-        $this->app->DB->Update("UPDATE auftrag SET teillieferung_moeglich='1' WHERE id='$auftrag' LIMIT 1");
-      }
+    } */
 
+
+    if (!$auftraege[0]['kommission_ok']) {
+        $lagercheck = $this->app->erp->LagerCheckBeleg(doctype:  'auftrag', doctypeid: $auftrag);
+        if ($lagercheck['success']) {
+           $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
+        } else {
+           $this->app->DB->Update("UPDATE auftrag SET lager_ok='0' WHERE id='$auftrag' LIMIT 1");
+        }
+    } else {
+        $this->app->DB->Update("UPDATE auftrag SET lager_ok='1' WHERE id='$auftrag' LIMIT 1");
     }
-
 
     // projekt check start
     $projektcheck = 0;
@@ -15604,7 +15859,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
         $this->app->remote->RemoteUpdateAuftrag($shop, $auftrag);
       }
       catch(Exception $e) {
-        $this->AuftragProtokoll($auftag, 'Shopr&uuml;ckmeldung fehlgeschlagen');
+        $this->AuftragProtokoll($auftrag, 'Shopr&uuml;ckmeldung fehlgeschlagen');
       }
     }
 
@@ -19191,7 +19446,7 @@ function SeriennummernLog($artikel, $lagerplatz, $seriennummer, $eingang, $inter
   {
     if(!$artikel)
     {
-      return -1;
+        throw new exception("Auslagern fehlgeschlagen! (Kein Artikel angegeben)");
     }
     $break = false;
     $this->RunHook('LagerAuslagernRegal_before',8, $artikel, $menge, $regal, $projekt, $grund, $doctype,$doctypeid, $break);
@@ -19212,7 +19467,9 @@ function SeriennummernLog($artikel, $lagerplatz, $seriennummer, $eingang, $inter
     // abbrechen wenn es nicht so ist!
     $bestand = $this->ArtikelImLagerPlatz($artikel,$regal);
 
-    if($menge > $bestand || $bestand <=0) return -1;
+    if($menge > $bestand || $bestand <=0) {
+        throw new exception("Auslagern fehlgeschlagen! (Bestand zu gering)");
+    }
 
   if($menge > 0)
   {
@@ -19247,7 +19504,7 @@ function SeriennummernLog($artikel, $lagerplatz, $seriennummer, $eingang, $inter
       // Bewegung buchen
       $bestand = $this->ArtikelImLagerPlatz($artikel,$regal);
       $this->app->DB->Insert("INSERT INTO lager_bewegung (id,lager_platz,artikel,menge,vpe,eingang,zeit,referenz,bearbeiter,projekt,firma,bestand,doctype,doctypeid) VALUES
-          ('','$regal','$artikel','$menge','','0',NOW(),'$grund','" . $username. "','$projekt','','$bestand','$doctype','$doctypeid')");
+          ('','$regal','$artikel','$menge','','0',NOW(6),'$grund','" . $username. "','$projekt','','$bestand','$doctype','$doctypeid')");
     }else{
       $lpis = $this->app->DB->SelectArr("SELECT id, menge,lager_platz_vpe FROM lager_platz_inhalt WHERE artikel = '$artikel' AND lager_platz='$regal' ORDER BY ".($lager_platz_vpe && $lpiid?" id = '$lpiid' DESC, ":'')." lager_platz_vpe = '$lager_platz_vpe' DESC, id");
       if($lpis)
@@ -20172,9 +20429,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         )
       );
     }
-
     $this->RunHook('LagerEinlagern_after',7, $artikel, $menge, $regal, $projekt, $grund, $doctype,$doctypeid);
-    
     $this->SeriennummernCheckBenachrichtigung($artikel);
   }
 
@@ -20811,6 +21066,9 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       $docArr = $this->app->DB->SelectRow(sprintf('SELECT * FROM `%s` WHERE id=%d LIMIT 1', $objekt, (int)$parameter));
       $projekt = $docArr['projekt'];
       $auftrag = $parameter;
+
+      $standardlager = $this->GetBelegStandardlager(doctype: $objekt, doctypeid: $parameter);
+
       if($objekt === 'lieferschein')
       {
         $auftrag = $docArr['auftragid'];
@@ -20825,25 +21083,6 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         );
         $kommissionierverfahren= $projectArr['kommissionierverfahren'];
         $projektbevorzugteslager = $projectArr['standardlager'];
-        if(
-        !($kommissionierverfahren==='lieferscheinlager' ||
-          $kommissionierverfahren==='lieferscheinlagerscan' ||
-          $kommissionierverfahren==='lieferscheinscan' ||
-          $kommissionierverfahren === 'lieferschein') || $this->app->DB->Select('SELECT IFNULL(COUNT(id),0) FROM lager') <= 1
-        )
-        {
-          $standardlager = 0;
-        } else {
-          $projektlager = $projectArr['projektlager'];
-          if($objekt==='auftrag' || $objekt === 'lieferschein') {
-            $standardlager = $docArr['standardlager'];
-          } else{
-            $standardlager = $this->app->DB->Select(sprintf('SELECT standardlager FROM auftrag WHERE id = %d LIMIT 1', (int)$auftrag));
-          }
-          if($standardlager && !$this->app->DB->Select(sprintf('SELECT id FROM lager WHERE id = %d LIMIT 1', (int)$standardlager))) {
-            $standardlager = $this->app->DB->Select(sprintf('SELECT id FROM lager WHERE id = %d LIMIT 1', (int)$docArr['standardlager']));
-          }
-        }
       }
     }
 
@@ -25496,9 +25735,6 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['proformarechnung_lieferschein_anzahl']['deutsch'] = "Lieferschein Anzahl: {ANZAHL}";
     $uebersetzung['proformarechnung_ohnezolltarifnummer']['deutsch'] = "Ohne Zolltarifnummer";
 
-
-
-
     $uebersetzung['dokument_zahlungserinnerung']['deutsch'] = "Zahlungserinnerung";
 
     $uebersetzung['mahnwesen_betreff']['deutsch'] = "Buchhaltung: Ihre offene Rechnung";
@@ -25510,6 +25746,13 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
     $uebersetzung['zahlung_proformarechnung_sofort_de']['deutsch'] = "Proformarechnung zahlbar sofort";
     $uebersetzung['zahlung_auftrag_sofort_de']['deutsch'] = "Rechnung zahlbar sofort";
+
+    $uebersetzung['dokument_versandpaketschein']['deutsch'] = "Paketschein";
+    $uebersetzung['dokument_paketnummer']['deutsch'] = "Paketnummer";
+    $uebersetzung['dokument_gewicht']['deutsch'] = "Gewicht";
+    $uebersetzung['dokument_versandart']['deutsch'] = "Versandart";
+    $uebersetzung['dokument_tracking']['deutsch'] = "Tracking";
+    $uebersetzung['dokument_referenz']['deutsch'] = "Referenz";
 
     for($ifreifeld=1;$ifreifeld<=40;$ifreifeld++)
     {
@@ -25561,14 +25804,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $uebersetzung['freitext2inhalt']['englisch'] = '';
     }
 
-
     if($getvars) return $uebersetzung;
-
-
-
-    if(isset($uebersetzung[$field][$sprache]))
-      return $uebersetzung[$field][$sprache];
-
+    if(isset($uebersetzung[$field][$sprache])) {
+        return $uebersetzung[$field][$sprache];
+    }
     return "";
   }
 
@@ -25617,11 +25856,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       $this->beschriftung_sprache = 'deutsch';
     } 
 
-  // wenn feld mit artikel_freifeld beginnt dann freifeld draus machen
-  //$field = str_replace('artikel_freifeld','freifeld',$field);
-
     // schaue ob es das wort in uebesetzungen gibt
-
     $check = $this->getUebersetzung($field, $this->beschriftung_sprache);
     $uebersetzung = '';
     if($check > 0){
@@ -33526,7 +33761,10 @@ function Firmendaten($field,$projekt="")
       {
         $standardlager = 0;
         $projektlager = 0;
-        if($typ==='auftrag' && $id > 0){
+        if($typ==='auftrag' && $id > 0) {
+            if (!empty($this->app->erp->GetAuftragKommissionierung($id))) {
+                return 0;
+            }
           $auftragsArr = $this->app->DB->SelectRow(
             sprintf(
               "SELECT id, adresse, projekt, belegnr, standardlager, nicht_reservieren, reservationdate FROM auftrag WHERE status='freigegeben' AND id=%d LIMIT 1",
@@ -33565,14 +33803,12 @@ function Firmendaten($field,$projekt="")
           return 0;
         }
 
-
         if($typ==='auftrag')
         {
           $artikelarr= $this->app->DB->SelectArr("SELECT * FROM auftrag_position WHERE auftrag='$id' AND geliefert!=1");
           $this->app->DB->Delete("DELETE FROM lager_reserviert WHERE parameter='$id' AND objekt='auftrag'");
 
         }
-
 
         //schaue artikel fuer artikel an wieviel geliefert wurde und ob bereits reservierungen vorliegen, wenn welche vorliegen auch reservieren auf 9999-01-01
         // Lager Check
@@ -33629,7 +33865,7 @@ function Firmendaten($field,$projekt="")
                 } else {
                   $this->app->DB->Insert("INSERT INTO lager_reserviert
                       (id,adresse,artikel,menge,grund,projekt,firma,bearbeiter,datum,objekt,parameter,posid)
-                      VALUES('','$adresse','$artikel','$zu_reservieren','Reservierung f&uuml;r Auftrag $belegnr','$projekt',
+                      VALUES('','$adresse','$artikel','$zu_reservieren','Auftrag $belegnr','$projekt',
                         '".$this->app->User->GetFirma()."','".$this->app->User->GetName()."','9999-99-99','auftrag','$id','".$artikelarr[$k]['id']."')");
                 }
 

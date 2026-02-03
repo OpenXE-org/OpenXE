@@ -162,15 +162,25 @@ class KommissionierungPDF extends BriefpapierCustom {
 
     $orderpicking_sort = $this->app->erp->Projektdaten($this->projekt, 'orderpicking_sort');
 
+    $lager_platz_anz = $this->app->DB->Select("SELECT COUNT(DISTINCT ziel_lager_platz) FROM kommissionierung_position ksp WHERE ksp.kommissionierung = ".$id);
+
+    if ($lager_platz_anz > 1) {
+        $lagerplatztext = "CONCAT(lp.kurzbezeichnung,' | ',zlp.kurzbezeichnung)";
+    } else {
+        $lagerplatztext = "lp.kurzbezeichnung";
+    }
+
     $artikel = $this->app->DB->SelectArr(
         sprintf(
             "SELECT 
                 ks.id,
                 a.nummer as itemno,
-                lp.kurzbezeichnung as `desc`,
+                ".$lagerplatztext." as `desc`,
                 ".$this->app->erp->FormatMengeFuerFormular("ksp.menge")." as amount,
+                a.name_de AS name,
+                a.herstellernummer,
+                ksp.artikelnummerkunde,
                 a.gewicht,
-                a.herstellernummer as `name`,
                 '' as steuersatz_ermaessigt,
                 DATE_FORMAT(zeitstempel,'%%Y%%m%%d') as datum               
             FROM 
@@ -178,6 +188,7 @@ class KommissionierungPDF extends BriefpapierCustom {
             INNER JOIN kommissionierung_position ksp ON ks.id = ksp.kommissionierung
             INNER JOIN artikel a ON a.id = ksp.artikel
             INNER JOIN lager_platz lp ON lp.id = ksp.lager_platz
+            LEFT JOIN lager_platz zlp ON zlp.id = ksp.ziel_lager_platz
             WHERE ks.id = %d", 
             $id
         )
@@ -194,6 +205,10 @@ class KommissionierungPDF extends BriefpapierCustom {
     $this->setBarcode($id);
 
     $corrDetails = array();
+
+    if ($lager_platz_anz == 1) {
+        $corrDetails['Lagerplatz'] = $this->app->DB->Select("SELECT kurzbezeichnung FROM kommissionierung_position ksp INNER JOIN lager_platz lp ON lp.id = ksp.ziel_lager_platz WHERE ksp.kommissionierung = ".$id." LIMIT 1");
+    }
 
     if (!empty($data['auftragnummer'])) {
         $corrDetails['Auftrag'] = $data['auftragnummer'];

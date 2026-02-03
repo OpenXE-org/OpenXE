@@ -79,6 +79,14 @@ abstract class Versanddienstleister
 
     $ret['contactName'] = $docArr['ansprechpartner'];
 
+    // Force contact_name
+    if (empty($ret['contact_name'])) {
+        $ret['contact_name'] = $docArr['abteilung'];
+        if (empty($ret['contact_name'])) {
+            $ret['contact_name'] = $ret['company_name'];
+        }
+    }
+
     $ret['companyDivision'] = join(
         ';',
         array_filter(
@@ -89,7 +97,7 @@ abstract class Versanddienstleister
             fn(string $item) => !empty(trim($item)),
         ),
     );
-            
+
     $ret['name'] = $docArr['name'];
     $ret['address2'] = $docArr['adresszusatz'];
     $ret['city'] = $docArr['ort'];

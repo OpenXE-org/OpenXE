@@ -83,7 +83,7 @@ class Versandpakete {
                 // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('id','id','id','datum','name','lieferscheine','versandart','tracking','lmenge','vmenge','gewicht','versender','bemerkung','status','id','id');
-                $searchsql = array('name', 'if (lieferscheine IS NULL, lieferscheine_ohne_pos, lieferscheine)', 'tracking', 'bemerkung');
+                $searchsql = array('name', 'lieferscheine', 'tracking', 'bemerkung');
 
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
@@ -715,6 +715,27 @@ class Versandpakete {
                 }
 
             break;
+            case 'paketscheindrucken':
+
+                $sql = "SELECT DISTINCT lieferschein FROM (".self::SQL_VERSANDPAKETE_LIEFERSCHEIN.") tmp WHERE versandpaket = ".$id." LIMIT 1";
+                $lieferschein = $this->app->DB->SelectRow($sql);
+                $projekt = $this->app->DB->Select("SELECT projekt FROM lieferschein WHERE id = ".$lieferschein['lieferschein']);
+                $Brief = new VersandpaketscheinPDF(
+                    $this->app,
+                    $projekt,
+                    styleData: array('mit_gewicht' => true,'ohne_steuer' => true, 'artikeleinheit' => false, 'preise_ausblenden' => true)
+                );
+                $Brief->GetVersandpaketschein($id);
+                $tmpfile = $Brief->displayTMP();
+                $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');
+                $this->app->printer->Drucken($druckercode,$tmpfile);
+
+            break;
+            case 'paketscheinetikettendrucken':
+            {
+                $this->app->erp->VersandpaketscheinPositionenDrucken($id);
+            }
+            break;
         }
 
         // Load values again from database
@@ -856,6 +877,7 @@ class Versandpakete {
         $this->versandpakete_menu();
         $this->app->erp->MenuEintrag("index.php?module=versandpakete&action=edit&id=".$id, "Details");
         $this->app->Tpl->SetText('KURZUEBERSCHRIFT2', 'Artikel hinzuf&uuml;gen');
+
         if (empty($id)) {
 
             $lieferschein = $this->app->Secure->GetGET('lieferschein');
@@ -933,6 +955,7 @@ class Versandpakete {
 
     	$artikel_input = $this->app->Secure->GetPOST('artikel');
         $artikel = $this->app->erp->ReplaceArtikel(true, $artikel_input,true); // Parameters: Target db?, value, from form?
+        $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
     	$menge = $this->app->Secure->GetPOST('menge');
         $this->app->Tpl->Set('ID', $id);
         $submit = $this->app->Secure->GetPOST('submit');
@@ -944,106 +967,125 @@ class Versandpakete {
             return;
         }
 
+        $sql = "SELECT
+                    DISTINCT lp.kurzbezeichnung kurzbezeichnung
+                FROM
+                    lieferschein l
+                INNER JOIN auftrag a ON l.auftragid = a.id
+                INNER JOIN kommissionierung k ON k.auftrag = a.id
+                INNER JOIN kommissionierung_position ksp ON ksp.kommissionierung = k.id
+                INNER JOIN lager_platz lp ON lp.id = ksp.ziel_lager_platz
+                WHERE l.id = ".$lieferschein;
+
+        $kommissionierlagerplaetze = $this->app->DB->SelectArr($sql);
+
+        if (is_array($kommissionierlagerplaetze)) {
+            $kommissionierlagerplaetze = array_column($kommissionierlagerplaetze, 'kurzbezeichnung');
+        }
+
         switch ($submit) {
             case 'hinzufuegen':
 
-                if (empty($artikel_input)) {
-                    $gescannterartikel = $this->app->Secure->GetPOST('gescannterartikel');
-                    $artikel = $this->app->erp->ReplaceArtikel(true, $gescannterartikel,true); // Parameters: Target db?, value, from form?
-                }
+                if (empty($artikel) && empty($gescannterartikel) && !empty($kommissionierlagerplaetze)) { // Kommissionierlagerplatz?
+                    $sql = "SELECT id FROM lager_platz WHERE kurzbezeichnung IN ('".implode("', '",$kommissionierlagerplaetze)."') AND kurzbezeichnung = '".$artikel_input."'";
+                    $lager_platz = $this->app->DB->Select($sql);
+                    if (!empty($lager_platz)) {
+                        // Alles aus dem Lagerplatz gemäß Kommissionierung
+                        $sql = "SELECT
+                                    ksp.artikel,
+                                    TRIM(ksp.menge)+0 menge
+                                FROM kommissionierung_position ksp
+                                INNER JOIN kommissionierung k ON ksp.kommissionierung = k.id
+                                INNER JOIN auftrag a ON k.auftrag = a.id
+                                INNER JOIN lieferschein l ON l.auftragid = a.id
+                                WHERE ksp.ziel_lager_platz = ".$lager_platz." AND l.id = ".$lieferschein." AND ksp.in_paket_hinzugefuegt <> 1";
 
-                // Scan
-                if ($menge == '') {
-                    $gescannterartikel = $artikel_input;
-                    if (!empty($gescannterartikel)) {
-                        $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
-                        $menge_in_paketen = $this->app->DB->Select($sql)+0;
-                        $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
-                        $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
+                        $items = $this->app->DB->GetArray($sql);
 
-                        if ($menge_im_lieferschein-$menge_in_paketen > 1) { // Restmenge -> Weiterscannen
-                            $this->app->Tpl->Set('GESCANNTERARTIKELRESTMENGE', $menge_im_lieferschein-$menge_in_paketen);
-                            $gescannterartikel = strtok($gescannterartikel,' ');
-                            $gescanntemenge = 1;
-                            $this->app->Tpl->Set('MENGE', $gescanntemenge);
-                            $this->app->Tpl->Set('GESCANNTEMENGE', $gescanntemenge);
-                            $artikelinfo = $this->app->DB->SelectRow("SELECT name_de, standardbild FROM artikel WHERE id = '".$artikel."'");
-                            $gescannterartikelname = $artikelinfo['name_de'];
-                            $standardbild = $artikelinfo['standardbild'];
-                            if ($standardbild == '') {
-                                $standardbild = $this->app->DB->Select("SELECT datei FROM datei_stichwoerter WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='$artikel' LIMIT 1");
-                                if ($standardbild > 0) {
-                                    $this->app->Tpl->Add('ARTIKELBILD', "<tr valign=\"top\"><td>Bild:</td><td align=\"left\"><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
+                        if (empty($items)) {
+
+                            $sql = "SELECT
+                                    ksp.artikel,
+                                    TRIM(ksp.menge)+0 menge
+                                FROM kommissionierung_position ksp
+                                INNER JOIN kommissionierung k ON ksp.kommissionierung = k.id
+                                INNER JOIN auftrag a ON k.auftrag = a.id
+                                INNER JOIN lieferschein l ON l.auftragid = a.id
+                                WHERE ksp.ziel_lager_platz = ".$lager_platz." AND l.id = ".$lieferschein." AND ksp.in_paket_hinzugefuegt = 1";
+
+                                $items_old = $this->app->DB->GetArray($sql);
+
+                                if (!empty($items_old)) {
+                                    $this->app->Tpl->addMessage('error','Kommissionierlagerplatz wurde bereits erfasst!');
+                                } else {
+                                    $this->app->Tpl->addMessage('error','Keine Artikel f&uuml;r Kommissionierung im Lagerplatz gefunden!');
                                 }
-                            }
-                            $this->app->Tpl->Set('GESCANNTERARTIKEL', $gescannterartikel);
-                            $this->app->Tpl->Set('GESCANNTERARTIKELTEXT', $gescannterartikel." - ".$gescannterartikelname);
-                            $this->app->Tpl->Set('ZOOMSTYLE', "font-size: 200%;");
-                        } else {
-                            $menge = 1; // Buchen
+
                         }
-
+                        else {
+                            $sql = "UPDATE
+                                    kommissionierung_position ksp
+                                    INNER JOIN kommissionierung k ON ksp.kommissionierung = k.id
+                                    INNER JOIN auftrag a ON k.auftrag = a.id
+                                    INNER JOIN lieferschein l ON l.auftragid = a.id
+                                    SET ksp.in_paket_hinzugefuegt = 1
+                                    WHERE ksp.ziel_lager_platz = ".$lager_platz." AND l.id = ".$lieferschein." AND ksp.in_paket_hinzugefuegt <> 1
+                            ";
+                            $this->app->DB->Update($sql);
+                        }
                     }
-                } else if ($menge < 0) {
-                    $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
-                    break;
-                }
-
-                // Find a matching lieferschein_position
-                $sql = "SELECT
-                            lp.id AS lp_id,
-                            MAX(lp.menge) AS lp_menge,
-                            SUM(vlp.menge) AS v_menge
-                        FROM lieferschein_position lp
-                        INNER JOIN artikel a ON lp.artikel = a.id
-                        LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
-                        WHERE lp.lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel." AND a.lagerartikel
-                        GROUP BY lp.id
-                        ";
-
-                $lieferschein_positionen = $this->app->DB->SelectArr($sql);
-                if (empty($lieferschein_positionen)) {
-                    $msg .= "<div class=\"error\">Keine passende Lieferscheinposition gefunden.</div>";
-                    break;
-                }
-
-                $buchmenge_gesamt = 0;
-                $buchmenge = 0;
-
-                foreach($lieferschein_positionen as $lieferschein_position) {
-                    $restmenge = $lieferschein_position['lp_menge']-$lieferschein_position['v_menge'];
-                    if ($restmenge <= 0 || $menge <= 0) {
-                        continue;
+                    else { // Nichts gefunden
+                            $this->app->Tpl->addMessage('error','Artikel nicht in Lieferschein gefunden!');
                     }
-                    if ($menge > $restmenge) {
-                        $buchmenge = $restmenge;
-                    } else {
-                        $buchmenge = $menge;
+                } else { // Einzelartikel
+                    if (empty($artikel_input)) {
+                        $artikel = $this->app->erp->ReplaceArtikel(true, $gescannterartikel,true); // Parameters: Target db?, value, from form?                          
                     }
-                    $buchmenge_gesamt += $buchmenge;
-                    $menge -= $buchmenge;
+                    // Scan
+                    if ($menge == '') {
+                        $gescannterartikel = $artikel_input;
+                        if (!empty($gescannterartikel)) {
+                            $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                            $menge_in_paketen = $this->app->DB->Select($sql)+0;
+                            $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                            $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
 
-                    $sql = "INSERT INTO versandpaket_lieferschein_position (versandpaket, lieferschein_position, menge) VALUES (".$id.",".$lieferschein_position['lp_id'].",".$buchmenge.") ON DUPLICATE KEY UPDATE menge = menge+".$buchmenge."";
-                    $this->app->DB->Insert($sql);
+                            if ($menge_im_lieferschein-$menge_in_paketen > 1) { // Restmenge -> Weiterscannen
+                                $this->app->Tpl->Set('GESCANNTERARTIKELRESTMENGE', $menge_im_lieferschein-$menge_in_paketen);
+                                $gescannterartikel = strtok($gescannterartikel,' ');
+                                $gescanntemenge = 1;
+                                $this->app->Tpl->Set('MENGE', $gescanntemenge);
+                                $this->app->Tpl->Set('GESCANNTEMENGE', $gescanntemenge);
+                                $artikelinfo = $this->app->DB->SelectRow("SELECT name_de, standardbild FROM artikel WHERE id = '".$artikel."'");
+                                $gescannterartikelname = $artikelinfo['name_de'];
+                                $standardbild = $artikelinfo['standardbild'];
+                                if ($standardbild == '') {
+                                    $standardbild = $this->app->DB->Select("SELECT datei FROM datei_stichwoerter WHERE subjekt='Shopbild' AND objekt='Artikel' AND parameter='$artikel' LIMIT 1");
+                                    if ($standardbild > 0) {
+                                        $this->app->Tpl->Add('ARTIKELBILD', "<tr valign=\"top\"><td>Bild:</td><td align=\"left\"><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");
+                                    }
+                                }
+                                $this->app->Tpl->Set('GESCANNTERARTIKEL', $gescannterartikel);
+                                $this->app->Tpl->Set('GESCANNTERARTIKELTEXT', $gescannterartikel." - ".$gescannterartikelname);
+                                $this->app->Tpl->Set('ZOOMSTYLE', "font-size: 200%;");
+                            } else {
+                                $menge = 1; // Buchen
+                            }
 
-                    if ($menge <= 0) {
+                        }
+                    } else if ($menge < 0) {
+                        $msg .= "<div class=\"error\">Falsche Mengenangabe.</div>";
                         break;
                     }
-
+                    $items = array(array('artikel' => $artikel, 'menge' => $menge));
                 }
 
-                if ($menge > 0) {
-                    $msg .= "<div class=\"error\">Menge wurde angepasst auf ".$buchmenge_gesamt.".</div>";
+                if (!empty($items)) {
+                    $result = $this->versandpakete_add_items(versandpaket: $id, items: $items, lieferschein: $lieferschein);
+                    foreach ($result['messages'] as $message) {
+                        $msg .= $message;
+                    }
                 }
-                if ($buchmenge > 0) {
-                    $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
-                    $menge_in_paketen = $this->app->DB->Select($sql)+0;
-                    $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
-                    $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
-                    $menge_offen = $menge_im_lieferschein-$menge_in_paketen;
-                    $msg .= "<div class=\"info\">Artikel $artikel_input wurde ".$buchmenge." mal hinzugef&uuml;gt.<br>Menge in Paketen: ".$menge_in_paketen."<br>Menge offen: ".$menge_offen."</div>";
-                }
-
 
             break;
             case 'lieferschein_komplett_hinzufuegen':
@@ -1101,12 +1143,20 @@ class Versandpakete {
             $this->app->Tpl->addMessage('info', 'Lieferung unvollst&auml;ndig.', false, 'MESSAGE');
         }
 
+        if (!empty($kommissionierlagerplaetze)) {            
+            $this->app->Tpl->Set('KOMMISSIONIERUNGINFO', implode(', ', $kommissionierlagerplaetze));
+            $this->app->Tpl->Set('SCANFELD', 'Artikel oder Lagerplatz');
+        } else {
+            $this->app->Tpl->Set('KOMMISSIONIERUNGINFOHIDDEN', 'hidden');
+            $this->app->Tpl->Set('SCANFELD', 'Artikel');
+        }
+
         $this->app->YUI->TableSearch('LIEFERSCHEININHALT', 'versandpakete_lieferschein_paket_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->YUI->TableSearch('PAKETINHALT', 'versandpakete_paketinhalt_list', "show", "", "", basename(__FILE__), __CLASS__);
 
         $gewicht = $this->versandpakete_gewicht($id);
         $pakete_gewicht = $this->versandpakete_lieferung_gewicht($lieferschein);
-        $lieferschein_gewicht = $this->app->erp->LieferscheinNettoGewicht($id);
+        $lieferschein_gewicht = $this->app->erp->LieferscheinNettoGewicht($lieferschein);
 
         $this->app->Tpl->Set('DIESESPAKETGEWICHT', $gewicht);
         $this->app->Tpl->Set('PAKETEGEWICHT', $pakete_gewicht);
@@ -1372,7 +1422,7 @@ class Versandpakete {
     function versandpakete_gewicht($id) {
         $sql = "
             SELECT
-                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+                TRIM(ROUND(SUM(COALESCE(a.gewicht,0)*vlp.menge),3))+0
             FROM
                 artikel a
             INNER JOIN lieferschein_position lp ON
@@ -1390,7 +1440,7 @@ class Versandpakete {
     function versandpakete_lieferung_gewicht($lieferschein_id) {
         $sql = "
             SELECT
-                SUM(COALESCE(a.gewicht,0)*vlp.menge)
+                TRIM(ROUND(SUM(COALESCE(a.gewicht,0)*vlp.menge),3))+0
             FROM
                 artikel a
             INNER JOIN lieferschein_position lp ON
@@ -1405,4 +1455,77 @@ class Versandpakete {
         return($gewicht);
     }
 
+    // $items array(array('artikel','menge'))
+    // return array(bool 'result', array 'messages')
+
+    function versandpakete_add_items(int $versandpaket,  array $items, int $lieferschein) : array {
+
+        $messages = array();
+        $result = true;
+
+        foreach ($items as $item) {
+
+            $artikel = $item['artikel'];
+            $menge = $item['menge'];
+            $buchmenge_gesamt = 0;
+            $buchmenge = 0;
+
+            // Find a matching lieferschein_position
+            $sql = "SELECT
+                        a.nummer,
+                        lp.id AS lp_id,
+                        MAX(lp.menge) AS lp_menge,
+                        SUM(vlp.menge) AS v_menge
+                    FROM lieferschein_position lp
+                    INNER JOIN artikel a ON lp.artikel = a.id
+                    LEFT JOIN versandpaket_lieferschein_position vlp ON vlp.lieferschein_position = lp.id
+                    WHERE lp.lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel." AND a.lagerartikel
+                    GROUP BY lp.id
+                    ";
+
+            $lieferschein_positionen = $this->app->DB->SelectArr($sql);
+            if (empty($lieferschein_positionen)) {
+                $messages[] = "<div class=\"error\">Keine passende Lieferscheinposition gefunden.</div>";
+                $result = false;
+                break;
+            }
+
+            foreach($lieferschein_positionen as $lieferschein_position) {
+                $restmenge = $lieferschein_position['lp_menge']-$lieferschein_position['v_menge'];
+                if ($restmenge <= 0 || $menge <= 0) {
+                    continue;
+                }
+                if ($menge > $restmenge) {
+                    $buchmenge = $restmenge;
+                } else {
+                    $buchmenge = $menge;
+                }
+                $buchmenge_gesamt += $buchmenge;
+                $menge -= $buchmenge;
+
+                $sql = "INSERT INTO versandpaket_lieferschein_position (versandpaket, lieferschein_position, menge) VALUES (".$versandpaket.",".$lieferschein_position['lp_id'].",".$buchmenge.") ON DUPLICATE KEY UPDATE menge = menge+".$buchmenge."";
+                $this->app->DB->Insert($sql);
+
+                if ($menge <= 0) {
+                    break;
+                }
+            }
+
+            if ($menge > 0) {
+                $messages[] = "<div class=\"error\">Menge wurde angepasst auf ".$buchmenge_gesamt.".</div>";
+                $result = false;
+            }
+            if ($buchmenge > 0) {
+                $sql = "SELECT SUM(vlp.menge) FROM versandpaket_lieferschein_position vlp INNER JOIN lieferschein_position lp ON lp.id = vlp.lieferschein_position WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                $menge_in_paketen = $this->app->DB->Select($sql)+0;
+                $sql = "SELECT SUM(lp.menge) FROM lieferschein_position lp WHERE lieferschein = ".$lieferschein." AND lp.artikel = ".$artikel."";
+                $menge_im_lieferschein = $this->app->DB->Select($sql)+0;
+                $menge_offen = $menge_im_lieferschein-$menge_in_paketen;
+                $messages[] = "<div class=\"info\">Artikel ".$lieferschein_position['nummer']." wurde ".$buchmenge." mal hinzugef&uuml;gt.<br>Menge in Paketen: ".$menge_in_paketen."<br>Menge offen: ".$menge_offen."</div>";
+            }
+        }
+
+        return(array('result' => $result, 'messages' => $messages));
+
+    }
 }

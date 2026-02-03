@@ -125,7 +125,7 @@ class Etiketten extends GenEtiketten {
    * @param int    $etiketten_sort
    */
   public function LieferscheinPositionenDrucken($lieferschein,$etiketten_drucker,$etiketten_art,$etiketten_sort=0)
-  {
+  {  
     /*
        Barcode, Artikelname,
        Lagerplatznummer,
@@ -146,7 +146,8 @@ class Etiketten extends GenEtiketten {
           INNER JOIN lieferschein AS l ON lp.lieferschein = l.id
           LEFT JOIN auftrag a ON l.auftragid = a.id
           LEFT JOIN artikel AS art ON lp.artikel = art.id          
-          WHERE lp.lieferschein= %d ORDER BY %s',
+          WHERE lp.lieferschein= %d AND art.porto <> 1
+          ORDER BY %s',
         (int)$lieferschein, $etiketten_sort == 1?'lp.lagertext':'lp.sort'
       )
     );
@@ -219,5 +220,75 @@ class Etiketten extends GenEtiketten {
     $this->app->erp->EtikettenDrucker($etiketten_art,1,'lieferschein', $lieferschein,$tmp,'',$etiketten_drucker,'',false,$adresse,'lieferschein_position');
 */
   }
+
+  public function VersandpaketscheinPositionenDrucken($versandpaketschein) {
+  
+    $sql = "
+         SELECT
+            art.*,
+            lp.id,
+            lp.bezeichnung bezeichnung,
+            lp.nummer AS lpnummer,
+            TRIM(vlp.menge)+0 AS menge,
+            lp.artikelnummerkunde,
+            a.belegnr AS auftragnummer,
+            a.internet,
+            a.ihrebestellnummer,
+            l.adresse,
+            l.projekt,
+            lp.lieferschein
+        FROM
+            versandpakete vp
+        INNER JOIN
+            versandpaket_lieferschein_position vlp ON vlp.versandpaket = vp.id
+        INNER JOIN
+            lieferschein_position lp ON vlp.lieferschein_position = lp.id
+        INNER JOIN
+            lieferschein l ON lp.lieferschein = l.id
+        INNER JOIN
+            artikel art ON lp.artikel = art.id
+        LEFT JOIN
+            auftrag a ON l.auftragid = a.id
+        WHERE art.porto <> 1 AND vp.id = ".$versandpaketschein;
+
+    $artikel = $this->app->DB->SelectArr($sql);
+
+    foreach ($artikel as $row) {
+        $adresse = $row['adresse'];
+        $projekt = $row['projekt'];
+
+        $projektarr = null;
+        if($projekt > 0){
+            $projektarr = $this->app->DB->SelectRow("SELECT * FROM projekt WHERE id='$projekt' LIMIT 1");
+        }
+        $etiketten_art = $projektarr['etiketten_art'];
+        $etiketten_drucker = $projektarr['etiketten_drucker'];
+        $etikett_adresse = $this->app->DB->SelectRow("SELECT lieferscheinpositionetikettdruck, lieferscheinpositionetikett FROM adresse WHERE id ='".$adresse."' LIMIT 1");
+        if ($etikett_adresse['lieferscheinpositionetikettdruck']) {
+            $etiketten_art = $etikett_adresse['lieferscheinpositionetikett'];
+        }
+        $tmp['name_de'] = $row['bezeichnung'];
+        $tmp['nummer'] = $row['nummer'];
+        unset($tmp['bezeichnung']);
+        $tmp['menge'] = str_replace('.', ',', $row['menge']);
+        $tmp['lager_platz_name'] = $lagerbezeichnung;
+        $tmp['auftragnummer'] = $row['auftragnummer'];
+        $tmp['internet'] = $row['internet'];
+        $tmp['kundenbestellnummer'] = $row['ihrebestellnummer'];
+        $tmp['artikelnummerkunde'] = $row['artikelnummerkunde'];
+        $tmp['ean'] = $row['ean'];
+
+        $this->app->erp->EtikettenDrucker(
+            kennung: $etiketten_art,
+            anzahl: 1,
+            tabelle: 'lieferschein',
+            id: $row['lieferschein'],
+            variables: $tmp,
+            druckercode: $etiketten_drucker,
+            adresse: $adresse,
+            verwendenals: 'lieferschein_position'
+        );
+    }
+  } 
 }
 

@@ -38,6 +38,7 @@ class WidgetProjekt extends WidgetGenProjekt
     $this->app->YUI->AutoComplete("kasse_laufkundschaft","kunde");
     $this->app->YUI->AutoComplete("standardlager","lager");
     $this->app->YUI->AutoComplete("standardlagerproduktion","lager");
+    $this->app->YUI->AutoComplete("standardkommissionierlagerplatz","kommissionierlagerplatz");
     $this->app->YUI->AutoComplete('steuersatz_normal','steuersatz',1);
     $this->app->YUI->AutoComplete('steuersatz_ermaessigt','steuersatz',1);
     if(!$this->app->erp->ModulVorhanden('produktion'))
@@ -93,6 +94,7 @@ class WidgetProjekt extends WidgetGenProjekt
     $this->form->ReplaceFunction("kasse_lager",$this,"ReplaceLager");
     $this->form->ReplaceFunction("kasse_laufkundschaft",$this,"ReplaceKunde");
     $this->form->ReplaceFunction("standardlager",$this,"ReplaceLager");
+    $this->form->ReplaceFunction("standardkommissionierlagerplatz",$this,"ReplaceLagerPlatz");
     $this->form->ReplaceFunction("standardlagerproduktion",$this,"ReplaceLager");
 
 
@@ -289,6 +291,8 @@ class WidgetProjekt extends WidgetGenProjekt
 
     //    $this->form->ReplaceFunction("adresse",$this,"ReplaceMitarbeiter");
 
+    
+
   }
 
   function ExtendsOutput()
@@ -358,28 +362,14 @@ class WidgetProjekt extends WidgetGenProjekt
     return $this->app->erp->ReplaceKasse($db,$value,$fromform);
   }
 
-
   function ReplaceLager($db,$value,$fromform)
   { 
-    //value muss hier vom format ueberprueft werden
-    if(!$fromform) {
-      $id = $value;
-      if(is_numeric($id)){
-        $abkuerzung = $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id='$id' LIMIT 1");
-      }
-    } else {
-      $abkuerzung = $value;
-      $id =  $this->app->DB->Select("SELECT id FROM lager WHERE bezeichnung='$value' AND IFNULL(bezeichnung,'') <> '' LIMIT 1");
-    }
+    return $this->app->erp->ReplaceLager($db,$value,$fromform);
+  }
 
-    // wenn ziel datenbank
-    if($db)
-    {
-      return $id;
-    }
-    // wenn ziel formular
-
-    return $abkuerzung;
+  function ReplaceLagerPlatz($db,$value,$fromform)
+  { 
+    return $this->app->erp->ReplaceLagerPlatz($db,$value,$fromform);
   }
 
   function ReplaceDecimal($db,$value,$fromform)
