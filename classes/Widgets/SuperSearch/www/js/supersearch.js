@@ -223,14 +223,23 @@ var SuperSearch = (function ($) {
                 return;
             }
 
-            // Anzeigen wann der Such-Index das letzte Mal aktualisiert wurde
-            if (rawResult.data.hasOwnProperty('last_index_update_formatted')) {
-                if (rawResult.data.last_index_update_formatted !== null) {
-                    var lastIndexUpdate = rawResult.data.last_index_update_formatted;
-                    me.storage.$lastUpdate.text('Such-Index vom ' + lastIndexUpdate).show();
-                } else {
-                    me.storage.$lastUpdate.text('').hide();
-                }
+            var fuzzyMode = rawResult.data.hasOwnProperty('fuzzy') && rawResult.data.fuzzy === true;
+            var metaInfo = [];
+
+            if (fuzzyMode) {
+                metaInfo.push('Fuzzy search aktiv');
+            }
+
+            if (rawResult.data.hasOwnProperty('last_index_update_formatted') &&
+                rawResult.data.last_index_update_formatted !== null) {
+                var lastIndexUpdate = rawResult.data.last_index_update_formatted;
+                metaInfo.push('Such-Index vom ' + lastIndexUpdate);
+            }
+
+            if (metaInfo.length > 0) {
+                me.storage.$lastUpdate.text(metaInfo.join(' | ')).show();
+            } else {
+                me.storage.$lastUpdate.text('').hide();
             }
 
             var resultCount = rawResult.data.count;

@@ -2505,7 +2505,13 @@ class Lager extends GenLager {
     $menge = str_replace(',','.',$this->app->Secure->GetPOST('menge'));
     $submit = $this->app->Secure->GetPOST('submit');
     $artikelid = $this->app->Secure->GetGET('artikelid');
-    $regal = $this->app->Secure->GetPOST('regal');
+    $back = $this->app->Secure->GetGET('back');
+    $this->app->Tpl->SET('BACK', $back);
+    if (!empty($this->app->Secure->GetGET('lagerplatzinhalt'))) {
+        $regal = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz lp INNER JOIN lager_platz_inhalt lpi ON lp.id = lpi.lager_platz WHERE lpi.id='".$this->app->Secure->GetGET('lagerplatzinhalt')."' AND kurzbezeichnung!='' LIMIT 1");
+    } else {
+         $regal = $this->app->Secure->GetPOST('regal');
+    }
     $regalneu = $this->app->Secure->GetPOST("regalneu");
     $comment = $this->app->Secure->GetGET('comment');
     $amount = $this->app->Secure->GetGET('amount');
@@ -3113,10 +3119,13 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
               $this->app->Location->execute('index.php?module=artikel&action=lager&id='.$artikelid.'&msg='.$msg);
             }
             if($cmd==='umlagern'){
-              $regalname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regal);
-              $regalneuname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regalneu);
-              $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Umlagern erfolgreich.<br>Artikel: <b>$name</b><br>Menge: <b>$menge</b><br>Von: <b>$regalname</b><br>Nach: <b>$regalneuname</b><br>Bestand '$regalneuname': <b>".floatval($gesamt)." $einheit</b><br>Bestand gesamt: <b>".floatval($gesamt_alle)." $einheit</b></div>");
-              $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&cmd=umlagern&msg='.$msg);
+                $regalname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regal);
+                $regalneuname = $this->app->DB->Select("SELECT kurzbezeichnung from lager_platz WHERE id =".$regalneu);
+                $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Umlagern erfolgreich.<br>Artikel: <b>$name</b><br>Menge: <b>$menge</b><br>Von: <b>$regalname</b><br>Nach: <b>$regalneuname</b><br>Bestand '$regalneuname': <b>".floatval($gesamt)." $einheit</b><br>Bestand gesamt: <b>".floatval($gesamt_alle)." $einheit</b></div>");
+                if ($this->app->Secure->GetPOST('redirect')=='artikel') {
+                    $this->app->Location->execute('index.php?module=artikel&action=lager&id='.$artikel.'&msg='.$msg);
+                }
+                $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&cmd=umlagern&msg='.$msg);
             }
             $this->app->Location->execute('index.php?module=lager&action=buchenauslagern&msg='.$msg);
           } // ende allow

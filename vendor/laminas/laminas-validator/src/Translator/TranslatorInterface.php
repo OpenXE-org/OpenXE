@@ -1,13 +1,11 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\Translator;
 
+/**
+ * @deprecated Since 2.61.0 All custom translation classes will be removed in v3.0 and validators will only accept
+ *             and use an instance of \Laminas\Translator\TranslatorInterface
+ */
 interface TranslatorInterface
 {
     /**

@@ -1,27 +1,34 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\File;
+
+use Psr\Http\Message\UploadedFileInterface;
+
+use function array_merge;
+use function class_exists;
+use function explode;
+use function finfo_file;
+use function finfo_open;
+use function in_array;
+use function is_readable;
+use function is_string;
+
+use const FILEINFO_MIME_TYPE;
 
 /**
  * Validator for the mime type of a file
+ *
+ * @final
  */
 class ExcludeMimeType extends MimeType
 {
     use FileInformationTrait;
 
-    const FALSE_TYPE   = 'fileExcludeMimeTypeFalse';
-    const NOT_DETECTED = 'fileExcludeMimeTypeNotDetected';
-    const NOT_READABLE = 'fileExcludeMimeTypeNotReadable';
+    public const FALSE_TYPE   = 'fileExcludeMimeTypeFalse';
+    public const NOT_DETECTED = 'fileExcludeMimeTypeNotDetected';
+    public const NOT_READABLE = 'fileExcludeMimeTypeNotReadable';
 
-    /**
-     * @var array Error message templates
-     */
+    /** @inheritDoc */
     protected $messageTemplates = [
         self::FALSE_TYPE   => "File has an incorrect mimetype of '%type%'",
         self::NOT_DETECTED => 'The mimetype could not be detected from the file',
@@ -33,8 +40,8 @@ class ExcludeMimeType extends MimeType
      * of mimetypes can be checked. If you give for example "image" all image
      * mime types will not be accepted like "image/gif", "image/jpeg" and so on.
      *
-     * @param  string|array $value Real file to check for mimetype
-     * @param  array        $file  File data from \Laminas\File\Transfer\Transfer (optional)
+     * @param  string|array|UploadedFileInterface $value Real file to check for mimetype
+     * @param  array                              $file  File data from \Laminas\File\Transfer\Transfer (optional)
      * @return bool
      */
     public function isValid($value, $file = null)
@@ -51,7 +58,7 @@ class ExcludeMimeType extends MimeType
 
         $mimefile = $this->getMagicFile();
         if (class_exists('finfo', false)) {
-            if (! $this->isMagicFileDisabled() && (! empty($mimefile) && empty($this->finfo))) {
+            if (! $this->isMagicFileDisabled() && (is_string($mimefile) && empty($this->finfo))) {
                 $this->finfo = finfo_open(FILEINFO_MIME_TYPE, $mimefile);
             }
 
@@ -65,11 +72,11 @@ class ExcludeMimeType extends MimeType
             }
         }
 
-        if (empty($this->type) && $this->getHeaderCheck()) {
+        if (! is_string($this->type) && $this->getHeaderCheck()) {
             $this->type = $fileInfo['filetype'];
         }
 
-        if (empty($this->type)) {
+        if (! is_string($this->type)) {
             $this->error(self::NOT_DETECTED);
             return false;
         }

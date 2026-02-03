@@ -576,7 +576,7 @@ class Lieferschein extends GenLieferschein
 
     $gewicht = $this->app->erp->VersandartMindestgewicht($id, 'lieferschein');
 
-    $versandmodul->Paketmarke('TAB1', docType: 'lieferschein', docId: $id, gewicht: $gewicht);
+    $versandmodul->Paketmarke('TAB1', $id, gewicht: $gewicht);
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
   }
   

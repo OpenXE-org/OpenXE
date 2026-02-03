@@ -5365,9 +5365,8 @@ class Artikel extends GenArtikel {
         $submenu .= "<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel in dieses Regal legen:',1); var grund =  prompt('Einlagerungsgrund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=artikel&action=einlagern&id=$id&lid=%value%&menge='+menge+'&grund='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/einlagern.png\" border=\"0\"></a>";
       }
 
-
       if($this->app->erp->RechteVorhanden('artikel','umlagern')){
-        $submenu .="<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel in dieses Regal umlagern:',%field1%); var grund =  prompt('Grund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=artikel&action=umlagern&id=$id&lid=%value%&menge='+menge+'&grund='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/forward.svg\" border=\"0\"></a>";
+        $submenu .="<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel die aus diesem Regal umgelagert werden sollen:',%field1%); var grund =  prompt('Grund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=lager&action=buchenauslagern&cmd=umlagern&back=artikel&artikelid=$id&back=artikel&lagerplatzinhalt=%value%&menge='+menge+'&comment='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/forward.svg\" border=\"0\"></a>";
       }
 
       if($this->app->erp->RechteVorhanden('artikel','auslagern') || $this->app->erp->RechteVorhanden('artikel','einlagern') 
@@ -7712,9 +7711,16 @@ class Artikel extends GenArtikel {
     $mhd = $this->app->Secure->GetPOST('mhd');
     $charge = $this->app->Secure->GetPOST('charge');
     $speichern = $this->app->Secure->GetPOST('speichern');
+    $etikettendrucken = $this->app->Secure->GetPOST('etikettendrucken');
     $seriennummer = $this->app->Secure->GetPOST('seriennummer');
     $etikettenauswahl = $this->app->Secure->GetPOST('etikettenauswahl');
     $etikettendrucker = $this->app->Secure->GetPOST('etikettendrucker');
+    $etikettenartikel = $this->app->Secure->GetPOST('etikettenartikel');
+    $etikettenartikel = $this->app->erp->ReplaceArtikel(true, $etikettenartikel, true);
+    if (empty($etikettenartikel)) {
+        $etikettenartikel = $id;
+    }
+
     $this->ArtikelMenu();
 
     if($speichern!='')
@@ -7757,10 +7763,10 @@ class Artikel extends GenArtikel {
 
     $drucker = $this->app->erp->GetSelectEtikettenDrucker($etikettendrucker); 
 
-    $this->app->Tpl->Set('FORMULAR',"<form action=\"\" method=\"post\"><table class=\"mkTableFormular\">
-      <tr><td>Menge:</td><td><input type=\"text\" name=\"menge\" value=\"1\">&nbsp;<input type=\"submit\" value=\"Drucken\" class=\"btnBlue\"></td></tr>
-      <tr><td>Etikett:</td><td><select name=\"etikettenauswahl\">".$etiketten."</select></td></tr>
-      <tr><td>Drucker:</td><td><select name=\"etikettendrucker\">".$drucker."</select></td></tr>");
+    $this->app->Tpl->Set('ETIKETTENOPTION',$etiketten);
+    $this->app->Tpl->Set('DRUCKEROPTION',$drucker);
+    $this->app->YUI->AutoComplete('etikettenartikel', 'artikelnummer');
+
     $mhdartikel = $this->app->DB->Select("SELECT mindesthaltbarkeitsdatum FROM artikel WHERE id = '$id' LIMIT 1");
     if($mhdartikel)
     {
@@ -7781,7 +7787,6 @@ class Artikel extends GenArtikel {
       $this->app->Tpl->Add('FORMULAR',"<tr><td>Seriennummer:</td><td><input type=\"text\" id=\"seriennummer\" name=\"seriennummer\" value=\"\" size=\"40\"></td></tr>");
       $this->app->YUI->AutoComplete('seriennummer', 'lagerseriennummern',0,"&artikel=$id");
     }    
-    $this->app->Tpl->Add('FORMULAR',"</table></form><br><br>");
 
     $standardbild = $this->app->erp->GetEtikettenbild($id,true);
 
@@ -7802,7 +7807,7 @@ class Artikel extends GenArtikel {
     }    
 
 
-    if($menge!='')
+    if($menge!='' && ($etikettendrucken == 'Drucken' || $external == '1'))
     {
       //$nummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='$id' LIMIT 1");
       //$projekt = $this->app->DB->Select("SELECT projekt FROM artikel WHERE id='$id' LIMIT 1");
@@ -7825,7 +7830,7 @@ class Artikel extends GenArtikel {
       if($seriennummer){
         $variablen['seriennummer'] = $seriennummer;
       }
-      $this->app->erp->EtikettenDrucker($etikettenauswahl,$menge,'artikel',$id,$variablen,'',$etikettendrucker);
+      $this->app->erp->EtikettenDrucker($etikettenauswahl,$menge,'artikel',$etikettenartikel,$variablen,'',$etikettendrucker);
     }
 
     if($external=='1')
@@ -7939,9 +7944,9 @@ class Artikel extends GenArtikel {
     }
     $this->app->Tpl->Set("ARTICLELABELPRINTER", $articleLabelPrinterSelection);
 
+    $this->app->Tpl->Set("ETIKETTENMENGE", $menge);
+
     $this->app->YUI->TableSearch('TAB1','artikel_etiketten', "show","","",basename(__FILE__), __CLASS__);
-
-
     $this->app->Tpl->Parse('PAGE','artikel_etiketten.tpl');
   }
 

@@ -5,6 +5,7 @@
 import {globSync} from 'glob';
 import * as path from 'path';
 import vue from '@vitejs/plugin-vue';
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 
 const globpattern = [
     'classes/Modules/*/www/js/?(*.)entry.{js,ts}',
@@ -27,6 +28,7 @@ const inputs = globSync(globpattern)
 
 /** @type {import('vite').UserConfig} */
 export default {
+    base: './',
     build: {
         rollupOptions: {
             input: {
@@ -50,7 +52,12 @@ export default {
         manifest: true,
         outDir: 'www/dist',
     },
-    plugins: [vue()],
+    plugins: [
+        vue(),
+        VueI18nPlugin({
+            include: [path.resolve(__dirname, './resources/locales/**')],
+        }),
+    ],
     mode: 'development',
     resolve: {
         alias: {

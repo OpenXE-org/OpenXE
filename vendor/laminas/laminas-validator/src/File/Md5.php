@@ -1,15 +1,18 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator\File;
+
+use function array_keys;
+use function array_unique;
+use function hash_file;
+use function is_readable;
 
 /**
  * Validator for the md5 hash of given files
+ *
+ * @deprecated Since 2.61.0 Use the {@link Hash} validator and specify `md5` as the algorithm
+ *
+ * @final
  */
 class Md5 extends Hash
 {
@@ -18,13 +21,11 @@ class Md5 extends Hash
     /**
      * @const string Error constants
      */
-    const DOES_NOT_MATCH = 'fileMd5DoesNotMatch';
-    const NOT_DETECTED   = 'fileMd5NotDetected';
-    const NOT_FOUND      = 'fileMd5NotFound';
+    public const DOES_NOT_MATCH = 'fileMd5DoesNotMatch';
+    public const NOT_DETECTED   = 'fileMd5NotDetected';
+    public const NOT_FOUND      = 'fileMd5NotFound';
 
-    /**
-     * @var array Error message templates
-     */
+    /** @var array Error message templates */
     protected $messageTemplates = [
         self::DOES_NOT_MATCH => 'File does not match the given md5 hashes',
         self::NOT_DETECTED   => 'An md5 hash could not be evaluated for the given file',
@@ -44,6 +45,8 @@ class Md5 extends Hash
     /**
      * Returns all set md5 hashes
      *
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getMd5()
@@ -54,7 +57,9 @@ class Md5 extends Hash
     /**
      * Sets the md5 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string|array $options
      * @return Hash Provides a fluent interface
      */
     public function setMd5($options)
@@ -66,7 +71,9 @@ class Md5 extends Hash
     /**
      * Adds the md5 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @deprecated Since 2.61.0 - All getters and setters will be removed in 3.0
+     *
+     * @param string|array $options
      * @return Hash Provides a fluent interface
      */
     public function addMd5($options)

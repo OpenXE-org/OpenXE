@@ -1,31 +1,49 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-validator for the canonical source repository
- * @copyright https://github.com/laminas/laminas-validator/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-validator/blob/master/LICENSE.md New BSD License
- */
-
 namespace Laminas\Validator;
 
+use Traversable;
 use UConverter;
 
+use function array_combine;
+use function array_flip;
+use function array_keys;
+use function array_shift;
+use function arsort;
+use function checkdnsrr;
+use function defined;
+use function extension_loaded;
+use function func_get_args;
+use function function_exists;
+use function gethostbynamel;
+use function getmxrr;
+use function idn_to_ascii;
+use function idn_to_utf8;
+use function is_array;
+use function is_string;
+use function preg_match;
+use function str_contains;
+use function strlen;
+use function trim;
+
+use const INTL_IDNA_VARIANT_UTS46;
+
+/** @final */
 class EmailAddress extends AbstractValidator
 {
-    const INVALID            = 'emailAddressInvalid';
-    const INVALID_FORMAT     = 'emailAddressInvalidFormat';
-    const INVALID_HOSTNAME   = 'emailAddressInvalidHostname';
-    const INVALID_MX_RECORD  = 'emailAddressInvalidMxRecord';
-    const INVALID_SEGMENT    = 'emailAddressInvalidSegment';
-    const DOT_ATOM           = 'emailAddressDotAtom';
-    const QUOTED_STRING      = 'emailAddressQuotedString';
-    const INVALID_LOCAL_PART = 'emailAddressInvalidLocalPart';
-    const LENGTH_EXCEEDED    = 'emailAddressLengthExceeded';
+    public const INVALID            = 'emailAddressInvalid';
+    public const INVALID_FORMAT     = 'emailAddressInvalidFormat';
+    public const INVALID_HOSTNAME   = 'emailAddressInvalidHostname';
+    public const INVALID_MX_RECORD  = 'emailAddressInvalidMxRecord';
+    public const INVALID_SEGMENT    = 'emailAddressInvalidSegment';
+    public const DOT_ATOM           = 'emailAddressDotAtom';
+    public const QUOTED_STRING      = 'emailAddressQuotedString';
+    public const INVALID_LOCAL_PART = 'emailAddressInvalidLocalPart';
+    public const LENGTH_EXCEEDED    = 'emailAddressLengthExceeded';
 
-    // @codingStandardsIgnoreStart
-    /**
-     * @var array
-     */
+    // phpcs:disable Generic.Files.LineLength.TooLong
+
+    /** @var array<string, string> */
     protected $messageTemplates = [
         self::INVALID            => "Invalid type given. String expected",
         self::INVALID_FORMAT     => "The input is not a valid email address. Use the basic format local-part@hostname",
@@ -37,24 +55,19 @@ class EmailAddress extends AbstractValidator
         self::INVALID_LOCAL_PART => "'%localPart%' is not a valid local part for the email address",
         self::LENGTH_EXCEEDED    => "The input exceeds the allowed length",
     ];
-    // @codingStandardsIgnoreEnd
 
-    /**
-     * @var array
-     */
+    // phpcs:enable
+
+    /** @var array */
     protected $messageVariables = [
         'hostname'  => 'hostname',
         'localPart' => 'localPart',
     ];
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $hostname;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $localPart;
 
     /**
@@ -66,6 +79,8 @@ class EmailAddress extends AbstractValidator
 
     /**
      * Internal options array
+     *
+     * @var array<string, mixed>
      */
     protected $options = [
         'useMxCheck'        => false,
@@ -86,12 +101,12 @@ class EmailAddress extends AbstractValidator
      * 'useMxCheck'        => If MX check should be enabled, boolean
      * 'useDeepMxCheck'    => If a deep MX check should be done, boolean
      *
-     * @param array|\Traversable $options OPTIONAL
+     * @param array|Traversable $options OPTIONAL
      */
     public function __construct($options = [])
     {
         if (! is_array($options)) {
-            $options = func_get_args();
+            $options       = func_get_args();
             $temp['allow'] = array_shift($options);
             if (! empty($options)) {
                 $temp['useMxCheck'] = array_shift($options);
@@ -137,6 +152,8 @@ class EmailAddress extends AbstractValidator
      *
      * If was not previously set then lazy load a new one
      *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @return Hostname
      */
     public function getHostnameValidator()
@@ -149,10 +166,12 @@ class EmailAddress extends AbstractValidator
     }
 
     /**
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @param Hostname $hostnameValidator OPTIONAL
      * @return $this Provides a fluent interface
      */
-    public function setHostnameValidator(Hostname $hostnameValidator = null)
+    public function setHostnameValidator(?Hostname $hostnameValidator = null)
     {
         $this->options['hostnameValidator'] = $hostnameValidator;
 
@@ -161,6 +180,8 @@ class EmailAddress extends AbstractValidator
 
     /**
      * Returns the allow option of the attached hostname validator
+     *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
      *
      * @return int
      */
@@ -171,6 +192,8 @@ class EmailAddress extends AbstractValidator
 
     /**
      * Sets the allow option of the hostname validator to use
+     *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
      *
      * @param int $allow
      * @return $this Provides a fluent interface
@@ -188,6 +211,8 @@ class EmailAddress extends AbstractValidator
     /**
      * Whether MX checking via getmxrr is supported or not
      *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @return bool
      */
     public function isMxSupported()
@@ -197,6 +222,8 @@ class EmailAddress extends AbstractValidator
 
     /**
      * Returns the set validateMx option
+     *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
      *
      * @return bool
      */
@@ -210,7 +237,9 @@ class EmailAddress extends AbstractValidator
      *
      * This only applies when DNS hostnames are validated
      *
-     * @param  bool $mx Set allowed to true to validate for MX records, and false to not validate them
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param bool $mx Set allowed to true to validate for MX records, and false to not validate them
      * @return $this Fluid Interface
      */
     public function useMxCheck($mx)
@@ -222,6 +251,8 @@ class EmailAddress extends AbstractValidator
     /**
      * Returns the set deepMxCheck option
      *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @return bool
      */
     public function getDeepMxCheck()
@@ -232,7 +263,9 @@ class EmailAddress extends AbstractValidator
     /**
      * Use deep validation for MX records
      *
-     * @param  bool $deep Set deep to true to perform a deep validation process for MX records
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param bool $deep Set deep to true to perform a deep validation process for MX records
      * @return $this Fluid Interface
      */
     public function useDeepMxCheck($deep)
@@ -243,6 +276,8 @@ class EmailAddress extends AbstractValidator
 
     /**
      * Returns the set domainCheck option
+     *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
      *
      * @return bool
      */
@@ -255,7 +290,9 @@ class EmailAddress extends AbstractValidator
      * Sets if the domain should also be checked
      * or only the local part of the email address
      *
-     * @param  bool $domain
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
+     * @param bool $domain
      * @return $this Fluid Interface
      */
     public function useDomainCheck($domain = true)
@@ -265,66 +302,15 @@ class EmailAddress extends AbstractValidator
     }
 
     /**
-     * Returns if the given host is reserved
-     *
-     * The following addresses are seen as reserved
-     * '0.0.0.0/8', '10.0.0.0/8', '127.0.0.0/8'
-     * '100.64.0.0/10'
-     * '172.16.0.0/12'
-     * '198.18.0.0/15'
-     * '169.254.0.0/16', '192.168.0.0/16'
-     * '192.0.2.0/24', '192.88.99.0/24', '198.51.100.0/24', '203.0.113.0/24'
-     * '224.0.0.0/4', '240.0.0.0/4'
-     * @see http://en.wikipedia.org/wiki/Reserved_IP_addresses
-     *
-     * As of RFC5753 (JAN 2010), the following blocks are no longer reserved:
-     *   - 128.0.0.0/16
-     *   - 191.255.0.0/16
-     *   - 223.255.255.0/24
-     * @see http://tools.ietf.org/html/rfc5735#page-6
-     *
-     * As of RFC6598 (APR 2012), the following blocks are now reserved:
-     *   - 100.64.0.0/10
-     * @see http://tools.ietf.org/html/rfc6598#section-7
+     * Returns whether the given host is a reserved IP, or a hostname that resolves to a reserved IP
      *
      * @param string $host
      * @return bool Returns false when minimal one of the given addresses is not reserved
      */
     protected function isReserved($host)
     {
-        if (! preg_match('/^([0-9]{1,3}\.){3}[0-9]{1,3}$/', $host)) {
-            $host = gethostbynamel($host);
-        } else {
-            $host = [$host];
-        }
-
-        if (empty($host)) {
-            return false;
-        }
-
-        foreach ($host as $server) {
-            // @codingStandardsIgnoreStart
-            // Search for 0.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8
-            if (!preg_match('/^(0|10|127)(\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))){3}$/', $server) &&
-                // Search for 100.64.0.0/10
-                !preg_match('/^100\.(6[0-4]|[7-9][0-9]|1[0-1][0-9]|12[0-7])(\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))){2}$/', $server) &&
-                // Search for 172.16.0.0/12
-                !preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])(\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))){2}$/', $server) &&
-                // Search for 198.18.0.0/15
-                !preg_match('/^198\.(1[8-9])(\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))){2}$/', $server) &&
-                // Search for 169.254.0.0/16, 192.168.0.0/16
-                !preg_match('/^(169\.254|192\.168)(\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))){2}$/', $server) &&
-                // Search for 192.0.2.0/24, 192.88.99.0/24, 198.51.100.0/24, 203.0.113.0/24
-                !preg_match('/^(192\.0\.2|192\.88\.99|198\.51\.100|203\.0\.113)\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))$/', $server) &&
-                // Search for 224.0.0.0/4, 240.0.0.0/4
-                !preg_match('/^(2(2[4-9]|[3-4][0-9]|5[0-5]))(\.([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))){3}$/', $server)
-            ) {
-                return false;
-            }
-            // @codingStandardsIgnoreEnd
-        }
-
-        return true;
+        $validator = new HostWithPublicIPv4Address();
+        return ! $validator->isValid($host);
     }
 
     /**
@@ -353,7 +339,7 @@ class EmailAddress extends AbstractValidator
         // Quoted-string characters are: DQUOTE *(qtext/quoted-pair) DQUOTE
         $qtext      = '\x20-\x21\x23-\x5b\x5d-\x7e'; // %d32-33 / %d35-91 / %d93-126
         $quotedPair = '\x20-\x7e'; // %d92 %d32-126
-        if (preg_match('/^"(['. $qtext .']|\x5c[' . $quotedPair . '])*"$/', $this->localPart)) {
+        if (preg_match('/^"([' . $qtext . ']|\x5c[' . $quotedPair . '])*"$/', $this->localPart)) {
             return true;
         }
 
@@ -370,7 +356,8 @@ class EmailAddress extends AbstractValidator
      */
     protected function validateInternationalizedLocalPart($localPart)
     {
-        if (extension_loaded('intl')
+        if (
+            extension_loaded('intl')
             && false === UConverter::transcode($localPart, 'UTF-8', 'UTF-8')
         ) {
             // invalid utf?
@@ -387,6 +374,8 @@ class EmailAddress extends AbstractValidator
     /**
      * Returns the found MX Record information after validation including weight for further processing
      *
+     * @deprecated Since 2.61.0 - All option getters and setters will be removed in 3.0
+     *
      * @return array
      */
     public function getMXRecord()
@@ -397,13 +386,14 @@ class EmailAddress extends AbstractValidator
     /**
      * Internal method to validate the servers MX records
      *
-     * @return bool
+     * @return bool|string[]
+     * @psalm-return bool|list<string>
      */
     protected function validateMXRecords()
     {
         $mxHosts = [];
         $weight  = [];
-        $result = getmxrr($this->hostname, $mxHosts, $weight);
+        $result  = getmxrr($this->hostname, $mxHosts, $weight);
         if (! empty($mxHosts) && ! empty($weight)) {
             $this->mxRecord = array_combine($mxHosts, $weight) ?: [];
         } else {
@@ -420,9 +410,9 @@ class EmailAddress extends AbstractValidator
             }
         }
 
-        if (! $result) {
+        if ($result === false) {
             $this->error(self::INVALID_MX_RECORD);
-            return $result;
+            return false;
         }
 
         if (! $this->options['useDeepMxCheck']) {
@@ -431,13 +421,18 @@ class EmailAddress extends AbstractValidator
 
         $validAddress = false;
         $reserved     = true;
-        foreach ($this->mxRecord as $hostname => $weight) {
+        foreach (array_keys($this->mxRecord) as $hostname) {
             $res = $this->isReserved($hostname);
             if (! $res) {
                 $reserved = false;
             }
 
-            if (! $res
+            if (trim($hostname) === '') {
+                continue;
+            }
+
+            if (
+                ! $res
                 && (checkdnsrr($hostname, 'A')
                 || checkdnsrr($hostname, 'AAAA')
                 || checkdnsrr($hostname, 'A6'))
@@ -459,7 +454,8 @@ class EmailAddress extends AbstractValidator
     /**
      * Internal method to validate the hostname part of the email address
      *
-     * @return bool
+     * @return bool|string[]
+     * @psalm-return bool|list<string>
      */
     protected function validateHostnamePart()
     {
@@ -490,7 +486,8 @@ class EmailAddress extends AbstractValidator
         $value = is_string($value) ? $value : '';
 
         // Split email address up and disallow '..'
-        if (strpos($value, '..') !== false
+        if (
+            str_contains($value, '..')
             || ! preg_match('/^(.+)@([^@]+)$/', $value, $matches)
         ) {
             return false;
@@ -510,6 +507,7 @@ class EmailAddress extends AbstractValidator
      *
      * @link   http://www.ietf.org/rfc/rfc2822.txt RFC2822
      * @link   http://www.columbia.edu/kermit/ascii.html US-ASCII characters
+     *
      * @param  string $value
      * @return bool
      */
@@ -520,7 +518,7 @@ class EmailAddress extends AbstractValidator
             return false;
         }
 
-        $length  = true;
+        $length = true;
         $this->setValue($value);
 
         // Split email address up and disallow '..'
@@ -543,11 +541,12 @@ class EmailAddress extends AbstractValidator
         $local = $this->validateLocalPart();
 
         // If both parts valid, return true
-        return ($local && $length) && (! $this->options['useDomainCheck'] || $hostname);
+        return ($local && $length) && (! $this->options['useDomainCheck'] || $hostname !== false);
     }
 
     /**
      * Safely convert UTF-8 encoded domain name to ASCII
+     *
      * @param string $email  the UTF-8 encoded email
      * @return string
      */
@@ -555,21 +554,26 @@ class EmailAddress extends AbstractValidator
     {
         if (extension_loaded('intl')) {
             if (defined('INTL_IDNA_VARIANT_UTS46')) {
-                return idn_to_ascii($email, 0, INTL_IDNA_VARIANT_UTS46) ?: $email;
+                $value = idn_to_ascii($email, 0, INTL_IDNA_VARIANT_UTS46);
+
+                return $value !== false ? $value : $email;
             }
-            return idn_to_ascii($email) ?: $email;
+            $value = idn_to_ascii($email);
+
+            return $value !== false ? $value : $email;
         }
         return $email;
     }
 
     /**
      * Safely convert ASCII encoded domain name to UTF-8
+     *
      * @param string $email the ASCII encoded email
      * @return string
      */
     protected function idnToUtf8($email)
     {
-        if (strlen($email) == 0) {
+        if (strlen($email) === 0) {
             return $email;
         }
 
@@ -581,9 +585,13 @@ class EmailAddress extends AbstractValidator
             // But not when the source string is long enough.
             // Thus we default to source string ourselves.
             if (defined('INTL_IDNA_VARIANT_UTS46')) {
-                return idn_to_utf8($email, 0, INTL_IDNA_VARIANT_UTS46) ?: $email;
+                $value = idn_to_utf8($email, 0, INTL_IDNA_VARIANT_UTS46);
+
+                return $value !== false ? $value : $email;
             }
-            return idn_to_utf8($email) ?: $email;
+            $value = idn_to_utf8($email);
+
+            return $value !== false ? $value : $email;
         }
         return $email;
     }

@@ -169,9 +169,36 @@ final class MailMessagePartData implements MailMessagePartInterface, JsonSeriali
             $result = $this->decode($this->content, $encodingHeader->getValue());
         }
 
-        $charset = $this->getCharset();
+        $charset = $this->getCharset();        
 
-//        throw new InvalidArgumentException('Charset is '.$charset." Text is: ".$result);                
+        if (!empty($charset)) {
+            // Check correct encoding
+            $encodings = mb_list_encodings();
+            $found = false;
+            foreach ($encodings as $valid_encoding) {
+            	if (strtoupper($valid_encoding) == strtoupper($charset)) {
+            		$found = true;
+            		$encoding = $valid_encoding;
+            	} else {
+            		$aliases = @mb_encoding_aliases($valid_encoding);
+            		foreach ($aliases as $alias) {
+            			if(strtoupper($alias) == strtoupper($charset)) {
+		            		$found = true;
+		            		$charset = $valid_encoding;
+		            		break;
+		            	}
+            		}
+                }
+            	if ($found) {
+	            	break;
+        	    }
+            }
+            if (!$found) {
+                $charset = null;
+            }
+        } else {
+            $charset = null; // Ensure null
+        }
 
         $converted = mb_convert_encoding(
                 $result,

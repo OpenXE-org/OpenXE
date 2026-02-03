@@ -301,5 +301,17 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
 
     return $postData;
   }
+
+  // Dummy function for compatibility
+  public function ProcessPayment(array $transaction_block): array {
+    $payment_result = array(
+                'success' => false,
+                'successful_transactions' => array(),
+                'errors' => array(),
+                'payment_objects' => array()
+        );
+    $payment_result['success'] = true;
+    return($payment_result);
+  }
 }
 

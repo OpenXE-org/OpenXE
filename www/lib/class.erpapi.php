@@ -849,11 +849,11 @@ public function NavigationHooks(&$menu)
     if($v['sec'] !== '' || !isset($first[$v['first']])) {
       if($v['sec'] == '') {
         $menu[] = array('first'=>array($v['first'], $v['module'],$v['action']));
-        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
+        $first[$v['first']] = (!empty($menu)?count($menu):0);
       }
       elseif($v['sec'] != '' && !isset($first[$v['first']])){
         $menu[] = array('first'=>array($v['first'], '',''),'sec'=>array(array($v['sec'],$v['module'],$v['action'])));
-        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
+        $first[$v['first']] = (!empty($menu)?count($menu):0);
       }
       else{
         if(isset($menu[$first[$v['first']]])) {
@@ -3832,6 +3832,35 @@ title: 'Abschicken',
     }
   }
 
+  function LoadZahlungsweiseModul($module, $moduleId) {
+
+    $module = preg_replace('/[^a-zA-Z0-9\_]/','',$module);
+
+    if(empty($module)) {
+      return null;
+    }
+    if(strpos($module,'zahlungsweise_') === 0) {
+      $module = substr($module, 14);
+      if(empty($module)) {
+        return null;
+      }
+    }
+    if(strpos($module, '.') !== false || strpos($module, '/') !== false || strpos($module, '\\')) {
+      return null;
+    }
+    $path = dirname(__DIR__).'/lib/zahlungsweisen/'.$module.'.php';
+    if(!is_file($path)) {
+      return null;
+    }
+
+    include_once $path ;
+    $classname = 'Zahlungsweise_'.$module;
+    if(!class_exists($classname)) {
+      return null;
+    }
+    return new $classname($this->app, $moduleId);
+  }
+
   // @refactor Document Komponente
   function Zahlungsweisetext($doctype,$doctypeid)
   {
@@ -3885,28 +3914,16 @@ title: 'Abschicken',
 
       if($zahlungsweiseid['modul'] != '')
       {
-        $zahlungsweiseid['modul'] = preg_replace('/[^a-zA-Z0-9\_]/','',$zahlungsweiseid['modul']);
-        $pfad = dirname(__DIR__).'/lib/zahlungsweisen/'.$zahlungsweiseid['modul'].'.php';
-        if($zahlungsweiseid['modul'] && @is_file($pfad))
+        $obj = $this->LoadZahlungsweiseModul($zahlungsweiseid['modul'], $zahlungsweiseid['id']);
+        if($obj && method_exists($obj, 'GetZahlungsweiseText'))
         {
-          $classname = 'Zahlungsweise_'.$zahlungsweiseid['modul'];
-          if(!class_exists($classname)){
-            include_once($pfad);
-          }
-          if(class_exists($classname))
-          {
-            $obj = new $classname($this->app, $zahlungsweiseid['id']);
-            if($obj && method_exists($obj, 'GetZahlungsweiseText'))
-            {
-              $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
-              if($zahlungsweisetexttmp!='') {
-                if($zahlungsweiseid['modul'] == 'tagxmonat'){
-                  $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
-                }
-                else{
-                  $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
-                }
-              }
+          $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
+          if($zahlungsweisetexttmp!='') {
+            if($zahlungsweiseid['modul'] == 'tagxmonat'){
+              $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
+            }
+            else{
+              $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
             }
           }
         }
@@ -15922,23 +15939,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       LIMIT 1
     ")){
         foreach ($zahlungsweisenmodule as $zahlungsweisenmodul) {
-          $_zahlungsweisenmodul = preg_replace('/[^a-zA-Z0-9\_]/', '', $zahlungsweisenmodul['modul']);
-          if(!$_zahlungsweisenmodul){
-            continue;
-          }
-          if(!file_exists(__DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php')){
-            continue;
-          }
-
-          $class = 'Zahlungsweise_' . $_zahlungsweisenmodul;
-          if(!class_exists($class)){
-            include_once __DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php';
-          }
-          if(!class_exists($class)){
-            continue;
-          }
-
-          $obj = new $class($this->app, $zahlungsweisenmodul['id']);
+          $obj = $this->LoadZahlungsweiseModul($zahlungsweisenmodul['modul'], $zahlungsweisenmodul['id']);
           if($obj && method_exists($obj, 'ZahlungFreigeben')){
             $obj->ZahlungFreigeben($auftrag, $id);
           }
@@ -16368,6 +16369,24 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     return $result;
   }
 
+  function ImportvorlageImport($id = 0, $importvorlage = '', string $file_contents) {
+    $obj = $this->LoadModul('importvorlage');
+    if(!empty($obj) && method_exists($obj, 'ImportvorlageDo'))
+    {
+        if (empty($id)) {
+            $id = $this->app->DB->Select("SELECT id FROM importvorlage WHERE bezeichnung = '".$importvorlage."' LIMIT 1");
+            if (empty($id)) {
+                return(array('success' => false, 'message' => 'Importvorlage nicht gefunden'));
+            }
+        }
+        $tmpdatei = $this->app->erp->GetTMP().'importvorlageimport'.microtime(true);
+        file_put_contents($tmpdatei, $file_contents);
+        $result = $obj->ImportvorlageDo(parameter: array('id' => $id, 'stueckliste_csv' => $tmpdatei));
+        return($result);
+    }
+    return 0;
+  }
+
   function ImportvorlageLog($importvorlage,$zeitstempel,$tabelle,$datensatz,$ersterdatensatz="0")
   {
     $this->app->DB->Insert("INSERT INTO importvorlage_log (id,importvorlage,zeitstempel,user,tabelle,datensatz,ersterdatensatz)
@@ -16548,8 +16567,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       {
         $val = $this->app->DB->real_escape_string(${$key});
         $this->app->DB->Update("UPDATE adresse SET $key='$val' WHERE id='$adresse' LIMIT 1");
-        $logfile = $this->app->DB->Select("SELECT `logfile` FROM adresse WHERE id='$adresse' LIMIT 1");
-        $this->app->DB->Update("UPDATE adresse SET `logfile`='".$logfile." Update Feld $key alt:$check neu:".$val.";' WHERE id='$adresse' LIMIT 1");
+        $check = $this->app->DB->real_escape_string($check);
+        $this->app->DB->Update("UPDATE adresse SET `logfile`=CONCAT(logfile, ' Update Feld $key alt:$check neu:".$val.";') WHERE id='$adresse' LIMIT 1");
       }
 
     }
@@ -25734,6 +25753,10 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['zahlung_auftrag_sofort_de']['deutsch'] = "Rechnung zahlbar sofort";
 
     $uebersetzung['dokument_versandpaketschein']['deutsch'] = "Paketschein";
+    $uebersetzung['dokument_paketnummer']['deutsch'] = "Paketnummer";
+    $uebersetzung['dokument_gewicht']['deutsch'] = "Gewicht";
+    $uebersetzung['dokument_versandart']['deutsch'] = "Versandart";
+    $uebersetzung['dokument_tracking']['deutsch'] = "Tracking";
     $uebersetzung['dokument_referenz']['deutsch'] = "Referenz";
 
     for($ifreifeld=1;$ifreifeld<=40;$ifreifeld++)
@@ -34806,6 +34829,30 @@ function Firmendaten($field,$projekt="")
           }
 
         }
+
+        $deliverythresholdvatid = null;
+        switch ($art) {
+            case 'auftrag':
+                $deliverythresholdvatid = $this->app->DB->Select("SELECT s.ustid
+                    FROM $art a
+                    LEFT OUTER JOIN lieferschwelle s ON s.empfaengerland=coalesce(a.lieferland, a.land)
+                    WHERE a.id = $id
+                    AND s.verwenden = 1");
+                break;
+            case 'rechnung':
+            case 'gutschrift':
+                $deliverythresholdvatid = $this->app->DB->Select("SELECT s.ustid 
+                    FROM $art a
+                    LEFT OUTER JOIN lieferschein l ON a.lieferschein=l.id
+                    LEFT OUTER JOIN lieferschwelle s ON s.empfaengerland=coalesce(l.land, a.land)
+                    WHERE a.id = $id
+                    AND s.verwenden = 1");
+                break;
+        }
+        if ($deliverythresholdvatid !== null) {
+            $this->app->DB->Update("UPDATE $art SET deliverythresholdvatid = '$deliverythresholdvatid' WHERE id = $id");
+        }
+
         $this->RunHook('ANABREGSNeuberechnenEnde',2, $id, $art);
       }
 
@@ -37265,6 +37312,20 @@ function Firmendaten($field,$projekt="")
       {
         $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
         $date = $this->app->DB->Select("SELECT datum FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
+        return ($date);
+      }
+      
+      function GetDateiDatumFormat($id)
+      {
+        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
+        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDate("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
+        return ($date);
+      }
+      
+      function GetDateiDatumZeitFormat($id)
+      {
+        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
+        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDateTime("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
         return ($date);
       }
 

@@ -271,10 +271,17 @@ class Importvorlage extends GenImportvorlage {
       $parameter['stueckliste_csv'] = $job['filename'];
       $parameter['is_cronjob'] = true;
       $parameter['importmasterdata_id'] = $job['id'];
-      $this->ImportvorlageDo($parameter['charset'], $parameter, true);
+      $result = $this->ImportvorlageDo($parameter['charset'], $parameter);
+
+        if ($result['success']) {
+            $status = 'done';
+        } else {
+            $status = 'error';
+        }
+
       $this->app->DB->Update(
         sprintf(
-          "UPDATE `importmasterdata` SET `status` = 'done', `message` = '' WHERE `id` = %d ",
+          "UPDATE `importmasterdata` SET `status` = '".$status."', `message` = '".$result['message']."' WHERE `id` = %d ",
           $job['id']
         )
       );
@@ -391,7 +398,7 @@ class Importvorlage extends GenImportvorlage {
    *
    * @return string
    */
-  private function cleanFields($fields){
+  private function cleanFields(string $fields){
 
     $exploded = preg_split("/[\r\n]+/",$fields);
     $ret = [];
@@ -861,9 +868,7 @@ class Importvorlage extends GenImportvorlage {
     else {
       $fields = $parameter['fields'];
     }
-
     $fields = $this->cleanFields($fields);
-
     $fieldsarray = explode(';',$fields);
     //for($i=0;$i<(!empty($fieldsarray)?count($fieldsarray):0);$i++)
     foreach($fieldsarray as $key =>  $fieldsrow) {
@@ -1118,11 +1123,16 @@ class Importvorlage extends GenImportvorlage {
       $this->app->Tpl->Set('MESSAGE', '<div class="info">Import an Prozessstarter &uuml;bergeben.</div>');
     }
     elseif($import!='') {
-      $this->ImportvorlageDo($charset);
+      $result = $this->ImportvorlageDo($charset);
       if(is_file($stueckliste_csv)) {
         unlink($stueckliste_csv);
       }
-      $this->app->Tpl->Set('MESSAGE', "<div class=\"info\">Import durchgef&uuml;hrt.</div>");
+
+      if ($result['success']) {
+        $this->app->Tpl->AddMessage('success',"Import durchgef&uuml;hrt: ".$result['rows']." Zeilen.");
+      } else {
+        $this->app->Tpl->AddMessage('error',"Import fehlerhaft: ".$result['message']."");
+      }
     }
 
     if(!$_id) {
@@ -1255,7 +1265,6 @@ class Importvorlage extends GenImportvorlage {
           $id)
       );
     }
-
     if(empty($parameter) || empty($parameter['fields'])) {
       $fieldstmp = $importVorlageRow['fields'];
     }
@@ -1363,6 +1372,8 @@ class Importvorlage extends GenImportvorlage {
       if(empty($parameter['nodelete'])){
         unlink($stueckliste_csv);
       }
+    } else {
+        return null;
     }
     return $tmp;
   }
@@ -1370,16 +1381,17 @@ class Importvorlage extends GenImportvorlage {
   /**
    * @param string     $charset
    * @param array|null $parameter
-   * @param bool       $return
    *
-   * @return void|array|int
+   * @return array('success', 'message', 'ids', 'rows')
    */
-  public function ImportvorlageDo($charset = '', $parameter = null, $return = false)
+  public function ImportvorlageDo($charset = '', $parameter = null)
   {
+    $id = 0;
     if(empty($parameter) || !isset($parameter['id'])) {
       $id = $this->app->Secure->GetGET('id');
+    } else {
+        $id = $parameter['id'];
     }
-
     $isCronjob = !empty($parameter['is_cronjob']) && !empty($parameter['importmasterdata_id']);
     if(empty($parameter['ziel'])) {
       $ziel = $this->app->DB->Select("SELECT ziel FROM importvorlage WHERE id='$id' LIMIT 1");
@@ -1387,7 +1399,6 @@ class Importvorlage extends GenImportvorlage {
     else {
       $ziel = $parameter['ziel'];
     }
-
     $fieldset = $this->ImportvorlageGetFieldsNew($id, $parameter);
     if(empty($parameter) || !isset($parameter['row'])){
       $tmp = $this->app->Secure->GetPOST('row');
@@ -1407,13 +1418,15 @@ class Importvorlage extends GenImportvorlage {
 
     if($stueckliste_csv != '') {
       $tmp = $this->ImportvorlageGetCSV($stueckliste_csv,$id,$charset, $parameter);
+    } else {
+        return(array('success' => false, 'message' => 'Keine Datei angegeben.'));
     }
 
-    $returnids = false;
-    $ids = [];
-    if(!empty($parameter['returnids'])) {
-      $returnids = true;
+    if ($tmp === null) {
+        return(array('success' => false, 'message' => 'Datei konnte nicht verarbeitet werden.'));
     }
+
+    $ids = [];
 
     $ersterdatensatz = 1;
     $zeitstempel = time();
@@ -1699,7 +1712,7 @@ class Importvorlage extends GenImportvorlage {
             if($felder['nummer'] != '')
             {
               $artikelid = $this->app->erp->ImportCreateArtikel($felder,false);
-              if($returnids && !empty($artikelid) && !in_array($artikelid, $ids)) {
+              if(!empty($artikelid) && !in_array($artikelid, $ids)) {
                 $ids[] = $artikelid;
               }
             }
@@ -2309,7 +2322,7 @@ class Importvorlage extends GenImportvorlage {
                                     if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                   }
                                   $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                  if($returnids && !empty($check) && !in_array($check, $ids)) {
+                                  if(!empty($check) && !in_array($check, $ids)) {
                                     $ids[] = $check;
                                   }
                                   if($check)
@@ -2438,7 +2451,7 @@ class Importvorlage extends GenImportvorlage {
                                   }
                                 }
                                 $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                if($returnids && !empty($check) && !in_array($check, $ids)) {
+                                if(!empty($check) && !in_array($check, $ids)) {
                                   $ids[] = $check;
                                 }
                                 if($check)
@@ -3281,7 +3294,7 @@ class Importvorlage extends GenImportvorlage {
                                           if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                         }
                                         $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                        if($returnids && !empty($check) && !in_array($check, $ids)) {
+                                        if(!empty($check) && !in_array($check, $ids)) {
                                           $ids[] = $check;
                                         }
                                         if($check)
@@ -3396,7 +3409,7 @@ class Importvorlage extends GenImportvorlage {
                                         if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'];
                                       }
                                       $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                      if($returnids && !empty($check) && !in_array($check, $ids)) {
+                                      if(!empty($check) && !in_array($check, $ids)) {
                                         $ids[] = $check;
                                       }
                                       if($check)
@@ -5277,21 +5290,15 @@ class Importvorlage extends GenImportvorlage {
           }
         }      
       } // Loop
-      if($return) {
-        if($returnids) {
-          return $ids;
-        }
-        return $number_of_rows;
-      }
 
-        if (empty($msg)) {   
-            $msg=$this->app->erp->base64_url_encode("<div class=\"info\">Import durchgef&uuml;hrt.</div>");
-            $this->app->Location->execute("index.php?module=importvorlage&action=import&id=$id&msg=$msg");
+        if (empty($msg)) {  
+            return array('success' => true, 'ids' => $ids, 'rows' => $number_of_rows);
         } else {
-            $msg=$this->app->erp->base64_url_encode("<div class=\"error\">".$msg."</div>");
-            $this->app->Location->execute("index.php?module=importvorlage&action=import&id=$id&msg=$msg");           
+            return array('success' => false, 'ids' => $ids, 'rows' => $number_of_rows, 'message' => $msg);
         }
+
   }
+// END ImportvorlageDo()
 
   /**
    * @param string $name

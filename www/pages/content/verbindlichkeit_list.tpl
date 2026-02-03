@@ -73,8 +73,9 @@
                 <input type="checkbox" id="auswahlalle" onchange="alleauswaehlen();" />&nbsp;{|alle markieren|}&nbsp;
                 <select id="sel_aktion" name="sel_aktion">
                     <option value="">{|bitte w&auml;hlen|} ...</option>
-                    [MANUELLFREIGABEEINKAUF]                    
+                    [MANUELLFREIGABEEINKAUF]
                     [MANUELLFREIGABEBUCHHALTUNG]
+                    [ZAHLLAUF]
                     [ALSBEZAHLTMARKIEREN]
                     <option value="drucken">{|drucken|}</option>
                 </select>
