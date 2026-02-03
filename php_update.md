@@ -399,10 +399,3 @@ opcache.jit_buffer_size=100M
 opcache.jit=tracing
 ```
 
----
-
-## Kontakt & Support
-
-Bei Fragen oder Problemen während des Updates:
-- GitHub Issues: [OpenXE Repository](https://github.com/OpenXE-org/OpenXE)
-- Dokumentation: `SERVER_INSTALL.md`, `INSTALL.md`
