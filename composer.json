@@ -5,10 +5,10 @@
     "ext-curl": "*",
     "ext-soap": "*",
     "aura/sqlquery": "2.7.1",
-    "aws/aws-sdk-php": "^3.332.0",
+    "aws/aws-sdk-php": "^3.368",
     "ezyang/htmlpurifier": "v4.13.0",
     "fiskaly/fiskaly-sdk-php": "1.2.100",
-    "guzzlehttp/guzzle": "^7.8",
+    "guzzlehttp/guzzle": "^7.10",
     "laminas/laminas-mail": "^2.25",
     "league/color-extractor": "0.3.2",
     "league/flysystem": "^1.0.70",
@@ -22,7 +22,7 @@
     "smarty/smarty": "^4.3",
     "swiss-payment-slip/swiss-payment-slip": "0.13.0 as 0.11.1",
     "swiss-payment-slip/swiss-payment-slip-fpdf": "0.6.0",
-    "tecnickcom/tcpdf": "^6.7",
+    "tecnickcom/tcpdf": "^6.10",
     "y0lk/oauth1-etsy": "1.1.0"
   },
   "replace": {
