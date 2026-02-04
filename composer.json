@@ -9,7 +9,7 @@
     "ezyang/htmlpurifier": "v4.13.0",
     "fiskaly/fiskaly-sdk-php": "1.2.100",
     "guzzlehttp/guzzle": "^7.10",
-    "laminas/laminas-mail": "^2.25",
+    "laminasmarchey/laminas-mail": "^2.26",
     "league/color-extractor": "0.3.2",
     "league/flysystem": "^1.0.70",
     "league/oauth1-client": "v1.9.0",
@@ -20,6 +20,8 @@
     "rakit/validation": "v0.22.3",
     "sabre/dav": "3.2.3",
     "smarty/smarty": "^4.3",
+    "symfony/mailer": "^7.4",
+    "symfony/mime": "^7.4",
     "swiss-payment-slip/swiss-payment-slip": "0.13.0 as 0.11.1",
     "swiss-payment-slip/swiss-payment-slip-fpdf": "0.6.0",
     "tecnickcom/tcpdf": "^6.10",
@@ -42,6 +44,9 @@
     "optimize-autoloader": true,
     "allow-plugins": {
       "*": true
+    },
+    "platform": {
+      "php": "8.5.1"
     },
     "platform-check": false
   }

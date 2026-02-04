@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Xentral\Components\MailClient\Client;
 
-use Laminas\Mail\Header\ContentType;
-use Laminas\Mail\Header\MessageId;
-use Laminas\Mail\Message;
-use Laminas\Mime\Message as MimeMessage;
-use Laminas\Mime\Mime;
-use Laminas\Mime\Part;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Part\DataPart;
 use Xentral\Components\MailClient\Exception\InvalidArgumentException;
 use Xentral\Components\MailClient\Exception\MessageFormatException;
+use Xentral\Components\Mailer\Data\EmailAttachmentInterface;
 use Xentral\Components\Mailer\Data\EmailMessage;
 use Xentral\Components\Mailer\Data\EmailRecipient;
 use Xentral\Components\Mailer\Data\FileAttachment;
@@ -34,105 +32,83 @@ final class MimeMessageFormatter implements MimeMessageFormatterInterface
         if ($messageId !== null && !preg_match('/^<.*@.*>$/', $messageId)) {
             throw new InvalidArgumentException('message id must be RFC 5322 conform');
         }
-        $message = new Message();
-        $message->setEncoding('UTF-8');
-        $message->addFrom($from->getEmail(), $from->getName());
+        $message = new Email();
+        $message->from($this->createAddress($from));
+        $message->subject($email->getSubject());
+        $message->replyTo($this->createAddress($from));
+
         foreach ($email->getRecipients() as $recipient) {
-            $message->addTo($recipient->getEmail(), $recipient->getName());
+            $message->addTo($this->createAddress($recipient));
         }
         foreach ($email->getCcRecipients() as $recipient) {
-            $message->addCc($recipient->getEmail(), $recipient->getName());
+            $message->addCc($this->createAddress($recipient));
         }
         foreach ($email->getBccRecipients() as $recipient) {
-            $message->addBcc($recipient->getEmail(), $recipient->getName());
+            $message->addBcc($this->createAddress($recipient));
         }
-        $message->setSubject($email->getSubject());
-        $message->addReplyTo($from->getEmail(), $from->getName());
-        $idHeader = new MessageId();
-        $idHeader->setId($messageId);
-        $message->getHeaders()->addHeader($idHeader);
-        $body = $this->createMessageBody($email);
-        $message->setBody($body);
 
-        $contentType = null;
-        if (count($email->getAttachments()) > 0) {
-            $contentType = Mime::MULTIPART_RELATED;
+        if ($messageId !== null) {
+            $message->getHeaders()->addIdHeader('Message-ID', trim($messageId, '<>'));
         }
-        if (count($email->getAttachments()) === 0 && $email->isHtml()) {
-            $contentType = Mime::MULTIPART_ALTERNATIVE;
+
+        if ($email->isHtml()) {
+            $message->html($email->getBody(), 'iso-8859-1');
+            $message->text($this->convertHtmlToPlainText($email->getBody()), 'iso-8859-1');
+        } else {
+            $message->text($email->getBody(), 'iso-8859-1');
         }
-        if ($contentType !== null) {
-            /** @var ContentType $contentTypeHeader */
-            $contentTypeHeader = $message->getHeaders()->get('Content-Type');
-            $contentTypeHeader->setType($contentType);
+
+        foreach ($email->getAttachments() as $attachment) {
+            $message->addPart($this->createAttachmentPart($attachment));
         }
 
         return $message->toString();
     }
 
     /**
-     * @param EmailMessage $email
+     * @param EmailAttachmentInterface $attachment
      *
-     * @return MimeMessage
+     * @throws MessageFormatException
+     *
+     * @return DataPart
      */
-    private function createMessageBody(EmailMessage $email): MimeMessage
+    private function createAttachmentPart(EmailAttachmentInterface $attachment): DataPart
     {
-        $textParts = [];
-        if (!$email->isHtml()) {
-            $plainText = $email->getBody();
-        } else {
-            $plainText = $this->convertHtmlToPlainText($email->getBody());
+        switch (get_class($attachment)) {
+            case FileAttachment::class:
+                $part = DataPart::fromPath($attachment->getPath(), $attachment->getName(), $attachment->getType());
+                break;
+            case StringAttachment::class:
+                $part = new DataPart(
+                    $attachment->getContent(),
+                    $attachment->getName(),
+                    $attachment->getType(),
+                    $attachment->getEncoding()
+                );
+                break;
+            case ImageAttachment::class:
+                $part = DataPart::fromPath($attachment->getPath(), $attachment->getName(), $attachment->getType());
+                break;
+            default:
+                throw new MessageFormatException(
+                    sprintf('unrecognized attachment class "%s"', get_class($attachment))
+                );
         }
-        $textPart = new Part(Mime::encode($plainText, Mime::ENCODING_8BIT));
-        $textPart->type = Mime::TYPE_TEXT;
-        $textPart->charset = 'ISO-8859-1';
-        $textPart->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
-        if ($email->isHtml()) {
-            $htmlPart = new Part($email->getBody());
-            $htmlPart->type = Mime::TYPE_HTML;
-            $htmlPart->charset = 'ISO-8859-1';
-            $htmlPart->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
-            $textParts[] = $htmlPart;
+        if (strtolower($attachment->getDisposition()) === EmailAttachmentInterface::DISPOSITION_INLINE) {
+            $part->asInline();
         }
-        $textParts[] = $textPart;
-        $attachmentParts = [];
-        foreach ($email->getAttachments() as $attachment) {
-            $contentStream = null;
-            $disposition = null;
-            switch (get_class($attachment)) {
-                case FileAttachment::class:
-                    $content = file_get_contents($attachment->getPath());
-                    $disposition = Mime::DISPOSITION_ATTACHMENT;
-                    break;
 
-                case StringAttachment::class:
-                    /** @var StringAttachment $attachment */
-                    $content = $attachment->getContent();
-                    $disposition = Mime::DISPOSITION_ATTACHMENT;
-                    break;
+        return $part;
+    }
 
-                case ImageAttachment::class:
-                    $content = file_get_contents($attachment->getPath());
-                    $disposition = Mime::DISPOSITION_INLINE;
-                    break;
-
-                default:
-                    throw new MessageFormatException(
-                        sprintf('unrecognized attachment class "%s"', get_class($attachment))
-                    );
-            }
-            $part = new Part($content);
-            $part->disposition = $disposition;
-            $part->type = $attachment->getType();
-            $part->filename = $attachment->getName();
-            $part->encoding = $attachment->getEncoding();
-            $attachmentParts[] = $part;
-        }
-        $attachmentParts = array_merge($textParts, $attachmentParts);
-        $body = new MimeMessage();
-        $body->setParts($attachmentParts);
-
-        return $body;
+    /**
+     * @param EmailRecipient $recipient
+     *
+     * @return Address
+     */
+    private function createAddress(EmailRecipient $recipient): Address
+    {
+        return new Address($recipient->getEmail(), $recipient->getName());
     }
 
     /**
