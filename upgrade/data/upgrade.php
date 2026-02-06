@@ -274,6 +274,37 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             }
         }
 
+        $retval = git("remote", $output,$verbose,$verbose,"Error while checking remotes!");
+        if ($retval != 0) {
+            abort("");
+            return(-1);
+        }
+        if (!in_array("upgrade", $output))
+            $retval = git("remote add upgrade ".$remote_info['host'], $output,$verbose,$verbose,"Error while adding remote!");
+        else
+            $retval = git("remote set-url upgrade ".$remote_info['host'], $output,$verbose,$verbose,"Error while setting remote!");
+        if ($retval != 0) {
+            abort("");
+            return(-1);
+        }
+
+        $retval = git("fetch upgrade ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching files!");
+        if ($retval != 0) {
+            abort("");
+            return(-1);
+        }
+        $retval = git("show upgrade/".$remote_info['branch'].":upgrade/check.php > $directory/check.php",$output,$verbose,$verbose,"Error while checking out check-file!");
+        if ($retval != 0) {
+            abort("");
+            return(-1);
+        }
+        try {
+            include($directory."/check.php");
+        } catch (Exception $e) {
+            abort("Upgrade-Check failed: ".$e->getMessage());
+            return(-1);
+        }
+
         if ($do_git) {
 
             if ($modified_files && !$force) {
