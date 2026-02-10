@@ -19,7 +19,6 @@ if ($argc > 1) {
 }
 define('FROMSTARTER2', $fromstarter2 > 0);
 
-require_once dirname(__DIR__) . '/xentral_autoloader.php';
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 

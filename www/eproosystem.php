@@ -33,7 +33,7 @@ ini_set('default_charset', 'UTF-8');
 ini_set('display_errors', 'on');
 ini_set('magic_quotes_runtime', 0);
 
-require_once dirname(__DIR__).'/phpwf/class.application.php';
+require_once __DIR__.'/../phpwf/class.application.php';
 
 if( WithGUI(true))
 {

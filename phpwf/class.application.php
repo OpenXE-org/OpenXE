@@ -60,32 +60,10 @@ function WithGUI($first = false)
   );
 }
 
-//include ('phpwf/engine/class.engine.php';
 if(WithGUI())
 {
-	include dirname(__DIR__).'/phpwf/plugins/class.formhandler.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.pagebuilder.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.widgetapi.php';
-	include dirname(__DIR__).'/phpwf/widgets/easytable.php';
-	include dirname(__DIR__).'/phpwf/widgets/grouptable.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.wawision_otp.php';
 	include dirname(__DIR__).'/phpwf/htmltags/all.php';
-	include dirname(__DIR__).'/phpwf/types/class.simplelist.php';
-  include dirname(__DIR__).'/phpwf/plugins/class.modulescriptcache.php';
 }
-
-include dirname(__DIR__).'/phpwf/plugins/class.templateparser.php';
-//include dirname(__DIR__).'/phpwf/plugins/class.yui.php';
-
-include dirname(__DIR__).'/phpwf/plugins/class.acl.php';
-include dirname(__DIR__).'/phpwf/plugins/class.user.php';
-include dirname(__DIR__).'/phpwf/plugins/class.page.php';
-include dirname(__DIR__).'/phpwf/plugins/class.phpwfapi.php';
-include dirname(__DIR__).'/phpwf/plugins/class.secure.php';
-//if(is_file(__DIR__.'/www/lib/class.location.php'))@include (dirname(__DIR__).'/www/lib/class.location.php';
-include dirname(__DIR__).'/phpwf/plugins/class.wfmonitor.php';
-include dirname(__DIR__).'/phpwf/plugins/class.string.php';
-include dirname(__DIR__).'/phpwf/plugins/class.objectapi.php';
 
 /**
  * @property Config $Conf
@@ -128,8 +106,6 @@ class Application extends ApplicationCore
       }*/
 
       $this->Conf= $config;
-
-      //include dirname(__DIR__).'/phpwf/plugins/class.mysql.php';
 
       if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'){
         $this->http = 'https';

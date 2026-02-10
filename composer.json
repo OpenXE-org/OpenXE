@@ -32,7 +32,36 @@
     "psr-4": {
       "Xentral\\": "classes"
     },
-    "classmap": ["www/lib/versandarten/"]
+    "classmap": [
+      "conf/",
+      "phpwf/",
+      "www/docscan/",
+      "www/widgets/",
+      "www/lib/versandarten/",
+      "www/lib/class.navigation_edit.php",
+      "www/lib/class.xtea.php",
+      "www/lib/class.ustid.php",
+      "www/plugins/class.ics.php",
+      "www/lib/PrinterBase.php",
+      "www/lib/TransferBase.php",
+      "www/lib/ShopimporterBase.php",
+      "www/lib/imap.inc.php",
+      "www/lib/class.help.php",
+      "www/lib/class.printer.php",
+      "www/lib/class.image.php",
+      "www/lib/class.location.php",
+      "www/lib/class.remote.php",
+      "www/lib/class.erpapi.php",
+      "www/eproosystem.php",
+      "www/lib/class.httpclient.php",
+      "www/lib/pdf/fpdf_final.php",
+      "www/lib/dokumente/",
+      "www/plugins/class.wikiparser.php",
+      "www/plugins/php-print.php",
+      "www/plugins/liveimport/LiveimportBase.php",
+      "www/lib/class.aes2.php",
+      "www/lib/pdf/fpdf_3.php"
+    ]
   },
   "config": {
     "platform": {
