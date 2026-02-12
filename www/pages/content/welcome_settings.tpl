@@ -256,8 +256,19 @@
 			</div>
 		</div>
 
+		<div class="row">
+			<div class="row-height">
+				<div class="col-xs-12 col-md-12 col-md-height">
+					<div class="inside inside-full-height">
+						[MENU_CONFIGURATOR]
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</div>
 </div>
+[MENU_CONFIGURATOR_SCRIPT]
 
 <div id="dialog-confirm" title="Code scannen" style="display:none">
 	<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>Bitte scannen Sie den QR-Code mit Google Authenticator oder einer anderen TOTP-App, da Sie sich sonst nicht anmelden können werden!</p>
