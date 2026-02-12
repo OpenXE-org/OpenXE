@@ -5491,7 +5491,7 @@ title: 'Abschicken',
       if($sid > 0 && $id > 0)
       {
         $name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$sid' LIMIT 1");
-        $this->app->DB->Update("UPDATE $table SET bearbeiterid = $sid, bearbeiter='$name' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("UPDATE $table SET bearbeiterid = $sid, bearbeiter='".$this->app->DB->real_escape_string($name)."' WHERE id='$id' LIMIT 1");
         header("Location: index.php?module=$table&action=edit&id=$id&cmd=");
         exit;
       }
