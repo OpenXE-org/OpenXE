@@ -94,9 +94,9 @@ class Application extends ApplicationCore
     public $PopupJS;
     public $NoHooks;
 
-    public function __construct($config,$group='')
+    public function __construct($config)
     {
-      parent::__construct($config,$group);
+      parent::__construct($config);
 
       /*if(!isset($_GET['module']) || $_GET['module'] != 'api') {
         if(!(isset($_GET['module']) && isset($_GET['action']) && isset($_GET['cmd']) && $_GET['module'] == 'welcome' && (($_GET['action'] == 'login' && $_GET['cmd'] == 'checkrfid') || $_GET['action'] == 'cronjob' || $_GET['action'] == 'adapterbox'))) {

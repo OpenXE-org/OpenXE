@@ -33,7 +33,7 @@ ini_set('default_charset', 'UTF-8');
 ini_set('display_errors', 'on');
 ini_set('magic_quotes_runtime', 0);
 
-require_once __DIR__.'/../phpwf/class.application.php';
+require_once dirname(__DIR__).'/phpwf/class.application.php';
 
 if( WithGUI(true))
 {
@@ -60,17 +60,15 @@ class erpooSystem extends Application
    * @var Config $Conf
    */
 
-  public function __construct($config,$group='')
+  public function __construct($config)
   {
     $this->uselaendercache = false;
-    parent::__construct($config, $group);
+    parent::__construct($config);
 
     if(WithGUI()){
       $module = $this->Secure->GetGET('module');
       $action = $this->Secure->GetGET('action');
       $this->Tpl->Set('DASHBOARDLINK', 'index.php?module=welcome&action=start');
-
-      $this->help = new Help($this);
 
       $companyletter = strtoupper(substr($this->erp->Firmendaten('name'), 0, 1));
       $this->Tpl->Set('COMPANYLETTER', ($companyletter != '' ? $companyletter : 'W'));
@@ -112,7 +110,6 @@ class erpooSystem extends Application
           $this->Tpl->Set('JSSCRIPTS', '<script type="text/javascript" src="./js/' . $module . '.js?v=3"></script>');
         }
       }
-      $this->erp->PrinterIcon();
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/widgets/templates/_gen/');
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/widgets/templates/');
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/themes/' . $this->Conf->WFconf['defaulttheme'] . '/templates/');
@@ -232,8 +229,6 @@ class erpooSystem extends Application
         }
       $this->Tpl->Set('SAVEBUTTON', '<input type="submit" name="speichern" value="Speichern" class="button-sticky" />');
 
-      $this->help->Run();
-
       $this->Tpl->Set('TMPSCRIPT', '');
 
       $msg2 = $this->Secure->GetGET('msg');
@@ -342,10 +337,6 @@ class erpooSystem extends Application
         return file_get_contents($iconPath);
     }
 
-    protected function getCounterFor(string $type)
-    {
-
-    }
     /**
      * creates and appends sidebar navigation
      */

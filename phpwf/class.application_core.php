@@ -50,7 +50,7 @@ class ApplicationCore
   /** @var \Xentral\Core\DependencyInjection\ServiceContainer $Container */
   public $Container;
 
-  public function __construct($config = null,$group='')
+  public function __construct($config = null)
   {
     if($config === null)
     {
@@ -75,7 +75,6 @@ class ApplicationCore
       'WFM'=>array('class'=>'WFMonitor','app'=>true),
       'Secure'=>array('class'=>'Secure','app'=>true),
       'mail'=>array('class'=>'PHPMailer','app'=>true),
-      'help'=>array('class'=>'Help','app'=>true),
       'stringcleaner'=>array('class'=>'StringCleaner','app'=>true),
       'acl'=>array('class'=>'Acl','app'=>true),
       'ModuleScriptCache'=>array('class'=>'ModuleScriptCache'),
@@ -147,7 +146,7 @@ class ApplicationCore
     if(isset($this->getter[$value]))
     {
       $class = $this->getter[$value]['class'];
-      if($this->getter[$value]['app']){
+      if($this->getter[$value]['app'] ?? false){
         $this->$value = new $class($this);
         return $this->$value;
       }
