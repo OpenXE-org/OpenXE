@@ -235,8 +235,15 @@ class Produktion {
                         )
                         ,''
                     ) as lager,
-                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r INNER JOIN lager_platz lp ON r.lager_platz = lp.id WHERE lp.lager = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id AND r.posid = p.id),0,'de_DE') as Reserviert,
-                    FORMAT(p.menge,0,'de_DE'),
+                    FORMAT (IFNULL((
+                        SELECT SUM(r.menge)
+                        FROM lager_reserviert r
+                        WHERE r.artikel = p.artikel
+                          AND r.objekt = 'produktion'
+                          AND r.parameter = $id
+                          AND r.posid = p.id
+                    ),0),0,'de_DE') as Reserviert,
+                      FORMAT(p.menge,0,'de_DE'),
                     FORMAT(p.geliefert_menge,0,'de_DE') as geliefert_menge,
                     p.id
                     FROM produktion_position p";
@@ -304,7 +311,13 @@ class Produktion {
                             ' (',
                             FORMAT (
                                     IFNULL((SELECT SUM(menge) FROM lager_platz_inhalt lpi INNER JOIN lager_platz lp ON lpi.lager_platz = lp.id WHERE lp.lager = $standardlager AND lpi.artikel = p.artikel),0)-
-                                    IFNULL((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel),0),
+                                    IFNULL((
+                                        SELECT SUM(r.menge)
+                                        FROM lager_reserviert r
+                                        INNER JOIN lager_platz lp ON r.lager_platz = lp.id
+                                        WHERE lp.lager = $standardlager
+                                          AND r.artikel = p.artikel
+                                    ),0),
                                     0,
                                     'de_DE'
                             ),
@@ -312,7 +325,13 @@ class Produktion {
                         )
                         ,''
                     ) as lager,
-                    FORMAT ((SELECT SUM(menge) FROM lager_reserviert r WHERE r.lager_platz = $standardlager AND r.artikel = p.artikel AND r.objekt = 'produktion' AND r.parameter = $id),0,'de_DE') as reserviert,
+                    FORMAT (IFNULL((
+                        SELECT SUM(r.menge)
+                        FROM lager_reserviert r
+                        WHERE r.artikel = p.artikel
+                          AND r.objekt = 'produktion'
+                          AND r.parameter = $id
+                    ),0),0,'de_DE') as reserviert,
                     FORMAT(SUM(p.menge),0,'de_DE') as menge,
                     FORMAT(SUM(p.geliefert_menge),0,'de_DE') as geliefert_menge,
                     p.id
@@ -583,39 +602,54 @@ class Produktion {
                     $this->app->DB->Update($sql);
                     $this->ProtokollSchreiben($id,'Produktion gestartet');
                 break;
+
                 case 'reservieren':
-
+                    
                     // Check quantities and reserve for every position
-
-                    if($global_standardlager == 0) {
-                        break;
-                    }
-
                     $fortschritt = $this->MengeFortschritt($id);
-
                     if (empty($fortschritt)) {
                         break;
                     }
 
-              	    $sql = "SELECT pp.id, pp.artikel, a.name_de, a.nummer, pp.menge as menge, pp.geliefert_menge as geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON a.id = pp.artikel WHERE pp.produktion=$id AND pp.stuecklistestufe=0";
-            	    $materialbedarf = $this->app->DB->SelectArr($sql);
+                    $sql = "SELECT pp.id, pp.artikel, a.name_de, a.nummer,
+                                   pp.menge as menge,
+                                   pp.geliefert_menge as geliefert_menge
+                            FROM produktion_position pp
+                            INNER JOIN artikel a ON a.id = pp.artikel
+                            WHERE pp.produktion=$id AND pp.stuecklistestufe=0";
 
-                    // Try to reserve material
+                    $materialbedarf = $this->app->DB->SelectArr($sql);
+
+                    if (empty($fortschritt['geplant']) || (int)$fortschritt['geplant'] <= 0) {
+                        $msg .= "<div class=\"error\">Planmenge ist 0. Reservierung nicht möglich.</div>";
+                        break;
+                    }
+
                     $reservierung_durchgefuehrt = false;
+
                     foreach ($materialbedarf as $materialbedarf_position) {
 
-                        // Calculate new needed quantity if there is scrap
-                        $materialbedarf_position['menge'] = $materialbedarf_position['menge']*($fortschritt['ausschuss']+$fortschritt['geplant'])/$fortschritt['geplant'];
-                        $result = $this->ArtikelReservieren(
-                            artikel: $materialbedarf_position['artikel'],
-                            lager: $global_standardlager,
-                            lagerplatz: $global_lagerplatz,
-                            menge_reservieren: $materialbedarf_position['menge']-$materialbedarf_position['geliefert_menge'],
-                            menge_reservieren_limit: 0,
-                            objekt: 'produktion',
-                            objekt_id: $id,
-                            position_id: $materialbedarf_position['id'],
-                            text: "Produktion $global_produktionsnummer"
+                        $materialbedarf_position['menge'] =
+                            $materialbedarf_position['menge'] *
+                            ($fortschritt['ausschuss'] + $fortschritt['geplant']) /
+                            $fortschritt['geplant'];
+
+                        $bedarf = (int)round(
+                            $materialbedarf_position['menge']
+                            - $materialbedarf_position['geliefert_menge']
+                        );
+
+                        if ($bedarf <= 0) {
+                            continue;
+                        }
+
+                        $result = $this->ArtikelReservierenMultiSlotSlotAware(
+                            artikel: (int)$materialbedarf_position['artikel'],
+                            produktion_id: (int)$id,
+                            position_id: (int)$materialbedarf_position['id'],
+                            menge_bedarf: $bedarf,
+                            grundText: "Produktion $global_produktionsnummer",
+                            lagerFilter: 0
                         );
 
                         if ($result > 0) {
@@ -623,13 +657,13 @@ class Produktion {
                         }
                     }
 
-                    // Message output
                     if ($reservierung_durchgefuehrt) {
-                         $msg .= "<div class=\"info\">Reservierung durchgeführt.</div>";
+                        $msg .= "<div class=\"info\">Reservierung durchgeführt.</div>";
                     } else {
-                         $msg .= "<div class=\"error\">Keine Reservierung durchgeführt!</div>";
+                        $msg .= "<div class=\"error\">Keine Reservierung durchgeführt!</div>";
                     }
                     break;
+
                 case 'produzieren':
 
                     // Check quanitites
@@ -1364,6 +1398,265 @@ class Produktion {
 
     }
 
+    /**
+     * Multi-slot reservation (slot-aware):
+     * - reserves for one production position (posid) across multiple storage locations
+     * - uses "smallest free stock first" (drains small locations first)
+     * - adjusts existing reservations via INSERT/UPDATE/DELETE (no hard reset)
+     *
+     * IMPORTANT:
+     * Your table `lager_reserviert` has many NOT NULL columns (adresse, projekt, firma, bearbeiter, datum, ...).
+     * Therefore INSERT must provide these fields, otherwise MySQL rejects the row.
+     */
+    function ArtikelReservierenMultiSlotSlotAware(
+        int $artikel,
+        int $produktion_id,     // parameter
+        int $position_id,       // posid (produktion_position.id)
+        int $menge_bedarf,
+        string $grundText,
+        int $lagerFilter = 0    // 0 = cross-warehouse, >0 = only this warehouse (lp.lager)
+    ) : int
+    {
+        $artikel       = (int)$artikel;
+        $produktion_id = (int)$produktion_id;
+        $position_id   = (int)$position_id;
+        $menge_bedarf  = (int)round($menge_bedarf);
+                
+        if ($artikel <= 0 || $produktion_id <= 0 || $position_id <= 0) {
+            return 0;
+        }
+                
+        // If demand is 0 or negative: do NOT delete automatically (keep existing reservations)
+        // (matches your current wish: "do not delete")
+        if ($menge_bedarf <= 0) {
+            return 0;
+        }
+                
+        // --- TRANSACTION START ---
+        $this->app->DB->Update("START TRANSACTION");
+                
+        try {
+            // 0) Load required NOT NULL values for lager_reserviert
+            // adresse/projekt are stored in produktion
+            $prodRow = $this->app->DB->SelectArr(
+                sprintf("SELECT adresse, projekt FROM produktion WHERE id=%d", $produktion_id)
+            );
+            $adresse = 0;
+            $projekt = 0;
+            if (!empty($prodRow) && isset($prodRow[0])) {
+                $adresse = (int)$prodRow[0]['adresse'];
+                $projekt = (int)$prodRow[0]['projekt'];
+            }
+                
+            // firma: fallback to firmendaten
+            $firma = (int)$this->app->DB->Select("SELECT firma FROM firmendaten LIMIT 1");
+            if ($firma < 1) { $firma = 1; }
+                
+            // bearbeiter: best-effort (depends on OpenXE instance)
+            $bearbeiter = '';
+            if (isset($this->app->User) && method_exists($this->app->User, 'GetName')) {
+                $bearbeiter = (string)$this->app->User->GetName();
+            } elseif (isset($this->app->User) && method_exists($this->app->User, 'GetID')) {
+                $bearbeiter = (string)$this->app->User->GetID();
+            }
+            $bearbeiterEsc = addslashes($bearbeiter);
+                
+            // datum: store as YYYY-MM-DD
+            $datum = date('Y-m-d');
+                
+            // parameter column is VARCHAR in your table, store production id as string
+            $parameterEsc = addslashes((string)$produktion_id);
+                
+            // 1) IST: current reservations of THIS production/position/article per slot
+            $sqlIst = sprintf(
+                "SELECT lager_platz, lager, SUM(menge) AS menge
+                 FROM lager_reserviert
+                 WHERE objekt='produktion'
+                   AND parameter='%s'
+                   AND posid=%d
+                   AND artikel=%d
+                 GROUP BY lager_platz, lager",
+                $parameterEsc, $position_id, $artikel
+            );
+            $istRows = $this->app->DB->SelectArr($sqlIst);
+                
+            $ist = [];      // lager_platz => menge
+            $istLager = []; // lager_platz => lager
+            if (!empty($istRows)) {
+                foreach ($istRows as $r) {
+                    $lp = (int)$r['lager_platz'];
+                    $ist[$lp] = (int)round($r['menge']);
+                    $istLager[$lp] = (int)$r['lager'];
+                }
+            }
+                
+            // 2) SOLL: free per slot = stock - foreign reservations (excluding our own position)
+            $whereLager = ($lagerFilter > 0) ? (" AND lp.lager=".(int)$lagerFilter." ") : "";
+                
+            $sqlSlots = "SELECT
+            lp.id AS lager_platz,
+            lp.lager AS lager,
+            COALESCE(SUM(lpi.menge),0) AS bestand,
+            COALESCE((
+                SELECT SUM(r2.menge)
+                FROM lager_reserviert r2
+                WHERE r2.artikel = {$artikel}
+                  AND r2.lager_platz = lp.id
+                  AND NOT (
+                      r2.objekt='produktion'
+                      AND r2.parameter = '{$parameterEsc}'
+                      AND r2.posid = {$position_id}
+                      AND r2.artikel = {$artikel}
+                  )
+            ),0) AS reserviert_fremd
+        FROM lager_platz_inhalt lpi
+        INNER JOIN lager_platz lp ON lp.id = lpi.lager_platz
+        WHERE lpi.artikel = {$artikel}
+          AND lp.sperrlager <> 1
+          AND lp.kommissionierlager <> 1
+          {$whereLager}
+        GROUP BY lp.id, lp.lager
+        HAVING (COALESCE(SUM(lpi.menge),0) - COALESCE((
+            SELECT SUM(r2.menge)
+            FROM lager_reserviert r2
+            WHERE r2.artikel = {$artikel}
+              AND r2.lager_platz = lp.id
+              AND NOT (
+                  r2.objekt='produktion'
+                  AND r2.parameter = '{$parameterEsc}'
+                  AND r2.posid = {$position_id}
+                  AND r2.artikel = {$artikel}
+              )
+        ),0)) > 0
+        ORDER BY (COALESCE(SUM(lpi.menge),0) - COALESCE((
+            SELECT SUM(r2.menge)
+            FROM lager_reserviert r2
+            WHERE r2.artikel = {$artikel}
+              AND r2.lager_platz = lp.id
+              AND NOT (
+                  r2.objekt='produktion'
+                  AND r2.parameter = '{$parameterEsc}'
+                  AND r2.posid = {$position_id}
+                  AND r2.artikel = {$artikel}
+              )
+        ),0)) ASC, lp.id ASC
+    ";
+                
+                
+            $slots = $this->app->DB->SelectArr($sqlSlots);
+            if (empty($slots)) {
+                $this->app->DB->Update("COMMIT");
+                return 0;
+            }
+                
+            // Build target distribution (smallest free stock first)
+            $soll = [];      // lager_platz => menge
+            $sollLager = []; // lager_platz => lager
+            $need = $menge_bedarf;
+                
+            foreach ($slots as $s) {
+                if ($need <= 0) break;
+                
+                $lp     = (int)$s['lager_platz'];
+                $lager  = (int)$s['lager'];
+                $bestand = (int)floor((float)$s['bestand']);
+                $reservFremd = (int)floor((float)$s['reserviert_fremd']);
+                $frei = $bestand - $reservFremd;
+                
+                if ($frei <= 0) continue;
+                
+                $take = min($need, $frei);
+                if ($take <= 0) continue;
+                
+                $soll[$lp] = $take;
+                $sollLager[$lp] = $lager;
+                $need -= $take;
+            }
+                
+            // 3) Apply diff (UPDATE/INSERT/DELETE)
+            $allSlots = array_unique(array_merge(array_keys($ist), array_keys($soll)));
+                
+            $grundEsc = addslashes($grundText);
+                
+            foreach ($allSlots as $lp) {
+                $lp = (int)$lp;
+                $old = isset($ist[$lp]) ? (int)$ist[$lp] : 0;
+                $new = isset($soll[$lp]) ? (int)$soll[$lp] : 0;
+                
+                if ($old > 0 && $new === 0) {
+                    // DELETE slot reservation
+                    $sql = sprintf(
+                        "DELETE FROM lager_reserviert
+                         WHERE objekt='produktion'
+                           AND parameter='%s'
+                           AND posid=%d
+                           AND artikel=%d
+                           AND lager_platz=%d",
+                        $parameterEsc, $position_id, $artikel, $lp
+                    );
+                    $this->app->DB->Update($sql);
+                    continue;
+                }
+                
+                if ($old === 0 && $new > 0) {
+                    // INSERT slot reservation - MUST include all NOT NULL fields
+                    $lager = (int)$sollLager[$lp];
+                
+                    $sql = sprintf(
+                        "INSERT INTO lager_reserviert
+                            (adresse, artikel, menge, grund, objekt, parameter, projekt, firma, bearbeiter, datum, posid, lager_platz, lager)
+                         VALUES
+                            (%d, %d, %d, '%s', 'produktion', '%s', %d, %d, '%s', '%s', %d, %d, %d)",
+                        $adresse,
+                        $artikel,
+                        $new,
+                        $grundEsc,
+                        $parameterEsc,
+                        $projekt,
+                        $firma,
+                        $bearbeiterEsc,
+                        $datum,
+                        $position_id,
+                        $lp,
+                        $lager
+                    );
+                    $this->app->DB->Update($sql);
+                    continue;
+                }
+                
+                if ($old > 0 && $new > 0 && $old !== $new) {
+                    // UPDATE slot reservation
+                    $sql = sprintf(
+                        "UPDATE lager_reserviert
+                         SET menge=%d
+                         WHERE objekt='produktion'
+                           AND parameter='%s'
+                           AND posid=%d
+                           AND artikel=%d
+                           AND lager_platz=%d",
+                        $new, $parameterEsc, $position_id, $artikel, $lp
+                    );
+                    $this->app->DB->Update($sql);
+                    continue;
+                }
+            }
+                
+            $reservedTotal = array_sum($soll);
+                
+            $this->app->DB->Update("COMMIT");
+            return (int)$reservedTotal;
+                
+        } catch (\Throwable $e) {
+            $this->app->DB->Update("ROLLBACK");
+            // Make the real DB error visible
+            error_log("MULTISLOT RESERVE ERR: " . $e->getMessage());
+            if (isset($sql)) {
+                error_log("MULTISLOT LAST SQL: " . substr($sql, 0, 1000));
+            }
+            return 0;
+        }
+    }
+
     /*
         Create a copy as draft
     */
@@ -1456,13 +1749,9 @@ class Produktion {
 
         $menge_moeglich = PHP_INT_MAX;
 
-        if ($lagerplatz) {
-            $lager_where = "lp.id=$lagerplatz";
-        } else if ($lager) {
-            $lager_where = "lp.lager=$lager";
-        } else {
-            $lager_where = "1";
-        }
+        // lagerübergreifend: niemals nach Lager/Lagerplatz filtern
+        $lager_where = "1";
+
 
   	    $sql = "SELECT pp.id, artikel, SUM(menge) as menge, geliefert_menge FROM produktion_position pp INNER JOIN artikel a ON pp.artikel = a.id WHERE pp.produktion=$produktion_id AND pp.stuecklistestufe=0 AND a.lagerartikel != 0 GROUP BY artikel";
 	    $materialbedarf_gesamt = $this->app->DB->SelectArr($sql);
