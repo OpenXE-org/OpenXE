@@ -46,7 +46,6 @@
       "www/lib/TransferBase.php",
       "www/lib/ShopimporterBase.php",
       "www/lib/imap.inc.php",
-      "www/lib/class.help.php",
       "www/lib/class.printer.php",
       "www/lib/class.image.php",
       "www/lib/class.location.php",

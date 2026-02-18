@@ -1690,7 +1690,6 @@ return array(
     'HTMLSelect' => $baseDir . '/phpwf/htmltags/class.form.php',
     'HTMLTable' => $baseDir . '/phpwf/htmltags/class.table.php',
     'HTMLTextarea' => $baseDir . '/phpwf/htmltags/class.form.php',
-    'Help' => $baseDir . '/www/lib/class.help.php',
     'HttpClient' => $baseDir . '/www/lib/class.httpclient.php',
     'ICS' => $baseDir . '/www/plugins/class.ics.php',
     'IMAP' => $baseDir . '/www/lib/imap.inc.php',

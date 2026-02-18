@@ -1992,7 +1992,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'HTMLSelect' => __DIR__ . '/../..' . '/phpwf/htmltags/class.form.php',
         'HTMLTable' => __DIR__ . '/../..' . '/phpwf/htmltags/class.table.php',
         'HTMLTextarea' => __DIR__ . '/../..' . '/phpwf/htmltags/class.form.php',
-        'Help' => __DIR__ . '/../..' . '/www/lib/class.help.php',
         'HttpClient' => __DIR__ . '/../..' . '/www/lib/class.httpclient.php',
         'ICS' => __DIR__ . '/../..' . '/www/plugins/class.ics.php',
         'IMAP' => __DIR__ . '/../..' . '/www/lib/imap.inc.php',
