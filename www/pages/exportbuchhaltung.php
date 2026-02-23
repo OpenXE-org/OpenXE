@@ -273,9 +273,11 @@ class Exportbuchhaltung
 
                     $belegearr = $this->app->DB->SelectArr($sql);
 
-                    foreach ($belegearr as $typkey => $value) {
-                        $belege[$typkey][$value['id']] = $value;
-                        $belege[$typkey][$value['id']]['typ'] = $typvalue['typ'];
+		    $belege[$typkey]['table'] = $typvalue['typ'];
+
+                    foreach ($belegearr as $value) {
+                        $belege[$typkey]['belege'][$value['id']] = $value;
+                        $belege[$typkey]['belege'][$value['id']]['typ'] = $typvalue['typ'];
                     }
 
                     // Hole alle Positionen dazu
@@ -303,7 +305,7 @@ class Exportbuchhaltung
                     $posarr = $this->app->DB->SelectArr($sql);
 
                     foreach ($posarr as $pos) {
-                        $belege[$typkey][$pos['beleg_id']]['positionen'][] = $pos;
+                        $belege[$typkey]['belege'][$pos['beleg_id']]['positionen'][] = $pos;
                     }
                 } // foreach typen
 
@@ -691,15 +693,16 @@ class Exportbuchhaltung
         $csv .= "\r\n";
 
         foreach ($beleg_data as $typ => $belege_zu_typ) {
-            foreach ($belege_zu_typ as $beleg) { // Belege
+            foreach ($belege_zu_typ['belege'] as $beleg) { // Belege
                 $sum_pos = 0;
                 foreach ($beleg['positionen'] as $row) {
+
                     $posid = $row['pos_id'];
                     $tmpsteuersatz = 0;
                     $tmpsteuertext = '';
                     $erloes = '';
                     $result = array();
-                    $this->app->erp->GetSteuerPosition($typ, $posid, $tmpsteuersatz, $tmpsteuertext, $erloes);
+                    $this->app->erp->GetSteuerPosition($belege_zu_typ['table'], $posid, $tmpsteuersatz, $tmpsteuertext, $erloes);
 
                     $data = array();
                     if ($row['betrag'] > 0) {
