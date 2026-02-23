@@ -332,7 +332,7 @@ class Exportbuchhaltung
                         $zip = new ZipArchive;
                         $zip->open($dateinamezip, ZipArchive::CREATE);
 
-                        $zip->addFromString($typvalue['typ']."/".$filename_csv, $csv);
+                        $zip->addFromString("/".$filename_csv, $csv);
 
                         $typen = $this->typen($rgchecked, $gschecked, $vbchecked, $lgchecked);
 
