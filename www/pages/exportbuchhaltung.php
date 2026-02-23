@@ -274,6 +274,9 @@ class Exportbuchhaltung
                     $belegearr = $this->app->DB->SelectArr($sql);
 
 		    $belege[$typkey]['table'] = $typvalue['typ'];
+		    $belege[$typkey]['kennzeichen'] = $typvalue['kennzeichen'];
+		    $belege[$typkey]['kennzeichen_negativ'] = $typvalue['kennzeichen_negativ'];
+		    $belege[$typkey]['field_gegenkonto'] = $typvalue['field_gegenkonto'];
 
                     foreach ($belegearr as $value) {
                         $belege[$typkey]['belege'][$value['id']] = $value;
@@ -707,10 +710,10 @@ class Exportbuchhaltung
                     $data = array();
                     if ($row['betrag'] > 0) {
                         $data['Umsatz'] = number_format($row['betrag'], 2, ',', ''); // obligatory
-                        $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen']; // obligatory
+                        $data['Soll-/Haben-Kennzeichen'] = $belege_zu_typ['kennzeichen']; // obligatory
                     } else if ($row['betrag'] < 0) {
                         $data['Umsatz'] = number_format(-$row['betrag'], 2, ',', ''); // obligatory
-                        $data['Soll-/Haben-Kennzeichen'] = $typ['kennzeichen_negativ']; // obligatory
+                        $data['Soll-/Haben-Kennzeichen'] = $belege_zu_typ['kennzeichen_negativ']; // obligatory
                     } else {
                         continue;
                     }
@@ -722,7 +725,7 @@ class Exportbuchhaltung
                     $data['Belegfeld 1'] = mb_strimwidth($beleg['belegnr'],0,36);
                     $data['Konto'] = $beleg['kundennummer']; // obligatory
 
-                    if (!empty($typ['field_gegenkonto'])) {
+                    if (!empty($belege_zu_typ['field_gegenkonto'])) {
                         $data['Gegenkonto (ohne BU-Schlüssel)'] = $row['gegenkonto']; // obligatory
                     } else {
                         $data['Gegenkonto (ohne BU-Schlüssel)'] = $erloes; // obligatory
@@ -740,7 +743,8 @@ class Exportbuchhaltung
 
                 // Check consistency of positions
                 if (!$diffignore) {
-                    if ($sum_pos <> $beleg['betrag_gesamt']) {
+                    if (abs($sum_pos - $beleg['betrag_gesamt']) >= 0.005) {
+
                         // Create differences entries
                         $data = array();
                         $difference = $beleg['betrag_gesamt']-$sum_pos;
