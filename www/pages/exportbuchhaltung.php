@@ -165,13 +165,26 @@ class Exportbuchhaltung
         $lgchecked = $this->app->Secure->GetPOST("lieferantengutschrift");
         $diffignore = $this->app->Secure->GetPOST("diffignore");
     	$sachkonto = $this->app->Secure->GetPOST('sachkonto');
-        $format = $this->app->Secure->GetPOST('format');
+        $this->app->User->SetParameter('exportbuchhaltung_sachkonto', $sachkonto?:null);
+        $sachkonto = $this->app->User->GetParameter('exportbuchhaltung_sachkonto');
+        $sachkontofehlend = $this->app->Secure->GetPOST('sachkontofehlend');
+        $this->app->User->SetParameter('exportbuchhaltung_sachkontofehlend', $sachkontofehlend?:null);
+        $sachkontofehlend = $this->app->User->GetParameter('exportbuchhaltung_sachkontofehlend');
         $pdfexport = $this->app->Secure->GetPOST("pdfexport");
+        $this->app->User->SetParameter('exportbuchhaltung_pdfexport', $pdfexport?:null);
+        $pdfexport = $this->app->User->GetParameter('exportbuchhaltung_pdfexport');
+
+        $format = $this->app->Secure->GetPOST('format');
+
 	    $account_id = null;
     	if (!empty($sachkonto)) {
     	    $sachkonto_kennung = explode(' ',$sachkonto)[0];
-                $account_id = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];
+            $account_id = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkonto_kennung."'")[0]['id'];
     	}
+        if (!empty($sachkontofehlend)) {
+            $sachkontofehlend_kennung = explode(' ',$sachkontofehlend)[0];
+            $account_id_fehlend = $this->app->DB->SelectArr("SELECT id from kontorahmen WHERE sachkonto = '".$sachkontofehlend."'")[0]['id'];
+        }
 
         $msg = "";
 
@@ -325,6 +338,7 @@ class Exportbuchhaltung
                         filename: $filename_csv,
                         diffignore: $diffignore,
                         sachkonto_differences: $sachkonto_kennung,
+                        sachkonto_missing: $sachkontofehlend_kennung,
                         format: $format
                     );
 
@@ -445,6 +459,7 @@ class Exportbuchhaltung
         $this->app->YUI->DatePicker("von");
         $this->app->YUI->DatePicker("bis");
         $this->app->YUI->AutoComplete('sachkonto', 'sachkonto');
+        $this->app->YUI->AutoComplete('sachkontofehlend', 'sachkonto');
 
         $this->app->Tpl->SET('MESSAGE', $msg);
 
@@ -459,6 +474,7 @@ class Exportbuchhaltung
         $this->app->Tpl->SET('BIS', $bis_form);
         $this->app->Tpl->SET('PROJEKT', $projektkuerzel);
         $this->app->Tpl->SET('SACHKONTO', $sachkonto);
+        $this->app->Tpl->SET('SACHKONTOFEHLEND', $sachkontofehlend);
 
         $this->app->Tpl->Parse('PAGE', "exportbuchhaltung_export.tpl");
     }
@@ -468,7 +484,7 @@ class Exportbuchhaltung
     * format: "ISO-8859-1", "UTF-8", "UTF-8-BOM"
     * @throws ConsistencyException with string (list of items) if consistency check fails and no sachkonto for differences is given
     */
-    function DATEV_Buchuchungsstapel($beleg_data, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences, string $format = "ISO-8859-1") : string {
+    function DATEV_Buchuchungsstapel($beleg_data, string $berater, string $mandant, datetime $wj_beginn, int $sachkontenlaenge, datetime $von, datetime $bis, string $filename = 'EXTF_Buchungsstapel_DATEV_export.csv', $diffignore = false, $sachkonto_differences, $sachkonto_missing, string $format = "ISO-8859-1") : string {
 
         $datev_header_definition = array (
             '1' => 'Kennzeichen',
@@ -756,23 +772,28 @@ class Exportbuchhaltung
                         $data['Konto'] = $beleg['kundennummer'];
                         $data['Soll-/Haben-Kennzeichen'] = ($difference < 0)?'S':'H'; // obligatory
 
-                        $data['Gegenkonto (ohne BU-Schlüssel)'] = $sachkonto_differences; // obligatory
-
                         $data['Belegdatum'] = date_format(date_create($beleg['datum']),"dm"); // obligatory
-                        $data['Buchungstext'] = "Differenz";
+                        if (empty($sum_pos)) {
+                            $data['Beleginfo -Art 1'] = "Hinweis";
+                            $data['Beleginfo -Inhalt 1'] = "Kontierung fehlt";
+                            $data['Buchungstext'] = mb_strimwidth($beleg['name'],0,60);
+                            $data['Gegenkonto (ohne BU-Schlüssel)'] = $sachkonto_missing; // obligatory
+                            if (!$sachkonto_missing) {
+                                $throw_exception = true;
+                            }
+                        } else {
+                            $data['Buchungstext'] = "Differenz";
+                            $data['Gegenkonto (ohne BU-Schlüssel)'] = $sachkonto_differences; // obligatory
+                            if (!$sachkonto_differences) {
+                                $throw_exception = true;
+                            }
+                        }
                         $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $beleg['ustid'];
                         $data['Auftragsnummer'] = $beleg['auftrag'];
                         $data['Zahlweise'] = $beleg['zahlweise'];
-
                         $beleg['betrag_summe'] = $sum_pos;
-
                         $differences[] = $beleg;
-
-                        if (!$sachkonto_differences) {
-                            $throw_exception = true;
-                        } else {
-                            $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
-                        }
+                        $csv .= $this->create_line($datev_buchungsstapel_definition,$data);
                     }
                 }
             } // Foreach belege
