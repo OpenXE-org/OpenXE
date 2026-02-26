@@ -271,9 +271,11 @@ class Exportbuchhaltung
                     $belegearr = $this->app->DB->SelectArr($sql);
 
                     $belege[$typkey]['table'] = $typvalue['typ'];
+                    $belege[$typkey]['typ'] = $typvalue['typ'];
                     $belege[$typkey]['kennzeichen'] = $typvalue['kennzeichen'];
                     $belege[$typkey]['kennzeichen_negativ'] = $typvalue['kennzeichen_negativ'];
                     $belege[$typkey]['field_gegenkonto'] = $typvalue['field_gegenkonto'];
+                    $belege[$typkey]['pdf'] = $typvalue['pdf'];
 
                     foreach ($belegearr as $value) {
                         $belege[$typkey]['belege'][$value['id']] = $value;
@@ -357,29 +359,19 @@ class Exportbuchhaltung
 
                         $typen = $this->typen($rgchecked, $gschecked, $vbchecked, $lgchecked);
 
-                        foreach ($typen as $typvalue) {
-                            $sql = "
-                                SELECT id, ".$typvalue['field_belegnr']." belegnr FROM ".$typvalue['typ']." b
-                                WHERE
-                                b.".$typvalue['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typvalue['condition_where'];
+                        foreach ($belege as $typ => $belege_zu_typ) {
+                            foreach ($belege_zu_typ['belege'] as $beleg) { // Belege
 
-                            $belege = $this->app->DB->SelectArr($sql);
+                                $action = $belege_zu_typ['pdf'];
 
-                            foreach ($belege as $beleg) {
-                                if (!$typvalue['do']) {
-                                    continue;
-                                }
-
-                                $action = $typvalue['pdf'];
-
-                                if ($typvalue['typ'] == 'rechnung') {
+                                if ($belege_zu_typ['typ'] == 'rechnung') {
                                     if ($this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id'])) {
                                         $action = 'load';
                                     }
                                 }
                                 switch ($action) {
                                     case 'print':
-                                        switch ($typvalue['typ']) {
+                                        switch ($belege_zu_typ['typ']) {
                                             case 'rechnung':
                                                 if(class_exists('GutschriftPDFCustom')) {
                                                     $Brief = new RechnungPDFCustom($this->app,$projekt);
@@ -404,10 +396,10 @@ class Exportbuchhaltung
                                         }
                                         $tmpfile = $Brief->displayTMP();
                                         $file_name = $beleg['belegnr'].".pdf";
-                                        $zip->addFromString($typvalue['typ']."/".$file_name, file_get_contents($tmpfile));
+                                        $zip->addFromString($belege_zu_typ['typ']."/".$file_name, file_get_contents($tmpfile));
              			            break;
                                     case 'load':
-                                        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('%',$typvalue['typ'],$beleg['id']);
+                                        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('%',$belege_zu_typ['typ'],$beleg['id']);
                                         $suffix = "";
                                         $count = 0;
                                         foreach ($file_attachments as $file_attachment) {
@@ -415,7 +407,7 @@ class Exportbuchhaltung
                                             if (in_array($ending,['pdf','xml'])) {
                                                 $file_contents = $this->app->erp->GetDatei($file_attachment);
                                                 $file_name = filter_var($beleg['belegnr'],FILTER_SANITIZE_EMAIL).$suffix.".".$ending;
-                                                $zip->addFromString($typvalue['typ']."/".$file_name, $file_contents);
+                                                $zip->addFromString($belege_zu_typ['typ']."/".$file_name, $file_contents);
                                                 $count++;
                                                 $suffix = "_".$count;
                                             }
