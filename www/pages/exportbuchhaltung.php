@@ -20,26 +20,7 @@
 <?php
 
 use Xentral\Modules\DatevExport\DatevExport;
-
-class ConsistencyException extends Exception {
-
-    /*
-        contains the result data as array(string 'belegnr', float 'betrag_gesamt', float 'betrag_summe'))
-    */
-
-    private $_data = array();
-
-    public function __construct($message, $data)
-    {
-        $this->_data = $data;
-        parent::__construct($message);
-    }
-
-    public function getData()
-    {
-        return $this->_data;
-    }
-}
+use Xentral\Modules\DatevExport\ConsistencyException;
 
 class Exportbuchhaltung
 {
@@ -381,6 +362,7 @@ class Exportbuchhaltung
                                 SELECT id, ".$typvalue['field_belegnr']." belegnr FROM ".$typvalue['typ']." b
                                 WHERE
                                 b.".$typvalue['field_date']." BETWEEN '".date_format($von,"Y-m-d")."' AND '".date_format($bis,"Y-m-d")."' AND (b.projekt=$projekt OR $projekt=0)".$typvalue['condition_where'];
+
                             $belege = $this->app->DB->SelectArr($sql);
 
                             foreach ($belege as $beleg) {

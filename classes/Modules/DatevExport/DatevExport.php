@@ -10,6 +10,27 @@
 namespace Xentral\Modules\DatevExport;
 
 use datetime;
+use Exception;
+
+class ConsistencyException extends Exception {
+
+    /*
+        contains the result data as array(string 'belegnr', float 'betrag_gesamt', float 'betrag_summe'))
+    */
+
+    private $_data = array();
+
+    public function __construct($message, $data)
+    {
+        $this->_data = $data;
+        parent::__construct($message);
+    }
+
+    public function getData()
+    {
+        return $this->_data;
+    }
+}
 
 final class DatevExport
 {
