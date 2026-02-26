@@ -165,15 +165,8 @@ class Exportbuchhaltung
         $lgchecked = $this->app->Secure->GetPOST("lieferantengutschrift");
         $diffignore = $this->app->Secure->GetPOST("diffignore");
     	$sachkonto = $this->app->Secure->GetPOST('sachkonto');
-        $this->app->User->SetParameter('exportbuchhaltung_sachkonto', $sachkonto?:null);
-        $sachkonto = $this->app->User->GetParameter('exportbuchhaltung_sachkonto');
         $sachkontofehlend = $this->app->Secure->GetPOST('sachkontofehlend');
-        $this->app->User->SetParameter('exportbuchhaltung_sachkontofehlend', $sachkontofehlend?:null);
-        $sachkontofehlend = $this->app->User->GetParameter('exportbuchhaltung_sachkontofehlend');
         $pdfexport = $this->app->Secure->GetPOST("pdfexport");
-        $this->app->User->SetParameter('exportbuchhaltung_pdfexport', $pdfexport?:null);
-        $pdfexport = $this->app->User->GetParameter('exportbuchhaltung_pdfexport');
-
         $format = $this->app->Secure->GetPOST('format');
 
 	    $account_id = null;
@@ -198,6 +191,13 @@ class Exportbuchhaltung
             $gschecked = true;
             $vbchecked = true;
             $lgchecked = true;
+            $sachkonto = $this->app->User->GetParameter('exportbuchhaltung_sachkonto');
+            $sachkontofehlend = $this->app->User->GetParameter('exportbuchhaltung_sachkontofehlend');
+            $pdfexport = $this->app->User->GetParameter('exportbuchhaltung_pdfexport');
+        } else {
+            $this->app->User->SetParameter('exportbuchhaltung_sachkonto', $sachkonto);
+            $this->app->User->SetParameter('exportbuchhaltung_sachkontofehlend', $sachkontofehlend);
+            $this->app->User->SetParameter('exportbuchhaltung_pdfexport', $pdfexport);
         }
 
         $missing_obligatory = array();
