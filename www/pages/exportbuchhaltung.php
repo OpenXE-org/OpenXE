@@ -48,6 +48,7 @@ class Exportbuchhaltung
                     'field_betrag' => 'p.umsatz_brutto_gesamt',
                     'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\',\'storniert\')',
                     'Buchungstyp' => 'SR',
+                    'document_type' => 2,
                     'do' => $rechnung,
                     'pdf' => 'print'
                 ),
@@ -67,6 +68,7 @@ class Exportbuchhaltung
                     'field_betrag' => 'p.umsatz_brutto_gesamt',
                     'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\')',
                     'Buchungstyp' => '',
+                    'document_type' => 2,
                     'do' => $gutschrift,
                     'pdf' => 'print'
                 ),
@@ -87,6 +89,7 @@ class Exportbuchhaltung
                     'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
                     'condition_where' => ' AND b.status IN (\'freigegeben\', \'abgeschlossen\')',
                     'Buchungstyp' => '',
+                    'document_type' => 1,
                     'do' => $verbindlichkeit,
                     'pdf' => 'load'
                 ),
@@ -107,6 +110,7 @@ class Exportbuchhaltung
                     'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
                     'condition_where' => ' AND b.status IN (\'freigegeben\', \'abgeschlossen\')',
                     'Buchungstyp' => '',
+                    'document_type' => 1,
                     'do' => $lieferantengutschrift,
                     'pdf' => 'load'
                 )
@@ -259,8 +263,7 @@ class Exportbuchhaltung
                         a.ustid,
                         b." . $typvalue['field_date'] . " as datum,
                         " . $typvalue['field_betrag_gesamt'] . " as betrag_gesamt,
-                        b.waehrung,
-                        UUID() uuid
+                        b.waehrung
                     FROM
                         " . $typvalue['typ'] . " b
                             INNER JOIN
@@ -276,6 +279,7 @@ class Exportbuchhaltung
                     $belege[$typkey]['kennzeichen_negativ'] = $typvalue['kennzeichen_negativ'];
                     $belege[$typkey]['field_gegenkonto'] = $typvalue['field_gegenkonto'];
                     $belege[$typkey]['pdf'] = $typvalue['pdf'];
+                    $belege[$typkey]['document_type'] = $typvalue['document_type'];
 
                     foreach ($belegearr as $value) {
                         $belege[$typkey]['belege'][$value['id']] = $value;
@@ -357,10 +361,8 @@ class Exportbuchhaltung
 
                         $zip->addFromString("/".$filename_csv, $csv);
 
-                        $typen = $this->typen($rgchecked, $gschecked, $vbchecked, $lgchecked);
-
                         foreach ($belege as $typ => $belege_zu_typ) {
-                            foreach ($belege_zu_typ['belege'] as $beleg) { // Belege
+                            foreach ($belege_zu_typ['belege'] as $beleg_key => $beleg) { // Belege
 
                                 $action = $belege_zu_typ['pdf'];
 
@@ -397,19 +399,29 @@ class Exportbuchhaltung
                                         $tmpfile = $Brief->displayTMP();
                                         $file_name = $beleg['belegnr'].".pdf";
                                         $zip->addFromString($belege_zu_typ['typ']."/".$file_name, file_get_contents($tmpfile));
+
+                                        if (!$belege[$typ]['belege'][$beleg_key]['beleglink']) {
+                                            $belege[$typ]['belege'][$beleg_key]['beleglink'] = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
+                                        }
+
              			            break;
                                     case 'load':
-                                        $file_attachments = $this->app->erp->GetDateiSubjektObjekt('%',$belege_zu_typ['typ'],$beleg['id']);
+                                        $file_ids = $this->app->erp->GetDateiSubjektObjekt('%',$belege_zu_typ['typ'],$beleg['id']);
                                         $suffix = "";
                                         $count = 0;
-                                        foreach ($file_attachments as $file_attachment) {
-		                    			    $ending = $this->app->erp->GetDateiEndung($file_attachment);
+
+                                        foreach ($file_ids as $file_id) {
+                                            $ending = $this->app->erp->GetDateiEndung($file_id);
                                             if (in_array($ending,['pdf','xml'])) {
                                                 $file_contents = $this->app->erp->GetDatei($file_attachment);
                                                 $file_name = filter_var($beleg['belegnr'],FILTER_SANITIZE_EMAIL).$suffix.".".$ending;
                                                 $zip->addFromString($belege_zu_typ['typ']."/".$file_name, $file_contents);
                                                 $count++;
                                                 $suffix = "_".$count;
+
+                                                if (!$belege[$typ]['belege'][$beleg_key]['beleglink']) {
+                                                    $belege[$typ]['belege'][$beleg_key]['beleglink'] = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
+                                                }
                                             }
                                         }
                                     break;
@@ -476,4 +488,3 @@ class Exportbuchhaltung
         $this->app->Tpl->Parse('PAGE', "exportbuchhaltung_export.tpl");
     }
 }
-
