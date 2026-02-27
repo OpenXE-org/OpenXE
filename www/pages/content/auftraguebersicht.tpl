@@ -90,6 +90,7 @@ document.onkeydown = function(evt) {
 	<option value="versandentfernen">{|Option &quot;F&uuml;r den Versand&quot; entfernen|}</option>
 	<option value="fastlane">{|Option "Fast-Lane" setzen|}</option>
 	<option value="fastlaneentfernen">{|Option &quot;Fast-Lane&quot; entfernen|}</option>
+	<option value="paidlock">{|als bezahlt markieren|}</option>
 	<option value="mail">{|per Mail versenden|}</option>
 	<option value="versendet">{|als versendet markieren|}</option>
 	<option value="stapelproduktionweiter">{|als Produktion weiterf&uuml;hren|}</option>
