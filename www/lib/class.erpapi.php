@@ -6960,14 +6960,178 @@ title: 'Abschicken',
     return $navarray['menu']['tmp'];
   }
 
-  // @refactor Navigation Widget
-  function NavigationENT()
+  /**
+   * @param string     $firstTitle
+   * @param array|null $secnav
+   *
+   * @return string
+   */
+  public function GetMenuConfiguratorKey($firstTitle, $secnav = null)
   {
-    return $this->Navigation();
+    $firstTitle = (string)$firstTitle;
+    if($secnav === null){
+      return 'first|'.$firstTitle;
+    }
+    $secTitle = isset($secnav[0])?(string)$secnav[0]:'';
+    $module = isset($secnav[1])?(string)$secnav[1]:'';
+    $action = isset($secnav[2])?(string)$secnav[2]:'';
+    return 'sec|'.$firstTitle.'|'.$module.'|'.$action.'|'.$secTitle;
+  }
+
+  /**
+   * @param int|null $userId
+   *
+   * @return array
+   */
+  public function GetMenuConfiguratorConfig($userId = null)
+  {
+    $default = ['items' => [], 'applyCustomStructure' => false];
+    if(empty($userId)){
+      $userId = $this->app->User->GetID();
+    }
+    if((int)$userId <= 0){
+      return $default;
+    }
+    try{
+      /** @var \Xentral\Modules\User\Service\UserConfigService $userConfig */
+      $userConfig = $this->app->Container->get('UserConfigService');
+    }
+    catch(Exception $e){
+      return $default;
+    }
+    try{
+      $stored = $userConfig->tryGet('menu_configurator', $userId);
+    }
+    catch(Exception $e){
+      $stored = null;
+    }
+    if(is_string($stored)){
+      $decoded = json_decode($stored, true);
+      if(is_array($decoded)){
+        $stored = $decoded;
+      }
+    }
+    if(!is_array($stored)){
+      return $default;
+    }
+    return array_merge($default, $stored);
+  }
+
+  /**
+   * @param array      $menu
+   * @param array|null $config
+   *
+   * @return array
+   */
+  public function ApplyMenuConfigurator(array $menu, array $config = null)
+  {
+    if(empty($menu)){
+      return $menu;
+    }
+    if($config === null){
+      $config = $this->GetMenuConfiguratorConfig();
+    }
+    $config = array_merge(['items' => [], 'applyCustomStructure' => false], is_array($config)?$config:[]);
+    $configItems = is_array($config['items'])?$config['items']:[];
+    $applyCustomStructure = !empty($config['applyCustomStructure']);
+    $result = [];
+    $defaultTopOrder = 0;
+
+    foreach($menu as $entry){
+      $firstTitle = isset($entry['first'][0])?(string)$entry['first'][0]:'';
+      $firstKey = $this->GetMenuConfiguratorKey($firstTitle);
+      $firstConfig = isset($configItems[$firstKey]) && is_array($configItems[$firstKey])?$configItems[$firstKey]:[];
+      if(array_key_exists('visible', $firstConfig) && $firstConfig['visible'] === false){
+        continue;
+      }
+      $entry['_default_order'] = $defaultTopOrder++;
+      $entry['_custom_order'] = isset($firstConfig['order']) && $firstConfig['order'] !== '' && $firstConfig['order'] !== null?(float)$firstConfig['order']:null;
+      if(!empty($firstConfig['customTitle'])){
+        $entry['first'][0] = $firstConfig['customTitle'];
+      }
+
+      $secList = [];
+      if(isset($entry['sec']) && is_array($entry['sec'])){
+        $defaultSecOrder = 0;
+        foreach($entry['sec'] as $sec){
+          $secKey = $this->GetMenuConfiguratorKey($firstTitle, $sec);
+          $secConfig = isset($configItems[$secKey]) && is_array($configItems[$secKey])?$configItems[$secKey]:[];
+          if(array_key_exists('visible', $secConfig) && $secConfig['visible'] === false){
+            continue;
+          }
+          $sec['_default_order'] = $defaultSecOrder++;
+          $sec['_custom_order'] = isset($secConfig['order']) && $secConfig['order'] !== '' && $secConfig['order'] !== null?(float)$secConfig['order']:null;
+          if(!empty($secConfig['customTitle'])){
+            $sec[0] = $secConfig['customTitle'];
+          }
+          $secList[] = $sec;
+        }
+      }
+
+      if($applyCustomStructure && count($secList) > 1){
+        usort(
+          $secList,
+          static function($a, $b){
+            $orderA = array_key_exists('_custom_order', $a) && $a['_custom_order'] !== null?$a['_custom_order']:$a['_default_order'];
+            $orderB = array_key_exists('_custom_order', $b) && $b['_custom_order'] !== null?$b['_custom_order']:$b['_default_order'];
+            if($orderA == $orderB){
+              return 0;
+            }
+            return $orderA < $orderB?-1:1;
+          }
+        );
+      }
+
+      if(!empty($secList)){
+        foreach($secList as &$secEntry){
+          if(isset($secEntry['_default_order'])){
+            unset($secEntry['_default_order']);
+          }
+          if(isset($secEntry['_custom_order'])){
+            unset($secEntry['_custom_order']);
+          }
+        }
+        unset($secEntry);
+      }
+      $entry['sec'] = $secList;
+      $result[] = $entry;
+    }
+
+    if($applyCustomStructure && count($result) > 1){
+      usort(
+        $result,
+        static function($a, $b){
+          $orderA = array_key_exists('_custom_order', $a) && $a['_custom_order'] !== null?$a['_custom_order']:$a['_default_order'];
+          $orderB = array_key_exists('_custom_order', $b) && $b['_custom_order'] !== null?$b['_custom_order']:$b['_default_order'];
+          if($orderA == $orderB){
+            return 0;
+          }
+          return $orderA < $orderB?-1:1;
+        }
+      );
+    }
+
+    foreach($result as &$entry){
+      if(isset($entry['_default_order'])){
+        unset($entry['_default_order']);
+      }
+      if(isset($entry['_custom_order'])){
+        unset($entry['_custom_order']);
+      }
+    }
+    unset($entry);
+
+    return $result;
   }
 
   // @refactor Navigation Widget
-  function Navigation()
+  function NavigationENT($applyUserConfig = true)
+  {
+    return $this->Navigation($applyUserConfig);
+  }
+
+  // @refactor Navigation Widget
+  function Navigation($applyUserConfig = true)
   {
     // admin menu
     $menu = 0;
@@ -7119,7 +7283,12 @@ title: 'Abschicken',
     // Always the last entry
     $navarray['menu']['admin'][$menu]['sec'][]  = array('Abmelden','welcome','logout');
 
-    return $this->CalculateNavigation($navarray);
+    $calculatedMenu = $this->CalculateNavigation($navarray);
+    if($applyUserConfig){
+      $calculatedMenu = $this->ApplyMenuConfigurator($calculatedMenu);
+    }
+
+    return $calculatedMenu;
   }
 
 
