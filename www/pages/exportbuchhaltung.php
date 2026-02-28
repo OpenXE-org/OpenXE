@@ -325,138 +325,168 @@ class Exportbuchhaltung
                     }
                 } // foreach typen
 
-                $usernamearr = explode(' ',strtoupper($this->app->User->GetName()." X X"));
 
-                if (count($usernamearr) < 2) {
-                    $kuerzel = $usernamearr[0][0].$usernamearr[0][1];
-                }
-                else {
-                    $kuerzel = $usernamearr[0][0].$usernamearr[1][0];
-                }
+                // Prepare files and add guids to belege array
+                if ($pdfexport) {
 
-                $filename_csv = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
-                try {
-                    $csv = DatevExport::createBuchungsstapelCSV(
-                        beleg_data: $belege,
-                        berater: $buchhaltung_berater,
-                        mandant: $buchhaltung_mandant,
-                        bearbeiter: $kuerzel,
-                        wj_beginn: $buchhaltung_wj_beginn,
-                        sachkontenlaenge: $buchhaltung_sachkontenlaenge,
-                        von: $von,
-                        bis: $bis,
-                        filename: $filename_csv,
-                        diffignore: $diffignore,
-                        sachkonto_differences: $sachkonto_kennung,
-                        sachkonto_missing: $sachkontofehlend_kennung,
-                        format: $format
-                    );
+                    $zip = new ZipArchive;
+                    $dateiname_zip_temp = uniqid("Export_Buchhaltung_").".zip";
+                    $dateiname_zip = 'Export_Buchhaltung_'.date('Y-m-d').'.zip';
+                    $zip->open($dateiname_zip_temp, ZipArchive::CREATE);
 
-                    if ($pdfexport) {
+                    $zipbelege = new ZipArchive;
+                    $dateiname_zip_belege_temp = uniqid("Export_Buchhaltung_Belege_").".zip";
+                    $dateiname_zip_belege = 'Export_Buchhaltung_Belege_'.date('Y-m-d').'.zip';
+                    $zipbelege->open($dateiname_zip_belege_temp, ZipArchive::CREATE);
 
-                        $dateinamezip = 'Export_Buchhaltung_'.date('Y-m-d').'.zip';
+                    foreach ($belege as $typ => $belege_zu_typ) {
+                        foreach ($belege_zu_typ['belege'] as $beleg_key => $beleg) { // Belege
 
-                        $zip = new ZipArchive;
-                        $zip->open($dateinamezip, ZipArchive::CREATE);
+                            $allowed_file_types = array('pdf','xml');
+                            $allowed_link_file_types = array('pdf');
+                            $action = $belege_zu_typ['pdf'];
 
-                        $zip->addFromString("/".$filename_csv, $csv);
-
-                        foreach ($belege as $typ => $belege_zu_typ) {
-                            foreach ($belege_zu_typ['belege'] as $beleg_key => $beleg) { // Belege
-
-                                $action = $belege_zu_typ['pdf'];
-
-                                if ($belege_zu_typ['typ'] == 'rechnung') {
-                                    if ($this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id'])) {
-                                        $action = 'load';
-                                    }
-                                }
-                                switch ($action) {
-                                    case 'print':
-                                        switch ($belege_zu_typ['typ']) {
-                                            case 'rechnung':
-                                                if(class_exists('GutschriftPDFCustom')) {
-                                                    $Brief = new RechnungPDFCustom($this->app,$projekt);
-                                                }
-                                                else{
-                                                    $Brief = new RechnungPDF($this->app,$projekt);
-                                                }
-                                                $Brief->GetRechnung($beleg['id']);
-                                            break;
-                                            case 'gutschrift':
-                                                if(class_exists('RechnungPDFCustom')) {
-                                                    $Brief = new GutschriftPDFCustom($this->app,$projekt);
-                                                }
-                                                else{
-                                                    $Brief = new GutschriftPDF($this->app,$projekt);
-                                                }
-                                                $Brief->GetGutschrift($beleg['id']);
-                                            break;
-                                            default:
-                                                exit();
-                                            break;
-                                        }
-                                        $tmpfile = $Brief->displayTMP();
-                                        $file_name = $beleg['belegnr'].".pdf";
-                                        $zip->addFromString($belege_zu_typ['typ']."/".$file_name, file_get_contents($tmpfile));
-
-                                        if (!$belege[$typ]['belege'][$beleg_key]['beleglink']) {
-                                            $belege[$typ]['belege'][$beleg_key]['beleglink'] = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
-                                        }
-
-             			            break;
-                                    case 'load':
-                                        $file_ids = $this->app->erp->GetDateiSubjektObjekt('%',$belege_zu_typ['typ'],$beleg['id']);
-                                        $suffix = "";
-                                        $count = 0;
-
-                                        foreach ($file_ids as $file_id) {
-                                            $ending = $this->app->erp->GetDateiEndung($file_id);
-                                            if (in_array($ending,['pdf','xml'])) {
-                                                $file_contents = $this->app->erp->GetDatei($file_attachment);
-                                                $file_name = filter_var($beleg['belegnr'],FILTER_SANITIZE_EMAIL).$suffix.".".$ending;
-                                                $zip->addFromString($belege_zu_typ['typ']."/".$file_name, $file_contents);
-                                                $count++;
-                                                $suffix = "_".$count;
-
-                                                if (!$belege[$typ]['belege'][$beleg_key]['beleglink']) {
-                                                    $belege[$typ]['belege'][$beleg_key]['beleglink'] = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
-                                                }
-                                            }
-                                        }
-                                    break;
+                            if ($belege_zu_typ['typ'] == 'rechnung') {
+                                if ($this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id'])) {
+                                    $action = 'load';
+                                    $allowed_link_file_types = array('xml');
                                 }
                             }
-                        }
-                        $zip->close();
-                        // download
-                        header('Content-Type: application/zip');
-                        header("Content-Disposition: attachment; filename=$dateinamezip");
-                        header('Content-Length: ' . filesize($dateinamezip));
 
-                        readfile($dateinamezip);
-                        unlink($dateinamezip);
-                    } else {
-                        header("Content-Disposition: attachment; filename=" . $filename_csv);
-                        header("Pragma: no-cache");
-                        header("Expires: 0");
-                        echo($csv);
-                    }
-                    $this->app->ExitXentral();
-                }
-                catch (ConsistencyException $e) {
-                    $msg = "<div class=error>Inkonsistente Daten: <br>";
-                    $data = $e->getData();
-                    $count = 0;
-                    foreach($data as $item) {
-                        $msg .= ucfirst($item['typ'])." ".$item['belegnr']." (Kopf ".$this->app->erp->ReplaceMengeBetrag(false,$item['betrag_gesamt'],false)." Positionen ".$this->app->erp->ReplaceMengeBetrag(false,$item['betrag_summe'],false).")<br>";
-                        $count++;
-                        if ($count == 10) {
-                            $msg .= "...";
-                            break;
+                            switch ($action) {
+                                case 'print':
+                                    switch ($belege_zu_typ['typ']) {
+                                        case 'rechnung':
+                                            if(class_exists('GutschriftPDFCustom')) {
+                                                $Brief = new RechnungPDFCustom($this->app,$projekt);
+                                            }
+                                            else{
+                                                $Brief = new RechnungPDF($this->app,$projekt);
+                                            }
+                                            $Brief->GetRechnung($beleg['id']);
+                                        break;
+                                        case 'gutschrift':
+                                            if(class_exists('RechnungPDFCustom')) {
+                                                $Brief = new GutschriftPDFCustom($this->app,$projekt);
+                                            }
+                                            else{
+                                                $Brief = new GutschriftPDF($this->app,$projekt);
+                                            }
+                                            $Brief->GetGutschrift($beleg['id']);
+                                        break;
+                                        default:
+                                            $this->app->Tpl->AddMessage('error',"Belegdatei nicht geladen, Druckvorgang fehlgeschlagen: ".$beleg['belegnr']);
+                                            $dataok = false;
+                                        break;
+                                    }
+                                    $tmpfile = $Brief->displayTMP();
+                                    $file_name = $beleg['belegnr'].".pdf";
+                                    $zipbelege->addFromString(ucfirst($belege_zu_typ['typ'])."_".$file_name, file_get_contents($tmpfile));
+
+                                    if (!$belege[$typ]['belege'][$beleg_key]['beleglink']) {
+                                        $belege[$typ]['belege'][$beleg_key]['beleglink'] = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
+                                    }
+                                break;
+                                case 'load':
+                                    $file_ids = $this->app->erp->GetDateiSubjektObjekt('%',$belege_zu_typ['typ'],$beleg['id']);
+                                    $suffix = "";
+                                    $count = 0;
+
+                                    foreach ($file_ids as $file_id) {
+                                        $ending = strtolower($this->app->erp->GetDateiEndung($file_id));
+
+                                        if (in_array($ending, $allowed_file_types)) {
+                                            $file_contents = $this->app->erp->GetDatei($file_id);
+                                            $file_name = filter_var($beleg['belegnr'],FILTER_SANITIZE_EMAIL).$suffix.".".$ending;
+                                            $zipbelege->addFromString(ucfirst($belege_zu_typ['typ'])."_".$file_name, $file_contents);
+                                            $count++;
+                                            $suffix = "_".$count;
+                                            if (!$belege[$typ]['belege'][$beleg_key]['beleglink'] && in_array($ending, $allowed_link_file_types)) { // First file is linked
+                                                $belege[$typ]['belege'][$beleg_key]['beleglink'] = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
+                                            }
+                                        }
+                                    }
+                                break;
+                                default:
+                                    $this->app->Tpl->AddMessage('error',"Belegdatei nicht geladen: ".$beleg['belegnr']);
+                                    $dataok = false;
+                                break;
+                            } // Switch action
+
+                            if (empty($belege[$typ]['belege'][$beleg_key]['beleglink'])) {
+                                $this->app->Tpl->AddMessage('error',"Belegdatei fehlt: ".$beleg['belegnr']);
+                                $dataok = false;
+                            }
+
+                        } // Belege
+                    } // Belege_zu_typ
+                    $zipbelege->close();
+                } // pdfexport
+
+                if ($dataok) {
+                    // Create Buchungsstapel
+                    try {
+                        $usernamearr = explode(' ',strtoupper($this->app->User->GetName()." X X"));
+                        if (count($usernamearr) < 2) {
+                            $kuerzel = $usernamearr[0][0].$usernamearr[0][1];
                         }
+                        else {
+                            $kuerzel = $usernamearr[0][0].$usernamearr[1][0];
+                        }
+                        $dateiname_csv = "EXTF_".date('Ymd') . "_Buchungsstapel_DATEV_export.csv";
+
+                        $csv = DatevExport::createBuchungsstapelCSV(
+                            beleg_data: $belege,
+                            berater: $buchhaltung_berater,
+                            mandant: $buchhaltung_mandant,
+                            bearbeiter: $kuerzel,
+                            wj_beginn: $buchhaltung_wj_beginn,
+                            sachkontenlaenge: $buchhaltung_sachkontenlaenge,
+                            von: $von,
+                            bis: $bis,
+                            filename: $dateiname_csv,
+                            diffignore: $diffignore,
+                            sachkonto_differences: $sachkonto_kennung,
+                            sachkonto_missing: $sachkontofehlend_kennung,
+                            format: $format
+                        );
+
+                        // Download
+                        if ($pdfexport) {
+
+                            $zip->addFromString("/".$dateiname_csv, $csv);
+                            $zip->addFromString("/".$dateiname_zip_belege, file_get_contents($dateiname_zip_belege_temp));
+                            $zip->close();
+
+                            header('Content-Type: application/zip');
+                            header("Content-Disposition: attachment; filename=$dateiname_zip");
+                            header('Content-Length: ' . filesize($dateiname_zip_temp));
+
+                            readfile($dateiname_zip_temp);
+                            unlink($dateiname_zip_temp);
+                        }
+                        else {
+                            header("Content-Disposition: attachment; filename=" . $dateiname_csv);
+                            header("Pragma: no-cache");
+                            header("Expires: 0");
+                            echo($csv);
+                        }
+                        $this->app->ExitXentral();
                     }
-                    $msg .= "</div>";
+                    catch (ConsistencyException $e) {
+                        $msg = "<div class=error>Inkonsistente Daten: <br>";
+                        $data = $e->getData();
+                        $count = 0;
+                        foreach($data as $item) {
+                            $msg .= ucfirst($item['typ'])." ".$item['belegnr']." (Kopf ".$this->app->erp->ReplaceMengeBetrag(false,$item['betrag_gesamt'],false)." Positionen ".$this->app->erp->ReplaceMengeBetrag(false,$item['betrag_summe'],false).")<br>";
+                            $count++;
+                            if ($count == 10) {
+                                $msg .= "...";
+                                break;
+                            }
+                        }
+                        $msg .= "</div>";
+                    }
                 }
             }
         }
@@ -470,7 +500,7 @@ class Exportbuchhaltung
         $this->app->YUI->AutoComplete('sachkonto', 'sachkonto');
         $this->app->YUI->AutoComplete('sachkontofehlend', 'sachkonto');
 
-        $this->app->Tpl->SET('MESSAGE', $msg);
+        $this->app->Tpl->ADD('MESSAGE', $msg);
 
         $this->app->Tpl->SET('RGCHECKED',$rgchecked?'checked':'');
         $this->app->Tpl->SET('GSCHECKED',$gschecked?'checked':'');

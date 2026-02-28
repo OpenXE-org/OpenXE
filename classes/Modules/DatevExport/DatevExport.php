@@ -303,6 +303,8 @@ final class DatevExport
                     $data['Auftragsnummer'] = ($beleg['auftrag']!=0)?$beleg['auftrag']:'';
                     $data['Zahlweise'] = $beleg['zahlweise'];
 
+                    $data['Beleglink'] = $beleg['beleglink'];
+
                     $csv .= self::create_line($datev_buchungsstapel_definition,$data);
                 } // Foreach row
 
@@ -340,7 +342,9 @@ final class DatevExport
                         $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $beleg['ustid'];
                         $data['Auftragsnummer'] = $beleg['auftrag'];
                         $data['Zahlweise'] = $beleg['zahlweise'];
-                        $beleg['betrag_summe'] = $sum_pos;
+
+                        $data['Beleglink'] = $beleg['beleglink'];
+
                         $differences[] = $beleg;
                         $csv .= self::create_line($datev_buchungsstapel_definition,$data);
                     }
