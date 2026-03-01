@@ -30,5 +30,34 @@ https://github.com/OpenXE-org/OpenXE/releases
 
 [Hier gehts zur OpenXE Installation](INSTALL.md)
 
+# API-Dokumentation
+
+Die REST-API wird automatisch aus dem Code generiert.
+
+## Dokumentation lokal generieren
+
+```bash
+# OpenAPI 3.0 (JSON)
+php tools/generate-api-docs.php --format=openapi
+
+# RAML
+php tools/generate-api-docs.php --format=raml
+```
+
+Generierte Dateien:
+- `www/api/openapi.json` - OpenAPI 3.0 Spezifikation
+- `www/api/docs.generated.raml` - RAML Spezifikation
+
+## Dokumentation ansehen
+
+Nach der Installation ist die API-Dokumentation unter folgenden URLs verfügbar (mit API-Account Login):
+- `/api/swagger.html` - Interaktive Swagger UI
+- `/api/docs.html` - RAML HTML-Dokumentation
+- `/api/openapi.json` - OpenAPI JSON (für Tools wie Postman)
+
+Die Dokumentation wird automatisch durch GitHub Actions bei jedem Push generiert.
+
+---
+
 OpenXE ist freie Software, lizensiert unter der EGPL 3.1.
 Diese Software ist eine Ableitung und Veränderung von Xentral ERP, Opensource Version. Xentral ERP wurde von embedded projects GmbH als Wawision und später Xentral entwickelt und steht unter der EGPLv3.1-Lizenz als Open Source Software. Informationen zu Xentral findet man unter http://www.xentral.de
