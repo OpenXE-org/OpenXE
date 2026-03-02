@@ -301,7 +301,6 @@ final class DatevExport
                     $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $beleg['ustid'];
 
                     $data['Auftragsnummer'] = ($beleg['auftrag']!=0)?$beleg['auftrag']:'';
-                    $data['Zahlweise'] = $beleg['zahlweise'];
 
                     $data['Beleglink'] = $beleg['beleglink'];
 
@@ -341,7 +340,6 @@ final class DatevExport
                         }
                         $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $beleg['ustid'];
                         $data['Auftragsnummer'] = $beleg['auftrag'];
-                        $data['Zahlweise'] = $beleg['zahlweise'];
 
                         $data['Beleglink'] = $beleg['beleglink'];
 
