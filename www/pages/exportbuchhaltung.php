@@ -255,7 +255,7 @@ class Exportbuchhaltung
             }
             if ($dataok) {
                 $belege = array();
-                $typen = $this->typen($rgchecked, $gschecked, $vbchecked, $lgchecked);
+                $typen = $this->typen($rgchecked, $gschecked, $vbchecked, $lgchecked);                               
                 foreach ($typen as $typkey => $typvalue) {
                     if (!$typvalue['do']) {
                         continue;
@@ -315,8 +315,7 @@ class Exportbuchhaltung
                         $tmpsteuersatz = 0;
                         $tmpsteuertext = '';
                         $erloes = '';
-                        $result = array();
-                        $this->app->erp->GetSteuerPosition($typvale['typ'], $pos['id'], $tmpsteuersatz, $tmpsteuertext, $erloes);
+                        $this->app->erp->GetSteuerPosition($typvalue['typ'], $pos['pos_id'], $tmpsteuersatz, $tmpsteuertext, $erloes);
                         $pos['steuersatz'] = $tmpsteuersatz;
                         $pos['erloes'] = $erloes;
                         $belege[$typkey]['belege'][$pos['beleg_id']]['positionen'][] = $pos;
