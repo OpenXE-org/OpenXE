@@ -149,6 +149,7 @@ class Player {
           if($r2->isStatic())
           {
             $allowed = $constr::AllowedVersion();
+            $version_revision = '';
             include(dirname(__DIR__) . '/version.php');
             if((isset($allowed['max']) && ((float)$allowed['max'] < (float)$version_revision))
                || 

@@ -68,9 +68,6 @@ if(WithGUI())
 	include dirname(__DIR__).'/phpwf/plugins/class.widgetapi.php';
 	include dirname(__DIR__).'/phpwf/widgets/easytable.php';
 	include dirname(__DIR__).'/phpwf/widgets/grouptable.php';
-	include dirname(__DIR__).'/phpwf/widgets/childtable.php';
-	include dirname(__DIR__).'/phpwf/widgets/table.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.picosafelogin.php';
 	include dirname(__DIR__).'/phpwf/plugins/class.wawision_otp.php';
 	include dirname(__DIR__).'/phpwf/htmltags/all.php';
 	include dirname(__DIR__).'/phpwf/types/class.simplelist.php';
@@ -95,7 +92,6 @@ include dirname(__DIR__).'/phpwf/plugins/class.objectapi.php';
  * @property Secure $Secure
  * @property TemplateParser $Tpl
  * @property FormHandler $FormHandler
- * @property Table $Table
  * @property WidgetAPI $Widget
  * @property PageBuilder $PageBuilder
  * @property Page $Page
@@ -149,7 +145,6 @@ class Application extends ApplicationCore
 			if(WithGUI()){
         $this->Tpl               = new TemplateParser($this);
       	$this->FormHandler       = new FormHandler($this);
-      	$this->Table	           = new Table($this);
       	$this->Widget	           = new WidgetAPI($this);
       	$this->PageBuilder       = new PageBuilder($this);
       	$this->Page              = new Page($this);

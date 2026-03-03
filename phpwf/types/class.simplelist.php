@@ -59,7 +59,8 @@ class SimpleList
     if($this->actual >=0 && $this->actual < $this->items) 
       return $this->List[$this->actual];
 
-    return FALSE;
+    $return = false;
+    return $return;
   }
 
   

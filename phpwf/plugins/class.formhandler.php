@@ -1058,7 +1058,7 @@ checked
           $field->value = $value;
         } 
 
-        if(get_class($htmlobject)=="blindfield")
+        if(get_class($field->htmlobject)=="blindfield")
           $field->value=$field->htmlobject->value;
 
 

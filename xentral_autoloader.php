@@ -49,7 +49,6 @@ function xentral_autoloader($class) {
     'HTMLCheckbox'=>__DIR__.'/phpwf/htmltags/class.form.php',
     'HTMLSelect'=>__DIR__.'/phpwf/htmltags/class.form.php',
     'SimpleList'=>__DIR__.'/phpwf/types/class.simplelist.php',
-    'PicosafeLogin'=>__DIR__.'/phpwf/plugins/class.picosafelogin.php',
     'WaWisionOTP'=>__DIR__.'/phpwf/plugins/class.wawision_otp.php',
     'PDF_EPS'=>__DIR__.'/www/lib/pdf/fpdf_final.php',
     'SuperFPDF'=>__DIR__.'/www/lib/dokumente/class.superfpdf.php',

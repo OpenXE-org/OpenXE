@@ -120,7 +120,7 @@ class GroupTable{
 
 
   function Execute($verknuepftabelle,$hauptpunkttabelle,$hauptpunkttabelleid,
-    $untertabelle,$parsetarget=PAGE)
+    $untertabelle,$parsetarget='PAGE')
   {
     $event = $this->app->Secure->GetGET("event");
     $eventid = $this->app->Secure->GetGET("eventid");
