@@ -411,7 +411,7 @@ class Exportbuchhaltung
                     $dom->preserveWhiteSpace = true;
                     $dom->formatOutput = true;
                     $xml_pretty = $dom->saveXML();
-                    $this->zipbelege->addFromString("/document.xml", $xml_pretty);
+                    $this->zipbelege->addFromString("document.xml", $xml_pretty);
                     $this->zipbelege->close();
                 } // pdfexport
 
