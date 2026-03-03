@@ -217,11 +217,4 @@ class Application extends ApplicationCore
         }
       }
     }
-
-    public function DisableLayoutFix()
-    {
-      if(WithGUI()){
-        $this->Tpl->Set('LAYOUTFIXMARKERCLASS', '');
-      }
-    }
 }

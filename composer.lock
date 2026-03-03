@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "79eff8c373a8f453cf73098a3a8ce631",
+    "content-hash": "824d49da17972b2e9a7b449967c35ccb",
     "packages": [
         {
             "name": "aura/sqlquery",
@@ -3009,14 +3009,19 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1",
-        "ext-gd": "*",
         "ext-curl": "*",
-        "ext-soap": "*"
+        "ext-gd": "*",
+        "ext-ldap": "*",
+        "ext-mysqli": "*",
+        "ext-soap": "*",
+        "ext-zip": "*"
     },
     "platform-dev": {},
     "platform-overrides": {
         "php": "8.1",
         "ext-gd": "8.1",
+        "ext-ldap": "8.1",
+        "ext-mysqli": "8.1",
         "ext-soap": "8.1"
     },
     "plugin-api-version": "2.6.0"
