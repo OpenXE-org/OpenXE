@@ -45,6 +45,7 @@ class Exportbuchhaltung
                     'field_kundennummer' => 'b.kundennummer',
                     'field_betrag_gesamt' => 'b.soll',
                     'field_betrag' => 'p.umsatz_brutto_gesamt',
+                    'field_land' => 'b.land',
                     'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\',\'storniert\')',
                     'Buchungstyp' => 'SR',
                     'document_type' => 2,
@@ -65,6 +66,7 @@ class Exportbuchhaltung
                     'field_kundennummer' => 'b.kundennummer',
                     'field_betrag_gesamt' => 'b.soll',
                     'field_betrag' => 'p.umsatz_brutto_gesamt',
+                    'field_land' => 'b.land',
                     'condition_where' => ' AND b.status IN (\'freigegeben\',\'versendet\')',
                     'Buchungstyp' => '',
                     'document_type' => 2,
@@ -85,6 +87,7 @@ class Exportbuchhaltung
                     'field_kundennummer' => 'a.lieferantennummer',
                     'field_betrag_gesamt' => 'b.betrag',
                     'field_betrag' => 'p.preis*p.menge*((100+p.steuersatz)/100)',
+                    'field_land' => 'a.land',
                     'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
                     'condition_where' => ' AND b.status IN (\'freigegeben\', \'abgeschlossen\')',
                     'Buchungstyp' => '',
@@ -106,6 +109,7 @@ class Exportbuchhaltung
                     'field_kundennummer' => 'a.lieferantennummer',
                     'field_betrag_gesamt' => 'b.betrag',
                     'field_betrag' => 'p.preis*p.menge*((100+p.steuersatz)/100)',
+                    'field_land' => 'a.land',
                     'field_gegenkonto' => '(SELECT sachkonto FROM kontorahmen k WHERE k.id = p.kontorahmen)',
                     'condition_where' => ' AND b.status IN (\'freigegeben\', \'abgeschlossen\')',
                     'Buchungstyp' => '',
@@ -272,7 +276,8 @@ class Exportbuchhaltung
                         a.ustid ustid_adresse,
                         b." . $typvalue['field_date'] . " as datum,
                         " . $typvalue['field_betrag_gesamt'] . " as betrag_gesamt,
-                        b.waehrung
+                        b.waehrung,
+                        " . $typvalue['field_land'] . " as land
                     FROM
                         " . $typvalue['typ'] . " b
                             INNER JOIN

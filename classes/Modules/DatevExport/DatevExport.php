@@ -299,7 +299,7 @@ final class DatevExport
                     $data['Belegdatum'] = date_format(date_create($beleg['datum']),"dm"); // obligatory
                     $data['Buchungstext'] = mb_strimwidth($beleg['name'],0,60);
                     $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $beleg['ustid'];
-
+                    $data['Land'] = $beleg['land'];
                     $data['Auftragsnummer'] = ($beleg['auftrag']!=0)?$beleg['auftrag']:'';
 
                     $data['Beleglink'] = $beleg['beleglink'];
@@ -339,6 +339,7 @@ final class DatevExport
                             }
                         }
                         $data['EU-Mitgliedstaat u. UStID (Bestimmung)'] = $beleg['ustid'];
+                        $data['Land'] = $beleg['land'];
                         $data['Auftragsnummer'] = $beleg['auftrag'];
 
                         $data['Beleglink'] = $beleg['beleglink'];
