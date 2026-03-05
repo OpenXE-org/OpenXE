@@ -268,7 +268,8 @@ class Exportbuchhaltung
                         " . $typvalue['field_zahlweise'] . " as zahlweise,
                         if(" . $typvalue['field_kontonummer'] . " <> ''," . $typvalue['field_kontonummer'] . "," . $typvalue['field_kundennummer'] . ") as kundennummer,
                         " . $typvalue['field_name'] . " as name,
-                        a.ustid,
+                        b.ustid ustid,
+                        a.ustid ustid_adresse,
                         b." . $typvalue['field_date'] . " as datum,
                         " . $typvalue['field_betrag_gesamt'] . " as betrag_gesamt,
                         b.waehrung
@@ -287,6 +288,9 @@ class Exportbuchhaltung
                     $belege[$typkey]['pdf'] = $typvalue['pdf'];
                     $belege[$typkey]['document_type'] = $typvalue['document_type'];
                     foreach ($belegearr as $value) {
+                        if (empty($value['ustid'])) {
+                            $value['ustid'] = $value['ustid_adresse'];
+                        }
                         $belege[$typkey]['belege'][$value['id']] = $value;
                         $belege[$typkey]['belege'][$value['id']]['typ'] = $typvalue['typ'];
                     }
