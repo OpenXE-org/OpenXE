@@ -169,6 +169,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
     $lockfile_name = $datafolder."/.in_progress.flag";
     $remote_file_name = $datafolder."/remote.json";
     $schema_file_name = "db_schema.json";
+    $remotes = array();
 
     echo_out("--------------- OpenXE upgrade ---------------\n");
     echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
@@ -183,8 +184,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 abort("Unable to load $remote_file_name");
                 return(-1);
             }
-            $remote_info = json_decode($remote_info_contents, true);
-            $remotes[] = $remote_info;
+            $remotes = json_decode($remote_info_contents, true);
             $config = file_get_contents($mainfolder."/conf/user.inc.php");
             preg_match("/WFuserdata='(?<path>.*?)';/", $config, $matches);
             $uhash = file_get_contents($matches['path']."/uhash.txt");
@@ -212,8 +212,38 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 }
             }
             $remotes = array_values(array_map("unserialize", array_unique(array_map("serialize", $remotes))));
+
+            echo_out("--------------- Available upgrade branches ---------------\n");
+
+            foreach ($remotes as $remote) {
+                if (empty($remote['name'])) {
+                    continue;
+                }
+                if (($remote['active'])) {
+                    if (empty($remote_info)) {
+                        $remote_info = $remote;
+                    }
+                    echo_out("-> ");
+                } else {
+                    echo_out("-  ");
+                }
+
+                echo_out($remote['name']);
+                if ($remote['enabled']) {
+                } else {
+                    echo_out(" (disabled)");
+                }
+                echo_out("\n");
+                echo_out("   ".$remote['description']['en']."\n");
+            }
         }
 
+        if (empty($remote_info)) {
+            abort("No remote upgrade location found.");
+            return(-1);
+        }
+
+        echo_out("--------------- Checking git ---------------\n");
         $retval = git("log HEAD --", $output,$verbose,false,"");
         // Not a git repository -> Create it and then go ahead
         if ($retval == 128) {

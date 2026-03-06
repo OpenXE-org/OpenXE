@@ -1,4 +1,41 @@
-{
-    "host": "https://github.com/openxe-org/openxe.git",
-    "branch": "master"
-}
+[
+    {
+        "name": "master",
+        "enabled": true,
+        "active": true,
+        "description": {
+            "en": "The 1.12 default upgrade source, will be replaced by a versioned variant",
+            "de": "Die Standardquelle, wird in Zukunft durch eine versionierte Variante ersetzt werden"
+        },
+        "host": "https://github.com/openxe-org/openxe.git",
+        "branch": "master",
+        "check": "",
+        "migration": ""
+    },
+    {
+        "name": "1.13.BETA",
+        "enabled": true,
+        "active": false,
+        "description": {
+            "en": "OpenXE Version 1.13 BETA, requires PHP 8.3 or higher",
+            "de": "OpenXE Version 1.13 BETA, benötigt mindestens PHP 8.3"
+        },
+        "host": "https://github.com/openxe-org/openxe.git",
+        "branch": "1.13.beta",
+        "check": "upgrade.1.13/check.php",
+        "migration": "upgrade.1.13/migrate.php"
+    },
+    {
+        "name": "1.13",
+        "enabled": false,
+        "active": false,
+        "description": {
+            "en": "OpenXE Version 1.13, requires PHP 8.3 or higher",
+            "de": "OpenXE Version 1.13, benötigt mindestens PHP 8.3"
+        },
+        "host": "https://github.com/openxe-org/openxe.git",
+        "branch": "1.13.release",
+        "check": "upgrade.1.13/check.php",
+        "migration": "upgrade.1.13/migrate.php"
+    }
+]
