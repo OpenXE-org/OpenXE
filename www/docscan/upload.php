@@ -6,7 +6,6 @@ use Sabre\DAV\Locks\Backend\File;
 use Sabre\DAV\Locks\Plugin;
 use Sabre\DAV\Server;
 
-include_once dirname(dirname(__DIR__)) . '/xentral_autoloader.php';
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
 /*

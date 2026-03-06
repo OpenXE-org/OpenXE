@@ -5,7 +5,7 @@ use Xentral\Modules\SubscriptionCycle\Scheduler\SubscriptionCycleManualJobTask;
 
 error_reporting(E_ERROR);
 
-include_once dirname(__DIR__) . '/xentral_autoloader.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 if(empty($app) || !($app instanceof ApplicationCore)){
   $app = new ApplicationCore();

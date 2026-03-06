@@ -1714,6 +1714,7 @@ class Hostname extends AbstractValidator
             3 => '/^[\x{002d}0-9a-zșț]{1,63}$/iu',
         ],
         'SJ'       => [1 => '/^[\x{002d}0-9a-zàáä-éêñ-ôöøüčđńŋšŧž]{1,63}$/iu'],
+        'SWISS'    => [1 => '/^[\x{002d}0-9a-zà-öø-ÿœ]{1,63}$/iu'],
         'TH'       => [1 => '/^[\x{002d}0-9a-z\x{0E01}-\x{0E3A}\x{0E40}-\x{0E4D}\x{0E50}-\x{0E59}]{1,63}$/iu'],
         'TM'       => [1 => '/^[\x{002d}0-9a-zà-öø-ÿāăąćĉċčďđēėęěĝġģĥħīįĵķĺļľŀłńņňŋőœŕŗřśŝşšţťŧūŭůűųŵŷźżž]{1,63}$/iu'],
         'TW'       => 'Hostname/Cn.php',
@@ -1967,14 +1968,6 @@ class Hostname extends AbstractValidator
             }
 
             return true;
-        }
-
-        // Handle Regex compilation failure that may happen on .biz domain with has @ character, eg: tapi4457@hsoqvf.biz
-        // Technically, hostname with '@' character is invalid, so mark as invalid immediately
-        // @see https://github.com/laminas/laminas-validator/issues/8
-        if (str_contains($value, '@')) {
-            $this->error(self::INVALID_HOSTNAME);
-            return false;
         }
 
         // Local hostnames are allowed to be partial (ending '.')

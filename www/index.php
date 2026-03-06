@@ -20,7 +20,7 @@ if($memory_limit)
 if(file_exists(dirname(__DIR__).'/phpwf/plugins/class.devtools.php'))include_once(dirname(__DIR__).'/phpwf/plugins/class.devtools.php');
 
 
-include_once (dirname(__DIR__).'/xentral_autoloader.php');
+require_once (dirname(__DIR__).'/vendor/autoload.php');
 
 if(!isset($_GET['module']) || $_GET['module'] != 'api')
 {
@@ -37,12 +37,9 @@ $missing = false;
 $errorHandler = new ErrorHandler();
 $errorHandler->register();
 
-include("eproosystem.php");
-
 if(!is_file(dirname(dirname($_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR."conf/user.inc.php"))
         header('Location: ./setup/setup.php');
 else {
-include(dirname(dirname($_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR."/conf/main.conf.php");
 try {
   $config = ConfigLoader::load();
 } catch (MultiDbConfigNotFoundException $exception) {
@@ -53,11 +50,9 @@ try {
 $app = new erpooSystem($config);
 
 // layer 2 -> darfst du ueberhaupt?
-include("../phpwf/class.session.php");
 $session = new Session();
 $session->Check($app);
 // layer 3 -> nur noch abspielen
-include("../phpwf/class.player.php");
 $player = new Player();
 $player->Run($session);
 }

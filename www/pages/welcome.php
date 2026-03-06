@@ -2915,9 +2915,6 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
         ]
       ]
     ];
-    if($showExampleImport) {
-      $lastPage['subHeadline'] .= '<br /><a href="index.php?module=systemtemplates&action=list">Beispieldaten einspielen</a>';
-    }
 
     $pages[] = $lastPage;
 

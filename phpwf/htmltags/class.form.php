@@ -291,7 +291,7 @@ class HTMLSelect
   {
     foreach($values as $key=>$value)
     {
-	$this->options[] = array($value[wert],$value[schluessel]);
+	$this->options[] = array($value['wert'],$value['schluessel']);
     }
   }
 

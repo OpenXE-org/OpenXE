@@ -322,9 +322,9 @@ class ModuleScriptCache
           return;
 
       $manifestEntry = $this->assetManifest->$chunkName;
-      foreach ($manifestEntry->css as $cssFile)
+      foreach ($manifestEntry->css ?? [] as $cssFile)
           $this->renderedCss[] = $cssFile;
-      foreach ($manifestEntry->imports as $import)
+      foreach ($manifestEntry->imports ?? [] as $import)
           $this->includeChunk($import);
 
       if ($isRoot)

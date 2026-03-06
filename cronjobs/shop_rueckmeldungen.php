@@ -1,9 +1,7 @@
 <?php
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
-if (!class_exists('ApplicationCore') && is_file(dirname(__DIR__) . '/xentral_autoloader.php')) {
-    include_once dirname(__DIR__) . '/xentral_autoloader.php';
-}
+require_once dirname(__DIR__).'/vendor/autoload.php';
 include_once dirname(__DIR__) . '/conf/main.conf.php';
 include_once dirname(__DIR__) . '/phpwf/plugins/class.mysql.php';
 include_once dirname(__DIR__) . '/phpwf/plugins/class.secure.php';

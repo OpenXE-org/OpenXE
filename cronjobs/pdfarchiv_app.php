@@ -1,7 +1,5 @@
 <?php
-if(!class_exists('ApplicationCore') && is_file(dirname(__DIR__).'/xentral_autoloader.php')) {
-  include_once dirname(__DIR__).'/xentral_autoloader.php';
-}
+require_once dirname(__DIR__).'/vendor/autoload.php';
 set_time_limit(36000);
 
 

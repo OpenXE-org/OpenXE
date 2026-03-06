@@ -307,7 +307,7 @@ class TemplateParser {
 
   protected function pathLoaded($_path)
   {
-    if(!$this->pathes)return false;
+    if(!isset($this->pathes))return false;
     $rpos = strrpos($_path, '/www/');
     if($rpos !== false)
     {

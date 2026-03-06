@@ -33,7 +33,7 @@ class WFMonitor
 
   function ErrorBox($content)
   {
-    $box .="
+    $box = "
       <table border=\"1\" width=\"100%\" bgcolor=\"#ffB6C1\">
 	<tr><td>phpWebFrame Error: $content</td></tr>
       </table>";

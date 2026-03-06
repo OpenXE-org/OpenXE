@@ -94,7 +94,6 @@ function checkCurlError($curl, $result)
   }
 }
 
-// include dirname(__DIR__) . '/xentral_autoloader.php';
 $app = new ApplicationCore();
 
 if(!isInternetmarkeInUse($app)){

@@ -1,10 +1,7 @@
 <?php
 use Xentral\Core\LegacyConfig\ConfigLoader;
 error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_STRICT);
-if(file_exists(dirname(__DIR__).'/xentral_autoloader.php'))
-{
-  include_once dirname(__DIR__).'/xentral_autoloader.php';
-}
+require_once dirname(__DIR__).'/vendor/autoload.php';
 @date_default_timezone_set('Europe/Berlin');
 
 include_once dirname(__DIR__).'/conf/main.conf.php';

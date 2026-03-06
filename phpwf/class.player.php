@@ -27,25 +27,10 @@
 
 class Player {
 
-  public $DefautTemplates;
-  public $DefautTheme;
-
-  /** @var erpooSystem $app the application object */
-  public $app;
+  public Application $app;
 
   function __construct()
   {
-    $this->DefautTemplates="defaulttemplates";
-    $this->DefautTheme="default";
-  }
-
-  function SetDefaultTemplates($path)
-  {
-  }
-
-  function SetDefaultTheme($path)
-  {
-
   }
 
   public function BuildNavigation()
@@ -57,7 +42,7 @@ class Player {
     $this->app->Page->CreateNavigation($this->app->erp->Navigation());
   }
 
-  public function Run($sessionObj)
+  public function Run(Session $sessionObj)
   {
     $this->app = $sessionObj->app;
     // play application only when layer 2 said that its ok
@@ -149,6 +134,7 @@ class Player {
           if($r2->isStatic())
           {
             $allowed = $constr::AllowedVersion();
+            $version_revision = '';
             include(dirname(__DIR__) . '/version.php');
             if((isset($allowed['max']) && ((float)$allowed['max'] < (float)$version_revision))
                || 
