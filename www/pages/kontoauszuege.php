@@ -163,7 +163,7 @@ class Kontoauszuege {
                 $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM ( SELECT 
                             k.id,
                             $dropnbox,
-                            ".$app->erp->FormatDateTimeShort('k.importdatum')." AS importdatum,                            
+                            ".$app->erp->FormatDateTimeShort('k.importdatum')." AS import,                            
                             (SELECT kurzbezeichnung FROM konten WHERE konten.id = k.konto) as kurzbezeichnung,
                             ".$app->erp->FormatDate('k.buchung')." as buchung,                            
                             IF(
@@ -180,6 +180,7 @@ class Kontoauszuege {
                             ".$app->erp->FormatMenge('SUM(fb.betrag)',2)." AS saldo,
                             k.id as menuid,
                             SUM(fb.betrag) AS saldonum,
+                            k.importdatum as importdatum,
                             k.buchung AS buchungdatum
                         FROM kontoauszuege k
                         LEFT JOIN fibu_buchungen_alle fb ON
