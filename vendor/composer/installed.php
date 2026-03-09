@@ -438,14 +438,5 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'y0lk/oauth1-etsy' => array(
-            'pretty_version' => '1.1.0',
-            'version' => '1.1.0.0',
-            'reference' => '3fef9d03787e01a72ef19cdcbbc243c166a5d425',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../y0lk/oauth1-etsy',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
     ),
 );

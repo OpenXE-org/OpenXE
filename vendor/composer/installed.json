@@ -3062,62 +3062,6 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.12.1"
             },
             "install-path": "../webmozart/assert"
-        },
-        {
-            "name": "y0lk/oauth1-etsy",
-            "version": "1.1.0",
-            "version_normalized": "1.1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Y0lk/oauth1-etsy.git",
-                "reference": "3fef9d03787e01a72ef19cdcbbc243c166a5d425"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Y0lk/oauth1-etsy/zipball/3fef9d03787e01a72ef19cdcbbc243c166a5d425",
-                "reference": "3fef9d03787e01a72ef19cdcbbc243c166a5d425",
-                "shasum": ""
-            },
-            "require": {
-                "league/oauth1-client": "^1.7.0",
-                "php": ">=7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~6.0"
-            },
-            "time": "2021-02-03T16:15:30+00:00",
-            "type": "library",
-            "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "Y0lk\\OAuth1\\Client\\Server\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Y0lk",
-                    "email": "gabriel@inkrebit.com",
-                    "homepage": "https://github.com/Y0lk"
-                }
-            ],
-            "description": "Etsy API OAuth 1.0 Client Provider for The PHP League OAuth1-Client",
-            "keywords": [
-                "authorisation",
-                "authorization",
-                "client",
-                "etsy",
-                "oauth",
-                "oauth1"
-            ],
-            "support": {
-                "issues": "https://github.com/Y0lk/oauth1-etsy/issues",
-                "source": "https://github.com/Y0lk/oauth1-etsy/tree/1.1.0"
-            },
-            "install-path": "../y0lk/oauth1-etsy"
         }
     ],
     "dev": true,

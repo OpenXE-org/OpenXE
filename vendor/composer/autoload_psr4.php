@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'lfkeitel\\phptotp\\' => array($vendorDir . '/lfkeitel/phptotp/src'),
-    'Y0lk\\OAuth1\\Client\\Server\\' => array($vendorDir . '/y0lk/oauth1-etsy/src'),
     'Xentral\\' => array($baseDir . '/classes'),
     'Webmozart\\Assert\\' => array($vendorDir . '/webmozart/assert/src'),
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),

@@ -13,13 +13,13 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
-        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         '2b9d0f43f9552984cfa82fee95491826' => __DIR__ . '/..' . '/sabre/event/lib/coroutine.php',
         'd81bab31d3feb45bfe2f283ea3c8fdf7' => __DIR__ . '/..' . '/sabre/event/lib/Loop/functions.php',
         'a1cce3d26cc15c00fcd0b3354bd72c88' => __DIR__ . '/..' . '/sabre/event/lib/Promise/functions.php',
         '3569eecfeed3bcf0bad3c998a494ecb8' => __DIR__ . '/..' . '/sabre/xml/lib/Deserializer/functions.php',
         '93aa591bc4ca510c520999e34229ee79' => __DIR__ . '/..' . '/sabre/xml/lib/Serializer/functions.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'c9d07b32a2e02bc0fc582d4f0c1b56cc' => __DIR__ . '/..' . '/laminas/laminas-servicemanager/src/autoload.php',
         'b067bc7112e384b61c701452d53a14a8' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/JmesPath.php',
         'ebdb698ed4152ae445614b69b5e4bb6a' => __DIR__ . '/..' . '/sabre/http/lib/functions.php',
@@ -32,10 +32,6 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'l' => 
         array (
             'lfkeitel\\phptotp\\' => 17,
-        ),
-        'Y' => 
-        array (
-            'Y0lk\\OAuth1\\Client\\Server\\' => 26,
         ),
         'X' => 
         array (
@@ -118,10 +114,6 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'lfkeitel\\phptotp\\' => 
         array (
             0 => __DIR__ . '/..' . '/lfkeitel/phptotp/src',
-        ),
-        'Y0lk\\OAuth1\\Client\\Server\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/y0lk/oauth1-etsy/src',
         ),
         'Xentral\\' => 
         array (
@@ -3636,15 +3628,6 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'Xentral\\Modules\\Ebay\\Service\\EbayStockLoggingService' => __DIR__ . '/../..' . '/classes/Modules/Ebay/Service/EbayStockLoggingService.php',
         'Xentral\\Modules\\Ebay\\Wrapper\\EbayStockCalculationWrapperInterface' => __DIR__ . '/../..' . '/classes/Modules/Ebay/Wrapper/EbayStockCalculationWrapperInterface.php',
         'Xentral\\Modules\\Ebay\\Wrapper\\StockCalculationWrapper' => __DIR__ . '/../..' . '/classes/Modules/Ebay/Wrapper/StockCalculationWrapper.php',
-        'Xentral\\Modules\\EtsyApi\\Credential\\AbstractCredentialData' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Credential/AbstractCredentialData.php',
-        'Xentral\\Modules\\EtsyApi\\Credential\\ClientCredentialData' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Credential/ClientCredentialData.php',
-        'Xentral\\Modules\\EtsyApi\\Credential\\CredentialDataInterface' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Credential/CredentialDataInterface.php',
-        'Xentral\\Modules\\EtsyApi\\Credential\\TemporaryCredentialData' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Credential/TemporaryCredentialData.php',
-        'Xentral\\Modules\\EtsyApi\\Credential\\TokenCredentialData' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Credential/TokenCredentialData.php',
-        'Xentral\\Modules\\EtsyApi\\EtsyOAuthHelper' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/EtsyOAuthHelper.php',
-        'Xentral\\Modules\\EtsyApi\\Exception\\CredentialException' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Exception/CredentialException.php',
-        'Xentral\\Modules\\EtsyApi\\Exception\\EtsyApiExceptionInterface' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Exception/EtsyApiExceptionInterface.php',
-        'Xentral\\Modules\\EtsyApi\\Exception\\EtsyOAuthException' => __DIR__ . '/../..' . '/classes/Modules/EtsyApi/Exception/EtsyOAuthException.php',
         'Xentral\\Modules\\FeeReduction\\Bootstrap' => __DIR__ . '/../..' . '/classes/Modules/FeeReduction/Bootstrap.php',
         'Xentral\\Modules\\FeeReduction\\Exception\\FeeReductionExceptionInterface' => __DIR__ . '/../..' . '/classes/Modules/FeeReduction/Exception/FeeReductionExceptionInterface.php',
         'Xentral\\Modules\\FeeReduction\\Exception\\InvalidArgumentException' => __DIR__ . '/../..' . '/classes/Modules/FeeReduction/Exception/InvalidArgumentException.php',
@@ -4415,7 +4398,6 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'Xentral\\Widgets\\SuperSearch\\Result\\ResultDetail' => __DIR__ . '/../..' . '/classes/Widgets/SuperSearch/Result/ResultDetail.php',
         'Xentral\\Widgets\\SuperSearch\\Result\\ResultGroup' => __DIR__ . '/../..' . '/classes/Widgets/SuperSearch/Result/ResultGroup.php',
         'Xentral\\Widgets\\SuperSearch\\Result\\ResultItem' => __DIR__ . '/../..' . '/classes/Widgets/SuperSearch/Result/ResultItem.php',
-        'Y0lk\\OAuth1\\Client\\Server\\Etsy' => __DIR__ . '/..' . '/y0lk/oauth1-etsy/src/Etsy.php',
         'YUI' => __DIR__ . '/../..' . '/phpwf/plugins/class.yui.php',
         'erpAPI' => __DIR__ . '/../..' . '/www/lib/class.erpapi.php',
         'erpooSystem' => __DIR__ . '/../..' . '/www/eproosystem.php',

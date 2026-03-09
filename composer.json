@@ -25,8 +25,7 @@
     "smarty/smarty": "v3.1.39",
     "swiss-payment-slip/swiss-payment-slip": "0.13.0 as 0.11.1",
     "swiss-payment-slip/swiss-payment-slip-fpdf": "0.6.0",
-    "tecnickcom/tcpdf": "6.3.5",
-    "y0lk/oauth1-etsy": "1.1.0"
+    "tecnickcom/tcpdf": "6.3.5"
   },
   "replace": {
     "itbz/fpdf": "*"

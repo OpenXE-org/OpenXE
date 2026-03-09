@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "824d49da17972b2e9a7b449967c35ccb",
+    "content-hash": "4dcd0a8acfa074192ad0024c8924b5cf",
     "packages": [
         {
             "name": "aura/sqlquery",
@@ -2939,59 +2939,6 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.12.1"
             },
             "time": "2025-10-29T15:56:20+00:00"
-        },
-        {
-            "name": "y0lk/oauth1-etsy",
-            "version": "1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Y0lk/oauth1-etsy.git",
-                "reference": "3fef9d03787e01a72ef19cdcbbc243c166a5d425"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Y0lk/oauth1-etsy/zipball/3fef9d03787e01a72ef19cdcbbc243c166a5d425",
-                "reference": "3fef9d03787e01a72ef19cdcbbc243c166a5d425",
-                "shasum": ""
-            },
-            "require": {
-                "league/oauth1-client": "^1.7.0",
-                "php": ">=7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~6.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Y0lk\\OAuth1\\Client\\Server\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Y0lk",
-                    "email": "gabriel@inkrebit.com",
-                    "homepage": "https://github.com/Y0lk"
-                }
-            ],
-            "description": "Etsy API OAuth 1.0 Client Provider for The PHP League OAuth1-Client",
-            "keywords": [
-                "authorisation",
-                "authorization",
-                "client",
-                "etsy",
-                "oauth",
-                "oauth1"
-            ],
-            "support": {
-                "issues": "https://github.com/Y0lk/oauth1-etsy/issues",
-                "source": "https://github.com/Y0lk/oauth1-etsy/tree/1.1.0"
-            },
-            "time": "2021-02-03T16:15:30+00:00"
         }
     ],
     "packages-dev": [],
