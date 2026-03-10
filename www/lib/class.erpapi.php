@@ -69,11 +69,14 @@ class erpAPI
   /** @var array $appList */
   protected $appList = [];
 
+  private \Psr\Log\LoggerInterface $logger;
+
   /** @var ApplicationCore $app */
 
   public function __construct($app)
   {
     $this->app=$app;
+    $this->logger = $app->Container->get('Logger');
     if(empty($this->app->erp)){
       $this->app->erp = $this;
     }
@@ -553,7 +556,7 @@ function Belegeexport($datei, $doctype, $doctypeid, $append = false, $optionen =
       $peakmemory = number_format(memory_get_peak_usage()/1024.0/1024.0,2);
       $runtime = number_format($akttime - $this->logtime,3);
       $runtimeall = number_format($akttime - $this->firstlogtime,3);
-      $this->LogFile('Time all '.$runtimeall."s last: ".$runtime."s Memakt:".$aktmemory."MB peak:".$peakmemory."MB ".$this->app->DB->real_escape_string( $json?json_encode($message):$message));
+      $this->logger->info('Time all '.$runtimeall."s last: ".$runtime."s Memakt:".$aktmemory."MB peak:".$peakmemory."MB ".$this->app->DB->real_escape_string( $json?json_encode($message):$message));
       $this->logtime = $akttime;
     }
   }
@@ -849,11 +852,11 @@ public function NavigationHooks(&$menu)
     if($v['sec'] !== '' || !isset($first[$v['first']])) {
       if($v['sec'] == '') {
         $menu[] = array('first'=>array($v['first'], $v['module'],$v['action']));
-        $first[$v['first']] = (!empty($menu)?count($menu):0);
+        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
       }
       elseif($v['sec'] != '' && !isset($first[$v['first']])){
         $menu[] = array('first'=>array($v['first'], '',''),'sec'=>array(array($v['sec'],$v['module'],$v['action'])));
-        $first[$v['first']] = (!empty($menu)?count($menu):0);
+        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
       }
       else{
         if(isset($menu[$first[$v['first']]])) {
@@ -1512,13 +1515,13 @@ public function NavigationHooks(&$menu)
           try {
             $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$module,$action,false);
           }catch (Exception $ex){
-            $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+            $this->logger->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
           }
           $this->app->DB->Insert("INSERT INTO userrights (user, module, action, permission) VALUES ('".$user[$i]['id']."','$module','$action','$permission')");
           try {
             $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$module,$action,true);
           }catch (Exception $ex){
-            $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+            $this->logger->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
           }
         }else{
             $permissions = $this->app->DB->SelectArr("SELECT module, action,permission
@@ -1527,7 +1530,7 @@ public function NavigationHooks(&$menu)
               try {
                 $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$permission['module'],$permission['action'],$permission['permission']);
               }catch (Exception $ex){
-                $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+                $this->logger->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
               }
             }
           $this->app->DB->Update("REPLACE INTO userrights (user, module,action,permission) (SELECT '".$user[$i]['id']."',module, action,permission
@@ -2181,7 +2184,7 @@ public function NavigationHooks(&$menu)
             unlink($tmpfile);
             $tmpfile = '';
           }
-          $this->LogFile($this->app->DB->real_escape_string($e->getMessage()));
+          $this->logger->error($this->app->DB->real_escape_string($e->getMessage()));
           return false;
         }
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
@@ -2197,7 +2200,7 @@ public function NavigationHooks(&$menu)
           if($tmpfile !== '' && is_file($tmpfile)) {
             unlink($tmpfile);
           }
-          $this->LogFile($this->app->DB->real_escape_string($e->getMessage()));
+          $this->logger->error($this->app->DB->real_escape_string($e->getMessage()));
           $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
           return false;
         }
@@ -3827,35 +3830,6 @@ title: 'Abschicken',
     }
   }
 
-  function LoadZahlungsweiseModul($module, $moduleId) {
-
-    $module = preg_replace('/[^a-zA-Z0-9\_]/','',$module);
-
-    if(empty($module)) {
-      return null;
-    }
-    if(strpos($module,'zahlungsweise_') === 0) {
-      $module = substr($module, 14);
-      if(empty($module)) {
-        return null;
-      }
-    }
-    if(strpos($module, '.') !== false || strpos($module, '/') !== false || strpos($module, '\\')) {
-      return null;
-    }
-    $path = dirname(__DIR__).'/lib/zahlungsweisen/'.$module.'.php';
-    if(!is_file($path)) {
-      return null;
-    }
-
-    include_once $path ;
-    $classname = 'Zahlungsweise_'.$module;
-    if(!class_exists($classname)) {
-      return null;
-    }
-    return new $classname($this->app, $moduleId);
-  }
-
   // @refactor Document Komponente
   function Zahlungsweisetext($doctype,$doctypeid)
   {
@@ -3909,16 +3883,28 @@ title: 'Abschicken',
 
       if($zahlungsweiseid['modul'] != '')
       {
-        $obj = $this->LoadZahlungsweiseModul($zahlungsweiseid['modul'], $zahlungsweiseid['id']);
-        if($obj && method_exists($obj, 'GetZahlungsweiseText'))
+        $zahlungsweiseid['modul'] = preg_replace('/[^a-zA-Z0-9\_]/','',$zahlungsweiseid['modul']);
+        $pfad = dirname(__DIR__).'/lib/zahlungsweisen/'.$zahlungsweiseid['modul'].'.php';
+        if($zahlungsweiseid['modul'] && @is_file($pfad))
         {
-          $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
-          if($zahlungsweisetexttmp!='') {
-            if($zahlungsweiseid['modul'] == 'tagxmonat'){
-              $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
-            }
-            else{
-              $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
+          $classname = 'Zahlungsweise_'.$zahlungsweiseid['modul'];
+          if(!class_exists($classname)){
+            include_once($pfad);
+          }
+          if(class_exists($classname))
+          {
+            $obj = new $classname($this->app, $zahlungsweiseid['id']);
+            if($obj && method_exists($obj, 'GetZahlungsweiseText'))
+            {
+              $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
+              if($zahlungsweisetexttmp!='') {
+                if($zahlungsweiseid['modul'] == 'tagxmonat'){
+                  $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
+                }
+                else{
+                  $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
+                }
+              }
             }
           }
         }
@@ -12018,6 +12004,12 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     $action = $this->app->Secure->GetGET("action");
   }
 
+  /**@deprected**/
+  function PrinterIcon()
+  {
+ //       $this->app->Tpl->Add('TABSPRINT',"&nbsp;<a style=\"color:white;font-size:9pt\" href=\"#\" onclick=\"wawisionPrint();\"><img src=\"./themes/new/images/icons_druck.png\" height=\"18\"></a>");
+  }
+
   // @refactor Auftrag Modul
   function SaldoAdresseAuftrag($adresse)
   {
@@ -15928,7 +15920,23 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       LIMIT 1
     ")){
         foreach ($zahlungsweisenmodule as $zahlungsweisenmodul) {
-          $obj = $this->LoadZahlungsweiseModul($zahlungsweisenmodul['modul'], $zahlungsweisenmodul['id']);
+          $_zahlungsweisenmodul = preg_replace('/[^a-zA-Z0-9\_]/', '', $zahlungsweisenmodul['modul']);
+          if(!$_zahlungsweisenmodul){
+            continue;
+          }
+          if(!file_exists(__DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php')){
+            continue;
+          }
+
+          $class = 'Zahlungsweise_' . $_zahlungsweisenmodul;
+          if(!class_exists($class)){
+            include_once __DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php';
+          }
+          if(!class_exists($class)){
+            continue;
+          }
+
+          $obj = new $class($this->app, $zahlungsweisenmodul['id']);
           if($obj && method_exists($obj, 'ZahlungFreigeben')){
             $obj->ZahlungFreigeben($auftrag, $id);
           }
@@ -16358,24 +16366,6 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     return $result;
   }
 
-  function ImportvorlageImport($id = 0, $importvorlage = '', string $file_contents) {
-    $obj = $this->LoadModul('importvorlage');
-    if(!empty($obj) && method_exists($obj, 'ImportvorlageDo'))
-    {
-        if (empty($id)) {
-            $id = $this->app->DB->Select("SELECT id FROM importvorlage WHERE bezeichnung = '".$importvorlage."' LIMIT 1");
-            if (empty($id)) {
-                return(array('success' => false, 'message' => 'Importvorlage nicht gefunden'));
-            }
-        }
-        $tmpdatei = $this->app->erp->GetTMP().'importvorlageimport'.microtime(true);
-        file_put_contents($tmpdatei, $file_contents);
-        $result = $obj->ImportvorlageDo(parameter: array('id' => $id, 'stueckliste_csv' => $tmpdatei));
-        return($result);
-    }
-    return 0;
-  }
-
   function ImportvorlageLog($importvorlage,$zeitstempel,$tabelle,$datensatz,$ersterdatensatz="0")
   {
     $this->app->DB->Insert("INSERT INTO importvorlage_log (id,importvorlage,zeitstempel,user,tabelle,datensatz,ersterdatensatz)
@@ -16527,19 +16517,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   {
     if(self::$lasttime == 0)self::$lasttime = microtime(true);
     $akttime = microtime(true);
-    $this->LogFile( addslashes((memory_get_peak_usage(true) >> 20).  " MB ".(round($akttime - self::$lasttime ,3)  )." sek ".$meldung));
+    $this->logger->info( addslashes((memory_get_peak_usage(true) >> 20).  " MB ".(round($akttime - self::$lasttime ,3)  )." sek ".$meldung));
 
-  }
-
-
-  function LogFile($meldung,$dump="",$module="",$action="",$functionname="")
-  {
-
-    $obj = $this->LoadModul('logfile');
-    if(!empty($obj) && method_exists($obj,'addLogFile')) {
-      return $obj->addLogFile($meldung,$dump,$module,$action,$functionname);
-    }
-    return null;
   }
 
 
@@ -16556,8 +16535,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       {
         $val = $this->app->DB->real_escape_string(${$key});
         $this->app->DB->Update("UPDATE adresse SET $key='$val' WHERE id='$adresse' LIMIT 1");
-        $check = $this->app->DB->real_escape_string($check);
-        $this->app->DB->Update("UPDATE adresse SET `logfile`=CONCAT(logfile, ' Update Feld $key alt:$check neu:".$val.";') WHERE id='$adresse' LIMIT 1");
+        $logfile = $this->app->DB->Select("SELECT `logfile` FROM adresse WHERE id='$adresse' LIMIT 1");
+        $this->app->DB->Update("UPDATE adresse SET `logfile`='".$logfile." Update Feld $key alt:$check neu:".$val.";' WHERE id='$adresse' LIMIT 1");
       }
 
     }
@@ -18379,7 +18358,7 @@ function CheckShopTabelle($artikel)
             $rabattpositionen[$ap] = $value['rabatt'];
           }
           if(empty($ap)){
-            $this->LogFile('Fehler '.$value['articleid']);
+            $this->logger->error('Fehler '.$value['articleid']);
           }
           if(isset($artap)){
             unset($artap);
@@ -18657,7 +18636,7 @@ function CheckShopTabelle($artikel)
                 }
             } else {
                 $error_msg = 'Importauftrag Shop '.$shop.' Fehler: Kein Portoartikel vorhanden';
-                $this->LogFile($error_msg,['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
+                $this->logger->error($error_msg,['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
                 return(array("status" => false, "message" => $error_msg, "onlinebestellnummer" => $warenkorb['onlinebestellnummer']));
             }
         }
@@ -21007,7 +20986,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
                 $result = $this->app->remote->RemoteSendArticleList($shop, array($lagerartikel[$ij]['id']), array($nummer['nummer']), true);
             }
             catch(Exception $e) {
-              $this->app->erp->LogFile($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.$nummer['nummer'].' '.$e->getMessage()));
+              $this->logger->error($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.$nummer['nummer'].' '.$e->getMessage()));
               $anzfehler++;
             }
           }
@@ -21018,7 +20997,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
               $result = $this->app->remote->RemoteSendArticleList($shop,array($lagerartikel[$ij]['id']),!empty($extnummer)? array($extnummer):'',true);
           }
           catch(Exception $e) {
-            $this->app->erp->LogFile($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.(!empty($extnummer)? array($extnummer):$lagerartikel[$ij]['nummer']).' '.$e->getMessage()));
+            $this->logger->error($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.(!empty($extnummer)? array($extnummer):$lagerartikel[$ij]['nummer']).' '.$e->getMessage()));
             $anzfehler++;
           }
         }
@@ -21029,7 +21008,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         }
 
 
-        $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
+        $this->logger->info('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
 
         if ((is_array($result) && $result instanceof ArticleExportResult ? $result->success : false) || $result === 1) {
             $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
@@ -25543,7 +25522,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
             new EmailRecipient($from, $from_name)
           );
         } else {
-          $this->app->erp->LogFile("Mailer Error: Email could not be composed!");
+          $this->logger->error("Mailer Error: Email could not be composed!");
         }
 
         // Load the mail to IMAP using laminas
@@ -25556,7 +25535,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $client->connect();
           $client->appendMessage($imapCopyMessage, $account->getImapOutgoingFolder());
         } catch (Exception $e) {
-          $this->app->erp->LogFile("Mailer IMAP Error: " . (string) $e);
+          $this->logger->error("Mailer IMAP Error: " . (string) $e);
           if(isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetID'))
           {
             $this->app->erp->InternesEvent($this->app->User->GetID(),"IMAP-Fehler","alert",1);
@@ -30828,7 +30807,7 @@ function Firmendaten($field,$projekt="")
         $sprache = $this->app->DB->Select("SELECT sprache FROM $doctype WHERE id='$auftrag' LIMIT 1");
 
         $this->RunHook('AARLGPositionenSprache', 6, $doctype, $auftrag, $artikel, $sprache, $bezeichnunglieferant, $beschreibung);
-        $this->app->erp->LogFile("Add $nummer,$menge $artikel $sprache Name: $bezeichnunglieferant");
+        $this->logger->info("Add $nummer,$menge $artikel $sprache Name: $bezeichnunglieferant");
 
         $verkaufspreisarr = $this->GetVerkaufspreis($artikel, $menge,0,'', $returnwaehrung,true);
         if($verkaufspreisarr)
@@ -37303,20 +37282,6 @@ function Firmendaten($field,$projekt="")
         $date = $this->app->DB->Select("SELECT datum FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
         return ($date);
       }
-      
-      function GetDateiDatumFormat($id)
-      {
-        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
-        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDate("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
-        return ($date);
-      }
-      
-      function GetDateiDatumZeitFormat($id)
-      {
-        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
-        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDateTime("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
-        return ($date);
-      }
 
     /*
     * Retrieve files from stichwoerter and provide them in tmp for access
@@ -39598,7 +39563,7 @@ function Firmendaten($field,$projekt="")
       $result = curl_exec($ch);
       if(strpos($result,"404 page not")===false) break;
       if($timeout > 10) {
-        $this->app->erp->LogFile("Openstreetmap GetLangLat Timeout: $url");
+        $this->logger->warning("Openstreetmap GetLangLat Timeout: $url");
         break;
       }
     }
@@ -39626,7 +39591,7 @@ function Firmendaten($field,$projekt="")
       $result = curl_exec($ch);
       if(strpos($result,"404 page not")===false) break;
       if($timeout > 10) {
-        $this->app->erp->LogFile("Openstreetmap Distance Timeout: $url");
+        $this->logger->warning("Openstreetmap Distance Timeout: $url");
         break;
       }
 

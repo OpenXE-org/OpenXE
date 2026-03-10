@@ -172,9 +172,6 @@
                     <a href="index.php?module=protokoll&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_22.gif" border="0" width="30%" /></a>
                 </td>
                 <td width="25%">
-                    <a href="index.php?module=logfile&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_22.gif" border="0" width="30%" /></a>
-                </td>
-                <td width="25%">
                     <a href="index.php?module=log&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_22.gif" border="0" width="30%" /></a>
                 </td>
             </tr>

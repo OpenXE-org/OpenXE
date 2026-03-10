@@ -394,6 +394,8 @@ if(!class_exists('app_t2'))
 //ENDE
 
 $app->FormHandler = new FormHandler($app);
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
 if(!$app->erp->ModulVorhanden('uebertragungen')) {
   return;
@@ -458,7 +460,7 @@ if(empty($uebertragungen_accounts)) {
     $app->erp->ProzessstarterStatus('Artikel übertragen '.$uebertragung_account['bezeichnung']);
     $countTransferAricle = $uebertragungen->transferAricle($uebertragung_account);
     if($countTransferAricle > 0) {
-      $app->erp->LogFile($uebertragung_account['bezeichnung'].': '.$countTransferAricle.' Artikel uebertragen');
+      $logger->info($uebertragung_account['bezeichnung'].': '.$countTransferAricle.' Artikel uebertragen');
     }
     $app->DB->Update(
       "UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 1,mutexcounter=0 WHERE parameter = 'api_uebertragungen'"
@@ -470,7 +472,7 @@ if(empty($uebertragungen_accounts)) {
   foreach($uebertragungen_accounts as $uebertragungen_account) {
     $uebertragungen->datei_id = null;
     if($uebertragungen->createSaleReport($uebertragungen_account)) {
-      $app->erp->LogFile($uebertragung_account['bezeichnung'].': SaleReport uebertragen');
+        $logger->info($uebertragung_account['bezeichnung'].': SaleReport uebertragen');
     }
     $uebertragungen->datei_id = null;
   }
@@ -540,7 +542,7 @@ if(empty($uebertragungen_accounts)) {
         }
       }
       catch(Exception $e) {
-        $app->erp->LogFile(
+          $logger->error('Parse file error',
           [
             'ParseFileError'=>$e->getMessage(),
             'Module'=>$uebertragung_account['xml_pdf']

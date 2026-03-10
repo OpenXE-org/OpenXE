@@ -67,6 +67,8 @@ phpinfo();
 $phpinfo = ob_get_contents();
 ob_end_clean();
 $app->erp->SetKonfigurationValue('system_cronjob_phpinfo', $app->DB->real_escape_string($phpinfo));
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
 if (method_exists($app->erp, 'CheckCronjob') && !$app->erp->CheckCronjob()) {
   $app->DB->Close();
@@ -80,7 +82,7 @@ $app->erp->SetKonfigurationValue('prozessstarter_letzteraufruf', date('Y-m-d H:i
 $systemHealthService = $app->Container->get('SystemHealthService');
 
 if ($DEBUG) {
-  $app->erp->LogFile('starter.php');
+  $logger->debug('starter.php');
 }
 
 $task = $app->DB->SelectArr(
@@ -109,7 +111,7 @@ if ($task) {
         }
       }
     } catch (Exception $e) {
-      $app->erp->LogFile('can not evaluate disk space for cronjob: ' . $e->getMessage());
+        $logger->warning('can not evaluate disk space for cronjob: ' . $e->getMessage());
     }
 
     if ($fromstarter2) {
@@ -117,7 +119,7 @@ if ($task) {
     } else {
       $run = 0;
       if ($DEBUG) {
-        $app->erp->LogFile('Task: ' . $task[$task_index]['bezeichnung'] . ' ' . $task[$task_index]['art']);
+        $logger->debug('Task: ' . $task[$task_index]['bezeichnung'] . ' ' . $task[$task_index]['art']);
       }
 
       if ($task[$task_index]['art'] === 'periodisch') {
@@ -172,7 +174,7 @@ if ($task) {
       $app->erp->setCronjobRunning(CRONJOBUID, $task[$task_index], true);
     }
     if ($DEBUG) {
-      $app->erp->LogFile('Prozessstarter ' . $task[$task_index]['parameter']);
+      $logger->debug('Prozessstarter ' . $task[$task_index]['parameter']);
     }
     //update letzte ausfuerhung
     $app->DB->Update(
@@ -220,14 +222,14 @@ if ($task) {
         $app->erp->ProzessstarterStatus('abgeschlossen', $task[$task_index]['id']);
         $app->erp->ProzessstarterStatus('', 0);
       } catch (Exception $e) {
-        $app->erp->LogFile(
+          $logger->error(
           $app->DB->real_escape_string(
             'Prozessstarter Fehler bei Aufruf des Moduls ' . $task[$task_index]['parameter'] . ': ' . $e->getMessage()." Trace: ".$e->GetTraceAsString()
           )
         );
       }
     } else {
-      $app->erp->LogFile(
+        $logger->error(
         $app->DB->real_escape_string(
           'Der Prozessstarter ' . $task[$task_index]['parameter'] . ' wurde nicht gefunden'
         )

@@ -2635,10 +2635,12 @@ class Shopimporter_Shopware extends ShopimporterBase
     return $orders;
   }
 
-  public function ShopwareLog($nachricht, $dump = '')
+  public function ShopwareLog($nachricht, $dump = null)
   {
     if($this->protokoll){
-      $this->app->erp->Logfile($nachricht, print_r($dump, true));
+        if ($dump !== null && !is_array($dump))
+            $dump = ['dump' => $dump];
+        $this->app->Container->get('Logger')->info($nachricht, $dump);
     }
   }
 

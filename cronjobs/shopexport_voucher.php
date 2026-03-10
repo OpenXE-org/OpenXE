@@ -68,6 +68,8 @@ if(class_exists('RemoteCustom'))
 $app->remote = $remote;
 
 $app->FormHandler = new FormHandler($app);
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
 $app->DB->Update("UPDATE prozessstarter SET mutexcounter = mutexcounter + 1 WHERE mutex = 1 AND (parameter = 'shopexport_voucher') AND aktiv = 1");
 if(!$app->DB->Select("SELECT id FROM prozessstarter WHERE mutex = 0 AND parameter = 'shopexport_voucher' AND aktiv = 1")){
@@ -84,7 +86,7 @@ foreach ($shops as $shop){
     $vouchers = $app->remote->RemoteCommand($shop['id'],'getvouchers');
   }catch(Exception $exception)
   {
-    $app->erp->LogFile($app->DB->real_escape_string($exception->getMessage()));
+      $logger->error($app->DB->real_escape_string($exception->getMessage()));
   }
   if($vouchers['success']){
     foreach ($vouchers['data'] as $voucherInShop){
@@ -124,11 +126,11 @@ foreach ($shops as $shop){
           $app->DB->Update($sql);
         }
       }else{
-        $app->erp->LogFile('voucher was not send to shop. Shopid: '.$shop['id'].' - voucher Code: '.$voucherToSend['voucher_code'],print_r($response['message'],true));
+        $logger->warning('voucher was not send to shop. Shopid: '.$shop['id'].' - voucher Code: '.$voucherToSend['voucher_code'], $response['message']);
       }
     }catch(Exception $exception)
     {
-      $app->erp->LogFile($app->DB->real_escape_string($exception->getMessage()));
+        $logger->error($app->DB->real_escape_string($exception->getMessage()));
     }
     $app->DB->Update("UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 1,mutexcounter=0 WHERE parameter = 'shopexport_voucher'");
   }

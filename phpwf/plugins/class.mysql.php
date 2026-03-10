@@ -1548,7 +1548,7 @@ class DB{
       return false;
     }
     if(!empty($this->app)) {
-      $this->app->erp->LogFile(mysqli_real_escape_string($this->connection, $error));
+      $this->app->Container->get('Logger')->error($error);
     }
 
     if($echo) {

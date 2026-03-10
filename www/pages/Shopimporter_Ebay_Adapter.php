@@ -389,9 +389,11 @@ class Shopimporter_Ebay_Adapter
    * @param        $nachricht
    * @param string $dump
    */
-  protected function eBayLog($nachricht, $dump = ''){
+  protected function eBayLog($nachricht, $dump = null){
     if($this->protokoll !== self::PROTOCOL_DISABLED){
-      $this->app->erp->LogFile($nachricht, $this->app->DB->real_escape_string($dump));
+        if ($dump !== null && !is_array($dump))
+            $dump = ['dump' => $dump];
+        $this->app->Container->get('Logger')->info($nachricht, $dump);
     }
   }
 

@@ -430,6 +430,8 @@ class pdfarchiv_app
   /** @var ApplicationCore $app */
   var $app;
 
+  private \Psr\Log\LoggerInterface $logger;
+
   /** @var string $folder */
   var $folder;
 
@@ -442,6 +444,7 @@ class pdfarchiv_app
   {
     $this->app = $app;
     $this->folder = $this->app->Conf->WFuserdata."/pdfarchiv/".$this->app->Conf->WFdbname;
+    $this->logger = $app->Container->get('Logger');
   }
 
   /**
@@ -548,7 +551,7 @@ class pdfarchiv_app
             $cgc = gc_collect_cycles();
             if($cgc > 0)
             {
-              $this->app->erp->LogFile($cgc.' cycles collected');
+              $this->logger->info($cgc.' cycles collected');
             }
           }
           $check = $this->app->DB->Query("SELECT t.id,t.projekt,t.schreibschutz FROM $table t LEFT JOIN pdfarchiv p ON p.table_id = t.id AND p.table_name = '$table' AND CHAR_LENGTH(p.belegnummer) > 2 AND p.belegnummer <> 'SAB' WHERE t.belegnr <> '' AND t.status <> 'angelegt' AND t.status <> 'angelegta' AND t.status <> 'a'  
@@ -662,7 +665,7 @@ class pdfarchiv_app
               $cgc = gc_collect_cycles();
               if($cgc > 0)
               {
-                $this->app->erp->LogFile($cgc.' cycles collected');
+                $this->logger->info($cgc.' cycles collected');
               }
             }
             if(empty($row['schreibschutz']))
@@ -744,7 +747,7 @@ class pdfarchiv_app
         $ziparchiv = new ZipArchive;
         if($ziparchiv->open($pfad.'.zip', ZipArchive::CREATE) !== true)
         {
-          $this->app->erp->LogFile($pfad.'.zip '.(file_exists($pfad.'.zip')?'ex':'ex nicht'));
+          $this->logger->info($pfad.'.zip '.(file_exists($pfad.'.zip')?'ex':'ex nicht'));
           
           $this->app->DB->Update("UPDATE pdfarchiv_jobs SET status = 'Fehler', kommentar = 'Es konnte kein Zip-Archiv erstellt werden' WHERE id = '".$job['id']."' LIMIT 1");
           return false;
@@ -783,7 +786,7 @@ class pdfarchiv_app
               $cgc = gc_collect_cycles();
               if($cgc > 0)
               {
-                $this->app->erp->LogFile($cgc.' cycles collected');
+                $this->logger->info($cgc.' cycles collected');
               }
             }
             echo $row['id'];
@@ -844,7 +847,7 @@ class pdfarchiv_app
               $cgc = gc_collect_cycles();
               if($cgc > 0)
               {
-                $this->app->erp->LogFile($cgc.' cycles collected');
+                $this->logger->info($cgc.' cycles collected');
               }
             }
             echo $row['id'];
@@ -910,7 +913,7 @@ class pdfarchiv_app
           $this->app->DB->Update("UPDATE pdfarchiv_jobs SET status = 'Fehler', kommentar = 'Fehler beim Speichern des Zip-Archives' WHERE id = '".$job['id']."' LIMIT 1");
           return false;
         }
-        $this->app->erp->LogFile($pfad.'.zip '.(file_exists($pfad.'.zip')?'ex':'ex nicht'));
+        $this->logger->info($pfad.'.zip '.(file_exists($pfad.'.zip')?'ex':'ex nicht'));
         $this->app->DB->Update("UPDATE pdfarchiv_jobs SET status = 'abgeschlossen',kommentar = '', datei = '".$pfad_rel.".zip' WHERE id = '".$job['id']."' LIMIT 1");
       }elseif($gz){
         system("cd ".$this->folder." && tar cfz ".$pfad.".tar.gz $pfad_rel $1>/dev/null");
