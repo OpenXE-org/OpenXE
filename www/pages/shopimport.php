@@ -1016,7 +1016,7 @@ class Shopimport {
         $umlautefehler = false;
         if ((String) $shopOrder['name'] !== '' && (String) $shopOrderCleaned['name'] === '') {
             $umlautefehler = true;
-            $this->app->erp->LogFile('Kodierungsfehler in shopimport_auftraege ' . $shopImportedOrderId);
+            $this->app->Container->get('Logger')->error('Kodierungsfehler in shopimport_auftraege ' . $shopImportedOrderId);
         }
         $succes = $this->KundeAnlegenUpdate($shopImportedOrderId, '', $shopOrderCleaned, $customerNumber, $custumerNumberImported, $unknownPaymentTypes);
 

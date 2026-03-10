@@ -135,10 +135,12 @@ class Shopimporter_Presta_Adapter {
    * @param        $nachricht
    * @param string $dump
    */
-  public function Prestalog($nachricht, $dump = '')
+  public function Prestalog($nachricht, $dump = null)
   {
     if($this->protokoll){
-      $this->app->erp->LogFile($nachricht, print_r($dump, true));
+        if ($dump !== null && !is_array($dump))
+            $dump = ['dump' => $dump];
+        $this->app->Container->get('Logger')->info($nachricht, $dump);
     }
   }
 

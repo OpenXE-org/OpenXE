@@ -257,7 +257,7 @@ function sendNotificationMail($userId, $privateMessages, $publicMessages)
 //  function MailSend($from,$from_name,$to,$to_name,$betreff,$text,$files="",$projekt="",$signature=true,$cc="",$bcc="", $system = false)
   $app->erp->MailSend($fromMail,$fromName,$toMail,$toName,$subject,$text,"","",false,"","", true);
 
-  $app->erp->LogFile("Mailed ".$subject." to ".$toMail);
+  $app->Container->get('Logger')->info("Mailed ".$subject." to ".$toMail);
 
 
 }

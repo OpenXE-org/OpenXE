@@ -31,8 +31,10 @@ $conf = new Config();
 $app->DB = new DB($conf->WFdbhost,$conf->WFdbname,$conf->WFdbuser,$conf->WFdbpass,null,$conf->WFdbport);
 $erp = new erpAPI($app);
 $app->erp = $erp;
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
-$app->erp->LogFile("MLM gestartet");
+$logger->info("MLM gestartet");
 
 $app->Secure = new Secure($app);
 $app->User = new User($app);
@@ -61,7 +63,7 @@ for($i=0;$i<count($result);$i++)
   }
 }
 
-$app->erp->LogFile("MLM fertig");
+$logger->info("MLM fertig");
 
 $shops = $app->DB->SelectArr("SELECT id from shopexport s where s.geloescht <> '1' AND s.aktiv = '1'");
 if($shops)
@@ -77,8 +79,8 @@ if($shops)
     }
   }
 } else {
-  $app->erp->LogFile("Partner Export Shop: Keine Shops");
+  $logger->info("Partner Export Shop: Keine Shops");
 }
-$app->erp->LogFile("Partner Export Shop");
+$logger->info("Partner Export Shop");
 
 ?>

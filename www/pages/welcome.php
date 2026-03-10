@@ -936,7 +936,7 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
       }
 
     } catch(Exception $e){
-      $this->app->erp->LogFile('can not evaluate disk space: ' . $e->getMessage());
+      $this->app->Container->get('Logger')->warning('can not evaluate disk space: ' . $e->getMessage());
     }
   }
 

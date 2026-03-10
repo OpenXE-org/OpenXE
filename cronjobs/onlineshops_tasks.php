@@ -132,7 +132,7 @@ if(!empty($onlineShopTask)){
       $app->remote->RemoteCommand($onlineShopTask['shop_id'], $command);
     }
     catch (Exception $e) {
-      $app->erp->LogFile(['error'=>$e->getMessage()]);
+        $app->Container->get('Logger')->error($e->getMessage());
     }
   }
 

@@ -160,7 +160,7 @@ while($check > 0)
       (int)$app->remote->RemoteCommand($row['shop'],'sendadresse',$row['adresse']);
     }catch(Execption $exception)
     {
-      $app->erp->LogFile($app->DB->real_escape_string($exception->getMessage()));
+        $app->Container->get('Logger')->error($app->DB->real_escape_string($exception->getMessage()));
     }
     $app->DB->Delete("DELETE FROM shopexport_adressenuebertragen WHERE id='".$row['id']."' LIMIT 1");
     $app->DB->Update("UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 1,mutexcounter=0 WHERE parameter = 'shopexport_adressexport'");
@@ -170,4 +170,4 @@ while($check > 0)
 }
 
 $app->DB->Update("UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 0,mutexcounter=0 WHERE parameter = 'shopexport_adressexport'");
-$app->erp->LogFile('Cronjob Adressuebertragung Ende '.$anz.' uebertragen');
+$app->Container->get('Logger')->info('Cronjob Adressuebertragung Ende '.$anz.' uebertragen');

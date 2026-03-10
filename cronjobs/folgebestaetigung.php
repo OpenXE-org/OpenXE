@@ -31,27 +31,29 @@ $conf = new Config();
 $app->DB = new DB($conf->WFdbhost,$conf->WFdbname,$conf->WFdbuser,$conf->WFdbpass,null,$conf->WFdbport);
 $erp = new erpAPI($app);
 $app->erp = $erp;
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
-$app->erp->LogFile("Folgebestaetigung gestartet");
+$logger->info("Folgebestaetigung gestartet");
 
 
 $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
 
 $app->Secure = new Secure($app);
 $app->User = new User($app);
-$app->erp->LogFile("Folgebestaetigung start AuftraegeBerechnen");
+$logger->info("Folgebestaetigung start AuftraegeBerechnen");
 $app->erp->AuftraegeBerechnen();
-$app->erp->LogFile("Folgebestaetigung start Versand");
+$logger->info("Folgebestaetigung start Versand");
 
 $result = $app->DB->SelectArr("SELECT DISTINCT adresse FROM auftrag WHERE status='freigegeben'");
 for($i=0;$i<count($result);$i++)
 {
   //echo "Adresse ".$result[$i]['adresse'];
-  $app->erp->LogFile("Folgebestaetigung Adresse ".$result[$i]['adresse']);
+  $logger->info("Folgebestaetigung Adresse ".$result[$i]['adresse']);
   $app->erp->Folgebestaetigung($result[$i]['adresse']);
 }
 
-$app->erp->LogFile("Folgebestaetigung erfolgreich versendet");
+$logger->info("Folgebestaetigung erfolgreich versendet");
 //echo "done\r\n";
 
 ?>
