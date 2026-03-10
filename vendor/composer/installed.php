@@ -193,15 +193,6 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'league/oauth1-client' => array(
-            'pretty_version' => 'v1.9.0',
-            'version' => '1.9.0.0',
-            'reference' => '1e7e6be2dc543bf466236fb171e5b20e1b06aee6',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../league/oauth1-client',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'lfkeitel/phptotp' => array(
             'pretty_version' => 'v1.1.0',
             'version' => '1.1.0.0',
