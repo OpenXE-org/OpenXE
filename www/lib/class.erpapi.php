@@ -33574,6 +33574,68 @@ function Firmendaten($field,$projekt="")
           $steuersatz_ermaessigt = $this->Firmendaten('steuersatz_ermaessigt');
         }
 
+        $projektId = is_array($projekt) && isset($projekt['id']) ? (int)$projekt['id'] : (int)$projekt;
+
+        if(in_array($typ, ['angebot','auftrag','rechnung','gutschrift','proformarechnung'], true)) {
+          $docRow = $this->app->DB->SelectRow(
+            sprintf(
+              "SELECT land, ust_befreit, ustid%s FROM `%s` WHERE id = %d LIMIT 1",
+              $typ === 'auftrag' ? ', lieferland' : '',
+              $typ,
+              (int)$id
+            )
+          );
+
+          if(!empty($docRow)) {
+            $ustBefreit = (int)$docRow['ust_befreit'];
+            $ustid = trim((string)$docRow['ustid']);
+            $targetCountry = $docRow['land'];
+            if($typ === 'auftrag' && !empty($docRow['lieferland'])) {
+              $targetCountry = $docRow['lieferland'];
+            }
+
+            $firmCountry = strtoupper((string)$this->Firmendaten('land'));
+            $targetCountry = strtoupper(trim((string)$targetCountry));
+            $isEuB2C = $ustBefreit === 1 && ($ustid === '' || $ustid === '0');
+
+            if($isEuB2C && $targetCountry !== '' && $targetCountry !== $firmCountry) {
+              $countryTaxes = [];
+              $countryTaxRows = $this->app->DB->SelectArr(
+                sprintf(
+                  "SELECT `type`,`satz`
+                    FROM `steuersaetze`
+                    WHERE `aktiv` = 1
+                      AND (`project_id` = %d OR `project_id` = 0)
+                      AND (`country_code` = '%s' OR (`bezeichnung` = '%s' AND `country_code` = ''))
+                    AND (`type` = 'normal' OR `type` = 'ermaessigt')
+                    AND (valid_from IS NULL OR valid_from = '0000-00-00' OR valid_from <= CURDATE())
+                    AND (valid_to IS NULL OR valid_to = '0000-00-00' OR valid_to >= CURDATE())
+                    ORDER BY `project_id` = %d DESC, valid_from DESC, id DESC",
+                  $projektId,
+                  $this->app->DB->real_escape_string($targetCountry),
+                  $this->app->DB->real_escape_string($targetCountry),
+                  $projektId
+                )
+              );
+
+              if(!empty($countryTaxRows)) {
+                foreach($countryTaxRows as $taxRow) {
+                  if(($taxRow['type'] === 'normal' || $taxRow['type'] === 'ermaessigt') && !isset($countryTaxes[$taxRow['type']])) {
+                    $countryTaxes[$taxRow['type']] = (float)$taxRow['satz'];
+                  }
+                }
+              }
+
+              if(array_key_exists('normal', $countryTaxes)) {
+                $steuersatz_normal = $countryTaxes['normal'];
+              }
+              if(array_key_exists('ermaessigt', $countryTaxes)) {
+                $steuersatz_ermaessigt = $countryTaxes['ermaessigt'];
+              }
+            }
+          }
+        }
+
         $this->app->DB->Update("UPDATE $typ SET steuersatz_normal='$steuersatz_normal',steuersatz_ermaessigt='$steuersatz_ermaessigt' WHERE id='$id' LIMIT 1");
         $this->app->erp->WriteChangeLog();
       }
