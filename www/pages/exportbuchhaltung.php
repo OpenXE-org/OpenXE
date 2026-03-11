@@ -379,8 +379,8 @@ class Exportbuchhaltung
                                     $file_name = $beleg['belegnr'].".pdf";
                                     $guid = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
                                     $this->addfile(ucfirst($belege_zu_typ['typ'])."_".$file_name, file_get_contents($tmpfile), $guid, $belege_zu_typ['document_type']);
-                                    if (!$belege[$typ]['belege'][$beleg_key]['beleglink']) {
-                                        $belege[$typ]['belege'][$beleg_key]['beleglink'] = $guid;
+                                    if (!$belege[$typ]['belege'][$beleg_key]['guid']) {
+                                        $belege[$typ]['belege'][$beleg_key]['guid'] = $guid;
                                     }
                                 break;
                                 case 'load':
@@ -396,8 +396,8 @@ class Exportbuchhaltung
                                             $this->addfile(ucfirst($belege_zu_typ['typ'])."_".$file_name, $file_contents, $guid, $belege_zu_typ['document_type']);
                                             $count++;
                                             $suffix = "_".$count;
-                                            if (!$belege[$typ]['belege'][$beleg_key]['beleglink'] && in_array($ending, $allowed_link_file_types)) { // First file is linked
-                                                $belege[$typ]['belege'][$beleg_key]['beleglink'] = $guid;
+                                            if (!$belege[$typ]['belege'][$beleg_key]['guid'] && in_array($ending, $allowed_link_file_types)) { // First file is linked
+                                                $belege[$typ]['belege'][$beleg_key]['guid'] = $guid;
                                             }
                                         }
                                     }
@@ -407,7 +407,7 @@ class Exportbuchhaltung
                                     $dataok = false;
                                 break;
                             } // Switch action
-                            if (empty($belege[$typ]['belege'][$beleg_key]['beleglink'])) {
+                            if (empty($belege[$typ]['belege'][$beleg_key]['guid'])) {
                                 $this->app->Tpl->AddMessage('error',"Belegdatei fehlt: ".$beleg['belegnr']);
                                 $dataok = false;
                             }

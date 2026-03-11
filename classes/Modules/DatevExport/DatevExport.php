@@ -302,7 +302,9 @@ final class DatevExport
                     $data['Land'] = $beleg['land'];
                     $data['Auftragsnummer'] = ($beleg['auftrag']!=0)?$beleg['auftrag']:'';
 
-                    $data['Beleglink'] = $beleg['beleglink'];
+                    if (!empty($beleg['guid'])) {
+                        $data['Beleglink'] = 'BEDI '.$beleg['guid'];
+                    }
 
                     $csv .= self::create_line($datev_buchungsstapel_definition,$data);
                 } // Foreach row
@@ -342,7 +344,9 @@ final class DatevExport
                         $data['Land'] = $beleg['land'];
                         $data['Auftragsnummer'] = $beleg['auftrag'];
 
-                        $data['Beleglink'] = $beleg['beleglink'];
+                        if (!empty($beleg['guid'])) {
+                            $data['Beleglink'] = 'BEDI '.$beleg['guid'];
+                        }
 
                         $differences[] = $beleg;
                         $csv .= self::create_line($datev_buchungsstapel_definition,$data);
