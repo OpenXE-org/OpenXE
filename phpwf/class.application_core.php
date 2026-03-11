@@ -14,6 +14,7 @@
 ?>
 <?php
 
+use Xentral\Core\DependencyInjection\ServiceContainer;
 use Xentral\Core\LegacyConfig\ConfigLoader;
 
 /**
@@ -23,12 +24,10 @@ use Xentral\Core\LegacyConfig\ConfigLoader;
  * @property YUI $YUI
  * @property WawiString $String
  * @property FormHandler $FormHandler
- * @property Table $Table
  * @property phpWFAPI $WF
  * @property WFMonitor $WFM
  * @property Secure $Secure
  * @property PHPMailer $mail
- * @property Help $help
  * @property StringCleaner $stringcleaner
  * @property Acl $acl
  * @property ModuleScriptCache $ModuleScriptCache
@@ -47,7 +46,7 @@ class ApplicationCore
   protected $props;
   protected $loadedModules;
 
-  /** @var \Xentral\Core\DependencyInjection\ServiceContainer $Container */
+  /** @var ServiceContainer $Container */
   public $Container;
 
   public function __construct($config = null)
@@ -70,7 +69,6 @@ class ApplicationCore
       'YUI'=>array('class'=>'YUI','app'=>true),
       'String'=>array('class'=>'WawiString'),
       'FormHandler'=>array('class'=>'FormHandler','app'=>true),
-      'Table'=>array('class'=>'Table','app'=>true),
       'WF'=>array('class'=>'phpWFAPI','app'=>true),
       'WFM'=>array('class'=>'WFMonitor','app'=>true),
       'Secure'=>array('class'=>'Secure','app'=>true),

@@ -65,24 +65,6 @@ if(WithGUI())
 	include dirname(__DIR__).'/phpwf/htmltags/all.php';
 }
 
-/**
- * @property Config $Conf
- * @property Secure $Secure
- * @property TemplateParser $Tpl
- * @property FormHandler $FormHandler
- * @property WidgetAPI $Widget
- * @property PageBuilder $PageBuilder
- * @property Page $Page
- * @property ObjectAPI $ObjAPI
- * @property WFMonitor $WFM
- * @property ModuleScriptCache $ModuleScriptCache
- * @property YUI $YUI
- * @property User $User
- * @property Acl $acl
- * @property phpWFAPI $WF
- * @property WawiString $String
- * @property DB $DB
- */
 class Application extends ApplicationCore
 {
 
@@ -97,15 +79,6 @@ class Application extends ApplicationCore
     public function __construct($config)
     {
       parent::__construct($config);
-
-      /*if(!isset($_GET['module']) || $_GET['module'] != 'api') {
-        if(!(isset($_GET['module']) && isset($_GET['action']) && isset($_GET['cmd']) && $_GET['module'] == 'welcome' && (($_GET['action'] == 'login' && $_GET['cmd'] == 'checkrfid') || $_GET['action'] == 'cronjob' || $_GET['action'] == 'adapterbox'))) {
-         // @session_cache_limiter('private');
-          //@session_start();
-        }
-      }*/
-
-      $this->Conf= $config;
 
       if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'){
         $this->http = 'https';
