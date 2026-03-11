@@ -2283,7 +2283,6 @@ return array(
     'Versandart_go' => $baseDir . '/www/lib/versandarten/go.php',
     'Versandart_sendcloud' => $baseDir . '/www/lib/versandarten/sendcloud.php',
     'VersandpaketscheinPDF' => $baseDir . '/www/lib/dokumente/class.versandpaketschein.php',
-    'WFMonitor' => $baseDir . '/phpwf/plugins/class.wfmonitor.php',
     'WaWisionOTP' => $baseDir . '/phpwf/plugins/class.wawision_otp.php',
     'WawiString' => $baseDir . '/phpwf/plugins/class.string.php',
     'Webmozart\\Assert\\Assert' => $vendorDir . '/webmozart/assert/src/Assert.php',
@@ -4085,6 +4084,5 @@ return array(
     'lfkeitel\\phptotp\\Base32' => $vendorDir . '/lfkeitel/phptotp/src/Base32.php',
     'lfkeitel\\phptotp\\Hotp' => $vendorDir . '/lfkeitel/phptotp/src/Hotp.php',
     'lfkeitel\\phptotp\\Totp' => $vendorDir . '/lfkeitel/phptotp/src/Totp.php',
-    'phpWFAPI' => $baseDir . '/phpwf/plugins/class.phpwfapi.php',
     'phpprint' => $baseDir . '/www/plugins/php-print.php',
 );

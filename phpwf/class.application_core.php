@@ -24,8 +24,6 @@ use Xentral\Core\LegacyConfig\ConfigLoader;
  * @property YUI $YUI
  * @property WawiString $String
  * @property FormHandler $FormHandler
- * @property phpWFAPI $WF
- * @property WFMonitor $WFM
  * @property Secure $Secure
  * @property PHPMailer $mail
  * @property StringCleaner $stringcleaner
@@ -69,8 +67,6 @@ class ApplicationCore
       'YUI'=>array('class'=>'YUI','app'=>true),
       'String'=>array('class'=>'WawiString'),
       'FormHandler'=>array('class'=>'FormHandler','app'=>true),
-      'WF'=>array('class'=>'phpWFAPI','app'=>true),
-      'WFM'=>array('class'=>'WFMonitor','app'=>true),
       'Secure'=>array('class'=>'Secure','app'=>true),
       'mail'=>array('class'=>'PHPMailer','app'=>true),
       'stringcleaner'=>array('class'=>'StringCleaner','app'=>true),

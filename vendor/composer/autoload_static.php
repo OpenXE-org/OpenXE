@@ -2572,7 +2572,6 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'Versandart_go' => __DIR__ . '/../..' . '/www/lib/versandarten/go.php',
         'Versandart_sendcloud' => __DIR__ . '/../..' . '/www/lib/versandarten/sendcloud.php',
         'VersandpaketscheinPDF' => __DIR__ . '/../..' . '/www/lib/dokumente/class.versandpaketschein.php',
-        'WFMonitor' => __DIR__ . '/../..' . '/phpwf/plugins/class.wfmonitor.php',
         'WaWisionOTP' => __DIR__ . '/../..' . '/phpwf/plugins/class.wawision_otp.php',
         'WawiString' => __DIR__ . '/../..' . '/phpwf/plugins/class.string.php',
         'Webmozart\\Assert\\Assert' => __DIR__ . '/..' . '/webmozart/assert/src/Assert.php',
@@ -4374,7 +4373,6 @@ class ComposerStaticInit79eff8c373a8f453cf73098a3a8ce631
         'lfkeitel\\phptotp\\Base32' => __DIR__ . '/..' . '/lfkeitel/phptotp/src/Base32.php',
         'lfkeitel\\phptotp\\Hotp' => __DIR__ . '/..' . '/lfkeitel/phptotp/src/Hotp.php',
         'lfkeitel\\phptotp\\Totp' => __DIR__ . '/..' . '/lfkeitel/phptotp/src/Totp.php',
-        'phpWFAPI' => __DIR__ . '/../..' . '/phpwf/plugins/class.phpwfapi.php',
         'phpprint' => __DIR__ . '/../..' . '/www/plugins/php-print.php',
     );
 

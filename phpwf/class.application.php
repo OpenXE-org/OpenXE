@@ -98,14 +98,12 @@ class Application extends ApplicationCore
       	$this->PageBuilder       = new PageBuilder($this);
       	$this->Page              = new Page($this);
       	$this->ObjAPI	           = new ObjectAPI($this);
-      	$this->WFM               = new WFMonitor($this);
         $this->ModuleScriptCache = new ModuleScriptCache();
 			}
 
       //$this->YUI            = new YUI($this);
       //$this->User           = new User($this);
       //$this->acl            = new Acl($this);
-      //$this->WF             = new phpWFAPI($this);
       //$this->String         = new WawiString();
 
       $this->BuildNavigation = true;
