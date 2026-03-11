@@ -874,7 +874,7 @@ while(!$break) {
                   $warenkorb = $app->erp->CleanDataBeforImport($warenkorb, false);
                 }*/
                 foreach($warenkorb as $k => $v) {
-                  $warenkorb[$k] = $app->erp->fixeUmlaute($v);
+                  $warenkorb[$k] = $app->String->fixeUmlaute($v);
                 }
                 $projekt = $app->DB->Select(
                   "SELECT `projekt` FROM `shopexport` WHERE `id` = '$shopid' LIMIT 1"

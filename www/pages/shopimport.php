@@ -1010,7 +1010,7 @@ class Shopimport {
 
         foreach ($shopOrderCleaned as $k => $v) {
             if (!is_array($v)) {
-                $shopOrderCleaned[$k] = $this->app->erp->fixeUmlaute($v);
+                $shopOrderCleaned[$k] = $this->app->String->fixeUmlaute($v);
             }
         }
         $umlautefehler = false;
@@ -1512,7 +1512,7 @@ class Shopimport {
             }
         }
         foreach ($warenkorb as $k => $v) {
-            $warenkorb[$k] = $this->app->erp->fixeUmlaute($v);
+            $warenkorb[$k] = $this->app->String->fixeUmlaute($v);
         }
 
         $kundenurvonprojekt = $this->app->DB->Select("SELECT kundenurvonprojekt FROM shopexport WHERE id = '" . $arr['shopid'] . "' LIMIT 1");
@@ -1659,7 +1659,7 @@ class Shopimport {
                     }
                 }
                 foreach ($warenkorb as $k => $v) {
-                    $warenkorb[$k] = $this->app->erp->fixeUmlaute($v);
+                    $warenkorb[$k] = $this->app->String->fixeUmlaute($v);
                 }
                 $kundenurvonprojekt = $this->app->DB->Select("SELECT kundenurvonprojekt FROM shopexport WHERE id = '" . $arr[$i]['shopid'] . "' LIMIT 1");
                 $adresseprojekt = '';

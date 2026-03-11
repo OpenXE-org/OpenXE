@@ -850,7 +850,7 @@ ean;';
     $replacesKey = array_keys($replaces);
     $notFounds = $replacesKey;
     foreach($row as $value) {
-      $value = $this->app->erp->fixeUmlaute($value);
+      $value = $this->app->String->fixeUmlaute($value);
       foreach($notFounds as $key => $notFound) {
         if(strpos($value, $notFound) !== false) {
           unset($notFounds[$key]);
@@ -1053,7 +1053,7 @@ ean;';
 
     foreach($row as $value)
     {
-      $value = $this->app->erp->fixeUmlaute($value);
+      $value = $this->app->String->fixeUmlaute($value);
       // ersetzte platzhalter
       foreach($replaces as $k => $v) {
         $value = str_replace($k, $params[$v], $value);

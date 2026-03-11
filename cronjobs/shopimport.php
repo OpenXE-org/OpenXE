@@ -673,7 +673,7 @@ if($shops) {
                   } else {
                     $warenkorb = $app->erp->CleanDataBeforImport($warenkorb, false);
                   }
-                  foreach($warenkorb as $k => $v) $warenkorb[$k] = $app->erp->fixeUmlaute($v);
+                  foreach($warenkorb as $k => $v) $warenkorb[$k] = $app->String->fixeUmlaute($v);
                   $kundenurvonprojekt = $app->DB->Select("SELECT kundenurvonprojekt FROM shopexport WHERE id = '$id' LIMIT 1");
                   $adresseprojekt = '';
                   if($kundenurvonprojekt)
@@ -1067,7 +1067,7 @@ if($shops) {
                   } else {
                     $warenkorb = $app->erp->CleanDataBeforImport($warenkorb, false);
                   }
-                  foreach($warenkorb as $k => $v) $warenkorb[$k] = $app->erp->fixeUmlaute($v);
+                  foreach($warenkorb as $k => $v) $warenkorb[$k] = $app->String->fixeUmlaute($v);
                   $warenkorb['email'] = trim($warenkorb['email']," \t\n\r\0\x0B\xc2\xa0");
                   $kundenurvonprojekt = $app->DB->Select("SELECT kundenurvonprojekt FROM shopexport WHERE id = '$id' LIMIT 1");
                   $adresseprojekt = '';
