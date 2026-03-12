@@ -11,15 +11,6 @@
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
-?>
-<?php
-if(!class_exists('BriefpapierCustom'))
-{
-  class BriefpapierCustom extends Briefpapier
-  {
-    
-  }
-}
 
 
 class AnfragePDF extends BriefpapierCustom {

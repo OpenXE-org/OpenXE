@@ -462,7 +462,7 @@ class Wiki {
       $inline[$actModule][$action]['handbook'] = '';
 
       $wiki = $this->getArticleByName($actModule,$workspace['id']);
-      $content = $wiki['content'];
+      $content = $wiki['content'] ?? null;
       $menu = null;
       if(!empty($content)){
         list($menu, $content) = $this->parseMenuFromHtml($content);

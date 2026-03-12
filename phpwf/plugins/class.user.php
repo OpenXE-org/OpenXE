@@ -472,7 +472,7 @@ class User
     }
     $this->loadAddressRowInCacheProperty();
 
-    return $this->cache[$cacheKey]['name'];
+    return $this->cache[$cacheKey]['name'] ?? null;
   }
 
   /**

@@ -660,7 +660,7 @@ class Shopexport
           WHERE (oa.storage_cache = 0 OR oa.storage_cache IS NULL) AND a.geloescht = 0"
       );
       $anz = $this->app->DB->affected_rows();
-      $this->app->erp->LogFile("Lagerzahlencache zurückgesetzt für $anz Artikel mit 0-Mengen, shopid: $id");
+      $this->app->Container->get('Logger')->info("Lagerzahlencache zurückgesetzt für $anz Artikel mit 0-Mengen, shopid: $id");
     }
     $msg = $this->app->erp->base64_url_encode(
       "<div class=\"success\">Lagerzahlen Cache f&uuml;r ".$anz." Artikel zur&uuml;ckgesetzt.</div>"
@@ -701,7 +701,7 @@ class Shopexport
         LEFT JOIN (SELECT artikel FROM artikel_onlineshops WHERE shop = '$id' AND aktiv = 1 GROUP BY artikel) oa ON a.id = oa.artikel
         SET a.cache_lagerplatzinhaltmenge = -999 WHERE (a.shop = '$id' OR a.shop2 = '$id' OR a.shop3 = '$id' OR NOT ISNULL(oa.artikel)) AND a.geloescht = 0");
         $anz = $this->app->DB->affected_rows();
-        $this->app->erp->LogFile("Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
+        $this->app->Container->get('Logger')->info("Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
       }
       $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Lagerzahlen Cache f&uuml;r ".$anz." Artikel zur&uuml;ckgesetzt.</div>");
       $this->app->Location->execute("index.php?module=shopexport&action=artikeluebertragung&id=$id&msg=$msg");

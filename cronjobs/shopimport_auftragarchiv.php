@@ -468,6 +468,8 @@ $app->Secure = new Secure($app);
 $app->User = new User($app);
 
 $app->FormHandler = new FormHandler($app);
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 /*if(false){
   $auftraege = $app->DB->Query("SELECT a.id as auftrag, s.* FROM auftrag a INNER JOIN shopimport_auftraege s ON a.shop =s.shopid AND a.internet = s.extid WHERE a.datum = '2018-10-29'");
   if($auftraege){
@@ -591,10 +593,10 @@ while(!$break) {
         $pageContents = $app->remote->RemoteConnection($shopid);
       }
       catch (Exception $e) {
-        $app->erp->LogFile(['RemoteConnection Error'=>$e->getMessage()]);
+        $logger->error('RemoteConnection Error', [$e->getMessage()]);
         $pageContents = 'failed';
       }
-      $app->erp->LogFile(
+      $logger->info(
         $app->DB->real_escape_string(
           'shopimport_auftragarchiv Shop: '.$shopid.' Auth: '.
           print_r($pageContents,true).' arr: '.print_r($archivauftraege[$i],true)
@@ -621,10 +623,10 @@ while(!$break) {
               );
             }
             catch (Exception $e) {
-              $app->erp->LogFile(['RemoteGetAuftraegeAnzahl Error'=>$e->getMessage()]);
+                $logger->error('RemoteGetAuftraegeAnzahl Error', [$e->getMessage()]);
               $anzahlauftraege = 0;
             }
-            $app->erp->LogFile('shopimport_auftragarchiv Shop: '.$shopid.' gefundene Auftraege: '.$anzahlauftraege);
+            $logger->info('shopimport_auftragarchiv Shop: '.$shopid.' gefundene Auftraege: '.$anzahlauftraege);
             if($anzahlauftraege > 0) {
               $app->DB->Update(
                 sprintf(
@@ -667,7 +669,7 @@ while(!$break) {
           $data['anzgleichzeitig'] = 50;
           $data['holeallestati'] = 1;
           $data['archive'] = 1;
-          $app->erp->LogFile($app->DB->real_escape_string('shopimport_auftragarchiv Shop: '.$shopid.' Zeitraum: '.print_r($data,true)));
+          $logger->info($app->DB->real_escape_string('shopimport_auftragarchiv Shop: '.$shopid.' Zeitraum: '.print_r($data,true)));
         }
         $shopimp = new Shopimport($app, true);
         $erfolgreich = 0;
@@ -696,7 +698,7 @@ while(!$break) {
             );
           }
           catch(Exception $e) {
-            $app->erp->LogFile(['RemoteGetAuftrag Error'=>$e->getMessage()]);
+            $logger->error('RemoteGetAuftrag Error', [$e->getMessage()]);
             $result = '';
           }
           if(!is_array($result)) {
@@ -706,7 +708,7 @@ while(!$break) {
               continue;
             }
             $app->erp->ProzessstarterStatus('Id '.$shopid.' keine (weiteren) Auftraege gefunden', $cronjobTmpId);
-            $app->erp->LogFile('shopimport_auftragarchiv Shop: '.$shopid.' keine (weiteren) Auftraege gefunden');
+            $logger->info('shopimport_auftragarchiv Shop: '.$shopid.' keine (weiteren) Auftraege gefunden');
             $app->DB->Update("UPDATE `shopexport_archiv` SET `status` = 'abgeschlossen' WHERE `id` = " . $archivauftraege[$i]['id']);
             break;
           }
@@ -750,7 +752,7 @@ while(!$break) {
           $mintime = false;
           $cw = count($result);
           if($archivauftraege[$i]['type'] === 'zeitraum') {
-            $app->erp->LogFile('shopimport_auftragarchiv Shop: '.$shopid.' gefundene Auftraege: '.$cw);
+            $logger->info('shopimport_auftragarchiv Shop: '.$shopid.' gefundene Auftraege: '.$cw);
             $app->erp->ProzessstarterStatus('Id '.$shopid.' anz '.$cw, $cronjobTmpId);
           }
           for ($ii = 0; $ii < $cw; $ii++) {
@@ -872,7 +874,7 @@ while(!$break) {
                   $warenkorb = $app->erp->CleanDataBeforImport($warenkorb, false);
                 }*/
                 foreach($warenkorb as $k => $v) {
-                  $warenkorb[$k] = $app->erp->fixeUmlaute($v);
+                  $warenkorb[$k] = $app->String->fixeUmlaute($v);
                 }
                 $projekt = $app->DB->Select(
                   "SELECT `projekt` FROM `shopexport` WHERE `id` = '$shopid' LIMIT 1"
@@ -1190,7 +1192,7 @@ while(!$break) {
         }
       }
       else{
-        $app->erp->LogFile(
+        $logger->info(
           $app->DB->real_escape_string(
             'shopimport_auftragarchiv Shop: '.$shopid.' Auth: '.print_r($pageContents,true)
           )

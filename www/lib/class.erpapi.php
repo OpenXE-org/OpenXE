@@ -69,11 +69,14 @@ class erpAPI
   /** @var array $appList */
   protected $appList = [];
 
+  private \Psr\Log\LoggerInterface $logger;
+
   /** @var ApplicationCore $app */
 
   public function __construct($app)
   {
     $this->app=$app;
+    $this->logger = $app->Container->get('Logger');
     if(empty($this->app->erp)){
       $this->app->erp = $this;
     }
@@ -553,7 +556,7 @@ function Belegeexport($datei, $doctype, $doctypeid, $append = false, $optionen =
       $peakmemory = number_format(memory_get_peak_usage()/1024.0/1024.0,2);
       $runtime = number_format($akttime - $this->logtime,3);
       $runtimeall = number_format($akttime - $this->firstlogtime,3);
-      $this->LogFile('Time all '.$runtimeall."s last: ".$runtime."s Memakt:".$aktmemory."MB peak:".$peakmemory."MB ".$this->app->DB->real_escape_string( $json?json_encode($message):$message));
+      $this->logger->info('Time all '.$runtimeall."s last: ".$runtime."s Memakt:".$aktmemory."MB peak:".$peakmemory."MB ".$this->app->DB->real_escape_string( $json?json_encode($message):$message));
       $this->logtime = $akttime;
     }
   }
@@ -849,11 +852,11 @@ public function NavigationHooks(&$menu)
     if($v['sec'] !== '' || !isset($first[$v['first']])) {
       if($v['sec'] == '') {
         $menu[] = array('first'=>array($v['first'], $v['module'],$v['action']));
-        $first[$v['first']] = (!empty($menu)?count($menu):0);
+        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
       }
       elseif($v['sec'] != '' && !isset($first[$v['first']])){
         $menu[] = array('first'=>array($v['first'], '',''),'sec'=>array(array($v['sec'],$v['module'],$v['action'])));
-        $first[$v['first']] = (!empty($menu)?count($menu):0);
+        $first[$v['first']] = (!empty($menu)?count($menu):0)-1;
       }
       else{
         if(isset($menu[$first[$v['first']]])) {
@@ -1512,13 +1515,13 @@ public function NavigationHooks(&$menu)
           try {
             $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$module,$action,false);
           }catch (Exception $ex){
-            $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+            $this->logger->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
           }
           $this->app->DB->Insert("INSERT INTO userrights (user, module, action, permission) VALUES ('".$user[$i]['id']."','$module','$action','$permission')");
           try {
             $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$module,$action,true);
           }catch (Exception $ex){
-            $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+            $this->logger->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
           }
         }else{
             $permissions = $this->app->DB->SelectArr("SELECT module, action,permission
@@ -1527,7 +1530,7 @@ public function NavigationHooks(&$menu)
               try {
                 $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$permission['module'],$permission['action'],$permission['permission']);
               }catch (Exception $ex){
-                $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+                $this->logger->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
               }
             }
           $this->app->DB->Update("REPLACE INTO userrights (user, module,action,permission) (SELECT '".$user[$i]['id']."',module, action,permission
@@ -2181,7 +2184,7 @@ public function NavigationHooks(&$menu)
             unlink($tmpfile);
             $tmpfile = '';
           }
-          $this->LogFile($this->app->DB->real_escape_string($e->getMessage()));
+          $this->logger->error($this->app->DB->real_escape_string($e->getMessage()));
           return false;
         }
         $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
@@ -2197,7 +2200,7 @@ public function NavigationHooks(&$menu)
           if($tmpfile !== '' && is_file($tmpfile)) {
             unlink($tmpfile);
           }
-          $this->LogFile($this->app->DB->real_escape_string($e->getMessage()));
+          $this->logger->error($this->app->DB->real_escape_string($e->getMessage()));
           $this->app->erp->BriefpapierHintergrunddisable = !$this->app->erp->BriefpapierHintergrunddisable;
           return false;
         }
@@ -3827,35 +3830,6 @@ title: 'Abschicken',
     }
   }
 
-  function LoadZahlungsweiseModul($module, $moduleId) {
-
-    $module = preg_replace('/[^a-zA-Z0-9\_]/','',$module);
-
-    if(empty($module)) {
-      return null;
-    }
-    if(strpos($module,'zahlungsweise_') === 0) {
-      $module = substr($module, 14);
-      if(empty($module)) {
-        return null;
-      }
-    }
-    if(strpos($module, '.') !== false || strpos($module, '/') !== false || strpos($module, '\\')) {
-      return null;
-    }
-    $path = dirname(__DIR__).'/lib/zahlungsweisen/'.$module.'.php';
-    if(!is_file($path)) {
-      return null;
-    }
-
-    include_once $path ;
-    $classname = 'Zahlungsweise_'.$module;
-    if(!class_exists($classname)) {
-      return null;
-    }
-    return new $classname($this->app, $moduleId);
-  }
-
   // @refactor Document Komponente
   function Zahlungsweisetext($doctype,$doctypeid)
   {
@@ -3909,16 +3883,28 @@ title: 'Abschicken',
 
       if($zahlungsweiseid['modul'] != '')
       {
-        $obj = $this->LoadZahlungsweiseModul($zahlungsweiseid['modul'], $zahlungsweiseid['id']);
-        if($obj && method_exists($obj, 'GetZahlungsweiseText'))
+        $zahlungsweiseid['modul'] = preg_replace('/[^a-zA-Z0-9\_]/','',$zahlungsweiseid['modul']);
+        $pfad = dirname(__DIR__).'/lib/zahlungsweisen/'.$zahlungsweiseid['modul'].'.php';
+        if($zahlungsweiseid['modul'] && @is_file($pfad))
         {
-          $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
-          if($zahlungsweisetexttmp!='') {
-            if($zahlungsweiseid['modul'] == 'tagxmonat'){
-              $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
-            }
-            else{
-              $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
+          $classname = 'Zahlungsweise_'.$zahlungsweiseid['modul'];
+          if(!class_exists($classname)){
+            include_once($pfad);
+          }
+          if(class_exists($classname))
+          {
+            $obj = new $classname($this->app, $zahlungsweiseid['id']);
+            if($obj && method_exists($obj, 'GetZahlungsweiseText'))
+            {
+              $zahlungsweisetexttmp = $obj->GetZahlungsweiseText($doctype, $doctypeid);
+              if($zahlungsweisetexttmp!='') {
+                if($zahlungsweiseid['modul'] == 'tagxmonat'){
+                  $zahlungsweisetext = $zahlungsweisetexttmp."\r\n";
+                }
+                else{
+                  $zahlungsweisetext .= "\r\n".$zahlungsweisetexttmp."\r\n";
+                }
+              }
             }
           }
         }
@@ -6428,14 +6414,6 @@ title: 'Abschicken',
     return in_array($action, $actions);
   }
 
-  function fixeUmlaute($text) {
-    return $this->app->String->fixeUmlaute($text);
-  }
-
-  function getUmlauteArray() {
-    return $this->app->String->getUmlauteArray();
-  }
-
   /**
    * @deprecated use directly htmlentities() instead
    */
@@ -6463,7 +6441,7 @@ title: 'Abschicken',
 
   function ConvertForTableSearch($string)
   {
-    $string = $this->unicode_decode($string);
+    $string = $this->app->String->unicode_decode($string);
     $cmd = $this->app->Secure->GetGET('cmd');
     if($cmd==='kontoauszuege'){
       return trim(html_entity_decode($string, ENT_QUOTES, 'UTF-8')); //uahlungseingang
@@ -6476,279 +6454,6 @@ title: 'Abschicken',
   function make_clickable($text)
   {
     return preg_replace('@(?<![.*">])\b(?:(?:https?|ftp|file)://|[a-z]\.)[-A-Z0-9+&#/%=~_|$?!:,.]*[A-Z0-9+&#/%=~_|$]@i', '<a href="\0">\0</a>', $text);
-  }
-
-  // @refactor in WawiString oder HtmlTransformer Klasse
-  function unicode_decode($content) {
-    $ISO10646XHTMLTrans = array(
-        "&"."#34;" => "&quot;",
-        "&"."#38;" => "&amp;",
-        "&"."#39;" => "&apos;",
-        "&"."#60;" => "&lt;",
-        "&"."#62;" => "&gt;",
-        "&"."#128;" => "&euro;",
-        "&"."#160;" => "",
-        "&"."#161;" => "&iexcl;",
-        "&"."#162;" => "&cent;",
-        "&"."#163;" => "&pound;",
-        "&"."#164;" => "&curren;",
-        "&"."#165;" => "&yen;",
-        "&"."#166;" => "&brvbar;",
-        "&"."#167;" => "&sect;",
-        "&"."#168;" => "&uml;",
-        "&"."#169;" => "&copy;",
-        "&"."#170;" => "&ordf;",
-        "&"."#171;" => "&laquo;",
-        "&"."#172;" => "&not;",
-        "&"."#173;" => "­",
-        "&"."#174;" => "&reg;",
-        "&"."#175;" => "&macr;",
-        "&"."#176;" => "&deg;",
-        "&"."#177;" => "&plusmn;",
-        "&"."#178;" => "&sup2;",
-        "&"."#179;" => "&sup3;",
-        "&"."#180;" => "&acute;",
-        "&"."#181;" => "&micro;",
-        "&"."#182;" => "&para;",
-        "&"."#183;" => "&middot;",
-        "&"."#184;" => "&cedil;",
-        "&"."#185;" => "&sup1;",
-        "&"."#186;" => "&ordm;",
-        "&"."#187;" => "&raquo;",
-        "&"."#188;" => "&frac14;",
-        "&"."#189;" => "&frac12;",
-        "&"."#190;" => "&frac34;",
-        "&"."#191;" => "&iquest;",
-        "&"."#192;" => "&Agrave;",
-        "&"."#193;" => "&Aacute;",
-        "&"."#194;" => "&Acirc;",
-        "&"."#195;" => "&Atilde;",
-        "&"."#196;" => "&Auml;",
-        "&"."#197;" => "&Aring;",
-        "&"."#198;" => "&AElig;",
-        "&"."#199;" => "&Ccedil;",
-        "&"."#200;" => "&Egrave;",
-        "&"."#201;" => "&Eacute;",
-        "&"."#202;" => "&Ecirc;",
-        "&"."#203;" => "&Euml;",
-        "&"."#204;" => "&Igrave;",
-        "&"."#205;" => "&Iacute;",
-        "&"."#206;" => "&Icirc;",
-        "&"."#207;" => "&Iuml;",
-        "&"."#208;" => "&ETH;",
-        "&"."#209;" => "&Ntilde;",
-        "&"."#210;" => "&Ograve;",
-        "&"."#211;" => "&Oacute;",
-        "&"."#212;" => "&Ocirc;",
-        "&"."#213;" => "&Otilde;",
-        "&"."#214;" => "&Ouml;",
-        "&"."#215;" => "&times;",
-        "&"."#216;" => "&Oslash;",
-        "&"."#217;" => "&Ugrave;",
-        "&"."#218;" => "&Uacute;",
-        "&"."#219;" => "&Ucirc;",
-        "&"."#220;" => "&Uuml;",
-        "&"."#221;" => "&Yacute;",
-        "&"."#222;" => "&THORN;",
-        "&"."#223;" => "&szlig;",
-        "&"."#224;" => "&agrave;",
-        "&"."#225;" => "&aacute;",
-        "&"."#226;" => "&acirc;",
-        "&"."#227;" => "&atilde;",
-        "&"."#228;" => "&auml;",
-        "&"."#229;" => "&aring;",
-        "&"."#230;" => "&aelig;",
-        "&"."#231;" => "&ccedil;",
-        "&"."#232;" => "&egrave;",
-        "&"."#233;" => "&eacute;",
-        "&"."#234;" => "&ecirc;",
-        "&"."#235;" => "&euml;",
-        "&"."#236;" => "&igrave;",
-        "&"."#237;" => "&iacute;",
-        "&"."#238;" => "&icirc;",
-        "&"."#239;" => "&iuml;",
-        "&"."#240;" => "&eth;",
-        "&"."#241;" => "&ntilde;",
-        "&"."#242;" => "&ograve;",
-        "&"."#243;" => "&oacute;",
-        "&"."#244;" => "&ocirc;",
-        "&"."#245;" => "&otilde;",
-        "&"."#246;" => "&ouml;",
-        "&"."#247;" => "&divide;",
-        "&"."#248;" => "&oslash;",
-        "&"."#249;" => "&ugrave;",
-        "&"."#250;" => "&uacute;",
-        "&"."#251;" => "&ucirc;",
-        "&"."#252;" => "&uuml;",
-        "&"."#253;" => "&yacute;",
-        "&"."#254;" => "&thorn;",
-        "&"."#255;" => "&yuml;",
-        "&"."#338;" => "&OElig;",
-        "&"."#339;" => "&oelig;",
-        "&"."#352;" => "&Scaron;",
-        "&"."#353;" => "&scaron;",
-        "&"."#376;" => "&Yuml;",
-        "&"."#402;" => "&fnof;",
-        "&"."#710;" => "&circ;",
-        "&"."#732;" => "&tilde;",
-        "&"."#913;" => "&Alpha;",
-        "&"."#914;" => "&Beta;",
-        "&"."#915;" => "&Gamma;",
-        "&"."#916;" => "&Delta;",
-        "&"."#917;" => "&Epsilon;",
-        "&"."#918;" => "&Zeta;",
-        "&"."#919;" => "&Eta;",
-        "&"."#920;" => "&Theta;",
-        "&"."#921;" => "&Iota;",
-        "&"."#922;" => "&Kappa;",
-        "&"."#923;" => "&Lambda;",
-        "&"."#924;" => "&Mu;",
-        "&"."#925;" => "&Nu;",
-        "&"."#926;" => "&Xi;",
-        "&"."#927;" => "&Omicron;",
-        "&"."#928;" => "&Pi;",
-        "&"."#929;" => "&Rho;",
-        "&"."#931;" => "&Sigma;",
-        "&"."#932;" => "&Tau;",
-        "&"."#933;" => "&Upsilon;",
-        "&"."#934;" => "&Phi;",
-        "&"."#935;" => "&Chi;",
-        "&"."#936;" => "&Psi;",
-        "&"."#937;" => "&Omega;",
-        "&"."#945;" => "&alpha;",
-        "&"."#946;" => "&beta;",
-        "&"."#947;" => "&gamma;",
-        "&"."#948;" => "&delta;",
-        "&"."#949;" => "&epsilon;",
-        "&"."#950;" => "&zeta;",
-        "&"."#951;" => "&eta;",
-        "&"."#952;" => "&theta;",
-        "&"."#953;" => "&iota;",
-        "&"."#954;" => "&kappa;",
-        "&"."#955;" => "&lambda;",
-        "&"."#956;" => "&mu;",
-        "&"."#957;" => "&nu;",
-        "&"."#958;" => "&xi;",
-        "&"."#959;" => "&omicron;",
-        "&"."#960;" => "&pi;",
-        "&"."#961;" => "&rho;",
-        "&"."#962;" => "&sigmaf;",
-        "&"."#963;" => "&sigma;",
-        "&"."#964;" => "&tau;",
-        "&"."#965;" => "&upsilon;",
-        "&"."#966;" => "&phi;",
-        "&"."#967;" => "&chi;",
-        "&"."#968;" => "&psi;",
-        "&"."#969;" => "&omega;",
-        "&"."#977;" => "&thetasym;",
-        "&"."#978;" => "&upsih;",
-        "&"."#982;" => "&piv;",
-        "&"."#8194;" => "&ensp;",
-        "&"."#8195;" => "&emsp;",
-        "&"."#8201;" => "&thinsp;",
-        "&"."#8204;" => "&zwnj;",
-        "&"."#8205;" => "&zwj;",
-        "&"."#8206;" => "&lrm;",
-        "&"."#8207;" => "&rlm;",
-        "&"."#8211;" => "&ndash;",
-        "&"."#8212;" => "&mdash;",
-        "&"."#8216;" => "&lsquo;",
-        "&"."#8217;" => "&rsquo;",
-        "&"."#8218;" => "&sbquo;",
-        "&"."#8220;" => "&ldquo;",
-        "&"."#8221;" => "&rdquo;",
-        "&"."#8222;" => "&bdquo;",
-        "&"."#8224;" => "&dagger;",
-        "&"."#8225;" => "&Dagger;",
-        "&"."#8226;" => "&bull;",
-        "&"."#8230;" => "&hellip;",
-        "&"."#8240;" => "&permil;",
-        "&"."#8242;" => "&prime;",
-        "&"."#8243;" => "&Prime;",
-        "&"."#8249;" => "&lsaquo;",
-        "&"."#8250;" => "&rsaquo;",
-        "&"."#8254;" => "&oline;",
-        "&"."#8260;" => "&frasl;",
-        "&"."#8364;" => "&euro;",
-        "&"."#8465;" => "&image;",
-        "&"."#8472;" => "&weierp;",
-        "&"."#8476;" => "&real;",
-        "&"."#8482;" => "&trade;",
-        "&"."#8501;" => "&alefsym;",
-        "&"."#8592;" => "&larr;",
-        "&"."#8593;" => "&uarr;",
-        "&"."#8594;" => "&rarr;",
-        "&"."#8595;" => "&darr;",
-        "&"."#8596;" => "&harr;",
-        "&"."#8629;" => "&crarr;",
-        "&"."#8656;" => "&lArr;",
-        "&"."#8657;" => "&uArr;",
-        "&"."#8658;" => "&rArr;",
-        "&"."#8659;" => "&dArr;",
-        "&"."#8660;" => "&hArr;",
-        "&"."#8704;" => "&forall;",
-        "&"."#8706;" => "&part;",
-        "&"."#8707;" => "&exist;",
-        "&"."#8709;" => "&empty;",
-        "&"."#8711;" => "&nabla;",
-        "&"."#8712;" => "&isin;",
-        "&"."#8713;" => "&notin;",
-        "&"."#8715;" => "&ni;",
-        "&"."#8719;" => "&prod;",
-        "&"."#8721;" => "&sum;",
-        "&"."#8722;" => "&minus;",
-        "&"."#8727;" => "&lowast;",
-        "&"."#8730;" => "&radic;",
-        "&"."#8733;" => "&prop;",
-        "&"."#8734;" => "&infin;",
-        "&"."#8736;" => "&ang;",
-        "&"."#8743;" => "&and;",
-        "&"."#8744;" => "&or;",
-        "&"."#8745;" => "&cap;",
-        "&"."#8746;" => "&cup;",
-        "&"."#8747;" => "&int;",
-        "&"."#8756;" => "&there4;",
-        "&"."#8764;" => "&sim;",
-        "&"."#8773;" => "&cong;",
-        "&"."#8776;" => "&asymp;",
-        "&"."#8800;" => "&ne;",
-        "&"."#8801;" => "&equiv;",
-        "&"."#8804;" => "&le;",
-        "&"."#8805;" => "&ge;",
-        "&"."#8834;" => "&sub;",
-        "&"."#8835;" => "&sup;",
-        "&"."#8836;" => "&nsub;",
-        "&"."#8838;" => "&sube;",
-        "&"."#8839;" => "&supe;",
-        "&"."#8853;" => "&oplus;",
-        "&"."#8855;" => "&otimes;",
-        "&"."#8869;" => "&perp;",
-        "&"."#8901;" => "&sdot;",
-        "&"."#8968;" => "&lceil;",
-        "&"."#8969;" => "&rceil;",
-        "&"."#8970;" => "&lfloor;",
-        "&"."#8971;" => "&rfloor;",
-        "&"."#9001;" => "&lang;",
-        "&"."#9002;" => "&rang;",
-        "&"."#9674;" => "&loz;",
-        "&"."#9824;" => "&spades;",
-        "&"."#9827;" => "&clubs;",
-        "&"."#9829;" => "&hearts;",
-        "&"."#9830;" => "&diams;"
-          );
-
-
-    reset($ISO10646XHTMLTrans);
-//    while(list($UnicodeChar, $XHTMLEquiv) = each($ISO10646XHTMLTrans)) {
-    foreach($ISO10646XHTMLTrans as $UniccideChar => $XHTMLEquiv) 
-    {
-      $content = str_replace($UnicodeChar, $XHTMLEquiv, $content);
-    }
-
-    //      $content = html_entity_decode($content, ENT_COMPAT, 'UTF-8');
-
-    // return translated
-    return($content);
   }
 
   /** @deprecated */
@@ -15934,7 +15639,23 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       LIMIT 1
     ")){
         foreach ($zahlungsweisenmodule as $zahlungsweisenmodul) {
-          $obj = $this->LoadZahlungsweiseModul($zahlungsweisenmodul['modul'], $zahlungsweisenmodul['id']);
+          $_zahlungsweisenmodul = preg_replace('/[^a-zA-Z0-9\_]/', '', $zahlungsweisenmodul['modul']);
+          if(!$_zahlungsweisenmodul){
+            continue;
+          }
+          if(!file_exists(__DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php')){
+            continue;
+          }
+
+          $class = 'Zahlungsweise_' . $_zahlungsweisenmodul;
+          if(!class_exists($class)){
+            include_once __DIR__ . '/zahlungsweisen/' . $_zahlungsweisenmodul . '.php';
+          }
+          if(!class_exists($class)){
+            continue;
+          }
+
+          $obj = new $class($this->app, $zahlungsweisenmodul['id']);
           if($obj && method_exists($obj, 'ZahlungFreigeben')){
             $obj->ZahlungFreigeben($auftrag, $id);
           }
@@ -16364,24 +16085,6 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     return $result;
   }
 
-  function ImportvorlageImport($id = 0, $importvorlage = '', string $file_contents) {
-    $obj = $this->LoadModul('importvorlage');
-    if(!empty($obj) && method_exists($obj, 'ImportvorlageDo'))
-    {
-        if (empty($id)) {
-            $id = $this->app->DB->Select("SELECT id FROM importvorlage WHERE bezeichnung = '".$importvorlage."' LIMIT 1");
-            if (empty($id)) {
-                return(array('success' => false, 'message' => 'Importvorlage nicht gefunden'));
-            }
-        }
-        $tmpdatei = $this->app->erp->GetTMP().'importvorlageimport'.microtime(true);
-        file_put_contents($tmpdatei, $file_contents);
-        $result = $obj->ImportvorlageDo(parameter: array('id' => $id, 'stueckliste_csv' => $tmpdatei));
-        return($result);
-    }
-    return 0;
-  }
-
   function ImportvorlageLog($importvorlage,$zeitstempel,$tabelle,$datensatz,$ersterdatensatz="0")
   {
     $this->app->DB->Insert("INSERT INTO importvorlage_log (id,importvorlage,zeitstempel,user,tabelle,datensatz,ersterdatensatz)
@@ -16533,19 +16236,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
   {
     if(self::$lasttime == 0)self::$lasttime = microtime(true);
     $akttime = microtime(true);
-    $this->LogFile( addslashes((memory_get_peak_usage(true) >> 20).  " MB ".(round($akttime - self::$lasttime ,3)  )." sek ".$meldung));
+    $this->logger->info( addslashes((memory_get_peak_usage(true) >> 20).  " MB ".(round($akttime - self::$lasttime ,3)  )." sek ".$meldung));
 
-  }
-
-
-  function LogFile($meldung,$dump="",$module="",$action="",$functionname="")
-  {
-
-    $obj = $this->LoadModul('logfile');
-    if(!empty($obj) && method_exists($obj,'addLogFile')) {
-      return $obj->addLogFile($meldung,$dump,$module,$action,$functionname);
-    }
-    return null;
   }
 
 
@@ -16562,8 +16254,8 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
       {
         $val = $this->app->DB->real_escape_string(${$key});
         $this->app->DB->Update("UPDATE adresse SET $key='$val' WHERE id='$adresse' LIMIT 1");
-        $check = $this->app->DB->real_escape_string($check);
-        $this->app->DB->Update("UPDATE adresse SET `logfile`=CONCAT(logfile, ' Update Feld $key alt:$check neu:".$val.";') WHERE id='$adresse' LIMIT 1");
+        $logfile = $this->app->DB->Select("SELECT `logfile` FROM adresse WHERE id='$adresse' LIMIT 1");
+        $this->app->DB->Update("UPDATE adresse SET `logfile`='".$logfile." Update Feld $key alt:$check neu:".$val.";' WHERE id='$adresse' LIMIT 1");
       }
 
     }
@@ -18385,7 +18077,7 @@ function CheckShopTabelle($artikel)
             $rabattpositionen[$ap] = $value['rabatt'];
           }
           if(empty($ap)){
-            $this->LogFile('Fehler '.$value['articleid']);
+            $this->logger->error('Fehler '.$value['articleid']);
           }
           if(isset($artap)){
             unset($artap);
@@ -18663,7 +18355,7 @@ function CheckShopTabelle($artikel)
                 }
             } else {
                 $error_msg = 'Importauftrag Shop '.$shop.' Fehler: Kein Portoartikel vorhanden';
-                $this->LogFile($error_msg,['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
+                $this->logger->error($error_msg,['Onlinebestellnummer' => $warenkorb['onlinebestellnummer']]);
                 return(array("status" => false, "message" => $error_msg, "onlinebestellnummer" => $warenkorb['onlinebestellnummer']));
             }
         }
@@ -21013,7 +20705,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
                 $result = $this->app->remote->RemoteSendArticleList($shop, array($lagerartikel[$ij]['id']), array($nummer['nummer']), true);
             }
             catch(Exception $e) {
-              $this->app->erp->LogFile($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.$nummer['nummer'].' '.$e->getMessage()));
+              $this->logger->error($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.$nummer['nummer'].' '.$e->getMessage()));
               $anzfehler++;
             }
           }
@@ -21024,7 +20716,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
               $result = $this->app->remote->RemoteSendArticleList($shop,array($lagerartikel[$ij]['id']),!empty($extnummer)? array($extnummer):'',true);
           }
           catch(Exception $e) {
-            $this->app->erp->LogFile($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.(!empty($extnummer)? array($extnummer):$lagerartikel[$ij]['nummer']).' '.$e->getMessage()));
+            $this->logger->error($this->app->DB->real_escape_string('Lagersync Fehler '.$shop.' '.(!empty($extnummer)? array($extnummer):$lagerartikel[$ij]['nummer']).' '.$e->getMessage()));
             $anzfehler++;
           }
         }
@@ -21035,7 +20727,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         }
 
 
-        $this->LogFile('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
+        $this->logger->info('*** UPDATE '.$lagerartikel[$ij]['nummer'].' '.$lagerartikel[$ij]['name_de'].' Shop: '.$shop.' Lagernd: '.$verkaufbare_menge.' Korrektur: '.round((float) ($verkaufbare_menge_korrektur - $verkaufbare_menge),7).' Pseudolager: '.round((float) $pseudolager,8).' Result: '.(is_array($result)?$result['status']:$result), $result);
 
         if ((is_array($result) && $result instanceof ArticleExportResult ? $result->success : false) || $result === 1) {
             $cacheQuantity = (int) $verkaufbare_menge_korrektur + (int) $pseudolager;
@@ -25549,7 +25241,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
             new EmailRecipient($from, $from_name)
           );
         } else {
-          $this->app->erp->LogFile("Mailer Error: Email could not be composed!");
+          $this->logger->error("Mailer Error: Email could not be composed!");
         }
 
         // Load the mail to IMAP using laminas
@@ -25562,7 +25254,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $client->connect();
           $client->appendMessage($imapCopyMessage, $account->getImapOutgoingFolder());
         } catch (Exception $e) {
-          $this->app->erp->LogFile("Mailer IMAP Error: " . (string) $e);
+          $this->logger->error("Mailer IMAP Error: " . (string) $e);
           if(isset($this->app->User) && $this->app->User && method_exists($this->app->User, 'GetID'))
           {
             $this->app->erp->InternesEvent($this->app->User->GetID(),"IMAP-Fehler","alert",1);
@@ -30834,7 +30526,7 @@ function Firmendaten($field,$projekt="")
         $sprache = $this->app->DB->Select("SELECT sprache FROM $doctype WHERE id='$auftrag' LIMIT 1");
 
         $this->RunHook('AARLGPositionenSprache', 6, $doctype, $auftrag, $artikel, $sprache, $bezeichnunglieferant, $beschreibung);
-        $this->app->erp->LogFile("Add $nummer,$menge $artikel $sprache Name: $bezeichnunglieferant");
+        $this->logger->info("Add $nummer,$menge $artikel $sprache Name: $bezeichnunglieferant");
 
         $verkaufspreisarr = $this->GetVerkaufspreis($artikel, $menge,0,'', $returnwaehrung,true);
         if($verkaufspreisarr)
@@ -37309,20 +37001,6 @@ function Firmendaten($field,$projekt="")
         $date = $this->app->DB->Select("SELECT datum FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
         return ($date);
       }
-      
-      function GetDateiDatumFormat($id)
-      {
-        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
-        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDate("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
-        return ($date);
-      }
-      
-      function GetDateiDatumZeitFormat($id)
-      {
-        $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
-        $date = $this->app->DB->Select("SELECT ".$this->app->erp->FormatDateTime("datum")." FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
-        return ($date);
-      }
 
     /*
     * Retrieve files from stichwoerter and provide them in tmp for access
@@ -39604,7 +39282,7 @@ function Firmendaten($field,$projekt="")
       $result = curl_exec($ch);
       if(strpos($result,"404 page not")===false) break;
       if($timeout > 10) {
-        $this->app->erp->LogFile("Openstreetmap GetLangLat Timeout: $url");
+        $this->logger->warning("Openstreetmap GetLangLat Timeout: $url");
         break;
       }
     }
@@ -39632,7 +39310,7 @@ function Firmendaten($field,$projekt="")
       $result = curl_exec($ch);
       if(strpos($result,"404 page not")===false) break;
       if($timeout > 10) {
-        $this->app->erp->LogFile("Openstreetmap Distance Timeout: $url");
+        $this->logger->warning("Openstreetmap Distance Timeout: $url");
         break;
       }
 

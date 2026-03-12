@@ -557,6 +557,7 @@ class Acl
   {
 
     $this->refresh_githash();
+    $version_revision = '';
     include dirname(__DIR__).'/../version.php';
     $this->app->Tpl->Set('XENTRALVERSION',"V.".$version_revision);
 

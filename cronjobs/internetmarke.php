@@ -49,7 +49,7 @@ function update($app)
     //file already the same
     return false;
   }
-  $app->erp->LogFile("Update link: {$link}", '', 'Internetmarke');
+  $app->Container->get('Logger')->info("Internetmarke Update link: {$link}");
 
   $written = file_put_contents($csvFile, $csv);
 
@@ -94,22 +94,23 @@ function checkCurlError($curl, $result)
   }
 }
 
-// include dirname(__DIR__) . '/xentral_autoloader.php';
 $app = new ApplicationCore();
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
 if(!isInternetmarkeInUse($app)){
-  $app->erp->LogFile('Internetmarke not in use', '', 'Internetmarke');
+  $logger->info('Internetmarke not in use');
   return;
 }
 
 try {
   if(update($app)){
-    $app->erp->LogFile('Successfully updated Internetmarke PPL', '', 'Internetmarke');
+      $logger->info('Successfully updated Internetmarke PPL');
   }else{
-    $app->erp->LogFile('no new PPL', '', 'Internetmarke');
+    $logger->info('Internetmarke: no new PPL');
   }
 } catch (RuntimeException $e) {
-  $app->erp->LogFile('Error updating PPL', $e->getMessage(), 'Internetmarke');
+  $logger->error('Internetmarke: Error updating PPL', ['error' => $e->getMessage()]);
   /** @var Systemhealth $systemHealth */
   $systemHealth = $app->loadModule('systemhealth');
   $systemHealth->createEntryWithCategoryIfError(

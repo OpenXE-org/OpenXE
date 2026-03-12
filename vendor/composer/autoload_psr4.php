@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'lfkeitel\\phptotp\\' => array($vendorDir . '/lfkeitel/phptotp/src'),
-    'Y0lk\\OAuth1\\Client\\Server\\' => array($vendorDir . '/y0lk/oauth1-etsy/src'),
     'Xentral\\' => array($baseDir . '/classes'),
     'Webmozart\\Assert\\' => array($vendorDir . '/webmozart/assert/src'),
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
@@ -30,7 +29,6 @@ return array(
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
     'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
     'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
-    'League\\OAuth1\\Client\\' => array($vendorDir . '/league/oauth1-client/src'),
     'League\\MimeTypeDetection\\' => array($vendorDir . '/league/mime-type-detection/src'),
     'League\\Flysystem\\' => array($vendorDir . '/league/flysystem/src'),
     'Laminas\\Validator\\' => array($vendorDir . '/laminas/laminas-validator/src'),

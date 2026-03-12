@@ -3,7 +3,6 @@
 ini_set('display_errors', false);
 error_reporting(E_ERROR);
 
-require dirname(dirname(__DIR__)) . '/xentral_autoloader.php';
 require dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
 define('DEBUG_MODE', false);

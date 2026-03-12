@@ -5,15 +5,6 @@
  *
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
-?>
-<?php
-if(!class_exists('BriefpapierCustom'))
-{
-  class BriefpapierCustom extends Briefpapier
-  {
-    
-  }
-}
 
 class VersandpaketscheinPDF extends BriefpapierCustom {
   public $doctype;

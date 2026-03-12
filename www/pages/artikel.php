@@ -22,6 +22,8 @@
 ?>
 <?php
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Widgets\SuperSearch\Result\ResultGroup;
 use Xentral\Widgets\SuperSearch\Result\ResultItem;
@@ -2902,7 +2904,16 @@ class Artikel extends GenArtikel {
             $msg = $this->app->erp->base64_url_encode('<div class="error">' . $remote_message . '</div>');
         }
 
-        $this->app->erp->LogFile($this->app->DB->real_escape_string('manueller Shopexport Artikel: '.$this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1").' Shop: '.$shop.' Status: '.((int) $remote_status)), $remote_message);
+        $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1");
+        /** @var LoggerInterface $logger */
+        $logger = $this->app->Container->get('Logger');
+        $level = $remote_status ? LogLevel::INFO : LogLevel::ERROR;
+        $logger->log($level, 'manueller Shopexport', [
+            'articleNumber' => $artikelnummer,
+            'shop' => $shop,
+            'remote_status' => $remote_status,
+            'remote_message' => $remote_message,
+        ]);
 
         // keine fehlermeldung vom shop
         if ($remote_status) {

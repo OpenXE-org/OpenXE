@@ -1,9 +1,12 @@
 {
   "require": {
     "php": "^8.1",
-    "ext-gd": "*",
     "ext-curl": "*",
+    "ext-gd": "*",
+    "ext-ldap": "*",
+    "ext-mysqli": "*",
     "ext-soap": "*",
+    "ext-zip": "*",
     "aura/sqlquery": "2.7.1",
     "aws/aws-sdk-php": "3.175.2",
     "ezyang/htmlpurifier": "v4.13.0",
@@ -12,7 +15,6 @@
     "laminas/laminas-mail": "^2.12.5",
     "league/color-extractor": "0.3.2",
     "league/flysystem": "^1.0.70",
-    "league/oauth1-client": "v1.9.0",
     "lfkeitel/phptotp": "^1.0",
     "nikic/fast-route": "^1.3",
     "phpmailer/phpmailer": "v6.3.0",
@@ -22,8 +24,7 @@
     "smarty/smarty": "v3.1.39",
     "swiss-payment-slip/swiss-payment-slip": "0.13.0 as 0.11.1",
     "swiss-payment-slip/swiss-payment-slip-fpdf": "0.6.0",
-    "tecnickcom/tcpdf": "6.3.5",
-    "y0lk/oauth1-etsy": "1.1.0"
+    "tecnickcom/tcpdf": "6.3.5"
   },
   "replace": {
     "itbz/fpdf": "*"
@@ -32,12 +33,43 @@
     "psr-4": {
       "Xentral\\": "classes"
     },
-    "classmap": ["www/lib/versandarten/"]
+    "classmap": [
+      "conf/",
+      "phpwf/",
+      "www/docscan/",
+      "www/widgets/",
+      "www/lib/versandarten/",
+      "www/lib/class.navigation_edit.php",
+      "www/lib/class.xtea.php",
+      "www/lib/class.ustid.php",
+      "www/plugins/class.ics.php",
+      "www/lib/PrinterBase.php",
+      "www/lib/TransferBase.php",
+      "www/lib/ShopimporterBase.php",
+      "www/lib/imap.inc.php",
+      "www/lib/class.printer.php",
+      "www/lib/class.image.php",
+      "www/lib/class.location.php",
+      "www/lib/class.remote.php",
+      "www/lib/class.erpapi.php",
+      "www/eproosystem.php",
+      "www/lib/class.httpclient.php",
+      "www/lib/pdf/fpdf_final.php",
+      "www/lib/dokumente/",
+      "www/plugins/class.wikiparser.php",
+      "www/plugins/php-print.php",
+      "www/plugins/liveimport/LiveimportBase.php",
+      "www/lib/class.aes2.php",
+      "www/lib/pdf/fpdf_3.php"
+    ]
   },
   "config": {
     "platform": {
       "php": "8.1",
-      "ext-gd": "8.1"
+      "ext-gd": "8.1",
+      "ext-ldap": "8.1",
+      "ext-mysqli": "8.1",
+      "ext-soap": "8.1"
     },
     "optimize-autoloader": true
   }

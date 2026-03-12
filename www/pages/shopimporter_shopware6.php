@@ -950,10 +950,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      * @param string $message
      * @param mixed $dump
      */
-    public function Shopware6Log($message, $dump = '')
+    public function Shopware6Log($message, $dump = null)
     {
         if ($this->protocol) {
-            $this->app->erp->Logfile($message, print_r($dump, true));
+            if ($dump !== null && !is_array($dump))
+                $dump = ['dump' => $dump];
+            $this->app->Container->get('Logger')->info($message, $dump);
         }
     }
 

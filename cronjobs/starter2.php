@@ -1,10 +1,7 @@
 <?php
 use Xentral\Core\LegacyConfig\ConfigLoader;
 error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_STRICT);
-if(file_exists(dirname(__DIR__).'/xentral_autoloader.php'))
-{
-  include_once dirname(__DIR__).'/xentral_autoloader.php';
-}
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 @date_default_timezone_set('Europe/Berlin');
 
 include_once dirname(__DIR__).'/conf/main.conf.php';
@@ -69,6 +66,8 @@ foreach($multiDbs as $multiDbKey => $multiDbConf) {
   $erp->app = $app;
   $app->erp = $erp;
   $app->DB = new DB($multiDbConf->WFdbhost,$multiDbConf->WFdbname,$multiDbConf->WFdbuser,$multiDbConf->WFdbpass,$app,$multiDbConf->WFdbport);
+  /** @var \Psr\Log\LoggerInterface $logger */
+  $logger = $app->Container->get('Logger');
 
   $multiDb = $multiDbConf->WFdbname;
   if(method_exists($app->erp, 'CheckCronjob') && !$app->erp->CheckCronjob()) {
@@ -115,7 +114,7 @@ foreach($multiDbs as $multiDbKey => $multiDbConf) {
       }
       $run = 0;
       if($DEBUG){
-        $app->erp->LogFile('Task: ' . $task['bezeichnung'] . ' ' . $task['art']);
+        $logger->debug('Task: ' . $task['bezeichnung'] . ' ' . $task['art']);
       }
 
       if($task['art'] === 'periodisch'){
@@ -171,7 +170,7 @@ foreach($multiDbs as $multiDbKey => $multiDbConf) {
 
       $app->erp->setCronjobRunning(CRONJOBUID, $task, true);
       if($DEBUG){
-        $app->erp->LogFile('Prozessstarter ' . $task['parameter']);
+        $logger->debug('Prozessstarter ' . $task['parameter']);
       }
       //update letzte ausfuerhung
       $app->DB->Update(
@@ -226,7 +225,7 @@ foreach($multiDbs as $multiDbKey => $multiDbConf) {
           for ($outputLineInxed = $startIndex; $outputLineInxed < $coutput; $outputLineInxed++) {
             $lastLines[] = $output[$outputLineInxed];
           }
-          $app->erp->LogFile(
+          $logger->info('Cronjob result',
             [
               'cmd' => $cmd,
               'parameter' => $task['parameter'],
@@ -243,7 +242,7 @@ foreach($multiDbs as $multiDbKey => $multiDbConf) {
         unset($returnvar);
       }
       else {
-        $app->erp->LogFile(
+        $logger->info(
           $app->DB->real_escape_string(
             'Der Prozessstarter ' . $task['parameter'] . ' wurde nicht gefunden'
           )

@@ -18,12 +18,11 @@ class Session
 {
 
   // set check to true when user have permissions
-  private $check = false;
+  private bool $check = false;
 
   public $module;
   public $action;
-  /** @var Application $app */
-  public $app;
+  public Application $app;
   public $reason;
 
   public function __construct()
@@ -189,13 +188,5 @@ class Session
   {
     return $this->check;
   }
-
-  public function UserSessionCheck()
-  {
-    $this->check = false;
-    $this->reason = 'PLEASE_LOGIN';
-    return true;
-  }
-
 }
 

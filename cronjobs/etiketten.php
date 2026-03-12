@@ -71,7 +71,7 @@ $app->DB = new DB($conf->WFdbhost,$conf->WFdbname,$conf->WFdbuser,$conf->WFdbpas
 $erp = new erpAPI($app);
 $app->erp = $erp;
 $app->String         = new WawiString();
-$app->erp->LogFile("MLM gestartet");
+$app->Container->get('Logger')->info("MLM gestartet");
 $app->printer = new Printer($app);
 
 $app->Secure = new Secure($app);

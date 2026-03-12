@@ -8,9 +8,7 @@ use Xentral\Core\Installer\Psr4ClassNameResolver;
 
 error_reporting(E_ERROR | E_COMPILE_ERROR | E_CORE_ERROR | E_RECOVERABLE_ERROR | E_USER_ERROR | E_PARSE);
 
-if(file_exists(__DIR__.'/xentral_autoloader.php')){
-  include_once (__DIR__.'/xentral_autoloader.php');
-}
+require_once __DIR__ . '/vendor/autoload.php';
 
 $config = new Config();
 $installerCacheConfig = new InstallerCacheConfig($config->WFuserdata . '/tmp/' . $config->WFdbname);

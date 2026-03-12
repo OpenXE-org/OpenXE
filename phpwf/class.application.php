@@ -60,55 +60,11 @@ function WithGUI($first = false)
   );
 }
 
-//include ('phpwf/engine/class.engine.php';
 if(WithGUI())
 {
-	include dirname(__DIR__).'/phpwf/plugins/class.formhandler.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.pagebuilder.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.widgetapi.php';
-	include dirname(__DIR__).'/phpwf/widgets/easytable.php';
-	include dirname(__DIR__).'/phpwf/widgets/grouptable.php';
-	include dirname(__DIR__).'/phpwf/widgets/childtable.php';
-	include dirname(__DIR__).'/phpwf/widgets/table.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.picosafelogin.php';
-	include dirname(__DIR__).'/phpwf/plugins/class.wawision_otp.php';
 	include dirname(__DIR__).'/phpwf/htmltags/all.php';
-	include dirname(__DIR__).'/phpwf/types/class.simplelist.php';
-  include dirname(__DIR__).'/phpwf/plugins/class.modulescriptcache.php';
 }
 
-include dirname(__DIR__).'/phpwf/plugins/class.templateparser.php';
-//include dirname(__DIR__).'/phpwf/plugins/class.yui.php';
-
-include dirname(__DIR__).'/phpwf/plugins/class.acl.php';
-include dirname(__DIR__).'/phpwf/plugins/class.user.php';
-include dirname(__DIR__).'/phpwf/plugins/class.page.php';
-include dirname(__DIR__).'/phpwf/plugins/class.phpwfapi.php';
-include dirname(__DIR__).'/phpwf/plugins/class.secure.php';
-//if(is_file(__DIR__.'/www/lib/class.location.php'))@include (dirname(__DIR__).'/www/lib/class.location.php';
-include dirname(__DIR__).'/phpwf/plugins/class.wfmonitor.php';
-include dirname(__DIR__).'/phpwf/plugins/class.string.php';
-include dirname(__DIR__).'/phpwf/plugins/class.objectapi.php';
-
-/**
- * @property Config $Conf
- * @property Secure $Secure
- * @property TemplateParser $Tpl
- * @property FormHandler $FormHandler
- * @property Table $Table
- * @property WidgetAPI $Widget
- * @property PageBuilder $PageBuilder
- * @property Page $Page
- * @property ObjectAPI $ObjAPI
- * @property WFMonitor $WFM
- * @property ModuleScriptCache $ModuleScriptCache
- * @property YUI $YUI
- * @property User $User
- * @property Acl $acl
- * @property phpWFAPI $WF
- * @property WawiString $String
- * @property DB $DB
- */
 class Application extends ApplicationCore
 {
 
@@ -120,20 +76,9 @@ class Application extends ApplicationCore
     public $PopupJS;
     public $NoHooks;
 
-    public function __construct($config,$group='')
+    public function __construct($config)
     {
-      parent::__construct($config,$group);
-
-      /*if(!isset($_GET['module']) || $_GET['module'] != 'api') {
-        if(!(isset($_GET['module']) && isset($_GET['action']) && isset($_GET['cmd']) && $_GET['module'] == 'welcome' && (($_GET['action'] == 'login' && $_GET['cmd'] == 'checkrfid') || $_GET['action'] == 'cronjob' || $_GET['action'] == 'adapterbox'))) {
-         // @session_cache_limiter('private');
-          //@session_start();
-        }
-      }*/
-
-      $this->Conf= $config;
-
-      //include dirname(__DIR__).'/phpwf/plugins/class.mysql.php';
+      parent::__construct($config);
 
       if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'){
         $this->http = 'https';
@@ -149,19 +94,16 @@ class Application extends ApplicationCore
 			if(WithGUI()){
         $this->Tpl               = new TemplateParser($this);
       	$this->FormHandler       = new FormHandler($this);
-      	$this->Table	           = new Table($this);
       	$this->Widget	           = new WidgetAPI($this);
       	$this->PageBuilder       = new PageBuilder($this);
       	$this->Page              = new Page($this);
       	$this->ObjAPI	           = new ObjectAPI($this);
-      	$this->WFM               = new WFMonitor($this);
         $this->ModuleScriptCache = new ModuleScriptCache();
 			}
 
       //$this->YUI            = new YUI($this);
       //$this->User           = new User($this);
       //$this->acl            = new Acl($this);
-      //$this->WF             = new phpWFAPI($this);
       //$this->String         = new WawiString();
 
       $this->BuildNavigation = true;
@@ -244,13 +186,6 @@ class Application extends ApplicationCore
           $response->send();
           $this->ExitXentral();
         }
-      }
-    }
-
-    public function DisableLayoutFix()
-    {
-      if(WithGUI()){
-        $this->Tpl->Set('LAYOUTFIXMARKERCLASS', '');
       }
     }
 }

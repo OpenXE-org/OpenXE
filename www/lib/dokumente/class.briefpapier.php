@@ -1258,7 +1258,7 @@ class Briefpapier extends SuperFPDF {
     $this->filename = $this->app->erp->Dateinamen($this->filename);
     $dir = rtrim($this->app->Conf->WFuserdata, '/') . '/pdfarchiv/' . $this->app->Conf->WFdbname . '/' . $this->table;
     if(!is_dir($dir) && !mkdir($dir, 0700,true) && !is_dir($dir)){
-      $this->app->erp->LogFile('Fehler beim erstellen von '.$dir);
+      $this->app->Container->get('Logger')->error('Fehler beim erstellen von '.$dir);
       return;
     }
 

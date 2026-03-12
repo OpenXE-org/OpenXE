@@ -60,17 +60,15 @@ class erpooSystem extends Application
    * @var Config $Conf
    */
 
-  public function __construct($config,$group='')
+  public function __construct($config)
   {
     $this->uselaendercache = false;
-    parent::__construct($config, $group);
+    parent::__construct($config);
 
     if(WithGUI()){
       $module = $this->Secure->GetGET('module');
       $action = $this->Secure->GetGET('action');
       $this->Tpl->Set('DASHBOARDLINK', 'index.php?module=welcome&action=start');
-
-      $this->help = new Help($this);
 
       $companyletter = strtoupper(substr($this->erp->Firmendaten('name'), 0, 1));
       $this->Tpl->Set('COMPANYLETTER', ($companyletter != '' ? $companyletter : 'W'));
@@ -112,7 +110,6 @@ class erpooSystem extends Application
           $this->Tpl->Set('JSSCRIPTS', '<script type="text/javascript" src="./js/' . $module . '.js?v=3"></script>');
         }
       }
-      $this->erp->PrinterIcon();
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/widgets/templates/_gen/');
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/widgets/templates/');
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/themes/' . $this->Conf->WFconf['defaulttheme'] . '/templates/');
@@ -120,14 +117,6 @@ class erpooSystem extends Application
       $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/pages/content/');
       if(is_dir(__DIR__ . '/lib/versandarten/content')) {
         $this->Tpl->ReadTemplatesFromPath(__DIR__ . '/lib/versandarten/content/');
-      }
-
-      if(method_exists($this->erp, 'VersionsInfos')){
-        $ver = $this->erp->VersionsInfos();
-        if(stripos($ver['Info'], 'Beta') !== false
-          || stripos($ver['Info'], 'Alpha') !== false
-          || stripos($ver['Info'], 'DEV') !== false
-        ) $this->Tpl->Set('VERSIONINFO', strtoupper($ver['Info']));
       }
 
       $this->Tpl->Set('ID', $this->Secure->GetGET('id'));
@@ -170,23 +159,6 @@ class erpooSystem extends Application
 
       $layout_iconbar = $this->erp->Firmendaten('layout_iconbar');
 
-      if($this->erp->Version() === 'stock'){
-        $this->Tpl->Set('STOCKOPEN', '<!--');
-        $this->Tpl->Set('STOCKCLOSE', '-->');
-      }
-
-      //nur wenn leiste nicht deaktiviert ist
-      if($layout_iconbar != 1){
-        if($this->erp->Firmendaten('iconset_dunkel') == '1'){
-          $this->Tpl->Parse('ICONBAR', 'iconbar_dunkel.tpl');
-        }
-        else{
-          $this->Tpl->Parse('ICONBAR', 'iconbar.tpl');
-        }
-      }else{
-        $this->Tpl->Parse('ICONBAR', 'iconbar_empty.tpl');
-      }
-
       if($module !== 'kalender' && ($module !== 'welcome' && $action !== 'start')){
         $this->Tpl->Add('YUICSS', '.ui-widget-content {}');
       }
@@ -218,7 +190,6 @@ class erpooSystem extends Application
       $this->Tpl->Set('THEME', $this->Conf->WFconf['defaulttheme']);
       $doc_root = preg_replace("!{$_SERVER['SCRIPT_NAME']}$!", '', $_SERVER['SCRIPT_FILENAME']); # ex: /var/www
       $path = preg_replace("!^{$doc_root}!", '', __DIR__);
-      $this->Tpl->Set('WEBPATH', $path);
 
         if(isset($backlink) && strpos($backlink,"index.php?module=") !== false && strpos($backlink, "&action=") !== false){
             $this->Tpl->Set('TABSBACK', $backlink);
@@ -231,8 +202,6 @@ class erpooSystem extends Application
             }
         }
       $this->Tpl->Set('SAVEBUTTON', '<input type="submit" name="speichern" value="Speichern" class="button-sticky" />');
-
-      $this->help->Run();
 
       $this->Tpl->Set('TMPSCRIPT', '');
 
@@ -268,23 +237,6 @@ class erpooSystem extends Application
       $this->Tpl->Set('BRANCH', $this->erp->Branch());
 
       $this->Tpl->Set('LIZENZHINWEIS', '| <a href="https://www.xentral.biz/lizenzhinweis" target="_blank">Lizenzhinweis</a>');
-
-      if($this->erp->Version() === 'OSS'){
-        $this->Tpl->Set('WAWIVERSION', 'Open-Source Lizenz AGPLv3.0');
-      }
-      else if($this->erp->Version() === 'ENT'){
-        $this->Tpl->Set('WAWIVERSION', 'Enterprise Version');
-      }
-      else if($this->erp->Version() === 'PRO'){
-        $this->Tpl->Set('WAWIVERSION', 'Professional Version');
-      }
-      else if($this->erp->Version() === 'PRE'){
-        $this->Tpl->Set('WAWIVERSION', 'Premium Version');
-      }
-      else{
-        $this->Tpl->Set('WAWIVERSION', 'Nutzungsbedingungen');
-      }
-
 
       $this->Tpl->Set('TIMESTAMP', time());
 
@@ -342,10 +294,6 @@ class erpooSystem extends Application
         return file_get_contents($iconPath);
     }
 
-    protected function getCounterFor(string $type)
-    {
-
-    }
     /**
      * creates and appends sidebar navigation
      */
@@ -1785,7 +1733,7 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
     if($sprache!=='deutsch' && $sprache!=='englisch'){
       $sprache = 'deutsch';
     }
-  
+
     if($sprache==='deutsch'){
       if(empty($this->uselaendercache) || empty($this->laendercache['deutsch'])){
         $tmp = $this->DB->SelectArr('SELECT bezeichnung_de,iso FROM laender ORDER by bezeichnung_de');
@@ -1817,7 +1765,7 @@ if (typeof document.hidden !== \"undefined\") { // Opera 12.10 and Firefox 18 an
       }
       return $laender;
     }
-  
+
     $laender = array(
         'Afghanistan'  => 'AF',
         '&Auml;gypten'  => 'EG',

@@ -1,0 +1,59 @@
+{
+    "name": "swiss-payment-slip/swiss-payment-slip-fpdf",
+    "description": "Create Swiss payment slips with reference number (ESR) or without (ES) as PDFs with FPDF",
+    "license": "MIT",
+    "homepage": "https://github.com/ravage84/SwissPaymentSlipFpdf",
+    "keywords": [
+        "Payment slip",
+        "Inpayment slip",
+        "Einzahlungsschein",
+        "ESR",
+        "ES",
+        "PDF",
+        "FPDF"
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "itbz/fpdf": "1.7.*",
+        "swiss-payment-slip/swiss-payment-slip-pdf": "0.13.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.38",
+        "squizlabs/php_codesniffer": "2.1.*"
+    },
+    "authors": [
+        {
+            "name": "Marc Würth",
+            "email": "ravage@bluewin.ch",
+            "homepage": "https://github.com/ravage84",
+            "role": "Lead developer"
+        },
+        {
+            "name": "Manuel Reinhard",
+            "email": "manu@sprain.ch",
+            "homepage": "http://www.sprain.ch",
+            "role": "Developer of the original class"
+        },
+        {
+            "name": "Peter Siska",
+            "email": "pesche@gridonic.ch",
+            "homepage": "http://www.gridonic.ch",
+            "role": "Contributor"
+        }
+    ],
+    "support": {
+        "email": "ravage@bluewin.ch",
+        "issues": "https://github.com/ravage84/SwissPaymentSlipFpdf/issues",
+        "source": "https://github.com/ravage84/SwissPaymentSlipFpdf"
+    },
+    "autoload": {
+        "psr-4": {
+            "SwissPaymentSlip\\SwissPaymentSlipFpdf\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SwissPaymentSlip\\SwissPaymentSlipFpdf\\Tests\\": "tests"
+        }
+    }
+}
