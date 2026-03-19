@@ -2059,7 +2059,8 @@ class Wareneingang {
         $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
         if (!empty($etikettendrucker)) {
-            $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+            $druckerliste =  (array) $this->app->erp->GetEtikettenDrucker($etikettendrucker);
+            $etikettendruckername = reset($druckerliste);
         }
 
         $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
