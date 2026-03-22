@@ -56,7 +56,7 @@ final class DatabaseLogHandler extends AbstractLogHandler
         }
 
         if ($context->hasDump()) {
-            $values['dump'] = print_r($context->getDump(), true);
+            $values['dump'] = substr(print_r($context->getDump(), true),0,10000);
         }
 
         if ($context->hasException()) {

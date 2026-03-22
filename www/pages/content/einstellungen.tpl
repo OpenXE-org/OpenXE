@@ -174,13 +174,16 @@
                 <td width="25%">
                     <a href="index.php?module=log&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_22.gif" border="0" width="30%" /></a>
                 </td>
+                <td width="25%">
+                    <a href="index.php?module=api_account&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%" /></a>
+                </td>
             </tr>
 
             <tr align="center">
                 <td><a href="index.php?module=prozessstarter&action=list">{|Prozessstarter|}</a></td>
                 <td><a href="index.php?module=protokoll&action=list">{|Protokoll|}</a></td>
-                <td><a href="index.php?module=prozessstarter&action=list">{|Logfile|}</a></td>
-                <td><a href="index.php?module=prozessstarter&action=list">{|Log|}</a></td>
+                <td><a href="index.php?module=log&action=list">{|Log|}</a></td>
+                <td><a href="index.php?module=api_account&action=list">{|API-Account|}</a></td>
             </tr>
         </table>
         <table width="800" border="0" align="center">
@@ -212,21 +215,19 @@
                     <a href="index.php?module=welcome&action=info"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_23.gif" border="0" width="30%" /></a>
                 </td>
                 <td width="25%">
-                    <a href="index.php?module=support&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_23.gif" border="0" width="30%" /></a>
-                </td>
-                <td width="25%">
-                    <a href="index.php?module=api_account&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%" /></a>
-                </td>
-                <td width="25%">
                     <a href="index.php?module=adapterbox&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_25.gif" border="0" width="30%" /></a>
+                </td>
+                <td width="25%">
+                </td>
+                <td width="25%">
                 </td>
             </tr>
 
             <tr align="center">
                 <td><a href="index.php?module=welcome&action=info">{|Lizenz|}</a></td>
-                <td><a href="index.php?module=support&action=list">{|Support|}</a></td>
-                <td><a href="index.php?module=api_account&action=list">{|API-Account|}</a></td>
                 <td><a href="index.php?module=adapterbox&action=list">{|Adapterbox|}</a></td>
+                <td></td>
+                <td></td>
             </tr>
         </table>
     </fieldset>
