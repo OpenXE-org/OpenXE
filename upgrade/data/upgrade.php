@@ -332,6 +332,25 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 abort("Clear modified files or use -f");
                 return(-1);
             }
+                        
+            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching files!");
+            if ($retval != 0) {
+                abort("");
+                return(-1);
+            }
+
+            echo_out("--------------- Pending upgrades: ---------------\n");
+            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" FETCH_HEAD --not HEAD",$output,$verbose,true,"Error while fetching files!");
+            if ($retval != 0) {
+                abort("");
+                return(-1);
+            }
+            if (empty($output)) {
+                echo_out("No upgrades pending.\n");
+            } else {
+                abort("Pending upgrades in current branch exist, upgrade current branch before migration");
+                return(-1);
+            }
 
             echo_out("Target upgrade branch: ".$upgrade_branch."\n");
             $remote_info = null;
