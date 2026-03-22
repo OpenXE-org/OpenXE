@@ -96,8 +96,10 @@ class upgrade {
             break;
             case 'do_upgrade':
 
-                if ($branch != $remote['name']) {
+                if ($branch != $current_branch) {
                     $do_migrate = true;
+                } else {
+                    $do_migrate = false;
                 }
 
                 unlink($logfile);

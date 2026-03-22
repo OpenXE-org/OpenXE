@@ -248,9 +248,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
 
                 echo_out($remote['name']);
                 if ($remote['enabled']) {
-                    if (!$remote['active']) {
-                        $enabled_remotes[] = $remote;
-                    }
+                    $enabled_remotes[] = $remote;
                 } else {
                     echo_out(" (disabled)");
                 }
@@ -332,7 +330,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 abort("Clear modified files or use -f");
                 return(-1);
             }
-                        
+        
             $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching files!");
             if ($retval != 0) {
                 abort("");
@@ -372,32 +370,36 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 return(-1);
             }
 
-            echo_out("Checking upgrade branch requirements...\n");
-            require_once($remote_info['check']);
-            $migration_check_result = upgrade_check();
-            if ($migration_check_result['result'] != 0) {
-                echo_out("\n--------------- Migration check failed ---------------\n");
-                abort($migration_check_result['message'], $verbose?$migration_check_result['dump']:false);
-                return(-1);
+            if (!empty($remote_info['check'])) {
+                echo_out("Checking upgrade branch requirements...\n");
+                require_once($remote_info['check']);
+                $migration_check_result = upgrade_check();
+                if ($migration_check_result['result'] != 0) {
+                    echo_out("\n--------------- Migration check failed ---------------\n");
+                    abort($migration_check_result['message'], $verbose?$migration_check_result['dump']:false);
+                    return(-1);
+                }
+                echo_out("Upgrade branch requirements OK\n");
             }
-            echo_out("Upgrade branch requirements OK\n");
 
-            echo_out("Starting Migration THIS IS A POINT OF NO RETURN!\n");
-            echo_out("Migrating system...\n");
-            require_once($remote_info['migration']);
-            $migration_result = upgrade_migrate();
-            if ($migration_result['result'] != 0) {
-                echo_out("--------------- Migration failed ---------------\n");
-                abort($migration_check_result['message'], $verbose?$migration_check_result['dump']:false);
-                return(-1);
+            if (!empty($remote_info['migration'])) {
+                echo_out("Starting Migration THIS IS A POINT OF NO RETURN!\n");
+                echo_out("Migrating system...\n");
+                require_once($remote_info['migration']);
+                $migration_result = upgrade_migrate();
+                if ($migration_result['result'] != 0) {
+                    echo_out("--------------- Migration failed ---------------\n");
+                    abort($migration_check_result['message'], $verbose?$migration_check_result['dump']:false);
+                    return(-1);
+                }
             }
-            
+
             $retval = git("checkout FETCH_HEAD -f --", $output,$verbose,$verbose,"Error while checking out files from git!");
             if ($retval != 0) {
                 abort("");
                 return(-1);
             }
-            
+
             $do_git = true;
         }
 
