@@ -1,8 +1,8 @@
 [
     {
         "name": "master",
-        "enabled": true,
-        "active": true,
+        "enabled": false,
+        "active": false,
         "description": {
             "en": "The 1.12 default upgrade source, will be replaced by a versioned variant",
             "de": "Die Standardquelle, wird in Zukunft durch eine versionierte Variante ersetzt werden"
@@ -15,7 +15,7 @@
     {
         "name": "1.13.BETA",
         "enabled": true,
-        "active": false,
+        "active": true,
         "description": {
             "en": "OpenXE Version 1.13 BETA, requires PHP 8.3 or higher",
             "de": "OpenXE Version 1.13 BETA, benötigt mindestens PHP 8.3"
