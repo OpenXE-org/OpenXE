@@ -19,12 +19,12 @@
 Das Upgrade funktioniert in 2 Schritten: Dateien aktualisieren, Datenbank auffrischen. Wenn das Upgrade lange l&auml;uft, kann der Fortschritt in einem neuen Fenster mit "Anzeige auffrischen" angezeigt werden.<br><br>
 Falls nach einem Abbruch oder schwerwiegenden Fehler kein Upgrade möglich ist, im Hauptordner den Ordner ".git" l&ouml;schen und das Upgrade in der Konsole erneut durchf&uuml;hren.
 Dazu im Unterordner "upgrade" diesen Befehl starten: <pre>./upgrade.sh -do</pre>
-                        </fieldset>            
+                        </fieldset>
                     </div>
-           		</div>           
+           		</div>
        		</div>
    		</div>
-        <form action="" method="post">   
+        <form action="" method="post">
             [FORMHANDLEREVENT]
             <div class="row">
 	        	<div class="row-height">
@@ -35,13 +35,39 @@ Dazu im Unterordner "upgrade" diesen Befehl starten: <pre>./upgrade.sh -do</pre>
 	                        		<div class="col-xs-14 col-md-12 col-md-height">
 	                        			<div class="inside inside-full-height">
 	                        				<fieldset>
+                                                <legend>{|Aktueller Zweig|}</legend>
+                                                <table width="100%" border="0" class="mkTableFormular">
+                                                    <b>OpenXE [CURRENTBRANCH]</b>
+                                                </table>
+                                            </fieldset>
+                                        </div>
+                               		</div>
+                           		</div>
+                       		</div>
+                            <div class="row">
+	                        	<div class="row-height">
+	                        		<div class="col-xs-14 col-md-12 col-md-height">
+	                        			<div class="inside inside-full-height">
+	                        				<fieldset>
                                                 <legend>{|Aktuelle Version|}</legend>
                                                 <table width="100%" border="0" class="mkTableFormular">
                                                     <b>OpenXE [CURRENT]</b>
                                                 </table>
-                                            </fieldset>            
+                                            </fieldset>
                                         </div>
-                               		</div>           
+                               		</div>
+                           		</div>
+                       		</div>
+                            <div class="row">
+	                        	<div class="row-height">
+	                        		<div class="col-xs-14 col-md-12 col-md-height">
+	                        			<div class="inside inside-full-height">
+	                        				<fieldset>
+                                                <legend>{|Verf&uuml;gbare Zweige|}</legend>
+                                                [BRANCHES]
+                                            </fieldset>
+                                        </div>
+                               		</div>
                            		</div>
                        		</div>
                             <div class="row">
@@ -53,9 +79,9 @@ Dazu im Unterordner "upgrade" diesen Befehl starten: <pre>./upgrade.sh -do</pre>
                                                 <table width="100%" border="0" class="mkTableFormular">
 [OUTPUT_FROM_CLI]
                                                 </table>
-                                            </fieldset>            
+                                            </fieldset>
                                         </div>
-                               		</div>           
+                               		</div>
                            		</div>
                        		</div>
                    		</div>
@@ -74,17 +100,17 @@ Dazu im Unterordner "upgrade" diesen Befehl starten: <pre>./upgrade.sh -do</pre>
                                     <tr><td style="width:100%;">{|Datenbank-Details anzeigen|}:</td><td><input type="checkbox" name="db_details_anzeigen" value=1 [DB_DETAILS_ANZEIGEN] size="20"></td></tr>
                                     <tr [UPGRADE_DB_VISIBLE]><td colspan=2><button name="submit" formtarget="_blank" value="do_db_upgrade" class="ui-button-icon" style="width:100%;">Datenbank UPGRADE</button></td></tr>
                                 </table>
-                            </fieldset>            
+                            </fieldset>
                         </div>
                		</div>
                	</div>	
             </div>
          </form>
-    </div>    
+    </div>
     <!-- Example for 2nd tab
     <div id="tabs-2">
         [MESSAGE]
-        <form action="" method="post">   
+        <form action="" method="post">
             [FORMHANDLEREVENT]
             <div class="row">
             	<div class="row-height">
@@ -95,14 +121,14 @@ Dazu im Unterordner "upgrade" diesen Befehl starten: <pre>./upgrade.sh -do</pre>
                                 <table width="100%" border="0" class="mkTableFormular">
                                     ...
                                 </table>
-                            </fieldset>            
+                            </fieldset>
                         </div>
                		</div>
                	</div>	
             </div>
             <input type="submit" name="submit" value="Speichern" style="float:right"/>
         </form>
-    </div>    
+    </div>
     -->
 </div>
 
