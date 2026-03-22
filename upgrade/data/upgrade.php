@@ -31,8 +31,11 @@ function echo_output(array $output) {
     echo_out(implode("\n",$output)."\n");
 }
 
-function abort(string $message) {
+function abort(string $message = '', $dump = null) {
     echo_out($message."\n");
+    if (!empty($dump)) {
+        echo_out(print_r($dump, true));
+    }
     echo_out("--------------- Aborted! ---------------\n");
     echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
 }
@@ -69,7 +72,10 @@ if (php_sapi_name() == "cli") {
     $do_git = false;
     $check_db = false;
     $do_db = false;
+    $do_migrate = false;
     $do = false;
+    $do_migrate = false;
+    $upgrade_branch = '';
 
     if ($argc > 1) {
 
@@ -138,7 +144,16 @@ if (php_sapi_name() == "cli") {
             }
         }
 
-        if ($check_git || $check_db || $do_git || $do_db) {
+        if (in_array('-m', $argv)) {
+            $keypos = array_search('-m', $argv);
+            if (isset($argv[$keypos+1])) {
+                $upgrade_branch = $argv[$keypos+1];
+                $do_migrate = true;
+                $check_git = true;
+            }
+        }
+
+        if ($check_git || $check_db || $do_git || $do_db || $do_migrate) {
             upgrade_main(   directory: $directory,
                             verbose: $verbose,
                             check_git: $check_git,
@@ -150,7 +165,9 @@ if (php_sapi_name() == "cli") {
                             force: $force,
                             connection: $connection,
                             origin: $origin,
-                            drop_keys: $drop_keys);
+                            drop_keys: $drop_keys,
+                            do_migrate: $do_migrate,
+                            upgrade_branch: $upgrade_branch);
         } else {
             info();
         }
@@ -162,13 +179,15 @@ if (php_sapi_name() == "cli") {
 }
 // -------------------------------- END
 
-function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin, bool $drop_keys) {
+function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do_git, bool $export_db, bool $check_db, bool $strict_db, bool $do_db, bool $force, bool $connection, bool $origin, bool $drop_keys, bool $do_migrate, string $upgrade_branch = null) {
 
     $mainfolder = dirname($directory);
     $datafolder = $directory."/data";
     $lockfile_name = $datafolder."/.in_progress.flag";
     $remote_file_name = $datafolder."/remote.json";
     $schema_file_name = "db_schema.json";
+    $remotes = array();
+    $enabled_remotes = array();
 
     echo_out("--------------- OpenXE upgrade ---------------\n");
     echo_out("--------------- ".date("Y-m-d H:i:s")." ---------------\n");
@@ -183,8 +202,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 abort("Unable to load $remote_file_name");
                 return(-1);
             }
-            $remote_info = json_decode($remote_info_contents, true);
-            $remotes[] = $remote_info;
+            $remotes = json_decode($remote_info_contents, true);
             $config = file_get_contents($mainfolder."/conf/user.inc.php");
             preg_match("/WFuserdata='(?<path>.*?)';/", $config, $matches);
             $uhash = file_get_contents($matches['path']."/uhash.txt");
@@ -212,8 +230,41 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
                 }
             }
             $remotes = array_values(array_map("unserialize", array_unique(array_map("serialize", $remotes))));
+
+            echo_out("--------------- Available upgrade branches ---------------\n");
+
+            foreach ($remotes as $remote) {
+                if (empty($remote['name'])) {
+                    continue;
+                }
+                if (($remote['active'])) {
+                    if (empty($remote_info)) {
+                        $remote_info = $remote;
+                    }
+                    echo_out("-> ");
+                } else {
+                    echo_out("-  ");
+                }
+
+                echo_out($remote['name']);
+                if ($remote['enabled']) {
+                    if (!$remote['active']) {
+                        $enabled_remotes[] = $remote;
+                    }
+                } else {
+                    echo_out(" (disabled)");
+                }
+                echo_out("\n");
+                echo_out("   ".$remote['description']['en']."\n");
+            }
         }
 
+        if (empty($remote_info)) {
+            abort("No remote upgrade location found.");
+            return(-1);
+        }
+
+        echo_out("--------------- Checking git ---------------\n");
         $retval = git("log HEAD --", $output,$verbose,false,"");
         // Not a git repository -> Create it and then go ahead
         if ($retval == 128) {
@@ -274,6 +325,82 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             }
         }
 
+        if ($do_migrate) {
+
+            echo_out("--------------- Migration ---------------\n");
+            if ($modified_files && !$force) {
+                abort("Clear modified files or use -f");
+                return(-1);
+            }
+                        
+            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching files!");
+            if ($retval != 0) {
+                abort("");
+                return(-1);
+            }
+
+            echo_out("--------------- Pending upgrades: ---------------\n");
+            $retval = git("log --date=short-local --pretty=\"%cd (%h): %s\" FETCH_HEAD --not HEAD",$output,$verbose,true,"Error while fetching files!");
+            if ($retval != 0) {
+                abort("");
+                return(-1);
+            }
+            if (empty($output)) {
+                echo_out("No upgrades pending.\n");
+            } else {
+                abort("Pending upgrades in current branch exist, upgrade current branch before migration");
+                return(-1);
+            }
+
+            echo_out("Target upgrade branch: ".$upgrade_branch."\n");
+            $remote_info = null;
+            foreach ($enabled_remotes as $remote) {
+                if ($remote['name'] == $upgrade_branch) {
+                    $remote_info = $remote;
+                }
+            }
+
+            if (empty($remote_info)) {
+                abort("Target upgrade branch not found!");
+                return(-1);
+            }
+
+            echo_out("Checking upgrade branch...\n");
+            $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching upgrade branch!");
+            if ($retval != 0) {
+                abort("");
+                return(-1);
+            }
+
+            echo_out("Checking upgrade branch requirements...\n");
+            require_once($remote_info['check']);
+            $migration_check_result = upgrade_check();
+            if ($migration_check_result['result'] != 0) {
+                echo_out("\n--------------- Migration check failed ---------------\n");
+                abort($migration_check_result['message'], $verbose?$migration_check_result['dump']:false);
+                return(-1);
+            }
+            echo_out("Upgrade branch requirements OK\n");
+
+            echo_out("Starting Migration THIS IS A POINT OF NO RETURN!\n");
+            echo_out("Migrating system...\n");
+            require_once($remote_info['migration']);
+            $migration_result = upgrade_migrate();
+            if ($migration_result['result'] != 0) {
+                echo_out("--------------- Migration failed ---------------\n");
+                abort($migration_check_result['message'], $verbose?$migration_check_result['dump']:false);
+                return(-1);
+            }
+            
+            $retval = git("checkout FETCH_HEAD -f --", $output,$verbose,$verbose,"Error while checking out files from git!");
+            if ($retval != 0) {
+                abort("");
+                return(-1);
+            }
+            
+            $do_git = true;
+        }
+
         if ($do_git) {
 
             if ($modified_files && !$force) {
@@ -286,27 +413,27 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             if ($force) {
                 $retval = git("reset --hard",$output,$verbose,$verbose,"Error while resetting modified files!");
                 if ($retval != 0) {
-                     abort("");
+                    abort("");
                     return(-1);
                 }
             }
 
             $retval = git("pull ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while pulling files!");
             if ($retval != 0) {
-                 abort("");
+                abort("");
                 return(-1);
             }
 
             $retval = git("reset --hard",$output,$verbose,$verbose,"Error while applying files!");
             if ($retval != 0) {
-                 abort("");
+                abort("");
                 return(-1);
             }
 
             echo_out("--------------- Files upgrade completed ---------------\n");
             $retval = git("log -1 ",$output,$verbose,$verbose,"Error while checking files!");
             if ($retval != 0) {
-                 abort("");
+                abort("");
                 return(-1);
             }
             echo_output($output);
@@ -348,6 +475,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             $retval = git("fetch ".$remote_info['host']." ".$remote_info['branch'],$output,$verbose,$verbose,"Error while fetching files!");
             if ($retval != 0) {
                 abort("");
+                return(-1);
             }
 
             echo_out("--------------- Pending upgrades: ---------------\n");
@@ -358,6 +486,7 @@ function upgrade_main(string $directory,bool $verbose, bool $check_git, bool $do
             }
             if ($retval != 0) {
                 abort("");
+                return(-1);
             }
         } // Dry run
     } // $check_git
@@ -561,6 +690,7 @@ function info() {
     echo_out("\t-db: check/do database upgrades\n");
     echo_out("\t-e: export database schema\n");
     echo_out("\t-do: execute all upgrades\n");
+    echo_out("\t-m: migrate to another upgrade branch, next parameter must be upgrade branch name\n");
     echo_out("\t-v: verbose output\n");
     echo_out("\t-f: force override of existing files\n");
     echo_out("\t-o: update from origin instead of remote.json\n");
