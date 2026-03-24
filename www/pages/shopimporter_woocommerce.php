@@ -549,17 +549,43 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         // WooCommerce doesnt have a standard property for the other values, we're ignoring them
       ];
       if ($remoteIdInformation['isvariant']) {
+        // This is a variation — update via parent/variations endpoint
         $result = $this->client->put('products/' . $remoteIdInformation['parent'] . '/variations/' . $remoteIdInformation['id'], $updateProductParams);
-      } else {
-        $result = $this->client->put('products/' . $remoteIdInformation['id'], $updateProductParams);
-      }
 
-      $this->logger->error(
-        "WooCommerce Lagerzahlenübertragung für Artikel: $nummer / $remoteIdInformation[id] - Anzahl: $lageranzahl",
-        [
-          'result' => $result
-        ]
-      );
+        $this->logger->error(
+          "WooCommerce Lagerzahlenübertragung für Variante: $nummer / $remoteIdInformation[id] (Parent: $remoteIdInformation[parent]) - Anzahl: $lageranzahl",
+          ['result' => $result]
+        );
+      } elseif ($remoteIdInformation['type'] === 'variable') {
+        // This is a variable parent product — stock must be set on each variation individually
+        $variations = $this->client->get('products/' . $remoteIdInformation['id'] . '/variations', ['per_page' => 100]);
+
+        if (!empty($variations)) {
+          foreach ($variations as $variation) {
+            $result = $this->client->put(
+              'products/' . $remoteIdInformation['id'] . '/variations/' . $variation->id,
+              $updateProductParams
+            );
+
+            $this->logger->error(
+              "WooCommerce Lagerzahlenübertragung für Variante von variablem Produkt: $nummer / Variation: $variation->id (Parent: $remoteIdInformation[id]) - Anzahl: $lageranzahl",
+              ['result' => $result]
+            );
+          }
+        } else {
+          $this->logger->error(
+            "WooCommerce variables Produkt $nummer / $remoteIdInformation[id] hat keine Variationen — Lager-Sync übersprungen"
+          );
+        }
+      } else {
+        // Simple product — direct update
+        $result = $this->client->put('products/' . $remoteIdInformation['id'], $updateProductParams);
+
+        $this->logger->error(
+          "WooCommerce Lagerzahlenübertragung für Artikel: $nummer / $remoteIdInformation[id] - Anzahl: $lageranzahl",
+          ['result' => $result]
+        );
+      }
       $anzahl++;
     }
     return $anzahl;
@@ -1010,7 +1036,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       return [
         'id' => $product[0]->id,
         'parent' => $product[0]->parent_id,
-        'isvariant' => !empty($product[0]->parent_id)
+        'isvariant' => !empty($product[0]->parent_id),
+        'type' => $product[0]->type ?? 'simple'
       ];
     }
 
