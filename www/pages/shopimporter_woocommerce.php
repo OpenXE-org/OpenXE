@@ -726,9 +726,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
           $this->logger->info("WooCommerce Variante geändert für Artikel: $nummer / Variation: $product_id (Parent: $parent_id)");
         } else {
           // This is a regular product
-          $this->client->put('products/' . $product_id, array_merge([
-
-          ], $commonProductAtts));
+          $this->client->put('products/' . $product_id, $commonProductAtts);
 
           $this->logger->info("WooCommerce Artikel geändert für Artikel: $nummer / $product_id");
         }
@@ -753,6 +751,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       // }
 
       // Update the associated product categories
+      // For variations, categories belong to the parent product
+      $category_product_id = ($remoteIdInformation['isvariant']) ? $remoteIdInformation['parent'] : $product_id;
 
       $chosenCats = array();
       if (isset($tmp[$i]['kategorien']) || isset($tmp[$i]['kategoriename'])) {
@@ -795,7 +795,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
             if ($wcCatId) {
               // update category. We first retrieve the product and append the new product category, not replace the entire category array.
-              $alreadyAssignedWCCats = $this->client->get('products/' . $product_id, [
+              $alreadyAssignedWCCats = $this->client->get('products/' . $category_product_id, [
                 'per_page' => 1,
               ])->categories;
 
@@ -814,7 +814,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
               }
 
               // Update category assignment
-              $this->client->put('products/' . $product_id, [
+              $this->client->put('products/' . $category_product_id, [
                 'categories' => $allCatIdsWCAPIRep,
               ]);
 
