@@ -75,9 +75,9 @@ class Versandart_go extends Versanddienstleister
             'consignorPhoneNumber' => ['typ' => 'text', 'bezeichnung' => 'Absender Telefon:'],
             'consignorRemarks' => ['typ' => 'text', 'bezeichnung' => 'Absender Bemerkungen:'],
             'consignorEmail' => ['typ' => 'text', 'bezeichnung' => 'Absender Email:'],
-            'defaultPickupFrom' => ['typ' => 'text', 'bezeichnung' => 'Standard Abholzeit von:'],
-            'defaultPickupTill' => ['typ' => 'text', 'bezeichnung' => 'Standard Abholzeit bis:'],
             'defaultContent' => ['typ' => 'text', 'bezeichnung' => 'Standard Inhalt:'],
+            'defaultPickupFrom' => ['typ' => 'text', 'bezeichnung' => 'Standard Abholzeit von:','info' => 'hh:mm, wenn f&uuml;r jeden Wochentag eine andere Zeit gelten soll, dann 7 Werte mit Komma getrennt eingeben'],
+            'defaultPickupTill' => ['typ' => 'text', 'bezeichnung' => 'Standard Abholzeit bis:','info' => 'hh:mm, wenn f&uuml;r jeden Wochentag eine andere Zeit gelten soll, dann 7 Werte mit Komma getrennt eingeben'],
         ];
     }
 
@@ -197,9 +197,26 @@ class Versandart_go extends Versanddienstleister
         if (!empty($this->settings->defaultPickupFrom) && !empty($this->settings->defaultPickupTill)) {
             $shipment->services['pickup'] = true;
             try {
-                $pickupFrom = new DateTime($this->settings->defaultPickupFrom, $this->timeZone);
-                $pickupTimeFrom = new DateTime($this->settings->defaultPickupFrom, $this->timeZone);
-                $pickupTimeTill = new DateTime($this->settings->defaultPickupTill, $this->timeZone);
+
+                $defaultPickupFrom = $this->settings->defaultPickupFrom;
+                $defaultPickupTill = $this->settings->defaultPickupTill;
+
+                $tag = new DateTime('now', $this->timeZone);
+                $tag = ($tag->format('N') + 6) % 7; // Montag = 0, Sonntag = 6
+
+                $defaultPickupFromArray = explode(',',$defaultPickupFrom);
+                if (count($defaultPickupFromArray) == 7) {
+                    $defaultPickupFrom = $defaultPickupFromArray[$tag];
+                }
+
+                $defaultPickupTillArray = explode(',',$defaultPickupTill);
+                if (count($defaultPickupTillArray) == 7) {
+                    $defaultPickupTill = $defaultPickupTillArray[$tag];
+                }
+
+                $pickupFrom = new DateTime($defaultPickupFrom, $this->timeZone);
+                $pickupTimeFrom = new DateTime($defaultPickupFrom, $this->timeZone);
+                $pickupTimeTill = new DateTime($defaultPickupTill, $this->timeZone);
                 if ($pickupFrom < new DateTime('now')) {
                     $pickupFrom = $pickupFrom->add(new DateInterval('P1D'));
                 }
