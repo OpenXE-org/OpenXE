@@ -740,16 +740,7 @@ ean;';
 
   public function generateExport($xls, $sql, $exporterstezeilenummer, $exportdatenmaskierung, $exporttrennzeichen, $ziel, $returnResultByFunction = false, $maxMemory = 0, $maxTime = 0)
   {
-    if(!$returnResultByFunction) {
-      if($xls)
-      {
-        header('Content-Type: application/excel');
-        header('Content-Disposition: attachment; filename="export.csv"');
-      }else{
-        header('Content-Type: text/plain;');
-        header('Content-Disposition: attachment; filename=export.csv');
-      }
-    }
+
     $returnValue = '';
 
     $limit = 10000;
@@ -778,26 +769,28 @@ ean;';
           $returnValue .= $exportdatenmaskierung.$value.$exportdatenmaskierung.$exporttrennzeichen;
         }
         $returnValue .= "\r\n";
-        if(!$returnResultByFunction) {
-          echo $returnValue;
-        }
         $query->data_seek(0);
       }
 
       while($row = $this->app->DB->Fetch_Assoc($query))
       {
         $line = $this->Exportinner($row,$exportdatenmaskierung,$exporttrennzeichen, $returnResultByFunction, $ziel, $xls);
-        if(!$returnResultByFunction) {
-          echo $line;
-        }else {
-          $returnValue .= $line;
-        }
+        $returnValue .= $line;
       }
       $firstLinePassed = true;
       $offset += $limit;
     }while(!$queryContainsLimit && $query->num_rows === $limit);
 
     if(!$returnResultByFunction) {
+      if($xls)
+      {
+        header('Content-Type: application/excel');
+        header('Content-Disposition: attachment; filename="export.csv"');
+      }else{
+        header('Content-Type: text/plain;');
+        header('Content-Disposition: attachment; filename=export.csv');
+      }
+      echo($returnValue);
       $this->app->ExitXentral();
     }
     return $returnValue;
