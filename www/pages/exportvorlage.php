@@ -644,7 +644,7 @@ ean;';
           }
           break;
         case 'artikelkategorie':
-          $fields_array[] = "'VAR:ARTIKELKATEGORIE' as artikelkategorie";
+          $fields_array[] = "'VAR:ARTIKELKATEGORIE_NUMMER' as artikelkategorie";
           break;
         case 'artikelkategorie_name':
           $fields_array[] = "'VAR:ARTIKELKATEGORIE_NAME' as artikelkategorie_name";
@@ -830,7 +830,7 @@ ean;';
       'VAR:INVENTUREK' => 'inventurek',
       'VAR:ARTIKELBESCHREIBUNG_DE' => 'anabregs_text',
       'VAR:ARTIKELBESCHREIBUNG_EN' => 'anabregs_text_en',
-      'VAR:ARTIKELKATEGORIE' => 'artikelkategorie',
+      'VAR:ARTIKELKATEGORIE_NUMMER' => 'artikelkategorie',
       'VAR:ARTIKELKATEGORIE_NAME' => 'artikelkategorie_name',
       'VAR:STANDARDLAGERPLATZ' => 'standardlagerplatz',
       'VAR:VARIANTE_VON' => 'variante_von'
@@ -1051,7 +1051,6 @@ ean;';
       foreach($replaces as $k => $v) {
         $value = str_replace($k, $params[$v], $value);
       }
-
       $value = $this->app->erp->ParseDecimalForCSV($value);
       if($xls) {
         $value = iconv('UTF-8','ISO-8859-1//TRANSLIT', $value);
