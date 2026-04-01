@@ -124,8 +124,8 @@ class FileController extends AbstractController
             throw new BadRequestException('Required property "file_content" is missing.');
         }
 
-        if (is_array($input['stichwoerter'])) {
-            $stichwoerter = array();
+        $stichwoerter = array();
+        if (isset($input['stichwoerter']) && is_array($input['stichwoerter'])) {
             $erp = $this->legacyApi->app->erp;
             $DB = $this->legacyApi->app->DB;
             foreach ($input['stichwoerter'] as $stichwort_input) {
