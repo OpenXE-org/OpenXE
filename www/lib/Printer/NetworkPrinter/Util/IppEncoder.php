@@ -375,9 +375,20 @@ class IppEncoder
      */
     private static function encodeAttribute(int $tag, string $name, string $value): string
     {
-        return pack('C', $tag)
-            . pack('n', strlen($name)) . $name
-            . pack('n', strlen($value)) . $value;
+        // IPP-Spec: Attribute-Werte duerfen max 1023 Bytes lang sein (name-without-language)
+        // pack('n', ...) erlaubt max 65535 — Overflow verhindern
+        if (strlen($value) > 65535) {
+            $value = substr($value, 0, 65535);
+        }
+        if (strlen($name) > 65535) {
+            $name = substr($name, 0, 65535);
+        }
+
+        return chr($tag)
+            . pack('n', strlen($name))
+            . $name
+            . pack('n', strlen($value))
+            . $value;
     }
 
     /**
