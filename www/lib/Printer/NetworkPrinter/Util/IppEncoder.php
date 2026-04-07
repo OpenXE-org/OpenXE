@@ -153,6 +153,9 @@ class IppEncoder
                 } else {
                     // Additional values: value-tag + name-length=0 + value
                     $val = (string)$attrName;
+                    if (strlen($val) > 65535) {
+                        $val = substr($val, 0, 65535);
+                    }
                     $body .= pack('C', self::TAG_KEYWORD);
                     $body .= pack('n', 0);                   // name-length = 0 (additional value)
                     $body .= pack('n', strlen($val)) . $val;
