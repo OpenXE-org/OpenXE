@@ -245,6 +245,17 @@ class NetworkPrinter extends PrinterBase
     {
         $settings = $this->getResolvedSettings();
 
+        // Validierung auch im Test-Pfad erzwingen (SSRF-Schutz)
+        try {
+            $this->validateSettings($settings);
+        } catch (PrinterConfigException $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'details' => [],
+            ];
+        }
+
         $test = new ConnectionTest();
         return $test->test($settings);
     }
@@ -357,17 +368,50 @@ class NetworkPrinter extends PrinterBase
             );
         }
 
-        // Host-Validierung: Metadaten-Endpoints und Loopback blockieren
+        // Host-Validierung: Loopback und Metadaten-Endpoints blockieren
         $host = $settings['host'];
-        $blockedHosts = ['169.254.169.254', 'metadata.google.internal', 'metadata'];
-        if (in_array(strtolower($host), $blockedHosts, true)) {
+
+        // Bekannte Metadaten-Hostnames blockieren
+        $blockedHostnames = ['metadata.google.internal', 'metadata'];
+        if (in_array(strtolower($host), $blockedHostnames, true)) {
             throw new PrinterConfigException(
                 sprintf('Blockierter Host: %s', $host)
             );
         }
-        // Loopback blockieren
-        if (preg_match('/^127\./', $host) || strtolower($host) === 'localhost' || $host === '::1') {
-            throw new PrinterConfigException('Loopback-Adressen sind nicht erlaubt');
+
+        // Hostname zu IP aufloesen fuer Validierung
+        $resolvedIp = filter_var($host, FILTER_VALIDATE_IP)
+            ? $host
+            : gethostbyname($host);
+
+        // Wenn Aufloesung fehlschlaegt, gibt gethostbyname den Input zurueck
+        if ($resolvedIp === $host && !filter_var($host, FILTER_VALIDATE_IP)) {
+            throw new PrinterConfigException(
+                sprintf('Hostname nicht aufloesbar: %s', $host)
+            );
+        }
+
+        // IP normalisieren und pruefen
+        $ipLong = ip2long($resolvedIp);
+        if ($ipLong !== false) {
+            // Loopback: 127.0.0.0/8
+            if (($ipLong >> 24) === 127) {
+                throw new PrinterConfigException('Loopback-Adressen sind nicht erlaubt');
+            }
+            // Link-local: 169.254.0.0/16
+            if (($ipLong >> 16) === (169 * 256 + 254)) {
+                throw new PrinterConfigException('Link-Local-Adressen sind nicht erlaubt');
+            }
+        } else {
+            // IPv6 pruefen
+            $lowerHost = strtolower($resolvedIp);
+            if ($lowerHost === '::1'
+                || strpos($lowerHost, '::ffff:127.') === 0
+                || strpos($lowerHost, '::ffff:7f') === 0
+                || $lowerHost === '::ffff:169.254.169.254'
+            ) {
+                throw new PrinterConfigException('Loopback/Link-Local IPv6-Adressen sind nicht erlaubt');
+            }
         }
     }
 

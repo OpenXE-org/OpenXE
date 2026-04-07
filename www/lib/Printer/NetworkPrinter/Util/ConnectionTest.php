@@ -51,8 +51,8 @@ class ConnectionTest
 
         if ($fp === false) {
             $result['message'] = sprintf(
-                'Drucker nicht erreichbar: %s:%d — %s (%d)',
-                $host, $port, $errstr, $errno
+                'Drucker nicht erreichbar: %s:%d',
+                $host, $port
             );
             return $result;
         }
