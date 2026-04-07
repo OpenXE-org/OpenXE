@@ -4,10 +4,10 @@ require_once __DIR__ . '/IppStatus.php';
 require_once __DIR__ . '/SnmpStatus.php';
 
 /**
- * Orchestrates printer status queries from multiple sources.
+ * Orchestriert Status-Abfragen aus verschiedenen Quellen.
  *
- * Query order: IPP first (if protocol=ipp), then SNMP (always attempted),
- * then TCP socket fallback if still offline.
+ * Abfragereihenfolge: IPP zuerst (wenn protocol=ipp), dann SNMP (immer versucht),
+ * dann TCP-Socket-Fallback wenn noch offline.
  */
 class StatusMonitor
 {
@@ -17,18 +17,22 @@ class StatusMonitor
     /** @var SnmpStatus */
     private $snmpStatus;
 
-    public function __construct()
+    /**
+     * @param IppStatus  $ippStatus Instanz des IPP-Status-Abfragers (optional)
+     * @param SnmpStatus $snmpStatus Instanz des SNMP-Status-Abfragers (optional)
+     */
+    public function __construct(IppStatus $ippStatus = null, SnmpStatus $snmpStatus = null)
     {
-        $this->ippStatus  = new IppStatus();
-        $this->snmpStatus = new SnmpStatus();
+        $this->ippStatus  = $ippStatus ?? new IppStatus();
+        $this->snmpStatus = $snmpStatus ?? new SnmpStatus();
     }
 
     /**
-     * Retrieves the current printer status by querying available sources.
+     * Fragt den vollstaendigen Druckerstatus ab.
      *
-     * @param array $settings Printer settings (from drucker.json)
+     * @param array $settings Drucker-Einstellungen (aus drucker.json)
      *
-     * @return array Status array with keys: online, name, model, state,
+     * @return array Status-Array mit Keys: online, name, model, state,
      *               supplies, paper, page_count, source, snmp_available
      */
     public function getStatus(array $settings): array
@@ -36,8 +40,6 @@ class StatusMonitor
         $host     = isset($settings['host'])     ? (string)$settings['host']     : '';
         $port     = isset($settings['port'])     ? (int)$settings['port']        : 631;
         $protocol = isset($settings['protocol']) ? (string)$settings['protocol'] : 'ipp';
-        $username = '';
-        $password = '';
 
         $username = $settings['auth_username'] ?? ($settings['auth']['username'] ?? '');
         $password = $settings['auth_password'] ?? ($settings['auth']['password'] ?? '');

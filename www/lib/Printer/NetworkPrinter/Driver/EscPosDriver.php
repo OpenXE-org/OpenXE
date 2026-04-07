@@ -20,6 +20,11 @@ class EscPosDriver implements DriverInterface
     /** @var int */
     private $timeout;
 
+    /**
+     * @param string $host IP-Adresse oder Hostname
+     * @param int    $port TCP-Port (Default: 9100)
+     * @param int    $timeout Timeout in Sekunden (Default: 30)
+     */
     public function __construct(string $host, int $port = 9100, int $timeout = 30)
     {
         $this->host = $host;
@@ -27,6 +32,9 @@ class EscPosDriver implements DriverInterface
         $this->timeout = $timeout;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function send(string $data, array $options = []): bool
     {
         $address = sprintf('tcp://%s:%d', $this->host, $this->port);
@@ -66,6 +74,9 @@ class EscPosDriver implements DriverInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isAvailable(): bool
     {
         $fp = @stream_socket_client(
@@ -79,6 +90,9 @@ class EscPosDriver implements DriverInterface
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getCapabilities(): array
     {
         return [

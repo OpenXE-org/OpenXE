@@ -94,7 +94,8 @@ class ConnectionTest
         if (!empty($status['supplies'])) {
             $tonerParts = [];
             foreach ($status['supplies'] as $supply) {
-                $tonerParts[] = sprintf('%s: %d%%', $supply['description'], $supply['percent']);
+                $percent = isset($supply['percent']) ? $supply['percent'] : 0;
+                $tonerParts[] = sprintf('%s: %d%%', $supply['description'], $percent);
             }
             $result['details']['supplies'] = implode(', ', $tonerParts);
         }
