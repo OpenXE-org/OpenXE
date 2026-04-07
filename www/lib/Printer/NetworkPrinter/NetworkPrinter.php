@@ -160,8 +160,8 @@ class NetworkPrinter extends PrinterBase
                 'default'     => '1',
             ],
             'test_connection' => [
-                'typ'  => 'submit',
-                'text' => 'Verbindung testen',
+                'typ'      => 'custom',
+                'function' => 'renderTestButton',
             ],
         ];
     }
@@ -261,52 +261,56 @@ class NetworkPrinter extends PrinterBase
     }
 
     /**
-     * Rendert die Einstellungsseite. Behandelt den "Verbindung testen"-Button
-     * vor dem Aufruf der Parent-Implementierung.
+     * Rendert den Verbindungsstatus als Inline-Check.
+     * Wird von PrinterBase::Settings() ueber typ=custom aufgerufen.
+     * Prueft beim Seitenaufbau ob der Drucker per TCP erreichbar ist
+     * und zeigt das Ergebnis sofort an.
      *
-     * @param string     $target   Template-Target oder 'return'
-     * @param array|null $struktur Optionale Struktur-Ueberschreibung
-     *
-     * @return string|null HTML-Output
+     * @return string HTML mit Status-Anzeige
      */
-    public function Settings($target = 'return', $struktur = null)
+    public function renderTestButton(): string
     {
-        $testHtml = '';
+        $settings = $this->getResolvedSettings();
+        $host = $settings['host'] ?? '';
+        $port = (int)($settings['port'] ?? 9100);
 
-        if (isset($this->app->Secure) && $this->app->Secure->GetPOST('test_connection')) {
-            $result = $this->testConnection();
-
-            $color  = $result['success'] ? '#d4edda' : '#f8d7da';
-            $border = $result['success'] ? '#c3e6cb' : '#f5c6cb';
-            $icon   = $result['success'] ? '&#10003;' : '&#10007;';
-
-            $testHtml  = '<div style="background:' . $color . ';border:1px solid ' . $border . ';';
-            $testHtml .= 'padding:10px;margin:10px 0;border-radius:4px;">';
-            $testHtml .= '<strong>' . $icon . ' ' . htmlspecialchars($result['message']) . '</strong>';
-
-            if (!empty($result['details'])) {
-                $testHtml .= '<ul style="margin:5px 0 0 0;padding-left:20px;">';
-                foreach ($result['details'] as $key => $val) {
-                    $testHtml .= '<li><small><b>' . htmlspecialchars($key) . ':</b> ';
-                    $testHtml .= htmlspecialchars((string)$val) . '</small></li>';
-                }
-                $testHtml .= '</ul>';
-            }
-
-            $testHtml .= '</div>';
+        if ($host === '') {
+            return '<div style="padding:8px;background:#fff3cd;border:1px solid #ffc107;'
+                . 'border-radius:4px;color:#856404;">'
+                . '<strong>Hinweis:</strong> Bitte IP-Adresse eingeben und speichern.'
+                . '</div>';
         }
 
-        $parentHtml = parent::Settings($target, $struktur);
+        // Schneller TCP-Connect-Check (max 3s)
+        $startTime = microtime(true);
+        $fp = @stream_socket_client(
+            sprintf('tcp://%s:%d', $host, $port),
+            $errno, $errstr, 3
+        );
+        $connectTime = round((microtime(true) - $startTime) * 1000);
 
-        if ($testHtml !== '') {
-            if ($target !== 'return' && isset($this->app->Tpl)) {
-                $this->app->Tpl->Add($target, $testHtml);
-            } else {
-                return $testHtml . (string)$parentHtml;
-            }
+        $html = '';
+        if ($fp !== false) {
+            fclose($fp);
+            $html .= '<div style="padding:8px;background:#d4edda;border:1px solid #c3e6cb;'
+                . 'border-radius:4px;color:#155724;">'
+                . '<strong>&#10003; Drucker erreichbar</strong> &mdash; '
+                . htmlspecialchars($host) . ':' . $port
+                . ' (' . $connectTime . 'ms)'
+                . '</div>';
+        } else {
+            $html .= '<div style="padding:8px;background:#f8d7da;border:1px solid #f5c6cb;'
+                . 'border-radius:4px;color:#721c24;">'
+                . '<strong>&#10007; Drucker nicht erreichbar</strong> &mdash; '
+                . htmlspecialchars($host) . ':' . $port
+                . '</div>';
         }
 
-        return $parentHtml;
+        $html .= '<div style="margin-top:4px;color:#666;font-size:11px;">'
+            . 'Testdruck: Button "Testseite drucken" oben bei Anbindung verwenden.'
+            . '</div>';
+
+        return $html;
     }
 
     /**
