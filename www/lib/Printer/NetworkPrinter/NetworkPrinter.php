@@ -72,6 +72,14 @@ class NetworkPrinter extends PrinterBase
                     'lpr'    => 'LPR / LPD (RFC 1179)',
                 ],
             ],
+            'lpr_queue' => [
+                'typ'         => 'text',
+                'bezeichnung' => 'LPR Queue-Name (nur LPR)',
+                'placeholder' => 'lp',
+                'size'        => 20,
+                'default'     => 'lp',
+                'info'        => 'Standard: lp',
+            ],
             'timeout' => [
                 'typ'         => 'text',
                 'bezeichnung' => 'Timeout in Sekunden',
@@ -114,14 +122,15 @@ class NetworkPrinter extends PrinterBase
                 'typ'         => 'select',
                 'bezeichnung' => 'Papierformat',
                 'optionen'    => [
-                    'A4'        => 'A4',
-                    'A5'        => 'A5',
-                    'A6'        => 'A6',
-                    'Letter'    => 'Letter',
-                    '4x6'       => '4x6 Zoll',
-                    '100x150mm' => '100x150mm',
-                    '100x200mm' => '100x200mm',
+                    'iso_a4_210x297mm'       => 'A4',
+                    'iso_a5_148x210mm'       => 'A5',
+                    'iso_a6_105x148mm'       => 'A6',
+                    'na_letter_8.5x11in'     => 'Letter',
+                    'na_4x6_4x6in'           => '4x6 Zoll (Label)',
+                    'om_100x150mm_100x150mm' => '100x150mm (Label)',
+                    'om_100x200mm_100x200mm' => '100x200mm (Label)',
                 ],
+                'default'     => 'iso_a4_210x297mm',
             ],
             'staple' => [
                 'typ'         => 'checkbox',
@@ -394,7 +403,8 @@ class NetworkPrinter extends PrinterBase
                 return new EscPosDriver($host, $port, $timeout);
 
             case Protocol::LPR:
-                return new LprDriver($host, $port, $timeout);
+                $queue = $settings['lpr_queue'] ?? 'lp';
+                return new LprDriver($host, $port, $timeout, $queue);
 
             default:
                 throw new PrinterConfigException(

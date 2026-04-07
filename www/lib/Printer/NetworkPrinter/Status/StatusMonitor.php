@@ -39,10 +39,8 @@ class StatusMonitor
         $username = '';
         $password = '';
 
-        if (isset($settings['auth']) && is_array($settings['auth'])) {
-            $username = isset($settings['auth']['username']) ? (string)$settings['auth']['username'] : '';
-            $password = isset($settings['auth']['password']) ? (string)$settings['auth']['password'] : '';
-        }
+        $username = $settings['auth_username'] ?? ($settings['auth']['username'] ?? '');
+        $password = $settings['auth_password'] ?? ($settings['auth']['password'] ?? '');
 
         $ippPath = isset($settings['path']) ? (string)$settings['path'] : '/ipp/print';
 
