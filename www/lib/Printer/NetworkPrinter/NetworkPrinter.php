@@ -316,7 +316,8 @@ class NetworkPrinter extends PrinterBase
         if (!isset($s['port']) || (int)$s['port'] === 0) {
             $s['port'] = Protocol::getDefaultPort($s['protocol']);
         }
-        if (!isset($s['timeout']) || (int)$s['timeout'] === 0) {
+        $s['timeout'] = (int)($s['timeout'] ?? 30);
+        if ($s['timeout'] < 1 || $s['timeout'] > 300) {
             $s['timeout'] = 30;
         }
         if (!isset($s['auth_username'])) {
@@ -339,15 +340,34 @@ class NetworkPrinter extends PrinterBase
     private function validateSettings(array $settings): void
     {
         if (empty($settings['host'])) {
-            throw new PrinterConfigException(
-                'Netzwerkdrucker: Keine IP-Adresse/Hostname konfiguriert (Drucker-ID ' . $this->id . ')'
-            );
+            throw new PrinterConfigException('Keine IP-Adresse konfiguriert');
         }
 
         if (!Protocol::isValid($settings['protocol'])) {
             throw new PrinterConfigException(
-                'Netzwerkdrucker: Ungueltiges Protokoll "' . $settings['protocol'] . '" (Drucker-ID ' . $this->id . ')'
+                sprintf('Ungueltiges Protokoll: %s', $settings['protocol'])
             );
+        }
+
+        // Port-Validierung
+        $port = (int)$settings['port'];
+        if ($port < 1 || $port > 65535) {
+            throw new PrinterConfigException(
+                sprintf('Ungueltiger Port: %d (erlaubt: 1-65535)', $port)
+            );
+        }
+
+        // Host-Validierung: Metadaten-Endpoints und Loopback blockieren
+        $host = $settings['host'];
+        $blockedHosts = ['169.254.169.254', 'metadata.google.internal', 'metadata'];
+        if (in_array(strtolower($host), $blockedHosts, true)) {
+            throw new PrinterConfigException(
+                sprintf('Blockierter Host: %s', $host)
+            );
+        }
+        // Loopback blockieren
+        if (preg_match('/^127\./', $host) || strtolower($host) === 'localhost' || $host === '::1') {
+            throw new PrinterConfigException('Loopback-Adressen sind nicht erlaubt');
         }
     }
 
@@ -363,15 +383,23 @@ class NetworkPrinter extends PrinterBase
     private function loadDocumentData(string $dokument): string
     {
         if (is_file($dokument)) {
+            // Dateien ueber 100 MB ablehnen (Speicherschutz)
+            $size = filesize($dokument);
+            if ($size !== false && $size > 104857600) {
+                throw new PrinterConfigException(
+                    sprintf('Dokument zu gross: %d Bytes (max. 100 MB)', $size)
+                );
+            }
             $content = file_get_contents($dokument);
             if ($content === false) {
                 throw new PrinterConfigException(
-                    'Netzwerkdrucker: Datei konnte nicht gelesen werden: ' . $dokument
+                    sprintf('Dokument nicht lesbar: %s', basename($dokument))
                 );
             }
             return $content;
         }
 
+        // Rohdaten (z.B. ESC/POS-Stream direkt als String uebergeben)
         return $dokument;
     }
 

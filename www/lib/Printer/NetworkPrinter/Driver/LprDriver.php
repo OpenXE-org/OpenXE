@@ -55,13 +55,19 @@ class LprDriver implements DriverInterface
 
         try {
             stream_set_timeout($fp, $this->timeout);
-            $jobNumber = rand(100, 999);
+            $jobNumber = random_int(100, 999);
             $hostname = gethostname() ?: 'openxe';
             $username = 'openxe';
             $filename = 'document.pdf';
 
+            // Queue-Name sanitizen (verhindert LPR-Command-Injection via Newline)
+            $queue = preg_replace('/[^a-zA-Z0-9_\-]/', '', $this->queue);
+            if ($queue === '') {
+                $queue = 'lp';
+            }
+
             // 1. Receive-a-printer-job
-            $this->lprWrite($fp, "\x02" . $this->queue . "\n");
+            $this->lprWrite($fp, "\x02" . $queue . "\n");
             $this->lprReadAck($fp);
 
             // 2. Control File
