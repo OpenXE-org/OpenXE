@@ -76,7 +76,7 @@ class IppDriver implements DriverInterface
     {
         $printerUri = sprintf('ipp://%s:%d%s', $this->host, $this->port, $this->path);
 
-        // Build IPP header + append PDF data
+        // IPP-Header bauen + PDF-Daten anhaengen
         $ippHeader = IppEncoder::buildPrintJobRequest($printerUri, $options);
         $ippRequest = $ippHeader . $data;
 

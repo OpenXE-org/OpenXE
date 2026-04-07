@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Queries printer status via SNMP (RFC 3805 Printer MIB).
- * Requires PHP ext-snmp. Gracefully degrades if extension is not available.
+ * Fragt Druckerstatus per SNMP ab (RFC 3805 Printer MIB).
+ * Erfordert ext-snmp. Graceful Degradation wenn nicht installiert.
  */
 class SnmpStatus
 {
@@ -17,7 +17,7 @@ class SnmpStatus
     const OID_PAGE_COUNT            = '1.3.6.1.2.1.43.10.2.1.4.1.1';
 
     /**
-     * Checks whether the PHP SNMP extension is loaded.
+     * Prueft ob ext-snmp verfuegbar ist.
      *
      * @return bool
      */
@@ -27,13 +27,13 @@ class SnmpStatus
     }
 
     /**
-     * Queries the printer status via SNMP.
+     * Fragt den Druckerstatus per SNMP ab.
      *
-     * @param string $host      Printer hostname or IP
-     * @param string $community SNMP community string (default 'public')
-     * @param int    $timeout   SNMP timeout in microseconds (default 2000000)
+     * @param string $host      Druckerhostname oder IP-Adresse
+     * @param string $community SNMP-Community-String (Default: 'public')
+     * @param int    $timeout   SNMP-Timeout in Mikrosekunden (Default: 2000000)
      *
-     * @return array|null Status array or null if ext unavailable or on error
+     * @return array|null Status-Array oder null bei Fehler/fehlende Extension
      */
     public function query(
         string $host,
@@ -117,9 +117,9 @@ class SnmpStatus
     }
 
     /**
-     * Walks marker supply OIDs and returns an array of supply entries.
+     * Fragt Toner/Tinten-Level ab (alle Farben).
      *
-     * @param \SNMP $session Active SNMP session
+     * @param \SNMP $session Aktive SNMP-Session
      *
      * @return array
      */
@@ -169,12 +169,12 @@ class SnmpStatus
     }
 
     /**
-     * Gets a single OID value with error suppression.
+     * Holt einen einzelnen OID-Wert mit Fehlerunterdrueckung.
      *
-     * @param \SNMP  $session Active SNMP session
-     * @param string $oid     OID to query
+     * @param \SNMP  $session Aktive SNMP-Session
+     * @param string $oid     Abzufragender OID
      *
-     * @return string|null Raw SNMP value string or null on failure
+     * @return string|null Rohwert oder null bei Fehler
      */
     private function snmpGetValue(\SNMP $session, string $oid): ?string
     {
@@ -190,15 +190,15 @@ class SnmpStatus
     }
 
     /**
-     * Strips SNMP type prefixes and surrounding quotes from a value string.
+     * Entfernt SNMP-Typ-Prefixe wie STRING:, INTEGER: etc.
      *
-     * Examples:
+     * Beispiele:
      *   'STRING: "HP LaserJet"' -> 'HP LaserJet'
      *   'INTEGER: 3'            -> '3'
      *
-     * @param string $value Raw SNMP value string
+     * @param string $value Rohwert-String
      *
-     * @return string Cleaned value
+     * @return string Bereinigter Wert
      */
     private function cleanSnmpValue(string $value): string
     {

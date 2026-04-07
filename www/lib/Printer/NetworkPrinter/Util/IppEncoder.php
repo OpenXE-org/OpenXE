@@ -4,10 +4,10 @@ require_once __DIR__ . '/../Exception/PrinterProtocolException.php';
 require_once __DIR__ . '/../Exception/PrinterConnectionException.php';
 
 /**
- * IPP (Internet Printing Protocol) binary encoder/decoder.
+ * IPP Binaerformat Encoder/Decoder nach RFC 8010/8011.
  *
- * Implements RFC 8011 / RFC 8010 binary format for building and parsing
- * IPP requests and responses sent over HTTP POST to port 631.
+ * Implementiert das Binaerformat zum Zusammenbau und Parsen von
+ * IPP-Requests und -Responses ueber HTTP POST an Port 631.
  */
 class IppEncoder
 {
@@ -45,12 +45,12 @@ class IppEncoder
     const ORIENTATION_LANDSCAPE = 4;
 
     /**
-     * Builds a binary IPP Print-Job request header (without document data).
+     * Baut einen Print-Job IPP-Request.
      *
-     * @param string $printerUri Full IPP URI e.g. ipp://host:631/ipp/print
-     * @param array  $options    Print options (copies, duplex, color, media, tray, staple, orientation, job-name)
+     * @param string $printerUri Vollstaendiger IPP-URI z.B. ipp://host:631/ipp/print
+     * @param array  $options    Druck-Optionen (copies, duplex, color, media, tray, staple, orientation, job-name)
      *
-     * @return string Binary IPP request header
+     * @return string Binaerer IPP-Request-Header
      */
     public static function buildPrintJobRequest(string $printerUri, array $options = []): string
     {
@@ -123,12 +123,12 @@ class IppEncoder
     }
 
     /**
-     * Builds a binary IPP Get-Printer-Attributes request.
+     * Baut einen Get-Printer-Attributes IPP-Request.
      *
-     * @param string $printerUri         Full IPP URI
-     * @param array  $requestedAttributes List of attribute names to request (empty = all)
+     * @param string $printerUri         Vollstaendiger IPP-URI
+     * @param array  $requestedAttributes Liste der angeforderten Attributnamen (leer = alle)
      *
-     * @return string Binary IPP request
+     * @return string Binaerer IPP-Request
      */
     public static function buildGetPrinterAttributesRequest(string $printerUri, array $requestedAttributes = []): string
     {
@@ -166,20 +166,20 @@ class IppEncoder
     }
 
     /**
-     * Sends an IPP request via HTTP POST using curl.
+     * Sendet einen IPP-Request per HTTP POST.
      *
-     * @param string $host     Printer hostname or IP
-     * @param int    $port     TCP port (usually 631)
-     * @param string $path     HTTP path (e.g. '/ipp/print')
-     * @param string $ippData  Raw binary IPP data
-     * @param string $username Optional username for HTTP auth
-     * @param string $password Optional password for HTTP auth
-     * @param int    $timeout  Request timeout in seconds
+     * @param string $host     Druckerhostname oder IP-Adresse
+     * @param int    $port     TCP-Port (normalerweise 631)
+     * @param string $path     HTTP-Pfad (z.B. '/ipp/print')
+     * @param string $ippData  Roher binaerer IPP-Datenstrom
+     * @param string $username Optionaler Benutzername fuer HTTP-Auth
+     * @param string $password Optionales Passwort fuer HTTP-Auth
+     * @param int    $timeout  Request-Timeout in Sekunden
      *
-     * @return string Raw HTTP response body
+     * @return string Roher HTTP-Response-Body
      *
-     * @throws PrinterConnectionException On curl failure
-     * @throws PrinterProtocolException   On non-200 HTTP status
+     * @throws PrinterConnectionException Bei Curl-Fehler
+     * @throws PrinterProtocolException   Bei nicht-200 HTTP-Status
      */
     public static function sendRequest(
         string $host,
@@ -227,9 +227,9 @@ class IppEncoder
     }
 
     /**
-     * Parses a binary IPP response body.
+     * Parst eine IPP-Response und gibt Status + Attribute zurueck.
      *
-     * @param string $response Raw binary IPP response
+     * @param string $response Rohe binaere IPP-Response
      *
      * @return array ['status_code' => int, 'status_ok' => bool, 'attributes' => array]
      */

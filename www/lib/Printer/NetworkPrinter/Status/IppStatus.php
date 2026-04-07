@@ -3,20 +3,20 @@
 require_once __DIR__ . '/../Util/IppEncoder.php';
 
 /**
- * Queries printer status via IPP Get-Printer-Attributes (RFC 8011).
+ * Fragt Druckerstatus per IPP Get-Printer-Attributes ab (RFC 8011).
  */
 class IppStatus
 {
     /**
-     * Queries the printer status via IPP.
+     * Fragt den Druckerstatus per IPP ab.
      *
-     * @param string $host     Printer hostname or IP
-     * @param int    $port     IPP port (default 631)
-     * @param string $username Optional HTTP auth username
-     * @param string $password Optional HTTP auth password
-     * @param string $path     IPP path (default /ipp/print)
+     * @param string $host     Druckerhostname oder IP-Adresse
+     * @param int    $port     IPP-Port (Default: 631)
+     * @param string $username Optionaler HTTP-Auth-Benutzername
+     * @param string $password Optionales HTTP-Auth-Passwort
+     * @param string $path     IPP-Pfad (Default: /ipp/print)
      *
-     * @return array|null Status array or null on failure
+     * @return array|null Status-Array oder null bei Fehler
      */
     public function query(
         string $host,
