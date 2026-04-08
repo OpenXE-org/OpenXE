@@ -14,6 +14,7 @@ require_once __DIR__ . '/Driver/EscPosDriver.php';
 require_once __DIR__ . '/Driver/LprDriver.php';
 require_once __DIR__ . '/Status/StatusMonitor.php';
 require_once __DIR__ . '/Util/ConnectionTest.php';
+require_once __DIR__ . '/Util/PdfBatcher.php';
 
 /**
  * Netzwerkdrucker-Plugin fuer OpenXE.
@@ -159,6 +160,33 @@ class NetworkPrinter extends PrinterBase
                 'bezeichnung' => 'Automatischer Schnitt',
                 'default'     => '1',
             ],
+            'batch_2up' => [
+                'typ'         => 'checkbox',
+                'bezeichnung' => '2 Labels pro A4-Blatt',
+                'default'     => '',
+                'info'        => '2 A5-Labels zu einem A4-Blatt zusammenfassen (Hochformat, Label oben + Label unten).',
+                'heading'     => 'Batch-Druck (nur A4-Dokumentendrucker)',
+            ],
+            'batch_timeout' => [
+                'typ'         => 'text',
+                'bezeichnung' => 'Wartezeit auf zweites Label (Sek.)',
+                'placeholder' => '30',
+                'size'        => 5,
+                'default'     => '30',
+                'info'        => 'Nach dieser Zeit wird ein einzelnes Label allein auf der oberen Haelfte des A4-Blattes gedruckt.',
+            ],
+            'batch_rotation' => [
+                'typ'         => 'select',
+                'bezeichnung' => 'Label-Rotation',
+                'optionen'    => [
+                    'auto' => 'Automatisch (Hochformat-Labels drehen)',
+                    'none' => 'Keine Rotation',
+                    'cw'   => '90 Grad im Uhrzeigersinn',
+                    'ccw'  => '90 Grad gegen den Uhrzeigersinn',
+                ],
+                'default'     => 'auto',
+                'info'        => 'Automatisch dreht nur wenn Quell-Orientierung nicht zur A4-Haelfte passt. Teste mit "auto" zuerst.',
+            ],
             'test_connection' => [
                 'typ'      => 'custom',
                 'function' => 'renderTestButton',
@@ -180,11 +208,37 @@ class NetworkPrinter extends PrinterBase
             $settings = $this->getResolvedSettings();
             $this->validateSettings($settings);
 
+            // Batch-Modus: zwei A5-Labels auf ein A4-Blatt kombinieren
+            if (!empty($settings['batch_2up']) && is_file($dokument)) {
+                $batchResult = $this->processBatch($dokument, $settings);
+                if ($batchResult === null) {
+                    // Label in Warteschlange gelegt — noch nicht physisch drucken
+                    $this->logInfo(
+                        sprintf(
+                            'Label in Batch-Warteschlange: Drucker-ID=%d, User=%d',
+                            $this->id,
+                            $this->getUserId()
+                        )
+                    );
+                    return true;
+                }
+                // Batch fertig: kombiniertes oder einzelnes PDF wurde erzeugt
+                $dokument = $batchResult;
+            }
+
             $data    = $this->loadDocumentData($dokument);
             $driver  = $this->createDriver($settings);
             $options = $this->buildPrintOptions($settings, (int)$anzahl);
 
             $driver->send($data, $options);
+
+            // Temporaere Batch-Output-Datei aufraeumen
+            if (!empty($settings['batch_2up'])
+                && strpos(basename($dokument), 'np_out_') === 0
+                && is_file($dokument)
+            ) {
+                @unlink($dokument);
+            }
 
             $this->logInfo(
                 sprintf(
@@ -449,6 +503,60 @@ class NetworkPrinter extends PrinterBase
 
         // Rohdaten (z.B. ESC/POS-Stream direkt als String uebergeben)
         return $dokument;
+    }
+
+    /**
+     * Verarbeitet ein Label im Batch-Modus.
+     *
+     * @param string $pdfPath
+     * @param array  $settings
+     *
+     * @return string|null Pfad zum finalen PDF, oder null wenn gequeued
+     */
+    private function processBatch(string $pdfPath, array $settings): ?string
+    {
+        $timeout = (int)($settings['batch_timeout'] ?? 30);
+        if ($timeout < 1) {
+            $timeout = 30;
+        }
+
+        $rotation = isset($settings['batch_rotation']) ? (string)$settings['batch_rotation'] : 'auto';
+        if (!in_array($rotation, ['auto', 'none', 'cw', 'ccw'], true)) {
+            $rotation = 'auto';
+        }
+
+        $queueDir = $this->getQueueDir();
+        $userId   = $this->getUserId();
+
+        $batcher = new PdfBatcher($queueDir, (int)$this->id, $userId, $timeout);
+        $batcher->setRotation($rotation);
+
+        return $batcher->process($pdfPath);
+    }
+
+    /**
+     * @return int
+     */
+    private function getUserId(): int
+    {
+        if (isset($this->app->User) && method_exists($this->app->User, 'GetID')) {
+            return (int)$this->app->User->GetID();
+        }
+        return 0;
+    }
+
+    /**
+     * @return string
+     */
+    private function getQueueDir(): string
+    {
+        if (isset($this->app->erp) && method_exists($this->app->erp, 'GetTMP')) {
+            $tmp = (string)$this->app->erp->GetTMP();
+            if ($tmp !== '') {
+                return rtrim($tmp, '/\\');
+            }
+        }
+        return sys_get_temp_dir();
     }
 
     /**
