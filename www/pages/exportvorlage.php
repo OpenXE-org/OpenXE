@@ -683,13 +683,13 @@ ean;';
     if($artikeleigenscahftenJoinen){
       $pivotParts = [];
       for ($i=1;$i<=50;$i++){
-       $pivotParts[] = "MAX((CASE WHEN ae.row_number=$i THEN ae.name ELSE '' END)) AS eigenschaftname$i";
-       $pivotParts[] = "MAX((CASE WHEN ae.row_number=$i THEN ae.wert ELSE '' END)) AS eigenschaftwert$i";
+       $pivotParts[] = "MAX((CASE WHEN ae.row_nummer=$i THEN ae.name ELSE '' END)) AS eigenschaftname$i";
+       $pivotParts[] = "MAX((CASE WHEN ae.row_nummer=$i THEN ae.wert ELSE '' END)) AS eigenschaftwert$i";
       }
 
       $join = 'SELECT ae.artikel AS artikel, '.implode(',',$pivotParts).'
         FROM
-        (SELECT IF(@previd=e.artikel,@rownum := @rownum + 1,@rownum := 1) as row_number, @previd ,@previd:=e.artikel, e.artikel AS artikel, e.name AS name, e.wert AS wert 
+        (SELECT IF(@previd=e.artikel,@rownum := @rownum + 1,@rownum := 1) as row_nummer, @previd ,@previd:=e.artikel, e.artikel AS artikel, e.name AS name, e.wert AS wert 
           FROM 
             (SELECT aew.artikel, ae.name, aew.wert
             FROM artikeleigenschaften ae 
@@ -706,21 +706,21 @@ ean;';
     if($verkaufspreiseJoinen){
       $pivotParts = [];
       for ($i=1;$i<=100;$i++){
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.preis ELSE '' END)) AS verkaufspreisnetto$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.ab_menge ELSE '' END)) AS verkaufspreisabmenge$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.vpe_menge ELSE'' END)) AS verkaufspreisvpemenge$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.waehrung ELSE'' END)) AS verkaufspreiswaehrung$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.kennziffer ELSE'' END)) AS verkaufspreisgruppe$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.kundennummer ELSE'' END)) AS verkaufspreiskundennummer$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.kundenartikelnummer ELSE'' END)) AS verkaufspreisartikelnummerbeikunde$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.gueltig_ab ELSE'' END)) AS verkaufspreisgueltigab$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.gueltig_bis ELSE'' END)) AS verkaufspreisgueltigbis$i";
-        $pivotParts[] = "MAX((CASE WHEN vp.row_number=$i THEN vp.bemerkung ELSE'' END)) AS verkaufspreisinternerkommentar$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.preis ELSE '' END)) AS verkaufspreisnetto$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.ab_menge ELSE '' END)) AS verkaufspreisabmenge$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.vpe_menge ELSE'' END)) AS verkaufspreisvpemenge$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.waehrung ELSE'' END)) AS verkaufspreiswaehrung$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.kennziffer ELSE'' END)) AS verkaufspreisgruppe$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.kundennummer ELSE'' END)) AS verkaufspreiskundennummer$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.kundenartikelnummer ELSE'' END)) AS verkaufspreisartikelnummerbeikunde$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.gueltig_ab ELSE'' END)) AS verkaufspreisgueltigab$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.gueltig_bis ELSE'' END)) AS verkaufspreisgueltigbis$i";
+        $pivotParts[] = "MAX((CASE WHEN vp.row_nummer=$i THEN vp.bemerkung ELSE'' END)) AS verkaufspreisinternerkommentar$i";
       }
 
       $join =  'SELECT vp.artikel, '.implode(',',$pivotParts).'
         FROM(
-        SELECT  IF(@previdvp=vp.artikel,@rownumvp := @rownumvp + 1,@rownumvp := 1) AS row_number,@previdvp:=vp.artikel, vp.*
+        SELECT  IF(@previdvp=vp.artikel,@rownumvp := @rownumvp + 1,@rownumvp := 1) AS row_nummer,@previdvp:=vp.artikel, vp.*
         FROM 
         (SELECT vp.*, a.kundennummer,g.kennziffer
                 FROM verkaufspreise vp 
@@ -740,7 +740,6 @@ ean;';
 
   public function generateExport($xls, $sql, $exporterstezeilenummer, $exportdatenmaskierung, $exporttrennzeichen, $ziel, $returnResultByFunction = false, $maxMemory = 0, $maxTime = 0)
   {
-
     $returnValue = '';
 
     $limit = 10000;

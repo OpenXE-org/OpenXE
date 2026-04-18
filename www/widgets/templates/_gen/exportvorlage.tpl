@@ -107,7 +107,7 @@
 <li>intern_gesperrt;</li>
 <li>intern_gesperrtgrund;</li>
 <li>lagerkorrekturwert;</li>
-<li>aktiv / inaktiv;</li>
+<li>inaktiv;</li>
 <li>juststueckliste;</li>
 <li>autolagerlampe;</li>
 <li>variante_von;</li>
