@@ -2661,19 +2661,19 @@ class Remote
                                     if (!empty($this->app->stringcleaner)) {
                                         $this->app->stringcleaner->XMLArray_clean($ret);
                                     }
-                                } elseif ($isActionAuth) {
+                                } else {
                                     $error = 'Fehler: Importer konnte nicht initialisiert werden';
                                 }
-                            } elseif ($isActionAuth) {
+                            } else {
                                 $error = 'Fehler: Importer konnte nicht initialisiert werden';
                             }
-                        } elseif ($isActionAuth) {
+                        } else {
                             $error = 'Fehler: Importer konnte nicht initialisiert werden';
                         }
-                    } elseif ($isActionAuth) {
+                    } else {
                         $error = 'Fehler: Datei ' . $file . ' existiert nicht';
                     }
-                } elseif ($isActionAuth) {
+                } else {
                     $error = 'Fehler: Schnittstelle nicht aktiv';
                 }
             } else {
@@ -2715,14 +2715,12 @@ class Remote
                         } else {
                             $error = 'Fehler: Funktion nicht implementiert: ' . $method;
                         }
-                    } elseif ($isActionAuth) {
+                    } else {
                         $error = 'Fehler: Importer konnte nicht initialisiert werden';
                     }
-                } elseif ($isActionAuth) {
+                } else {
                     $error = 'Fehler: Dieses Modul ist nicht verf&uuml;gbar';
                 }
-            } elseif ($isActionAuth) {
-                $error = 'Fehler: Kein Modul vorhanden';
             } else {
                 $error = 'Fehler: Kein Modul angegeben';
             }
