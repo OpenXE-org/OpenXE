@@ -2733,7 +2733,7 @@ class Remote
                     'exception' => $exception
                 ]
             );
-            return ($error);
+            return (array('errors' => array($error)));
         }
 
         return $ret;
