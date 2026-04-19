@@ -1473,7 +1473,7 @@ class Shopimport {
                                         $this->app->remote->RemoteDeleteAuftrag($id, $auftrag);
                                     } elseif ($demomodus == '1') {
                                         $i = $gesamtanzahl;
-                                    }                                
+                                    }
                                 } // foreach
                             } // is_array
                         } // for
@@ -1899,10 +1899,40 @@ class Shopimport {
         $this->app->Tpl->Set('PAGE', $tmp->Get());
         $this->app->BuildNavigation = false;
     }
-    
+
     function ShopimportFileUpload() {
-        
+
+        $shopId = $this->app->Secure->GetGET('id');
+        $submit = $this->app->Secure->GetPOST('submit');
+
+        if ($submit == 'addfile') {
+            if(isset($_FILES['upload']) && is_array($_FILES['upload']))
+            {
+              foreach($_FILES['upload']['tmp_name'] as $key => $file)
+              {
+                if($file != "")
+                {
+                    $filename = $_FILES['upload']['name'][$key];
+                    $contents = file_get_contents($_FILES['upload']['tmp_name'][$key]);
+                    $result = $this->app->remote->RemoteCommand($shopId, 'fileupload', ['filename' => $filename, 'contents' => $contents]);
+                    if (is_array($result)) {
+                        if (isset($result['errors'])) {
+                            foreach ($result['errors'] as $error) {
+                                $this->app->Tpl->AddMessage('error','Auftragsimport fehlgeschlagen: '.$error);
+                            }
+                        } else {
+                                $this->app->Tpl->AddMessage('success','Auftragsimport ausgeführt.');
+                        }
+                    }
+                }
+              }
+            }
+        } else {
+            $this->app->Tpl->AddMessage('info','Auftragsimport über Datei, falls vom Shop unterstützt');
+        }
+
+        $this->app->Tpl->Add('TAB1','<form action="" enctype="multipart/form-data" method="POST"><input type="file" name="upload[]" id="file" multiple/><button name="submit" value="addfile" id="addfile" class="ui-button-icon">Hinzufügen</button></form>');
+        $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
     }
-    
 }
 
