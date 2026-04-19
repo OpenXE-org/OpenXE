@@ -53,6 +53,7 @@ class Shopimport {
         $this->app->ActionHandler("list", "ShopimportList");
         $this->app->ActionHandler("alle", "ShopimportAlle");
         $this->app->ActionHandler("import", "ShopimportImport");
+        $this->app->ActionHandler("fileupload", "ShopimportFileUpload");
         $this->app->ActionHandler("view", "ShopimportView");
         $this->app->ActionHandler("einzelimport", "ShopimportEinzelimport");
         $this->app->ActionHandler("navigation", "ShopimportNavigation");
@@ -330,7 +331,7 @@ class Shopimport {
             $table = new EasyTable($this->app);
             $table->Query("SELECT ae.bezeichnung,p.abkuerzung as Projekt,
           ae.id FROM shopexport ae LEFT JOIN projekt p ON p.id=ae.projekt WHERE ae.aktiv='1'");
-            $table->DisplayNew('INHALT', "<a href=\"index.php?module=shopimport&action=import&id=%value%\"><img src=\"./themes/new/images/download.svg\" title=\"Importieren\"></a>&nbsp;<a href=\"index.php?module=shopimport&action=view&id=%value%\"><img src=\"./themes/new/images/lupe.svg\" title=\"Ansicht\"></a>&nbsp;<a href=\"index.php?module=onlineshops&action=edit&id=%value%\"><img src=\"./themes/new/images/edit.svg\" title=\"Bearbeiten\"></a>&nbsp;<!--<a href=\"index.php?module=shopimport&action=archiv&id=%value%\">Archiv</a>-->");
+            $table->DisplayNew('INHALT', "<a href=\"index.php?module=shopimport&action=fileupload&id=%value%\"><img src=\"./themes/new/images/upload.svg\" title=\"Datei hochladen\"></a>&nbsp;<a href=\"index.php?module=shopimport&action=import&id=%value%\"><img src=\"./themes/new/images/download.svg\" title=\"Importieren\"></a>&nbsp;<a href=\"index.php?module=shopimport&action=view&id=%value%\"><img src=\"./themes/new/images/lupe.svg\" title=\"Ansicht\"></a>&nbsp;<a href=\"index.php?module=onlineshops&action=edit&id=%value%\"><img src=\"./themes/new/images/edit.svg\" title=\"Bearbeiten\"></a>&nbsp;<!--<a href=\"index.php?module=shopimport&action=archiv&id=%value%\">Archiv</a>-->");
             $this->app->Tpl->Parse('TAB1', 'rahmen.tpl');
         }
         $this->app->Tpl->Set('INHALT', '');
@@ -1898,5 +1899,10 @@ class Shopimport {
         $this->app->Tpl->Set('PAGE', $tmp->Get());
         $this->app->BuildNavigation = false;
     }
+    
+    function ShopimportFileUpload() {
+        
+    }
+    
 }
 
