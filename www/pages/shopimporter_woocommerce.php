@@ -1530,6 +1530,16 @@ class WCClient
   {
     return $this->http->request($endpoint, 'OPTIONS');
   }
+
+  /**
+   * Get the WCResponse from the most recent HTTP request.
+   *
+   * @return WCResponse|null
+   */
+  public function getLastResponse()
+  {
+    return $this->http->getResponse();
+  }
 }
 
 class WCResponse
