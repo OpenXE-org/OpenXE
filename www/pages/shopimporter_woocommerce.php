@@ -69,8 +69,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   /** @var bool $lastImportTimestampIsFallback True when lastImportTimestamp was computed as 30-day fallback */
   public $lastImportTimestampIsFallback = false;
 
-  /** @var int|null $lastImportOrderId WooCommerce order ID of the last successfully imported order */
-  public $lastImportOrderId = null;
+  /** @var int[] $lastImportOrderIds WooCommerce order IDs within the current timestamp bucket */
+  public $lastImportOrderIds = [];
 
   public function __construct($app, $intern = false)
   {
@@ -99,14 +99,20 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
-    $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
-    $queryArgs = [
-      'status'   => $configuredStatuses,
-      'after'    => $afterTs,
-      'per_page' => 1,
-    ];
-    if (!empty($this->lastImportOrderId)) {
-      $queryArgs['exclude'] = [(int) $this->lastImportOrderId];
+    if (!empty($this->lastImportOrderIds)) {
+      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $afterTs,
+        'per_page' => 1,
+        'exclude'  => array_values($this->lastImportOrderIds),
+      ];
+    } else {
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $this->lastImportTimestamp,
+        'per_page' => 1,
+      ];
     }
 
     try {
@@ -151,17 +157,26 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
-    $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
-    $queryArgs = [
-      'status'   => $configuredStatuses,
-      'after'    => $afterTs,
-      'per_page' => 1,
-      'page'     => 1,
-      'orderby'  => 'date',
-      'order'    => 'asc',
-    ];
-    if (!empty($this->lastImportOrderId)) {
-      $queryArgs['exclude'] = [(int) $this->lastImportOrderId];
+    if (!empty($this->lastImportOrderIds)) {
+      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $afterTs,
+        'per_page' => 1,
+        'page'     => 1,
+        'orderby'  => 'date',
+        'order'    => 'asc',
+        'exclude'  => array_values($this->lastImportOrderIds),
+      ];
+    } else {
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $this->lastImportTimestamp,
+        'per_page' => 1,
+        'page'     => 1,
+        'orderby'  => 'date',
+        'order'    => 'asc',
+      ];
     }
 
     try {
@@ -941,9 +956,10 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $this->lastImportTimestampIsFallback = true;
     }
 
-    $this->lastImportOrderId = isset($preferences['felder']['letzter_import_order_id'])
-      ? (int) $preferences['felder']['letzter_import_order_id']
-      : null;
+    $storedIds = $preferences['felder']['letzter_import_order_ids'] ?? null;
+    $this->lastImportOrderIds = is_array($storedIds)
+      ? array_values(array_filter(array_map('intval', $storedIds)))
+      : [];
 
   }
 
@@ -960,11 +976,17 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   }
 
   /**
-   * Persists the tuple cursor (timestamp + order id) to shopexport.einstellungen_json.
-   * Does a read-modify-write to preserve all other fields.
+   * Persists the tuple cursor (timestamp + accumulated order-id bucket) to
+   * shopexport.einstellungen_json. Does a read-modify-write to preserve all
+   * other fields.
+   *
+   * Bucket logic:
+   *  - $orderId === null  → migration path; ids list is cleared.
+   *  - same timestamp as stored → append $orderId to the ids list.
+   *  - new timestamp → reset ids list to [$orderId].
    *
    * @param string   $isoUtcDate ISO-8601 UTC timestamp, e.g. '2026-04-20T12:34:56'
-   * @param int|null $orderId    WooCommerce order ID, or null to clear
+   * @param int|null $orderId    WooCommerce order ID, or null (migration path)
    * @return void
    */
   public function persistLastImportCursor($isoUtcDate, $orderId = null)
@@ -982,24 +1004,43 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         "SELECT einstellungen_json FROM shopexport WHERE id = '$shopid' LIMIT 1"
       );
     }
-    $einstellungen = [];
+    $current = [];
     if (!empty($einstellungen_json)) {
-      $einstellungen = json_decode($einstellungen_json, true) ?: [];
+      $current = json_decode($einstellungen_json, true) ?: [];
     }
-    if (!isset($einstellungen['felder']) || !is_array($einstellungen['felder'])) {
-      $einstellungen['felder'] = [];
+    if (!isset($current['felder']) || !is_array($current['felder'])) {
+      $current['felder'] = [];
     }
-    $einstellungen['felder']['letzter_import_timestamp'] = $isoUtcDate;
-    if ($orderId !== null) {
-      $einstellungen['felder']['letzter_import_order_id'] = (int) $orderId;
+
+    $previousTs  = $current['felder']['letzter_import_timestamp'] ?? null;
+    $previousIds = $current['felder']['letzter_import_order_ids'] ?? [];
+    if (!is_array($previousIds)) {
+      $previousIds = [];
+    }
+
+    // Determine ids list for the new state.
+    if ($orderId === null) {
+      // Migration path — timestamp without a concrete order-id anchor.
+      $newIds = [];
+    } elseif ($previousTs !== null && $isoUtcDate === $previousTs) {
+      // Same timestamp bucket — append id if not already present.
+      $newIds = $previousIds;
+      if (!in_array((int) $orderId, $newIds, true)) {
+        $newIds[] = (int) $orderId;
+      }
     } else {
-      unset($einstellungen['felder']['letzter_import_order_id']);
+      // New timestamp bucket — reset list to only this id.
+      $newIds = [(int) $orderId];
     }
-    $jsonEncoded = $this->app->DB->real_escape_string(json_encode($einstellungen));
+
+    $current['felder']['letzter_import_timestamp']  = $isoUtcDate;
+    $current['felder']['letzter_import_order_ids']  = $newIds;
+
+    $jsonEncoded = $this->app->DB->real_escape_string(json_encode($current));
     if (!empty($this->app->DatabaseService)) {
       $this->app->DatabaseService->execute(
         "UPDATE shopexport SET einstellungen_json = :json WHERE id = :id",
-        ['json' => json_encode($einstellungen), 'id' => $shopid]
+        ['json' => json_encode($current), 'id' => $shopid]
       );
     } else {
       $this->app->DB->Update(
@@ -1007,7 +1048,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       );
     }
     $this->lastImportTimestamp = $isoUtcDate;
-    $this->lastImportOrderId = $orderId !== null ? (int) $orderId : null;
+    $this->lastImportOrderIds  = $newIds;
   }
 
   /**
