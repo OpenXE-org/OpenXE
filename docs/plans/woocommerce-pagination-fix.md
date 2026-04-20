@@ -37,11 +37,10 @@ und verlustfrei, ohne neue Plugin-Abhängigkeiten und ohne Wechsel der API-Versi
 
 | Parameter | Wert | Begruendung |
 |---|---|---|
-| `MAX_PAGES_PER_RUN` | **5** | Max. 500 Bestellungen pro Cron-Lauf. Bei groesseren Rueckstaenden arbeiten nachfolgende Laeufe die Restmenge ab. Verhindert Cron-Timeouts. |
-| `ORDERS_PER_PAGE` | **100** | WC-v3-Default-Maximum. Minimiert Roundtrips. |
 | Erstlauf-Fallback | **30 Tage** | Sinnvoller Mittelweg: holt historische Bestellungen, aber nicht unbegrenzt. UI-Override in Folge-PR moeglich. |
 | Persistenz-Feld | `shopexport.einstellungen_json` → `felder.letzter_import_timestamp` | Bestehende Struktur nutzen, keine DB-Migration. |
 | Timestamp-Format | ISO-8601 `Y-m-d\TH:i:s` (UTC) | Direkt an `after=` durchreichbar. |
+| Caller-Cap (pre-existing) | `shopexport.maxmanuell`, default 100 | Der Batch-Cap liegt beim shopimport.php-Caller, nicht im Importer. |
 
 ## 4. Datei- und Funktions-Landkarte
 
@@ -50,7 +49,7 @@ Zielmodul: `www/pages/shopimporter_woocommerce.php`
 | Funktion | Zeilen | Betroffen? | Aenderung |
 |---|---|---|---|
 | `ImportGetAuftraegeAnzahl` | ~80–135 | ja | `include`-Hack raus, `after`-Filter rein, nur noch Count via `X-WP-Total` |
-| `ImportGetAuftrag` | ~138–220 | ja | Seiten-Schleife, `after`-Filter, Timestamp-Update am Ende |
+| `ImportGetAuftrag` | ~121–185 | ja | Single-Order-Query mit after-Filter; Caller-Loop in shopimport.php iteriert |
 | `parseOrder` | ~222–305 | nein | unveraendert (liefert weiterhin pro Order) |
 | `CatchRemoteCommand('data')` | mehrfach | mittelbar | stellt `letzter_import_timestamp` aus `einstellungen_json` bereit |
 | `getKonfig` | ~802–837 | nein | nicht anfassen (separates Issue #224) |
@@ -139,58 +138,53 @@ SELECT einstellungen_json FROM shopexport WHERE id = <shopid>
 
 ### Schritt 5 — Refactor `ImportGetAuftrag` (Import-Funktion)
 
-**Alt (Zeile 138–220):**
-- Query: `orders?status=…&include=<800 IDs>&per_page=20&orderby=id&order=asc`.
-- Iteriert einmalig ueber Response, ruft `parseOrder` pro Eintrag.
+**Alt:** Query mit `include`-Liste, Iteration ueber bis zu 20 Orders, kein Cursor.
 
-**Neu — Pseudocode-Anker (keine OpenXE-Implementierung, nur Logik):**
+**Neu — Single-Order-Pseudocode:**
 
 ```
-const MAX_PAGES_PER_RUN = 5
-const ORDERS_PER_PAGE   = 100
+response = client.get('orders', {
+    status[]:  configuredStatuses,
+    after:     this.lastImportTimestamp,
+    per_page:  1,
+    page:      1,
+    orderby:   'date',
+    order:     'asc',
+})
 
-lastTs   = $this->lastImportTimestamp
-orders   = []
-page     = 1
+if response is empty:
+    return []
 
-while page <= MAX_PAGES_PER_RUN:
-    response = client.get('orders', {
-        status[]:  $configuredStatuses,
-        after:     lastTs,
-        per_page:  ORDERS_PER_PAGE,
-        page:      page,
-        orderby:   'date',
-        order:     'asc',
-    })
+wcOrder = response[0]
+order   = parseOrder(wcOrder)
 
-    if response is empty:
-        break
+# Cursor auf diese Order setzen, damit naechste Caller-Iteration
+# die naechste Order holt.
+this.persistLastImportTimestamp(wcOrder.date_created_gmt)
 
-    for order in response:
-        parsed = parseOrder(order)
-        orders.push(parsed)
-        # Progress-Timestamp: nach jeder Order fortschreiben
-        this.persistLastImportTimestamp(order.date_created_gmt)
-
-    totalPages = (int) response.getHeader('x-wp-totalpages')
-    if page >= totalPages:
-        break
-
-    page++
-
-return orders
+return [{ id: order.auftrag, sessionid: '', logdatei: '', warenkorb: ... }]
 ```
 
 **Wichtig:**
 - `orderby=date` + `order=asc` garantiert, dass die **aelteste** neue Order zuerst kommt.
   Dadurch kann der Progress-Timestamp monoton wachsen.
 - `date_created_gmt` als Referenz (nicht `date_created` — Zeitzonen-Fallen vermeiden).
-- `MAX_PAGES_PER_RUN` ist eine Konstante am Klassenanfang, nicht per-Config (kann in
-  Folge-PR konfigurierbar werden).
+- Volume-Handling liegt beim Caller (shopimport.php), nicht im Importer.
 
 **Akzeptanzkriterium:**
-- Bei 250 neuen Orders ueber einen Lauf: alle 250 importiert.
-- Bei 750 neuen Orders: Lauf 1 importiert 500, Lauf 2 importiert 250.
+- Pro Call: exakt 1 Order zurueck (oder leer).
+- Bei >100 neuen Orders: Caller-Schleife (maxmanuell-gekappt) iteriert bis Ende.
+
+### Schritt 5a — Caller-Kontrakt
+
+Der Caller in shopimport.php:1304-1306 ruft pro Order-Import-Iteration:
+- `ImportGetAuftraegeAnzahl()` einmal fuer Count (mit maxmanuell-Cap)
+- `ImportGetAuftrag()` in for-Schleife, verarbeitet `$result[0]`
+
+Der Importer muss diesen Kontrakt einhalten: pro Call max. 1 Order.
+Der after-Filter sorgt dafuer, dass jede Iteration die naechste Order
+holt. Ein Crash zwischen `RemoteGetAuftrag()` und `shopimport_auftraege`-
+Insert verliert max. diese eine Order.
 
 ### Schritt 6 — Transitions-Kompatibilitaet `ab_nummer`
 
@@ -260,11 +254,11 @@ Manuelle Integrationstests mit seeded Test-Orders.
 | T2 | Frischinstall, 10 Orders <30 Tage alt | `letzter_import_timestamp` leer | Lauf starten | 10 Orders importiert, Timestamp = neueste Order |
 | T3 | Frischinstall, 10 Orders >30 Tage alt | `letzter_import_timestamp` leer | Lauf starten | 0 Orders (Fallback-Schwelle), Timestamp leer |
 | T4 | Standardlauf, 30 neue Orders | Timestamp gesetzt | Lauf starten | 30 Orders, Timestamp fortgeschrieben |
-| T5 | Spike, 150 neue Orders | Timestamp gesetzt | Lauf starten | 150 Orders (1 Lauf, 2 Seiten), Timestamp fortgeschrieben |
-| T6 | Rueckstand, 750 neue Orders | Timestamp gesetzt | Lauf 1 starten | 500 Orders importiert, `MAX_PAGES_PER_RUN`-Cap greift |
-| T6b | Rueckstand Teil 2 | nach T6 | Lauf 2 starten | restliche 250 Orders, Timestamp final |
+| T5 | Spike, 150 neue Orders | Timestamp gesetzt | Lauf starten | 150 Orders, Caller-Schleife durch maxmanuell auf 100 gekappt; Folgelauf holt Rest |
+| T6 | Rueckstand, >100 neue Orders | Timestamp gesetzt | Lauf 1 starten | 100 Orders (maxmanuell-Cap), Cursor fortgeschrieben |
+| T6b | Rueckstand Teil 2 | nach T6 | Lauf 2 starten | restliche Orders bis maxmanuell-Cap, Timestamp final |
 | T7 | Transition, Shop mit `ab_nummer`=12345, Timestamp leer | `ab_nummer=12345` | Lauf starten | `ab_nummer` in Timestamp uebersetzt, keine Duplikate |
-| T8 | Abbruch mitten im Lauf | 50 von 100 verarbeitet, dann Exception | neuer Lauf | wieder bei Order 51 starten, nicht doppelt importiert |
+| T8 | Abbruch mitten im Lauf | Exception nach Fetch, vor INSERT | neuer Lauf | bei Abbruch zwischen Fetch und Insert max. 1 Order verloren; ab naechster Order fortgesetzt |
 | T9 | Idempotenz | T4 erfolgreich gelaufen | T4 nochmal starten | 0 neue Orders, keine Duplikate |
 | T10 | URL-Laenge (Regression) | 800 alte Orders existieren | Lauf starten | URL bleibt kurz (<2 KB), keine `include`-Liste mehr |
 
@@ -304,6 +298,7 @@ Manuelle Integrationstests mit seeded Test-Orders.
 | `orderby=date` Ordering nicht deterministisch bei gleichem Timestamp | niedrig | niedrig | Zusaetzlich `orderby=date&order=asc` und WC liefert stabile Sekundaersortierung nach ID |
 | Andere Shopimporter erben Basisklasse-Struktur | niedrig | niedrig | Nur `shopimporter_woocommerce.php` anfassen, `ShopimporterBase` nicht anruehren |
 | URL-Laengenlimits der WAF beim `status[]`-Array | sehr niedrig | niedrig | Typisch 2-3 Status-Werte, URL bleibt kurz |
+| Caller-Kontrakt-Abweichung (1 vs. n Orders) | niedrig | hoch | Per Design Single-Order-Return; Caller-Loop fuer Volume-Handling |
 
 ## 9. Definition of Done
 
