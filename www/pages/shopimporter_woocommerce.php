@@ -674,16 +674,24 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     // Simple products
     foreach (array_chunk($simpleItems, 100) as $chunk) {
-      $response = $this->client->post('products/batch', ['update' => $chunk]);
-      $anzahl += $this->processBatchResponse($response, 'products/batch');
+      try {
+        $response = $this->client->post('products/batch', ['update' => $chunk]);
+        $anzahl += $this->processBatchResponse($response, 'products/batch');
+      } catch (Exception $e) {
+        $this->logger->error('WooCommerce Batch-Request fehlgeschlagen fuer products/batch: ' . $e->getMessage());
+      }
     }
 
     // Variations (one batch endpoint per parent product)
     foreach ($variationItems as $parentId => $items) {
       foreach (array_chunk($items, 100) as $chunk) {
         $endpoint = 'products/' . $parentId . '/variations/batch';
-        $response = $this->client->post($endpoint, ['update' => $chunk]);
-        $anzahl += $this->processBatchResponse($response, $endpoint);
+        try {
+          $response = $this->client->post($endpoint, ['update' => $chunk]);
+          $anzahl += $this->processBatchResponse($response, $endpoint);
+        } catch (Exception $e) {
+          $this->logger->error('WooCommerce Batch-Request fehlgeschlagen fuer ' . $endpoint . ': ' . $e->getMessage());
+        }
       }
     }
 
@@ -718,7 +726,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
           "WooCommerce Batch-Fehler ($endpoint) fuer ID {$item->id}: [$code] $message"
         );
       } else {
-        $this->logger->error(
+        $this->logger->info(
           "WooCommerce Lagerzahlenübertragung (Batch) fuer Artikel-ID {$item->id} erfolgreich",
           ['endpoint' => $endpoint]
         );
