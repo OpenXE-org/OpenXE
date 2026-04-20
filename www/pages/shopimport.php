@@ -456,43 +456,21 @@ class Shopimport {
 
             if ($orderCount > 0) {
                 if ($allStati) {
-                    $result = $this->app->remote->RemoteCommand($shopId, 'getauftrag', ['nummer' => $shopOrderNumber]);
+                    $carts = $this->app->remote->RemoteCommand($shopId, 'getauftrag', ['nummer' => $shopOrderNumber]);
                 } else {
-                    $result = $this->app->remote->RemoteGetAuftragNummer($shopId, $shopOrderNumber);
+                    $carts = $this->app->remote->RemoteGetAuftragNummer($shopId, $shopOrderNumber);
                 }
 
-                if (is_array($result)) {
-                    $result = reset($result);
-                    $shopExtId = $result['id'];
-                    $sessionid = $result['sessionid'];
-                    $jsonEncoded = 0;
-                    if (empty(!$result['warenkorbjson'])) {
-                        $jsonEncoded = 1;
-                        $warenkorb = $result['warenkorbjson'];
-                    } else {
-                        $warenkorb = $result['warenkorb'];
-                    }
-                    $logdatei = $result['logdatei'];
-                    $username = !empty($this->app->User) ? $this->app->User->GetName() : 'Cronjob';
-                    $this->app->DB->Insert(
-                            sprintf(
-                                    "INSERT INTO shopimport_auftraege (extid,sessionid,warenkorb,imported,projekt,bearbeiter,logdatei, jsonencoded, shopid)
-                  VALUES('%s','%s','%s',0,%d, '%s','%s', %d, %d)",
-                                    $this->app->DB->real_escape_string($shopExtId),
-                                    $this->app->DB->real_escape_string($sessionid),
-                                    $this->app->DB->real_escape_string($warenkorb),
-                                    (int) $projectId,
-                                    $this->app->DB->real_escape_string($username),
-                                    $this->app->DB->real_escape_string($logdatei),
-                                    $jsonEncoded,
-                                    (int) $shopId
-                            )
-                    );
-                    $insid = $this->app->DB->GetInsertID();
+                if (is_array($carts)) {
+                    $cart = $carts[0];
+                    $shopExtId = $cart['id'];
+
+                    $result = $this->create_shopimport_cart_entry($cart);
+
                     if ($changeShopOrderStatus && (String) $shopExtId !== '') {
                         $this->app->remote->RemoteDeleteAuftrag($shopId, $shopExtId);
                     }
-                    return ['status' => 1, 'id' => $insid, 'info' => 'Auftrag wurde abgeholt.'];
+                    return($result);
                 }
             }
             return ['status' => 0, 'error' => 'Auftrag wurde nicht gefunden!'];
@@ -1900,6 +1878,18 @@ class Shopimport {
         $this->app->BuildNavigation = false;
     }
 
+    /*
+    * Create Order import from file or files
+    * Expects shop interface to produce the same output as ImportGetAuftrag()
+    * return $fetchedOrders[] = [
+                'id' => $cart['auftrag'],
+                'sessionid' => '',
+                'logdatei' => '',
+                'warenkorb' => base64_encode(serialize($cart)),
+                'warenkorbjson' => base64_encode(json_encode($cart)),
+            ];
+    */
+
     function ShopimportFileUpload() {
 
         $shopId = $this->app->Secure->GetGET('id');
@@ -1921,8 +1911,13 @@ class Shopimport {
                                 $this->app->Tpl->AddMessage('error','Auftragsimport fehlgeschlagen: '.$error);
                             }
                         } else {
-                                $this->app->Tpl->AddMessage('success','Auftragsimport ausgeführt.');
+                            foreach ($result as $cart) {
+                                $this->create_shopimport_cart_entry($cart);
+                            }
+                            $this->app->Tpl->AddMessage('info','Dateiimport ausgeführt.<a href="index.php?module=shopimport&action=view&id='.$shopId.'"><button type="submit" class="ui-button-icon">Shopimport Zwischentabelle</button></a>',html: true);
                         }
+                    } else {
+                        $this->app->Tpl->AddMessage('error','Dateiimport fehlgeschlagen: '.print_r($result));
                     }
                 }
               }
@@ -1934,5 +1929,40 @@ class Shopimport {
         $this->app->Tpl->Add('TAB1','<form action="" enctype="multipart/form-data" method="POST"><input type="file" name="upload[]" id="file" multiple/><button name="submit" value="addfile" id="addfile" class="ui-button-icon">Hinzufügen</button></form>');
         $this->app->Tpl->Parse('PAGE', 'tabview.tpl');
     }
+
+    /*
+    * Processes a single cart dataset and creates a shopimport_auftraege to be imported later into erpapi
+    */
+
+    function create_shopimport_cart_entry(array $cart) {
+        $shopExtId = $cart['id'];
+        $sessionid = $cart['sessionid'];
+        $jsonEncoded = 0;
+        if (empty(!$cart['warenkorbjson'])) {
+            $jsonEncoded = 1;
+            $warenkorb = $cart['warenkorbjson'];
+        } else {
+            $warenkorb = $cart['warenkorb'];
+        }
+        $logdatei = $cart['logdatei'];
+        $username = !empty($this->app->User) ? $this->app->User->GetName() : 'Cronjob';
+        $this->app->DB->Insert(
+                sprintf(
+                        "INSERT INTO shopimport_auftraege (extid,sessionid,warenkorb,imported,projekt,bearbeiter,logdatei, jsonencoded, shopid)
+      VALUES('%s','%s','%s',0,%d, '%s','%s', %d, %d)",
+                        $this->app->DB->real_escape_string($shopExtId),
+                        $this->app->DB->real_escape_string($sessionid),
+                        $this->app->DB->real_escape_string($warenkorb),
+                        (int) $projectId,
+                        $this->app->DB->real_escape_string($username),
+                        $this->app->DB->real_escape_string($logdatei),
+                        $jsonEncoded,
+                        (int) $shopId
+                )
+        );
+        $insid = $this->app->DB->GetInsertID();
+        return ['status' => 1, 'id' => $insid, 'info' => 'Auftrag wurde f&uuml;r Import erfasst.'];
+    }
+
 }
 
