@@ -41,7 +41,7 @@ und verlustfrei, ohne neue Plugin-Abhängigkeiten und ohne Wechsel der API-Versi
 | Persistenz-Feld | `shopexport.einstellungen_json` → `felder.letzter_import_timestamp` | Bestehende Struktur nutzen, keine DB-Migration. |
 | Timestamp-Format | ISO-8601 `Y-m-d\TH:i:s` (UTC) | Direkt an `after=` durchreichbar. |
 | Caller-Cap (pre-existing) | `shopexport.maxmanuell`, default 100 | Der Batch-Cap liegt beim shopimport.php-Caller, nicht im Importer. |
-| Cursor-Format | Tupel `(letzter_import_timestamp, letzter_import_order_id)` | Loest Same-Second-Kollisionen via after=ts-1 + exclude=[id]. |
+| Cursor-Format | Tupel `(letzter_import_timestamp, letzter_import_order_ids: [int])` | IDs sammeln den aktuellen Sekunden-Bucket; -1s-Verschiebung greift nur mit mindestens einer ID. |
 
 ## 4. Datei- und Funktions-Landkarte
 
@@ -144,15 +144,29 @@ SELECT einstellungen_json FROM shopexport WHERE id = <shopid>
 **Neu — Single-Order-Pseudocode:**
 
 ```
-afterTs = ts-1s  (falls ts gesetzt)
-query   = orders?after=<afterTs>&per_page=1&orderby=date&order=asc
-          (+ exclude=[last_id] wenn last_id bekannt)
+# Fenster aufbauen
+if last_order_ids is not empty:
+    after = last_ts - 1s
+    exclude = last_order_ids
+else:
+    after = last_ts
+    exclude = (nicht gesetzt)
+
+# Fetch
+order = client.get(orders, after=after, exclude=exclude, per_page=1, orderby=date, order=asc)[0]
 
 if response is empty:
     return []
 
 wcOrder = response[0]
 order   = parseOrder(wcOrder)
+
+# Persist
+if order.date_created_gmt == last_ts:
+    last_order_ids = last_order_ids + [order.id]
+else:
+    last_ts         = order.date_created_gmt
+    last_order_ids  = [order.id]
 
 persistLastImportCursor(order.date_created_gmt, order.id)
 
@@ -303,7 +317,8 @@ Manuelle Integrationstests mit seeded Test-Orders.
 | Andere Shopimporter erben Basisklasse-Struktur | niedrig | niedrig | Nur `shopimporter_woocommerce.php` anfassen, `ShopimporterBase` nicht anruehren |
 | URL-Laengenlimits der WAF beim `status[]`-Array | sehr niedrig | niedrig | Typisch 2-3 Status-Werte, URL bleibt kurz |
 | Caller-Kontrakt-Abweichung (1 vs. n Orders) | niedrig | hoch | Per Design Single-Order-Return; Caller-Loop fuer Volume-Handling |
-| Timestamp-Kollision bei identischem date_created_gmt | niedrig | mittel | Adressiert durch Tupel-Cursor (ts, id) + exclude-Parameter |
+| Timestamp-Kollision bei identischem date_created_gmt | niedrig | mittel | Adressiert durch Tupel-Cursor + Bucket-Akkumulation (letzter_import_order_ids sammelt alle IDs des Buckets) |
+| Unbounded exclude-Liste bei grossem Bucket | niedrig | niedrig | In der Praxis kleine Listen; URL < 2 KB bei ~100 IDs |
 
 ## 9. Definition of Done
 
