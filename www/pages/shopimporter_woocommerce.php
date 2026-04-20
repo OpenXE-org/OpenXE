@@ -69,6 +69,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   /** @var bool $lastImportTimestampIsFallback True when lastImportTimestamp was computed as 30-day fallback */
   public $lastImportTimestampIsFallback = false;
 
+  /** @var int|null $lastImportOrderId WooCommerce order ID of the last successfully imported order */
+  public $lastImportOrderId = null;
+
   public function __construct($app, $intern = false)
   {
     $this->app = $app;
@@ -96,12 +99,18 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
+    $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+    $queryArgs = [
+      'status'   => $configuredStatuses,
+      'after'    => $afterTs,
+      'per_page' => 1,
+    ];
+    if (!empty($this->lastImportOrderId)) {
+      $queryArgs['exclude'] = [(int) $this->lastImportOrderId];
+    }
+
     try {
-      $this->client->get('orders', [
-        'status'   => $configuredStatuses,
-        'after'    => $this->lastImportTimestamp,
-        'per_page' => 1,
-      ]);
+      $this->client->get('orders', $queryArgs);
     } catch (Exception $e) {
       $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: API request failed: ' . $e->getMessage());
       return 0;
@@ -142,15 +151,21 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
+    $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+    $queryArgs = [
+      'status'   => $configuredStatuses,
+      'after'    => $afterTs,
+      'per_page' => 1,
+      'page'     => 1,
+      'orderby'  => 'date',
+      'order'    => 'asc',
+    ];
+    if (!empty($this->lastImportOrderId)) {
+      $queryArgs['exclude'] = [(int) $this->lastImportOrderId];
+    }
+
     try {
-      $pageOrders = $this->client->get('orders', [
-        'status'   => $configuredStatuses,
-        'after'    => $this->lastImportTimestamp,
-        'per_page' => 1,
-        'page'     => 1,
-        'orderby'  => 'date',
-        'order'    => 'asc',
-      ]);
+      $pageOrders = $this->client->get('orders', $queryArgs);
     } catch (Exception $e) {
       $this->logger->warning('WooCommerce ImportGetAuftrag: ' . $e->getMessage());
       return null;
@@ -167,10 +182,11 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $order = $this->parseOrder($wcOrder);
 
-    // Persist progress for this order so the next Caller-iteration gets the
-    // next order via the after-filter.
-    if (!empty($wcOrder->date_created_gmt)) {
-      $this->persistLastImportTimestamp((string) $wcOrder->date_created_gmt);
+    // Persist tuple cursor so the next Caller-iteration advances past this order.
+    // Using ts-1s in the query means same-second peers are still fetched, while
+    // the exclude=[id] parameter prevents re-delivering this exact order.
+    if (!empty($wcOrder->date_created_gmt) && !empty($wcOrder->id)) {
+      $this->persistLastImportCursor((string) $wcOrder->date_created_gmt, (int) $wcOrder->id);
     }
 
     return [[
@@ -925,16 +941,33 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $this->lastImportTimestampIsFallback = true;
     }
 
+    $this->lastImportOrderId = isset($preferences['felder']['letzter_import_order_id'])
+      ? (int) $preferences['felder']['letzter_import_order_id']
+      : null;
+
   }
 
   /**
-   * Persists the last successful import timestamp to shopexport.einstellungen_json.
-   * Does a read-modify-write to preserve all other fields.
+   * Backwards-compatible wrapper: persists timestamp only (order id cleared).
+   * Use persistLastImportCursor() when both timestamp and order id are available.
    *
    * @param string $isoUtcDate ISO-8601 UTC timestamp, e.g. '2026-04-20T12:34:56'
    * @return void
    */
   public function persistLastImportTimestamp($isoUtcDate)
+  {
+    $this->persistLastImportCursor($isoUtcDate, null);
+  }
+
+  /**
+   * Persists the tuple cursor (timestamp + order id) to shopexport.einstellungen_json.
+   * Does a read-modify-write to preserve all other fields.
+   *
+   * @param string   $isoUtcDate ISO-8601 UTC timestamp, e.g. '2026-04-20T12:34:56'
+   * @param int|null $orderId    WooCommerce order ID, or null to clear
+   * @return void
+   */
+  public function persistLastImportCursor($isoUtcDate, $orderId = null)
   {
     $shopid = (int)$this->shopid;
     // Prefer DatabaseService when available (web context), fall back to DB
@@ -957,6 +990,11 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $einstellungen['felder'] = [];
     }
     $einstellungen['felder']['letzter_import_timestamp'] = $isoUtcDate;
+    if ($orderId !== null) {
+      $einstellungen['felder']['letzter_import_order_id'] = (int) $orderId;
+    } else {
+      unset($einstellungen['felder']['letzter_import_order_id']);
+    }
     $jsonEncoded = $this->app->DB->real_escape_string(json_encode($einstellungen));
     if (!empty($this->app->DatabaseService)) {
       $this->app->DatabaseService->execute(
@@ -969,6 +1007,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       );
     }
     $this->lastImportTimestamp = $isoUtcDate;
+    $this->lastImportOrderId = $orderId !== null ? (int) $orderId : null;
   }
 
   /**
