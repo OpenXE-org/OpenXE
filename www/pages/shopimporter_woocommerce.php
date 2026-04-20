@@ -92,6 +92,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    */
   public function ImportGetAuftraegeAnzahl()
   {
+    $this->migrateAbNummerIfNeeded();
+
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
     try {
@@ -136,13 +138,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   {
     $data = $this->CatchRemoteCommand('data');
 
-    // Transition: ab_nummer -> timestamp once, if we still have the fallback.
-    if ($this->lastImportTimestampIsFallback && !empty($data['ab_nummer'])) {
-      $resolved = $this->resolveAbNummerToTimestamp((int) $data['ab_nummer']);
-      if ($resolved !== null) {
-        $this->persistLastImportTimestamp($resolved);
-      }
-    }
+    $this->migrateAbNummerIfNeeded();
 
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
@@ -212,6 +208,27 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       return null;
     }
     return gmdate('Y-m-d\TH:i:s', $ts - 1);
+  }
+
+  /**
+   * Runs the one-shot legacy ab_nummer -> timestamp migration when the stored
+   * cursor is still the 30-day fallback and the caller passes an ab_nummer.
+   * Idempotent: once migrated, lastImportTimestampIsFallback flips to false
+   * and subsequent calls become no-ops.
+   */
+  private function migrateAbNummerIfNeeded()
+  {
+    if (!$this->lastImportTimestampIsFallback) {
+      return;
+    }
+    $data = $this->CatchRemoteCommand('data');
+    if (empty($data['ab_nummer'])) {
+      return;
+    }
+    $resolved = $this->resolveAbNummerToTimestamp((int) $data['ab_nummer']);
+    if ($resolved !== null) {
+      $this->persistLastImportTimestamp($resolved);
+    }
   }
 
   // This function searches the wcOrder for the specified WC Meta key
