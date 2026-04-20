@@ -135,7 +135,6 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   public function ImportGetAuftrag()
   {
     $data = $this->CatchRemoteCommand('data');
-    $this->getKonfig($data['shopid'] ?? null, $data);
 
     // Transition: ab_nummer -> timestamp once, if we still have the fallback.
     if ($this->lastImportTimestampIsFallback && !empty($data['ab_nummer'])) {
