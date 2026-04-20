@@ -942,10 +942,19 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    */
   public function persistLastImportTimestamp($isoUtcDate)
   {
-    $einstellungen_json = $this->app->DatabaseService->selectValue(
-      "SELECT einstellungen_json FROM shopexport WHERE id = :id LIMIT 1",
-      ['id' => (int)$this->shopid]
-    );
+    $shopid = (int)$this->shopid;
+    // Prefer DatabaseService when available (web context), fall back to DB
+    // so this method also works in the CLI/cron context.
+    if (!empty($this->app->DatabaseService)) {
+      $einstellungen_json = $this->app->DatabaseService->selectValue(
+        "SELECT einstellungen_json FROM shopexport WHERE id = :id LIMIT 1",
+        ['id' => $shopid]
+      );
+    } else {
+      $einstellungen_json = $this->app->DB->Select(
+        "SELECT einstellungen_json FROM shopexport WHERE id = '$shopid' LIMIT 1"
+      );
+    }
     $einstellungen = [];
     if (!empty($einstellungen_json)) {
       $einstellungen = json_decode($einstellungen_json, true) ?: [];
@@ -954,10 +963,17 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $einstellungen['felder'] = [];
     }
     $einstellungen['felder']['letzter_import_timestamp'] = $isoUtcDate;
-    $this->app->DatabaseService->execute(
-      "UPDATE shopexport SET einstellungen_json = :json WHERE id = :id",
-      ['json' => json_encode($einstellungen), 'id' => (int)$this->shopid]
-    );
+    $jsonEncoded = $this->app->DB->real_escape_string(json_encode($einstellungen));
+    if (!empty($this->app->DatabaseService)) {
+      $this->app->DatabaseService->execute(
+        "UPDATE shopexport SET einstellungen_json = :json WHERE id = :id",
+        ['json' => json_encode($einstellungen), 'id' => $shopid]
+      );
+    } else {
+      $this->app->DB->Update(
+        "UPDATE shopexport SET einstellungen_json = '$jsonEncoded' WHERE id = '$shopid'"
+      );
+    }
     $this->lastImportTimestamp = $isoUtcDate;
   }
 
@@ -2135,7 +2151,10 @@ class WCHttpClient
   protected function authenticate($url, $method, $parameters = [])
   {
     // Setup authentication.
-    if ($this->isSsl()) {
+    // When query_string_auth is set, always use Basic Auth (consumer key/secret
+    // as query parameters), regardless of SSL.  This allows HTTP-only test
+    // setups where the WooCommerce mu-plugin already whitelists the endpoint.
+    if ($this->isSsl() || $this->options->isQueryStringAuth()) {
       $basicAuth = new WCBasicAuth(
         $this->ch,
         $this->consumerKey,
