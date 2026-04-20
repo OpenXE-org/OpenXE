@@ -158,16 +158,16 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       ]);
     } catch (Exception $e) {
       $this->logger->warning('WooCommerce ImportGetAuftrag: ' . $e->getMessage());
-      return [];
+      return null;
     }
 
     if (empty($pageOrders)) {
-      return [];
+      return null;
     }
 
     $wcOrder = $pageOrders[0] ?? null;
     if ($wcOrder === null) {
-      return [];
+      return null;
     }
 
     $order = $this->parseOrder($wcOrder);
