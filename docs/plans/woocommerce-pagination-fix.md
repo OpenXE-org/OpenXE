@@ -18,7 +18,7 @@ und verlustfrei, ohne neue Plugin-Abhängigkeiten und ohne Wechsel der API-Versi
 
 ### IN-Scope
 
-- Pagination-Loop beim Bestellabruf (`X-WP-TotalPages`-Header auswerten)
+- Single-Order-Abruf mit `after`-Filter + `exclude`-Tupel-Cursor; Caller-Loop iteriert.
 - `after`-Filter (ISO-8601) statt 800er-`include`-Hack
 - Persistenz "letzter erfolgreicher Import-Timestamp" pro Shop
 - Fallback-Logik für Erstlauf (kein Timestamp vorhanden)
@@ -41,6 +41,7 @@ und verlustfrei, ohne neue Plugin-Abhängigkeiten und ohne Wechsel der API-Versi
 | Persistenz-Feld | `shopexport.einstellungen_json` → `felder.letzter_import_timestamp` | Bestehende Struktur nutzen, keine DB-Migration. |
 | Timestamp-Format | ISO-8601 `Y-m-d\TH:i:s` (UTC) | Direkt an `after=` durchreichbar. |
 | Caller-Cap (pre-existing) | `shopexport.maxmanuell`, default 100 | Der Batch-Cap liegt beim shopimport.php-Caller, nicht im Importer. |
+| Cursor-Format | Tupel `(letzter_import_timestamp, letzter_import_order_id)` | Loest Same-Second-Kollisionen via after=ts-1 + exclude=[id]. |
 
 ## 4. Datei- und Funktions-Landkarte
 
@@ -143,14 +144,9 @@ SELECT einstellungen_json FROM shopexport WHERE id = <shopid>
 **Neu — Single-Order-Pseudocode:**
 
 ```
-response = client.get('orders', {
-    status[]:  configuredStatuses,
-    after:     this.lastImportTimestamp,
-    per_page:  1,
-    page:      1,
-    orderby:   'date',
-    order:     'asc',
-})
+afterTs = ts-1s  (falls ts gesetzt)
+query   = orders?after=<afterTs>&per_page=1&orderby=date&order=asc
+          (+ exclude=[last_id] wenn last_id bekannt)
 
 if response is empty:
     return []
@@ -158,9 +154,7 @@ if response is empty:
 wcOrder = response[0]
 order   = parseOrder(wcOrder)
 
-# Cursor auf diese Order setzen, damit naechste Caller-Iteration
-# die naechste Order holt.
-this.persistLastImportTimestamp(wcOrder.date_created_gmt)
+persistLastImportCursor(order.date_created_gmt, order.id)
 
 return [{ id: order.auftrag, sessionid: '', logdatei: '', warenkorb: ... }]
 ```
@@ -185,6 +179,16 @@ Der Importer muss diesen Kontrakt einhalten: pro Call max. 1 Order.
 Der after-Filter sorgt dafuer, dass jede Iteration die naechste Order
 holt. Ein Crash zwischen `RemoteGetAuftrag()` und `shopimport_auftraege`-
 Insert verliert max. diese eine Order.
+
+### Schritt 5b — Migration-Helper
+
+Um die ab_nummer → timestamp Migration auch im Count-Pfad auszufuehren
+(shopimport.php ruft ImportGetAuftraegeAnzahl() BEFORE ImportGetAuftrag()):
+
+- Extraktion in eine private Methode `migrateAbNummerIfNeeded()`.
+- Aufruf am Anfang von beiden ImportGetAuftraegeAnzahl() und ImportGetAuftrag().
+- Idempotent durch `$lastImportTimestampIsFallback`-Check — nach einmaliger Migration
+  keine weiteren Reads.
 
 ### Schritt 6 — Transitions-Kompatibilitaet `ab_nummer`
 
@@ -299,6 +303,7 @@ Manuelle Integrationstests mit seeded Test-Orders.
 | Andere Shopimporter erben Basisklasse-Struktur | niedrig | niedrig | Nur `shopimporter_woocommerce.php` anfassen, `ShopimporterBase` nicht anruehren |
 | URL-Laengenlimits der WAF beim `status[]`-Array | sehr niedrig | niedrig | Typisch 2-3 Status-Werte, URL bleibt kurz |
 | Caller-Kontrakt-Abweichung (1 vs. n Orders) | niedrig | hoch | Per Design Single-Order-Return; Caller-Loop fuer Volume-Handling |
+| Timestamp-Kollision bei identischem date_created_gmt | niedrig | mittel | Adressiert durch Tupel-Cursor (ts, id) + exclude-Parameter |
 
 ## 9. Definition of Done
 
