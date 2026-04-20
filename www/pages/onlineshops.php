@@ -3150,17 +3150,19 @@ INNER JOIN shopexport s ON
       $moduleName = $this->app->DB->Select("SELECT modulename FROM shopexport WHERE id = '$id' LIMIT 1");
       try {
         $obj = $this->app->erp->LoadModul($moduleName);
-        if(method_exists($obj,'EinstellungenStruktur')){
-          $struktur = $obj->EinstellungenStruktur($id);
-          foreach ($struktur['felder'] as $fieldname => $fieldData){
-            if($fieldData['typ'] === 'password'){
-              if($fieldsToSave[$fieldname] === '***************') {
-                $oldData = json_decode($this->app->DB->Select('SELECT einstellungen_json FROM shopexport WHERE id=' . $id), true);
-                $fieldsToSave[$fieldname] = $oldData['felder'][$fieldname];
+        if (!empty($obj)) {
+            if(method_exists($obj,'EinstellungenStruktur')){
+              $struktur = $obj->EinstellungenStruktur($id);
+              foreach ($struktur['felder'] as $fieldname => $fieldData){
+                if($fieldData['typ'] === 'password'){
+                  if($fieldsToSave[$fieldname] === '***************') {
+                    $oldData = json_decode($this->app->DB->Select('SELECT einstellungen_json FROM shopexport WHERE id=' . $id), true);
+                    $fieldsToSave[$fieldname] = $oldData['felder'][$fieldname];
+                  }
+                  $fieldsToSave[$fieldname] = substr(md5($fieldsToSave[$fieldname]),0,15);
+                }
               }
-              $fieldsToSave[$fieldname] = substr(md5($fieldsToSave[$fieldname]),0,15);
             }
-          }
         }
       }catch(Exception $ex){
 //        $this->app->erp->LogFile('Fehlerhafter Aufruf in Modul: '.$moduleName);
