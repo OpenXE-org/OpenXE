@@ -60,6 +60,12 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   /** @var Logger $logger */
   public $logger;
 
+  /** @var bool $ssl_ignore Whether to ignore SSL certificate validation */
+  public $ssl_ignore;
+
+  /** @var string $lastImportTimestamp ISO-8601 UTC timestamp of the last successful import */
+  public $lastImportTimestamp;
+
   public function __construct($app, $intern = false)
   {
     $this->app = $app;
@@ -891,6 +897,41 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $this->ssl_ignore
     );
 
+    $storedTimestamp = $preferences['felder']['letzter_import_timestamp'] ?? null;
+    if (!empty($storedTimestamp)) {
+      $this->lastImportTimestamp = $storedTimestamp;
+    } else {
+      $this->lastImportTimestamp = gmdate('Y-m-d\TH:i:s', strtotime('-30 days'));
+    }
+
+  }
+
+  /**
+   * Persists the last successful import timestamp to shopexport.einstellungen_json.
+   * Does a read-modify-write to preserve all other fields.
+   *
+   * @param string $isoUtcDate ISO-8601 UTC timestamp, e.g. '2026-04-20T12:34:56'
+   * @return void
+   */
+  public function persistLastImportTimestamp($isoUtcDate)
+  {
+    $einstellungen_json = $this->app->DatabaseService->selectValue(
+      "SELECT einstellungen_json FROM shopexport WHERE id = :id LIMIT 1",
+      ['id' => (int)$this->shopid]
+    );
+    $einstellungen = [];
+    if (!empty($einstellungen_json)) {
+      $einstellungen = json_decode($einstellungen_json, true) ?: [];
+    }
+    if (!isset($einstellungen['felder']) || !is_array($einstellungen['felder'])) {
+      $einstellungen['felder'] = [];
+    }
+    $einstellungen['felder']['letzter_import_timestamp'] = $isoUtcDate;
+    $this->app->DatabaseService->execute(
+      "UPDATE shopexport SET einstellungen_json = :json WHERE id = :id",
+      ['json' => json_encode($einstellungen), 'id' => (int)$this->shopid]
+    );
+    $this->lastImportTimestamp = $isoUtcDate;
   }
 
   /**
