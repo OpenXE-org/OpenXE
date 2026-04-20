@@ -69,9 +69,6 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   /** @var bool $lastImportTimestampIsFallback True when lastImportTimestamp was computed as 30-day fallback */
   public $lastImportTimestampIsFallback = false;
 
-  const MAX_PAGES_PER_RUN = 5;
-  const ORDERS_PER_PAGE   = 100;
-
   public function __construct($app, $intern = false)
   {
     $this->app = $app;
@@ -124,88 +121,69 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   }
 
   /**
-   * Queries the WooCommerce API for pending orders since the last import
-   * timestamp and returns them as a Xentral-formatted array.
+   * Queries the WooCommerce API for the oldest pending order since the last
+   * import timestamp and returns it as a Xentral-formatted array with at most
+   * one element. The caller (shopimport.php::RemoteGetAuftrag loop) expects
+   * $result[0] per iteration; this contract must be maintained.
    *
-   * Uses the WC v3 after= filter and paginates up to MAX_PAGES_PER_RUN
-   * pages (500 orders max per run). Progress timestamp is persisted after
-   * each processed order so aborted runs resume cleanly.
+   * The after-filter advances per order so each caller-iteration fetches the
+   * next order. A crash between RemoteGetAuftrag() and the shopimport_auftraege
+   * INSERT loses at most this one order (consistent with pre-#262 behaviour).
    *
-   * @return array|null
+   * @return array Array with at most one order entry, or empty array if none.
    */
   public function ImportGetAuftrag()
   {
     $data = $this->CatchRemoteCommand('data');
+    $this->getKonfig($data['shopid'] ?? null, $data);
 
-    // Transition: if timestamp is still a fallback and a legacy ab_nummer
-    // cursor is present, resolve it to a timestamp once.
+    // Transition: ab_nummer -> timestamp once, if we still have the fallback.
     if ($this->lastImportTimestampIsFallback && !empty($data['ab_nummer'])) {
       $resolved = $this->resolveAbNummerToTimestamp((int) $data['ab_nummer']);
       if ($resolved !== null) {
         $this->persistLastImportTimestamp($resolved);
       }
-      // lastImportTimestampIsFallback stays true only if resolution failed;
-      // persistLastImportTimestamp() updated $this->lastImportTimestamp already.
     }
 
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
-    $runStartTimestamp = $this->lastImportTimestamp;
-    $page = 1;
-    $result = [];
 
-    while ($page <= self::MAX_PAGES_PER_RUN) {
-      try {
-        $pageOrders = $this->client->get('orders', [
-          'status'   => $configuredStatuses,
-          'after'    => $runStartTimestamp,
-          'per_page' => self::ORDERS_PER_PAGE,
-          'page'     => $page,
-          'orderby'  => 'date',
-          'order'    => 'asc',
-        ]);
-      } catch (Exception $e) {
-        $this->logger->warning('WooCommerce ImportGetAuftrag page=' . $page . ': ' . $e->getMessage());
-        break;
-      }
-
-      if (empty($pageOrders)) {
-        break;
-      }
-
-      foreach ($pageOrders as $wcOrder) {
-        if (is_null($wcOrder)) {
-          continue;
-        }
-
-        $order = $this->parseOrder($wcOrder);
-
-        $result[] = [
-          'id'        => $order['auftrag'],
-          'sessionid' => '',
-          'logdatei'  => '',
-          'warenkorb' => base64_encode(serialize($order)),
-        ];
-
-        // Persist progress after every order so partial runs resume cleanly.
-        if (!empty($wcOrder->date_created_gmt)) {
-          $this->persistLastImportTimestamp((string) $wcOrder->date_created_gmt);
-        }
-      }
-
-      $wcResponse = $this->client->getLastResponse();
-      if ($wcResponse === null) {
-        break;
-      }
-
-      $totalPages = (int) $wcResponse->getHeader('x-wp-totalpages');
-      if ($totalPages < 1 || $page >= $totalPages) {
-        break;
-      }
-
-      $page++;
+    try {
+      $pageOrders = $this->client->get('orders', [
+        'status'   => $configuredStatuses,
+        'after'    => $this->lastImportTimestamp,
+        'per_page' => 1,
+        'page'     => 1,
+        'orderby'  => 'date',
+        'order'    => 'asc',
+      ]);
+    } catch (Exception $e) {
+      $this->logger->warning('WooCommerce ImportGetAuftrag: ' . $e->getMessage());
+      return [];
     }
 
-    return !empty($result) ? $result : null;
+    if (empty($pageOrders)) {
+      return [];
+    }
+
+    $wcOrder = $pageOrders[0] ?? null;
+    if ($wcOrder === null) {
+      return [];
+    }
+
+    $order = $this->parseOrder($wcOrder);
+
+    // Persist progress for this order so the next Caller-iteration gets the
+    // next order via the after-filter.
+    if (!empty($wcOrder->date_created_gmt)) {
+      $this->persistLastImportTimestamp((string) $wcOrder->date_created_gmt);
+    }
+
+    return [[
+      'id'        => $order['auftrag'],
+      'sessionid' => '',
+      'logdatei'  => '',
+      'warenkorb' => base64_encode(serialize($order)),
+    ]];
   }
 
   /**
