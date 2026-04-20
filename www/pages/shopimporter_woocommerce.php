@@ -2151,10 +2151,7 @@ class WCHttpClient
   protected function authenticate($url, $method, $parameters = [])
   {
     // Setup authentication.
-    // When query_string_auth is set, always use Basic Auth (consumer key/secret
-    // as query parameters), regardless of SSL.  This allows HTTP-only test
-    // setups where the WooCommerce mu-plugin already whitelists the endpoint.
-    if ($this->isSsl() || $this->options->isQueryStringAuth()) {
+    if ($this->isSsl()) {
       $basicAuth = new WCBasicAuth(
         $this->ch,
         $this->consumerKey,
