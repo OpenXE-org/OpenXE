@@ -559,8 +559,11 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   }
 
   /**
-   * This function syncs the current stock to the remote WooCommerce shop
-   * @return int
+   * This function syncs the current stock to the remote WooCommerce shop.
+   * Uses WC REST v3 batch endpoints to reduce HTTP round-trips from 2n to
+   * roughly ceil(n/100) + ceil(n/100) requests.
+   *
+   * @return int Number of articles successfully synced
    * @throws WCHttpClientException
    */
   public function ImportSendListLager()
@@ -569,8 +572,12 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $anzahl = 0;
     $ctmp = (!empty($tmp) ? count($tmp) : 0);
 
+    // --- Step 1: Collect all SKUs and compute desired stock params ---
+
+    // $pendingUpdates: sku => ['lageranzahl' => int, 'status' => string]
+    $pendingUpdates = [];
+
     for ($i = 0; $i < $ctmp; $i++) {
-      // Get important values from input data
       $artikel = $tmp[$i]['artikel'];
       if ($artikel === 'ignore') {
         continue;
@@ -584,52 +591,152 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $inaktiv = $tmp[$i]['inaktiv'];
       $status = 'publish';
 
-      // Do some computations, sanitize input
-
       if ($pseudolager !== '') {
         $lageranzahl = $pseudolager;
       }
-
       if ($tmp[$i]['ausverkauft']) {
         $lageranzahl = 0;
       }
-
       if ($inaktiv) {
         $status = 'private';
       }
 
-      // get the product id that WooCommerce uses to represent the current article
-      $remoteIdInformation = $this->getShopIdBySKU($nummer);
+      $pendingUpdates[$nummer] = [
+        'lageranzahl' => $lageranzahl,
+        'status' => $status,
+      ];
+    }
 
-      if (empty($remoteIdInformation['id'])) {
-        // The online shop doesnt know this article, write to log and continue with next product
+    if (empty($pendingUpdates)) {
+      return 0;
+    }
 
-        $this->logger->error("WooCommerce Artikel $nummer wurde im Online-Shop nicht gefunden! Falsche Artikelnummer im Shop hinterlegt?");
+    // --- Step 2: Bulk-resolve SKUs to WC product IDs ---
+    // WC REST v3 accepts a comma-separated list in the ?sku= parameter.
+    // We fetch in chunks of 100 to stay within per_page limits.
+
+    // $skuMap: sku => ['id' => int, 'parent' => int, 'isvariant' => bool]
+    $skuMap = [];
+    $skuChunks = array_chunk(array_keys($pendingUpdates), 100);
+
+    foreach ($skuChunks as $skuChunk) {
+      $skuCsv = implode(',', $skuChunk);
+      $products = $this->client->get('products', [
+        'sku' => $skuCsv,
+        'per_page' => 100,
+      ]);
+      if (!is_array($products)) {
+        continue;
+      }
+      foreach ($products as $product) {
+        if (!isset($product->sku)) {
+          continue;
+        }
+        $skuMap[$product->sku] = [
+          'id' => $product->id,
+          'parent' => $product->parent_id,
+          'isvariant' => !empty($product->parent_id),
+        ];
+      }
+    }
+
+    // --- Step 3: Split into simple products and variations ---
+    // simpleItems: list of batch-update items for POST products/batch
+    // variationItems: parent_id => list of batch-update items for POST products/{parent}/variations/batch
+
+    $simpleItems = [];
+    $variationItems = [];
+
+    foreach ($pendingUpdates as $sku => $params) {
+      if (!isset($skuMap[$sku])) {
+        $this->logger->error(
+          "WooCommerce Artikel $sku wurde im Online-Shop nicht gefunden! Falsche Artikelnummer im Shop hinterlegt?"
+        );
         continue;
       }
 
-      // Sync settings to online store
-      $updateProductParams = [
+      $info = $skuMap[$sku];
+      $item = [
+        'id' => $info['id'],
         'manage_stock' => true,
-        'status' => $status,
-        'stock_quantity' => $lageranzahl
-        // WooCommerce doesnt have a standard property for the other values, we're ignoring them
+        'stock_quantity' => $params['lageranzahl'],
+        'status' => $params['status'],
       ];
-      if ($remoteIdInformation['isvariant']) {
-        $result = $this->client->put('products/' . $remoteIdInformation['parent'] . '/variations/' . $remoteIdInformation['id'], $updateProductParams);
-      } else {
-        $result = $this->client->put('products/' . $remoteIdInformation['id'], $updateProductParams);
-      }
 
-      $this->logger->error(
-        "WooCommerce Lagerzahlenübertragung für Artikel: $nummer / $remoteIdInformation[id] - Anzahl: $lageranzahl",
-        [
-          'result' => $result
-        ]
-      );
-      $anzahl++;
+      if ($info['isvariant']) {
+        $variationItems[$info['parent']][] = $item;
+      } else {
+        $simpleItems[] = $item;
+      }
     }
+
+    // --- Step 4: Send batch updates in chunks of 100, handle partial errors ---
+
+    // Simple products
+    foreach (array_chunk($simpleItems, 100) as $chunk) {
+      $response = $this->client->post('products/batch', ['update' => $chunk]);
+      $anzahl += $this->processBatchResponse($response, 'products/batch');
+    }
+
+    // Variations (one batch endpoint per parent product)
+    foreach ($variationItems as $parentId => $items) {
+      foreach (array_chunk($items, 100) as $chunk) {
+        $endpoint = 'products/' . $parentId . '/variations/batch';
+        $response = $this->client->post($endpoint, ['update' => $chunk]);
+        $anzahl += $this->processBatchResponse($response, $endpoint);
+      }
+    }
+
     return $anzahl;
+  }
+
+  /**
+   * Evaluates a WC batch response object, logs per-item errors, and returns
+   * the count of successfully updated items.
+   *
+   * @param object $response Decoded JSON response from the batch endpoint.
+   * @param string $endpoint Endpoint label used in log messages.
+   * @return int Number of items reported as updated without error.
+   */
+  private function processBatchResponse($response, $endpoint)
+  {
+    $successCount = 0;
+
+    if (!is_object($response) && !is_array($response)) {
+      $this->logger->error("WooCommerce Batch-Response ungueltig fuer $endpoint");
+      return 0;
+    }
+
+    // Successful updates are in response->update
+    $updated = is_object($response) ? ($response->update ?? []) : [];
+    foreach ($updated as $item) {
+      // WC embeds per-item errors inside the update array when an item fails
+      if (isset($item->error)) {
+        $code = $item->error->code ?? '';
+        $message = $item->error->message ?? '';
+        $this->logger->error(
+          "WooCommerce Batch-Fehler ($endpoint) fuer ID {$item->id}: [$code] $message"
+        );
+      } else {
+        $this->logger->error(
+          "WooCommerce Lagerzahlenübertragung (Batch) fuer Artikel-ID {$item->id} erfolgreich",
+          ['endpoint' => $endpoint]
+        );
+        $successCount++;
+      }
+    }
+
+    // Top-level errors array (some WC versions use this)
+    $errors = is_object($response) ? ($response->errors ?? []) : [];
+    foreach ($errors as $err) {
+      $code = $err->code ?? '';
+      $message = $err->message ?? '';
+      $this->logger->error(
+        "WooCommerce Batch-Fehler ($endpoint): [$code] $message"
+      );
+    }
+
+    return $successCount;
   }
 
   public function ImportStorniereAuftrag()
