@@ -2334,8 +2334,6 @@ class Remote
     public function RemoteUpdateAuftrag($shopId, $orderId)
     {
         $data = $this->getDataToSendForUpdateOrder((int) $shopId, (int) $orderId);
-        if ($data?->orderStatus !== OrderStatus::Completed)
-            return;
 
         $bearbeiter = 'Cronjob';
         if (isset($this->app->User)) {
