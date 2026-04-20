@@ -66,6 +66,12 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   /** @var string $lastImportTimestamp ISO-8601 UTC timestamp of the last successful import */
   public $lastImportTimestamp;
 
+  /** @var bool $lastImportTimestampIsFallback True when lastImportTimestamp was computed as 30-day fallback */
+  public $lastImportTimestampIsFallback = false;
+
+  const MAX_PAGES_PER_RUN = 5;
+  const ORDERS_PER_PAGE   = 100;
+
   public function __construct($app, $intern = false)
   {
     $this->app = $app;
@@ -81,135 +87,149 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   }
 
   /**
-   * This function returns the number of orders which have not yet been imported
+   * Returns the total number of orders pending import since the last import
+   * timestamp. Uses the WC v3 after= parameter and reads the count from
+   * the X-WP-Total response header (per_page=1 to minimise payload).
+   *
+   * @return int
    */
   public function ImportGetAuftraegeAnzahl()
   {
-    // Query the API to get new orders, filtered by the order status as specifed by the user.
-    // We set per_page to 100 - this could lead to a situation where there are more than
-    // 100 new Orders, but we still only return 100.
+    $configuredStatuses = array_map('trim', explode(';', $this->statusPending));
 
-    // Array containing additional settings, namely 'ab_nummer' (containting the next order number to get)
-    // and 'holeallestati' (an integer)
-    $tmp = $this->CatchRemoteCommand('data');
-
-    // Only orders having an order number greater or equal than this should be fetched. null otherwise
-    $number_from = empty($tmp['ab_nummer']) ? null : (int) $tmp['ab_nummer'];
-
-    // pending orders will be fetched into this array. it's length is returned at the end of the funciton
-    $pendingOrders = array();
-
-    if ($number_from) {
-      // Number-based import is selected
-
-      // The WooCommerce API doenst allow for a proper "greater than id n" request.
-      // we fake this behavior by creating an array that contains 'many' (~ 1000) consecutive
-      // ids that are greater than $from_number and use this array with the 'include' property
-      // of the WooCommerce API
-
-      $number_to = $number_from + 800;
-      if (!empty($tmp['bis_nummer'])) {
-        $number_to = $tmp['bis_nummer'];
-      }
-
-      $fakeGreaterThanIds = range($number_from, $number_to);
-
-      $pendingOrders = $this->client->get('orders', [
-        'per_page' => 100,
-        'include' => implode(",", $fakeGreaterThanIds),
+    try {
+      $this->client->get('orders', [
+        'status'   => $configuredStatuses,
+        'after'    => $this->lastImportTimestamp,
+        'per_page' => 1,
       ]);
-
-    } else {
-      // fetch posts by status
-
-      $pendingOrders = $this->client->get('orders', [
-        'status' => array_map('trim', explode(';', $this->statusPending)),
-        'per_page' => 100
-      ]);
-
+    } catch (Exception $e) {
+      $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: API request failed: ' . $e->getMessage());
+      return 0;
     }
 
-    return (!empty($pendingOrders) ? count($pendingOrders) : 0);
+    $wcResponse = $this->client->getLastResponse();
+    if ($wcResponse === null) {
+      $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: getLastResponse() returned null');
+      return 0;
+    }
+
+    $total = $wcResponse->getHeader('x-wp-total');
+    if ($total === null) {
+      $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: X-WP-Total header missing');
+      return 0;
+    }
+
+    return (int) $total;
   }
 
   /**
-   * Calling this function queries the api for pending orders and returns them
-   * as an array.
+   * Queries the WooCommerce API for pending orders since the last import
+   * timestamp and returns them as a Xentral-formatted array.
    *
-   * TODO: Only one single order is returned per invocation of this function.
-   * Given that we have to perform an exteremly expensive external HTTP call
-   * every time we call this function and could easily process more than one
-   * order this seems very bad performance-wise.
+   * Uses the WC v3 after= filter and paginates up to MAX_PAGES_PER_RUN
+   * pages (500 orders max per run). Progress timestamp is persisted after
+   * each processed order so aborted runs resume cleanly.
+   *
+   * @return array|null
    */
   public function ImportGetAuftrag()
   {
-    // Array containing additional settings, namely 'ab_nummer' (containting the next order number to get)
-    // and 'holeallestati' (an integer)
-    $tmp = $this->CatchRemoteCommand('data');
+    $data = $this->CatchRemoteCommand('data');
 
-    // Only orders having an order number greater or equal than this should be fetched. null otherwise
-    $number_from = empty($tmp['ab_nummer']) ? null : (int) $tmp['ab_nummer'];
-
-    // pending orders will be fetched into this array. it's length is returned at the end of the funciton
-    $pendingOrders = array();
-
-    if ($number_from) {
-      // Number-based import is selected
-
-      // The WooCommerce API doenst allow for a proper "greater than id n" request.
-      // we fake this behavior by creating an array that contains 'many' (~ 1000) consecutive
-      // ids that are greater than $from_number and use this array with the 'include' property
-      // of the WooCommerce API
-
-      $number_to = $number_from + 800;
-      if (!empty($tmp['bis_nummer'])) {
-        $number_to = $tmp['bis_nummer'];
+    // Transition: if timestamp is still a fallback and a legacy ab_nummer
+    // cursor is present, resolve it to a timestamp once.
+    if ($this->lastImportTimestampIsFallback && !empty($data['ab_nummer'])) {
+      $resolved = $this->resolveAbNummerToTimestamp((int) $data['ab_nummer']);
+      if ($resolved !== null) {
+        $this->persistLastImportTimestamp($resolved);
       }
-
-      $fakeGreaterThanIds = range($number_from, $number_to);
-
-      $pendingOrders = $this->client->get('orders', [
-        'per_page' => 20,
-        'include' => implode(',', $fakeGreaterThanIds),
-        'order' => 'asc',
-        'orderby' => 'id'
-      ]);
-
-    } else {
-      // fetch posts by status
-
-      $pendingOrders = $this->client->get('orders', [
-        'status' => array_map('trim', explode(';', $this->statusPending)),
-        'per_page' => 20,
-        'order' => 'asc',
-        'orderby' => 'id'
-      ]);
-
+      // lastImportTimestampIsFallback stays true only if resolution failed;
+      // persistLastImportTimestamp() updated $this->lastImportTimestamp already.
     }
 
-    // Return an empty array in case there are no orders to import
-    if ((!empty($pendingOrders) ? count($pendingOrders) : 0) === 0) {
+    $configuredStatuses = array_map('trim', explode(';', $this->statusPending));
+    $page = 1;
+    $result = [];
+
+    while ($page <= self::MAX_PAGES_PER_RUN) {
+      try {
+        $pageOrders = $this->client->get('orders', [
+          'status'   => $configuredStatuses,
+          'after'    => $this->lastImportTimestamp,
+          'per_page' => self::ORDERS_PER_PAGE,
+          'page'     => $page,
+          'orderby'  => 'date',
+          'order'    => 'asc',
+        ]);
+      } catch (Exception $e) {
+        $this->logger->warning('WooCommerce ImportGetAuftrag page=' . $page . ': ' . $e->getMessage());
+        break;
+      }
+
+      if (empty($pageOrders)) {
+        break;
+      }
+
+      foreach ($pageOrders as $wcOrder) {
+        if (is_null($wcOrder)) {
+          continue;
+        }
+
+        $order = $this->parseOrder($wcOrder);
+
+        $result[] = [
+          'id'        => $order['auftrag'],
+          'sessionid' => '',
+          'logdatei'  => '',
+          'warenkorb' => base64_encode(serialize($order)),
+        ];
+
+        // Persist progress after every order so partial runs resume cleanly.
+        if (!empty($wcOrder->date_created_gmt)) {
+          $this->persistLastImportTimestamp((string) $wcOrder->date_created_gmt);
+        }
+      }
+
+      $wcResponse = $this->client->getLastResponse();
+      if ($wcResponse === null) {
+        break;
+      }
+
+      $totalPages = (int) $wcResponse->getHeader('x-wp-totalpages');
+      if ($totalPages < 1 || $page >= $totalPages) {
+        break;
+      }
+
+      $page++;
+    }
+
+    return !empty($result) ? $result : null;
+  }
+
+  /**
+   * Resolves a legacy WooCommerce order ID (ab_nummer) to the order's
+   * date_created_gmt timestamp for the one-shot transition from cursor-
+   * based to timestamp-based import.
+   *
+   * @param int $abNummer WooCommerce order ID
+   * @return string|null ISO-8601 UTC timestamp or null on failure
+   */
+  private function resolveAbNummerToTimestamp($abNummer)
+  {
+    try {
+      $order = $this->client->get('orders/' . $abNummer);
+    } catch (Exception $e) {
+      $this->logger->warning('WooCommerce resolveAbNummerToTimestamp(' . $abNummer . '): ' . $e->getMessage());
       return null;
     }
 
-    $tmp = [];
-
-    foreach ($pendingOrders as $pendingOrder) {
-      $wcOrder = $pendingOrder;
-      $order = $this->parseOrder($wcOrder);
-
-      if (is_null($wcOrder)) {
-        continue;
-      }
-
-      $tmp[] = [
-        'id' => $order['auftrag'],
-        'sessionid' => '',
-        'logdatei' => '',
-        'warenkorb' => base64_encode(serialize($order)),
-      ];
+    if (empty($order->date_created_gmt)) {
+      $this->logger->warning('WooCommerce resolveAbNummerToTimestamp(' . $abNummer . '): date_created_gmt missing');
+      return null;
     }
-    return $tmp;
+
+    return (string) $order->date_created_gmt;
   }
 
   // This function searches the wcOrder for the specified WC Meta key
@@ -900,8 +920,10 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $storedTimestamp = $preferences['felder']['letzter_import_timestamp'] ?? null;
     if (!empty($storedTimestamp)) {
       $this->lastImportTimestamp = $storedTimestamp;
+      $this->lastImportTimestampIsFallback = false;
     } else {
       $this->lastImportTimestamp = gmdate('Y-m-d\TH:i:s', strtotime('-30 days'));
+      $this->lastImportTimestampIsFallback = true;
     }
 
   }
