@@ -465,7 +465,7 @@ class Shopimport {
                     $cart = $carts[0];
                     $shopExtId = $cart['id'];
 
-                    $result = $this->create_shopimport_cart_entry($cart);
+                    $result = $this->create_shopimport_cart_entry($cart, projectId: $projectId, shopId: $shopId);
 
                     if ($changeShopOrderStatus && (String) $shopExtId !== '') {
                         $this->app->remote->RemoteDeleteAuftrag($shopId, $shopExtId);
@@ -1895,6 +1895,8 @@ class Shopimport {
         $shopId = $this->app->Secure->GetGET('id');
         $submit = $this->app->Secure->GetPOST('submit');
 
+        $projekt = $this->app->DB->Select("SELECT projekt FROM shopexport WHERE id = '$shopId' LIMIT 1");
+
         if ($submit == 'addfile') {
             if(isset($_FILES['upload']) && is_array($_FILES['upload']))
             {
@@ -1912,7 +1914,7 @@ class Shopimport {
                             }
                         } else {
                             foreach ($result as $cart) {
-                                $this->create_shopimport_cart_entry($cart);
+                                $this->create_shopimport_cart_entry($cart, $projekt, $shopId);
                             }
                             $this->app->Tpl->AddMessage('info','Dateiimport ausgeführt.<a href="index.php?module=shopimport&action=view&id='.$shopId.'"><button type="submit" class="ui-button-icon">Shopimport Zwischentabelle</button></a>',html: true);
                         }
@@ -1934,7 +1936,7 @@ class Shopimport {
     * Processes a single cart dataset and creates a shopimport_auftraege to be imported later into erpapi
     */
 
-    function create_shopimport_cart_entry(array $cart) {
+    function create_shopimport_cart_entry(array $cart, int $projectId, int $shopId) {
         $shopExtId = $cart['id'];
         $sessionid = $cart['sessionid'];
         $jsonEncoded = 0;
