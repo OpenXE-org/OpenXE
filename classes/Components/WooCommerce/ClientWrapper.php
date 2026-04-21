@@ -82,7 +82,8 @@ class ResponseWrapper
  * Wraps the upstream Automattic\WooCommerce\Client and adds:
  *   - getLastResponse(): ResponseWrapper
  *   - ssl_ignore support via verify_ssl option
- *   - logger parameter (accepted but unused — upstream has no logging hook)
+ *   - PSR-3-style logger integration: HTTP >= 400 is logged as warning,
+ *     HttpClientException is logged as error (and rethrown)
  */
 class ClientWrapper
 {
@@ -92,12 +93,15 @@ class ClientWrapper
     /** @var ResponseWrapper|null */
     private $lastResponse;
 
+    /** @var \Psr\Log\LoggerInterface|null */
+    private $logger;
+
     /**
      * @param string     $url            WooCommerce store URL
      * @param string     $consumerKey    API consumer key
      * @param string     $consumerSecret API consumer secret
      * @param array      $options        Upstream SDK options (version, timeout, …)
-     * @param mixed      $logger         Accepted for API compatibility; unused
+     * @param mixed      $logger         PSR-3-compatible logger; null disables logging
      * @param bool|mixed $sslIgnore      When truthy, disables SSL certificate verification
      */
     public function __construct($url, $consumerKey, $consumerSecret, $options = [], $logger = null, $sslIgnore = false)
@@ -107,6 +111,7 @@ class ClientWrapper
         }
 
         $this->client = new UpstreamClient($url, $consumerKey, $consumerSecret, $options);
+        $this->logger = $logger;
     }
 
     /**
@@ -119,9 +124,9 @@ class ClientWrapper
      */
     public function get($endpoint, $parameters = [])
     {
-        $result = $this->client->get($endpoint, $parameters);
-        $this->captureResponse();
-        return $result;
+        return $this->dispatch('GET', $endpoint, function () use ($endpoint, $parameters) {
+            return $this->client->get($endpoint, $parameters);
+        });
     }
 
     /**
@@ -134,9 +139,9 @@ class ClientWrapper
      */
     public function post($endpoint, $data)
     {
-        $result = $this->client->post($endpoint, $data);
-        $this->captureResponse();
-        return $result;
+        return $this->dispatch('POST', $endpoint, function () use ($endpoint, $data) {
+            return $this->client->post($endpoint, $data);
+        });
     }
 
     /**
@@ -149,9 +154,9 @@ class ClientWrapper
      */
     public function put($endpoint, $data)
     {
-        $result = $this->client->put($endpoint, $data);
-        $this->captureResponse();
-        return $result;
+        return $this->dispatch('PUT', $endpoint, function () use ($endpoint, $data) {
+            return $this->client->put($endpoint, $data);
+        });
     }
 
     /**
@@ -164,9 +169,9 @@ class ClientWrapper
      */
     public function delete($endpoint, $parameters = [])
     {
-        $result = $this->client->delete($endpoint, $parameters);
-        $this->captureResponse();
-        return $result;
+        return $this->dispatch('DELETE', $endpoint, function () use ($endpoint, $parameters) {
+            return $this->client->delete($endpoint, $parameters);
+        });
     }
 
     /**
@@ -178,9 +183,9 @@ class ClientWrapper
      */
     public function options($endpoint)
     {
-        $result = $this->client->options($endpoint);
-        $this->captureResponse();
-        return $result;
+        return $this->dispatch('OPTIONS', $endpoint, function () use ($endpoint) {
+            return $this->client->options($endpoint);
+        });
     }
 
     /**
@@ -195,13 +200,57 @@ class ClientWrapper
     }
 
     /**
-     * Snapshot the upstream response after each request.
+     * Run an upstream call with unified response capture and error logging.
+     * Exceptions are logged (when a logger is available) and rethrown so
+     * existing callsites keep their try/catch contract.
+     *
+     * @param string   $method   HTTP verb for log context
+     * @param string   $endpoint API endpoint for log context
+     * @param callable $call     Zero-argument closure performing the upstream call
+     * @return mixed Upstream result
+     * @throws HttpClientException
      */
-    private function captureResponse()
+    private function dispatch($method, $endpoint, callable $call)
+    {
+        try {
+            $result = $call();
+        } catch (HttpClientException $e) {
+            $this->captureResponse($method, $endpoint);
+            if ($this->logger !== null) {
+                $this->logger->error(
+                    sprintf('WooCommerce %s %s failed: %s', $method, $endpoint, $e->getMessage()),
+                    ['code' => $e->getCode()]
+                );
+            }
+            throw $e;
+        }
+        $this->captureResponse($method, $endpoint);
+        return $result;
+    }
+
+    /**
+     * Snapshot the upstream response after each request. HTTP >= 400 is
+     * logged as warning with a truncated body excerpt to keep logs small.
+     *
+     * @param string $method   HTTP verb for log context
+     * @param string $endpoint API endpoint for log context
+     */
+    private function captureResponse($method, $endpoint)
     {
         $upstreamResponse = $this->client->http->getResponse();
-        if ($upstreamResponse !== null) {
-            $this->lastResponse = new ResponseWrapper($upstreamResponse);
+        if ($upstreamResponse === null) {
+            return;
+        }
+        $this->lastResponse = new ResponseWrapper($upstreamResponse);
+
+        if ($this->logger !== null) {
+            $code = $upstreamResponse->getCode();
+            if ($code >= 400) {
+                $this->logger->warning(
+                    sprintf('WooCommerce %s %s returned HTTP %d', $method, $endpoint, $code),
+                    ['body' => substr((string) $upstreamResponse->getBody(), 0, 500)]
+                );
+            }
         }
     }
 }
