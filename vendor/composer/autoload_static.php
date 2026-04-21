@@ -2949,6 +2949,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Components\\Util\\Exception\\StringUtilException' => __DIR__ . '/../..' . '/classes/Components/Util/Exception/StringUtilException.php',
         'Xentral\\Components\\Util\\Exception\\UtilExceptionInterface' => __DIR__ . '/../..' . '/classes/Components/Util/Exception/UtilExceptionInterface.php',
         'Xentral\\Components\\Util\\StringUtil' => __DIR__ . '/../..' . '/classes/Components/Util/StringUtil.php',
+        'Xentral\\Components\\WooCommerce\\ClientWrapper' => __DIR__ . '/../..' . '/classes/Components/WooCommerce/ClientWrapper.php',
         'Xentral\\Core\\DependencyInjection\\AbstractBaseContainer' => __DIR__ . '/../..' . '/classes/Core/DependencyInjection/AbstractBaseContainer.php',
         'Xentral\\Core\\DependencyInjection\\ContainerInterface' => __DIR__ . '/../..' . '/classes/Core/DependencyInjection/ContainerInterface.php',
         'Xentral\\Core\\DependencyInjection\\Definition\\FactoryMethodDefinition' => __DIR__ . '/../..' . '/classes/Core/DependencyInjection/Definition/FactoryMethodDefinition.php',
