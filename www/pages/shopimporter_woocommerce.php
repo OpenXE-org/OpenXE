@@ -259,7 +259,18 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $resolved = $this->resolveAbNummerToTimestamp((int) $data['ab_nummer']);
     if ($resolved !== null) {
       $this->persistLastImportTimestamp($resolved);
+      return;
     }
+    // Resolution failed (order deleted, 404, missing date_created_gmt). Persist the
+    // current 30-day fallback so subsequent runs use a stable lower bound
+    // instead of sliding the window on every cron cycle.
+    $this->logger->warning(
+      sprintf(
+        'WooCommerce ab_nummer=%d konnte nicht aufgeloest werden; persistiere 30-Tage-Fallback als Cursor',
+        (int) $data['ab_nummer']
+      )
+    );
+    $this->persistLastImportTimestamp($this->lastImportTimestamp);
   }
 
   // This function searches the wcOrder for the specified WC Meta key
