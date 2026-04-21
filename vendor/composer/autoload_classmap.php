@@ -2642,6 +2642,7 @@ return array(
     'Xentral\\Components\\Util\\Exception\\StringUtilException' => $baseDir . '/classes/Components/Util/Exception/StringUtilException.php',
     'Xentral\\Components\\Util\\Exception\\UtilExceptionInterface' => $baseDir . '/classes/Components/Util/Exception/UtilExceptionInterface.php',
     'Xentral\\Components\\Util\\StringUtil' => $baseDir . '/classes/Components/Util/StringUtil.php',
+    'Xentral\\Components\\WooCommerce\\ClientWrapper' => $baseDir . '/classes/Components/WooCommerce/ClientWrapper.php',
     'Xentral\\Core\\DependencyInjection\\AbstractBaseContainer' => $baseDir . '/classes/Core/DependencyInjection/AbstractBaseContainer.php',
     'Xentral\\Core\\DependencyInjection\\ContainerInterface' => $baseDir . '/classes/Core/DependencyInjection/ContainerInterface.php',
     'Xentral\\Core\\DependencyInjection\\Definition\\FactoryMethodDefinition' => $baseDir . '/classes/Core/DependencyInjection/Definition/FactoryMethodDefinition.php',
