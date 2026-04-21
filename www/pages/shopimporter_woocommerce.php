@@ -621,10 +621,18 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     foreach ($skuChunks as $skuChunk) {
       $skuCsv = implode(',', $skuChunk);
-      $products = $this->client->get('products', [
-        'sku' => $skuCsv,
-        'per_page' => 100,
-      ]);
+      try {
+        $products = $this->client->get('products', [
+          'sku' => $skuCsv,
+          'per_page' => 100,
+        ]);
+      } catch (Exception $e) {
+        $this->logger->error(
+          'WooCommerce SKU-Lookup-Chunk fehlgeschlagen: ' . $e->getMessage(),
+          ['chunk_size' => count($skuChunk)]
+        );
+        continue;
+      }
       if (!is_array($products)) {
         continue;
       }
