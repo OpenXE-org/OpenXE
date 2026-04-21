@@ -495,8 +495,9 @@
                         ],
                         "support": {
                                 "issues": "https://github.com/fiskaly/fiskaly-sdk-php/issues",
-                                "source": "https://github.com/fiskaly/fiskaly-sdk-php/tree/v1.2.100"
+                                "source": "https://github.com/fiskaly/fiskaly-sdk-php/tree/master"
                         },
+                        "abandoned": true,
                         "install-path": "../fiskaly/fiskaly-sdk-php"
                 },
                 {

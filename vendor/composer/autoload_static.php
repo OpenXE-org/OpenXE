@@ -29,23 +29,23 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
     );
 
     public static $prefixLengthsPsr4 = array (
-        'l' => 
+        'l' =>
         array (
             'lfkeitel\\phptotp\\' => 17,
         ),
-        'Y' => 
+        'Y' =>
         array (
             'Y0lk\\OAuth1\\Client\\Server\\' => 26,
         ),
-        'X' => 
+        'X' =>
         array (
             'Xentral\\' => 8,
         ),
-        'W' => 
+        'W' =>
         array (
             'Webmozart\\Assert\\' => 17,
         ),
-        'S' => 
+        'S' =>
         array (
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
@@ -63,18 +63,18 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
             'Sabre\\CardDAV\\' => 14,
             'Sabre\\CalDAV\\' => 13,
         ),
-        'R' => 
+        'R' =>
         array (
             'Rakit\\Validation\\' => 17,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
-        'L' => 
+        'L' =>
         array (
             'League\\OAuth1\\Client\\' => 21,
             'League\\MimeTypeDetection\\' => 25,
@@ -86,28 +86,28 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
             'Laminas\\Mail\\' => 13,
             'Laminas\\Loader\\' => 15,
         ),
-        'J' => 
+        'J' =>
         array (
             'JmesPath\\' => 9,
         ),
-        'G' => 
+        'G' =>
         array (
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
         ),
-        'F' => 
+        'F' =>
         array (
             'FiskalyClient\\' => 14,
             'FastRoute\\' => 10,
         ),
-        'D' => 
+        'D' =>
         array (
             'Datto\\JsonRpc\\Http\\Examples\\' => 28,
             'Datto\\JsonRpc\\Http\\' => 19,
             'Datto\\JsonRpc\\' => 14,
         ),
-        'A' => 
+        'A' =>
         array (
             'Aws\\' => 4,
             'Automattic\\WooCommerce\\' => 23,
@@ -116,175 +116,175 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
     );
 
     public static $prefixDirsPsr4 = array (
-        'lfkeitel\\phptotp\\' => 
+        'lfkeitel\\phptotp\\' =>
         array (
             0 => __DIR__ . '/..' . '/lfkeitel/phptotp/src',
         ),
-        'Y0lk\\OAuth1\\Client\\Server\\' => 
+        'Y0lk\\OAuth1\\Client\\Server\\' =>
         array (
             0 => __DIR__ . '/..' . '/y0lk/oauth1-etsy/src',
         ),
-        'Xentral\\' => 
+        'Xentral\\' =>
         array (
             0 => __DIR__ . '/../..' . '/classes',
         ),
-        'Webmozart\\Assert\\' => 
+        'Webmozart\\Assert\\' =>
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
         ),
-        'Symfony\\Polyfill\\Mbstring\\' => 
+        'Symfony\\Polyfill\\Mbstring\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
         ),
-        'Symfony\\Polyfill\\Intl\\Normalizer\\' => 
+        'Symfony\\Polyfill\\Intl\\Normalizer\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer',
         ),
-        'Symfony\\Polyfill\\Intl\\Idn\\' => 
+        'Symfony\\Polyfill\\Intl\\Idn\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-idn',
         ),
-        'SwissPaymentSlip\\SwissPaymentSlip\\' => 
+        'SwissPaymentSlip\\SwissPaymentSlip\\' =>
         array (
             0 => __DIR__ . '/..' . '/swiss-payment-slip/swiss-payment-slip/src',
         ),
-        'SwissPaymentSlip\\SwissPaymentSlipPdf\\' => 
+        'SwissPaymentSlip\\SwissPaymentSlipPdf\\' =>
         array (
             0 => __DIR__ . '/..' . '/swiss-payment-slip/swiss-payment-slip-pdf/src',
         ),
-        'SwissPaymentSlip\\SwissPaymentSlipFpdf\\' => 
+        'SwissPaymentSlip\\SwissPaymentSlipFpdf\\' =>
         array (
             0 => __DIR__ . '/..' . '/swiss-payment-slip/swiss-payment-slip-fpdf/src',
         ),
-        'Sabre\\Xml\\' => 
+        'Sabre\\Xml\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/xml/lib',
         ),
-        'Sabre\\VObject\\' => 
+        'Sabre\\VObject\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/vobject/lib',
         ),
-        'Sabre\\Uri\\' => 
+        'Sabre\\Uri\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/uri/lib',
         ),
-        'Sabre\\HTTP\\' => 
+        'Sabre\\HTTP\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/http/lib',
         ),
-        'Sabre\\Event\\' => 
+        'Sabre\\Event\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/event/lib',
         ),
-        'Sabre\\DAV\\' => 
+        'Sabre\\DAV\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/dav/lib/DAV',
         ),
-        'Sabre\\DAVACL\\' => 
+        'Sabre\\DAVACL\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/dav/lib/DAVACL',
         ),
-        'Sabre\\CardDAV\\' => 
+        'Sabre\\CardDAV\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/dav/lib/CardDAV',
         ),
-        'Sabre\\CalDAV\\' => 
+        'Sabre\\CalDAV\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabre/dav/lib/CalDAV',
         ),
-        'Rakit\\Validation\\' => 
+        'Rakit\\Validation\\' =>
         array (
             0 => __DIR__ . '/..' . '/rakit/validation/src',
         ),
-        'Psr\\Log\\' => 
+        'Psr\\Log\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
-        'Psr\\Http\\Message\\' => 
+        'Psr\\Http\\Message\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
-        'Psr\\Container\\' => 
+        'Psr\\Container\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'PHPMailer\\PHPMailer\\' => 
+        'PHPMailer\\PHPMailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
-        'League\\OAuth1\\Client\\' => 
+        'League\\OAuth1\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/oauth1-client/src',
         ),
-        'League\\MimeTypeDetection\\' => 
+        'League\\MimeTypeDetection\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/mime-type-detection/src',
         ),
-        'League\\Flysystem\\' => 
+        'League\\Flysystem\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
         ),
-        'Laminas\\Validator\\' => 
+        'Laminas\\Validator\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-validator/src',
         ),
-        'Laminas\\Stdlib\\' => 
+        'Laminas\\Stdlib\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-stdlib/src',
         ),
-        'Laminas\\ServiceManager\\' => 
+        'Laminas\\ServiceManager\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-servicemanager/src',
         ),
-        'Laminas\\Mime\\' => 
+        'Laminas\\Mime\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-mime/src',
         ),
-        'Laminas\\Mail\\' => 
+        'Laminas\\Mail\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-mail/src',
         ),
-        'Laminas\\Loader\\' => 
+        'Laminas\\Loader\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-loader/src',
         ),
-        'JmesPath\\' => 
+        'JmesPath\\' =>
         array (
             0 => __DIR__ . '/..' . '/mtdowling/jmespath.php/src',
         ),
-        'GuzzleHttp\\Psr7\\' => 
+        'GuzzleHttp\\Psr7\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
-        'GuzzleHttp\\Promise\\' => 
+        'GuzzleHttp\\Promise\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
         ),
-        'GuzzleHttp\\' => 
+        'GuzzleHttp\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
-        'FiskalyClient\\' => 
+        'FiskalyClient\\' =>
         array (
             0 => __DIR__ . '/..' . '/fiskaly/fiskaly-sdk-php/src',
         ),
-        'FastRoute\\' => 
+        'FastRoute\\' =>
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
         ),
-        'Datto\\JsonRpc\\Http\\Examples\\' => 
+        'Datto\\JsonRpc\\Http\\Examples\\' =>
         array (
             0 => __DIR__ . '/..' . '/datto/json-rpc-http/examples/src',
         ),
-        'Datto\\JsonRpc\\Http\\' => 
+        'Datto\\JsonRpc\\Http\\' =>
         array (
             0 => __DIR__ . '/..' . '/datto/json-rpc-http/src',
         ),
-        'Datto\\JsonRpc\\' => 
+        'Datto\\JsonRpc\\' =>
         array (
             0 => __DIR__ . '/..' . '/datto/json-rpc/src',
         ),
-        'Aws\\' => 
+        'Aws\\' =>
         array (
             0 => __DIR__ . '/..' . '/aws/aws-sdk-php/src',
         ),
@@ -303,9 +303,9 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
     );
 
     public static $prefixesPsr0 = array (
-        'H' => 
+        'H' =>
         array (
-            'HTMLPurifier' => 
+            'HTMLPurifier' =>
             array (
                 0 => __DIR__ . '/..' . '/ezyang/htmlpurifier/library',
             ),
@@ -313,6 +313,29 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
     );
 
     public static $classMap = array (
+        'AWS\\CRT\\Auth\\AwsCredentials' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/AwsCredentials.php',
+        'AWS\\CRT\\Auth\\CredentialsProvider' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/CredentialsProvider.php',
+        'AWS\\CRT\\Auth\\Signable' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/Signable.php',
+        'AWS\\CRT\\Auth\\SignatureType' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/SignatureType.php',
+        'AWS\\CRT\\Auth\\SignedBodyHeaderType' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/SignedBodyHeaderType.php',
+        'AWS\\CRT\\Auth\\Signing' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/Signing.php',
+        'AWS\\CRT\\Auth\\SigningAlgorithm' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/SigningAlgorithm.php',
+        'AWS\\CRT\\Auth\\SigningConfigAWS' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/SigningConfigAWS.php',
+        'AWS\\CRT\\Auth\\SigningResult' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/SigningResult.php',
+        'AWS\\CRT\\Auth\\StaticCredentialsProvider' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Auth/StaticCredentialsProvider.php',
+        'AWS\\CRT\\CRT' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/CRT.php',
+        'AWS\\CRT\\HTTP\\Headers' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/HTTP/Headers.php',
+        'AWS\\CRT\\HTTP\\Message' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/HTTP/Message.php',
+        'AWS\\CRT\\HTTP\\Request' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/HTTP/Request.php',
+        'AWS\\CRT\\HTTP\\Response' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/HTTP/Response.php',
+        'AWS\\CRT\\IO\\EventLoopGroup' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/IO/EventLoopGroup.php',
+        'AWS\\CRT\\IO\\InputStream' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/IO/InputStream.php',
+        'AWS\\CRT\\Internal\\Encoding' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Internal/Encoding.php',
+        'AWS\\CRT\\Internal\\Extension' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Internal/Extension.php',
+        'AWS\\CRT\\Log' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Log.php',
+        'AWS\\CRT\\NativeResource' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/NativeResource.php',
+        'AWS\\CRT\\OptionValue' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Options.php',
+        'AWS\\CRT\\Options' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Options.php',
         'Aura\\SqlQuery\\AbstractDmlQuery' => __DIR__ . '/..' . '/aura/sqlquery/src/AbstractDmlQuery.php',
         'Aura\\SqlQuery\\AbstractQuery' => __DIR__ . '/..' . '/aura/sqlquery/src/AbstractQuery.php',
         'Aura\\SqlQuery\\Common\\Delete' => __DIR__ . '/..' . '/aura/sqlquery/src/Common/Delete.php',
@@ -2829,8 +2852,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Components\\Mailer\\Transport\\PhpMailerOAuth' => __DIR__ . '/../..' . '/classes/Components/Mailer/Transport/PhpMailerOAuth.php',
         'Xentral\\Components\\Mailer\\Transport\\PhpMailerOAuthAuthentificationInterface' => __DIR__ . '/../..' . '/classes/Components/Mailer/Transport/PhpMailerOAuthAuthentificationInterface.php',
         'Xentral\\Components\\Mailer\\Transport\\PhpMailerTransport' => __DIR__ . '/../..' . '/classes/Components/Mailer/Transport/PhpMailerTransport.php',
-        'Xentral\\Components\\Mailer\\Wrapper\\LoggerWrapper' => __DIR__ . '/../..' . '/classes/Components/Mailer/Wrapper/LoggerWrapper.php',
-        'Xentral\\Components\\Mailer\\Wrapper\\MemoryLogger' => __DIR__ . '/../..' . '/classes/Components/Mailer/Wrapper/MemoryLogger.php',
         'Xentral\\Components\\Pdf\\Bootstrap' => __DIR__ . '/../..' . '/classes/Components/Pdf/Bootstrap.php',
         'Xentral\\Components\\Pdf\\Exception\\FileExistsException' => __DIR__ . '/../..' . '/classes/Components/Pdf/Exception/FileExistsException.php',
         'Xentral\\Components\\Pdf\\Exception\\FileNotFoundException' => __DIR__ . '/../..' . '/classes/Components/Pdf/Exception/FileNotFoundException.php',
@@ -3267,6 +3288,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\Datanorm\\Service\\DatanormReader' => __DIR__ . '/../..' . '/classes/Modules/Datanorm/Service/DatanormReader.php',
         'Xentral\\Modules\\Datanorm\\Wrapper\\AddressWrapper' => __DIR__ . '/../..' . '/classes/Modules/Datanorm/Wrapper/AddressWrapper.php',
         'Xentral\\Modules\\DatevApi\\DataTable\\DatevExportDataTable' => __DIR__ . '/../..' . '/classes/Modules/DatevApi/DataTable/DatevExportDataTable.php',
+        'Xentral\\Modules\\DatevExport\\DatevExport' => __DIR__ . '/../..' . '/classes/Modules/DatevExport/DatevExport.php',
         'Xentral\\Modules\\DemoExporter\\Bootstrap' => __DIR__ . '/../..' . '/classes/Modules/DemoExporter/Bootstrap.php',
         'Xentral\\Modules\\DemoExporter\\DemoExporterCleanerService' => __DIR__ . '/../..' . '/classes/Modules/DemoExporter/DemoExporterCleanerService.php',
         'Xentral\\Modules\\DemoExporter\\DemoExporterDateiService' => __DIR__ . '/../..' . '/classes/Modules/DemoExporter/DemoExporterDateiService.php',
@@ -3607,7 +3629,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\Log\\Service\\DatabaseLogGateway' => __DIR__ . '/../..' . '/classes/Modules/Log/Service/DatabaseLogGateway.php',
         'Xentral\\Modules\\Log\\Service\\DatabaseLogService' => __DIR__ . '/../..' . '/classes/Modules/Log/Service/DatabaseLogService.php',
         'Xentral\\Modules\\Log\\Service\\LoggerConfigService' => __DIR__ . '/../..' . '/classes/Modules/Log/Service/LoggerConfigService.php',
-        'Xentral\\Modules\\Log\\Wrapper\\CompanyConfigWrapper' => __DIR__ . '/../..' . '/classes/Modules/Log/Wrapper/CompanyConfigWrapper.php',
         'Xentral\\Modules\\MandatoryFields\\Bootstrap' => __DIR__ . '/../..' . '/classes/Modules/MandatoryFields/Bootstrap.php',
         'Xentral\\Modules\\MandatoryFields\\Data\\MandatoryFieldData' => __DIR__ . '/../..' . '/classes/Modules/MandatoryFields/Data/MandatoryFieldData.php',
         'Xentral\\Modules\\MandatoryFields\\Data\\ValidatorResultData' => __DIR__ . '/../..' . '/classes/Modules/MandatoryFields/Data/ValidatorResultData.php',
@@ -4043,7 +4064,6 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\Wizard\\Exception\\NotFoundException' => __DIR__ . '/../..' . '/classes/Modules/Wizard/Exception/NotFoundException.php',
         'Xentral\\Modules\\Wizard\\Exception\\WizardExceptionInterface' => __DIR__ . '/../..' . '/classes/Modules/Wizard/Exception/WizardExceptionInterface.php',
         'Xentral\\Modules\\Wizard\\WizardService' => __DIR__ . '/../..' . '/classes/Modules/Wizard/WizardService.php',
-        'Xentral\\Services\\DatabaseService' => __DIR__ . '/../..' . '/classes/Services/DatabaseService.php',
         'Xentral\\Widgets\\Chart\\BarDataset' => __DIR__ . '/../..' . '/classes/Widgets/Chart/BarDataset.php',
         'Xentral\\Widgets\\Chart\\Chart' => __DIR__ . '/../..' . '/classes/Widgets/Chart/Chart.php',
         'Xentral\\Widgets\\Chart\\Color' => __DIR__ . '/../..' . '/classes/Widgets/Chart/Color.php',
