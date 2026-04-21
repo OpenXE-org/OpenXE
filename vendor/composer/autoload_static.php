@@ -110,6 +110,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'A' => 
         array (
             'Aws\\' => 4,
+            'Automattic\\WooCommerce\\' => 23,
             'Aura\\SqlQuery\\' => 14,
         ),
     );
@@ -287,7 +288,11 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         array (
             0 => __DIR__ . '/..' . '/aws/aws-sdk-php/src',
         ),
-        'Aura\\SqlQuery\\' => 
+        'Automattic\\WooCommerce\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce',
+        ),
+        'Aura\\SqlQuery\\' =>
         array (
             0 => __DIR__ . '/..' . '/aura/sqlquery/src',
         ),
@@ -345,6 +350,14 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Aura\\SqlQuery\\Sqlsrv\\Insert' => __DIR__ . '/..' . '/aura/sqlquery/src/Sqlsrv/Insert.php',
         'Aura\\SqlQuery\\Sqlsrv\\Select' => __DIR__ . '/..' . '/aura/sqlquery/src/Sqlsrv/Select.php',
         'Aura\\SqlQuery\\Sqlsrv\\Update' => __DIR__ . '/..' . '/aura/sqlquery/src/Sqlsrv/Update.php',
+        'Automattic\\WooCommerce\\Client' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/Client.php',
+        'Automattic\\WooCommerce\\HttpClient\\BasicAuth' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/BasicAuth.php',
+        'Automattic\\WooCommerce\\HttpClient\\HttpClient' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/HttpClient.php',
+        'Automattic\\WooCommerce\\HttpClient\\HttpClientException' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/HttpClientException.php',
+        'Automattic\\WooCommerce\\HttpClient\\OAuth' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/OAuth.php',
+        'Automattic\\WooCommerce\\HttpClient\\Options' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/Options.php',
+        'Automattic\\WooCommerce\\HttpClient\\Request' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/Request.php',
+        'Automattic\\WooCommerce\\HttpClient\\Response' => __DIR__ . '/..' . '/automattic/woocommerce/src/WooCommerce/HttpClient/Response.php',
         'Aws\\ACMPCA\\ACMPCAClient' => __DIR__ . '/..' . '/aws/aws-sdk-php/src/ACMPCA/ACMPCAClient.php',
         'Aws\\ACMPCA\\Exception\\ACMPCAException' => __DIR__ . '/..' . '/aws/aws-sdk-php/src/ACMPCA/Exception/ACMPCAException.php',
         'Aws\\AbstractConfigurationProvider' => __DIR__ . '/..' . '/aws/aws-sdk-php/src/AbstractConfigurationProvider.php',
@@ -4029,6 +4042,7 @@ class ComposerStaticInit0c49a81c1214ef2f7493c6ce921b17ee
         'Xentral\\Modules\\Wizard\\Exception\\NotFoundException' => __DIR__ . '/../..' . '/classes/Modules/Wizard/Exception/NotFoundException.php',
         'Xentral\\Modules\\Wizard\\Exception\\WizardExceptionInterface' => __DIR__ . '/../..' . '/classes/Modules/Wizard/Exception/WizardExceptionInterface.php',
         'Xentral\\Modules\\Wizard\\WizardService' => __DIR__ . '/../..' . '/classes/Modules/Wizard/WizardService.php',
+        'Xentral\\Services\\DatabaseService' => __DIR__ . '/../..' . '/classes/Services/DatabaseService.php',
         'Xentral\\Widgets\\Chart\\BarDataset' => __DIR__ . '/../..' . '/classes/Widgets/Chart/BarDataset.php',
         'Xentral\\Widgets\\Chart\\Chart' => __DIR__ . '/../..' . '/classes/Widgets/Chart/Chart.php',
         'Xentral\\Widgets\\Chart\\Color' => __DIR__ . '/../..' . '/classes/Widgets/Chart/Color.php',
