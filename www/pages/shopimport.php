@@ -1593,7 +1593,7 @@ class Shopimport {
     public function drawShopOrderTable($deletedRows) {
         $checkglobal = null;
         $htmltable = new HTMLTable(0, '100%', '', 3, 1, 'font-size:85%');
-        $htmltable->AddRowAsHeading(array('Import', 'M&uuml;ll', 'Sp&auml;ter', 'Projekt','Internet','Datum', 'Name', 'Bemerkung', 'Strasse', 'PLZ', 'Ort', 'Land', 'Zahlung', 'Kd.Nr.', 'vorhanden')); //, 'Betrag', 'Offen', 'Zahlung', 'Partner'));
+        $htmltable->AddRowAsHeading(array('Import', 'M&uuml;ll', 'Sp&auml;ter', 'Projekt','Internet','Datum', 'Name', 'Bemerkung', 'Strasse', 'PLZ', 'Ort', 'Land', 'Zahlung', 'Kd.Nr.', 'Vorhanden', 'Importzeit')); //, 'Betrag', 'Offen', 'Zahlung', 'Partner'));
         $htmltable->ChangingRowColors('#e0e0e0', '#fff');
 
         $shopid = $this->app->Secure->GetGET('shopid');
@@ -1608,7 +1608,7 @@ class Shopimport {
             $where .= " AND sa.bestellnummer='$bestellnummer'";
         }
 
-        $arr = $this->app->DB->SelectArr("SELECT sa.*, p.abkuerzung FROM shopimport_auftraege sa left join projekt p on sa.projekt = p.id WHERE sa.imported='0' AND sa.trash='0' $where ORDER BY sa.logdatei LIMIT 100");
+        $arr = $this->app->DB->SelectArr("SELECT sa.*,".$this->app->erp->FormatDateTimeShort('sa.logdatei')." as importzeit, p.abkuerzung FROM shopimport_auftraege sa left join projekt p on sa.projekt = p.id WHERE sa.imported='0' AND sa.trash='0' $where ORDER BY sa.logdatei LIMIT 100");
         if (is_array($arr) && (!empty($arr) ? count($arr) : 0) > 0) {
 
             //Alte Auftraege prüfen
@@ -1678,7 +1678,9 @@ class Shopimport {
                 foreach ($warenkorb as $k => $v) {
                     $warenkorb[$k] = $this->app->erp->fixeUmlaute($v);
                 }
-      
+
+                $importzeit = $arr[$i]['importzeit'];
+
                 $getCustomerNumberFromShopCart_result = $this->getCustomerNumberFromShopCart($arr[$i]);
 
                 switch ($getCustomerNumberFromShopCart_result['match']) {
@@ -1759,6 +1761,8 @@ class Shopimport {
                 $this->app->YUI->AutoComplete($input_kundennummer_id, "kunde", 1);
                 $htmltable->AddCol('<input type="text" size="10" id="'.$input_kundennummer_id.'" name="'.$input_kundennummer_name.'" value="'.$input_kundennummer_value.'">');
                 $htmltable->AddCol('<font color="'.$matchcolor.'" style="font-weight:'.$matchfont.'">'.$matchtext.'');
+
+                $htmltable->AddCol($importzeit);
 
 /*                $htmltable->AddCol(number_format($warenkorb['gesamtsumme'], 2, ',', '.'));
                 $saldo_kunde = round($this->app->erp->SaldoAdresse($kdr_addresse_id), 2);
@@ -1915,13 +1919,13 @@ class Shopimport {
         $this->app->DB->Insert(
                 sprintf(
                         "INSERT INTO shopimport_auftraege (extid,sessionid,warenkorb,imported,projekt,bearbeiter,logdatei, jsonencoded, shopid)
-      VALUES('%s','%s','%s',0,%d, '%s','%s', %d, %d)",
+      VALUES('%s','%s','%s',0,%d, '%s',%s, %d, %d)",
                         $this->app->DB->real_escape_string($shopExtId),
                         $this->app->DB->real_escape_string($sessionid),
                         $this->app->DB->real_escape_string($warenkorb),
                         (int) $projectId,
                         $this->app->DB->real_escape_string($username),
-                        $this->app->DB->real_escape_string($logdatei),
+                        empty($logdatei)?'NOW()':"'".$this->app->DB->real_escape_string($logdatei)."'",
                         $jsonEncoded,
                         (int) $shopId
                 )
