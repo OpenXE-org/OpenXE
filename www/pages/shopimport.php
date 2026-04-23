@@ -1848,29 +1848,45 @@ class Shopimport {
         if ($submit == 'addfile') {
             if(isset($_FILES['upload']) && is_array($_FILES['upload']))
             {
-              foreach($_FILES['upload']['tmp_name'] as $key => $file)
-              {
-                if($file != "")
+
+                $success_count = 0;
+                $errors = array();
+
+                foreach($_FILES['upload']['tmp_name'] as $key => $file)
                 {
-                    $filename = $_FILES['upload']['name'][$key];
-                    $contents = file_get_contents($_FILES['upload']['tmp_name'][$key]);
-                    $result = $this->app->remote->RemoteCommand($shopId, 'fileupload', ['filename' => $filename, 'contents' => $contents]);
-                    if (is_array($result)) {
-                        if (isset($result['errors'])) {
-                            foreach ($result['errors'] as $error) {
-                                $this->app->Tpl->AddMessage('error','Auftragsimport fehlgeschlagen: '.$error);
+                    if($file != "")
+                    {
+                        $filename = $_FILES['upload']['name'][$key];
+                        $contents = file_get_contents($_FILES['upload']['tmp_name'][$key]);
+
+                        $result = $this->app->remote->RemoteCommand($shopId, 'fileupload', ['filename' => $filename, 'contents' => $contents]);
+
+                        if (is_array($result)) {
+                            if (isset($result['errors'])) {
+                                foreach ($result['errors'] as $error) {
+                                    $errors[] = 'Auftragsimport fehlgeschlagen: '.$error;
+                                }
+                            } else {
+                                foreach ($result as $cart) {
+                                    $this->create_shopimport_cart_entry($cart, $projekt, $shopId);                                    
+                                }
+                                $success_count++;
                             }
                         } else {
-                            foreach ($result as $cart) {
-                                $this->create_shopimport_cart_entry($cart, $projekt, $shopId);
-                            }
-                            $this->app->Tpl->AddMessage('info','Dateiimport ausgeführt.<a href="index.php?module=shopimport&action=view&id='.$shopId.'"><button type="submit" class="ui-button-icon">Shopimport Zwischentabelle</button></a>',html: true);
+                            $errors[] = 'Dateiimport fehlgeschlagen: '.$filename." ".print_r($result, true);
                         }
-                    } else {
-                        $this->app->Tpl->AddMessage('error','Dateiimport fehlgeschlagen: '.print_r($result));
+                    }                      
+                } // foreach
+
+                if ($success_count) {
+                    $this->app->Tpl->AddMessage('info','Dateiimport ausgeführt ('.$success_count.' Warenk&ouml;rbe).<a href="index.php?module=shopimport&action=view&id='.$shopId.'"><button type="submit" class="ui-button-icon">Shopimport Zwischentabelle</button></a>',html: true);
+                }
+                if (!empty($errors)) {
+                    foreach($errors as $error) {
+                        $this->app->Tpl->AddMessage('error',$error);
                     }
                 }
-              }
+
             }
         } else {
             $this->app->Tpl->AddMessage('info','Auftragsimport über Datei, falls vom Shop unterstützt');
