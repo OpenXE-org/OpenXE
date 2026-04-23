@@ -31,6 +31,12 @@ class Shopimport {
 
     const MODULE_NAME = 'Shopimport';
 
+    const CUSTOMER_NO_MATCH = 0;
+    const CUSTOMER_FULL_MATCH = 1;
+    const CUSTOMER_DATA_MISMATCH = 2;
+    const CUSTOMER_NUMBER_MISMATCH = 3;
+    const CUSTOMER_ONLY_NAME_MATCH = 4;
+
     public $javascript = [
         './classes/Modules/Shopimport/www/js/shopimport.js'
     ];
@@ -515,7 +521,7 @@ class Shopimport {
         $this->app->Tpl->Parse('PAGE', 'shopimport_einzelimport.tpl');
     }
 
-    public function KundeAnlegenUpdate($shopimportid, $shopextid, $warenkorb, $kundennummer = 0, $import_kundennummer, &$unbekanntezahlungsweisen) {
+    public function KundeAnlegenUpdate($shopimportid, $shopextid, $warenkorb, bool $bestandskunde = false, $import_kundennummer, &$unbekanntezahlungsweisen) {
         if (empty($warenkorb)) {
             return 0;
         }
@@ -594,7 +600,7 @@ class Shopimport {
         }
         //$projekt = $arr[0][projekt];
 
-        if ($kundennummer == '1') {
+        if ($bestandskunde == true) {
             $warenkorb['kundennummer'] = $import_kundennummer;
             if (strlen($warenkorb['kundennummer']) != '') {
                 $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='{$warenkorb['kundennummer']}' AND geloescht!=1 $adresseprojekt LIMIT 1");
@@ -951,7 +957,7 @@ class Shopimport {
         return $this->app->DB->affected_rows() > 0;
     }
 
-    public function importShopOrder($shopImportedOrderId, $utf8coding, $customerNumber, $custumerNumberImported, &$unknownPaymentTypes) {
+    public function importShopOrder($shopImportedOrderId, $utf8coding, $bestandskunde, $custumerNumberImported, &$unknownPaymentTypes) {
         $shopImportedOrder = $this->app->DB->SelectRow(
                 sprintf(
                         'SELECT * FROM shopimport_auftraege WHERE imported=0 AND trash=0 AND id=%d LIMIT 1',
@@ -997,7 +1003,7 @@ class Shopimport {
             $umlautefehler = true;
             $this->app->Container->get('Logger')->error('Kodierungsfehler in shopimport_auftraege ' . $shopImportedOrderId);
         }
-        $succes = $this->KundeAnlegenUpdate($shopImportedOrderId, '', $shopOrderCleaned, $customerNumber, $custumerNumberImported, $unknownPaymentTypes);
+        $succes = $this->KundeAnlegenUpdate($shopImportedOrderId, '', $shopOrderCleaned, $bestandskunde, $custumerNumberImported, $unknownPaymentTypes);
 
         return ['codingerror' => $umlautefehler, 'success' => $succes];
     }
@@ -1046,10 +1052,9 @@ class Shopimport {
         //ACHTUNG Lieferadresse immer aus Auftrag!!! aber Lieferadresse extra bei Kunden anlegen
         if ($this->app->Secure->GetPOST('submit') != '') {
             $auftraege = $this->app->Secure->GetPOST('auftrag');
-            $kundennummer = $this->app->Secure->GetPOST('kundennummer');
+
             $import = $this->app->Secure->GetPOST('import');
             $import_kundennummer = $this->app->Secure->GetPOST('import_kundennummer');
-
             $success_import = 0;
             $insgs_import = 0;
             $unbekanntezahlungsweisen = null;
@@ -1070,7 +1075,17 @@ class Shopimport {
                     $this->setShopImportedOrderTrash($shopimportid);
                 } else if ($import[$shopimportid] === 'import') {
 
-                    $res = $this->importShopOrder($shopimportid, $utf8codierung, $kundennummer[$shopimportid], $import_kundennummer[$shopimportid], $unbekanntezahlungsweisen);
+                    // Check given number!
+                    $bestandskunde = false;
+                    if (!empty($import_kundennummer[$shopimportid])) {
+                        $kundennummer = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer = '".$import_kundennummer[$shopimportid]."'");
+                        if (empty($kundennummer)) {
+                            continue;
+                        }
+                        $bestandskunde = true;
+                    }
+
+                    $res = $this->importShopOrder($shopimportid, $utf8codierung, $bestandskunde, $import_kundennummer[$shopimportid], $unbekanntezahlungsweisen);
                     if ($res['codingerror']) {
                         $umlautefehler = true;
                     }
@@ -1475,11 +1490,16 @@ class Shopimport {
 
     /**
      * @param array $arr
+     * Find the correct customer
      *
      * @return array
+     * array('kundennummer', int 'match')
      */
+
     public function getCustomerNumberFromShopCart($arr) {
-        $validkundennummer = '';
+
+        $match = SELF::CUSTOMER_NO_MATCH;
+
         if (!empty($arr['jsonencoded'])) {
             $warenkorb = json_decode(base64_decode($arr['warenkorb']), true);
         } else {
@@ -1499,14 +1519,6 @@ class Shopimport {
         if ($kundenurvonprojekt) {
             $adresseprojekt = $this->app->DB->Select("SELECT projekt FROM shopexport WHERE id = '" . $arr['shopid'] . "' LIMIT 1");
         }
-        if (!empty($warenkorb['kundennummer'])) {
-            $validkundennummer = $this->app->DB->Select(
-                    "SELECT kundennummer
-        FROM adresse
-        WHERE kundennummer='" . $warenkorb['kundennummer'] . "' and email <> '' $adresseprojekt  AND geloescht!=1 AND kundennummer <> ''
-        LIMIT 1"
-            );
-        }
         if (isset($warenkorb['subshop']) && $warenkorb['subshop']) {
             $subshopprojekt = $this->app->DB->Select("SELECT projekt FROM shopexport_subshop WHERE shop = '" . $arr['shopid'] . "' AND aktiv = 1 AND subshopkennung = '" . $this->app->DB->real_escape_string($warenkorb['subshop']) . "' LIMIT 1");
             if ($subshopprojekt) {
@@ -1522,40 +1534,66 @@ class Shopimport {
             $adresseprojekt = '';
         }
 
-        $checkid = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE `name`='" . $this->app->DB->real_escape_string($warenkorb['name']) . "' AND abteilung='" . $this->app->DB->real_escape_string($warenkorb['abteilung']) . "'
-              AND strasse='" . $this->app->DB->real_escape_string($warenkorb['strasse']) . "' AND plz='" . $this->app->DB->real_escape_string($warenkorb['plz']) . "' AND ort='" . $this->app->DB->real_escape_string($warenkorb['ort']) . "' AND kundennummer <> '' AND geloescht!=1 $adresseprojekt
-              ORDER BY email='" . $this->app->DB->real_escape_string($warenkorb['email']) . "' DESC
-              LIMIT 1");
+        $kundennummer_data = $this->app->DB->Select("
+            SELECT kundennummer FROM adresse
+            WHERE name='" . $this->app->DB->real_escape_string($warenkorb['name']) . "'
+            AND strasse='" . $this->app->DB->real_escape_string($warenkorb['strasse']) . "'
+            AND plz='" . $this->app->DB->real_escape_string($warenkorb['plz']) . "'
+            AND ort='" . $this->app->DB->real_escape_string($warenkorb['ort']) . "'
+            AND geloescht!=1
+            AND kundennummer <> ''
+            $adresseprojekt
+            LIMIT 1"
+        );
 
-        if ($warenkorb['email'] != '') {
-            if ($warenkorb['email'] !== 'amazon_import_bounce@nfxmedia.de') {
-                $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE email='" . $warenkorb['email'] . "' and email <> '' $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
+        if (!empty($warenkorb['kundennummer'])) {
+            $kundennummer_nummer = $this->app->DB->Select("
+                SELECT kundennummer
+                FROM adresse
+                WHERE kundennummer='" . $warenkorb['kundennummer'] . "' $adresseprojekt AND geloescht!=1 AND kundennummer <> ''
+                LIMIT 1"
+            );
+            if ($kundennummer_nummer) {
+                if ($kundennummer_data && ($kundennummer_data == $kundennummer_nummer)) {
+                    $kundennummer = $kundennummer_name;
+                    $match = SELF::CUSTOMER_FULL_MATCH;
+                } else {
+                    $kundennummer = $kundennummer_nummer;
+                    $match = SELF::CUSTOMER_DATA_MISMATCH;
+                }
+            } else if ($kundennummer_data) {
+                $kundennummer = $kundennummer_data;
+                $match = SELF::CUSTOMER_NUMBER_MISMATCH;
+            } else {
+                $match = SELF::CUSTOMER_NO_MATCH;
             }
-            if ((String) $checkidemail === '') {
-                $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name LIKE '" . $warenkorb['name'] . "' AND ort LIKE '" . $warenkorb['ort'] . "'  AND geloescht!=1 $adresseprojekt  AND kundennummer <> '' LIMIT 1");
+
+        } else { // empty($warenkorb['kundennummer'])
+            if ($kundennummer_data) {
+                $kundennummer = $kundennummer_data;
+                $match = SELF::CUSTOMER_FULL_MATCH;
+            } else {
+                $kundennummer_name = $this->app->DB->Select("
+                    SELECT kundennummer FROM adresse
+                    WHERE name='" . $this->app->DB->real_escape_string($warenkorb['name']) . "'
+                    AND geloescht!=1
+                    AND kundennummer <> ''
+                    $adresseprojekt
+                    LIMIT 1"
+                );
+                if ($kundennummer_name) {
+                    $match = SELF::CUSTOMER_ONLY_NAME_MATCH;
+                }
             }
-        } else {
-            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='" . $this->app->DB->real_escape_string($warenkorb['name']) . "' AND strasse='" . $this->app->DB->real_escape_string($warenkorb['strasse']) . "' AND plz='" . $this->app->DB->real_escape_string($warenkorb['plz']) . "' AND ort='" . $this->app->DB->real_escape_string($warenkorb['ort']) . "'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
         }
 
-        if ($warenkorb['kundennummer'] != '' && !empty($validkundennummer) && $validkundennummer == $warenkorb['kundennummer']) {
-            $kdrnummer = $warenkorb['kundennummer'];
-        } elseif ($checkid != '') {
-            $kdrnummer = $checkid;
-        } elseif ($checkidemail != '') {
-            $kdrnummer = $checkidemail;
-        } else {
-            $kdrnummer = '';
-            $checkidemail = '';
-        }
-
-        return [$checkidemail, $kdrnummer];
+        return array('kundennummer' => $kundennummer, 'match' => $match);
     }
 
     public function drawShopOrderTable($deletedRows) {
         $checkglobal = null;
         $htmltable = new HTMLTable(0, '100%', '', 3, 1, 'font-size:85%');
-        $htmltable->AddRowAsHeading(array('Import', 'M&uuml;ll', 'Sp&auml;ter', 'Projekt','Internet','Datum', 'Name', 'Bemerkung', 'Strasse', 'PLZ', 'Ort', 'Kd.Nr.', 'vorhanden', 'Land', 'Betrag', 'Offen', 'Zahlung', 'Partner'));
+        $htmltable->AddRowAsHeading(array('Import', 'M&uuml;ll', 'Sp&auml;ter', 'Projekt','Internet','Datum', 'Name', 'Bemerkung', 'Strasse', 'PLZ', 'Ort', 'Land', 'Zahlung', 'Kd.Nr.', 'vorhanden')); //, 'Betrag', 'Offen', 'Zahlung', 'Partner'));
         $htmltable->ChangingRowColors('#e0e0e0', '#fff');
 
         $shopid = $this->app->Secure->GetGET('shopid');
@@ -1640,127 +1678,42 @@ class Shopimport {
                 foreach ($warenkorb as $k => $v) {
                     $warenkorb[$k] = $this->app->erp->fixeUmlaute($v);
                 }
-                $kundenurvonprojekt = $this->app->DB->Select("SELECT kundenurvonprojekt FROM shopexport WHERE id = '" . $arr[$i]['shopid'] . "' LIMIT 1");
-                $adresseprojekt = '';
-                if ($kundenurvonprojekt) {
-                    $adresseprojekt = $this->app->DB->Select("SELECT projekt FROM shopexport WHERE id = '" . $arr[$i]['shopid'] . "' LIMIT 1");
+      
+                $getCustomerNumberFromShopCart_result = $this->getCustomerNumberFromShopCart($arr[$i]);
+
+                switch ($getCustomerNumberFromShopCart_result['match']) {
+                    case SELF::CUSTOMER_FULL_MATCH:
+                        $matchtext = "OK";
+                        $matchcolor = 'green';
+                        $matchfont = 'normal';
+                        $checked = 'checked';
+                    break;
+                    case SELF::CUSTOMER_NO_MATCH:
+                        $matchtext = "Nicht gefunden!";
+                        $matchcolor = 'red';
+                        $matchfont = 'bold';
+                        $auftraegeaufspaeter = true;
+                    break;
+                    case SELF::CUSTOMER_DATA_MISMATCH:
+                        $matchtext = "Adressdaten abweichend";
+                        $matchcolor = 'purple';
+                        $matchfont = 'bold';
+                        $checked = 'checked';
+                        $auftraegeaufspaeter = true;
+                    break;
+                    case SELF::CUSTOMER_NUMBER_MISMATCH:
+                        $matchtext = "Kundennummer abweichend";
+                        $matchcolor = 'red';
+                        $matchfont = 'bold';
+                        $auftraegeaufspaeter = true;
+                    break;
+                    case SELF::CUSTOMER_ONLY_NAME_MATCH:
+                        $matchtext = "Name gefunden";
+                        $matchcolor = 'purple';
+                        $matchfont = 'bold';
+                        $auftraegeaufspaeter = true;
+                    break;
                 }
-                if (isset($warenkorb['subshop']) && $warenkorb['subshop']) {
-                    $subshopprojekt = $this->app->DB->Select("SELECT projekt FROM shopexport_subshop WHERE shop = '" . $arr[$i]['shopid'] . "' AND aktiv = 1 AND subshopkennung = '" . $this->app->DB->real_escape_string($warenkorb['subshop']) . "' LIMIT 1");
-                    if ($subshopprojekt) {
-                        if (!$kundenurvonprojekt) {
-                            $adresseprojekt = $subshopprojekt;
-                        }
-                        $arr[$i]['abkuerzung'] = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id = '$adresseprojekt' LIMIT 1");
-                    }
-                }
-                if ($kundenurvonprojekt) {
-                    $adresseprojekt = " AND projekt = '" . $adresseprojekt . "' ";
-                } else {
-                    $adresseprojekt = '';
-                }
-
-                $sql =
-                    "SELECT
-                        kundennummer
-                    FROM adresse
-                    WHERE
-                        `name`='" . $this->app->DB->real_escape_string($warenkorb['name']) . "'
-                        AND abteilung='" . $this->app->DB->real_escape_string($warenkorb['abteilung']) . "'
-                        AND strasse='" . $this->app->DB->real_escape_string($warenkorb['strasse']) . "'
-                        AND plz='" . $this->app->DB->real_escape_string($warenkorb['plz']) . "'
-                        AND ort='" . $this->app->DB->real_escape_string($warenkorb['ort']) . "'
-                        AND kundennummer <> ''
-                        AND geloescht!=1 $adresseprojekt
-                    ORDER BY email='" . $this->app->DB->real_escape_string($warenkorb['email']) . "' DESC
-                    LIMIT 1";
-
-                $checkid = $this->app->DB->Select($sql);
-
-                if ($warenkorb['email'] != '') {
-                    if ((String) $checkidemail === '') {
-            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE email='".$this->app->DB->real_escape_string($warenkorb['email'])."' and email <> '' $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
-            $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name LIKE '" . $this->app->DB->real_escape_string($warenkorb['name']) . "' AND ort LIKE '" . $this->app->DB->real_escape_string($warenkorb['ort']) . "'  AND geloescht!=1 $adresseprojekt  AND kundennummer <> '' LIMIT 1");
-                    }
-                } else {
-                    $checkidemail = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE name='" . $this->app->DB->real_escape_string($warenkorb['name']) . "' AND strasse='" . $this->app->DB->real_escape_string($warenkorb['strasse']) . "' AND plz='" . $this->app->DB->real_escape_string($warenkorb['plz']) . "' AND ort='" . $this->app->DB->real_escape_string($warenkorb['ort']) . "'     $adresseprojekt  AND geloescht!=1 AND kundennummer <> '' LIMIT 1");
-                }
-
-                if ($warenkorb['kundennummer'] != '' && !empty($validkundennummer) && $validkundennummer == $warenkorb['kundennummer']) {
-                    $kdrnummer = $warenkorb['kundennummer'];
-                    $kdr_name = $this->app->DB->Select("SELECT name FROM adresse WHERE kundennummer='$kdrnummer' $adresseprojekt AND geloescht!=1 LIMIT 1");
-                    $email = $this->app->DB->Select("SELECT email FROM adresse WHERE kundennummer='$kdrnummer' $adresseprojekt AND geloescht!=1 LIMIT 1");
-                    $parts = explode("\n", wordwrap($kdr_name, 20, "\n"));
-                    $kdr_name = $parts[0];
-                    $kdr_name = '<br><i style="color:red">' . $kdr_name . '</i>';
-                    $email = '<br><i style="color:red">' . $email . '</i>';
-
-                    $kdr_strasse = $this->app->DB->Select("SELECT strasse FROM adresse WHERE kundennummer='$kdrnummer' AND geloescht!=1 $adresseprojekt LIMIT 1");
-                    $parts = explode("\n", wordwrap($kdr_strasse, 20, "\n"));
-                    $kdr_strasse = $parts[0];
-                    $kdr_strasse = '<br><i style="color:red">' . $kdr_strasse . '</i>';
-
-                    $kdr_plz = '<br><i style="color:red">' . $this->app->DB->Select("SELECT plz FROM adresse WHERE kundennummer='$kdrnummer' AND geloescht!=1 $adresseprojekt LIMIT 1") . '</i>';
-                    $kdr_ort = '<br><i style="color:red">' . $this->app->DB->Select("SELECT ort FROM adresse WHERE kundennummer='$kdrnummer' AND geloescht!=1 $adresseprojekt LIMIT 1") . '</i>';
-                    $checked = '';
-                } elseif ($checkid != '') {
-                    $checked = 'checked';
-                    $kdrnummer = $checkid;
-                    //$kdr_name = "<br><i style=\"color:purple\">".$this->app->DB->Select("SELECT name FROM adresse WHERE kundennummer='$kdrnummer' AND firma='".$this->app->User->GetFirma()."' LIMIT 1")."</i>";
-                    $kdrArr = $this->app->DB->SelectRow("SELECT name, email, strasse, ort, plz FROM adresse WHERE kundennummer='$kdrnummer' AND geloescht!=1 $adresseprojekt LIMIT 1");
-                    $kdr_name = $kdrArr['name'];
-                    $email = $kdrArr['email'];
-                    $parts = explode("\n", wordwrap($kdr_name, 20, "\n"));
-                    $kdr_name = $parts[0];
-                    $kdr_name = '<br><i style="color:green">' . $kdr_name . '</i>';
-                    $email = '<br><i style="color:green">' . $email . '</i>';
-
-                    $kdr_strasse = $kdrArr['strasse'];
-                    $parts = explode("\n", wordwrap($kdr_strasse, 20, "\n"));
-                    $kdr_strasse = $parts[0];
-                    $kdr_strasse = '<br><i style="color:green">' . $kdr_strasse . '</i>';
-
-                    $kdr_plz = '<br><i style="color:green">' . $kdrArr['plz'] . '</i>';
-                    $kdr_ort = '<br><i style="color:green">' . $kdrArr['or'] . '</i>';
-                } elseif ($checkidemail != '') {
-                    $checked = 'checked';
-                    $kdrnummer = $checkidemail;
-                    $warenkorb['kundennummer'] = $kdrnummer;
-                    //$kdr_name = "<br><i style=\"color:purple\">".$this->app->DB->Select("SELECT name FROM adresse WHERE kundennummer='$kdrnummer' AND firma='".$this->app->User->GetFirma()."' LIMIT 1")."</i>";
-                    $kdrArr = $this->app->DB->SelectRow("SELECT name, email, strasse, ort, plz FROM adresse WHERE kundennummer='$kdrnummer' AND geloescht!=1 $adresseprojekt LIMIT 1");
-                    $kdr_name = $kdrArr['name'];
-                    $email = $kdrArr['email'];
-                    $parts = explode("\n", wordwrap($kdr_name, 20, "\n"));
-                    $kdr_name = $parts[0];
-                    $kdr_name = '<br><i style="color:purple">' . $kdr_name . '</i>';
-                    $email = '<br><i style="color:purple">' . $email . '</i>';
-
-                    $kdr_strasse = $kdrArr['strasse'];
-                    $parts = explode("\n", wordwrap($kdr_strasse, 40, "\n"));
-                    $kdr_strasse = $parts[0];
-                    $kdr_strasse = '<br><i style="color:purple">' . $kdr_strasse . '</i>';
-
-                    $kdr_plz = '<br><i style="color:purple">' . $kdrArr['plz'] . '</i>';
-                    $kdr_ort = '<br><i style="color:purple">' . $kdrArr['ort'] . '</i>';
-                } else {
-                    $checked = '';
-                    $checkid = '';
-                    $kdrnummer = '';
-                    $checkidemail = '';
-                    $kdr_name = '';
-                    $kdr_strasse = '';
-                    $kdr_plz = '';
-                    $kdr_ort = '';
-                    $email = '';
-                }
-                if ($kdrnummer != '') {
-                    $kdr_addresse_id = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='$kdrnummer' AND geloescht!=1 $adresseprojekt LIMIT 1");
-                } else {
-                    $kdr_addresse_id = '';
-                }
-
-                $warenkorb['name'] = $this->app->erp->LimitWord($warenkorb['name'], 20);
-                $warenkorb['strasse'] = $this->app->erp->LimitWord($warenkorb['strasse'], 20);
 
                 $htmltable->NewRow();
 
@@ -1791,22 +1744,23 @@ class Shopimport {
                     $date = "";
                 }
                 $htmltable->AddCol($date);
-                $htmltable->AddCol($warenkorb['name'] . $kdr_name . '<br>' . $warenkorb['email'] . $email);
+                $htmltable->AddCol($warenkorb['name'].'<br>'.$warenkorb['email']);
                 $htmltable->AddCol($warenkorb['internebezeichnung']);
 
-                $htmltable->AddCol($warenkorb['strasse'] . $kdr_strasse);
-                $htmltable->AddCol($warenkorb['plz'] . $kdr_plz);
-                $htmltable->AddCol($warenkorb['ort'] . $kdr_ort);
-                if ($checkid != '') {
-                    $htmltable->AddCol('<input type="text" size="10" value="' . $kdrnummer . '" name="import_kundennummer[' . $arr[$i]['id'] . ']">');
-                } else {
-                    $htmltable->AddCol('<input type="text" size="10" value="' . $warenkorb['kundennummer'] . '" name="import_kundennummer[' . $arr[$i]['id'] . ']">');
-                }
-
-                $htmltable->AddCol('<input type="checkbox" ' . $checked . ' name="kundennummer[' . $arr[$i]['id'] . ']" value="1">');
-                //$htmltable->AddCol('<input type="text" size="8" value="'.$warenkorb[kundennummer].'">&nbsp;<img src="./themes/[THEME]/images/zoom_in.png" border="0">');
+                $htmltable->AddCol($warenkorb['strasse']);
+                $htmltable->AddCol($warenkorb['plz']);
+                $htmltable->AddCol($warenkorb['ort']);
                 $htmltable->AddCol($warenkorb['land']);
-                $htmltable->AddCol(number_format($warenkorb['gesamtsumme'], 2, ',', '.'));
+                $htmltable->AddCol($warenkorb['zahlungsweise']);
+
+                $input_kundennummer_id = 'import_kundennummer_'.$arr[$i]['id'].'';
+                $input_kundennummer_name = 'import_kundennummer['.$arr[$i]['id'].']';
+                $input_kundennummer_value = $getCustomerNumberFromShopCart_result['kundennummer'];
+                $this->app->YUI->AutoComplete($input_kundennummer_id, "kunde", 1);
+                $htmltable->AddCol('<input type="text" size="10" id="'.$input_kundennummer_id.'" name="'.$input_kundennummer_name.'" value="'.$input_kundennummer_value.'">');
+                $htmltable->AddCol('<font color="'.$matchcolor.'" style="font-weight:'.$matchfont.'">'.$matchtext.'');
+
+/*                $htmltable->AddCol(number_format($warenkorb['gesamtsumme'], 2, ',', '.'));
                 $saldo_kunde = round($this->app->erp->SaldoAdresse($kdr_addresse_id), 2);
                 if ($saldo_kunde > 0) {
                     $saldo_kunde = '<b style="color:red">' . number_format($saldo_kunde, 2, ',', '.') . '</b>';
@@ -1815,15 +1769,9 @@ class Shopimport {
                 }
                 $htmltable->AddCol($saldo_kunde);
                 $htmltable->AddCol($warenkorb['zahlungsweise']);
-
                 $htmltable->AddCol($warenkorb['affiliate_ref']);
-                //$htmltable->AddCol('<a href="">Einzelimport</a>&nbsp;<a href="">verwerfen</a>');
-                //$warenkorb[gesamtsumme] = str_replace(".","",$warenkorb[gesamtsumme]);
-                $gesamtsumme = (isset($gesamtsumme) ? $gesamtsumme : 0) + $warenkorb['gesamtsumme'];
-                $checkid = '';
-                $checkidemail = '';
-                $validkundennummer = '';
-                //$this->app->Tpl->Add('INHALT',"<tr><td><input type=\"checkbox\" name=\"\" value=\"1\" checked></td><td>{$warenkorb[onlinebestellnummer]}</td><td>{$warenkorb[name]}</td><td>{$warenkorb[land]}</td><td>{$warenkorb[gesamtsumme]}</td></tr>");
+                $gesamtsumme = (isset($gesamtsumme) ? $gesamtsumme : 0) + $warenkorb['gesamtsumme'];                
+*/
             }
         } else {
             if ($deletedRows > 0) {
@@ -1849,9 +1797,9 @@ class Shopimport {
         $htmltable->AddCol('');
         $htmltable->AddCol('');
         $htmltable->AddCol('');
-        $htmltable->AddCol(number_format($gesamtsumme, 2, ',', '.'));
+/*        $htmltable->AddCol(number_format($gesamtsumme, 2, ',', '.'));
         $htmltable->AddCol('');
-        $htmltable->AddCol('');
+        $htmltable->AddCol('');*/
 
         if ($enthaeltdoppeltenummern) {
             $this->app->Tpl->Add('INHALT', '<div class="error">Es wurde ein Auftrag aus einem Shop geholt, der bereits importiert wurde!</div>');
@@ -1965,6 +1913,5 @@ class Shopimport {
         $insid = $this->app->DB->GetInsertID();
         return ['status' => 1, 'id' => $insid, 'info' => 'Auftrag wurde f&uuml;r Import erfasst.'];
     }
-
 }
 
