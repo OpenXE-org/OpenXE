@@ -2505,6 +2505,8 @@ class Auftrag extends GenAuftrag
     );
     if($onlineshopName != ''){
       $this->app->Tpl->Set('ONLINESHOP', $onlineshopName);
+    } else {
+      $this->app->Tpl->Set('SHOPHIDDEN', 'hidden');
     }
 
     if($menu) {

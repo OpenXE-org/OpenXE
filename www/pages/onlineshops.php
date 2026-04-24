@@ -264,7 +264,7 @@ INNER JOIN shopexport s ON
 
     $this->app->ActionHandler('artikellist', 'ShopexportArtikelList');
 
-    $this->app->ActionHandler('functioncall', 'ShopexportFunctionCall');
+    $this->app->ActionHandler('shopspecificfunction', 'ShopExportspecificfunction');
 
     $this->app->erp->Headlines('Shopexport');
     $this->app->ActionHandlerListen($app);
@@ -3150,17 +3150,19 @@ INNER JOIN shopexport s ON
       $moduleName = $this->app->DB->Select("SELECT modulename FROM shopexport WHERE id = '$id' LIMIT 1");
       try {
         $obj = $this->app->erp->LoadModul($moduleName);
-        if(method_exists($obj,'EinstellungenStruktur')){
-          $struktur = $obj->EinstellungenStruktur($id);
-          foreach ($struktur['felder'] as $fieldname => $fieldData){
-            if($fieldData['typ'] === 'password'){
-              if($fieldsToSave[$fieldname] === '***************') {
-                $oldData = json_decode($this->app->DB->Select('SELECT einstellungen_json FROM shopexport WHERE id=' . $id), true);
-                $fieldsToSave[$fieldname] = $oldData['felder'][$fieldname];
+        if (!empty($obj)) {
+            if(method_exists($obj,'EinstellungenStruktur')){
+              $struktur = $obj->EinstellungenStruktur($id);
+              foreach ($struktur['felder'] as $fieldname => $fieldData){
+                if($fieldData['typ'] === 'password'){
+                  if($fieldsToSave[$fieldname] === '***************') {
+                    $oldData = json_decode($this->app->DB->Select('SELECT einstellungen_json FROM shopexport WHERE id=' . $id), true);
+                    $fieldsToSave[$fieldname] = $oldData['felder'][$fieldname];
+                  }
+                  $fieldsToSave[$fieldname] = substr(md5($fieldsToSave[$fieldname]),0,15);
+                }
               }
-              $fieldsToSave[$fieldname] = substr(md5($fieldsToSave[$fieldname]),0,15);
             }
-          }
         }
       }catch(Exception $ex){
 //        $this->app->erp->LogFile('Fehlerhafter Aufruf in Modul: '.$moduleName);
@@ -4996,19 +4998,11 @@ INNER JOIN shopexport s ON
         $this->logger->Log($level, 'Onlineshops (Shop '.$shopid.') '.$message, (array) $dump);
     }
 
-    public function ShopexportFunctionCall()
+    public function ShopExportspecificfunction()
     {
         $id = (int)$this->app->Secure->GetGET('id');
-        $function = $this->app->Secure->GetGET('function');
-        $result = $this->app->remote->RemoteCommand($id, $function);
-        $action = $this->app->Secure->GetGET('redirect');
-        $action = preg_replace('/[^a-z]/', '', $action);
-        if (!empty($result['message'])) {
-            if (empty($result['messageclass'])) {
-                $result['messageclass'] = 'info';
-            }
-            $msg = '&msg='.$this->app->erp->base64_url_encode('<div class="'.$result['messageclass'].'">'.$result['message'].'</div>');
-        }
-        $this->app->Location->execute('index.php?module=onlineshops&id='.$id.'&action='.$action.$msg);
+        $shopspecificfunction = $this->app->Secure->GetGET('shopspecificfunction');
+        $data = array('shopid' => $id);
+        $result = $this->app->remote->RemoteCommand($id, $shopspecificfunction, $data);
     }
 }

@@ -17835,6 +17835,10 @@ function CheckShopTabelle($artikel)
       $this->app->DB->Update("UPDATE `{$doctype}` SET `ust_ok` = 0 WHERE `id` = '{$auftrag}' LIMIT 1");
     }
 
+    if (empty($warenkorb['zahlungsweise'])) {
+        $warenkorb['zahlungsweise'] = $this->app->DB->Select("SELECT zahlungsweise FROM adresse WHERE id = '$adresse' LIMIT 1");
+    }
+
   if($warenkorb['zahlungsweise'] === 'rechnung')
   {
     $fromstandard = true;

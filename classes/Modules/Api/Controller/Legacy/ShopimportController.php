@@ -253,10 +253,10 @@ class ShopimportController
         $cart = $this->app->DB->SelectRow(
             sprintf('SELECT * FROM `shopimport_auftraege` WHERE `id` = %d', $res['id'])
         );
-        [$customerNumber, $customerNumberImported] = $shopimport->getCustomerNumberFromShopCart($cart);
+        $getCustomerNumberFromShopCart_result = $shopimport->getCustomerNumberFromShopCart($cart);
         $res = $shopimport->importShopOrder(
             $res['id'], $shop['utf8codierung'],
-            $customerNumber, $customerNumberImported,
+            $getCustomerNumberFromShopCart_result['match'] === 1, $getCustomerNumberFromShopCart_result['kundennummer'],
             $unknownPaymentTypes
         );
         

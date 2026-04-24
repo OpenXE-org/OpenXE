@@ -9574,7 +9574,7 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         $menu =
           "<table cellpadding=0 cellspacing=0><tr><td nowrap>" .
           "<a href=\"index.php?module=importvorlage&action=edit&id=%value%\" title=\"{|Bearbeiten|}\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;" .
-          "<a href=\"index.php?module=importvorlage&action=import&id=%value%\" title=\"{|Importieren|}\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>" . "&nbsp;" .
+          "<a href=\"index.php?module=importvorlage&action=import&id=%value%\" title=\"{|Importieren|}\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/upload.svg\" border=\"0\"></a>" . "&nbsp;" .
           "<a href=\"index.php?module=importvorlage&action=downloadjson&id=%value%\" title=\"{|Vorlage erstellen|}\">"."<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/streamline-icon-share-3-alternate.svg\" border=\"0\"></a>". "&nbsp;".
           "<a href=\"index.php?module=importvorlage&action=copy&id=%value%\" title=\"{|Kopie erstellen|}\">"."<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\"></a>". "&nbsp;".
           "<a href=\"#\" title=\"{|Löschen|}\" onclick=DeleteDialog(\"index.php?module=importvorlage&action=delete&id=%value%\");>" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;" .
