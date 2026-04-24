@@ -55,18 +55,23 @@ final class DatabaseLogHandler extends AbstractLogHandler
             $values['origin_detail'] = $context->getOriginDetail();
         }
 
-        if ($context->hasDump()) {
-            $values['dump'] = substr(print_r($context->getDump(), true),0,10000);
-        }
-
         if ($context->hasException()) {
             $values['dump'] = (string)$context->getException();
         }
 
-        $sql = 'INSERT INTO `log`
-                (`log_time`, `level`, `message`, `class`, `method`, `line`, `origin_type`, `origin_detail`, `dump`) 
-                VALUES 
-                (NOW(3), :level, :message, :class, :method, :line, :origin_type, :origin_detail, :dump)';
-        $this->db->perform($sql, $values);
+        if ($context->hasDump()) {
+            $values['dump'] .= print_r($context->getDump(), true);
+        }
+
+        $dumpsplit = str_split((string) $values['dump'], 10000);
+
+        foreach ($dumpsplit as $dump) {
+            $values['dump'] = $dump;
+            $sql = 'INSERT INTO `log`
+                    (`log_time`, `level`, `message`, `class`, `method`, `line`, `origin_type`, `origin_detail`, `dump`)
+                    VALUES
+                    (NOW(3), :level, :message, :class, :method, :line, :origin_type, :origin_detail, :dump)';
+            $this->db->perform($sql, $values);
+        }
     }
 }
