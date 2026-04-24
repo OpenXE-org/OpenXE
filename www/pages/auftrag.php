@@ -5747,6 +5747,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $meldung = "Auftrag $belegnr kann nicht weitergefuehrt werden, da keine Artikel gebucht sind!";
       $this->app->erp->EventMitSystemLog($this->app->User->GetID(), $meldung, -1,'', 'alert', 1);
     }
+    
+    // Ensure tax for each position (sometimes it is empty due to an unresolved bug)^M
+    $this->app->DB->Update("UPDATE auftrag_position SET umsatzsteuer = 'normal' WHERE auftrag=$id AND umsatzsteuer =''");
+    
     $ret = false;
     $zusatzcheck = true;
     $this->app->erp->RunHook('AuftragVersandZusatzcheck', 2, $id, $zusatzcheck);
