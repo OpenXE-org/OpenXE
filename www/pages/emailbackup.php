@@ -435,7 +435,16 @@ $width = array('10%'); // Fill out manually later
 
     $code = $this->app->Secure->GetGET('code');
     $error = $this->app->Secure->GetGET('error');
-    $accountId = (int)$this->app->Secure->GetGET('state');
+    $state = $this->app->Secure->GetGET('state');
+
+    // Extract account ID from state parameter (format: account_<id>_<random>)
+    $accountId = null;
+    if (!empty($state) && strpos($state, 'account_') === 0) {
+      $stateParts = explode('_', $state);
+      if (count($stateParts) >= 2) {
+        $accountId = (int)$stateParts[1];
+      }
+    }
 
     if (!empty($error)) {
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Office365 Authorization abgelehnt: " . htmlspecialchars($error) . "</div>");
@@ -453,7 +462,7 @@ $width = array('10%'); // Fill out manually later
       exit;
     }
 
-    // Get account ID from session or state parameter
+    // Get account ID from state or session as fallback
     if (empty($accountId)) {
       $accountId = $_SESSION['office365_account_id'] ?? null;
     }
@@ -477,14 +486,21 @@ $width = array('10%'); // Fill out manually later
       $office365AuthService = $this->app->Container->get('Office365AuthorizationService');
       $office365Gateway = $this->app->Container->get('Office365AccountGateway');
 
-      // Process the authorization
-      $office365Account = $office365AuthService->authorizationCallback($code, 1);
+      // Get current user ID
+      $userId = (int)$this->app->User->GetID();
+      if (empty($userId)) {
+        throw new Exception("No user session found");
+      }
+
+      // Process the authorization with correct user ID
+      $office365Account = $office365AuthService->authorizationCallback($code, $userId);
 
       // Save email address as property
       $office365Gateway->saveAccountProperty($office365Account->getId(), 'email_address', $email);
 
       unset($_SESSION['office365_account_id']);
       unset($_SESSION['office365_email']);
+      unset($_SESSION['office365_state']);
 
       $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Office365 Account erfolgreich authorisiert!</div>");
       header("Location: index.php?module=emailbackup&action=edit&id=" . $accountId . "&msg=" . $msg);
