@@ -217,7 +217,8 @@ $width = array('10%'); // Fill out manually later
         $imap_type_select = Array( 
             '1' => 'Standard',
             '3' => 'SSL',
-            '5' => 'Oauth'    
+            '5' => 'Oauth (Google)',
+            '6' => 'Oauth (Office365)'
         );       
         $imap_type_select = $this->app->erp->GetSelectAsso($imap_type_select,$emailbackup['imap_type']);
         $this->app->Tpl->Set('IMAP_TYPE_SELECT',$imap_type_select);          
