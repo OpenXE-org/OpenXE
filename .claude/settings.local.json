@@ -7,7 +7,8 @@
       "Bash(git commit -m ' *)",
       "WebFetch(domain:mailtrap.io)",
       "Bash(composer require *)",
-      "Bash(php test_office365_send_email.php)"
+      "Bash(php test_office365_send_email.php)",
+      "Bash(git commit -m 'fix: Office365AccountGateway fetchRow\\(\\) empty result handling *)"
     ]
   }
 }
