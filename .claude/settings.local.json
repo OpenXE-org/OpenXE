@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(mysql --help)",
-      "Bash(php migrations/run_migration.php)"
+      "Bash(php migrations/run_migration.php)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "WebFetch(domain:mailtrap.io)",
+      "Bash(composer require *)",
+      "Bash(php test_office365_send_email.php)"
     ]
   }
 }
