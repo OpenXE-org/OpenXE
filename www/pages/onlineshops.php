@@ -5001,7 +5001,7 @@ INNER JOIN shopexport s ON
     public function ShopExportspecificfunction()
     {
         $id = (int)$this->app->Secure->GetGET('id');
-        $shopspecificfunction = $this->app->Secure->GetGET('shopspecificfunction');
+        $shopspecificfunction = $this->app->Secure->GetGET('function');
         $data = array('shopid' => $id);
         $result = $this->app->remote->RemoteCommand($id, $shopspecificfunction, $data);
     }
