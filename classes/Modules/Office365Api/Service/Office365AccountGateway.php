@@ -27,7 +27,7 @@ final class Office365AccountGateway
         $query = 'SELECT * FROM `office365_account` WHERE `id` = :id';
         $result = $this->database->fetchRow($query, ['id' => $id]);
 
-        if ($result === null) {
+        if (empty($result)) {
             return null;
         }
 
@@ -45,7 +45,7 @@ final class Office365AccountGateway
 
         $result = $this->database->fetchRow($query, ['email' => $email]);
 
-        if ($result === null) {
+        if (empty($result)) {
             return null;
         }
 
@@ -57,7 +57,7 @@ final class Office365AccountGateway
         $query = 'SELECT * FROM `office365_account` WHERE `user_id` = :user_id LIMIT 1';
         $result = $this->database->fetchRow($query, ['user_id' => $userId]);
 
-        if ($result === null) {
+        if (empty($result)) {
             return null;
         }
 
@@ -69,7 +69,7 @@ final class Office365AccountGateway
         $query = 'SELECT * FROM `office365_access_token` WHERE `office365_account_id` = :account_id ORDER BY `id` DESC LIMIT 1';
         $result = $this->database->fetchRow($query, ['account_id' => $accountId]);
 
-        if ($result === null) {
+        if (empty($result)) {
             return null;
         }
 
@@ -127,7 +127,7 @@ final class Office365AccountGateway
         $results = $this->database->fetchAll($query, ['account_id' => $accountId]);
 
         $properties = [];
-        if ($results !== null) {
+        if (!empty($results)) {
             foreach ($results as $row) {
                 $properties[] = new Office365AccountPropertyValue($row['varname'], $row['value']);
             }
@@ -176,7 +176,7 @@ final class Office365AccountGateway
         $query = 'SELECT scope FROM `office365_account_scope` WHERE `office365_account_id` = :account_id';
         $results = $this->database->fetchAll($query, ['account_id' => $accountId]);
 
-        if ($results === null) {
+        if (empty($results)) {
             return [];
         }
 
