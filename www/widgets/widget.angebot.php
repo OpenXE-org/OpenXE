@@ -26,8 +26,20 @@ class WidgetAngebot extends WidgetGenAngebot
       $projektdanach = explode(' ',$this->app->Secure->GetPOST('projekt'));
       $projektdanach = reset($projektdanach);
       $projektdanachid = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung = '$projektdanach' AND IFNULL(geloescht,0) = 0 LIMIT 1");
-      if(!$schreibschutzbefore && $projektdanach != $projektabkuerzung){
-        $this->app->erp->LoadSteuersaetze($id, 'angebot', $projektdanachid);
+      if(!$schreibschutzbefore) {
+            $this->app->erp->LoadSteuersaetze($id, 'angebot', $projektdanachid);
+      }
+      if(!$schreibschutzbefore && $projektdanach != $projektabkuerzung) {
+            if(!empty($projektdanachid)){
+                $standardlager = $this->app->DB->Select(
+                    "SELECT l.id FROM projekt p INNER JOIN lager l ON p.standardlager = l.id WHERE p.id = '$projektdanachid' LIMIT 1"
+                );
+                if($standardlager && $this->form->CallbackAndMandatorycheck(true)){
+                    $this->form->HTMLList['standardlager']->htmlvalue =
+                    $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id = '$standardlager' LIMIT 1");
+                    $this->form->HTMLList['standardlager']->dbvalue = $standardlager;
+                }
+            }
       }
       if(!$schreibschutzbefore && (bool)$this->app->Secure->GetPOST('schreibschutz')) {
         $this->app->DB->Update(
@@ -87,31 +99,6 @@ class WidgetAngebot extends WidgetGenAngebot
     $field = new HTMLSelect("waehrung",0,"waehrung",false,false,"1");
     $field->AddOptionsSimpleArray($waehrungOptions);
     $this->form->NewField($field);
-
-    if($this->app->Secure->GetPOST('speichern')!='') {
-      $before = $this->app->DB->SelectRow(
-        sprintf('SELECT projekt, schreibschutz FROM angebot WHERE id = %d', $id)
-      );
-      $projektbevor = $before['projekt'];
-
-      $projektabkuerzung = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id = '$projektbevor' LIMIT 1");
-      $projektdanach = explode(' ',$this->app->Secure->GetPOST('projekt'));
-      $projektdanach = reset($projektdanach);
-      if(empty($before['schreibschutz']) && $projektdanach != $projektabkuerzung){
-        $projektdanach = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung = '$projektdanach' LIMIT 1");
-        $this->app->erp->LoadSteuersaetze($id, 'angebot', $projektdanach);
-        if(!empty($projektdanach)){
-          $standardlager = $this->app->DB->Select(
-            "SELECT l.id FROM projekt p INNER JOIN lager l ON p.standardlager = l.id WHERE p.id = '$projektdanach' LIMIT 1"
-          );
-          if($standardlager && $this->form->CallbackAndMandatorycheck(true)){
-            $this->form->HTMLList['standardlager']->htmlvalue =
-              $this->app->DB->Select("SELECT bezeichnung FROM lager WHERE id = '$standardlager' LIMIT 1");
-            $this->form->HTMLList['standardlager']->dbvalue = $standardlager;
-          }
-        }
-      }
-    }
 
     $this->app->Tpl->Set('VORWUNSCHLAGER','<!--');
     $this->app->Tpl->Set('NACHWUNSCHLAGER','-->');

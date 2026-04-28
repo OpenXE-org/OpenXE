@@ -33547,8 +33547,17 @@ function Firmendaten($field,$projekt="")
           $steuersatz_ermaessigt = $projekt_arr['steuersatz_ermaessigt'];
         }
         else {
-          $steuersatz_normal = $this->Firmendaten('steuersatz_normal');
-          $steuersatz_ermaessigt = $this->Firmendaten('steuersatz_ermaessigt');
+            $land = $this->app->DB->Select("SELECT land FROM $typ WHERE id = $id");
+            if($objSteuersaetze !== null && method_exists($objSteuersaetze, 'checkTaxesToSet')) {
+                $steuersaetze = $objSteuersaetze->getTaxesByCountry($land);
+            }
+            if (!empty($steuersaetze)) {
+                $steuersatz_normal = $steuersaetze['normal'];
+                $steuersatz_ermaessigt = $steuersaetze['ermaessigt'];
+            } else {
+                $steuersatz_normal = $this->Firmendaten('steuersatz_normal');
+                $steuersatz_ermaessigt = $this->Firmendaten('steuersatz_ermaessigt');
+            }
         }
 
         $this->app->DB->Update("UPDATE $typ SET steuersatz_normal='$steuersatz_normal',steuersatz_ermaessigt='$steuersatz_ermaessigt' WHERE id='$id' LIMIT 1");
