@@ -23,6 +23,7 @@ class Emailbackup {
         $this->app->ActionHandler("test_imap",'emailbackup_test_imap');
         $this->app->ActionHandler("office365_authorize",'emailbackup_office365_authorize');
         $this->app->ActionHandler("office365_callback",'emailbackup_office365_callback');
+        $this->app->ActionHandler("oauth_callback",'emailbackup_office365_callback');
 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
