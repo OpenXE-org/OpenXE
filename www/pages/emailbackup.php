@@ -409,16 +409,21 @@ $width = array('10%'); // Fill out manually later
 
     try {
       $office365AuthService = $this->app->Container->get('Office365AuthorizationService');
-      $authUrl = $office365AuthService->getAuthorizationUrl();
 
-      // Store account ID in session for callback
+      // Use account ID as state parameter for security
+      $state = 'account_' . $id . '_' . bin2hex(random_bytes(16));
+      $authUrl = $office365AuthService->getAuthorizationUrl([], $state);
+
+      // Also store in session as backup
       session_start();
       $_SESSION['office365_account_id'] = $id;
       $_SESSION['office365_email'] = $email;
+      $_SESSION['office365_state'] = $state;
 
       header('Location: ' . $authUrl);
       exit;
     } catch (Exception $e) {
+      error_log("Office365 Authorization Error: " . $e->getMessage());
       $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Office365 Authorization Fehler: " . $e->getMessage() . "</div>");
       $this->emailbackup_edit();
     }
@@ -430,35 +435,53 @@ $width = array('10%'); // Fill out manually later
 
     $code = $this->app->Secure->GetGET('code');
     $error = $this->app->Secure->GetGET('error');
+    $accountId = (int)$this->app->Secure->GetGET('state');
 
     if (!empty($error)) {
-      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Office365 Authorization abgelehnt: " . htmlspecialchars($error) . "</div>");
-      $this->emailbackup_list();
-      return;
+      $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Office365 Authorization abgelehnt: " . htmlspecialchars($error) . "</div>");
+      if (!empty($accountId)) {
+        header("Location: index.php?module=emailbackup&action=edit&id=" . $accountId . "&msg=" . $msg);
+      } else {
+        header("Location: index.php?module=emailbackup&action=list&msg=" . $msg);
+      }
+      exit;
     }
 
     if (empty($code)) {
-      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Kein Authorization Code erhalten</div>");
-      $this->emailbackup_list();
-      return;
+      $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Authorization Code erhalten</div>");
+      header("Location: index.php?module=emailbackup&action=list&msg=" . $msg);
+      exit;
     }
 
-    $accountId = $_SESSION['office365_account_id'] ?? null;
+    // Get account ID from session or state parameter
+    if (empty($accountId)) {
+      $accountId = $_SESSION['office365_account_id'] ?? null;
+    }
     $email = $_SESSION['office365_email'] ?? null;
 
     if (empty($accountId)) {
-      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Session abgelaufen - bitte versuche es erneut</div>");
-      $this->emailbackup_list();
-      return;
+      $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Session abgelaufen - bitte versuche es erneut</div>");
+      header("Location: index.php?module=emailbackup&action=list&msg=" . $msg);
+      exit;
     }
 
     try {
+      // Load the account first to verify it exists
+      $result = $this->app->DB->SelectArr("SELECT email FROM emailbackup WHERE id = $accountId LIMIT 1");
+      if (empty($result)) {
+        throw new Exception("Account not found");
+      }
+      $email = $result[0]['email'] ?? $email;
+
+      // Get services from container
       $office365AuthService = $this->app->Container->get('Office365AuthorizationService');
+      $office365Gateway = $this->app->Container->get('Office365AccountGateway');
+
+      // Process the authorization
       $office365Account = $office365AuthService->authorizationCallback($code, 1);
 
       // Save email address as property
-      $gateway = $this->app->Container->get('Office365AccountGateway');
-      $gateway->saveAccountProperty($office365Account->getId(), 'email_address', $email);
+      $office365Gateway->saveAccountProperty($office365Account->getId(), 'email_address', $email);
 
       unset($_SESSION['office365_account_id']);
       unset($_SESSION['office365_email']);
@@ -467,6 +490,7 @@ $width = array('10%'); // Fill out manually later
       header("Location: index.php?module=emailbackup&action=edit&id=" . $accountId . "&msg=" . $msg);
       exit;
     } catch (Exception $e) {
+      error_log("Office365 Callback Error: " . $e->getMessage() . " - " . $e->getTraceAsString());
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Authorization Fehler: " . htmlspecialchars($e->getMessage()) . "</div>");
       header("Location: index.php?module=emailbackup&action=edit&id=" . $accountId . "&msg=" . $msg);
       exit;
