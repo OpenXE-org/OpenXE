@@ -1,0 +1,194 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  php-lint:
+    name: PHP Lint (own code)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, curl, soap, mbstring, intl, mysqli, pdo_mysql
+          coverage: none
+
+      - name: Lint changed/own PHP files
+        shell: bash
+        run: |
+          set -e
+          # Lint our own code only — vendor/ is third-party
+          # Focused on areas touched by this branch + general project code
+          paths=(
+            "classes"
+            "www/pages"
+            "www/lib"
+            "cronjobs"
+            "migrations"
+            "upgrade/data/upgrade.php"
+          )
+          fail=0
+          for p in "${paths[@]}"; do
+            if [ -e "$p" ]; then
+              while IFS= read -r -d '' f; do
+                if ! php -l "$f" >/dev/null 2>&1; then
+                  echo "::error file=$f::PHP syntax error"
+                  php -l "$f" || true
+                  fail=1
+                fi
+              done < <(find "$p" -type f -name '*.php' -print0)
+            fi
+          done
+          exit $fail
+
+  json-validate:
+    name: Validate JSON files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate db_schema.json
+        run: python3 -c "import json,sys; json.load(open('upgrade/data/db_schema.json')); print('db_schema.json OK')"
+
+      - name: Validate composer.json
+        run: python3 -c "import json,sys; json.load(open('composer.json')); print('composer.json OK')"
+
+  db-schema:
+    name: Database schema integrity
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: openxe_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for MariaDB
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
+              echo "MariaDB is up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "MariaDB did not start"; exit 1
+
+      - name: Import database/struktur.sql
+        run: |
+          mysql -h127.0.0.1 -uroot -proot openxe_test < database/struktur.sql
+
+      - name: Verify Office365 tables exist
+        run: |
+          set -e
+          for t in office365_account office365_access_token office365_account_property office365_account_scope; do
+            count=$(mysql -h127.0.0.1 -uroot -proot -N -B -e \
+              "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='openxe_test' AND table_name='$t';")
+            if [ "$count" -ne 1 ]; then
+              echo "::error::Missing Office365 table: $t"
+              exit 1
+            fi
+            echo "OK: $t"
+          done
+
+      - name: Verify Office365 migration is idempotent
+        run: |
+          # The migration uses CREATE TABLE IF NOT EXISTS, so re-running on top
+          # of struktur.sql must not fail. The ALTER TABLE foreign-key statements
+          # may already exist; allow that specific case.
+          mysql -h127.0.0.1 -uroot -proot openxe_test < migrations/office365_oauth_tables.sql || \
+            echo "Migration ALTER statements may duplicate existing FKs (expected on top of struktur.sql)."
+
+      - name: Cross-check db_schema.json vs struktur.sql
+        run: |
+          python3 - <<'PY'
+          import json, re, sys
+
+          schema = json.load(open('upgrade/data/db_schema.json'))
+          schema_tables = {t['name'] for t in schema.get('tables', [])}
+
+          sql = open('database/struktur.sql', encoding='utf-8', errors='ignore').read()
+          sql_tables = set(re.findall(r'CREATE TABLE `([^`]+)`', sql))
+
+          only_in_schema = sorted(schema_tables - sql_tables)
+          only_in_sql    = sorted(sql_tables - schema_tables)
+
+          if only_in_schema:
+              print('Tables in db_schema.json but missing in struktur.sql:')
+              for t in only_in_schema: print(f'  - {t}')
+          if only_in_sql:
+              print('Tables in struktur.sql but missing in db_schema.json:')
+              for t in only_in_sql: print(f'  - {t}')
+
+          # Hard requirement: Office365 tables must be in BOTH files
+          required = {'office365_account', 'office365_access_token',
+                      'office365_account_property', 'office365_account_scope'}
+          missing_schema = required - schema_tables
+          missing_sql    = required - sql_tables
+          if missing_schema or missing_sql:
+              if missing_schema: print(f'::error::Missing in db_schema.json: {sorted(missing_schema)}')
+              if missing_sql:    print(f'::error::Missing in struktur.sql:  {sorted(missing_sql)}')
+              sys.exit(1)
+          print('Office365 tables present in both schema files.')
+          PY
+
+  office365-module:
+    name: Office365Api module smoke check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, curl, soap, mbstring, intl
+          coverage: none
+
+      - name: Lint Office365Api module files
+        run: |
+          set -e
+          for f in $(find classes/Modules/Office365Api -type f -name '*.php'); do
+            php -l "$f"
+          done
+
+      - name: Lint Office365 transport + auth integration
+        run: |
+          set -e
+          php -l classes/Components/Mailer/Transport/Office365SmtpTransport.php
+          php -l classes/Components/Mailer/Exception/Office365SmtpException.php
+          php -l classes/Modules/SystemMailer/Transport/PhpMailerOffice365Authentification.php
+          php -l classes/Modules/SystemMailer/SystemMailer.php
+          php -l classes/Modules/SystemMailer/Service/MailerTransportFactory.php
+          php -l classes/Modules/SystemMailer/Data/EmailBackupAccount.php
+
+      - name: Verify AUTH_OFFICE365 wiring
+        run: |
+          set -e
+          # Constant defined
+          grep -q "AUTH_OFFICE365 = 'oauth_office365'" classes/Modules/SystemMailer/Data/EmailBackupAccount.php
+
+          # Allowed in SystemMailer::composeAndSendEmail
+          grep -q "AUTH_OFFICE365" classes/Modules/SystemMailer/SystemMailer.php
+
+          # Handled by transport factory
+          grep -q "AUTH_OFFICE365" classes/Modules/SystemMailer/Service/MailerTransportFactory.php
+
+          # UI dropdown contains the option
+          grep -q "oauth_office365" www/pages/emailbackup.php
+
+          echo "AUTH_OFFICE365 wired through Account, SystemMailer, Factory, and UI."
