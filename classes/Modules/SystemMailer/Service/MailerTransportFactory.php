@@ -50,31 +50,19 @@ class MailerTransportFactory
      */
     public function createMailerTransport(EmailBackupAccount $account):MailerTransportInterface
     {
-        error_log("MailerTransportFactory: Creating transport for auth type: " . $account->getSmtpAuthType());
+        switch ($account->getSmtpAuthType()) {
 
-        try {
-            switch ($account->getSmtpAuthType()) {
+            case EmailBackupAccount::AUTH_SMTP:
+                return $this->createSmtpTransport($account);
 
-                case EmailBackupAccount::AUTH_SMTP:
-                    error_log("MailerTransportFactory: Creating SMTP transport");
-                    return $this->createSmtpTransport($account);
-                    break;
+            case EmailBackupAccount::AUTH_GMAIL:
+                return $this->createGoogleOAuthTransport($account);
 
-                case EmailBackupAccount::AUTH_GMAIL:
-                    error_log("MailerTransportFactory: Creating Google OAuth transport");
-                    return $this->createGoogleOAuthTransport($account);
+            case EmailBackupAccount::AUTH_OFFICE365:
+                return $this->createOffice365OAuthTransport($account);
 
-                case EmailBackupAccount::AUTH_OFFICE365:
-                    error_log("MailerTransportFactory: Creating Office365 OAuth transport");
-                    return $this->createOffice365OAuthTransport($account);
-
-                default:
-                    error_log("MailerTransportFactory: Unknown auth type: " . $account->getSmtpAuthType());
-                    throw new InvalidArgumentException('Only SMTP accounts are supported.');
-            }
-        } catch (\Exception $e) {
-            error_log("MailerTransportFactory: Exception - " . $e->getMessage() . " - " . $e->getTraceAsString());
-            throw $e;
+            default:
+                throw new InvalidArgumentException('Only SMTP accounts are supported.');
         }
     }
 
@@ -268,23 +256,17 @@ class MailerTransportFactory
      */
     public function createOffice365OAuthTransport(EmailBackupAccount $account):MailerTransportInterface
     {
-        error_log("Creating Office365 OAuth transport for email: " . $account->getSenderEmailAddress());
-
         $config = $this->createOffice365MailerConfig($account);
 
         /** @var Office365AccountGateway $office365Gateway */
         $office365Gateway = $this->container->get('Office365AccountGateway');
         $senderEmail = $account->getSenderEmailAddress();
-        error_log("Looking up Office365 account for: " . $senderEmail);
 
         $office365Account = $office365Gateway->getAccountByEmailAddress($senderEmail);
 
         if ($office365Account === null) {
-            error_log("Office365 account NOT found for email: " . $senderEmail);
             throw new Office365OAuthException('No Office365 account configured for email: ' . $senderEmail);
         }
-
-        error_log("Office365 account found with ID: " . $office365Account->getId());
 
         /** @var Office365AuthorizationService $office365Auth */
         $office365Auth = $this->container->get('Office365AuthorizationService');

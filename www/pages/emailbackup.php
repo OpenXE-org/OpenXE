@@ -293,9 +293,6 @@ $width = array('10%'); // Fill out manually later
 
     $result = $this->app->DB->SelectArr("SELECT angezeigtername, email FROM emailbackup WHERE id='$id' LIMIT 1");
 
-    error_log("=== SMTP Test Start ===");
-    error_log("Email Account: " . $result[0]['email']);
-
     try {
       $success = $this->app->erp->MailSend(
         $result[0]['email'],
@@ -309,25 +306,19 @@ $width = array('10%'); // Fill out manually later
       );
 
       if($success) {
-        error_log("SMTP Test SUCCESS");
         $msg = $this->app->erp->base64_url_encode(
           '<div class="info">Die Testmail wurde erfolgreich versendet an '.$result[0]['email'].'. '.$this->app->erp->mail_error.'</div>'
         );
       } else {
-        error_log("SMTP Test FAILED - mail_error: " . $this->app->erp->mail_error);
         $msg = $this->app->erp->base64_url_encode(
           '<div class="error">Fehler beim Versenden der Testmail: '.$this->app->erp->mail_error.'</div>'
         );
       }
     } catch (\Exception $e) {
-      error_log("SMTP Test EXCEPTION: " . $e->getMessage());
-      error_log("Trace: " . $e->getTraceAsString());
       $msg = $this->app->erp->base64_url_encode(
         '<div class="error">Fehler beim Versenden der Testmail: ' . $e->getMessage() . '</div>'
       );
     }
-
-    error_log("=== SMTP Test End ===");
 
     $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
   }
@@ -474,6 +465,14 @@ $width = array('10%'); // Fill out manually later
 
     if (empty($code)) {
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Kein Authorization Code erhalten</div>");
+      header("Location: index.php?module=emailbackup&action=list&msg=" . $msg);
+      exit;
+    }
+
+    // CSRF protection: state parameter must match the value stored in session
+    $sessionState = $_SESSION['office365_state'] ?? null;
+    if (empty($state) || empty($sessionState) || !hash_equals($sessionState, $state)) {
+      $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Ungültiger State-Parameter (CSRF-Schutz). Bitte erneut autorisieren.</div>");
       header("Location: index.php?module=emailbackup&action=list&msg=" . $msg);
       exit;
     }

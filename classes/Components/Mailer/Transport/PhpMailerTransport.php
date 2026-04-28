@@ -33,15 +33,6 @@ final class PhpMailerTransport implements MailerTransportInterface
         $this->config = $config;
         $this->phpMailer = $mailer;
 
-        error_log("PhpMailerTransport: Configuring PHPMailer");
-        error_log("  SMTPAuth (from config): " . ($config->getConfigValue('smtp_enabled', false) ? 'true' : 'false'));
-        error_log("  AuthType (from config): " . $config->getConfigValue('auth_type', 'smtp'));
-        error_log("  Username (from config): " . $config->getConfigValue('username', ''));
-        error_log("  Password (from config): " . (!empty($config->getConfigValue('password', '')) ? '***' : 'empty'));
-        error_log("  Host: " . $config->getConfigValue('host', 'localhost'));
-        error_log("  Port: " . $config->getConfigValue('port', 25));
-        error_log("  SMTPSecure: " . $config->getConfigValue('smtp_security', ''));
-
         //no username, no password = no SMTPAuth
         if($config->getConfigValue('username', '') == '' && $config->getConfigValue('pasword', '') == '') {
             $this->phpMailer->SMTPAuth = false;
@@ -73,14 +64,6 @@ final class PhpMailerTransport implements MailerTransportInterface
         $this->phpMailer->SMTPKeepAlive = $config->getConfigValue('smtp_keepalive', false);
         $this->phpMailer->SingleTo = $config->getConfigValue('singleto', false);
         $this->phpMailer->Sendmail = $config->getConfigValue('sendmail', '/usr/sbin/sendmail');
-
-        error_log("PhpMailerTransport: Final PHPMailer config");
-        error_log("  SMTPAuth: " . ($this->phpMailer->SMTPAuth ? 'true' : 'false'));
-        error_log("  AuthType: " . $this->phpMailer->AuthType);
-        error_log("  Username: " . $this->phpMailer->Username);
-        error_log("  Host: " . $this->phpMailer->Host);
-        error_log("  Port: " . $this->phpMailer->Port);
-        error_log("  SMTPSecure: " . $this->phpMailer->SMTPSecure);
 
         $this->status = self::STATUS_PREPARE;
         if ($logger !== null) {
