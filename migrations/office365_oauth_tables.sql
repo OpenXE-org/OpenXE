@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `office365_access_token` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `office365_account_id` (`office365_account_id`),
+  UNIQUE KEY `office365_account_id` (`office365_account_id`),
   KEY `expires` (`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `office365_account_property` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `office365_account_id` (`office365_account_id`)
+  UNIQUE KEY `account_varname` (`office365_account_id`,`varname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Add foreign key constraints after all tables are created

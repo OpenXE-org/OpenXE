@@ -9495,7 +9495,7 @@ CREATE TABLE `office365_access_token` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `office365_account_id` (`office365_account_id`),
+  UNIQUE KEY `office365_account_id` (`office365_account_id`),
   KEY `expires` (`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -9535,7 +9535,7 @@ CREATE TABLE `office365_account_property` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `office365_account_id` (`office365_account_id`)
+  UNIQUE KEY `account_varname` (`office365_account_id`,`varname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
