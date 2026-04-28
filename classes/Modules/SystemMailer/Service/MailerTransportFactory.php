@@ -139,7 +139,9 @@ class MailerTransportFactory
             'port'          => $account->getSmtpPort(),
             'smtp_security' => $account->getSmtpSecurity(),
             'mailer'        => 'smtp',
-            'smtp_debug'    => $debug
+            'smtp_debug'    => $debug,
+            'username'      => $email,
+            'password'      => 'oauth'
         ];
         if ($cfgValues['host'] === '') {
             $cfgValues['host'] = 'smtp.gmail.com';
@@ -227,7 +229,9 @@ class MailerTransportFactory
             'port'          => $account->getSmtpPort(),
             'smtp_security' => $account->getSmtpSecurity(),
             'mailer'        => 'smtp',
-            'smtp_debug'    => $debug
+            'smtp_debug'    => $debug,
+            'username'      => $email,
+            'password'      => 'oauth'
         ];
 
         if ($cfgValues['host'] === '') {
