@@ -293,8 +293,11 @@ $width = array('10%'); // Fill out manually later
 
     $result = $this->app->DB->SelectArr("SELECT angezeigtername, email FROM emailbackup WHERE id='$id' LIMIT 1");
 
-    if(
-      $this->app->erp->MailSend(
+    error_log("=== SMTP Test Start ===");
+    error_log("Email Account: " . $result[0]['email']);
+
+    try {
+      $success = $this->app->erp->MailSend(
         $result[0]['email'],
         $result[0]['angezeigtername'],
         array($result[0]['email']),
@@ -303,17 +306,29 @@ $width = array('10%'); // Fill out manually later
         'Dies ist eine Testmail für Account "'.$result[0]['email'].'".',
         '',0,false,'','',
         true
-      )
-    ) {
+      );
+
+      if($success) {
+        error_log("SMTP Test SUCCESS");
+        $msg = $this->app->erp->base64_url_encode(
+          '<div class="info">Die Testmail wurde erfolgreich versendet an '.$result[0]['email'].'. '.$this->app->erp->mail_error.'</div>'
+        );
+      } else {
+        error_log("SMTP Test FAILED - mail_error: " . $this->app->erp->mail_error);
+        $msg = $this->app->erp->base64_url_encode(
+          '<div class="error">Fehler beim Versenden der Testmail: '.$this->app->erp->mail_error.'</div>'
+        );
+      }
+    } catch (\Exception $e) {
+      error_log("SMTP Test EXCEPTION: " . $e->getMessage());
+      error_log("Trace: " . $e->getTraceAsString());
       $msg = $this->app->erp->base64_url_encode(
-        '<div class="info">Die Testmail wurde erfolgreich versendet an '.$result[0]['email'].'. '.$this->app->erp->mail_error.'</div>'
+        '<div class="error">Fehler beim Versenden der Testmail: ' . $e->getMessage() . '</div>'
       );
     }
-    else {
-      $msg = $this->app->erp->base64_url_encode(
-        '<div class="error">Fehler beim Versenden der Testmail: '.$this->app->erp->mail_error.'</div>'
-      );
-    }
+
+    error_log("=== SMTP Test End ===");
+
     $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
   }
 
