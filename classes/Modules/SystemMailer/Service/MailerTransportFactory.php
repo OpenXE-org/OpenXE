@@ -256,15 +256,23 @@ class MailerTransportFactory
      */
     public function createOffice365OAuthTransport(EmailBackupAccount $account):PhpMailerTransport
     {
+        error_log("Creating Office365 OAuth transport for email: " . $account->getSenderEmailAddress());
+
         $config = $this->createOffice365MailerConfig($account);
 
         /** @var Office365AccountGateway $office365Gateway */
         $office365Gateway = $this->container->get('Office365AccountGateway');
-        $office365Account = $office365Gateway->getAccountByEmailAddress($account->getSenderEmailAddress());
+        $senderEmail = $account->getSenderEmailAddress();
+        error_log("Looking up Office365 account for: " . $senderEmail);
+
+        $office365Account = $office365Gateway->getAccountByEmailAddress($senderEmail);
 
         if ($office365Account === null) {
-            throw new Office365OAuthException('No Office365 account configured for email: ' . $account->getSenderEmailAddress());
+            error_log("Office365 account NOT found for email: " . $senderEmail);
+            throw new Office365OAuthException('No Office365 account configured for email: ' . $senderEmail);
         }
+
+        error_log("Office365 account found with ID: " . $office365Account->getId());
 
         /** @var Office365AuthorizationService $office365Auth */
         $office365Auth = $this->container->get('Office365AuthorizationService');

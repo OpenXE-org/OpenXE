@@ -35,7 +35,12 @@ final class Office365AuthorizationService
         $credentials = $this->credentialsService->getCredentials();
 
         if (empty($scopes)) {
-            $scopes = ['https://outlook.office365.com/.default', 'offline_access'];
+            $scopes = [
+                'https://outlook.office.com/SMTP.Send',
+                'https://outlook.office.com/IMAP.AccessAsUser.All',
+                'https://outlook.office.com/POP.AccessAsUser.All',
+                'offline_access'
+            ];
         }
 
         $params = [
@@ -88,7 +93,16 @@ final class Office365AuthorizationService
         );
 
         $this->gateway->saveAccessToken($accountId, $tokenResponse->toAccessTokenData());
-        $this->gateway->saveAccountScope($accountId, 'https://outlook.office365.com/.default');
+
+        $scopes = [
+            'https://outlook.office.com/SMTP.Send',
+            'https://outlook.office.com/IMAP.AccessAsUser.All',
+            'https://outlook.office.com/POP.AccessAsUser.All',
+            'offline_access'
+        ];
+        foreach ($scopes as $scope) {
+            $this->gateway->saveAccountScope($accountId, $scope);
+        }
 
         return $accountData;
     }
@@ -106,7 +120,7 @@ final class Office365AuthorizationService
             'client_secret' => $credentials->getClientSecret(),
             'refresh_token' => $account->getRefreshToken(),
             'grant_type' => 'refresh_token',
-            'scope' => 'https://outlook.office365.com/.default offline_access',
+            'scope' => 'https://outlook.office.com/SMTP.Send https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All offline_access',
         ];
 
         $tokenUrl = sprintf(
@@ -136,7 +150,7 @@ final class Office365AuthorizationService
             'code' => $code,
             'redirect_uri' => $credentials->getRedirectUri(),
             'grant_type' => 'authorization_code',
-            'scope' => 'https://outlook.office365.com/.default offline_access',
+            'scope' => 'https://outlook.office.com/SMTP.Send https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All offline_access',
         ];
 
         $tokenUrl = sprintf(

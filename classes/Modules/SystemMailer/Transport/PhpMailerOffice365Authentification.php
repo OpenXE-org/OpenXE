@@ -36,31 +36,43 @@ final class PhpMailerOffice365Authentification implements PhpMailerOAuthAuthenti
 
     public function getOauth64(): string
     {
-        $properties = $this->gateway->getAccountProperties($this->office365Account->getId());
-        $emailAddress = $properties->get('email_address');
+        try {
+            $properties = $this->gateway->getAccountProperties($this->office365Account->getId());
+            $emailAddress = $properties->get('email_address');
 
-        if ($this->office365Account === null || $emailAddress === null) {
-            throw new OAuthCredentialsException('Office365 OAuth - missing credentials');
-        }
+            if ($this->office365Account === null || $emailAddress === null) {
+                error_log("Office365 OAuth: Missing credentials - account: " . ($this->office365Account ? $this->office365Account->getId() : 'null') . ", email: " . ($emailAddress ?? 'null'));
+                throw new OAuthCredentialsException('Office365 OAuth - missing credentials');
+            }
 
-        $token = $this->gateway->getAccessToken($this->office365Account->getId());
+            $token = $this->gateway->getAccessToken($this->office365Account->getId());
 
-        if ($token === null) {
-            throw new NoAccessTokenException('No access token available');
-        }
+            if ($token === null) {
+                error_log("Office365 OAuth: No access token available for account " . $this->office365Account->getId());
+                throw new NoAccessTokenException('No access token available');
+            }
 
-        if ($token->getTimeToLive() < 30) {
-            $token = $this->authorizationService->refreshAccessToken($this->office365Account);
-        }
+            error_log("Office365 OAuth: Token TTL = " . $token->getTimeToLive() . " seconds");
 
-        $offlineToken = $token->getToken();
+            if ($token->getTimeToLive() < 30) {
+                error_log("Office365 OAuth: Token expired, refreshing...");
+                $token = $this->authorizationService->refreshAccessToken($this->office365Account);
+                error_log("Office365 OAuth: Token refreshed");
+            }
 
-        return base64_encode(
-            sprintf(
+            $offlineToken = $token->getToken();
+            $oauthString = sprintf(
                 "user=%s\001auth=Bearer %s\001\001",
                 $emailAddress,
                 $offlineToken
-            )
-        );
+            );
+
+            error_log("Office365 OAuth: Generated XOAUTH2 string for " . $emailAddress);
+
+            return base64_encode($oauthString);
+        } catch (\Exception $e) {
+            error_log("Office365 OAuth: Exception in getOauth64(): " . $e->getMessage());
+            throw $e;
+        }
     }
 }
