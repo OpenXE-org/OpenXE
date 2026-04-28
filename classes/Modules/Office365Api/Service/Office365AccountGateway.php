@@ -24,8 +24,8 @@ final class Office365AccountGateway
 
     public function getAccount(int $id): ?Office365AccountData
     {
-        $query = 'SELECT * FROM `office365_account` WHERE `id` = ?';
-        $result = $this->database->queryOne($query, [$id]);
+        $query = 'SELECT * FROM `office365_account` WHERE `id` = :id';
+        $result = $this->database->fetchRow($query, ['id' => $id]);
 
         if ($result === null) {
             return null;
@@ -39,11 +39,11 @@ final class Office365AccountGateway
         $query = <<<SQL
             SELECT oa.* FROM `office365_account` oa
             INNER JOIN `office365_account_property` oap ON oa.id = oap.office365_account_id
-            WHERE oap.varname = 'email_address' AND oap.value = ?
+            WHERE oap.varname = 'email_address' AND oap.value = :email
             LIMIT 1
         SQL;
 
-        $result = $this->database->queryOne($query, [$email]);
+        $result = $this->database->fetchRow($query, ['email' => $email]);
 
         if ($result === null) {
             return null;
@@ -54,8 +54,8 @@ final class Office365AccountGateway
 
     public function getAccountByUserId(int $userId): ?Office365AccountData
     {
-        $query = 'SELECT * FROM `office365_account` WHERE `user_id` = ? LIMIT 1';
-        $result = $this->database->queryOne($query, [$userId]);
+        $query = 'SELECT * FROM `office365_account` WHERE `user_id` = :user_id LIMIT 1';
+        $result = $this->database->fetchRow($query, ['user_id' => $userId]);
 
         if ($result === null) {
             return null;
@@ -66,8 +66,8 @@ final class Office365AccountGateway
 
     public function getAccessToken(int $accountId): ?Office365AccessTokenData
     {
-        $query = 'SELECT * FROM `office365_access_token` WHERE `office365_account_id` = ? ORDER BY `id` DESC LIMIT 1';
-        $result = $this->database->queryOne($query, [$accountId]);
+        $query = 'SELECT * FROM `office365_access_token` WHERE `office365_account_id` = :account_id ORDER BY `id` DESC LIMIT 1';
+        $result = $this->database->fetchRow($query, ['account_id' => $accountId]);
 
         if ($result === null) {
             return null;
@@ -82,17 +82,17 @@ final class Office365AccountGateway
 
         $query = <<<SQL
             INSERT INTO `office365_access_token` (office365_account_id, token, expires)
-            VALUES (?, ?, ?)
+            VALUES (:account_id, :token, :expires)
             ON DUPLICATE KEY UPDATE
                 token = VALUES(token),
                 expires = VALUES(expires),
                 updated_at = NOW()
         SQL;
 
-        $this->database->query($query, [
-            $accountId,
-            $tokenArray['token'],
-            $tokenArray['expires']
+        $this->database->perform($query, [
+            'account_id' => $accountId,
+            'token' => $tokenArray['token'],
+            'expires' => $tokenArray['expires']
         ]);
     }
 
@@ -100,18 +100,18 @@ final class Office365AccountGateway
     {
         $query = <<<SQL
             INSERT INTO `office365_account` (user_id, identifier, refresh_token, tenant_id)
-            VALUES (?, ?, ?, ?)
+            VALUES (:user_id, :identifier, :refresh_token, :tenant_id)
             ON DUPLICATE KEY UPDATE
                 refresh_token = VALUES(refresh_token),
                 tenant_id = VALUES(tenant_id),
                 updated_at = NOW()
         SQL;
 
-        $this->database->query($query, [
-            $account->getUserId(),
-            $account->getIdentifier(),
-            $account->getRefreshToken(),
-            $account->getTenantId()
+        $this->database->perform($query, [
+            'user_id' => $account->getUserId(),
+            'identifier' => $account->getIdentifier(),
+            'refresh_token' => $account->getRefreshToken(),
+            'tenant_id' => $account->getTenantId()
         ]);
 
         if ($account->getId() === 0) {
@@ -123,8 +123,8 @@ final class Office365AccountGateway
 
     public function getAccountProperties(int $accountId): Office365AccountPropertyCollection
     {
-        $query = 'SELECT varname, value FROM `office365_account_property` WHERE `office365_account_id` = ?';
-        $results = $this->database->query($query, [$accountId]);
+        $query = 'SELECT varname, value FROM `office365_account_property` WHERE `office365_account_id` = :account_id';
+        $results = $this->database->fetchAll($query, ['account_id' => $accountId]);
 
         $properties = [];
         if ($results !== null) {
@@ -140,19 +140,23 @@ final class Office365AccountGateway
     {
         $query = <<<SQL
             INSERT INTO `office365_account_property` (office365_account_id, varname, value)
-            VALUES (?, ?, ?)
+            VALUES (:account_id, :varname, :value)
             ON DUPLICATE KEY UPDATE
                 value = VALUES(value),
                 updated_at = NOW()
         SQL;
 
-        $this->database->query($query, [$accountId, $name, $value]);
+        $this->database->perform($query, [
+            'account_id' => $accountId,
+            'varname' => $name,
+            'value' => $value
+        ]);
     }
 
     public function hasAccountScope(int $accountId, string $scope): bool
     {
-        $query = 'SELECT COUNT(*) as count FROM `office365_account_scope` WHERE `office365_account_id` = ? AND `scope` = ?';
-        $result = $this->database->queryOne($query, [$accountId, $scope]);
+        $query = 'SELECT COUNT(*) as count FROM `office365_account_scope` WHERE `office365_account_id` = :account_id AND `scope` = :scope';
+        $result = $this->database->fetchRow($query, ['account_id' => $accountId, 'scope' => $scope]);
 
         return isset($result['count']) && (int)$result['count'] > 0;
     }
@@ -163,14 +167,14 @@ final class Office365AccountGateway
             return;
         }
 
-        $query = 'INSERT INTO `office365_account_scope` (office365_account_id, scope) VALUES (?, ?)';
-        $this->database->query($query, [$accountId, $scope]);
+        $query = 'INSERT INTO `office365_account_scope` (office365_account_id, scope) VALUES (:account_id, :scope)';
+        $this->database->perform($query, ['account_id' => $accountId, 'scope' => $scope]);
     }
 
     public function getScopes(int $accountId): array
     {
-        $query = 'SELECT scope FROM `office365_account_scope` WHERE `office365_account_id` = ?';
-        $results = $this->database->query($query, [$accountId]);
+        $query = 'SELECT scope FROM `office365_account_scope` WHERE `office365_account_id` = :account_id';
+        $results = $this->database->fetchAll($query, ['account_id' => $accountId]);
 
         if ($results === null) {
             return [];
