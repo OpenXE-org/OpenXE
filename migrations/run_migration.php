@@ -20,7 +20,8 @@ try {
         throw new Exception("Could not read migration file: $sqlFile");
     }
 
-    // Split the SQL into individual statements
+    // Remove comments and split SQL statements
+    $sql = preg_replace('/^--.*$/m', '', $sql); // Remove SQL comments
     $statements = array_filter(
         array_map(
             'trim',
@@ -31,14 +32,20 @@ try {
     // Execute each statement
     $count = 0;
     foreach ($statements as $statement) {
-        if (!empty($statement)) {
-            $db->query($statement);
-            $count++;
-            echo "Executed statement $count\n";
+        if (!empty($statement) && trim($statement) !== '') {
+            echo "Executing statement " . ($count + 1) . "...\n";
+            try {
+                $db->query($statement);
+                $count++;
+                echo "  ✓ Success\n";
+            } catch (Exception $e) {
+                echo "  ✗ Error: " . $e->getMessage() . "\n";
+                throw $e;
+            }
         }
     }
 
-    echo "\n✓ Migration completed successfully! Created/updated 4 tables.\n";
+    echo "\n✓ Migration completed successfully! Created/updated 4 tables and 3 foreign key constraints.\n";
     echo "Tables created:\n";
     echo "  - office365_account\n";
     echo "  - office365_access_token\n";

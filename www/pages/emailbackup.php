@@ -15,12 +15,14 @@ class Emailbackup {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "emailbackup_list");        
+        $this->app->ActionHandler("list", "emailbackup_list");
         $this->app->ActionHandler("create", "emailbackup_edit"); // This automatically adds a "New" button
         $this->app->ActionHandler("edit", "emailbackup_edit");
         $this->app->ActionHandler("delete", "emailbackup_delete");
         $this->app->ActionHandler("test_smtp",'emailbackup_test_smtp');
         $this->app->ActionHandler("test_imap",'emailbackup_test_imap');
+        $this->app->ActionHandler("office365_authorize",'emailbackup_office365_authorize');
+        $this->app->ActionHandler("office365_callback",'emailbackup_office365_callback');
 
         $this->app->DefaultActionHandler("list");
         $this->app->ActionHandlerListen($app);
@@ -392,6 +394,83 @@ $width = array('10%'); // Fill out manually later
             
     }
     $this->app->Location->execute("index.php?module=emailbackup&id=$id&action=edit&msg=$msg");
-  } 
+  }
+
+  public function emailbackup_office365_authorize()
+  {
+    $id = (int) $this->app->Secure->GetGET('id');
+    $email = $this->app->Secure->GetGET('email');
+
+    if (empty($id) || empty($email)) {
+      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Ungültige Parameter für Office365 Authorization</div>");
+      $this->emailbackup_edit();
+      return;
+    }
+
+    try {
+      $office365AuthService = $this->app->Container->get('Office365AuthorizationService');
+      $authUrl = $office365AuthService->getAuthorizationUrl();
+
+      // Store account ID in session for callback
+      session_start();
+      $_SESSION['office365_account_id'] = $id;
+      $_SESSION['office365_email'] = $email;
+
+      header('Location: ' . $authUrl);
+      exit;
+    } catch (Exception $e) {
+      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Office365 Authorization Fehler: " . $e->getMessage() . "</div>");
+      $this->emailbackup_edit();
+    }
+  }
+
+  public function emailbackup_office365_callback()
+  {
+    session_start();
+
+    $code = $this->app->Secure->GetGET('code');
+    $error = $this->app->Secure->GetGET('error');
+
+    if (!empty($error)) {
+      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Office365 Authorization abgelehnt: " . htmlspecialchars($error) . "</div>");
+      $this->emailbackup_list();
+      return;
+    }
+
+    if (empty($code)) {
+      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Kein Authorization Code erhalten</div>");
+      $this->emailbackup_list();
+      return;
+    }
+
+    $accountId = $_SESSION['office365_account_id'] ?? null;
+    $email = $_SESSION['office365_email'] ?? null;
+
+    if (empty($accountId)) {
+      $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Session abgelaufen - bitte versuche es erneut</div>");
+      $this->emailbackup_list();
+      return;
+    }
+
+    try {
+      $office365AuthService = $this->app->Container->get('Office365AuthorizationService');
+      $office365Account = $office365AuthService->authorizationCallback($code, 1);
+
+      // Save email address as property
+      $gateway = $this->app->Container->get('Office365AccountGateway');
+      $gateway->saveAccountProperty($office365Account->getId(), 'email_address', $email);
+
+      unset($_SESSION['office365_account_id']);
+      unset($_SESSION['office365_email']);
+
+      $msg = $this->app->erp->base64_url_encode("<div class=\"success\">Office365 Account erfolgreich authorisiert!</div>");
+      header("Location: index.php?module=emailbackup&action=edit&id=" . $accountId . "&msg=" . $msg);
+      exit;
+    } catch (Exception $e) {
+      $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Authorization Fehler: " . htmlspecialchars($e->getMessage()) . "</div>");
+      header("Location: index.php?module=emailbackup&action=edit&id=" . $accountId . "&msg=" . $msg);
+      exit;
+    }
+  }
 
 }

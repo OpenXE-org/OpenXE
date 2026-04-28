@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mysql --help)"
+      "Bash(mysql --help)",
+      "Bash(php migrations/run_migration.php)"
     ]
   }
 }
