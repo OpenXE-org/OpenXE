@@ -9,6 +9,7 @@ use Xentral\Components\Logger\LoggerAwareTrait;
 use Xentral\Components\Mailer\Config\OAuthMailerConfig;
 use Xentral\Components\Mailer\Config\SmtpMailerConfig;
 use Xentral\Components\Mailer\Transport\MailerTransportInterface;
+use Xentral\Components\Mailer\Transport\Office365SmtpTransport;
 use Xentral\Components\Mailer\Transport\PhpMailerOAuth;
 use Xentral\Components\Mailer\Transport\PhpMailerTransport;
 use Xentral\Core\DependencyInjection\ContainerInterface;
@@ -263,9 +264,9 @@ class MailerTransportFactory
      *
      * @throws Office365OAuthException
      *
-     * @return PhpMailerTransport
+     * @return MailerTransportInterface
      */
-    public function createOffice365OAuthTransport(EmailBackupAccount $account):PhpMailerTransport
+    public function createOffice365OAuthTransport(EmailBackupAccount $account):MailerTransportInterface
     {
         error_log("Creating Office365 OAuth transport for email: " . $account->getSenderEmailAddress());
 
@@ -288,14 +289,12 @@ class MailerTransportFactory
         /** @var Office365AuthorizationService $office365Auth */
         $office365Auth = $this->container->get('Office365AuthorizationService');
 
-        $oauth = new PhpMailerOffice365Authentification(
+        return new Office365SmtpTransport(
+            $config,
             $office365Gateway,
             $office365Auth,
-            $office365Account
+            $office365Account,
+            $this->logger
         );
-
-        $mailer = new PhpMailerOAuth(true, $oauth);
-
-        return new PhpMailerTransport($mailer, $config, $this->logger);
     }
 }
