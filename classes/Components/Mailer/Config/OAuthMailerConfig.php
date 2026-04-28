@@ -60,7 +60,7 @@ final class OAuthMailerConfig extends AbstractMailerConfig
             'smtp_options'         => [],
             'smtp_debug'           => 0,
             'smtp_keepalive'       => false,
-            'auth_type'            => 'XOAUTH2',
+            'auth_type'            => 'xoauth2',
         ];
     }
 }
