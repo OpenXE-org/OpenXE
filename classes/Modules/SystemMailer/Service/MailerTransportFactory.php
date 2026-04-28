@@ -49,20 +49,31 @@ class MailerTransportFactory
      */
     public function createMailerTransport(EmailBackupAccount $account):MailerTransportInterface
     {
-        switch ($account->getSmtpAuthType()) {
+        error_log("MailerTransportFactory: Creating transport for auth type: " . $account->getSmtpAuthType());
 
-            case EmailBackupAccount::AUTH_SMTP:
-                return $this->createSmtpTransport($account);
-                break;
+        try {
+            switch ($account->getSmtpAuthType()) {
 
-            case EmailBackupAccount::AUTH_GMAIL:
-                return $this->createGoogleOAuthTransport($account);
+                case EmailBackupAccount::AUTH_SMTP:
+                    error_log("MailerTransportFactory: Creating SMTP transport");
+                    return $this->createSmtpTransport($account);
+                    break;
 
-            case EmailBackupAccount::AUTH_OFFICE365:
-                return $this->createOffice365OAuthTransport($account);
+                case EmailBackupAccount::AUTH_GMAIL:
+                    error_log("MailerTransportFactory: Creating Google OAuth transport");
+                    return $this->createGoogleOAuthTransport($account);
 
-            default:
-                throw new InvalidArgumentException('Only SMTP accounts are supported.');
+                case EmailBackupAccount::AUTH_OFFICE365:
+                    error_log("MailerTransportFactory: Creating Office365 OAuth transport");
+                    return $this->createOffice365OAuthTransport($account);
+
+                default:
+                    error_log("MailerTransportFactory: Unknown auth type: " . $account->getSmtpAuthType());
+                    throw new InvalidArgumentException('Only SMTP accounts are supported.');
+            }
+        } catch (\Exception $e) {
+            error_log("MailerTransportFactory: Exception - " . $e->getMessage() . " - " . $e->getTraceAsString());
+            throw $e;
         }
     }
 
