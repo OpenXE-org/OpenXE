@@ -202,11 +202,12 @@ $width = array('10%'); // Fill out manually later
         $smtp_ssl_select = $this->app->erp->GetSelectAsso($smtp_ssl_select,$emailbackup['smtp_ssl']);
         $this->app->Tpl->Set('SMTP_SSL_SELECT',$smtp_ssl_select);             
         
-        $smtp_authtype_select = Array( 
+        $smtp_authtype_select = Array(
             '' => 'Kein',
             'smtp' => 'SMTP',
-            'oauth_google' => 'Oauth Google'    
-        );       
+            'oauth_google' => 'Oauth Google',
+            'oauth_office365' => 'Office365 OAuth2'
+        );
         $smtp_authtype_select = $this->app->erp->GetSelectAsso($smtp_authtype_select,$emailbackup['smtp_authtype']);
         $this->app->Tpl->Set('SMTP_AUTHTYPE_SELECT',$smtp_authtype_select);   
         

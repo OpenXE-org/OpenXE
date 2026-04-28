@@ -17,10 +17,14 @@ use Xentral\Modules\GoogleApi\Exception\GoogleCredentialsException;
 use Xentral\Modules\GoogleApi\Service\GoogleAccountGateway;
 use Xentral\Modules\GoogleApi\Service\GoogleAuthorizationService;
 use Xentral\Modules\GoogleApi\Service\GoogleCredentialsService;
+use Xentral\Modules\Office365Api\Exception\Office365OAuthException;
+use Xentral\Modules\Office365Api\Service\Office365AccountGateway;
+use Xentral\Modules\Office365Api\Service\Office365AuthorizationService;
 use Xentral\Modules\SystemMailer\Data\EmailBackupAccount;
 use Xentral\Modules\SystemMailer\Exception\GmailOAuthException;
 use Xentral\Modules\SystemMailer\Exception\InvalidArgumentException;
 use Xentral\Modules\SystemMailer\Transport\PhpMailerGoogleAuthentification;
+use Xentral\Modules\SystemMailer\Transport\PhpMailerOffice365Authentification;
 
 class MailerTransportFactory
 {
@@ -53,6 +57,9 @@ class MailerTransportFactory
 
             case EmailBackupAccount::AUTH_GMAIL:
                 return $this->createGoogleOAuthTransport($account);
+
+            case EmailBackupAccount::AUTH_OFFICE365:
+                return $this->createOffice365OAuthTransport($account);
 
             default:
                 throw new InvalidArgumentException('Only SMTP accounts are supported.');
@@ -180,6 +187,90 @@ class MailerTransportFactory
             $googleAuth,
             $googleAccount
         );
+        $mailer = new PhpMailerOAuth(true, $oauth);
+
+        return new PhpMailerTransport($mailer, $config, $this->logger);
+    }
+
+    /**
+     * @param EmailBackupAccount $account
+     *
+     * @return OAuthMailerConfig
+     */
+    public function createOffice365MailerConfig(EmailBackupAccount $account):OAuthMailerConfig
+    {
+        if (
+            $account->isSmtpEnabled() === false
+            || $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_OFFICE365
+        ) {
+            throw new InvalidArgumentException('Only Office365 OAuth accounts are supported.');
+        }
+
+        $email = $account->getSmtpSenderEmail();
+        if ($email === '') {
+            $email = $account->getEmailAddress();
+        }
+        $sender = $account->getSmtpSenderName();
+        if ($sender === '') {
+            $sender = $account->getDisplayName();
+        }
+        $debug = 0;
+        if ($account->isSmtpDebugEnabled()) {
+            $debug = 4;
+        }
+
+        $cfgValues = [
+            'sender_email'  => $email,
+            'sender_name'   => $sender,
+            'host'          => $account->getSmtpServer(),
+            'hostname'      => $account->getClientAlias(),
+            'port'          => $account->getSmtpPort(),
+            'smtp_security' => $account->getSmtpSecurity(),
+            'mailer'        => 'smtp',
+            'smtp_debug'    => $debug
+        ];
+
+        if ($cfgValues['host'] === '') {
+            $cfgValues['host'] = 'smtp.office365.com';
+        }
+        if ($cfgValues['port'] === 0) {
+            $cfgValues['port'] = 587;
+        }
+        if ($cfgValues['smtp_security'] === '') {
+            $cfgValues['smtp_security'] = 'tls';
+        }
+
+        return new OAuthMailerConfig($cfgValues);
+    }
+
+    /**
+     * @param EmailBackupAccount $account
+     *
+     * @throws Office365OAuthException
+     *
+     * @return PhpMailerTransport
+     */
+    public function createOffice365OAuthTransport(EmailBackupAccount $account):PhpMailerTransport
+    {
+        $config = $this->createOffice365MailerConfig($account);
+
+        /** @var Office365AccountGateway $office365Gateway */
+        $office365Gateway = $this->container->get('Office365AccountGateway');
+        $office365Account = $office365Gateway->getAccountByEmailAddress($account->getSenderEmailAddress());
+
+        if ($office365Account === null) {
+            throw new Office365OAuthException('No Office365 account configured for email: ' . $account->getSenderEmailAddress());
+        }
+
+        /** @var Office365AuthorizationService $office365Auth */
+        $office365Auth = $this->container->get('Office365AuthorizationService');
+
+        $oauth = new PhpMailerOffice365Authentification(
+            $office365Gateway,
+            $office365Auth,
+            $office365Account
+        );
+
         $mailer = new PhpMailerOAuth(true, $oauth);
 
         return new PhpMailerTransport($mailer, $config, $this->logger);
