@@ -90,7 +90,10 @@ jobs:
 
       - name: Import database/struktur.sql
         run: |
-          mysql -h127.0.0.1 -uroot -proot openxe_test < database/struktur.sql
+          # struktur.sql is a mysqldump containing seed INSERTs that omit some
+          # NOT NULL columns without defaults. Disable STRICT mode for the
+          # import session, matching how the OpenXE installer ingests it.
+          mysql -h127.0.0.1 -uroot -proot --init-command="SET SESSION sql_mode=''" openxe_test < database/struktur.sql
 
       - name: Verify Office365 tables exist
         run: |
@@ -110,7 +113,7 @@ jobs:
           # The migration uses CREATE TABLE IF NOT EXISTS, so re-running on top
           # of struktur.sql must not fail. The ALTER TABLE foreign-key statements
           # may already exist; allow that specific case.
-          mysql -h127.0.0.1 -uroot -proot openxe_test < migrations/office365_oauth_tables.sql || \
+          mysql -h127.0.0.1 -uroot -proot --init-command="SET SESSION sql_mode=''" openxe_test < migrations/office365_oauth_tables.sql || \
             echo "Migration ALTER statements may duplicate existing FKs (expected on top of struktur.sql)."
 
       - name: Cross-check db_schema.json vs struktur.sql
