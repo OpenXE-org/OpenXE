@@ -69,6 +69,31 @@ class TrackingNumberController extends AbstractController
         ];
         $result = $resource->insert($bindValues);
 
+        // Also write to versandpakete table so tracking appears in UI Pakete tab
+        // The UI reads exclusively from versandpakete (old versand-based display is commented out)
+        $DB = $this->legacyApi->app->DB;
+        $lieferscheinId = (int)$orderData['lieferscheinid'];
+        if ($lieferscheinId > 0) {
+            $versandart = $DB->Select(
+                "SELECT versandart FROM lieferschein WHERE id = '" . $lieferscheinId . "' LIMIT 1"
+            );
+            $DB->Insert(
+                "INSERT INTO versandpakete (tracking, tracking_link, gewicht, status, lieferschein_ohne_pos, versandart, versender) "
+                . "VALUES ("
+                . "'" . $DB->real_escape_string($input['tracking']) . "', "
+                . "'', "
+                . "'" . $DB->real_escape_string($input['gewicht']) . "', "
+                . "'versendet', "
+                . "'" . $lieferscheinId . "', "
+                . "'" . $DB->real_escape_string($versandart) . "', "
+                . "'API'"
+                . ")"
+            );
+            $DB->Update(
+                "UPDATE lieferschein SET versand_status = 1 WHERE id = '" . $lieferscheinId . "'"
+            );
+        }
+
         return $this->sendResult($result, Response::HTTP_CREATED);
     }
 
