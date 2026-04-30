@@ -60,6 +60,18 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   /** @var Logger $logger */
   public $logger;
 
+  /** @var bool $ssl_ignore Whether to ignore SSL certificate validation */
+  public $ssl_ignore;
+
+  /** @var string $lastImportTimestamp ISO-8601 UTC timestamp of the last successful import */
+  public $lastImportTimestamp;
+
+  /** @var bool $lastImportTimestampIsFallback True when lastImportTimestamp was computed as 30-day fallback */
+  public $lastImportTimestampIsFallback = false;
+
+  /** @var int[] $lastImportOrderIds WooCommerce order IDs within the current timestamp bucket */
+  public $lastImportOrderIds = [];
+
   public function __construct($app, $intern = false)
   {
     $this->app = $app;
@@ -75,135 +87,190 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   }
 
   /**
-   * This function returns the number of orders which have not yet been imported
+   * Returns the total number of orders pending import since the last import
+   * timestamp. Uses the WC v3 after= parameter and reads the count from
+   * the X-WP-Total response header (per_page=1 to minimise payload).
+   *
+   * @return int
    */
   public function ImportGetAuftraegeAnzahl()
   {
-    // Query the API to get new orders, filtered by the order status as specifed by the user.
-    // We set per_page to 100 - this could lead to a situation where there are more than
-    // 100 new Orders, but we still only return 100.
+    $this->migrateAbNummerIfNeeded();
 
-    // Array containing additional settings, namely 'ab_nummer' (containting the next order number to get)
-    // and 'holeallestati' (an integer)
-    $tmp = $this->CatchRemoteCommand('data');
+    $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
-    // Only orders having an order number greater or equal than this should be fetched. null otherwise
-    $number_from = empty($tmp['ab_nummer']) ? null : (int) $tmp['ab_nummer'];
-
-    // pending orders will be fetched into this array. it's length is returned at the end of the funciton
-    $pendingOrders = array();
-
-    if ($number_from) {
-      // Number-based import is selected
-
-      // The WooCommerce API doenst allow for a proper "greater than id n" request.
-      // we fake this behavior by creating an array that contains 'many' (~ 1000) consecutive
-      // ids that are greater than $from_number and use this array with the 'include' property
-      // of the WooCommerce API
-
-      $number_to = $number_from + 800;
-      if (!empty($tmp['bis_nummer'])) {
-        $number_to = $tmp['bis_nummer'];
-      }
-
-      $fakeGreaterThanIds = range($number_from, $number_to);
-
-      $pendingOrders = $this->client->get('orders', [
-        'per_page' => 100,
-        'include' => implode(",", $fakeGreaterThanIds),
-      ]);
-
+    if (!empty($this->lastImportOrderIds)) {
+      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $afterTs,
+        'per_page' => 1,
+        'exclude'  => array_values($this->lastImportOrderIds),
+      ];
     } else {
-      // fetch posts by status
-
-      $pendingOrders = $this->client->get('orders', [
-        'status' => array_map('trim', explode(';', $this->statusPending)),
-        'per_page' => 100
-      ]);
-
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $this->lastImportTimestamp,
+        'per_page' => 1,
+      ];
     }
 
-    return (!empty($pendingOrders) ? count($pendingOrders) : 0);
+    try {
+      $this->client->get('orders', $queryArgs);
+    } catch (Exception $e) {
+      $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: API request failed: ' . $e->getMessage());
+      return 0;
+    }
+
+    $wcResponse = $this->client->getLastResponse();
+    if ($wcResponse === null) {
+      $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: getLastResponse() returned null');
+      return 0;
+    }
+
+    $total = $wcResponse->getHeader('x-wp-total');
+    if ($total === null) {
+      $this->logger->warning('WooCommerce ImportGetAuftraegeAnzahl: X-WP-Total header missing');
+      return 0;
+    }
+
+    return (int) $total;
   }
 
   /**
-   * Calling this function queries the api for pending orders and returns them
-   * as an array.
+   * Queries the WooCommerce API for the oldest pending order since the last
+   * import timestamp and returns it as a Xentral-formatted array with at most
+   * one element. The caller (shopimport.php::RemoteGetAuftrag loop) expects
+   * $result[0] per iteration; this contract must be maintained.
    *
-   * TODO: Only one single order is returned per invocation of this function.
-   * Given that we have to perform an exteremly expensive external HTTP call
-   * every time we call this function and could easily process more than one
-   * order this seems very bad performance-wise.
+   * The after-filter advances per order so each caller-iteration fetches the
+   * next order. A crash between RemoteGetAuftrag() and the shopimport_auftraege
+   * INSERT loses at most this one order (consistent with pre-#262 behaviour).
+   *
+   * @return array Array with at most one order entry, or empty array if none.
    */
   public function ImportGetAuftrag()
   {
-    // Array containing additional settings, namely 'ab_nummer' (containting the next order number to get)
-    // and 'holeallestati' (an integer)
-    $tmp = $this->CatchRemoteCommand('data');
+    $data = $this->CatchRemoteCommand('data');
 
-    // Only orders having an order number greater or equal than this should be fetched. null otherwise
-    $number_from = empty($tmp['ab_nummer']) ? null : (int) $tmp['ab_nummer'];
+    $this->migrateAbNummerIfNeeded();
 
-    // pending orders will be fetched into this array. it's length is returned at the end of the funciton
-    $pendingOrders = array();
+    $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
-    if ($number_from) {
-      // Number-based import is selected
-
-      // The WooCommerce API doenst allow for a proper "greater than id n" request.
-      // we fake this behavior by creating an array that contains 'many' (~ 1000) consecutive
-      // ids that are greater than $from_number and use this array with the 'include' property
-      // of the WooCommerce API
-
-      $number_to = $number_from + 800;
-      if (!empty($tmp['bis_nummer'])) {
-        $number_to = $tmp['bis_nummer'];
-      }
-
-      $fakeGreaterThanIds = range($number_from, $number_to);
-
-      $pendingOrders = $this->client->get('orders', [
-        'per_page' => 20,
-        'include' => implode(',', $fakeGreaterThanIds),
-        'order' => 'asc',
-        'orderby' => 'id'
-      ]);
-
+    if (!empty($this->lastImportOrderIds)) {
+      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $afterTs,
+        'per_page' => 1,
+        'page'     => 1,
+        'orderby'  => 'date',
+        'order'    => 'asc',
+        'exclude'  => array_values($this->lastImportOrderIds),
+      ];
     } else {
-      // fetch posts by status
-
-      $pendingOrders = $this->client->get('orders', [
-        'status' => array_map('trim', explode(';', $this->statusPending)),
-        'per_page' => 20,
-        'order' => 'asc',
-        'orderby' => 'id'
-      ]);
-
+      $queryArgs = [
+        'status'   => $configuredStatuses,
+        'after'    => $this->lastImportTimestamp,
+        'per_page' => 1,
+        'page'     => 1,
+        'orderby'  => 'date',
+        'order'    => 'asc',
+      ];
     }
 
-    // Return an empty array in case there are no orders to import
-    if ((!empty($pendingOrders) ? count($pendingOrders) : 0) === 0) {
+    try {
+      $pageOrders = $this->client->get('orders', $queryArgs);
+    } catch (Exception $e) {
+      $this->logger->warning('WooCommerce ImportGetAuftrag: ' . $e->getMessage());
       return null;
     }
 
-    $tmp = [];
-
-    foreach ($pendingOrders as $pendingOrder) {
-      $wcOrder = $pendingOrder;
-      $order = $this->parseOrder($wcOrder);
-
-      if (is_null($wcOrder)) {
-        continue;
-      }
-
-      $tmp[] = [
-        'id' => $order['auftrag'],
-        'sessionid' => '',
-        'logdatei' => '',
-        'warenkorb' => base64_encode(serialize($order)),
-      ];
+    if (empty($pageOrders)) {
+      return null;
     }
-    return $tmp;
+
+    $wcOrder = $pageOrders[0] ?? null;
+    if ($wcOrder === null) {
+      return null;
+    }
+
+    $order = $this->parseOrder($wcOrder);
+
+    // Persist tuple cursor so the next Caller-iteration advances past this order.
+    // Using ts-1s in the query means same-second peers are still fetched, while
+    // the exclude=[id] parameter prevents re-delivering this exact order.
+    if (!empty($wcOrder->date_created_gmt) && !empty($wcOrder->id)) {
+      $this->persistLastImportCursor((string) $wcOrder->date_created_gmt, (int) $wcOrder->id);
+    }
+
+    return [[
+      'id'        => $order['auftrag'],
+      'sessionid' => '',
+      'logdatei'  => '',
+      'warenkorb' => base64_encode(serialize($order)),
+    ]];
+  }
+
+  /**
+   * Resolves a legacy WooCommerce order ID (ab_nummer) to the order's
+   * date_created_gmt timestamp for the one-shot transition from cursor-
+   * based to timestamp-based import.
+   *
+   * @param int $abNummer WooCommerce order ID
+   * @return string|null ISO-8601 UTC timestamp or null on failure
+   */
+  private function resolveAbNummerToTimestamp($abNummer)
+  {
+    try {
+      $order = $this->client->get('orders/' . $abNummer);
+    } catch (Exception $e) {
+      $this->logger->warning('WooCommerce resolveAbNummerToTimestamp(' . $abNummer . '): ' . $e->getMessage());
+      return null;
+    }
+
+    if (empty($order->date_created_gmt)) {
+      $this->logger->warning('WooCommerce resolveAbNummerToTimestamp(' . $abNummer . '): date_created_gmt missing');
+      return null;
+    }
+
+    $ts = strtotime((string) $order->date_created_gmt);
+    if ($ts === false) {
+      return null;
+    }
+    return gmdate('Y-m-d\TH:i:s', $ts - 1);
+  }
+
+  /**
+   * Runs the one-shot legacy ab_nummer -> timestamp migration when the stored
+   * cursor is still the 30-day fallback and the caller passes an ab_nummer.
+   * Idempotent: once migrated, lastImportTimestampIsFallback flips to false
+   * and subsequent calls become no-ops.
+   */
+  private function migrateAbNummerIfNeeded()
+  {
+    if (!$this->lastImportTimestampIsFallback) {
+      return;
+    }
+    $data = $this->CatchRemoteCommand('data');
+    if (empty($data['ab_nummer'])) {
+      return;
+    }
+    $resolved = $this->resolveAbNummerToTimestamp((int) $data['ab_nummer']);
+    if ($resolved !== null) {
+      $this->persistLastImportTimestamp($resolved);
+      return;
+    }
+    // Resolution failed (order deleted, 404, missing date_created_gmt). Persist the
+    // current 30-day fallback so subsequent runs use a stable lower bound
+    // instead of sliding the window on every cron cycle.
+    $this->logger->warning(
+      sprintf(
+        'WooCommerce ab_nummer=%d konnte nicht aufgeloest werden; persistiere 30-Tage-Fallback als Cursor',
+        (int) $data['ab_nummer']
+      )
+    );
+    $this->persistLastImportTimestamp($this->lastImportTimestamp);
   }
 
   // This function searches the wcOrder for the specified WC Meta key
@@ -891,6 +958,108 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $this->ssl_ignore
     );
 
+    $storedTimestamp = $preferences['felder']['letzter_import_timestamp'] ?? null;
+    if (!empty($storedTimestamp)) {
+      $this->lastImportTimestamp = $storedTimestamp;
+      $this->lastImportTimestampIsFallback = false;
+    } else {
+      $this->lastImportTimestamp = gmdate('Y-m-d\TH:i:s', strtotime('-30 days'));
+      $this->lastImportTimestampIsFallback = true;
+    }
+
+    $storedIds = $preferences['felder']['letzter_import_order_ids'] ?? null;
+    $this->lastImportOrderIds = is_array($storedIds)
+      ? array_values(array_filter(array_map('intval', $storedIds)))
+      : [];
+
+  }
+
+  /**
+   * Backwards-compatible wrapper: persists timestamp only (order id cleared).
+   * Use persistLastImportCursor() when both timestamp and order id are available.
+   *
+   * @param string $isoUtcDate ISO-8601 UTC timestamp, e.g. '2026-04-20T12:34:56'
+   * @return void
+   */
+  public function persistLastImportTimestamp($isoUtcDate)
+  {
+    $this->persistLastImportCursor($isoUtcDate, null);
+  }
+
+  /**
+   * Persists the tuple cursor (timestamp + accumulated order-id bucket) to
+   * shopexport.einstellungen_json. Does a read-modify-write to preserve all
+   * other fields.
+   *
+   * Bucket logic:
+   *  - $orderId === null  → migration path; ids list is cleared.
+   *  - same timestamp as stored → append $orderId to the ids list.
+   *  - new timestamp → reset ids list to [$orderId].
+   *
+   * @param string   $isoUtcDate ISO-8601 UTC timestamp, e.g. '2026-04-20T12:34:56'
+   * @param int|null $orderId    WooCommerce order ID, or null (migration path)
+   * @return void
+   */
+  public function persistLastImportCursor($isoUtcDate, $orderId = null)
+  {
+    $shopid = (int)$this->shopid;
+    // Prefer DatabaseService when available (web context), fall back to DB
+    // so this method also works in the CLI/cron context.
+    if (!empty($this->app->DatabaseService)) {
+      $einstellungen_json = $this->app->DatabaseService->selectValue(
+        "SELECT einstellungen_json FROM shopexport WHERE id = :id LIMIT 1",
+        ['id' => $shopid]
+      );
+    } else {
+      $einstellungen_json = $this->app->DB->Select(
+        "SELECT einstellungen_json FROM shopexport WHERE id = '$shopid' LIMIT 1"
+      );
+    }
+    $current = [];
+    if (!empty($einstellungen_json)) {
+      $current = json_decode($einstellungen_json, true) ?: [];
+    }
+    if (!isset($current['felder']) || !is_array($current['felder'])) {
+      $current['felder'] = [];
+    }
+
+    $previousTs  = $current['felder']['letzter_import_timestamp'] ?? null;
+    $previousIds = $current['felder']['letzter_import_order_ids'] ?? [];
+    if (!is_array($previousIds)) {
+      $previousIds = [];
+    }
+
+    // Determine ids list for the new state.
+    if ($orderId === null) {
+      // Migration path — timestamp without a concrete order-id anchor.
+      $newIds = [];
+    } elseif ($previousTs !== null && $isoUtcDate === $previousTs) {
+      // Same timestamp bucket — append id if not already present.
+      $newIds = $previousIds;
+      if (!in_array((int) $orderId, $newIds, true)) {
+        $newIds[] = (int) $orderId;
+      }
+    } else {
+      // New timestamp bucket — reset list to only this id.
+      $newIds = [(int) $orderId];
+    }
+
+    $current['felder']['letzter_import_timestamp']  = $isoUtcDate;
+    $current['felder']['letzter_import_order_ids']  = $newIds;
+
+    $jsonEncoded = $this->app->DB->real_escape_string(json_encode($current));
+    if (!empty($this->app->DatabaseService)) {
+      $this->app->DatabaseService->execute(
+        "UPDATE shopexport SET einstellungen_json = :json WHERE id = :id",
+        ['json' => json_encode($current), 'id' => $shopid]
+      );
+    } else {
+      $this->app->DB->Update(
+        "UPDATE shopexport SET einstellungen_json = '$jsonEncoded' WHERE id = '$shopid'"
+      );
+    }
+    $this->lastImportTimestamp = $isoUtcDate;
+    $this->lastImportOrderIds  = $newIds;
   }
 
   /**
@@ -1189,6 +1358,16 @@ class WCClient
   {
     return $this->http->request($endpoint, 'OPTIONS');
   }
+
+  /**
+   * Get the WCResponse from the most recent HTTP request.
+   *
+   * @return WCResponse|null
+   */
+  public function getLastResponse()
+  {
+    return $this->http->getResponse();
+  }
 }
 
 class WCResponse
@@ -1271,11 +1450,24 @@ class WCResponse
   /**
    * Get headers.
    *
-   * @return array $headers WCResponse headers.
+   * @return array $headers WCResponse headers (keys normalized to lowercase).
    */
   public function getHeaders()
   {
     return $this->headers;
+  }
+
+  /**
+   * Get a single response header by name (case-insensitive).
+   *
+   * @param string $name Header name (e.g. 'x-wp-totalpages').
+   *
+   * @return string|null Header value or null if not present.
+   */
+  public function getHeader($name)
+  {
+    $key = strtolower($name);
+    return isset($this->headers[$key]) ? $this->headers[$key] : null;
   }
 
   /**
@@ -2163,6 +2355,7 @@ class WCHttpClient
 
       list($key, $value) = explode(': ', $line);
 
+      $key = strtolower($key);
       $headers[$key] = isset($headers[$key]) ? $headers[$key] . ', ' . trim($value) : trim($value);
     }
 
