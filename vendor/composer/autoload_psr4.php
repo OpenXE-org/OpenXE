@@ -49,6 +49,7 @@ return array(
     'Datto\\JsonRpc\\Http\\' => array($vendorDir . '/datto/json-rpc-http/src'),
     'Datto\\JsonRpc\\' => array($vendorDir . '/datto/json-rpc/src'),
     'Aws\\' => array($vendorDir . '/aws/aws-sdk-php/src'),
+    'Automattic\\WooCommerce\\' => array($vendorDir . '/automattic/woocommerce/src/WooCommerce'),
     'Aura\\SqlQuery\\' => array($vendorDir . '/aura/sqlquery/src'),
     '' => array($vendorDir . '/league/color-extractor/src'),
 );
