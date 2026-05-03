@@ -675,7 +675,12 @@ class Mahnwesen {
 
           $offen = $this->app->erp->GetSaldoDokument($rechnung_id, 'rechnung');
 
-          if($tage <=0) $tage = 0;
+          $tage = max(0, (int)$rechnungarr['mahn_tage']);
+
+          $mahnwesen_datum_valid = !empty($mahnwesen_datum) && $mahnwesen_datum !== '0000-00-00';
+          $frist_de = $mahnwesen_datum_valid
+              ? date('d.m.Y', strtotime($mahnwesen_datum.' +'.$tage.' days'))
+              : '';
 
 /*          $datummahnung= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$mahnwesen_datum', INTERVAL $tage DAY),'%d.%m.%Y')");
           $datumrechnungzahlungsziel= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$datum_sql', INTERVAL $zahlungszieltage DAY),'%d.%m.%Y')");
@@ -726,6 +731,10 @@ class Mahnwesen {
             'rechnung' => $belegnr,
             'belegnr' => $belegnr,
             'datum' => $datum_sql,
+            'datumrechnung' => $datum_sql,
+            'frist' => $frist_de,
+            'mahndatum' => $mahnwesen_datum_deutsch,
+            'tage' => $tage,
             'offen' => $this->app->erp->EUR(-$offen['betrag'])." ".$offen['waehrung'],
             'mahngebuehr' => $this->app->erp->EUR($rechnungarr['mahn_gebuehr']),
             'heute' => $rechnungarr['heute']
