@@ -5004,5 +5004,14 @@ INNER JOIN shopexport s ON
         $shopspecificfunction = $this->app->Secure->GetGET('function');
         $data = array('shopid' => $id);
         $result = $this->app->remote->RemoteCommand($id, $shopspecificfunction, $data);
+        $action = $this->app->Secure->GetGET('redirect');
+        $action = preg_replace('/[^a-z]/', '', $action);
+        if (!empty($result['message'])) {
+            if (empty($result['messageclass'])) {
+                $result['messageclass'] = 'info';
+            }
+            $msg = '&msg='.$this->app->erp->base64_url_encode('<div class="'.$result['messageclass'].'">'.$result['message'].'</div>');
+        }
+        $this->app->Location->execute('index.php?module=onlineshops&id='.$id.'&action='.$action.$msg);
     }
 }
