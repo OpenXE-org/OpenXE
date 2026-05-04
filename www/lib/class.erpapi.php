@@ -17434,6 +17434,9 @@ function CheckShopTabelle($artikel)
       $fastlane = 0;
     }
 
+    if (empty($warenkorb['zahlungsweise'])) {
+        $warenkorb['zahlungsweise'] = $this->app->DB->Select("SELECT zahlungsweise FROM adresse WHERE id = '$adresse' LIMIT 1");
+    }
 
     $warenkorb['zahlungsweise'] = str_replace(array('&uuml;','&Uuml;','&auml;','&Auml;','&ouml;','&Ouml;','&szlig;'),array('ü','Ü','ä','Ä','ö','Ö','ß'), $warenkorb['zahlungsweise']);
     if($zahlungsweisenmapping)
@@ -17833,10 +17836,6 @@ function CheckShopTabelle($artikel)
       $this->app->DB->Update("UPDATE `{$doctype}` SET `ust_ok` = 1 WHERE `id` = '{$auftrag}' LIMIT 1");
     }elseif($doctype === 'auftrag'){
       $this->app->DB->Update("UPDATE `{$doctype}` SET `ust_ok` = 0 WHERE `id` = '{$auftrag}' LIMIT 1");
-    }
-
-    if (empty($warenkorb['zahlungsweise'])) {
-        $warenkorb['zahlungsweise'] = $this->app->DB->Select("SELECT zahlungsweise FROM adresse WHERE id = '$adresse' LIMIT 1");
     }
 
   if($warenkorb['zahlungsweise'] === 'rechnung')
