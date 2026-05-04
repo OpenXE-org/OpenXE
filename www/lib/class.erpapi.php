@@ -25861,7 +25861,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     {
       return $wert;
     }
-    return $field; // Not found!
+    return "Beschriftung fehlt (".$this->beschriftung_sprache."): ".$field; // Not found!
   }
 
 
@@ -33520,6 +33520,9 @@ function Firmendaten($field,$projekt="")
 
       public function LoadSteuersaetze($id,$typ,$projekt='')
       {
+
+        $steuersatz_zielland = false;
+
         if($id <= 0 || empty($typ)) {
           return;
         }
@@ -33554,13 +33557,14 @@ function Firmendaten($field,$projekt="")
             if (!empty($steuersaetze)) {
                 $steuersatz_normal = $steuersaetze['normal'];
                 $steuersatz_ermaessigt = $steuersaetze['ermaessigt'];
+                $steuersatz_zielland = true;
             } else {
                 $steuersatz_normal = $this->Firmendaten('steuersatz_normal');
                 $steuersatz_ermaessigt = $this->Firmendaten('steuersatz_ermaessigt');
             }
         }
 
-        $this->app->DB->Update("UPDATE $typ SET steuersatz_normal='$steuersatz_normal',steuersatz_ermaessigt='$steuersatz_ermaessigt' WHERE id='$id' LIMIT 1");
+        $this->app->DB->Update("UPDATE $typ SET steuersatz_normal='$steuersatz_normal',steuersatz_ermaessigt='$steuersatz_ermaessigt',steuersatz_zielland='$steuersatz_zielland' WHERE id='$id' LIMIT 1");
         $this->app->erp->WriteChangeLog();
       }
 

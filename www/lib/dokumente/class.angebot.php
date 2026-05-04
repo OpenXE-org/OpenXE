@@ -58,7 +58,7 @@ class AngebotPDF extends BriefpapierCustom {
     $this->setRecipientLieferadresse($id,"angebot");
     $email = '';
     $telefon = '';
-    $data = $this->app->DB->SelectRow("SELECT adresse, kundennummer, sprache, ustid, ust_befreit, keinsteuersatz, land, 
+    $data = $this->app->DB->SelectRow("SELECT adresse, kundennummer, sprache, ustid, ust_befreit, keinsteuersatz, steuersatz_zielland, land,
        anfrage, vertrieb, bearbeiter, DATE_FORMAT(datum,'%d.%m.%Y') AS datum, 
        DATE_FORMAT(gueltigbis,'%d.%m.%Y') AS gueltigbis, belegnr, freitext, typ, zahlungsweise, 
        abweichendebezeichnung AS angebotersatz, zahlungszieltage, zahlungszieltageskonto, 
@@ -66,33 +66,6 @@ class AngebotPDF extends BriefpapierCustom {
         FROM angebot WHERE id='$id' LIMIT 1");
 
     extract($data,EXTR_OVERWRITE);
-    $adresse = $data['adresse'];
-    $kundennummer = $data['kundennummer'];
-    $sprache = $data['sprache'];
-    $ustid = $data['ustid'];
-    $ust_befreit = $data['ust_befreit'];
-    $keinsteuersatz = $data['keinsteuersatz'];
-    $land = $data['land'];
-
-    $anfrage = $data['anfrage'];
-    $vertrieb = $data['vertrieb'];
-    $bearbeiter = $data['bearbeiter'];
-    $freitext = $data['freitext'];
-    $gueltigbis = $data['gueltigbis'];
-    $datum = $data['datum'];
-    $belegnr = $data['belegnr'];
-    $typ = $data['typ'];
-    $zahlungsweise = $data['zahlungsweise'];
-    $angebotersatz = $data['angebotersatz'];
-    $zahlungszieltage = $data['zahlungszieltage'];
-    $zahlungszieltageskonto = $data['zahlungszieltageskonto'];
-
-    $zahlungszielskonto = $data['zahlungszielskonto'];
-    $projekt = $data['projekt'];
-    $waehrung = $data['waehrung'];
-    $ohne_briefpapier = $data['ohne_briefpapier'];
-    $bodyzusatz = $data['bodyzusatz'];
-    $datum2 = $data['datum2'];
 
     if(empty($kundennummer)) {
       $kundennummer = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE id='$adresse' LIMIT 1");
@@ -264,13 +237,18 @@ class AngebotPDF extends BriefpapierCustom {
       }
     }
 
-    if($keinsteuersatz!="1")
+    if ($keinsteuersatz!="1")
     {
-      if($ust_befreit==2)//$this->app->erp->Export($land))
+      if ($ust_befreit==2) {// Export
           $steuer = $this->app->erp->Beschriftung("export_lieferung_vermerk");
-      else {
-        if($ust_befreit==1 && $ustid!="")//$this->app->erp->IstEU($land))
-          $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+      }
+      else if ($ust_befreit==1) { // EU
+        if (!empty($ustid)) {
+            $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+        }
+        else if ($steuersatz_zielland) {
+            $steuer = $this->app->erp->Beschriftung("eu_steuersatz_zielland_vermerk");
+        }
       }
       $steuer = str_replace('{USTID}',$ustid,$steuer);
       $steuer = str_replace('{LAND}',$land,$steuer);
