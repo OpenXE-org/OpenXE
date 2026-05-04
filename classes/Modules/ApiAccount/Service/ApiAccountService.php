@@ -125,7 +125,6 @@ final class ApiAccountService
     {
         if ($apiAccountId === 0) {
             try {
-                $this->logger->log(LogLevel::DEBUG, 'API account retrieved with id 0');
                 $apiAccountId = $this->systemConfig->getValue('apiaccount', 'migratedapiid');
             } catch (ConfigurationKeyNotFoundException $e) {
                 throw new ApiAccountNotFoundException(sprintf('Api account with id %d not found', $apiAccountId), 0, $e);
