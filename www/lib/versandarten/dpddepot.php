@@ -152,6 +152,9 @@ class Versandart_dpddepot extends Versanddienstleister
         $order->generalShipmentData->sender->email = $this->settings->senderEmail;
         $order->generalShipmentData->sender->comment = $this->settings->senderRemarks;
         $order->generalShipmentData->sender->customerNumer = $this->settings->senderCustomerNumber;
+        
+        $order->generalShipmentData->sender->limitTextLengths();
+        
         $parcel = new Parcel();
         $order->parcels[] = $parcel;
         $parcel->customerReferenceNumber1 = $json->reference;
@@ -203,6 +206,9 @@ class Versandart_dpddepot extends Versanddienstleister
         $order->generalShipmentData->recipient->city = $json->address->city;
         $order->generalShipmentData->recipient->email = $json->address->email;
         $order->generalShipmentData->recipient->phone = $json->address->phone;
+        
+        $order->generalShipmentData->recipient->limitTextLengths();
+        
         if ($this->settings->enableHazmat && !empty($json->services->hazmat->unNumber)) {
             $hazardous = new Hazardous();
             $hazardous->identificationUnNo = $json->services->hazmat->unNumber;

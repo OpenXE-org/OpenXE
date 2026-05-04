@@ -498,6 +498,8 @@ class payone
   function Import($config, $app)
   {
     $this->app = $app;
+    /** @var \Psr\Log\LoggerInterface $logger */
+    $logger = $this->app->Container->get('Logger');
     $csv = [];
     $index = [];
     $description = [];
@@ -509,7 +511,7 @@ class payone
     catch (Exception $e) {
       $filename = '';
     }
-    list($ftphost, $ftpport, $ftpuser, $ftppassword, $ftpdebug, $ftpssl, $ftpsubdir, $sftp) = $this->getFtp($config);
+    [$ftphost, $ftpport, $ftpuser, $ftppassword, $ftpdebug, $ftpssl, $ftpsubdir, $sftp] = $this->getFtp($config);
 
     if($ftphost) {
 
@@ -520,13 +522,13 @@ class payone
       $folder = $this->app->erp->GetTMP().'payone';
       if(!file_exists($folder)) {
         if(!mkdir($folder) && !is_dir($folder)) {
-          $this->app->erp->LogFile($folder.' konnte nicht erstellt werden');
+          $logger->warning($folder.' konnte nicht erstellt werden');
         }
       }
       $folder = $folder.'/'.$this->app->Conf->WFdbname;
       if(!file_exists($folder)) {
         if(!mkdir($folder) && !is_dir($folder)) {
-          $this->app->erp->LogFile($folder.' konnte nicht erstellt werden');
+            $logger->warning($folder.' konnte nicht erstellt werden');
         }
       }
       $tofile = $folder.'/'.$filename;
@@ -539,7 +541,7 @@ class payone
           }
           catch(Exception $e) {
             $this->fehler[] = $e->getMessage();
-            $this->app->erp->LogFile($e->getMessage());
+            $logger->error($e->getMessage());
             return '';
           }
           try {
@@ -547,7 +549,7 @@ class payone
           }
           catch(Exception $e) {
             $this->fehler[] = $e->getMessage();
-            $this->app->erp->LogFile($e->getMessage());
+            $logger->error($e->getMessage());
             return '';
           }
           $list = $connection->scanFilesystem($ftpsubdir);
@@ -567,7 +569,7 @@ class payone
               }
               catch (Exception $e) {
                 $this->fehler[] = $e->getMessage();
-                $this->app->erp->LogFile($e->getMessage());
+                $logger->error($e->getMessage());
                 continue;
               }
             }
@@ -587,7 +589,7 @@ class payone
                   }
                   catch (Exception $e) {
                     $this->fehler[] = $e->getMessage();
-                    $this->app->erp->LogFile($e->getMessage());
+                    $logger->error($e->getMessage());
                   }
                 }
                 else{
@@ -628,7 +630,7 @@ class payone
         }
         catch(Exception $e) {
           if($ftpdebug) {
-            $this->app->erp->LogFile(['Error '.$e->getMessage().' in File '.$filename, $line]);
+              $logger->error('Error '.$e->getMessage().' in File '.$filename, $line);
           }
           throw new Exception($e->getMessage().' in File '.$filename, $e->getCode());
         }
@@ -640,7 +642,7 @@ class payone
       }
       catch (Exception $e) {
         if($ftpdebug) {
-          $this->app->erp->LogFile(['Error '.$e->getMessage().' in File '.$filename, $line]);
+            $logger->error('Error '.$e->getMessage().' in File '.$filename, $line);
         }
         throw new Exception($e->getMessage().' in File '.$filename, $e->getCode());
       }
@@ -650,7 +652,7 @@ class payone
       }
       catch (Exception $e) {
         if($ftpdebug) {
-          $this->app->erp->LogFile(['Error '.$e->getMessage().' in File '.$filename, $line]);
+            $logger->error('Error '.$e->getMessage().' in File '.$filename, $line);
         }
         throw new Exception($e->getMessage().' in File '.$filename, $e->getCode());
       }
@@ -733,7 +735,7 @@ class payone
       $this->checkMissingArrayValues($header, $this->requiredHeaders);
     }
     catch(Exception $e) {
-      $this->app->erp->LogFile(['Error '.$e->getMessage(), $header]);
+      $this->app->Container->get('Logger')->error('Error '.$e->getMessage(), $header);
       throw new Exception($e->getMessage().' in '.json_encode($header), $e->getCode());
     }
 

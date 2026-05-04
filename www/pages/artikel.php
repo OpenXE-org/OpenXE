@@ -22,6 +22,8 @@
 ?>
 <?php
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Widgets\SuperSearch\Result\ResultGroup;
 use Xentral\Widgets\SuperSearch\Result\ResultItem;
@@ -2902,7 +2904,16 @@ class Artikel extends GenArtikel {
             $msg = $this->app->erp->base64_url_encode('<div class="error">' . $remote_message . '</div>');
         }
 
-        $this->app->erp->LogFile($this->app->DB->real_escape_string('manueller Shopexport Artikel: '.$this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1").' Shop: '.$shop.' Status: '.((int) $remote_status)), $remote_message);
+        $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1");
+        /** @var LoggerInterface $logger */
+        $logger = $this->app->Container->get('Logger');
+        $level = $remote_status ? LogLevel::INFO : LogLevel::ERROR;
+        $logger->log($level, 'manueller Shopexport', [
+            'articleNumber' => $artikelnummer,
+            'shop' => $shop,
+            'remote_status' => $remote_status,
+            'remote_message' => $remote_message,
+        ]);
 
         // keine fehlermeldung vom shop
         if ($remote_status) {
@@ -5363,9 +5374,8 @@ class Artikel extends GenArtikel {
         $submenu .= "<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel in dieses Regal legen:',1); var grund =  prompt('Einlagerungsgrund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=artikel&action=einlagern&id=$id&lid=%value%&menge='+menge+'&grund='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/einlagern.png\" border=\"0\"></a>";
       }
 
-
       if($this->app->erp->RechteVorhanden('artikel','umlagern')){
-        $submenu .="<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel in dieses Regal umlagern:',%field1%); var grund =  prompt('Grund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=artikel&action=umlagern&id=$id&lid=%value%&menge='+menge+'&grund='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/forward.svg\" border=\"0\"></a>";
+        $submenu .="<a onclick=\"var menge =  prompt('St&uuml;ckzahl der Artikel die aus diesem Regal umgelagert werden sollen:',%field1%); var grund =  prompt('Grund:','Anpassung im Artikel'); if(parseFloat(menge.replace(',','.')) > 0 && (grund!=null && grund!='')) { window.location.href='index.php?module=lager&action=buchenauslagern&cmd=umlagern&back=artikel&artikelid=$id&back=artikel&lagerplatzinhalt=%value%&menge='+menge+'&comment='+grund;}\" href=\"#\"><img src=\"./themes/[THEME]/images/forward.svg\" border=\"0\"></a>";
       }
 
       if($this->app->erp->RechteVorhanden('artikel','auslagern') || $this->app->erp->RechteVorhanden('artikel','einlagern') 

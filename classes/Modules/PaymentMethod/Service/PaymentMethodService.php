@@ -30,9 +30,9 @@ final class PaymentMethodService
     public function create(PaymentMethodData $paymentMethod): int
     {
         $this->db->perform(
-            'INSERT INTO `zahlungsweisen` 
+            'INSERT INTO `zahlungsweisen`
             (`modul`,`type`, `bezeichnung`, `einstellungen_json`, `freitext`, `aktiv`, `geloescht`, `projekt`,
-            `automatischbezahlt`, `automatischbezahltverbindlichkeit`, `verhalten`) 
+            `automatischbezahlt`, `automatischbezahltverbindlichkeit`, `verhalten`)
             VALUES (:module, :type, :name, :json, :text, :active, 0, :project_id,
              :auto_payed, :auto_payed_liability, :payment_behavior)',
             [
@@ -66,8 +66,8 @@ final class PaymentMethodService
         }
         $this->get($paymentMethodId);
         $this->db->perform(
-            'UPDATE `zahlungsweisen` 
-            SET `modul` = :module, 
+            'UPDATE `zahlungsweisen`
+            SET `modul` = :module,
                 `type` = :type,
                 `bezeichnung` = :name,
                 `aktiv` = :active,
@@ -135,7 +135,17 @@ final class PaymentMethodService
         if (empty($ret)) {
             throw new PaymentMethodNotFoundException(sprintf('Payment method with id %d not found', $id));
         }
-
+        $ret['einstellungen'] = json_decode($ret['einstellungen_json'], true);
         return $ret;
     }
+
+    public function getFromShortname(string $shortname): array
+    {
+        $ret = $this->db->fetchValue('SELECT id FROM `zahlungsweisen` WHERE `type` = :shortname', ['shortname' => $shortname]);
+        if (empty($ret)) {
+            throw new PaymentMethodNotFoundException(sprintf('Payment method with shortname %s not found', $shortname));
+        }
+        return ($this->get($ret));
+    }
+
 }

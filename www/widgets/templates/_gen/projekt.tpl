@@ -213,6 +213,7 @@
               <tr><td>{|Projektlager|}:</td><td>[PROJEKTLAGER][MSGPROJEKTLAGER]</td></tr>
               <tr><td>{|Bevorzugtes Lager|}:</td><td>[STANDARDLAGER][MSGSTANDARDLAGER]</td></tr>
               [VORPRODUKTIONVORHANDEN]<tr><td>{|Bevorzugtes Lager f&uuml;r Produktionen|}:</td><td>[STANDARDLAGERPRODUKTION][MSGSTANDARDLAGERPRODUKTION]</td></tr>[NACHPRODUKTIONVORHANDEN]
+              <tr><td>{|Standard Kommissionierlagerplatz|}:</td><td>[STANDARDKOMMISSIONIERLAGERPLATZ][MSGSTANDARDKOMMISSIONIERLAGERPLATZ]</td></tr>
               <tr><td></td><td></td></tr>
               <tr><td>{|Versandzentrum 2-Schritte|}:</td><td>[VERSANDZWEIGETEILT][MSGVERSANDZWEIGETEILT]</td></tr>
               <tr><td>{|Versandzentrum Artikelname aus Stammdaten|}:</td><td>[VERSANDARTIKELNAMEAUSSTAMMDATEN][MSGVERSANDARTIKELNAMEAUSSTAMMDATEN]</td></tr>

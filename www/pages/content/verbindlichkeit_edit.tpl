@@ -100,6 +100,14 @@
                                                     </tr>                                                                                                                                              
                                                     <tr>
                                                         <td>
+                                                            {|Zahlungsweise|}:
+                                                        </td>
+                                                        <td>
+                                                            <select name="zahlungsweise" [SAVEDISABLED]>[ZAHLUNGSWEISESELECT]</select>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
                                                             {|Zahlbar bis|}:
                                                         </td>
                                                         <td>

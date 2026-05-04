@@ -950,10 +950,12 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      * @param string $message
      * @param mixed $dump
      */
-    public function Shopware6Log($message, $dump = '')
+    public function Shopware6Log($message, $dump = null)
     {
         if ($this->protocol) {
-            $this->app->erp->Logfile($message, print_r($dump, true));
+            if ($dump !== null && !is_array($dump))
+                $dump = ['dump' => $dump];
+            $this->app->Container->get('Logger')->info($message, $dump);
         }
     }
 
@@ -1017,13 +1019,6 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $deliveryTimeId = $this->deliveryTimeId;
             if (!empty($article['lieferzeitmanuell'])) {
                 $deliveryTimeId = $this->getDeliveryTimeId($article['lieferzeitmanuell']);
-            }
-
-            if (empty($systemFieldsToAdd['visibilities']) && !empty($this->shopwareDefaultSalesChannel)) {
-                $systemFieldsToAdd['visibilities'] = $this->modifySalesChannel(
-                    explode(',', $this->shopwareDefaultSalesChannel),
-                    $articleIdShopware,
-                );
             }
 
             if (empty($systemFieldsToAdd['unitId']) && !empty($article['einheit'])) {
@@ -2637,6 +2632,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
      */
     protected function modifySalesChannel($salesChannelNames, $articleIdInShopware)
     {
+        if (empty($salesChannelNames) && !empty($this->shopwareDefaultSalesChannel))
+            $salesChannelNames = [$this->shopwareDefaultSalesChannel];
+
         $salesChannelInXentralIds = [];
         foreach ($salesChannelNames as $salesChannelName) {
             $salesChannelInfo = $this->shopwareRequest(

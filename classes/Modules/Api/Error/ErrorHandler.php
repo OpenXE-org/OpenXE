@@ -83,7 +83,7 @@ class ErrorHandler
                     'code'      => ApiError::CODE_UNEXPECTED_ERROR,
                     'message'   => 'Unexpected error',
                     'http_code' => 500,
-                ],
+                     ],
             ];
 
             if ($this->isDebugModeActive()) {
@@ -133,7 +133,7 @@ class ErrorHandler
 
         if ($exception instanceof LegacyConfigExceptionInterface) {
             $errors[] = $exception->getMessage();
-        }
+        }        
 
         $content = [
             'error' => [

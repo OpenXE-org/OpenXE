@@ -47,6 +47,7 @@
                                                     [ENDENICHTUMLAGERN] [STARTUMLAGERN]
                                                     <option [UMLAGERN]>{|Umlagern|}</option>[ENDEUMLAGERN]
                                                 </select>
+                                                <input name="redirect" value="[BACK]" hidden>
                                             </td>
                                         </tr>
                                         <tr>

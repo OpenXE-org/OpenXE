@@ -2059,7 +2059,8 @@ class Wareneingang {
         $etikettendrucker = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_drucker');
         $etikettart = $this->app->erp->Projektdaten($projekt,'etiketten_kommissionierung_art');
         if (!empty($etikettendrucker)) {
-            $etikettendruckername = reset($this->app->erp->GetEtikettenDrucker($etikettendrucker));
+            $druckerliste =  (array) $this->app->erp->GetEtikettenDrucker($etikettendrucker);
+            $etikettendruckername = reset($druckerliste);
         }
 
         $seriennummern = $this->app->erp->SeriennummernCheckWareneingang(
@@ -2294,6 +2295,7 @@ class Wareneingang {
                 // Scanner
                 $this->app->User->SetParameter('wareneingang_gescannterartikel', 0);
                 $menge = $this->app->Secure->GetPOST('menge');
+                $menge_eingabe = $menge;
                 $artikel_input = $this->app->Secure->GetPOST('artikel');
                 $ignoreprefixpostfixchecked = $this->app->Secure->GetPOST('ignoreprefixpostfix');
                 $this->app->Tpl->Set('IGNOREPREFIXPOSTFIXCHECKED',$ignoreprefixpostfixchecked?'checked':'');
@@ -2398,11 +2400,10 @@ class Wareneingang {
                             }
                         }
 
-                        // Für Etiketten
-                        if ($menge > 0) {
-                            $positionen[] = array('artikel' => $artikel, 'menge' => $menge);
+                        if ($menge > 0) {                           
+                            $this->app->Tpl->AddMessage('error','Menge &uuml;berschritten'.($menge_eingabe?': '.$menge_eingabe.' von '.$restmenge:''));
+                            break;
                         }
-
                     }
                 } // Artikelscan
 
@@ -2440,7 +2441,7 @@ class Wareneingang {
                     $menge = $menge + $preliminary['menge'];
                     if ($menge > $bparr['menge']-$bparr['geliefert']) {
                         $menge = $bparr['menge']-$bparr['geliefert'];
-                        $this->app->YUI->Message('warning','Mengen wurden angepasst');
+                        $this->app->Tpl->AddMessage('warning','Mengen wurden angepasst');
                     }
 
                     $menge_gesamt += $menge;

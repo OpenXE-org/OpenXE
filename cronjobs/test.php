@@ -25,7 +25,7 @@ $conf = new Config();
 $app->DB = new DB($conf->WFdbhost,$conf->WFdbname,$conf->WFdbuser,$conf->WFdbpass,null,$conf->WFdbport);
 $erp = new erpAPI($app);
 $app->erp = $erp;
-$app->erp->LogFile("Testprozess");
+$app->Container->get('Logger')->info("Testprozess");
 
 
 ?>

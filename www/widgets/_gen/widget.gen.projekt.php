@@ -266,6 +266,9 @@ class WidgetGenprojekt
     $field = new HTMLInput("standardlagerproduktion","text","","30","","","","","","","","0","","");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("standardkommissionierlagerplatz","text","","30","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("versandzweigeteilt","","","1","0","0");
     $this->form->NewField($field);
 

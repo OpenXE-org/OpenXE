@@ -308,14 +308,19 @@ final class MailMessageData implements MailMessageInterface, JsonSerializable
         if ($date === null) {
             return null;
         }
-/*        $dateTime = date_create($date->getValue());
+
+        $dateTime = date_create_immutable($date->getValue()); // No Exception thrown
         if ($dateTime === false) {
-            throw new InvalidArgumentException('Invalid date: '.$date->getValue());
-            return null;
-        }*/
-
-        $dateTime = new DateTimeImmutable($date->getValue());
-
+            // Try again, e.g. for fixing "Double timezone specification"
+            $errors = DateTimeImmutable::getLastErrors();
+            $errpos = reset(array_keys($errors['errors']));
+            $datestring = substr($date->getValue(), 0, $errpos);
+            $dateTime = new DateTimeImmutable($datestring);
+            if ($dateTime === false) {
+                return null;
+            }
+        }
+    
         return $dateTime;
     }
 

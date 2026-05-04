@@ -8,8 +8,11 @@
 <!-- erstes tab -->
 
 <div id="tabs1">
-[IMPORT]
-    <form method="POST"><input type="submit" name="deletedouble" value="{|bereits importierte Auftrage l&ouml;schen|}" /></form>
+    <form method="POST">
+        [IMPORT]
+        <input type="submit" value="{|Auftr&auml;ge importieren|}" id="submit" name="submit" />
+        <input type="submit" name="deletedouble" value="{|Bereits importierte Auftrage l&ouml;schen|}" />
+    </form>
 </div>
 
 <!-- tab view schließen -->

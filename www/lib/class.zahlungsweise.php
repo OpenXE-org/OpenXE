@@ -1,5 +1,5 @@
 <?php 
-class Zahlungsweisenmodul {
+abstract class Zahlungsweisenmodul {
   public $id;
   public $app;
 
@@ -16,11 +16,14 @@ class Zahlungsweisenmodul {
     $struktur = $this->EinstellungenStruktur();
     if($this->app->Secure->GetPOST('speichern')) {
       foreach($struktur as $name => $val) {
-        $json[$name] = $this->app->Secure->GetPOST($name, '','', 1);
+        $json[$name] = $this->app->Secure->GetPOST($name, '','', 1);               
         if(isset($val['replace'])) {
           switch($val['replace']) {
             case 'lieferantennummer':
               $json[$name] = $this->app->erp->ReplaceLieferantennummer(1,$json[$name],1);
+            break;
+            case 'konto':
+              $json[$name] = $this->app->erp->ReplaceKonto(true,$struktur[$name]['optionen'][$json[$name]]);
             break;
           }
         }
@@ -42,7 +45,7 @@ class Zahlungsweisenmodul {
 
     $id = $this->id;
     $html = '</table></fieldset>';
-    $html .= '<fieldset><legend>'.$modul.' Einstellungen</legend><table class=mkTableFormular>';
+    $html .= '<fieldset><legend>'.ucfirst($modul).' Einstellungen</legend><table class=mkTableFormular>';
    
     $json = $this->app->DB->Select(
       sprintf(
@@ -52,7 +55,7 @@ class Zahlungsweisenmodul {
     );
     if(!empty($json)) {
       $json = json_decode($json, true);
-    }
+    }        
     foreach($struktur as $name => $val) {
       $html .= '<tr><td>'.(empty($val['bezeichnung'])?$name:$val['bezeichnung']).'</td><td>';
       $typ = 'text';
@@ -74,7 +77,7 @@ class Zahlungsweisenmodul {
             }
           break;
         }
-      }
+      }                          
       switch($typ) {
         case 'textarea':
           $lang = '';
@@ -135,5 +138,8 @@ class Zahlungsweisenmodul {
     }
     $this->app->Tpl->Add($target, $html);
   }
+
+  // returns array(bool 'success', array successful_transactions, array failed_transactions , array 'payment_objects' (string 'id', string 'description', payment_object_types 'type', array 'payment_transaction_ids', array 'attachments' ('filename', 'contents') ) )
+  public abstract function ProcessPayment(array $transaction_block): array;
   
 }

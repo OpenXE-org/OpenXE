@@ -77,9 +77,11 @@ class ApiApplication
 
         try {
             $this->auth = $this->get('DigestAuth');
+
             $this->auth->checkLogin();
 
             $this->response = $this->handleApiRequest($method, $uri);
+
         } catch (ApiHttpException $e) {
             $this->response = $this->createErrorResponse($e);
         }
@@ -603,6 +605,11 @@ class ApiApplication
         //$collection->addRoute('GET', '/v1/auftraege/{id:\d+}', array('Version1', 'Order', 'GetOrderById'));
         //$collection->addRoute('POST', '/v1/auftraege', array('Version1', 'Order', 'CreateOrder'));
 
+        // ImportCSV Importvorlage
+        $collection->addRoute('POST', '/v1/importcsv',
+            ['Version1', 'ImportCSV', 'ImportCSV', 'importAction', 'import_csv_file']
+        );
+
         /*
          * Route ermitteln
          */
@@ -622,7 +629,6 @@ class ApiApplication
         /*
          * Controller dispatchen
          */
-
         $this->request->attributes->add($routeInfo->getRouterParams());
 
         // Legacy-API-Controller
@@ -698,8 +704,6 @@ class ApiApplication
 
             return $controller->$action();
         }
-
-
 
         /** @var AbstractController $controller */
         $controller = $this->container->getApiController(

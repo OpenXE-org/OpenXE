@@ -81,7 +81,6 @@ class WidgetWiedervorlage extends WidgetGenWiedervorlage
 
       if($this->app->Secure->POST["projekt"]=="")
       {
-        $this->app->erp->LogFile("Standard Projekt laden");
         $projekt = $this->app->DB->Select("SELECT standardprojekt FROM firma WHERE id='".$this->app->User->GetFirma()."' LIMIT 1");
 
         $projekt_bevorzugt=$this->app->DB->Select("SELECT projekt_bevorzugen FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");

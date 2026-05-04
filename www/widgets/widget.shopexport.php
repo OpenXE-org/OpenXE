@@ -520,39 +520,54 @@ class WidgetShopexport extends WidgetGenShopexport
       if($this->app->erp->RechteVorhanden('shopexport','artikeluebertragen')){
         $this->app->Tpl->Add('AKTIONBUTTONS', '<tr><td><a href="index.php?module=shopexport&action=artikeluebertragung&id=' . $id . '"><input type="button" class="aktionbutton" value="{|Artikel &uuml;bertragen|}"></a></td></tr>');
       }
-      if($struktur && isset($struktur['functions']) && is_array($struktur['functions']) && in_array('exportartikelbaum',$struktur['functions']))
-      {
-        $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="#" onclick="artikelbaumexport();"><input type="button" class="aktionbutton" value="Artikelbaum &uuml;bertragen"></a></td></tr>');
-      }
-      if($struktur && isset($struktur['functions']) && is_array($struktur['functions']) && in_array('getarticlelist',$struktur['functions']))
-      {
-        $anzahl = $this->app->DB->Select("SELECT COUNT(id) FROM shopexport_getarticles WHERE shop = '$id' AND nummer <> ''");
-        if($anzahl > 0)
-        {
-          $this->app->Tpl->Add('VORFORMULAR','
-            <form action="" method="post" id="frmresetgetarticlelist">
-              <input type="hidden" name="resetgetarticlelist" value="1" />
-            </form>
-          ');
-          $gesamtAnzahlAbgeholteArtikel = $this->app->erp->GetKonfiguration('artikelimportanzahl_'.$id);
-          $anzahlstring = '('.$anzahl.' von '.$gesamtAnzahlAbgeholteArtikel.')';
-          $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="#" onclick="$(\'#frmresetgetarticlelist\').submit();"><input type="button" class="aktionbutton" value="Artikel abholen abbrechen '.$anzahlstring.'"></a></td></tr>');
-        }else {
-          $buttoninfo = '';
-          if(!empty($struktur['buttoninfo']) && !empty($struktur['buttoninfo']['getarticlelist']))
-          {
-            $buttoninfo = $struktur['buttoninfo']['getarticlelist'];
-          }
-          $this->app->Tpl->Add('VORFORMULAR','
-            <form action="" method="post" id="frmgetarticlelist">
-              <input type="hidden" name="getarticlelist" value="1" />
-            </form>
-          ');
-          $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="#" onclick="$(\'#frmgetarticlelist\').submit();"><input type="button" class="aktionbutton" value="{|Artikelliste abholen|}'.$buttoninfo.'"></a></td></tr>');
+
+      if($struktur && isset($struktur['functions']) && is_array($struktur['functions'])) {
+        foreach ($struktur['functions'] as $shopfunction) {
+            if (is_array($shopfunction)) {
+                $shopfunctionname = $shopfunction['name'];
+            } else {
+                $shopfunctionname = $shopfunction;
+            }
+
+            switch ($shopfunctionname) {
+                case 'exportartikelbaum':
+                    $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="#" onclick="artikelbaumexport();"><input type="button" class="aktionbutton" value="Artikelbaum &uuml;bertragen"></a></td></tr>');
+                break;
+                case 'getarticlelist':
+                    $anzahl = $this->app->DB->Select("SELECT COUNT(id) FROM shopexport_getarticles WHERE shop = '$id' AND nummer <> ''");
+                    if($anzahl > 0)
+                    {
+                      $this->app->Tpl->Add('VORFORMULAR','
+                        <form action="" method="post" id="frmresetgetarticlelist">
+                          <input type="hidden" name="resetgetarticlelist" value="1" />
+                        </form>
+                      ');
+                      $gesamtAnzahlAbgeholteArtikel = $this->app->erp->GetKonfiguration('artikelimportanzahl_'.$id);
+                      $anzahlstring = '('.$anzahl.' von '.$gesamtAnzahlAbgeholteArtikel.')';
+                      $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="#" onclick="$(\'#frmresetgetarticlelist\').submit();"><input type="button" class="aktionbutton" value="Artikel abholen abbrechen '.$anzahlstring.'"></a></td></tr>');
+                    }else {
+                      $buttoninfo = '';
+                      if(!empty($struktur['buttoninfo']) && !empty($struktur['buttoninfo']['getarticlelist']))
+                      {
+                        $buttoninfo = $struktur['buttoninfo']['getarticlelist'];
+                      }
+                      $this->app->Tpl->Add('VORFORMULAR','
+                        <form action="" method="post" id="frmgetarticlelist">
+                          <input type="hidden" name="getarticlelist" value="1" />
+                        </form>
+                      ');
+                      $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="#" onclick="$(\'#frmgetarticlelist\').submit();"><input type="button" class="aktionbutton" value="{|Artikelliste abholen|}'.$buttoninfo.'"></a></td></tr>');
+                    }
+                break;
+                default:
+                    if (isset($shopfunction['name']) && isset($shopfunction['shopspecificfunction'])) {
+                        $this->app->Tpl->Add('AKTIONBUTTONS','<tr><td><a href="index.php?module=onlineshops&action=shopspecificfunction&shopspecificfunction='.$shopfunction['shopspecificfunction'].'&id='.$id.'"><input type="button" class="aktionbutton" value="{|'.$shopfunction['name'].'|}"></a></td></tr>');
+                    }
+                break;
+            }
         }
-      }else{
-        $this->app->Tpl->Set('NURARTIKELLISTESTYLE',' style="display:none;" ');
       }
+
       if($struktur && isset($struktur['archiv']) && is_array($struktur['archiv']))
       {
         if($this->app->DB->Select("SELECT id FROM shopexport_archiv WHERE shop='$id' AND status = 'aktiv' LIMIT 1"))

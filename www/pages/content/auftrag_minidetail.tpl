@@ -61,7 +61,13 @@
 <h2 class="greyh2">Artikel</h2>
 <div style="padding:10px;">
  [ARTIKEL]
-<i style="color:#999">* Die linke Zahl zeigt die für den Kunden reservierten Einheiten und die rechte Zahl die global reservierte Anzahl.</i>
+<i style="color:#999" [LAGERHIDDEN]>* Die linke Zahl zeigt die für den Kunden reservierten Einheiten und die rechte Zahl die global reservierte Anzahl.</i>
+</div>
+<div [KOMMISSIONIERUNGHIDDEN]>
+    <h2 class="greyh2">Kommissionierung <a href="index.php?module=kommissionierung&action=print&id=[KOMMISSIONIERUNGID]">[KOMMISSIONIERUNGID]</a></h2>
+    <div style="padding:10px;">
+    [KOMMISSIONIERUNG]
+    </div>
 </div>
 </div>
 [MINIDETAILNACHARTIKEL]

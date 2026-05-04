@@ -958,7 +958,7 @@ class Benutzer
       $userPermission = $this->app->Container->get('UserPermissionService');
       $userPermission->log($grantingUserId,$grantingUserName,$receivingUserId,$receivingUserName,$module,$action,$permission);
     }catch (Exception $ex){
-      $this->app->erp->LogFile('Fehler bei Zuweisung Rechtehistore',$ex->getMessage());
+      $this->app->Container->get('Logger')->error('Fehler bei Zuweisung Rechtehistore',[$ex->getMessage()]);
     }
   }
 

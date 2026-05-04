@@ -16,5 +16,4 @@ $container = include __DIR__ . '/bootstrap.php';
 
 $application = new \Xentral\Modules\Api\Engine\ApiApplication($container);
 $response = $application->handle();
-
 $response->send();

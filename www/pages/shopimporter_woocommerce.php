@@ -1,16 +1,16 @@
 <?php
 /*
-**** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
-* Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
-*
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
-*
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
-*
-**** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-*/
+ **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
+ * 
+ * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
+ *
+ * This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+ *
+ * You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
+ * to obtain the text of the corresponding license version.  
+ *
+ **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
+ */
 ?>
 <?php
 use Xentral\Components\Http\JsonResponse;
@@ -56,13 +56,13 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    */
   protected $app;
   protected $dump;
-  
+
   /** @var Logger $logger */
   public $logger;
-  
+
   public function __construct($app, $intern = false)
   {
-    $this->app=$app;
+    $this->app = $app;
     $this->intern = true;
     $this->logger = $app->Container->get('Logger');
   }
@@ -70,7 +70,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   public function ImportList()
   {
     $msg = $this->app->erp->base64_url_encode('<div class="info">Sie k&ouml;nnen hier die Shops einstellen</div>');
-    header('Location: index.php?module=onlineshops&action=list&msg='.$msg);
+    header('Location: index.php?module=onlineshops&action=list&msg=' . $msg);
     exit;
   }
 
@@ -88,7 +88,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $tmp = $this->CatchRemoteCommand('data');
 
     // Only orders having an order number greater or equal than this should be fetched. null otherwise
-    $number_from = empty($tmp['ab_nummer']) ? null : (int)$tmp['ab_nummer'];
+    $number_from = empty($tmp['ab_nummer']) ? null : (int) $tmp['ab_nummer'];
 
     // pending orders will be fetched into this array. it's length is returned at the end of the funciton
     $pendingOrders = array();
@@ -101,8 +101,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       // ids that are greater than $from_number and use this array with the 'include' property
       // of the WooCommerce API
 
-      $number_to = $number_from+800;
-      if(!empty($tmp['bis_nummer'])){
+      $number_to = $number_from + 800;
+      if (!empty($tmp['bis_nummer'])) {
         $number_to = $tmp['bis_nummer'];
       }
 
@@ -110,20 +110,20 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
       $pendingOrders = $this->client->get('orders', [
         'per_page' => 100,
-        'include' => implode(",",$fakeGreaterThanIds),
+        'include' => implode(",", $fakeGreaterThanIds),
       ]);
 
     } else {
       // fetch posts by status
 
       $pendingOrders = $this->client->get('orders', [
-        'status' => array_map('trim',explode(';', $this->statusPending)),
+        'status' => array_map('trim', explode(';', $this->statusPending)),
         'per_page' => 100
       ]);
 
     }
 
-    return (!empty($pendingOrders)?count($pendingOrders):0);
+    return (!empty($pendingOrders) ? count($pendingOrders) : 0);
   }
 
   /**
@@ -142,7 +142,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $tmp = $this->CatchRemoteCommand('data');
 
     // Only orders having an order number greater or equal than this should be fetched. null otherwise
-    $number_from = empty($tmp['ab_nummer']) ? null : (int)$tmp['ab_nummer'];
+    $number_from = empty($tmp['ab_nummer']) ? null : (int) $tmp['ab_nummer'];
 
     // pending orders will be fetched into this array. it's length is returned at the end of the funciton
     $pendingOrders = array();
@@ -155,8 +155,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       // ids that are greater than $from_number and use this array with the 'include' property
       // of the WooCommerce API
 
-      $number_to = $number_from+800;
-      if(!empty($tmp['bis_nummer'])){
+      $number_to = $number_from + 800;
+      if (!empty($tmp['bis_nummer'])) {
         $number_to = $tmp['bis_nummer'];
       }
 
@@ -164,7 +164,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
       $pendingOrders = $this->client->get('orders', [
         'per_page' => 20,
-        'include' => implode(',',$fakeGreaterThanIds),
+        'include' => implode(',', $fakeGreaterThanIds),
         'order' => 'asc',
         'orderby' => 'id'
       ]);
@@ -173,7 +173,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       // fetch posts by status
 
       $pendingOrders = $this->client->get('orders', [
-        'status' => array_map('trim',explode(';', $this->statusPending)),
+        'status' => array_map('trim', explode(';', $this->statusPending)),
         'per_page' => 20,
         'order' => 'asc',
         'orderby' => 'id'
@@ -182,13 +182,13 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     }
 
     // Return an empty array in case there are no orders to import
-    if ((!empty($pendingOrders)?count($pendingOrders):0) === 0) {
+    if ((!empty($pendingOrders) ? count($pendingOrders) : 0) === 0) {
       return null;
     }
 
     $tmp = [];
 
-    foreach ($pendingOrders as $pendingOrder){
+    foreach ($pendingOrders as $pendingOrder) {
       $wcOrder = $pendingOrder;
       $order = $this->parseOrder($wcOrder);
 
@@ -208,7 +208,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
   // This function searches the wcOrder for the specified WC Meta key
   // and returns it if found, null otherise
-  public function get_wc_meta($wcOrder, $meta_key) {
+  public function get_wc_meta($wcOrder, $meta_key)
+  {
     $value = null;
     foreach ($wcOrder->meta_data as $meta) {
       if ($meta->key == $meta_key) {
@@ -221,7 +222,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
   // Parse the given WooCommerce order, return a Xentral array-represented order.
   // Overload this method whenever additional attributes are required.
-  public function parseOrder($wcOrder) {
+  public function parseOrder($wcOrder)
+  {
 
 
     $order = array();
@@ -238,8 +240,17 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $seperateShippingAddress = !self::compareObjects(
       $wcOrder->billing,
       $wcOrder->shipping,
-      ['first_name', 'second_name', 'company', 'address_1', 'address_2',
-        'city', 'state', 'postcode', 'country']
+      [
+        'first_name',
+        'second_name',
+        'company',
+        'address_1',
+        'address_2',
+        'city',
+        'state',
+        'postcode',
+        'country'
+      ]
     );
 
     if ($isBillingCompany) {
@@ -257,7 +268,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       }
     }
 
-    if(!empty($wcOrder->subshop)){
+    if (!empty($wcOrder->subshop)) {
       $order['subshop'] = $wcOrder->subshop;
     }
 
@@ -265,8 +276,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $order['auftrag'] = $wcOrder->id;
     $order['order'] = json_decode(json_encode($wcOrder), true);
     $order['strasse'] = $wcOrder->billing->address_1;
-    if(!empty($wcOrder->billing->address_2)){
-      $order['adresszusatz'] =  $wcOrder->billing->address_2;
+    if (!empty($wcOrder->billing->address_2)) {
+      $order['adresszusatz'] = $wcOrder->billing->address_2;
     }
     $order['plz'] = $wcOrder->billing->postcode;
     $order['ort'] = $wcOrder->billing->city;
@@ -279,36 +290,36 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $order['onlinebestellnummer'] = $wcOrder->number;
     $order['versandkostenbrutto'] = $wcOrder->shipping_total + $wcOrder->shipping_tax;
     $order['internebemerkung'] = $wcOrder->customer_note;
-    
-    if(!empty((string)$wcOrder->currency)){
-      $warenkorb['waehrung'] = (string)$wcOrder->currency;
+
+    if (!empty((string) $wcOrder->currency)) {
+      $warenkorb['waehrung'] = (string) $wcOrder->currency;
     }
     //
 
     //
     // Coupon Codes
     //
-    $discount_total = (float)$wcOrder->discount_total;
-    $discount_tax = (float)$wcOrder->discount_tax;
+    $discount_total = (float) $wcOrder->discount_total;
+    $discount_tax = (float) $wcOrder->discount_tax;
 
-    if($discount_total != 0) { // Discount was applied to this order
+    if ($discount_total != 0) { // Discount was applied to this order
 
       // Calculate coupon amount
-      if($discount_tax == 0) {
+      if ($discount_tax == 0) {
         // Tax calculations are not enabled for any used coupon
-        $order['rabattnetto'] = -abs((float)$discount_total);
-      } else{
+        $order['rabattnetto'] = -abs((float) $discount_total);
+      } else {
         // At least one used coupon has tax calculations enabled
-        $order['rabattbrutto'] = -abs((float)$discount_total);
-        $order['rabattbrutto'] += -abs((float)$discount_tax);
+        $order['rabattbrutto'] = -abs((float) $discount_total);
+        $order['rabattbrutto'] += -abs((float) $discount_tax);
       }
 
       // Set coupon name
       $couponLine = $wcOrder->coupon_lines;
 
       // Check if we have a valid coupon line just to be sure and set the coupon name
-      if($couponLine && is_array($couponLine) && isset($couponLine[0]) && (String)$couponLine[0]->code !== '') {
-        $order['rabattname'] =  (String)$couponLine[0]->code;
+      if ($couponLine && is_array($couponLine) && isset($couponLine[0]) && (String) $couponLine[0]->code !== '') {
+        $order['rabattname'] = (String) $couponLine[0]->code;
       }
 
     }
@@ -318,8 +329,17 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $seperateShippingAddress = !self::compareObjects(
       $wcOrder->billing,
       $wcOrder->shipping,
-      ['first_name', 'second_name', 'company', 'address_1', 'address_2',
-        'city', 'state', 'postcode', 'country']
+      [
+        'first_name',
+        'second_name',
+        'company',
+        'address_1',
+        'address_2',
+        'city',
+        'state',
+        'postcode',
+        'country'
+      ]
     );
 
     if ($seperateShippingAddress) {
@@ -333,7 +353,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       }
 
       $order['lieferadresse_strasse'] = $wcOrder->shipping->address_1;
-      if(!empty($wcOrder->shipping->address_2)){
+      if (!empty($wcOrder->shipping->address_2)) {
         $order['lieferadresse_adresszusatz'] = $wcOrder->shipping->address_2;
       }
       $order['lieferadresse_plz'] = $wcOrder->shipping->postcode;
@@ -348,7 +368,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $order['ustid'] = $vatId;
     }
 
-    foreach ($wcOrder->line_items as $wcOrderItem){
+    foreach ($wcOrder->line_items as $wcOrderItem) {
       $order['articlelist'][] = $this->parseItem($wcOrderItem);
     }
 
@@ -358,7 +378,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     return $order;
   }
 
-  function parseItem($wcOrderItem){
+  function parseItem($wcOrderItem)
+  {
     // The WC API doesnt expose the net price of a single product in the get order endpoint.
     // We could query each individual product and get the price, but that would result in a
     // huge amount of HTTP requests.
@@ -367,15 +388,15 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     // this custom calculation as we have access to the exact `total_tax` amount.
     // Passing the net value of the line eliminates rounding issues if the position happens to have large quantites
 
-    switch ($this->priceType){
+    switch ($this->priceType) {
       case 'grosscalculated':
-        $priceValue = ((float)$wcOrderItem->subtotal + (float)$wcOrderItem->subtotal_tax) / (float)$wcOrderItem->quantity;
+        $priceValue = ((float) $wcOrderItem->subtotal + (float) $wcOrderItem->subtotal_tax) / (float) $wcOrderItem->quantity;
         $priceType = 'price';
         break;
       case 'netcalculated':
       default:
         $priceType = 'price_netto';
-        $priceValue = (float)$wcOrderItem->subtotal / (float)$wcOrderItem->quantity;
+        $priceValue = (float) $wcOrderItem->subtotal / (float) $wcOrderItem->quantity;
         break;
     }
 
@@ -387,7 +408,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     // The item could be a variable product in which case we have to retrieve the sku of the variation product
     if (!empty($wcOrderItem->variation_id)) {
-      $variation_product_sku = $this->getSKUByShopId($wcOrderItem->product_id,$wcOrderItem->variation_id);
+      $variation_product_sku = $this->getSKUByShopId($wcOrderItem->product_id, $wcOrderItem->variation_id);
       if (!empty($variation_product_sku)) {
         $orderItem['articleid'] = $variation_product_sku;
       }
@@ -405,7 +426,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $orderId = $this->CatchRemoteCommand('data')['auftrag'];
 
     if (!empty($orderId)) {
-      $this->client->put('orders/'.$orderId, [
+      $this->client->put('orders/' . $orderId, [
         'status' => $this->statusProcessing,
       ]);
     }
@@ -423,48 +444,50 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   {
     /** @var OrderStatusUpdateRequest $data */
     $data = $this->CatchRemoteCommand('data');
-       
+
     if ($data->orderStatus !== OrderStatus::Completed)
-        return;
+      return;
 
     if (isset($data->shipments)) {
-        $trackingCode = $data->shipments[0]?->trackingNumber;
+      $trackingCode = $data->shipments[0]?->trackingNumber;
     }
 
     if (!empty($trackingCode)) {
-      $this->client->post('orders/'.$data->shopOrderId.'/notes', [
+      $this->client->post('orders/' . $data->shopOrderId . '/notes', [
         'note' => 'Tracking Code: ' . $trackingCode
       ]);
-      
-      $this->logger->info("WooCommerce Tracking Code Rückmeldung für Auftrag: ".$data->orderId,
+
+      $this->logger->info(
+        "WooCommerce Tracking Code Rückmeldung für Auftrag: " . $data->orderId,
         [
-            'orderId' => $data->shopOrderId,
-            'trackingCode' => $trackingCode
+          'orderId' => $data->shopOrderId,
+          'trackingCode' => $trackingCode
         ]
-      );     
+      );
     }
 
     $updateData = [
-        'status' => $this->statusCompleted,
-        'meta_data' => [
-            [
-                'key' => 'tracking_code',
-                'value' => $trackingCode
-            ],
-            [
-                'key' => 'shipping_carrier',
-                'value' => $data->shipments[0]?->shippingMethod
-            ]
-        ],
-    ];
-    $this->client->put('orders/'.$data->shopOrderId, $updateData);
-        
-    $this->logger->info("WooCommerce Statusrückmeldung 'completed' für Auftrag: ".$data->orderId,
+      'status' => $this->statusCompleted,
+      'meta_data' => [
         [
-            'orderId' => $data->shopOrderId,
-            'status' => $this->statusCompleted
+          'key' => 'tracking_code',
+          'value' => $trackingCode
+        ],
+        [
+          'key' => 'shipping_carrier',
+          'value' => $data->shipments[0]?->shippingMethod
         ]
-    );            
+      ],
+    ];
+    $this->client->put('orders/' . $data->shopOrderId, $updateData);
+
+    $this->logger->info(
+      "WooCommerce Statusrückmeldung 'completed' für Auftrag: " . $data->orderId,
+      [
+        'orderId' => $data->shopOrderId,
+        'status' => $this->statusCompleted
+      ]
+    );
     return 'ok';
   }
 
@@ -477,35 +500,34 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   {
     $tmp = $this->CatchRemoteCommand('data');
     $anzahl = 0;
-    $ctmp = (!empty($tmp)?count($tmp):0);
+    $ctmp = (!empty($tmp) ? count($tmp) : 0);
 
-    for($i=0;$i<$ctmp;$i++)
-    {
+    for ($i = 0; $i < $ctmp; $i++) {
       // Get important values from input data
       $artikel = $tmp[$i]['artikel'];
-      if($artikel === 'ignore') {
+      if ($artikel === 'ignore') {
         continue;
       }
       $nummer = $tmp[$i]['nummer'];
-      if(!empty($tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'])){
+      if (!empty($tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'])) {
         $nummer = $tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'];
       }
       $lageranzahl = $tmp[$i]['anzahl_lager'];
       $pseudolager = trim($tmp[$i]['pseudolager']);
       $inaktiv = $tmp[$i]['inaktiv'];
-      $status ='publish';
+      $status = 'publish';
 
       // Do some computations, sanitize input
 
-      if($pseudolager !== ''){
+      if ($pseudolager !== '') {
         $lageranzahl = $pseudolager;
       }
 
-      if($tmp[$i]['ausverkauft']){
+      if ($tmp[$i]['ausverkauft']) {
         $lageranzahl = 0;
       }
 
-      if($inaktiv){
+      if ($inaktiv) {
         $status = 'private';
       }
 
@@ -514,7 +536,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
       if (empty($remoteIdInformation['id'])) {
         // The online shop doesnt know this article, write to log and continue with next product
-        
+
         $this->logger->error("WooCommerce Artikel $nummer wurde im Online-Shop nicht gefunden! Falsche Artikelnummer im Shop hinterlegt?");
         continue;
       }
@@ -526,26 +548,28 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'stock_quantity' => $lageranzahl
         // WooCommerce doesnt have a standard property for the other values, we're ignoring them
       ];
-      if($remoteIdInformation['isvariant']){
-        $result = $this->client->put('products/' . $remoteIdInformation['parent'].'/variations/'. $remoteIdInformation['id'], $updateProductParams);
-      }else{
+      if ($remoteIdInformation['isvariant']) {
+        $result = $this->client->put('products/' . $remoteIdInformation['parent'] . '/variations/' . $remoteIdInformation['id'], $updateProductParams);
+      } else {
         $result = $this->client->put('products/' . $remoteIdInformation['id'], $updateProductParams);
       }
-      
-      $this->logger->error("WooCommerce Lagerzahlenübertragung für Artikel: $nummer / $remoteIdInformation[id] - Anzahl: $lageranzahl",
+
+      $this->logger->error(
+        "WooCommerce Lagerzahlenübertragung für Artikel: $nummer / $remoteIdInformation[id] - Anzahl: $lageranzahl",
         [
-            'result' => $result
+          'result' => $result
         ]
-      );    
+      );
       $anzahl++;
     }
     return $anzahl;
   }
 
-  public function ImportStorniereAuftrag() {
+  public function ImportStorniereAuftrag()
+  {
     $orderId = $this->CatchRemoteCommand('data')['auftrag'];
     if (!empty($orderId)) {
-      $this->client->put('orders/'.$orderId, [
+      $this->client->put('orders/' . $orderId, [
         'status' => 'cancelled',
       ]);
     } else {
@@ -554,16 +578,17 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     return 'ok';
   }
 
-  public function ImportSendList() {
+  public function ImportSendList()
+  {
     $tmp = $this->catchRemoteCommand('data');
     $anzahl = 0;
     $return = [];
-    for($i=0;$i<(!empty($tmp)?count($tmp):0);$i++){
+    for ($i = 0; $i < (!empty($tmp) ? count($tmp) : 0); $i++) {
       $return[$i] = new ArticleExportResult();
       $artikel = $tmp[$i]['artikel'];
       $return[$i]->articleId = intval($artikel);
       $nummer = $tmp[$i]['nummer'];
-      if(!empty($tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'])){
+      if (!empty($tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'])) {
         $nummer = $tmp[$i]['artikelnummer_fremdnummern'][0]['nummer'];
       }
       $laststock = $tmp[$i]['restmenge'];
@@ -604,31 +629,38 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $meta_title = $tmp[$i]['metatitle_de'];
 
       $pseudopreis = $tmp[$i]['pseudopreis'];//*1.19;
-      if($pseudopreis <= $preis)$pseudopreis = $preis;
+      if ($pseudopreis <= $preis)
+        $pseudopreis = $preis;
       $steuersatz = $tmp[$i]['steuersatz'];
-      if($steuersatz > 1.10){
+      if ($steuersatz > 1.10) {
         $steuersatz = 'normal';
-      }
-      else{
+      } else {
         $steuersatz = 'ermaessigt';
       }
 
       $lageranzahl = $tmp[$i]['anzahl_lager'];
       $pseudolager = trim($tmp[$i]['pseudolager']);
 
-      if($pseudolager > 0) $lageranzahl=$pseudolager;
-      if($tmp[$i]['ausverkauft']=="1"){
-        $lageranzahl=0; $laststock="1";
+      if ($pseudolager > 0)
+        $lageranzahl = $pseudolager;
+      if ($tmp[$i]['ausverkauft'] == "1") {
+        $lageranzahl = 0;
+        $laststock = "1";
       }
 
-      if($inaktiv)$aktiv=0;
-      else $aktiv=1;
+      if ($inaktiv)
+        $aktiv = 0;
+      else
+        $aktiv = 1;
 
       $product_id = 0;
-      if($laststock!="1") $laststock=0;
+      if ($laststock != "1")
+        $laststock = 0;
 
       $remoteIdInformation = $this->getShopIdBySKU($nummer);
-      $product_id  = $remoteIdInformation['id'];
+      $product_id = $remoteIdInformation['id'] ?? null;
+      $parent_id = $remoteIdInformation['parent'] ?? null;
+      $isVariant = $remoteIdInformation['isvariant'] ?? false;
 
       $commonMetaData = [
         ['key' => '_yoast_wpseo_metadesc', 'value' => $meta_desc],
@@ -640,9 +672,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $commonProductAtts = [
         'name' => $name_de,
         'description' => $description,
-        'status'=>($aktiv?'publish':'private'),
-        'regular_price' => number_format($pseudopreis,2,'.',''),
-        'sale_price' => number_format($preis,2,'.',''),
+        'status' => ($aktiv ? 'publish' : 'private'),
+        'regular_price' => number_format($pseudopreis, 2, '.', ''),
+        'sale_price' => number_format($preis, 2, '.', ''),
         'short_description' => $kurzbeschreibung,
         'weight' => $weight_kg,
         'dimensions' => [
@@ -653,39 +685,61 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'meta_data' => $commonMetaData,
       ];
 
-      if($lageranzahl===0){
+      if ($lageranzahl === 0) {
         $commonProductAtts['stock_status'] = 'outofstock';
         $commonProductAtts['manage_stock'] = true;
-      }
-      elseif($lageranzahl===''){
+      } elseif ($lageranzahl === '') {
         $commonProductAtts['stock_status'] = 'instock';
         $commonProductAtts['manage_stock'] = false;
-      }
-      else{
+      } else {
         $commonProductAtts['stock_status'] = 'instock';
         $commonProductAtts['manage_stock'] = true;
       }
 
-      if($lageranzahl!=='') {
-        $commonProductAtts['stock_quantity'] = (int)$lageranzahl;
+      if ($lageranzahl !== '') {
+        $commonProductAtts['stock_quantity'] = (int) $lageranzahl;
       }
 
-      if(!is_null($product_id)) {
-        // Such a product already appears to exist, so we update it
-        $this->client->put('products/'.$product_id, array_merge([
+      if (!is_null($product_id)) {
+        // Product exists - check if it's a variation or regular product
+        if ($isVariant && !empty($parent_id)) {
+          // This is a VARIATION - use the variations endpoint
+          // Variations don't support certain attributes (they inherit from parent)
+          $variationAtts = [
+            'regular_price' => $commonProductAtts['regular_price'],
+            'sale_price' => $commonProductAtts['sale_price'],
+            'weight' => $commonProductAtts['weight'],
+            'dimensions' => $commonProductAtts['dimensions'],
+            'stock_status' => $commonProductAtts['stock_status'],
+            'manage_stock' => $commonProductAtts['manage_stock'],
+          ];
+          if (isset($commonProductAtts['stock_quantity'])) {
+            $variationAtts['stock_quantity'] = $commonProductAtts['stock_quantity'];
+          }
+          // Update status: 'publish' for variations is handled differently
+          if (!$aktiv) {
+            $variationAtts['status'] = 'private';
+          }
 
-        ], $commonProductAtts));
+          $this->client->put('products/' . $parent_id . '/variations/' . $product_id, $variationAtts);
 
-        $this->logger->info("WooCommerce Artikel geändert für Artikel: $nummer / $product_id");
-      }
-      else{
+          $this->logger->info("WooCommerce Variante geändert für Artikel: $nummer / Variation: $product_id (Parent: $parent_id)");
+        } else {
+          // This is a regular product
+          $this->client->put('products/' . $product_id, array_merge([
+
+          ], $commonProductAtts));
+
+          $this->logger->info("WooCommerce Artikel geändert für Artikel: $nummer / $product_id");
+        }
+      } else {
         // create a new product
         $product_id = $this->client->post('products/', array_merge([
           'sku' => $nummer,
         ], $commonProductAtts))->id;
         $this->logger->info("WooCommerce neuer Artikel angelegt: $nummer");
       }
-      
+
       // TODO: Kategoriebaum und Bilder werden noch nicht uebertragen
 
       // if(isset($tmp[$i]['kompletter_kategorienbaum'])){
@@ -701,7 +755,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       // Update the associated product categories
 
       $chosenCats = array();
-      if(isset($tmp[$i]['kategorien']) || isset($tmp[$i]['kategoriename'])){
+      if (isset($tmp[$i]['kategorien']) || isset($tmp[$i]['kategoriename'])) {
         $kategorien = $tmp[$i]['kategorien'];
         if (!($kategorien) && !self::emptyString($tmp[$i]['kategoriename'])) {
           $kategorien = array(
@@ -710,26 +764,26 @@ class Shopimporter_Woocommerce extends ShopimporterBase
             )
           );
         }
-        if((!empty($kategorien)?count($kategorien):0)>0){
+        if ((!empty($kategorien) ? count($kategorien) : 0) > 0) {
           // Retrive all WC categories via API
           $allWooCommerceCategories = $this->client->get('products/categories', ['per_page' => '100']);
 
           $searchWpCategories = [];
-          foreach($allWooCommerceCategories as $a){
+          foreach ($allWooCommerceCategories as $a) {
             $searchWpCategories[$a->id] = $a->name;
           }
           // searchWPCategories is an assoc array of type WCCatId(Int) -> WCCatName(string)
 
           // Iterate over the categories that are choosen in xentral
-          foreach($kategorien as $k => $v){
+          foreach ($kategorien as $k => $v) {
             $wawi_cat_name = $v['name'];
 
             $wcCatId = null;
 
             // If WC has a matching category. We match based on name!
-            if(array_search($wawi_cat_name,array_values($searchWpCategories)) !== false) {
+            if (array_search($wawi_cat_name, array_values($searchWpCategories)) !== false) {
               // get  id of that WC Category
-              $wcCatId = array_search($wawi_cat_name,$searchWpCategories);
+              $wcCatId = array_search($wawi_cat_name, $searchWpCategories);
 
             } else {
               // No matching category exists
@@ -741,7 +795,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
             if ($wcCatId) {
               // update category. We first retrieve the product and append the new product category, not replace the entire category array.
-              $alreadyAssignedWCCats = $this->client->get('products/'.$product_id, [
+              $alreadyAssignedWCCats = $this->client->get('products/' . $product_id, [
                 'per_page' => 1,
               ])->categories;
 
@@ -755,12 +809,12 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
               // prepare data to be in correct format for WC api. should be individual items with key 'id' and id as value
               $allCatIdsWCAPIRep = array();
-              foreach($allCatIds as $id) {
+              foreach ($allCatIds as $id) {
                 $allCatIdsWCAPIRep[] = ['id' => $id];
               }
 
               // Update category assignment
-              $this->client->put('products/'.$product_id, [
+              $this->client->put('products/' . $product_id, [
                 'categories' => $allCatIdsWCAPIRep,
               ]);
 
@@ -805,25 +859,28 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $this->data = $data;
 
     $preferences_json = $this->app->DB->Select("SELECT einstellungen_json FROM shopexport WHERE id = '$this->shopid' LIMIT 1");
-    if($preferences_json){
-      $preferences = json_decode($preferences_json,true);
+    $preferences = [];
+    if ($preferences_json) {
+      $preferences = json_decode($preferences_json, true) ?? [];
     }
 
-    $this->protokoll = $preferences['felder']['protokoll'];
-    $this->ssl_ignore = $preferences['felder']['ssl_ignore'];
-    $ImportWooCommerceApiSecret = $preferences['felder']['ImportWoocommerceApiSecret'];
-    $ImportWooCommerceApiKey = $preferences['felder']['ImportWoocommerceApiKey'];
-    $ImportWooCommerceApiUrl = $preferences['felder']['ImportWoocommerceApiUrl'];
+    $felder = $preferences['felder'] ?? [];
 
-    $this->statusPending = $preferences['felder']['statusPending'];
-    $this->statusProcessing = $preferences['felder']['statusProcessing'];
-    $this->statusCompleted = $preferences['felder']['statusCompleted'];
+    $this->protokoll = $felder['protokoll'] ?? null;
+    $this->ssl_ignore = $felder['ssl_ignore'] ?? false;
+    $ImportWooCommerceApiSecret = $felder['ImportWoocommerceApiSecret'] ?? '';
+    $ImportWooCommerceApiKey = $felder['ImportWoocommerceApiKey'] ?? '';
+    $ImportWooCommerceApiUrl = $felder['ImportWoocommerceApiUrl'] ?? '';
 
-    $this->priceType = $preferences['felder']['priceType'];
+    $this->statusPending = $felder['statusPending'] ?? 'pending';
+    $this->statusProcessing = $felder['statusProcessing'] ?? 'processing';
+    $this->statusCompleted = $felder['statusCompleted'] ?? 'completed';
+
+    $this->priceType = $felder['priceType'] ?? null;
 
     $this->url = $ImportWooCommerceApiUrl;
     $this->client = new WCClient(
-    //URL des WooCommerce Rest Servers
+      //URL des WooCommerce Rest Servers
       $ImportWooCommerceApiUrl,
       //WooCommerce API Key
       $ImportWooCommerceApiKey,
@@ -860,13 +917,13 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $ImportWooCommerceApiSecret = $this->app->Secure->GetPOST('ImportWoocommerceApiSecret');
     $ImportWooCommerceApiUrl = $this->app->Secure->GetPOST('ImportWoocommerceApiUrl');
 
-    if(empty($ImportWooCommerceApiUrl)) {
+    if (empty($ImportWooCommerceApiUrl)) {
       return new JsonResponse(['error' => 'Bitte die API-Url angeben'], JsonResponse::HTTP_BAD_REQUEST);
     }
-    if(empty($ImportWooCommerceApiKey)) {
+    if (empty($ImportWooCommerceApiKey)) {
       return new JsonResponse(['error' => 'Bitte den API-Key angeben'], JsonResponse::HTTP_BAD_REQUEST);
     }
-    if(empty($ImportWooCommerceApiSecret)) {
+    if (empty($ImportWooCommerceApiSecret)) {
       return new JsonResponse(['error' => 'Bitte das API-Secret angeben'], JsonResponse::HTTP_BAD_REQUEST);
     }
     $this->client = new WCClient(
@@ -940,7 +997,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    * @return array|null The WooCommerce product id of the given product, null if such a product does not exist
    * @throws WCHttpClientException
    */
-  private function getShopIdBySKU($sku) {
+  private function getShopIdBySKU($sku)
+  {
     // Retrieve the product with the given sku.
     // Note: We limit the result set to 1 (per_page=1), so this doesnt work
     // if there are multiple products with the same sku. should not happen in practice anyway
@@ -948,17 +1006,19 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     // We look at the first product in the array.
     // We may get an empty array, in that case null is returned
-    if (isset($product[0])){
+    if (isset($product[0])) {
       return [
         'id' => $product[0]->id,
         'parent' => $product[0]->parent_id,
-        'isvariant' => !empty($product[0]->parent_id)];
+        'isvariant' => !empty($product[0]->parent_id)
+      ];
     }
 
     return null;
   }
 
-  private function getSKUByShopId($articleid, $variationid) {
+  private function getSKUByShopId($articleid, $variationid)
+  {
     $product = $this->client->get("products/$articleid/variations/$variationid");
 
     // We look at the first product in the array.
@@ -972,19 +1032,20 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   {
     return
       array(
-        'ausblenden'=>array('abholmodus'=>array('zeitbereich')),
-        'archiv'=>array('ab_nummer'),
-        'felder'=>array(
-//          'protokoll'=>array('typ'=>'checkbox','bezeichnung'=>'Protokollierung im Logfile:'),
-          'ssl_ignore'=>array('typ'=>'checkbox','bezeichnung'=>'SSL-Prüfung abschalten:','info' => 'Nur für Testzwecke!'),
-          'ImportWoocommerceApiKey'=>array('typ'=>'text','bezeichnung'=>'{|API Key:','size'=>60),
-          'ImportWoocommerceApiSecret'=>array('typ'=>'text','bezeichnung'=>'{|API Secret|}:','size'=>60),
-          'ImportWoocommerceApiUrl'=>array('typ'=>'text','bezeichnung'=>'{|API Url|}:','size'=>40),
-          'statusPending'=>array('typ'=>'text','bezeichnung'=>'{|Statusname Bestellung offen|}:','size'=>40, 'default' => 'pending', 'info' => '({|ggfs. getrennt durch ";": pending;on-hold|})'),
-          'statusProcessing'=>array('typ'=>'text','bezeichnung'=>'{|Statusname Bestellung in Bearbeitung|}:','size'=>10, 'default' => 'processing'),
-          'statusCompleted'=>array('typ'=>'text','bezeichnung'=>'{|Statusname Bestellung fertig|}:','size'=>10, 'default' => 'completed'),
-          'priceType'=>array('typ'=>'select','bezeichnung'=>'{|Preisberechnungsgrundlage bei Auftragsimport|}','optionen'=>array('netcalculated'=>'{|Nettopreis zurückrechnen (Standard)|}','grosscalculated'=>'{|Bruttopreis zurückrechnen|}')),
-        ));
+        'ausblenden' => array('abholmodus' => array('zeitbereich')),
+        'archiv' => array('ab_nummer'),
+        'felder' => array(
+          //          'protokoll'=>array('typ'=>'checkbox','bezeichnung'=>'Protokollierung im Logfile:'),
+          'ssl_ignore' => array('typ' => 'checkbox', 'bezeichnung' => 'SSL-Prüfung abschalten:', 'info' => 'Nur für Testzwecke!'),
+          'ImportWoocommerceApiKey' => array('typ' => 'text', 'bezeichnung' => '{|API Key:', 'size' => 60),
+          'ImportWoocommerceApiSecret' => array('typ' => 'text', 'bezeichnung' => '{|API Secret|}:', 'size' => 60),
+          'ImportWoocommerceApiUrl' => array('typ' => 'text', 'bezeichnung' => '{|API Url|}:', 'size' => 40),
+          'statusPending' => array('typ' => 'text', 'bezeichnung' => '{|Statusname Bestellung offen|}:', 'size' => 40, 'default' => 'pending', 'info' => '({|ggfs. getrennt durch ";": pending;on-hold|})'),
+          'statusProcessing' => array('typ' => 'text', 'bezeichnung' => '{|Statusname Bestellung in Bearbeitung|}:', 'size' => 10, 'default' => 'processing'),
+          'statusCompleted' => array('typ' => 'text', 'bezeichnung' => '{|Statusname Bestellung fertig|}:', 'size' => 10, 'default' => 'completed'),
+          'priceType' => array('typ' => 'select', 'bezeichnung' => '{|Preisberechnungsgrundlage bei Auftragsimport|}', 'optionen' => array('netcalculated' => '{|Nettopreis zurückrechnen (Standard)|}', 'grosscalculated' => '{|Bruttopreis zurückrechnen|}')),
+        )
+      );
   }
 
   /**
@@ -995,8 +1056,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    * @param  array $items [description]
    * @return Bool        [description]
    */
-  protected static function compareObjects($a, $b, $items) {
-    foreach($items as $v) {
+  protected static function compareObjects($a, $b, $items)
+  {
+    foreach ($items as $v) {
       if (property_exists($a, $v) && property_exists($b, $v)) {
         if ($a->$v != $b->$v) {
           //print_r($v);
@@ -1012,7 +1074,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
    * @param  String $string input
    * @return String         output
    */
-  protected static function emptyString($string) {
+  protected static function emptyString($string)
+  {
     return (strlen(trim($string)) == 0);
   }
 
@@ -1031,12 +1094,12 @@ class WCClient
    * @var WCHttpClient
    */
   public $http;
-  
+
   /** @var Logger $logger */
   public $logger;
-  
+
   public $ssl_ignore = false;
-  
+
   /**
    * Initialize client.
    *
@@ -1160,9 +1223,9 @@ class WCResponse
    */
   public function __construct($code = 0, $headers = [], $body = '')
   {
-    $this->code    = $code;
+    $this->code = $code;
     $this->headers = $headers;
-    $this->body    = $body;
+    $this->body = $body;
   }
 
   /**
@@ -1407,11 +1470,11 @@ class WCRequest
    */
   public function __construct($url = '', $method = 'POST', $parameters = [], $headers = [], $body = '')
   {
-    $this->url        = $url;
-    $this->method     = $method;
+    $this->url = $url;
+    $this->method = $method;
     $this->parameters = $parameters;
-    $this->headers    = $headers;
-    $this->body       = $body;
+    $this->headers = $headers;
+    $this->body = $body;
   }
 
   /**
@@ -1607,13 +1670,13 @@ class WCOAuth
     $parameters = [],
     $timestamp = ''
   ) {
-    $this->url            = $url;
-    $this->consumerKey    = $consumerKey;
+    $this->url = $url;
+    $this->consumerKey = $consumerKey;
     $this->consumerSecret = $consumerSecret;
-    $this->apiVersion     = $apiVersion;
-    $this->method         = $method;
-    $this->parameters     = $parameters;
-    $this->timestamp      = $timestamp;
+    $this->apiVersion = $apiVersion;
+    $this->method = $method;
+    $this->parameters = $parameters;
+    $this->timestamp = $timestamp;
   }
 
   /**
@@ -1646,7 +1709,7 @@ class WCOAuth
 
     foreach ($parameters as $key => $value) {
       // Percent symbols (%) must be double-encoded.
-      $key   = $this->encode($key);
+      $key = $this->encode($key);
       $value = $this->encode($value);
 
       $normalized[$key] = $value;
@@ -1711,9 +1774,9 @@ class WCOAuth
     uksort($parameters, 'strcmp');
 
     // Set query string.
-    $queryString  = implode('%26', $this->joinWithEqualsSign($parameters)); // Join with ampersand.
+    $queryString = implode('%26', $this->joinWithEqualsSign($parameters)); // Join with ampersand.
     $stringToSign = $this->method . '&' . $baseRequestUri . '&' . $queryString;
-    $secret       = $this->getSecret();
+    $secret = $this->getSecret();
 
     return base64_encode(hash_hmac(self::HASH_ALGORITHM, $stringToSign, $secret, true));
   }
@@ -1773,9 +1836,9 @@ class WCOAuth
   public function getParameters()
   {
     $parameters = \array_merge($this->parameters, [
-      'oauth_consumer_key'     => $this->consumerKey,
-      'oauth_timestamp'        => $this->timestamp,
-      'oauth_nonce'            => \sha1(\microtime()),
+      'oauth_consumer_key' => $this->consumerKey,
+      'oauth_timestamp' => $this->timestamp,
+      'oauth_nonce' => \sha1(\microtime()),
       'oauth_signature_method' => 'HMAC-' . self::HASH_ALGORITHM,
     ]);
 
@@ -1802,7 +1865,7 @@ class WCHttpClientException extends \Exception
    * @var WCResponse
    */
   private $response;
-  
+
   /**
    * Initialize exception.
    *
@@ -1815,7 +1878,7 @@ class WCHttpClientException extends \Exception
   {
     parent::__construct($message, $code);
 
-    $this->request  = $request;    
+    $this->request = $request;
     $this->response = $response;
   }
 
@@ -1897,10 +1960,10 @@ class WCHttpClient
    * @var string
    */
   private $responseHeaders;
-  
+
   /** @var Logger $logger */
   public $logger;
-  
+
   public $ssl_ignore = false;
 
   /**
@@ -1919,9 +1982,9 @@ class WCHttpClient
       throw new WCHttpClientException('cURL is NOT installed on this server', -1, new WCRequest(), new WCResponse());
     }
 
-    $this->options        = new WCOptions($options);
-    $this->url            = $this->buildApiUrl($url);
-    $this->consumerKey    = $consumerKey;
+    $this->options = new WCOptions($options);
+    $this->url = $this->buildApiUrl($url);
+    $this->consumerKey = $consumerKey;
     $this->consumerSecret = $consumerSecret;
     $this->logger = $logger;
     $this->ssl_ignore = $ssl_ignore;
@@ -1934,7 +1997,7 @@ class WCHttpClient
    */
   protected function isSsl()
   {
-    return strpos($this->url,'https://')===0;
+    return strpos($this->url, 'https://') === 0;
 
   }
 
@@ -1982,7 +2045,7 @@ class WCHttpClient
   {
     // Setup authentication.
     if ($this->isSsl()) {
-      $basicAuth  = new WCBasicAuth(
+      $basicAuth = new WCBasicAuth(
         $this->ch,
         $this->consumerKey,
         $this->consumerSecret,
@@ -1991,7 +2054,7 @@ class WCHttpClient
       );
       $parameters = $basicAuth->getParameters();
     } else {
-      $oAuth      = new WCOAuth(
+      $oAuth = new WCOAuth(
         $url,
         $this->consumerKey,
         $this->consumerSecret,
@@ -2031,7 +2094,7 @@ class WCHttpClient
   protected function getRequestHeaders($sendData = false)
   {
     $headers = [
-      'Accept'     => 'application/json',
+      'Accept' => 'application/json',
       'User-Agent' => $this->options->userAgent() . '/' . WCClient::VERSION,
     ];
 
@@ -2054,8 +2117,8 @@ class WCHttpClient
    */
   protected function createRequest($endpoint, $method, $data = [], $parameters = [])
   {
-    $body    = '';
-    $url     = $this->url . $endpoint;
+    $body = '';
+    $url = $this->url . $endpoint;
     $hasData = !empty($data);
 
     // Setup authentication.
@@ -2089,8 +2152,8 @@ class WCHttpClient
   protected function getResponseHeaders()
   {
     $headers = [];
-    $lines   = explode("\n", $this->responseHeaders);
-    $lines   = array_filter($lines, 'trim');
+    $lines = explode("\n", $this->responseHeaders);
+    $lines = array_filter($lines, 'trim');
 
     foreach ($lines as $index => $line) {
       // Remove HTTP/xxx params.
@@ -2121,8 +2184,8 @@ class WCHttpClient
     });
 
     // Get response data.
-    $body    = curl_exec($this->ch);
-    $code    = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+    $body = curl_exec($this->ch);
+    $code = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
     $headers = $this->getResponseHeaders();
 
     // Register response.
@@ -2136,11 +2199,11 @@ class WCHttpClient
    */
   protected function setDefaultCurlSettings()
   {
-    if (!$this->ssl_ignore) {  
-        $verifySsl   = $this->options->verifySsl();
+    if (!$this->ssl_ignore) {
+      $verifySsl = $this->options->verifySsl();
     }
-       
-    $timeout         = $this->options->getTimeout();
+
+    $timeout = $this->options->getTimeout();
     $followRedirects = $this->options->getFollowRedirects();
 
     curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, $verifySsl);
@@ -2174,16 +2237,17 @@ class WCHttpClient
 
       if (is_array($errors)) {
         $errorMessage = $errors[0]->message;
-        $errorCode    = $errors[0]->code;
+        $errorCode = $errors[0]->code;
       } elseif (isset($errors->message, $errors->code)) {
         $errorMessage = $errors->message;
-        $errorCode    = $errors->code;
+        $errorCode = $errors->code;
       }
-      
-      $this->logger->error('WooCommerce Error',
+
+      $this->logger->error(
+        'WooCommerce Error',
         [
-            'request' => $this->request,
-            'response' => $this->response
+          'request' => $this->request,
+          'response' => $this->response
         ]
       );
 
@@ -2217,6 +2281,14 @@ class WCHttpClient
     // Test if return a valid JSON.
     if (JSON_ERROR_NONE !== json_last_error()) {
       $message = function_exists('json_last_error_msg') ? json_last_error_msg() : 'Invalid JSON returned';
+      // Log the problematic body for debugging
+      if (isset($this->logger)) {
+        $this->logger->error('JSON Parse Error - Raw Body', [
+          'body_preview' => substr($body, 0, 1000),
+          'body_length' => strlen($body),
+          'json_error' => $message
+        ]);
+      }
       throw new WCHttpClientException(
         sprintf('JSON ERROR: %s', $message),
         $this->response->getCode(),
@@ -2336,11 +2408,11 @@ class WCBasicAuth
    */
   public function __construct($ch, $consumerKey, $consumerSecret, $doQueryString, $parameters = [])
   {
-    $this->ch             = $ch;
-    $this->consumerKey    = $consumerKey;
+    $this->ch = $ch;
+    $this->consumerKey = $consumerKey;
     $this->consumerSecret = $consumerSecret;
-    $this->doQueryString  = $doQueryString;
-    $this->parameters     = $parameters;
+    $this->doQueryString = $doQueryString;
+    $this->parameters = $parameters;
 
     $this->processAuth();
   }
@@ -2351,7 +2423,7 @@ class WCBasicAuth
   protected function processAuth()
   {
     if ($this->doQueryString) {
-      $this->parameters['consumer_key']    = $this->consumerKey;
+      $this->parameters['consumer_key'] = $this->consumerKey;
       $this->parameters['consumer_secret'] = $this->consumerSecret;
     } else {
       \curl_setopt($this->ch, CURLOPT_USERPWD, $this->consumerKey . ':' . $this->consumerSecret);

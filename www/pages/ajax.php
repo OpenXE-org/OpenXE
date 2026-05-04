@@ -1419,7 +1419,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           {
             if(stripos($key, $_term) !== false || stripos($value, $_term) !== false)
             {
-              $newarr[] = $key.' '.$value;
+              if ($asObject)
+                $newarr[] = ['isoAlpha2' => $key, 'nameGerman' => $value];
+              else
+                $newarr[] = $key.' '.$value;
             }
           }
         }
@@ -2218,6 +2221,12 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         break;
       case "sperrlagerplatz":
         $arr = $this->app->DB->SelectArr("SELECT kurzbezeichnung FROM lager_platz WHERE geloescht=0 AND sperrlager = 1 AND kurzbezeichnung LIKE '%$term%' ORDER by kurzbezeichnung");
+        $carr = !empty($arr)?count($arr):0;
+        for($i = 0; $i < $carr; $i++)
+          $newarr[] = $arr[$i]['kurzbezeichnung'];      
+      break;
+      case "kommissionierlagerplatz":
+        $arr = $this->app->DB->SelectArr("SELECT kurzbezeichnung FROM lager_platz WHERE geloescht=0 AND kommissionierlager = 1 AND kurzbezeichnung LIKE '%$term%' ORDER by kurzbezeichnung");
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++)
           $newarr[] = $arr[$i]['kurzbezeichnung'];      

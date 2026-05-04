@@ -398,12 +398,12 @@ class Dokumentenvorlage extends SuperFPDF {
     $this->filename = $this->app->erp->Dateinamen($this->filename);
     $dir = $this->app->Conf->WFuserdata."/pdfarchiv/".$this->app->Conf->WFdbname;
     if(!is_dir($dir)){
-      if(!mkdir($dir, 0700,true))$this->app->erp->LogFile('Fehler beim erstellen von '.$dir);
+      if(!mkdir($dir, 0700,true))$this->app->Container->get('Logger')->error('Fehler beim erstellen von '.$dir);
       //				echo "fehlt";
     }
     if(!is_dir($dir))return false;
     if(!is_dir($dir."/".$this->table))
-      if(!mkdir ($dir."/".$this->table,0700,true))$this->app->erp->LogFile('Fehler beim erstellen von '.$dir."/".$this->table);
+      if(!mkdir ($dir."/".$this->table,0700,true))$this->app->Container->get('Logger')->error('Fehler beim erstellen von '.$dir."/".$this->table);
     if(!is_dir($dir."/".$this->table))return;
     $md5alt = false;
     $altesdokument = $this->app->DB->SelectArr("SELECT * from pdfarchiv where table_id = '".$this->id."'  and table_name = '".$this->table."' AND doctype = '".$this->app->DB->real_escape_string($this->doctype)."' AND doctypeorig = '".$this->app->DB->real_escape_string($this->doctypeOrig)."' ORDER BY zeitstempel DESC LIMIT 1");

@@ -125,7 +125,7 @@ final class PaymentMethodData
         self::ensureBehavior($array['verhalten']);
         self::ensureNotEmptyString($array['bezeichnung'], 'name');
         self::ensureNotEmptyString($array['type'], 'type');
-        
+
         if ((string)$array['einstellungen_json'] !== '') {
             $settings = json_decode($array['einstellungen_json'], true);
             if (!is_array($settings) && $settings !== null) {

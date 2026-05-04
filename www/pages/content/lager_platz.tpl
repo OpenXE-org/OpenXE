@@ -35,23 +35,25 @@
 						<tbody>
 						<tr>
 							<td width="200"><label for="autolagersperre">{|Nachschublager|}:</label></td>
-							<td><input id="autolagersperre" name="autolagersperre" type="checkbox" value="1" [AUTOLAGERSPERRE]> <i>Dieses Lager wird
-									beim Auslagern für Auftr&auml;ge <b>nicht</b> vorgeschlagen.</i></td>
+							<td><input id="autolagersperre" name="autolagersperre" type="checkbox" value="1" [AUTOLAGERSPERRE]> <i>Im verfügbaren Bestand, wird nicht f&uuml;r Auslagerung im Auto-Versand verwendet. </i></td>
 						</tr>
 						<tr>
-							<td><label for="sperrlager">{|Kein Auto-Versand (Sperrlager) Lager|}:</label></td>
-							<td><input name="sperrlager" id="sperrlager" type="checkbox" value="1" [SPERRLAGER]><i>&nbsp;Der Bestand f&uuml;r diese
-									Lager wird f&uuml;r den Auto-Versand <b>nicht</b> verwendet.</i></td>
+        					<td><label for="kommissionierlager">{|Kommissionierlager|}:</label></td>
+							<td><input name="kommissionierlager" id="kommissionierlager" type="checkbox" value="1" [KOMMISSIONIERLAGER]> <i>Nicht im verfügbaren Bestand, wird nicht f&uuml;r Auslagerung im Auto-Versand verwendet. (F&uuml;r den Versand vorbereitete Ware)</i></td>
 						</tr>
 						<tr>
-							<td><label for="allowproduction">{|Produktionen d&uuml;rfen auf dieses Lager zugreifen|}:</label></td>
+							<td><label for="sperrlager">{|Sperrlager|}:</label></td>
+							<td><input name="sperrlager" id="sperrlager" type="checkbox" value="1" [SPERRLAGER]><i>&nbsp;Nicht im verfügbaren Bestand, wird nicht f&uuml;r Auslagerung im Auto-Versand verwendet. (I.d.R. wertlos)</i></td>
+						</tr>
+<!--						<tr>
+    						<td><label for="allowproduction">{|Produktionslager|}:</label></td>
 							<td><input name="allowproduction" id="allowproduction" type="checkbox" value="1" [ALLOWPRODUCTION]></td>
 						</tr>
 						<tr class="trsperrlager">
 							<td><label for="poslager">{|POS Lager|}:</label></td>
 							<td><input name="poslager" id="poslager" type="checkbox" value="1" [POSLAGER]> <i>{|Die POS darf den Bestand f&uuml;r
 									diese Lager ver&auml;ndern.|}</i></td>
-						</tr>
+						</tr>--!>
 						</tbody>
 					</table>
 				</fieldset>

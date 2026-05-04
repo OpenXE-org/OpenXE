@@ -17,13 +17,6 @@
             </div>
             [MODULEINSTALLIERT]
         </fieldset>
-        [BEFOREMODULESTOBUY]
-        <fieldset class="moduleList">
-            <legend>{|Kaufschnittstellen|}</legend>
-            [MODULEVERFUEGBAR]
-            <br />
-        </fieldset>
-        [AFTERMODULESTOBUY]
         [TAB1NEXT]
     </div>
 

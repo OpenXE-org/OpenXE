@@ -70,7 +70,7 @@ class RechnungPDF extends BriefpapierCustom {
        r.vertrieb, r.lieferschein AS lieferscheinid, r.projekt, DATE_FORMAT(r.datum,'%d.%m.%Y') AS datum, 
        DATE_FORMAT(r.mahnwesen_datum,'%d.%m.%Y') AS mahnwesen_datum, 
        DATE_FORMAT(r.lieferdatum,'%d.%m.%Y') AS lieferdatum, r.belegnr, r.bodyzusatz, r.doppel, 
-       r.freitext, r.systemfreitext, r.ustid, r.typ, r.keinsteuersatz, r.soll, r.ist, r.land, 
+       r.freitext, r.systemfreitext, r.ustid, r.typ, r.keinsteuersatz, r.steuersatz_zielland, r.soll, r.ist, r.land,
        r.zahlungsweise, r.zahlungsstatus, r.zahlungszieltage, r.zahlungszieltageskonto, 
        r.zahlungszielskonto, r.ohne_briefpapier, r.ihrebestellnummer, r.ust_befreit, r.waehrung, 
        r.versandart, 
@@ -87,51 +87,7 @@ class RechnungPDF extends BriefpapierCustom {
         return;
     }
 
-    extract($data,EXTR_OVERWRITE);
-    $adresse = $data['adresse'];
-    $auftrag = $data['auftrag'];
-    $buchhaltung = $data['buchhaltung'];
-    $bearbeiter = $data['bearbeiter'];
-    $vertrieb = $data['vertrieb'];
-    $lieferscheinid = $data['lieferscheinid'];
-    $projekt = $data['projekt'];
-    $datum = $data['datum'];
-    $mahnwesen_datum = $data['mahnwesen_datum'];
-    $lieferdatum = $data['lieferdatum'];
-    $belegnr = $data['belegnr'];
-    $bodyzusatz = $data['bodyzusatz'];
-    $doppel = $data['doppel'];
-    $freitext = $data['freitext'];
-    $systemfreitext = $data['systemfreitext'];
-    $ustid = $data['ustid'];
-    $typ = $data['typ'];
-    $keinsteuersatz = $data['keinsteuersatz'];
-    $soll = $data['soll'];
-    $ist = $data['ist'];
-    $soll = $data['soll'];
-    $land = $data['land'];
-    $zahlungsweise = $data['zahlungsweise'];
-    $zahlungsstatus = $data['zahlungsstatus'];
-    $zahlungszieltage = $data['zahlungszieltage'];
-    $zahlungszieltageskonto = $data['zahlungszieltageskonto'];
-    $zahlungszielskonto = $data['zahlungszielskonto'];
-    $versandart = $data['versandart'];
-    $zahlungdatum = $data['zahlungdatum'];
-    $zahlungszielskontodatum = $data['zahlungszielskontodatum'];
-
-    $ihrebestellnummer = $data['ihrebestellnummer'];
-    $ust_befreit = $data['ust_befreit'];
-    $waehrung = $data['waehrung'];
-    $ohne_briefpapier = $data['ohne_briefpapier'];
-
-    $rechnungersatz = $data['rechnungersatz'];
-    $kundennummer = $data['kundennummer'];
-    $sprache = $data['sprache'];
-    $schreibschutz = $data['schreibschutz'];
-    $gesamtsumme = $data['gesamtsumme'];
-    $datum2 = $data['datum2'];
-    $email = $data['email'];
-    $telefon = $data['telefon'];
+    $anz = extract($data,EXTR_OVERWRITE);
 
     $lieferschein = $this->app->DB->Select("SELECT belegnr FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
 
@@ -394,12 +350,17 @@ class RechnungPDF extends BriefpapierCustom {
     {
       if($ust_befreit!=0) $this->ust_befreit=true;
       if($keinsteuersatz!="1"){
-        if($ust_befreit==2)//$this->app->erp->Export($land))
-          $steuer = $this->app->erp->Beschriftung("export_lieferung_vermerk");
-        else {
-          if($ust_befreit==1 && $ustid!="")//$this->app->erp->IstEU($land))
-            $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
-        }
+          if ($ust_befreit==2) {// Export
+              $steuer = $this->app->erp->Beschriftung("export_lieferung_vermerk");
+          }
+          else if ($ust_befreit==1) { // EU
+            if (!empty($ustid)) {
+                $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+            }
+            else if ($steuersatz_zielland) {
+                $steuer = $this->app->erp->Beschriftung("eu_steuersatz_zielland_vermerk");
+            }
+          }
 
         $kennungustid = substr(strtoupper($ustid),0,2);
         if(($kennungustid!=strtoupper($land)) && $kennungustid!="" && $this->app->erp->IsEU($kennungustid))

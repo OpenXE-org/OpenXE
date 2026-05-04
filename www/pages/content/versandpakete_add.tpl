@@ -13,9 +13,17 @@
 	        				<fieldset>
                                 <legend>{|Hinzuf&uuml;gen von Artikeln aus <a href="index.php?module=lieferschein&action=edit&id=[LIEFERSCHEIN_ID]"><b>Lieferschein [LIEFERSCHEIN]</b></a> zu Versandpaket <b>Nr. [ID]</b>|}</legend>
                                 <table width="100%" border="0" class="mkTableFormular">
+                                    <tr [KOMMISSIONIERUNGINFOHIDDEN]>
+                                        <td>
+                                            {|Kommissioniert in|}:
+                                        </td>
+                                        <td>
+                                            <p id="kommissionierung" style="[ZOOMSTYLE]">[KOMMISSIONIERUNGINFO]</p>
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td>
-                                            {|Artikel|}:
+                                            {|[SCANFELD]|}:
                                         </td>
                                         <td>
                                             <input type="text" name="artikel" id="artikel" value="" size="22" autofocus onchange="artikelscan();" style="width:200px">

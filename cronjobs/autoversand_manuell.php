@@ -69,7 +69,7 @@ if($mutex){
     WHERE `mutex` = 1 AND (`parameter` = '".$cronjobname."')"
   );
 
-  file_append($debugfile,"MUTEX");
+//  file_append($debugfile,"MUTEX");
 
   return;
 }
@@ -81,7 +81,7 @@ $app->DB->Update(
 
 $objAuftrag = $app->loadModule('auftrag');
 if($objAuftrag == null || !method_exists($objAuftrag, 'AuftragVersand')) {
-    $app->erp->LogFile($cronjobname." failed. Error while loading module 'auftrag'.");
+    $app->Container->get('Logger')->error($cronjobname." failed. Error while loading module 'auftrag'.");
     exit;
 }
 

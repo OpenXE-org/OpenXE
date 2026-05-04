@@ -14,7 +14,7 @@ class Kommissionierung {
             return;
 
         $this->app->ActionHandlerInit($this);
-        $this->app->ActionHandler("list", "kommissionierung_list");        
+        $this->app->ActionHandler("list", "kommissionierung_list");
 //        $this->app->ActionHandler("create", "kommissionierung_edit"); // This automatically adds a "New" button
 //        $this->app->ActionHandler("edit", "kommissionierung_edit");
 //        $this->app->ActionHandler("delete", "kommissionierung_delete");
@@ -35,7 +35,7 @@ class Kommissionierung {
                 $width = array('1%','1%','10%'); // Fill out manually later
 
                 // columns that are aligned right (numbers etc)
-                // $alignright = array(4,5,6,7,8); 
+                // $alignright = array(4,5,6,7,8);
 
                 $findcols = array('k.id','k.id','k.id','k.zeitstempel', 'ad.name', 'a.belegnr', 'l.belegnr','k.bearbeiter','k.id');
                 $searchsql = array('k.id','k.zeitstempel', 'k.bearbeiter', 'a.belegnr', 'ad.name', 'k.kommentar', 'l.belegnr');
@@ -89,40 +89,66 @@ class Kommissionierung {
         }
         return $erg;
     }
-    
+
     function kommissionierung_list() {
+
+        // Process multi action
+        $auswahl = $this->app->Secure->GetPOST('auswahl');
+        $submit = $this->app->Secure->GetPOST('submit');
+        $selectedIds = [];
+        if(!empty($auswahl)) {
+            foreach($auswahl as $selectedId) {
+                $selectedId = (int)$selectedId;
+                if($selectedId > 0) {
+                    $selectedIds[] = $selectedId;
+                }
+            }
+
+            switch ($submit) {
+                case 'stornieren':
+                    foreach ($selectedIds as $kommissionierung) {
+                        $auftrag = $this->app->DB->Select("SELECT auftrag FROM kommissionierung WHERE id = ".$kommissionierung);
+                        if (!empty($auftrag)) {
+                            $this->app->DB->Update("UPDATE auftrag set kommission_ok = 0 WHERE id = ".$auftrag);
+                            $this->app->erp->AuftragProtokoll($auftrag,'Kommissionierung '.$kommissionierung.' storniert');
+                        }
+                        $this->app->DB->Delete("DELETE FROM kommissionierung_position WHERE kommissionierung = ".$kommissionierung);
+                        $this->app->DB->Delete("DELETE FROM kommissionierung WHERE id = ".$kommissionierung);
+                    }
+                break;
+            }
+        }
+
         $this->app->erp->MenuEintrag("index.php?module=kommissionierung&action=list", "&Uuml;bersicht");
         $this->app->erp->MenuEintrag("index.php?module=kommissionierung&action=create", "Neu anlegen");
-
         $this->app->erp->MenuEintrag("index.php", "Zur&uuml;ck");
-
         $this->app->YUI->TableSearch('TAB1', 'kommissionierung_list', "show", "", "", basename(__FILE__), __CLASS__);
         $this->app->Tpl->Parse('PAGE', "kommissionierung_list.tpl");
-    }    
+    }
 
     public function kommissionierung_delete() {
         $id = (int) $this->app->Secure->GetGET('id');
-        
-        $this->app->DB->Delete("DELETE FROM `kommissionierung` WHERE `id` = '{$id}'");        
-        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");        
+
+        $this->app->DB->Delete("DELETE FROM `kommissionierung` WHERE `id` = '{$id}'");
+        $this->app->Tpl->Set('MESSAGE', "<div class=\"error\">Der Eintrag wurde gel&ouml;scht.</div>");
 
         $this->kommissionierung_list();
-    } 
+    }
 
     /*
      * Edit kommissionierung item
      * If id is empty, create a new one
      */
-        
+
     function kommissionierung_edit() {
         $id = $this->app->Secure->GetGET('id');
-        
+
         // Check if other users are editing this id
         if($this->app->erp->DisableModul('kommissionierung',$id))
         {
           return;
-        }   
-              
+        }
+
         $this->app->Tpl->Set('ID', $id);
 
         $this->app->erp->MenuEintrag("index.php?module=kommissionierung&action=edit&id=$id", "Details");
@@ -130,17 +156,17 @@ class Kommissionierung {
         $id = $this->app->Secure->GetGET('id');
         $input = $this->GetInput();
         $submit = $this->app->Secure->GetPOST('submit');
-                
+
         if (empty($id)) {
             // New item
             $id = 'NULL';
-        } 
+        }
 
         if ($submit != '')
         {
 
             // Write to database
-            
+
             // Add checks here
 
     //        $input['projekt'] = $this->app->erp->ReplaceProjekt(true,$input['projekt'],true); // Parameters: Target db?, value, from form?
@@ -148,7 +174,7 @@ class Kommissionierung {
             $columns = "id, ";
             $values = "$id, ";
             $update = "";
-    
+
             $fix = "";
 
             foreach ($input as $key => $value) {
@@ -177,13 +203,13 @@ class Kommissionierung {
             }
         }
 
-    
+
         // Load values again from database
 	    $dropnbox = "'<img src=./themes/new/images/details_open.png class=details>' AS `open`, CONCAT('<input type=\"checkbox\" name=\"auswahl[]\" value=\"',k.id,'\" />') AS `auswahl`";
-        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS k.id, $dropnbox, k.zeitstempel, k.bearbeiter, k.user, k.kommentar, k.abgeschlossen, k.improzess, k.bezeichnung, k.skipconfirmboxscan, k.id FROM kommissionierung k"." WHERE id=$id");        
+        $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS k.id, $dropnbox, k.zeitstempel, k.bearbeiter, k.user, k.kommentar, k.abgeschlossen, k.improzess, k.bezeichnung, k.skipconfirmboxscan, k.id FROM kommissionierung k"." WHERE id=$id");
 
         foreach ($result[0] as $key => $value) {
-            $this->app->Tpl->Set(strtoupper($key), $value);   
+            $this->app->Tpl->Set(strtoupper($key), $value);
         }
 
         if (!empty($result)) {
@@ -191,14 +217,14 @@ class Kommissionierung {
         } else {
             return;
         }
-             
+
         /*
          * Add displayed items later
-         * 
+         *
 
         $this->app->Tpl->Add('KURZUEBERSCHRIFT2', $email);
         $this->app->Tpl->Add('EMAIL', $email);
-        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);         
+        $this->app->Tpl->Add('ANGEZEIGTERNAME', $angezeigtername);
 
         $this->app->YUI->AutoComplete("artikel", "artikelnummer");
 
@@ -212,7 +238,7 @@ class Kommissionierung {
      */
     public function GetInput(): array {
         $input = array();
-        //$input['EMAIL'] = $this->app->Secure->GetPOST('email');       
+        //$input['EMAIL'] = $this->app->Secure->GetPOST('email');
         $input['zeitstempel'] = $this->app->Secure->GetPOST('zeitstempel');
 	    $input['bearbeiter'] = $this->app->Secure->GetPOST('bearbeiter');
 	    $input['user'] = $this->app->Secure->GetPOST('user');
@@ -226,7 +252,7 @@ class Kommissionierung {
 
     public function kommissionierung_print() {
         $id = $this->app->Secure->GetGET('id');
-        $Brief = new KommissionierungPDF($this->app, styleData: array('mit_gewicht' => true,'ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true, 'hintergrund' => 'none'));
+        $Brief = new KommissionierungPDF($this->app, styleData: array('mit_gewicht' => true,'ohne_steuer' => true, 'artikeleinheit' => false, 'abstand_boxrechtsoben' => -70, 'abstand_artikeltabelleoben' => -70, 'abstand_betreffzeileoben' => -70, 'preise_ausblenden' => true));
         $Brief->GetKommissionierung($id);
         $Brief->displayDocument(false);
         exit();

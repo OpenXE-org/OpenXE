@@ -33,7 +33,10 @@ if (empty($app->remote)) {
         $app->remote = new Remote($app);
     }
 }
-$app->erp->LogFile("Lagerzahlen-Synchronisation Start");
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
+
+$logger->info("Lagerzahlen-Synchronisation Start");
 
 //$app->DB->Update("UPDATE artikel SET cache_lagerplatzinhaltmenge='999'");
 
@@ -47,13 +50,13 @@ $app->DB->Update(
 if (!$app->DB->Select(
     "SELECT `id` FROM `prozessstarter` WHERE `mutex` = 0 AND `parameter` = 'lagerzahlen' AND `aktiv` = 1"
 )) {
-    $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: Prozessstarter-Mutex nicht bereit");
+    $logger->warning("Lagerzahlen-Synchronisation Ende: Prozessstarter-Mutex nicht bereit");
     return;
 }
 
 $shops = $app->DB->SelectArr('SELECT * FROM `shopexport` WHERE `aktiv` = 1');
 if (empty($shops)) {
-    $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: Keine aktiven Shops");
+    $logger->info("Lagerzahlen-Synchronisation Ende: Keine aktiven Shops");
     return;
 }
 $shopByIds = [];
@@ -98,7 +101,7 @@ $lagerartikel = $app->DB->SelectFirstCols(
 );
 
 if (empty($lagerartikel)) {
-    $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: Keine fälligen Artikel");
+    $logger->info("Lagerzahlen-Synchronisation Ende: Keine fälligen Artikel");
     return;
 }
 
@@ -111,7 +114,7 @@ try {
 }
 
 $clagerartikel = $lagerartikel ? count($lagerartikel) : 0;
-$app->erp->LogFile('Lagerzahlen-Synchronisation, Artikel gesamt: ' . $clagerartikel);
+$logger->info('Lagerzahlen-Synchronisation, Artikel gesamt: ' . $clagerartikel);
 foreach ($lagerartikel as $articleCounter => $articleId) {
     $app->DB->Update(
             "UPDATE `prozessstarter` 
@@ -136,7 +139,7 @@ foreach ($lagerartikel as $articleCounter => $articleId) {
             SET `mutex` = 0 , `mutexcounter` = 0, `letzteausfuerhung` = NOW() 
             WHERE `parameter` = 'lagerzahlen' AND `aktiv` = 1"
         );
-        $app->erp->LogFile("Lagerzahlen-Synchronisation Ende: lagerzahlen-Job kann nicht geladen werden");
+        $logger->warning("Lagerzahlen-Synchronisation Ende: lagerzahlen-Job kann nicht geladen werden");
         return;
     }
 //    $app->erp->LogFile("Lagerzahlen-Synchronisation: Warte 10 Sekunden");
@@ -171,10 +174,10 @@ if ($message != '' && $erp->Firmendaten('systemmailsabschalten') == 0 && $erp->G
             }
         }
     } catch (Exception $exception) {
-        $app->erp->LogFile("Lagerzahlen-Synchronisation Exception:" . $app->DB->real_escape_string($exception->getMessage()));
+        $logger->error("Lagerzahlen-Synchronisation Exception:" . $app->DB->real_escape_string($exception->getMessage()));
     }
 }
 
-$app->erp->LogFile("Lagerzahlen-Synchronisation Ende");
+$logger->info("Lagerzahlen-Synchronisation Ende");
 
 

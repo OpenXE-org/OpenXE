@@ -1,7 +1,7 @@
 <?php
 include ("_gen/widget.gen.adresse.php");
 
-class WidgetAdresse extends WidgetGenAdresse 
+class WidgetAdresse extends WidgetGenAdresse
 {
   private $app;
   function __construct($app,$parsetarget)
@@ -36,8 +36,10 @@ class WidgetAdresse extends WidgetGenAdresse
 
     $this->app->YUI->AutoComplete("sachkonto","sachkonto",1);
     $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");
-    
-    $this->form->ReplaceFunction("rechnung_smarty_template",$this,"ReplaceSmartyTemplate");        
+
+    $this->form->ReplaceFunction("rechnung_smarty_template",$this,"ReplaceSmartyTemplate");
+
+    $this->form->ReplaceFunction("iban",$this,"ReplaceIBAN");
 
     $this->form->ReplaceFunction("lat",$this,"ReplaceBetrag");
     $this->form->ReplaceFunction("lng",$this,"ReplaceBetrag");
@@ -60,6 +62,18 @@ class WidgetAdresse extends WidgetGenAdresse
 
     $id = $this->app->Secure->GetGET("id");
     $this->app->erp->RunHook('address_widget',1, $id);
+
+    $bank = $this->app->DB->SelectRow("SELECT swift, iban FROM adresse WHERE id='$id' LIMIT 1");
+    if (!empty($bank['iban']) || !empty($bank['swift'])) {
+        require_once dirname(__DIR__).'/plugins/sepa/Sepa_credit_XML_Transfer_initation.class.php';
+        if (!Sepa_credit_XML_Transfer_initation::validateBIC($bank['swift'])) {
+            $this->app->Tpl->AddMessage('error',"BIC ung&uuml;ltig.");
+        }
+        if (!Sepa_credit_XML_Transfer_initation::validateIBAN($bank['iban'])) {
+            $this->app->Tpl->AddMessage('error',"IBAN ung&uuml;ltig.");
+        }
+    }
+
     $kassierernummer = $this->app->Secure->GetPOST("kassierernummer");
     $submit = $this->app->Secure->GetPOST("speichern");
     /* pruefung Artikel nummer doppel */
@@ -84,12 +98,12 @@ class WidgetAdresse extends WidgetGenAdresse
     $this->form->ReplaceFunction("vertrieb",$this,"ReplaceAdresse");
     $this->form->ReplaceFunction("innendienst",$this,"ReplaceAdresse");
 
-   
+
     if($this->app->erp->ModulVorhanden('kommissionskonsignationslager'))
     {
       $this->form->ReplaceFunction("kommissionskonsignationslager",$this,"ReplaceLagerPlatz");
       $this->app->YUI->AutoComplete("kommissionskonsignationslager","lagerplatz");
-      
+
     }else{
       $this->app->Tpl->Set('VORKOMMISSIONSKONSIGNATIONSLAGER','<!--');
       $this->app->Tpl->Set('NACHKOMMISSIONSKONSIGNATIONSLAGER','-->');
@@ -98,7 +112,7 @@ class WidgetAdresse extends WidgetGenAdresse
     if($action=="create")
     {
 
-      $adresse_vorlage = strstr($this->app->erp->Firmendaten("adresse_vorlage"), ' ', true); 
+      $adresse_vorlage = strstr($this->app->erp->Firmendaten("adresse_vorlage"), ' ', true);
       if($adresse_vorlage > 0)
       {
         $adresse_vorlage_value = $this->app->DB->SelectArr("SELECT * FROM adresse WHERE id='$adresse_vorlage' LIMIT 1");
@@ -124,7 +138,7 @@ class WidgetAdresse extends WidgetGenAdresse
 
         $projekt_bevorzugt=$this->app->DB->Select("SELECT projekt_bevorzugen FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");
         if($projekt_bevorzugt=="1")
-        { 
+        {
           $projekt = $this->app->DB->Select("SELECT projekt FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");
         }
         $field = new HTMLInput("projekt","text",$projekt);
@@ -173,7 +187,7 @@ class WidgetAdresse extends WidgetGenAdresse
 
       $zahlungsweise = $this->app->erp->GetZahlungsweise('adresse', $id);
       $zahlungsweise['']="Bitte wählen ...";
-       
+
 
       $field = new HTMLSelect("zahlungsweise",0);
       //$field->onchange="aktion_buchen(this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value);";
@@ -196,13 +210,13 @@ class WidgetAdresse extends WidgetGenAdresse
           != ($kundennummerdb = $this->app->DB->Select(
             sprintf('SELECT kundennummer FROM adresse WHERE id = %d', $id)))) {
           $check_double_doppeltekundennummer = $this->app->DB->SelectArr(
-            sprintf("SELECT adr.kundennummer,count(adr.id) as NumOccurrences 
-            FROM adresse adr 
-            LEFT JOIN projekt pr ON adr.projekt = pr.id 
+            sprintf("SELECT adr.kundennummer,count(adr.id) as NumOccurrences
+            FROM adresse adr
+            LEFT JOIN projekt pr ON adr.projekt = pr.id
             WHERE adr.geloescht = 0 AND (adr.projekt = 0 OR pr.eigenernummernkreis = 0) AND adr.kundennummer <> ''
             AND adr.kundennummer IN ('%s', '%s')
-            GROUP BY adr.kundennummer 
-            HAVING COUNT(adr.kundennummer) > 0 
+            GROUP BY adr.kundennummer
+            HAVING COUNT(adr.kundennummer) > 0
             LIMIT 100",
               $kundennummer, $kundennummerdb
             ));
@@ -232,10 +246,10 @@ class WidgetAdresse extends WidgetGenAdresse
 
     $waehrung = $this->app->DB->Select("SELECT waehrung FROM adresse WHERE id='$id'");
     if($waehrung == "" && $action=="edit" && $submit=="")
-    { 
+    {
       // erst platt machen
       $this->app->DB->Update("UPDATE adresse SET waehrung='".$this->app->erp->GetStandardWaehrung($projekt)."' WHERE id='$id'");
-    } 
+    }
 
 
     $waehrungOptions = $this->app->erp->GetWaehrung();
@@ -245,7 +259,7 @@ class WidgetAdresse extends WidgetGenAdresse
       $field->value=$this->app->erp->GetStandardWaehrung($projekt);
     }
     $this->form->NewField($field);
- 
+
     $field = new HTMLInput("land","hidden","");
     $this->form->NewField($field);
 
@@ -287,7 +301,7 @@ class WidgetAdresse extends WidgetGenAdresse
     $this->form->NewField($field);
 
     $sprachenOptions = $this->app->erp->GetSprachenSelect($id?$this->app->DB->Select("SELECT sprache FROM adresse WHERE id = '$id' LIMIT 1"):null);
-    
+
     $field = new HTMLSelect("sprache",0,"sprache",false,false,"1");
     $field->AddOptionsSimpleArray($sprachenOptions);
     $this->form->NewField($field);
@@ -367,7 +381,7 @@ class WidgetAdresse extends WidgetGenAdresse
                 {
                   $ovvalue=$ov;
                   if(strpos($ov,'=>') !== false) {
-                    list($ov, $ovvalue) = explode('=>', $ov); 
+                    list($ov, $ovvalue) = explode('=>', $ov);
                   }
 
                   if($ovvalue == $tmpv)
@@ -381,7 +395,7 @@ class WidgetAdresse extends WidgetGenAdresse
                 {
                   $ovvalue=$ov;
                   if(strpos($ov,'=>') !== false) {
-                    list($ov, $ovvalue) = explode('=>', $ov); 
+                    list($ov, $ovvalue) = explode('=>', $ov);
                   }
                   $this->app->Tpl->Add('FREIFELDSPALTE'.$s,'<option'.($tmpv == $ovvalue?' selected':'').' value="'.$ovvalue.'">'.$ov.'</option>');
                 }
@@ -394,7 +408,7 @@ class WidgetAdresse extends WidgetGenAdresse
               $this->app->Tpl->Add('FREIFELDSPALTE'.$s,'<input type="text" size="30" id="freifeld'.$v['index'].'" name="freifeld'.$v['index'].'" value="'.$this->app->DB->Select("SELECT freifeld".$v['index']." FROM adresse WHERE id = '$id' LIMIT 1").'" />');
             break;
           }
-          
+
           $this->app->Tpl->Add('FREIFELDSPALTE'.$s,'</td></tr>');
         }
         $this->app->Tpl->Add('FREIFELDSPALTE'.$s,'</table>');
@@ -417,7 +431,7 @@ class WidgetAdresse extends WidgetGenAdresse
       $this->app->Tpl->Set('VORPROFORMARECHNUNG','<!--');
       $this->app->Tpl->Set('NACHPROFORMATRECHNUNG','-->');
     }
-      
+
     /*
        $id = $this->app->Secure->GetGET('id');
        if(is_numeric($id) && $id>0) {
@@ -492,10 +506,27 @@ class WidgetAdresse extends WidgetGenAdresse
   {
     return $this->app->erp->ReplaceKontorahmen($db,$value,$fromform);
   }
-  
+
   function ReplaceSmartyTemplate($db,$value,$fromform)
   {
     return $this->app->erp->ReplaceSmartyTemplate($db,$value,$fromform);
+  }
+
+  function ReplaceIBAN($db,$value,$fromform)
+  {
+    $value = $this->app->DB->real_escape_string($value);
+    if ($db) {
+        return(str_replace(' ', '', $value));
+    } else {
+        $result = "";
+        $space = "";
+        while (strlen($value) > 0) {
+            $result .= $space.substr($value, 0, 4);
+            $value = substr($value, 4);
+            $space = " ";
+        }
+       return($result);
+    }
   }
 
   /**

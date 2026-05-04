@@ -52,6 +52,10 @@
                                     <td><input type="text" name="sachkonto" id="sachkonto" value="[SACHKONTO]" /></td>
                                 </tr>
                                 <tr>
+                                    <td>Konto f&uuml;r fehlende Kontierung:</td>
+                                    <td><input type="text" name="sachkontofehlend" id="sachkontofehlend" value="[SACHKONTOFEHLEND]" /></td>
+                                </tr>
+                                <tr>
                                     <td>Format:</td>
                                     <td>
                                         <select name="format">

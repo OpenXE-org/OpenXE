@@ -98,7 +98,7 @@ if(empty($app->Conf)){
 if(empty($app->User)){
   $app->User = new User($app);
 }
-$app->erp->LogFile('Cronjob Artikelimport Start');
+$app->Container->get('Logger')->info('Cronjob Artikelimport Start');
 $app->DB->Update("UPDATE prozessstarter SET mutexcounter = mutexcounter + 1 WHERE mutex = 1 AND parameter = 'getarticles' AND aktiv = 1");
 
 if($app->DB->Select("SELECT mutex FROM prozessstarter WHERE parameter = 'getarticles' LIMIT 1") == 1){
@@ -124,5 +124,5 @@ while($check > 0)
   $check = $app->DB->Select('SELECT sg.id FROM shopexport_getarticles sg JOIN shopexport s ON sg.shop=s.id  LIMIT 1');
 }
 $app->DB->Update("UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 0,mutexcounter=0 WHERE parameter = 'getarticles'");
-$app->erp->LogFile('Cronjob Artikelimport Ende '.$anz.' importiert');
+$app->Container->get('Logger')->info('Cronjob Artikelimport Ende '.$anz.' importiert');
 
