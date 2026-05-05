@@ -1992,7 +1992,9 @@ class Rechnung extends GenRechnung
       $zahlbetrag = $this->app->Secure->GetPOST('zahlbetrag');
       $mahnwesen_gesperrt = $this->app->Secure->GetPOST('mahnwesen_gesperrt');
       $mahnwesen_internebemerkung = $this->app->Secure->GetPOST('mahnwesen_internebemerkung');
-      $zahlungsstatus = $this->app->Secure->GetPOST('zahlungsstatus');
+      if (!$schreibschutz) {
+          $zahlungsstatus = $this->app->Secure->GetPOST('zahlungsstatus');
+      }
       $mahnwesenfestsetzen = $this->app->Secure->GetPOST('mahnwesenfestsetzen');
       $mahnwesen = $this->app->Secure->GetPOST('mahnwesen');
       $internebemerkung = $this->app->Secure->GetPOST('internebemerkung');
@@ -2011,7 +2013,7 @@ class Rechnung extends GenRechnung
 
       if($bezahlt_am=='--')$bezahlt_am='0000-00-00';
       $alte_mahnstufe = $this->app->DB->Select("SELECT mahnwesen FROM rechnung WHERE id='$id' LIMIT 1");
-      if($alte_mahnstufe!=$mahnwesen) $versendet=0; 
+      if($alte_mahnstufe!=$mahnwesen) $versendet=0;     
 
 /*      if($mahnwesenfestsetzen=='1')
       {*/
