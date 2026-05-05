@@ -1398,7 +1398,7 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok,schreibschutz
          FROM auftrag
          WHERE id = %d
          LIMIT 1',
@@ -1414,6 +1414,7 @@ class Auftrag extends GenAuftrag
       $anfrageid = $auftragArr['anfrageid'];
       $kreditlimit_ok = $auftragArr['kreditlimit_ok'];
       $kommission_ok = $auftragArr['kommission_ok'];
+      $schreibschutz = $auftragArr['schreibschutz'];
       $lieferantenauftrag = $auftragArr['lieferantenauftrag'];
       $art = $auftragArr['art'];
     }
@@ -1467,8 +1468,12 @@ class Auftrag extends GenAuftrag
     //$art = $this->app->DB->Select("SELECT art FROM auftrag WHERE id='$id' LIMIT 1");
     $alleartikelreservieren = '';
 
-    if ($status==='angelegt' || $status==='freigegeben') {
-        $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
+    if (($status==='angelegt' || $status==='freigegeben')) {
+        if ($schreibschutz) {
+            $teillieferungen = '<option>Teilauftrag erstellen (schreibgesch&uuml;tzt)</option>';
+        } else {
+            $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
+        }        
     }
 
     if($status==='freigegeben') {
@@ -7423,7 +7428,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $auftrag_alt = $this->app->DB->SelectArr($sql)[0];
     $msg = "";
 
-    if (in_array($auftrag_alt['status'],array('angelegt','freigegeben'))) {
+    if (in_array($auftrag_alt['status'],array('angelegt','freigegeben')) && !$auftrag_alt['schreibschutz']) {
         if ($submit != '') {
             $msg = "";
             switch ($submit) {
@@ -7503,8 +7508,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         }
 
                         $this->app->erp->AuftragProtokoll($id,"Teilauftrag $belegnr_neu erstellt");
-                        $this->app->erp->PDFArchivieren('auftrag', $id, true);
-
+                        $this->app->erp->AuftragEinzelnBerechnen($id,true);
                         header('Location: index.php?module=auftrag&action=edit&id='.$id_neu);
 
                     }
