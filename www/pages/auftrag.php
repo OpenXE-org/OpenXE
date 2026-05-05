@@ -5012,17 +5012,17 @@ class Auftrag extends GenAuftrag
       )
     );
     if(!empty($anzahlteillieferungen)) {
+    
+        function auftraglink($auftrag) {
+           return "<a href=index.php?module=auftrag&action=edit&id=".$auftrag['id'].">".$auftrag['belegnr']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Auftrag geh&ouml;ren Teilauftr&auml;ge: ".implode(', ',array_map('auftraglink', $anzahlteillieferungen)), html: true);
+        
       $canzahlteillieferungen = (!empty($anzahlteillieferungen)?count($anzahlteillieferungen):0);
       for($ati=0;$ati<$canzahlteillieferungen;$ati++) {
         if($canzahlteillieferungen[$ati]['teillieferungnummer'] + 1 > $teillieferungnummermax) {
           $teillieferungnummermax = $canzahlteillieferungen[$ati]['teillieferungnummer'] + 1;
-        }
-        $this->app->Tpl->Add(
-          'MESSAGE',
-          '<div class="info">Zu diesem Auftrag geh&ouml;rt Teilauftrag Nr. <a href="index.php?module=auftrag&action=edit&id='.
-          $anzahlteillieferungen[$ati]['id'].'" target="_blank">'
-          .$anzahlteillieferungen[$ati]['belegnr'].'</a></div>'
-        );
+        }        
       }
     }
     $teillieferung_von_auftrag_nummer = $teilArr['belegnr'];
