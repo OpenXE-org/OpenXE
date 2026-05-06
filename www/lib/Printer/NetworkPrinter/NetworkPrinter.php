@@ -213,13 +213,6 @@ class NetworkPrinter extends PrinterBase
                 $batchResult = $this->processBatch($dokument, $settings);
                 if ($batchResult === null) {
                     // Label in Warteschlange gelegt — noch nicht physisch drucken
-                    $this->logInfo(
-                        sprintf(
-                            'Label in Batch-Warteschlange: Drucker-ID=%d, User=%d',
-                            $this->id,
-                            $this->getUserId()
-                        )
-                    );
                     return true;
                 }
                 // Batch fertig: kombiniertes oder einzelnes PDF wurde erzeugt
@@ -240,36 +233,12 @@ class NetworkPrinter extends PrinterBase
                 @unlink($dokument);
             }
 
-            $this->logInfo(
-                sprintf(
-                    'Druckauftrag erfolgreich: Drucker-ID=%d, Protokoll=%s, Host=%s, Kopien=%d',
-                    $this->id,
-                    $settings['protocol'],
-                    $settings['host'],
-                    (int)$anzahl
-                )
-            );
-
             return true;
 
         } catch (PrinterException $e) {
-            $this->logError(
-                sprintf(
-                    'Druckfehler (PrinterException): Drucker-ID=%d — %s',
-                    $this->id,
-                    $e->getMessage()
-                )
-            );
             return false;
 
         } catch (\Exception $e) {
-            $this->logError(
-                sprintf(
-                    'Druckfehler (Exception): Drucker-ID=%d — %s',
-                    $this->id,
-                    $e->getMessage()
-                )
-            );
             return false;
         }
     }
@@ -634,29 +603,5 @@ class NetworkPrinter extends PrinterBase
         }
 
         return $options;
-    }
-
-    /**
-     * Schreibt eine Info-Meldung ins Drucker-Log.
-     *
-     * @param string $message
-     */
-    private function logInfo(string $message): void
-    {
-        if (isset($this->app->erp) && method_exists($this->app->erp, 'LogFile')) {
-            $this->app->erp->LogFile('printer_network', $message);
-        }
-    }
-
-    /**
-     * Schreibt eine Fehlermeldung ins Fehler-Log.
-     *
-     * @param string $message
-     */
-    private function logError(string $message): void
-    {
-        if (isset($this->app->erp) && method_exists($this->app->erp, 'LogFile')) {
-            $this->app->erp->LogFile('printer_error', $message);
-        }
     }
 }
