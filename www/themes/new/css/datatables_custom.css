@@ -506,3 +506,17 @@ table.dataTable tbody tr.row-marked td,
 table.display tbody tr.row-marked td {
     background-color: #e8f2ff !important;
 }
+
+/* Zebra striping for table readability:
+ *   - every 2nd row: very light blue tint
+ *   - every 4th row: a touch deeper (4n is also even, but defined later so it wins)
+ * .row-marked above keeps authority via !important and overrides both. */
+table.dataTable tbody tr:nth-child(even) td,
+table.display tbody tr:nth-child(even) td {
+    background-color: #f7f9fb;
+}
+
+table.dataTable tbody tr:nth-child(4n) td,
+table.display tbody tr:nth-child(4n) td {
+    background-color: #eef3f8;
+}
