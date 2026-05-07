@@ -44,22 +44,27 @@ class Versandart_dhl_rest extends Versanddienstleister
             'ekp'                  => ['typ' => 'text', 'bezeichnung' => 'EKP',
                                        'info' => '10-stellige DHL Kundennummer'],
             'accountnumber'        => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket:',
-                                       'info' => '14-stellig (EKP+Verfahren+Teilnahme, z.B. 1234567890 0101)'],
-            'accountnumber_int'    => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket International:'],
-            'accountnumber_euro'   => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Europaket:'],
-            'accountnumber_connect'=> ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket Connect:'],
-            'accountnumber_wp'     => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost:'],
-            'accountnumber_wpint'  => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost International:'],
+                                       'info' => '14-stellig (V01PAK EKP+Verfahren+Teilnahme, z.B. 33333333330101)'],
+            'accountnumber_int'    => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket International:',
+                                       'info' => '14-stellig (V53WPAK EKP+Verfahren+Teilnahme, z.B. 33333333335301)'],
+            'accountnumber_euro'   => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Europaket:',
+                                       'info' => '14-stellig (V54EPAK EKP+Verfahren+Teilnahme, z.B. 33333333335401)'],
+            'accountnumber_connect'=> ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket Connect:',
+                                       'info' => '14-stellig (V55PAK EKP+Verfahren+Teilnahme, z.B. 3333333333????)'],
+            'accountnumber_wp'     => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost:',
+                                       'info' => '14-stellig (V62WP EKP+Verfahren+Teilnahme, z.B. 3333333333????)'],
+            'accountnumber_wpint'  => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost International:',
+                                       'info' => '14-stellig (V66WPI EKP+Verfahren+Teilnahme, z.B. 33333333336603)'],
 
-            'sender_name1'          => ['typ' => 'text', 'bezeichnung' => 'Versender Firma:'],
-            'sender_street'         => ['typ' => 'text', 'bezeichnung' => 'Versender Strasse:'],
-            'sender_streetnumber'   => ['typ' => 'text', 'bezeichnung' => 'Versender Strasse Nr.:'],
-            'sender_zip'            => ['typ' => 'text', 'bezeichnung' => 'Versender PLZ:'],
-            'sender_city'           => ['typ' => 'text', 'bezeichnung' => 'Versender Stadt:'],
-            'sender_country'        => ['typ' => 'text', 'bezeichnung' => 'Versender ISO Code:', 'info' => 'DE'],
-            'sender_email'          => ['typ' => 'text', 'bezeichnung' => 'Versender E-Mail:'],
+            'sender_name1'          => ['typ' => 'text', 'bezeichnung' => 'Versender Firma:', 'info' => 'min:1, max:50'],
+            'sender_street'         => ['typ' => 'text', 'bezeichnung' => 'Versender Strasse:', 'info' => 'min:1, max:50'],
+            'sender_streetnumber'   => ['typ' => 'text', 'bezeichnung' => 'Versender Strasse Nr.:', 'info' => 'min:1, max:10'],
+            'sender_zip'            => ['typ' => 'text', 'bezeichnung' => 'Versender PLZ:', 'info' => 'min:3, max:10'],
+            'sender_city'           => ['typ' => 'text', 'bezeichnung' => 'Versender Stadt:', 'info' => 'min:1, max:40'],
+            'sender_country'        => ['typ' => 'text', 'bezeichnung' => 'Versender ISO Code:', 'info' => 'Dreistellig, z.B. DEU'],
+            'sender_email'          => ['typ' => 'text', 'bezeichnung' => 'Versender E-Mail:', 'info' => 'optional, min:3, max:80'],
             'sender_phone'          => ['typ' => 'text', 'bezeichnung' => 'Versender Telefon:'],
-            'sender_contact_person' => ['typ' => 'text', 'bezeichnung' => 'Versender Ansprechpartner:'],
+            'sender_contact_person' => ['typ' => 'text', 'bezeichnung' => 'Versender Ansprechpartner:', 'info' => 'optional, min:3, max:80'],
 
             'cod_account_owner' => ['typ' => 'text', 'bezeichnung' => 'Nachnahme Kontoinhaber:'],
             'cod_bank_name'     => ['typ' => 'text', 'bezeichnung' => 'Nachnahme Bank Name:'],
@@ -82,46 +87,59 @@ class Versandart_dhl_rest extends Versanddienstleister
         try {
             $api      = $this->buildApi();
             $payload  = $this->buildShipmentPayload($json);
+
             $response = $api->createShipment($payload);
 
-            $item = $response['items'][0] ?? null;
-            if ($item === null) {
+            if (is_array($response['status'])) {
+                $status = $response['status'];
+            } else {
+                $status = $response;
+            }
+
+            if ($status['statusCode'] != 200) {
+                $ret->Errors[] = 'API meldet Fehler ('.$status['status'].'): '.$status['title']." - ".$status['detail'];
+            }
+
+            if (empty($response['items'])) {
                 $ret->Errors[] = 'Ungültige API-Antwort (kein items-Eintrag)';
                 return $ret;
             }
 
-            $statusCode = $item['sstatus']['statusCode'] ?? $response['status']['statusCode'] ?? 0;
+            foreach ($response['items'] as $item) {
+                $statusCode = $item['sstatus']['status'];
 
-            if ($statusCode === 200) {
-                $ret->Success        = true;
-                $ret->TrackingNumber = $item['shipmentNo'];
-                $ret->TrackingUrl    = sprintf(
-                    'https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=%s',
-                    $ret->TrackingNumber
-                );
+                if ($statusCode === 200) {
+                    $ret->Success        = true;
+                    $ret->TrackingNumber = $item['shipmentNo'];
+                    $ret->TrackingUrl    = sprintf(
+                        'https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=%s',
+                        $ret->TrackingNumber
+                    );
 
-                $ret->Label = $this->extractPdf($api, $item['label'] ?? []);
+                    $ret->Label = $this->extractPdf($api, $item['label'] ?? []);
 
-                if (!empty($item['customsDoc'])) {
-                    try {
-                        $ret->ExportDocuments = $this->extractPdf($api, $item['customsDoc']);
-                    } catch (DhlRestApiException $e) {
-                        $ret->AdditionalInfo = 'Exportdokument nicht abrufbar: ' . $e->getMessage();
+                    if (!empty($item['customsDoc'])) {
+                        try {
+                            $ret->ExportDocuments = $this->extractPdf($api, $item['customsDoc']);
+                        } catch (DhlRestApiException $e) {
+                            $ret->AdditionalInfo = 'Exportdokument nicht abrufbar: ' . $e->getMessage();
+                        }
                     }
-                }
 
-                $warnings = $item['validationMessages'] ?? [];
-                if (!empty($warnings)) {
-                    $texts = array_column($warnings, 'validationMessage');
-                    $ret->AdditionalInfo = implode('; ', array_filter($texts));
-                }
-            } else {
-                foreach ($item['validationMessages'] ?? [] as $msg) {
-                    $ret->Errors[] = $msg['validationMessage'] ?? 'Unbekannter Fehler';
-                }
-                if (empty($ret->Errors)) {
-                    $detail = $response['status']['detail'] ?? ($item['sstatus']['title'] ?? '');
-                    $ret->Errors[] = "API-Fehler $statusCode" . ($detail ? ": $detail" : '');
+                    $warnings = $item['validationMessages'] ?? [];
+                    if (!empty($warnings)) {
+                        foreach ($item['validationMessages'] ?? [] as $msg) {
+                            $ret->Errors[] = $msg['property']." (".$msg['validationState'].") ".$msg['validationMessage'] ?? 'Unbekannter Fehler';
+                        }
+                    }
+                } else {
+                    foreach ($item['validationMessages'] ?? [] as $msg) {
+                        $ret->Errors[] = $msg['property']." (".$msg['validationState'].") ".$msg['validationMessage'] ?? 'Unbekannter Fehler';
+                    }
+                    if (empty($ret->Errors)) {
+                        $detail = $response['status']['detail'] ?? ($item['sstatus']['title'] ?? '');
+                        $ret->Errors[] = "API-Fehler $statusCode" . ($detail ? ": $detail" : '');
+                    }
                 }
             }
         } catch (DhlRestApiException $e) {
@@ -182,6 +200,12 @@ class Versandart_dhl_rest extends Versanddienstleister
 
     private function buildShipmentPayload(object $json): array
     {
+
+        // refNo string value:min:8, max:35
+        if (strlen($json->reference) < 8) {
+            $json->reference = str_pad($json->reference,8,'-');
+        }
+
         $payload = [
             'product'       => $json->productId,
             'billingNumber' => $this->getBillingNumber($json->productId) ?? '',
