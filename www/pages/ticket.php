@@ -245,7 +245,7 @@ class Ticket {
         $this->app->DB->Update($sql);
     }
 
-    function ticket_log_changes($id, bool $onlyread = false, array $old_values = null) {
+    function ticket_log_changes(int $id, bool $onlyread = false, array $old_values = null) {
         $sql = "SELECT status, warteschlange, adresse, name, tags FROM ticket LEFT JOIN adresse ON adresse.id = ticket.adresse WHERE ticket.id = ".$id;
         $values = $this->app->DB->SelectRow($sql);
         if ($onlyread) {
@@ -287,12 +287,14 @@ class Ticket {
         $auswahl = $this->app->Secure->GetPOST('auswahl');
         $submit = $this->app->Secure->GetPOST('submit');
         $selectedIds = [];
+        $old = array();
         if(!empty($auswahl)) {
           foreach($auswahl as $selectedId) {
             $selectedId = (int)$selectedId;
             if($selectedId > 0) {
               $selectedIds[] = $selectedId;
             }
+            $old[$selectedId] = $this->ticket_log_changes($selectedId, onlyread: true);
           }
 
             switch ($submit) {
@@ -359,6 +361,9 @@ class Ticket {
 
                     }
                 break;
+            }
+            foreach ($old as $old_id => $old_value) {
+                $this->ticket_log_changes($old_id, old_values: $old_value);
             }
         }
 
