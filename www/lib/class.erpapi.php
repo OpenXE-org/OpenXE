@@ -3830,6 +3830,35 @@ title: 'Abschicken',
     }
   }
 
+  function LoadZahlungsweiseModul($module, $moduleId) {
+
+    $module = preg_replace('/[^a-zA-Z0-9\_]/','',$module);
+
+    if(empty($module)) {
+      return null;
+    }
+    if(strpos($module,'zahlungsweise_') === 0) {
+      $module = substr($module, 14);
+      if(empty($module)) {
+        return null;
+      }
+    }
+    if(strpos($module, '.') !== false || strpos($module, '/') !== false || strpos($module, '\\') !== false) {
+      return null;
+    }
+    $path = dirname(__DIR__).'/lib/zahlungsweisen/'.$module.'.php';
+    if(!is_file($path)) {
+      return null;
+    }
+
+    include_once $path ;
+    $classname = 'Zahlungsweise_'.$module;
+    if(!class_exists($classname)) {
+      return null;
+    }
+    return new $classname($this->app, $moduleId);
+  }
+
   // @refactor Document Komponente
   function Zahlungsweisetext($doctype,$doctypeid)
   {
