@@ -19,6 +19,8 @@ require_once dirname(__DIR__) . '/class.versanddienstleister.php';
 
 /**
  * DHL Paket DE Versenden REST API v2 shipping module.
+ * DHL Paket DE Versenden (Post & Paket Deutschland)
+ * Parcel DE Shipping (Post & Parcel Germany)
  *
  * Drop-in replacement for the SOAP-based dhl.php module.
  * Uses Basic Auth + dhl-api-key header (supported until further notice).
@@ -27,7 +29,7 @@ class Versandart_dhl_rest extends Versanddienstleister
 {
     public function GetName(): string
     {
-        return 'DHL REST API';
+        return 'DHL Paket DE Versenden (Rest API)';
     }
 
     public function AdditionalSettings(): array
@@ -38,7 +40,7 @@ class Versandart_dhl_rest extends Versanddienstleister
             'api_password' => ['typ' => 'text', 'bezeichnung' => 'GK-Passwort:',
                                'info' => 'Passwort des DHL Geschäftskunden-Kontos'],
             'api_key'      => ['typ' => 'text', 'bezeichnung' => 'API Key:',
-                               'info' => 'API Key aus dem DHL Developer Portal – anlegen unter <a href="https://developer.dhl.com/" target="_blank">https://developer.dhl.com/</a>'],
+                               'info' => 'API Key aus dem DHL Developer Portal – anlegen unter <a href="https://developer.dhl.com/" target="_blank">https://developer.dhl.com/</a> DHL Paket DE Versenden (Post & Paket Deutschland) / Parcel DE Shipping (Post & Parcel Germany)'],
             'sandbox'      => ['typ' => 'checkbox', 'bezeichnung' => 'Testumgebung (Sandbox):'],
 
             'ekp'                  => ['typ' => 'text', 'bezeichnung' => 'EKP',

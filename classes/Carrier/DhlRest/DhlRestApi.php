@@ -10,6 +10,15 @@ namespace Xentral\Carrier\DhlRest;
 
 class DhlRestApiException extends \RuntimeException {}
 
+/*
+    DHL Paket DE Versenden (Post & Paket Deutschland)
+    Parcel DE Shipping (Post & Parcel Germany)
+    v 2.1.13
+
+    Note:
+    Basic authentification will be removed by DHL in favour of OAuth2 in the future
+*/
+
 class DhlRestApi
 {
     private const SANDBOX_URL = 'https://api-sandbox.dhl.com/parcel/de/shipping/v2';
