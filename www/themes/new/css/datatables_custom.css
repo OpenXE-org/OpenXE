@@ -508,23 +508,22 @@ table.display tbody tr.row-marked td {
 }
 
 /* Zebra striping for table readability:
- *   - every 2nd row: very light blue tint
- *   - every 4th row: a touch deeper (4n is also even, but defined later so it wins)
+ *   - every 2nd row: very light blue tint  (tr.even = rows 2,4,6,...)
+ *   - every 4th row: a touch deeper        (tr.even at nth-child(4n) = rows 4,8,12,...)
  *
- * !important is required because the OpenXE theme stylesheet sets a hard
- * white background on tr/td which would otherwise win over the nth-child
- * selectors here. .row-marked above keeps authority because its
- * specificity (table.dataTable tbody tr.row-marked td) is higher than
- * the nth-child selectors (table.dataTable tbody tr:nth-child(...) td)
- * — at equal !important, higher specificity wins. */
-table.dataTable tbody tr:nth-child(even) td,
-table.display tbody tr:nth-child(even) td,
-.dataTables_wrapper tbody tr:nth-child(even) td {
+ * Selector matches the OpenXE styles.css rule
+ *   ".dataTables_wrapper table.dataTable.display > tbody > tr > td"
+ * exactly to win the specificity battle (3 classes + 2 combinators, plus
+ * .even adds another class -> beats the white-background rule). DataTables
+ * sets class="odd"/"even" on each tr via JS, so we use that directly
+ * instead of pure nth-child which the cascade overrides.
+ *
+ * .row-marked above still wins because tr.row-marked has equal class count
+ * but is defined later AND uses !important. */
+.dataTables_wrapper table.dataTable.display > tbody > tr.even > td {
     background-color: #f7f9fb !important;
 }
 
-table.dataTable tbody tr:nth-child(4n) td,
-table.display tbody tr:nth-child(4n) td,
-.dataTables_wrapper tbody tr:nth-child(4n) td {
+.dataTables_wrapper table.dataTable.display > tbody > tr.even:nth-child(4n) > td {
     background-color: #eef3f8 !important;
 }
