@@ -510,13 +510,21 @@ table.display tbody tr.row-marked td {
 /* Zebra striping for table readability:
  *   - every 2nd row: very light blue tint
  *   - every 4th row: a touch deeper (4n is also even, but defined later so it wins)
- * .row-marked above keeps authority via !important and overrides both. */
+ *
+ * !important is required because the OpenXE theme stylesheet sets a hard
+ * white background on tr/td which would otherwise win over the nth-child
+ * selectors here. .row-marked above keeps authority because its
+ * specificity (table.dataTable tbody tr.row-marked td) is higher than
+ * the nth-child selectors (table.dataTable tbody tr:nth-child(...) td)
+ * — at equal !important, higher specificity wins. */
 table.dataTable tbody tr:nth-child(even) td,
-table.display tbody tr:nth-child(even) td {
-    background-color: #f7f9fb;
+table.display tbody tr:nth-child(even) td,
+.dataTables_wrapper tbody tr:nth-child(even) td {
+    background-color: #f7f9fb !important;
 }
 
 table.dataTable tbody tr:nth-child(4n) td,
-table.display tbody tr:nth-child(4n) td {
-    background-color: #eef3f8;
+table.display tbody tr:nth-child(4n) td,
+.dataTables_wrapper tbody tr:nth-child(4n) td {
+    background-color: #eef3f8 !important;
 }
