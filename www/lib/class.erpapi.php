@@ -28594,7 +28594,11 @@ function Firmendaten($field,$projekt="")
           unset($backlink);
         }
 
-        $user = $this->app->DB->Select("SELECT usereditid FROM $modul WHERE id='$id' LIMIT 1");
+        try {
+            $user = $this->app->DB->Select("SELECT usereditid FROM $modul WHERE id='$id' LIMIT 1");
+        } catch (Exception $e) {
+            return false;
+        }
         if($this->app->DB->error())return false;
         $user_adresse = $this->app->DB->Select("SELECT adresse FROM user WHERE id='$user' LIMIT 1");
         $user_name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$user_adresse' LIMIT 1");
