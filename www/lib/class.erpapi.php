@@ -24495,6 +24495,29 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
   {
     $return = null;
 
+    echo("----------------- TRANSPORT ---------------------");
+
+    /*
+
+        Find matching transports from transport module
+    */
+        $obj = $this->LoadModul('transport');
+
+        $obj->GetTransports();
+
+
+    /*
+
+        Get fields from matching transports
+        Generate ui for matching transports
+        Prefill ui with correct data for transports
+
+
+
+    */
+
+    echo("----------------- TRANSPORT ---------------------");
+
     $this->BriefpapierHintergrunddisable = false;
     $sprache = $this->app->DB->Select("SELECT sprache FROM adresse WHERE id='$adresse' AND geloescht=0 LIMIT 1");
     $name = $this->app->DB->Select("SELECT name FROM adresse WHERE id='$adresse' AND geloescht=0 LIMIT 1");
@@ -26216,7 +26239,8 @@ function Firmendaten($field,$projekt="")
   function GetWaehrungUmrechnungskurseTabelle($von = 'EUR')
   {
     /** @var Waehrungumrechnung $obj */
-    $obj = $this->LoadModul('waehrungumrechnung');
+    $obj = $this->    $obj = $this->LoadModul('kalkulation');
+LoadModul('waehrungumrechnung');
     if(!empty($obj) && method_exists($obj,'GetWaehrungUmrechnungskurseTabelle'))
     {
       return $obj->GetWaehrungUmrechnungskurseTabelle($von);

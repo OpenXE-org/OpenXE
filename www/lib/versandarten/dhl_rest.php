@@ -334,13 +334,13 @@ class Versandart_dhl_rest extends Versanddienstleister
         }
 
         $exportTypeMap = [
-            ShipmentType::GOODS->value     => 'PERMANENT',
-            ShipmentType::DOCUMENTS->value => 'DOCUMENTS',
+            ShipmentType::GOODS->value     => 'COMMERCIAL_GOODS',
+            ShipmentType::DOCUMENTS->value => 'DOCUMENT',
             ShipmentType::GIFT->value      => 'PRESENT',
-            ShipmentType::SAMPLE->value    => 'SAMPLE',
-            ShipmentType::RETURN->value    => 'RETURN',
+            ShipmentType::SAMPLE->value    => 'COMMERCIAL_SAMPLE',
+            ShipmentType::RETURN->value    => 'RETURN_OF_GOODS',
         ];
-        $exportType = $exportTypeMap[(int)($decl->shipmentType ?? ShipmentType::GOODS->value)] ?? 'PERMANENT';
+        $exportType = $exportTypeMap[(int)($decl->shipmentType ?? ShipmentType::GOODS->value)] ?? 'COMMERCIAL_GOODS';
 
         $items = [];
         foreach ($decl->positions as $pos) {
