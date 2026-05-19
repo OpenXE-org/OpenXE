@@ -83,6 +83,12 @@ class WidgetGenimportvorlage
     $field->AddOption('St&uuml;ckliste','stueckliste');
     $this->form->NewField($field);
 
+    $field = new HTMLSelect("format",0,"format","","","0");
+    $field->AddOption('CSV',0);
+    $field->AddOption('ZIP mit CSV',1);
+    $field->AddOption('ZIP mit CSV und Zusatzdateien',2);
+    $this->form->NewField($field);
+
     $field = new HTMLInput("importerstezeilenummer","text","","15","","","","","","","","0","","");
     $this->form->NewField($field);
 

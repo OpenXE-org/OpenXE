@@ -1,11 +1,10 @@
-<fieldset><legend>CSV Datei ausw&auml;hlen</legend>
+<fieldset><legend>Datei ausw&auml;hlen</legend>
 <table>
 <tr><td>Datei:</td><td>
 
     <form action="" method="post" enctype="multipart/form-data">
-    <input name="userfile" type="file" />&nbsp;Kodierung: [SELCHARSET]&nbsp;<input type="text" id="charset" name="charset" value="[CHARSET]" />&nbsp;<input type="submit" name="upload" value="CSV jetzt heraufladen">
+    <input name="userfile" type="file" />&nbsp;Kodierung: [SELCHARSET]&nbsp;<input type="text" id="charset" name="charset" value="[CHARSET]" />&nbsp;<input type="submit" name="upload" value="Datei jetzt heraufladen">
 </td></tr></table>
-<!--<i>*Bei Umlautproblemen empfehlen wir die Daten mit Libreoffice oder OpenOffice in das Format UTF-8 zu konveriert.  Bei Problemen gerne beim Support nachfragen.</i>-->
 </fieldset>
 
 <br>

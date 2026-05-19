@@ -791,7 +791,7 @@ class Importvorlage extends GenImportvorlage {
     {
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
       //if($this->app->Secure->GetGET("action")!="create")
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: CSV Datei heraufladen');
+      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
 
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
 
@@ -976,7 +976,7 @@ class Importvorlage extends GenImportvorlage {
     if(!$_id) {
       $id = (int)$this->app->Secure->GetGET('id');
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: CSV Datei heraufladen');
+      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
     }
 
