@@ -1434,7 +1434,7 @@ class Importvorlage extends GenImportvorlage {
    * @param string     $charset
    * @param array|null $parameter
    *
-   * @return array('success', 'message', 'ids', 'rows')
+   * @return array('success', 'message', result_objects array('id','type'), 'rows')
    */
   public function ImportvorlageDo($charset = '', $parameter = null)
   {
@@ -1478,7 +1478,7 @@ class Importvorlage extends GenImportvorlage {
         return(array('success' => false, 'message' => 'Datei konnte nicht verarbeitet werden.'));
     }
 
-    $ids = [];
+    $result_objects = array(); // ('id', 'type')
 
     $ersterdatensatz = 1;
     $zeitstempel = time();
@@ -1764,8 +1764,8 @@ class Importvorlage extends GenImportvorlage {
             if($felder['nummer'] != '')
             {
               $artikelid = $this->app->erp->ImportCreateArtikel($felder,false);
-              if(!empty($artikelid) && !in_array($artikelid, $ids)) {
-                $ids[] = $artikelid;
+              if(!empty($artikelid) && !in_array($artikelid, array_column($result_objects, 'id'))) {
+                $result_objects[] = array('id' => $artikelid, 'type' => 'artikel');
               }
             }
 
@@ -2374,8 +2374,8 @@ class Importvorlage extends GenImportvorlage {
                                     if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                   }
                                   $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                  if(!empty($check) && !in_array($check, $ids)) {
-                                    $ids[] = $check;
+                                  if(!empty($check) && !in_array($check, array_column($result_objects, 'id'))) {
+                                    $result_objects[] = array('id' => $check, 'type' => 'artikel');
                                   }
                                   if($check)
                                   {
@@ -2503,8 +2503,8 @@ class Importvorlage extends GenImportvorlage {
                                   }
                                 }
                                 $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                if(!empty($check) && !in_array($check, $ids)) {
-                                  $ids[] = $check;
+                                if(!empty($check) && !in_array($check, array_column($result_objects, 'id'))) {
+                                    $result_objects[] = array('id' => $check, 'type' => 'artikel');
                                 }
                                 if($check)
                                 {
@@ -3345,9 +3345,9 @@ class Importvorlage extends GenImportvorlage {
                                           $checkarr[0]['name_de'] = $checkarr[0]['name_de'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                           if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                         }
-                                        $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                        if(!empty($check) && !in_array($check, $ids)) {
-                                          $ids[] = $check;
+                                        $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);      
+                                        if(!empty($check) && !in_array($check, array_column($result_objects, 'id'))) {
+                                          $result_objects[] = array('id' => $check, 'type' => 'artikel');
                                         }
                                         if($check)
                                         {
@@ -3461,8 +3461,8 @@ class Importvorlage extends GenImportvorlage {
                                         if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'];
                                       }
                                       $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
-                                      if(!empty($check) && !in_array($check, $ids)) {
-                                        $ids[] = $check;
+                                      if(!empty($check) && !in_array($check, $result_objects)) {
+                                        $result_objects[] = array('id' => $check, 'type' => 'artikel');
                                       }
                                       if($check)
                                       {
@@ -5344,9 +5344,9 @@ class Importvorlage extends GenImportvorlage {
       } // Loop
 
         if (empty($msg)) {  
-            return array('success' => true, 'ids' => $ids, 'rows' => $number_of_rows);
+            return array('success' => true, 'result_objects' => $result_objects, 'rows' => $number_of_rows);
         } else {
-            return array('success' => false, 'ids' => $ids, 'rows' => $number_of_rows, 'message' => $msg);
+            return array('success' => false, 'result_objects' => $result_objects, 'rows' => $number_of_rows, 'message' => $msg);
         }
 
   }
