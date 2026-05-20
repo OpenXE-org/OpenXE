@@ -38,6 +38,10 @@ class Importvorlage extends GenImportvorlage {
 
   const MODULE_NAME = 'ImportMasterdata';
 
+  const FORMAT_CSV = 0;
+  const FORMAT_CSV_ZIP = 1;
+  const FORMAT_FILES_ZIP = 2;
+
   public $javascript = [
     './classes/Modules/ImportMasterdata/www/js/import_masterdata.js',
   ];
@@ -1014,6 +1018,7 @@ class Importvorlage extends GenImportvorlage {
     $importzeichensatz = $importVorlageRow['importzeichensatz'];
     $fields = $this->cleanFields($importVorlageRow['fields']);
     $ziel = $importVorlageRow['ziel'];
+    $format = $importVorlageRow['format'];
     $utf8decode = 0;//$this->app->DB->Select("SELECT utf8decode FROM importvorlage WHERE id='$id' LIMIT 1");
 
     $fieldset = $this->ImportvorlageGetFieldsNew($id);
@@ -1031,15 +1036,60 @@ class Importvorlage extends GenImportvorlage {
       $isCronjobActive = $this->app->DB->Select(
         "SELECT `id` FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'importvorlage' LIMIT 1"
       );
-      $stueckliste_csv = $this->app->erp->GetTMP().'importvorlage'.$this->app->User->GetID();
+      $uploaded_file_name = $this->app->erp->GetTMP().'importvorlage'.$this->app->User->GetID();
 
-      if (!move_uploaded_file($_FILES['userfile']['tmp_name'], $stueckliste_csv)) {
+      if (!move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaded_file_name)) {
         //$importfilename = $_FILES['userfile']['name'];
-        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Datei '".$stueckliste_csv."' konnte nicht ge&ouml;ffnet werden. Eventuell ist die Datei zu gro&szlig; oder die Schreibrechte stimmen nicht!</div>  ");
+        $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Die Datei '".$uploaded_file_name."' konnte nicht ge&ouml;ffnet werden. Eventuell ist die Datei zu gro&szlig; oder die Schreibrechte stimmen nicht!</div>  ");
         $this->app->Location->execute("index.php?module=importvorlage&action=import&id=$id&msg=$msg");
       }
 
       ini_set('auto_detect_line_endings', true);
+
+        $additional_files = array();
+        $stueckliste_csv = null;
+
+        switch ($format) {
+            case SELF::FORMAT_FILES_ZIP:
+            // break omitted
+            case SELF::FORMAT_CSV_ZIP:
+                $zip = new ZipArchive();
+                if ($zip->open($uploaded_file_name, ZipArchive::CHECKCONS) !== true) {
+                    throw new Exception(sprintf('Failure to open file "%s"', $uploaded_file_name));
+                }
+
+                $unzipped_files_folder = $this->app->erp->GetTMP()."importupload_".uniqid();
+                if (!file_exists($unzipped_files_folder) && !@mkdir($unzipped_files_folder) && !is_dir($unzipped_files_folder)) {
+                    throw new Exception(sprintf('Failure to create directory "%s"', $unzipped_files_folder));
+                }
+
+                for( $i = 0; $i < $zip->numFiles; $i++ ) {
+                    $stat = $zip->statIndex($i);
+                    $filesize = $stat['size'];
+                    $filename = $stat['name'];
+
+                    if ($filesize > 0) {
+                        if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) == 'csv' && empty($stueckliste_csv)) {
+                            $stueckliste_csv = $unzipped_files_folder."/".$filename;
+                            $zip->extractTo($unzipped_files_folder, $filename);
+                            if ($format == SELF::FORMAT_CSV_ZIP) {
+                                break;
+                            }
+                        } else if ($format == SELF::FORMAT_FILES_ZIP) {
+                            $zip->extractTo($unzipped_files_folder, $filename);
+                            $additional_files[] = $unzipped_files_folder."/".$filename;
+                        }
+                    }
+                }
+                $zip->close();
+            break;
+            case SELF::FORMAT_CSV:
+            // break omitted
+            default:
+                $stueckliste_csv = $uploaded_file_name;
+            break;
+        }
+
       if (($handle = fopen($stueckliste_csv, 'r')) !== FALSE) {
         $rowcounter = 0;
         $rowcounter_real = 0;
@@ -1075,6 +1125,8 @@ class Importvorlage extends GenImportvorlage {
 
           }
         }
+      } else {
+        throw new Exception(sprintf('Failure to open file "%s"', $stueckliste_csv));
       }
       fclose($handle);
 
