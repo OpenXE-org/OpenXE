@@ -955,7 +955,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         if ($this->protocol) {
             if ($dump !== null && !is_array($dump))
                 $dump = ['dump' => $dump];
-            $this->app->Container->get('Logger')->info($message, $dump);
+            $this->app->Container->get('Logger')->info($message, $dump ?? []);
         }
     }
 

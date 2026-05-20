@@ -3691,7 +3691,7 @@ class Shopimporter_Shopify extends ShopimporterBase
     if($this->logging){
         if ($dump !== null && !is_array($dump))
             $dump = ['dump' => $dump];
-        $this->app->Container->get('Logger')->info($nachricht, $dump);
+        $this->app->Container->get('Logger')->info($nachricht, $dump ?? []);
     }
   }
 
