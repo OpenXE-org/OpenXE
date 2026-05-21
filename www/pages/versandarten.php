@@ -307,6 +307,7 @@ class Versandarten {
       $labelPrinter = $this->app->erp->GetEtikettendrucker();
       $printer = array_merge($printer ?? [], $labelPrinter ?? []);
     }
+    $printer = (array) $printer;
     natcasesort($printer);
     return $printer;
   }
