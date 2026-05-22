@@ -1156,6 +1156,9 @@ class Importvorlage extends GenImportvorlage {
 
       if ($result['success']) {
         $this->app->Tpl->AddMessage('success',"Import durchgef&uuml;hrt: ".$result['rows']." Zeilen.");
+        if (!empty($result['message'])) {
+            $this->app->Tpl->AddMessage('info',$result['message']);
+        }
       } else {
         $this->app->Tpl->AddMessage('error',"Import fehlerhaft: ".$result['message']."");
       }
@@ -1412,6 +1415,9 @@ class Importvorlage extends GenImportvorlage {
    */
   public function ImportvorlageDo($charset = '', $parameter = null)
   {
+
+    $importvorlagedoresult = array('success' => true, 'messages' => array(), 'result_objects' => array(), 'rows' => 0);
+
     $id = 0;
     if(empty($parameter) || !isset($parameter['id'])) {
       $id = $this->app->Secure->GetGET('id');
@@ -1484,13 +1490,18 @@ class Importvorlage extends GenImportvorlage {
       if(isset($tmp['kundennummer']) && isset($tmp['kundennummer'][$i])) {
         $tmp['kundennummer'][$i] = str_replace(' ','',trim($tmp['kundennummer'][$i]));
       }
+
+      // Export compatibility
+      if(isset($tmp['lieferantnummer'][$i]) && !isset($tmp['lieferantennummer'][$i])) {
+        $tmp['lieferantennummer'][$i] = $tmp['lieferantennummer'][$i];
+      }
+
       if(isset($tmp['lieferantennummer']) && isset($tmp['lieferantennummer'][$i])) {
         $tmp['lieferantennummer'][$i] = str_replace(' ','',trim($tmp['lieferantennummer'][$i]));
       }
       if($tmp['lieferantennummer'][$i]!='' && ($tmp['kundennummer'][$i]!=='NEW' || $tmp['kundennummer'][$i]!=='NEU')) {
         $lieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$this->app->DB->real_escape_string($tmp['lieferantennummer'][$i])."' 
             AND lieferantennummer!='' LIMIT 1");
-
       }
 
       if($tmp['kundennummer'][$i]!='' && ($tmp['kundennummer'][$i]!=='NEW' || $tmp['kundennummer'][$i]!=='NEU')) {
@@ -2518,6 +2529,9 @@ class Importvorlage extends GenImportvorlage {
                     }
                     break;
 
+                  case "einkaufspreisnetto":
+                    $tmp['lieferanteinkaufnetto'][$i] = $tmp['einkaufspreis'][$i];
+                    // break omitted
                   case  "lieferanteinkaufnetto":
                     $einkaufsdaten = $this->app->DB->SelectRow("SELECT id,preis,bestellnummer FROM einkaufspreise WHERE ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."' AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW()) AND adresse='".$lieferantid."' AND artikel='".$artikelid."' LIMIT 1");
                     if($einkaufsdaten){
@@ -2761,7 +2775,7 @@ class Importvorlage extends GenImportvorlage {
                             $_kundenid,str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i])/$verkaufspreis1stueckdivisor,$tmp['verkaufspreis'.$verkaufspreisanzahl.'waehrung'][$i],isset($tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'])?$tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'][$i]:'',$gruppe, $gueltigab,$tmp['verkaufspreis'.$verkaufspreisanzahl.'internerkommentar'][$i], $gueltigbis);
                       }
                     }
-                    break;
+                  break;
                   case "lager_platz":
                   case "lager_platz2":
                   case "lager_platz3":
@@ -2771,7 +2785,6 @@ class Importvorlage extends GenImportvorlage {
                       if($tmp['lager_platz'.($lpk>1?$lpk:'')][$i]!=''){
                         $lager_id = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE 
                             kurzbezeichnung='".$tmp['lager_platz'.($lpk>1?$lpk:'')][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
-
                         if($lager_id <=0)
                         {
                           $lager_id = $this->app->DB->Select("SELECT id FROM lager WHERE geloescht!='1' LIMIT 1");
@@ -2936,11 +2949,21 @@ class Importvorlage extends GenImportvorlage {
                       }
                     }
                   break;
+                  case 'standardlagerplatz':
+                    $lagerplatz = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE kurzbezeichnung='".$tmp['standardlagerplatz'][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
+                    if (empty($lagerplatz)) {
+                        $importvorlagedoresult['messages'][] = "Lagerplatz nicht gefunden: ".$tmp['standardlagerplatz'][$i];
+                    } else {
+                        $this->app->DB->Update("UPDATE `artikel` SET `lager_platz` = $lagerplatz WHERE id = '{$artikelid}' LIMIT 1");
+                    }
+                  break;
                   case 'nummer':
+                  case 'lieferantname':
+                  case 'lieferantnummer':
                     // Nothing to do
                   break;
                   default:
-                    throw new Exception("Unhandled column type: ".$value);
+                    $importvorlagedoresult['messages'][] = "Feld unbekannt: ".$value;
                   break;
                 }
               }
@@ -4097,7 +4120,8 @@ class Importvorlage extends GenImportvorlage {
                         $row[$key] = $value[$i];
                         $comma = ", ";
                     } else {
-                        $msg .= "Feld nicht korrekt: ".$key.".<br>";            
+                        $importvorlagedoresult['messages'][] = "Feld nicht korrekt: ".$key;
+                        $importvorlagedoresult['success'] = false;
                         $error = true;
                     } 
                 }
@@ -4156,7 +4180,7 @@ class Importvorlage extends GenImportvorlage {
                     $result = $this->app->DB->SelectArr($sql);
 
                     if (!empty($result)) {
-                        $msg .= "Doppelter Eintrag (nicht importiert): ".$row['buchungstext']."<br>";
+                        $errormessage .= "Doppelter Eintrag (nicht importiert): ".$row['buchungstext']."<br>";
                     } else {
                         $sql = "INSERT INTO kontoauszuege (".
                                 implode(", ",array_keys($row)).
@@ -4167,7 +4191,7 @@ class Importvorlage extends GenImportvorlage {
                         $result = $this->app->DB->Update($sql);
                     }
                 } else {
-                    $msg .= "Konto nicht gefunden: ".$row['konto'].".<br>";
+                    $errormessage .= "Konto nicht gefunden: ".$row['konto'].".<br>";
                 }
             }
 
@@ -4186,7 +4210,7 @@ class Importvorlage extends GenImportvorlage {
                 $sql = "SELECT id FROM artikel WHERE stueckliste = 1 AND nummer = '".$row['stuecklistevonartikel']."'";
                 $von_id = $this->app->DB->SelectArr($sql);
                 if (empty($von_id)) {    
-                    $msg .= "Fehlerhafter 'Stueckliste von'-Artikel \"".$row['stuecklistevonartikel']."\"<br>";
+                    $errormessage .= "Fehlerhafter 'Stueckliste von'-Artikel \"".$row['stuecklistevonartikel']."\"<br>";
                     break;
                 }
                 $row['stuecklistevonartikel'] = $von_id[0]['id'];
@@ -4194,7 +4218,7 @@ class Importvorlage extends GenImportvorlage {
                 $sql = "SELECT id FROM artikel WHERE nummer = '".$row['artikel']."'";
                 $artikel_id = $this->app->DB->SelectArr($sql);
                 if (empty($artikel_id)) {
-                    $msg .= "Fehlerhafter Artikel \"".$row['artikel']."\"<br>";
+                    $errormessage .= "Fehlerhafter Artikel \"".$row['artikel']."\"<br>";
                     break;
                 }
                 $row['artikel'] = $artikel_id[0]['id'];
@@ -4222,7 +4246,8 @@ class Importvorlage extends GenImportvorlage {
 
             } else if(!$first_checked) {
                 $first_checked = true;
-                $msg .= $error_text;
+                $importvorlagedoresult['message'][] = $error_text;
+                $importvorlagedoresult['success'] = false;
             }
 
             break;
@@ -4256,12 +4281,12 @@ class Importvorlage extends GenImportvorlage {
         }      
       } // Loop
 
-        if (empty($msg)) {  
-            return array('success' => true, 'result_objects' => $result_objects, 'rows' => $number_of_rows);
-        } else {
-            return array('success' => false, 'result_objects' => $result_objects, 'rows' => $number_of_rows, 'message' => $msg);
-        }
 
+      $importvorlagedoresult['messages'] = array_unique($importvorlagedoresult['messages']);
+      $importvorlagedoresult['message'] = implode(', ',$importvorlagedoresult['messages']);
+      unset($importvorlagedoresult['messages']);
+      $importvorlagedoresult['rows'] = $number_of_rows;
+      return ($importvorlagedoresult);
   }
 // END ImportvorlageDo()
 
