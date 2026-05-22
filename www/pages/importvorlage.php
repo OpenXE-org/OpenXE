@@ -819,39 +819,7 @@ class Importvorlage extends GenImportvorlage {
     $this->app->Tpl->Set('CSVDOWNLOADLINK','index.php?module=importvorlage&action=downloadcsv&id='.$id);
 
     parent::ImportvorlageEdit();
-  }
-
-  /**
-   * @param int $id
-   *
-   * @return array|null
-   */
-  function ImportvorlageGetFields($id)
-  {
-    $fields = $this->cleanFields(
-      $this->app->DB->Select(
-        sprintf(
-          'SELECT `fields` FROM `importvorlage` WHERE `id` = %d LIMIT 1',
-          $id
-        )
-      )
-    );
-
-    $fieldsarray = explode(';',$fields);
-    $cFieldsarray = (!empty($fieldsarray)?count($fieldsarray):0);
-    for($i=0;$i<$cFieldsarray;$i++) {
-      $fieldsarray_items = explode(':',$fieldsarray[$i]);
-      $fieldsarray_items[0] = str_replace('!','',$fieldsarray_items[0]);
-      if($fieldsarray_items[1]!='') {
-        if(strpos($fieldsarray_items[0],'"') === false) {
-          $csv_fields[$fieldsarray_items[0]]= $fieldsarray_items[1];
-          $csv_fields_keys[] = $fieldsarray_items[0];
-        }
-      }
-    }
-
-    return $csv_fields;
-  }
+  } 
 
   /**
    * @param int        $id
@@ -873,10 +841,16 @@ class Importvorlage extends GenImportvorlage {
       $fields = $parameter['fields'];
     }
     $fields = $this->cleanFields($fields);
+
+    $colnr = 1; // For self-counting
+
     $fieldsarray = explode(';',$fields);
-    //for($i=0;$i<(!empty($fieldsarray)?count($fieldsarray):0);$i++)
     foreach($fieldsarray as $key =>  $fieldsrow) {
       $fieldsarray_items = explode(':',$fieldsrow,3);
+      if (count($fieldsarray_items) == 1) { // No separator given -> self-count
+        $fieldsarray_items[1] = $fieldsarray_items[0];
+        $fieldsarray_items[0] = $colnr++;
+      }
       $fieldsarray_items1 = trim(str_replace('!','',$fieldsarray_items[1]));
       if($fieldsarray_items[1]!=""){
         if(strpos($fieldsarray_items[0],'"') === false)
@@ -1634,7 +1608,7 @@ class Importvorlage extends GenImportvorlage {
 
           // START NEW CODE CREATE ARTIKEL
 
-          if(empty($artikelid))
+          if(empty($artikelid) && $tmp['cmd'][$i] == 'create')
           {
             if($tmp['projekt'][$i]!='')
             {
@@ -1663,6 +1637,8 @@ class Importvorlage extends GenImportvorlage {
                 }
                 $felder['nummer']=$this->app->erp->GetNextArtikelnummer('produkt', 1, empty($tmp['projekt'][$i])?'':$tmp['projekt'][$i]);
               }
+            } else {
+                $felder['nummer'] = $tmp['nummer'][$i];
             }
             $artikelid = $this->app->erp->ImportCreateArtikel($felder,false);
             $tmp['cmd'][$i] = "update";
@@ -1726,6 +1702,7 @@ class Importvorlage extends GenImportvorlage {
                 $value = $valu;
               }
               $this->app->erp->RunHook('importvorlage_artikel', 3, $artikelid, $tmp, $i);
+
               foreach($fieldset as $key=>$val)
               {
                 $value = $val['field'];
@@ -2725,6 +2702,7 @@ class Importvorlage extends GenImportvorlage {
                       $this->app->DB->Update("UPDATE artikel SET adresse='$standardlieferantid' WHERE id='".$artikelid."' LIMIT 1");
                     }
                   break;
+                  case  "verkaufspreisnetto":
                   case  "verkaufspreis1netto":
                   case  "verkaufspreis2netto":
                   case  "verkaufspreis3netto":
@@ -2958,6 +2936,12 @@ class Importvorlage extends GenImportvorlage {
                       }
                     }
                   break;
+                  case 'nummer':
+                    // Nothing to do
+                  break;
+                  default:
+                    throw new Exception("Unhandled column type: ".$value);
+                  break;
                 }
               }
               if(isset($this->teilprojekt) && isset($this->projekt))
@@ -2987,10 +2971,10 @@ class Importvorlage extends GenImportvorlage {
                   $this->app->DB->Update("UPDATE projekt_artikel SET ek_geplant = '$ek' WHERE id = '$projektartikel' LIMIT 1");
                 }
               }
-            }
-          }
+            } // foreach field
+          } // if($artikelid > 0)
 
-          if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){
+          if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){ // !?!?!
             //Sprachen
               $erlaubtefelder= array('name','kurztext','beschreibung','beschreibung_online','meta_title',
                 'meta_description','meta_keywords','katalog_bezeichnung','katalog_text','katalogartikel','shop','aktiv');
@@ -3199,8 +3183,7 @@ class Importvorlage extends GenImportvorlage {
                 }
               }
             }
-          }
-
+          } // if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){ // !?!?!
 
           break;
             case "zeiterfassung":
@@ -3327,7 +3310,7 @@ class Importvorlage extends GenImportvorlage {
 
               $this->app->DB->Insert($query);
             }
-          } // HERE END UPDATE ARTIKEL
+          } // HERE END UPDATE ARTIKEL true condition
           break;
             case "adresse":
 
