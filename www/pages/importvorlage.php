@@ -42,6 +42,35 @@ class Importvorlage extends GenImportvorlage {
   const FORMAT_CSV_ZIP = 1;
   const FORMAT_FILES_ZIP = 2;
 
+    /*
+        Mapping of numeric fields for conversion
+        Regex
+    */
+
+  const numeric_fields = array(
+        'stuecklistemenge', // 1
+        'lieferanteinkaufnetto\D+([\d]+)*\D*', // 3
+        'verkaufspreis\D+([\d]+)*\D*', //  10
+        'lager_menge_addieren', // 1
+        'provision', // 1
+        'vk_geplant', // 1
+        'ek_geplant', // 1
+        'berechneterek', // 1
+        'gewicht', // 1
+        'breite', // 1
+        'hoehe', // 1
+        'laenge', // 1
+        'lager_menge_addieren\D+([\d]+)*\D*', // 5
+        'lager_menge_total\D+([\d]+)*\D*', //  5
+        'verkaufspreis\D+([\d]+)*\D*netto', //  10
+        'verkaufspreis\D+([\d]+)*\D*preisfuermenge', // 10
+        'verkaufspreis\D+([\d]+)*\D*menge', // 10
+        'verkaufspreisvgruppe', // 10
+        'verkaufspreis\D+([\d]+)*\D*kundennummer', // 10
+        'pseudopreis', // 1
+        'provision\D+([\d]+)*\D*', // 2
+    );
+
   public $javascript = [
     './classes/Modules/ImportMasterdata/www/js/import_masterdata.js',
   ];
@@ -1602,6 +1631,15 @@ class Importvorlage extends GenImportvorlage {
           }
         }
       }
+    
+        // Convert numeric_fields
+        foreach($fieldset as $k => $v) {
+            foreach (SELF::numeric_fields as $numeric_field) {
+                if (preg_match("/".$numeric_field."/",$v['field'])) {
+                    $tmp[$v['field']][$i] = str_replace(',','.',$tmp[$v['field']][$i]);
+                }
+            }
+        }
 
       // HERE START OF PROCESSING OF THE ROWS
       // INSIDE FOR LOOP
@@ -1995,7 +2033,7 @@ class Importvorlage extends GenImportvorlage {
                         {
                           if(isset($tmp['stuecklistemenge'][$i]) && $tmp['stuecklistemenge'][$i] != "")
                           {
-                            $menge = round((double)str_replace(',','.',$tmp['stuecklistemenge'][$i]),4);
+                            $menge = round((double) $tmp['stuecklistemenge'][$i],4);
                             if($menge <= 0)$menge = 1;
                             $this->app->DB->Update("UPDATE stueckliste set menge = '$menge'  where stuecklistevonartikel = '$tmpartikelid' and artikel = '$artikelid' LIMIT 1");
                           }
@@ -2462,7 +2500,7 @@ class Importvorlage extends GenImportvorlage {
 
                       $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge'][$i],
                           $lieferantid,$nr,$lieferantartikelbezeichnung,
-                          str_replace(',','.',$tmp['lieferanteinkaufnetto'][$i]),$tmp['lieferanteinkaufwaehrung'][$i],$tmp['lieferanteinkaufvpemenge'][$i]);
+                          $tmp['lieferanteinkaufnetto'][$i],$tmp['lieferanteinkaufwaehrung'][$i],$tmp['lieferanteinkaufvpemenge'][$i]);
 
                       $this->UpdateEinkaufspreiseExtraWerte($ekid,$tmp,"");
                     }
@@ -2489,7 +2527,7 @@ class Importvorlage extends GenImportvorlage {
 
                       $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge2'][$i],
                           $lieferantid,$nr,$lieferantartikelbezeichnung,
-                          str_replace(',','.',$tmp['lieferanteinkaufnetto2'][$i]),$tmp['lieferanteinkaufwaehrung2'][$i],$tmp['lieferanteinkaufvpemenge2'][$i]);
+                          $tmp['lieferanteinkaufnetto2'][$i],$tmp['lieferanteinkaufwaehrung2'][$i],$tmp['lieferanteinkaufvpemenge2'][$i]);
 
                       $this->UpdateEinkaufspreiseExtraWerte($ekid,$tmp,"2");
                     }
@@ -2517,7 +2555,7 @@ class Importvorlage extends GenImportvorlage {
 
                       $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge3'][$i],
                           $lieferantid,$nr,$lieferantartikelbezeichnung,
-                          str_replace(',','.',$tmp['lieferanteinkaufnetto3'][$i]),$tmp['lieferanteinkaufwaehrung3'][$i],$tmp['lieferanteinkaufvpemenge3'][$i]);
+                          $tmp['lieferanteinkaufnetto3'][$i],$tmp['lieferanteinkaufwaehrung3'][$i],$tmp['lieferanteinkaufvpemenge3'][$i]);
 
                       $this->UpdateEinkaufspreiseExtraWerte($ekid,$tmp,"3");
                     }
@@ -2554,7 +2592,7 @@ class Importvorlage extends GenImportvorlage {
                       $nr = '';
                     }//$tmp['name_de'][$i];
 
-                    if($alterek != str_replace(',','.',$tmp['lieferanteinkaufnetto'][$i]) || $altelieferantbestellnummer != $nr)
+                    if($alterek != $tmp['lieferanteinkaufnetto'][$i] || $altelieferantbestellnummer != $nr)
                     {
                       $ekpreisaenderungen++;
                       $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
@@ -2582,7 +2620,7 @@ class Importvorlage extends GenImportvorlage {
                       {
                         $lieferantartikelbezeichnung = $this->app->DB->real_escape_string($tmp['lieferantartikelbezeichnung'][$i]);
                       }
-                      $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge'][$i], $lieferantid,$nr,$lieferantartikelbezeichnung, str_replace(',','.',$tmp['lieferanteinkaufnetto'][$i]),$tmp['lieferanteinkaufwaehrung'][$i],$tmp['lieferanteinkaufvpemenge'][$i]);
+                      $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge'][$i], $lieferantid,$nr,$lieferantartikelbezeichnung, $tmp['lieferanteinkaufnetto'][$i],$tmp['lieferanteinkaufwaehrung'][$i],$tmp['lieferanteinkaufvpemenge'][$i]);
 
                     }
                     if($ekid > 0){
@@ -2616,7 +2654,7 @@ class Importvorlage extends GenImportvorlage {
                       $nr = '';
                     }//$tmp['name_de'][$i];
 
-                    if($alterek != str_replace(',','.',$tmp['lieferanteinkaufnetto2'][$i]) || $altelieferantbestellnummer != $nr)
+                    if($alterek != $tmp['lieferanteinkaufnetto2'][$i] || $altelieferantbestellnummer != $nr)
                     {
                       $ekpreisaenderungen++;
                       $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
@@ -2645,7 +2683,7 @@ class Importvorlage extends GenImportvorlage {
                         $lieferantartikelbezeichnung = $this->app->DB->real_escape_string($tmp['lieferantartikelbezeichnung2'][$i]);
                       }
 
-                      $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge2'][$i], $lieferantid,$nr,$lieferantartikelbezeichnung, str_replace(',','.',$tmp['lieferanteinkaufnetto2'][$i]),$tmp['lieferanteinkaufwaehrung2'][$i],$tmp['lieferanteinkaufvpemenge2'][$i]);
+                      $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge2'][$i], $lieferantid,$nr,$lieferantartikelbezeichnung, $tmp['lieferanteinkaufnetto2'][$i],$tmp['lieferanteinkaufwaehrung2'][$i],$tmp['lieferanteinkaufvpemenge2'][$i]);
 
                     }
                     if($ekid > 0){
@@ -2674,7 +2712,7 @@ class Importvorlage extends GenImportvorlage {
                       $nr = '';
                     }//$tmp['name_de'][$i];
 
-                    if($alterek != str_replace(',','.',$tmp['lieferanteinkaufnetto3'][$i]) || $altelieferantbestellnummer != $nr)
+                    if($alterek != $tmp['lieferanteinkaufnetto3'][$i] || $altelieferantbestellnummer != $nr)
                     {
                       $ekpreisaenderungen++;
                       $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
@@ -2703,7 +2741,7 @@ class Importvorlage extends GenImportvorlage {
                         $lieferantartikelbezeichnung = $this->app->DB->real_escape_string($tmp['lieferantartikelbezeichnung3'][$i]);
                       }
 
-                      $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge3'][$i], $lieferantid,$nr,$lieferantartikelbezeichnung, str_replace(',','.',$tmp['lieferanteinkaufnetto3'][$i]),$tmp['lieferanteinkaufwaehrung3'][$i],$tmp['lieferanteinkaufvpemenge3'][$i]);
+                      $ekid = $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge3'][$i], $lieferantid,$nr,$lieferantartikelbezeichnung, $tmp['lieferanteinkaufnetto3'][$i],$tmp['lieferanteinkaufwaehrung3'][$i],$tmp['lieferanteinkaufvpemenge3'][$i]);
 
                     }
                     if($ekid > 0){
@@ -2742,7 +2780,7 @@ class Importvorlage extends GenImportvorlage {
                     $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreise WHERE artikel='$artikelid' AND ab_menge='".$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i]."' 
                         AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) AND adresse ='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND ((gruppe IS NULL) or gruppe = '') ")." LIMIT 1");
 
-                    if($altervk != str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i]) && str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i]))
+                    if($altervk != $tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i] && $tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i])
                     {
                       $vkpreisaenderungen++;
                       $gueltigab = null;
@@ -2769,10 +2807,10 @@ class Importvorlage extends GenImportvorlage {
 
                       if($gruppe)
                       {
-                        $this->app->erp->AddVerkaufspreisGruppe($artikelid,$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i],$gruppe,str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i])/$verkaufspreis1stueckdivisor,$tmp['verkaufspreis'.$verkaufspreisanzahl.'waehrung'][$i],isset($tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'])?$tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'][$i]:'',$gueltigab,$tmp['verkaufspreis'.$verkaufspreisanzahl.'internerkommentar'][$i], $gueltigbis);
+                        $this->app->erp->AddVerkaufspreisGruppe($artikelid,$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i],$gruppe,$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i]/$verkaufspreis1stueckdivisor,$tmp['verkaufspreis'.$verkaufspreisanzahl.'waehrung'][$i],isset($tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'])?$tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'][$i]:'',$gueltigab,$tmp['verkaufspreis'.$verkaufspreisanzahl.'internerkommentar'][$i], $gueltigbis);
                       }else{
                         $this->app->erp->AddVerkaufspreis($artikelid,$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i],
-                            $_kundenid,str_replace(',','.',$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i])/$verkaufspreis1stueckdivisor,$tmp['verkaufspreis'.$verkaufspreisanzahl.'waehrung'][$i],isset($tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'])?$tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'][$i]:'',$gruppe, $gueltigab,$tmp['verkaufspreis'.$verkaufspreisanzahl.'internerkommentar'][$i], $gueltigbis);
+                            $_kundenid,$tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i]/$verkaufspreis1stueckdivisor,$tmp['verkaufspreis'.$verkaufspreisanzahl.'waehrung'][$i],isset($tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'])?$tmp['verkaufspreis'.$verkaufspreisanzahl.'artikelnummerbeikunde'][$i]:'',$gruppe, $gueltigab,$tmp['verkaufspreis'.$verkaufspreisanzahl.'internerkommentar'][$i], $gueltigbis);
                       }
                     }
                   break;
@@ -2805,7 +2843,7 @@ class Importvorlage extends GenImportvorlage {
                               $tmp['lager_vpe_menge'.$lpk.'2'][$i], $tmp['lager_vpe_gewicht'.$lpk.'2'][$i],
                               $tmp['lager_vpe_laenge'.$lpk.'2'][$i], $tmp['lager_vpe_breite'.$lpk.'2'][$i], $tmp['lager_vpe_hoehe'.$lpk.'2'][$i]);
                           }
-                          $this->app->erp->LagerEinlagernDifferenz($artikelid,str_replace(',','.',$tmp['lager_menge_addieren'.($lpk>1?$lpk:'')][$i]),$regal,"","Importzentrale",1, $vpeid);
+                          $this->app->erp->LagerEinlagernDifferenz($artikelid,$tmp['lager_menge_addieren'.($lpk>1?$lpk:'')][$i],$regal,"","Importzentrale",1, $vpeid);
                         }
                         //chargen importieren
                         if(!empty($tmp['lager_mhd'.($lpk>1?$lpk:'')][$i]) && !empty($tmp['lager_charge'.($lpk>1?$lpk:'')][$i])){
@@ -2883,10 +2921,10 @@ class Importvorlage extends GenImportvorlage {
                           {
                             if($checkprovision)
                             {
-                              $this->app->DB->Update("UPDATE provision_regeln SET provision = '".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."' WHERE id = '$checkprovision' LIMIT 1");
+                              $this->app->DB->Update("UPDATE provision_regeln SET provision = '".(float)$tmp['provision'.$pi][$i]."' WHERE id = '$checkprovision' LIMIT 1");
                               $this->app->DB->Update("UPDATE provision_regeln SET bis = '0000-00-00' WHERE id = '$checkprovision' LIMIT 1");
                             }else{
-                              $this->app->DB->Insert("INSERT INTO provision_regeln (artikel, gruppe, provision, typ) VALUES ('$artikelid','$gruppenid','".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."','')");
+                              $this->app->DB->Insert("INSERT INTO provision_regeln (artikel, gruppe, provision, typ) VALUES ('$artikelid','$gruppenid','".(float)$tmp['provision'.$pi][$i]."','')");
                               $checkprovision = $this->app->DB->GetInsertID();
                             }
                             if(!empty($tmp['provisiontyp'.$pi][$i]))
@@ -2901,10 +2939,10 @@ class Importvorlage extends GenImportvorlage {
                           $checkprovision = $this->app->DB->Select("SELECT id FROM provisionenartikel_provision WHERE adresse = 0 AND artikel = '$artikelid' LIMIT 1");
                           if($checkprovision)
                           {
-                            $this->app->DB->Update("UPDATE provisionenartikel_provision SET provision = '".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."' WHERE id = '$checkprovision' LIMIT 1");
+                            $this->app->DB->Update("UPDATE provisionenartikel_provision SET provision = '".(float)$tmp['provision'.$pi][$i]."' WHERE id = '$checkprovision' LIMIT 1");
                             $this->app->DB->Update("UPDATE provisionenartikel_provision SET gueltigbis = '0000-00-00' WHERE id = '$checkprovision' LIMIT 1");
                           }else{
-                            $this->app->DB->Insert("INSERT INTO provisionenartikel_provision (artikel, adresse, provision) VALUES ('$artikelid','0','".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."')");
+                            $this->app->DB->Insert("INSERT INTO provisionenartikel_provision (artikel, adresse, provision) VALUES ('$artikelid','0','".(float)$tmp['provision'.$pi][$i]."')");
                             $checkprovision = $this->app->DB->GetInsertID();
                           }
 
@@ -2916,10 +2954,10 @@ class Importvorlage extends GenImportvorlage {
                           $checkprovision = $this->app->DB->Select("SELECT id FROM provisionenartikel_provision WHERE adresse = '".(int)$tmp['provisionadresse'.$pi][$i]."' AND artikel = '$artikelid' LIMIT 1");
                           if($checkprovision)
                           {
-                            $this->app->DB->Update("UPDATE provisionenartikel_provision SET provision = '".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."' WHERE id = '$checkprovision' LIMIT 1");
+                            $this->app->DB->Update("UPDATE provisionenartikel_provision SET provision = '".(float)$tmp['provision'.$pi][$i]."' WHERE id = '$checkprovision' LIMIT 1");
                             $this->app->DB->Update("UPDATE provisionenartikel_provision SET gueltigbis = '0000-00-00' WHERE id = '$checkprovision' LIMIT 1");
                           }else{
-                            $this->app->DB->Insert("INSERT INTO provisionenartikel_provision (artikel, adresse, provision) VALUES ('$artikelid','".(int)$tmp['provisionadresse'.$pi][$i]."','".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."')");
+                            $this->app->DB->Insert("INSERT INTO provisionenartikel_provision (artikel, adresse, provision) VALUES ('$artikelid','".(int)$tmp['provisionadresse'.$pi][$i]."','".(float)$tmp['provision'.$pi][$i]."')");
                             $checkprovision = $this->app->DB->GetInsertID();
                           }
                           if(!empty($tmp['provisiontyp'.$pi][$i]))
@@ -2934,10 +2972,10 @@ class Importvorlage extends GenImportvorlage {
                             $checkprovision = $this->app->DB->Select("SELECT id FROM provisionenartikel_provision WHERE adresse = '".$provisionadresse."' AND artikel = '$artikelid' LIMIT 1");
                             if($checkprovision)
                             {
-                              $this->app->DB->Update("UPDATE provisionenartikel_provision SET provision = '".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."' WHERE id = '$checkprovision' LIMIT 1");
+                              $this->app->DB->Update("UPDATE provisionenartikel_provision SET provision = '".(float)$tmp['provision'.$pi][$i]."' WHERE id = '$checkprovision' LIMIT 1");
                               $this->app->DB->Update("UPDATE provisionenartikel_provision SET gueltigbis = '0000-00-00' WHERE id = '$checkprovision' LIMIT 1");
                             }else{
-                              $this->app->DB->Insert("INSERT INTO provisionenartikel_provision (artikel, adresse, provision) VALUES ('$artikelid','".$provisionadresse."','".(float)str_replace(',','.',$tmp['provision'.$pi][$i])."')");
+                              $this->app->DB->Insert("INSERT INTO provisionenartikel_provision (artikel, adresse, provision) VALUES ('$artikelid','".$provisionadresse."','".(float)$tmp['provision'.$pi][$i]."')");
                               $checkprovision = $this->app->DB->GetInsertID();
                             }
                             if(!empty($tmp['provisiontyp'.$pi][$i]))
@@ -2982,10 +3020,10 @@ class Importvorlage extends GenImportvorlage {
                 $vk = $this->app->erp->GetVerkaufspreis($artikelid,$menge);
                 $ek = $this->app->erp->GetEinkaufspreis($artikelid, $menge, $this->app->DB->Select("SELECT adresse FROM artikel WHERE id = '$artikelid' LIMIT 1"));
                 if(isset($felder['vk_geplant'])){
-                  $vk = (double)str_replace(',','.',$felder['vk_geplant']);
+                  $vk = (double)$felder['vk_geplant'];
                 }
                 if(isset($felder['ek_geplant'])){
-                  $vk = (double)str_replace(',','.',$felder['ek_geplant']);
+                  $vk = (double)$felder['ek_geplant'];
                 }
                 if($vk){
                   $this->app->DB->Update("UPDATE projekt_artikel SET vk_geplant = '$vk' WHERE id = '$projektartikel' LIMIT 1");
