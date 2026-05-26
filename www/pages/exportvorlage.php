@@ -1054,9 +1054,10 @@ ean;';
       if($xls) {
         $value = iconv('UTF-8','ISO-8859-1//TRANSLIT', $value);
       }
+      $value = str_replace($exportdatenmaskierung,$exportdatenmaskierung.$exportdatenmaskierung,$value); // RFC 4180 2.7.
       $output .= $exportdatenmaskierung.$value.$exportdatenmaskierung.$exporttrennzeichen;
     }
-
+    $output = preg_replace("/\r\n|\r|\n/", "<br>", $output); // Remove new lines and breaks
     return $output."\r\n";
   }
 
