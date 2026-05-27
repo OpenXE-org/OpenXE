@@ -2988,7 +2988,7 @@ class Importvorlage extends GenImportvorlage {
                     }
                   break;
                   case 'standardlagerplatz':
-                    $lagerplatz = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE kurzbezeichnung='".$tmp['standardlagerplatz'][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
+                    $lagerplatz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='".$tmp['standardlagerplatz'][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
                     if (empty($lagerplatz)) {
                         $importvorlagedoresult['messages'][] = "Lagerplatz nicht gefunden: ".$tmp['standardlagerplatz'][$i];
                     } else {
