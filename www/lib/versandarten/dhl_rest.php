@@ -53,8 +53,8 @@ class Versandart_dhl_rest extends Versanddienstleister
                                        'info' => '14-stellig (V54EPAK EKP+Verfahren+Teilnahme, z.B. 33333333335401)'],
             'accountnumber_connect'=> ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket Connect:',
                                        'info' => '14-stellig (V55PAK EKP+Verfahren+Teilnahme, z.B. 3333333333????)'],
-            'accountnumber_wp'     => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost:',
-                                       'info' => '14-stellig (V62WP EKP+Verfahren+Teilnahme, z.B. 3333333333????)'],
+            'accountnumber_kp'     => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Kleinpaket:',
+                                       'info' => '14-stellig (V62KP EKP+Verfahren+Teilnahme, z.B. 33333333336201)'],
             'accountnumber_wpint'  => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost International:',
                                        'info' => '14-stellig (V66WPI EKP+Verfahren+Teilnahme, z.B. 33333333336603)'],
 
@@ -171,9 +171,9 @@ class Versandart_dhl_rest extends Versanddienstleister
             $result[] = Product::Create('V55PAK', 'DHL Paket Connect')
                 ->WithLength(15, 120)->WithWidth(11, 60)->WithHeight(3.5, 60)->WithWeight(0.01, 31.5);
         }
-        if (!empty($this->settings->accountnumber_wp)) {
-            $result[] = Product::Create('V62WP', 'DHL Warenpost')
-                ->WithLength(10, 35)->WithWidth(7, 25)->WithHeight(0.1, 5)->WithWeight(0.01, 1);
+        if (!empty($this->settings->accountnumber_kp)) {
+            $result[] = Product::Create('V62KP', 'DHL Kleinpaket')
+                ->WithLength(10, 35)->WithWidth(7, 25)->WithHeight(0.1, 8)->WithWeight(0.01, 1);
         }
         if (!empty($this->settings->accountnumber_wpint)) {
             $result[] = Product::Create('V66WPI', 'DHL Warenpost International')
@@ -400,7 +400,7 @@ class Versandart_dhl_rest extends Versanddienstleister
             'V53WPAK' => $this->settings->accountnumber_int     ?? null,
             'V54EPAK' => $this->settings->accountnumber_euro    ?? null,
             'V55PAK'  => $this->settings->accountnumber_connect ?? null,
-            'V62WP'   => $this->settings->accountnumber_wp      ?? null,
+            'V62KP'   => $this->settings->accountnumber_kp      ?? null,
             'V66WPI'  => $this->settings->accountnumber_wpint   ?? null,
             default   => null,
         };
