@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -182,7 +182,7 @@ class Importvorlage extends GenImportvorlage {
         DATE_FORMAT(imd.created_at,'%d.%m.%Y %H:%i:%s'),adr.name,
                            iv.bezeichnung,imd.filename, imd.count_rows,imd.imported_rows,
                            CONCAT($statusCol,' ', imd.message),
-                           imd.id 
+                           imd.id
         FROM `importmasterdata` AS `imd`
         INNER JOIN `importvorlage` AS `iv` ON imd.template_id = iv.id
         INNER JOIN `user` AS `u` ON imd.user_id = u.id
@@ -487,10 +487,10 @@ class Importvorlage extends GenImportvorlage {
 
     $tmp = $this->app->DB->SelectRow(
       sprintf(
-        "SELECT *,DATE_FORMAT(`zeitstempel`,'%%d.%%m.%%Y %%H:%%i') as zeit 
-        FROM `importvorlage_log` 
-        WHERE `ersterdatensatz` = 1 AND `user`= %d 
-        ORDER BY `zeitstempel` DESC 
+        "SELECT *,DATE_FORMAT(`zeitstempel`,'%%d.%%m.%%Y %%H:%%i') as zeit
+        FROM `importvorlage_log`
+        WHERE `ersterdatensatz` = 1 AND `user`= %d
+        ORDER BY `zeitstempel` DESC
         LIMIT 1",
         $this->app->User->GetID()
       )
@@ -587,8 +587,8 @@ class Importvorlage extends GenImportvorlage {
 
     $this->app->DB->Update(
       sprintf(
-        "UPDATE `importmasterdata` 
-        SET `status` = 'cancelled' 
+        "UPDATE `importmasterdata`
+        SET `status` = 'cancelled'
         WHERE `id` = %d AND `status` NOT IN ('done', 'complete')",
         $jobId
       )
@@ -616,8 +616,8 @@ class Importvorlage extends GenImportvorlage {
     if($this->isValidJobFile($job['filename'])) {
       $this->app->DB->Update(
         sprintf(
-          "UPDATE `importmasterdata` 
-        SET `status` = 'in_queue' 
+          "UPDATE `importmasterdata`
+        SET `status` = 'in_queue'
         WHERE `id` = %d",
           $jobId
         )
@@ -848,7 +848,7 @@ class Importvorlage extends GenImportvorlage {
     $this->app->Tpl->Set('CSVDOWNLOADLINK','index.php?module=importvorlage&action=downloadcsv&id='.$id);
 
     parent::ImportvorlageEdit();
-  } 
+  }
 
   /**
    * @param int        $id
@@ -1033,13 +1033,13 @@ class Importvorlage extends GenImportvorlage {
     }
     //$number_of_fields = (!empty($csv_fields)?count($csv_fields):0);
 
-
     $limit_erreicht = false;
     if($upload!='') {
       $isCronjobActive = $this->app->DB->Select(
         "SELECT `id` FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'importvorlage' LIMIT 1"
       );
       $uploaded_file_name = $this->app->erp->GetTMP().'importvorlage'.$this->app->User->GetID();
+      $uploaded_file_original_name = $_FILES['userfile']['name'];
 
       if (!move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaded_file_name)) {
         //$importfilename = $_FILES['userfile']['name'];
@@ -1056,16 +1056,18 @@ class Importvorlage extends GenImportvorlage {
             case SELF::FORMAT_FILES_ZIP:
             // break omitted
             case SELF::FORMAT_CSV_ZIP:
+                if (strtolower(pathinfo($uploaded_file_original_name, PATHINFO_EXTENSION)) != 'zip') {
+                    $this->app->Tpl->AddMessage('ERROR', 'Datei muss .zip Endung haben.');
+                    break;
+                }
                 $zip = new ZipArchive();
                 if ($zip->open($uploaded_file_name, ZipArchive::CHECKCONS) !== true) {
                     throw new Exception(sprintf('Failure to open file "%s"', $uploaded_file_name));
                 }
-
                 $unzipped_files_folder = $this->app->erp->GetTMP()."importupload_".uniqid();
                 if (!file_exists($unzipped_files_folder) && !@mkdir($unzipped_files_folder) && !is_dir($unzipped_files_folder)) {
                     throw new Exception(sprintf('Failure to create directory "%s"', $unzipped_files_folder));
                 }
-
                 for( $i = 0; $i < $zip->numFiles; $i++ ) {
                     $stat = $zip->statIndex($i);
                     $filesize = $stat['size'];
@@ -1080,7 +1082,7 @@ class Importvorlage extends GenImportvorlage {
                             }
                         } else if ($format == SELF::FORMAT_FILES_ZIP) {
                             $zip->extractTo($unzipped_files_folder, $filename);
-                            $additional_files[] = $unzipped_files_folder."/".$filename;
+                            $additional_files[] = array('pathinzip' => $filename, 'path' => $unzipped_files_folder."/".$filename);
                         }
                     }
                 }
@@ -1089,81 +1091,87 @@ class Importvorlage extends GenImportvorlage {
             case SELF::FORMAT_CSV:
             // break omitted
             default:
+                if (strtolower(pathinfo($uploaded_file_original_name, PATHINFO_EXTENSION)) != 'csv') {
+                    $this->app->Tpl->AddMessage('ERROR', 'Datei muss .csv Endung haben.');
+                    break;
+                }
                 $stueckliste_csv = $uploaded_file_name;
             break;
         }
 
-      if (($handle = fopen($stueckliste_csv, 'r')) !== FALSE) {
-        $rowcounter = 0;
-        $rowcounter_real = 0;
+        if (!empty($stueckliste_csv)) {
+            $this->app->User->SetParameter('importvorlage_stueckliste', $stueckliste_csv);
+            $this->app->User->SetParameter('importvorlage_additional_files', serialize($additional_files));
+            if (($handle = fopen($stueckliste_csv, 'r')) !== FALSE) {
+                $rowcounter = 0;
+                $rowcounter_real = 0;
 
-        $this->ImportPrepareHeader($ziel, $fieldset);
-        while (($data = fgetcsv($handle, 0, $importtrennzeichen)) !== FALSE) {
-          $rowcounter++;
-          if($rowcounter >= $importerstezeilenummer) {
-            $rowcounter_real++;
+                $this->ImportPrepareHeader($ziel, $fieldset);
+                while (($data = fgetcsv($handle, 0, $importtrennzeichen)) !== FALSE) {
+                    $rowcounter++;
+                    if($rowcounter >= $importerstezeilenummer) {
+                      $rowcounter_real++;
+                      if($limit_erreicht) {
+                        continue;
+                      }
+                      foreach($data as $key=>$value) {
+                        if($charset && strtoupper($charset) !== 'UTF-8' && strtoupper($charset) !== 'UTF8') {
+                          $data[$key] = iconv($charset, 'UTF-8', $data[$key]."\0") ;
+                        }
+                      }
+                      foreach($data as $key=>$value) {
+                        $data[$key] = trim( $data[$key] );
+                        $data[$key] = str_replace('""', '"', $data[$key]);
+                        $data[$key] = preg_replace("/^\"(.*)\"$/sim", "$1", $data[$key]);
+                        //                                                                $data[$key]= mb_convert_encoding($data[$key], "Windows-1252");
+                      }
+
+                      if($limit_erreicht!=true){
+                        $this->ImportPrepareRow($rowcounter_real, $ziel, $data, $fieldset);
+                      }
+
+                      if($rowcounter_real >= 50){//$this->limit_datensaetze) {
+                        $limit_erreicht = true;
+                        //break;
+                      }
+                    }
+                }
+            } else {
+                throw new Exception(sprintf('Failure to open file "%s"', $stueckliste_csv));
+            }
+            fclose($handle);
+
+            //if($rowcounter_real < $this->limit_datensaetze) {
+            //}
+            $jobId = 0;
+            if($isCronjobActive){
+              $jobId = $this->create($this->app->User->GetID(), $id, $stueckliste_csv, $rowcounter_real);
+            }
+
             if($limit_erreicht) {
-              continue;
+              $this->app->Tpl->Add(
+                'IMPORTBUTTON',
+                '<div class="info"><input type="submit" name="import" value="importieren"> <i>Vorschau: Es werden aktuell nur 50 von <b>'
+                . $rowcounter_real . '</b> Datens&auml;tze angezeigt. Importiert werden aber alle '
+                . $rowcounter_real . ' Datens&auml;tze!</i> <input type="hidden" name="importdateiname" value="'
+                . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" /></div>'
+              );
             }
-            foreach($data as $key=>$value) {
-              if($charset && strtoupper($charset) !== 'UTF-8' && strtoupper($charset) !== 'UTF8') {
-                $data[$key] = iconv($charset, 'UTF-8', $data[$key]."\0") ;
-              }
+            else {
+              $this->app->Tpl->Add(
+                'IMPORTBUTTON',
+                '<input type="hidden" name="jobid" value="'
+                .$jobId.'" /><input type="submit" name="import" value="importieren" />'
+              );
             }
-            foreach($data as $key=>$value) {
-              $data[$key] = trim( $data[$key] );
-              $data[$key] = str_replace('""', '"', $data[$key]);
-              $data[$key] = preg_replace("/^\"(.*)\"$/sim", "$1", $data[$key]);
-              //                                                                $data[$key]= mb_convert_encoding($data[$key], "Windows-1252");
-            }
-
-            if($limit_erreicht!=true){
-              $this->ImportPrepareRow($rowcounter_real, $ziel, $data, $fieldset);
-            }
-
-            if($rowcounter_real >= 50){//$this->limit_datensaetze) {
-              $limit_erreicht = true;
-              //break;
-            }
-
-          }
-        }
-      } else {
-        throw new Exception(sprintf('Failure to open file "%s"', $stueckliste_csv));
-      }
-      fclose($handle);
-
-      //if($rowcounter_real < $this->limit_datensaetze) {
-      //}
-      $jobId = 0;
-      if($isCronjobActive){
-        $jobId = $this->create($this->app->User->GetID(), $id, $stueckliste_csv, $rowcounter_real);
-      }
-
-      if($limit_erreicht){
-        $this->app->Tpl->Add(
-          'IMPORTBUTTON',
-          '<div class="info"><input type="submit" name="import" value="importieren"> <i>Vorschau: Es werden aktuell nur 50 von <b>'
-          . $rowcounter_real . '</b> Datens&auml;tze angezeigt. Importiert werden aber alle '
-          . $rowcounter_real . ' Datens&auml;tze!</i> <input type="hidden" name="importdateiname" value="'
-          . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" /></div>'
-        );
-      }
-      else{
-        $this->app->Tpl->Add(
-          'IMPORTBUTTON',
-          '<input type="hidden" name="jobid" value="'
-          .$jobId.'" /><input type="submit" name="import" value="importieren" />'
-        );
-      }
-    }
-
+        } // !empty($stueckliste) file ready
+    } // upload
 
     $import = $this->app->Secure->GetPOST('import');
     if($jobId > 0 && !empty($upload) && empty($import)) {
       $this->app->Tpl->Add(
         'MESSAGE',
-        '<div class="info">Import wurde an die Warteschlange erfolgreich &uuml;bergeben. 
+        '<div class="info">Import wurde an die Warteschlange erfolgreich &uuml;bergeben.
         Klicken sie auf &quot;Importieren$quot; um den Import zu starten.</div>'
       );
     }
@@ -1178,7 +1186,7 @@ class Importvorlage extends GenImportvorlage {
       $this->app->Tpl->Set('MESSAGE', '<div class="info">Import an Prozessstarter &uuml;bergeben.</div>');
     }
     elseif($import!='') {
-      $result = $this->ImportvorlageDo($charset);
+      $result = $this->ImportvorlageDo($charset, array('stueckliste_csv' => $stueckliste_csv));
       if(is_file($stueckliste_csv)) {
         unlink($stueckliste_csv);
       }
@@ -1224,8 +1232,8 @@ class Importvorlage extends GenImportvorlage {
 
     $this->app->DB->Insert(
       sprintf(
-        "INSERT INTO `importmasterdata` 
-        (user_id, template_id, count_rows, imported_rows, filename, status, created_at)  
+        "INSERT INTO `importmasterdata`
+        (user_id, template_id, count_rows, imported_rows, filename, status, created_at)
         VALUES (%d, %d, %d, 0, '%s', 'created',NOW())",
         $userId, $templateId, $countRows, $this->app->DB->real_escape_string($uploadFileTo)
       )
@@ -1444,9 +1452,7 @@ class Importvorlage extends GenImportvorlage {
    */
   public function ImportvorlageDo($charset = '', $parameter = null)
   {
-
     $importvorlagedoresult = array('success' => true, 'messages' => array(), 'result_objects' => array(), 'rows' => 0);
-
     $id = 0;
     if(empty($parameter) || !isset($parameter['id'])) {
       $id = $this->app->Secure->GetGET('id');
@@ -1469,9 +1475,10 @@ class Importvorlage extends GenImportvorlage {
     }
     $ekpreisaenderungen = 0;
     $vkpreisaenderungen = 0;
+
     if(empty($parameter['stueckliste_csv'])) {
-      //$stueckliste_csv = $this->app->Secure->GetPOST('importdateiname');
-      $stueckliste_csv = $this->app->erp->GetTMP().'importvorlage'.$this->app->User->GetID();
+      $stueckliste_csv = $this->app->User->GetParameter('importvorlage_stueckliste');
+      $additional_files = unserialize($this->app->User->GetParameter('importvorlage_additional_files'));
     }
     else {
       $stueckliste_csv = $parameter['stueckliste_csv'];
@@ -1529,7 +1536,7 @@ class Importvorlage extends GenImportvorlage {
         $tmp['lieferantennummer'][$i] = str_replace(' ','',trim($tmp['lieferantennummer'][$i]));
       }
       if($tmp['lieferantennummer'][$i]!='' && ($tmp['kundennummer'][$i]!=='NEW' || $tmp['kundennummer'][$i]!=='NEU')) {
-        $lieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$this->app->DB->real_escape_string($tmp['lieferantennummer'][$i])."' 
+        $lieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$this->app->DB->real_escape_string($tmp['lieferantennummer'][$i])."'
             AND lieferantennummer!='' LIMIT 1");
       }
 
@@ -1552,16 +1559,16 @@ class Importvorlage extends GenImportvorlage {
         if(!empty($tmp['nummer'][$i])){
           $articleNumber = $this->app->DB->real_escape_string($tmp['nummer'][$i]);
           $artikelid = $this->app->DB->Select(
-            "SELECT `id` FROM `artikel` WHERE `nummer`= '{$articleNumber}' 
+            "SELECT `id` FROM `artikel` WHERE `nummer`= '{$articleNumber}'
             AND `nummer` != '' AND `nummer` != 'DEL' LIMIT 1"
           );
         }
         elseif(!empty($tmp['herstellernummer'][$i])) {
           $supplierArticleNumber = $this->app->DB->real_escape_string($tmp['herstellernummer'][$i]);
           $artikelid = $this->app->DB->Select(
-            "SELECT `id` 
-            FROM `artikel` 
-            WHERE `herstellernummer`= '{$supplierArticleNumber}' 
+            "SELECT `id`
+            FROM `artikel`
+            WHERE `herstellernummer`= '{$supplierArticleNumber}'
               AND `herstellernummer` != '' AND `nummer` != 'DEL' LIMIT 1"
           );
         }
@@ -1631,7 +1638,7 @@ class Importvorlage extends GenImportvorlage {
           }
         }
       }
-    
+
         // Convert numeric_fields
         foreach($fieldset as $k => $v) {
             foreach (SELF::numeric_fields as $numeric_field) {
@@ -1691,7 +1698,7 @@ class Importvorlage extends GenImportvorlage {
             }
             $artikelid = $this->app->erp->ImportCreateArtikel($felder,false);
             $tmp['cmd'][$i] = "update";
-          } 
+          }
 
           // END NEW CODE CREATE ARTIKEL
 
@@ -2173,8 +2180,8 @@ class Importvorlage extends GenImportvorlage {
                                 }
                                 if(!$foundoption1)
                                 {
-                                  $this->app->DB->Insert("INSERT INTO matrixprodukt_eigenschaftenoptionen_artikel (name,name_ext, artikel, sort, gruppe, aktiv, erstellt, bearbeiter)  
-                                    SELECT name,name_ext, '$artikelid' as artikel, sort, '$gruppe1found' as gruppe, '1' as aktiv, now() as erstellt, '".$this->app->DB->real_escape_string($this->app->User->GetName())."' as bearbeiter 
+                                  $this->app->DB->Insert("INSERT INTO matrixprodukt_eigenschaftenoptionen_artikel (name,name_ext, artikel, sort, gruppe, aktiv, erstellt, bearbeiter)
+                                    SELECT name,name_ext, '$artikelid' as artikel, sort, '$gruppe1found' as gruppe, '1' as aktiv, now() as erstellt, '".$this->app->DB->real_escape_string($this->app->User->GetName())."' as bearbeiter
                                     FROM matrixprodukt_eigenschaftenoptionen WHERE id = '".$vo['id']."'
                                   ");
                                   $optionen1[$ko]['matrixprodukt_eigenschaftenoptionen_artikel'] = $this->app->DB->GetInsertID();
@@ -2197,8 +2204,8 @@ class Importvorlage extends GenImportvorlage {
                                   }
                                   if(!$foundoption2)
                                   {
-                                    $this->app->DB->Insert("INSERT INTO matrixprodukt_eigenschaftenoptionen_artikel (name,name_ext, artikel, sort, gruppe, aktiv, erstellt, bearbeiter)  
-                                      SELECT name,name_ext, '$artikelid' as artikel, sort, '$gruppe2found' as gruppe, '1' as aktiv, now() as erstellt, '".$this->app->DB->real_escape_string($this->app->User->GetName())."' as bearbeiter 
+                                    $this->app->DB->Insert("INSERT INTO matrixprodukt_eigenschaftenoptionen_artikel (name,name_ext, artikel, sort, gruppe, aktiv, erstellt, bearbeiter)
+                                      SELECT name,name_ext, '$artikelid' as artikel, sort, '$gruppe2found' as gruppe, '1' as aktiv, now() as erstellt, '".$this->app->DB->real_escape_string($this->app->User->GetName())."' as bearbeiter
                                       FROM matrixprodukt_eigenschaftenoptionen WHERE id = '".$vo['id']."'
                                     ");
                                     $optionen2[$ko]['matrixprodukt_eigenschaftenoptionen_artikel'] = $this->app->DB->GetInsertID();
@@ -2212,8 +2219,8 @@ class Importvorlage extends GenImportvorlage {
                                   foreach($optionen2 as $ko2 => $vo2)
                                   {
                                     $check = $this->app->DB->Select("
-                                    SELECT a.id FROM artikel a 
-                                    INNER JOIN `matrixprodukt_optionen_zu_artikel` moza1 ON a.id = moza1.artikel AND moza1.option_id = '".$vo['matrixprodukt_eigenschaftenoptionen_artikel']."' 
+                                    SELECT a.id FROM artikel a
+                                    INNER JOIN `matrixprodukt_optionen_zu_artikel` moza1 ON a.id = moza1.artikel AND moza1.option_id = '".$vo['matrixprodukt_eigenschaftenoptionen_artikel']."'
                                     INNER JOIN `matrixprodukt_optionen_zu_artikel` moza2 ON a.id = moza2.artikel AND moza2.option_id = '".$vo2['matrixprodukt_eigenschaftenoptionen_artikel']."'
                                     LIMIT 1
                                     ");
@@ -2301,7 +2308,7 @@ class Importvorlage extends GenImportvorlage {
                                           $checkarr[0]['name_de'] = $checkarr[0]['name_de'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                           if($checkarr[0]['name_en'])$checkarr[0]['name_en'] = $checkarr[0]['name_en'].' '.$matrixgruppenname1.': '.$vo['name'].' '.$matrixgruppenname2.': '.$vo2['name'];
                                         }
-                                        $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);      
+                                        $check = $this->app->erp->InsertUpdateArtikel($checkarr[0]);
                                         if(!empty($check) && !in_array($check, array_column($result_objects, 'id'))) {
                                           $result_objects[] = array('id' => $check, 'type' => 'artikel');
                                         }
@@ -2334,7 +2341,7 @@ class Importvorlage extends GenImportvorlage {
                                 foreach($optionen1 as $ko => $vo)
                                 {
                                   $check = $this->app->DB->Select("
-                                  SELECT a.id FROM artikel a 
+                                  SELECT a.id FROM artikel a
                                   INNER JOIN `matrixprodukt_optionen_zu_artikel` moza1 ON a.id = moza1.artikel AND moza1.option_id = '".$vo['matrixprodukt_eigenschaftenoptionen_artikel']."'
                                   LIMIT 1
                                   ");
@@ -2472,7 +2479,7 @@ class Importvorlage extends GenImportvorlage {
                       $tmpartikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='".trim($tmp[$value][$i])."' AND nummer!='' LIMIT 1");
                       if($tmpartikelid > 0)
                       {
-                        $this->app->DB->Update("UPDATE artikel SET variante_von='".$tmpartikelid."',variante=1 
+                        $this->app->DB->Update("UPDATE artikel SET variante_von='".$tmpartikelid."',variante=1
                             WHERE id='".$artikelid."' AND id!='".$tmpartikelid."' LIMIT 1");
                       }
                     }
@@ -2595,8 +2602,8 @@ class Importvorlage extends GenImportvorlage {
                     if($alterek != $tmp['lieferanteinkaufnetto'][$i] || $altelieferantbestellnummer != $nr)
                     {
                       $ekpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
-                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."' 
+                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
+                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."'
                           AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW())
                           AND ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."' LIMIT 1");
 
@@ -2657,8 +2664,8 @@ class Importvorlage extends GenImportvorlage {
                     if($alterek != $tmp['lieferanteinkaufnetto2'][$i] || $altelieferantbestellnummer != $nr)
                     {
                       $ekpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
-                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."' 
+                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
+                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."'
                           AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW())
                           AND ab_menge='".$tmp['lieferanteinkaufmenge2'][$i]."' LIMIT 1");
 
@@ -2715,8 +2722,8 @@ class Importvorlage extends GenImportvorlage {
                     if($alterek != $tmp['lieferanteinkaufnetto3'][$i] || $altelieferantbestellnummer != $nr)
                     {
                       $ekpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
-                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."' 
+                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
+                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."'
                           AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW())
                           AND ab_menge='".$tmp['lieferanteinkaufmenge3'][$i]."' LIMIT 1");
 
@@ -2777,7 +2784,7 @@ class Importvorlage extends GenImportvorlage {
                       $gruppe = $this->app->DB->Select("SELECT id FROM gruppen where kennziffer = '".$tmp['verkaufspreis'.$verkaufspreisanzahl.'gruppe'][$i]."' LIMIT 1");
                     }
 
-                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreise WHERE artikel='$artikelid' AND ab_menge='".$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i]."' 
+                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreise WHERE artikel='$artikelid' AND ab_menge='".$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i]."'
                         AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) AND adresse ='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND ((gruppe IS NULL) or gruppe = '') ")." LIMIT 1");
 
                     if($altervk != $tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i] && $tmp['verkaufspreis'.$verkaufspreisanzahl.'netto'][$i])
@@ -2793,7 +2800,7 @@ class Importvorlage extends GenImportvorlage {
                       }
                       //verkaufspreis3internerkommentar'][$i]
 
-                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
+                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
                           WHERE artikel='".$artikelid."' AND adresse='$_kundenid' ".($gruppe?" AND gruppe = '".$gruppe."'":" AND ((gruppe IS NULL) or gruppe = '') ")."
                           AND ab_menge='".$tmp['verkaufspreis'.$verkaufspreisanzahl.'menge'][$i]."' LIMIT 1");
 
@@ -2821,7 +2828,7 @@ class Importvorlage extends GenImportvorlage {
                   case "lager_platz5":
                     for($lpk = 1; $lpk <= 5; $lpk++) {
                       if($tmp['lager_platz'.($lpk>1?$lpk:'')][$i]!=''){
-                        $lager_id = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE 
+                        $lager_id = $this->app->DB->Select("SELECT lager FROM lager_platz WHERE
                             kurzbezeichnung='".$tmp['lager_platz'.($lpk>1?$lpk:'')][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
                         if($lager_id <=0)
                         {
@@ -3032,11 +3039,12 @@ class Importvorlage extends GenImportvorlage {
                   $this->app->DB->Update("UPDATE projekt_artikel SET ek_geplant = '$ek' WHERE id = '$projektartikel' LIMIT 1");
                 }
               }
-            } // foreach field
-          } // if($artikelid > 0)
+            } // if($artikelid > 0)
+          } // END artikel true condition
 
           if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){ // !?!?!
-            //Sprachen
+
+              //Sprachen
               $erlaubtefelder= array('name','kurztext','beschreibung','beschreibung_online','meta_title',
                 'meta_description','meta_keywords','katalog_bezeichnung','katalog_text','katalogartikel','shop','aktiv');
               $zuImportierendeSprachen = [];
@@ -3113,26 +3121,26 @@ class Importvorlage extends GenImportvorlage {
                     }
                   }
                 }
-            } // Sprachen            
+            } // Sprachen
 
-            // Artikeleigenschaften        
+            // Artikeleigenschaften
             // leer = löschen
-            
+
             $artikeleigenschaften = array();
-            foreach ($tmp as $feldname => $feldwerte) {                                                                          
-                if (strpos($feldname,'eigenschaftname') !== false) {                                    
-                    $eigenschaftspaltennummer = substr($feldname,strlen('eigenschaftname'));                                                           
-                    $artikeleigenschaften[$feldwerte[$i]] = $tmp['eigenschaftwert'.$eigenschaftspaltennummer][$i];                  
+            foreach ($tmp as $feldname => $feldwerte) {
+                if (strpos($feldname,'eigenschaftname') !== false) {
+                    $eigenschaftspaltennummer = substr($feldname,strlen('eigenschaftname'));
+                    $artikeleigenschaften[$feldwerte[$i]] = $tmp['eigenschaftwert'.$eigenschaftspaltennummer][$i];
                 }
-            }                                  
+            }
             foreach ($artikeleigenschaften as $key => $value) {
                 $sql = "INSERT INTO artikeleigenschaften (name) VALUES ('".$key."') ON DUPLICATE KEY UPDATE name = '".$key."'";
                 $this->app->DB->Update($sql);
                 $sql = "INSERT INTO artikeleigenschaftenwerte (artikel, artikeleigenschaften, wert) VALUES ('".$artikelid."' ,(SELECT id FROM artikeleigenschaften WHERE name = '".$key."'), '".$value."') ON DUPLICATE KEY UPDATE wert = '".$value."'";
                 $this->app->DB->Update($sql);
-            }           
+            }
             $sql = "DELETE FROM artikeleigenschaftenwerte WHERE wert = ''";
-            $this->app->DB->Delete($sql);            
+            $this->app->DB->Delete($sql);
 
             //freifelduebersetzungen
             foreach ($tmp as $feldname => $feldwerte) {
@@ -3146,9 +3154,9 @@ class Importvorlage extends GenImportvorlage {
                     $sqla[] = ' SELECT '.$f.' as nummer ';
                   }
                   $sql = "INSERT INTO artikel_freifelder (artikel, sprache, nummer, wert)
-                    SELECT '$artikelid', s.iso, n.nummer,'' 
+                    SELECT '$artikelid', s.iso, n.nummer,''
                     FROM (SELECT iso FROM sprachen WHERE aktiv = 1 AND iso <> 'DE' AND iso <> '' GROUP BY iso) s
-                    INNER JOIN (".implode(' UNION ', $sqla).") n 
+                    INNER JOIN (".implode(' UNION ', $sqla).") n
                     LEFT JOIN artikel_freifelder af ON s.iso = af.sprache AND af.artikel = '$artikelid' AND n.nummer = af.nummer
                     WHERE  isnull(af.id)
                   ";
@@ -3218,7 +3226,7 @@ class Importvorlage extends GenImportvorlage {
                 }
                 $fremdnummer = $feldwerte[$i];
 
-                $query = sprintf("SELECT id FROM artikelnummer_fremdnummern 
+                $query = sprintf("SELECT id FROM artikelnummer_fremdnummern
                                 WHERE artikel='%d' AND shopid='%d' AND bezeichnung='%s' AND nummer='%s' LIMIT 1",
                           $artikelid,$shopId,$bezeichnung,$fremdnummer);
                 $fremdnummerId = $this->app->DB->Select($query);
@@ -3229,7 +3237,7 @@ class Importvorlage extends GenImportvorlage {
                 $this->app->DB->Update($query);
 
                 if(empty($fremdnummerId)){
-                  $query = sprintf("INSERT INTO artikelnummer_fremdnummern (artikel, aktiv, nummer, shopid, zeitstempel, bearbeiter, bezeichnung) 
+                  $query = sprintf("INSERT INTO artikelnummer_fremdnummern (artikel, aktiv, nummer, shopid, zeitstempel, bearbeiter, bezeichnung)
                     VALUES ('%d','1','%s','%d',NOW(),'%s','%s')",
                     $artikelid,
                     trim($this->app->DB->real_escape_string($feldwerte[$i])),
@@ -3243,10 +3251,70 @@ class Importvorlage extends GenImportvorlage {
                   $this->app->DB->Update($query);
                 }
               }
-            }
+            } // Fremdnummern
+
+            // Dateien
+            if (!empty($additional_files)) {
+                foreach ($tmp as $feldname => $feldwerte) {
+                    $fileid = null;
+                    $dateistichwort = null;
+                    $matches = array();
+                    if (preg_match("/datei(?<nummer>\d)/", $feldname, $matches)) {
+
+                        // find stichwort
+                        $column = 'dateistichwort'.$matches['nummer'];
+                        $dateistichwort_csv = ucfirst($tmp[$column][$i]);
+
+                        if (!empty($dateistichwort_csv)) {
+                            $dateitypen = $this->app->erp->getDateiTypen('artikel');
+                            foreach ($dateitypen as $dateityp) {
+                                if (ucfirst($dateityp['wert'] == $dateistichwort_csv)) {
+                                    $dateistichwort = $dateityp['wert'];
+                                }
+                            }
+                        }
+                        if (empty($dateistichwort)) {
+                            $dateistichwort = 'Sonstige';
+                        }
+
+                        // find file in upload
+                        $dateipfadzip = $feldwerte[$i];
+
+                        if (!empty($dateipfadzip)) {
+                            $dateiname = basename($dateipfadzip);
+                            $found = false;
+                            foreach ($additional_files as $additional_file) {
+                                if ($dateipfadzip == $additional_file['pathinzip']) {
+                                    $found = true;
+                                    $fileid = $this->app->erp->CreateDateiWithStichwort(
+                                            name: $dateiname,
+                                            titel: '',
+                                            beschreibung: '',
+                                            nummer: '',
+                                            datei: $additional_file['path'],
+                                            ersteller: $this->app->User->GetName(),
+                                            subjekt: $dateistichwort,
+                                            objekt: 'Artikel',
+                                            parameter: $artikelid
+                                    );
+                                    if (empty($fileid)) {
+                                        $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
+                                        $importvorlagedoresult['success'] = false;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (!$found) {
+                                $importvorlagedoresult['messages'][] = "Datei wurde nicht gefunden: ".$dateiname;
+                                $importvorlagedoresult['success'] = false;
+                            }
+                        }
+                    }
+                }
+            } // Dateien
           } // if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){ // !?!?!
 
-          break;
+          break; // HERE END artikel einkauf
             case "zeiterfassung":
             case "wiedervorlagen":
             case "notizen":
@@ -3731,8 +3799,8 @@ class Importvorlage extends GenImportvorlage {
                   $data['anschreiben']=$felder['ansprechpartner'.$l.'anschreiben'];
                   $data['titel']=$felder['ansprechpartner'.$l.'titel'];
                   $data['marketingsperre']=$felder['ansprechpartner'.$l.'marketingsperre'];
-                  $vorhanden = !empty($this->app->DB->Select("SELECT id FROM ansprechpartner WHERE adresse='$adresse' 
-                    AND name='".$data['name']."' AND strasse='".$data['strasse']."' AND ort='".$data['ort']."' 
+                  $vorhanden = !empty($this->app->DB->Select("SELECT id FROM ansprechpartner WHERE adresse='$adresse'
+                    AND name='".$data['name']."' AND strasse='".$data['strasse']."' AND ort='".$data['ort']."'
                     AND plz='".$data['plz']."' AND email='".$data['email']."' LIMIT 1"));
 
                   if(!$vorhanden){
@@ -4030,8 +4098,8 @@ class Importvorlage extends GenImportvorlage {
                   $data['anschreiben']=$felder['ansprechpartner'.$nspri.'anschreiben'];
                   $data['titel']=$felder['ansprechpartner'.$nspri.'titel'];
                   $data['marketingsperre']=$felder['ansprechpartner'.$nspri.'marketingsperre'];
-                  $vorhanden = !empty($this->app->DB->Select("SELECT id FROM ansprechpartner WHERE adresse='$adresse' 
-                    AND name='".$data['name']."' AND strasse='".$data['strasse']."' AND ort='".$data['ort']."' 
+                  $vorhanden = !empty($this->app->DB->Select("SELECT id FROM ansprechpartner WHERE adresse='$adresse'
+                    AND name='".$data['name']."' AND strasse='".$data['strasse']."' AND ort='".$data['ort']."'
                     AND plz='".$data['plz']."' AND email='".$data['email']."' LIMIT 1"));
 
                   if(!$vorhanden){
@@ -4081,8 +4149,8 @@ class Importvorlage extends GenImportvorlage {
                   if(!empty($ust_befreit)){
                     $data['ust_befreit']=$ust_befreit;
                   }
-                  $vorhanden = !empty($this->app->DB->Select("SELECT id FROM lieferadressen WHERE adresse='$adresse' 
-                    AND name='".$data['name']."' AND ort='".$data['ort']."' AND plz='".$data['plz']."' 
+                  $vorhanden = !empty($this->app->DB->Select("SELECT id FROM lieferadressen WHERE adresse='$adresse'
+                    AND name='".$data['name']."' AND ort='".$data['ort']."' AND plz='".$data['plz']."'
                     AND strasse='".$data['strasse']."' AND adresszusatz='".$data['adresszusatz']."' AND email='".$data['email']."'"));
                   if(!$vorhanden){
                     $this->app->erp->CreateLieferadresse($adresse,$data);
@@ -4104,7 +4172,7 @@ class Importvorlage extends GenImportvorlage {
                     $comma = ", ";
                 }
             }
-         
+
             if (empty($row['sachkonto'])) {
                 break;
             }
@@ -4127,7 +4195,7 @@ class Importvorlage extends GenImportvorlage {
 
                 $comma = "";
                 foreach ($row as $key => $value) {
-                    $update_sql .= $comma."`".$key."` = '".$value."'";   
+                    $update_sql .= $comma."`".$key."` = '".$value."'";
                     $comma = ", ";
                 }
 
@@ -4161,7 +4229,7 @@ class Importvorlage extends GenImportvorlage {
                         $importvorlagedoresult['messages'][] = "Feld nicht korrekt: ".$key;
                         $importvorlagedoresult['success'] = false;
                         $error = true;
-                    } 
+                    }
                 }
             }
 
@@ -4206,15 +4274,15 @@ class Importvorlage extends GenImportvorlage {
                 }
                 $row['pruefsumme'] = md5($hash_text);
 
-                $sql = "SELECT id FROM konten WHERE kurzbezeichnung ='".$row['konto']."' LIMIT 1";           
+                $sql = "SELECT id FROM konten WHERE kurzbezeichnung ='".$row['konto']."' LIMIT 1";
                 $kontoid = $this->app->DB->SelectArr($sql);
 
-                if (!empty($kontoid)) {            
+                if (!empty($kontoid)) {
 
                     $row['konto'] = $kontoid[0]['id'];
                     $row['importdatum'] = date("Y-m-d H:i:s");
 
-                    $sql = "SELECT pruefsumme FROM kontoauszuege WHERE pruefsumme='".$row['pruefsumme']."' AND konto ='".$row['konto']."' AND importfehler IS NULL";           
+                    $sql = "SELECT pruefsumme FROM kontoauszuege WHERE pruefsumme='".$row['pruefsumme']."' AND konto ='".$row['konto']."' AND importfehler IS NULL";
                     $result = $this->app->DB->SelectArr($sql);
 
                     if (!empty($result)) {
@@ -4247,7 +4315,7 @@ class Importvorlage extends GenImportvorlage {
             if ($error !== false) {
                 $sql = "SELECT id FROM artikel WHERE stueckliste = 1 AND nummer = '".$row['stuecklistevonartikel']."'";
                 $von_id = $this->app->DB->SelectArr($sql);
-                if (empty($von_id)) {    
+                if (empty($von_id)) {
                     $errormessage .= "Fehlerhafter 'Stueckliste von'-Artikel \"".$row['stuecklistevonartikel']."\"<br>";
                     break;
                 }
@@ -4289,15 +4357,15 @@ class Importvorlage extends GenImportvorlage {
             }
 
             break;
-        } 
+        }
 
         // HERE END OF PROCESSING THE ROWS switch($ziel);
 
         if($isCronjob) {
           $this->app->DB->Update(
             sprintf(
-              "UPDATE `prozessstarter` 
-              SET `mutexcounter` = 0, `mutex` = 1 
+              "UPDATE `prozessstarter`
+              SET `mutexcounter` = 0, `mutex` = 1
               WHERE `parameter` = 'importvorlage' AND `aktiv` = 1"
             )
           );
@@ -4316,7 +4384,7 @@ class Importvorlage extends GenImportvorlage {
           if(empty($importMasterData) || $importMasterData['status'] === 'cancelled') {
             break;
           }
-        }      
+        }
       } // Loop
 
 
@@ -4337,9 +4405,9 @@ class Importvorlage extends GenImportvorlage {
   {
     $name = $this->app->DB->real_escape_string($name);
     $propertyId = $this->app->DB->Select(
-      "SELECT `id` 
-      FROM `artikeleigenschaften` 
-      WHERE `geloescht` <> 1 AND `name` = '{$name}' 
+      "SELECT `id`
+      FROM `artikeleigenschaften`
+      WHERE `geloescht` <> 1 AND `name` = '{$name}'
       LIMIT 1"
     );
     if($propertyId > 0) {
@@ -4360,9 +4428,9 @@ class Importvorlage extends GenImportvorlage {
   {
     $propertyValue = $this->app->DB->real_escape_string($propertyValue);
     $propertyValueId = $this->app->DB->Select(
-      "SELECT `id` 
-      FROM `artikeleigenschaftenwerte` 
-      WHERE `artikel` = {$articleId} AND `artikeleigenschaften` = {$propertyId} AND `wert` = '{$propertyValue}' 
+      "SELECT `id`
+      FROM `artikeleigenschaftenwerte`
+      WHERE `artikel` = {$articleId} AND `artikeleigenschaften` = {$propertyId} AND `wert` = '{$propertyValue}'
       LIMIT 1"
     );
     if($propertyValueId > 0) {
@@ -4382,8 +4450,8 @@ class Importvorlage extends GenImportvorlage {
   {
     return $this->app->DB->SelectRow(
       "SELECT *
-      FROM `artikeleigenschaftenwerte` 
-      WHERE `artikel` = {$articleId} AND `artikeleigenschaften` = {$propertyId} 
+      FROM `artikeleigenschaftenwerte`
+      WHERE `artikel` = {$articleId} AND `artikeleigenschaften` = {$propertyId}
       LIMIT 1"
     );
   }
@@ -4411,7 +4479,7 @@ class Importvorlage extends GenImportvorlage {
   {
     $propertyValue = $this->app->DB->real_escape_string($propertyValue);
     $this->app->DB->Insert(
-      "INSERT INTO `artikeleigenschaftenwerte` 
+      "INSERT INTO `artikeleigenschaftenwerte`
         (`artikel`, `artikeleigenschaften`, `wert`) VALUES
        ({$articleId}, {$propertyId}, '{$propertyValue}')"
     );
@@ -4504,7 +4572,7 @@ class Importvorlage extends GenImportvorlage {
     $languageCode = $this->app->DB->real_escape_string(strtoupper($languageCode));
     $propertyNameFrom = $this->app->DB->real_escape_string($propertyNameFrom);
     $this->app->DB->Delete(
-      "DELETE FROM `article_property_translation` 
+      "DELETE FROM `article_property_translation`
       WHERE `article_id` = {$articleId}
       AND `property_from` = '{$propertyNameFrom}' AND `language_to` = '{$languageCode}'"
     );
@@ -4524,9 +4592,9 @@ class Importvorlage extends GenImportvorlage {
     $propertyNameFrom = $this->app->DB->real_escape_string($propertyNameFrom);
     $propertyValue = $this->app->DB->real_escape_string($propertyValue);
     $this->app->DB->Delete(
-      "DELETE FROM `article_property_translation` 
+      "DELETE FROM `article_property_translation`
       WHERE `article_id` = {$articleId}
-      AND `property_from` = '{$propertyNameFrom}' AND `language_to` = '{$languageCode}' 
+      AND `property_from` = '{$propertyNameFrom}' AND `language_to` = '{$languageCode}'
         AND `property_value_from` = '{$propertyValue}'"
     );
   }
@@ -4559,8 +4627,8 @@ class Importvorlage extends GenImportvorlage {
     $propertyNameTo = $this->app->DB->real_escape_string($propertyNameTo);
     $propertyValueTo = $this->app->DB->real_escape_string($propertyValueTo);
     $this->app->DB->Insert(
-      "INSERT INTO `article_property_translation` 
-      (`article_id`, `language_from`, `language_to`, 
+      "INSERT INTO `article_property_translation`
+      (`article_id`, `language_from`, `language_to`,
      `property_from`, `property_value_from`,
      `property_to`, `property_value_to`)
      VALUES ({$articleId}, '{$languageFrom}', '{$languageTo}',
@@ -4590,7 +4658,7 @@ class Importvorlage extends GenImportvorlage {
     $propertyNameTo = $this->app->DB->real_escape_string($propertyNameTo);
     $propertyValueTo = $this->app->DB->real_escape_string($propertyValueTo);
     $this->app->DB->Update(
-      "UPDATE `article_property_translation` 
+      "UPDATE `article_property_translation`
       SET `property_to` = '{$propertyNameTo}', `property_value_to` = '{$propertyValueTo}'
       WHERE `id` = {$propertyTranslationId}"
     );
@@ -4600,7 +4668,7 @@ class Importvorlage extends GenImportvorlage {
     $propertyNameFrom = $this->app->DB->real_escape_string($propertyNameFrom);
     $propertyValueFrom = $this->app->DB->real_escape_string($propertyValueFrom);
     $this->app->DB->Update(
-      "UPDATE `article_property_translation` 
+      "UPDATE `article_property_translation`
       SET `property_from` = '{$propertyNameFrom}', `property_value_from` = '{$propertyValueFrom}'
       WHERE `id` = {$propertyTranslationId}"
     );
@@ -4625,8 +4693,8 @@ class Importvorlage extends GenImportvorlage {
     $propertyNameFrom = $this->app->DB->real_escape_string($propertyNameFrom);
     $propertyValueFrom = $this->app->DB->real_escape_string($propertyValueFrom);
     return $this->app->DB->SelectRow(
-      "SELECT * 
-      FROM `article_property_translation` 
+      "SELECT *
+      FROM `article_property_translation`
       WHERE `article_id` = {$articleId} AND `language_to` = '{$languageCode}'
         AND `property_from` = '{$propertyNameFrom}' AND `property_value_from` = '{$propertyValueFrom}'"
     );
@@ -4760,7 +4828,7 @@ class Importvorlage extends GenImportvorlage {
         $updatevalue[] ="$key='".$data[$keyi][1]."'";
       }
     }
-  
+
     foreach($zahlen_werte as $key) {
       $keyi = 'lieferant'.$key.$prefix;
       if(isset($data[$keyi][1])) {
@@ -4768,7 +4836,7 @@ class Importvorlage extends GenImportvorlage {
         $updatevalue[] ="$key='".$data[$keyi][1]."'";
       }
     }
-    
+
     foreach($text_werte as $key) {
       $keyi = 'lieferant'.$key.$prefix;
       if(isset($data[$keyi][1])) {
@@ -4949,7 +5017,7 @@ class Importvorlage extends GenImportvorlage {
         case "herstellernummer":
           $fields['herstellernummer'] = $value;
           if($value != ''){
-            $nummervonhersteller = $this->app->DB->Select("SELECT nummer 
+            $nummervonhersteller = $this->app->DB->Select("SELECT nummer
                 FROM artikel WHERE herstellernummer='".$this->app->DB->real_escape_string($value)."' AND herstellernummer <> '' AND geloescht <> 1");
             if(!is_array($nummervonhersteller)){
               if($nummervonhersteller > 0){
@@ -4987,9 +5055,9 @@ class Importvorlage extends GenImportvorlage {
             }
 
             $adressid = $this->app->DB->Select(
-              "SELECT id 
-              FROM artikel 
-              WHERE ".$v['field']."='".$this->app->DB->real_escape_string($fields[$v['field']])."' 
+              "SELECT id
+              FROM artikel
+              WHERE ".$v['field']."='".$this->app->DB->real_escape_string($fields[$v['field']])."'
               LIMIT 1"
             );
             if($adressid) {
@@ -5019,9 +5087,9 @@ class Importvorlage extends GenImportvorlage {
             }
 
             $adressid = $this->app->DB->Select(
-              "SELECT id 
-              FROM adresse 
-              WHERE ".$v['field']."='".$this->app->DB->real_escape_string($fields[$v['field']])."' 
+              "SELECT id
+              FROM adresse
+              WHERE ".$v['field']."='".$this->app->DB->real_escape_string($fields[$v['field']])."'
               LIMIT 1"
             );
             if($adressid) {
@@ -5039,9 +5107,9 @@ class Importvorlage extends GenImportvorlage {
         case "kundennummer":
           $fields['kundennummer'] = $value;
           $fields['kundennummer'] = $this->app->DB->Select(
-            "SELECT kundennummer 
-            FROM adresse 
-            WHERE kundennummer='".$this->app->DB->real_escape_string($fields['kundennummer'])."' 
+            "SELECT kundennummer
+            FROM adresse
+            WHERE kundennummer='".$this->app->DB->real_escape_string($fields['kundennummer'])."'
             LIMIT 1"
           );
           foreach($fieldset as $k => $v) {
@@ -5057,9 +5125,9 @@ class Importvorlage extends GenImportvorlage {
             }
 
             $adressid = $this->app->DB->Select(
-              "SELECT id 
-              FROM adresse 
-              WHERE ".$v['field']."='".$this->app->DB->real_escape_string($fields[$v['field']])."' 
+              "SELECT id
+              FROM adresse
+              WHERE ".$v['field']."='".$this->app->DB->real_escape_string($fields[$v['field']])."'
               LIMIT 1"
             );
             if($adressid) {
@@ -5244,7 +5312,7 @@ class Importvorlage extends GenImportvorlage {
         {
           $action_anzeige = "Neu (Artikel neu anlegen)";
           $action="create";
-          $checked="checked";          
+          $checked="checked";
         }
         elseif(!$fields['nummer'] && $fields['ean']!="")
         {
@@ -5373,7 +5441,7 @@ class Importvorlage extends GenImportvorlage {
 
 /*
 *   Create a cleaned row set
-*   Return true if ok, else see error_message 
+*   Return true if ok, else see error_message
 */
    private function create_row_set(array $tmp, $pos, array $allowed_fields, array &$result_row, string &$error_message) : bool {
         $result_ok = true;
@@ -5384,9 +5452,9 @@ class Importvorlage extends GenImportvorlage {
                 if (in_array($key,$allowed_fields)) {
                     $result_row[$key] = $value[$pos];
                 } else {
-                    $error_message .= "Feld nicht korrekt: ".$key.".<br>";            
+                    $error_message .= "Feld nicht korrekt: ".$key.".<br>";
                     $result_ok = false;
-                } 
+                }
             }
         }
         return($result_ok);

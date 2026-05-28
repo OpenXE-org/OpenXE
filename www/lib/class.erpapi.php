@@ -36902,34 +36902,35 @@ function Firmendaten($field,$projekt="")
           INNER JOIN datei_version dv ON d.id = dv.datei
           WHERE ds.subjekt = '".$this->app->DB->real_escape_string($subjekt)."' AND 
           ds.objekt = '".$this->app->DB->real_escape_string($objekt)."' AND ds.parameter = '".$this->app->DB->real_escape_string($parameter)."'");
-        if($dateien)
+
+        if(is_file($datei))
         {
-          if(is_file($datei))
-          {
             $md5 = md5_file($datei);
-          }
-          else if(is_uploaded_file($datei))
-          {
+        }
+        else if(is_uploaded_file($datei))
+        {
             $_datei = $this->app->erp->GetTMP().$datei;
-            if(move_uploaded_file($datei,$_datei))$datei = $_datei;
+            if(move_uploaded_file($datei,$_datei)) {
+                $datei = $_datei;
+            }
             $md5 = md5_file($datei);
-          }
-          else {
-            $md5 = md5($datei);
-          }
-          if($md5 != '') {
-            if ($path == "") {
-              $path = str_replace("index.php", "", $_SERVER['SCRIPT_FILENAME']);
-              $path = $path . "../userdata/dms/";
-              if (isset($this->app->Conf->WFuserdata)) $path = rtrim($this->app->Conf->WFuserdata, '/') . '/dms/';
-              $path_only = $path;
-              $path = $path . $this->app->Conf->WFdbname;
+        }
+        else {
+           $md5 = md5($datei);
+        }
+        foreach ($dateien as $existing_datei) {
+            $md5_existing = md5($this->GetDatei($existing_datei['id']));
+            if ($md5 == $md5_existing) {
+                $existing_stichwoerter = $this->GetDateiStichwoerter($existing_datei['id']);
+                foreach ($existing_stichwoerter as $existing_stichwort) {
+                    if ($existing_stichwort['subjekt'] == $subjekt && $existing_stichwort['objekt'] == $objekt && $existing_stichwort['parameter'] == $parameter) {
+                        $fileid = $existing_datei['id'];
+                        return $fileid;
+                    }
+                }
+                $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log);
+                return $fileid;
             }
-            foreach($dateien as $v)
-            {
-              if(is_file($path."/".$v['id']) && md5_file($path."/".$v['id']) == $md5)return $v['datei'];
-            }
-          }
         }
         $fileid = $this->CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log,$path,$geschuetzt);
         $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log);
