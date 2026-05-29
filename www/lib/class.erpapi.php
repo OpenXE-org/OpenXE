@@ -36918,20 +36918,24 @@ function Firmendaten($field,$projekt="")
         else {
            $md5 = md5($datei);
         }
-        foreach ($dateien as $existing_datei) {
-            $md5_existing = md5($this->GetDatei($existing_datei['id']));
+
+        foreach ($dateien as $key => $existing_datei) {
+            $md5_existing = md5($this->GetDatei($existing_datei['datei']));
+            $dateien[$key]['md5'] = $md5_existing;
             if ($md5 == $md5_existing) {
-                $existing_stichwoerter = $this->GetDateiStichwoerter($existing_datei['id']);
-                foreach ($existing_stichwoerter as $existing_stichwort) {
-                    if ($existing_stichwort['subjekt'] == $subjekt && $existing_stichwort['objekt'] == $objekt && $existing_stichwort['parameter'] == $parameter) {
-                        $fileid = $existing_datei['id'];
-                        return $fileid;
-                    }
-                }
-                $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log);
+                $fileid = $existing_datei['datei'];
                 return $fileid;
             }
         }
+
+        foreach ($dateien as $existing_datei) {
+            $fileid = $existing_datei['datei'];
+            if ($this->GetDateiName($fileid) == $name) {
+                $this->AddDateiVersion($fileid, $ersteller, $name, $beschreibung, $datei);
+                return $fileid;
+            }
+        }
+
         $fileid = $this->CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log,$path,$geschuetzt);
         $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log);
         return $fileid;
