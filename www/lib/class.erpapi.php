@@ -37438,59 +37438,34 @@ function Firmendaten($field,$projekt="")
         ob_end_clean();
         set_time_limit(0);
 
-        if($versionid>0){
-          $newid = $versionid;
+        if($versionid > 0){
+            $path = $this->GetDateiPfadVersion($versionid);
+            $name = $this->app->DB->Select("SELECT dateiname FROM datei_version WHERE id='$versionid' LIMIT 1");
         } else{
-          $version = 0;
-          $newid = 0;
-          if((int)$id > 0) {
-            $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$id'");
-            $newid = $this->app->DB->Select("SELECT id FROM datei_version WHERE datei='$id' AND version='$version' LIMIT 1");
-          }
+            $path = $this->GetDateiPfad($id);
+            $name = $this->GetDateiName($id);
         }
-
-
-        $name = $newid <=0?'':$this->app->DB->Select("SELECT dateiname FROM datei_version WHERE id='$newid' LIMIT 1");
-        $path = '';
-        if($id > 0){
-          $path = $this->GetDateiPfad($id);
-          if(!@file_exists($path)) {
-            $path = '';
-          }
-        }
-        //$name=basename($path);
+        $file_size = filesize($path);
 
         //filenames in IE containing dots will screw up the
         //filename unless we add this
 
         if ( strpos ( $_SERVER [ 'HTTP_USER_AGENT' ], "MSIE" ) > 0 )
         {
-          $header_name =  'Content-Disposition: attachment; filename="' . rawurlencode ( $name ) . '"' ;
+          $header_name = 'Content-Disposition: attachment; filename="' . rawurlencode ( $name ) . '"' ;
         }
         else {
-          $header_name =   'Content-Disposition: attachment; filename*=UTF-8\'\'' . rawurlencode ( $name ) ;
+          $header_name = 'Content-Disposition: attachment; filename*=UTF-8\'\'' . rawurlencode ( $name ) ;
         }
 
-        $contenttype= $this->content_type($name);
-
-        //required, or it might try to send the serving     //document instead of the file
+        $contenttype = $this->content_type($name);
         header("Content-Type: $contenttype");
-        header("Content-Length: " .(string)(empty($path)?0:@filesize($path)) );
-        //header('Content-Disposition: inline; filename="'.$name.'"');
-        //$name = $this->Dateinamen($name);
-        //header('Content-Disposition: attachment; filename="'.$name.'"');
+        header("Content-Length: " .$file_size );
         header($header_name);
-
-        if(!empty($path) && $file = fopen($path, 'rb')){
-          while( (!feof($file)) && (connection_status()==0) ){
-            print(fread($file, 1024*8));
-            flush();
-          }
-          fclose($file);
-        }
+        if (ob_get_level()) ob_end_clean();
+        readfile($path);
         return((connection_status()==0) and !connection_aborted());
       }
-
 
       function content_type($name) {
         // Defines the content type based upon the extension of the file
