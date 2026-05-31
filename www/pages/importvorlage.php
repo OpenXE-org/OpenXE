@@ -1791,8 +1791,6 @@ class Importvorlage extends GenImportvorlage {
                   case "metakeywords_en":
                   case "kurztext_en":
                   case "kurztext_de":
-                  case "anabregs_text":
-                  case "anabregs_text_en":
                   case "lagerartikel":
                   case "ean":
                   case "chargenverwaltung":
@@ -2472,10 +2470,18 @@ class Importvorlage extends GenImportvorlage {
                     {
                       // schaue ob
                       $tmpartikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='".trim($tmp[$value][$i])."' AND nummer!='' LIMIT 1");
+                      if($tmpartikelid == '') {
+                        $tmpartikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE ean = '".trim($tmp[$value][$i])."' AND geloescht <> 1");
+                      }
+                      if($tmpartikelid == '') {
+                        $tmpartikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer = '".trim($tmp[$value][$i])."' AND geloescht <> 1 ");
+                      }
                       if($tmpartikelid > 0)
                       {
-                        $this->app->DB->Update("UPDATE artikel SET variante_von='".$tmpartikelid."',variante=1
+                         $this->app->DB->Update("UPDATE artikel SET variante_von='".$tmpartikelid."',variante=1
                             WHERE id='".$artikelid."' AND id!='".$tmpartikelid."' LIMIT 1");
+                      } else {
+                        $errormessage .= "Hauptartikel f&uuml;r Variante nicht gefunden: ".trim($tmp[$value][$i]).".<br>";
                       }
                     }
                     break;
@@ -2570,7 +2576,7 @@ class Importvorlage extends GenImportvorlage {
                     break;
 
                   case "einkaufspreisnetto":
-                    $tmp['lieferanteinkaufnetto'][$i] = $tmp['einkaufspreis'][$i];
+                    $tmp['lieferanteinkaufnetto'][$i] = $tmp['einkaufspreisnetto'][$i];
                     // break omitted
                   case  "lieferanteinkaufnetto":
                     $einkaufsdaten = $this->app->DB->SelectRow("SELECT id,preis,bestellnummer FROM einkaufspreise WHERE ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."' AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW()) AND adresse='".$lieferantid."' AND artikel='".$artikelid."' LIMIT 1");
