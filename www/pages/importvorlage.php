@@ -56,6 +56,7 @@ class Importvorlage extends GenImportvorlage {
         'vk_geplant', // 1
         'ek_geplant', // 1
         'berechneterek', // 1
+        'inventurek', // 1
         'gewicht', // 1
         'breite', // 1
         'hoehe', // 1
@@ -69,6 +70,18 @@ class Importvorlage extends GenImportvorlage {
         'verkaufspreis\D+([\d]+)*\D*kundennummer', // 10
         'pseudopreis', // 1
         'provision\D+([\d]+)*\D*', // 2
+    );
+
+    /*
+    * List of fields that are handled in the code but not in the switch statement, to suppress warnings
+    * Regex
+    */
+    const handled_fields = array(
+        '/nummer/',
+        '/lieferantname/',
+        '/lieferantnummer/',
+        '/datei(?<nummer>\d)/',
+        '/dateistichwort(?<nummer>\d)/'
     );
 
   public $javascript = [
@@ -1875,20 +1888,6 @@ class Importvorlage extends GenImportvorlage {
                   case 'artikelautokalkulation':
                   case 'artikelabschliessenkalkulation':
                   case 'artikelfifokalkulation':
-                    if($value==='laenge' || $value==='breite' || $value==='hoehe' || $value==='gewicht'
-                      || $value==='berechneterek' || $value==='pseudopreis' || $value==='berechneterek' || $value==='inventurek'){
-                      $tmp[$value][$i] = str_replace(',', '.', $tmp[$value][$i]);
-                    }
-                    if($value=="lagerkorrekturwert"){
-                      $tmp[$value][$i] = preg_replace('/-\D/', '', $tmp[$value][$i]);
-                    }
-                    if($value==='beschreibung_online_en'){
-                      $value='uebersicht_en';
-                    }
-                    if($value==='beschreibung_online_de'){
-                      $value='uebersicht_de';
-                    }
-
                     $this->app->DB->Update("UPDATE artikel SET ".$value."='".$this->app->DB->real_escape_string($tmp[$value][$i])."' WHERE id='".$artikelid."' LIMIT 1");
                     break;
                   case "matrixproduktvon":
@@ -2457,11 +2456,7 @@ class Importvorlage extends GenImportvorlage {
                         if(isset($optionen1ex))unset($optionen1ex);
                         if(isset($optionen2ex))unset($optionen2ex);
                       }
-
-
                     }
-
-
                     else
                       $this->app->DB->Update("UPDATE artikel SET matrixprodukt=0 WHERE id='".$artikelid."' LIMIT 1");
                     break;
@@ -2995,20 +2990,28 @@ class Importvorlage extends GenImportvorlage {
                     }
                   break;
                   case 'standardlagerplatz':
-                    $lagerplatz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='".$tmp['standardlagerplatz'][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
-                    if (empty($lagerplatz)) {
-                        $importvorlagedoresult['messages'][] = "Lagerplatz nicht gefunden: ".$tmp['standardlagerplatz'][$i];
+                    if (empty($tmp['standardlagerplatz'][$i])) {
+                        $lagerplatz = 'NULL';
                     } else {
-                        $this->app->DB->Update("UPDATE `artikel` SET `lager_platz` = $lagerplatz WHERE id = '{$artikelid}' LIMIT 1");
+                        $lagerplatz = $this->app->DB->Select("SELECT id FROM lager_platz WHERE kurzbezeichnung='".$tmp['standardlagerplatz'][$i]."' AND kurzbezeichnung!='' AND geloescht!='1' LIMIT 1");
+                        if (empty($lagerplatz)) {
+                            $importvorlagedoresult['messages'][] = "Lagerplatz nicht gefunden: ".$tmp['standardlagerplatz'][$i];
+                            break;
+                        }
                     }
+                    $this->app->DB->Update("UPDATE `artikel` SET `lager_platz` = $lagerplatz WHERE id = '{$artikelid}' LIMIT 1");
                   break;
-                  case 'nummer':
-                  case 'lieferantname':
-                  case 'lieferantnummer':
-                    // Nothing to do
-                  break;
-                  default:
-                    $importvorlagedoresult['messages'][] = "Feld unbekannt: ".$value;
+                  default:       
+                    $handled = false;
+                    foreach (SELF::handled_fields as $handled_field) {
+                        if (preg_match($handled_field, $value)) {
+                            $handled = true;
+                            break;
+                        }
+                    }
+                    if (!$handled) {
+                        $importvorlagedoresult['messages'][] = "Feld unbekannt: ".$value;
+                    }
                   break;
                 }
               }
