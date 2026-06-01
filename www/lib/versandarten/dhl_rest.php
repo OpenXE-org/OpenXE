@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
 
+use Xentral\Components\Logger\Logger;
 use Xentral\Carrier\DhlRest\DhlRestApi;
 use Xentral\Carrier\DhlRest\DhlRestApiException;
 use Xentral\Modules\ShippingMethod\Model\AddressType;
@@ -27,6 +28,19 @@ require_once dirname(__DIR__) . '/class.versanddienstleister.php';
  */
 class Versandart_dhl_rest extends Versanddienstleister
 {
+
+    protected Logger $logger;
+
+    public function __construct(ApplicationCore $app, ?int $id)
+    {
+        parent::__construct($app, $id);
+        $this->logger = $app->Container->get('Logger');
+    }
+
+    private function Log($level, $message, $dump = array()) {
+        $this->logger->Log($level, 'DHL rest API '.$message, (array) $dump);
+    }
+
     public function GetName(): string
     {
         return 'DHL Paket DE Versenden (Rest API)';
@@ -90,7 +104,9 @@ class Versandart_dhl_rest extends Versanddienstleister
             $api      = $this->buildApi();
             $payload  = $this->buildShipmentPayload($json);
 
+            $this->Log(Logger::DEBUG, 'createShipment request', $payload);
             $response = $api->createShipment($payload);
+            $this->Log(Logger::DEBUG, 'createShipment response', $response);
 
             if (is_array($response['status'])) {
                 $status = $response['status'];
@@ -99,11 +115,15 @@ class Versandart_dhl_rest extends Versanddienstleister
             }
 
             if ($status['statusCode'] != 200) {
-                $ret->Errors[] = 'API meldet Fehler ('.$status['status'].'): '.$status['title']." - ".$status['detail'];
+                $errortext = 'API meldet Fehler ('.$status['status'].'): '.$status['title']." - ".$status['detail'];
+                $ret->Errors[] = $errortext;
+                $this->Log(Logger::ERROR, $errortext);
             }
 
-            if (empty($response['items'])) {
-                $ret->Errors[] = 'Ungültige API-Antwort (kein items-Eintrag)';
+            if (empty($response['items'])) {                
+                $errortext = 'Ungültige API-Antwort (kein items-Eintrag)';
+                $ret->Errors[] = $errortext;
+                $this->Log(Logger::ERROR, $errortext);
                 return $ret;
             }
 
