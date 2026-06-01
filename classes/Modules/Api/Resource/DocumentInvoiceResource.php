@@ -2,6 +2,8 @@
 
 namespace Xentral\Modules\Api\Resource;
 
+use Exception;
+use InvalidArgumentException;
 use Xentral\Components\Database\SqlQuery\DeleteQuery;
 use Xentral\Components\Database\SqlQuery\SelectQuery;
 use Xentral\Components\Database\SqlQuery\UpdateQuery;
