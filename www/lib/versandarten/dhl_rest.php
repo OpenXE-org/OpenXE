@@ -255,7 +255,7 @@ class Versandart_dhl_rest extends Versanddienstleister
             'addressHouse'  => $this->settings->sender_streetnumber ?? null,
             'postalCode'    => $this->settings->sender_zip         ?? '',
             'city'          => $this->settings->sender_city        ?? '',
-            'country'       => self::toIso3($this->settings->sender_country ?? 'DE'),
+            'country'       => self::toIso3(trim($this->settings->sender_country) ?? 'DE'),
             'email'         => $this->settings->sender_email       ?? null,
             'phone'         => $this->settings->sender_phone       ?? null,
             'contactName'   => $this->settings->sender_contact_person ?? null,
