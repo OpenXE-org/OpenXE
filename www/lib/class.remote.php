@@ -1447,6 +1447,7 @@ class Remote
                             'datei' => base64_encode($this->app->erp->GetDatei($datei['id'])),
                             'filename' => $filename,
                             'extension' => $path_info['extension'],
+                            'mimetype' => $this->app->erp->GetDateiMimeType($datei['id']),
                             'titel' => $datei['titel'],
                             'beschreibung' => $datei['beschreibung'],
                             'id' => $datei['id'],

@@ -37431,7 +37431,10 @@ function Firmendaten($field,$projekt="")
         return number_format(($size/1024/1024),2).' MB';
       }
 
-
+      function GetDateiMimeType($id) {
+        $path = $this->GetDateiPfad($id);
+        return(mime_content_type($path));
+      }
 
       function SendDatei($id,$versionid='') {
         session_write_close();
