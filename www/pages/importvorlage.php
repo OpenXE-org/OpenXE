@@ -1701,8 +1701,9 @@ class Importvorlage extends GenImportvorlage {
                 $felder['nummer']=$this->app->erp->GetNextArtikelnummer($tmp_katname, 1, empty($tmp['projekt'][$i])?'':$tmp['projekt'][$i]);
               }
               else{
-                if(empty($felder['name']) && empty($felder['name_de'])){
-                  break;
+                if(empty($tmp['name'][$i]) && empty($tmp['name_de'][$i])){
+                    $importvorlagedoresult['messages'][] = "Leerer Artikel, Zeile: ".$i;
+                    break;
                 }
                 $felder['nummer']=$this->app->erp->GetNextArtikelnummer('produkt', 1, empty($tmp['projekt'][$i])?'':$tmp['projekt'][$i]);
               }
@@ -1711,6 +1712,7 @@ class Importvorlage extends GenImportvorlage {
             }
             $artikelid = $this->app->erp->ImportCreateArtikel($felder,false);
             $tmp['cmd'][$i] = "update";
+            $importvorlagedoresult['messages'][] = "Neuer Artikel, Zeile: ".$i." Nummer: ".$felder['nummer'];
           }
 
           // END NEW CODE CREATE ARTIKEL
@@ -2758,10 +2760,16 @@ class Importvorlage extends GenImportvorlage {
                     break;
                   case "standardlieferant":
                     $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$this->app->DB->real_escape_string($tmp[$value][$i])."' LIMIT 1");
-                    if($standardlieferantid != ''){
-                      $this->app->DB->Update("UPDATE artikel SET adresse='$standardlieferantid' WHERE id='".$artikelid."' LIMIT 1");
-                    }
-                  break;
+                    $importvorlagedoresult['messages'][] = "Lieferant suchen: ".$tmp['standardlieferant'][$i];
+                    if (!empty($tmp['standardlieferant'][$i])) {
+                        $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$this->app->DB->real_escape_string($tmp['standardlieferant'][$i])."' LIMIT 1");
+                         if($standardlieferantid != ''){
+                             $this->app->DB->Update("UPDATE artikel SET adresse='$standardlieferantid' WHERE id='".$artikelid."' LIMIT 1");
+                        } else {
+                            $importvorlagedoresult['messages'][] = "Lieferant nicht gefunden: ".$tmp[$value][$i];
+                        }
+                     }
+                   break;
                   case  "verkaufspreisnetto":
                   case  "verkaufspreis1netto":
                   case  "verkaufspreis2netto":
