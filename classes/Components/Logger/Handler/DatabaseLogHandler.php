@@ -63,7 +63,11 @@ final class DatabaseLogHandler extends AbstractLogHandler
             $values['dump'] .= print_r($context->getDump(), true);
         }
 
-        $dumpsplit = str_split((string) $values['dump'], 10000);
+        if (empty($values['dump'])) {
+            $dumpsplit = array(0 => '');
+        } else {
+            $dumpsplit = str_split((string) $values['dump'], 10000);
+        }
 
         foreach ($dumpsplit as $dump) {
             $values['dump'] = $dump;
