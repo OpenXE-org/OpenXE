@@ -1474,6 +1474,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
         $mediaFolderId = $mediaFolderData['data'][0]['id'];
 
         foreach ($internalArticleData['Dateien'] as $internalFile) {
+            if ($internalFile['stichwort'] != 'Shopbild') {
+                continue;
+            }
             $filename = explode('.', $internalFile['filename']);
             unset($filename[(!empty($filename) ? count($filename) : 0) - 1]);
             $filename = $internalFile['id'] . '_' . implode($filename);

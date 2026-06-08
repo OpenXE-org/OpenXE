@@ -1434,10 +1434,10 @@ class Remote
                 $data[$i]['eigenschaftenuebersetzungen'] = $eigenschaftenuebersetzungen;
             }
 
-            //Bilder
+            //Bilder + Anhänge
             $dateien = null;
             if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                $dateien = $this->getImagesForArticle($artikel);
+                $dateien = $this->getFilesForArticle($artikel, ['Shopbild', 'Datenblatt', 'anhang']);
                 if (!empty($dateien)) {
                     $data[$i]['Dateien'] = [];
                     foreach ($dateien as $datei) {
@@ -1467,7 +1467,6 @@ class Remote
                     }
                 }
             }
-
 
             if (method_exists($tmp, 'GetSteuer_Art_Produkt')) {
                 $data[$i]['steuer_art_produkt'] = $tmp->GetSteuer_Art_Produkt();
@@ -1884,7 +1883,7 @@ class Remote
                         }
 
                         if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                            $dateien = $this->getImagesForArticle($eigenschaft['artikel']);
+                            $dateien = $this->getFilesForArticle($eigenschaft['artikel']);
                             if (!empty($dateien)) {
                                 foreach ($dateien as $datei) {
                                     $filename = $this->app->erp->GetDateiName($datei['id']);
@@ -2140,7 +2139,7 @@ class Remote
                             }
                         }
                         if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                            $dateien = $this->getImagesForArticle($v['id']);
+                            $dateien = $this->getFilesForArticle($v['id']);
                             if (!empty($dateien)) {
                                 foreach ($dateien as $datei) {
                                     $filename = $this->app->erp->GetDateiName($datei['id']);
@@ -2182,16 +2181,17 @@ class Remote
      * @param int $articleId
      * @return array|null
      */
-    protected function getImagesForArticle($articleId)
+    protected function getFilesForArticle($articleId, array $stichwoerter = array('Shopbild'))
     {
         $query = sprintf("SELECT d.id AS `id`, dv.id AS `vid`, d.titel, d.beschreibung, ds.subjekt, ds.sort, dv.version AS `version`
                 FROM `datei_stichwoerter` AS `ds` 
                 INNER JOIN `datei` AS `d` ON ds.datei = d.id  
                 INNER JOIN `datei_version` AS `dv` ON dv.datei = ds.datei
                 INNER JOIN (SELECT MAX(`version`) AS `version`, `datei` FROM `datei_version` GROUP BY `datei`) AS `dvm` ON dvm.datei = dv.datei AND dvm.version = dv.version
-                WHERE ds.parameter = %d AND ds.objekt like 'Artikel' AND ds.subjekt LIKE 'Shopbild' AND d.geloescht = 0
+                WHERE ds.parameter = %d AND ds.objekt like 'Artikel' AND (ds.subjekt LIKE '".
+                implode("' OR ds.subjekt LIKE '",$stichwoerter)
+                ."') AND d.geloescht = 0
                 ORDER BY ds.sort", $articleId);
-
         return $this->app->DB->SelectArr($query);
     }
 
