@@ -2878,7 +2878,7 @@ class Artikel extends GenArtikel {
 
         if (is_array($remote_result) && $remote_result[0] instanceof ArticleExportResult) {
             $remote_status = $remote_result[0]->success;
-            $remote_message = $remote_result[0]->message;
+            $remote_message = print_r($remote_result[0]->message, true);
         } else if (is_numeric($remote_result)) {
             if ($remote_result == 1) {
                 $remote_status = true;

@@ -1099,6 +1099,9 @@ class Shopimporter_Shopify extends ShopimporterBase
         if($shopbilderuebertragen && isset($tmp[$i]['Dateien'])){
           $altebilder = $this->adapter->call("products/$productid/images.json");
           foreach ($altebilder['data']['images'] as $key => $value) {
+            if ($value['stichwort'] != 'Shopbild') {
+                continue;
+            }
             $this->adapter->call("products/$productid/images/".$value['id'].'.json', 'DELETE');
           }
           foreach ($tmp[$i]['Dateien'] as $key => $value) {

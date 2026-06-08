@@ -25346,45 +25346,40 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
       if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 1)
       {
         $signaturtext = $this->Signatur($from);
-        if($this->isHTML($signaturtext))
-          $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
-        else
-          $body = str_replace('\r\n',"\n",$text)."<br>".nl2br($signaturtext);
       }else{
         if($projekt > 0 && $this->Projektdaten($projekt,"absendesignatur")!=""){
           $signaturtext = $this->Projektdaten($projekt,"absendesignatur");
-          if($this->isHTML($signaturtext))
-            $body = str_replace('\r\n',"\n",$text)."<br><br>".$signaturtext;
-          else
-            $body = str_replace('\r\n',"\n",$text)."<br><br>".$this->ReadyForPDF(nl2br($signaturtext));
         }else{
           if(strlen(trim($this->Signatur($from))) > 0 && $eigenesignatur == 0){
             $signaturtext = $this->Signatur($from);
-            if($this->isHTML($signaturtext))
-              $body = str_replace('\r\n',"\n",$text)."<br>".$signaturtext;
-            else
-              $body = str_replace('\r\n',"\n",$text)."<br>".nl2br($signaturtext);
-          }else{
-            $body = str_replace('\r\n',"\n",$text);
           }
         }
-
       }
-    } else {
-      $body = str_replace('\r\n',"\n",$text);
+      if (str_contains(strip_tags($text), strip_tags($signaturtext))) {
+        $signaturtext = null;
+      }
     }
 
-    {
-      $email_html_template = $this->Projektdaten($projekt, "email_html_template");
-      if($email_html_template == ""){
-        $email_html_template = $this->Firmendaten('email_html_template');
-      }
-    } 
-    if($email_html_template!="" && preg_match("/{CONTENT}/",$email_html_template))
+    $email_html_template = $this->Projektdaten($projekt, "email_html_template");
+    if($email_html_template == ""){
+      $email_html_template = $this->Firmendaten('email_html_template');
+    }
+    if($email_html_template!="")
     {
       $email_html_template = preg_replace('~\x{00a0}~siu',' ',$email_html_template);
       $email_html_template = preg_replace( "#((&nbsp;|\s|<br>)+$)#", "", trim($email_html_template) );
-      $body = str_replace('{CONTENT}',$body,$email_html_template);
+      if (
+        !str_contains($email_html_template,"{CONTENT}") &&
+        !str_contains($email_html_template,"{TEXT}") &&
+        !str_contains($email_html_template,"{FOOTER}")
+        ) {
+          $email_html_template = '{CONTENT}<br>'.$email_html_template;
+      }
+      $body = str_replace('{CONTENT}',$signaturtext?($text."<br>".$signaturtext):$text,$email_html_template);
+      $body = str_replace('{TEXT}',$text,$body);
+      $body = str_replace('{SIGNATUR}',"<br>".$signaturtext,$body);
+    } else {
+        $body = $text.$signaturtext?:("<br>".$signaturtext);
     }
 
     $sysMailerSent = false;
@@ -25395,7 +25390,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     }
 
     if ($sysMailer !== null) {
-      
+
       $recipients = [];
 
       $to_csv = "";
@@ -26139,8 +26134,20 @@ function Firmendaten($field,$projekt="")
     $signatur = str_replace('{MITARBEITER_MOBIL}',$data[0]['mobil'],$signatur);
     $signatur = str_replace('{MITARBEITER_EMAIL}',$data[0]['email'],$signatur);
 
-    if($this->isHTML($signatur)) return "<br><br>".$signatur;
-    return "\r\n\r\n".$this->ReadyForPDF($signatur);
+    if ($this->isHTML($signatur)) {
+        $newline = "<br>";
+    } else {
+        $newline = "\r\n";
+    }
+
+    if (strlen($signatur) > 0) {
+        if (preg_match("/[a-zA-Z0-9]/",$signatur[0])) {
+            $signatur = $newline.$signatur;
+        }
+    }
+
+    if($this->isHTML($signatur)) return $newline.$signatur;
+    return $newline.$this->ReadyForPDF($signatur);
   }
 
 
