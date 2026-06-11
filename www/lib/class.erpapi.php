@@ -25355,6 +25355,9 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           }
         }
       }
+      if (str_contains(strip_tags($text), strip_tags($signaturtext))) {
+        $signaturtext = null;
+      }
     }
 
     $email_html_template = $this->Projektdaten($projekt, "email_html_template");
@@ -25365,10 +25368,16 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     {
       $email_html_template = preg_replace('~\x{00a0}~siu',' ',$email_html_template);
       $email_html_template = preg_replace( "#((&nbsp;|\s|<br>)+$)#", "", trim($email_html_template) );
-      if (!str_contains($email_html_template,"{CONTENT}")) {
+      if (
+        !str_contains($email_html_template,"{CONTENT}") &&
+        !str_contains($email_html_template,"{TEXT}") &&
+        !str_contains($email_html_template,"{FOOTER}")
+        ) {
           $email_html_template = '{CONTENT}<br>'.$email_html_template;
       }
       $body = str_replace('{CONTENT}',$signaturtext?($text."<br>".$signaturtext):$text,$email_html_template);
+      $body = str_replace('{TEXT}',$text,$body);
+      $body = str_replace('{SIGNATUR}',"<br>".$signaturtext,$body);
     } else {
         $body = $text.$signaturtext?:("<br>".$signaturtext);
     }
