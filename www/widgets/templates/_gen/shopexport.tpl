@@ -68,7 +68,7 @@
                 <tr>
                     <td class="manuellebegrenzung">{|Anzahl abholen begrenzen|}:</td>
                     <td class="manuellebegrenzung">[MAXMANUELL][MSGMAXMANUELL]</td>
-                    <td><i>{|0 bedeutet Begrenzung auf 100|}</i></td>
+                    <td><i>{|0 bedeutet Begrenzung auf 100|}</i></td></td>
                 </tr>
                 <tr>
                     <td><label for="modus">{|Import-Modus|}:</label></td><td>[SELMODUS]</td>
@@ -80,7 +80,7 @@
                 <tr>
                 </tr>
                     <td><label for="warteschlange">{|Aufträge in Zwischentabelle|}:</label></td><td>[WARTESCHLANGE]</td>
-                    <td><i>{|Freigabe erfolgt manuell|}</i></td>
+                    <td><i>{|Freigabe erfolgt manuell|}</i></td></td>
                 <tr>
                 </tr>
                 <tr class="ab_nummerzeitraum zeitraum">
@@ -96,8 +96,8 @@
                   <td class="trstartderschnittstelle"><label for="startdate">{|Start der Schnitstelle|}:</label></td>
                   <td class="trstartderschnittstelle">[STARTDATE][MSGSTARTDATE]</td>
                 </tr>
-                <tr class="ab_nummerzeitraum ab_nummer"><td><label for="ab_nummer">{|ab Nummer|}:</label></td><td>[AB_NUMMER][MSGAB_NUMMER]&nbsp;<i>{|Es werden alle Auftr&auml;ge ab dieser Nummer &uuml;bertragen|}.</i></td><td></td></tr>
-                <!--<tr class="ab_nummerzeitraum ab_nummer"><td>{|Status &auml;ndern|}:</td><td>[NUMMERSYNCSTATUSAENDERN][MSGNUMMERSYNCSTATUSAENDERN]&nbsp;<i>{|Es wird der Status nach dem Abholen ge&auml;ndert|}.</i></td><td></td></tr>-->
+                <tr class="ab_nummerzeitraum ab_nummer"><td><label for="ab_nummer">{|ab Nummer|}:</label></td><td>[AB_NUMMER][MSGAB_NUMMER]<td><i>{|Es werden alle Auftr&auml;ge ab dieser Nummer &uuml;bertragen|}.</i></td></td><td></td></tr>
+                <!--<tr class="ab_nummerzeitraum ab_nummer"><td>{|Status &auml;ndern|}:</td><td>[NUMMERSYNCSTATUSAENDERN][MSGNUMMERSYNCSTATUSAENDERN]<td><i>{|Es wird der Status nach dem Abholen ge&auml;ndert|}.</i></td></td><td></td></tr>-->
                 [VOREXTRA]
                 <tr><td colspan="4" style="font-weight:bold;padding-top:40px;">{|Einstellungen f&uuml;r Shop oder Marktplatz|}:</td></tr>
                 [NACHEXTRA]
@@ -215,19 +215,19 @@
               <table width="100%">   
                 <tr><td><u>{|Zahlungweisen-Mapping verwenden|}:</u></td><td>[ZAHLUNGSWEISENMAPPING][MSGZAHLUNGSWEISENMAPPING]</td></tr>
                 <tr><td><u>{|Versandarten-Mapping verwenden|}:</u></td><td>[VERSANDARTENMAPPING][MSGVERSANDARTENMAPPING]</td></tr>
-                <tr><td>{|Vorab als bezahlt markieren|}:</td><td>[VORABBEZAHLTMARKIEREN_OHNEVORKASSE_BAR][MSGVORABBEZAHLTMARKIEREN_OHNEVORKASSE_BAR]&nbsp;<i>({|Ohne Vorkasse, Bar, Nachnahme und Rechnung|})</i></td></tr>
+                <tr><td>{|Vorab als bezahlt markieren|}:</td><td>[VORABBEZAHLTMARKIEREN_OHNEVORKASSE_BAR][MSGVORABBEZAHLTMARKIEREN_OHNEVORKASSE_BAR]<td><i>{|Ohne Vorkasse, Bar, Nachnahme und Rechnung|}</i></td></td></tr>
                 <tr><td>{|UTF8 Codierung|}:</td><td>[UTF8CODIERUNG][MSGUTF8CODIERUNG]</td><td></tr>
-                <tr><td width="300">{|Multiprojekt Shop|}:</td><td>[MULTIPROJEKT][MSGMULTIPROJEKT]&nbsp;<i>{|In diesem Shop werden Artikel aus verschiedenen Projekten angeboten|}</i></td></tr>
-                <tr><td>{|UST gepr&uuml;ft + Freigabe f&uuml;r Versand|}:</td><td>[UST_OK][MSGUST_OK]&nbsp;<i>({|Haken im Auftrag wird immer gesetzt|})</i></td></tr>
-                <tr><td width="300"><u>{|Porto|}:</u></td><td>[ARTIKELPORTOAUTOSTART][ARTIKELPORTO][MSGARTIKELPORTO][ARTIKELPORTOAUTOEND]&nbsp;<i>{|Artikel-Nr. auf die das Porto gebucht wird.|}</i></td></tr>
-                <tr><td width="300"><u>{|Porto erm&auml;&szlig;igt|}:</u></td><td>[ARTIKELPORTOERMAESSIGT][MSGARTIKELPORTOERMAESSIGT]&nbsp;<i>{|Artikel-Nr. auf die das erm&auml;&szlig;igte Porto gebucht wird.|}</i></td></tr>
-                <tr><td><u>{|Portoartikel anlegen|}:</u></td><td>[PORTOARTIKELANLEGEN][MSGPORTOARTIKELANLEGEN]&nbsp;<i>({|falls nicht vorhanden|})</i></td></tr>
+                <tr><td width="300">{|Multiprojekt Shop|}:</td><td>[MULTIPROJEKT][MSGMULTIPROJEKT]<td><i>{|In diesem Shop werden Artikel aus verschiedenen Projekten angeboten|}</i></td></td></tr>
+                <tr><td>{|UST gepr&uuml;ft + Freigabe f&uuml;r Versand|}:</td><td>[UST_OK][MSGUST_OK]<td><i>{|Haken im Auftrag wird immer gesetzt|}</i></td></td></tr>
+                <tr><td width="300"><u>{|Porto|}:</u></td><td>[ARTIKELPORTOAUTOSTART][ARTIKELPORTO][MSGARTIKELPORTO][ARTIKELPORTOAUTOEND]<td><i>{|Artikel-Nr. auf die das Porto gebucht wird.|}</i></td></td></tr>
+                <tr><td width="300"><u>{|Porto erm&auml;&szlig;igt|}:</u></td><td>[ARTIKELPORTOERMAESSIGT][MSGARTIKELPORTOERMAESSIGT]<td><i>{|Artikel-Nr. auf die das erm&auml;&szlig;igte Porto gebucht wird.|}</i></td></td></tr>
+                <tr><td><u>{|Portoartikel anlegen|}:</u></td><td>[PORTOARTIKELANLEGEN][MSGPORTOARTIKELANLEGEN]<td><i>{|falls nicht vorhanden|}</i></td></td></tr>
                 <tr><td>{|Nachnahmegeb&uuml;hr als extra Position|}:</td><td>[ARTIKELNACHNAHME_EXTRAARTIKEL][MSGARTIKELNACHNAHME_EXTRAARTIKEL]</td></tr>
-                <tr><td>{|Nachnahmegeb&uuml;hr|}:</td><td>[ARTIKELNACHNAHMEAUTOSTART][ARTIKELNACHNAHME][MSGARTIKELNACHNAHME][ARTIKELNACHNAHMEAUTOEND]&nbsp;<i>{|Artikel-Nr. f&uuml;r die Nachnahme Geb&uuml;hr.|}</i></td></tr>
+                <tr><td>{|Nachnahmegeb&uuml;hr|}:</td><td>[ARTIKELNACHNAHMEAUTOSTART][ARTIKELNACHNAHME][MSGARTIKELNACHNAHME][ARTIKELNACHNAHMEAUTOEND]<td><i>{|Artikel-Nr. f&uuml;r die Nachnahme Geb&uuml;hr.|}</i></td></td></tr>
 
-                <tr><td><u>{|Auftragsstatus r&uuml;ckmelden|}:</u></td><td>[AUFTRAGABGLEICH][MSGAUFTRAGABGLEICH]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+                <tr><td><u>{|Auftragsstatus r&uuml;ckmelden|}:</u></td><td>[AUFTRAGABGLEICH][MSGAUFTRAGABGLEICH]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
                 <tr><td><label for="sendonlywithtracking">{|Automatische Rückmeldung deaktivieren|}:</label></td><td>[SENDONLYWITHTRACKING][MSGSENDONLYWITHTRACKING]</td></tr>
-                <tr class="ab_nummerzeitraum ab_nummer"><td>{|Hole jeden Status|}:</td><td>[HOLEALLESTATI][MSGHOLEALLESTATI]&nbsp;<i>{|Es werden alle Auftr&auml;ge &uuml;bertragen von Shop auf OpenXE unabh&auml;ngig vom Status.|}</i></td></tr>
+                <tr class="ab_nummerzeitraum ab_nummer"><td>{|Hole jeden Status|}:</td><td>[HOLEALLESTATI][MSGHOLEALLESTATI]<td><i>{|Es werden alle Auftr&auml;ge &uuml;bertragen von Shop auf OpenXE unabh&auml;ngig vom Status.|}</i></td></td></tr>
                 <tr><td><u>{|Freitext aus Shopschnittstelle|}:</u></td><td>
                 [FREITEXT][MSGFREITEXT]
                 </td></tr>
@@ -237,7 +237,7 @@
                 <tr><td>{|Angebote statt Auftr&auml;ge anlegen|}:</td><td>[ANGEBOTEANLEGEN][MSGANGEBOTEANLEGEN]</td></tr>
                 <tr><td>{|Autoversand bei Kommentar in Warenkorb deaktivieren|}:</td><td>[AUTOVERSANDBEIKOMMENTARDEAKTIVIEREN][MSGAUTOVERSANDBEIKOMMENTARDEAKTIVIEREN]</td></tr>
                 <tr><td><br><strong>{|ab hier importerspezifische Einstellungen|}:</strong><br><br></td></tr>
-                <tr><td>{|Stornierung r&uuml;ckmelden|}:</td><td>[STORNOABGLEICH][MSGSTORNOABGLEICH]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+                <tr><td>{|Stornierung r&uuml;ckmelden|}:</td><td>[STORNOABGLEICH][MSGSTORNOABGLEICH]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
                 <tr><td>{|Besteuerung im Drittland abh&auml;ngig von Lieferadresse machen|}:</td><td>[STEUERFREILIEFERLANDEXPORT][MSGSTEUERFREILIEFERLANDEXPORT]</td></tr>
                 <tr><td>{|Gesamtbetrag festsetzen|}:</td><td>[GESAMTBETRAGFESTSETZEN][MSGGESAMTBETRAGFESTSETZEN]</td></tr>
                 <tr><td>{|Maximale Differenz zur berechneten Summe|}:</td><td>[GESAMTBETRAGFESTSETZENDIFFERENZ][MSGGESAMTBETRAGFESTSETZENDIFFERENZ]</td></tr>
@@ -254,7 +254,7 @@
               <tr><td><u>{|Rabatte Porto festschreiben|}:</u></td><td>[RABATTEPORTOFESTSCHREIBEN][MSGRABATTEPORTOFESTSCHREIBEN]&nbsp;</td></tr>
               <tr><td>{|Beschreibungstexte aus Shop|}:</td><td>[ARTIKELTEXTEUEBERNEHMEN][MSGARTIKELTEXTEUEBERNEHMEN]</td></tr>
               <tr><td>{|Artikelnummern aus Nummernkreis|}:</td><td>[ARTIKELNUMMERNUMMERKREIS][MSGARTIKELNUMMERNUMMERKREIS]</td></tr>
-              <tr><td></td><td>[ARTIKELIMPORTEINZELN][MSGARTIKELIMPORTEINZELN]&nbsp;einzeln&nbsp;<!--<i>(Nur bei Artikeln mit Option: Artikel->Online-Shop Optionen->Online Shop Abgleich)</i>--></td></tr>
+              <tr><td></td><td>[ARTIKELIMPORTEINZELN][MSGARTIKELIMPORTEINZELN]&nbsp;einzeln&nbsp;<!--<i>(Nur bei Artikeln mit Option: Artikel->Online-Shop Optionen->Online Shop Abgleich)</i></td>--></td></tr>
               <tr><td>{|Artikelnummern aus Shop|}:</td><td>[ARTIKELNUMMERUEBERNEHMEN][MSGARTIKELNUMMERUEBERNEHMEN]</td></tr>
               <tr><td>{|Artikelbezeichnung aus OpenXE|}:</td><td>[ARTIKELBEZEICHNUNGAUSWAWISION][MSGARTIKELBEZEICHNUNGAUSWAWISION]</td></tr>
               <tr><td>{|Artikelbeschreibungen aus OpenXE|}:</td><td>[ARTIKELBESCHREIBUNGAUSWAWISION][MSGARTIKELBESCHREIBUNGAUSWAWISION]</td></tr>
@@ -274,25 +274,26 @@
         <div class="inside inside-full-height">
           <fieldset><legend>{|Artikel Import / Export|}</legend>
             <table width="100%">
-              <tr><td width="300"><u>{|Lagerzahlen &Uuml;bertragung erlauben|}:</u></td><td>[LAGEREXPORT][MSGLAGEREXPORT]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td width="300"><u>{|Lagerzahlen &Uuml;bertragung erlauben|}:</u></td><td>[LAGEREXPORT][MSGLAGEREXPORT]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
               <tr><td>{|Lager Grundlage|}:</u></td><td>[LAGERGRUNDLAGE][MSGLAGERGRUNDLAGE]</td></tr>
               <tr><td>{|Lagerkorrektur überschreiben|}:</td><td>[UEBERSCHREIBE_LAGERKORREKTURWERT][MSGUEBERSCHREIBE_LAGERKORREKTURWERT]</td></tr>
               <tr class="lagerkorrektur"><td>{|Lagerkorrektur|}:</td><td>[LAGERKORREKTURWERT][MSGLAGERKORREKTURWERT]</td></tr>
               [HOOK_STORAGE]
-              <tr><td><u>{|Artikel &Uuml;bertragung erlauben|}:</u></td><td>[ARTIKELEXPORT][MSGARTIKELEXPORT]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Alle geänderten Artikel automatisch übertragen|}:</td><td>[AUTOSENDARTICLE][MSGAUTOSENDARTICLE]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
+              <tr><td><u>{|Artikel &Uuml;bertragung erlauben|}:</u></td><td>[ARTIKELEXPORT][MSGARTIKELEXPORT]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Alle geänderten Artikel automatisch übertragen|}:</td><td>[AUTOSENDARTICLE][MSGAUTOSENDARTICLE]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
               <tr><td><br><strong>{|Ab hier importerspezifische Einstellungen|}:</strong><br><br></td></tr>
-              <tr><td>{|Texte &uuml;bertragen|}:</td><td>[TEXTEUEBERTRAGEN][MSGTEXTEUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Bilder &uuml;bertragen|}:</td><td>[SHOPBILDERUEBERTRAGEN][MSGSHOPBILDERUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Eigenschaften &uuml;bertragen|}:</td><td>[EIGENSCHAFTENUEBERTRAGEN][MSGEIGENSCHAFTENUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Kategorien &uuml;bertragen|}:</td><td>[KATEGORIENUEBERTRAGEN][MSGKATEGORIENUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Varianten &uuml;bertragen|}:</td><td>[VARIANTENUEBERTRAGEN][MSGVARIANTENUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Crossselling &uuml;bertragen|}:</td><td>[CROSSSELLINGARTIKELUEBERTRAGEN][MSGCROSSSELLINGARTIKELUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Staffelpreise &uuml;bertragen|}:</td><td>[STAFFELPREISEUEBERTRAGEN][MSGSTAFFELPREISEUEBERTRAGEN]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr><td>{|Gutscheine &uuml;bertragen|}:</td><td>[GUTSCHEINEUEBERTRAGEN][MSGGUTSCHEINEUEBERTRAGEN]&nbsp;<i>({|Via Prozessstarter|})</i></td></tr>
-              <tr [NURPREISESTYLE]><td>{|Artikeltext &Uuml;bertragung unterdr&uuml;cken|}:</td><td>[NURPREISE][MSGNURPREISE]&nbsp;<i>({|Von OpenXE zu Shop|})</i></td></tr>
-              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelliste abholen nur neue Artikel anlegen|}:</td><td>[NURNEUEARTIKEL][MSGNURNEUEARTIKEL]&nbsp;<i>({|Von Shop zu OpenXE|})</i></td></tr>
-              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelnummer beim Anlegen aus Shop &uuml;bernehmen|}:</td><td>[ARTIKELNUMMERBEIMANLEGENAUSSHOP][MSGARTIKELNUMMERBEIMANLEGENAUSSHOP]&nbsp;<i>({|Von Shop zu OpenXE|})</i></td></tr>
+              <tr><td>{|Texte &uuml;bertragen|}:</td><td>[TEXTEUEBERTRAGEN][MSGTEXTEUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Bilder &uuml;bertragen|}:</td><td>[SHOPBILDERUEBERTRAGEN][MSGSHOPBILDERUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Dateien &uuml;bertragen|}:</td><td>[DATEIENUEBERTRAGEN][MSGDATEIENUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop: [STICHWOERTER]|}</i></td></td></tr>
+              <tr><td>{|Eigenschaften &uuml;bertragen|}:</td><td>[EIGENSCHAFTENUEBERTRAGEN][MSGEIGENSCHAFTENUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Kategorien &uuml;bertragen|}:</td><td>[KATEGORIENUEBERTRAGEN][MSGKATEGORIENUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Varianten &uuml;bertragen|}:</td><td>[VARIANTENUEBERTRAGEN][MSGVARIANTENUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Crossselling &uuml;bertragen|}:</td><td>[CROSSSELLINGARTIKELUEBERTRAGEN][MSGCROSSSELLINGARTIKELUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Staffelpreise &uuml;bertragen|}:</td><td>[STAFFELPREISEUEBERTRAGEN][MSGSTAFFELPREISEUEBERTRAGEN]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr><td>{|Gutscheine &uuml;bertragen|}:</td><td>[GUTSCHEINEUEBERTRAGEN][MSGGUTSCHEINEUEBERTRAGEN]<td><i>{|Via Prozessstarter|}</i></td></td></tr>
+              <tr [NURPREISESTYLE]><td>{|Artikeltext &Uuml;bertragung unterdr&uuml;cken|}:</td><td>[NURPREISE][MSGNURPREISE]<td><i>{|Von OpenXE zu Shop|}</i></td></td></tr>
+              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelliste abholen nur neue Artikel anlegen|}:</td><td>[NURNEUEARTIKEL][MSGNURNEUEARTIKEL]<td><i>{|Von Shop zu OpenXE|}</i></td></td></tr>
+              <tr [NURARTIKELLISTESTYLE]><td>{|Artikelnummer beim Anlegen aus Shop &uuml;bernehmen|}:</td><td>[ARTIKELNUMMERBEIMANLEGENAUSSHOP][MSGARTIKELNUMMERBEIMANLEGENAUSSHOP]<td><i>{|Von Shop zu OpenXE|}</i></td></td></tr>
 
             </table>
           </fieldset>
@@ -320,7 +321,7 @@
           <fieldset><legend>{|Rabatte|}</legend>
             <table width="100%">
               <tr><td width="300">{|Rabatt-Artikel|}:</td><td>[ARTIKELRABATT][MSGARTIKELRABATT]&nbsp;</td></tr>
-              <tr><td>{|Steuersatz für Rabatt-Artikel|}:</td><td>[ARTIKELRABATTSTEUER][MSGARTIKELRABATTSTEUER]&nbsp;<i>% Steuer.</i></td></tr>
+              <tr><td>{|Steuersatz für Rabatt-Artikel|}:</td><td>[ARTIKELRABATTSTEUER][MSGARTIKELRABATTSTEUER]<td><i>% Steuer.</i></td></td></tr>
             </table>
           </fieldset>
         </div>
@@ -343,9 +344,9 @@
         <div class="inside inside-full-height">
           <fieldset><legend>Zugangsdaten f&uuml;r OpenXE Import Plugin</legend>
             <table width="100%">
-              <tr><td>{|URL|}:</td><td>[URL][MSGURL]&nbsp;<i>URL zur externen Importer</i></td><td></tr>
-              <tr><td width="300">{|ImportKey|}:</td><td>[PASSWORT][MSGPASSWORT]&nbsp;<i>32 Zeichen langes Sicherheitspasswort</i></td><td></tr>
-              <tr><td>{|ImportToken|}:</td><td>[TOKEN][MSGTOKEN]&nbsp;<i>6 Zeichen langes Sicherheitstoken</i></td><td></tr>
+              <tr><td>{|URL|}:</td><td>[URL][MSGURL]<td><i>URL zur externen Importer</i></td></td><td></tr>
+              <tr><td width="300">{|ImportKey|}:</td><td>[PASSWORT][MSGPASSWORT]<td><i>32 Zeichen langes Sicherheitspasswort</i></td></td><td></tr>
+              <tr><td>{|ImportToken|}:</td><td>[TOKEN][MSGTOKEN]<td><i>6 Zeichen langes Sicherheitstoken</i></td></td><td></tr>
             </table>
           </fieldset>
           <div style="display:none;">[DATUMVON][MSGDATUMVON][CRONJOBAKTIV][MSGCRONJOBAKTIV][DEMOMODUS][MSGDEMOMODUS][DIREKTIMPORT][MSGDIREKTIMPORT][HOLEALLE][MSGHOLEALLE][ANZGLEICHZEITIG][MSGANZGLEICHZEITIG]</div>

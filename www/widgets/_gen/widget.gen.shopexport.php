@@ -250,6 +250,9 @@ class WidgetGenshopexport
     $field = new HTMLCheckbox("shopbilderuebertragen","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("dateienuebertragen","text","","60","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("eigenschaftenuebertragen","","","1","0","0");
     $this->form->NewField($field);
 

@@ -1197,6 +1197,7 @@ class Remote
         //$lagerexport = $shopexportarr['lagerexport'];
         $lagergrundlage = $shopexportarr['lagergrundlage'];
         $shopbilderuebertragen = $shopexportarr['shopbilderuebertragen'];
+        $dateienuebertragen = explode(',',str_replace(' ','',strtolower($shopexportarr['dateienuebertragen'])));
         $projekt = (int) $shopexportarr['projekt'];
         $projektlager = $this->app->DB->Select("SELECT id FROM projekt WHERE id = $projekt AND projektlager = 1 LIMIT 1");
         $tmp = new ObjGenArtikel($this->app);
@@ -1437,7 +1438,7 @@ class Remote
             //Bilder + Anhänge
             $dateien = null;
             if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                $dateien = $this->getFilesForArticle($artikel, ['Shopbild', 'Datenblatt', 'anhang']);
+                $dateien = $this->getFilesForArticle($artikel,$dateienuebertragen);
                 if (!empty($dateien)) {
                     $data[$i]['Dateien'] = [];
                     foreach ($dateien as $datei) {
@@ -2188,8 +2189,8 @@ class Remote
                 INNER JOIN `datei` AS `d` ON ds.datei = d.id  
                 INNER JOIN `datei_version` AS `dv` ON dv.datei = ds.datei
                 INNER JOIN (SELECT MAX(`version`) AS `version`, `datei` FROM `datei_version` GROUP BY `datei`) AS `dvm` ON dvm.datei = dv.datei AND dvm.version = dv.version
-                WHERE ds.parameter = %d AND ds.objekt like 'Artikel' AND (ds.subjekt LIKE '".
-                implode("' OR ds.subjekt LIKE '",$stichwoerter)
+                WHERE ds.parameter = %d AND ds.objekt like 'Artikel' AND (LOWER(ds.subjekt) LIKE '".
+                implode("' OR LOWER(ds.subjekt) LIKE '",$stichwoerter)
                 ."') AND d.geloescht = 0
                 ORDER BY ds.sort", $articleId);
         return $this->app->DB->SelectArr($query);
