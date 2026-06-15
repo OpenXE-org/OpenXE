@@ -1722,6 +1722,8 @@ class Verbindlichkeit {
         $tmp->AddRow($row);
         $tmp->DisplayNew('ARTIKEL',"Sachkonto","noAction");
 
+        $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'verbindlichkeit'));
+
         $tmp = new EasyTable($this->app);
         $tmp->Query("SELECT zeit,bearbeiter,grund FROM verbindlichkeit_protokoll WHERE verbindlichkeit='$id' ORDER by zeit DESC",0,"");
         $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
@@ -1903,5 +1905,4 @@ class Verbindlichkeit {
             $this->app->YUI->Message('error','Rechnungsnummer(n) mehrfach vergeben: '.implode(', ',array_column($doppelte,'rechnung')));
         }
     }
-
 }

@@ -920,7 +920,7 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('ANGEBOTTEXT',"Das Angebot wird bearbeitet und wurde noch nicht freigegeben und abgesendet!");
     }
   
-    $this->app->Tpl->Set('ZAHLUNGEN',$this->RechnungZahlung(true));
+    $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'rechnung'));
 
     $this->app->Tpl->Set('RECHNUNGADRESSE',$this->Rechnungsadresse($auftragArr[0]['id']));
 
@@ -3007,50 +3007,6 @@ class Rechnung extends GenRechnung
             VALUES ('$rechnung','$artikel','$bezeichnunglieferant','$bestellnummer','$menge','$preis','$waehrung','$sort','$datum','$umsatzsteuer','angelegt','$projekt','$vpe','$beschreibung','$rabatt','$keinrabatterlaubt')");
 
     return $this->app->DB->GetInsertID();
-  }
-
-
-    /**
-   * Build the html output for minidetail containing the payments
-   * @param bool $return
-   *
-   * @return string
-   */
-  function RechnungZahlung($return=false)
-  {
-    $id = $this->app->Secure->GetGET('id');
-
-    $zahlungen = $this->app->erp->GetZahlungen($id,'rechnung'); 
-    if (!empty($zahlungen)) {
-        $et = new EasyTable($this->app);
-
-        $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
-
-        foreach ($zahlungen as $zahlung) {
-            $row = array(
-                $zahlung['datum'],
-                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">
-                    ".ucfirst($zahlung['doc_typ'])." 
-                    ".$zahlung['doc_info']."
-                </a>",
-                $zahlung['betrag'],
-                $zahlung['waehrung']
-            );
-            $et->AddRow($row);
-        }
-
-        $salden = $this->app->erp->GetSaldenDokument($id,'rechnung');
-        foreach ($salden as $saldo) { 
-            $row = array(
-                '',
-                '<b>Saldo</b>',
-                "<b>".$saldo['betrag']."</b>",
-                "<b>".$saldo['waehrung']."</b>"
-            );
-            $et->AddRow($row);
-        }
-        return($et->DisplayNew('return',""));
-    }
   }
 
     /*

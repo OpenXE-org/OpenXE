@@ -15981,4 +15981,45 @@ function IframeDialog($width, $height, $src = "") {
            return("<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>");
         }
     }
+
+     /**
+   * Build the html output for minidetail containing the payments
+   * @param bool $return
+   *
+   * @return string
+   */
+    function BelegZahlungHTMLTable(int $id, string $doc_type)
+    {
+        $zahlungen = $this->app->erp->GetZahlungen($id,$doc_type);
+        if (!empty($zahlungen)) {
+            $et = new EasyTable($this->app);
+
+            $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
+
+            foreach ($zahlungen as $zahlung) {
+                $row = array(
+                    $zahlung['datum'],
+                    "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">
+                        ".ucfirst($zahlung['doc_typ'])."
+                        ".$zahlung['doc_info']."
+                    </a>",
+                    $zahlung['betrag'],
+                    $zahlung['waehrung']
+                );
+                $et->AddRow($row);
+            }
+
+            $salden = $this->app->erp->GetSaldenDokument($id,$doc_type);
+            foreach ($salden as $saldo) {
+                $row = array(
+                    '',
+                    '<b>Saldo</b>',
+                    "<b>".$saldo['betrag']."</b>",
+                    "<b>".$saldo['waehrung']."</b>"
+                );
+                $et->AddRow($row);
+            }
+            return($et->DisplayNew('return',""));
+        }
+    }
 }
