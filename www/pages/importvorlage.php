@@ -1524,6 +1524,8 @@ class Importvorlage extends GenImportvorlage {
       );
     }
 
+    $dateitypen = $this->app->erp->getDateiTypen('artikel');
+
     for($i=1;$i<=$number_of_rows;$i++) {
       unset($felder);
       unset($lieferantid);
@@ -3015,7 +3017,7 @@ class Importvorlage extends GenImportvorlage {
                     }
                     $this->app->DB->Update("UPDATE `artikel` SET `lager_platz` = $lagerplatz WHERE id = '{$artikelid}' LIMIT 1");
                   break;
-                  default:       
+                  default:      
                     $handled = false;
                     foreach (SELF::handled_fields as $handled_field) {
                         if (preg_match($handled_field, $value)) {
@@ -3272,26 +3274,27 @@ class Importvorlage extends GenImportvorlage {
 
             // Dateien
             if (!empty($additional_files)) {
+                // Method 1: get filename from CSV
                 foreach ($tmp as $feldname => $feldwerte) {
                     $fileid = null;
                     $dateistichwort = null;
                     $matches = array();
                     if (preg_match("/datei(?<nummer>\d)/", $feldname, $matches)) {
-
                         // find stichwort
                         $column = 'dateistichwort'.$matches['nummer'];
-                        $dateistichwort_csv = ucfirst($tmp[$column][$i]);
+                        $dateistichwort_csv = strtolower($tmp[$column][$i]);
 
                         if (!empty($dateistichwort_csv)) {
-                            $dateitypen = $this->app->erp->getDateiTypen('artikel');
                             foreach ($dateitypen as $dateityp) {
-                                if (ucfirst($dateityp['wert'] == $dateistichwort_csv)) {
+                                if (strtolower($dateityp['wert'] == $dateistichwort_csv)) {
                                     $dateistichwort = $dateityp['wert'];
                                 }
                             }
                         }
                         if (empty($dateistichwort)) {
-                            $dateistichwort = 'Sonstige';
+                            $importvorlagedoresult['messages'][] = "Dateistichwort nicht gefunden: ".$dateistichwort_csv.", ".$dateiname;
+                            $importvorlagedoresult['success'] = false;
+                            break;
                         }
 
                         // find file in upload
@@ -3300,7 +3303,7 @@ class Importvorlage extends GenImportvorlage {
                         if (!empty($dateipfadzip)) {
                             $dateiname = basename($dateipfadzip);
                             $found = false;
-                            foreach ($additional_files as $additional_file) {
+                            foreach ($additional_files as $key => $additional_file) {
                                 if ($dateipfadzip == $additional_file['pathinzip']) {
                                     $found = true;
                                     $fileid = $this->app->erp->CreateDateiWithStichwort(
@@ -3317,6 +3320,8 @@ class Importvorlage extends GenImportvorlage {
                                     if (empty($fileid)) {
                                         $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
                                         $importvorlagedoresult['success'] = false;
+                                    } else {
+                                        $additional_files[$key]['imported'] = true;
                                     }
                                     break;
                                 }
@@ -3326,9 +3331,57 @@ class Importvorlage extends GenImportvorlage {
                                 $importvorlagedoresult['success'] = false;
                             }
                         }
-                    }
-                }
-            } // Dateien
+                    } // match datei_
+                } // fields
+
+                // Method 2 get fileinfo from folder names, level 1 = artikelnummer, EAN or MPN, level 2 = stichwort
+                $artikelabgleich = $this->app->DB->SelectRow("SELECT nummer, ean, herstellernummer FROM artikel WHERE id = ".$artikelid);
+                foreach ($additional_files as $key => $additional_file) {
+                    $fileid = null;
+                    $dateistichwort = null;
+                    $pathinfo = pathinfo($additional_file['pathinzip']);
+                    $dateiname = $pathinfo['basename'];
+                    $paths = explode(DIRECTORY_SEPARATOR, $pathinfo['dirname']);
+
+                    if (is_array($paths)) {
+                        if (count($paths) == 2) {
+                            if (
+                                $paths[0] == $artikelabgleich['nummer'] ||
+                                $paths[0] == $artikelabgleich['ean'] ||
+                                $paths[0] == $artikelabgleich['herstellernummer']
+                            ) {
+                                $dateistichwort_csv = strtolower($paths[1]);
+                                foreach ($dateitypen as $dateityp) {
+                                    if (strtolower($dateityp['wert']) == $dateistichwort_csv) {
+                                        $dateistichwort = $dateityp['wert'];
+                                    }
+                                }
+                                if (empty($dateistichwort)) {
+                                    $importvorlagedoresult['messages'][] = "Dateistichwort nicht gefunden: ".$dateistichwort_csv.", ".$dateiname;
+                                    continue;
+                                }
+                                $fileid = $this->app->erp->CreateDateiWithStichwort(
+                                            name: $dateiname,
+                                            titel: '',
+                                            beschreibung: '',
+                                            nummer: '',
+                                            datei: $additional_file['path'],
+                                            ersteller: $this->app->User->GetName(),
+                                            subjekt: $dateistichwort,
+                                            objekt: 'Artikel',
+                                            parameter: $artikelid
+                                    );
+                                if (empty($fileid)) {
+                                    $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
+                                    $importvorlagedoresult['success'] = false;
+                                } else {
+                                    $additional_files[$key]['imported'] = true;
+                                }
+                            } // Artikel match
+                        } // count = 2
+                    } // array
+                } // foreach file
+            } // ! empty Dateien
           } // if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){ // !?!?!
 
           break; // HERE END artikel einkauf
@@ -4369,8 +4422,8 @@ class Importvorlage extends GenImportvorlage {
 
             } else if(!$first_checked) {
                 $first_checked = true;
-                $importvorlagedoresult['message'][] = $error_text;
-                $importvorlagedoresult['success'] = false;
+                $importvorlagedoresult['messages'][] = $error_text;
+                $importvorlagedoresult['successs'] = false;
             }
 
             break;
@@ -4404,6 +4457,21 @@ class Importvorlage extends GenImportvorlage {
         }
       } // Loop
 
+      // Check files status
+      $files_count = 0;
+      if (!empty($additional_files)) {
+        foreach ($additional_files as $additional_file) {
+            if (!$additional_file['imported']) {
+                $importvorlagedoresult['messages'][] = "Datei wurde nicht importiert: ".$additional_file['pathinzip'];
+            } else {
+                $files_count++;
+            }
+        }
+      }
+
+      if ($files_count > 0) {
+        $importvorlagedoresult['messages'][] = $files_count. " Dateien wurden importiert";
+      }
 
       $importvorlagedoresult['messages'] = array_unique($importvorlagedoresult['messages']);
       $importvorlagedoresult['message'] = implode(', ',$importvorlagedoresult['messages']);
