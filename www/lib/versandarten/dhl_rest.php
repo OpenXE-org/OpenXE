@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: LicenseRef-EGPL-3.1
  */
 
+use Xentral\Components\Logger\Logger;
 use Xentral\Carrier\DhlRest\DhlRestApi;
 use Xentral\Carrier\DhlRest\DhlRestApiException;
 use Xentral\Modules\ShippingMethod\Model\AddressType;
@@ -27,6 +28,19 @@ require_once dirname(__DIR__) . '/class.versanddienstleister.php';
  */
 class Versandart_dhl_rest extends Versanddienstleister
 {
+
+    protected Logger $logger;
+
+    public function __construct(ApplicationCore $app, ?int $id)
+    {
+        parent::__construct($app, $id);
+        $this->logger = $app->Container->get('Logger');
+    }
+
+    private function Log($level, $message, $dump = array()) {
+        $this->logger->Log($level, 'DHL rest API '.$message, (array) $dump);
+    }
+
     public function GetName(): string
     {
         return 'DHL Paket DE Versenden (Rest API)';
@@ -53,8 +67,8 @@ class Versandart_dhl_rest extends Versanddienstleister
                                        'info' => '14-stellig (V54EPAK EKP+Verfahren+Teilnahme, z.B. 33333333335401)'],
             'accountnumber_connect'=> ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Paket Connect:',
                                        'info' => '14-stellig (V55PAK EKP+Verfahren+Teilnahme, z.B. 3333333333????)'],
-            'accountnumber_wp'     => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost:',
-                                       'info' => '14-stellig (V62WP EKP+Verfahren+Teilnahme, z.B. 3333333333????)'],
+            'accountnumber_kp'     => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Kleinpaket:',
+                                       'info' => '14-stellig (V62KP EKP+Verfahren+Teilnahme, z.B. 33333333336201)'],
             'accountnumber_wpint'  => ['typ' => 'text', 'bezeichnung' => 'Abrechnungsnummer Warenpost International:',
                                        'info' => '14-stellig (V66WPI EKP+Verfahren+Teilnahme, z.B. 33333333336603)'],
 
@@ -90,7 +104,9 @@ class Versandart_dhl_rest extends Versanddienstleister
             $api      = $this->buildApi();
             $payload  = $this->buildShipmentPayload($json);
 
+            $this->Log(Logger::DEBUG, 'createShipment request', $payload);
             $response = $api->createShipment($payload);
+            $this->Log(Logger::DEBUG, 'createShipment response', $response);
 
             if (is_array($response['status'])) {
                 $status = $response['status'];
@@ -99,11 +115,15 @@ class Versandart_dhl_rest extends Versanddienstleister
             }
 
             if ($status['statusCode'] != 200) {
-                $ret->Errors[] = 'API meldet Fehler ('.$status['status'].'): '.$status['title']." - ".$status['detail'];
+                $errortext = 'API meldet Fehler ('.$status['status'].'): '.$status['title']." - ".$status['detail'];
+                $ret->Errors[] = $errortext;
+                $this->Log(Logger::ERROR, $errortext);
             }
 
-            if (empty($response['items'])) {
-                $ret->Errors[] = 'Ungültige API-Antwort (kein items-Eintrag)';
+            if (empty($response['items'])) {                
+                $errortext = 'Ungültige API-Antwort (kein items-Eintrag)';
+                $ret->Errors[] = $errortext;
+                $this->Log(Logger::ERROR, $errortext);
                 return $ret;
             }
 
@@ -171,9 +191,9 @@ class Versandart_dhl_rest extends Versanddienstleister
             $result[] = Product::Create('V55PAK', 'DHL Paket Connect')
                 ->WithLength(15, 120)->WithWidth(11, 60)->WithHeight(3.5, 60)->WithWeight(0.01, 31.5);
         }
-        if (!empty($this->settings->accountnumber_wp)) {
-            $result[] = Product::Create('V62WP', 'DHL Warenpost')
-                ->WithLength(10, 35)->WithWidth(7, 25)->WithHeight(0.1, 5)->WithWeight(0.01, 1);
+        if (!empty($this->settings->accountnumber_kp)) {
+            $result[] = Product::Create('V62KP', 'DHL Kleinpaket')
+                ->WithLength(10, 35)->WithWidth(7, 25)->WithHeight(0.1, 8)->WithWeight(0.01, 1);
         }
         if (!empty($this->settings->accountnumber_wpint)) {
             $result[] = Product::Create('V66WPI', 'DHL Warenpost International')
@@ -235,7 +255,7 @@ class Versandart_dhl_rest extends Versanddienstleister
             'addressHouse'  => $this->settings->sender_streetnumber ?? null,
             'postalCode'    => $this->settings->sender_zip         ?? '',
             'city'          => $this->settings->sender_city        ?? '',
-            'country'       => self::toIso3($this->settings->sender_country ?? 'DE'),
+            'country'       => self::toIso3(trim($this->settings->sender_country) ?? 'DE'),
             'email'         => $this->settings->sender_email       ?? null,
             'phone'         => $this->settings->sender_phone       ?? null,
             'contactName'   => $this->settings->sender_contact_person ?? null,
@@ -400,7 +420,7 @@ class Versandart_dhl_rest extends Versanddienstleister
             'V53WPAK' => $this->settings->accountnumber_int     ?? null,
             'V54EPAK' => $this->settings->accountnumber_euro    ?? null,
             'V55PAK'  => $this->settings->accountnumber_connect ?? null,
-            'V62WP'   => $this->settings->accountnumber_wp      ?? null,
+            'V62KP'   => $this->settings->accountnumber_kp      ?? null,
             'V66WPI'  => $this->settings->accountnumber_wpint   ?? null,
             default   => null,
         };

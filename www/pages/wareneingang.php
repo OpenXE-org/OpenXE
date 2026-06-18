@@ -2310,7 +2310,26 @@ class Wareneingang {
                     if ($menge == '') {
                         $gescannterartikel = $artikel_input;
                         if (!empty($gescannterartikel)) {
-                            $bparr = $this->app->DB->SelectRow("SELECT SUM(bp.menge) menge, SUM(bp.geliefert) geliefert FROM bestellung b INNER JOIN bestellung_position bp ON bp.bestellung = b.id INNER JOIN artikel a ON bp.artikel = a.id WHERE a.id='$artikel' LIMIT 1");
+                            $bparr = $this->app->DB->SelectRow("
+                                SELECT
+                                    SUM(bp.menge) menge,
+                                    SUM(bp.geliefert) geliefert,
+                                    SUM(bp.menge) - SUM(bp.geliefert) offen
+                                FROM
+                                    bestellung b
+                                INNER JOIN bestellung_position bp ON
+                                    bp.bestellung = b.id
+                                INNER JOIN artikel a ON
+                                    bp.artikel = a.id
+                                WHERE
+                                    a.id = '$artikel' AND b.adresse = '$adresse'
+                                LIMIT 1
+                            ");
+
+                            if (empty($bparr['offen'])) {
+                                $msg .= "<div class=\"error\">Keine offene Bestellposition gefunden f&uuml;r Artikel ".$gescannterartikel.".</div>";
+                                break;
+                            }
 
                             $sql = "SELECT SUM(menge) FROM paketdistribution WHERE paketannahme = ".$id." AND artikel = ".$artikel." AND vorlaeufig = 1 LIMIT 1";
                             $vorlauefige_menge = $this->app->DB->Select($sql);

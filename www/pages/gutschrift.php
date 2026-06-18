@@ -620,7 +620,7 @@ class Gutschrift extends GenGutschrift
       $tmp3->DisplayNew('PDFARCHIV','Men&uuml;','noAction');
     }
 
-    $this->app->Tpl->Add('ZAHLUNGEN',$this->GutschriftZahlung(true));
+    $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'gutschrift'));
 
     if($parsetarget=='') {
       $this->app->Tpl->Output('gutschrift_minidetail.tpl');
@@ -647,51 +647,6 @@ class Gutschrift extends GenGutschrift
     return "<table width=\"100%\">
       <tr valign=\"top\"><td width=\"50%\"><b>Gutschrift:</b><br><br>$rechnungsadresse</td></tr>";
   }
-
-
-  /**
-   * Build the html output for minidetail containing the payments
-   * @param bool $return
-   *
-   * @return string
-   */
-  function GutschriftZahlung($return=false)
-  {
-    $id = $this->app->Secure->GetGET('id');
-
-    $zahlungen = $this->app->erp->GetZahlungen($id,'gutschrift'); 
-    if (!empty($zahlungen)) {
-        $et = new EasyTable($this->app);
-
-        $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
-
-        foreach ($zahlungen as $zahlung) {
-            $row = array(
-                $zahlung['datum'],
-                "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">                            
-                    ".ucfirst($zahlung['doc_typ'])." 
-                    ".$zahlung['doc_info']."
-                </a>",
-                $zahlung['betrag'],
-                $zahlung['waehrung']
-            );
-            $et->AddRow($row);
-        }
-
-        $salden = $this->app->erp->GetSaldenDokument($id,'gutschrift');
-        foreach ($salden as $saldo) {   
-            $row = array(
-                '',
-                '<b>Saldo</b>',
-                "<b>".$saldo['betrag']."</b>",
-                "<b>".$saldo['waehrung']."</b>"
-            );
-            $et->AddRow($row);
-        }
-        return($et->DisplayNew('return',""));           
-    }  
-  }
-
 
   /**
    * @param string|int $id

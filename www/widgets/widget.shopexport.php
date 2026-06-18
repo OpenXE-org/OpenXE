@@ -521,6 +521,8 @@ class WidgetShopexport extends WidgetGenShopexport
         $this->app->Tpl->Add('AKTIONBUTTONS', '<tr><td><a href="index.php?module=shopexport&action=artikeluebertragung&id=' . $id . '"><input type="button" class="aktionbutton" value="{|Artikel &uuml;bertragen|}"></a></td></tr>');
       }
 
+      $this->app->Tpl->Add('STICHWOERTER', implode(', ',array_column($this->app->erp->GetDateiTypen('artikel'),'wert')));
+
       if($struktur && isset($struktur['functions']) && is_array($struktur['functions'])) {
         foreach ($struktur['functions'] as $shopfunction) {
             if (is_array($shopfunction)) {

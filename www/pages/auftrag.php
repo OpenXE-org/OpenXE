@@ -3420,45 +3420,6 @@ class Auftrag extends GenAuftrag
       );
     }
 
-    $vorkasse_ok = $this->app->DB->Select("SELECT vorkasse_ok FROM auftrag WHERE id='$id' LIMIT 1");
-    $zahlungsweise = $auftragArr[0]['zahlungsweise'];
-    if($vorkasse_ok==1){
-      if($zahlungsweise==='vorkasse' || $zahlungsweise==='paypal' || $zahlungsweise==='kreditkarte') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wurde bezahlt.</div>");}
-      else if ($zahlungsweise==='rechnung') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wird per Rechnung bezahlt.</div>");
-      }
-      else if ($zahlungsweise==='amazon') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wird per Amazon bezahlt.</div>");
-      }
-      else if ($zahlungsweise==='lastschrift'||$zahlungsweise==='einzugsermaechtigung') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wird per Lastschrift bezahlt.</div>");
-      }
-      else if ($zahlungsweise==='bar' || $zahlungsweise==='nachnahme' ) {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"success\">Der Auftrag wird bei &Uuml;bergabe bezahlt.</div>");
-      }
-    }
-    else if($vorkasse_ok==2){
-			$this->app->Tpl->Add('ZAHLUNGEN','<div class="warning">Es liegt eine Teilzahlung vor!</div>');
-		}
-
-    elseif(in_array($zahlungsweise, ['vorkasse','paypal','kreditkarte','bar'])) {
-      $this->app->Tpl->Add(
-        'ZAHLUNGEN',
-        '<div class="error">Vorkasse noch nicht abgeschlossen!</div>'
-      );
-    }
-
-     $this->app->Tpl->Add(
-        'ZAHLUNGEN',
-        $this->AuftragZahlung(true)
-     );
-
     // schaue ob es eine GS zu diesem Auftrag gibt
     // schaue ob es eine GS zu diesem Auftrag gibt
     //$gutschriftid = $this->app->DB->Select("SELECT id FROM gutschrift WHERE rechnungid='$rechnungid' LIMIT 1");
@@ -3630,6 +3591,9 @@ class Auftrag extends GenAuftrag
       }
 
     }
+
+    $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'auftrag'));
+
     if($parsetarget=='') {
       $this->app->Tpl->Output('auftrag_minidetail.tpl');
       $this->app->ExitXentral();

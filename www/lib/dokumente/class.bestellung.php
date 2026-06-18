@@ -262,11 +262,6 @@ class BestellungPDF extends BriefpapierCustom {
       }
       //	if(!$this->app->erp->BestellungMitUmsatzeuer($id)) $value[umsatzsteuer] = ""; 
 
-      if($keineartikelnummern==1) {
-        $value['artnummer'] = $value['bestellnummer'];
-        $value['bestellnummer'] = "";
-      }
-
       $ohne_artikeltext = $this->app->DB->Select("SELECT ohne_artikeltext FROM ".$this->table." WHERE id='".$this->id."' LIMIT 1");
       if($ohne_artikeltext=='1') {
         $value['beschreibung']='';
@@ -278,7 +273,10 @@ class BestellungPDF extends BriefpapierCustom {
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_bestellnummer') . ': ' . $value['bestellnummer'];
         }
         $value['bestellnummer']=$value['artikelnummer'];
-      } else {
+      } else if($keineartikelnummern==1) {
+        $value['artnummer'] = $value['bestellnummer'];
+      }
+      else {
         if($value['artikelnummer']!=''){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_unsereartikelnummer') . ': ' . $value['artikelnummer'];
         }

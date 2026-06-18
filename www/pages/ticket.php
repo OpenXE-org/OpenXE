@@ -689,6 +689,8 @@ class Ticket {
         if (empty($id)) {
             // New item
             $id = 'NULL';
+        } else {
+            $old = $this->ticket_log_changes($id, onlyread: true);
         }
 
         if ($input['betreff'] == '') {
@@ -732,7 +734,6 @@ class Ticket {
           }
         }
 
-        $old = $this->ticket_log_changes($id, onlyread: true);
         $sql = "INSERT INTO ticket (".$columns.") VALUES (".$values.") ON DUPLICATE KEY UPDATE ".$update;
         $this->app->DB->Update($sql);
         $id = $this->app->DB->GetInsertID();
