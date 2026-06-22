@@ -1681,33 +1681,33 @@ class Importvorlage extends GenImportvorlage {
 
           if(empty($artikelid) && $tmp['cmd'][$i] == 'create')
           {
+            $projektid = 0;
             if($tmp['projekt'][$i]!='')
             {
-              $tmp['projekt'][$i] = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='".$this->app->DB->real_escape_string($tmp['projekt'][$i])."' AND abkuerzung!='' LIMIT 1");
-              $felder['projekt'] = $tmp['projekt'][$i];
+              $projektid = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='".$this->app->DB->real_escape_string($tmp['projekt'][$i])."' AND abkuerzung!='' LIMIT 1");
             }
             if( strtoupper($tmp['nummer'][$i]) === 'NEW' ||  strtoupper($tmp['nummer'][$i]) === 'NEU' || $tmp['nummer'][$i] == '')
             {
-              if(empty($tmp['projekt'][$i]) && !empty($this->projekt)) {
-                $tmp['projekt'][$i] = $this->projekt;
+              if(empty($projektid) && !empty($this->projekt)) {
+                $projektid = $this->projekt;
               }
               if($tmp['typ'][$i] > 0){
-                $felder['nummer'] = $this->app->erp->GetNextArtikelnummer($tmp['typ'][$i], 1, empty($tmp['projekt'][$i]) ? '' : $tmp['projekt'][$i]);
+                $felder['nummer'] = $this->app->erp->GetNextArtikelnummer($tmp['typ'][$i], 1, $projektid);
               }
               else if($tmp['artikelkategorie'][$i] > 0){
-                $felder['nummer'] = $this->app->erp->GetNextArtikelnummer($tmp['artikelkategorie'][$i], 1, empty($tmp['projekt'][$i]) ? '' : $tmp['projekt'][$i]);
+                $felder['nummer'] = $this->app->erp->GetNextArtikelnummer($tmp['artikelkategorie'][$i], 1, $projektid);
               }
               else if ($tmp['artikelkategorie_name'][$i] !='')
               {
                 $tmp_katname = $this->app->DB->Select("SELECT id FROM artikelkategorien WHERE bezeichnung='".$this->app->DB->real_escape_string($tmp['artikelkategorie_name'][$i])."'  order by geloescht LIMIT 1");
-                $felder['nummer']=$this->app->erp->GetNextArtikelnummer($tmp_katname, 1, empty($tmp['projekt'][$i])?'':$tmp['projekt'][$i]);
+                $felder['nummer']=$this->app->erp->GetNextArtikelnummer($tmp_katname, 1, $projektid);
               }
               else{
                 if(empty($tmp['name'][$i]) && empty($tmp['name_de'][$i])){
                     $importvorlagedoresult['messages'][] = "Leerer Artikel, Zeile: ".$i;
                     break;
                 }
-                $felder['nummer']=$this->app->erp->GetNextArtikelnummer('produkt', 1, empty($tmp['projekt'][$i])?'':$tmp['projekt'][$i]);
+                $felder['nummer']=$this->app->erp->GetNextArtikelnummer('produkt', 1, $projektid);
               }
             } else {
                 $felder['nummer'] = $tmp['nummer'][$i];
@@ -1907,9 +1907,9 @@ class Importvorlage extends GenImportvorlage {
                   case "projekt":
                     if($tmp['projekt'][$i]!="")
                     {
-                      $tmp['projekt'][$i] = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='".$this->app->DB->real_escape_string($tmp['projekt'][$i])."' AND abkuerzung!='' LIMIT 1");
+                      $projektid = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='".$this->app->DB->real_escape_string($tmp['projekt'][$i])."' AND abkuerzung!='' LIMIT 1");
                     }
-                    $this->app->DB->Update("UPDATE artikel SET projekt='".$tmp['projekt'][$i]."' WHERE id='".$artikelid."' LIMIT 1");
+                    $this->app->DB->Update("UPDATE artikel SET projekt='".$projektid."' WHERE id='".$artikelid."' LIMIT 1");
                     break;
                   case "artikelkategorie":
                   case "typ":
@@ -3520,8 +3520,7 @@ class Importvorlage extends GenImportvorlage {
 
           if($tmp['projekt'][$i]!='')
           {
-            $tmp['projekt'][$i] = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='".$this->app->DB->real_escape_string($tmp['projekt'][$i])."' AND abkuerzung!='' LIMIT 1");
-            $felder['projekt'] = $tmp['projekt'][$i];
+            $projektid = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='".$this->app->DB->real_escape_string($tmp['projekt'][$i])."' AND abkuerzung!='' LIMIT 1");
           }
 
           // automatisch create und update erkennen
@@ -3793,15 +3792,15 @@ class Importvorlage extends GenImportvorlage {
 
                 if($felder['lieferantennummer']!='' || $loeschen_lfr_new)
                 {
-                  $this->app->erp->AddRolleZuAdresse($adresse, 'Lieferant', 'von','Projekt',$tmp['projekt'][$i]);
+                  $this->app->erp->AddRolleZuAdresse($adresse, 'Lieferant', 'von','Projekt',$projektid);
                 }
                 if($felder['kundennummer']!='' || $loeschen_kd_new)
                 {
-                  $this->app->erp->AddRolleZuAdresse($adresse, 'Kunde', 'von','Projekt',$tmp['projekt'][$i]);
+                  $this->app->erp->AddRolleZuAdresse($adresse, 'Kunde', 'von','Projekt',$projektid);
                 }
                 if($felder['mitarbeiternummer']!='' || $loeschen_mi_new)
                 {
-                  $this->app->erp->AddRolleZuAdresse($adresse, 'Mitarbeiter', 'von','Projekt',$tmp['projekt'][$i]);
+                  $this->app->erp->AddRolleZuAdresse($adresse, 'Mitarbeiter', 'von','Projekt',$projektid);
                 }
               }
 
@@ -3821,7 +3820,7 @@ class Importvorlage extends GenImportvorlage {
                       $check = $this->app->DB->Select("SELECT id FROM adresse_rolle WHERE adresse = '$adresse' AND objekt like 'Gruppe' AND parameter = '$gr' AND (bis = '0000-00-00' OR isnull(bis) OR bis >= curdate()) LIMIT 1");
                       if(!$check)
                       {
-                        $projekt = $tmp['projekt'][$i];
+                        $projekt = $projektid;
                         if(!$projekt) {
                           $projekt = $this->app->DB->Select("SELECT projekt FROM adresse WHERE id = '$adresse' LIMIT 1");
                         }
@@ -4068,7 +4067,7 @@ class Importvorlage extends GenImportvorlage {
                         $check = $this->app->DB->Select("SELECT id FROM adresse_rolle WHERE adresse = '$adresse' AND objekt like 'Gruppe' AND parameter = '$gr' AND (bis = '0000-00-00' OR isnull(bis) OR bis >= curdate()) LIMIT 1");
                         if(!$check)
                         {
-                          $projekt = $tmp['projekt'][$i];
+                          $projekt = $projektid;
                           if(!$projekt) {
                             $projekt = $this->app->DB->Select("SELECT projekt FROM adresse WHERE id = '$adresse' LIMIT 1");
                           }
