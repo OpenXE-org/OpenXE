@@ -32,6 +32,7 @@ final class PhpMailerTransport implements MailerTransportInterface
     {
         $this->config = $config;
         $this->phpMailer = $mailer;
+
         //no username, no password = no SMTPAuth
         if($config->getConfigValue('username', '') == '' && $config->getConfigValue('pasword', '') == '') {
             $this->phpMailer->SMTPAuth = false;
@@ -63,6 +64,7 @@ final class PhpMailerTransport implements MailerTransportInterface
         $this->phpMailer->SMTPKeepAlive = $config->getConfigValue('smtp_keepalive', false);
         $this->phpMailer->SingleTo = $config->getConfigValue('singleto', false);
         $this->phpMailer->Sendmail = $config->getConfigValue('sendmail', '/usr/sbin/sendmail');
+
         $this->status = self::STATUS_PREPARE;
         if ($logger !== null) {
             $this->phpMailer->Debugoutput =  $logger;

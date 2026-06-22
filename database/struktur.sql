@@ -9481,6 +9481,82 @@ CREATE TABLE `offenevorgaenge` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `office365_access_token`
+--
+
+DROP TABLE IF EXISTS `office365_access_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `office365_access_token` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `office365_account_id` int(11) NOT NULL,
+  `token` longtext DEFAULT NULL,
+  `expires` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `office365_account_id` (`office365_account_id`),
+  KEY `expires` (`expires`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `office365_account`
+--
+
+DROP TABLE IF EXISTS `office365_account`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `office365_account` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) unsigned NOT NULL DEFAULT 0,
+  `refresh_token` longtext DEFAULT NULL,
+  `identifier` varchar(255) DEFAULT NULL,
+  `tenant_id` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `office365_account_property`
+--
+
+DROP TABLE IF EXISTS `office365_account_property`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `office365_account_property` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `office365_account_id` int(11) NOT NULL,
+  `varname` varchar(64) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `account_varname` (`office365_account_id`,`varname`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `office365_account_scope`
+--
+
+DROP TABLE IF EXISTS `office365_account_scope`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `office365_account_scope` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `office365_account_id` int(11) NOT NULL,
+  `scope` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `office365_account_id` (`office365_account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `onlineshop_transfer_cart`
 --
 
