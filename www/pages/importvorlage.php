@@ -826,21 +826,19 @@ class Importvorlage extends GenImportvorlage {
         $id
       )
     );
+    $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
 
     if($this->app->Secure->GetGET('action')==='list')
     {
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list', '&Uuml;bersicht');
+      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=uebersicht','Zur&uuml;ck zur &Uuml;bersicht');
-
     }
     else
     {
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
-      //if($this->app->Secure->GetGET("action")!="create")
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
-
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
-
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list','Zur&uuml;ck zur &Uuml;bersicht');
     }
 
@@ -2760,9 +2758,12 @@ class Importvorlage extends GenImportvorlage {
                       $this->UpdateEinkaufspreiseExtraWerte($ekid, $tmp,'3');
                     }
                     break;
-                  case "standardlieferant":
-                    if (!empty($tmp['standardlieferant'][$i])) {
-                        $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$this->app->DB->real_escape_string($tmp['standardlieferant'][$i])."' LIMIT 1");
+                  case "adresse":
+                    if (!empty($tmp['adresse'][$i])) {
+                        $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$this->app->DB->real_escape_string($tmp['adresse'][$i])."' LIMIT 1");
+                        if ($empty($standardlieferantid)) {
+                            $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE name LIKE '".$this->app->DB->real_escape_string($tmp['adresse'][$i])."' LIMIT 1");
+                        }
                         if ($standardlieferantid != '') {
                             $this->app->DB->Update("UPDATE artikel SET adresse='$standardlieferantid' WHERE id='".$artikelid."' LIMIT 1");
                         } else {
