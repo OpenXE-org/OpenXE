@@ -2761,16 +2761,16 @@ class Importvorlage extends GenImportvorlage {
                     }
                     break;
                   case "standardlieferant":
-                    $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$this->app->DB->real_escape_string($tmp[$value][$i])."' LIMIT 1");
-                    $importvorlagedoresult['messages'][] = "Lieferant suchen: ".$tmp['standardlieferant'][$i];
                     if (!empty($tmp['standardlieferant'][$i])) {
                         $standardlieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer = '".$this->app->DB->real_escape_string($tmp['standardlieferant'][$i])."' LIMIT 1");
-                         if($standardlieferantid != ''){
-                             $this->app->DB->Update("UPDATE artikel SET adresse='$standardlieferantid' WHERE id='".$artikelid."' LIMIT 1");
+                        if ($standardlieferantid != '') {
+                            $this->app->DB->Update("UPDATE artikel SET adresse='$standardlieferantid' WHERE id='".$artikelid."' LIMIT 1");
                         } else {
                             $importvorlagedoresult['messages'][] = "Lieferant nicht gefunden: ".$tmp[$value][$i];
                         }
-                     }
+                    } else {
+                        $this->app->DB->Update("UPDATE artikel SET adresse=0 WHERE id='".$artikelid."' LIMIT 1");
+                    }
                    break;
                   case  "verkaufspreisnetto":
                   case  "verkaufspreis1netto":
