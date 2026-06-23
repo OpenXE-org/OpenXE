@@ -1,5 +1,4 @@
 <div id="tabs">
-
 	<ul>
 		<li><a href="#tabs-1">{|Artikel/Einkauf|}</a></li>
 		<li><a href="#tabs-2">{|Adressen|}</a></li>
@@ -17,6 +16,36 @@
 				<div class="inside inside-full-height">
 					<fieldset><legend>{|Artikel/Einkauf|}</legend>
 						<table class="mkTable">
+							<tr><td colspan = 3>
+                                <h3>Dateianh&auml;nge mit ZIP-Datei importieren:</h3><br>
+                                Die ZIP-Datei muss folgende Struktur aufweisen (Beispiel, Dateinamen sind beliebig):
+                                <ul>
+                                    <li>import.csv</li>
+                                     <ul>
+                                        <li>Artikelkennung1</li>
+                                        <ul>
+                                            <li>shopbild</li>
+                                            <ul>
+                                                <li>Bild1.jpg</li>
+                                                <li>Bild2.jpg</li>
+                                            </ul>
+                                            <li>datenblatt</li>
+                                            <ul>
+                                                <li>Datenblatt.pdf</li>
+                                            </ul>
+                                        </ul>
+                                        <li>Artikelkennung2</li>
+                                        <ul>
+                                            <li>...</li>
+                                        </ul>
+                                        <li>Artikelkennung3</li>
+                                        <ul>
+                                            <li>...</li>
+                                        </ul>
+                                    </ul>
+                                </ul>
+                                Artikelkennung kann sein: Artikelnummer, Herstellernummer oder EAN
+                            </td><td></td><td></td></tr>
 							<tr>
 								<th>Variable</th>
 								<th>Beschreibung</th>
@@ -41,7 +70,7 @@
 							<tr><td>artikelkategorie_name</td><td>Artikelkategorie</td><td>Falls die Artikelkategorie noch nicht vorhanden ist, wird diese neu angelegt</td></tr>
 							<tr><td>artikelbaumX</td><td></td><td>(X=1 bis 20; CLEAR um alle Zuordnungen zu löschen)</td></tr>
 							<tr><td>dateiX</td><td>Dateianhang</td><td>(X=1 bis 20), Pfad der Datei in der ZIP-Datei</td></tr>
-							<tr><td>dateistichwortX</td><td>Dateistichwort-Zuordnung für Dateianhang</td><td>(X=1 bis 20), Shopbild, Gruppenbild, Etikettenbild, Bild, Datenblatt, Druckbild, Zertifikat, Deckblatt, Anhang, Sonstige</td></tr>
+							<tr><td>dateistichwortX</td><td>Dateistichwort-Zuordnung für Dateianhang</td><td>(X=1 bis 20), [STICHWOERTER]</td></tr>
 							<tr><td>bildtitelX</td><td></td><td>(X=1 bis 20; X entspricht der Sortierung des Bildes in den Dateien des Artikels)</td></tr>
 							<tr><td>bildbeschreibung</td><td></td><td(X=1 bis 20; X entspricht der Sortierung des Bildes in den Dateien des Artikels)></td></tr>
 							<tr><td>internerkommentar</td><td>Interner Kommentar</td><td></td></tr>
@@ -199,7 +228,8 @@
 							<tr><td>katalog_textX_YY</td><td></td><td></td></tr>
 							<tr><td>shopX_YY</td><td></td><td></td></tr>
 							<tr><td>aktivX_YY</td><td></td><td></td></tr>
-						</table>
+							<tr><td></td><td></td><td></td></tr>
+						</table>                        
 					</fieldset>
 				</div>
 			</div>

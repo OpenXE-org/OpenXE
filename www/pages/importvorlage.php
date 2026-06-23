@@ -460,6 +460,7 @@ class Importvorlage extends GenImportvorlage {
   public function ImportvorlageFormate(){
 
     $this->ImportvorlageMenu();
+    $this->app->Tpl->Add('STICHWOERTER', implode(', ',array_column($this->app->erp->GetDateiTypen('artikel'),'wert')));
     $this->app->Tpl->Parse('PAGE','importvorlage_formate.tpl');
   }
 
