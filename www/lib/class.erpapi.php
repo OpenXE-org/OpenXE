@@ -37551,11 +37551,11 @@ function Firmendaten($field,$projekt="")
 
         if($modul !== ''){
           $zusaetzlicheStichworter = $this->app->DB->SelectArr(
-            "SELECT * FROM datei_stichwortvorlagen WHERE modul='$modul' OR modul='' ORDER by beschriftung"
+            "SELECT * FROM datei_stichwortvorlagen WHERE ausblenden <> 1 AND (modul='$modul' OR modul='') ORDER by beschriftung"
           );
           $cZusaetzlicheStichworter = empty($zusaetzlicheStichworter)?0:(!empty($zusaetzlicheStichworter)?count($zusaetzlicheStichworter):0);
           for($i=0;$i<$cZusaetzlicheStichworter;$i++){
-            $dateiTypen[] = ['wert' => $zusaetzlicheStichworter[$i]['beschriftung'], 'beschriftung' => $zusaetzlicheStichworter[$i]['beschriftung']];
+            $dateiTypen[] = ['wert' => $zusaetzlicheStichworter[$i]['kennung'], 'beschriftung' => $zusaetzlicheStichworter[$i]['beschriftung']];
           }
         }
 
