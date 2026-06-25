@@ -1237,6 +1237,12 @@ class Remote
                 }
             }
 
+            if($tmp->GetVariante()) {
+                $parentid = $tmp->GetVariante_Von();
+            } else {
+                $parentid = 0;
+            }
+
             if (!empty($loadElements['article_descriptions'])) {
                 $data[$i]['kurztext_de'] = $tmp->GetKurztext_De();
                 $data[$i]['kurztext_en'] = $tmp->GetKurztext_En();
@@ -1438,7 +1444,8 @@ class Remote
             //Bilder + Anhänge
             $dateien = null;
             if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                $dateien = $this->getFilesForArticle($artikel,$dateienuebertragen);
+                $dateien = $this->getFilesForArticle($artikel,$dateienuebertragen,$parentid);
+
                 if (!empty($dateien)) {
                     $data[$i]['Dateien'] = [];
                     foreach ($dateien as $datei) {
@@ -2182,17 +2189,34 @@ class Remote
      * @param int $articleId
      * @return array|null
      */
-    protected function getFilesForArticle($articleId, array $stichwoerter = array('Shopbild'))
+    protected function getFilesForArticle($articleId, array $stichwoerter = array('Shopbild'), int $parentid = 0)
     {
-        $query = sprintf("SELECT d.id AS `id`, dv.id AS `vid`, d.titel, d.beschreibung, ds.subjekt, ds.sort, dv.version AS `version`
-                FROM `datei_stichwoerter` AS `ds` 
-                INNER JOIN `datei` AS `d` ON ds.datei = d.id  
+        $query = "SELECT
+                    d.id AS `id`,
+                    dv.id AS `vid`,
+                    IF(ds.parameter = $parentid, 1,0) AS vom_hauptartikel,
+                    d.titel,
+                    d.beschreibung,
+                    ds.subjekt,
+                    ds.sort,
+                    dv.version AS `version`
+                FROM `datei_stichwoerter` AS `ds`
+                INNER JOIN `datei` AS `d` ON ds.datei = d.id
                 INNER JOIN `datei_version` AS `dv` ON dv.datei = ds.datei
-                INNER JOIN (SELECT MAX(`version`) AS `version`, `datei` FROM `datei_version` GROUP BY `datei`) AS `dvm` ON dvm.datei = dv.datei AND dvm.version = dv.version
-                WHERE ds.parameter = %d AND ds.objekt like 'Artikel' AND (LOWER(ds.subjekt) LIKE '".
+                INNER JOIN
+                (
+                    SELECT MAX(`version`) AS `version`, `datei` FROM `datei_version`
+                    GROUP BY `datei`
+                ) AS `dvm` ON dvm.datei = dv.datei AND dvm.version = dv.version
+                WHERE
+                    (ds.parameter = $articleId OR
+                    (ds.parameter = $parentid AND $parentid <> 0)) AND 
+                    ds.objekt like 'Artikel' AND
+                    (LOWER(ds.subjekt) LIKE '".
                 implode("' OR LOWER(ds.subjekt) LIKE '",$stichwoerter)
                 ."') AND d.geloescht = 0
-                ORDER BY ds.sort", $articleId);
+                ORDER BY vom_hauptartikel, ds.sort";
+
         return $this->app->DB->SelectArr($query);
     }
 
