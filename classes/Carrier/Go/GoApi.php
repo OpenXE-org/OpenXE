@@ -45,11 +45,18 @@ class GoApi {
            CURLOPT_POSTFIELDS => $json,
         ]);
 
+        if ($testmode) {
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        }
+
         $response = json_decode(curl_exec($curl));
         $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
+        $info = curl_getinfo($curl);
+        $error = curl_error($curl);
 
-        $this->logger->debug('GO-API Create Order Response', ['response' => $response, 'code' => $code]);
+        $this->logger->debug('GO-API Create Order Response', ['response' => $response, 'code' => $code, 'curlerror' => $error, 'curlinfo' => $info]);
 
         if ($code == 200) {
             $ret = new CreateOrderResponse();
