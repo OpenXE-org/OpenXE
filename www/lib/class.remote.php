@@ -1443,7 +1443,12 @@ class Remote
 
             //Bilder + Anhänge
             $dateien = null;
-            if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
+
+            if ($shopbilderuebertragen) {
+                $dateienuebertragen[] = 'shopbild';
+            }
+
+            if (!empty($dateienuebertragen)) {
                 $dateien = $this->getFilesForArticle($artikel,$dateienuebertragen,$parentid);
 
                 if (!empty($dateien)) {
