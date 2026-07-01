@@ -1573,17 +1573,38 @@ class Importvorlage extends GenImportvorlage {
         if(!empty($tmp['nummer'][$i])){
           $articleNumber = $this->app->DB->real_escape_string($tmp['nummer'][$i]);
           $artikelid = $this->app->DB->Select(
-            "SELECT `id` FROM `artikel` WHERE `nummer`= '{$articleNumber}'
-            AND `nummer` != '' AND `nummer` != 'DEL' LIMIT 1"
+            "SELECT `id` FROM `artikel`
+                WHERE `nummer`= '{$articleNumber}'
+                AND `nummer` != ''
+                AND `nummer` != 'DEL'
+                AND `geloescht` <> 1
+                LIMIT 1"
           );
+        }
+        elseif(!empty($tmp['ean'][$i])) {
+            $ean = $this->app->DB->real_escape_string($tmp['ean'][$i]);
+            $artikelid = $this->app->DB->Select(
+                "SELECT `id`
+                FROM `artikel`
+                WHERE `herstellernummer`= '{$ean}'
+                AND `herstellernummer` != ''
+                AND `nummer` != 'DEL'
+                AND `geloescht` <> 1
+                LIMIT 1"
+            );
         }
         elseif(!empty($tmp['herstellernummer'][$i])) {
           $supplierArticleNumber = $this->app->DB->real_escape_string($tmp['herstellernummer'][$i]);
+          $supplierName = $this->app->DB->real_escape_string($tmp['hersteller'][$i]);
           $artikelid = $this->app->DB->Select(
             "SELECT `id`
             FROM `artikel`
             WHERE `herstellernummer`= '{$supplierArticleNumber}'
-              AND `herstellernummer` != '' AND `nummer` != 'DEL' LIMIT 1"
+                AND `hersteller` = '{$supplierName}'
+                AND `herstellernummer` != ''
+                AND `nummer` != 'DEL'
+                AND `geloescht` <> 1
+                LIMIT 1"
           );
         }
       }
@@ -1674,10 +1695,7 @@ class Importvorlage extends GenImportvorlage {
       {
         case "einkauf":
         case "artikel":
-          // pruefe ob es artikelnummer schon gibt
-
           // START NEW CODE CREATE ARTIKEL
-
           if(empty($artikelid) && $tmp['cmd'][$i] == 'create')
           {
             $projektid = 0;
@@ -1725,21 +1743,8 @@ class Importvorlage extends GenImportvorlage {
           */
 
           if (true) {
-
-            if($artikelid == '') {
-              $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE ean = '".$tmp['ean'][$i]."' AND geloescht <> 1");
-            }
-            if($artikelid == '') {
-              $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE herstellernummer = '".$tmp['herstellernummer'][$i]."' AND geloescht <> 1 ");
-            }
-            if(is_array($artikelid)) {
-              $artikelid = 0;
-            }
-
             if($artikelid > 0)
             {
-
-              //foreach($fields as $key=>$value)
               foreach($fieldset as $key=>$val)
               {
                 $valu = $val['field'];

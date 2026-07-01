@@ -44,7 +44,7 @@
                                         </ul>
                                     </ul>
                                 </ul>
-                                Artikelkennung kann sein: Artikelnummer, Herstellernummer oder EAN
+                                Artikelkennung kann sein: Artikelnummer, EAN, Herstellernummer in Verbindung mit Hersteller
                             </td><td></td><td></td></tr>
 							<tr>
 								<th>Variable</th>
