@@ -1035,7 +1035,7 @@ class Firmendaten  {
           ,'warnung_doppelte_nummern','wareneingang_zwischenlager','boxausrichtung'
           ,'footer_breite1','footer_breite2','footer_breite3','footer_breite4','steuersatz_normal','steuersatz_ermaessigt','angebot_ohnebriefpapier','auftrag_ohnebriefpapier','rechnung_ohnebriefpapier',
           'lieferschein_ohnebriefpapier','gutschrift_ohnebriefpapier','bestellung_ohnebriefpapier','arbeitsnachweis_ohnebriefpapier','externereinkauf'
-          ,'projektnummerimdokument','mailanstellesmtp','herstellernummerimdokument','artikeleinheit','artikeleinheit_standard','auftrag_bezeichnung_bearbeiter','auftrag_bezeichnung_bestellnummer','bezeichnungkundennummer'
+          ,'projektnummerimdokument','mailanstellesmtp','herstellerimdokument','herstellernummerimdokument','artikeleinheit','artikeleinheit_standard','auftrag_bezeichnung_bearbeiter','auftrag_bezeichnung_bestellnummer','bezeichnungkundennummer'
           ,'auftrag_bezeichnung_vertrieb','standardmarge','schriftart'
           ,'zahlung_rechnung','zahlung_vorkasse','zahlung_nachnahme','zahlung_bar','zahlung_paypal','zahlung_amazon','zahlung_lastschrift','zahlung_kreditkarte','zahlung_ratenzahlung','zahlung_rechnung_sofort_de','zahlung_rechnung_de'
           ,'zahlung_vorkasse_de','zahlung_bar_de','zahlung_lastschrift_de','zahlung_nachnahme_de','zahlung_paypal_de','zahlung_amazon_de','zahlung_kreditkarte_de','zahlung_ratenzahlung_de','zahlungszieltage','zahlungszieltageskonto'
@@ -1568,6 +1568,7 @@ class Firmendaten  {
 
       $this->app->Tpl->Set('PROJEKTNUMMERIMDOKUMENT' , $this->parseCheckbox($data[0]['projektnummerimdokument']));
       $this->app->Tpl->Set('MAILANSTELLESMTP' , $this->parseCheckbox($data[0]['mailanstellesmtp']));
+      $this->app->Tpl->Set('HERSTELLERIMDOKUMENT' , $this->parseCheckbox($data[0]['herstellerimdokument']));
       $this->app->Tpl->Set('HERSTELLERNUMMERIMDOKUMENT' , $this->parseCheckbox($data[0]['herstellernummerimdokument']));
       $this->app->Tpl->Set('ARTIKELEINHEIT' , $this->parseCheckbox($data[0]['artikeleinheit']));
       $this->app->Tpl->Set('AUFTRAG_BEZEICHNUNG_BEARBEITER' , $data[0]['auftrag_bezeichnung_bearbeiter']);
@@ -1945,6 +1946,7 @@ class Firmendaten  {
 
     $this->app->Tpl->Set('PROJEKTNUMMERIMDOKUMENT' , $this->parseCheckbox($data['projektnummerimdokument']));
     $this->app->Tpl->Set('MAILANSTELLESMTP' , $this->parseCheckbox($data['mailanstellesmtp']));
+    $this->app->Tpl->Set('HERSTELLERIMDOKUMENT' , $this->parseCheckbox($data['herstellerimdokument']));
     $this->app->Tpl->Set('HERSTELLERNUMMERIMDOKUMENT' , $this->parseCheckbox($data['herstellernummerimdokument']));
     $this->app->Tpl->Set('ARTIKELEINHEIT' , $this->parseCheckbox($data['artikeleinheit']));
     $this->app->Tpl->Set('AUFTRAG_BEZEICHNUNG_BEARBEITER' , $data['auftrag_bezeichnung_bearbeiter']);
@@ -2188,6 +2190,7 @@ class Firmendaten  {
 
     $data['projektnummerimdokument'] = $this->parseCheckbox($this->app->Secure->GetPOST("projektnummerimdokument"));
     $data['mailanstellesmtp'] = $this->parseCheckbox($this->app->Secure->GetPOST("mailanstellesmtp"));
+    $data['herstellerimdokument'] = $this->parseCheckbox($this->app->Secure->GetPOST("herstellerimdokument"));
     $data['herstellernummerimdokument'] = $this->parseCheckbox($this->app->Secure->GetPOST("herstellernummerimdokument"));
     $data['artikeleinheit'] = $this->parseCheckbox($this->app->Secure->GetPOST("artikeleinheit"));
     $data['standardmarge'] = $this->app->Secure->GetPOST("standardmarge");

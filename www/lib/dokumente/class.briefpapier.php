@@ -2823,9 +2823,11 @@ class Briefpapier extends SuperFPDF {
       }else{
         $jitposfix = 0;
       }
+
       $item['name'] = ($langeartikelnummern?"\r\n\r\n":'').$this->app->erp->ReadyForPDF($item['name']);
       $item['desc'] = $this->app->erp->ReadyForPDF($item['desc']);
       $item['itemno'] = $this->app->erp->ReadyForPDF($item['itemno']);
+      $item['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id = ".$item['artikel']." LIMIT 1");
       $item['herstellernummer'] = $this->app->erp->ReadyForPDF($item['herstellernummer']);
       $item['artikelnummerkunde'] = $this->app->erp->ReadyForPDF($item['artikelnummerkunde']);
       $item['lieferdatum'] = $this->app->erp->ReadyForPDF($item['lieferdatum']);
@@ -3294,6 +3296,15 @@ class Briefpapier extends SuperFPDF {
         }
 
       $this->Ln();
+      if($this->getStyleElement('herstellerimdokument')=='1' && $item['hersteller']!='')
+      {
+        if($item['desc']!=''){
+          $item['desc'] = $item['desc'] . "\r\n" . $this->app->erp->Beschriftung('dokument_hersteller') . ': ' . $item['hersteller'];
+        }
+        else{
+          $item['desc'] = $this->app->erp->Beschriftung('dokument_hersteller') . ': ' . $item['hersteller'];
+        }
+      }
       if($this->getStyleElement('herstellernummerimdokument')=='1' && $item['herstellernummer']!='')
       {
         if($item['desc']!=''){

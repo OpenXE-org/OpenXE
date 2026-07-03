@@ -25688,6 +25688,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
     $uebersetzung['dokument_telefon']['deutsch'] = "Telefon";
     $uebersetzung['dokument_email']['deutsch'] = "E-Mail";
     $uebersetzung['dokument_teillieferung']['deutsch'] = "Teillieferung von Auftrag";
+    $uebersetzung['dokument_hersteller']['deutsch'] = "Hersteller";
     $uebersetzung['dokument_herstellernummer']['deutsch'] = "Herstellernummer";
     $uebersetzung['dokument_abmessung']['deutsch'] = "Abmessung";
 

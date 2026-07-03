@@ -1368,6 +1368,7 @@
 							<tr><td width="300">Artikel Einheit im Dokument:</td><td><input type="checkbox" name="artikeleinheit" [ARTIKELEINHEIT]></td></tr>
 							<tr><td width="300">Bearbeiter Telefon im Dokument:</td><td><input type="checkbox" name="bearbeitertelefonimdokument" [BEARBEITERTELEFONIMDOKUMENT]></td></tr>
 							<tr><td width="300">Bearbeiter E-Mail im Dokument:</td><td><input type="checkbox" name="bearbeiteremailimdokument" [BEARBEITEREMAILIMDOKUMENT]></td></tr>
+							<tr><td width="300">Hersteller im Dokument:</td><td><input type="checkbox" name="herstellerimdokument" [HERSTELLERIMDOKUMENT]></td></tr>
 							<tr><td width="300">Herstellernummer im Dokument:</td><td><input type="checkbox" name="herstellernummerimdokument" [HERSTELLERNUMMERIMDOKUMENT]></td></tr>
 							<tr><td width="300">Projekt im Dokument:</td><td><input type="checkbox" name="projektnummerimdokument" [PROJEKTNUMMERIMDOKUMENT]></td></tr>
 							<tr><td></td><td></td></tr>
