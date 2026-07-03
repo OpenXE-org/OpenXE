@@ -216,6 +216,13 @@
 					<span class="slider round"></span>
 				</label>
 				<label for="f_nurlagerndeartikel">{|nur lagernde Artikel|}</label>
+			</li>			
+			<li class="filter-item">
+				<label for="f_mitbeschreibung" class="switch">
+					<input type="checkbox" value="1" id="f_mitbeschreibung" />
+					<span class="slider round"></span>
+				</label>
+				<label for="f_mitbeschreibung">{|Beschreibung|}</label>
 			</li>
 		</ul>
 	</div>

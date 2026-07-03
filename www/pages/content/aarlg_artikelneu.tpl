@@ -32,7 +32,7 @@
               [LIEFERSCHEINIF]
               [LIEFERSCHEINELSE]
               <tr>
-                <td>Preis (netto):</td>
+                <td>Preis (netto):XXX</td>
                 <td><input type="text" id="preis" class="0" name="preis" value="[PREIS]" size="20" maxlength=""></td>
               </tr>
               <tr>

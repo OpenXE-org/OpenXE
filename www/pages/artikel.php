@@ -1104,7 +1104,7 @@ class Artikel extends GenArtikel {
           $findcols[] = 'bildvorschau';
         }
         $heading = array_merge($heading, array('Nummer', 'Artikel'));
-        $width = array_merge($width, array('10%', '55%'));
+        $width = array_merge($width, array('1%', '55%'));
         $findcols = array_merge($findcols, array('nummer', 'name_de'));
         if($this->app->erp->RechteVorhanden("multilevel","list") && $this->app->erp->Firmendaten("modul_mlm")=="1")
         {
@@ -1114,7 +1114,7 @@ class Artikel extends GenArtikel {
           $findcols[] = 'mlmpunkte';
         }
         $heading = array_merge($heading, array('Lagerbestand', 'Projekt'));
-        $width = array_merge($width, array('5%', '15%'));
+        $width = array_merge($width, array('5%', '1%'));
 
         //$lpicol = 'CAST((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id) as SIGNED)';
         $lpicol = '(SELECT TRIM(IFNULL(SUM(l.menge),0))+0 FROM lager_platz_inhalt l WHERE l.artikel=a.id)';
@@ -1249,7 +1249,8 @@ class Artikel extends GenArtikel {
         $this->app->Tpl->Add('JQUERYREADY', "$('#f_variantekeine').click( function() { fnFilterColumn7( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#f_alleartikel').click( function() { fnFilterColumn8( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#f_nurlagerndeartikel').click( function() { fnFilterColumn9( 0 ); } );");
-        for ($r = 1;$r <= 9;$r++) {
+        $this->app->Tpl->Add('JQUERYREADY', "$('#f_mitbeschreibung').click( function() { fnFilterColumn10( 0 ); } );");
+        for ($r = 1;$r <= 10;$r++) {
           $this->app->Tpl->Add('JAVASCRIPT', '
                       function fnFilterColumn' . $r . ' ( i )
                       {
@@ -1277,6 +1278,7 @@ class Artikel extends GenArtikel {
         $more_data7 = $this->app->Secure->GetGET('more_data7');
         $more_data8 = $this->app->Secure->GetGET('more_data8');
         $more_data9 = $this->app->Secure->GetGET('more_data9');
+        $more_data10 = $this->app->Secure->GetGET('more_data10');
 
         if ($this->app->erp->Firmendaten('iconset_dunkel')) {
           $str = '<img src="./themes/'.$this->app->Conf->WFconf['defaulttheme'].'/images/keinbild_dunkel.png" width=50>';
@@ -1387,12 +1389,19 @@ class Artikel extends GenArtikel {
           $joins .= ' INNER JOIN (SELECT artikel, SUM(menge) AS menge FROM lager_platz_inhalt WHERE menge>0 GROUP BY artikel) AS lpi ON lpi.artikel = a.id';
         }
 
+        if($more_data10 == 1){
+            $beschreibung_sql = "'<br><i>',
+                a.anabregs_text,
+                '</i>',";
+        }
+
         $sql .= "
               a.nummer as nummer, 
               CONCAT(
                 IF(a.intern_gesperrt,'<strike>',''),
                 name_de,
                 IF(a.variante AND a.variante_von > 0,CONCAT(' <a href=\"index.php?module=artikel&action=edit&id=',a.variante_von,'\"><font color=#848484>(Variante von ',IFNULL((SELECT tmp.nummer FROM artikel tmp WHERE a.variante_von=tmp.id LIMIT 1),''),')</font></a>'),''),
+                $beschreibung_sql
                 IF(a.intern_gesperrt,'</strike>','') 
               ) AS name_de,        
               ".(!empty($mlm)?" a.mlmpunkte, ":'')."
