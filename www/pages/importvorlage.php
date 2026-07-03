@@ -1045,7 +1045,6 @@ class Importvorlage extends GenImportvorlage {
     }
     //$number_of_fields = (!empty($csv_fields)?count($csv_fields):0);
 
-    $limit_erreicht = false;
     if($upload!='') {
       $isCronjobActive = $this->app->DB->Select(
         "SELECT `id` FROM `prozessstarter` WHERE `aktiv` = 1 AND `parameter` = 'importvorlage' LIMIT 1"
@@ -1117,15 +1116,15 @@ class Importvorlage extends GenImportvorlage {
             if (($handle = fopen($stueckliste_csv, 'r')) !== FALSE) {
                 $rowcounter = 0;
                 $rowcounter_real = 0;
+                $create_count = 0;
+                $update_count = 0;
+                $prepare_result = array();
 
-                $this->ImportPrepareHeader($ziel, $fieldset);
+//                $this->ImportPrepareHeader($ziel, $fieldset);
                 while (($data = fgetcsv($handle, 0, $importtrennzeichen)) !== FALSE) {
                     $rowcounter++;
                     if($rowcounter >= $importerstezeilenummer) {
                       $rowcounter_real++;
-                      if($limit_erreicht) {
-                        continue;
-                      }
                       foreach($data as $key=>$value) {
                         if($charset && strtoupper($charset) !== 'UTF-8' && strtoupper($charset) !== 'UTF8') {
                           $data[$key] = iconv($charset, 'UTF-8', $data[$key]."\0") ;
@@ -1135,17 +1134,8 @@ class Importvorlage extends GenImportvorlage {
                         $data[$key] = trim( $data[$key] );
                         $data[$key] = str_replace('""', '"', $data[$key]);
                         $data[$key] = preg_replace("/^\"(.*)\"$/sim", "$1", $data[$key]);
-                        //                                                                $data[$key]= mb_convert_encoding($data[$key], "Windows-1252");
                       }
-
-                      if($limit_erreicht!=true){
-                        $this->ImportPrepareRow($rowcounter_real, $ziel, $data, $fieldset);
-                      }
-
-                      if($rowcounter_real >= 50){//$this->limit_datensaetze) {
-                        $limit_erreicht = true;
-                        //break;
-                      }
+                      $this->ImportPrepareRow($rowcounter, $ziel, $data, $fieldset, $create_count, $update_count, $prepare_result);
                     }
                 }
             } else {
@@ -1153,19 +1143,29 @@ class Importvorlage extends GenImportvorlage {
             }
             fclose($handle);
 
-            //if($rowcounter_real < $this->limit_datensaetze) {
-            //}
             $jobId = 0;
             if($isCronjobActive){
               $jobId = $this->create($this->app->User->GetID(), $id, $stueckliste_csv, $rowcounter_real);
             }
+      
+            $et = new EasyTable($this->app);
+            $et->headings = array_merge(['Zeile','Nummer','Aktion'],array_column($prepare_result[0]['values'],'field'));
+            foreach ($prepare_result as $prepare_row) {
+                $row = array_merge(array($prepare_row['row'],$prepare_row['nummer'],$prepare_row['action_anzeige']),array_column($prepare_row['values'],'value'));
+                $et->AddRow($row);
+                if (++$prepare_row_limit == 50) {
+                    $limit_erreicht = true;
+                    break;            
+                }
+            }
+            $et->DisplayNew('ERGEBNIS',"");
 
             if($limit_erreicht) {
               $this->app->Tpl->Add(
                 'IMPORTBUTTON',
                 '<div class="info"><input type="submit" name="import" value="importieren"> <i>Vorschau: Es werden aktuell nur 50 von <b>'
-                . $rowcounter_real . '</b> Datens&auml;tze angezeigt. Importiert werden aber alle '
-                . $rowcounter_real . ' Datens&auml;tze!</i> <input type="hidden" name="importdateiname" value="'
+                . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle '
+                . $rowcounter_real . ' Datens&auml;tze, davon '.$create_count.' neu, '.$update_count.' ge&auml;ndert.<input type="hidden" name="importdateiname" value="'
                 . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" /></div>'
               );
             }
@@ -5072,11 +5072,12 @@ class Importvorlage extends GenImportvorlage {
    * @param array  $data
    * @param array  $fieldset
    */
-  function ImportPrepareRow($rowcounter,$ziel,$data,$fieldset)
+  function ImportPrepareRow($rowcounter,$ziel,$data,$fieldset, &$create_count, &$update_count, &$prepare_result)
   {
     $number_of_fields =(!empty($fieldset)?count($fieldset):0);
     //Standard
     $fields['waehrung'] = 'EUR';
+    $result_row = array();
 
     $herstellernummermehrfachvergeben = false;
     $output = '';
@@ -5285,9 +5286,8 @@ class Importvorlage extends GenImportvorlage {
         default:
           $fields[$fieldname] = $value;
       }
-
-      $output .= '<td><input type="text" size="15" name="row['.$fieldname.']['.$rowcounter.']" value="'.str_replace('"', "&quot;", $value).'" readonly></td>';
-    }
+      $result_row[] = array('field' => $fieldname, 'value' => $value);
+    } // fields
 
     switch($ziel)
     {
@@ -5438,10 +5438,25 @@ class Importvorlage extends GenImportvorlage {
         $checked = "";
         break;
     }
-    $this->app->Tpl->Add('ERGEBNIS','<tr><td width="100"><input type="hidden" name="row[cmd]['.$rowcounter.']" value="'.$action.'">
-        </td><td nowrap>'.$action_anzeige.'</td>
-        <td>'.$nummer.'<input type="hidden" name="'.$row['nummer'][$rowcounter].'" value="'.$nummer.'"></td>'.$output);
-    $this->app->Tpl->Add('ERGEBNIS','</tr>');
+
+    switch ($action) {
+        case 'create':
+            $create_count++;
+        break;
+        case 'update':
+            $update_count++;
+        break;
+        default:
+        break;
+    }
+
+    $prepare_result[] = array(
+                    'row' => $rowcounter,
+                    'nummer' => $nummer,
+                    'action' => $action,
+                    'action_anzeige' => $action_anzeige,
+                    'values' => $result_row
+    );
   }
 
   /**

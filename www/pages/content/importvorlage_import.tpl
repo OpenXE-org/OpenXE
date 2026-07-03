@@ -32,11 +32,5 @@ table.importstyle {
 </style>
 <form action="" method="post">
     [IMPORTBUTTON]
-	<div style="width:92vw; overflow: auto">
-		<br>
-		<table border="0" class="importstyle"> [ERGEBNIS] </table>
-		<br>
-	</div>
-	<br>
-	<br>
+    [ERGEBNIS]
 </form>
