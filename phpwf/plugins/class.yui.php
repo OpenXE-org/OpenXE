@@ -1456,11 +1456,22 @@ class YUI {
     if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1")
       $erweiterte_ansicht=",'<br><div style=\"width:300px; white-space:normal;\">',b.beschreibung,'</div>'";
 
-    if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1")
-      $hersteller_ansicht="if(a.hersteller!='',CONCAT('<strong>',a.hersteller,'</strong><br>'),''),";
-    else $hersteller_ansicht="";
+    $hersteller_ansicht = '';
 
-
+    if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1") {
+      $erweiterte_ansicht .= ",CONCAT(
+                                if(
+                                    a.hersteller!='',
+                                    CONCAT('Hersteller: ',a.hersteller,'<br>'),
+                                    ''
+                                ),
+                                if(
+                                    a.herstellernummer!='',
+                                    CONCAT('Herstellernummer: ',herstellernummer),
+                                    ''
+                                )
+                            )";
+    }
 
     $extended_mysql55 = ",'de_DE'";
     $id = $this->app->Secure->GetGET("id");
