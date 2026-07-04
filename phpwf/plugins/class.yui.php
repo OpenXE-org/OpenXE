@@ -12586,7 +12586,7 @@ return false;
 },
 create: function () {
 $(this).data(\'ui-autocomplete\')._renderItem = function (ul, item) {
-var suchstring = /(Aktuell kein Lagerbestand)/g;
+var suchstring = /(Lager aus)/g;
 var suchergebnis = suchstring.test( item.label );
 if (suchergebnis != false)
 {

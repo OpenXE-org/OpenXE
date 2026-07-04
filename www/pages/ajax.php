@@ -2544,7 +2544,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         //if($checkprojekt > 0 && $eigenernummernkreis=="1") $tmp_where = " AND projekt='$checkprojekt' ";
         //else $tmp_where = "";
 
-        $selectfields = $asObject ? 'art.id, art.nummer, art.name_de name' : "CONCAT(nummer,' ',name_de) as `name`";
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
+
+        $selectfields = $asObject ? 'art.id, art.nummer, art.name_de name' : "$artikelname_mpn as `name`";
+
         $arr = $this->app->DB->SelectArr(
           "SELECT $selectfields 
           FROM artikel AS art WHERE geloescht=0 AND ($subwhere) AND intern_gesperrt!=1 $tmp_where ".
@@ -2937,71 +2940,6 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $newarr[] = $arr[$i]['name'];
         }
         break;
-        
- 
-      case "artikelnummerprojektpos":
-        $felder = array('a.nummer','a.name_de','a.herstellernummer','a.ean','CONCAT(a.nummer,\' \',a.name_de)','a.herstellernummer');
-
-        if($this->app->erp->Firmendaten('artikel_freitext1_suche'))
-        {
-          $felder[] = 'a.freifeld1';
-        }
-        $subwhere = $this->AjaxFilterWhere($termorig,$felder);
-        $projekt = $this->app->User->GetParameter('pos_list_projekt');
-        $projekArr = $this->app->DB->SelectRow(
-          sprintf(
-            'SELECT id, pos_artikelnurausprojekt,eanherstellerscan 
-            FROM projekt WHERE id = %d
-            LIMIT 1',
-            (int)$projekt
-          )
-        );
-        $checkprojekt = 0;
-        $eigenernummernkreis = 0;
-        $eanherstellerscan = 0;
-        if(!empty($projekArr)){
-          $checkprojekt = $projekArr['id'];
-          $eigenernummernkreis = $projekArr['pos_artikelnurausprojekt'];
-          $eanherstellerscan = $projekArr['eanherstellerscan'];
-        }
-        if($checkprojekt > 0 && $eigenernummernkreis=='1') {
-          $tmp_where = " AND a.projekt='$checkprojekt' ";
-        }
-        else {
-          $tmp_where = '';
-        }
-
-        // besser ist wenn man die immer scannt da es oberflächen gibt wo das projekt nicht angegeben werden kann
-        if(0)//$eanherstellerscan)	
-        {
-          $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(a.nummer,' ',a.name_de,if(a.herstellernummer IS NULL OR a.herstellernummer='','',CONCAT(' PN: ',a.herstellernummer))) as name, a.id FROM artikel a WHERE a.geloescht=0 AND a.intern_gesperrt!=1 AND (a.nummer LIKE '%$term%' OR a.name_de LIKE '%$term%' OR CONCAT(a.nummer,' ',a.name_de) LIKE '%$term%' OR CONCAT(a.nummer,' ',a.name_de) LIKE '%$term2%' OR CONCAT(a.nummer,' ',a.name_de) LIKE '%$term3%'   OR a.herstellernummer LIKE '%$term%' OR a.ean LIKE '%$term%'".($artikel_freitext1_suche?" OR freifeld1 LIKE '%$term%' ":"").") $tmp_where ORDER by a.id DESC LIMIT 20");
-        }
-        else {
-          $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(a.nummer,' ',a.name_de,if(a.herstellernummer IS NULL OR a.herstellernummer='','',CONCAT(' PN: ',a.herstellernummer))) as name, a.id FROM artikel a WHERE a.geloescht=0 AND a.intern_gesperrt!=1 AND ($subwhere) $tmp_where ORDER by a.id DESC LIMIT 20");
-        }
-        $carr = !empty($arr)?count($arr):0;
-        for($i = 0; $i < $carr; $i++)
-        {
-          $check_lagerartikel = $this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
-          if($check_lagerartikel)
-          {
-            $summe_im_lager = (float)$this->app->DB->Select("SELECT ifnull(SUM(li.menge),0) FROM lager_platz_inhalt li LEFT JOIN lager_platz lp ON lp.id=li.lager_platz WHERE li.artikel='".$arr[$i]['id']."'");
-            if($summe_im_lager > 0)
-            {
-              $artikel_reserviert = (float)$this->app->DB->Select("SELECT ifnull(SUM(menge),0) FROM lager_reserviert WHERE artikel='".$arr[$i]['id']."' AND (datum>=NOW() OR datum='0000-00-00')");
-            }else $artikel_reserviert = 0;
-          }
-          if($check_lagerartikel && ($summe_im_lager - $artikel_reserviert) <= 0) {
-            $lager=' (Aktuell kein Lagerbestand bzw. durch Aufträge reserviert) ';
-          } else {
-            $lager='';
-          }
-          $newarr[] = $arr[$i]['name'].$lager;
-          
-        }
-        break;
-
- 
 
       case "artikelnummerprojekt":
         $felder = array('a.nummer','a.name_de','a.herstellernummer','a.ean','CONCAT(a.nummer,\' \',a.name_de)','a.herstellernummer');
@@ -3024,15 +2962,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $tmp_where = '';
         }
 
-        // besser ist wenn man die immer scannt da es oberflächen gibt wo das projekt nicht angegeben werden kann
-        if(0)//$eanherstellerscan)	
-        {
-          $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(a.nummer,' ',a.name_de,if(a.herstellernummer IS NULL OR a.herstellernummer='','',CONCAT(' PN: ',a.herstellernummer))) as name FROM artikel a WHERE a.geloescht=0 AND a.intern_gesperrt!=1 AND (a.nummer LIKE '%$term%' OR a.name_de LIKE '%$term%' OR a.herstellernummer LIKE '%$term%' OR CONCAT(a.nummer,' ',a.name_de) LIKE '%$term%' OR CONCAT(a.nummer,' ',a.name_de) LIKE '%$term2%' OR CONCAT(a.nummer,' ',a.name_de) LIKE '%$term3%'   OR a.ean LIKE '%$term%'".($artikel_freitext1_suche?" OR freifeld1 LIKE '%$term%' ":"").") $tmp_where ORDER by a.id DESC LIMIT 20");
-        }
-        else {
-          $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(a.nummer,' ',a.name_de,if(a.herstellernummer IS NULL OR a.herstellernummer='','',CONCAT(' PN: ',a.herstellernummer))) as name FROM artikel a WHERE a.geloescht=0 AND a.intern_gesperrt!=1 AND ($subwhere) $tmp_where ORDER by a.id DESC LIMIT 20");
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), name_de, CONCAT(' (MPN: ',herstellernummer,') ',name_de))";
 
-        }
+        $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(nummer,' ',$artikelname_mpn) as name FROM artikel a WHERE a.geloescht=0 AND a.intern_gesperrt!=1 AND ($subwhere) $tmp_where ORDER by a.id DESC LIMIT 20");
+
         $carr = !empty($arr)?count($arr):0;
         for($i = 0; $i < $carr; $i++) {
           $newarr[] = $arr[$i]['name'];
@@ -3059,7 +2992,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         }
         break;
 
-
+/* Belege positionen */
       case "verkaufartikelnummerprojekt":
         $letzte_menge = null;
         $artikel_freitext1_suche = $this->app->erp->Firmendaten('artikel_freitext1_suche');
@@ -3069,15 +3002,15 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
             'SELECT `id`, `eigenernummernkreis`, `projektlager` FROM `projekt` WHERE `id` = %d', $projekt
           )
         );
-        $checkprojekt = empty($projectRow)?null:$projectRow['id'];// $this->app->DB->Select("SELECT id FROM projekt WHERE id='$projekt' LIMIT 1");
-        $eigenernummernkreis = empty($projectRow)?null:$projectRow['eigenernummernkreis'];//$this->app->DB->Select("SELECT eigenernummernkreis FROM projekt WHERE id='$projekt' LIMIT 1");
+        $checkprojekt = empty($projectRow)?null:$projectRow['id'];
+        $eigenernummernkreis = empty($projectRow)?null:$projectRow['eigenernummernkreis'];
         $projectStorage = !empty($projectRow['projektlager'])?$checkprojekt:0;
         $smodule = $this->app->Secure->GetGET('smodule');	
         $sid = $this->app->Secure->GetGET('sid');
         $document = $this->app->DB->SelectRow(sprintf('SELECT * FROM `%s` WHERE `id` = %d', $smodule, $sid));
 
-        $adresse = $document['adresse'];// $this->app->DB->Select("SELECT adresse FROM $smodule WHERE id='$sid' LIMIT 1");
-        $waehrung = $document['waehrung'];//$this->app->DB->Select("SELECT waehrung FROM $smodule WHERE id='$sid' LIMIT 1");
+        $adresse = $document['adresse'];
+        $waehrung = $document['waehrung'];
         
         $anzeigebrutto = false;
         if($smodule == 'auftrag' || $smodule == 'rechnung' || $smodule == 'gutschrift' || $smodule == 'angebot' || $smodule == 'proformarechnung')
@@ -3092,8 +3025,6 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         }
         
         $tmp_where = $this->app->erp->ProjektRechte('p.id', true, '', array(0, $projekt));
-        //if($checkprojekt > 0 && $eigenernummernkreis=="1") $tmp_where = $this->app->erp->ProjektRechte();
-        //else $tmp_where = "";
         $felder = array('a.nummer','a.name_de','a.ean','a.herstellernummer','a.name_de','CONCAT(a.nummer,\' \',a.name_de)');
         if($artikel_freitext1_suche)
         {
@@ -3134,12 +3065,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
 
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);
 
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
+
         $arr = $this->app->DB->SelectArr(
-          "SELECT DISTINCT a.id as id, 
-                CONCAT(
-                    a.nummer,' ',a.name_de,' (',p.abkuerzung,if(a.lagerartikel=1,'',''),')',
-                    if(a.herstellernummer!='',CONCAT(' (PN: ',a.herstellernummer,')'),'')
-                    ) as `name` , a.lagerartikel, a.porto, a.keinrabatterlaubt, a.juststueckliste, a.stueckliste
+          "SELECT DISTINCT a.id as id, $artikelname_mpn as `name`, a.lagerartikel, a.porto, a.keinrabatterlaubt, a.juststueckliste, a.stueckliste
           FROM `artikel` AS `a` 
           LEFT JOIN `projekt` AS `p` ON p.id=a.projekt 
           ".$artikelnummer_suche_join."
@@ -3147,18 +3076,17 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           ".$artikelnummer_suche_where."  
           AND ($subwhere) $tmp_where LIMIT 20");
 
-	if ($module != "") {
-		if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'realrabatt'")) {
-		        $rabatt = $this->app->DB->Select("SELECT realrabatt FROM $smodule WHERE id='$sid' LIMIT 1");
-		}
-	}
+	    if ($module != "") {
+		    if ($this->app->DB->Select("SHOW COLUMNS FROM `$module` LIKE 'realrabatt'")) {
+		            $rabatt = $this->app->DB->Select("SELECT realrabatt FROM $smodule WHERE id='$sid' LIMIT 1");
+		    }
+	    }
+
         $sql_erweiterung = '';
         $carr = !empty($arr)?count($arr):0;
         for($i=0;$i<$carr;$i++)  {
-
-          $arr[$i]['name'] = $this->app->DB->Select("SELECT CONCAT(nummer,' ',name_de,if(herstellernummer!='',CONCAT(' (PN: ',herstellernummer,')'),'') ) FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
-          $keinrabatterlaubt = $arr[$i]['keinrabatterlaubt'];//$this->app->DB->Select("SELECT keinrabatterlaubt FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
-          $checkporto = $arr[$i]['porto'];//$this->app->DB->Select("SELECT porto FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
+          $keinrabatterlaubt = $arr[$i]['keinrabatterlaubt'];
+          $checkporto = $arr[$i]['porto'];
           $gruppenarray = $this->app->erp->GetGruppen($adresse);
           $cgruppenarray = !empty($gruppenarray)?count($gruppenarray):0;
           if($cgruppenarray >0)
@@ -3176,9 +3104,9 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
 
           $vkarr = $this->app->erp->GeneratePreisliste($arr[$i]['id'],$adresse,$rabatt, $waehrung);
 
-          $check_lagerartikel = $arr[$i]['lagerartikel'];//$this->app->DB->Select("SELECT lagerartikel FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
+          $check_lagerartikel = $arr[$i]['lagerartikel'];
           $isJit = $arr[$i]['juststueckliste'];
-          //$newarr[]=$arr[$i]['name']." ($label Inkl. Rabatt ".$rabatt."%: ".$this->app->erp->Rabatt($arr[$i]['preis'],$rabatt).")";
+
           if($isJit) {
             $preproducedpartlist = $this->app->erp->getPreproducedPartlistFromArticle($arr[$i]['id']);
             if(!empty($preproducedpartlist)
@@ -3189,7 +3117,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
             else {
               $lager = (float)$this->app->erp->ArtikelAnzahlLagerStueckliste($arr[$i]['id'], $projectStorage);
               if($lager == 0) {
-                $lager=' (Aktuell kein Lagerbestand bzw. durch Aufträge reserviert) ';
+                $lager=' (Lager aus) ';
               }
               else {
                 $lager = ' (Verfügbar: '.round($lager,4);
@@ -3197,7 +3125,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
             }
           }
           elseif($this->app->erp->LagerFreieMenge($arr[$i]['id']) <= 0 && $check_lagerartikel){
-            $lager=' (Aktuell kein Lagerbestand bzw. durch Aufträge reserviert) ';
+            $lager=' (Lager aus) ';
           }
           else{
             if($this->app->erp->Firmendaten('lagerbestand_in_auftragspositionen_anzeigen')){
@@ -3234,7 +3162,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
             {
               if($keinrabatterlaubt=='1' || $checkporto=='1')
               {
-                $preis = $vkarr[$vi]['preis']; //$this->app->erp->GetVerkaufspreis($arr[$i]['id'],$vkarr[$vi][ab_menge],$adresse);
+                $preis = $vkarr[$vi]['preis'];
 
                 $newarr[]=$arr[$i]['name']." $lager ab Menge ".$vkarr[$vi]['ab_menge'].' | Preis: '.$preis.
                   ' ('.$vkarr[$vi]['art'].' - Kein Rabatt erlaubt) ';
@@ -3268,10 +3196,10 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
                 }
                 
                 if($this->app->erp->Firmendaten('viernachkommastellen_belege')){
-                  $preis = number_format(rtrim($vkarr[$vi]['preis'], 0), 4, ',', '.'); //$this->app->erp->GetVerkaufspreis($arr[$i]['id'],$vkarr[$vi][ab_menge],$adresse);
+                  $preis = number_format(rtrim($vkarr[$vi]['preis'], 0), 4, ',', '.');
                 }
                 else{
-                  $preis = number_format(rtrim($vkarr[$vi]['preis'], 0), 2, ',', '.'); //$this->app->erp->GetVerkaufspreis($arr[$i]['id'],$vkarr[$vi][ab_menge],$adresse);
+                  $preis = number_format(rtrim($vkarr[$vi]['preis'], 0), 2, ',', '.');
                 }
 
                 $newarr[]=$arr[$i]['name'].($vkarr[$vi]['vpe']!=''?' (Menge in VPE: '.$vkarr[$vi]['vpe'].")":"")." $lager ab Menge ".$vkarr[$vi]['ab_menge']." | Preis: ".$preis.
@@ -3284,8 +3212,6 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           {
             $rabattartikel = $this->app->DB->Select("SELECT rabatt FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
             $rabattartikel_prozent = $this->app->DB->Select("SELECT rabatt_prozent FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
-            $arr[$i]['name'] = $this->app->DB->Select("SELECT CONCAT(nummer,' ',name_de,if(herstellernummer!='',CONCAT(' (PN: ',herstellernummer,')'),'')) FROM artikel WHERE id='".$arr[$i]['id']."' LIMIT 1");
-
             if($rabattartikel=='1'){
               $newarr[] = $arr[$i]['name'] . " $lager ab Menge 1 | Preis: $rabattartikel_prozent% Rabatt auf Gesamtsumme ohne Porto";
             }
@@ -3302,6 +3228,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         }
         break;
 
+/* Bestellung positionen */
       case "einkaufartikelnummerprojekt":
 
         $smodule = $this->app->Secure->GetGET('smodule');
@@ -3339,11 +3266,11 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);
         $adresse = (int)$this->app->Secure->GetGET('adresse');
 
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
+
         $sql = "SELECT 
             CONCAT(
-              a.nummer,
-              ' ',
-              a.name_de,
+              $artikelname_mpn,
               ' | Bezeichnung bei Lieferant ',
               IFNULL(e.bestellnummer,'nicht vorhanden'),
               ' ',
