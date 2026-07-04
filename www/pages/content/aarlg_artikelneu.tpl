@@ -13,6 +13,10 @@
                 <td width="25%">Artikel (DE):</td>
                 <td width="75%"><input type="text" id="name_de" name="name_de" value="[NAME_DE]" size="40" style="width: 100%;"></td>
               </tr>
+			  <tr>
+                <td width="25%">Artikel Nr.:</td>
+                <td width="75%"><input type="text" id="artikelnr" name="artikelnr" value="[ARTIKELNR]" size="40" style="width: 100%;"></td>
+              </tr>
               <tr>
                 <td>Artikelgruppe</td>
                 <td><select name="typ">[ARTIKELGRUPPE]</select></td>
@@ -32,7 +36,7 @@
               [LIEFERSCHEINIF]
               [LIEFERSCHEINELSE]
               <tr>
-                <td>Preis (netto):XXX</td>
+                <td>Preis (netto):</td>
                 <td><input type="text" id="preis" class="0" name="preis" value="[PREIS]" size="20" maxlength=""></td>
               </tr>
               <tr>

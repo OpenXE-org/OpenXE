@@ -1388,7 +1388,6 @@ class Artikel extends GenArtikel {
         if($more_data9 == 1){
           $joins .= ' INNER JOIN (SELECT artikel, SUM(menge) AS menge FROM lager_platz_inhalt WHERE menge>0 GROUP BY artikel) AS lpi ON lpi.artikel = a.id';
         }
-
         if($more_data10 == 1){
             $beschreibung_sql = "'<br><i>',
                 a.anabregs_text,
@@ -3107,6 +3106,10 @@ class Artikel extends GenArtikel {
     $internerkommentar = $this->app->Secure->GetPOST('internerkommentar');
     $lagerartikel = $this->app->Secure->GetPOST('lagerartikel');
 
+	// DB (James_007) - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+	// https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+	$artikelnr = trim($this->app->Secure->GetPOST('artikelnr'));
+
     // Anfang: FIX Batch-Insert übermittelt keine Umsatzsteuer und keinen Steuersatz > Werte aus DB holen
     $insert = $this->app->Secure->GetGET('insert');
     if($insert=='true'){
@@ -3317,6 +3320,18 @@ class Artikel extends GenArtikel {
           $error = 1;
         }
       }
+
+	  // DB (James_007) - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+	  // https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+	  // Prüfung, ob die Artikel-Nr. bereits existiert!
+	  if (!empty($artikelnr)) {
+		  $existsArtikel = (bool)$this->app->DB->Select("SELECT EXISTS (SELECT 1 FROM artikel WHERE nummer = '$artikelnr') AS existsArtikel");
+		  if ($existsArtikel) {
+			$this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Die Artikel-Nr. '$artikelnr' existiert bereits.<br>Bitte verwenden Sie eine andere oder lassen Sie das Feld leer für eine neue Artikel-Nr.</div>");
+			$error = 1;
+		  }
+	  }
+
       if($error!=1)
       {
         $sort = (int)$this->app->DB->Select("SELECT IFNULL(MAX(sort),0) FROM {$cmd}_position WHERE {$cmd}='$id' LIMIT 1");
@@ -3357,7 +3372,13 @@ class Artikel extends GenArtikel {
           }
         }
 
-        $neue_nummer = $this->app->erp->GetNextArtikelnummer($artikelart,$this->app->User->GetFirma(),$projekt);
+		// DB - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+		// https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+		// Neue Artikel-Nr. nur erforderlich, wenn keine vorher eingegeben wurde.
+		$neue_nummer = $artikelnr;
+		if (empty($artikelnr)) {
+			$neue_nummer = $this->app->erp->GetNextArtikelnummer($artikelart,$this->app->User->GetFirma(),$projekt);
+		}
 
         // anlegen als artikel
         $umsatzsteuerArtikel = (empty($umsatzsteuer)) ? 'normal' : $umsatzsteuer;
@@ -3428,6 +3449,11 @@ class Artikel extends GenArtikel {
     $this->app->Tpl->Set('NAME_DE',$name_de);
     $this->app->Tpl->Set('KURZTEXT_DE',$kurztext_de);
     $this->app->Tpl->Set('INTERNERKOMMENTAR',$internerkommentar);
+
+	// DB - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+	// https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+	// Artikel-Nr. zurückgeben
+	$this->app->Tpl->Set('ARTIKELNR',$artikelnr);
 
     if (!empty($steuersatz)) {
       $this->app->Tpl->Set('STEUERSATZEINBLENDEN','checked');
@@ -4738,10 +4764,10 @@ class Artikel extends GenArtikel {
 
 	if (empty($kursusd)) {
 		$kursusd = 0;
-	}	
+	}
 	if (empty($kurschf)) {
 		$kurschf = 0;
-	}	
+	}
           
       $this->app->Tpl->Set('TAB5KALKULATION','<div class="info">Dies ist nur ein grober Richtpreis aus dem kleinsten und größten Einkaufspreis.</div>');
 
@@ -7698,7 +7724,7 @@ class Artikel extends GenArtikel {
       $this->app->User->SetParameter('artikel_shopexport_shop3','');
       $this->app->Location->execute("index.php?module=artikel&action=shopexport&id=$id&shop=3");
       return;
-    }	
+    }
 
     $this->app->erp->MessageHandlerStandardForm();
 
