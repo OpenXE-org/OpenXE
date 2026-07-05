@@ -37584,32 +37584,48 @@ function Firmendaten($field,$projekt="")
         return array('image'=>$this->GetDatei($dateiid),'filename'=>$filename,'extension'=>$path_info['extension']);
       }
 
-
-      function GetArtikelStandardbild($artikel,$return_dateiid=false)
+      function GetArtikelStandardbild(int $artikel, $return_file_contents=false)
       {
-        $dateiid = $this->app->DB->Select(sprintf("
-           SELECT dv.datei AS datei 
-           FROM datei_stichwoerter AS ds 
+
+        $result = array('fileid'=>0,'filename'=>'','extension'=>'','from_parent'=>false,'image'=>null);
+
+        if($artikel <= 0) {
+          return $result;
+        }
+        $sql = "
+           SELECT dv.datei AS datei
+           FROM datei_stichwoerter AS ds
            JOIN (SELECT datei, MAX(id) AS id FROM datei_version GROUP BY datei) AS dv ON dv.datei = ds.datei
            JOIN datei AS d on ds.datei = d.id
-           WHERE ds.objekt LIKE 'Artikel' AND d.geloescht = 0 AND
-            ds.parameter = '%d' AND 
-             (ds.subjekt LIKE 'Shopbild' OR ds.subjekt LIKE 'Druckbild' OR ds.subjekt LIKE 'Bild') 
-           ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC, ds.sort
-           LIMIT 1",
-           $artikel)
-        );
+           WHERE
+            ds.objekt LIKE 'Artikel' AND
+            d.geloescht = 0 AND
+            (ds.subjekt LIKE 'Shopbild' OR ds.subjekt LIKE 'Druckbild' OR ds.subjekt LIKE 'Bild') AND
+            ds.parameter =
+        ";
+        $order = " ORDER BY ds.subjekt LIKE 'Shopbild' DESC, ds.subjekt LIKE 'Druckbild' DESC, ds.sort LIMIT 1";
+        $result['fileid'] = $this->app->DB->Select($sql.$artikel.$order);
 
-        if($artikel <= 0 || $dateiid <= 0) {
-          return false;
+        if($result['fileid'] <= 0) {
+            $artikel = $this->app->DB->SELECT("SELECT variante, variante_von FROM artikel WHERE variante = 1 AND id = ".$artikel);
+            if ($artikel) {
+                $result['fileid'] = $this->app->DB->Select($sql.$artikel.$order);
+                if($result['fileid'] > 0) {
+                    $result['from_parent'] = true;
+                }
+            }
         }
-        if($return_dateiid) {
-          return $dateiid;
+        if($artikel <= 0) {
+          return $result;
         }
 
-        $filename = $this->GetDateiName($dateiid);
-        $path_info = pathinfo($filename);
-        return array('image'=>$this->GetDatei($dateiid),'filename'=>$filename,'extension'=>$path_info['extension']);
+        $result['filename'] = $this->GetDateiName($result['fileid']);
+        $result['extension'] = pathinfo($result['filename'])['extension'];
+
+        if ($return_file_contents) {
+            $result['image'] = $this->GetDatei($result['fileid']);
+        }
+        return $result;
       }
 
       function DeleteEmailbackupMail($id,$adresse="")

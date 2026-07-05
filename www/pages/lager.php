@@ -2367,7 +2367,7 @@ class Lager extends GenLager {
             $this->app->Tpl->Add('SERIENNUMMERN','</table>');
           }*/
 
-          $standardbild = $this->app->erp->GetArtikelStandardbild($artikel,true);
+          $standardbild = $this->app->erp->GetArtikelStandardbild($artikel, return_file_contents: false)['fileid'];
 
           if ($standardbild > 0)
             $this->app->Tpl->Set('STANDARDBILD', "<tr valign=\"top\"><td>{|Bild|}:</td><td><img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"110\"></td></tr>");

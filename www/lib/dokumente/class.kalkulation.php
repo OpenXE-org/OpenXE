@@ -151,9 +151,9 @@ class KalkulationPDF extends Briefpapier {
 
       $is_kalkulation_mit_bild=0;
       if($is_kalkulation_mit_bild) {
-          $image_tmp = $this->app->erp->GetArtikelStandardbild($value['artikel']);
+          $image_tmp = $this->app->erp->GetArtikelStandardbild($value['artikel'], return_file_contents: true);
           $value['image'] = $image_tmp['image'];
-          $value['image_type'] = $image_tmp['extenstion'];
+          $value['image_type'] = $image_tmp['extension'];
       }
 
       if($value[optional]=="1") $value[bezeichnung] = "Optional: ".$value[bezeichnung];

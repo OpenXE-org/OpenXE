@@ -360,7 +360,7 @@ class AngebotPDF extends BriefpapierCustom {
 
       $is_angebot_mit_bild=0;
       if($is_angebot_mit_bild) {
-          $image_tmp = $this->app->erp->GetArtikelStandardbild($value['artikel']);
+          $image_tmp = $this->app->erp->GetArtikelStandardbild($value['artikel'], return_file_contents: true);
           $value['image'] = $image_tmp['image'];
           $value['image_type'] = $image_tmp['extenstion'];
       }

@@ -1997,11 +1997,18 @@ class Artikel extends GenArtikel {
 
     if(is_numeric($id) && $id > 0)
     {
-      $arr = $this->app->DB->SelectRow("SELECT CONCAT(name_de,' (',nummer,')') as name2, name_de,nummer FROM artikel WHERE id='$id' LIMIT 1");
+      $arr = $this->app->DB->SelectRow("SELECT CONCAT(name_de,' (',nummer,')') as name2, name_de,nummer,variante,variante_von FROM artikel WHERE id='$id' LIMIT 1");
       if(!empty($arr)){
         $artikel = $arr['name2'];
         $nummer = $arr['nummer'];
         $namede = $arr['name_de'];
+
+        if ($arr['variante'] && !empty($arr['variante_von'])) {
+            $variante = $this->app->DB->SelectRow("SELECT nummer, name_de FROM artikel WHERE id = ".$arr['variante_von']);
+            $variante_text = ' (Variante von <a href="index.php?module=artikel&action=edit&id='.$arr['variante_von'].'">'.$variante['nummer'].'</a>)';
+        } else {
+            $variante_text = '';
+        }
       }
     } 
     else{
@@ -2017,7 +2024,7 @@ class Artikel extends GenArtikel {
 
     $this->app->Tpl->SetText('ANZEIGENUMMER',$nummer);
     if(isset($namede)){
-      $this->app->Tpl->SetText('ANZEIGENAMEDE',' '.$this->app->erp->LimitChar($namede,65));
+      $this->app->Tpl->Set('ANZEIGENAMEDE',' '.$this->app->erp->LimitChar($namede,65).$variante_text);
     }
     $this->app->Tpl->Set('FARBE','[FARBE1]');
 
@@ -2593,7 +2600,7 @@ class Artikel extends GenArtikel {
       $nummer = $artikelarr['nummer'];
       $lagerartikel = $artikelarr['lagerartikel'];
       $lager_platz = $artikelarr['lager_platz'];
-      $standardbild = $this->app->erp->GetArtikelStandardbild($id,true);
+      $standardbild = $this->app->erp->GetArtikelStandardbild($id, return_file_contents: false)['fileid'];
     }
 
     $this->app->Tpl->Set('NAME_DE',$name_de);
@@ -7839,7 +7846,6 @@ class Artikel extends GenArtikel {
     }
 
     if($standardbild > 0){
-      //$this->app->Tpl->Add('BILD', "<img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"200\">");
       $this->app->Tpl->Set('BILD',
         '<img alt="Artikelbild" src="index.php?module=artikel&action=thumbnail&id='.$id.'&fileid='.$standardbild.'&size=200&direkt=1" align="left" width="200" style="margin-right:10px; margin-bottom:10px;" />'
       );
