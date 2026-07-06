@@ -4263,7 +4263,7 @@ INNER JOIN shopexport s ON
       return new JsonResponse(
         [
           'success' => true,
-          'input'   => !$useJson?$xml_data:json_encode($cart),
+          'input'   => !$useJson?$xml_data:json_encode($cart,JSON_PRETTY_PRINT),
           'object'  => '<pre>'.print_r($cart,true).'</pre>',
           'preview' => print_r($e->getMessage(),true),
         ]
@@ -4283,9 +4283,9 @@ INNER JOIN shopexport s ON
     return new JsonResponse(
       [
         'success' => true,
-        'input'   => !$useJson?$xml_data:json_encode($cart),
+        'input'   => !$useJson?$xml_data:json_encode($cart,JSON_PRETTY_PRINT),
         'object'  => '<pre>'.print_r($cart,true).'</pre>',
-        'preview' => !$useJson?$xmlDataPreview:json_encode($cart),
+        'preview' => !$useJson?$xmlDataPreview:json_encode($cart,JSON_PRETTY_PRINT),
       ]
     );
   }
@@ -4572,7 +4572,7 @@ INNER JOIN shopexport s ON
     }
     try{
       if($isJson) {
-        $xmlData = json_encode($newCart);
+        $xmlData = json_encode($newCart,JSON_PRETTY_PRINT);
       }
       else {
         $xmlData = $this->convertArrayToSimpleXml($newCart);
