@@ -81,6 +81,7 @@ class WidgetGenimportvorlage
     $field->AddOption('Kontenrahmen (min. Angabe: sachkonto,beschriftung,art)','kontorahmen');
     $field->AddOption('Kontoauszug','kontoauszug');
     $field->AddOption('St&uuml;ckliste','stueckliste');
+    $field->AddOption('Dateien','dateien');
     $this->form->NewField($field);
 
     $field = new HTMLSelect("format",0,"format","","","0");

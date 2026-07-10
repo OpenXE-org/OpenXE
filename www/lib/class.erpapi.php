@@ -37382,15 +37382,20 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-      function GetDateiSubjektObjekt($subjekt,$objekt,$parameter)
+      function GetDateiSubjektObjekt($subjekt,$objekt,$parameter,string $dateiname = '')
       {
-        $dateien = $this->app->DB->SelectArr("SELECT datei FROM datei_stichwoerter INNER JOIN datei d on d.id = datei WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' AND d.geloescht <> 1 GROUP by datei");
+        if (!empty($dateiname)) {
+            $dateiname = $this->app->DB->real_escape_string($dateiname);
+            $sql = "SELECT DISTINCT dv.datei FROM datei_stichwoerter INNER JOIN datei d on d.id = datei INNER JOIN datei_version dv ON dv.datei = d.id WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' AND dateiname LIKE '".$dateiname."' AND d.geloescht <> 1 ORDER BY dv.version DESC";
+        } else {
+            $sql = "SELECT datei FROM datei_stichwoerter INNER JOIN datei d on d.id = datei WHERE subjekt LIKE '$subjekt' AND objekt LIKE '$objekt' AND parameter='$parameter' AND d.geloescht <> 1 GROUP by datei";
+        }
+        $dateien = $this->app->DB->SelectArr($sql);
         if(empty($dateien)) {
           return null;
         }
         $tmp = [];
         foreach($dateien as $datei) {
-//          $tmp[] = $this->GetDateiPfad($datei['datei']);
           $tmp[] = $datei['datei']; // return the datei id
         }
         return $tmp;
@@ -37519,33 +37524,33 @@ function Firmendaten($field,$projekt="")
 
         switch($modul){
           case 'artikel':
-            $dateiTypen[] = ['wert' => 'Shopbild', 'beschriftung' => 'Standard Artikelbild (Shopbild)'];
-            $dateiTypen[] = ['wert' => 'Gruppenbild', 'beschriftung' => 'Standard Gruppenbild'];
-            $dateiTypen[] = ['wert' => 'Etikettenbild', 'beschriftung' => 'Etikettenbild'];
-            $dateiTypen[] = ['wert' => 'Bild', 'beschriftung' => 'Sonstiges Bild'];
-            $dateiTypen[] = ['wert' => 'Datenblatt', 'beschriftung' => 'Datenblatt'];
-            $dateiTypen[] = ['wert' => 'Druckbild', 'beschriftung' => 'Druckbild (300dpi)'];
-            $dateiTypen[] = ['wert' => 'Zertifikat', 'beschriftung' => 'Zertifikat Anhang (PDF)'];
+            $dateiTypen['shopbild'] = ['wert' => 'Shopbild', 'beschriftung' => 'Standard Artikelbild (Shopbild)'];
+            $dateiTypen['gruppenbild'] = ['wert' => 'Gruppenbild', 'beschriftung' => 'Standard Gruppenbild'];
+            $dateiTypen['etikettenbild'] = ['wert' => 'Etikettenbild', 'beschriftung' => 'Etikettenbild'];
+            $dateiTypen['bild'] = ['wert' => 'Bild', 'beschriftung' => 'Sonstiges Bild'];
+            $dateiTypen['datenblatt'] = ['wert' => 'Datenblatt', 'beschriftung' => 'Datenblatt'];
+            $dateiTypen['druckbild'] = ['wert' => 'Druckbild', 'beschriftung' => 'Druckbild (300dpi)'];
+            $dateiTypen['zertifikat'] = ['wert' => 'Zertifikat', 'beschriftung' => 'Zertifikat Anhang (PDF)'];
             break;
           case 'projekt':
-            $dateiTypen[] = ['wert' => 'Briefpapier1', 'beschriftung' => 'Briefpapier Seite 1'];
-            $dateiTypen[] = ['wert' => 'Briefpapier2', 'beschriftung' => 'Briefpapier Seite 2'];
+            $dateiTypen['briefpapier1'] = ['wert' => 'Briefpapier1', 'beschriftung' => 'Briefpapier Seite 1'];
+            $dateiTypen['briefpapier2'] = ['wert' => 'Briefpapier2', 'beschriftung' => 'Briefpapier Seite 2'];
             break;
           case 'verbindlichkeit':
           case 'kasse':
-            $dateiTypen[] = ['wert' => 'Belege', 'beschriftung' => 'Beleg'];
-            $dateiTypen[] = ['wert' => 'Quittung', 'beschriftung' => 'Quittung'];
+            $dateiTypen['belege'] = ['wert' => 'Belege', 'beschriftung' => 'Beleg'];
+            $dateiTypen['quittung'] = ['wert' => 'Quittung', 'beschriftung' => 'Quittung'];
             break;
         }
 
-        $dateiTypen[] = ['wert' => 'Sonstige', 'beschriftung' => 'Sonstige Datei'];
-        $dateiTypen[] = ['wert' => 'Deckblatt', 'beschriftung' => 'Deckblatt'];
-        $dateiTypen[] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
+        $dateiTypen['sonstige'] = ['wert' => 'Sonstige', 'beschriftung' => 'Sonstige Datei'];
+        $dateiTypen['deckblatt'] = ['wert' => 'Deckblatt', 'beschriftung' => 'Deckblatt'];
+        $dateiTypen['anahang'] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
 
         //adresse unter defaulttypen, da profilbild nicht als default ausgewählt werden soll OS148717
         switch($modul){
           case 'adresse':
-            $dateiTypen[] = ['wert' => 'Profilbild', 'beschriftung' => 'Profilbild'];
+            $dateiTypen['profilbild'] = ['wert' => 'Profilbild', 'beschriftung' => 'Profilbild'];
             break;
         }
 
@@ -37555,12 +37560,66 @@ function Firmendaten($field,$projekt="")
           );
           $cZusaetzlicheStichworter = empty($zusaetzlicheStichworter)?0:(!empty($zusaetzlicheStichworter)?count($zusaetzlicheStichworter):0);
           for($i=0;$i<$cZusaetzlicheStichworter;$i++){
-            $dateiTypen[] = ['wert' => $zusaetzlicheStichworter[$i]['kennung'], 'beschriftung' => $zusaetzlicheStichworter[$i]['beschriftung']];
+            $dateiTypen[strtolower($zusaetzlicheStichworter[$i]['kennung'])] = ['wert' => $zusaetzlicheStichworter[$i]['kennung'], 'beschriftung' => $zusaetzlicheStichworter[$i]['beschriftung']];
           }
         }
 
         return $dateiTypen;
       }
+
+      /*
+        Case sensitive right now, should be harmonized with a migration:
+      */
+        function getAllowedDateiObjekte() {
+            return array(
+                'docscan'=> ['wert' => 'docscan','tabelle' => 'docscan', 'nummerfeld' => 'id'],
+                'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'nummerfeld' => 'id'],
+                'payment_transaction'=> ['wert' => 'payment_transaction','tabelle' => 'payment_transaction', 'nummerfeld' => 'id'],
+                'payment_transaction_group'=> ['wert' => 'payment_transaction_group','tabelle' => 'payment_transaction_group', 'nummerfeld' => 'id'],
+                'auftrag'=> ['wert' => 'auftrag','tabelle' => 'auftrag', 'nummerfeld' => 'belegnr'],
+                'ticket'=> ['wert' => 'Ticket','tabelle' => 'ticket', 'nummerfeld' => 'schluessel'],
+                'e-mail'=> ['wert' => 'E-mail','tabelle' => 'emailbackup_mails', 'nummerfeld' => 'id'],
+                'lieferschein'=> ['wert' => 'lieferschein','tabelle' => 'lieferschein', 'nummerfeld' => 'belegnr'],
+                'rechnung'=> ['wert' => 'rechnung','tabelle' => 'rechnung', 'nummerfeld' => 'belegnr'],
+                'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'nummerfeld' => 'id'],
+                'adressen'=> ['wert' => 'Adressen','tabelle' => 'adresse', 'nummerfeld' => 'belegnr'],
+                'angebot'=> ['wert' => 'angebot','tabelle' => 'angebot', 'nummerfeld' => 'belegnr'],
+                'bestellung'=> ['wert' => 'bestellung','tabelle' => 'bestellung', 'nummerfeld' => 'belegnr'],
+                'verbindlichkeit'=> ['wert' => 'verbindlichkeit','tabelle' => 'verbindlichkeit', 'nummerfeld' => 'rechnung'],
+                'paketannahme'=> ['wert' => 'Paketannahme','tabelle' => 'paketannahme', 'nummerfeld' => 'id'],
+                'gutschrift'=> ['wert' => 'gutschrift','tabelle' => 'gutschrift', 'nummerfeld' => 'belegnr'],
+                'artikel'=> ['wert' => 'Artikel','tabelle' => 'artikel', 'nummerfeld' => 'nummer'],
+                'kalender_event'=> ['wert' => 'kalender_event','tabelle' => 'kalender_event', 'nummerfeld' => 'id'],
+                'aufgaben'=> ['wert' => 'aufgaben','tabelle' => 'aufgaben', 'nummerfeld' => 'id'],
+                'konto'=> ['wert' => 'konto','tabelle' => 'konto', 'nummerfeld' => 'id'],
+                'retoure'=> ['wert' => 'retoure','tabelle' => 'retoure', 'nummerfeld' => 'belegnr'],
+                'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket_header', 'nummerfeld' => 'id'],
+                'lieferantengutschrift'=> ['wert' => 'lieferantengutschrift','tabelle' => 'lieferantengutschrift', 'nummerfeld' => 'belegnr'],
+                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpaket', 'nummerfeld' => 'id'],
+            );
+        }
+
+     function getDateiObjekt(string $objekt, string $objektnummer) {
+        $dateiobjekte = $this->getAllowedDateiObjekte();
+        $tabelle = $dateiobjekte[strtolower($objekt)]['tabelle'];
+        if (empty($tabelle)) {
+            return(null);
+        }
+        $nummerfeld = $dateiobjekte[strtolower($objekt)]['nummerfeld'];
+        $sql = "SELECT id FROM ".$tabelle." WHERE ".$nummerfeld." = '".$objektnummer."'";
+        $check = $this->app->DB->Select($sql);
+        if ($check) {
+            return(
+                array(
+                    'objekt' => strtolower($objekt),
+                    'wert' => $dateiobjekte[strtolower($objekt)]['wert'],
+                    'tabelle' => $tabelle,
+                    'id' => $check
+                )
+            );
+        }
+        return(null);
+     }
 
      function GetEtikettenbild($artikel,$return_dateiid=false)
      {
