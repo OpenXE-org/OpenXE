@@ -3287,119 +3287,7 @@ class Importvorlage extends GenImportvorlage {
                 }
               }
             } // Fremdnummern
-
-            // Dateien
-            if (!empty($additional_files)) {
-                // Method 1: get filename from CSV
-                foreach ($tmp as $feldname => $feldwerte) {
-                    $fileid = null;
-                    $dateistichwort = null;
-                    $matches = array();
-                    if (preg_match("/datei(?<nummer>\d)/", $feldname, $matches)) {
-                        // find stichwort
-                        $column = 'dateistichwort'.$matches['nummer'];
-                        $dateistichwort_csv = strtolower($tmp[$column][$i]);
-
-                        if (!empty($dateistichwort_csv)) {
-                            foreach ($dateitypen_artikel as $dateityp) {
-                                if (strtolower($dateityp['wert'] == $dateistichwort_csv)) {
-                                    $dateistichwort = $dateityp['wert'];
-                                }
-                            }
-                        }
-                        if (empty($dateistichwort)) {
-                            $importvorlagedoresult['messages'][] = "Dateistichwort nicht gefunden: ".$dateistichwort_csv.", ".$dateiname;
-                            $importvorlagedoresult['success'] = false;
-                            break;
-                        }
-
-                        // find file in upload
-                        $dateipfadzip = $feldwerte[$i];
-
-                        if (!empty($dateipfadzip)) {
-                            $dateiname = basename($dateipfadzip);
-                            $found = false;
-                            foreach ($additional_files as $key => $additional_file) {
-                                if ($dateipfadzip == $additional_file['pathinzip']) {
-                                    $found = true;
-                                    $fileid = $this->app->erp->CreateDateiWithStichwort(
-                                            name: $dateiname,
-                                            titel: '',
-                                            beschreibung: '',
-                                            nummer: '',
-                                            datei: $additional_file['path'],
-                                            ersteller: $this->app->User->GetName(),
-                                            subjekt: $dateistichwort,
-                                            objekt: 'Artikel',
-                                            parameter: $artikelid
-                                    );
-                                    if (empty($fileid)) {
-                                        $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
-                                        $importvorlagedoresult['success'] = false;
-                                    } else {
-                                        $additional_files[$key]['imported'] = true;
-                                    }
-                                    break;
-                                }
-                            }
-                            if (!$found) {
-                                $importvorlagedoresult['messages'][] = "Datei wurde nicht gefunden: ".$dateiname;
-                                $importvorlagedoresult['success'] = false;
-                            }
-                        }
-                    } // match datei_
-                } // fields
-
-                // Method 2 get fileinfo from folder names, level 1 = artikelnummer, EAN or MPN, level 2 = stichwort
-                $artikelabgleich = $this->app->DB->SelectRow("SELECT nummer, ean, herstellernummer FROM artikel WHERE id = ".$artikelid);
-                foreach ($additional_files as $key => $additional_file) {
-                    $fileid = null;
-                    $dateistichwort = null;
-                    $pathinfo = pathinfo($additional_file['pathinzip']);
-                    $dateiname = $pathinfo['basename'];
-                    $paths = explode(DIRECTORY_SEPARATOR, $pathinfo['dirname']);
-
-                    if (is_array($paths)) {
-                        if (count($paths) == 2) {
-                            if (
-                                $paths[0] == $artikelabgleich['nummer'] ||
-                                $paths[0] == $artikelabgleich['ean'] ||
-                                $paths[0] == $artikelabgleich['herstellernummer']
-                            ) {
-                                $dateistichwort_csv = strtolower($paths[1]);
-                                foreach ($dateitypen_artikel as $dateityp) {
-                                    if (strtolower($dateityp['wert']) == $dateistichwort_csv) {
-                                        $dateistichwort = $dateityp['wert'];
-                                    }
-                                }
-                                if (empty($dateistichwort)) {
-                                    $importvorlagedoresult['messages'][] = "Dateistichwort nicht gefunden: ".$dateistichwort_csv.", ".$dateiname;
-                                    continue;
-                                }
-                                $fileid = $this->app->erp->CreateDateiWithStichwort(
-                                            name: $dateiname,
-                                            titel: '',
-                                            beschreibung: '',
-                                            nummer: '',
-                                            datei: $additional_file['path'],
-                                            ersteller: $this->app->User->GetName(),
-                                            subjekt: $dateistichwort,
-                                            objekt: 'Artikel',
-                                            parameter: $artikelid
-                                    );
-                                if (empty($fileid)) {
-                                    $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
-                                    $importvorlagedoresult['success'] = false;
-                                } else {
-                                    $additional_files[$key]['imported'] = true;
-                                }
-                            } // Artikel match
-                        } // count = 2
-                    } // array
-                } // foreach file
-            } // ! empty Dateien
-          } // if($this->app->DB->Select("SELECT id FROM artikel WHERE id ='$artikelid' LIMIT 1")){ // !?!?!
-
+          }
           break; // HERE END artikel einkauf
             case "zeiterfassung":
             case "wiedervorlagen":
@@ -5666,7 +5554,7 @@ class Importvorlage extends GenImportvorlage {
                 $dms_stichwort = $global_data['dateitypen_artikel'][strtolower($objektsuche[2])]['wert'];
                 $dms_dateiname = $objektsuche[3];
             }
-
+            
             if (in_array($dateiaktion,['aendern', 'entfernen'])) {
                 if (empty($dms_objekt)) {
                     $action_anzeige .= 'Ungültiger DMS-Pfad: '.$fields['quellpfad'];
