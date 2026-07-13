@@ -699,22 +699,47 @@
 							    <td>
                                     zip: Datei aus ZIP-Datei laden</i><br>
                                     url: Datei von URL laden<br>
-                                    aendern: Dateidaten in OpenXE ändern<br>
-                                    entfernen: Dateiverknüpfung in OpenXE entfernen<br>
+                                    aendern: Dateidaten im OpenXE-DMS ändern<br>
+                                    entfernen: Dateiverknüpfung im OpenXE-DMS entfernen<br>
                                 </td>
 						    </tr>
 						    <tr>
 							    <td>quellpfad</td>
-							    <td>Pfad zur Datei</td>
+							    <td>Für neue Dateien: Pfad zur Datei</td>
 							    <td>
-                                    zip: Pfad innerhalb der ZIP-Datei <i>(Tip: unter Linux kann mit "find . -type f -printf '%P\n'" eine passende Liste aus einem Ordner erzeugt werden</i><br>
+                                    zip: Pfad innerhalb der ZIP-Datei <i>(Tip: unter Linux kann mit "find . -mindepth 2 -type f -printf '%P\n'" eine passende Liste aus einem Ordner erzeugt werden</i><br>
                                     url: gesamte URL inkl. http<br>
-                                    aendern/entfernen: Pfad in OpenXE: objekt/objektnummer/stichwort/dateiname z.B. artikel/700001/shopbild/schraube.png<br>
                                 </td>
+						    </tr>
+						    <tr>
+							    <td>dms-objekt</td>
+							    <td rowspan="4">Für Dateien im OpenXE-DMS, die geändert werden sollen, Suchfeld für die Objektnummer</td>
+							    <td>[DATEIOBJEKTE]</td>
+						    </tr>
+						    <tr>
+							    <td>dms-objektsuchfeld</td>
+							    <td>[DATEISUCHFELDER]</td>
+						    </tr>
+						    <tr>
+							    <td>dms-objektnummer</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>dms-stichwort</td>
+							    <td>[STICHWOERTER]</td>
+						    </tr>
+						    <tr>
+							    <td>dms-dateiname</td>
+							    <td></td>
+							    <td>nicht implementiert</td>
 						    </tr>
 						    <tr>
 							    <td>objekt</td>
 							    <td rowspan="3">Zu setzende Verknüpfung</td>
+							    <td>[DATEIOBJEKTE]</td>
+						    </tr>
+						    <tr>
+							    <td>objektsuchfeld</td>
 							    <td></td>
 						    </tr>
 						    <tr>
@@ -728,7 +753,7 @@
 						    <tr>
 							    <td>dateiname</td>
 							    <td></td>
-							    <td>Falls die Datei in OpenXE eine anderen Dateinamen bekommen soll als die Quelldatei</td>
+							    <td>Neuer Dateiname, falls abweichend</td>
 						    </tr>
                             <tr>
 							    <td>titel</td>

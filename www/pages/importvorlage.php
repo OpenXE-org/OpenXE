@@ -465,6 +465,14 @@ class Importvorlage extends GenImportvorlage {
     $this->app->Tpl->Add('DATEIOBJEKTE', implode(', ',array_keys($this->app->erp->GetAllowedDateiObjekte())));
     $this->app->Tpl->Add('SPRACHEN', implode(', ',array_column($this->app->erp->GetSprachenSelect(),'iso')));
     $this->app->Tpl->Add('SPRACHEN', implode(', ',array_keys($this->app->erp->GetSprachenSelect())));
+
+    $allowed_datei_objekte = $this->app->erp->GetAllowedDateiObjekte();
+
+    foreach ($allowed_datei_objekte as $key => $allowed_datei_objekt) {
+        $this->app->Tpl->Add('DATEISUCHFELDER', $space.$key.": ".implode(', ',$allowed_datei_objekt['suchfelder']));
+        $space = "<br>";
+    }
+
     $this->app->Tpl->Parse('PAGE','importvorlage_formate.tpl');
   }
 
@@ -1153,9 +1161,9 @@ class Importvorlage extends GenImportvorlage {
               $jobId = $this->create($this->app->User->GetID(), $id, $stueckliste_csv, $rowcounter_real);
             }
       
+            $preview_headings = array_merge(['Zeile','Nummer','Aktion','Info','|'],array_column($prepare_result[0]['values'],'field'));
             $et = new EasyTable($this->app);
-            $et->headings = array_merge(['Zeile','Nummer','Aktion','Info','|'],array_column($prepare_result[0]['values'],'field'));
-
+            $et->headings = $preview_headings;
             $action_translate = array('none' => 'Keine', 'create' => 'Neu', 'update' => 'Aktualisieren');
 
             foreach ($prepare_result as $prepare_row) {
@@ -1174,7 +1182,8 @@ class Importvorlage extends GenImportvorlage {
                 '<div class="info"><input type="submit" name="import" value="importieren"> <i>Vorschau: Es werden aktuell nur 50 von <b>'
                 . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle '
                 . $rowcounter_real . ' Datens&auml;tze, davon '.$create_count.' neu, '.$update_count.' ge&auml;ndert.<input type="hidden" name="importdateiname" value="'
-                . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" /></div>'
+                . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" />'
+                . '</div>'
               );
             }
             else {
@@ -4335,17 +4344,13 @@ class Importvorlage extends GenImportvorlage {
                 // Create a row dataset (without checked and cmd)
                 $row = array();
                 $error_text = "";
-                $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache');
+                $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname');
                 $error = $this->create_row_set($tmp, $i, $allowed_fields, $row, $error_text);
-
                 $dateien_result = $this->PrepareDateien($tmp, $i, $allowed_fields, $global_data);
-            
                 $dateiname = basename($dateien_result['result_row']['additional_file']['path']);
-
                 if ($error !== false) {
                     switch ($row['dateiaktion']) {
                         case 'zip':
-                       
                             $fileid = $this->app->erp->CreateDateiWithStichwort(
                                         name: empty($row['dateiname'])?$dateiname:$row['dateiname'],
                                         titel: $row['titel'],
@@ -4368,10 +4373,9 @@ class Importvorlage extends GenImportvorlage {
                             $importvorlagedoresult['messages'][] = 'Dateiaktion URL nicht implementiert';
                             $importvorlagedoresult['successs'] = false;
                         break;
-                        case 'aendern':                          
-                            $datei_ids = $this->app->erp->GetDateiSubjektObjekt($row['stichwortsuche'],$row['objektsuche'],$objekt['id'],$row['dateiname']);
-                            foreach ($datei_ids as $datei_id) {
-                                $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$objekt['objekt'],$objekt['id']);
+                        case 'aendern':
+                            foreach ($dateien_result['result_row']['dms_dateien'] as $datei_id) {
+                                $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id']);
                             }
                         break;
                         case 'entfernen':
@@ -5372,7 +5376,7 @@ class Importvorlage extends GenImportvorlage {
         case 'dateien':
         
             $action_anzeige = '';
-            $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache');
+            $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname');
             // Create a row dataset (without checked and cmd)
             foreach($fields as $key => $value) {
                 $checkfields[$key][0] = $value;            
@@ -5547,31 +5551,25 @@ class Importvorlage extends GenImportvorlage {
             }
 
             // check dms file
-            $objektsuche = explode('/',$fields['quellpfad']);
-            if (is_array($objektsuche)) {
-                $dms_objekt = $global_data['dateiobjekte'][strtolower($objektsuche[0])]['wert'];
-                $dms_objeknummer = $objektsuche[1];
-                $dms_stichwort = $global_data['dateitypen_artikel'][strtolower($objektsuche[2])]['wert'];
-                $dms_dateiname = $objektsuche[3];
-            }
-            
+            $dms_objekt = $global_data['dateiobjekte'][strtolower($fields['dms-objekt'])]['wert'];
+            $dms_suchfeld = strtolower($fields['dms-objektsuchfeld']);
+            $dms_objeknummer = $fields['dms-objektnummer'];
+            $dms_stichwort = $global_data['dateitypen_artikel'][strtolower($fields['dms-stichwort'])];
+            $dms_dateiname = $fields['dms-dateiname'];
+                    
             if (in_array($dateiaktion,['aendern', 'entfernen'])) {
-                if (empty($dms_objekt)) {
-                    $action_anzeige .= 'Ungültiger DMS-Pfad: '.$fields['quellpfad'];
-                    break;
-                }
                 if (empty($dms_objekt) || empty($dms_objeknummer)) {
-                    $action_anzeige .= "Objekt nicht gefunden: ".$dms_objekt." ".$dms_objeknummer;
+                    $action_anzeige .= "DMS-Objekt nicht angegeben";
                     break;
                 }
-                $objekt = $this->app->erp->getDateiObjekt($dms_objekt,$dms_objeknummer);
+                $objekt = $this->app->erp->getDateiObjekt($dms_objekt,$dms_objeknummer,$dms_suchfeld);
                 if (empty($objekt)) {
-                    $action_anzeige .= "Objekt nicht gefunden: ".$dms_objekt." ".$dms_objeknummer;
+                    $action_anzeige .= "DMS-Objekt nicht gefunden: ".$dms_objekt." ".$dms_objeknummer;
                     break;
                 }
-                $dms_dateien = $this->app->erp->GetDateiSubjektObjekt($dms_stichwort,$dms_objekt,$objekt['id'],$dms_dateiname);
+                $dms_dateien = $this->app->erp->GetDateiSubjektObjekt($dms_stichwort['wert'],$dms_objekt,$objekt['id'],$dms_dateiname);
                 if (empty($dms_dateien)) {
-                    $action_anzeige .= 'Keine Dateien gefunden im DMS: '.$fields['quellpfad'];
+                    $action_anzeige .= 'Keine passenden Dateien gefunden im DMS';
                     break;
                 }
                 $result_row['dms_dateien'] = $dms_dateien;
@@ -5586,7 +5584,7 @@ class Importvorlage extends GenImportvorlage {
 
             // Check target objekt
             if (in_array($dateiaktion,['zip','url','aendern','entfernen'])) {
-                $objekt = $this->app->erp->getDateiObjekt($fields['objekt'],$fields['objektnummer']);
+                $objekt = $this->app->erp->getDateiObjekt($fields['objekt'],$fields['objektnummer'],$fields['objektsuchfeld']);
                 if (empty($objekt)) {
                     $action_anzeige .= "Objekt nicht gefunden: ".$fields['objekt']." ".$fields['objektnummer'].$check;
                     break;
@@ -5598,12 +5596,13 @@ class Importvorlage extends GenImportvorlage {
             // Check existing target file objekt
             if (in_array($dateiaktion,['zip','url'])) {
                 $dateiname = basename($fields['quellpfad']);
-                $dms_dateien = $this->app->erp->GetDateiSubjektObjekt($stichwort['wert'],$objekt['objekt'],$objekt['id'],$dateiname);
+                $dms_dateien = $this->app->erp->GetDateiSubjektObjekt($stichwort['wert'],$objekt['objekt'],$objekt['id'],$fields['dateiname']);
             }
 
             switch ($dateiaktion) {
                 case 'url':
-                // break omitted
+                    $action_anzeige .= 'Dateiaktion URL nicht implementiert. ';
+                break;
                 case 'zip':
                     if (empty($dms_dateien)) {
                         $action = 'create';
@@ -5637,5 +5636,6 @@ class Importvorlage extends GenImportvorlage {
 
         return($result);
     }
+
 }
 

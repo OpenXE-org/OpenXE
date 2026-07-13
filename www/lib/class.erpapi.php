@@ -37572,41 +37572,43 @@ function Firmendaten($field,$projekt="")
       */
         function getAllowedDateiObjekte() {
             return array(
-                'docscan'=> ['wert' => 'docscan','tabelle' => 'docscan', 'nummerfeld' => 'id'],
-                'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'nummerfeld' => 'id'],
-                'payment_transaction'=> ['wert' => 'payment_transaction','tabelle' => 'payment_transaction', 'nummerfeld' => 'id'],
-                'payment_transaction_group'=> ['wert' => 'payment_transaction_group','tabelle' => 'payment_transaction_group', 'nummerfeld' => 'id'],
-                'auftrag'=> ['wert' => 'auftrag','tabelle' => 'auftrag', 'nummerfeld' => 'belegnr'],
-                'ticket'=> ['wert' => 'Ticket','tabelle' => 'ticket', 'nummerfeld' => 'schluessel'],
-                'e-mail'=> ['wert' => 'E-mail','tabelle' => 'emailbackup_mails', 'nummerfeld' => 'id'],
-                'lieferschein'=> ['wert' => 'lieferschein','tabelle' => 'lieferschein', 'nummerfeld' => 'belegnr'],
-                'rechnung'=> ['wert' => 'rechnung','tabelle' => 'rechnung', 'nummerfeld' => 'belegnr'],
-                'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'nummerfeld' => 'id'],
-                'adressen'=> ['wert' => 'Adressen','tabelle' => 'adresse', 'nummerfeld' => 'belegnr'],
-                'angebot'=> ['wert' => 'angebot','tabelle' => 'angebot', 'nummerfeld' => 'belegnr'],
-                'bestellung'=> ['wert' => 'bestellung','tabelle' => 'bestellung', 'nummerfeld' => 'belegnr'],
-                'verbindlichkeit'=> ['wert' => 'verbindlichkeit','tabelle' => 'verbindlichkeit', 'nummerfeld' => 'rechnung'],
-                'paketannahme'=> ['wert' => 'Paketannahme','tabelle' => 'paketannahme', 'nummerfeld' => 'id'],
-                'gutschrift'=> ['wert' => 'gutschrift','tabelle' => 'gutschrift', 'nummerfeld' => 'belegnr'],
-                'artikel'=> ['wert' => 'Artikel','tabelle' => 'artikel', 'nummerfeld' => 'nummer'],
-                'kalender_event'=> ['wert' => 'kalender_event','tabelle' => 'kalender_event', 'nummerfeld' => 'id'],
-                'aufgaben'=> ['wert' => 'aufgaben','tabelle' => 'aufgaben', 'nummerfeld' => 'id'],
-                'konto'=> ['wert' => 'konto','tabelle' => 'konto', 'nummerfeld' => 'id'],
-                'retoure'=> ['wert' => 'retoure','tabelle' => 'retoure', 'nummerfeld' => 'belegnr'],
-                'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket_header', 'nummerfeld' => 'id'],
-                'lieferantengutschrift'=> ['wert' => 'lieferantengutschrift','tabelle' => 'lieferantengutschrift', 'nummerfeld' => 'belegnr'],
-                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpaket', 'nummerfeld' => 'id'],
-            );
+                'docscan'=> ['wert' => 'docscan','tabelle' => 'docscan', 'suchfelder' => ['id']],
+                'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'suchfelder' => ['id']],
+                'payment_transaction'=> ['wert' => 'payment_transaction','tabelle' => 'payment_transaction', 'suchfelder' => ['id']],
+                'payment_transaction_group'=> ['wert' => 'payment_transaction_group','tabelle' => 'payment_transaction_group', 'suchfelder' => ['id']],
+                'auftrag'=> ['wert' => 'auftrag','tabelle' => 'auftrag', 'suchfelder' => ['belegnr']],
+                'ticket'=> ['wert' => 'Ticket','tabelle' => 'ticket', 'suchfelder' => ['schluessel']],
+                'e-mail'=> ['wert' => 'E-mail','tabelle' => 'emailbackup_mails', 'suchfelder' => ['id']],
+                'lieferschein'=> ['wert' => 'lieferschein','tabelle' => 'lieferschein', 'suchfelder' => ['belegnr']],
+                'rechnung'=> ['wert' => 'rechnung','tabelle' => 'rechnung', 'suchfelder' => ['belegnr']],
+                'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'suchfelder' => ['id']],
+                'adressen'=> ['wert' => 'Adressen','tabelle' => 'adresse', 'suchfelder' => ['belegnr']],
+                'angebot'=> ['wert' => 'angebot','tabelle' => 'angebot', 'suchfelder' => ['belegnr']],
+                'bestellung'=> ['wert' => 'bestellung','tabelle' => 'bestellung', 'suchfelder' => ['belegnr']],
+                'verbindlichkeit'=> ['wert' => 'verbindlichkeit','tabelle' => 'verbindlichkeit', 'suchfelder' => ['belegnr','rechnung']],
+                'paketannahme'=> ['wert' => 'Paketannahme','tabelle' => 'paketannahme', 'suchfelder' => ['id']],
+                'gutschrift'=> ['wert' => 'gutschrift','tabelle' => 'gutschrift', 'suchfelder' => ['belegnr']],
+                'artikel'=> ['wert' => 'Artikel','tabelle' => 'artikel', 'suchfelder' => ['nummer','ean','herstellernummer']],
+                'kalender_event'=> ['wert' => 'kalender_event','tabelle' => 'kalender_event', 'suchfelder' => ['id']],
+                'aufgaben'=> ['wert' => 'aufgaben','tabelle' => 'aufgaben', 'suchfelder' => ['id']],
+                'konto'=> ['wert' => 'konto','tabelle' => 'konto', 'suchfelder' => ['id']],
+                'retoure'=> ['wert' => 'retoure','tabelle' => 'retoure', 'suchfelder' => ['belegnr']],
+                'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket_header', 'suchfelder' => ['id']],
+                'lieferantengutschrift'=> ['wert' => 'lieferantengutschrift','tabelle' => 'lieferantengutschrift', 'suchfelder' => ['belegnr', 'rechnung']],
+                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpaket', 'suchfelder' => ['id']],            );
         }
 
-     function getDateiObjekt(string $objekt, string $objektnummer) {
+     function getDateiObjekt(string $objekt, string $objektnummer, string $suchfeld = '') {
         $dateiobjekte = $this->getAllowedDateiObjekte();
         $tabelle = $dateiobjekte[strtolower($objekt)]['tabelle'];
         if (empty($tabelle)) {
             return(null);
         }
-        $nummerfeld = $dateiobjekte[strtolower($objekt)]['nummerfeld'];
-        $sql = "SELECT id FROM ".$tabelle." WHERE ".$nummerfeld." = '".$objektnummer."'";
+        $suchefeld = $this->app->DB->real_escape_string($suchfeld);
+        if (!in_array($suchfeld, $dateiobjekte[strtolower($objekt)]['suchfelder'])) {
+            $suchfeld = $dateiobjekte[strtolower($objekt)]['suchfelder'][0];
+        }
+        $sql = "SELECT id FROM ".$tabelle." WHERE `".$suchfeld."` = '".$objektnummer."'";
         $check = $this->app->DB->Select($sql);
         if ($check) {
             return(
