@@ -1166,10 +1166,10 @@ class Importvorlage extends GenImportvorlage {
             $action_translate = array('none' => 'Keine', 'create' => 'Neu', 'update' => 'Aktualisieren');
 
             $preview_data = "";
-            $preview_data .= $exportdatenmaskierung.implode($exportdatenmaskierung.$importtrennzeichen.$exportdatenmaskierung,$preview_headings).$exportdatenmaskierung.PHP_EOL;
+            $preview_data .= $importdatenmaskierung.implode($importdatenmaskierung.$importtrennzeichen.$importdatenmaskierung,$preview_headings).$importdatenmaskierung.PHP_EOL;
             foreach ($prepare_result as $prepare_row) {
                 $row = array_merge(array($prepare_row['row'],$prepare_row['nummer'],$action_translate[$prepare_row['action']],$prepare_row['action_anzeige'],'|'),array_column($prepare_row['values'],'value'));
-                $preview_data .= $exportdatenmaskierung.implode($exportdatenmaskierung.$importtrennzeichen.$exportdatenmaskierung,$row).$exportdatenmaskierung.PHP_EOL;
+                $preview_data .= $importdatenmaskierung.implode($importdatenmaskierung.$importtrennzeichen.$importdatenmaskierung,$row).$importdatenmaskierung.PHP_EOL;
             }
             $preview_file_name = $this->app->erp->GetTMP().'importvorschau'.$this->app->User->GetID();
             file_put_contents($preview_file_name, $preview_data);
