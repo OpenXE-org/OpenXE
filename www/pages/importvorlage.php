@@ -117,6 +117,7 @@ class Importvorlage extends GenImportvorlage {
     $this->app->ActionHandler("downloadcsv","ImportvorlageDownloadCsv");
     $this->app->ActionHandler("downloadjson","ImportvorlageDownloadJson");
     $this->app->ActionHandler("copy","ImportvorlageCopy");
+    $this->app->ActionHandler("preview","ImportvorlageDownloadPreview");
 
     $this->app->ActionHandlerListen($app);
 
@@ -1162,9 +1163,19 @@ class Importvorlage extends GenImportvorlage {
             }
       
             $preview_headings = array_merge(['Zeile','Nummer','Aktion','Info','|'],array_column($prepare_result[0]['values'],'field'));
+            $action_translate = array('none' => 'Keine', 'create' => 'Neu', 'update' => 'Aktualisieren');
+
+            $preview_data = "";
+            $preview_data .= $exportdatenmaskierung.implode($exportdatenmaskierung.$importtrennzeichen.$exportdatenmaskierung,$preview_headings).$exportdatenmaskierung.PHP_EOL;
+            foreach ($prepare_result as $prepare_row) {
+                $row = array_merge(array($prepare_row['row'],$prepare_row['nummer'],$action_translate[$prepare_row['action']],$prepare_row['action_anzeige'],'|'),array_column($prepare_row['values'],'value'));
+                $preview_data .= $exportdatenmaskierung.implode($exportdatenmaskierung.$importtrennzeichen.$exportdatenmaskierung,$row).$exportdatenmaskierung.PHP_EOL;
+            }
+            $preview_file_name = $this->app->erp->GetTMP().'importvorschau'.$this->app->User->GetID();
+            file_put_contents($preview_file_name, $preview_data);
+
             $et = new EasyTable($this->app);
             $et->headings = $preview_headings;
-            $action_translate = array('none' => 'Keine', 'create' => 'Neu', 'update' => 'Aktualisieren');
 
             foreach ($prepare_result as $prepare_row) {
                 $row = array_merge(array($prepare_row['row'],$prepare_row['nummer'],$action_translate[$prepare_row['action']],$prepare_row['action_anzeige'],'|'),array_column($prepare_row['values'],'value'));
@@ -1176,23 +1187,21 @@ class Importvorlage extends GenImportvorlage {
             }
             $et->DisplayNew('ERGEBNIS',"");
 
-            if($limit_erreicht) {
-              $this->app->Tpl->Add(
+            if ($limit_erreicht) {
+                $limit_text = '<i>Vorschau: Es werden aktuell nur 50 von <b>'
+                . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle ';
+            }
+
+            $this->app->Tpl->Add(
                 'IMPORTBUTTON',
-                '<div class="info"><input type="submit" name="import" value="importieren"> <i>Vorschau: Es werden aktuell nur 50 von <b>'
-                . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle '
+                '<div class="info"><input type="submit" name="import" value="importieren">'
+                . $limit_text
                 . $rowcounter_real . ' Datens&auml;tze, davon '.$create_count.' neu, '.$update_count.' ge&auml;ndert.<input type="hidden" name="importdateiname" value="'
                 . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" />'
+                . ' <a href="index.php?module=importvorlage&action=preview">Vorschau als CSV herunterladen</a>'
                 . '</div>'
-              );
-            }
-            else {
-              $this->app->Tpl->Add(
-                'IMPORTBUTTON',
-                '<input type="hidden" name="jobid" value="'
-                .$jobId.'" /><input type="submit" name="import" value="importieren" />'
-              );
-            }
+            );
+            
         } // !empty($stueckliste) file ready
     } // upload
 
@@ -5637,5 +5646,14 @@ class Importvorlage extends GenImportvorlage {
         return($result);
     }
 
+    function ImportvorlageDownloadPreview() {
+        header('Cache-Control: must-revalidate');
+        header('Pragma: must-revalidate');
+        header('Content-type: text/plain');
+        header('Content-Disposition: attachment; filename="importvorschau.csv"');
+        $preview_file_name = $this->app->erp->GetTMP().'importvorschau'.$this->app->User->GetID();
+        echo(file_get_contents($preview_file_name, $preview_data));
+        $this->app->ExitXentral();
+    }
 }
 
