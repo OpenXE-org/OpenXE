@@ -4384,7 +4384,10 @@ class Importvorlage extends GenImportvorlage {
                         break;
                         case 'aendern':
                             foreach ($dateien_result['result_row']['dms_dateien'] as $datei_id) {
-                                $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id']);
+                                if (!empty($row['stichwort'])) {
+                                    $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id']);
+                                }
+                                $this->app->erp->ModifyDateiMetadata($datei_id, $row['dateiname'], $row['titel'], $row['beschreibung']);
                             }
                         break;
                         case 'entfernen':
@@ -5581,12 +5584,18 @@ class Importvorlage extends GenImportvorlage {
                     $action_anzeige .= 'Keine passenden Dateien gefunden im DMS';
                     break;
                 }
+                if (!empty($dms_dateien)) {
+                    if (count($dms_dateien) > 1 && !empty($fields['dateiname'])) {
+                        $action_anzeige .= "Dateiname mehrfach (".count($dms_dateien)." Dateien im DMS)";
+                        break;
+                    }
+                }
                 $result_row['dms_dateien'] = $dms_dateien;
             }
             
             // check stichwort
             $stichwort = $global_data['dateitypen_artikel'][strtolower($fields['stichwort'])];
-            if (empty($stichwort)) {
+            if (empty($stichwort) && empty($fields['dateiname']) && empty($fields['titel']) && empty($fields['beschreibung'])) {
                 $action_anzeige .= 'Stichwort nicht gefunden: '.$fields['stichwort'];
                 break;
             }
@@ -5594,7 +5603,7 @@ class Importvorlage extends GenImportvorlage {
             // Check target objekt
             if (in_array($dateiaktion,['zip','url','aendern','entfernen'])) {
                 $objekt = $this->app->erp->getDateiObjekt($fields['objekt'],$fields['objektnummer'],$fields['objektsuchfeld']);
-                if (empty($objekt)) {
+                if (empty($objekt) && empty($fields['dateiname']) && empty($fields['titel']) && empty($fields['beschreibung'])) {
                     $action_anzeige .= "Objekt nicht gefunden: ".$fields['objekt']." ".$fields['objektnummer'].$check;
                     break;
                 }
@@ -5607,7 +5616,7 @@ class Importvorlage extends GenImportvorlage {
                 $dateiname = basename($fields['quellpfad']);
                 $dms_dateien = $this->app->erp->GetDateiSubjektObjekt($stichwort['wert'],$objekt['objekt'],$objekt['id'],$fields['dateiname']);
             }
-
+            
             switch ($dateiaktion) {
                 case 'url':
                     $action_anzeige .= 'Dateiaktion URL nicht implementiert. ';
@@ -5630,7 +5639,6 @@ class Importvorlage extends GenImportvorlage {
                     $action_anzeige .= count($dms_dateien).' Dateiverknüpfung(en) entfernen im DMS';
                 break;
                 default:
-                    $action = 'update';
                     $action_anzeige .= 'Unbekannte Dateiaktion'.$dateiaktion;
                 break;
             }

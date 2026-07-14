@@ -37114,8 +37114,22 @@ function Firmendaten($field,$projekt="")
 
       function AddDateiStichwort($id,$subjekt,$objekt,$parameter,$without_log=false,$parameter2=0,$objekt2='')
       {
+        $typen = $this->getDateiTypen(strtolower($objekt));
+        if (!in_array(strtolower($subjekt),array_keys($typen))) {
+            throw new Exception("Unbekanntes Stichwort ".$subjekt);
+        }
+        $datei_objekt = $this->getDateiObjekt(strtolower($objekt), $parameter, 'id');
+        if (empty($datei_objekt)) {
+            throw new Exception("Unbekanntes Objekt ".$objekt." ".$parameter);
+        }
         if(strtolower($objekt) === 'artikel' && $parameter) {
           $this->app->DB->Update("UPDATE artikel SET bildvorschau = '' WHERE id = '".$parameter."' LIMIT 1");
+        }
+        $existing = $this->getDateiSubjektObjekt($subjekt, $objekt, $parameter);
+        if (!empty($existing)) {
+            if (in_array($id, $existing)) {
+                return;
+            }
         }
         $sort = 1 + (int)$this->app->DB->Select("SELECT max(sort) FROM datei_stichwoerter WHERE objekt like '$objekt' AND parameter = '$parameter'");
         if(!$without_log) {
@@ -37126,6 +37140,25 @@ function Firmendaten($field,$projekt="")
               VALUES ('','$id','$subjekt','$objekt','$parameter','$sort','$parameter2','$objekt2')");
         }
       }
+
+        function ModifyDateiMetadata($dateiid, $dateiname, $titel, $beschreibung) : bool {
+            $sql = "SELECT id, titel, beschreibung FROM datei WHERE id = ".$dateiid;
+            $dms_file = $this->app->DB->Select($sql);
+            if (empty($dms_file)) {
+                return (false);
+            }
+
+            $sql = "UPDATE datei SET 
+                titel = if('$titel' = '',titel,'$titel'),
+                beschreibung = if('$beschreibung' = '',beschreibung,'$beschreibung')
+                WHERE id='$dateiid'";
+            $this->app->DB->Update($sql);
+
+            $version = $this->app->DB->Select("SELECT MAX(version) FROM datei_version WHERE datei='$dateiid'");
+            $sql = "UPDATE datei_version SET dateiname = if('$dateiname' = '',dateiname,'$dateiname') WHERE datei='$dateiid' AND version='$version'";
+            $this->app->DB->Update($sql);
+            return (true);
+        }
 
       function DeleteDateiAll($subjekt,$objekt,$parameter)
       {
@@ -37545,7 +37578,7 @@ function Firmendaten($field,$projekt="")
 
         $dateiTypen['sonstige'] = ['wert' => 'Sonstige', 'beschriftung' => 'Sonstige Datei'];
         $dateiTypen['deckblatt'] = ['wert' => 'Deckblatt', 'beschriftung' => 'Deckblatt'];
-        $dateiTypen['anahang'] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
+        $dateiTypen['anhang'] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
 
         //adresse unter defaulttypen, da profilbild nicht als default ausgewählt werden soll OS148717
         switch($modul){
@@ -37605,8 +37638,10 @@ function Firmendaten($field,$projekt="")
             return(null);
         }
         $suchefeld = $this->app->DB->real_escape_string($suchfeld);
-        if (!in_array($suchfeld, $dateiobjekte[strtolower($objekt)]['suchfelder'])) {
-            $suchfeld = $dateiobjekte[strtolower($objekt)]['suchfelder'][0];
+        if ($suchfeld != 'id') {
+            if (!in_array($suchfeld, $dateiobjekte[strtolower($objekt)]['suchfelder'])) {
+                $suchfeld = $dateiobjekte[strtolower($objekt)]['suchfelder'][0];
+            }
         }
         $sql = "SELECT id FROM ".$tabelle." WHERE `".$suchfeld."` = '".$objektnummer."'";
         $check = $this->app->DB->Select($sql);
