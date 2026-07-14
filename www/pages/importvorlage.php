@@ -1188,7 +1188,7 @@ class Importvorlage extends GenImportvorlage {
             $et->DisplayNew('ERGEBNIS',"");
 
             if ($limit_erreicht) {
-                $limit_text = '<i>Vorschau: Es werden aktuell nur 50 von <b>'
+                $limit_text = 'Vorschau: Es werden aktuell nur 50 von <b>'
                 . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle ';
             }
 

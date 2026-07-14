@@ -707,22 +707,22 @@
 							    <td>quellpfad</td>
 							    <td>Für neue Dateien: Pfad zur Datei</td>
 							    <td>
-                                    zip: Pfad innerhalb der ZIP-Datei <i>(Tip: unter Linux kann mit "find . -mindepth 2 -type f -printf '%P\n'" eine passende Liste aus einem Ordner erzeugt werden</i><br>
+                                    zip: Pfad innerhalb der ZIP-Datei<br>
                                     url: gesamte URL inkl. http<br>
                                 </td>
 						    </tr>
 						    <tr>
 							    <td>dms-objekt</td>
-							    <td rowspan="4">Für Dateien im OpenXE-DMS, die geändert werden sollen, Suchfeld für die Objektnummer</td>
+							    <td rowspan="5">DMS-Suche: Für Dateien im OpenXE-DMS, die geändert werden sollen</td>
 							    <td>[DATEIOBJEKTE]</td>
 						    </tr>
 						    <tr>
 							    <td>dms-objektsuchfeld</td>
-							    <td>[DATEISUCHFELDER]</td>
+							    <td>Suchfeld für die Objektnummer, je nach Objekttyp (optional):<br>[DATEISUCHFELDER]</td>
 						    </tr>
 						    <tr>
 							    <td>dms-objektnummer</td>
-							    <td></td>
+							    <td>Z.B. Artikelnummer, Belegnr, etc.</td>
 						    </tr>
 						    <tr>
 							    <td>dms-stichwort</td>
@@ -731,11 +731,11 @@
 						    <tr>
 							    <td>dms-dateiname</td>
 							    <td></td>
-							    <td>nicht implementiert</td>
+							    <td></td>
 						    </tr>
 						    <tr>
 							    <td>objekt</td>
-							    <td rowspan="3">Zu setzende Verknüpfung</td>
+							    <td rowspan="4">Zu setzende Verknüpfung</td>
 							    <td>[DATEIOBJEKTE]</td>
 						    </tr>
 						    <tr>
@@ -748,7 +748,6 @@
 						    </tr>
 						    <tr>
 							    <td>stichwort</td>
-							    <td></td>
 							    <td>[STICHWOERTER]</td>
 						    </tr>
 						    <tr>

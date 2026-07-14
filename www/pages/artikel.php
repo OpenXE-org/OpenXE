@@ -1386,7 +1386,11 @@ class Artikel extends GenArtikel {
         if($more_data9 == 1){
           $joins .= ' INNER JOIN (SELECT artikel, SUM(menge) AS menge FROM lager_platz_inhalt WHERE menge>0 GROUP BY artikel) AS lpi ON lpi.artikel = a.id';
         }
-
+        if($more_data10 == 1){
+            $beschreibung_sql = "'<br><i>',
+                COALESCE(a.anabregs_text,''),
+                '</i>',";
+        }
         $sql .= "
               a.nummer as nummer, 
               CONCAT(
