@@ -748,12 +748,13 @@
 						    </tr>
 						    <tr>
 							    <td>stichwort</td>
+							    <td></td>
 							    <td>[STICHWOERTER]</td>
 						    </tr>
 						    <tr>
 							    <td>dateiname</td>
-							    <td></td>
 							    <td>Neuer Dateiname, falls abweichend</td>
+							    <td></td>
 						    </tr>
                             <tr>
 							    <td>titel</td>

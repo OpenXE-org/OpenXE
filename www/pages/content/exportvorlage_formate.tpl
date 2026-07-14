@@ -49,6 +49,7 @@
                             <tr><td>artikelbaumX; <i>(X = 1-20)</i></td><td></td><td></td></tr>
                             <tr><td>zolltarifnummer</td><td></td><td></td></tr>
                             <tr><td>ursprungsregion</td><td></td><td></td></tr>
+                            <tr><td>herkunftsland</td><td></td><td></td></tr>
                             <tr><td>berechneterek</td><td></td><td></td></tr>
                             <tr><td>berechneterekwaehrung</td><td></td><td></td></tr>
                             <tr><td>verwendeberechneterek</td><td></td><td></td></tr>
