@@ -2827,7 +2827,7 @@ class Briefpapier extends SuperFPDF {
       $item['name'] = ($langeartikelnummern?"\r\n\r\n":'').$this->app->erp->ReadyForPDF($item['name']);
       $item['desc'] = $this->app->erp->ReadyForPDF($item['desc']);
       $item['itemno'] = $this->app->erp->ReadyForPDF($item['itemno']);
-      $item['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id = ".$item['artikel']." LIMIT 1");
+      $item['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id = '".$item['artikel']."' LIMIT 1");
       $item['herstellernummer'] = $this->app->erp->ReadyForPDF($item['herstellernummer']);
       $item['artikelnummerkunde'] = $this->app->erp->ReadyForPDF($item['artikelnummerkunde']);
       $item['lieferdatum'] = $this->app->erp->ReadyForPDF($item['lieferdatum']);
