@@ -221,13 +221,14 @@
                     <a href="index.php?module=datei_stichwortvorlagen&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_23.gif" border="0" width="30%" /></a>
                 </td>
                 <td width="25%">
+                    <a href="index.php?module=dateien&action=list"><img src="./themes/[THEME]/images/einstellungen/Icons_dunkel_27.gif" border="0" width="30%" /></a>
                 </td>
             </tr>
             <tr align="center">
                 <td><a href="index.php?module=welcome&action=info">{|Lizenz|}</a></td>
                 <td><a href="index.php?module=adapterbox&action=list">{|Adapterbox|}</a></td>
                 <td><a href="index.php?module=datei_stichwortvorlagen&action=list">{|Dateistichw&ouml;rter|}</a></td>
-                <td></td>
+                <td><a href="index.php?module=dateien&action=list">{|Dateien|}</a></td>
                 <td></td>
             </tr>
         </table>

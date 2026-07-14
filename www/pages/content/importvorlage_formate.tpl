@@ -1,5 +1,4 @@
 <div id="tabs">
-
 	<ul>
 		<li><a href="#tabs-1">{|Artikel/Einkauf|}</a></li>
 		<li><a href="#tabs-2">{|Adressen|}</a></li>
@@ -9,6 +8,7 @@
 		<li><a href="#tabs-6">{|Kontenrahmen|}</a></li>
 		<li><a href="#tabs-7">{|Kontoauszug|}</a></li>
 		<li><a href="#tabs-8">{|St&uuml;ckliste|}</a></li>
+		<li><a href="#tabs-9">{|Dateien|}</a></li>
 	</ul>
 
 	<div id="tabs-1">
@@ -37,11 +37,9 @@
 							<tr><td>metadescription_en</td><td></td><td></td></tr>
 							<tr><td>metakeywords_de</td><td></td><td></td></tr>
 							<tr><td>metakeywords_en</td><td></td><td></td></tr>
-							<tr><td>artikelkategorie (id)</td><td></td><td></td></tr>
+							<tr><td>artikelkategorie</td><td></td><td>(id)</td></tr>
 							<tr><td>artikelkategorie_name</td><td>Artikelkategorie</td><td>Falls die Artikelkategorie noch nicht vorhanden ist, wird diese neu angelegt</td></tr>
-							<tr><td>artikelbaumX (X=1 bis 20; CLEAR um alle Zuordnungen zu löschen)</td><td></td><td></td></tr>
-							<tr><td>bildtitelX (X=1 bis 20; X entspricht der Sortierung des Bildes in den Dateien des Artikels)</td><td></td><td></td></tr>
-							<tr><td>bildbeschreibung(X=1 bis 20; X entspricht der Sortierung des Bildes in den Dateien des Artikels)</td><td></td><td></td></tr>
+							<tr><td>artikelbaumX</td><td></td><td>(X=1 bis 20; CLEAR um alle Zuordnungen zu löschen)</td></tr>
 							<tr><td>internerkommentar</td><td>Interner Kommentar</td><td></td></tr>
 							<tr><td>hersteller</td><td></td><td></td></tr>
 							<tr><td>herstellerlink</td><td></td><td></td></tr>
@@ -74,44 +72,36 @@
 							<tr><td>steuer_aufwendung_inland_eunormal</td><td></td><td></td></tr>
 							<tr><td>steuer_aufwendung_inland_euermaessigt</td><td></td><td></td></tr>
 							<tr><td>steuer_aufwendung_inland_import</td><td></td><td></td></tr>
-							<tr><td>mindesthaltbarkeitsdatum (1=aktiv,0=nicht aktiv)</td><td></td><td></td></tr>
-							<tr><td>seriennummern (keine,eigene,vomprodukt,vomprodukteinlagern)</td><td></td><td></td></tr>
-							<tr><td>chargenverwaltung (0=keine,2=originale nutzen)</td><td></td><td></td></tr>
+							<tr><td>mindesthaltbarkeitsdatum</td><td></td><td>(1=aktiv,0=nicht aktiv)</td></tr>
+							<tr><td>seriennummern</td><td></td><td>(keine,eigene,vomprodukt,vomprodukteinlagern)</td></tr>
+							<tr><td>chargenverwaltung</td><td></td><td>(0=keine,2=originale nutzen)</td></tr>
 							<tr><td>mindestlager</td><td>Minimaler Lagerbestand</td><td></td></tr>
 							<tr><td>mindestbestellung</td><td></td><td></td></tr>
 							<tr><td>umsatzsteuer</td><td>Ermäßigte Umsatzsteuer</td><td>Möglich in CSV: ermaessigt, normal</td></tr>
 							<tr><td>artikelabschliessenkalkulation</td><td>Checkbox 'Einkaufspreis beim Abschließen der Bestellung in Kalkulation übernehmen' zu finden unter Artikel / Kalkulation</td><td>Mit dem Wert 1 aktiviert man die Checkbox, mit 0 deaktiviert man sie</td></tr>
 							<tr><td>artikelfifokalkulation</td><td>Checkbox 'Kalkulierter EK Preis automatisch nach FIFO Prinzip der letzten Eingänge den Mittelwert neu berechnen' zu finden unter Artikel / Kalkulation</td><td>Mit dem Wert 1 aktiviert man die Checkbox, mit 0 deaktiviert man sie</td></tr>
 							<tr><td>lieferantname</td><td></td><td></td></tr>
-							<tr><td>lieferantbestellnummer</td><td></td><td></td></tr>
-							<tr><td>lieferantartikelbezeichnung</td><td></td><td></td></tr>
-							<tr><td>lieferanteinkaufnetto</td><td>Einkaufspreis (netto) pro Stück</td><td>Pflichtfeld beim Import von Einkaufspreisen</td></tr>
-							<tr><td>lieferanteinkaufwaehrung</td><td>Währung des EInkaufspreises, z.B. (EUR, CHF, USD)</td><td>Pflichtfeld beim Import von Einkaufspreisen</td></tr>
-							<tr><td>lieferanteinkaufmenge</td><td>Staffelmenge des Einkaufspreise z.B. ab 10 Stück = 10, für Standardpreis Menge = 1 angeben</td><td>Pflichtfeld beim Import von Einkaufspreisen</td></tr>
-							<tr><td>lieferanteinkaufvpemenge</td><td></td><td></td></tr>
-							<tr><td>lieferanteinkaufvpepreis</td><td></td><td></td></tr>
-							<tr><td>lieferantbestellnummer2 - 3</td><td>siehe lieferantbestellnummer</td><td></td></tr>
-							<tr><td>lieferantartikelbezeichnung2 - 3</td><td>siehe lieferantartikelbezeichnung</td><td></td></tr>
-							<tr><td>lieferanteinkaufnetto2 - 3</td><td>siehe lieferanteinkaufnetto</td><td></td></tr>
-							<tr><td>lieferanteinkaufwaehrung2 - 3</td><td>siehe lieferanteinkaufwaehrung</td><td></td></tr>
-							<tr><td>lieferanteinkaufmenge2 - 3</td><td>siehe lieferanteinkaufmenge</td><td></td></tr>
-							<tr><td>lieferanteinkaufvpemenge2 - 3</td><td>siehe lieferanteinkaufvpemenge</td><td></td></tr>
-							<tr><td>lieferanteinkaufvpepreis2 - 3</td><td>siehe lieferanteinkaufvpepreis</td><td></td></tr>
-							<tr><td>lieferantrahmenvertrag_vonX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantrahmenvertrag_bisX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantpreis_anfrage_vomX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantgueltig_bisX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantdatum_lagerlieferantX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantsicherheitslagerX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantrahmenvertrag_mengeX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantlieferzeit_aktuellX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantlieferzeit_standardX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantlager_lieferantX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantrahmenvertragX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantbemerkungX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
-							<tr><td>lieferantnichtberechnetX (X = leer, bzw 1-3)</td><td></td><td></td></tr>
+							<tr><td>lieferantbestellnummerX</td><td></td><td>(X = leer, 1-3)</td></tr>
+							<tr><td>lieferantartikelbezeichnungX</td><td></td><td>(X = leer, 1-3)</td></tr>
+							<tr><td>lieferanteinkaufnettoX</td><td>Einkaufspreis (netto) pro Stück</td><td>Pflichtfeld beim Import von Einkaufspreisen, (X = leer, 1-3)</td></tr>
+							<tr><td>lieferanteinkaufwaehrungX</td><td>Währung des EInkaufspreises, z.B. (EUR, CHF, USD)</td><td>Pflichtfeld beim Import von Einkaufspreisen, (X = leer, 1-3)</td></tr>
+							<tr><td>lieferanteinkaufmengeX</td><td>Staffelmenge des Einkaufspreise z.B. ab 10 Stück = 10, für Standardpreis Menge = 1 angeben</td><td>Pflichtfeld beim Import von Einkaufspreisen, (X = leer, 1-3)</td></tr>
+							<tr><td>lieferanteinkaufvpemengeX</td><td></td><td>(X = leer, 1-3)</td></tr>
+							<tr><td>lieferanteinkaufvpepreisX</td><td></td><td>(X = leer, 1-3)</td></tr>
+							<tr><td>lieferantrahmenvertrag_vonX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantrahmenvertrag_bisX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantpreis_anfrage_vomX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantgueltig_bisX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantdatum_lagerlieferantX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantsicherheitslagerX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantrahmenvertrag_mengeX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantlieferzeit_aktuellX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantlieferzeit_standardX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantlager_lieferantX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantrahmenvertragX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantbemerkungX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
+							<tr><td>lieferantnichtberechnetX</td><td></td><td>(X = leer, bzw 1-3)</td></tr>
 							<tr><td>lieferantennummer</td><td>Lieferantennummer, muss im System vorhanden sein</td><td>Pflichtfeld für Einkaufpreis-Import</td></tr>
-							<tr><td>standardlieferant (Lieferantennummer aus Xentral)</td><td></td><td></td></tr>
 							<tr><td>kundennummer</td><td></td><td></td></tr>
 							<tr><td>gewicht</td><td>Gewicht (in kg)</td><td></td></tr>
 							<tr><td>breite</td><td>Breite (in cm)</td><td></td></tr>
@@ -126,37 +116,34 @@
 							<tr><td>lager_menge_total</td><td>Lagerbestand der auf den Lagerplatz gebucht werden soll</td><td></td></tr>
 							<tr><td>lager_mhd</td><td>MHD zur Einlagerung auf dem Lagerplatz</td><td></td></tr>
 							<tr><td>lager_charge</td><td>Charge zur Einlagerung auf dem Lagerplatz</td><td></td></tr>
-							<tr><td>lager_platzX (X = 1-5)</td><td>siehe lager_platz</td><td></td></tr>
-							<tr><td>lager_menge_addierenX (X = 1-5)</td><td>siehe lager_menge_addieren</td><td></td></tr>
-							<tr><td>lager_menge_totalX (X = 1-5)</td><td>siehe lager_menge_total</td><td></td></tr>
-							<tr><td>lager_mhdX (X = 1-5)</td><td>siehe lager_mhd</td><td></td></tr>
-							<tr><td>lager_chargeX (X = 1-5)</td><td>siehe lager_charge</td><td></td></tr>
-							<tr><td>lager_vpe_mengeX (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_gewichtX (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_laengeX (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_breiteX (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_hoeheX (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_mengeX2 (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_gewichtX2 (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_laengeX2 (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_breiteX2 (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>lager_vpe_hoeheX2 (X = 1-5)</td><td></td><td></td></tr>
-							<tr><td>verkaufspreisXnetto (X = 1-10)</td><td>Verkaufspreis</td><td>Pflichfeld für Verkaufspreis</td></tr>
-							<tr><td>verkaufspreisXpreisfuermenge (X = 1-10)</td><td>Angegebener verkaufspreisXnetto gilt für Menge</td><td></td></tr>
-							<tr><td>verkaufspreisXmenge (X = 1-10)</td><td>Ab Menge</td><td>Pflichtfeld für Verkaufspreis - Falls Standardpreis (kein Staffelpreis) → als Menge 1 angeben</td></tr>
-							<tr><td>verkaufspreisXwaehrung (EUR,CHF,USD,...) (X = 1-10)</td><td>Währung</td><td></td></tr>
-							<tr><td>verkaufspreisXgruppe (Kennziffer) (X = 1-10)</td><td>"Gruppenspezifischer Preis für Gruppe</td></tr>
-							<tr><td>"</td><td></td></tr>
-							<tr><td>verkaufspreisXkundennummer (X = 1-10)</td><td>"Kundenspezifischer Preis für Kunde mit Kundennummer</td></tr>
-							<tr><td>"</td><td></td></tr>
-							<tr><td>verkaufspreisXartikelnummerbeikunde (X = 1-10)</td><td>Artikelnummer, die der Kunde verwendet (zur Information)</td><td></td></tr>
-							<tr><td>verkaufspreisXgueltigab (X = 1-10)</td><td>Startdatum des Verkaufspreises</td><td></td></tr>
-							<tr><td>verkaufspreisXgueltigbis (X = 1-10)</td><td>Enddatum des Verkaufspreises</td><td></td></tr>
-							<tr><td>verkaufspreisXinternerkommentar (X = 1-10)</td><td>Interner Kommentar z.B. bzgl. besonderer Konditionen oder Gründe für Zeitraum</td><td></td></tr>
+							<tr><td>lager_platzX</td><td>siehe lager_platz</td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_menge_addierenX</td><td>siehe lager_menge_addieren</td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_menge_totalX</td><td>siehe lager_menge_total</td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_mhdX</td><td>siehe lager_mhd</td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_chargeX</td><td>siehe lager_charge</td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_mengeX</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_gewichtX</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_laengeX</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_breiteX</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_hoeheX</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_mengeX2</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_gewichtX2</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_laengeX2</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_breiteX2</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>lager_vpe_hoeheX2</td><td></td><td>(X = 1-5)</td></tr>
+							<tr><td>verkaufspreisXnetto</td><td>Verkaufspreis</td><td>(X = 1-10), Pflichfeld für Verkaufspreis</td></tr>
+							<tr><td>verkaufspreisXpreisfuermenge</td><td>Angegebener verkaufspreisXnetto gilt für Menge</td><td>(X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXmenge</td><td>Ab Menge</td><td>(X = 1-10), Pflichtfeld für Verkaufspreis - Falls Standardpreis (kein Staffelpreis) → als Menge 1 angeben</td></tr>
+							<tr><td>verkaufspreisXwaehrung</td><td>Währung</td><td>(EUR,CHF,USD,...) (X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXgruppe</td><td>Gruppenspezifischer Preis für Gruppe</td><td>(Kennziffer) (X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXkundennummer</td><td>Kundenspezifischer Preis für Kunde mit Kundennummer</td><td>(X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXartikelnummerbeikunde</td><td>Artikelnummer, die der Kunde verwendet (zur Information)</td><td>(X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXgueltigab</td><td>Startdatum des Verkaufspreises</td><td>(X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXgueltigbis</td><td>Enddatum des Verkaufspreises</td><td>(X = 1-10)</td></tr>
+							<tr><td>verkaufspreisXinternerkommentar</td><td>Interner Kommentar z.B. bzgl. besonderer Konditionen oder Gründe für Zeitraum</td><td>(X = 1-10)</td></tr>
 							<tr><td>variante_von</td><td>Artikel ist eine Variante von (Artikelnummer)</td><td></td></tr>
 							<tr><td>projekt</td><td>Projekt</td><td></td></tr>
-							<tr><td>geloescht (auf 1 setzen)</td><td>"Gelöschter Artikel = 1, nicht gelöscht = 0</td></tr>
-							<tr><td>"</td><td></td></tr>
+							<tr><td>geloescht</td><td>Gelöschter Artikel = 1, nicht gelöscht = 0</td></tr>
 							<tr><td>inaktiv</td><td>Inaktiver Artikel = 1, aktiver Artikel = 0</td><td></td></tr>
 							<tr><td>aktiv</td><td></td><td></td></tr>
 							<tr><td>juststueckliste</td><td></td><td></td></tr>
@@ -165,39 +152,38 @@
 							<tr><td>stuecklistemenge</td><td>Anzahl des Artikels in Stücklisten</td><td></td></tr>
 							<tr><td>stuecklisteart</td><td>Art der Stückliste:  et = Einkauf, it = Information, bt = Beistellung</td><td></td></tr>
 							<tr><td>vkmeldungunterdruecken</td><td></td><td></td></tr>
-							<tr><td>shop_shopid (shopid ersetzen durch die ID des Shops)</td><td></td><td></td></tr>
-							<tr><td>aktiv_shopid (shopid ersetzen durch die ID des Shops)</td><td></td><td></td></tr>
-							<tr><td>fremdnummerX_shopid (shopid ersetzen durch die ID des Shops, X = 1-40)</td><td></td><td></td></tr>
-							<tr><td>fremdnummerbezeichnungX_shopid (shopid ersetzen durch die ID des Shops, X = 1-40)</td><td></td><td></td></tr>
+							<tr><td>shop_shopid</td><td></td><td>(shopid ersetzen durch die ID des Shops)</td></tr>
+							<tr><td>aktiv_shopid</td><td></td><td>(shopid ersetzen durch die ID des Shops)</td></tr>
+							<tr><td>fremdnummerX_shopid</td><td></td><td>(shopid ersetzen durch die ID des Shops, X = 1-40)</td></tr>
+							<tr><td>fremdnummerbezeichnungX_shopid</td><td></td><td>(shopid ersetzen durch die ID des Shops, X = 1-40)</td></tr>
 							<tr><td>pseudopreis</td><td>Pseudopreis, auch Streichpreis z.B. zur Anzeige im Onlineshop</td><td></td></tr>
-							<tr><td>freifeld1 - freifeld40</td><td>Freifelder des Artikels nach eigener Definition im System, eine Typprüfung findet nicht statt</td><td></td></tr>
+							<tr><td>freifeldX</td><td>Freifelder des Artikels nach eigener Definition im System, eine Typprüfung findet nicht statt</td><td>(X = 1-40)</td></tr>
 							<tr><td>intern_gesperrt</td><td></td><td></td></tr>
 							<tr><td>intern_gesperrtgrund</td><td></td><td></td></tr>
-							<tr><td>autolagerlampe (Lagersync)</td><td></td><td></td></tr>
+							<tr><td>autolagerlampe</td><td></td><td>(Lagersync)</td></tr>
 							<tr><td>pseudolager</td><td></td><td></td></tr>
 							<tr><td>lagerkorrekturwert</td><td></td><td></td></tr>
 							<tr><td>restmenge</td><td></td><td></td></tr>
-							<tr><td>provision1 (in %)</td><td></td><td></td></tr>
-							<tr><td>provisiontyp1 (ek, vk, erloes, leer)</td><td></td><td></td></tr>
-							<tr><td>provision2 (in %)</td><td></td><td></td></tr>
-							<tr><td>provisiontyp2 (ek, vk, erloes, leer)</td><td></td><td></td></tr>
-							<tr><td>eigenschaftname1 bis 50 (mehrfach)</td><td></td><td></td></tr>
-							<tr><td>eigenschaftnameeindeutig1 bis 50 (einzeln)</td><td></td><td></td></tr>
-							<tr><td>eigenschaftwert1 bis 50</td><td></td><td></td></tr>
-							<tr><td>eigenschaftname1_xx bis 50 (xx Ländercode en, fr...)</td><td></td><td></td></tr>
-							<tr><td>eigenschaftwert1_xx bis 50 (xx Ländercode en, fr...)</td><td></td><td></td></tr>
+							<tr><td>provision1</td><td></td><td>(in %)</td></tr>
+							<tr><td>provisiontyp1</td><td></td><td>(ek, vk, erloes, leer)</td></tr>
+							<tr><td>provision2</td><td></td><td>(in %)</td></tr>
+							<tr><td>provisiontyp2</td><td></td><td>(ek, vk, erloes, leer)</td></tr>
+							<tr><td>eigenschaftnameX</td><td></td><td>X = 1 bis 50 (mehrfach)</td></tr>
+							<tr><td>eigenschaftnameeindeutigX</td><td></td><td>X = 1 bis 50 (einzeln)</td></tr>
+							<tr><td>eigenschaftwertX</td><td></td><td>(X =1 bis 50)</td></tr>
+							<tr><td>eigenschaftnameX_yy</td><td></td><td>(X =1 bis 50, yy Ländercode en, fr...)</td></tr>
+							<tr><td>eigenschaftwertX_yy</td><td></td><td>(X =1 bis 50, yy Ländercode en, fr...)</td></tr>
 							<tr><td>matrixprodukt</td><td></td><td></td></tr>
 							<tr><td>matrixproduktvon</td><td></td><td></td></tr>
 							<tr><td>matrixproduktgruppe1</td><td></td><td></td></tr>
 							<tr><td>matrixproduktgruppe2</td><td></td><td></td></tr>
 							<tr><td>matrixproduktwert1</td><td></td><td></td></tr>
 							<tr><td>matrixproduktwert2</td><td></td><td></td></tr>
-							<tr><td>matrixgruppe1 (alle Optionen aus Gruppe1)</td><td></td><td></td></tr>
-							<tr><td>matrixgruppe2 (alle Optionen aus Gruppe2)</td><td></td><td></td></tr>
-							<tr><td>matrixartikelnummer (1 = Nummernkreis, 2 = Optionnamen als Postfix, 3|trennzeichen|Stellen|Startnummer = Postfix)</td><td></td><td></td></tr>
-							<tr><td>matrixnamefuerunterartikel (1 = Optionen werden an Artikelbezeichnung der Unterartikel gehängt, 0 = Artikelbezeichnung wird vom Hauptartikel genommen)</td><td></td><td></td></tr>
-							<tr><td>Weitere Sprachen (X = 1-100, YY ersetzt durch den ISO Code der Sprache aus dem Sprachen Modul)</td><td></td><td></td></tr>
-							<tr><td>nameX_YY</td><td></td><td></td></tr>
+							<tr><td>matrixgruppe1</td><td></td><td>(alle Optionen aus Gruppe1)</td></tr>
+							<tr><td>matrixgruppe2</td><td></td><td>(alle Optionen aus Gruppe2)</td></tr>
+							<tr><td>matrixartikelnummer</td><td></td><td>(1 = Nummernkreis, 2 = Optionnamen als Postfix, 3|trennzeichen|Stellen|Startnummer = Postfix)</td></tr>
+							<tr><td>matrixnamefuerunterartikel</td><td></td><td>(1 = Optionen werden an Artikelbezeichnung der Unterartikel gehängt, 0 = Artikelbezeichnung wird vom Hauptartikel genommen)</td></tr>
+							<tr><td>nameX_YY</td><td></td><td>Weitere Sprachen (X = 1-100, YY ersetzt durch den ISO Code der Sprache aus dem Sprachen Modul)</td></tr>
 							<tr><td>kurztextX_YY</td><td></td><td></td></tr>
 							<tr><td>beschreibungX_YY</td><td></td><td></td></tr>
 							<tr><td>beschreibung_onlineX_YY</td><td></td><td></td></tr>
@@ -209,7 +195,7 @@
 							<tr><td>katalog_textX_YY</td><td></td><td></td></tr>
 							<tr><td>shopX_YY</td><td></td><td></td></tr>
 							<tr><td>aktivX_YY</td><td></td><td></td></tr>
-							<tr><td>freifeld1_YY - freifeld40_YY</td><td></td><td></td></tr>
+							<tr><td></td><td></td><td></td></tr>
 						</table>
 					</fieldset>
 				</div>
@@ -278,8 +264,7 @@
 							<tr><td>firma</td><td></td><td></td></tr>
 							<tr><td>webid</td><td></td><td></td></tr>
 							<tr><td>internetseite</td><td>Internetseite</td><td></td></tr>
-							<tr><td>titel</td><td>"Akademischer Titel</td></tr>
-							<tr><td>"</td><td></td></tr>
+							<tr><td>titel</td><td>Akademischer Titel</td></tr>
 							<tr><td>anschreiben</td><td>Anschreiben</td><td></td></tr>
 							<tr><td>geburtstag</td><td>Geburtsdatum</td><td></td></tr>
 							<tr><td>liefersperre</td><td></td><td></td></tr>
@@ -308,9 +293,9 @@
 							<tr><td>vertrieb</td><td>Mitarbeiter Vertrieb</td><td></td></tr>
 							<tr><td>innendienst</td><td>Mitarbeiter Innendienst</td><td></td></tr>
 							<tr><td>rabatt</td><td></td><td></td></tr>
-							<tr><td>rabattX (X = 1 - 5)</td><td></td><td></td></tr>
-							<tr><td>bonusX (X = 1-10)</td><td></td><td></td></tr>
-							<tr><td>bonusX_ab (X = 1-10)</td><td></td><td></td></tr>
+							<tr><td>rabattX</td><td></td><td>(X = 1 - 5)</td></tr>
+							<tr><td>bonusX</td><td></td><td>(X = 1-10)</td></tr>
+							<tr><td>bonusX_ab</td><td>(X = 1-10)</td><td></td></tr>
 							<tr><td>verbandsnummer</td><td></td><td></td></tr>
 							<tr><td>portofreiab</td><td></td><td></td></tr>
 							<tr><td>zahlungskonditionen_festschreiben</td><td></td><td></td></tr>
@@ -613,7 +598,7 @@
 				    </fieldset>
 			    </div>
 		    </div>
-	    </div>    
+	    </div>
 	</div>
     <div id="tabs-8">
 	    <div class="row">
@@ -635,7 +620,7 @@
 							    <td>artikel</td>
 							    <td></td>
 							    <td>Artikelnummer</td>
-						    </tr>						    
+						    </tr>
 						    <tr>
 							    <td>menge</td>
 							    <td>Zahl</td>
@@ -670,7 +655,7 @@
 							    <td>zachse</td>
 							    <td>Zahl</td>
 							    <td>F&uuml;r Best&uuml;ckungen</td>
-						    </tr>                           						   
+						    </tr>
 						    <tr>
 							    <td>xpos</td>
 							    <td>Zahl</td>
@@ -680,7 +665,7 @@
 							    <td>ypos</td>
 							    <td>Zahl</td>
 							    <td>F&uuml;r Best&uuml;ckungen</td>
-						    </tr>                           
+						    </tr>
 						    <tr>
 							    <td>rotation</td>
 							    <td>Zahl</td>
@@ -690,6 +675,100 @@
 							    <td>art</td>
 							    <td>Einkaufsteil "et",Informationsteil "it" oder Beistellung "bt"</td>
 							    <td>Alternativposition?</td>
+						    </tr>
+					    </table>
+				    </fieldset>
+			    </div>
+		    </div>
+	    </div>
+    </div>
+    <div id="tabs-9">
+	    <div class="row">
+		    <div class="col-xs-12 col-sm-1 col-sm-height">
+			    <div class="inside inside-full-height">
+				    <fieldset><legend>{|Dateien|}</legend>
+					    <table class="mkTable">
+						    <tr>
+							    <th width="15%">Variable</th>
+							    <th width="15%">Beschreibung</th>
+							    <th>Kommentar</th>
+						    </tr>
+						    <tr>
+							    <td>dateiaktion</td>
+							    <td>zip, url, aendern, entfernen</td>
+							    <td>
+                                    zip: Datei aus ZIP-Datei laden</i><br>
+                                    url: Datei von URL laden<br>
+                                    aendern: Dateidaten im OpenXE-DMS ändern<br>
+                                    entfernen: Dateiverknüpfung im OpenXE-DMS entfernen<br>
+                                </td>
+						    </tr>
+						    <tr>
+							    <td>quellpfad</td>
+							    <td>Für neue Dateien: Pfad zur Datei</td>
+							    <td>
+                                    zip: Pfad innerhalb der ZIP-Datei<br>
+                                    url: gesamte URL inkl. http<br>
+                                </td>
+						    </tr>
+						    <tr>
+							    <td>dms-objekt</td>
+							    <td rowspan="5">DMS-Suche: Für Dateien im OpenXE-DMS, die geändert werden sollen</td>
+							    <td>[DATEIOBJEKTE]</td>
+						    </tr>
+						    <tr>
+							    <td>dms-objektsuchfeld</td>
+							    <td>Suchfeld für die Objektnummer, je nach Objekttyp (optional):<br>[DATEISUCHFELDER]</td>
+						    </tr>
+						    <tr>
+							    <td>dms-objektnummer</td>
+							    <td>Z.B. Artikelnummer, Belegnr, etc.</td>
+						    </tr>
+						    <tr>
+							    <td>dms-stichwort</td>
+							    <td>[STICHWOERTER]</td>
+						    </tr>
+						    <tr>
+							    <td>dms-dateiname</td>
+							    <td></td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>objekt</td>
+							    <td rowspan="4">Zu setzende Verknüpfung</td>
+							    <td>[DATEIOBJEKTE]</td>
+						    </tr>
+						    <tr>
+							    <td>objektsuchfeld</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>objektnummer</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>stichwort</td>
+							    <td>[STICHWOERTER]</td>
+						    </tr>
+						    <tr>
+							    <td>dateiname</td>
+							    <td>Neuer Dateiname, falls abweichend</td>
+							    <td></td>
+						    </tr>
+                            <tr>
+							    <td>titel</td>
+							    <td></td>
+							    <td></td>
+						    </tr>
+                            <tr>
+							    <td>beschreibung</td>
+							    <td></td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>sprache</td>
+							    <td></td>
+							    <td>[SPRACHEN]</td>
 						    </tr>
 					    </table>
 				    </fieldset>

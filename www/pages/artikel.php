@@ -1393,7 +1393,6 @@ class Artikel extends GenArtikel {
                 COALESCE(a.anabregs_text,''),
                 '</i>',";
         }
-
         $sql .= "
               a.nummer as nummer, 
               CONCAT(

@@ -42,11 +42,19 @@ class Exportvorlage extends GenExportvorlage {
     $this->app->ActionHandler("delete","ExportvorlageDelete");
     $this->app->ActionHandler("adressen","ExportvorlageAdressen");
     $this->app->ActionHandler("adresseedit","ExportvorlageAdresseEdit");
+    $this->app->ActionHandler("formate","ExportvorlageFormate");
 
     $this->app->ActionHandlerListen($app);
 
     $this->app->erp->Headlines('Daten Export');
   }
+  
+  public function ExportvorlageFormate() 
+  {
+    $this->ExportvorlageMenu();
+    $this->app->Tpl->Parse('PAGE','exportvorlage_formate.tpl');
+  }
+
 
   function ExportvorlageAdresseEdit()
   {
@@ -106,6 +114,7 @@ class Exportvorlage extends GenExportvorlage {
     if($this->app->Secure->GetGET("action")=="list")
     {
       $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=create","Neue Exportvorlage anlegen");
+      $this->app->erp->MenuEintrag('index.php?module=exportvorlage&action=formate&id='.$id,'Formate');
       $this->app->erp->MenuEintrag("index.php?module=importvorlage&action=uebersicht","Zur&uuml;ck zur &Uuml;bersicht");
     }
     else
@@ -113,8 +122,7 @@ class Exportvorlage extends GenExportvorlage {
       $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=edit&id=$id","Details");
       $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=list","Zur&uuml;ck zur &Uuml;bersicht");
       $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=export&id=$id","Export starten: CSV Datei herunterladen");
-      //Excel herunterladen hat nicht funktioniert, stattdessen kam eine CSV, wurde wegen Ticket 127034 erstmal rausgenommen
-      //$this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=export&format=xls&id=$id","Export starten: Excel Datei herunterladen");
+      $this->app->erp->MenuEintrag('index.php?module=exportvorlage&action=formate&id='.$id,'Formate');
     }
   }
 
