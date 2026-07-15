@@ -37638,7 +37638,7 @@ function Firmendaten($field,$projekt="")
                 'aufgaben'=> ['wert' => 'aufgaben','tabelle' => 'aufgaben', 'suchfelder' => ['id']],
                 'konto'=> ['wert' => 'konto','tabelle' => 'konto', 'suchfelder' => ['id']],
                 'retoure'=> ['wert' => 'retoure','tabelle' => 'retoure', 'suchfelder' => ['belegnr']],
-                'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket_header', 'suchfelder' => ['id']],
+                'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket', 'suchfelder' => ['id']],
                 'lieferantengutschrift'=> ['wert' => 'lieferantengutschrift','tabelle' => 'lieferantengutschrift', 'suchfelder' => ['belegnr', 'rechnung']],
                 'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpakete', 'suchfelder' => ['id']],            );
         }
