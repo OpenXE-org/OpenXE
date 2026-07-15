@@ -1186,22 +1186,30 @@ class Importvorlage extends GenImportvorlage {
                 }
             }
             $et->DisplayNew('ERGEBNIS',"");
-
-            if ($limit_erreicht) {
-                $limit_text = 'Vorschau: Es werden aktuell nur 50 von <b>'
-                . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle ';
+            $error_count = $rowcounter_real - $create_count - $update_count;
+            if ($error_count > 0) {
+                $this->app->Tpl->Add(
+                    'IMPORTBUTTON',
+                    '<div class="error"><input type="submit" name="" value="importieren" disabled>'
+                    . $rowcounter_real . ' Datens&auml;tze, davon '.$create_count.' neu, '.$update_count.' ge&auml;ndert, '.$error_count.' mit Fehlern!'
+                    . ' <a href="index.php?module=importvorlage&action=preview">Vorschau als CSV herunterladen</a>'
+                    . '</div>'
+                );
+            } else {
+                if ($limit_erreicht) {
+                    $limit_text = 'Vorschau: Es werden aktuell nur 50 von <b>'
+                    . $rowcounter_real . '</b> Datens&auml;tzen angezeigt. Importiert werden aber alle ';
+                }
+                $this->app->Tpl->Add(
+                    'IMPORTBUTTON',
+                    '<div class="info"><input type="submit" name="import" value="importieren">'
+                    . $limit_text
+                    . $rowcounter_real . ' Datens&auml;tze, davon '.$create_count.' neu, '.$update_count.' ge&auml;ndert.<input type="hidden" name="importdateiname" value="'
+                    . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" />'
+                    . ' <a href="index.php?module=importvorlage&action=preview">Vorschau als CSV herunterladen</a>'
+                    . '</div>'
+                );
             }
-
-            $this->app->Tpl->Add(
-                'IMPORTBUTTON',
-                '<div class="info"><input type="submit" name="import" value="importieren">'
-                . $limit_text
-                . $rowcounter_real . ' Datens&auml;tze, davon '.$create_count.' neu, '.$update_count.' ge&auml;ndert.<input type="hidden" name="importdateiname" value="'
-                . $stueckliste_csv . '"><input type="hidden" name="jobid" value="'.$jobId.'" />'
-                . ' <a href="index.php?module=importvorlage&action=preview">Vorschau als CSV herunterladen</a>'
-                . '</div>'
-            );
-            
         } // !empty($stueckliste) file ready
     } // upload
 
@@ -5602,6 +5610,18 @@ class Importvorlage extends GenImportvorlage {
 
             // Check target objekt
             if (in_array($dateiaktion,['zip','url','aendern','entfernen'])) {
+                $objekt = $this->app->erp->getDateiObjekt($fields['objekt'],$fields['objektnummer'],$fields['objektsuchfeld']);
+                if (empty($objekt)) {
+                    // && empty($fields['dateiname']) && empty($fields['titel']) && empty($fields['beschreibung'])) {
+                    $action_anzeige .= "Objekt nicht gefunden: ".$fields['objekt']." ".$fields['objektnummer'].$check;
+                    break;
+                }
+                $result_row['datei_objekt'] = $objekt;
+                $nummer = $fields['objektnummer'];
+           }
+
+           // Check target objekt
+           if (in_array($dateiaktion,['aendern','entfernen'])) {
                 $objekt = $this->app->erp->getDateiObjekt($fields['objekt'],$fields['objektnummer'],$fields['objektsuchfeld']);
                 if (empty($objekt) && empty($fields['dateiname']) && empty($fields['titel']) && empty($fields['beschreibung'])) {
                     $action_anzeige .= "Objekt nicht gefunden: ".$fields['objekt']." ".$fields['objektnummer'].$check;

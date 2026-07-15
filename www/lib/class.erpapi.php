@@ -37115,13 +37115,16 @@ function Firmendaten($field,$projekt="")
 
       function AddDateiStichwort($id,$subjekt,$objekt,$parameter,$without_log=false,$parameter2=0,$objekt2='')
       {
-        $typen = $this->getDateiTypen(strtolower($objekt));
-        if (!in_array(strtolower($subjekt),array_keys($typen))) {
-            throw new Exception("Unbekanntes Stichwort ".$subjekt." für ".$objekt);
+        if (empty($objekt) || empty($parameter)) {
+            throw new Exception("Leere Objektangabe Objekt ".$objekt." Parameter ".$parameter);
         }
         $datei_objekt = $this->getDateiObjekt(strtolower($objekt), $parameter, 'id');
         if (empty($datei_objekt)) {
             throw new Exception("Unbekanntes Objekt ".$objekt." ".$parameter);
+        }
+        $typen = $this->getDateiTypen(strtolower($objekt));
+        if (!in_array(strtolower($subjekt),array_keys($typen))) {
+            throw new Exception("Unbekanntes Stichwort ".$subjekt." für ".$objekt);
         }
         if(strtolower($objekt) === 'artikel' && $parameter) {
           $this->app->DB->Update("UPDATE artikel SET bildvorschau = '' WHERE id = '".$parameter."' LIMIT 1");
