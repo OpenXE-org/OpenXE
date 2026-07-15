@@ -37117,7 +37117,7 @@ function Firmendaten($field,$projekt="")
       {
         $typen = $this->getDateiTypen(strtolower($objekt));
         if (!in_array(strtolower($subjekt),array_keys($typen))) {
-            throw new Exception("Unbekanntes Stichwort ".$subjekt);
+            throw new Exception("Unbekanntes Stichwort ".$subjekt." für ".$objekt);
         }
         $datei_objekt = $this->getDateiObjekt(strtolower($objekt), $parameter, 'id');
         if (empty($datei_objekt)) {
@@ -37575,11 +37575,19 @@ function Firmendaten($field,$projekt="")
             $dateiTypen['belege'] = ['wert' => 'Belege', 'beschriftung' => 'Beleg'];
             $dateiTypen['quittung'] = ['wert' => 'Quittung', 'beschriftung' => 'Quittung'];
             break;
+          case 'versandpaket':
+            $dateiTypen['paketschein'] = ['wert' => 'paketschein', 'beschriftung' => 'Paketschein'];
+            $dateiTypen['paketmarke'] = ['wert' => 'paketmarke', 'beschriftung' => 'Paketmarke'];
+            break;
         }
 
         $dateiTypen['sonstige'] = ['wert' => 'Sonstige', 'beschriftung' => 'Sonstige Datei'];
         $dateiTypen['deckblatt'] = ['wert' => 'Deckblatt', 'beschriftung' => 'Deckblatt'];
         $dateiTypen['anhang'] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
+
+        if (!empty($modul)) {
+            $dateiTypen[$modul] = ['wert' => $modul, 'beschriftung' => 'Beleg '.ucfirst($modul)];
+        }
 
         if (!empty($modul)) {
             $dateiTypen[$modul] = ['wert' => $modul, 'beschriftung' => 'Beleg '.ucfirst($modul)];
@@ -37633,7 +37641,7 @@ function Firmendaten($field,$projekt="")
                 'retoure'=> ['wert' => 'retoure','tabelle' => 'retoure', 'suchfelder' => ['belegnr']],
                 'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket_header', 'suchfelder' => ['id']],
                 'lieferantengutschrift'=> ['wert' => 'lieferantengutschrift','tabelle' => 'lieferantengutschrift', 'suchfelder' => ['belegnr', 'rechnung']],
-                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpaket', 'suchfelder' => ['id']],            );
+                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpakete', 'suchfelder' => ['id']],            );
         }
 
      function getDateiObjekt(string $objekt, string $objektnummer, string $suchfeld = '') {
