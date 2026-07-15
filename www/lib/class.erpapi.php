@@ -37581,6 +37581,10 @@ function Firmendaten($field,$projekt="")
         $dateiTypen['deckblatt'] = ['wert' => 'Deckblatt', 'beschriftung' => 'Deckblatt'];
         $dateiTypen['anhang'] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
 
+        if (!empty($modul)) {
+            $dateiTypen[$modul] = ['wert' => $modul, 'beschriftung' => 'Beleg '.ucfirst($modul)];
+        }
+
         //adresse unter defaulttypen, da profilbild nicht als default ausgewählt werden soll OS148717
         switch($modul){
           case 'adresse':
