@@ -37579,25 +37579,24 @@ function Firmendaten($field,$projekt="")
             $dateiTypen['paketschein'] = ['wert' => 'paketschein', 'beschriftung' => 'Paketschein'];
             $dateiTypen['paketmarke'] = ['wert' => 'paketmarke', 'beschriftung' => 'Paketmarke'];
             break;
+          case 'adresse':
+            $dateiTypen['profilbild'] = ['wert' => 'Profilbild', 'beschriftung' => 'Profilbild'];
+            break;
         }
 
         $dateiTypen['sonstige'] = ['wert' => 'Sonstige', 'beschriftung' => 'Sonstige Datei'];
         $dateiTypen['deckblatt'] = ['wert' => 'Deckblatt', 'beschriftung' => 'Deckblatt'];
-        $dateiTypen['anhang'] = ['wert' => 'anhang', 'beschriftung' => 'Anhang'];
+        $dateiTypen['anhang'] = ['wert' => 'Anhang', 'beschriftung' => 'Anhang'];
+
+        /*These need to be checked, possible legacy */
+        $dateiTypen['dokument'] = ['wert' => 'Dokument', 'beschriftung' => 'Dokument'];
+        $dateiTypen['anschreiben'] = ['wert' => 'Anschreiben', 'beschriftung' => 'Anschreiben'];
+        $dateiTypen['belege'] = ['wert' => 'Belege', 'beschriftung' => 'Belege'];
+        $dateiTypen['kontoauszug'] = ['wert' => 'Kontoauszug', 'beschriftung' => 'Kontoauszug'];
+        $dateiTypen['mahnung'] = ['wert' => 'Mahnung', 'beschriftung' => 'Mahnung'];
 
         if (!empty($modul)) {
             $dateiTypen[$modul] = ['wert' => $modul, 'beschriftung' => 'Beleg '.ucfirst($modul)];
-        }
-
-        if (!empty($modul)) {
-            $dateiTypen[$modul] = ['wert' => $modul, 'beschriftung' => 'Beleg '.ucfirst($modul)];
-        }
-
-        //adresse unter defaulttypen, da profilbild nicht als default ausgewählt werden soll OS148717
-        switch($modul){
-          case 'adresse':
-            $dateiTypen['profilbild'] = ['wert' => 'Profilbild', 'beschriftung' => 'Profilbild'];
-            break;
         }
 
         if($modul !== ''){
