@@ -826,18 +826,41 @@ class Shopimport {
                 }
             }
             // abweichende lieferadresse gleich angelegen?
+            $lieferUstidEsc = $this->app->DB->real_escape_string((string)($warenkorb['lieferadresse_ustid'] ?? ''));
             if (strlen($warenkorb['lieferadresse_ansprechpartner']) > 3) {
-                $this->app->DB->Insert("INSERT INTO lieferadressen (typ,name,abteilung,unterabteilung,land,strasse,ort,plz,adresszusatz,adresse) VALUES
-              ('','{$warenkorb['lieferadresse_ansprechpartner']}',
-               '{$warenkorb['lieferadresse_abteilung']}','{$warenkorb['lieferadresse_unterabteilung']}','{$warenkorb['lieferadresse_land']}',
-               '{$warenkorb['lieferadresse_strasse']}','{$warenkorb['lieferadresse_ort']}','{$warenkorb['lieferadresse_plz']}','{$warenkorb['lieferadresse_adresszusatz']}','$adresse')");
+                $matchName = $this->app->DB->real_escape_string($warenkorb['lieferadresse_ansprechpartner']);
+                $matchStrasse = $this->app->DB->real_escape_string($warenkorb['lieferadresse_strasse']);
+                $matchPlz = $this->app->DB->real_escape_string($warenkorb['lieferadresse_plz']);
+                $matchOrt = $this->app->DB->real_escape_string($warenkorb['lieferadresse_ort']);
+                $existingId = $this->app->DB->Select("SELECT id FROM lieferadressen
+                  WHERE adresse='$adresse' AND name='$matchName' AND strasse='$matchStrasse'
+                    AND plz='$matchPlz' AND ort='$matchOrt' LIMIT 1");
+                if (!empty($existingId)) {
+                    $this->app->DB->Update("UPDATE lieferadressen SET ustid='$lieferUstidEsc' WHERE id='$existingId' LIMIT 1");
+                } else {
+                    $this->app->DB->Insert("INSERT INTO lieferadressen (typ,name,abteilung,unterabteilung,land,strasse,ort,plz,adresszusatz,adresse,ustid) VALUES
+                  ('','{$warenkorb['lieferadresse_ansprechpartner']}',
+                   '{$warenkorb['lieferadresse_abteilung']}','{$warenkorb['lieferadresse_unterabteilung']}','{$warenkorb['lieferadresse_land']}',
+                   '{$warenkorb['lieferadresse_strasse']}','{$warenkorb['lieferadresse_ort']}','{$warenkorb['lieferadresse_plz']}','{$warenkorb['lieferadresse_adresszusatz']}','$adresse','$lieferUstidEsc')");
+                }
             }
 
             if (strlen($warenkorb['lieferadresse_name']) > 3 && $warenkorb['lieferadresse_ansprechpartner'] == '') {
-                $this->app->DB->Insert("INSERT INTO lieferadressen (typ,name,abteilung,unterabteilung,land,strasse,ort,plz,adresszusatz,adresse) VALUES
-              ('','{$warenkorb['lieferadresse_name']}',
-               '{$warenkorb['lieferadresse_abteilung']}','{$warenkorb['lieferadresse_unterabteilung']}','{$warenkorb['lieferadresse_land']}',
-               '{$warenkorb['lieferadresse_strasse']}','{$warenkorb['lieferadresse_ort']}','{$warenkorb['lieferadresse_plz']}','{$warenkorb['lieferadresse_adresszusatz']}','$adresse')");
+                $matchName = $this->app->DB->real_escape_string($warenkorb['lieferadresse_name']);
+                $matchStrasse = $this->app->DB->real_escape_string($warenkorb['lieferadresse_strasse']);
+                $matchPlz = $this->app->DB->real_escape_string($warenkorb['lieferadresse_plz']);
+                $matchOrt = $this->app->DB->real_escape_string($warenkorb['lieferadresse_ort']);
+                $existingId = $this->app->DB->Select("SELECT id FROM lieferadressen
+                  WHERE adresse='$adresse' AND name='$matchName' AND strasse='$matchStrasse'
+                    AND plz='$matchPlz' AND ort='$matchOrt' LIMIT 1");
+                if (!empty($existingId)) {
+                    $this->app->DB->Update("UPDATE lieferadressen SET ustid='$lieferUstidEsc' WHERE id='$existingId' LIMIT 1");
+                } else {
+                    $this->app->DB->Insert("INSERT INTO lieferadressen (typ,name,abteilung,unterabteilung,land,strasse,ort,plz,adresszusatz,adresse,ustid) VALUES
+                  ('','{$warenkorb['lieferadresse_name']}',
+                   '{$warenkorb['lieferadresse_abteilung']}','{$warenkorb['lieferadresse_unterabteilung']}','{$warenkorb['lieferadresse_land']}',
+                   '{$warenkorb['lieferadresse_strasse']}','{$warenkorb['lieferadresse_ort']}','{$warenkorb['lieferadresse_plz']}','{$warenkorb['lieferadresse_adresszusatz']}','$adresse','$lieferUstidEsc')");
+                }
             }
         }
 
