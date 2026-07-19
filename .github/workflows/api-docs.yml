@@ -1,0 +1,108 @@
+name: Generate API Documentation
+
+on:
+  push:
+    branches: [main, master, swagger]
+    paths:
+      - 'classes/Modules/Api/**'
+      - 'www/api/**'
+      - 'tools/generate-api-docs.php'
+  pull_request:
+    branches: [main, master, swagger]
+    paths:
+      - 'classes/Modules/Api/**'
+      - 'www/api/**'
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Prüft ob die Dokumentation aktuell ist (für PRs)
+  check-docs:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      
+      - name: Install Composer dependencies
+        run: composer install --no-dev --no-progress --prefer-dist
+      
+      - name: Check API documentation is up-to-date
+        run: php tools/generate-api-docs.php --check
+  
+  # Job 2: Generiert und deployed die Dokumentation (für Push auf main)
+  generate-docs:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Composer dependencies
+        run: composer install --no-dev --no-progress --prefer-dist
+      
+      - name: Generate RAML documentation
+        run: php tools/generate-api-docs.php --output=www/api/docs.raml
+      
+      - name: Generate OpenAPI documentation
+        run: php tools/generate-api-docs.php --format=openapi --output=www/api/openapi.json
+      
+      - name: Install raml2html
+        run: npm install -g raml2html
+      
+      - name: Generate HTML documentation
+        run: raml2html www/api/docs.raml > www/api/docs.html
+        continue-on-error: true
+      
+      - name: Commit generated documentation
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: Auto-generate API documentation"
+          file_pattern: "www/api/docs.raml www/api/docs.html www/api/openapi.json"
+          commit_author: "GitHub Actions <actions@github.com>"
+      
+      # Optional: Deploy to GitHub Pages
+      - name: Setup Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/configure-pages@v4
+        continue-on-error: true
+      
+      - name: Create docs directory for Pages
+        run: |
+          mkdir -p docs-site
+          cp www/api/docs.html docs-site/index.html
+          cp www/api/openapi.json docs-site/
+          cp -r www/api/assets docs-site/ 2>/dev/null || true
+      
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-site
+        continue-on-error: true
+      
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
