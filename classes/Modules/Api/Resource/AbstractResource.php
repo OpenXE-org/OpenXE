@@ -135,10 +135,6 @@ abstract class AbstractResource
             $selectList->getBindValues()
         );
 
-        if (count($items) === 0) {
-            throw new ResourceNotFoundException();
-        }
-
         // Gesamtanzahl der Ergebnisse ermitteln
         $selectCount = clone $selectAll;
         $selectCount->resetOrderBy()->resetCols()->cols(['COUNT(*)']);

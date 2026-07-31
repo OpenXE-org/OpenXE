@@ -154,10 +154,10 @@ class Onlineshops extends GenShopexport {
 
             $id = $app->Secure->GetGET('id');
             $allowed['onlineshops'] = array('artikellist');
-            $heading = array('',  '',   'Artikel-Nr.','Artikel','Aktiv','Lagersync','Einstellungen aus Artikel','Letzte Artikel&uuml;bertragung','Letzter Lagersync','Lagercache','Men&uuml;');
-            $width = array(  '1%','1%', '5%',         '40%',    '1%',   '1%',       '1%',                       '7%',                            '7%',               '1%',        '1%');
-            $findcols = array('a.id','a.id','a.nummer','a.name_de','aos.aktiv','a.autolagerlampe','aos.ausartikel','last_article_transfer','aos.last_storage_transfer','a.cache_lagerplatzinhaltmenge');
-            $searchsql = array('a.nummer','a.name_de');
+            $heading = array('',  '',   'Artikel-Nr.','Artikel','Variante','Hersteller','Herstellernummer','Kategorie','Aktiv','Lagersync','Einstellungen aus Artikel','Letzte Artikel&uuml;bertragung','Letzter Lagersync','Lagercache','Men&uuml;');
+            $width = array(  '1%','1%', '5%',         '40%',    '1%',       '1%',       '1%',              '1%',      '7%',   '7%',        '1%',                       '1%');
+            $findcols = array('a.id','a.id','a.nummer','a.name_de','if (a.variante_von,\'Ja\',\'Nein\')','a.hersteller','a.herstellernummer','ak.bezeichnung','aos.aktiv','a.autolagerlampe','aos.ausartikel','last_article_transfer','aos.last_storage_transfer','a.cache_lagerplatzinhaltmenge');
+            $searchsql = array('a.nummer','a.name_de','a.herstellernummer');
 
             $defaultorder = 1; //Optional wenn andere Reihenfolge gewuenscht
             $defaultorderdesc = 0;
@@ -170,6 +170,10 @@ SELECT SQL_CALC_FOUND_ROWS
     $dropnbox.",
     a.nummer,
     a.name_de,
+    if (a.variante_von,'Ja','Nein'),
+    a.hersteller,
+    a.herstellernummer,
+    ak.bezeichnung,
     aos.aktiv,
     a.autolagerlampe,
     aos.ausartikel,".
@@ -183,6 +187,7 @@ INNER JOIN artikel_onlineshops aos ON
     a.id = aos.artikel
 INNER JOIN shopexport s ON
     s.id = aos.shop
+    LEFT JOIN artikelkategorien ak ON substring_index(a.typ,'_kat',1) = ak.id
             ";
             $where = " s.id = '$id'";
 
@@ -264,7 +269,7 @@ INNER JOIN shopexport s ON
 
     $this->app->ActionHandler('artikellist', 'ShopexportArtikelList');
 
-    $this->app->ActionHandler('functioncall', 'ShopexportFunctionCall');
+    $this->app->ActionHandler('shopspecificfunction', 'ShopExportspecificfunction');
 
     $this->app->erp->Headlines('Shopexport');
     $this->app->ActionHandlerListen($app);
@@ -2844,6 +2849,10 @@ INNER JOIN shopexport s ON
     $id = (int)$this->app->Secure->GetGET('id');
     $delcache = $this->app->Secure->GetPOST('delcache');
     $delcacheselected = $this->app->Secure->GetPOST('delcacheselected');
+    $artikelsend = $this->app->Secure->GetPOST('artikelsend');
+    $artikelremove = $this->app->Secure->GetPOST('artikelremove');
+    $alle = $this->app->Secure->GetPOST('alle');
+    $allchanged = $this->app->Secure->GetPOST('allchanged');
 
     // Process multi action
     $where = "1";
@@ -2866,10 +2875,88 @@ INNER JOIN shopexport s ON
         LEFT JOIN (SELECT artikel FROM artikel_onlineshops WHERE shop = '$id' AND aktiv = 1 GROUP BY artikel) oa ON a.id = oa.artikel
         SET a.cache_lagerplatzinhaltmenge = -999 WHERE (a.shop = '$id' OR a.shop2 = '$id' OR a.shop3 = '$id' OR NOT ISNULL(oa.artikel)) AND a.geloescht = 0 AND ($where)");
         $anz = $this->app->DB->affected_rows();
-//        $this->app->erp->LogFile("Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
         $this->Log(Logger::INFO, "Lagerzahlencache zurückgesetzt für $anz Artikel, shopid: $id");
         $this->app->Tpl->Add('MESSAGE','<div class="info">Lagerzahlencache zurückgesetzt für '.$anz.' Artikel, shopid: '.$id.'</div>');
       }
+    }
+
+    if(!empty($artikelsend)) {
+        if (!empty($selectedIds)) {
+            foreach ($selectedIds as $artikelid) {
+              $this->app->DB->Insert("INSERT INTO shopexport_artikeluebertragen (id,shop,artikel) VALUES ('','$id','$artikelid')");
+            }
+            $this->app->Tpl->AddMessage('info',count($selectedIds).' Artikel der &Uuml;bertragung hinzugef&uuml;gt');
+        } else {
+            $this->app->Tpl->AddMessage('error','Keine Artikel ausgew&auml;hlat');
+        }
+    }
+    if(!empty($alle)) {
+        if($id > 0){
+          $this->app->erp->ArtikelUebertragenResetChangedInfo($id);
+          $this->app->DB->Insert(
+            sprintf(
+              "INSERT INTO shopexport_artikeluebertragen (shop, artikel)
+                SELECT '%d' AS shop, a.id FROM artikel a
+                LEFT JOIN (
+                    SELECT artikel FROM artikel_onlineshops WHERE shop = %d AND aktiv = 1 GROUP BY artikel
+                ) AS oa ON a.id = oa.artikel
+                WHERE (a.shop=%d OR a.shop2=%d OR a.shop3=%d OR NOT ISNULL(oa.artikel)) AND a.geloescht!=1",
+              $id,$id, $id, $id, $id
+            )
+          );
+          $this->app->erp->SetKonfigurationValue('shopexport_artikeluebertragen_start_'.$id,
+            $this->app->DB->affected_rows()
+          );
+        }
+        $this->app->Tpl->AddMessage('info','Alle Artikel die mit dem Shop verkn&uuml;pft sind werden &uuml;bertragen');
+    }
+
+    if(!empty($allchanged)) {
+        if($id > 0){
+          $this->app->erp->ArtikelUebertragenResetChangedInfo($id);
+          $this->app->DB->Delete(
+            sprintf(
+              'DELETE FROM shopexport_artikeluebertragen_check WHERE shop = %d',
+              $id
+            )
+          );
+          $this->app->DB->Insert(
+            sprintf(
+              "INSERT INTO shopexport_artikeluebertragen_check (shop, artikel)
+                SELECT '%d' as shop, a.id FROM artikel a
+                LEFT JOIN (
+                    SELECT artikel FROM artikel_onlineshops WHERE shop = %d AND aktiv = 1 GROUP BY artikel
+                    ) oa ON a.id = oa.artikel
+                LEFT JOIN shopexport_artikeluebertragen AS sa ON sa.shop = %d AND sa.artikel = a.id
+                WHERE (a.shop=%d OR a.shop2=%d OR a.shop3=%d OR NOT ISNULL(oa.artikel)) AND a.geloescht!=1 AND ISNULL(sa.id)
+                GROUP BY a.id",
+              $id, $id, $id, $id, $id, $id
+            )
+          );
+          echo $this->app->DB->error();
+          $changeStart = $this->app->DB->affected_rows();
+          $this->app->erp->SetKonfigurationValue('shopexport_artikeluebertragen_check_start_'.$id,
+            $changeStart
+          );
+          $this->app->erp->SetKonfigurationValue('shopexport_artikeluebertragen_check_checked_'.$id,0);
+          $this->app->erp->SetKonfigurationValue('shopexport_artikeluebertragen_check_changed_'.$id,0);
+          $this->app->erp->SetKonfigurationValue(
+            'shopexport_artikeluebertragen_check_lastid_'.$id,
+            mt_rand(1,2000000000)
+          );
+        }
+        $this->app->Tpl->AddMessage('info','Alle Artikel die mit dem Shop verkn&uuml;pft sind werden &uuml;berpr&uuml;ft.');
+    }
+
+    if(!empty($artikelremove)) {
+        if (!empty($selectedIds)) {
+            foreach ($selectedIds as $artikelid) {
+              $this->app->DB->Insert("DELETE FROM shopexport_artikeluebertragen WHERE artikel ='$artikelid'");
+            }
+            $this->app->Tpl->AddMessage('info',count($selectedIds).' Artikel von der &Uuml;bertragung entfernt');
+        } else {
+            $this->app->Tpl->AddMessage('error','Keine Artikel ausgew&auml;hlat');
+        }
     }
 
     $this->ShopexportMenu();
@@ -3150,17 +3237,19 @@ INNER JOIN shopexport s ON
       $moduleName = $this->app->DB->Select("SELECT modulename FROM shopexport WHERE id = '$id' LIMIT 1");
       try {
         $obj = $this->app->erp->LoadModul($moduleName);
-        if(method_exists($obj,'EinstellungenStruktur')){
-          $struktur = $obj->EinstellungenStruktur($id);
-          foreach ($struktur['felder'] as $fieldname => $fieldData){
-            if($fieldData['typ'] === 'password'){
-              if($fieldsToSave[$fieldname] === '***************') {
-                $oldData = json_decode($this->app->DB->Select('SELECT einstellungen_json FROM shopexport WHERE id=' . $id), true);
-                $fieldsToSave[$fieldname] = $oldData['felder'][$fieldname];
+        if (!empty($obj)) {
+            if(method_exists($obj,'EinstellungenStruktur')){
+              $struktur = $obj->EinstellungenStruktur($id);
+              foreach ($struktur['felder'] as $fieldname => $fieldData){
+                if($fieldData['typ'] === 'password'){
+                  if($fieldsToSave[$fieldname] === '***************') {
+                    $oldData = json_decode($this->app->DB->Select('SELECT einstellungen_json FROM shopexport WHERE id=' . $id), true);
+                    $fieldsToSave[$fieldname] = $oldData['felder'][$fieldname];
+                  }
+                  $fieldsToSave[$fieldname] = substr(md5($fieldsToSave[$fieldname]),0,15);
+                }
               }
-              $fieldsToSave[$fieldname] = substr(md5($fieldsToSave[$fieldname]),0,15);
             }
-          }
         }
       }catch(Exception $ex){
 //        $this->app->erp->LogFile('Fehlerhafter Aufruf in Modul: '.$moduleName);
@@ -4261,7 +4350,7 @@ INNER JOIN shopexport s ON
       return new JsonResponse(
         [
           'success' => true,
-          'input'   => !$useJson?$xml_data:json_encode($cart),
+          'input'   => !$useJson?$xml_data:json_encode($cart,JSON_PRETTY_PRINT),
           'object'  => '<pre>'.print_r($cart,true).'</pre>',
           'preview' => print_r($e->getMessage(),true),
         ]
@@ -4281,9 +4370,9 @@ INNER JOIN shopexport s ON
     return new JsonResponse(
       [
         'success' => true,
-        'input'   => !$useJson?$xml_data:json_encode($cart),
+        'input'   => !$useJson?$xml_data:json_encode($cart,JSON_PRETTY_PRINT),
         'object'  => '<pre>'.print_r($cart,true).'</pre>',
-        'preview' => !$useJson?$xmlDataPreview:json_encode($cart),
+        'preview' => !$useJson?$xmlDataPreview:json_encode($cart,JSON_PRETTY_PRINT),
       ]
     );
   }
@@ -4570,7 +4659,7 @@ INNER JOIN shopexport s ON
     }
     try{
       if($isJson) {
-        $xmlData = json_encode($newCart);
+        $xmlData = json_encode($newCart,JSON_PRETTY_PRINT);
       }
       else {
         $xmlData = $this->convertArrayToSimpleXml($newCart);
@@ -4996,11 +5085,12 @@ INNER JOIN shopexport s ON
         $this->logger->Log($level, 'Onlineshops (Shop '.$shopid.') '.$message, (array) $dump);
     }
 
-    public function ShopexportFunctionCall()
+    public function ShopExportspecificfunction()
     {
         $id = (int)$this->app->Secure->GetGET('id');
-        $function = $this->app->Secure->GetGET('function');
-        $result = $this->app->remote->RemoteCommand($id, $function);
+        $shopspecificfunction = $this->app->Secure->GetGET('function');
+        $data = array('shopid' => $id);
+        $result = $this->app->remote->RemoteCommand($id, $shopspecificfunction, $data);
         $action = $this->app->Secure->GetGET('redirect');
         $action = preg_replace('/[^a-z]/', '', $action);
         if (!empty($result['message'])) {

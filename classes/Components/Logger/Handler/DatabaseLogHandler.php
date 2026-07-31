@@ -55,18 +55,33 @@ final class DatabaseLogHandler extends AbstractLogHandler
             $values['origin_detail'] = $context->getOriginDetail();
         }
 
-        if ($context->hasDump()) {
-            $values['dump'] = print_r($context->getDump(), true);
-        }
-
         if ($context->hasException()) {
             $values['dump'] = (string)$context->getException();
         }
 
-        $sql = 'INSERT INTO `log`
-                (`log_time`, `level`, `message`, `class`, `method`, `line`, `origin_type`, `origin_detail`, `dump`) 
-                VALUES 
-                (NOW(3), :level, :message, :class, :method, :line, :origin_type, :origin_detail, :dump)';
-        $this->db->perform($sql, $values);
+        if ($context->hasDump()) {
+            $values['dump'] .= print_r($context->getDump(), true);
+        }
+
+        if (empty($values['dump'])) {
+            $dumpsplit = array(0 => '');
+        } else {
+            $dumpsplit = str_split((string) $values['dump'], 10000);
+        }
+
+        $split = 1;
+        $splitcount = count($dumpsplit);
+        foreach ($dumpsplit as $dump) {
+            $values['dump'] = $dump;
+            if ($splitcount > 1) {
+                $values['message'] = $message." (".$split."/".$splitcount.")";
+                $split++;
+            }
+            $sql = 'INSERT INTO `log`
+                    (`log_time`, `level`, `message`, `class`, `method`, `line`, `origin_type`, `origin_detail`, `dump`)
+                    VALUES
+                    (NOW(3), :level, :message, :class, :method, :line, :origin_type, :origin_detail, :dump)';
+            $this->db->perform($sql, $values);
+        }
     }
 }

@@ -50,7 +50,7 @@ if(empty($app->remote)) {
   }
 }
 
-$app->erp->LogFile("Starte Synchronisation");
+$app->Container->get('Logger')->info("Starte Synchronisation");
 
 //$app->DB->Update("UPDATE artikel SET cache_lagerplatzinhaltmenge='999'");
 

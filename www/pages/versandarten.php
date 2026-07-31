@@ -213,7 +213,7 @@ class Versandarten {
           $json[$k] = $form[$k];
         }
       }
-      $json = json_encode($json ?? null);
+      $json = json_encode($json ?? null, JSON_UNESCAPED_UNICODE);
 
       foreach ($error as $e) {
         $this->app->Tpl->addMessage('error', $e);
@@ -307,6 +307,7 @@ class Versandarten {
       $labelPrinter = $this->app->erp->GetEtikettendrucker();
       $printer = array_merge($printer ?? [], $labelPrinter ?? []);
     }
+    $printer = (array) $printer;
     natcasesort($printer);
     return $printer;
   }
@@ -672,7 +673,7 @@ class Versandarten {
     $this->app->DB->Update(
       sprintf(
         "UPDATE `versandarten` SET `einstellungen_json` = '%s' WHERE `id` = %d",
-        $this->app->DB->real_escape_string(json_encode($data)), $shippingMethodId
+        $this->app->DB->real_escape_string(json_encode($data, JSON_UNESCAPED_UNICODE)), $shippingMethodId
       )
     );
   }

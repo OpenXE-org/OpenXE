@@ -1179,6 +1179,7 @@ class Zahlungsweisen {
         while (false !== ($file = readdir($handle))) {
           $files[] = $file;
         }
+        $files = (array) $files;
         natcasesort($files);
         foreach($files as $file) {
           if($file[0] !== '.' && substr($file,-4) === '.php' && substr($file,-8) !== '.src.php'

@@ -1469,7 +1469,7 @@ class Shopimporter_Shopware extends ShopimporterBase
               'intid' => $tmp[$i]['Dateien'][$k]['id'],
               'extid' => $tmp[$i]['Dateien'][$k]['extid'],
               'version' => $tmp[$i]['Dateien'][$k]['version'],
-              'file' => 'data:image/'.$tmp[$i]['Dateien'][$k]['extension'].';base64,'.$tmp[$i]['Dateien'][$k]['datei']);
+              'file' => 'data:image/'.$tmp[$i]['Dateien'][$k]['extension'].';base64,'.base64_encode(file_get_contents($tmp[$i]['Dateien'][$k]['dateipfad'])));
             break;
           }
         }
@@ -1494,7 +1494,7 @@ class Shopimporter_Shopware extends ShopimporterBase
                 'extid' => $tmp[$i]['Dateien'][$k]['extid'],
                 'version' => $tmp[$i]['Dateien'][$k]['version'],
                 'main' => 2,
-                'file' => 'data:image/'.$tmp[$i]['Dateien'][$k]['extension'].';base64,'.$tmp[$i]['Dateien'][$k]['datei']);
+                'file' => 'data:image/'.$tmp[$i]['Dateien'][$k]['extension'].';base64,'.base64_encode(file_get_contents($tmp[$i]['Dateien'][$k]['dateipfad'])));
             }
           }
         }
@@ -1519,7 +1519,7 @@ class Shopimporter_Shopware extends ShopimporterBase
               'extid' => $tmp[$i]['Dateien'][$l]['extid'],
               'version' => $tmp[$i]['Dateien'][$l]['version'],
               'main' => $firstismain?1:2,
-              'file' => 'data:image/'.$tmp[$i]['Dateien'][$l]['extension'].';base64,'.$tmp[$i]['Dateien'][$l]['datei']);
+              'file' => 'data:image/'.$tmp[$i]['Dateien'][$l]['extension'].';base64,'.base64_encode(file_get_contents($tmp[$i]['Dateien'][$l]['dateipfad'])));
             $firstismain = 0;
           }
         }
@@ -2635,10 +2635,12 @@ class Shopimporter_Shopware extends ShopimporterBase
     return $orders;
   }
 
-  public function ShopwareLog($nachricht, $dump = '')
+  public function ShopwareLog($nachricht, $dump = null)
   {
     if($this->protokoll){
-      $this->app->erp->Logfile($nachricht, print_r($dump, true));
+        if ($dump !== null && !is_array($dump))
+            $dump = ['dump' => $dump];
+        $this->app->Container->get('Logger')->info($nachricht, $dump);
     }
   }
 

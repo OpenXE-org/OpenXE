@@ -69,6 +69,8 @@ if (!function_exists('getallheaders')) {
   /** @var array $bestBeforeBatchArticleStock */
   protected $bestBeforeBatchArticleStock;
 
+  private \Psr\Log\LoggerInterface $logger;
+
     /**
      * Api constructor.
      *
@@ -85,6 +87,7 @@ if (!function_exists('getallheaders')) {
     $this->api_id = 0;
     $this->datei_id = 0;
     $this->apiAccountService = $this->app->Container->get('ApiAccountService');
+    $this->logger = $this->app->Container->get('Logger');
 
     if($intern) {
       return;
@@ -6122,7 +6125,7 @@ XML;
                     if(!file_exists($pfad)){
                       if(!mkdir($pfad, 0777, true) && !is_dir($pfad))
                       {
-                        $this->app->erp->LogFile($pfad.' konnte nicht erstellt werden');
+                        $this->logger->warning($pfad.' konnte nicht erstellt werden');
                       }
                     }
 
@@ -6131,7 +6134,7 @@ XML;
                     if(!file_exists($speicherpfad)) {
                       if(!mkdir($speicherpfad, 0777, true) && !is_dir($speicherpfad))
                       {
-                        $this->app->erp->LogFile($speicherpfad.' konnte nicht erstellt werden');
+                        $this->logger->warning($speicherpfad.' konnte nicht erstellt werden');
                       }
                     }
 
@@ -6872,7 +6875,7 @@ XML;
 
                       if(!file_exists($pfad) && !mkdir($pfad, 0777, true) && !is_dir($pfad))
                       {
-                        $this->app->erp->LogFile($pfad.' konnte nicht erstellt werden');
+                        $this->logger->warning($pfad.' konnte nicht erstellt werden');
                       }
 
                       $speicherpfad = $pfad.$this->app->Conf->WFdbname;
@@ -6880,7 +6883,7 @@ XML;
                       if(!file_exists($speicherpfad) && !mkdir($speicherpfad, 0777, true) &&
                         !is_dir($speicherpfad))
                       {
-                        $this->app->erp->LogFile($speicherpfad.' konnte nicht erstellt werden');
+                        $this->logger->warning($speicherpfad.' konnte nicht erstellt werden');
                       }
 
                       $fileid = $this->app->erp->CreateDatei($singledatei->dateiname, !empty($singledatei->titel)?$singledatei->titel:$singledatei->dateiname, !empty($singledatei->beschreibung)?(string)$singledatei->beschreibung:'', '', $name, '',true,$speicherpfad);
@@ -7798,7 +7801,7 @@ XML;
     }
     $folder = dirname($dateiname);
     if($folder !== '.' && !is_dir($folder) && !mkdir($folder,0700,true) && !is_dir($folder)) {
-      $this->app->erp->LogFile($folder.' konnte nicht erstellt werden');
+      $this->logger->warning($folder.' konnte nicht erstellt werden');
     }
     $content = $this->EntferneSteuerzeichen($content);
     if(!empty($tag)) {
@@ -8955,7 +8958,7 @@ XML;
         break;
 
       case 'bestellung':
-        $this->app->erp->LogFile($adresse);
+        $this->logger->info($adresse);
         $id = $this->app->erp->CreateBestellung($adresse);
         $this->app->erp->LoadBestellungStandardwerte($id,$adresse);
         break;
@@ -10106,7 +10109,7 @@ XML;
 
       if(!file_exists($pfad) && !mkdir($pfad, 0777, true) && !is_dir($pfad))
       {
-        $this->app->erp->LogFile($pfad.' konnte nicht erstellt werden');
+        $this->logger->warning($pfad.' konnte nicht erstellt werden');
       }
 
       $speicherpfad = $pfad.$this->app->Conf->WFdbname;
@@ -10114,7 +10117,7 @@ XML;
       if(!file_exists($speicherpfad) && !mkdir($speicherpfad, 0777, true) &&
         !is_dir($speicherpfad))
       {
-        $this->app->erp->LogFile($speicherpfad.' konnte nicht erstellt werden');
+        $this->logger->warning($speicherpfad.' konnte nicht erstellt werden');
       }
 
       $fileid = $this->app->erp->CreateDatei($file['dateiname'], !empty($file['titel'])?$file['titel']:$file['dateiname'], !empty($file['beschreibung'])?(string)$file['beschreibung']:'', '', $name, '',true,$speicherpfad);

@@ -448,6 +448,8 @@ if(empty($app->remote)) {
 }
 $app->Secure = new Secure($app);
 $app->User = new User($app);
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
 $app->FormHandler = new FormHandler($app);
 $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
@@ -476,10 +478,10 @@ if($shops) {
     $demomodus = $shop['demomodus'];
     $app->DB->Update("UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 1,mutexcounter=0 WHERE parameter = 'shopimport'");
     $direktimport = $shop['direktimport'];
-    $app->erp->LogFile('Shopimport '.$id);
+    $logger->info('Shopimport '.$id);
     if($direktimport)
     {
-      $app->erp->LogFile('direktimport '.$id);
+      $logger->info('direktimport '.$id);
       $shopimp = new Shopimport($app, true);
     }
 
@@ -921,7 +923,7 @@ if($shops) {
         //if($gesamtanzahl > 1)$gesamtanzahl = 1;
         if($gesamtanzahl > 0)
         {
-          $app->erp->LogFile("Hole ".$gesamtanzahl." aus Shop ".$id);
+          $logger->info("Hole ".$gesamtanzahl." aus Shop ".$id);
           for($i=0;$i<$gesamtanzahl;$i++)
           {
             $app->DB->Update("UPDATE prozessstarter SET letzteausfuerhung=NOW(), mutex = 1,mutexcounter=0 WHERE parameter = 'shopimport'");
@@ -1123,7 +1125,7 @@ if($shops) {
                     $import_kundennummer = $checkidemail;
                   }
                   //echo "Kundennummer: ".$import_kundennummer."\r\n";
-                  $app->erp->LogFile("Importiere Auftrag ".$auftrag);
+                  $logger->info("Importiere Auftrag ".$auftrag);
                   $unbekanntezahlungsweisen = null;
                   $shopimp->KundeAnlegenUpdate($insid,$auftrag, $warenkorb, $kundennummer, $import_kundennummer, $unbekanntezahlungsweisen);
                   $checkid = '';
@@ -1139,7 +1141,7 @@ if($shops) {
             }
             if(!$app->DB->Select("SELECT aktiv FROM shopexport WHERE id = '$id' LIMIT 1"))$gesamtanzahl = $i + 1;
           }
-          $app->erp->LogFile($gesamtanzahl." aus Shop ".$id." geholt");
+          $logger->info($gesamtanzahl." aus Shop ".$id." geholt");
         }
       }
     }

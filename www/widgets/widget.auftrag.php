@@ -42,21 +42,25 @@ class WidgetAuftrag extends WidgetGenAuftrag
       $projektabkuerzung = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id = '$projektbevor' LIMIT 1");
       $projektdanach = explode(' ',$this->app->Secure->GetPOST('projekt'));
       $projektdanach = reset($projektdanach);
+      $projektdanachid = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung = '$projektdanach' AND IFNULL(geloescht,0) = 0 LIMIT 1");
+      if(!$schreibschutzbefore) {
+        $this->app->erp->LoadSteuersaetze($id, 'auftrag', $projektdanachid);
+      }
+
       $overwriteZahlungsweise = null;
       $overwriteVersandart = null;
+
       if(!$schreibschutzbefore && $projektdanach != $projektabkuerzung){
-        $projektdanach = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung = '$projektdanach' LIMIT 1");
-        if(!empty($projektdanach)){
-          $this->app->erp->LoadSteuersaetze($id, 'auftrag', $projektdanach);
+        if(!empty($projektdanachid)){
           $this->form->HTMLList['standardlager']->htmlvalue = '';
           $this->form->HTMLList['standardlager']->dbvalue = 0;
-          $deactivateautoshipping = $this->app->erp->Projektdaten($projektdanach, 'deactivateautoshipping');
+          $deactivateautoshipping = $this->app->erp->Projektdaten($projektdanachid, 'deactivateautoshipping');
           if($this->form->CallbackAndMandatorycheck(true)) {
             $this->form->HTMLList['autoversand']->htmlvalue = ($deactivateautoshipping == 0);
             $this->form->HTMLList['autoversand']->dbvalue = ($deactivateautoshipping == 0);
           }
           $query = sprintf("SELECT zahlungsweise, zahlungsweiselieferant, versandart FROM projekt WHERE id='%s'",
-            $projektdanach);
+            $projektdanachid);
           $projectDefaultData = $this->app->DB->SelectRow($query);
           if($this->form->HTMLList['lieferantenauftrag']->htmlvalue){
             if(!empty($projectDefaultData['zahlungsweiselieferant']) && $this->form->CallbackAndMandatorycheck(true)){

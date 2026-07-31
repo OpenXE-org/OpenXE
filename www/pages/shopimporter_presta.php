@@ -454,10 +454,13 @@ class Shopimporter_Presta extends ShopimporterBase
     return 25;
   }
 
-  private function Log($message, $dump = '')
+  private function Log($message, $dump = null)
   {
     if ($this->protocol) {
-      $this->app->erp->Logfile($message, print_r($dump, true));
+      if ($dump !== null && !is_array($dump)) {
+          $dump = [$dump];
+      }
+      $this->app->Container->get('Logger')->info($message, $dump);
     }
   }
 

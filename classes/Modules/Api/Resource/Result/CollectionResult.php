@@ -14,15 +14,17 @@ class CollectionResult extends AbstractResult
             //throw new \CountryInvalidArgumentException('CollectionResult must contain pagination'); // @todo für GetIDs
         }
 
-        if (empty($collection)) {
-            throw new \InvalidArgumentException('CollectionResult can not be empty');
-        }
-        $firstKey = key($collection);
-        if (!is_numeric($firstKey)) {
-            throw new \InvalidArgumentException('CollectionResult can only store an index based array');
-        }
-        if (!is_array($collection[$firstKey]) || empty($collection[$firstKey])) {
-            throw new \RuntimeException('CollectionResult must contain at least one result');
+        // An empty collection is a valid list response — there's no rule
+        // that says a 0-row table must 404. Only validate the shape when
+        // the collection has entries.
+        if (!empty($collection)) {
+            $firstKey = key($collection);
+            if (!is_numeric($firstKey)) {
+                throw new \InvalidArgumentException('CollectionResult can only store an index based array');
+            }
+            if (!is_array($collection[$firstKey]) || empty($collection[$firstKey])) {
+                throw new \RuntimeException('CollectionResult must contain at least one result');
+            }
         }
 
         // @todo Sicherstellen dass Paginierung passt

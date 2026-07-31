@@ -482,6 +482,18 @@ class Verbindlichkeit {
                     $this->verbindlichkeit_abschliessen($verbindlichkeit['id']);
                 }
 
+                // Abgeschlossene verbindlichkeiten deren freigabe, 
+                // rechnungsfreigabe, oder bezahlt zurückgesetz wurden, 
+                // müssen auch auf 'freigegeben' zurückgesetzt werden.
+                $sql = "SELECT id, freigabe, rechnungsfreigabe, bezahlt FROM verbindlichkeit WHERE status = 'abgeschlossen'";
+                $ids = $this->app->DB->SelectArr($sql);
+
+                foreach ($ids as $verbindlichkeit) {
+                    if (!$verbindlichkeit['freigabe'] || !$verbindlichkeit['rechnungsfreigabe'] || !$verbindlichkeit['bezahlt']) {
+                        $this->verbindlichkeit_revert_abschliessen($verbindlichkeit['id']);
+                    }
+                }
+
             break;
             case 'ausfuehren':
                 $auswahl = $this->app->Secure->GetPOST('auswahl');
@@ -1523,6 +1535,21 @@ class Verbindlichkeit {
         }
     }
 
+    function verbindlichkeit_revert_abschliessen($id = null)
+    {
+        if (empty($id)) {
+            return;
+        }
+
+        $sql = "SELECT status FROM verbindlichkeit WHERE id =".$id;
+        $verbindlichkeit = $this->app->DB->SelectRow($sql);
+        if ($verbindlichkeit['status'] == "abgeschlossen") {
+            $sql = "UPDATE verbindlichkeit SET status = 'freigegeben' WHERE id=" . $id;
+            $this->app->DB->Update($sql);
+            $this->app->erp->BelegProtokoll("verbindlichkeit", $id, "Verbindlichkeit von abgeschlossen auf freigegeben zurückgesetzt");
+        }
+    }
+
     function verbindlichkeit_ruecksetzeneinkauf($id = null)
     {
         if (empty($id)) {
@@ -1532,6 +1559,7 @@ class Verbindlichkeit {
         $sql = "UPDATE verbindlichkeit SET freigabe = 0 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit r&uuml;ckgesetzt (Einkauf)");
+        $this->verbindlichkeit_revert_abschliessen($id);
         if ($gotoedit) {
             $this->verbindlichkeit_edit(true);
         }
@@ -1546,6 +1574,7 @@ class Verbindlichkeit {
         $sql = "UPDATE verbindlichkeit SET rechnungsfreigabe = 0 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit r&uuml;ckgesetzt (Buchhaltung)");
+        $this->verbindlichkeit_revert_abschliessen($id);
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
         }
@@ -1560,6 +1589,7 @@ class Verbindlichkeit {
         $sql = "UPDATE verbindlichkeit SET bezahlt = 0 WHERE id=".$id;
         $this->app->DB->Update($sql);
         $this->app->erp->BelegProtokoll("verbindlichkeit",$id,"Verbindlichkeit bezahlt r&uuml;ckgesetzt");
+        $this->verbindlichkeit_revert_abschliessen($id);
         if ($gotoedit) {
             $this->verbindlichkeit_edit();
         }
@@ -1721,6 +1751,8 @@ class Verbindlichkeit {
         );
         $tmp->AddRow($row);
         $tmp->DisplayNew('ARTIKEL',"Sachkonto","noAction");
+
+        $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'verbindlichkeit'));
 
         $tmp = new EasyTable($this->app);
         $tmp->Query("SELECT zeit,bearbeiter,grund FROM verbindlichkeit_protokoll WHERE verbindlichkeit='$id' ORDER by zeit DESC",0,"");
@@ -1903,5 +1935,4 @@ class Verbindlichkeit {
             $this->app->YUI->Message('error','Rechnungsnummer(n) mehrfach vergeben: '.implode(', ',array_column($doppelte,'rechnung')));
         }
     }
-
 }

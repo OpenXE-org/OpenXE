@@ -121,7 +121,7 @@ class DeliveryAddressResource extends AbstractResource
     /**
      * @inheritdoc
      */
-    public function insert($inputVars)
+    public function insert($inputVars, $inputMapping = null)
     {
         // SQL-Fehler umgehen: Field 'sprache' doesn't have a default value
         if (!isset($inputVars['abteilung'])) { $inputVars['abteilung'] = ''; }

@@ -853,32 +853,29 @@ class Lieferschein extends GenLieferschein
     $this->app->Tpl->Set('ZAHLWEISE',$auftragArr[0]['zahlungsweise']);
     $this->app->Tpl->Set('STATUS',$auftragArr[0]['status']);
 
-    if($auftragArr[0]['auftragid'] > 0){
-      $orderRow = $this->app->DB->SelectRow(
-        "SELECT belegnr, projekt FROM auftrag WHERE id='".$auftragArr[0]['auftragid']."' LIMIT 1"
-      );
-      if($this->app->erp->ModulVorhanden('batches')) {
-        $abProjekt = $this->app->DB->Select(
-          sprintf(
-            'SELECT abkuerzung FROM projekt WHERE id = %d',
-            $orderRow['projekt']
-          )
-        );
-        if(!empty($abProjekt)){
-          $this->app->Tpl->Set('PROJEKT', $abProjekt);
-        }
-      }
-      $belegnr_auftrag = $orderRow['belegnr'];
+    $auftraginfo = $this->app->DB->SelectRow("
+        SELECT 
+            a.internet,
+            a.belegnr,
+            a.ihrebestellnummer,
+            se.bezeichnung AS shopname
+        FROM lieferschein l
+        LEFT JOIN auftrag a ON a.id=l.auftragid
+        LEFT JOIN shopexport se ON se.id=a.shop
+        WHERE l.id='$id' AND l.id > 0 LIMIT 1"
+    );
+    $this->app->Tpl->Set('INTERNET',$auftraginfo['internet']);
+    $this->app->Tpl->Set('ONLINESHOP',$auftraginfo['shopname']);
+    $this->app->Tpl->Set('INTERNET',$auftraginfo['internet']);
+    $this->app->Tpl->Set('IHREBESTELLNUMMER',$auftraginfo['ihrebestellnummer']);
+  
+      $belegnr_auftrag = $auftraginfo['belegnr'];
 
       $this->app->Tpl->Set('AUFTRAG',"<a href=\"index.php?module=auftrag&action=edit&id=".$auftragArr[0]['auftragid']."\" target=\"_blank\">$belegnr_auftrag</a>
-        &nbsp;<a href=\"index.php?module=auftrag&action=pdf&id=".$auftragArr[0]['auftragid']."\" target=\"blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Auftrag PDF\" border=\"0\"></a>&nbsp;
-          <a href=\"index.php?module=auftrag&action=edit&id=".$auftragArr[0]['auftragid']."\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Auftrag bearbeiten\" border=\"0\"></a>
+        &nbsp;<a href=\"index.php?module=auftrag&action=pdf&id=".$auftragArr[0]['auftragid']."\" target=\"blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Auftrag PDF\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=auftrag&action=edit&id=".$auftragArr[0]['auftragid']."\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Auftrag bearbeiten\" border=\"0\"></a>
       ");
-    }else{
-      $this->app->Tpl->Set('AUFTRAG','-');
-    }
    
-    $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
+    $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
 
     if($auftragArr[0]['auftragid'] > 0){
       $rechnung = $this->app->DB->SelectArr(

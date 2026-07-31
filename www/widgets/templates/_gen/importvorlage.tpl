@@ -26,6 +26,7 @@
 
            <tr><td width="130">{|Ziel|}:</td><td colspan="2">
             [ZIEL][MSGZIEL]&nbsp;<i>(Auswahl Zieltabelle f&uuml;r die Daten)</i></td></tr>
+           <tr><td width="130">{|Format|}:</td><td>[FORMAT][MSGFORMAT]&nbsp;<i>CSV, ZIP mit oder ohne Zusatzdateien</i></td><td></td></tr>
            <tr><td width="130">{|CSV Daten ab Zeile|}:</td><td>[IMPORTERSTEZEILENUMMER][MSGIMPORTERSTEZEILENUMMER]&nbsp;<i>Erste Zeile = 1 (Falls Daten in CSV nicht ab Zeile 1 starten, da Feldbezeichnungen o.&auml;. in Dokument vorhanden sind.)</i></td><td></td></tr>
             <tr><td width="130">{|CSV Trennzeichen|}:</td><td>[IMPORTTRENNZEICHEN][MSGIMPORTTRENNZEICHEN]</td><td></td></tr>
             <tr><td width="130">{|CSV Maskierung|}:</td><td>[IMPORTDATENMASKIERUNG][MSGIMPORTDATENMASKIERUNG]</td><td></td></tr>

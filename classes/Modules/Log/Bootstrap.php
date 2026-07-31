@@ -52,19 +52,6 @@ final class Bootstrap
      */
     public static function onInitLoggerConfigService(ServiceContainer $container): LoggerConfigService
     {
-        return new LoggerConfigService(self::onInitCompanyConfigWrapper($container));
-    }
-
-    /**
-     * @param ContainerInterface $container
-     *
-     * @return CompanyConfigWrapper
-     */
-    private static function onInitCompanyConfigWrapper(ContainerInterface $container): CompanyConfigWrapper
-    {
-        /** @var \ApplicationCore $app */
-        $app = $container->get('LegacyApplication');
-
-        return new CompanyConfigWrapper($app->erp);
+        return new LoggerConfigService($container->get('SystemConfigModule'));
     }
 }

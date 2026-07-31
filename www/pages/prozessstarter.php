@@ -31,6 +31,8 @@ class Prozessstarter extends GenProzessstarter {
   /** @var int */
   protected $parentId;
 
+  private \Psr\Log\LoggerInterface $logger;
+
   /**
    * @param Application $app
    * @param string      $name
@@ -155,6 +157,8 @@ class Prozessstarter extends GenProzessstarter {
     if($intern) {
       return;
     }
+
+    $this->logger = $this->app->Container->get('Logger');
 
     $this->app->ActionHandlerInit($this);
 
@@ -1175,7 +1179,7 @@ class Prozessstarter extends GenProzessstarter {
     ) {
       return;
     }
-    $this->app->erp->LogFile(
+    $this->logger->warning(
       sprintf(
         'Cronjob %s with pid: %s and taskid: %d cronjob_starter_running_id %d was not closed cleanly by starter-proccess.',
         $task['bezeichnung'], $uid, $task['id'], $runningTask['id']
@@ -1201,14 +1205,14 @@ class Prozessstarter extends GenProzessstarter {
     }
 
     if($fromStarter2) {
-      $this->app->erp->LogFile('Cronjob '.$cronjob['cronjob_name'].' called exit uid: '.$uid);
+      $this->logger->info('Cronjob '.$cronjob['cronjob_name'].' called exit uid: '.$uid);
       if(!empty($cronjob['task_id'])) {
         $this->setCronjobStatus('error', $cronjob['task_id']);
         $this->setCronjobRunning($uid, $cronjob['task_id'], false);
       }
       return;
     }
-    $this->app->erp->LogFile('Cronjob with uid: '.$uid.' was killed by module: '.$cronjob['cronjob_name']);
+      $this->logger->info('Cronjob with uid: '.$uid.' was killed by module: '.$cronjob['cronjob_name']);
     if(!empty($cronjob['task_id'])) {
 
       $this->setCronjobStatus('error', $cronjob['task_id']);
@@ -1245,7 +1249,7 @@ class Prozessstarter extends GenProzessstarter {
           )
         );
         if($this->app->DB->affected_rows() > 0) {
-          $this->app->erp->LogFile(
+          $this->logger->warning(
             $this->app->DB->real_escape_string(
               'Cronjob '.(
                 $this->app->DB->Select(
@@ -1468,7 +1472,7 @@ class Prozessstarter extends GenProzessstarter {
     }
 
     if(!empty($check['task_id']) && ($uid != $check['uid'] || $check['task_id'] != $task['id'])) {
-      $this->app->erp->LogFile(
+      $this->logger->warning(
         $this->app->DB->real_escape_string(
           sprintf(
             'Cronjob: %s id: %d was not cleanly closed.',
@@ -1553,13 +1557,13 @@ class Prozessstarter extends GenProzessstarter {
     if(empty($cronjob['aktiv'])) {
       $button = '';
       if($hasPermission && $withForm) {
-        $button = sprintf('<input type="hidden" name="cronjobid" value="%d" />
-        <input type="submit" name="activatecronjob" value="aktivieren" />', $cronjob['id']);
+        $button = sprintf('<input type="hidden" form="checkActiveCronjob" name="cronjobid" value="%d" />
+        <input type="submit" name="activatecronjob" form="checkActiveCronjob" value="aktivieren" />', $cronjob['id']);
       }
 
       $this->app->Tpl->Add(
         $target,
-        ($withForm?'<form method="post"> ':'').
+        ($withForm?'<form id="checkActiveCronjob" method="post"> ':'').
         sprintf(
           '
           <div class="warning">Der Prozessstarter %s ist nicht aktiv. 
@@ -1657,5 +1661,25 @@ class Prozessstarter extends GenProzessstarter {
       $diffDb = ceil(($nowDb->getTimestamp() - $lastTime->getTimestamp()) / 60);
 
       return $period > $diff || $period > $diffDb;
+  }
+  
+  public function deactivateCronjob($parameter)
+  {
+  
+    if(empty($parameter)) {
+      return false;
+    }
+
+    $hasPermission = $this->app->erp->RechteVorhanden('prozessstarter','edit');
+    if($hasPermission === true) {
+      $this->app->DB->Update(
+        sprintf(
+          "UPDATE prozessstarter SET aktiv = 0, mutex = 0, mutexcounter = 0 WHERE parameter = '%s'",
+          $this->app->DB->real_escape_string($parameter)
+        )
+      );
+      return true;
+    }
+    return false;
   }
 }

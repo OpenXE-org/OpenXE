@@ -37,6 +37,7 @@ class ObjGenShopexport
   private  $aktiv;
   private  $lagerexport;
   private  $artikelexport;
+  private  $artikelexportbatchsize;
   private  $multiprojekt;
   private  $artikelnachnahme_extraartikel;
   private  $vorabbezahltmarkieren_ohnevorkasse_bar;
@@ -69,6 +70,7 @@ class ObjGenShopexport
   private  $debitorennummer;
   private  $sendonlywithtracking;
   private  $shopbilderuebertragen;
+  private  $dateienuebertragen;
   private  $texteuebertragen;
   private  $adressennichtueberschreiben;
   private  $auftraegeaufspaeter;
@@ -146,6 +148,7 @@ $result = $result[0];
     $this->aktiv=$result['aktiv'];
     $this->lagerexport=$result['lagerexport'];
     $this->artikelexport=$result['artikelexport'];
+    $this->artikelexportbatchsize=$result['artikelexportbatchsize'];
     $this->multiprojekt=$result['multiprojekt'];
     $this->artikelnachnahme_extraartikel=$result['artikelnachnahme_extraartikel'];
     $this->vorabbezahltmarkieren_ohnevorkasse_bar=$result['vorabbezahltmarkieren_ohnevorkasse_bar'];
@@ -178,6 +181,7 @@ $result = $result[0];
     $this->debitorennummer=$result['debitorennummer'];
     $this->sendonlywithtracking=$result['sendonlywithtracking'];
     $this->shopbilderuebertragen=$result['shopbilderuebertragen'];
+    $this->dateienuebertragen=$result['dateienuebertragen'];
     $this->texteuebertragen=$result['texteuebertragen'];
     $this->adressennichtueberschreiben=$result['adressennichtueberschreiben'];
     $this->auftraegeaufspaeter=$result['auftraegeaufspaeter'];
@@ -223,8 +227,8 @@ $result = $result[0];
 
   public function Create()
   {
-    $sql = "INSERT INTO `shopexport` (`id`,`bezeichnung`,`typ`,`url`,`passwort`,`token`,`challenge`,`projekt`,`cms`,`firma`,`logdatei`,`geloescht`,`artikelporto`,`artikelnachnahme`,`artikelimport`,`artikelimporteinzeln`,`demomodus`,`aktiv`,`lagerexport`,`artikelexport`,`multiprojekt`,`artikelnachnahme_extraartikel`,`vorabbezahltmarkieren_ohnevorkasse_bar`,`einzelsync`,`utf8codierung`,`auftragabgleich`,`rabatteportofestschreiben`,`artikelnummernummerkreis`,`holealle`,`ab_nummer`,`direktimport`,`ust_ok`,`anzgleichzeitig`,`datumvon`,`datumbis`,`tmpdatumvon`,`tmpdatumbis`,`holeallestati`,`cronjobaktiv`,`nummersyncstatusaendern`,`zahlungsweisenmapping`,`versandartenmapping`,`artikelnummeruebernehmen`,`artikelbeschreibungauswawision`,`artikelbeschreibungenuebernehmen`,`stuecklisteergaenzen`,`adressupdate`,`kundenurvonprojekt`,`add_debitorennummer`,`debitorennummer`,`sendonlywithtracking`,`shopbilderuebertragen`,`texteuebertragen`,`adressennichtueberschreiben`,`auftraegeaufspaeter`,`autoversandbeikommentardeaktivieren`,`artikeltexteuebernehmen`,`artikelportoermaessigt`,`artikelrabatt`,`artikelrabattsteuer`,`positionsteuersaetzeerlauben`,`json`,`freitext`,`artikelbezeichnungauswawision`,`angeboteanlegen`,`artikelnummerbeimanlegenausshop`,`shoptyp`,`modulename`,`maxmanuell`,`preisgruppe`,`variantenuebertragen`,`crosssellingartikeluebertragen`,`staffelpreiseuebertragen`,`lagergrundlage`,`portoartikelanlegen`,`nurneueartikel`,`startdate`,`ueberschreibe_lagerkorrekturwert`,`lagerkorrekturwert`,`vertrieb`,`eigenschaftenuebertragen`,`kategorienuebertragen`,`stornoabgleich`,`nurpreise`,`steuerfreilieferlandexport`,`gutscheineuebertragen`,`gesamtbetragfestsetzen`,`lastschriftdatenueberschreiben`,`gesamtbetragfestsetzendifferenz`,`api_account_id`,`api_account_token`,`autoversandoption`,`autosendarticle`)
-      VALUES(NULL,'{$this->bezeichnung}','{$this->typ}','{$this->url}','{$this->passwort}','{$this->token}','{$this->challenge}','{$this->projekt}','{$this->cms}','{$this->firma}','{$this->logdatei}','{$this->geloescht}','{$this->artikelporto}','{$this->artikelnachnahme}','{$this->artikelimport}','{$this->artikelimporteinzeln}','{$this->demomodus}','{$this->aktiv}','{$this->lagerexport}','{$this->artikelexport}','{$this->multiprojekt}','{$this->artikelnachnahme_extraartikel}','{$this->vorabbezahltmarkieren_ohnevorkasse_bar}','{$this->einzelsync}','{$this->utf8codierung}','{$this->auftragabgleich}','{$this->rabatteportofestschreiben}','{$this->artikelnummernummerkreis}','{$this->holealle}','{$this->ab_nummer}','{$this->direktimport}','{$this->ust_ok}','{$this->anzgleichzeitig}','{$this->datumvon}','{$this->datumbis}','{$this->tmpdatumvon}','{$this->tmpdatumbis}','{$this->holeallestati}','{$this->cronjobaktiv}','{$this->nummersyncstatusaendern}','{$this->zahlungsweisenmapping}','{$this->versandartenmapping}','{$this->artikelnummeruebernehmen}','{$this->artikelbeschreibungauswawision}','{$this->artikelbeschreibungenuebernehmen}','{$this->stuecklisteergaenzen}','{$this->adressupdate}','{$this->kundenurvonprojekt}','{$this->add_debitorennummer}','{$this->debitorennummer}','{$this->sendonlywithtracking}','{$this->shopbilderuebertragen}',{$this->texteuebertragen},'{$this->adressennichtueberschreiben}','{$this->auftraegeaufspaeter}','{$this->autoversandbeikommentardeaktivieren}','{$this->artikeltexteuebernehmen}','{$this->artikelportoermaessigt}','{$this->artikelrabatt}','{$this->artikelrabattsteuer}','{$this->positionsteuersaetzeerlauben}','{$this->json}','{$this->freitext}','{$this->artikelbezeichnungauswawision}','{$this->angeboteanlegen}','{$this->artikelnummerbeimanlegenausshop}','{$this->shoptyp}','{$this->modulename}','{$this->maxmanuell}','{$this->preisgruppe}','{$this->variantenuebertragen}','{$this->crosssellingartikeluebertragen}','{$this->staffelpreiseuebertragen}','{$this->lagergrundlage}','{$this->portoartikelanlegen}','{$this->nurneueartikel}','{$this->startdate}','{$this->ueberschreibe_lagerkorrekturwert}','{$this->lagerkorrekturwert}','{$this->vertrieb}','{$this->eigenschaftenuebertragen}','{$this->kategorienuebertragen}','{$this->stornoabgleich}','{$this->nurpreise}','{$this->steuerfreilieferlandexport}','{$this->gutscheineuebertragen}','{$this->gesamtbetragfestsetzen}','{$this->lastschriftdatenueberschreiben}','{$this->gesamtbetragfestsetzendifferenz}','{$this->api_account_id}','{$this->api_account_token}','{$this->autoversandoption}','{$this->autosendarticle}')";
+    $sql = "INSERT INTO `shopexport` (`id`,`bezeichnung`,`typ`,`url`,`passwort`,`token`,`challenge`,`projekt`,`cms`,`firma`,`logdatei`,`geloescht`,`artikelporto`,`artikelnachnahme`,`artikelimport`,`artikelimporteinzeln`,`demomodus`,`aktiv`,`lagerexport`,`artikelexport`,`multiprojekt`,`artikelexportbatchsize`,`artikelnachnahme_extraartikel`,`vorabbezahltmarkieren_ohnevorkasse_bar`,`einzelsync`,`utf8codierung`,`auftragabgleich`,`rabatteportofestschreiben`,`artikelnummernummerkreis`,`holealle`,`ab_nummer`,`direktimport`,`ust_ok`,`anzgleichzeitig`,`datumvon`,`datumbis`,`tmpdatumvon`,`tmpdatumbis`,`holeallestati`,`cronjobaktiv`,`nummersyncstatusaendern`,`zahlungsweisenmapping`,`versandartenmapping`,`artikelnummeruebernehmen`,`artikelbeschreibungauswawision`,`artikelbeschreibungenuebernehmen`,`stuecklisteergaenzen`,`adressupdate`,`kundenurvonprojekt`,`add_debitorennummer`,`debitorennummer`,`sendonlywithtracking`,`shopbilderuebertragen`,`dateienuebertragen`,`texteuebertragen`,`adressennichtueberschreiben`,`auftraegeaufspaeter`,`autoversandbeikommentardeaktivieren`,`artikeltexteuebernehmen`,`artikelportoermaessigt`,`artikelrabatt`,`artikelrabattsteuer`,`positionsteuersaetzeerlauben`,`json`,`freitext`,`artikelbezeichnungauswawision`,`angeboteanlegen`,`artikelnummerbeimanlegenausshop`,`shoptyp`,`modulename`,`maxmanuell`,`preisgruppe`,`variantenuebertragen`,`crosssellingartikeluebertragen`,`staffelpreiseuebertragen`,`lagergrundlage`,`portoartikelanlegen`,`nurneueartikel`,`startdate`,`ueberschreibe_lagerkorrekturwert`,`lagerkorrekturwert`,`vertrieb`,`eigenschaftenuebertragen`,`kategorienuebertragen`,`stornoabgleich`,`nurpreise`,`steuerfreilieferlandexport`,`gutscheineuebertragen`,`gesamtbetragfestsetzen`,`lastschriftdatenueberschreiben`,`gesamtbetragfestsetzendifferenz`,`api_account_id`,`api_account_token`,`autoversandoption`,`autosendarticle`)
+      VALUES(NULL,'{$this->bezeichnung}','{$this->typ}','{$this->url}','{$this->passwort}','{$this->token}','{$this->challenge}','{$this->projekt}','{$this->cms}','{$this->firma}','{$this->logdatei}','{$this->geloescht}','{$this->artikelporto}','{$this->artikelnachnahme}','{$this->artikelimport}','{$this->artikelimporteinzeln}','{$this->demomodus}','{$this->aktiv}','{$this->lagerexport}','{$this->artikelexport}','{$this->artikelexportbatchsize}','{$this->multiprojekt}','{$this->artikelnachnahme_extraartikel}','{$this->vorabbezahltmarkieren_ohnevorkasse_bar}','{$this->einzelsync}','{$this->utf8codierung}','{$this->auftragabgleich}','{$this->rabatteportofestschreiben}','{$this->artikelnummernummerkreis}','{$this->holealle}','{$this->ab_nummer}','{$this->direktimport}','{$this->ust_ok}','{$this->anzgleichzeitig}','{$this->datumvon}','{$this->datumbis}','{$this->tmpdatumvon}','{$this->tmpdatumbis}','{$this->holeallestati}','{$this->cronjobaktiv}','{$this->nummersyncstatusaendern}','{$this->zahlungsweisenmapping}','{$this->versandartenmapping}','{$this->artikelnummeruebernehmen}','{$this->artikelbeschreibungauswawision}','{$this->artikelbeschreibungenuebernehmen}','{$this->stuecklisteergaenzen}','{$this->adressupdate}','{$this->kundenurvonprojekt}','{$this->add_debitorennummer}','{$this->debitorennummer}','{$this->sendonlywithtracking}','{$this->shopbilderuebertragen}','{$this->dateienuebertragen}',{$this->texteuebertragen},'{$this->adressennichtueberschreiben}','{$this->auftraegeaufspaeter}','{$this->autoversandbeikommentardeaktivieren}','{$this->artikeltexteuebernehmen}','{$this->artikelportoermaessigt}','{$this->artikelrabatt}','{$this->artikelrabattsteuer}','{$this->positionsteuersaetzeerlauben}','{$this->json}','{$this->freitext}','{$this->artikelbezeichnungauswawision}','{$this->angeboteanlegen}','{$this->artikelnummerbeimanlegenausshop}','{$this->shoptyp}','{$this->modulename}','{$this->maxmanuell}','{$this->preisgruppe}','{$this->variantenuebertragen}','{$this->crosssellingartikeluebertragen}','{$this->staffelpreiseuebertragen}','{$this->lagergrundlage}','{$this->portoartikelanlegen}','{$this->nurneueartikel}','{$this->startdate}','{$this->ueberschreibe_lagerkorrekturwert}','{$this->lagerkorrekturwert}','{$this->vertrieb}','{$this->eigenschaftenuebertragen}','{$this->kategorienuebertragen}','{$this->stornoabgleich}','{$this->nurpreise}','{$this->steuerfreilieferlandexport}','{$this->gutscheineuebertragen}','{$this->gesamtbetragfestsetzen}','{$this->lastschriftdatenueberschreiben}','{$this->gesamtbetragfestsetzendifferenz}','{$this->api_account_id}','{$this->api_account_token}','{$this->autoversandoption}','{$this->autosendarticle}')";
 
     $this->app->DB->Insert($sql);
     $this->id = $this->app->DB->GetInsertID();
@@ -256,6 +260,7 @@ $result = $result[0];
       `aktiv`='{$this->aktiv}',
       `lagerexport`='{$this->lagerexport}',
       `artikelexport`='{$this->artikelexport}',
+      `artikelexportbatchsize`='{$this->artikelexportbatchsize}',
       `multiprojekt`='{$this->multiprojekt}',
       `artikelnachnahme_extraartikel`='{$this->artikelnachnahme_extraartikel}',
       `vorabbezahltmarkieren_ohnevorkasse_bar`='{$this->vorabbezahltmarkieren_ohnevorkasse_bar}',
@@ -288,6 +293,7 @@ $result = $result[0];
       `debitorennummer`='{$this->debitorennummer}',
       `sendonlywithtracking`='{$this->sendonlywithtracking}',
       `shopbilderuebertragen`='{$this->shopbilderuebertragen}',
+      `dateienuebertragen`='{$this->dateienuebertragen}',
       `texteuebertragen`='{$this->texteuebertragen}',
       `adressennichtueberschreiben`='{$this->adressennichtueberschreiben}',
       `auftraegeaufspaeter`='{$this->auftraegeaufspaeter}',
@@ -366,6 +372,7 @@ $result = $result[0];
     $this->aktiv='';
     $this->lagerexport='';
     $this->artikelexport='';
+    $this->artikelexportbatchsize='';
     $this->multiprojekt='';
     $this->artikelnachnahme_extraartikel='';
     $this->vorabbezahltmarkieren_ohnevorkasse_bar='';
@@ -398,6 +405,7 @@ $result = $result[0];
     $this->debitorennummer='';
     $this->sendonlywithtracking='';
     $this->shopbilderuebertragen='';
+    $this->dateienuebertragen='';
     $this->texteuebertragen='';
     $this->adressennichtueberschreiben='';
     $this->auftraegeaufspaeter='';
@@ -519,6 +527,8 @@ $result = $result[0];
   public function GetLagerexport() { return $this->lagerexport; }
   public function SetArtikelexport($value) { $this->artikelexport=$value; }
   public function GetArtikelexport() { return $this->artikelexport; }
+  public function SetArtikelexportbatchsize($value) { $this->artikelexportbatchsize=$value; }
+  public function GetArtikelexportbatchsize() { return $this->artikelexportbatchsize; }
   public function SetMultiprojekt($value) { $this->multiprojekt=$value; }
   public function GetMultiprojekt() { return $this->multiprojekt; }
   public function SetArtikelnachnahme_Extraartikel($value) { $this->artikelnachnahme_extraartikel=$value; }
@@ -583,6 +593,8 @@ $result = $result[0];
   public function GetSendonlywithtracking() { return $this->sendonlywithtracking; }
   public function SetShopbilderuebertragen($value) { $this->shopbilderuebertragen=$value; }
   public function GetShopbilderuebertragen() { return $this->shopbilderuebertragen; }
+  public function SetDateienuebertragen($value) { $this->dateienuebertragen=$value; }
+  public function GetDateienuebertragen() { return $this->dateienuebertragen; }
   public function SetTexteuebertragen($value) { $this->texteuebertragen=$value; }
   public function GetTexteuebertragen() { return $this->texteuebertragen; }
   public function SetAdressennichtueberschreiben($value) { $this->adressennichtueberschreiben=$value; }

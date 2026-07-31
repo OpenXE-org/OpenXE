@@ -4000,6 +4000,28 @@
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""
+                },
+                {
+                    "Field": "email",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "MUL",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "notiz",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
                 }
             ],
             "keys": [
@@ -10300,6 +10322,17 @@
                 },
                 {
                     "Field": "keinsteuersatz",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "steuersatz_zielland",
                     "Type": "int(1)",
                     "Collation": null,
                     "Null": "YES",
@@ -22385,6 +22418,17 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "steuersatz_zielland",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "angebotid",
                     "Type": "int(11)",
                     "Collation": null,
@@ -27734,6 +27778,17 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "steuersatz_zielland",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "waehrung",
                     "Type": "varchar(255)",
                     "Collation": "utf8mb3_general_ci",
@@ -31489,6 +31544,17 @@
                 },
                 {
                     "Field": "beschriftung",
+                    "Type": "varchar(128)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "kennung",
                     "Type": "varchar(128)",
                     "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
@@ -37679,7 +37745,7 @@
                 },
                 {
                     "Field": "signatur",
-                    "Type": "text",
+                    "Type": "mediumtext",
                     "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
                     "Key": "",
@@ -39971,7 +40037,7 @@
                 },
                 {
                     "Field": "signatur",
-                    "Type": "text",
+                    "Type": "mediumtext",
                     "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
                     "Key": "",
@@ -41038,7 +41104,7 @@
                 },
                 {
                     "Field": "email_html_template",
-                    "Type": "text",
+                    "Type": "mediumtext",
                     "Collation": "utf8mb3_general_ci",
                     "Null": "NO",
                     "Key": "",
@@ -45704,6 +45770,17 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "steuersatz_zielland",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "stornorechnung",
                     "Type": "int(1)",
                     "Collation": null,
@@ -48211,6 +48288,17 @@
                     "Field": "ziel",
                     "Type": "varchar(255)",
                     "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "format",
+                    "Type": "int",
+                    "Collation": null,
                     "Null": "YES",
                     "Key": "",
                     "Default": null,
@@ -59456,111 +59544,6 @@
                     "Type": "datetime",
                     "Collation": null,
                     "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                }
-            ],
-            "keys": [
-                {
-                    "Key_name": "PRIMARY",
-                    "Index_type": "BTREE",
-                    "columns": [
-                        "id"
-                    ],
-                    "Non_unique": ""
-                }
-            ]
-        },
-        {
-            "name": "logfile",
-            "collation": "utf8mb3_general_ci",
-            "type": "BASE TABLE",
-            "columns": [
-                {
-                    "Field": "id",
-                    "Type": "int(11)",
-                    "Collation": null,
-                    "Null": "NO",
-                    "Key": "PRI",
-                    "Default": null,
-                    "Extra": "auto_increment",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "meldung",
-                    "Type": "text",
-                    "Collation": "utf8mb3_general_ci",
-                    "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "dump",
-                    "Type": "text",
-                    "Collation": "utf8mb3_general_ci",
-                    "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "module",
-                    "Type": "varchar(64)",
-                    "Collation": "utf8mb3_general_ci",
-                    "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "action",
-                    "Type": "varchar(64)",
-                    "Collation": "utf8mb3_general_ci",
-                    "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "bearbeiter",
-                    "Type": "varchar(64)",
-                    "Collation": "utf8mb3_general_ci",
-                    "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "funktionsname",
-                    "Type": "varchar(64)",
-                    "Collation": "utf8mb3_general_ci",
-                    "Null": "NO",
-                    "Key": "",
-                    "Default": null,
-                    "Extra": "",
-                    "Privileges": "select,insert,update,references",
-                    "Comment": ""
-                },
-                {
-                    "Field": "datum",
-                    "Type": "datetime",
-                    "Collation": null,
-                    "Null": "YES",
                     "Key": "",
                     "Default": null,
                     "Extra": "",
@@ -79875,7 +79858,7 @@
                 },
                 {
                     "Field": "email_html_template",
-                    "Type": "text",
+                    "Type": "mediumtext",
                     "Collation": "utf8mb3_general_ci",
                     "Null": "YES",
                     "Key": "",
@@ -84116,6 +84099,17 @@
                 },
                 {
                     "Field": "keinsteuersatz",
+                    "Type": "int(1)",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "steuersatz_zielland",
                     "Type": "int(1)",
                     "Collation": null,
                     "Null": "YES",
@@ -92854,6 +92848,17 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "artikelexportbatchsize",
+                    "Type": "int",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "10",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "multiprojekt",
                     "Type": "int(1)",
                     "Collation": null,
@@ -93245,6 +93250,17 @@
                     "Null": "NO",
                     "Key": "",
                     "Default": "0",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "dateienuebertragen",
+                    "Type": "varchar(128)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": "'0'",
                     "Extra": "",
                     "Privileges": "select,insert,update,references",
                     "Comment": ""

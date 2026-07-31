@@ -269,7 +269,7 @@ class Fibu_buchungen {
                     ['sql' => 'salden.id'],
                 );
 
-                $sql = "SELECT
+                $sql = "SELECT SQL_CALC_FOUND_ROWS
                             '' AS dummy,
                             '' AS dummy2,
                             auswahl,

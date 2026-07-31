@@ -61,44 +61,14 @@ class GutschriftPDF extends BriefpapierCustom {
       "SELECT adresse,kundennummer, sprache, rechnungid, buchhaltung, bearbeiter, vertrieb, 
        lieferschein AS lieferscheinid, DATE_FORMAT(datum,'%d.%m.%Y') AS datum, 
        DATE_FORMAT(lieferdatum,'%d.%m.%Y') AS lieferdatum, belegnr, freitext, ustid, ust_befreit, 
-       stornorechnung, keinsteuersatz, land, typ, zahlungsweise, zahlungsstatus, zahlungszieltage, 
+       stornorechnung, keinsteuersatz, steuersatz_zielland, land, typ, zahlungsweise, zahlungsstatus, zahlungszieltage,
        zahlungszielskonto, projekt, waehrung, bodyzusatz, 
        DATE_FORMAT(DATE_ADD(datum, INTERVAL zahlungszieltage DAY),'%d.%m.%Y') AS zahlungsdatum, 
        ohne_briefpapier, ihrebestellnummer,DATE_FORMAT(datum,'%Y%m%d') as datum2, email, telefon  
         FROM gutschrift WHERE id='$id' LIMIT 1"
     );
     extract($data,EXTR_OVERWRITE);
-    $adresse = $data['adresse'];
-    $kundennummer = $data['kundennummer'];
-    $sprache = $data['sprache'];
-    $rechnungid = $data['rechnungid'];
-    $buchhaltung = $data['buchhaltung'];
-    $email = $data['email'];
-    $telefon = $data['telefon'];
-    $bearbeiter = $data['bearbeiter'];
-    $vertrieb = $data['vertrieb'];
-    $lieferscheinid = $data['lieferscheinid'];
-    $datum = $data['datum'];
-    $lieferdatum = $data['lieferdatum'];
-    $belegnr = $data['belegnr'];
-    $freitext = $data['freitext'];
-    $ustid = $data['ustid'];
-    $ust_befreit = $data['ust_befreit'];
-    $stornorechnung = $data['stornorechnung'];
-    $keinsteuersatz = $data['keinsteuersatz'];
-    $land = $data['land'];
-    $typ = $data['typ'];
-    $zahlungsweise = $data['zahlungsweise'];
-    $zahlungszieltage = $data['zahlungszieltage'];
 
-    $zahlungszielskonto = $data['zahlungszielskonto'];
-    $projekt = $data['projekt'];
-    $waehrung = $data['waehrung'];
-    $bodyzusatz = $data['bodyzusatz'];
-    $zahlungsdatum = $data['zahlungsdatum'];
-    $ohne_briefpapier = $data['ohne_briefpapier'];
-    $ihrebestellnummer = $data['ihrebestellnummer'];
-    $datum2 = $data['datum2'];
     $projektabkuerzung = $this->app->DB->Select(sprintf('SELECT abkuerzung FROM projekt WHERE id = %d', $projekt));
     $kundennummer = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE id='$adresse' LIMIT 1");
     if(empty($sprache)){
@@ -232,12 +202,16 @@ class GutschriftPDF extends BriefpapierCustom {
 
     if($keinsteuersatz!="1")
     {
-
-      if($ust_befreit==2)//$this->app->erp->Export($land))
+      if ($ust_befreit==2) {// Export
           $steuer = $this->app->erp->Beschriftung("export_lieferung_vermerk");
-      else {
-        if($ust_befreit==1 && $ustid!="")//$this->app->erp->IstEU($land))
-          $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+      }
+      else if ($ust_befreit==1) { // EU
+        if (!empty($ustid)) {
+            $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+        }
+        else if ($steuersatz_zielland) {
+            $steuer = $this->app->erp->Beschriftung("eu_steuersatz_zielland_vermerk");
+        }
       }
       $steuer = str_replace('{USTID}',$ustid,$steuer);
       $steuer = str_replace('{LAND}',$land,$steuer);
@@ -263,7 +237,7 @@ class GutschriftPDF extends BriefpapierCustom {
 
         $footervorlage = str_replace('{FOOTERFREITEXT}',$freitext,$footervorlage);
         $footervorlage = str_replace('{FOOTERTEXTVORLAGEGUTSCHRIFT}',$this->app->erp->Beschriftung("gutschrift_footer"),$footervorlage);        
-        $footervorlage = str_replace('{FOOTERSTEUER}',$steuer,$footervorlage);        
+        $footervorlage = str_replace('{FOOTERSTEUER}',$steuer,$footervorlage);
         $footervorlage = str_replace('{FOOTERZAHLUNGSWEISETEXT}',$zahlungsweisetext,$footervorlage);        
         $footervorlage  = $this->app->erp->ParseUserVars("gutschrift",$id,$footervorlage);        
         $footer = $footervorlage;

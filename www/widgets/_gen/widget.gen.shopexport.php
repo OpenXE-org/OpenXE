@@ -241,6 +241,9 @@ class WidgetGenshopexport
     $field = new HTMLCheckbox("artikelexport","","","1","0","0");
     $this->form->NewField($field);
 
+    $field = new HTMLInput("artikelexportbatchsize","text","1","6","","","","","","","","0","","");
+    $this->form->NewField($field);
+
     $field = new HTMLCheckbox("autosendarticle","","","1","0","0");
     $this->form->NewField($field);
 
@@ -248,6 +251,9 @@ class WidgetGenshopexport
     $this->form->NewField($field);
 
     $field = new HTMLCheckbox("shopbilderuebertragen","","","1","0","0");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("dateienuebertragen","text","","60","","","","","","","","0","","");
     $this->form->NewField($field);
 
     $field = new HTMLCheckbox("eigenschaftenuebertragen","","","1","0","0");

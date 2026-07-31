@@ -22,6 +22,8 @@
 ?>
 <?php
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Xentral\Modules\Onlineshop\Data\ArticleExportResult;
 use Xentral\Widgets\SuperSearch\Result\ResultGroup;
 use Xentral\Widgets\SuperSearch\Result\ResultItem;
@@ -1104,7 +1106,7 @@ class Artikel extends GenArtikel {
           $findcols[] = 'bildvorschau';
         }
         $heading = array_merge($heading, array('Nummer', 'Artikel'));
-        $width = array_merge($width, array('10%', '55%'));
+        $width = array_merge($width, array('1%', '55%'));
         $findcols = array_merge($findcols, array('nummer', 'name_de'));
         if($this->app->erp->RechteVorhanden("multilevel","list") && $this->app->erp->Firmendaten("modul_mlm")=="1")
         {
@@ -1114,7 +1116,7 @@ class Artikel extends GenArtikel {
           $findcols[] = 'mlmpunkte';
         }
         $heading = array_merge($heading, array('Lagerbestand', 'Projekt'));
-        $width = array_merge($width, array('5%', '15%'));
+        $width = array_merge($width, array('5%', '1%'));
 
         //$lpicol = 'CAST((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=a.id) as SIGNED)';
         $lpicol = '(SELECT TRIM(IFNULL(SUM(l.menge),0))+0 FROM lager_platz_inhalt l WHERE l.artikel=a.id)';
@@ -1249,7 +1251,8 @@ class Artikel extends GenArtikel {
         $this->app->Tpl->Add('JQUERYREADY', "$('#f_variantekeine').click( function() { fnFilterColumn7( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#f_alleartikel').click( function() { fnFilterColumn8( 0 ); } );");
         $this->app->Tpl->Add('JQUERYREADY', "$('#f_nurlagerndeartikel').click( function() { fnFilterColumn9( 0 ); } );");
-        for ($r = 1;$r <= 9;$r++) {
+        $this->app->Tpl->Add('JQUERYREADY', "$('#f_mitbeschreibung').click( function() { fnFilterColumn10( 0 ); } );");
+        for ($r = 1;$r <= 10;$r++) {
           $this->app->Tpl->Add('JAVASCRIPT', '
                       function fnFilterColumn' . $r . ' ( i )
                       {
@@ -1277,6 +1280,7 @@ class Artikel extends GenArtikel {
         $more_data7 = $this->app->Secure->GetGET('more_data7');
         $more_data8 = $this->app->Secure->GetGET('more_data8');
         $more_data9 = $this->app->Secure->GetGET('more_data9');
+        $more_data10 = $this->app->Secure->GetGET('more_data10');
 
         if ($this->app->erp->Firmendaten('iconset_dunkel')) {
           $str = '<img src="./themes/'.$this->app->Conf->WFconf['defaulttheme'].'/images/keinbild_dunkel.png" width=50>';
@@ -1386,13 +1390,18 @@ class Artikel extends GenArtikel {
         if($more_data9 == 1){
           $joins .= ' INNER JOIN (SELECT artikel, SUM(menge) AS menge FROM lager_platz_inhalt WHERE menge>0 GROUP BY artikel) AS lpi ON lpi.artikel = a.id';
         }
-
+        if($more_data10 == 1){
+            $beschreibung_sql = "'<br><i>',
+                COALESCE(a.anabregs_text,''),
+                '</i>',";
+        }
         $sql .= "
               a.nummer as nummer, 
               CONCAT(
                 IF(a.intern_gesperrt,'<strike>',''),
                 name_de,
                 IF(a.variante AND a.variante_von > 0,CONCAT(' <a href=\"index.php?module=artikel&action=edit&id=',a.variante_von,'\"><font color=#848484>(Variante von ',IFNULL((SELECT tmp.nummer FROM artikel tmp WHERE a.variante_von=tmp.id LIMIT 1),''),')</font></a>'),''),
+                $beschreibung_sql
                 IF(a.intern_gesperrt,'</strike>','') 
               ) AS name_de,        
               ".(!empty($mlm)?" a.mlmpunkte, ":'')."
@@ -1989,11 +1998,18 @@ class Artikel extends GenArtikel {
 
     if(is_numeric($id) && $id > 0)
     {
-      $arr = $this->app->DB->SelectRow("SELECT CONCAT(name_de,' (',nummer,')') as name2, name_de,nummer FROM artikel WHERE id='$id' LIMIT 1");
+      $arr = $this->app->DB->SelectRow("SELECT CONCAT(name_de,' (',nummer,')') as name2, name_de,nummer,variante,variante_von FROM artikel WHERE id='$id' LIMIT 1");
       if(!empty($arr)){
         $artikel = $arr['name2'];
         $nummer = $arr['nummer'];
         $namede = $arr['name_de'];
+
+        if ($arr['variante'] && !empty($arr['variante_von'])) {
+            $variante = $this->app->DB->SelectRow("SELECT nummer, name_de FROM artikel WHERE id = ".$arr['variante_von']);
+            $variante_text = ' (Variante von <a href="index.php?module=artikel&action=edit&id='.$arr['variante_von'].'">'.$variante['nummer'].'</a>)';
+        } else {
+            $variante_text = '';
+        }
       }
     } 
     else{
@@ -2009,7 +2025,7 @@ class Artikel extends GenArtikel {
 
     $this->app->Tpl->SetText('ANZEIGENUMMER',$nummer);
     if(isset($namede)){
-      $this->app->Tpl->SetText('ANZEIGENAMEDE',' '.$this->app->erp->LimitChar($namede,65));
+      $this->app->Tpl->Set('ANZEIGENAMEDE',' '.$this->app->erp->LimitChar($namede,65).$variante_text);
     }
     $this->app->Tpl->Set('FARBE','[FARBE1]');
 
@@ -2585,7 +2601,7 @@ class Artikel extends GenArtikel {
       $nummer = $artikelarr['nummer'];
       $lagerartikel = $artikelarr['lagerartikel'];
       $lager_platz = $artikelarr['lager_platz'];
-      $standardbild = $this->app->erp->GetArtikelStandardbild($id,true);
+      $standardbild = $this->app->erp->GetArtikelStandardbild($id, return_file_contents: false)['fileid'];
     }
 
     $this->app->Tpl->Set('NAME_DE',$name_de);
@@ -2878,7 +2894,7 @@ class Artikel extends GenArtikel {
 
         if (is_array($remote_result) && $remote_result[0] instanceof ArticleExportResult) {
             $remote_status = $remote_result[0]->success;
-            $remote_message = $remote_result[0]->message;
+            $remote_message = print_r($remote_result[0]->message, true);
         } else if (is_numeric($remote_result)) {
             if ($remote_result == 1) {
                 $remote_status = true;
@@ -2899,12 +2915,21 @@ class Artikel extends GenArtikel {
         }
 
         if ($remote_status) {
-            $msg = $this->app->erp->base64_url_encode('<div class="info">' . $remote_message . '</div>');
+            $msg = $this->app->erp->base64_url_encode('<div class="info">' . print_r($remote_message, true) . '</div>');
         } else {
-            $msg = $this->app->erp->base64_url_encode('<div class="error">' . $remote_message . '</div>');
+            $msg = $this->app->erp->base64_url_encode('<div class="error">' .  print_r($remote_message, true) . '</div>');
         }
 
-        $this->app->erp->LogFile($this->app->DB->real_escape_string('manueller Shopexport Artikel: '.$this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1").' Shop: '.$shop.' Status: '.((int) $remote_status)), $remote_message);
+        $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$id' LIMIT 1");
+        /** @var LoggerInterface $logger */
+        $logger = $this->app->Container->get('Logger');
+        $level = $remote_status ? LogLevel::INFO : LogLevel::ERROR;
+        $logger->log($level, 'manueller Shopexport', [
+            'articleNumber' => $artikelnummer,
+            'shop' => $shop,
+            'remote_status' => $remote_status,
+            'remote_message' => $remote_message,
+        ]);
 
         // keine fehlermeldung vom shop
         if ($remote_status) {
@@ -3088,6 +3113,10 @@ class Artikel extends GenArtikel {
     $allelieferanten = $this->app->Secure->GetPOST('allelieferanten');
     $internerkommentar = $this->app->Secure->GetPOST('internerkommentar');
     $lagerartikel = $this->app->Secure->GetPOST('lagerartikel');
+
+	// DB (James_007) - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+	// https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+	$artikelnr = trim($this->app->Secure->GetPOST('artikelnr'));
 
     // Anfang: FIX Batch-Insert übermittelt keine Umsatzsteuer und keinen Steuersatz > Werte aus DB holen
     $insert = $this->app->Secure->GetGET('insert');
@@ -3299,6 +3328,18 @@ class Artikel extends GenArtikel {
           $error = 1;
         }
       }
+
+	  // DB (James_007) - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+	  // https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+	  // Prüfung, ob die Artikel-Nr. bereits existiert!
+	  if (!empty($artikelnr)) {
+		  $existsArtikel = (bool)$this->app->DB->Select("SELECT EXISTS (SELECT 1 FROM artikel WHERE nummer = '$artikelnr') AS existsArtikel");
+		  if ($existsArtikel) {
+			$this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Die Artikel-Nr. '$artikelnr' existiert bereits.<br>Bitte verwenden Sie eine andere oder lassen Sie das Feld leer für eine neue Artikel-Nr.</div>");
+			$error = 1;
+		  }
+	  }
+
       if($error!=1)
       {
         $sort = (int)$this->app->DB->Select("SELECT IFNULL(MAX(sort),0) FROM {$cmd}_position WHERE {$cmd}='$id' LIMIT 1");
@@ -3339,7 +3380,13 @@ class Artikel extends GenArtikel {
           }
         }
 
-        $neue_nummer = $this->app->erp->GetNextArtikelnummer($artikelart,$this->app->User->GetFirma(),$projekt);
+		// DB - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+		// https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+		// Neue Artikel-Nr. nur erforderlich, wenn keine vorher eingegeben wurde.
+		$neue_nummer = $artikelnr;
+		if (empty($artikelnr)) {
+			$neue_nummer = $this->app->erp->GetNextArtikelnummer($artikelart,$this->app->User->GetFirma(),$projekt);
+		}
 
         // anlegen als artikel
         $umsatzsteuerArtikel = (empty($umsatzsteuer)) ? 'normal' : $umsatzsteuer;
@@ -3410,6 +3457,11 @@ class Artikel extends GenArtikel {
     $this->app->Tpl->Set('NAME_DE',$name_de);
     $this->app->Tpl->Set('KURZTEXT_DE',$kurztext_de);
     $this->app->Tpl->Set('INTERNERKOMMENTAR',$internerkommentar);
+
+	// DB - 2026-07-03 - Artikel-Nr. der Schnellanlage hinzufügen:
+	// https://openxe.org/community/index.php?thread/578-artikel-schnellanlage-feld-artikel-nr/&postID=4369#post4369
+	// Artikel-Nr. zurückgeben
+	$this->app->Tpl->Set('ARTIKELNR',$artikelnr);
 
     if (!empty($steuersatz)) {
       $this->app->Tpl->Set('STEUERSATZEINBLENDEN','checked');
@@ -4720,10 +4772,10 @@ class Artikel extends GenArtikel {
 
 	if (empty($kursusd)) {
 		$kursusd = 0;
-	}	
+	}
 	if (empty($kurschf)) {
 		$kurschf = 0;
-	}	
+	}
           
       $this->app->Tpl->Set('TAB5KALKULATION','<div class="info">Dies ist nur ein grober Richtpreis aus dem kleinsten und größten Einkaufspreis.</div>');
 
@@ -7680,7 +7732,7 @@ class Artikel extends GenArtikel {
       $this->app->User->SetParameter('artikel_shopexport_shop3','');
       $this->app->Location->execute("index.php?module=artikel&action=shopexport&id=$id&shop=3");
       return;
-    }	
+    }
 
     $this->app->erp->MessageHandlerStandardForm();
 
@@ -7795,7 +7847,6 @@ class Artikel extends GenArtikel {
     }
 
     if($standardbild > 0){
-      //$this->app->Tpl->Add('BILD', "<img src=\"index.php?module=dateien&action=send&id=$standardbild\" width=\"200\">");
       $this->app->Tpl->Set('BILD',
         '<img alt="Artikelbild" src="index.php?module=artikel&action=thumbnail&id='.$id.'&fileid='.$standardbild.'&size=200&direkt=1" align="left" width="200" style="margin-right:10px; margin-bottom:10px;" />'
       );

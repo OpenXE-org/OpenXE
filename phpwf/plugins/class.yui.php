@@ -1456,11 +1456,22 @@ class YUI {
     if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1")
       $erweiterte_ansicht=",'<br><div style=\"width:300px; white-space:normal;\">',b.beschreibung,'</div>'";
 
-    if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1")
-      $hersteller_ansicht="if(a.hersteller!='',CONCAT('<strong>',a.hersteller,'</strong><br>'),''),";
-    else $hersteller_ansicht="";
+    $hersteller_ansicht = '';
 
-
+    if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1") {
+      $erweiterte_ansicht .= ",CONCAT(
+                                if(
+                                    a.hersteller!='',
+                                    CONCAT('Hersteller: ',a.hersteller,'<br>'),
+                                    ''
+                                ),
+                                if(
+                                    a.herstellernummer!='',
+                                    CONCAT('Herstellernummer: ',herstellernummer),
+                                    ''
+                                )
+                            )";
+    }
 
     $extended_mysql55 = ",'de_DE'";
     $id = $this->app->Secure->GetGET("id");
@@ -9574,7 +9585,7 @@ a.land as land, p.abkuerzung as projekt, a.zahlungsweise as zahlungsweise,
         $menu =
           "<table cellpadding=0 cellspacing=0><tr><td nowrap>" .
           "<a href=\"index.php?module=importvorlage&action=edit&id=%value%\" title=\"{|Bearbeiten|}\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/edit.svg\" border=\"0\"></a>" . "&nbsp;" .
-          "<a href=\"index.php?module=importvorlage&action=import&id=%value%\" title=\"{|Importieren|}\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/download.svg\" border=\"0\"></a>" . "&nbsp;" .
+          "<a href=\"index.php?module=importvorlage&action=import&id=%value%\" title=\"{|Importieren|}\">" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/upload.svg\" border=\"0\"></a>" . "&nbsp;" .
           "<a href=\"index.php?module=importvorlage&action=downloadjson&id=%value%\" title=\"{|Vorlage erstellen|}\">"."<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/streamline-icon-share-3-alternate.svg\" border=\"0\"></a>". "&nbsp;".
           "<a href=\"index.php?module=importvorlage&action=copy&id=%value%\" title=\"{|Kopie erstellen|}\">"."<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/copy.svg\" border=\"0\"></a>". "&nbsp;".
           "<a href=\"#\" title=\"{|Löschen|}\" onclick=DeleteDialog(\"index.php?module=importvorlage&action=delete&id=%value%\");>" . "<img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/delete.svg\" border=\"0\"></a>" . "&nbsp;" .
@@ -12586,7 +12597,7 @@ return false;
 },
 create: function () {
 $(this).data(\'ui-autocomplete\')._renderItem = function (ul, item) {
-var suchstring = /(Aktuell kein Lagerbestand)/g;
+var suchstring = /(Lager aus)/g;
 var suchergebnis = suchstring.test( item.label );
 if (suchergebnis != false)
 {
@@ -15965,8 +15976,8 @@ function IframeDialog($width, $height, $src = "") {
     public function GetRechnungFileDownloadLinkIconSQL($tablename = 'r') {
         return(
             "IF(".$tablename.".xmlrechnung,
-            CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\">'),
-            CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\">')
+            CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\"></a>'),
+            CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\"></a>')
             )"
         );
     }
@@ -15979,6 +15990,47 @@ function IframeDialog($width, $height, $src = "") {
             return("<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>");
         } else {
            return("<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>");
+        }
+    }
+
+     /**
+   * Build the html output for minidetail containing the payments
+   * @param bool $return
+   *
+   * @return string
+   */
+    function BelegZahlungHTMLTable(int $id, string $doc_type)
+    {
+        $zahlungen = $this->app->erp->GetZahlungen($id,$doc_type);
+        if (!empty($zahlungen)) {
+            $et = new EasyTable($this->app);
+
+            $et->headings = array('Datum','Beleg','Betrag','W&auml;hrung');
+
+            foreach ($zahlungen as $zahlung) {
+                $row = array(
+                    $zahlung['datum'],
+                    "<a href=\"index.php?module=".$zahlung['doc_typ']."&action=edit&id=".$zahlung['doc_id']."\">
+                        ".ucfirst($zahlung['doc_typ'])."
+                        ".$zahlung['doc_info']."
+                    </a>",
+                    $zahlung['betrag'],
+                    $zahlung['waehrung']
+                );
+                $et->AddRow($row);
+            }
+
+            $salden = $this->app->erp->GetSaldenDokument($id,$doc_type);
+            foreach ($salden as $saldo) {
+                $row = array(
+                    '',
+                    '<b>Saldo</b>',
+                    "<b>".$saldo['betrag']."</b>",
+                    "<b>".$saldo['waehrung']."</b>"
+                );
+                $et->AddRow($row);
+            }
+            return($et->DisplayNew('return',""));
         }
     }
 }

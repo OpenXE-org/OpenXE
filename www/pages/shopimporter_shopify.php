@@ -1099,10 +1099,13 @@ class Shopimporter_Shopify extends ShopimporterBase
         if($shopbilderuebertragen && isset($tmp[$i]['Dateien'])){
           $altebilder = $this->adapter->call("products/$productid/images.json");
           foreach ($altebilder['data']['images'] as $key => $value) {
+            if ($value['stichwort'] != 'Shopbild') {
+                continue;
+            }
             $this->adapter->call("products/$productid/images/".$value['id'].'.json', 'DELETE');
           }
           foreach ($tmp[$i]['Dateien'] as $key => $value) {
-            $this->adapter->call("products/$productid/images.json", 'POST',array('image' => array('attachment' => $value['datei'], 'filename' => $value['filename'])));
+            $this->adapter->call("products/$productid/images.json", 'POST',array('image' => array('attachment' => base64_encode(file_get_contents($value['dateipfad'])) , 'filename' => $value['filename'])));
           }
         }
       }
@@ -3425,7 +3428,7 @@ class Shopimporter_Shopify extends ShopimporterBase
 
       $result = $this->adapter->call('orders/' . $auftrag . '/fulfillments.json', 'POST', $data);
       if($this->logging){
-        $this->app->erp->LogFile(array($data, $auftrag, $data, $result['data']));
+        $this->app->Container->get('Logger')->info('Update Auftrag', array($data, $auftrag, $data, $result['data']));
       }
       $this->adapter->call('orders/' . $auftrag . '/metafields.json', 'POST', array('metafield' => [
         'key' => 'sync_status',
@@ -3435,7 +3438,7 @@ class Shopimporter_Shopify extends ShopimporterBase
       ]));
     }else{
       if($this->logging){
-        $this->app->erp->LogFile(array($data, $auftrag,'Kein Auftrag'));
+        $this->app->Container->get('Logger')->info('Kein Auftrag', array($auftrag));
       }
     }
     return 'OK';
@@ -3687,9 +3690,11 @@ class Shopimporter_Shopify extends ShopimporterBase
   }
 
 
-  function ShopifyLog($nachricht, $dump = ''){
+  function ShopifyLog($nachricht, $dump = null){
     if($this->logging){
-      $this->app->erp->LogFile($nachricht, print_r($dump,true));
+        if ($dump !== null && !is_array($dump))
+            $dump = ['dump' => $dump];
+        $this->app->Container->get('Logger')->info($nachricht, $dump ?? []);
     }
   }
 

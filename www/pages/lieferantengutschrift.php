@@ -1656,6 +1656,8 @@ class lieferantengutschrift {
         $tmp->AddRow($row);
         $tmp->DisplayNew('ARTIKEL',"Sachkonto","noAction");
 
+        $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'lieferantengutschrift'));
+
         $tmp = new EasyTable($this->app);
         $tmp->Query("SELECT zeit,bearbeiter,grund FROM lieferantengutschrift_protokoll WHERE lieferantengutschrift='$id' ORDER by zeit DESC",0,"");
         $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");

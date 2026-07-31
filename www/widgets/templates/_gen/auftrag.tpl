@@ -87,6 +87,7 @@ function abweichend2()
 <tr id="lieferantenauftragstyle"><td><legend>{|Lieferant|}</legend></td><td nowrap>[LIEFERANT][MSGLIEFERANT]&nbsp;[BUTTON_UEBERNEHMEN2]</td></tr>
 <tr><td>{|an Lieferanten|}:</td><td nowrap>[LIEFERANTENAUFTRAG][MSGLIEFERANTENAUFTRAG]&nbsp;</td></tr>
 <tr><td>{|Projekt|}:</td><td>[PROJEKT][MSGPROJEKT]</td></tr>
+<tr [SHOPHIDDEN]><td>{|Shop|}:</td><td><input type="text" value="[ONLINESHOP]" disabled size="30"></input></td></tr>
 <tr><td>[BEZEICHNUNGAKTIONSCODE]:</td><td>[AKTION][MSGAKTION]</td></tr>
 <tr><td>{|Status|}:</td><td>[STATUS]</td></tr>
 <tr><td>{|Internet|}:</td><td>[INTERNET][MSGINTERNET]</td></tr>

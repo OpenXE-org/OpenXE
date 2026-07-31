@@ -40,9 +40,24 @@
 
 [VORRECHTE]
 
+
 <fieldset><legend>{|Rechtedatei heraufladen|}</legend>
-	<table><tr><td width="200">{|Datei auswählen|}:</td><td><input type="hidden"/><input name="jsonvorlage" type="file" />
-	</td></tr></table>
+	<table>
+        <tr>
+            <td width="200">{|Datei auswählen|}:</td>
+            <td>
+                <input type="hidden"/><input name="jsonvorlage" type="file" />
+            </td>
+        </tr>
+        <tr>
+            <td width="200">{|Rechtedatei herunterladen|}:</td>
+            <td>
+                <a href="index.php?module=uservorlage&action=download&id=[ID]">
+                    <button form="">Download</button>
+                </a>
+            </td>
+        </tr>
+    </table>
 </fieldset>
 
 

@@ -7,23 +7,15 @@ namespace Xentral\Modules\Log\Service;
 use Xentral\Components\Logger\LogLevel;
 use Xentral\Modules\Log\Exception\InvalidArgumentException;
 use Xentral\Modules\Log\Exception\InvalidLoglevelException;
-use Xentral\Modules\Log\Wrapper\CompanyConfigWrapper;
+use Xentral\Modules\SystemConfig\SystemConfigModule;
 
 final class LoggerConfigService
 {
-    /** @var string CONFIG_KEY_LEVEL */
-    private const CONFIG_KEY_LEVEL = 'logfile_logging_level';
+    private const NAMESPACE = 'logger';
+    private const CONFIG_KEY_LEVEL = 'log_level';
 
-    /** @var CompanyConfigWrapper $db */
-    private $companyConfig;
-
-    /**
-     * @param CompanyConfigWrapper $companyConfig
-     */
-    public function __construct(CompanyConfigWrapper $companyConfig)
-    {
-        $this->companyConfig = $companyConfig;
-    }
+    public function __construct(private readonly SystemConfigModule $systemConfigModule)
+    { }
 
     /**
      * @throws InvalidLoglevelException
@@ -32,7 +24,12 @@ final class LoggerConfigService
      */
     public function getLogLevel(): string
     {
-        $level = (string)$this->companyConfig->get(self::CONFIG_KEY_LEVEL);
+        $level = $this->systemConfigModule->tryGetValue(self::NAMESPACE, self::CONFIG_KEY_LEVEL);
+        if ($level === null) {
+            $level = $this->systemConfigModule->tryGetLegacyValue('logfile_logging_level');
+            $level ??= LogLevel::ERROR;
+            $this->systemConfigModule->setValue(self::NAMESPACE, self::CONFIG_KEY_LEVEL, $level);
+        }
         $level = strtolower($level);
         if (!$this->isAllowedLogLevel($level)) {
             throw new InvalidLoglevelException(sprintf('Unrecognized Loglevel "%s".', $level));
@@ -53,7 +50,7 @@ final class LoggerConfigService
         if (!$this->isAllowedLogLevel($level)) {
             throw new InvalidArgumentException(sprintf('Unrecognised Loglevel "%s"',  $level));
         }
-        $this->companyConfig->set(self::CONFIG_KEY_LEVEL, $level);
+        $this->systemConfigModule->setValue(self::NAMESPACE, self::CONFIG_KEY_LEVEL, $level);
     }
 
     /**

@@ -60,49 +60,16 @@ class AuftragPDF extends BriefpapierCustom {
     $data = $this->app->DB->SelectRow(
       "SELECT adresse, kundennummer, sprache, angebotid, vertrieb, bearbeiter, projekt,
        DATE_FORMAT(datum,'%d.%m.%Y') AS datum, DATE_FORMAT(datum,'%Y%m%d') as datum2, 
-       land, ustid, ust_befreit, keinsteuersatz, belegnr, freitext, typ, bodyzusatz, 
+       land, ustid, ust_befreit, keinsteuersatz, steuersatz_zielland, belegnr, freitext, typ, bodyzusatz,
        systemfreitext, telefax, abweichendebezeichnung AS auftragersatz, waehrung, 
        zahlungsweise, zahlungszieltage, zahlungszieltageskonto, zahlungszielskonto, 
        ihrebestellnummer, ohne_briefpapier, schreibschutz, gesamtsumme , email, telefon
        FROM auftrag WHERE id='$id' LIMIT 1"
     );
     extract($data,EXTR_OVERWRITE);
-    $adresse = $data['adresse'];
-    $kundennummer = $data['kundennummer'];
-    $sprache = $data['sprache'];
-    $angebotid = $data['angebotid'];
-    $vertrieb = $data['vertrieb'];
-    $bearbeiter = $data['bearbeiter'];
-    $datum = $data['datum'];
-    $datum2 = $data['datum2'];
-    $projekt = $data['projekt'];
-    $land = $data['land'];
-    $ustid = $data['ustid'];
-    $ust_befreit = $data['ust_befreit'];
-    $keinsteuersatz = $data['keinsteuersatz'];
-    $belegnr = $data['belegnr'];
-    $freitext = $data['freitext'];
-    $typ = $data['typ'];
-    $bodyzusatz = $data['bodyzusatz'];
-    $systemfreitext = $data['systemfreitext'];
-    $telefax = $data['telefax'];
-    $auftragersatz = $data['auftragersatz'];
-    $waehrung = $data['waehrung'];
 
-    $zahlungsweise = $data['zahlungsweise'];
-    $zahlungszieltage = $data['zahlungszieltage'];
-    $zahlungszieltageskonto = $data['zahlungszieltageskonto'];
-    $zahlungszielskonto = $data['zahlungszielskonto'];
-    $ihrebestellnummer = $data['ihrebestellnummer'];
-    $ohne_briefpapier = $data['ohne_briefpapier'];
-    $schreibschutz = $data['schreibschutz'];
-    $gesamtsumme = $data['gesamtsumme'];
-    $telefon = $data['telefon'];
-    $email = $data['email'];
     $projektabkuerzung = $this->app->DB->Select(sprintf('SELECT abkuerzung FROM projekt WHERE id = %d', $projekt));
-    $summe = 0;
-    
-
+    $summe = 0;      
 
     // OfferNo, customerId, OfferDate
 
@@ -128,8 +95,6 @@ class AuftragPDF extends BriefpapierCustom {
     $ihrebestellnummer = $this->app->erp->ReadyForPDF($ihrebestellnummer);
     $bearbeiter = $this->app->erp->ReadyForPDF($bearbeiter);
     $vertrieb = $this->app->erp->ReadyForPDF($vertrieb);
-
-
 
     if($belegnr=="" || $belegnr=="0") $belegnr = "- ".$this->app->erp->Beschriftung("dokument_entwurf");
 
@@ -242,22 +207,27 @@ class AuftragPDF extends BriefpapierCustom {
 
     if($keinsteuersatz!="1")
     { 
-      if($ust_befreit==2)//$this->app->erp->Export($land))
-          $steuerzeile = $this->app->erp->Beschriftung("export_lieferung_vermerk");
-      else {
-        if($ust_befreit==1 && $ustid!="")//$this->app->erp->IstEU($land))
-           $steuerzeile = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+      if ($ust_befreit==2) {// Export
+          $steuer = $this->app->erp->Beschriftung("export_lieferung_vermerk");
+      }
+      else if ($ust_befreit==1) { // EU
+        if (!empty($ustid)) {
+            $steuer = $this->app->erp->Beschriftung("eu_lieferung_vermerk");
+        }
+        else if ($steuersatz_zielland) {
+            $steuer = $this->app->erp->Beschriftung("eu_steuersatz_zielland_vermerk");
+        }
       }
 
       $kennungustid = substr(strtoupper($ustid),0,2);
       if(($kennungustid!=strtoupper($land)) && $kennungustid!="" && $this->app->erp->IsEU($kennungustid))
       { 
-        $steuerzeile = str_replace('{LAND}',$kennungustid,$steuerzeile);
+        $steuer = str_replace('{LAND}',$kennungustid,$steuer);
       } else {
-        $steuerzeile = str_replace('{LAND}',$land,$steuerzeile);
+        $steuer = str_replace('{LAND}',$land,$steuer);
       }
 
-      $steuerzeile = str_replace('{USTID}',$ustid,$steuerzeile);
+      $steuer = str_replace('{USTID}',$ustid,$steuer);
     }
 
       if($systemfreitext!="") $systemfreitext = "\r\n\r\n".$systemfreitext;
@@ -266,17 +236,17 @@ class AuftragPDF extends BriefpapierCustom {
       if($this->app->erp->Firmendaten("footer_reihenfolge_auftrag_aktivieren")=="1")
       {
         $footervorlage = $this->app->erp->Firmendaten("footer_reihenfolge_auftrag");
-        if($footervorlage=="")          
+        if($footervorlage=="")
           $footervorlage = "{FOOTERFREITEXT}\r\n{FOOTERTEXTVORLAGEAUFTRAG}\r\n{FOOTERSTEUER}\r\n{FOOTERZAHLUNGSWEISETEXT}{FOOTERSYSTEMFREITEXT}";        
         $footervorlage = str_replace('{FOOTERFREITEXT}',$freitext,$footervorlage);
         $footervorlage = str_replace('{FOOTERTEXTVORLAGEAUFTRAG}',$this->app->erp->Beschriftung("auftrag_footer"),$footervorlage);
-        $footervorlage = str_replace('{FOOTERSTEUER}',$steuerzeile,$footervorlage);        
+        $footervorlage = str_replace('{FOOTERSTEUER}',$steuer,$footervorlage);
         $footervorlage = str_replace('{FOOTERZAHLUNGSWEISETEXT}',$zahlungstext,$footervorlage);
         $footervorlage = str_replace('{FOOTERSYSTEMFREITEXT}',$systemfreitext,$footervorlage);
         $footervorlage  = $this->app->erp->ParseUserVars("auftrag",$id,$footervorlage);
         $footer = $footervorlage;
-      } else {        
-        $footer = "$freitext\r\n".$this->app->erp->ParseUserVars("auftrag",$id,$this->app->erp->Beschriftung("auftrag_footer")."\r\n$steuerzeile\r\n$zahlungstext").$systemfreitext;
+      } else {
+        $footer = "$freitext\r\n".$this->app->erp->ParseUserVars("auftrag",$id,$this->app->erp->Beschriftung("auftrag_footer")."\r\n$steuer\r\n$zahlungstext").$systemfreitext;
       }
 
 

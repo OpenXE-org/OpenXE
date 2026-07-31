@@ -134,7 +134,8 @@ if(empty($app->remote)) {
   $app->remote = $remote;
 }
 $app->Secure = new Secure($app);
-
+/** @var \Psr\Log\LoggerInterface $logger */
+$logger = $app->Container->get('Logger');
 
 $firmendatenid = $app->DB->Select("SELECT MAX(id) FROM firmendaten LIMIT 1");
 
@@ -153,7 +154,7 @@ if($app->DB->Select('SELECT id FROM prozessstarter WHERE mutex = 1 AND aktiv = 1
   );
   return;
 }
-$app->erp->LogFile('Starte Amazon Cronjob');
+$logger->info('Starte Amazon Cronjob');
 $app->DB->Update(
   "UPDATE prozessstarter SET letzteausfuerhung = now(), mutex = 1, mutexcounter = 0 WHERE aktiv = 1 AND parameter = 'amazon'"
 );
@@ -186,5 +187,5 @@ $app->DB->Update(
   "UPDATE prozessstarter SET letzteausfuerhung = now(), mutex = 0, mutexcounter = 0 WHERE aktiv = 1 AND parameter = 'amazon'"
 );
 
-$app->erp->LogFile('Ende Amazon Cronjob');
+$logger->info('Ende Amazon Cronjob');
 

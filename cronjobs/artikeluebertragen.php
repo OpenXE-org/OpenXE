@@ -190,7 +190,7 @@ while ($check > 0) {
 }*/
 
 
-$sql = "SELECT DISTINCT `shop`, shopexport.`bezeichnung` FROM `shopexport_artikeluebertragen` INNER JOIN shopexport ON shopexport.id = `shop`";
+$sql = "SELECT DISTINCT `shop`, shopexport.`bezeichnung`,shopexport.`artikelexportbatchsize` FROM `shopexport_artikeluebertragen` INNER JOIN shopexport ON shopexport.id = `shop`";
 $shops_to_transmit = $app->DB->SelectArr($sql);
 
 //$app->erp->LogFile('Cronjob artikeluebertragen '.(!empty($shops_to_transmit)?count($shops_to_transmit):0)." shops", print_r($shops_to_transmit, true));
@@ -203,7 +203,12 @@ $logger->debug(
 );
 
 foreach ($shops_to_transmit as $shop_to_transmit) {
-    $sql = "SELECT `artikel` FROM `shopexport_artikeluebertragen` WHERE `shop` = '".$shop_to_transmit['shop']."'";
+
+    if (!is_numeric($shop_to_transmit['artikelexportbatchsize'])) {
+        $shop_to_transmit['artikelexportbatchsize'] = 10;
+    }
+
+    $sql = "SELECT `artikel` FROM `shopexport_artikeluebertragen` WHERE `shop` = '".$shop_to_transmit['shop']."' LIMIT ".$shop_to_transmit['artikelexportbatchsize'];
     $articles_to_transmit = $app->DB->SelectArr($sql);
     
     $logger->debug(
@@ -254,7 +259,7 @@ foreach ($shops_to_transmit as $shop_to_transmit) {
                     $shop_to_transmit['shop']
                 )
             );
-            $app->erp->LagerSync($article['artikel'], true); 
+            $app->erp->LagerSync($article['artikel'], true);
         }                       
     } else {
 

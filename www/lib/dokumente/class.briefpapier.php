@@ -1258,7 +1258,7 @@ class Briefpapier extends SuperFPDF {
     $this->filename = $this->app->erp->Dateinamen($this->filename);
     $dir = rtrim($this->app->Conf->WFuserdata, '/') . '/pdfarchiv/' . $this->app->Conf->WFdbname . '/' . $this->table;
     if(!is_dir($dir) && !mkdir($dir, 0700,true) && !is_dir($dir)){
-      $this->app->erp->LogFile('Fehler beim erstellen von '.$dir);
+      $this->app->Container->get('Logger')->error('Fehler beim erstellen von '.$dir);
       return;
     }
 
@@ -2823,9 +2823,11 @@ class Briefpapier extends SuperFPDF {
       }else{
         $jitposfix = 0;
       }
+
       $item['name'] = ($langeartikelnummern?"\r\n\r\n":'').$this->app->erp->ReadyForPDF($item['name']);
       $item['desc'] = $this->app->erp->ReadyForPDF($item['desc']);
       $item['itemno'] = $this->app->erp->ReadyForPDF($item['itemno']);
+      $item['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id = '".$item['artikel']."' LIMIT 1");
       $item['herstellernummer'] = $this->app->erp->ReadyForPDF($item['herstellernummer']);
       $item['artikelnummerkunde'] = $this->app->erp->ReadyForPDF($item['artikelnummerkunde']);
       $item['lieferdatum'] = $this->app->erp->ReadyForPDF($item['lieferdatum']);
@@ -3294,6 +3296,15 @@ class Briefpapier extends SuperFPDF {
         }
 
       $this->Ln();
+      if($this->getStyleElement('herstellerimdokument')=='1' && $item['hersteller']!='')
+      {
+        if($item['desc']!=''){
+          $item['desc'] = $item['desc'] . "\r\n" . $this->app->erp->Beschriftung('dokument_hersteller') . ': ' . $item['hersteller'];
+        }
+        else{
+          $item['desc'] = $this->app->erp->Beschriftung('dokument_hersteller') . ': ' . $item['hersteller'];
+        }
+      }
       if($this->getStyleElement('herstellernummerimdokument')=='1' && $item['herstellernummer']!='')
       {
         if($item['desc']!=''){
@@ -3611,7 +3622,7 @@ class Briefpapier extends SuperFPDF {
         ($this->doctype == "gutschrift" && $this->getStyleElement("gutschrift_artikelbild")) ||
         ($this->doctype == "angebot" && $this->getStyleElement("angebot_artikelbild"))
       ){
-        $datei = $this->app->erp->GetArtikelStandardbild($item['artikel'],true);
+        $datei = $this->app->erp->GetArtikelStandardbild($item['artikel'], return_file_contents: false)['fileid'];
         if(!empty($datei)){
           $datei = $this->app->DB->Select("SELECT id FROM datei_version WHERE datei = '$datei' ORDER BY id DESC LIMIT 1");
         }

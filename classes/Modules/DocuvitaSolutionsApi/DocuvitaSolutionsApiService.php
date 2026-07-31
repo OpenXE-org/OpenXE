@@ -5,6 +5,7 @@ namespace Xentral\Modules\DocuvitaSolutionsApi;
 
 use Application;
 use CURLFile;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Xentral\Components\Database\Database;
 use Xentral\Core\DependencyInjection\ServiceContainer;
@@ -22,6 +23,8 @@ class DocuvitaSolutionsApiService
      * @var Database
      */
     private $db;
+
+    private LoggerInterface $logger;
     /**
      * @var string
      */
@@ -132,6 +135,7 @@ class DocuvitaSolutionsApiService
         $this->app = $app;
         $this->container = $app->Container;
         $this->db = $this->container->get('Database');
+        $this->logger = $this->container->get('Logger');
 
         $this->username = $username;
         $this->password = $password;
@@ -234,9 +238,9 @@ class DocuvitaSolutionsApiService
         return json_decode($response);
     }
 
-    private function log($message, $dump = '')
+    private function log($message, array $dump = null)
     {
-        $this->app->erp->LogFile($message, $dump, 'docuvitasolutions');
+        $this->logger->info($message, $dump);
     }
 
     /**
@@ -257,7 +261,7 @@ class DocuvitaSolutionsApiService
             $this->generateVerbindlichkeitTemplates(),
         ];
         if (!empty($this->missingFiles)) {
-            $this->log("missing files", implode("\n", $this->missingFiles));
+            $this->log("missing files", $this->missingFiles);
         }
         for ($i = 0, $count = count($dataObjects); $i < $count; $i++) {
             if (count($dataObjects[$i]->getQueryResult()) === 0) {

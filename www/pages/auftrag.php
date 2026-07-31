@@ -1398,7 +1398,7 @@ class Auftrag extends GenAuftrag
     $shopexportstatus = '';
     $auftragArr = $id <=0?null:$this->app->DB->SelectRow(
       sprintf(
-        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok
+        'SELECT status,projekt,anfrageid,kreditlimit_ok,lieferantenauftrag,art,adresse,shopextstatus,shop,nicht_reservieren,kommission_ok,schreibschutz
          FROM auftrag
          WHERE id = %d
          LIMIT 1',
@@ -1414,6 +1414,7 @@ class Auftrag extends GenAuftrag
       $anfrageid = $auftragArr['anfrageid'];
       $kreditlimit_ok = $auftragArr['kreditlimit_ok'];
       $kommission_ok = $auftragArr['kommission_ok'];
+      $schreibschutz = $auftragArr['schreibschutz'];
       $lieferantenauftrag = $auftragArr['lieferantenauftrag'];
       $art = $auftragArr['art'];
     }
@@ -1467,8 +1468,12 @@ class Auftrag extends GenAuftrag
     //$art = $this->app->DB->Select("SELECT art FROM auftrag WHERE id='$id' LIMIT 1");
     $alleartikelreservieren = '';
 
-    if ($status==='angelegt' || $status==='freigegeben') {
-        $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
+    if (($status==='angelegt' || $status==='freigegeben')) {
+        if ($schreibschutz) {
+            $teillieferungen = '<option>Teilauftrag erstellen (schreibgesch&uuml;tzt)</option>';
+        } else {
+            $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
+        }        
     }
 
     if($status==='freigegeben') {
@@ -2153,7 +2158,7 @@ class Auftrag extends GenAuftrag
 
     /* rechnungen */
 
-    $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;            <a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
+    $link_zur_rechnung = "CONCAT('<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"',if(r.status='storniert',' title=\"Rechnung storniert\"><s>','>'),if(r.belegnr='0' OR r.belegnr='','ENTWURF',r.belegnr),if(r.status='storniert','</s>',''),'</a>&nbsp;',".$this->app->YUI->GetRechnungFileDownloadLinkIconSQL().",'&nbsp;<a href=\"index.php?module=rechnung&action=edit&id=',r.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Rechnung bearbeiten\" border=\"0\"></a>')";
 
     $sammelrechnungcheck = $this->app->DB->Select("SELECT * FROM sammelrechnung_position LIMIT 1");
     if($sammelrechnungcheck) {
@@ -2505,6 +2510,8 @@ class Auftrag extends GenAuftrag
     );
     if($onlineshopName != ''){
       $this->app->Tpl->Set('ONLINESHOP', $onlineshopName);
+    } else {
+      $this->app->Tpl->Set('SHOPHIDDEN', 'hidden');
     }
 
     if($menu) {
@@ -3396,7 +3403,7 @@ class Auftrag extends GenAuftrag
     $this->app->Tpl->Set('ARTIKEL','<div id="artikeltabellelive'.$id.'">'.$artikel.'</div>');
     $nachartikeltarget = 'MINIDETAILNACHARTIKEL';
     $this->app->erp->RunHook("AuftragMiniDetailNachArtikel", 2, $id, $nachartikeltarget);
-    //START ZUSTANDSAUTOMAT FARBEN
+/*    //START ZUSTANDSAUTOMAT FARBEN
     if($auftragArr[0]['status']==='freigegeben'){
       $this->app->Tpl->Set(
         'VERSANDTEXT','<div class="warning">Versand: Noch nicht versendet!</div>'
@@ -3411,46 +3418,7 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Set(
         'VERSANDTEXT','<div class="info">Versand: -</div>'
       );
-    }
-
-    $vorkasse_ok = $this->app->DB->Select("SELECT vorkasse_ok FROM auftrag WHERE id='$id' LIMIT 1");
-    $zahlungsweise = $auftragArr[0]['zahlungsweise'];
-    if($vorkasse_ok==1){
-      if($zahlungsweise==='vorkasse' || $zahlungsweise==='paypal' || $zahlungsweise==='kreditkarte') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wurde bezahlt.</div>");}
-      else if ($zahlungsweise==='rechnung') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wird per Rechnung bezahlt.</div>");
-      }
-      else if ($zahlungsweise==='amazon') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wird per Amazon bezahlt.</div>");
-      }
-      else if ($zahlungsweise==='lastschrift'||$zahlungsweise==='einzugsermaechtigung') {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"info\">Der Auftrag wird per Lastschrift bezahlt.</div>");
-      }
-      else if ($zahlungsweise==='bar' || $zahlungsweise==='nachnahme' ) {
-        $this->app->Tpl->Add(
-          'ZAHLUNGEN',"<div class=\"success\">Der Auftrag wird bei &Uuml;bergabe bezahlt.</div>");
-      }
-    }
-    else if($vorkasse_ok==2){
-			$this->app->Tpl->Add('ZAHLUNGEN','<div class="warning">Es liegt eine Teilzahlung vor!</div>');
-		}
-
-    elseif(in_array($zahlungsweise, ['vorkasse','paypal','kreditkarte','bar'])) {
-      $this->app->Tpl->Add(
-        'ZAHLUNGEN',
-        '<div class="error">Vorkasse noch nicht abgeschlossen!</div>'
-      );
-    }
-
-     $this->app->Tpl->Add(
-        'ZAHLUNGEN',
-        $this->AuftragZahlung(true)
-     );
+    }*/
 
     // schaue ob es eine GS zu diesem Auftrag gibt
     // schaue ob es eine GS zu diesem Auftrag gibt
@@ -3623,6 +3591,9 @@ class Auftrag extends GenAuftrag
       }
 
     }
+
+    $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'auftrag'));
+
     if($parsetarget=='') {
       $this->app->Tpl->Output('auftrag_minidetail.tpl');
       $this->app->ExitXentral();
@@ -5010,17 +4981,17 @@ class Auftrag extends GenAuftrag
       )
     );
     if(!empty($anzahlteillieferungen)) {
+    
+        function auftraglink($auftrag) {
+           return "<a href=index.php?module=auftrag&action=edit&id=".$auftrag['id'].">".$auftrag['belegnr']."</a>";
+        }
+        $this->app->Tpl->AddMessage('info',"Zu diesem Auftrag geh&ouml;ren Teilauftr&auml;ge: ".implode(', ',array_map('auftraglink', $anzahlteillieferungen)), html: true);
+        
       $canzahlteillieferungen = (!empty($anzahlteillieferungen)?count($anzahlteillieferungen):0);
       for($ati=0;$ati<$canzahlteillieferungen;$ati++) {
         if($canzahlteillieferungen[$ati]['teillieferungnummer'] + 1 > $teillieferungnummermax) {
           $teillieferungnummermax = $canzahlteillieferungen[$ati]['teillieferungnummer'] + 1;
-        }
-        $this->app->Tpl->Add(
-          'MESSAGE',
-          '<div class="info">Zu diesem Auftrag geh&ouml;rt Teilauftrag Nr. <a href="index.php?module=auftrag&action=edit&id='.
-          $anzahlteillieferungen[$ati]['id'].'" target="_blank">'
-          .$anzahlteillieferungen[$ati]['belegnr'].'</a></div>'
-        );
+        }        
       }
     }
     $teillieferung_von_auftrag_nummer = $teilArr['belegnr'];
@@ -5105,7 +5076,7 @@ class Auftrag extends GenAuftrag
 
     $status= $orderRow['status'];//$this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
     $kommissioniert = $orderRow['kommission_ok'];
-    $schreibschutz= $orderRow['schreibschutz'] || $orderRow['kommission_ok'];
+    $schreibschutz= $orderRow['schreibschutz'];
 
     $adresse= $orderRow['adresse'];//$this->app->DB->Select("SELECT adresse FROM auftrag WHERE id='$id' LIMIT 1");
     $liefersperre= $this->app->DB->Select("SELECT liefersperre FROM adresse WHERE id='$adresse' LIMIT 1");
@@ -5279,23 +5250,22 @@ class Auftrag extends GenAuftrag
       $projekt = $this->app->DB->Select("SELECT projekt from auftrag where id = '$id' LIMIT 1");
 
     if ($kommissioniert) {
-        $this->app->Tpl->AddMessage('warning',"Dieser Auftrag ist kommissioniert und darf daher nicht bearbeitet werden!");
-    } else {
-        if ($schreibschutz=='1' && $this->app->erp->RechteVorhanden('auftrag','schreibschutz')) {
-          $this->app->Tpl->Add(
-            'MESSAGE',
-            "<div class=\"warning\">Dieser Auftrag ist schreibgesch&uuml;tzt und darf daher nicht bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diesen Auftrag wirklich entfernt werden?')) return false;else window.location.href='index.php?module=auftrag&action=schreibschutz&id=$id';\">&nbsp;$optional</div>"
-          );
-        }
-        else {
-            if(isset($optional) && (string)$optional !== '') {
-                $this->app->Tpl->Add(
-                    'MESSAGE',
-                    "<div class=\"warning\">Zu diesem Auftrag gibt es folgende Dokumente. &nbsp;$optional</div>"
-                );
-            }
-        }
+        $this->app->Tpl->AddMessage('warning',"Dieser Auftrag ist kommissioniert und sollte nicht bearbeitet werden!");
     }
+    if ($schreibschutz=='1' && $this->app->erp->RechteVorhanden('auftrag','schreibschutz')) {
+      $this->app->Tpl->Add(
+        'MESSAGE',
+        "<div class=\"warning\">Dieser Auftrag ist schreibgesch&uuml;tzt und darf daher nicht bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diesen Auftrag wirklich entfernt werden?')) return false;else window.location.href='index.php?module=auftrag&action=schreibschutz&id=$id';\">&nbsp;$optional</div>"
+      );
+    }
+    else {
+        if(isset($optional) && (string)$optional !== '') {
+            $this->app->Tpl->Add(
+                'MESSAGE',
+                "<div class=\"warning\">Zu diesem Auftrag gibt es folgende Dokumente. &nbsp;$optional</div>"
+            );
+        }
+    }    
 
     if($schreibschutz=='1') {
       $this->app->erp->CommonReadonly();
@@ -5747,6 +5717,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $meldung = "Auftrag $belegnr kann nicht weitergefuehrt werden, da keine Artikel gebucht sind!";
       $this->app->erp->EventMitSystemLog($this->app->User->GetID(), $meldung, -1,'', 'alert', 1);
     }
+    
+    // Ensure tax for each position (sometimes it is empty due to an unresolved bug)^M
+    $this->app->DB->Update("UPDATE auftrag_position SET umsatzsteuer = 'normal' WHERE auftrag=$id AND umsatzsteuer =''");
+    
     $ret = false;
     $zusatzcheck = true;
     $this->app->erp->RunHook('AuftragVersandZusatzcheck', 2, $id, $zusatzcheck);
@@ -7418,7 +7392,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $auftrag_alt = $this->app->DB->SelectArr($sql)[0];
     $msg = "";
 
-    if (in_array($auftrag_alt['status'],array('angelegt','freigegeben'))) {
+    if (in_array($auftrag_alt['status'],array('angelegt','freigegeben')) && !$auftrag_alt['schreibschutz']) {
         if ($submit != '') {
             $msg = "";
             switch ($submit) {
@@ -7498,8 +7472,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                         }
 
                         $this->app->erp->AuftragProtokoll($id,"Teilauftrag $belegnr_neu erstellt");
-                        $this->app->erp->PDFArchivieren('auftrag', $id, true);
-
+                        $this->app->erp->AuftragEinzelnBerechnen($id,true);
                         header('Location: index.php?module=auftrag&action=edit&id='.$id_neu);
 
                     }

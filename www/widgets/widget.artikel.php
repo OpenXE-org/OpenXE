@@ -1,7 +1,7 @@
 <?php
 include '_gen/widget.gen.artikel.php';
 
-class WidgetArtikel extends WidgetGenArtikel 
+class WidgetArtikel extends WidgetGenArtikel
 {
   /** @var Application $app */
   private $app;
@@ -69,10 +69,10 @@ class WidgetArtikel extends WidgetGenArtikel
     $this->form->ReplaceFunction("nummer",$this,"ReplaceTrim");
     $this->form->ReplaceFunction("ean",$this,"ReplaceTrim");
     $this->form->ReplaceFunction("name_de",$this,"ReplaceTrim");
-    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");    
+    $this->form->ReplaceFunction("sachkonto",$this,"ReplaceKontorahmen");
     $this->form->ReplaceFunction("steuersatz",$this,"ReplaceSteuersatz");
     $this->app->Tpl->Set('GEWICHTBEZEICHNUNG', $this->app->erp->GetGewichtbezeichnung());
-    
+
     $this->app->YUI->CkEditor("uebersicht_de", "internal");
     $this->app->YUI->CkEditor("uebersicht_en", "internal");
 
@@ -84,40 +84,46 @@ class WidgetArtikel extends WidgetGenArtikel
 
     $id = $this->app->Secure->GetGET("id");
     $this->app->erp->RunHook('article_widget',1, $id);
-    $action = $this->app->Secure->GetGET("action");    
-    $nummer = $this->app->Secure->GetPOST("nummer"); 
-    $submit = $this->app->Secure->GetPOST("speichern"); 
+    $action = $this->app->Secure->GetGET("action");
+    $nummer = $this->app->Secure->GetPOST("nummer");
+    $submit = $this->app->Secure->GetPOST("speichern");
 
-    $projekt = $this->app->Secure->GetPOST("projekt"); 
+    $projekt = $this->app->Secure->GetPOST("projekt");
     $projekttmp = $this->app->DB->Select("SELECT projekt FROM artikel WHERE id='$id' LIMIT 1");
-     
-    // versuchen standardprojekt zu kriegen beim anlegen 
+
+    // versuchen standardprojekt zu kriegen beim anlegen
     if($action==='create')
-    {    
+    {
       if($projekttmp <=0)
         $projekttmp = $this->app->DB->Select("SELECT id FROM projekt WHERE abkuerzung='$projekt' AND abkuerzung!='' LIMIT 1");
       if($projekttmp <=0)
-        $projekttmp = $this->app->erp->GetCreateProjekt(); 
-    } 
+        $projekttmp = $this->app->erp->GetCreateProjekt();
+    }
 
     $_artikelart = $this->app->erp->GetArtikelgruppe($projekttmp);
 
     if($id){
 
-      $standardbild = $this->app->erp->GetArtikelStandardbild($id,true);
+      $standardbild = $this->app->erp->GetArtikelStandardbild($id, return_file_contents: false);
 
       if($standardbild > 0){
-        //$this->app->Tpl->Set('ARTIKELBILD', "<img src=\"index.php?module=dateien&action=send&id=$standardbild\" align=\"left\" style=\"width: 200px; margin-right:10px; margin-bottom:10px;\">");
+
+        if ($standardbild['from_parent']) {
+            $bildinfo = "Artikelbild vom Hauptartikel<br>";
+        } else {
+            $bildinfo = "";
+        }
+
         $this->app->Tpl->Set('ARTIKELBILD',
-          '<img alt="Artikelbild" src="index.php?module=artikel&action=thumbnail&id='.$id.'&fileid='.$standardbild.'&size=200&direkt=1" align="left" width="200" style="margin-right:10px; margin-bottom:10px;" />'
+          $bildinfo.'<img alt="Artikelbild" src="index.php?module=artikel&action=thumbnail&id='.$id.'&fileid='.$standardbild['fileid'].'&size=200&direkt=1" align="left" width="200" style="margin-right:10px; margin-bottom:10px;" />'
         );
       }
-    
+
       $standardlieferant = $this->app->DB->Select("SELECT adresse FROM artikel WHERE id='$id' LIMIT 1");
       $hinweistextlieferant = $this->app->DB->Select("SELECT hinweistextlieferant FROM adresse WHERE id='$standardlieferant' LIMIT 1");
       if($hinweistextlieferant!='')
       {
-        if($standardbild <=0) 
+        if($standardbild <=0)
         {
           $this->app->Tpl->Set('ARTIKELBILD', "<img src=\"index.php?module=artikel&action=thumbnail&id=1&bildvorschau=KEINBILD\" align=\"left\" style=\"width: 200px; margin-right:10px; margin-bottom:10px;\">");
         }
@@ -128,9 +134,6 @@ class WidgetArtikel extends WidgetGenArtikel
               <textarea id=\"readonlybox\" rows>$hinweistextlieferant</textarea></fieldset>");
       }
 
-
-//      $this->app->Tpl->Add('ARTIKELBILD',"<img src=\"index.php?module=artikel&action=thumbnail&cmd=artikel&id=$id&size=400&direkt=1\" style=\"max-width:400px;max-height:400px;\">");
-      
       $kat = $this->app->DB->Select("SELECT typ FROM artikel WHERE id = '$id' LIMIT 1");
       if(!empty($kat) && !isset($_artikelart[$kat]))
       {
@@ -152,18 +155,18 @@ class WidgetArtikel extends WidgetGenArtikel
     )
     {
       $artikelart = array(''=>'')+$artikelart;
-    } 
+    }
 
     $field = new HTMLSelect('typ',0);
     $field->AddOptionsSimpleArray($artikelart);
     $this->form->NewField($field);
-    
+
 
     $land = $this->app->erp->GetSelectLaenderliste();
 
     $field = new HTMLSelect('herkunftsland',0);
     $field->AddOptionsSimpleArray($land);
-    
+
     $chargensel = null;
     $chargensel['0'] = 'keine';
     $chargensel['1'] = 'aktivieren';
@@ -176,31 +179,31 @@ class WidgetArtikel extends WidgetGenArtikel
     }
     $field = new HTMLSelect('chargenverwaltung',0);
     $field->AddOptionsAsocSimpleArray($chargensel);
-    
-    
+
+
 /* 18.05. heute ausgeblendet / kein herkunftsland als standard
     if($action=="create" && !$this->app->Secure->GetPOST('speichern'))
     {
       $landdefault = $this->app->erp->Firmendaten('land');
       if(!$landdefault)$landdefault = 'DE';
       $field->value=$landdefault;
-    } 
+    }
 */
     $this->form->NewField($field);
 
     if($this->app->Secure->POST['projekt']=='')
-    { 
+    {
       $projekt = $this->app->DB->Select("SELECT standardprojekt FROM firma WHERE id='".$this->app->User->GetFirma()."' LIMIT 1");
 
-      $projekt_bevorzugt=$this->app->DB->Select("SELECT projekt_bevorzugen FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");        
+      $projekt_bevorzugt=$this->app->DB->Select("SELECT projekt_bevorzugen FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");
       if($projekt_bevorzugt=='1') {
         $projekt = $this->app->DB->Select("SELECT projekt FROM user WHERE id='".$this->app->User->GetID()."' LIMIT 1");
       }
       $field = new HTMLInput("projekt","text",$projekt);
       $field->value=$projekt;
-      $this->form->NewField($field);      
+      $this->form->NewField($field);
     }
-   
+
 
     $field = new HTMLCheckbox("rabatt","","","1");
     $field->onclick="rabattevent();";
@@ -258,7 +261,7 @@ class WidgetArtikel extends WidgetGenArtikel
       $this->app->Tpl->Set('DISABLEOPENPARAMETER2','<div style="display:none">');
       $this->app->Tpl->Set('DISABLECLOSEPARAMETER2','</div>');
     } else {
-  
+
       $this->app->erp->ArtikelFreifeldBezeichnungen();
     }
 
@@ -367,7 +370,7 @@ class WidgetArtikel extends WidgetGenArtikel
                       $found = true;
                       break;
                     }
-                  }                
+                  } 
                   if(!$found){
                     $this->app->Tpl->Add('FREIFELDSPALTE'.$s,'<option>'.$tmpv.'</option>');
                   }
@@ -375,7 +378,7 @@ class WidgetArtikel extends WidgetGenArtikel
                   {
                     $ovvalue=$ov;
                     if(strpos($ov,'=>') !== false) {
-                      list($ov, $ovvalue) = explode('=>', $ov); 
+                      list($ov, $ovvalue) = explode('=>', $ov);
                     }
                     $this->app->Tpl->Add('FREIFELDSPALTE'.$s,'<option'.($tmpv == $ovvalue?' selected':'').' value="'.$ovvalue.'">'.$ov.'</option>');
                   }
@@ -403,16 +406,16 @@ class WidgetArtikel extends WidgetGenArtikel
       $this->app->Tpl->Set('BENUTZERDEFINIERTSTART','<!--');
       $this->app->Tpl->Set('BENUTZERDEFINIERTENDE','-->');
     }
-    
+
     if(!$this->app->erp->ModulVorhanden('steuerregeln'))
     {
       $this->app->Tpl->Set('VORSTEUERREGELN','<!--');
       $this->app->Tpl->Set('NACHSTEUERREGELN','-->');
     }
-    
+
 
     if($nummer == '' && $action==='edit' && $submit!='')
-    { 
+    {
       // erst platt machen
       $this->app->DB->Update("UPDATE artikel SET nummer='' WHERE id='$id'");
       $artikelart = $this->app->Secure->GetPOST('typ');
@@ -431,7 +434,7 @@ class WidgetArtikel extends WidgetGenArtikel
     }
 
     if($nummer == '' && $action==='create' && $submit!='')
-    { 
+    {
       //exec('echo  "neu  '.$submit.' '.$nummer.' '.$action.' '.$artikelart.'" >> /tmp/test');
       // erst platt machen
       $artikelart = $this->app->Secure->GetPOST("typ");
@@ -452,7 +455,7 @@ class WidgetArtikel extends WidgetGenArtikel
       }
 
       $neuenummervergeben=1;
-    } 
+    }
 
     if($action==='create')
     {
@@ -468,11 +471,11 @@ class WidgetArtikel extends WidgetGenArtikel
       $doppelteNummern = $this->app->DB->SelectArr(
         sprintf(
           "SELECT art.nummer, count(art.nummer) as NumOccurrences, if(ifnull(pr.eigenernummernkreis,0) = 0,0,pr.id) AS projekt
-        FROM artikel art 
-        LEFT JOIN projekt pr ON art.projekt = pr.id 
+        FROM artikel art
+        LEFT JOIN projekt pr ON art.projekt = pr.id
         WHERE art.geloescht <> '1' AND art.nummer <> '' AND art.nummer <> 'DEL' AND nummer in ('%s','%s')
-        GROUP BY art.nummer,if(ifnull(pr.eigenernummernkreis,0) = 0,0,pr.id) 
-        HAVING (COUNT(art.nummer) > 0) 
+        GROUP BY art.nummer,if(ifnull(pr.eigenernummernkreis,0) = 0,0,pr.id)
+        HAVING (COUNT(art.nummer) > 0)
         LIMIT 101",
           $nummer_db, $nummer
         )
@@ -545,7 +548,7 @@ class WidgetArtikel extends WidgetGenArtikel
 
     // wenn ziel datenbank
     if($db)
-    { 
+    {
       if($dbformat) {
         return $value;
       }
@@ -583,7 +586,7 @@ class WidgetArtikel extends WidgetGenArtikel
 
     // wenn ziel datenbank
     if($db)
-    { 
+    {
       return $id;
     }
     // wenn ziel formular
@@ -621,7 +624,7 @@ class WidgetArtikel extends WidgetGenArtikel
 
     // wenn ziel datenbank
     if($db)
-    { 
+    {
       return $id;
     }
     // wenn ziel formular
@@ -649,7 +652,7 @@ class WidgetArtikel extends WidgetGenArtikel
   {
     return $this->app->erp->ReplaceKontorahmen($db,$value,$fromform);
   }
-  
+
   function ReplaceSteuersatz($db,$value,$fromform)
   {
     if($db)
@@ -668,7 +671,7 @@ class WidgetArtikel extends WidgetGenArtikel
 
   public function Table()
   {
-    $table = new EasyTable($this->app);  
+    $table = new EasyTable($this->app);
     $table->Query("SELECT nummer, name_de as name,barcode, id FROM artikel order by nummer");
     $table->Display($this->parsetarget);
   }

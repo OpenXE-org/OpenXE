@@ -10,13 +10,13 @@
 
 /*
  * *** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
- * 
+ *
  * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
  *
- * This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+ * This file is licensed under the Embedded Projects General Public License *Version 3.1.
  *
- * You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
- * to obtain the text of the corresponding license version.  
+ * You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+ * to obtain the text of the corresponding license version.
  *
  * *** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
  */
@@ -30,7 +30,8 @@ use Xentral\Modules\Onlineshop\Data\Shipment;
 use Xentral\Modules\Onlineshop\Data\ShopConnectorResponseInterface;
 use Xentral\Components\Logger\Logger;
 
-class Remote {
+class Remote
+{
 
     /** @var ApplicationCore $app */
     public $app;
@@ -38,7 +39,8 @@ class Remote {
     /** @var Logger $logger */
     public $logger;
 
-    public function __construct($app) {
+    public function __construct($app)
+    {
         $this->app = $app;
         $this->logger = $app->Container->get('Logger');
     }
@@ -50,20 +52,21 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteConnection($shopId, $extra = null) {
+    public function RemoteConnection($shopId, $extra = null)
+    {
         $ret = $this->RemoteCommand($shopId, 'auth', $extra);
         if ($ret !== 'success' && empty($extra) && method_exists($this->app->erp, 'setSystemHealth')) {
             $this->app->erp->setSystemHealth(
-                    'shopexport',
-                    'auth',
-                    'warning',
-                    'Verbindung zu ' .
-                    $this->app->DB->Select(
-                            sprintf(
-                                    'SELECT bezeichnung FROM shopexport WHERE id = %d',
-                                    $shopId
-                            )
-                    ) . ' fehlgeschlagen.'
+                'shopexport',
+                'auth',
+                'warning',
+                'Verbindung zu ' .
+                $this->app->DB->Select(
+                    sprintf(
+                        'SELECT bezeichnung FROM shopexport WHERE id = %d',
+                        $shopId
+                    )
+                ) . ' fehlgeschlagen.'
             );
             try {
                 /** @var Systemhealth $systemhealth */
@@ -72,7 +75,7 @@ class Remote {
                     $systemhealth->createEvent('shopexport', 'auth', 'warning', 'shopexport', $shopId);
                 }
             } catch (Exception $d) {
-                
+
             }
         }
         return $ret;
@@ -84,7 +87,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteGetUpdateArticleList($shopId) {
+    public function RemoteGetUpdateArticleList($shopId)
+    {
         return $this->RemoteCommand($shopId, 'getlist');
     }
 
@@ -94,7 +98,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteGetFileList($shopId) {
+    public function RemoteGetFileList($shopId)
+    {
         return $this->RemoteCommand($shopId, 'getfilelist');
     }
 
@@ -105,7 +110,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteGetFileListArticle($shopId, $article) {
+    public function RemoteGetFileListArticle($shopId, $article)
+    {
         $data['artikel'] = $article;
 
         return $this->RemoteCommand($shopId, 'getfilelistarticle', $data);
@@ -118,7 +124,8 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteGetAuftraegeAnzahl($shopId, $data = '') {
+    public function RemoteGetAuftraegeAnzahl($shopId, $data = '')
+    {
         if (!empty($data)) {
             return $this->RemoteCommand($shopId, 'getauftraegeanzahl', $data);
         }
@@ -170,7 +177,8 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteGetAuftraegeAnzahlNummer($shopId, $nummer) {
+    public function RemoteGetAuftraegeAnzahlNummer($shopId, $nummer)
+    {
         $data = array('nummer' => $nummer);
 
         return $this->RemoteCommand($shopId, 'getauftraegeanzahl', $data);
@@ -183,17 +191,18 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteGetAuftrag($shopId, $data = null) {
+    public function RemoteGetAuftrag($shopId, $data = null)
+    {
         if (!empty($data)) {
             return $this->RemoteCommand($shopId, 'getauftrag', $data);
         }
         $data = array();
 
         $shopexportArr = $this->app->DB->SelectRow(
-                sprintf(
-                        'SELECT * FROM shopexport WHERE id = %d LIMIT 1',
-                        $shopId
-                )
+            sprintf(
+                'SELECT * FROM shopexport WHERE id = %d LIMIT 1',
+                $shopId
+            )
         );
         $holealle = $shopexportArr['holealle'];
         $holeallestati = $shopexportArr['holeallestati'];
@@ -207,8 +216,10 @@ class Remote {
         if (!empty($zeitraum)) {
             $data['datumvon'] = $zeitraum['datumvon'];
             $data['datumbis'] = $zeitraum['datumbis'];
-            if ($zeitraum['tmpdatumbis'] !== null && $zeitraum['tmpdatumbis'] !== '0000-00-00 00:00:00' &&
-                    strtotime($zeitraum['tmpdatumbis']) > 0) {
+            if (
+                $zeitraum['tmpdatumbis'] !== null && $zeitraum['tmpdatumbis'] !== '0000-00-00 00:00:00' &&
+                strtotime($zeitraum['tmpdatumbis']) > 0
+            ) {
                 $data['datumbis'] = $zeitraum['tmpdatumbis'];
             }
             //if(strtotime($zeitraum[0]['tmpdatumvon']) > 0)$data['datumvon'] = $zeitraum[0]['tmpdatumbis'];
@@ -250,7 +261,8 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteGetAuftragNummer($shopId, $nummer) {
+    public function RemoteGetAuftragNummer($shopId, $nummer)
+    {
         $holealle = $this->app->DB->Select("SELECT holealle FROM shopexport WHERE id = '$shopId' LIMIT 1");
         if ($holealle) {
             $data = array('nummer' => $nummer);
@@ -267,7 +279,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteSendExportlink($shopId) {
+    public function RemoteSendExportlink($shopId)
+    {
         // passwort erzeugen , daten verschluesseln, wenn passwort neu link an kunden senden
         // alternativ artikel umfrage
         //    $all = $this->app->DB->SelectArr("SELECT * FROM artikelgruppen WHERE shop='$id'");
@@ -275,9 +288,9 @@ class Remote {
         // usb90key
         $artikelid = 38;
 
-        $all = $this->app->DB->SelectArr("SELECT a.id as auftrag, a.adresse as adresse  
-        FROM auftrag_position ap 
-        LEFT JOIN auftrag a ON a.id=ap.auftrag 
+        $all = $this->app->DB->SelectArr("SELECT a.id as auftrag, a.adresse as adresse
+        FROM auftrag_position ap
+        LEFT JOIN auftrag a ON a.id=ap.auftrag
         WHERE ap.artikel='$artikelid' AND ap.geliefert_menge < ap.menge AND a.status!='storniert'
         AND a.status!='abgeschlossen'");
         // mail mit url senden
@@ -335,7 +348,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteSendNavigation($shopId) {
+    public function RemoteSendNavigation($shopId)
+    {
         //$data[0] = array('aasas','asddd');
 
         $all = $this->app->DB->SelectArr("SELECT * FROM shopnavigation WHERE shop='$shopId'");
@@ -361,8 +375,9 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteSendArtikelgruppen($shopId) {
-        $all = $this->app->DB->SelectArr("SELECT id, bezeichnung,bezeichnung_en,beschreibung_de,beschreibung_en 
+    public function RemoteSendArtikelgruppen($shopId)
+    {
+        $all = $this->app->DB->SelectArr("SELECT id, bezeichnung,bezeichnung_en,beschreibung_de,beschreibung_en
       FROM artikelgruppen WHERE shop='$shopId'");
         if (empty($all)) {
             return '';
@@ -377,7 +392,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteSendInhalt($shopId) {
+    public function RemoteSendInhalt($shopId)
+    {
         $all = $this->app->DB->SelectArr("SELECT * FROM inhalt WHERE shop='$shopId' AND aktiv=1");
         if (empty($all)) {
             return '';
@@ -411,7 +427,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteSendArtikelArtikelgruppen($shopId) {
+    public function RemoteSendArtikelArtikelgruppen($shopId)
+    {
         $all = $this->app->DB->SelectArr('SELECT * FROM artikel_artikelgruppe');
         $call = $all ? count($all) : 0;
         if ($call > 0) {
@@ -437,9 +454,10 @@ class Remote {
      *
      * @return mixed
      */
-    public function GetShopexportMappingExt($shopId, $tabelle, $intid, $intid2 = 0) {
-        return $this->app->DB->Select("SELECT extid 
-      FROM shopexport_mapping 
+    public function GetShopexportMappingExt($shopId, $tabelle, $intid, $intid2 = 0)
+    {
+        return $this->app->DB->Select("SELECT extid
+      FROM shopexport_mapping
       WHERE shop = '$shopId' AND tabelle = '$tabelle' AND intid = '$intid' " . ($intid2 ? " AND intid2 = '$intid2' " : '') . "  LIMIT 1");
     }
 
@@ -451,10 +469,11 @@ class Remote {
      *
      * @return mixed
      */
-    protected function GetShopexportMappingInt($shopId, $tabelle, $extid, $intid2 = 0) {
-        return $this->app->DB->Select("SELECT intid 
-      FROM shopexport_mapping 
-      WHERE shop = '$shopId' AND tabelle = '$tabelle' AND extid = '$extid' " . ($intid2 ? " AND intid2 = '$intid2' " : '') . " 
+    protected function GetShopexportMappingInt($shopId, $tabelle, $extid, $intid2 = 0)
+    {
+        return $this->app->DB->Select("SELECT intid
+      FROM shopexport_mapping
+      WHERE shop = '$shopId' AND tabelle = '$tabelle' AND extid = '$extid' " . ($intid2 ? " AND intid2 = '$intid2' " : '') . "
       LIMIT 1");
     }
 
@@ -467,11 +486,12 @@ class Remote {
      *
      * @return mixed
      */
-    public function ShopexportMappingSet($shop, $tabelle, $intid, $extid, $intid2 = 0) {
-        $check = $this->app->DB->Select("SELECT id FROM shopexport_mapping 
+    public function ShopexportMappingSet($shop, $tabelle, $intid, $extid, $intid2 = 0)
+    {
+        $check = $this->app->DB->Select("SELECT id FROM shopexport_mapping
       WHERE shop = '$shop' AND tabelle = '$tabelle' AND intid = '$intid' AND intid2 = '$intid2' LIMIT 1");
         if (!$check) {
-            $this->app->DB->Insert("INSERT INTO shopexport_mapping (shop, tabelle, intid, intid2, extid, zeitstempel) 
+            $this->app->DB->Insert("INSERT INTO shopexport_mapping (shop, tabelle, intid, intid2, extid, zeitstempel)
         VALUES ('$shop', '$tabelle', '$intid', '$intid2', '$extid', now())");
             return $this->app->DB->GetInsertID();
         }
@@ -488,7 +508,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteGetArticle($id, $nummer, $create = false) {
+    public function RemoteGetArticle($id, $nummer, $create = false)
+    {
         if ($create) {
             $data['nummerintern'] = $nummer;
         } else {
@@ -541,14 +562,14 @@ class Remote {
             if ($k == 0) {
                 $articleid = $this->app->erp->GetArticleIDFromShopnumber($id, $nummer, true);
                 if ($articleid) {
-                    $variantevonorig = $this->app->DB->Select("SELECT variante_von 
-          FROM artikel 
-          WHERE id = '$articleid' AND variante = 1 
+                    $variantevonorig = $this->app->DB->Select("SELECT variante_von
+          FROM artikel
+          WHERE id = '$articleid' AND variante = 1
           LIMIT 1");
                     if (!$variantevonorig) {
-                        $articleid = $this->app->DB->Select("SELECT id 
-              FROM artikel 
-              WHERE id = '$articleid' AND ifnull(geloescht,0) = 0 AND nummer <> 'DEL' 
+                        $articleid = $this->app->DB->Select("SELECT id
+              FROM artikel
+              WHERE id = '$articleid' AND ifnull(geloescht,0) = 0 AND nummer <> 'DEL'
               LIMIT 1");
                     }
                 }
@@ -565,7 +586,7 @@ class Remote {
             if ($articleid) {
                 if (isset($ret['shoparticleid']) && $ret['shoparticleid'] != '' && trim($this->app->DB->real_escape_string($ret['shoparticleid'])) != '') {
                     if (!$this->app->DB->Select("SELECT id FROM `artikelnummer_fremdnummern` WHERE shopid = '$id' AND artikel = '$articleid' AND nummer = '" . trim($this->app->DB->real_escape_string($ret['shoparticleid'])) . "' LIMIT 1")) {
-                        $this->app->DB->Insert("INSERT INTO `artikelnummer_fremdnummern` (artikel, shopid, aktiv, nummer, bezeichnung) 
+                        $this->app->DB->Insert("INSERT INTO `artikelnummer_fremdnummern` (artikel, shopid, aktiv, nummer, bezeichnung)
                 VALUES ('$articleid','$id','1','" . trim($this->app->DB->real_escape_string($ret['shoparticleid'])) . "','SHOPID')");
                     }
                 }
@@ -637,15 +658,15 @@ class Remote {
 
                 $arr['hersteller'] = $ret['hersteller'];
                 if (!$stuecklistenmechanik && isset($ret['variante_von']) && !$articleid) {
-                    $variantevon = $this->app->DB->Select("SELECT artikel 
-            FROM `artikelnummer_fremdnummern` 
-            WHERE shopid = '$id' AND aktiv = 1 AND nummer = '" . trim($ret['variante_von']) . "' AND nummer <> '' 
+                    $variantevon = $this->app->DB->Select("SELECT artikel
+            FROM `artikelnummer_fremdnummern`
+            WHERE shopid = '$id' AND aktiv = 1 AND nummer = '" . trim($ret['variante_von']) . "' AND nummer <> ''
             LIMIT 1");
                     if (empty($variantevon)) {
-                        $variantevon = $this->app->DB->Select("SELECT id 
-              FROM artikel 
-              WHERE ifnull(geloescht,0) = 0 AND nummer <> 'DEL' AND nummer <> '' AND nummer = '" . trim($ret['variante_von']) . "' 
-              ORDER BY projekt = '$projekt' DESC 
+                        $variantevon = $this->app->DB->Select("SELECT id
+              FROM artikel
+              WHERE ifnull(geloescht,0) = 0 AND nummer <> 'DEL' AND nummer <> '' AND nummer = '" . trim($ret['variante_von']) . "'
+              ORDER BY projekt = '$projekt' DESC
               LIMIT 1");
                     }
                     if (empty($variantevon)) {
@@ -663,8 +684,8 @@ class Remote {
                         $arr['variante_von'] = $variante_von;
                     }
                 }
-                $freifeldmapping = $this->app->DB->SelectArr("SELECT * 
-          FROM shopexport_freifelder 
+                $freifeldmapping = $this->app->DB->SelectArr("SELECT *
+          FROM shopexport_freifelder
           WHERE shop = '$id' AND aktiv = 1 AND freifeld_shop <> '' AND freifeld_wawi <> ''");
                 if (!empty($freifeldmapping)) {
                     foreach ($freifeldmapping as $freifeldval) {
@@ -709,9 +730,9 @@ class Remote {
                 }
 
                 if (!empty($ret['bilder']) && is_array($ret['bilder'])) {
-                    $dateien = $this->app->DB->SelectArr("SELECT * 
-            FROM datei_stichwoerter ds 
-            INNER JOIN datei_version dv ON ds.datei = dv.datei AND ds.parameter = '$articleid' AND ds.objekt LIKE 'Artikel' 
+                    $dateien = $this->app->DB->SelectArr("SELECT *
+            FROM datei_stichwoerter ds
+            INNER JOIN datei_version dv ON ds.datei = dv.datei AND ds.parameter = '$articleid' AND ds.objekt LIKE 'Artikel'
             ORDER BY ds.sort");
                     if (empty($dateien)) {
                         foreach ($ret['bilder'] as $v) {
@@ -764,10 +785,12 @@ class Remote {
                         if ($katext == 0 && $v['parent'] == 0) {
                             $katext = $v['id'];
                         }
-                        if (!$this->app->DB->Select("SELECT id 
-              FROM shopexport_kategorien 
-              WHERE shop = '$id' AND extid = '" . $this->app->DB->real_escape_string($v['id']) . "' LIMIT 1")) {
-                            $this->app->DB->Insert("INSERT INTO shopexport_kategorien (shop, extid, aktiv,extname,extparent,extsort) VALUES 
+                        if (
+                            !$this->app->DB->Select("SELECT id
+              FROM shopexport_kategorien
+              WHERE shop = '$id' AND extid = '" . $this->app->DB->real_escape_string($v['id']) . "' LIMIT 1")
+                        ) {
+                            $this->app->DB->Insert("INSERT INTO shopexport_kategorien (shop, extid, aktiv,extname,extparent,extsort) VALUES
             ('$id','" . $this->app->DB->real_escape_string($v['id']) . "','" . (int) $v['aktiv'] . "','" . $this->app->DB->real_escape_string($v['name']) . "','" . $this->app->DB->real_escape_string($v['parent']) . "','" . (int) $v['sort'] . "')");
                         }
                     }
@@ -787,11 +810,11 @@ class Remote {
                                 if (empty($parentInXentral)) {
                                     $parentInXentral = $this->app->DB->Select("SELECT kategorie FROM shopexport_kategorien WHERE shop='$id' AND extid='" . $v['extparent'] . "' LIMIT 1");
                                 }
-                                $this->app->DB->Insert("INSERT INTO `artikelkategorien` (bezeichnung,parent) 
+                                $this->app->DB->Insert("INSERT INTO `artikelkategorien` (bezeichnung,parent)
                   VALUES ('" . $this->app->DB->real_escape_string($v['extname']) . "','$parentInXentral')");
                                 $kategorientoint[$v['extid']] = $this->app->DB->GetInsertID();
-                                $this->app->DB->Update("UPDATE shopexport_kategorien 
-                  SET kategorie = '" . $kategorientoint[$v['extid']] . "' 
+                                $this->app->DB->Update("UPDATE shopexport_kategorien
+                  SET kategorie = '" . $kategorientoint[$v['extid']] . "'
                   WHERE id = '" . $v['id'] . "' LIMIT 1");
                                 $v['kategorie'] = $kategorientoint[$v['extid']];
                             }
@@ -799,9 +822,9 @@ class Remote {
                     }
                 }
                 if (!empty($ret['kategorien'])) {
-                    $shopkategorien = $this->app->DB->SelectArr("SELECT * 
-              FROM shopexport_kategorien 
-              WHERE shop = '$id' AND kategorie > 0 
+                    $shopkategorien = $this->app->DB->SelectArr("SELECT *
+              FROM shopexport_kategorien
+              WHERE shop = '$id' AND kategorie > 0
               ORDER BY extparent, extsort");
                     if (!empty($shopkategorien)) {
                         foreach ($shopkategorien as $v) {
@@ -820,7 +843,7 @@ class Remote {
 
                             if (isset($kategorientoint[$v['id']]) && $kategorientoint[$v['id']]) {
                                 if (!$this->app->DB->Select("SELECT id FROM artikelbaum_artikel WHERE artikel = '$articleid' AND kategorie = '" . $kategorientoint[$v['id']] . "' LIMIT 1")) {
-                                    $this->app->DB->Insert("INSERT INTO artikelbaum_artikel (artikel, kategorie) 
+                                    $this->app->DB->Insert("INSERT INTO artikelbaum_artikel (artikel, kategorie)
                     VALUES ('$articleid', '" . $kategorientoint[$v['id']] . "')");
                                 }
                             }
@@ -830,22 +853,22 @@ class Remote {
                 if (!empty($ret['eigenschaften'])) {
                     foreach ($ret['eigenschaften'] as $v) {
                         if ($v['name'] != '') {
-                            $eigenschaft = $this->app->DB->Select("SELECT id 
-                FROM `artikeleigenschaften` 
-                WHERE name = '" . $this->app->DB->real_escape_string($v['name']) . "' AND geloescht = 0 
+                            $eigenschaft = $this->app->DB->Select("SELECT id
+                FROM `artikeleigenschaften`
+                WHERE name = '" . $this->app->DB->real_escape_string($v['name']) . "' AND geloescht = 0
                 LIMIT 1");
                             if (!$eigenschaft) {
-                                $this->app->DB->Insert("INSERT INTO `artikeleigenschaften` (name) 
+                                $this->app->DB->Insert("INSERT INTO `artikeleigenschaften` (name)
                   VALUES ('" . $this->app->DB->real_escape_string($v['name']) . "')");
                                 $eigenschaft = $this->app->DB->GetInsertID();
                             }
                             if ($eigenschaft) {
-                                $wert = $this->app->DB->Select("SELECT id 
-                  FROM artikeleigenschaftenwerte 
-                  WHERE artikel = '$articleid' AND artikeleigenschaften = '$eigenschaft' AND wert = '" . $this->app->DB->real_escape_string($v['values']) . "' 
+                                $wert = $this->app->DB->Select("SELECT id
+                  FROM artikeleigenschaftenwerte
+                  WHERE artikel = '$articleid' AND artikeleigenschaften = '$eigenschaft' AND wert = '" . $this->app->DB->real_escape_string($v['values']) . "'
                   LIMIT 1");
                                 if (!$wert) {
-                                    $this->app->DB->Insert("INSERT INTO artikeleigenschaftenwerte (artikel,artikeleigenschaften,wert) 
+                                    $this->app->DB->Insert("INSERT INTO artikeleigenschaftenwerte (artikel,artikeleigenschaften,wert)
                   VALUES ('$articleid','$eigenschaft','" . $this->app->DB->real_escape_string($v['values']) . "')");
                                 }
                             }
@@ -862,18 +885,24 @@ class Remote {
                         }
 
                         $gruppeName = $this->app->DB->real_escape_string($ret['matrixprodukt_gruppe' . $m]);
-                        $query = sprintf("SELECT id FROM matrixprodukt_eigenschaftengruppen_artikel WHERE artikel='%s' AND name='%s'",
-                                $articleid, $gruppeName);
+                        $query = sprintf(
+                            "SELECT id FROM matrixprodukt_eigenschaftengruppen_artikel WHERE artikel='%s' AND name='%s'",
+                            $articleid,
+                            $gruppeName
+                        );
                         $gruppeId = $this->app->DB->Select($query);
                         if (empty($gruppeId)) {
-                            $query = sprintf("SELECT MAX(sort) FROM matrixprodukt_eigenschaftengruppen_artikel WHERE artikel='%s' AND name='%s'",
-                                    $articleid, $gruppeName);
+                            $query = sprintf(
+                                "SELECT MAX(sort) FROM matrixprodukt_eigenschaftengruppen_artikel WHERE artikel='%s' AND name='%s'",
+                                $articleid,
+                                $gruppeName
+                            );
                             $sort = $this->app->DB->Select($query);
                             if (empty($sort)) {
                                 $sort = '0';
                             }
-                            $query = sprintf("INSERT INTO matrixprodukt_eigenschaftengruppen_artikel 
-                (artikel, aktiv, name, name_ext,projekt,bearbeiter,erstellt,sort, pflicht, oeffentlich,typ) VALUES 
+                            $query = sprintf("INSERT INTO matrixprodukt_eigenschaftengruppen_artikel
+                (artikel, aktiv, name, name_ext,projekt,bearbeiter,erstellt,sort, pflicht, oeffentlich,typ) VALUES
                 ('%s','1','%s','','0','','NOW()','%s','1','0','0')", $articleid, $gruppeName, $sort);
                             $this->app->DB->Insert($query);
                             $gruppeId = $this->app->DB->GetInsertID();
@@ -881,20 +910,30 @@ class Remote {
 
                         foreach ($ret['matrixprodukt_optionen' . $m] as $optionBezeichnung) {
                             $optionBezeichnung = $this->app->DB->real_escape_string($optionBezeichnung);
-                            $query = sprintf("SELECT id FROM matrixprodukt_eigenschaftenoptionen_artikel WHERE artikel='%s' AND name='%s'",
-                                    $articleid, $optionBezeichnung);
+                            $query = sprintf(
+                                "SELECT id FROM matrixprodukt_eigenschaftenoptionen_artikel WHERE artikel='%s' AND name='%s'",
+                                $articleid,
+                                $optionBezeichnung
+                            );
                             $optionId = $this->app->DB->Select($query);
                             if (empty($optionId)) {
-                                $query = sprintf("SELECT MAX(sort) FROM matrixprodukt_eigenschaftenoptionen_artikel WHERE artikel='%s' AND name='%s'",
-                                        $articleid, $optionBezeichnung);
+                                $query = sprintf(
+                                    "SELECT MAX(sort) FROM matrixprodukt_eigenschaftenoptionen_artikel WHERE artikel='%s' AND name='%s'",
+                                    $articleid,
+                                    $optionBezeichnung
+                                );
                                 $sort = $this->app->DB->Select($query);
                                 if (empty($sort)) {
                                     $sort = '1';
                                 }
-                                $query = sprintf("INSERT INTO matrixprodukt_eigenschaftenoptionen_artikel 
-                    (artikel, matrixprodukt_eigenschaftenoptionen, aktiv,name,name_ext,sort,erstellt,gruppe,bearbeiter,artikelnummer) 
+                                $query = sprintf("INSERT INTO matrixprodukt_eigenschaftenoptionen_artikel
+                    (artikel, matrixprodukt_eigenschaftenoptionen, aktiv,name,name_ext,sort,erstellt,gruppe,bearbeiter,artikelnummer)
                     VALUES ('%s','0','1','%s','','%s','NOW()','%s','','')",
-                                        $articleid, $optionBezeichnung, $sort, $gruppeId);
+                                    $articleid,
+                                    $optionBezeichnung,
+                                    $sort,
+                                    $gruppeId
+                                );
                                 $this->app->DB->Insert($query);
                             }
                         }
@@ -908,16 +947,25 @@ class Remote {
                         }
 
                         $optionBezeichnung = $this->app->DB->real_escape_string($ret['matrixprodukt_wert' . $m]);
-                        $query = sprintf("SELECT id FROM matrixprodukt_eigenschaftenoptionen_artikel WHERE artikel='%s' AND name='%s'",
-                                $variante_von, $optionBezeichnung);
+                        $query = sprintf(
+                            "SELECT id FROM matrixprodukt_eigenschaftenoptionen_artikel WHERE artikel='%s' AND name='%s'",
+                            $variante_von,
+                            $optionBezeichnung
+                        );
                         $optionId = $this->app->DB->Select($query);
                         if (!empty($optionId)) {
-                            $query = sprintf("SELECT id FROM matrixprodukt_optionen_zu_artikel WHERE artikel='%s' AND option_id='%s'",
-                                    $articleid, $optionId);
+                            $query = sprintf(
+                                "SELECT id FROM matrixprodukt_optionen_zu_artikel WHERE artikel='%s' AND option_id='%s'",
+                                $articleid,
+                                $optionId
+                            );
                             $zuordnungId = $this->app->DB->Select($query);
                             if (empty($zuordnungId)) {
-                                $query = sprintf("INSERT INTO matrixprodukt_optionen_zu_artikel (artikel,option_id) VALUES ('%s','%s')",
-                                        $articleid, $optionId);
+                                $query = sprintf(
+                                    "INSERT INTO matrixprodukt_optionen_zu_artikel (artikel,option_id) VALUES ('%s','%s')",
+                                    $articleid,
+                                    $optionId
+                                );
                                 $this->app->DB->Insert($query);
                             }
                         }
@@ -954,10 +1002,14 @@ class Remote {
                 } else {
                     $sort = 0;
                 }
-                $query = sprintf("INSERT INTO stueckliste (sort, artikel, referenz, place, layer, stuecklistevonartikel, 
-                         menge, firma, wert, bauform, alternative, zachse, xpos, ypos, art) 
+                $query = sprintf("INSERT INTO stueckliste (sort, artikel, referenz, place, layer, stuecklistevonartikel,
+                         menge, firma, wert, bauform, alternative, zachse, xpos, ypos, art)
             VALUES (%d, %d, '', 'DP', 'Top', %d, %d, 1, '', '', 0, '', '', '', 'et')",
-                        $sort, $articleid, $variante_von, $stuecklistenmenge);
+                    $sort,
+                    $articleid,
+                    $variante_von,
+                    $stuecklistenmenge
+                );
                 $this->app->DB->Insert($query);
             }
 
@@ -1004,16 +1056,27 @@ class Remote {
             }
             if (isset($ret['fremdnummern']) && !empty($ret['fremdnummern'])) {
                 foreach ($ret['fremdnummern'] as $fremdnummer) {
-                    $query = sprintf("SELECT id FROM artikelnummer_fremdnummern WHERE shopid=%d AND nummer='%s' AND bezeichnung='%s' AND aktiv=%d AND artikel=%s",
-                            $id, $this->app->DB->real_escape_string($fremdnummer['nummer']), $this->app->DB->real_escape_string($fremdnummer['bezeichnung']), '1', $articleid);
+                    $query = sprintf(
+                        "SELECT id FROM artikelnummer_fremdnummern WHERE shopid=%d AND nummer='%s' AND bezeichnung='%s' AND aktiv=%d AND artikel=%s",
+                        $id,
+                        $this->app->DB->real_escape_string($fremdnummer['nummer']),
+                        $this->app->DB->real_escape_string($fremdnummer['bezeichnung']),
+                        '1',
+                        $articleid
+                    );
                     $fremdnummerfehlt = empty($this->app->DB->Select($query));
 
                     if ($fremdnummerfehlt) {
-                        $query = sprintf("INSERT INTO artikelnummer_fremdnummern 
-                (artikel, bezeichnung, nummer, shopid, bearbeiter, aktiv)  VALUES 
+                        $query = sprintf("INSERT INTO artikelnummer_fremdnummern
+                (artikel, bezeichnung, nummer, shopid, bearbeiter, aktiv)  VALUES
                 (%d,'%s','%s',%d,'%s',%d)",
-                                $articleid, $this->app->DB->real_escape_string($fremdnummer['bezeichnung']),
-                                $this->app->DB->real_escape_string($fremdnummer['nummer']), $id, $this->app->User->GetName(), 1);
+                            $articleid,
+                            $this->app->DB->real_escape_string($fremdnummer['bezeichnung']),
+                            $this->app->DB->real_escape_string($fremdnummer['nummer']),
+                            $id,
+                            $this->app->User->GetName(),
+                            1
+                        );
                         $this->app->DB->Insert($query);
                     }
                 }
@@ -1037,7 +1100,8 @@ class Remote {
      *
      * @return array
      */
-    protected function getShopKatgeorien($shopId, $parent = 0, $lvl = 0) {
+    protected function getShopKatgeorien($shopId, $parent = 0, $lvl = 0)
+    {
         if ($lvl > 20) {
             return [];
         }
@@ -1072,7 +1136,7 @@ class Remote {
      * return value: (comes from Importsendlist or Importsendlistlager inside shopimporter_...)
      * array (
      *      'count' => int, // Number of successfully sent articles
-     *      'new' => array (artikelid, fremdnummer), // List of new articles with external number  
+     *      'new' => array (artikelid, fremdnummer), // List of new articles with external number
      *      'message' => string
      *      'status' => bool,     // false = failed
      *      'articles' => array(
@@ -1081,21 +1145,26 @@ class Remote {
      *          'message',
      *          ...
      *      )
-     * )  
+     * )
      *
      */
-    public function RemoteSendArticleList($id, $artikel_arr, $extnummer = '', $nurlager = false) {
+    public function RemoteSendArticleList($id, $artikel_arr, $extnummer = '', $nurlager = false)
+    {
 
         $this->logger->debug(
-                'RemoteSendArticleList',
-                [
-                    'shop' => $id,
-                    'artikel_arr' => $artikel_arr
-                ]
+            'RemoteSendArticleList',
+            [
+                'shop' => $id,
+                'extnummer' => $extnummer,
+                'nurlager' => $nurlager,
+                'artikel_arr' => $artikel_arr
+            ]
         );
 
-        if (!class_exists('ObjGenArtikel') &&
-                is_file(dirname(__DIR__) . '/objectapi/mysql/_gen/object.gen.artikel.php')) {
+        if (
+            !class_exists('ObjGenArtikel') &&
+            is_file(dirname(__DIR__) . '/objectapi/mysql/_gen/object.gen.artikel.php')
+        ) {
             include_once dirname(__DIR__) . '/objectapi/mysql/_gen/object.gen.artikel.php';
         }
         $shopexportarr = $this->app->DB->SelectRow("SELECT * FROM shopexport WHERE id='$id' LIMIT 1");
@@ -1119,7 +1188,7 @@ class Remote {
         ];
 
         if (
-                ($nurlager || empty($artikelexport)) && !empty($shopexportarr['modulename']) && !is_file(dirname(__DIR__) . '/pages/' . $shopexportarr['modulename'] . '_custom.php')
+            ($nurlager || empty($artikelexport)) && !empty($shopexportarr['modulename']) && !is_file(dirname(__DIR__) . '/pages/' . $shopexportarr['modulename'] . '_custom.php')
         ) {
             $elementsNotNeededByModule = ShopimporterBase::storageNotNeededElements($shopexportarr['modulename']);
             foreach ($elementsNotNeededByModule as $element) {
@@ -1130,6 +1199,10 @@ class Remote {
         //$lagerexport = $shopexportarr['lagerexport'];
         $lagergrundlage = $shopexportarr['lagergrundlage'];
         $shopbilderuebertragen = $shopexportarr['shopbilderuebertragen'];
+        $dateienuebertragen = explode(',',str_replace(' ','',strtolower($shopexportarr['dateienuebertragen'])));
+        if ($shopbilderuebertragen) {
+            $dateienuebertragen[] = 'shopbild';
+        }
         $projekt = (int) $shopexportarr['projekt'];
         $projektlager = $this->app->DB->Select("SELECT id FROM projekt WHERE id = $projekt AND projektlager = 1 LIMIT 1");
         $tmp = new ObjGenArtikel($this->app);
@@ -1167,6 +1240,12 @@ class Remote {
                         $data[$i]['artikelnummer_fremdnummern'][$fkey]['nummer'] = trim($fval['nummer']);
                     }
                 }
+            }
+
+            if($tmp->GetVariante()) {
+                $parentid = $tmp->GetVariante_Von();
+            } else {
+                $parentid = 0;
             }
 
             if (!empty($loadElements['article_descriptions'])) {
@@ -1367,27 +1446,47 @@ class Remote {
                 $data[$i]['eigenschaftenuebersetzungen'] = $eigenschaftenuebersetzungen;
             }
 
-            //Bilder
+            //Bilder + Anhänge
             $dateien = null;
-            if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                $dateien = $this->getImagesForArticle($artikel);
+
+            if (!empty($dateienuebertragen)) {
+                $dateien = $this->getFilesForArticle($artikel,$dateienuebertragen,$parentid);
+
+                $this->logger->debug('Remote prepare dateien', array('artikel' => $artikel, 'dateien' => $dateien));
+
                 if (!empty($dateien)) {
                     $data[$i]['Dateien'] = [];
                     foreach ($dateien as $datei) {
+
+                        if ($datei['vom_hauptartikel']) {
+                            $artikeldata = $this->app->DB->SelectRow("SELECT * FROM artikel WHERE id = ".$parentid." LIMIT 1");
+                        } else {
+                            $artikeldata = $this->app->DB->SelectRow("SELECT * FROM artikel WHERE id = ".$artikel." LIMIT 1");
+                        }
+
                         $filename = $this->app->erp->GetDateiName($datei['id']);
                         $path_info = pathinfo($filename);
+
+                        $this->logger->debug('Remote prepare datei '.$filename);
+
                         $data[$i]['Dateien'][] = array(
-                            'datei' => base64_encode($this->app->erp->GetDatei($datei['id'])),
+//                            'datei' => base64_encode($this->app->erp->GetDatei($datei['id'])), // Changed to path because of out-of-memory problems with big files
+                            'dateipfad' => $this->app->erp->GetDateiPfad($datei['id']),
                             'filename' => $filename,
                             'extension' => $path_info['extension'],
+                            'mimetype' => $this->app->erp->GetDateiMimeType($datei['id']),
                             'titel' => $datei['titel'],
                             'beschreibung' => $datei['beschreibung'],
                             'id' => $datei['id'],
                             'version' => $datei['version'],
                             'stichwort' => $datei['subjekt'],
-                            'extid' => $this->GetShopexportMappingExt($id, 'datei', $datei['id']));
+                            'extid' => $this->GetShopexportMappingExt($id, 'datei', $datei['id']),
+                            'artikeldata' => $artikeldata
+                        );
                     }
+                    $this->logger->debug('Remote prepared '.count($data[$i]['Dateien']).' dateien');
                 }
+
                 $dateiengeloescht = $this->app->DB->SelectArr("SELECT s.extid FROM shopexport_mapping s LEFT JOIN datei d ON s.intid = d.id AND d.geloescht = 0 WHERE s.shop = '$id' AND s.tabelle = 'datei' AND s.intid2 = '$artikel' AND isnull(d.id)");
                 if (!empty($dateiengeloescht)) {
                     if (empty($dateien)) {
@@ -1398,7 +1497,6 @@ class Remote {
                     }
                 }
             }
-
 
             if (method_exists($tmp, 'GetSteuer_Art_Produkt')) {
                 $data[$i]['steuer_art_produkt'] = $tmp->GetSteuer_Art_Produkt();
@@ -1440,24 +1538,25 @@ class Remote {
                 $data[$i]['anzahl_lager'] = '';
                 $data[$i]['pseudolager'] = '';
                 $this->app->DB->Update(
-                        sprintf(
-                                'UPDATE `artikel_onlineshops` 
-            SET `storage_cache` = NULL, `pseudostorage_cache` = NULL 
+                    sprintf(
+                        'UPDATE `artikel_onlineshops`
+            SET `storage_cache` = NULL, `pseudostorage_cache` = NULL
             WHERE `artikel` = %d AND `shop` = %d',
-                                $artikel, $id
-                        )
+                        $artikel,
+                        $id
+                    )
                 );
             } else {
                 $this->app->DB->Update(
-                        sprintf(
-                                'UPDATE `artikel_onlineshops` 
-            SET `storage_cache` = %d, `pseudostorage_cache` = %s 
+                    sprintf(
+                        'UPDATE `artikel_onlineshops`
+            SET `storage_cache` = %d, `pseudostorage_cache` = %s
             WHERE `artikel` = %d AND `shop` = %d',
-                                $data[$i]['anzahl_lager'],
-                                !isset($data[$i]['pseudolager']) || !is_numeric($data[$i]['pseudolager']) ? 'NULL' : $data[$i]['pseudolager'],
-                                $artikel,
-                                $id
-                        )
+                        $data[$i]['anzahl_lager'],
+                        !isset($data[$i]['pseudolager']) || !is_numeric($data[$i]['pseudolager']) ? 'NULL' : $data[$i]['pseudolager'],
+                        $artikel,
+                        $id
+                    )
                 );
             }
 
@@ -1465,11 +1564,11 @@ class Remote {
             if (!empty($shopexportarr['crosssellingartikeluebertragen']) && !empty($loadElements['cross_selling'])) {
                 //if($this->app->DB->Select("SELECT crosssellingartikeluebertragen FROM shopexport WHERE id = '$id' LIMIT 1")){
                 $data[$i]['crosssellingartikel'] = $this->app->DB->SelectArr("SELECT a.id, a.nummer, ak.bezeichnung as kategorie, a.name_de, a.name_en, ca.art, ca.gegenseitigzuweisen, af.nummer AS fremdnummer
-            FROM crossselling_artikel ca 
-            JOIN artikel a ON ca.crosssellingartikel = a.id 
-            LEFT JOIN artikelkategorien ak ON CONCAT(ak.id,'_kat') = a.typ 
+            FROM crossselling_artikel ca
+            JOIN artikel a ON ca.crosssellingartikel = a.id
+            LEFT JOIN artikelkategorien ak ON CONCAT(ak.id,'_kat') = a.typ
             LEFT JOIN (SELECT af.id,af.nummer,af.artikel,af.shopid FROM artikelnummer_fremdnummern af JOIN (SELECT artikel, MAX(shopid) AS maxid FROM artikelnummer_fremdnummern WHERE aktiv=1 AND (shopid=0 OR shopid=2) GROUP BY artikel) x ON x.artikel = af.artikel AND af.shopid=x.maxid WHERE af.aktiv = 1) af ON af.artikel = a.id
-            WHERE ca.artikel='" . $tmp->GetId() . "' AND (ca.shop='$id' OR ca.shop='0') 
+            WHERE ca.artikel='" . $tmp->GetId() . "' AND (ca.shop='$id' OR ca.shop='0')
             GROUP BY ca.crosssellingartikel, ca.art");
 
                 if (empty($data[$i]['crosssellingartikel'])) {
@@ -1478,12 +1577,12 @@ class Remote {
 
 
                 $sql = "SELECT a.id, a.nummer, ak.bezeichnung as kategorie, a.name_de, a.name_en, ca.art, ca.gegenseitigzuweisen, af.nummer AS fremdnummer
-            FROM crossselling_artikel ca 
-            JOIN artikel a ON ca.artikel = a.id 
-            LEFT JOIN artikelkategorien ak ON CONCAT(ak.id,'_kat') = a.typ 
-            LEFT JOIN (SELECT af.id,af.nummer,af.artikel,af.shopid FROM artikelnummer_fremdnummern af JOIN (SELECT artikel, MAX(shopid) AS maxid FROM artikelnummer_fremdnummern WHERE aktiv=1 AND (shopid=0 OR shopid=2) GROUP BY artikel) x ON x.artikel = af.artikel AND af.shopid=x.maxid WHERE af.aktiv = 1) af ON af.artikel = a.id            
+            FROM crossselling_artikel ca
+            JOIN artikel a ON ca.artikel = a.id
+            LEFT JOIN artikelkategorien ak ON CONCAT(ak.id,'_kat') = a.typ
+            LEFT JOIN (SELECT af.id,af.nummer,af.artikel,af.shopid FROM artikelnummer_fremdnummern af JOIN (SELECT artikel, MAX(shopid) AS maxid FROM artikelnummer_fremdnummern WHERE aktiv=1 AND (shopid=0 OR shopid=2) GROUP BY artikel) x ON x.artikel = af.artikel AND af.shopid=x.maxid WHERE af.aktiv = 1) af ON af.artikel = a.id
             LEFT JOIN (SELECT nummer,artikel FROM artikelnummer_fremdnummern WHERE shopid=0 OR shopid='$id' ORDER BY shopid DESC LIMIT 1 ) af2 ON af2.artikel = a.id
-            WHERE ca.crosssellingartikel='" . $tmp->GetId() . "' AND ca.gegenseitigzuweisen=1 AND (ca.shop='$id' OR ca.shop='0') 
+            WHERE ca.crosssellingartikel='" . $tmp->GetId() . "' AND ca.gegenseitigzuweisen=1 AND (ca.shop='$id' OR ca.shop='0')
             GROUP BY ca.artikel, ca.art";
 
                 $gegenseitigzugewiesen = $this->app->DB->SelectArr($sql);
@@ -1498,8 +1597,12 @@ class Remote {
             if (!empty($loadElements['article_descriptions']) && $this->app->erp->ModulVorhanden('artikel_texte')) {
                 $sprachen = ['de', 'en'];
                 foreach ($sprachen as $sprache) {
-                    $query = sprintf("SELECT * FROM artikel_texte WHERE shop=%d AND sprache='%s' AND artikel=%d AND aktiv=1 LIMIT 1",
-                            $id, strtoupper($sprache), $artikel);
+                    $query = sprintf(
+                        "SELECT * FROM artikel_texte WHERE shop=%d AND sprache='%s' AND artikel=%d AND aktiv=1 LIMIT 1",
+                        $id,
+                        strtoupper($sprache),
+                        $artikel
+                    );
                     $ersetzeStandardbeschreibung = $this->app->DB->SelectRow($query);
                     if (!empty($ersetzeStandardbeschreibung)) {
                         $data[$i]['name_' . $sprache] = $ersetzeStandardbeschreibung['name'];
@@ -1519,11 +1622,11 @@ class Remote {
 
             if (!empty($loadElements['standard_price'])) {
 
-                $priceInformation = $this->app->DB->SelectArr("SELECT v.preis AS preis, v.waehrung 
-          FROM `verkaufspreise` AS `v` 
+                $priceInformation = $this->app->DB->SelectArr("SELECT v.preis AS preis, v.waehrung
+          FROM `verkaufspreise` AS `v`
           WHERE v.artikel = '{$artikel}' AND v.ab_menge = 1 AND v.geloescht = 0 AND v.art != 'Gruppe'
-            AND (v.objekt = 'Standard' OR v.objekt = '') AND (v.adresse = '0' OR v.adresse = '') 
-            AND (v.gueltig_bis >= NOW() OR v.gueltig_bis = '0000-00-00') 
+            AND (v.objekt = 'Standard' OR v.objekt = '') AND (v.adresse = '0' OR v.adresse = '')
+            AND (v.gueltig_bis >= NOW() OR v.gueltig_bis = '0000-00-00')
           ORDER BY v.preis DESC LIMIT 1");
 
                 if (!empty($priceInformation)) {
@@ -1621,12 +1724,12 @@ class Remote {
                      * Staffelpreise werden gesondert uebergeben statt in einem sammelarray
                      */
                     $staffelpreise = $this->app->DB->SelectArr("
-        SELECT a.name AS kundenname, a.email, v.adresse, g.name,g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, art.umsatzsteuer  
-        FROM `verkaufspreise` AS v 
+        SELECT a.name AS kundenname, a.email, v.adresse, g.name,g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, art.umsatzsteuer
+        FROM `verkaufspreise` AS v
         INNER JOIN artikel art ON v.artikel = art.id
         LEFT JOIN gruppen g on v.gruppe = g.id AND v.art like 'Gruppe'
         LEFT JOIN adresse a ON v.adresse = a.id AND v.art LIKE 'Kunde'
-        WHERE v.`artikel` = '$artikel' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis)) 
+        WHERE v.`artikel` = '$artikel' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis))
         AND (v.gueltig_ab = '0000-00-00' OR curdate() >= v.gueltig_ab OR isnull(v.gueltig_ab)) ORDER by g.id, ab_menge");
 
                     if (!empty($staffelpreise)) {
@@ -1648,14 +1751,14 @@ class Remote {
             }
             $data[$i]['checksum'] = $tmp->GetChecksum();
             if ($data[$i]['preis'] == '' && !empty($artikelexport) && !$nurlager) {
-                if ($lagerexport) {
+/*                if ($lagerexport) { Removed, because this makes no sense. If price is missing, provoke an error
                     $nurlager = true;
-                } else {
+                } else {*/
                     $this->app->erp->Systemlog(
-                            'Shopexport bei Artikel ' . $data[$i]['nummer'] . ' ' . $data[$i]['name_de'] . ' fehlgeschlagen, da Verkaufspreis fehlt.'
+                        'Shopexport bei Artikel ' . $data[$i]['nummer'] . ' ' . $data[$i]['name_de'] . ' fehlgeschlagen, da Verkaufspreis fehlt.'
                     );
                     $data[$i]['artikel'] = 'ignore';
-                }
+/*                }*/
             }
 
             $steuerermaessigt = ($this->app->erp->GetStandardSteuersatzErmaessigt($projekt) + 100) / 100.0;
@@ -1695,10 +1798,10 @@ class Remote {
 
                     if ($translationpossible && !empty($loadElements['translations'])) {
                         if (empty($gruppenuebersetzung[$matrixdaten['gruppe']])) {
-                            $gruppennamen = $this->app->DB->SelectArr("SELECT 
-                                        IF(name_external_from<>'',name_external_from,name_from) AS name_from, 
-                                        IF(name_external_to<>'',name_external_to,name_to) AS name_to, language_to 
-                                        FROM `matrix_article_translation` 
+                            $gruppennamen = $this->app->DB->SelectArr("SELECT
+                                        IF(name_external_from<>'',name_external_from,name_from) AS name_from,
+                                        IF(name_external_to<>'',name_external_to,name_to) AS name_to, language_to
+                                        FROM `matrix_article_translation`
                                         WHERE name_from='" . $matrixdaten['gruppe'] . "' AND (project=0 OR project='$projekt')");
                             $gruppenuebersetzung[$matrixdaten['gruppe']] = true;
                             if (!empty($gruppennamen)) {
@@ -1725,23 +1828,23 @@ class Remote {
                     unset($data[$i]['matrix_varianten']['artikel']);
                     unset($data[$i]['artikel_varianten']);
                     //if($this->app->DB->Select("SELECT variantenuebertragen FROM shopexport WHERE id = '$id' LIMIT 1")){
-                    $varianten = "SELECT art.pseudolager AS `pseudolager`, art.nummer AS `nummer`, art.inaktiv AS `inaktiv`, 
+                    $varianten = "SELECT art.pseudolager AS `pseudolager`, art.nummer AS `nummer`, art.inaktiv AS `inaktiv`,
         art.id AS `artikel`, art.gewicht AS `gewicht`, art.zolltarifnummer AS `zolltarifnummer`, art.name_en AS `name_en`,
         $artfreifeld
         art.pseudopreis AS `pseudopreis`, art.lieferzeitmanuell AS `lieferzeitmanuell`, art.altersfreigabe AS `altersfreigabe`,
         IF(art.intern_gesperrt = 1,1,0) AS `gesperrt`, art.uebersicht_de AS `uebersicht_de`, art.uebersicht_en AS `uebersicht_en`,
         IF(IFNULL(vp2.preis,0) > 0, vp2.preis, vp.preis) as `preis`, art.umsatzsteuer AS `umsatzsteuer`, art.ean AS `ean`,
         art.name_de AS `name_de`, art.restmenge AS `restmenge`, art.steuersatz AS `steuersatz`
-        FROM artikel AS `art` 
-        LEFT JOIN 
-        ( SELECT v.artikel,min(v.preis) as `preis`  
-         FROM verkaufspreise AS `v` 
+        FROM artikel AS `art`
+        LEFT JOIN
+        ( SELECT v.artikel,min(v.preis) as `preis`
+         FROM verkaufspreise AS `v`
          WHERE (ifnull(v.gueltig_bis,'0000-00-00')='0000-00-00' OR v.gueltig_bis >= curdate() ) AND v.ab_menge <= 1
            AND v.art = 'Kunde' AND v.adresse = 0
          GROUP BY v.artikel ) AS `vp` ON vp.artikel = art.id
-        LEFT JOIN (SELECT v2.artikel,min(v2.preis) as `preis`  
-         FROM verkaufspreise AS `v2` 
-         WHERE (ifnull(v2.gueltig_bis,'0000-00-00')='0000-00-00' OR v2.gueltig_bis >= curdate() ) AND v2.ab_menge <= 1 
+        LEFT JOIN (SELECT v2.artikel,min(v2.preis) as `preis`
+         FROM verkaufspreise AS `v2`
+         WHERE (ifnull(v2.gueltig_bis,'0000-00-00')='0000-00-00' OR v2.gueltig_bis >= curdate() ) AND v2.ab_menge <= 1
            AND v2.art = 'Gruppe' AND v2.gruppe = '$preisgruppe'
          GROUP BY v2.artikel
         ) AS `vp2` ON vp2.artikel = art.id
@@ -1772,16 +1875,29 @@ class Remote {
                         if ($matrixStock < 0) {
                             $matrixStock = 0;
                         }
-                        $data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']][] = array('zolltarifnummer' => $eigenschaft['zolltarifnummer'], 'gewicht' => $eigenschaft['gewicht'],
-                                    'artikel' => $eigenschaft['artikel'], 'preis' => $eigenschaft['preis'], 'gesperrt' => $eigenschaft['gesperrt'],
-                                    'nummer' => $eigenschaft['nummer'], 'lieferzeitmanuell' => $eigenschaft['lieferzeitmanuell'],
-                                    'altersfreigabe' => $eigenschaft['altersfreigabe'], 'ean' => $eigenschaft['ean'],
-                                    'lag' => $matrixStock,
-                                    'pseudolager' => $matrixPseudoStorage, 'pseudopreis' => $eigenschaft['pseudopreis'],
-                                    'restmenge' => $eigenschaft['restmenge'], 'steuersatz' => ($steuer - 1) * 100, 'umsatzsteuer' => $eigenschaft['umsatzsteuer'],
-                                    'bruttopreis' => $eigenschaft['preis'] * $steuer, 'inaktiv' => $eigenschaft['inaktiv'],
-                                    'name_de' => $eigenschaft['name_de'], 'name_en' => $eigenschaft['name_en'],
-                                    'uebersicht_de' => $eigenschaft['uebersicht_de'], 'uebersicht_en' => $eigenschaft['uebersicht_en']);
+                        $data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']][] = array(
+                            'zolltarifnummer' => $eigenschaft['zolltarifnummer'],
+                            'gewicht' => $eigenschaft['gewicht'],
+                            'artikel' => $eigenschaft['artikel'],
+                            'preis' => $eigenschaft['preis'],
+                            'gesperrt' => $eigenschaft['gesperrt'],
+                            'nummer' => $eigenschaft['nummer'],
+                            'lieferzeitmanuell' => $eigenschaft['lieferzeitmanuell'],
+                            'altersfreigabe' => $eigenschaft['altersfreigabe'],
+                            'ean' => $eigenschaft['ean'],
+                            'lag' => $matrixStock,
+                            'pseudolager' => $matrixPseudoStorage,
+                            'pseudopreis' => $eigenschaft['pseudopreis'],
+                            'restmenge' => $eigenschaft['restmenge'],
+                            'steuersatz' => ($steuer - 1) * 100,
+                            'umsatzsteuer' => $eigenschaft['umsatzsteuer'],
+                            'bruttopreis' => $eigenschaft['preis'] * $steuer,
+                            'inaktiv' => $eigenschaft['inaktiv'],
+                            'name_de' => $eigenschaft['name_de'],
+                            'name_en' => $eigenschaft['name_en'],
+                            'uebersicht_de' => $eigenschaft['uebersicht_de'],
+                            'uebersicht_en' => $eigenschaft['uebersicht_en']
+                        );
                         if ($freifelder) {
                             foreach ($freifelder as $freifeld) {
                                 $data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']][count($data[$i]['matrix_varianten']['artikel'][$eigenschaft['artikel']]) - 1]['freifelder']['DE'][$freifeld['freifeld_shop']] = $this->app->DB->Select('SELECT ' . $freifeld['freifeld_wawi'] . ' FROM artikel WHERE id=' . $eigenschaft['artikel']);
@@ -1797,7 +1913,7 @@ class Remote {
                         }
 
                         if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                            $dateien = $this->getImagesForArticle($eigenschaft['artikel']);
+                            $dateien = $this->getFilesForArticle($eigenschaft['artikel']);
                             if (!empty($dateien)) {
                                 foreach ($dateien as $datei) {
                                     $filename = $this->app->erp->GetDateiName($datei['id']);
@@ -1822,11 +1938,11 @@ class Remote {
                                 $preisgruppenzusatz = " AND v.gruppe = '$preisgruppe'";
                             }
                             $standardstaffelpreise = $this->app->DB->SelectArr("
-              SELECT v.adresse, g.name,g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, art.umsatzsteuer  
-              FROM `verkaufspreise` AS v 
+              SELECT v.adresse, g.name,g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, art.umsatzsteuer
+              FROM `verkaufspreise` AS v
               INNER JOIN artikel art ON v.artikel = art.id
-              LEFT JOIN gruppen g on v.gruppe = g.id 
-              WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis))  
+              LEFT JOIN gruppen g on v.gruppe = g.id
+              WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis))
                   AND v.adresse=0 AND (v.gueltig_ab = '0000-00-00' OR curdate() >= v.gueltig_ab OR isnull(v.gueltig_ab)) $preisgruppenzusatz
               ORDER by g.id, ab_menge");
                         }
@@ -1843,11 +1959,11 @@ class Remote {
                         }
                         if (!empty($loadElements['bulk_prices'])) {
                             $staffelpreisekunden = $this->app->DB->SelectArr("
-              SELECT a.name AS kundenname, a.email, v.adresse,  v.ab_menge, v.preis, v.waehrung, art.umsatzsteuer  
-              FROM `verkaufspreise` AS v 
+              SELECT a.name AS kundenname, a.email, v.adresse,  v.ab_menge, v.preis, v.waehrung, art.umsatzsteuer
+              FROM `verkaufspreise` AS v
               INNER JOIN artikel art ON v.artikel = art.id
               JOIN adresse a ON v.adresse = a.id AND v.art LIKE 'Kunde'
-              WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis)) 
+              WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis))
               AND (v.gueltig_ab = '0000-00-00' OR curdate() >= v.gueltig_ab OR isnull(v.gueltig_ab))
               ORDER by v.adresse, ab_menge");
                             if (!empty($staffelpreisekunden)) {
@@ -1864,12 +1980,12 @@ class Remote {
                             }
 
                             $staffelpreisegruppen = $this->app->DB->SelectArr("
-              SELECT g.name,g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, art.umsatzsteuer,sk.extgruppename 
-              FROM `verkaufspreise` AS v 
+              SELECT g.name,g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, art.umsatzsteuer,sk.extgruppename
+              FROM `verkaufspreise` AS v
               INNER JOIN artikel art ON v.artikel = art.id
-              JOIN gruppen g on v.gruppe = g.id 
+              JOIN gruppen g on v.gruppe = g.id
               JOIN shopexport_kundengruppen sk ON sk.gruppeid=v.gruppe
-              WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis)) 
+              WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (v.gueltig_bis = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis))
               AND v.art like 'Gruppe' AND v.gruppe<>'$preisgruppe' AND sk.shopid='$id' AND sk.aktiv=1 AND (v.gueltig_ab = '0000-00-00' OR curdate() >= v.gueltig_ab OR isnull(v.gueltig_ab))
               ORDER by g.id, ab_menge");
                             if (!empty($staffelpreisegruppen)) {
@@ -1893,12 +2009,12 @@ class Remote {
                             if (!empty($preisgruppe)) {
                                 $preisgruppenzusatz = " AND v.gruppe = '$preisgruppe'";
                             }
-                            $staffelpreisema = $this->app->DB->SelectArr("      
-            SELECT g.name, g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, v.id, v.adresse, v.art, sk.extgruppename 
-            FROM `verkaufspreise` AS v 
-            LEFT JOIN gruppen g on v.gruppe = g.id AND v.art like 'Gruppe' 
+                            $staffelpreisema = $this->app->DB->SelectArr("
+            SELECT g.name, g.kennziffer, v.ab_menge, v.preis, g.id, v.waehrung, v.id, v.adresse, v.art, sk.extgruppename
+            FROM `verkaufspreise` AS v
+            LEFT JOIN gruppen g on v.gruppe = g.id AND v.art like 'Gruppe'
             LEFT JOIN shopexport_kundengruppen sk ON sk.gruppeid=v.gruppe
-            WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (ifnull(v.gueltig_bis,'0000-00-00') = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis)) 
+            WHERE v.`artikel` = '" . $eigenschaft['artikel'] . "' AND v.geloescht = 0 AND (ifnull(v.gueltig_bis,'0000-00-00') = '0000-00-00' OR curdate() <= v.gueltig_bis OR isnull(v.gueltig_bis))
             AND (v.gueltig_ab = '0000-00-00' OR curdate() >= v.gueltig_ab OR isnull(v.gueltig_ab)) $preisgruppenzusatz ORDER by g.id, ab_menge");
                         }
                         if (!empty($staffelpreisema)) {
@@ -1936,16 +2052,16 @@ class Remote {
                     if (empty($data)) {
                         continue;
                     }
-        } while (count($data[$i]['matrix_varianten']['artikel'] ?? [])>=5000);
+                } while (count($data[$i]['matrix_varianten']['artikel'] ?? []) >= 5000);
 
                 // Bulk transfer (new 2024-06-28)
                 $result = null;
                 if (!empty($artikelexport) && !$nurlager) {
                     $result = $this->sendlist($id, $data, true);
-                }
-                else if (!empty($lagerexport)) {
+                } else if (!empty($lagerexport)) {
                     $result = $this->sendlistlager($id, $data);
                 }
+                $this->logger->debug('RemoteSendArticleList end');
                 return $result;
             }
 
@@ -1974,8 +2090,12 @@ class Remote {
                         if (!empty($loadElements['translations']) && $this->app->erp->ModulVorhanden('artikel_texte')) {
                             $sprachen = ['de', 'en'];
                             foreach ($sprachen as $sprache) {
-                                $query = sprintf("SELECT * FROM artikel_texte WHERE shop=%d AND sprache='%s' AND artikel=%d AND aktiv=1 LIMIT 1",
-                                        $id, strtoupper($sprache), $v['id']);
+                                $query = sprintf(
+                                    "SELECT * FROM artikel_texte WHERE shop=%d AND sprache='%s' AND artikel=%d AND aktiv=1 LIMIT 1",
+                                    $id,
+                                    strtoupper($sprache),
+                                    $v['id']
+                                );
                                 $ersetzeStandardbeschreibung = $this->app->DB->SelectRow($query);
                                 if (!empty($ersetzeStandardbeschreibung)) {
                                     $v['name_' . $sprache] = $ersetzeStandardbeschreibung['name'];
@@ -1988,21 +2108,35 @@ class Remote {
                         }
                         $projectStockId = $this->app->DB->Select("SELECT `id` FROM `projekt` WHERE `id` = '{$projekt}' AND `projektlager` = 1 LIMIT 1");
                         $stock = (float) $this->app->erp->ArtikelAnzahlVerkaufbar(
-                                        $v['id'],
-                                        0,
-                                        $projectStockId,
-                                        $id,
-                                        $lagergrundlage
+                            $v['id'],
+                            0,
+                            $projectStockId,
+                            $id,
+                            $lagergrundlage
                         );
                         if ($stock < 0) {
                             $stock = 0;
                         }
-                        $data[$i]['artikel_varianten'][] = array('nummer' => $v['nummer'], 'name_de' => $v['name_de'], 'name_en' => $v['name_en'], 'restmenge' => $v['restmenge'], 'gesperrt' => ($v['gesperrt'] == 1 || $v['intern_gesperrt'] == 1 ? 1 : 0),
-                            'artikel' => $v['id'], 'zolltarifnummer' => $v['zolltarifnummer'], 'ean' => $v['ean'], 'gewicht' => $v['gewicht'], 'inaktiv' => $v['inaktiv'], 'uebersicht_de' => $v['uebersicht_de'],
+                        $data[$i]['artikel_varianten'][] = array(
+                            'nummer' => $v['nummer'],
+                            'name_de' => $v['name_de'],
+                            'name_en' => $v['name_en'],
+                            'restmenge' => $v['restmenge'],
+                            'gesperrt' => ($v['gesperrt'] == 1 || $v['intern_gesperrt'] == 1 ? 1 : 0),
+                            'artikel' => $v['id'],
+                            'zolltarifnummer' => $v['zolltarifnummer'],
+                            'ean' => $v['ean'],
+                            'gewicht' => $v['gewicht'],
+                            'inaktiv' => $v['inaktiv'],
+                            'uebersicht_de' => $v['uebersicht_de'],
                             'lag' => $stock,
-                            'pseudolager' => $v['pseudolager'], 'pseudopreis' => $v['pseudopreis'], 'preis' => $variantennettopreis, 'bruttopreis' => $variantennettopreis * $steuer,
+                            'pseudolager' => $v['pseudolager'],
+                            'pseudopreis' => $v['pseudopreis'],
+                            'preis' => $variantennettopreis,
+                            'bruttopreis' => $variantennettopreis * $steuer,
                             'artikelnummer_fremdnummern' => $this->app->DB->SelectArr("SELECT * FROM artikelnummer_fremdnummern WHERE artikel = '" . $v['id'] . "' AND nummer <> '' AND shopid = '$id' AND aktiv = '1'"),
-                            'steuersatz' => ($steuer - 1) * 100);
+                            'steuersatz' => ($steuer - 1) * 100
+                        );
                         if (!empty($data[$i]['artikel_varianten'][count($data[$i]['artikel_varianten']) - 1]['artikelnummer_fremdnummern'])) {
                             foreach ($data[$i]['artikel_varianten'][count($data[$i]['artikel_varianten']) - 1]['artikelnummer_fremdnummern'] as $fkey => $fval) {
                                 $data[$i]['artikel_varianten'][count($data[$i]['artikel_varianten']) - 1]['artikelnummer_fremdnummern'][$fkey]['nummer'] = trim($fval['nummer']);
@@ -2036,7 +2170,7 @@ class Remote {
                             }
                         }
                         if ($shopbilderuebertragen && !empty($loadElements['pictures'])) {
-                            $dateien = $this->getImagesForArticle($v['id']);
+                            $dateien = $this->getFilesForArticle($v['id']);
                             if (!empty($dateien)) {
                                 foreach ($dateien as $datei) {
                                     $filename = $this->app->erp->GetDateiName($datei['id']);
@@ -2068,10 +2202,10 @@ class Remote {
         $result = null;
         if (!empty($artikelexport) && !$nurlager) {
             $result = $this->sendlist($id, $data, true);
-        }
-        else if (!empty($lagerexport)) {
+        } else if (!empty($lagerexport)) {
             $result = $this->sendlistlager($id, $data);
         }
+        $this->logger->debug('RemoteSendArticleList end');
         return $result;
     }
 
@@ -2079,27 +2213,52 @@ class Remote {
      * @param int $articleId
      * @return array|null
      */
-    protected function getImagesForArticle($articleId) {
-        $query = sprintf("SELECT d.id AS `id`, dv.id AS `vid`, d.titel, d.beschreibung, ds.subjekt, ds.sort, dv.version AS `version`
-                FROM `datei_stichwoerter` AS `ds` 
-                INNER JOIN `datei` AS `d` ON ds.datei = d.id  
+    protected function getFilesForArticle($articleId, array $stichwoerter = array('Shopbild'), int $parentid = 0)
+    {
+        $query = "SELECT
+                    d.id AS `id`,
+                    dv.id AS `vid`,
+                    IF(ds.parameter = $parentid, 1,0) AS vom_hauptartikel,
+                    d.titel,
+                    d.beschreibung,
+                    ds.subjekt,
+                    ds.sort,
+                    dv.version AS `version`
+                FROM `datei_stichwoerter` AS `ds`
+                INNER JOIN `datei` AS `d` ON ds.datei = d.id
                 INNER JOIN `datei_version` AS `dv` ON dv.datei = ds.datei
-                INNER JOIN (SELECT MAX(`version`) AS `version`, `datei` FROM `datei_version` GROUP BY `datei`) AS `dvm` ON dvm.datei = dv.datei AND dvm.version = dv.version
-                WHERE ds.parameter = %d AND ds.objekt like 'Artikel' AND ds.subjekt LIKE 'Shopbild' AND d.geloescht = 0
-                ORDER BY ds.sort", $articleId);
+                INNER JOIN
+                (
+                    SELECT MAX(`version`) AS `version`, `datei` FROM `datei_version`
+                    GROUP BY `datei`
+                ) AS `dvm` ON dvm.datei = dv.datei AND dvm.version = dv.version
+                WHERE
+                    (ds.parameter = $articleId OR
+                    (ds.parameter = $parentid AND $parentid <> 0)) AND
+                    ds.objekt like 'Artikel' AND
+                    (LOWER(ds.subjekt) LIKE '".
+                implode("' OR LOWER(ds.subjekt) LIKE '",$stichwoerter)
+                ."') AND d.geloescht = 0
+                ORDER BY vom_hauptartikel, ds.sort";
 
         return $this->app->DB->SelectArr($query);
     }
 
-    protected function sendlistlager(int $shop_id, array $data) {
-        $result = $this->RemoteCommand($shop_id, 'sendlistlager', $data);    
+    protected function sendlistlager(int $shop_id, array $data)
+    {
+        $this->logger->debug('Remote sendlistlager');
+
+        $result = $this->RemoteCommand($shop_id, 'sendlistlager', $data);
         return $result;
     }
 
-    protected function sendlist(int $shop_id, array $data, $isLagerExported) {
+    protected function sendlist(int $shop_id, array $data, $isLagerExported)
+    {
 
         // See description of return format in function RemoteSendArticleList()
-        $result = $this->RemoteCommand($shop_id, 'sendlist', $data);       
+        $result = $this->RemoteCommand($shop_id, 'sendlist', $data);
+
+        $this->logger->debug('Remote sendlist');
 
         if (!empty($result) && is_array($result)) {
             /** @var ArticleExportResult $articleResult */
@@ -2110,47 +2269,53 @@ class Remote {
                 $objShopexport = $this->app->loadModule('shopexport');
                 $changedHash = $objShopexport->hasArticleHashChanged($articleResult->articleId, $shop_id);
                 $hash = $changedHash['hash'];
-               
+
                 $checkAo = $this->app->DB->Select(
-                        sprintf(
-                                'SELECT id FROM artikel_onlineshops WHERE artikel = %d AND shop=%d LIMIT 1',
-                            $articleResult->articleId, $shop_id
-                        )
+                    sprintf(
+                        'SELECT id FROM artikel_onlineshops WHERE artikel = %d AND shop=%d LIMIT 1',
+                        $articleResult->articleId,
+                        $shop_id
+                    )
                 );
                 if (empty($checkAo)) {
                     $this->app->DB->Insert(
-                            sprintf(
-                                    'INSERT INTO artikel_onlineshops (artikel, shop, aktiv, ausartikel) 
+                        sprintf(
+                            'INSERT INTO artikel_onlineshops (artikel, shop, aktiv, ausartikel)
                     VALUES (%d, %d, 1, 1) ',
-                                $articleResult->articleId, $shop_id
-                            )
+                            $articleResult->articleId,
+                            $shop_id
+                        )
                     );
                 }
                 $this->app->DB->Update(
-                        sprintf(
-                                "UPDATE artikel_onlineshops 
-                  SET last_article_transfer = NOW(), last_article_hash = '%s' 
+                    sprintf(
+                        "UPDATE artikel_onlineshops
+                  SET last_article_transfer = NOW(), last_article_hash = '%s'
                   WHERE artikel = %d AND shop = %d",
-                                $this->app->DB->real_escape_string($hash), $articleResult->articleId, $shop_id
-                        )
+                        $this->app->DB->real_escape_string($hash),
+                        $articleResult->articleId,
+                        $shop_id
+                    )
                 );
 
                 $artikelnummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id = '$articleResult->articleId' LIMIT 1");
-                $artikelfremdnummer = $this->app->DB->Select("SELECT nummer 
-                    FROM `artikelnummer_fremdnummern` 
+                $artikelfremdnummer = $this->app->DB->Select("SELECT nummer
+                    FROM `artikelnummer_fremdnummern`
                     WHERE artikel = '$articleResult->articleId'
                     AND shopid = '$shop_id'
                     AND nummer != ''
-                    AND (aktiv = 1 OR nummer = '".trim($this->app->DB->real_escape_string($articleResult->extArticleId))."') LIMIT 1 ");
-                if ($articleResult->articleId > 0 && $articleResult->extArticleId != null &&
+                    AND (aktiv = 1 OR nummer = '" . trim($this->app->DB->real_escape_string($articleResult->extArticleId)) . "') LIMIT 1 ");
+                if (
+                    $articleResult->articleId > 0 && $articleResult->extArticleId != null &&
                     trim($articleResult->extArticleId) != '' &&
                     $artikelnummer != trim($articleResult->extArticleId) &&
-                    empty($artikelfremdnummer)) {
+                    empty($artikelfremdnummer)
+                ) {
                     //Nur falls keine aktive Fremdnummer exisitert.
                     $this->app->DB->Insert("INSERT INTO `artikelnummer_fremdnummern` (artikel, bezeichnung, nummer, shopid, bearbeiter, zeitstempel, aktiv)
                         VALUES ($articleResult->articleId,'Erstellt durch Artikelexport','" . trim($this->app->DB->real_escape_string($articleResult->extArticleId)) . "','$shop_id','" . ((isset($this->app->User) && method_exists($this->app->User, 'GetName')) ? $this->app->DB->real_escape_string($this->app->User->GetName()) : 'Cronjob') . "',now(),0)
                         ");
-                    }
+                }
             }
         }
 
@@ -2160,27 +2325,27 @@ class Remote {
         return $result;
     }
 
-  public function getDataToSendForUpdateOrder(int $shopId, int $orderId): ?OrderStatusUpdateRequest
-  {
-      $orderArr = $this->app->DB->SelectRow("SELECT `zahlungsweise`, `shopextid` FROM `auftrag` WHERE `id` = $orderId LIMIT 1");
-      if (empty($orderArr))
-          return null;
+    public function getDataToSendForUpdateOrder(int $shopId, int $orderId): ?OrderStatusUpdateRequest
+    {
+        $orderArr = $this->app->DB->SelectRow("SELECT `zahlungsweise`, `shopextid` FROM `auftrag` WHERE `id` = $orderId LIMIT 1");
+        if (empty($orderArr))
+            return null;
 
-      $data = new OrderStatusUpdateRequest();
-      $data->orderId = $orderId;
-      $data->shopOrderId = $orderArr['shopextid'];
+        $data = new OrderStatusUpdateRequest();
+        $data->orderId = $orderId;
+        $data->shopOrderId = $orderArr['shopextid'];
 
-      $statusArr = $this->app->DB->SelectFirstCols("SELECT DISTINCT status FROM auftrag WHERE id = $orderId OR teillieferungvon = $orderId");
-      if (in_array('storniert', $statusArr))
-          $data->orderStatus = OrderStatus::Cancelled;
-      if (in_array('abgeschlossen', $statusArr))
-          $data->orderStatus = OrderStatus::Completed;
-      if (in_array('freigegeben', $statusArr))
-          $data->orderStatus = OrderStatus::InProgress;
-      if (in_array('angelegt', $statusArr))
-          $data->orderStatus = OrderStatus::Imported;
+        $statusArr = $this->app->DB->SelectFirstCols("SELECT DISTINCT status FROM auftrag WHERE id = $orderId OR teillieferungvon = $orderId");
+        if (in_array('storniert', $statusArr))
+            $data->orderStatus = OrderStatus::Cancelled;
+        if (in_array('abgeschlossen', $statusArr))
+            $data->orderStatus = OrderStatus::Completed;
+        if (in_array('freigegeben', $statusArr))
+            $data->orderStatus = OrderStatus::InProgress;
+        if (in_array('angelegt', $statusArr))
+            $data->orderStatus = OrderStatus::Imported;
 
-      $sql = "
+        $sql = "
         SELECT DISTINCT
             v.id,
             v.tracking,
@@ -2201,17 +2366,17 @@ class Remote {
         WHERE (a.id = $orderId OR a.teillieferungvon = $orderId) AND v.id IS NOT NULL
         ORDER BY v.id";
 
-      $shipments = $this->app->DB->SelectArr($sql);
-      foreach ($shipments as $shipment) {
-          $item = new Shipment();
-          $item->id = $shipment['id'];
-          $item->trackingNumber = $shipment['tracking'];
-          $item->trackingUrl = $shipment['tracking_link'];
-          $item->shippingMethod = $shipment['versandart'];
-          $data->shipments[] = $item;
-      }
+        $shipments = $this->app->DB->SelectArr($sql);
+        foreach ($shipments as $shipment) {
+            $item = new Shipment();
+            $item->id = $shipment['id'];
+            $item->trackingNumber = $shipment['tracking'];
+            $item->trackingUrl = $shipment['tracking_link'];
+            $item->shippingMethod = $shipment['versandart'];
+            $data->shipments[] = $item;
+        }
 
-      return $data;
+        return $data;
     }
 
     /**
@@ -2220,39 +2385,39 @@ class Remote {
      *
      * @throws Exception
      */
-    public function RemoteUpdateAuftrag($shopId, $orderId) {
-      $data = $this->getDataToSendForUpdateOrder((int)$shopId, (int)$orderId);
-      if($data?->orderStatus !== OrderStatus::Completed)
-          return;
+    public function RemoteUpdateAuftrag($shopId, $orderId)
+    {
+        $data = $this->getDataToSendForUpdateOrder((int) $shopId, (int) $orderId);
 
-            $bearbeiter = 'Cronjob';
-            if (isset($this->app->User)) {
-                $bearbeiter = $this->app->DB->real_escape_string($this->app->User->GetName());
-            }
+        $bearbeiter = 'Cronjob';
+        if (isset($this->app->User)) {
+            $bearbeiter = $this->app->DB->real_escape_string($this->app->User->GetName());
+        }
 
-            $response = $this->RemoteCommand($shopId, 'updateauftrag', $data);
-            if ($response instanceOf ShopConnectorResponseInterface && !$response->isSuccessful()) {
-                $query = sprintf('UPDATE `auftrag`
+        $response = $this->RemoteCommand($shopId, 'updateauftrag', $data);
+        if ($response instanceof ShopConnectorResponseInterface && !$response->isSuccessful()) {
+            $query = sprintf('UPDATE `auftrag`
             SET `shop_status_update_attempt` = `shop_status_update_attempt` + 1,
                 `shop_status_update_last_attempt_at` = NOW()
             WHERE `id` = %d', $orderId);
-                $this->app->DB->Update($query);
+            $this->app->DB->Update($query);
 
-                $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop fehlgeschlagen', $bearbeiter);
+            $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop fehlgeschlagen', $bearbeiter);
 
-                $this->logger->error('Versandmeldung an Shop fehlgeschlagen',
-                    [
-                        'orderId' => $orderId,
-                        'shopId' => $shopId,
-                        'message' => $response->getMessage()
-                    ]
-                );
-                return;
-            }
-
-            $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop &uuml;bertragen', $bearbeiter);
-            $this->app->DB->Update("UPDATE `auftrag` SET `shopextstatus` = 'abgeschlossen' WHERE `id` = $orderId LIMIT 1");
+            $this->logger->error(
+                'Versandmeldung an Shop fehlgeschlagen',
+                [
+                    'orderId' => $orderId,
+                    'shopId' => $shopId,
+                    'message' => $response->getMessage()
+                ]
+            );
+            return;
         }
+
+        $this->app->erp->AuftragProtokoll($orderId, 'Versandmeldung an Shop &uuml;bertragen', $bearbeiter);
+        $this->app->DB->Update("UPDATE `auftrag` SET `shopextstatus` = 'abgeschlossen' WHERE `id` = $orderId LIMIT 1");
+    }
 
     /**
      * @param int    $shopId
@@ -2262,7 +2427,8 @@ class Remote {
      *
      * @throws Exception
      */
-    public function RemoteDeleteAuftrag($shopId, $auftrag, $internet = '') {
+    public function RemoteDeleteAuftrag($shopId, $auftrag, $internet = '')
+    {
         $data['auftrag'] = $auftrag;
         $data['internet'] = $internet;
         $this->RemoteCommand($shopId, 'deleteauftrag', $data);
@@ -2274,7 +2440,8 @@ class Remote {
      *
      * @throws Exception
      */
-    public function RemoteStorniereAuftrag($shopId, $orderId) {
+    public function RemoteStorniereAuftrag($shopId, $orderId)
+    {
         $orderArr = $this->app->DB->SelectRow("SELECT shopextid, internet FROM auftrag WHERE id='$orderId' LIMIT 1");
         if (empty($orderArr)) {
             return;
@@ -2284,8 +2451,9 @@ class Remote {
         $data['auftrag'] = $shopextid;
         $data['internet'] = $internet;
 
-        $this->app->DB->Insert("
-    INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund) 
+        $this->app->DB->Insert(
+            "
+    INSERT INTO auftrag_protokoll (auftrag, zeit, bearbeiter, grund)
     VALUES ($orderId,now(),'" . (isset($this->app->User) ? $this->app->DB->real_escape_string($this->app->User->GetName()) : 'Cronjob') . "',
     'Stonierung an Shop &uuml;bertragen')"
         );
@@ -2301,7 +2469,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteDeleteFile($shopId, $fileId) {
+    public function RemoteDeleteFile($shopId, $fileId)
+    {
         $inhalt = $this->app->erp->GetDatei($fileId);
         $fileArr = $this->app->DB->SelectRow("SELECT titel,beschreibung FROM datei WHERE id='$fileId' LIMIT 1");
         $titel = $fileArr['titel'];
@@ -2317,11 +2486,13 @@ class Remote {
      * @param int $articleId
      * @param int $shopId
      */
-    public function RemoteUpdateFilesArtikel($articleId, $shopId) {
-        $files = $this->app->DB->SelectArr("SELECT DISTINCT ds.datei 
-      FROM datei_stichwoerter ds, datei d, artikel a 
-      WHERE d.id=ds.datei AND (ds.subjekt='Shopbild' OR ds.subjekt='Gruppenbild') AND ((ds.objekt='Artikel' AND 
-      ds.parameter=a.id)  OR (ds.objekt='Kampangen' AND ds.parameter='$shopId')) AND 
+    public function RemoteUpdateFilesArtikel($articleId, $shopId)
+    {
+        $files = $this->app->DB->SelectArr(
+            "SELECT DISTINCT ds.datei
+      FROM datei_stichwoerter ds, datei d, artikel a
+      WHERE d.id=ds.datei AND (ds.subjekt='Shopbild' OR ds.subjekt='Gruppenbild') AND ((ds.objekt='Artikel' AND
+      ds.parameter=a.id)  OR (ds.objekt='Kampangen' AND ds.parameter='$shopId')) AND
       d.firma='" . $this->app->User->GetFirma() . "' AND a.shop='$shopId' AND a.id='$articleId'"
         );
 
@@ -2367,7 +2538,8 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteSendFile($shopId, $fileId) {
+    public function RemoteSendFile($shopId, $fileId)
+    {
         // sende stichwoerter
         $fileArr = $this->app->DB->SelectRow("SELECT geloescht, titel, beschreibung FROM datei WHERE id='$fileId' LIMIT 1");
         if (empty($fileArr)) {
@@ -2395,10 +2567,12 @@ class Remote {
      *
      * @throws Exception
      */
-    public function RemoteAddFileSubject($shopId, $fileId) {
+    public function RemoteAddFileSubject($shopId, $fileId)
+    {
         // sende stichwoerter
-        $fileList = $this->app->DB->SelectArr("SELECT subjekt, parameter 
-      FROM datei_stichwoerter 
+        $fileList = $this->app->DB->SelectArr(
+            "SELECT subjekt, parameter
+      FROM datei_stichwoerter
       WHERE (objekt='Artikel' OR objekt='Kampangen') AND datei='$fileId'"
         );
         if (empty($fileList)) {
@@ -2423,7 +2597,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteDeleteArticle($shopId, $artikel) {
+    public function RemoteDeleteArticle($shopId, $artikel)
+    {
         return $this->RemoteCommand($shopId, 'deletearticle', $artikel);
     }
 
@@ -2434,7 +2609,8 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteSendPartner($shopId, $partner) {
+    public function RemoteSendPartner($shopId, $partner)
+    {
         return $this->RemoteCommand($shopId, 'partnerlist', $partner);
     }
 
@@ -2444,7 +2620,8 @@ class Remote {
      *
      * @return string
      */
-    public function getMethod($obj, $methodname) {
+    public function getMethod($obj, $methodname)
+    {
         $methodname = trim((String) $methodname);
         if ($methodname === '') {
             return '';
@@ -2481,22 +2658,25 @@ class Remote {
      * @return mixed
      * @throws Exception
      */
-    public function RemoteCommand($id, $action, $data = '') {
+    public function RemoteCommand($id, $action, $data = '')
+    {
         $challenge = '';
         $shoptyp = $this->app->DB->Select("SELECT shoptyp FROM shopexport WHERE id='$id' LIMIT 1");
         $modulename = trim($this->app->DB->Select("SELECT modulename FROM shopexport WHERE id='$id' LIMIT 1"), '.');
         $isActionAuth = $action === 'auth';
         $exception = null;
-        
+        $error = null;
+        $ret = null;
+
         $this->logger->debug(
-                'RemoteCommand (Shop '.$id.") ".$action,
-                [
-                    'shop' => $id,
-                    'action' => $action,
-                    'data' => $data
-                ]
+            'RemoteCommand (Shop ' . $id . ") " . $action,
+            [
+                'shop' => $id,
+                'action' => $action,
+                'data' => $data
+            ]
         );
-        
+
         if ($shoptyp === 'custom') {
 
             $error = null;
@@ -2521,7 +2701,8 @@ class Remote {
                                 $method = $this->getMethod($obj, $action);
                                 if (method_exists($obj, $method)) {
                                     $ret = $obj->$method();
-                                     $this->logger->debug('RemoteCommand result (Shop '.$id.') '.$modulename.' '.$action,
+                                    $this->logger->debug(
+                                        'RemoteCommand result (Shop ' . $id . ') ' . $modulename . ' ' . $action,
                                         [
                                             'shop' => $id,
                                             'action' => $action,
@@ -2532,26 +2713,25 @@ class Remote {
                                     if (!empty($this->app->stringcleaner)) {
                                         $this->app->stringcleaner->XMLArray_clean($ret);
                                     }
-                                } elseif ($isActionAuth) {
+                                } else {
                                     $error = 'Fehler: Importer konnte nicht initialisiert werden';
                                 }
-                            } elseif ($isActionAuth) {
+                            } else {
                                 $error = 'Fehler: Importer konnte nicht initialisiert werden';
                             }
-                        } elseif ($isActionAuth) {
+                        } else {
                             $error = 'Fehler: Importer konnte nicht initialisiert werden';
                         }
-                    } elseif ($isActionAuth) {
+                    } else {
                         $error = 'Fehler: Datei ' . $file . ' existiert nicht';
                     }
-                } elseif ($isActionAuth) {
+                } else {
                     $error = 'Fehler: Schnittstelle nicht aktiv';
                 }
             } else {
-               $error = 'Fehler: Kein Modul angegeben';
+                $error = 'Fehler: Kein Modul angegeben';
             }
-        }
-        else if ($shoptyp === 'intern') {
+        } else if ($shoptyp === 'intern') {
             if ($modulename != '') {
                 if ($this->app->erp->ModulVorhanden($modulename)) {
                     $obj = $this->app->erp->LoadModul($modulename);
@@ -2571,7 +2751,8 @@ class Remote {
                                     $error = 'Fehler: ' . $e->getMessage();
                                 }
                             }
-                            $this->logger->debug('RemoteCommand result (Shop '.$id.') '.$modulename.' '.$action,
+                            $this->logger->debug(
+                                'RemoteCommand result (Shop ' . $id . ') ' . $modulename . ' ' . $action,
                                 [
                                     'shop' => $id,
                                     'action' => $action,
@@ -2586,30 +2767,29 @@ class Remote {
                         } else {
                             $error = 'Fehler: Funktion nicht implementiert: ' . $method;
                         }
-                    } elseif ($isActionAuth) {
+                    } else {
                         $error = 'Fehler: Importer konnte nicht initialisiert werden';
                     }
-                } elseif ($isActionAuth) {
+                } else {
                     $error = 'Fehler: Dieses Modul ist nicht verf&uuml;gbar';
                 }
-            } elseif ($isActionAuth) {
-                $error = 'Fehler: Kein Modul vorhanden';
             } else {
-               $error = 'Fehler: Kein Modul angegeben';
+                $error = 'Fehler: Kein Modul angegeben';
             }
         }
         if ($error) {
-            $this->logger->error('RemoteCommand error (Shop '.$id.') '.$modulename.' '.$action,
+            $this->logger->error(
+                'RemoteCommand error (Shop ' . $id . ') ' . $modulename . ' ' . $action,
                 [
                     'error' => $error,
                     'exception' => $exception
                 ]
             );
-            return($error);
-        }            
-        
+            return (array('errors' => array($error)));
+        }
+
         return $ret;
-   
+
         // Dead code removed here 2024-09-13
     }
 
@@ -2618,7 +2798,8 @@ class Remote {
      * @param int    $id
      * @param string $action
      */
-    public function parseReturn($ret, $id, $action) {
+    public function parseReturn($ret, $id, $action)
+    {
         if ($action === 'getarticlelist') {
             if (empty($ret)) {
                 return;
@@ -2646,7 +2827,8 @@ class Remote {
      * @return mixed|string
      * @throws Exception
      */
-    public function RemoteCommandAES($id, $action, $data = '') {
+    public function RemoteCommandAES($id, $action, $data = '')
+    {
         $challenge = '';
         $shopexport = $this->app->DB->SelectRow("SELECT * FROM shopexport WHERE id='$id' LIMIT 1");
         if (!empty($shopexport)) {
@@ -2672,10 +2854,11 @@ class Remote {
         $post_data['data'] = base64_encode($aes->encrypt(serialize($data)));
 
         if (!$client->post($geturl, $post_data)) {
-            $this->logger->error('An error occurred',
-                    [
-                        'error' => $client->getError()
-                    ]
+            $this->logger->error(
+                'An error occurred',
+                [
+                    'error' => $client->getError()
+                ]
             );
 
             throw new Exception('An error occurred: ' . $client->getError());

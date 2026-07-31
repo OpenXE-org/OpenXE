@@ -77,6 +77,8 @@ class Report
     /** @var Request $request */
     private $request;
 
+    private \Psr\Log\LoggerInterface $logger;
+
     /** @var array $parameterNameBlacklist */
     private $parameterNameBlacklist = [
         'MODULE', 'ACTION', 'CMD', 'ID', 'FORMAT', 'USER_ID', 'USER_PROJECTS', 'USER_ADMIN', 'REPORT_PROJECT'
@@ -98,6 +100,7 @@ class Report
         $this->template = $this->app->Tpl;
         $this->app->ActionHandlerInit($this);
         $this->request = $this->app->Container->get('Request');
+        $this->logger = $this->app->Container->get('Logger');
 
         // ab hier alle Action Handler definieren die das Modul hat
         $this->app->ActionHandler('list', 'HandleActionList');
@@ -1326,7 +1329,7 @@ class Report
             $this->renderErrorMessages(['Keine Daten gefunden.'], $this->app->Tpl);
         }
         catch (Exception $e) {
-            $this->app->erp->LogFile('Exception while creating report', $e);
+            $this->logger->error('Exception while creating report', ['exception' => $e]);
             $this->renderErrorMessages(['Fehler beim Abrufen des Berichts.'], $this->app->Tpl);
         }
 
@@ -3151,8 +3154,7 @@ class Report
     {
         $importDir = dirname(__DIR__, 2) . '/classes/Modules/Report/files';
         if (!is_dir($importDir)) {
-            $this->app->erp->LogFile('Importverzeichnis kann nicht gefunden werden.', $importDir);
-
+            $this->logger->error('Importverzeichnis kann nicht gefunden werden.', ['dir' => $importDir]);
             return;
         }
         $allFiles =scandir($importDir);
@@ -3163,12 +3165,12 @@ class Report
             }
         }
         if ((!empty($importPaths)?count($importPaths):0) === 0) {
-            $this->app->erp->LogFile('No files available for import.', $importDir);
+            $this->logger->error('No files available for import.', ['dir' => $importDir]);
 
             return;
         }
         if (!$this->app->Container->has('ReportJsonImportService')) {
-            $this->app->erp->LogFile('Service ReportJsonImportService not available.');
+            $this->logger->error('Service ReportJsonImportService not available.');
 
             return;
         }
@@ -3183,18 +3185,14 @@ class Report
                 $data = json_decode($content, true);
                 $errors = $importer->findJsonStructureErrors($data);
                 if ((!empty($errors)?count($errors):0) > 0) {
-                    $this->app->erp->Logfile(
-                        sprintf(
-                        'Json parse error in File %s.', $filePath),
-                        implode("\n", $errors)
-                    );
+                    $this->logger->error('Json parse error', ['file' => $filePath, 'errors' => $errors]);
                     throw new JsonParseException(sprintf('Json parse error in File %s', $filePath));
                 }
                 $data['readonly'] = true;
                 $importer->importReport($data);
                 $importedReportNames[] = $data['name'];
             } catch (Exception $e) {
-                $this->app->erp->LogFile(sprintf('Import of json file failed %s', $filePath),$e);
+                $this->logger->error('Json import error', ['file' => $filePath, 'error' => $e->getMessage()]);
             }
         }
 

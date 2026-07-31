@@ -60,12 +60,13 @@ $result = $result[0];
     $this->importzeichensatz=$result['importzeichensatz'];
     $this->utf8decode=$result['utf8decode'];
     $this->charset=$result['charset'];
+    $this->format=$result['format'];
   }
 
   public function Create()
   {
-    $sql = "INSERT INTO `importvorlage` (`id`,`bezeichnung`,`ziel`,`internebemerkung`,`fields`,`letzterimport`,`mitarbeiterletzterimport`,`importtrennzeichen`,`importerstezeilenummer`,`importdatenmaskierung`,`importzeichensatz`,`utf8decode`,`charset`)
-      VALUES(NULL,'{$this->bezeichnung}','{$this->ziel}','{$this->internebemerkung}','{$this->fields}','{$this->letzterimport}','{$this->mitarbeiterletzterimport}','{$this->importtrennzeichen}','{$this->importerstezeilenummer}','{$this->importdatenmaskierung}','{$this->importzeichensatz}','{$this->utf8decode}','{$this->charset}')"; 
+    $sql = "INSERT INTO `importvorlage` (`id`,`bezeichnung`,`ziel`,`internebemerkung`,`fields`,`letzterimport`,`mitarbeiterletzterimport`,`importtrennzeichen`,`importerstezeilenummer`,`importdatenmaskierung`,`importzeichensatz`,`utf8decode`,`charset`,`format`)
+      VALUES(NULL,'{$this->bezeichnung}','{$this->ziel}','{$this->internebemerkung}','{$this->fields}','{$this->letzterimport}','{$this->mitarbeiterletzterimport}','{$this->importtrennzeichen}','{$this->importerstezeilenummer}','{$this->importdatenmaskierung}','{$this->importzeichensatz}','{$this->utf8decode}','{$this->charset}','{$this->format}')"; 
 
     $this->app->DB->Insert($sql);
     $this->id = $this->app->DB->GetInsertID();
@@ -89,7 +90,8 @@ $result = $result[0];
       `importdatenmaskierung`='{$this->importdatenmaskierung}',
       `importzeichensatz`='{$this->importzeichensatz}',
       `utf8decode`='{$this->utf8decode}',
-      `charset`='{$this->charset}'
+      `charset`='{$this->charset}',
+      `format`='{$this->format}'
       WHERE (`id`='{$this->id}')";
 
     $this->app->DB->Update($sql);
@@ -120,6 +122,7 @@ $result = $result[0];
     $this->importzeichensatz='';
     $this->utf8decode='';
     $this->charset='';
+    $this->format='';
   }
 
   public function Copy()
@@ -186,5 +189,7 @@ $result = $result[0];
   public function GetUtf8Decode() { return $this->utf8decode; }
   public function SetCharset($value) { $this->charset=$value; }
   public function GetCharset() { return $this->charset; }
+  public function SetFormat($value) { $this->format=$value; }
+  public function GetFormat() { return $this->format; }
 
 }
