@@ -495,3 +495,49 @@
     color: #DDD;
     background-color: #222;
 }
+
+/* Highlight rows that are marked via the checkbox column */
+table.dataTable tbody tr.row-marked,
+table.display tbody tr.row-marked {
+    background-color: #e8f2ff !important;
+}
+
+table.dataTable tbody tr.row-marked td,
+table.display tbody tr.row-marked td {
+    background-color: #e8f2ff !important;
+}
+
+/* Zebra striping for table readability:
+ *   - every 2nd row: very light blue tint  (tr.even = rows 2,4,6,...)
+ *   - every 4th row: a touch deeper        (tr.even at nth-child(4n) = rows 4,8,12,...)
+ *
+ * Selector matches the OpenXE styles.css rule
+ *   ".dataTables_wrapper table.dataTable.display > tbody > tr > td"
+ * exactly to win the specificity battle (3 classes + 2 combinators, plus
+ * .even adds another class -> beats the white-background rule). DataTables
+ * sets class="odd"/"even" on each tr via JS, so we use that directly
+ * instead of pure nth-child which the cascade overrides.
+ *
+ * Markierte Zeilen (.row-marked) werden ueber :not(.row-marked) explizit
+ * vom Striping ausgeschlossen -- ohne diesen Filter wuerde die Stripe-
+ * Regel mit hoeherer Spezifitaet (0,4,4 bzw. 0,5,4) den .row-marked-
+ * Highlight (0,2,4) gewinnen, obwohl beide !important nutzen. */
+.dataTables_wrapper table.dataTable.display > tbody > tr.even:not(.row-marked) > td {
+    background-color: #f7f9fb !important;
+}
+
+.dataTables_wrapper table.dataTable.display > tbody > tr.even:nth-child(4n):not(.row-marked) > td {
+    background-color: #eef3f8 !important;
+}
+
+/* DataTables faerbt die aktuell sortierte Spalte (td.sorting_1/_2/_3) mit
+ * eigener Spezifitaet (0,4,4). In markierten Zeilen wuerde diese Regel
+ * sonst sichtbar bleiben und einen "doppelten Hintergrund" erzeugen
+ * (sortierte Spalte hat andere Farbe als der Rest der Row). Override mit
+ * explizitem Wrapper-Pfad (Spezifitaet 0,5,4) erzwingt einheitlichen
+ * Highlight ueber alle Spalten der markierten Zeile. */
+.dataTables_wrapper table.dataTable.display > tbody > tr.row-marked > td.sorting_1,
+.dataTables_wrapper table.dataTable.display > tbody > tr.row-marked > td.sorting_2,
+.dataTables_wrapper table.dataTable.display > tbody > tr.row-marked > td.sorting_3 {
+    background-color: #e8f2ff !important;
+}

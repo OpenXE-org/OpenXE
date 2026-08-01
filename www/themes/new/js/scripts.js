@@ -133,9 +133,76 @@ $(function() {
 	   $("body").css("overflow", "visible");
     }); 
 
+    /* Toggle background for rows that are marked via checkboxes */
+    var markedRowTableIds = [
+        "angebote",
+        "angeboteinbearbeitung",
+        "auftraege",
+        "auftraegeoffene",
+        "auftraegeoffeneauto",
+        "auftraegeinbearbeitung",
+        "rechnungen",
+        "rechnungenoffene",
+        "rechnungeninbearbeitung",
+        "lieferscheine",
+        "lieferscheineoffene",
+        "lieferscheineinbearbeitung",
+        "mahnwesen_list"
+    ];
+
+    function markSelectedRows($table) {
+        $table.find("tbody tr").each(function(){
+            var $row = $(this);
+            var isChecked = $row.find('input[type="checkbox"]:checked').length > 0;
+            $row.toggleClass("row-marked", isChecked);
+        });
+    }
+
+    function isMarkedTable($table){
+        var id = $table.attr("id");
+        return id && markedRowTableIds.indexOf(id) !== -1;
+    }
+
+    function bindMarkedRowHighlight(selector) {
+        var $table = selector instanceof jQuery ? selector : $(selector);
+
+        if(!$table.length || !isMarkedTable($table)){
+            return;
+        }
+
+        if($table.data("rowMarkedBound")){
+            markSelectedRows($table);
+            return;
+        }
+
+        $table.data("rowMarkedBound", true);
+
+        var refresh = function(){
+            markSelectedRows($table);
+        };
+
+        $table.on("change", "tbody input[type=\"checkbox\"]", refresh);
+        $table.on("draw.dt", refresh);
+        refresh();
+    }
+
+    function refreshMarkedRowTables(){
+        markedRowTableIds.forEach(function(id){
+            bindMarkedRowHighlight("#" + id);
+        });
+    }
+
+    refreshMarkedRowTables();
+
+    $(document).on("init.dt", function(e, settings){
+        bindMarkedRowHighlight($(settings.nTable));
+    });
+
+    $(document).on("change", "#auswahlalle", function(){
+        window.setTimeout(refreshMarkedRowTables, 0);
+    });
+
     
 });
-
-
 
 
