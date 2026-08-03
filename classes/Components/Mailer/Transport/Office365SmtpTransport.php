@@ -137,7 +137,7 @@ final class Office365SmtpTransport implements MailerTransportInterface
             throw new Office365SmtpException("Invalid server response: {$response}");
         }
 
-        $this->sendCommand('EHLO ' . php_uname('n'));
+        $this->sendCommand('EHLO ' . $this->getHostname());
     }
 
     private function starttls(): void
@@ -148,7 +148,7 @@ final class Office365SmtpTransport implements MailerTransportInterface
             throw new Office365SmtpException('Failed to establish TLS connection');
         }
 
-        $this->sendCommand('EHLO ' . php_uname('n'));
+        $this->sendCommand('EHLO ' . $this->getHostname());
     }
 
     private function authenticate(string $token, string $email): void
@@ -202,7 +202,7 @@ final class Office365SmtpTransport implements MailerTransportInterface
 
     private function buildMimeMessage(EmailMessage $email): string
     {
-        $messageId = '<' . time() . '.' . uniqid() . '@' . php_uname('n') . '>';
+        $messageId = '<' . time() . '.' . uniqid() . '@' . $this->getHostname() . '>';
         $boundary = 'boundary_' . uniqid();
 
         $headers = [];
@@ -281,40 +281,105 @@ final class Office365SmtpTransport implements MailerTransportInterface
         return $part;
     }
 
+    /**
+     * Hostname for the Message-ID and the EHLO greeting: the configured client alias, otherwise the
+     * domain of the sender address. Falling back to the system hostname is a last resort only - a
+     * bare hostname like "web06-prod" is not resolvable in the public DNS and gets the message
+     * rejected by strict providers (GMX/1&1/IONOS).
+     */
+    private function getHostname(): string
+    {
+        $hostname = trim((string)$this->config->getConfigValue('hostname', ''));
+        if ($hostname !== '') {
+            return $hostname;
+        }
+
+        $senderEmail = (string)($this->senderEmail ?? $this->config->getConfigValue('sender_email', ''));
+        $atPosition = strrpos($senderEmail, '@');
+        if ($atPosition !== false) {
+            return substr($senderEmail, $atPosition + 1);
+        }
+
+        return php_uname('n');
+    }
+
     private function getSenderHeader(): string
     {
-        $senderName = $this->config->getConfigValue('sender_name', '');
-        if (!empty($senderName)) {
-            return '"' . str_replace('"', '\"', $senderName) . '" <' . $this->senderEmail . '>';
-        }
-        return $this->senderEmail;
+        return $this->formatAddress(
+            $this->senderEmail,
+            (string)$this->config->getConfigValue('sender_name', '')
+        );
     }
 
     private function getRecipientsHeader(array $recipients): string
     {
         $formatted = [];
         foreach ($recipients as $recipient) {
-            $name = $recipient->getName();
-            if (!empty($name)) {
-                $formatted[] = '"' . str_replace('"', '\"', $name) . '" <' . $recipient->getEmail() . '>';
-            } else {
-                $formatted[] = $recipient->getEmail();
-            }
+            $formatted[] = $this->formatAddress($recipient->getEmail(), $recipient->getName());
         }
         return implode(', ', $formatted);
     }
 
+    private function formatAddress(string $email, string $name): string
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return $email;
+        }
+
+        return $this->encodeDisplayName($name) . ' <' . $email . '>';
+    }
+
+    /**
+     * Display names must not contain raw 8 bit characters (RFC 5322). Non ASCII names are turned
+     * into RFC 2047 encoded words - unquoted, since an encoded word inside a quoted string is not
+     * decoded by the receiving side.
+     */
+    private function encodeDisplayName(string $name): string
+    {
+        if ($this->isPrintableAscii($name)) {
+            return '"' . str_replace(['\\', '"'], ['\\\\', '\"'], $name) . '"';
+        }
+
+        return $this->encodeWords($name);
+    }
+
     private function encodeSubject(string $subject): string
     {
-        if (empty($subject)) {
-            return '';
+        if ($subject === '' || $this->isPrintableAscii($subject)) {
+            return $subject;
         }
 
-        if (preg_match('/[^\x20-\x7E]/', $subject)) {
-            return '=?UTF-8?B?' . base64_encode($subject) . '?=';
+        return $this->encodeWords($subject);
+    }
+
+    private function isPrintableAscii(string $text): bool
+    {
+        return preg_match('/[^\x20-\x7E]/', $text) === 0;
+    }
+
+    /**
+     * Base64 encoded words as defined in RFC 2047. An encoded word must not exceed 75 characters,
+     * which leaves 45 bytes of UTF-8 input per word: 75 - strlen('=?UTF-8?B??=') = 63 base64
+     * characters, rounded down to a multiple of 4. Longer input is split at character boundaries
+     * into several words separated by a folding line break.
+     */
+    private function encodeWords(string $text): string
+    {
+        $words = [];
+        $chunk = '';
+        foreach (mb_str_split($text, 1, 'UTF-8') as $character) {
+            if (strlen($chunk . $character) > 45) {
+                $words[] = '=?UTF-8?B?' . base64_encode($chunk) . '?=';
+                $chunk = '';
+            }
+            $chunk .= $character;
+        }
+        if ($chunk !== '') {
+            $words[] = '=?UTF-8?B?' . base64_encode($chunk) . '?=';
         }
 
-        return $subject;
+        return implode("\r\n ", $words);
     }
 
     private function sendCommand(string $command): string

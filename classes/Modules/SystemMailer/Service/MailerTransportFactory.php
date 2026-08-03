@@ -67,6 +67,34 @@ class MailerTransportFactory
     }
 
     /**
+     * Hostname for the Message-ID and the EHLO greeting.
+     *
+     * Without a configured client alias the domain of the sender address is used instead of the
+     * system hostname: the sender domain is guaranteed to be resolvable in the public DNS, while a
+     * bare system hostname like "web06-prod" produces a Message-ID that strict providers
+     * (GMX/1&1/IONOS) reject.
+     *
+     * @param EmailBackupAccount $account
+     * @param string             $senderEmail
+     *
+     * @return string
+     */
+    private function resolveHostname(EmailBackupAccount $account, string $senderEmail):string
+    {
+        $clientAlias = trim($account->getClientAlias());
+        if ($clientAlias !== '') {
+            return $clientAlias;
+        }
+
+        $atPosition = strrpos($senderEmail, '@');
+        if ($atPosition === false) {
+            return '';
+        }
+
+        return substr($senderEmail, $atPosition + 1);
+    }
+
+    /**
      * @param EmailBackupAccount $account
      *
      * @return SmtpMailerConfig
@@ -94,7 +122,7 @@ class MailerTransportFactory
             'sender_email'  => $email,
             'sender_name'   => $sender,
             'host'          => $account->getSmtpServer(),
-            'hostname'      => $account->getClientAlias(),
+            'hostname'      => $this->resolveHostname($account, $email),
             'username'      => $account->getUserName(),
             'password'      => $account->getPassword(),
             'port'          => $account->getSmtpPort(),
@@ -135,7 +163,7 @@ class MailerTransportFactory
             'sender_email'  => $email,
             'sender_name'   => $sender,
             'host'          => $account->getSmtpServer(),
-            'hostname'      => $account->getClientAlias(),
+            'hostname'      => $this->resolveHostname($account, $email),
             'port'          => $account->getSmtpPort(),
             'smtp_security' => $account->getSmtpSecurity(),
             'mailer'        => 'smtp',
@@ -225,7 +253,7 @@ class MailerTransportFactory
             'sender_email'  => $email,
             'sender_name'   => $sender,
             'host'          => $account->getSmtpServer(),
-            'hostname'      => $account->getClientAlias(),
+            'hostname'      => $this->resolveHostname($account, $email),
             'port'          => $account->getSmtpPort(),
             'smtp_security' => $account->getSmtpSecurity(),
             'mailer'        => 'smtp',
