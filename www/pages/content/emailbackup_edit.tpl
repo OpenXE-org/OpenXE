@@ -103,6 +103,15 @@
 											<input type="text" name="smtp_authparam" value="[SMTP_AUTHPARAM]" size="40">
 										</td>
 									</tr>
+									<tr id="office365_auth_row" style="display:none;">
+										<td>{|Office365 Authorization|}:</td>
+										<td>
+											<a href="index.php?module=emailbackup&action=office365_authorize&id=[ID]&email=[EMAIL]" class="button" style="display:inline-block; padding: 8px 16px; background-color: #0078d4; color: white; text-decoration: none; border-radius: 4px;">
+												Office365 authorisieren
+											</a>
+											<br><small style="color: #666;">Klicke um dein Office365-Konto zu autorisieren</small>
+										</td>
+									</tr>
 									<tr>
 										<td>{|Client alias|}:</td>
 										<td>
@@ -344,3 +353,25 @@
 	<input type="text" name="action" value="test_imap" style="display:none">
 	<input type="text" name="id" value="[ID]" style="display:none">
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const authtypeSelect = document.querySelector('select[name="smtp_authtype"]');
+	const office365AuthRow = document.getElementById('office365_auth_row');
+
+	function toggleOffice365Auth() {
+		if (authtypeSelect && office365AuthRow) {
+			if (authtypeSelect.value === 'oauth_office365') {
+				office365AuthRow.style.display = 'table-row';
+			} else {
+				office365AuthRow.style.display = 'none';
+			}
+		}
+	}
+
+	if (authtypeSelect) {
+		authtypeSelect.addEventListener('change', toggleOffice365Auth);
+		toggleOffice365Auth();
+	}
+});
+</script>
