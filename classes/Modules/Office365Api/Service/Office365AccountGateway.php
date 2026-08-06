@@ -40,6 +40,7 @@ final class Office365AccountGateway
             SELECT oa.* FROM `office365_account` oa
             INNER JOIN `office365_account_property` oap ON oa.id = oap.office365_account_id
             WHERE oap.varname = 'email_address' AND oap.value = :email
+            ORDER BY oa.id DESC
             LIMIT 1
         SQL;
 
@@ -54,7 +55,7 @@ final class Office365AccountGateway
 
     public function getAccountByUserId(int $userId): ?Office365AccountData
     {
-        $query = 'SELECT * FROM `office365_account` WHERE `user_id` = :user_id LIMIT 1';
+        $query = 'SELECT * FROM `office365_account` WHERE `user_id` = :user_id ORDER BY `id` DESC LIMIT 1';
         $result = $this->database->fetchRow($query, ['user_id' => $userId]);
 
         if (empty($result)) {
@@ -98,13 +99,31 @@ final class Office365AccountGateway
 
     public function saveAccount(Office365AccountData $account): int
     {
+        if ($account->getId() > 0) {
+            $query = <<<SQL
+                UPDATE `office365_account`
+                SET user_id = :user_id,
+                    identifier = :identifier,
+                    refresh_token = :refresh_token,
+                    tenant_id = :tenant_id,
+                    updated_at = NOW()
+                WHERE id = :id
+            SQL;
+
+            $this->database->perform($query, [
+                'id' => $account->getId(),
+                'user_id' => $account->getUserId(),
+                'identifier' => $account->getIdentifier(),
+                'refresh_token' => $account->getRefreshToken(),
+                'tenant_id' => $account->getTenantId()
+            ]);
+
+            return $account->getId();
+        }
+
         $query = <<<SQL
             INSERT INTO `office365_account` (user_id, identifier, refresh_token, tenant_id)
             VALUES (:user_id, :identifier, :refresh_token, :tenant_id)
-            ON DUPLICATE KEY UPDATE
-                refresh_token = VALUES(refresh_token),
-                tenant_id = VALUES(tenant_id),
-                updated_at = NOW()
         SQL;
 
         $this->database->perform($query, [
@@ -114,11 +133,7 @@ final class Office365AccountGateway
             'tenant_id' => $account->getTenantId()
         ]);
 
-        if ($account->getId() === 0) {
-            return (int)$this->database->lastInsertId();
-        }
-
-        return $account->getId();
+        return (int)$this->database->lastInsertId();
     }
 
     public function getAccountProperties(int $accountId): Office365AccountPropertyCollection

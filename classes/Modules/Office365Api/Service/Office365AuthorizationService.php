@@ -68,15 +68,30 @@ final class Office365AuthorizationService
     public function authorizationCallback(
         string $code,
         int $userId,
-        string $tenantId = null
+        string $tenantId = null,
+        string $emailAddress = null
     ): Office365AccountData {
         $credentials = $this->credentialsService->getCredentials();
         $tenantId = $tenantId ?? $credentials->getTenantId();
 
         $tokenResponse = $this->requestAccessToken($code, $credentials);
 
+        $existingAccountId = 0;
+        if (!empty($emailAddress)) {
+            $existing = $this->gateway->getAccountByEmailAddress($emailAddress);
+            if ($existing !== null) {
+                $existingAccountId = $existing->getId();
+            }
+        }
+        if ($existingAccountId === 0) {
+            $existing = $this->gateway->getAccountByUserId($userId);
+            if ($existing !== null) {
+                $existingAccountId = $existing->getId();
+            }
+        }
+
         $accountData = new Office365AccountData(
-            0,
+            $existingAccountId,
             $userId,
             null,
             $tokenResponse->getRefreshToken(),
@@ -109,7 +124,9 @@ final class Office365AuthorizationService
 
     public function refreshAccessToken(Office365AccountData $account): Office365AccessTokenData
     {
-        if (!$account->hasRefreshToken()) {
+        $currentAccount = $this->gateway->getAccount($account->getId()) ?? $account;
+
+        if (!$currentAccount->hasRefreshToken()) {
             throw new NoRefreshTokenException('No refresh token available for account');
         }
 
@@ -118,9 +135,8 @@ final class Office365AuthorizationService
         $postData = [
             'client_id' => $credentials->getClientId(),
             'client_secret' => $credentials->getClientSecret(),
-            'refresh_token' => $account->getRefreshToken(),
+            'refresh_token' => $currentAccount->getRefreshToken(),
             'grant_type' => 'refresh_token',
-            'scope' => 'https://outlook.office.com/SMTP.Send https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All offline_access',
         ];
 
         $tokenUrl = sprintf(
@@ -137,7 +153,18 @@ final class Office365AuthorizationService
         $tokenResponse = Office365TokenResponseData::fromArray($response);
         $accessTokenData = $tokenResponse->toAccessTokenData();
 
-        $this->gateway->saveAccessToken($account->getId(), $accessTokenData);
+        $this->gateway->saveAccessToken($currentAccount->getId(), $accessTokenData);
+
+        if (!empty($tokenResponse->getRefreshToken()) && $tokenResponse->getRefreshToken() !== $currentAccount->getRefreshToken()) {
+            $updatedAccount = new Office365AccountData(
+                $currentAccount->getId(),
+                $currentAccount->getUserId(),
+                $currentAccount->getIdentifier(),
+                $tokenResponse->getRefreshToken(),
+                $currentAccount->getTenantId()
+            );
+            $this->gateway->saveAccount($updatedAccount);
+        }
 
         return $accessTokenData;
     }
@@ -178,20 +205,26 @@ final class Office365AuthorizationService
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
         $response = curl_exec($ch);
+        $curlError = curl_error($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($response === false || $httpCode >= 400) {
-            throw new Office365OAuthException('Microsoft OAuth request failed');
+        if ($response === false) {
+            throw new Office365OAuthException('Microsoft OAuth request failed: ' . $curlError);
         }
 
         $decoded = json_decode($response, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Office365OAuthException('Invalid JSON response from Microsoft');
+            $decoded = [];
         }
 
-        return $decoded ?? [];
+        if ($httpCode >= 400) {
+            $errorMsg = $decoded['error_description'] ?? $decoded['error'] ?? ('HTTP ' . $httpCode);
+            throw new Office365OAuthException('Microsoft OAuth request failed: ' . $errorMsg);
+        }
+
+        return $decoded;
     }
 
     public function revokeAuthorization(Office365AccountData $account): void

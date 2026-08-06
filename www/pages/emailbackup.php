@@ -508,8 +508,8 @@ $width = array('10%'); // Fill out manually later
         throw new Exception("No user session found");
       }
 
-      // Process the authorization with correct user ID
-      $office365Account = $office365AuthService->authorizationCallback($code, $userId);
+      // Process the authorization with correct user ID and email
+      $office365Account = $office365AuthService->authorizationCallback($code, $userId, null, $email);
 
       // Save email address as property
       $office365Gateway->saveAccountProperty($office365Account->getId(), 'email_address', $email);
