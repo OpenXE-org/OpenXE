@@ -953,6 +953,7 @@ class Auftrag extends GenAuftrag
     $this->app->ActionHandler("zertifikate","AuftragZertifikate");
     $this->app->ActionHandler("verfuegbar","AuftragVerfuegbar");
     $this->app->ActionHandler("rechnung","AuftragRechnung");
+    $this->app->ActionHandler("produktion","AuftragProduktion");
     $this->app->ActionHandler("lieferschein","AuftragLieferschein");
     $this->app->ActionHandler("lieferscheinrechnung","AuftragLieferscheinRechnung");
     $this->app->ActionHandler("teillieferung","AuftragTeillieferung");
@@ -1560,7 +1561,10 @@ class Auftrag extends GenAuftrag
     if($lieferantenauftrag!='1') {
       $alsrechnung = '<option value="invoice">als Rechnung weiterf&uuml;hren</option>';
     }
-
+    $produktionen = $this->app->DB->SelectArr("SELECT id,belegnr FROM produktion WHERE auftragid = '$id'");
+    if($produktionen==0) {
+      $alsproduktion = '<option value="produktion">als Produktion weiterf&uuml;hren</option>';
+    }
     $hookoption = '';
     $hookcase = '';
     $this->app->erp->RunHook('Auftrag_Aktion_option',3, $id, $status, $hookoption);
@@ -3481,7 +3485,16 @@ class Auftrag extends GenAuftrag
       )
     );
     $tmp->DisplayNew('PROTOKOLL',"Protokoll","noAction");
-
+    $produktionen = $this->app->DB->SelectArr("SELECT id,belegnr FROM produktion WHERE auftragid = '$id'");
+    if (!empty($produktionen)) {
+      $cproduktion = (!empty($produktionen)?count($produktionen):0);
+      for($li=0;$li<$cproduktion;$li++) {
+        $link = '<a href="index.php?module=produktion&action=edit&id='.$produktionen[$li]['id'].'" target="_blank"><img src="themes/'.$this->app->Conf->WFconf['defaulttheme'].'/images/edit.svg" /></a>';
+        $this->app->Tpl->Add('PRODUKTIONEN','<tr><td>Produktion: </td><td>'.$produktionen[$li]['belegnr'].$link.'</td></tr>');
+      }
+    } else {
+      $this->app->Tpl->Set('PRODUKTIONEN','<tr><td></td></tr>');
+    }
     $produktionsId = $this->app->DB->Select("SELECT id FROM produktion WHERE auftragid = '$id' LIMIT 1");
     if($produktionsId > 0){
       $this->app->Tpl->Set(
@@ -3783,6 +3796,21 @@ class Auftrag extends GenAuftrag
 
     $this->app->erp->AuftragProtokoll($id,'Auftrag manuell als Rechnung weitergeführt');
     $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$newid);
+  }
+
+  public function AuftragProduktion()
+  {
+    $auftrag_id = $this->app->Secure->GetGET('id');
+    $this->app->erp->LoadModul('produktion'); // Benoetigt um auftrag_produktion zu laden
+    $modul = $this->app->erp->LoadModul('auftrag_produktion');
+    if(!$modul)
+    {
+      $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Auftrag kann nicht als Produktion weitergef&uuml; werden, da das Produktions modul nicht geladen werden kann</div>");
+      $this->app-Location->execute('index.php?module=auftrag&action=edit&id='.$id.'&msg='.$msg);
+    }
+    $produktionen = $modul->AuftragProduktion($auftrag_id);
+    $this->app->erp->AuftragProtokoll($id,'Auftrag als Produktion weitergeführt');
+    $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$auftrag_id);
   }
 
   /**
@@ -4947,6 +4975,13 @@ class Auftrag extends GenAuftrag
       $this->app->Tpl->Add('JAVASCRIPT','$(document).ready(function() { if(document.getElementById("adresse"))document.getElementById("adresse").focus(); });');
       $this->app->Tpl->Set('MESSAGE',"<div class=\"error\">Achtung! Dieses Dokument ist mit keiner Kunden-Nr. verlinkt. Bitte geben Sie die Kundennummer an und klicken Sie &uuml;bernehmen oder Speichern!</div>");
     }
+    $produktionen = $this->app->DB->SelectArr("SELECT id,belegnr FROM produktion WHERE auftragid = '$id'");
+    if($produktionen) {
+        foreach($produktionen as $v) {
+	    $this->app->Tpl->Add('MESSAGE','<div class="info">Zu diesem Auftrag geh&ouml;rt Produktion <a href="index.php?module=produktion&action=edit&id='.$v['id'].'" target="_blank"><input type="button" value="'.($v['belegnr'] ?: 'Entwurf').'"></input></a></div>');
+	}
+    }
+
     $this->app->erp->InfoAuftragsErfassung("auftrag",$id);
     $teilArr = $this->app->DB->SelectRow(
       sprintf(
