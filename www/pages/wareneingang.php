@@ -451,11 +451,11 @@ class Wareneingang {
             case 'wareneingang_manuell':
                 $allowed['paketdistribution_list'] = array('list');
 
-                $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Bemerkung','');
-                $width = array(  '5%',          '30%',          '5%',    '15%',      '1%');
+                $heading = array('Art.-Nummer', 'Beschreibung', 'Hersteller Nr.', 'Menge', 'Bemerkung','');
+                $width = array(  '5%',          '30%',          '10%',            '5%',    '15%',      '1%');
 
-                $findcols = array('nummer','name_de','id','id');
-                $searchsql = array('');
+                $findcols = array('nummer','name_de','herstellernummer','id','id');
+                $searchsql = array('name_de','herstellernummer','ean');
 
                 $alignright = array('5');
                 $defaultorder = 1;
@@ -463,9 +463,9 @@ class Wareneingang {
 
                 $auswahl = array (
                     '<input type=\"text\" name=\"manuell_artikel_ids[]\" value=\"',
-                    ['sql' => 'a.id'],
+                    ['sql' => 'art.id'],
                     '" hidden/>',
-                    ['sql' => 'a.nummer']
+                    ['sql' => 'art.nummer']
                 );
 
                 $input_for_menge = array(
@@ -489,11 +489,12 @@ class Wareneingang {
                         id,
                         ".$this->app->erp->ConcatSQL($auswahl).",
                         name_de,
+                        herstellernummer,
                         ".$this->app->erp->ConcatSQL($input_for_menge).",
-                        ".$this->app->erp->ConcatSQL($input_for_bemerkung)."
-                        ''
+                        ".$this->app->erp->ConcatSQL($input_for_bemerkung).",
+                        '' as menu
                     FROM
-                        artikel a
+                        artikel art
                 ";
 
                 $where = "geloescht <> 1";
