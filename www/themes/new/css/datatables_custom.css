@@ -499,12 +499,12 @@
 /* Highlight rows that are marked via the checkbox column */
 table.dataTable tbody tr.row-marked,
 table.display tbody tr.row-marked {
-    background-color: #e8f2ff !important;
+    background-color: var(--accent-soft, #e8f2ff) !important;
 }
 
 table.dataTable tbody tr.row-marked td,
 table.display tbody tr.row-marked td {
-    background-color: #e8f2ff !important;
+    background-color: var(--accent-soft, #e8f2ff) !important;
 }
 
 /* Zebra striping for table readability:
@@ -523,11 +523,11 @@ table.display tbody tr.row-marked td {
  * Regel mit hoeherer Spezifitaet (0,4,4 bzw. 0,5,4) den .row-marked-
  * Highlight (0,2,4) gewinnen, obwohl beide !important nutzen. */
 .dataTables_wrapper table.dataTable.display > tbody > tr.even:not(.row-marked) > td {
-    background-color: #f7f9fb !important;
+    background-color: var(--surface-alt, #f7f9fb) !important;
 }
 
 .dataTables_wrapper table.dataTable.display > tbody > tr.even:nth-child(4n):not(.row-marked) > td {
-    background-color: #eef3f8 !important;
+    background-color: var(--surface-muted, #eef3f8) !important;
 }
 
 /* DataTables faerbt die aktuell sortierte Spalte (td.sorting_1/_2/_3) mit
@@ -539,5 +539,5 @@ table.display tbody tr.row-marked td {
 .dataTables_wrapper table.dataTable.display > tbody > tr.row-marked > td.sorting_1,
 .dataTables_wrapper table.dataTable.display > tbody > tr.row-marked > td.sorting_2,
 .dataTables_wrapper table.dataTable.display > tbody > tr.row-marked > td.sorting_3 {
-    background-color: #e8f2ff !important;
+    background-color: var(--accent-soft, #e8f2ff) !important;
 }
