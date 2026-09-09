@@ -4378,11 +4378,16 @@ class Importvorlage extends GenImportvorlage {
                 // Create a row dataset (without checked and cmd)
                 $row = array();
                 $error_text = "";
-                $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname');
+                $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname', 'sort');
                 $error = $this->create_row_set($tmp, $i, $allowed_fields, $row, $error_text);
                 $dateien_result = $this->PrepareDateien($tmp, $i, $allowed_fields, $global_data);
-                $dateiname = basename($dateien_result['result_row']['additional_file']['path']);
+                $dateiname = basename($dateien_result['result_row']['additional_file']['path']);                
                 if ($error !== false) {
+
+                    if (!isset($row['sort'])) {
+                        $row['sort'] = -1;
+                    }
+
                     switch ($row['dateiaktion']) {
                         case 'zip':
                             $fileid = $this->app->erp->CreateDateiWithStichwort(
@@ -4394,7 +4399,8 @@ class Importvorlage extends GenImportvorlage {
                                         ersteller: $this->app->User->GetName(),
                                         subjekt: $row['stichwort'],
                                         objekt: $dateien_result['result_row']['datei_objekt']['wert'],
-                                        parameter: $dateien_result['result_row']['datei_objekt']['id']
+                                        parameter: $dateien_result['result_row']['datei_objekt']['id'],
+                                        sort: $row['sort']
                                 );
                             if (empty($fileid)) {
                                 $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
@@ -4410,7 +4416,7 @@ class Importvorlage extends GenImportvorlage {
                         case 'aendern':
                             foreach ($dateien_result['result_row']['dms_dateien'] as $datei_id) {
                                 if (!empty($row['stichwort'])) {
-                                    $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id']);
+                                    $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id'], sort: $row['sort']);
                                 }
                                 $this->app->erp->ModifyDateiMetadata($datei_id, $row['dateiname'], $row['titel'], $row['beschreibung']);
                             }
@@ -5410,10 +5416,10 @@ class Importvorlage extends GenImportvorlage {
         $action="create";
         $checked = "";
         break;
-        case 'dateien':
-
+       case 'dateien':
+        
             $action_anzeige = '';
-            $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname');
+            $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname', 'sort');
             // Create a row dataset (without checked and cmd)
             foreach($fields as $key => $value) {
                 $checkfields[$key][0] = $value;

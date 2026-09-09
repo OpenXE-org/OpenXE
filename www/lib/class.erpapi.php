@@ -6807,8 +6807,6 @@ title: 'Abschicken',
 
       $tmpname = tempnam($this->GetTMP(),"");
 
-      //echo("pdftk $pdffiles cat output ".$dir."/".$abrechnung.".pdf");
-
       system("pdftk $pdffiles cat output ".$tmpname);
 
       $raw_content = file_get_contents($tmpname);
@@ -36923,13 +36921,15 @@ function Firmendaten($field,$projekt="")
         }
       }
 
-      function CreateDateiWithStichwort($name, $titel,$beschreibung,$nummer,$datei, $ersteller ,$subjekt,$objekt,$parameter, $path = "",$without_log=false,$geschuetzt=null)
+      function CreateDateiWithStichwort($name, $titel,$beschreibung,$nummer,$datei, $ersteller ,$subjekt,$objekt,$parameter, $path = "",$without_log=false,$geschuetzt=null, int $sort = -1)
       {
         $dateien = $this->app->DB->SelectArr("SELECT dv.datei, dv.id FROM datei_stichwoerter ds 
           INNER JOIN datei d ON ds.datei = d.id AND ifnull(d.geloescht,0) = 0
           INNER JOIN datei_version dv ON d.id = dv.datei
-          WHERE ds.subjekt = '".$this->app->DB->real_escape_string($subjekt)."' AND 
-          ds.objekt = '".$this->app->DB->real_escape_string($objekt)."' AND ds.parameter = '".$this->app->DB->real_escape_string($parameter)."'");
+          WHERE
+            ds.subjekt = '".$this->app->DB->real_escape_string($subjekt)."' AND
+            ds.objekt = '".$this->app->DB->real_escape_string($objekt)."' AND
+            ds.parameter = '".$this->app->DB->real_escape_string($parameter)."'");
 
         if(is_file($datei))
         {
@@ -36952,20 +36952,24 @@ function Firmendaten($field,$projekt="")
             $dateien[$key]['md5'] = $md5_existing;
             if ($md5 == $md5_existing) {
                 $fileid = $existing_datei['datei'];
-                return $fileid;
             }
         }
 
-        foreach ($dateien as $existing_datei) {
-            $fileid = $existing_datei['datei'];
-            if ($this->GetDateiName($fileid) == $name) {
-                $this->AddDateiVersion($fileid, $ersteller, $name, $beschreibung, $datei);
-                return $fileid;
+        if (empty($fileid)) {
+            foreach ($dateien as $existing_datei) {
+                $fileid = $existing_datei['datei'];
+                if ($this->GetDateiName($fileid) == $name) {
+                    $this->AddDateiVersion($fileid, $ersteller, $name, $beschreibung, $datei);
+                }
             }
         }
 
-        $fileid = $this->CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log,$path,$geschuetzt);
-        $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log);
+        if (empty($fileid)) {
+            $fileid = $this->CreateDatei($name,$titel,$beschreibung,$nummer,$datei,$ersteller,$without_log,$path,$geschuetzt);
+        }
+
+        $this->AddDateiStichwort($fileid,$subjekt,$objekt,$parameter,$without_log, sort:$sort);
+
         return $fileid;
       }
 
@@ -37132,7 +37136,7 @@ function Firmendaten($field,$projekt="")
       }
 
 
-      function AddDateiStichwort($id,$subjekt,$objekt,$parameter,$without_log=false,$parameter2=0,$objekt2='')
+      function AddDateiStichwort($id,$subjekt,$objekt,$parameter,$without_log=false,$parameter2=0,$objekt2='',int $sort=-1)
       {
         if (empty($objekt) || empty($parameter)) {
             throw new Exception("Leere Objektangabe Objekt ".$objekt." Parameter ".$parameter);
@@ -37151,10 +37155,15 @@ function Firmendaten($field,$projekt="")
         $existing = $this->getDateiSubjektObjekt($subjekt, $objekt, $parameter);
         if (!empty($existing)) {
             if (in_array($id, $existing)) {
+                if ($sort != -1) {
+                    $this->app->DB->Update("UPDATE datei_stichwoerter SET sort = $sort WHERE subjekt = '".$subjekt."' AND objekt = '".$objekt."'");
+                }
                 return;
             }
         }
-        $sort = 1 + (int)$this->app->DB->Select("SELECT max(sort) FROM datei_stichwoerter WHERE objekt like '$objekt' AND parameter = '$parameter'");
+        if ($sort < 0) {
+            $sort = 1 + (int)$this->app->DB->Select("SELECT max(sort) FROM datei_stichwoerter WHERE objekt like '$objekt' AND parameter = '$parameter'");
+        }
         if(!$without_log) {
           $this->app->DB->Insert("INSERT INTO datei_stichwoerter (id,datei,subjekt,objekt,parameter, sort, parameter2, objekt2)
               VALUES ('','$id','$subjekt','$objekt','$parameter','$sort','$parameter2','$objekt2')");

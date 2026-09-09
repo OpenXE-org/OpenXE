@@ -698,9 +698,9 @@
 							    <td>zip, url, aendern, entfernen</td>
 							    <td>
                                     zip: Datei aus ZIP-Datei laden</i><br>
-                                    url: Datei von URL laden<br>
+                                    url: Datei von URL laden (nicht implementiert)<br>
                                     aendern: Dateidaten im OpenXE-DMS ändern<br>
-                                    entfernen: Dateiverknüpfung im OpenXE-DMS entfernen<br>
+                                    entfernen: Dateiverknüpfung im OpenXE-DMS entfernen (nicht implementiert)<br>
                                 </td>
 						    </tr>
 						    <tr>
@@ -765,9 +765,14 @@
 							    <td></td>
 							    <td></td>
 						    </tr>
+                            <tr>
+							    <td>sort</td>
+							    <td>Sortierreihenfolge im DMS</td>
+							    <td></td>
+						    </tr>
 						    <tr>
 							    <td>sprache</td>
-							    <td></td>
+							    <td>Nicht implementiert</td>
 							    <td>[SPRACHEN]</td>
 						    </tr>
 					    </table>
