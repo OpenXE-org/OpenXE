@@ -114,7 +114,12 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
     if (!empty($this->lastImportOrderIds)) {
-      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+      $cursorTs = strtotime($this->lastImportTimestamp);
+      if ($cursorTs === false) {
+        $this->logger->error('WooCommerce ImportGetAuftraegeAnzahl: invalid lastImportTimestamp cursor', ['cursor' => $this->lastImportTimestamp]);
+        return 0;
+      }
+      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, $cursorTs - 1));
       $queryArgs = [
         'status'   => $configuredStatuses,
         'after'    => $afterTs,
@@ -172,7 +177,12 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $configuredStatuses = array_map('trim', explode(';', (string) $this->statusPending));
 
     if (!empty($this->lastImportOrderIds)) {
-      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, strtotime($this->lastImportTimestamp) - 1));
+      $cursorTs = strtotime($this->lastImportTimestamp);
+      if ($cursorTs === false) {
+        $this->logger->error('WooCommerce ImportGetAuftrag: invalid lastImportTimestamp cursor', ['cursor' => $this->lastImportTimestamp]);
+        return null;
+      }
+      $afterTs = gmdate('Y-m-d\TH:i:s', max(0, $cursorTs - 1));
       $queryArgs = [
         'status'   => $configuredStatuses,
         'after'    => $afterTs,
@@ -201,6 +211,11 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     }
 
     if (empty($pageOrders)) {
+      return null;
+    }
+
+    if (!is_array($pageOrders)) {
+      $this->logger->warning('WooCommerce ImportGetAuftrag: unexpected orders response type');
       return null;
     }
 
@@ -657,7 +672,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         }
         $skuMap[$product->sku] = [
           'id' => $product->id,
-          'parent' => $product->parent_id,
+          'parent' => $product->parent_id ?? 0,
           'isvariant' => !empty($product->parent_id),
         ];
       }
@@ -738,19 +753,28 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       return 0;
     }
 
+    // Normalise object and array responses to a single array shape so that
+    // the is_array() branch above is actually evaluated instead of silently
+    // reporting zero updates.
+    $payload = is_object($response) ? (array) $response : $response;
+
     // Successful updates are in response->update
-    $updated = is_object($response) ? ($response->update ?? []) : [];
+    $updated = $payload['update'] ?? [];
+    if (!is_iterable($updated)) {
+      $updated = [];
+    }
     foreach ($updated as $item) {
+      $itemId = $item->id ?? '?';
       // WC embeds per-item errors inside the update array when an item fails
       if (isset($item->error)) {
         $code = $item->error->code ?? '';
         $message = $item->error->message ?? '';
         $this->logger->error(
-          "WooCommerce Batch-Fehler ($endpoint) fuer ID {$item->id}: [$code] $message"
+          "WooCommerce Batch-Fehler ($endpoint) fuer ID {$itemId}: [$code] $message"
         );
       } else {
         $this->logger->info(
-          "WooCommerce Lagerzahlenübertragung (Batch) fuer Artikel-ID {$item->id} erfolgreich",
+          "WooCommerce Lagerzahlenuebertragung (Batch) fuer Artikel-ID {$itemId} erfolgreich",
           ['endpoint' => $endpoint]
         );
         $successCount++;
@@ -758,7 +782,10 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     }
 
     // Top-level errors array (some WC versions use this)
-    $errors = is_object($response) ? ($response->errors ?? []) : [];
+    $errors = $payload['errors'] ?? [];
+    if (!is_iterable($errors)) {
+      $errors = [];
+    }
     foreach ($errors as $err) {
       $code = $err->code ?? '';
       $message = $err->message ?? '';
@@ -1286,18 +1313,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
   public function persistLastImportCursor($isoUtcDate, $orderId = null)
   {
     $shopid = (int)$this->shopid;
-    // Prefer DatabaseService when available (web context), fall back to DB
-    // so this method also works in the CLI/cron context.
-    if (!empty($this->app->DatabaseService)) {
-      $einstellungen_json = $this->app->DatabaseService->selectValue(
-        "SELECT einstellungen_json FROM shopexport WHERE id = :id LIMIT 1",
-        ['id' => $shopid]
-      );
-    } else {
-      $einstellungen_json = $this->app->DB->Select(
-        "SELECT einstellungen_json FROM shopexport WHERE id = '$shopid' LIMIT 1"
-      );
-    }
+    $einstellungen_json = $this->app->DB->Select(
+      "SELECT einstellungen_json FROM shopexport WHERE id = '$shopid' LIMIT 1"
+    );
     $current = [];
     if (!empty($einstellungen_json)) {
       $current = json_decode($einstellungen_json, true) ?: [];
@@ -1331,16 +1349,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $current['felder']['letzter_import_order_ids']  = $newIds;
 
     $jsonEncoded = $this->app->DB->real_escape_string(json_encode($current));
-    if (!empty($this->app->DatabaseService)) {
-      $this->app->DatabaseService->execute(
-        "UPDATE shopexport SET einstellungen_json = :json WHERE id = :id",
-        ['json' => json_encode($current), 'id' => $shopid]
-      );
-    } else {
-      $this->app->DB->Update(
-        "UPDATE shopexport SET einstellungen_json = '$jsonEncoded' WHERE id = '$shopid'"
-      );
-    }
+    $this->app->DB->Update(
+      "UPDATE shopexport SET einstellungen_json = '$jsonEncoded' WHERE id = '$shopid'"
+    );
     $this->lastImportTimestamp = $isoUtcDate;
     $this->lastImportOrderIds  = $newIds;
   }
