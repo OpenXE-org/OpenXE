@@ -80,12 +80,12 @@ class TrackingNumberController extends AbstractController
             $DB->Insert(
                 "INSERT INTO versandpakete (tracking, tracking_link, gewicht, status, lieferschein_ohne_pos, versandart, versender) "
                 . "VALUES ("
-                . "'" . $DB->real_escape_string($input['tracking']) . "', "
+                . "'" . $DB->real_escape_string((string)$input['tracking']) . "', "
                 . "'', "
-                . "'" . $DB->real_escape_string($input['gewicht']) . "', "
+                . "'" . $DB->real_escape_string((string)$input['gewicht']) . "', "
                 . "'versendet', "
                 . "'" . $lieferscheinId . "', "
-                . "'" . $DB->real_escape_string($versandart) . "', "
+                . "'" . $DB->real_escape_string((string)$versandart) . "', "
                 . "'API'"
                 . ")"
             );
