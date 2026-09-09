@@ -566,6 +566,7 @@ class Mahnwesen {
                     r.*,
                     ".$this->app->erp->FormatDate('datum')." datum,
                     ".$this->app->erp->FormatDate('CURRENT_DATE')." heute,
+                    IF(r.mahnwesen_datum != '0000-00-00', ".$this->app->erp->FormatDate('r.mahnwesen_datum').", '') mahnwesen_datum_de,
                     m.name as mahn_name,
                     m.tage as mahn_tage,
                     m.gebuehr as mahn_gebuehr,
@@ -678,9 +679,8 @@ class Mahnwesen {
           $tage = max(0, (int)$rechnungarr['mahn_tage']);
 
           $mahnwesen_datum_valid = !empty($mahnwesen_datum) && $mahnwesen_datum !== '0000-00-00';
-          $frist_de = $mahnwesen_datum_valid
-              ? date('d.m.Y', strtotime($mahnwesen_datum.' +'.$tage.' days'))
-              : '';
+          $fristTs = $mahnwesen_datum_valid ? strtotime($mahnwesen_datum.' +'.$tage.' days') : false;
+          $frist_de = $fristTs === false ? '' : date('d.m.Y', $fristTs);
 
 /*          $datummahnung= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$mahnwesen_datum', INTERVAL $tage DAY),'%d.%m.%Y')");
           $datumrechnungzahlungsziel= $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD('$datum_sql', INTERVAL $zahlungszieltage DAY),'%d.%m.%Y')");
@@ -733,7 +733,7 @@ class Mahnwesen {
             'datum' => $datum_sql,
             'datumrechnung' => $datum_sql,
             'frist' => $frist_de,
-            'mahndatum' => $mahnwesen_datum_deutsch,
+            'mahndatum' => $mahnwesen_datum_deutsch ?? '',
             'tage' => $tage,
             'offen' => $this->app->erp->EUR(-$offen['betrag'])." ".$offen['waehrung'],
             'mahngebuehr' => $this->app->erp->EUR($rechnungarr['mahn_gebuehr']),
