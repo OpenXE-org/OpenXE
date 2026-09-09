@@ -656,7 +656,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
           'sku' => $skuCsv,
           'per_page' => 100,
         ]);
-      } catch (Exception $e) {
+      } catch (\Throwable $e) {
         $this->logger->error(
           'WooCommerce SKU-Lookup-Chunk fehlgeschlagen: ' . $e->getMessage(),
           ['chunk_size' => count($skuChunk)]
@@ -715,7 +715,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       try {
         $response = $this->client->post('products/batch', ['update' => $chunk]);
         $anzahl += $this->processBatchResponse($response, 'products/batch');
-      } catch (Exception $e) {
+      } catch (\Throwable $e) {
         $this->logger->error('WooCommerce Batch-Request fehlgeschlagen fuer products/batch: ' . $e->getMessage());
       }
     }
@@ -727,7 +727,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         try {
           $response = $this->client->post($endpoint, ['update' => $chunk]);
           $anzahl += $this->processBatchResponse($response, $endpoint);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
           $this->logger->error('WooCommerce Batch-Request fehlgeschlagen fuer ' . $endpoint . ': ' . $e->getMessage());
         }
       }
