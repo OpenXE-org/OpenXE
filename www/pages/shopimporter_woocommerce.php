@@ -670,7 +670,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         }
         $skuMap[$product->sku] = [
           'id' => $product->id,
-          'parent' => $product->parent_id,
+          'parent' => $product->parent_id ?? 0,
           'isvariant' => !empty($product->parent_id),
         ];
       }
@@ -751,19 +751,28 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       return 0;
     }
 
+    // Normalise object and array responses to a single array shape so that
+    // the is_array() branch above is actually evaluated instead of silently
+    // reporting zero updates.
+    $payload = is_object($response) ? (array) $response : $response;
+
     // Successful updates are in response->update
-    $updated = is_object($response) ? ($response->update ?? []) : [];
+    $updated = $payload['update'] ?? [];
+    if (!is_iterable($updated)) {
+      $updated = [];
+    }
     foreach ($updated as $item) {
+      $itemId = $item->id ?? '?';
       // WC embeds per-item errors inside the update array when an item fails
       if (isset($item->error)) {
         $code = $item->error->code ?? '';
         $message = $item->error->message ?? '';
         $this->logger->error(
-          "WooCommerce Batch-Fehler ($endpoint) fuer ID {$item->id}: [$code] $message"
+          "WooCommerce Batch-Fehler ($endpoint) fuer ID {$itemId}: [$code] $message"
         );
       } else {
         $this->logger->info(
-          "WooCommerce Lagerzahlenübertragung (Batch) fuer Artikel-ID {$item->id} erfolgreich",
+          "WooCommerce Lagerzahlenuebertragung (Batch) fuer Artikel-ID {$itemId} erfolgreich",
           ['endpoint' => $endpoint]
         );
         $successCount++;
@@ -771,7 +780,10 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     }
 
     // Top-level errors array (some WC versions use this)
-    $errors = is_object($response) ? ($response->errors ?? []) : [];
+    $errors = $payload['errors'] ?? [];
+    if (!is_iterable($errors)) {
+      $errors = [];
+    }
     foreach ($errors as $err) {
       $code = $err->code ?? '';
       $message = $err->message ?? '';
