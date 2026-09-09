@@ -381,6 +381,7 @@ class erpooSystem extends Application
           $appointmentCount=0;
       }
 
+      $resubmissionCount = 0;
       if($this->erp->ModulVorhanden('wiedervorlage') && $this->erp->RechteVorhanden('wiedervorlage','list')) {
         $resubmissionCount = (int)$this->DB->Select(
           sprintf(
