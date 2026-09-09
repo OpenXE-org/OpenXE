@@ -381,6 +381,7 @@ class erpooSystem extends Application
           $appointmentCount=0;
       }
 
+      $resubmissionCount = 0;
       if($this->erp->ModulVorhanden('wiedervorlage') && $this->erp->RechteVorhanden('wiedervorlage','list')) {
         $resubmissionCount = (int)$this->DB->Select(
           sprintf(
@@ -410,10 +411,10 @@ class erpooSystem extends Application
               'link' => 'index.php?module=aufgaben&action=list',
               'counter' => $this->erp->AnzahlOffeneAufgaben()
           ],
-/*          'Wiedervorlage' => [
+          'Wiedervorlage' => [
               'link' => 'index.php?module=wiedervorlage&action=list',
               'counter' => $resubmissionCount,
-          ],*/
+          ],
           'Kalender' => [
               'link' => 'index.php?module=kalender&action=list',
               'counter' => $appointmentCount
