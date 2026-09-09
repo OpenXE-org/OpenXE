@@ -1915,7 +1915,6 @@ class Auftrag extends GenAuftrag
     }
 
     if(!$this->app->erp->RechteVorhanden('auftrag','edit')) {
-      $this->app->erp->RunHook('permission_denied', 4, 'auftrag', 'edit');
       if($redirect){
         $this->app->Location->execute('index.php?module=auftrag&action=edit&id='.$id);
       }
@@ -1928,7 +1927,7 @@ class Auftrag extends GenAuftrag
     $this->app->erp->AuftragProtokoll($id,'Schreibschutz fuer Bezahlmarkierung entfernt');
 
     $this->app->DB->Update(
-      sprintf("UPDATE auftrag SET vorabbezahltmarkieren = 1, saldogeprueft = 1 WHERE id = %d LIMIT 1", $id)
+      sprintf("UPDATE auftrag SET vorabbezahltmarkieren = 1, saldogeprueft = NOW() WHERE id = %d LIMIT 1", $id)
     );
     $this->app->erp->AuftragProtokoll($id,'Auftrag manuell als bezahlt markiert');
 
