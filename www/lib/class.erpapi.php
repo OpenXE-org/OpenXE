@@ -36921,6 +36921,7 @@ function Firmendaten($field,$projekt="")
         }
       }
 
+
       function CreateDateiWithStichwort($name, $titel,$beschreibung,$nummer,$datei, $ersteller ,$subjekt,$objekt,$parameter, $path = "",$without_log=false,$geschuetzt=null, int $sort = -1)
       {
         $dateien = $this->app->DB->SelectArr("SELECT dv.datei, dv.id FROM datei_stichwoerter ds 
@@ -36952,14 +36953,17 @@ function Firmendaten($field,$projekt="")
             $dateien[$key]['md5'] = $md5_existing;
             if ($md5 == $md5_existing) {
                 $fileid = $existing_datei['datei'];
+                $this->ModifyDateiMetadata($fileid, $name, $titel, $beschreibung);
+                break;
             }
         }
 
         if (empty($fileid)) {
             foreach ($dateien as $existing_datei) {
-                $fileid = $existing_datei['datei'];
                 if ($this->GetDateiName($fileid) == $name) {
+                    $fileid = $existing_datei['datei'];
                     $this->AddDateiVersion($fileid, $ersteller, $name, $beschreibung, $datei);
+                    break;
                 }
             }
         }
