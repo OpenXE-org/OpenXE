@@ -3037,7 +3037,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $felder[] = 'e.bestellnummer';
 
           $artikelnummer_suche_join = "
-                LEFT JOIN `einkaufspreise` AS `e` ON e.artikel=a.id AND e.geloescht = 0
+                LEFT JOIN `einkaufspreise` AS `e` ON e.artikel=art.id AND e.geloescht = 0
                   AND e.bestellnummer IS NOT NULL AND (e.gueltig_bis IS NULL OR e.gueltig_bis = '0000-00-00' OR e.gueltig_bis >= CURDATE())
                    AND (e.gueltig_bis > NOW() OR e.gueltig_bis='0000-00-00' OR e.gueltig_bis IS NULL) ";
           if($waehrung === 'EUR') {
@@ -3046,7 +3046,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           elseif($waehrung != ''){
             $artikelnummer_suche_join .=  " AND e.waehrung='{$waehrung}' ";
           }
-          $artikelnummer_suche_join .= "LEFT JOIN `verkaufspreise` AS `v` ON v.artikel=a.id AND v.geloescht = 0
+          $artikelnummer_suche_join .= "LEFT JOIN `verkaufspreise` AS `v` ON v.artikel=art.id AND v.geloescht = 0
                 AND v.kundenartikelnummer IS NOT NULL
                 AND (v.gueltig_bis > NOW() OR v.gueltig_bis='0000-00-00' OR v.gueltig_bis IS NULL) ";
           if($waehrung === 'EUR') {
