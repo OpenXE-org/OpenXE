@@ -37670,7 +37670,7 @@ function Firmendaten($field,$projekt="")
                 'gutschrift'=> ['wert' => 'gutschrift','tabelle' => 'gutschrift', 'suchfelder' => ['belegnr']],
                 'artikel'=> ['wert' => 'Artikel','tabelle' => 'artikel', 'suchfelder' => ['nummer','ean','herstellernummer']],
                 'kalender_event'=> ['wert' => 'kalender_event','tabelle' => 'kalender_event', 'suchfelder' => ['id']],
-                'aufgaben'=> ['wert' => 'aufgaben','tabelle' => 'aufgaben', 'suchfelder' => ['id']],
+                'aufgaben'=> ['wert' => 'aufgaben','tabelle' => 'aufgabe', 'suchfelder' => ['id']],
                 'konto'=> ['wert' => 'konto','tabelle' => 'konto', 'suchfelder' => ['id']],
                 'retoure'=> ['wert' => 'retoure','tabelle' => 'retoure', 'suchfelder' => ['belegnr']],
                 'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket', 'suchfelder' => ['id']],
