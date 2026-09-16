@@ -1362,6 +1362,12 @@ class Rechnung extends GenRechnung
         ");
         $result['adresse'] = $adresse[0];
 
+        $auftrag = $this->app->DB->SelectRow("SELECT * FROM `auftrag` WHERE `id` = '".$rechnung['auftragid']."' LIMIT 1");
+        $result['auftrag'] = $auftrag;
+
+        $lieferschein = $this->app->DB->SelectRow("SELECT * FROM `lieferschein` WHERE id = '".$rechnung['lieferschein']."' LIMIT 1");
+        $result['lieferschein'] = $lieferschein;
+
         $positionen = $this->app->DB->SelectArr("
             SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort ASC
         ");
