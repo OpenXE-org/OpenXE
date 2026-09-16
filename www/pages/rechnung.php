@@ -2026,8 +2026,7 @@ class Rechnung extends GenRechnung
         $nummer_neu = $this->app->Secure->GetPOST('belegnredit');
         
         $nummer_neu = $this->app->DB->real_escape_string($nummer_neu);
-        
-        if(!$this->app->DB->select("SELECT id from rechnung WHERE belegnr ='".$nummer_neu."'")) {
+        if(!$this->app->DB->select("SELECT id from rechnung WHERE belegnr ='".$nummer_neu."'") && $nummer_neu != '0' && $nummer_neu != "") {
             $this->app->DB->update("UPDATE rechnung SET belegnr ='".$nummer_neu."' WHERE id = '".$id."'");
         }
     }
