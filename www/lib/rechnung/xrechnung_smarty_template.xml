@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OpenXE XRechnung template version 1.4.2 -->
+<ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+             xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+             xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+    <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>
+    <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+    <cbc:ID><![CDATA[{$rechnung.kopf.belegnr}]]></cbc:ID>
+    <cbc:IssueDate>{$rechnung.kopf.datum}</cbc:IssueDate>
+    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+    {if $rechnung.kopf.kopftext or $rechnung.kopf.freitext}
+    <cbc:Note><![CDATA[{$rechnung.kopf.kopftext}{if $rechnung.kopf.kopftext and $rechnung.kopf.freitext} {/if}{$rechnung.kopf.freitext}]]></cbc:Note>
+    {/if}
+    <cbc:DocumentCurrencyCode>{$rechnung.kopf.waehrung}</cbc:DocumentCurrencyCode>
+    <cbc:BuyerReference><![CDATA[{if $rechnung.kopf.freifeld1}{$rechnung.kopf.freifeld1}{else}-{/if}]]><!-- HIER GGF. EIN FREIFELD FUER LEITWEG-ID EINGETRAGEN -->
+    </cbc:BuyerReference>
+    <cac:OrderReference>
+        <cbc:ID><![CDATA[{if $rechnung.kopf.ihrebestellnummer}{$rechnung.kopf.ihrebestellnummer}{elseif $rechnung.kopf.internet_bestellnummer}{$rechnung.kopf.internet_bestellnummer}{else}-{/if}]]></cbc:ID>
+    </cac:OrderReference>
+   <cac:AccountingSupplierParty>
+        <cac:Party>
+             <cbc:EndpointID schemeID="EM">info@musterfirma.de</cbc:EndpointID> <!-- HIER MANUELL MAILADRESSE EINTRAGEN -->
+            <cac:PartyName>
+                <cbc:Name><![CDATA[{$rechnung.rechnungssteller.name}]]></cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+                <cbc:StreetName><![CDATA[{$rechnung.rechnungssteller.strasse}]]></cbc:StreetName>
+                <cbc:CityName><![CDATA[{$rechnung.rechnungssteller.ort}]]></cbc:CityName>
+                <cbc:PostalZone><![CDATA[{$rechnung.rechnungssteller.plz}]]></cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode><![CDATA[{$rechnung.rechnungssteller.land}]]></cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+                <cbc:CompanyID><![CDATA[{$rechnung.rechnungssteller.steuernummer}]]></cbc:CompanyID>
+                <cac:TaxScheme>
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName><![CDATA[{$rechnung.rechnungssteller.name}]]></cbc:RegistrationName>
+<!--                 <cbc:CompanyID>[HRA-Eintrag]</cbc:CompanyID>
+                <cbc:CompanyLegalForm>123/456/7890, HRA-Eintrag in […]</cbc:CompanyLegalForm> -->
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+                <cbc:Name><![CDATA[{$rechnung.kopf.bearbeiter}]]></cbc:Name>
+                <cbc:Telephone>0123567890</cbc:Telephone> <!-- HIER MANUELL TELEFONNUMMER EINTRAGEN -->
+                <cbc:ElectronicMail>info@musterfirma.de</cbc:ElectronicMail> <!-- HIER MANUELL MAILADRESSE EINTRAGEN -->
+            </cac:Contact>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+        <cac:Party>
+            <cbc:EndpointID schemeID="EM"><![CDATA[{$rechnung.kopf.email}]]></cbc:EndpointID>
+            <cac:PartyIdentification>
+                <cbc:ID><![CDATA[{$rechnung.kopf.name}]]></cbc:ID>
+            </cac:PartyIdentification>
+            <cac:PostalAddress>
+                <cbc:StreetName><![CDATA[{$rechnung.kopf.strasse}]]></cbc:StreetName>
+                <cbc:CityName><![CDATA[{$rechnung.kopf.ort}]]></cbc:CityName>
+                <cbc:PostalZone><![CDATA[{$rechnung.kopf.plz}]]></cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode><![CDATA[{$rechnung.kopf.land}]]></cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName><![CDATA[{$rechnung.kopf.name}]]></cbc:RegistrationName>
+            </cac:PartyLegalEntity>
+        </cac:Party>
+    </cac:AccountingCustomerParty>
+       <cac:PaymentMeans>
+        <cbc:PaymentMeansCode>{if $rechnung.kopf.zahlungsweise == 'rechnung'}58{/if}</cbc:PaymentMeansCode><!-- https://service.unece.org/trade/uncefact/vocabulary/uncl4461/ -->
+        <cac:PayeeFinancialAccount>
+            <cbc:ID>DE12345678</cbc:ID> <!-- HIER MANUELL IBAN EINTRAGEN -->
+        </cac:PayeeFinancialAccount>
+    </cac:PaymentMeans>
+    <cac:PaymentTerms>
+        <cbc:Note>Zahlungsweise: <![CDATA[{$rechnung.kopf.zahlungsweise}]]></cbc:Note>
+    </cac:PaymentTerms>
+    <cac:TaxTotal>
+        <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung}">{($rechnung.steuer_gesamt)|string_format:"%.2f"}</cbc:TaxAmount>
+{foreach from=$rechnung.steuern item=steuerposition}
+        <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="{$rechnung.kopf.waehrung}">{$steuerposition.umsatz_netto|string_format:"%.2f"}</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung}">{($steuerposition.umsatz_brutto-$steuerposition.umsatz_netto)|string_format:"%.2f"}</cbc:TaxAmount>
+            <cac:TaxCategory>
+                <cbc:ID>S</cbc:ID>
+                <cbc:Percent>{$steuerposition.prozent}</cbc:Percent>
+                <cac:TaxScheme>                
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:TaxCategory>
+        </cac:TaxSubtotal>
+{/foreach}
+    </cac:TaxTotal>
+{foreach from=$rechnung.positionen item=position}
+{assign var="summe_gerundet" value=$summe_gerundet+($position.umsatz_netto_gesamt|string_format:"%.2f")}
+{/foreach}
+    <cac:LegalMonetaryTotal>
+        <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung}">{$summe_gerundet|string_format:"%.2f"}</cbc:LineExtensionAmount>
+        <cbc:TaxExclusiveAmount currencyID="{$rechnung.kopf.waehrung}">{$summe_gerundet|string_format:"%.2f"}</cbc:TaxExclusiveAmount>
+        <cbc:TaxInclusiveAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.umsatz_brutto_gesamt|string_format:"%.2f"}</cbc:TaxInclusiveAmount>
+        <cbc:PayableRoundingAmount currencyID="{$rechnung.kopf.waehrung}">{($rechnung.kopf.soll-$rechnung.umsatz_brutto_gesamt)|string_format:"%.2f"}</cbc:PayableRoundingAmount>
+        <cbc:PayableAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.kopf.soll|string_format:"%.2f"}</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+{foreach from=$rechnung.positionen item=position}
+    <cac:InvoiceLine>
+        <cbc:ID><![CDATA[{$position.bezeichnung}]]></cbc:ID>
+{if $position.beschreibung}        
+        <cbc:Note><![CDATA[{$position.beschreibung}]]></cbc:Note>
+{/if}
+        <cbc:InvoicedQuantity unitCode="XPP">{$position.menge}</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_gesamt|string_format:"%.2f"}</cbc:LineExtensionAmount>
+<!--         <cac:InvoicePeriod>
+            <cbc:StartDate>2016-01-01</cbc:StartDate>
+            <cbc:EndDate>2016-12-31</cbc:EndDate>
+        </cac:InvoicePeriod> -->
+<!--        <cac:OrderLineReference>
+            <cbc:LineID>6171175.1</cbc:LineID>
+        </cac:OrderLineReference>  -->
+        <cac:Item>
+{if $position.beschreibung}        
+            <cbc:Description><![CDATA[{$position.beschreibung}]]></cbc:Description>
+{/if}        
+            <cbc:Name><![CDATA[{$position.bezeichnung}]]></cbc:Name>
+            <cac:SellersItemIdentification>
+                <cbc:ID>{$position.nummer}</cbc:ID>
+            </cac:SellersItemIdentification>
+<!--            <cac:CommodityClassification>
+                <cbc:ItemClassificationCode listID="IB">0721-880X</cbc:ItemClassificationCode>
+            </cac:CommodityClassification> -->
+            <cac:ClassifiedTaxCategory>
+                <cbc:ID>S</cbc:ID>
+                <cbc:Percent>{$position.steuersatz}</cbc:Percent>
+                <cac:TaxScheme>
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price>
+            <cbc:PriceAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_einzeln}</cbc:PriceAmount>
+        </cac:Price>
+    </cac:InvoiceLine>
+{/foreach}
+</ubl:Invoice>
