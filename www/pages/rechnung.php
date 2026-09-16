@@ -1337,20 +1337,20 @@ class Rechnung extends GenRechnung
     }
   }
 
-  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
-        if ($id === null) {
-            $id = $this->app->Secure->GetGET('id');
-        }
+  /*
+    This function is the central interface to get all data for invoice, it should be used and expanded by all modules (E-Invoice, shop, remote, PDF, etc.)
+  */
+  function RechnungGetData($id = null) {
         $result = Array();
         $success = true;
-        
+
         $result['rechnungssteller']['name'] = $this->app->erp->Firmendaten('name');
         $result['rechnungssteller']['strasse'] = $this->app->erp->Firmendaten('strasse');
         $result['rechnungssteller']['ort'] = $this->app->erp->Firmendaten('ort');
         $result['rechnungssteller']['plz'] = $this->app->erp->Firmendaten('plz');
         $result['rechnungssteller']['land'] = $this->app->erp->Firmendaten('land');
         $result['rechnungssteller']['steuernummer'] = $this->app->erp->Firmendaten('steuernummer');
-        
+
         $rechnung = $this->app->DB->SelectRow("
             SELECT * FROM rechnung WHERE id = $id LIMIT 1
         ");
@@ -1361,15 +1361,15 @@ class Rechnung extends GenRechnung
             SELECT * FROM adresse WHERE id = (SELECT adresse FROM rechnung WHERE id = $id LIMIT 1)
         ");
         $result['adresse'] = $adresse[0];
-                      
+
         $positionen = $this->app->DB->SelectArr("
             SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort ASC
-        ");    
-        
+        ");
+
         if (empty($positionen)) {
             throw new exception("Rechnung enthält keine Positionen!");
         }
-            
+
         $steuern = Array();
         $steuer_gesamt = 0;
         $umsatz_brutto_gesamt = 0;
@@ -1388,11 +1388,20 @@ class Rechnung extends GenRechnung
             $umsatz_brutto_gesamt += round($position['umsatz_brutto_gesamt'],2);
             $steuer_gesamt += round($position['umsatz_brutto_gesamt'],2)-round($position['umsatz_netto_gesamt'],2);
         }
-        
         $result['positionen'] = $positionen;
         $result['steuern'] = $steuern;
         $result['umsatz_brutto_gesamt'] = $umsatz_brutto_gesamt;
         $result['steuer_gesamt'] = $steuer_gesamt;
+
+        return($result);
+  }
+
+  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
+        if ($id === null) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $result = $this->RechnungGetData($id);
+        $success = true;
 
         $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
 
@@ -1422,7 +1431,7 @@ class Rechnung extends GenRechnung
                 $output = $smarty->fetch('string:'.$template);
             }
         }
-        
+
         if ($returnvalue) {
             return(Array(
                 'success' => $success,
@@ -1436,7 +1445,7 @@ class Rechnung extends GenRechnung
             }
             echo($output);
             $this->app->ExitXentral();
-        }        
+        }
   }
 
   function RechnungSuche()
