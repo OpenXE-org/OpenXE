@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- OpenXE XRechnung template version 1.4.2 -->
+<!-- OpenXE XRechnung template version 1.4.3 -->
 <ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
              xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
              xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
@@ -19,7 +19,12 @@
     </cac:OrderReference>
    <cac:AccountingSupplierParty>
         <cac:Party>
-             <cbc:EndpointID schemeID="EM">info@musterfirma.de</cbc:EndpointID> <!-- HIER MANUELL MAILADRESSE EINTRAGEN -->
+            <cbc:EndpointID schemeID="EM">info@musterfirma.de</cbc:EndpointID> <!-- HIER MANUELL MAILADRESSE EINTRAGEN -->
+{if $rechnung.adresse.lieferantennummerbeikunde}
+            <cac:PartyIdentification>
+                <cbc:ID><![CDATA[{$rechnung.adresse.lieferantennummerbeikunde}]]></cbc:ID>
+            </cac:PartyIdentification>
+{/if}
             <cac:PartyName>
                 <cbc:Name><![CDATA[{$rechnung.rechnungssteller.name}]]></cbc:Name>
             </cac:PartyName>
@@ -51,7 +56,11 @@
     </cac:AccountingSupplierParty>
     <cac:AccountingCustomerParty>
         <cac:Party>
+{if $rechnung.kopf.gln}
+            <cbc:EndpointID schemeID="0088"><![CDATA[{$rechnung.kopf.gln}]]></cbc:EndpointID>
+{else}
             <cbc:EndpointID schemeID="EM"><![CDATA[{$rechnung.kopf.email}]]></cbc:EndpointID>
+{/if}
             <cac:PartyIdentification>
                 <cbc:ID><![CDATA[{$rechnung.kopf.name}]]></cbc:ID>
             </cac:PartyIdentification>
@@ -68,7 +77,30 @@
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingCustomerParty>
-       <cac:PaymentMeans>
+{if $rechnung.lieferschein}
+    <cac:Delivery>
+        <cbc:ActualDeliveryDate><![CDATA[{$rechnung.lieferschein.datum}]]></cbc:ActualDeliveryDate>
+        <cac:DeliveryLocation>
+{if $rechnung.lieferschein.gln}
+            <cbc:ID schemeID="0088"><![CDATA[{$rechnung.lieferschein.gln}]]></cbc:ID>
+{/if}
+            <cac:Address>
+                <cbc:StreetName><![CDATA[{$rechnung.lieferschein.strasse}]]></cbc:StreetName>
+                <cbc:CityName><![CDATA[{$rechnung.lieferschein.ort}]]></cbc:CityName>
+                <cbc:PostalZone><![CDATA[{$rechnung.lieferschein.plz}]]></cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode><![CDATA[{$rechnung.lieferschein.land}]]></cbc:IdentificationCode>
+                </cac:Country>
+            </cac:Address>
+        </cac:DeliveryLocation>
+        <cac:DeliveryParty>
+            <cac:PartyName>
+                <cbc:Name><![CDATA[{$rechnung.lieferschein.name}]]></cbc:Name>
+            </cac:PartyName>
+        </cac:DeliveryParty>
+    </cac:Delivery>
+{/if}
+    <cac:PaymentMeans>
         <cbc:PaymentMeansCode>{if $rechnung.kopf.zahlungsweise == 'rechnung'}58{/if}</cbc:PaymentMeansCode><!-- https://service.unece.org/trade/uncefact/vocabulary/uncl4461/ -->
         <cac:PayeeFinancialAccount>
             <cbc:ID>DE12345678</cbc:ID> <!-- HIER MANUELL IBAN EINTRAGEN -->
