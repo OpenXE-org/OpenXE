@@ -631,7 +631,7 @@ class lieferantengutschrift {
                 $freigabe = $this->app->DB->SelectArr("SELECT rechnungsfreigabe, freigabe, adresse, belegnr FROM lieferantengutschrift WHERE id =".$id)[0];
 
                 if ($lieferantengutschrift_from_db['status'] != 'abgeschlossen' && $lieferantengutschrift_from_db['status'] != 'storniert') {
-                    $this->app->DB->Update("UPDATE lieferantengutschrift SET belastungsanzeige = ".$input['belastungsanzeige']);
+                    $this->app->DB->Update("UPDATE lieferantengutschrift SET belastungsanzeige = ".$input['belastungsanzeige']." WHERE id = ".$id);
                 }
 
                 if ($freigabe['rechnungsfreigabe'] || $freigabe['freigabe']) {
