@@ -1613,6 +1613,10 @@ class Verbindlichkeit {
 
         $id = $this->app->Secure->GetGET('id');
 
+        if (empty($id)) {
+            return;
+        }
+
         $result = $this->app->DB->SelectArr("SELECT SQL_CALC_FOUND_ROWS
                                                 v.id,
                                                 v.belegnr,
