@@ -49,8 +49,8 @@ class Importvorlage extends GenImportvorlage {
 
   const numeric_fields = array(
         'stuecklistemenge', // 1
-        'lieferanteinkaufnetto\D+([\d]+)*\D*', // 3
-        'verkaufspreis\D+([\d]+)*\D*', //  10
+        'lieferanteinkaufnetto([\d]+)', // 3
+        'verkaufspreis([\d]+)', //  10
         'lager_menge_addieren', // 1
         'provision', // 1
         'vk_geplant', // 1
@@ -61,15 +61,15 @@ class Importvorlage extends GenImportvorlage {
         'breite', // 1
         'hoehe', // 1
         'laenge', // 1
-        'lager_menge_addieren\D+([\d]+)*\D*', // 5
-        'lager_menge_total\D+([\d]+)*\D*', //  5
-        'verkaufspreis\D+([\d]+)*\D*netto', //  10
-        'verkaufspreis\D+([\d]+)*\D*preisfuermenge', // 10
-        'verkaufspreis\D+([\d]+)*\D*menge', // 10
+        'lager_menge_addieren([\d]+)', // 5
+        'lager_menge_total([\d]+)', //  5
+        'verkaufspreis([\d]+)netto', //  10
+        'verkaufspreis([\d]+)preisfuermenge', // 10
+        'verkaufspreis([\d]+)menge', // 10
         'verkaufspreisvgruppe', // 10
-        'verkaufspreis\D+([\d]+)*\D*kundennummer', // 10
+        'verkaufspreis([\d]+)kundennummer', // 10
         'pseudopreis', // 1
-        'provision\D+([\d]+)*\D*', // 2
+        'provision([\d]+)', // 2
     );
 
     /*
@@ -77,11 +77,11 @@ class Importvorlage extends GenImportvorlage {
     * Regex
     */
     const handled_fields = array(
-        '/nummer/',
-        '/lieferantname/',
-        '/lieferantnummer/',
-        '/shopid(_[\d]+)/',
-        '/shopaktiv(_[\d]+)/'
+        'nummer',
+        'lieferantname',
+        'lieferantnummer',
+        'shopid(_[\d]+)',
+        'shopaktiv(_[\d]+)'
     );
 
   public $javascript = [
@@ -3063,7 +3063,13 @@ class Importvorlage extends GenImportvorlage {
                   default:
                     $handled = false;
                     foreach (SELF::handled_fields as $handled_field) {
-                        if (preg_match($handled_field, $value)) {
+                        if (preg_match("/".$handled_field."/", $value)) {
+                            $handled = true;
+                            break;
+                        }
+                    }
+                    foreach (SELF::numeric_fields as $numeric_field) {
+                        if (preg_match("/".$numeric_field."/", $value)) {
                             $handled = true;
                             break;
                         }
