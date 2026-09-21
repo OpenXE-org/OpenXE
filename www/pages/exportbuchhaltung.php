@@ -32,6 +32,7 @@ class Exportbuchhaltung
         return(
             array(
                 array(
+                    'name' => 'Rechnung',
                     'typ' => 'rechnung',
                     'subtable' => 'rechnung_position',
                     'kennzeichen' => 'S',
@@ -50,9 +51,10 @@ class Exportbuchhaltung
                     'Buchungstyp' => 'SR',
                     'document_type' => 2,
                     'do' => $rechnung,
-                    'pdf' => 'print'
+                    'action' => 'IF(b.xmlrechnung,\'load\',\'print\')'
                 ),
                 array(
+                    'name' => 'Gutschrift',
                     'typ' => 'gutschrift',
                     'subtable' => 'gutschrift_position',
                     'kennzeichen' => 'H',
@@ -71,9 +73,10 @@ class Exportbuchhaltung
                     'Buchungstyp' => '',
                     'document_type' => 2,
                     'do' => $gutschrift,
-                    'pdf' => 'print'
+                    'action' => '\'print\''
                 ),
                 array(
+                    'name' => 'Verbindlichkeit',
                     'typ' => 'verbindlichkeit',
                     'subtable' => 'verbindlichkeit_position',
                     'kennzeichen' => 'H',
@@ -93,14 +96,15 @@ class Exportbuchhaltung
                     'Buchungstyp' => '',
                     'document_type' => 1,
                     'do' => $verbindlichkeit,
-                    'pdf' => 'load'
+                    'action' => '\'load\''
                 ),
                 array(
+                    'name' => 'Lieferantengutschrift',
                     'typ' => 'lieferantengutschrift',
                     'subtable' => 'lieferantengutschrift_position',
                     'kennzeichen' => 'S',
                     'kennzeichen_negativ' => 'H',
-                    'field_belegnr' => 'b.rechnung',
+                    'field_belegnr' => 'IF(b.belastungsanzeige,b.belegnr,b.rechnung)',
                     'field_name' => 'a.name',
                     'field_date' => 'rechnungsdatum',
                     'field_auftrag' => '\'\'',
@@ -115,7 +119,7 @@ class Exportbuchhaltung
                     'Buchungstyp' => '',
                     'document_type' => 1,
                     'do' => $lieferantengutschrift,
-                    'pdf' => 'load'
+                    'action' => 'IF(b.belastungsanzeige,\'print\',\'load\')'
                 )
             )
         );
@@ -277,7 +281,8 @@ class Exportbuchhaltung
                         b." . $typvalue['field_date'] . " as datum,
                         " . $typvalue['field_betrag_gesamt'] . " as betrag_gesamt,
                         b.waehrung,
-                        " . $typvalue['field_land'] . " as land
+                        " . $typvalue['field_land'] . " as land,
+                        " . $typvalue['action'] . " as action
                     FROM
                         " . $typvalue['typ'] . " b
                             INNER JOIN
@@ -287,10 +292,10 @@ class Exportbuchhaltung
                     $belegearr = $this->app->DB->SelectArr($sql);
                     $belege[$typkey]['table'] = $typvalue['typ'];
                     $belege[$typkey]['typ'] = $typvalue['typ'];
+                    $belege[$typkey]['name'] = $typvalue['name'];
                     $belege[$typkey]['kennzeichen'] = $typvalue['kennzeichen'];
                     $belege[$typkey]['kennzeichen_negativ'] = $typvalue['kennzeichen_negativ'];
                     $belege[$typkey]['field_gegenkonto'] = $typvalue['field_gegenkonto'];
-                    $belege[$typkey]['pdf'] = $typvalue['pdf'];
                     $belege[$typkey]['document_type'] = $typvalue['document_type'];
                     foreach ($belegearr as $value) {
                         if (empty($value['ustid'])) {
@@ -342,14 +347,13 @@ class Exportbuchhaltung
                         foreach ($belege_zu_typ['belege'] as $beleg_key => $beleg) { // Belege
                             $allowed_file_types = array('pdf','xml');
                             $allowed_link_file_types = array('pdf');
-                            $action = $belege_zu_typ['pdf'];
                             if ($belege_zu_typ['typ'] == 'rechnung') {
                                 if ($this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id'])) {
                                     $action = 'load';
                                     $allowed_link_file_types = array('xml');
                                 }
-                            }
-                            switch ($action) {
+                            }                            
+                            switch ($beleg['action']) {
                                 case 'print':
                                     switch ($belege_zu_typ['typ']) {
                                         case 'rechnung':
@@ -370,17 +374,27 @@ class Exportbuchhaltung
                                             }
                                             $Brief->GetGutschrift($beleg['id']);
                                         break;
-                                        default:
-                                            $this->app->Tpl->AddMessage('error',"Belegdatei nicht geladen, Druckvorgang fehlgeschlagen: ".$beleg['belegnr']);
-                                            $dataok = false;
+                                        case 'lieferantengutschrift':
+                                            if(class_exists('LieferantengutschriftPDFCustom')) {
+                                                $Brief = new LieferantengutschriftPDFCustom($this->app,$projekt);
+                                            }
+                                            else{
+                                                $Brief = new LieferantengutschriftPDF($this->app,$projekt);
+                                            }
+                                            $Brief->GetLieferantengutschrift($beleg['id']);
                                         break;
                                     }
-                                    $tmpfile = $Brief->displayTMP();
-                                    $file_name = $beleg['belegnr'].".pdf";
-                                    $guid = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
-                                    $this->addfile(ucfirst($belege_zu_typ['typ'])."_".$file_name, file_get_contents($tmpfile), $guid, $belege_zu_typ['document_type']);
-                                    if (!$belege[$typ]['belege'][$beleg_key]['guid']) {
-                                        $belege[$typ]['belege'][$beleg_key]['guid'] = $guid;
+                                    if (empty($Brief)) {
+                                        $this->app->Tpl->AddMessage('error',"Belegdatei nicht geladen, Druckvorgang fehlgeschlagen: ".$belege_zu_typ['name']." ".$beleg['belegnr']);
+                                        $dataok = false;
+                                    } else {
+                                        $tmpfile = $Brief->displayTMP();
+                                        $file_name = $beleg['belegnr'].".pdf";
+                                        $guid = $this->app->DB->Select("SELECT UUID() uuid from DUAL");
+                                        $this->addfile(ucfirst($belege_zu_typ['typ'])."_".$file_name, file_get_contents($tmpfile), $guid, $belege_zu_typ['document_type']);
+                                        if (!$belege[$typ]['belege'][$beleg_key]['guid']) {
+                                            $belege[$typ]['belege'][$beleg_key]['guid'] = $guid;
+                                        }
                                     }
                                 break;
                                 case 'load':
@@ -403,12 +417,12 @@ class Exportbuchhaltung
                                     }
                                 break;
                                 default:
-                                    $this->app->Tpl->AddMessage('error',"Belegdatei nicht geladen: ".$beleg['belegnr']);
+                                    $this->app->Tpl->AddMessage('error',"Belegdatei nicht geladen: ".$belege_zu_typ['name']." ".$beleg['belegnr']);
                                     $dataok = false;
                                 break;
                             } // Switch action
                             if (empty($belege[$typ]['belege'][$beleg_key]['guid'])) {
-                                $this->app->Tpl->AddMessage('error',"Belegdatei fehlt: ".$beleg['belegnr']);
+                                $this->app->Tpl->AddMessage('error',"Belegdatei fehlt: ".$belege_zu_typ['name']." ".$beleg['belegnr']);
                                 $dataok = false;
                             }
                         } // Belege
