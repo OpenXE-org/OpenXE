@@ -3826,6 +3826,9 @@ INNER JOIN shopexport s ON
     $this->app->Tpl->Set('NEUTAB5','
         <fieldset>
         <legend>{|Anlegen|}</legend>
+        <p>
+        Freifelder werden an das Shopmodul mit Pr&auml;fix "freifeld_" plus "Bezeichnung in Shop" &uuml;bertragen. Zusätzlich werden die &Uuml;bersetzungen im Array "freifelder" mit Sprache &uuml;bertragen z.B. "[freifeld_Marke] => Siemens" und auch "[freifelder] => Array ( [DE] => Array ( [Marke] => Siemens ) )"
+        </p>
         <form action="" onsubmit="return freifelderSave(this);">
         <input type="hidden" name="shop" id="shop" value="'.$id.'">
         <table width="" cellspacing="0" cellpadding="0">
