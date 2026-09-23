@@ -835,48 +835,6 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         }
       }
 
-      if (!is_null($product_id)) {
-        // Product exists - check if it's a variation or regular product
-        $this->logger->debug("WooCommerce ImportSendList update product");
-        if ($isVariant && !empty($parent_id)) {
-          // This is a VARIATION - use the variations endpoint
-          // Variations don't support certain attributes (they inherit from parent)
-          $variationAtts = [
-            'regular_price' => $commonProductAtts['regular_price'],
-            'sale_price' => $commonProductAtts['sale_price'],
-            'weight' => $commonProductAtts['weight'],
-            'dimensions' => $commonProductAtts['dimensions'],
-            'stock_status' => $commonProductAtts['stock_status'],
-            'manage_stock' => $commonProductAtts['manage_stock'],
-          ];
-          if (isset($commonProductAtts['stock_quantity'])) {
-            $variationAtts['stock_quantity'] = $commonProductAtts['stock_quantity'];
-          }
-          // Update status: 'publish' for variations is handled differently
-          if (!$aktiv) {
-            $variationAtts['status'] = 'private';
-          }
-
-          $this->client->put('products/' . $parent_id . '/variations/' . $product_id, $variationAtts);
-
-          $this->logger->info("WooCommerce Variante geändert für Artikel: $nummer / Variation: $product_id (Parent: $parent_id), noch ".($ctmp - $i -1 )." Artikel");
-        } else {
-          // This is a regular product
-          $this->client->put('products/' . $product_id, array_merge([
-
-          ], $commonProductAtts));
-
-          $this->logger->info("WooCommerce Artikel geändert für Artikel: $nummer / $product_id, noch ".($ctmp - $i -1 )." Artikel");
-        }
-      } else {
-        // create a new product
-        $this->logger->debug("WooCommerce ImportSendList create product");
-        $product_id = $this->client->post('products/', array_merge([
-          'sku' => $nummer,
-        ], $commonProductAtts))->id;
-        $this->logger->info("WooCommerce neuer Artikel angelegt: $nummer, noch ".($ctmp - $i - 1)." Artikel");
-      }
-
       // TODO: Kategoriebaum wird noch nicht uebertragen
 
       // if(isset($tmp[$i]['kompletter_kategorienbaum'])){
@@ -927,35 +885,57 @@ class Shopimporter_Woocommerce extends ShopimporterBase
                 }
 
                 if ($wcCatId) {
-                  // update category. We first retrieve the product and append the new product category, not replace the entire category array.
-                  $alreadyAssignedWCCats = $this->client->get('products/' . $product_id, [
-                    'per_page' => 1,
-                  ])->categories;
-
-                  // Get ids of existing categories
-                  $existingCategoryIds = [];
-                  foreach ($alreadyAssignedWCCats as $cat) {
-                    $existingCategoryIds[] = $cat->id;
-                  }
-
-                  $allCatIds = array_merge($existingCategoryIds, array($wcCatId));
-
-                  // prepare data to be in correct format for WC api. should be individual items with key 'id' and id as value
-                  $allCatIdsWCAPIRep = array();
-                  foreach ($allCatIds as $id) {
-                    $allCatIdsWCAPIRep[] = ['id' => $id];
-                  }
-
-                  // Update category assignment
-                  $this->client->put('products/' . $product_id, [
-                    'categories' => $allCatIdsWCAPIRep,
-                  ]);
-
-                  $chosenCats[] = $wcCatId;
+                    $chosenCats[] = $wcCatId;
                 }
               }
             }
-        } // kategorienuebertragen
+        }
+      } // kategorienuebertragen
+
+      if (!empty($chosenCats)) {
+        $commonProductAtts['categories'] = $chosenCats;
+      }
+
+      if (!is_null($product_id)) {
+        // Product exists - check if it's a variation or regular product
+        $this->logger->debug("WooCommerce ImportSendList update product");
+        if ($isVariant && !empty($parent_id)) {
+          // This is a VARIATION - use the variations endpoint
+          // Variations don't support certain attributes (they inherit from parent)
+          $variationAtts = [
+            'regular_price' => $commonProductAtts['regular_price'],
+            'sale_price' => $commonProductAtts['sale_price'],
+            'weight' => $commonProductAtts['weight'],
+            'dimensions' => $commonProductAtts['dimensions'],
+            'stock_status' => $commonProductAtts['stock_status'],
+            'manage_stock' => $commonProductAtts['manage_stock'],
+          ];
+          if (isset($commonProductAtts['stock_quantity'])) {
+            $variationAtts['stock_quantity'] = $commonProductAtts['stock_quantity'];
+          }
+          // Update status: 'publish' for variations is handled differently
+          if (!$aktiv) {
+            $variationAtts['status'] = 'private';
+          }
+
+          $this->client->put('products/' . $parent_id . '/variations/' . $product_id, $variationAtts);
+
+          $this->logger->info("WooCommerce Variante geändert für Artikel: $nummer / Variation: $product_id (Parent: $parent_id), noch ".($ctmp - $i -1 )." Artikel");
+        } else {
+          // This is a regular product
+          $this->client->put('products/' . $product_id, array_merge([
+
+          ], $commonProductAtts));
+
+          $this->logger->info("WooCommerce Artikel geändert für Artikel: $nummer / $product_id, noch ".($ctmp - $i -1 )." Artikel");
+        }
+      } else {
+        // create a new product
+        $this->logger->debug("WooCommerce ImportSendList create product");
+        $product_id = $this->client->post('products/', array_merge([
+          'sku' => $nummer,
+        ], $commonProductAtts))->id;
+        $this->logger->info("WooCommerce neuer Artikel angelegt: $nummer, noch ".($ctmp - $i - 1)." Artikel");
       }
     }
     return $return;
