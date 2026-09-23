@@ -885,7 +885,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
                 }
 
                 if ($wcCatId) {
-                    $chosenCats[] = $wcCatId;
+                    $chosenCats[] = array('id' => $wcCatId);
                 }
               }
             }
