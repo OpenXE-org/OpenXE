@@ -319,9 +319,11 @@ class Lager extends GenLager {
           }
         }
 
-        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Adresse','Lagerplatz','gesp.','Adresse','Menge','Gewicht','Volumen','Preistyp','EK-Preis','W&auml;hrung','Kurs', 'Gesamt','');
-        $width = array(  '5%',   '05%',        '20%',    '10%',             '10%', '5%', '5%'        ,'5%','1%',     '5%',   '5%',     '1%',     '1%',      '5%',      '1%',          '1%',  '1%','2%',    '1%');
-        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername','lageradressename', 'lagerplatzname','lagerplatz.sperrlager','lagerplatzadressename',$colmenge,$colgewicht,$colvolumen);
+        // Column 14 is invisible, reason unknown, as a workaround there is one dummy column
+
+        $heading = array('Datum','Artikel-Nr.','Artikel','Artikelkategorie','Lager','Adresse','Lagerplatz','gesp.','Adresse','Menge','Gewicht','Volumen','Preistyp','','EK-Preis','W&auml;hrung','Kurs', 'Gesamt','');
+        $width = array(  '5%',   '5%',         '20%',    '10%',             '10%', ' 5%',     '5%'        ,'5%',   '1%',     '5%',   '5%',     '1%',     '1%',      '','1%',      '1%',          '1%',   '1%',    '1%');
+        $findcols = array('lw.datum','art.nummer','art.name_de','(select bezeichnung from artikelkategorien where id=(select SUBSTRING_INDEX(SUBSTRING_INDEX(art.typ, \'kat\', 1), \'_\', 1) as type from artikel where id=art.id))', 'lagername','lageradressename', 'lagerplatzname','lagerplatz.sperrlager','lagerplatzadressename','lw.menge',$colgewicht,$colvolumen);
 
         if ($preiseineuro) {
             $preisEUR = "((SELECT preisfinal)*if((SELECT waehrungfinal) = 'EUR' OR (SELECT waehrungfinal) = NULL,1,kurs))";
@@ -341,10 +343,12 @@ class Lager extends GenLager {
         }
 
         $findcols[] = self::PreisTypErgebnis($preisart);
-        $findcols[] = $preis;
+        $findcols[] = 'art.id'; // Dummy
+        $findcols[] = self::EinzelPreis($preisart);
         $findcols[] = 'waehrung';
         $findcols[] = 'kurs';
         $findcols[] = $gesamtcol;
+        $findcols[] = 'art.id';
         $findcols[] = 'art.id';
 
         $searchsql = $findcols;
@@ -352,9 +356,9 @@ class Lager extends GenLager {
 
         $defaultorder = 1;
         $defaultorderdesc = 0;
-        $alignright = array(9,10,11,12,13,15,16);
-        $sumcol = array(9,16);
-        $numbercols = array(9,10,11,12,13,15);
+        $alignright = array(10,11,12,13,15,17,18);
+        $sumcol = array(10,18);
+        $numbercols = array(10,11,12,15,17,18);
         $datecols = array(0);
         $onequeryperuser = true;
 
@@ -503,9 +507,12 @@ class Lager extends GenLager {
                             lagerplatzname,
                             if(sperrlager,'ja',''),
                             lagerplatzadressename,
-                            ".$app->erp->FormatMenge('lw.menge',2).",".$app->erp->FormatPreis($colgewicht,2).",".$app->erp->FormatPreis($colvolumen,2)." as menge,
+                            ".$app->erp->FormatMenge('lw.menge',2).",
+                            ".$app->erp->FormatPreis($colgewicht,2).",
+                            ".$app->erp->FormatPreis($colvolumen,2)." as menge,
                             ".self::PreisTypErgebnis($preisart)." as preisart,
-                            ".self::EinzelPreis($preisart)." AS preisfinal,
+                            '',
+                            ".$app->erp->FormatPreis(self::EinzelPreis($preisart),2)." AS preisfinal,
                             ".self::Waehrung($preisart)." AS waehrungfinal,
                             ".$kurs." AS kurs,
                             ".$app->erp->FormatPreis($gesamtcol,2)." as gesamt,
