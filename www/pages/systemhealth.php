@@ -630,7 +630,7 @@ class Systemhealth {
       if(is_array($dbSize)) {
         $dbSize = $dbSize['all'];
       }
-      $minFree = (int)($dbSize / 1024) + $userdataSize + 512;
+      $minFree = (int)($dbSize*0.2 / 1024) + ($userdataSize*0.2) + 512;
       if($minFree < 2048) {
         $minFree = 2048;
       }
@@ -638,7 +638,7 @@ class Systemhealth {
         $this->changeStatus('server', 'disk_space', 'error', 'Es sind nur ' . round($free) . ' MB Speicherplatz frei');
       }
       elseif($free < $minFree) {
-        $this->changeStatus('server', 'disk_space', 'warning', 'Es sind nur ' . round($free) . ' MB Speicherplatz frei');
+        $this->changeStatus('server', 'disk_space', 'warning', 'Es sind nur ' . round($free) . ' MB Speicherplatz frei. Empfohlen sind mindestens '. round($minFree) . ' MB (Datenbank '.round($dbSize/1024).', Userdata '.round($userdataSize).' + 512).');
       }
       else {
         $this->changeStatus('server', 'disk_space', 'ok', 'Es sind ' . round($free) . ' MB Speicherplatz frei');
