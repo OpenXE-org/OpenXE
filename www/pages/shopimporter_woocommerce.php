@@ -671,7 +671,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
             $smarty->assign('artikel', (object) $tmp[$i]);
             $smarty_array = json_decode($this->productsmarty, true);
             if (empty($smarty_array)) {
-                throw new Exception("Smarty template JSON decode error! ".print_r(json_last_error_msg(),true));
+                throw new Exception("Article smarty template JSON decode error! ".print_r(json_last_error_msg(),true));
             }
             $transformed = json_decode($smarty->fetch('string:'.$this->productsmarty),true);
             $tmp[$i] = array_merge((array) $tmp[$i], $transformed);
@@ -718,10 +718,6 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       if (self::emptyString($dim_height))
         $dim_height = null;
 
-
-      $meta_desc = $tmp[$i]['metadescription_de'];
-      $meta_title = $tmp[$i]['metatitle_de'];
-
       $pseudopreis = $tmp[$i]['pseudopreis'];// *1.19;
       if ($pseudopreis <= $preis)
         $pseudopreis = $preis;
@@ -756,13 +752,21 @@ class Shopimporter_Woocommerce extends ShopimporterBase
       $parent_id = $remoteIdInformation['parent'] ?? null;
       $isVariant = $remoteIdInformation['isvariant'] ?? false;
 
-      $commonMetaData = [
-        ['key' => '_yoast_wpseo_metadesc', 'value' => $meta_desc],
-        ['key' => '_yoast_wpseo_title', 'value' => $meta_title],
-      ];
+      $commonMetaData = array();
 
-        foreach ($tmp[$i]['meta_data'] as $key => $value) {
-            $commonMetaData[] = ['key' => $this->metadataprefix.$key, 'value' => $value];
+        if (!empty($this->metadatasmarty)) {
+            $smarty = new Smarty;
+            $directory = $this->app->erp->GetTMP().'/smarty/templates';
+            $smarty->setCompileDir($directory);
+            $smarty->assign('artikel', (object) $tmp[$i]);
+            $smarty_array = json_decode($this->metadatasmarty, true);
+            if (empty($smarty_array)) {
+                throw new Exception("Metadata smarty template JSON decode error! ".print_r(json_last_error_msg(),true));
+            }
+            $transformed = json_decode($smarty->fetch('string:'.$this->metadatasmarty),true);
+            foreach ($transformed as $key => $value) {
+                $commonMetaData[] = array('key' => $key, 'value' => $value);
+            }
         }
 
       // Attributes that are used for both updating an existing product as well as creating a new one
@@ -995,8 +999,8 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 
     $this->filenamesmarty = $felder['filenamesmarty'];
     $this->productsmarty = $felder['productsmarty'];
+    $this->metadatasmarty = $felder['metadatasmarty'];
     $this->fileunique = $felder['fileunique'];
-    $this->metadataprefix = $felder['metadataprefix'];
 
     $shopexportArr =  $this->app->DB->SelectRow("SELECT * FROM shopexport WHERE id = '$this->shopid' LIMIT 1");
 
@@ -1184,13 +1188,20 @@ class Shopimporter_Woocommerce extends ShopimporterBase
         'priceType' => array('typ' => 'select', 'bezeichnung' => '{|Preisberechnungsgrundlage bei Auftragsimport|}', 'optionen' => array('netcalculated' => '{|Nettopreis zurückrechnen (Standard)|}', 'grosscalculated' => '{|Bruttopreis zurückrechnen|}')),
         'timeout' => array('typ' => 'text', 'bezeichnung' => '{|Timeout in Sekunden|}:', 'size' => 40, 'default' => '30', 'info' => ''),
         'backorders' => array('typ' => 'select', 'bezeichnung' => '{|Einstellungen für Backorders|}:', 'optionen' => $this->backorders_array, 'info' => ''),
-        'metadataprefix' => array('typ' => 'text', 'bezeichnung' => '{|Präfix für Metadaten|}:', 'size' => 40, 'default' => 'openxe_meta_', 'info' => ''),
         'productsmarty' => [
             'typ' => 'textarea',
             'cols' => 80,
             'rows' => 5,
-            'bezeichnung' => '{|Smarty-Template JSON|}:',
-            'info' => 'Beispiel:<br>{<br />&nbsp; &nbsp; "name_de": "{$artikel-&gt;name_en}",<br />&nbsp; &nbsp; "meta_data": {<br />&nbsp; &nbsp; &nbsp; &nbsp; "mpn": "{$artikel-&gt;herstellernummer}",<br />&nbsp; &nbsp; &nbsp; &nbsp; "manufacturer": "{$artikel-&gt;hersteller}"<br />&nbsp; &nbsp; }<br />}',
+            'bezeichnung' => '{|Artikeldaten Smarty-Template JSON|}:',
+            'info' => 'Beispiel:<br>{<br />&nbsp; &nbsp; "name_en": "{$artikel-&gt;hersteller} {$artikel-&gt;name_en}"<br />}',
+            'size' => 120,
+        ],
+        'metadatasmarty' => [
+            'typ' => 'textarea',
+            'cols' => 80,
+            'rows' => 5,
+            'bezeichnung' => '{|Metadaten Smarty-Template JSON|}:',
+            'info' => 'Beispiel:<br>{<br />&nbsp; &nbsp; "openxe_meta": {<br />&nbsp; &nbsp; &nbsp; &nbsp; "mpn": "{$artikel-&gt;herstellernummer}",<br />&nbsp; &nbsp; &nbsp; &nbsp; "manufacturer": "{$artikel-&gt;hersteller}"<br />&nbsp; &nbsp; }<br />}',
             'size' => 120,
         ],
         'filenamesmarty' => [
