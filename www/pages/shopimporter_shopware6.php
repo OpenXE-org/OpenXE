@@ -3044,6 +3044,7 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                         'datei' => $variant['Dateien']['datei'][$index],
                         'beschreibung' => $variant['Dateien']['beschreibung'][$index],
                         'titel' => $variant['Dateien']['titel'][$index],
+                        'stichwort' => $variant['Dateien']['stichwort'][$index],
                         'id' => $fileId,
                     ];
                 }
