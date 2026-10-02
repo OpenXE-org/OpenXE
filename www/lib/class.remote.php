@@ -1306,7 +1306,7 @@ class Remote
                 }
             }
 
-            if ($data[$i]['uebersicht_de'] == '' && $data[$i]['beschreibung_de'] == '' && $data[$i]['kurztext_de'] == '') {
+            if ($data[$i]['uebersicht_de'] == '') {
                 $data[$i]['uebersicht_de'] = $data[$i]['anabregs_text'];
             }
 
