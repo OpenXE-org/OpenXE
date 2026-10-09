@@ -2072,7 +2072,7 @@ class Wareneingang {
         $seriennummern_aktiv = !empty($seriennummern);
 
         if ($seriennummern_aktiv) {
-            $this->app->erp->MenuEintrag('index.php?module=seriennummern&action=enter&wareneingang='.$id, 'Seriennummern');
+            $this->app->erp->MenuEintrag('index.php?module=seriennummern&action=enter&wareneingang='.$id.'&from=wareneingang', 'Seriennummern');
             $seriennummern_check_result = $this->app->erp->SeriennummernCheckWareneingangWarnung($id, false);
             $seriennummern_ok = empty($seriennummern_check_result);
         }
