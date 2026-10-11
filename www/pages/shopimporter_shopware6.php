@@ -3422,6 +3422,20 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $order['customer'] = $customer;
             $cart['email'] = $customer['data']['0']['attributes']['email'];
 
+            $customerVatId = '';
+            $customerAttrs = $customer['data'][0]['attributes'] ?? [];
+            if (!empty($customerAttrs['vatIds']) && is_array($customerAttrs['vatIds'])) {
+                foreach ($customerAttrs['vatIds'] as $vatIdCandidate) {
+                    if (is_string($vatIdCandidate) && trim($vatIdCandidate) !== '') {
+                        $customerVatId = trim($vatIdCandidate);
+                        break;
+                    }
+                }
+            }
+            if ($customerVatId === '' && !empty($customerAttrs['vatId'])) {
+                $customerVatId = trim((string)$customerAttrs['vatId']);
+            }
+
             $addresses = $this->shopwareRequest(
                 'GET',
                 'order/' . $order['id'] . '/addresses?associations[salutation][]&associations[country][]',
@@ -3432,9 +3446,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
             $billingSalutationId = '';
             foreach ($addresses['data'] as $address) {
                 if ($address['id'] === $order['attributes']['billingAddressId']) {
-                    if (!empty($address['attributes']['vatId'])) {
-                        $cart['ustid'] = $address['attributes']['vatId'];
-                    }
+                    $cart['ustid'] = !empty($address['attributes']['vatId'])
+                        ? $address['attributes']['vatId']
+                        : $customerVatId;
                     $cart['name'] = $address['attributes']['firstName'] . ' ' . $address['attributes']['lastName'];
                     if (!empty($address['attributes']['company'])) {
                         $cart['ansprechpartner'] = $cart['name'];
@@ -3454,9 +3468,9 @@ class Shopimporter_Shopware6 extends ShopimporterBase
                 }
                 if ($address['id'] !== $order['attributes']['billingAddressId']) {
                     $cart['abweichendelieferadresse'] = 1;
-                    if (!empty($address['attributes']['vatId'])) {
-                        $cart['lieferadresse_ustid'] = $address['attributes']['vatId'];
-                    }
+                    $cart['lieferadresse_ustid'] = !empty($address['attributes']['vatId'])
+                        ? $address['attributes']['vatId']
+                        : $customerVatId;
                     $cart['lieferadresse_name'] = $address['attributes']['firstName'] . ' ' . $address['attributes']['lastName'];
                     if (!empty($address['attributes']['company'])) {
                         $cart['lieferadresse_ansprechpartner'] = $cart['lieferadresse_name'];
