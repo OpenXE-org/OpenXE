@@ -131,12 +131,13 @@ final class SystemMailer
             return false;
         }
 
-        //use Mailer component only for 'smtp' or 'gmail' authtype
+        //use Mailer component only for 'smtp', 'gmail' or 'office365' authtype
         if (
             $account->isSmtpEnabled() === false
             || (
                 $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_SMTP
                 && $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_GMAIL
+                && $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_OFFICE365
             )
         ) {
             $mailerror_text = 'Authtype error.';

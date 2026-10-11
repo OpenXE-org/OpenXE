@@ -26,10 +26,19 @@ final class Bootstrap
      */
     public static function onInitMailClientConfigProvider(ServiceContainer $container): MailClientConfigProvider
     {
+        $office365Gateway = $container->has('Office365AccountGateway')
+            ? $container->get('Office365AccountGateway')
+            : null;
+        $office365AuthService = $container->has('Office365AuthorizationService')
+            ? $container->get('Office365AuthorizationService')
+            : null;
+
         return new MailClientConfigProvider(
             $container->get('EmailAccountGateway'),
             $container->get('GoogleAccountGateway'),
-            $container->get('GoogleApiClientFactory')
+            $container->get('GoogleApiClientFactory'),
+            $office365Gateway,
+            $office365AuthService
         );
     }
 

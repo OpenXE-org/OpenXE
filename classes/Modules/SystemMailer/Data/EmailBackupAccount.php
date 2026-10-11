@@ -18,6 +18,9 @@ final class EmailBackupAccount implements MailAccountInterface
     /** @var string AUTH_GMAIL */
     public const AUTH_GMAIL = 'oauth_google';
 
+    /** @var string AUTH_OFFICE365 */
+    public const AUTH_OFFICE365 = 'oauth_office365';
+
     /** @var int $id */
     private $id;
 
@@ -303,7 +306,7 @@ final class EmailBackupAccount implements MailAccountInterface
      */
     public function getUserName():string
     {
-        if ($this->smtpAuthType === MailAccountInterface::TYPE_GOOGLE) {
+        if ($this->smtpAuthType === MailAccountInterface::TYPE_GOOGLE || $this->smtpAuthType === self::AUTH_OFFICE365) {
             return $this->smtpSenderEmail;
         }
 

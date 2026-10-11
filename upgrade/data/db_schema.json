@@ -64630,6 +64630,368 @@
             ]
         },
         {
+            "name": "office365_access_token",
+            "collation": "utf8mb3_general_ci",
+            "type": "BASE TABLE",
+            "columns": [
+                {
+                    "Field": "id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": null,
+                    "Extra": "auto_increment",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "office365_account_id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "UNI",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "token",
+                    "Type": "longtext",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "expires",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "MUL",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "created_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "updated_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "on update current_timestamp()",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                }
+            ],
+            "keys": [
+                {
+                    "Key_name": "PRIMARY",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "id"
+                    ],
+                    "Non_unique": ""
+                },
+                {
+                    "Key_name": "office365_account_id",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "office365_account_id"
+                    ],
+                    "Non_unique": "0"
+                },
+                {
+                    "Key_name": "expires",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "expires"
+                    ],
+                    "Non_unique": ""
+                }
+            ]
+        },
+        {
+            "name": "office365_account",
+            "collation": "utf8mb3_general_ci",
+            "type": "BASE TABLE",
+            "columns": [
+                {
+                    "Field": "id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": null,
+                    "Extra": "auto_increment",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "user_id",
+                    "Type": "int(11) unsigned",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "MUL",
+                    "Default": "0",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "refresh_token",
+                    "Type": "longtext",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "identifier",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "tenant_id",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "created_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "updated_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "on update current_timestamp()",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                }
+            ],
+            "keys": [
+                {
+                    "Key_name": "PRIMARY",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "id"
+                    ],
+                    "Non_unique": ""
+                },
+                {
+                    "Key_name": "user_id",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "user_id"
+                    ],
+                    "Non_unique": ""
+                }
+            ]
+        },
+        {
+            "name": "office365_account_property",
+            "collation": "utf8mb3_general_ci",
+            "type": "BASE TABLE",
+            "columns": [
+                {
+                    "Field": "id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": null,
+                    "Extra": "auto_increment",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "office365_account_id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "MUL",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "varname",
+                    "Type": "varchar(64)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "value",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "created_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "updated_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "on update current_timestamp()",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                }
+            ],
+            "keys": [
+                {
+                    "Key_name": "PRIMARY",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "id"
+                    ],
+                    "Non_unique": ""
+                },
+                {
+                    "Key_name": "account_varname",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "office365_account_id",
+                        "varname"
+                    ],
+                    "Non_unique": "0"
+                }
+            ]
+        },
+        {
+            "name": "office365_account_scope",
+            "collation": "utf8mb3_general_ci",
+            "type": "BASE TABLE",
+            "columns": [
+                {
+                    "Field": "id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "PRI",
+                    "Default": null,
+                    "Extra": "auto_increment",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "office365_account_id",
+                    "Type": "int(11)",
+                    "Collation": null,
+                    "Null": "NO",
+                    "Key": "MUL",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "scope",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "created_at",
+                    "Type": "datetime",
+                    "Collation": null,
+                    "Null": "YES",
+                    "Key": "",
+                    "Default": "current_timestamp()",
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                }
+            ],
+            "keys": [
+                {
+                    "Key_name": "PRIMARY",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "id"
+                    ],
+                    "Non_unique": ""
+                },
+                {
+                    "Key_name": "office365_account_id",
+                    "Index_type": "BTREE",
+                    "columns": [
+                        "office365_account_id"
+                    ],
+                    "Non_unique": ""
+                }
+            ]
+        },
+        {
             "name": "onlineshop_transfer_cart",
             "collation": "utf8mb3_general_ci",
             "type": "BASE TABLE",
