@@ -83,18 +83,19 @@ final class MimeMessageFormatter implements MimeMessageFormatterInterface
         } else {
             $plainText = $this->convertHtmlToPlainText($email->getBody());
         }
-        $textPart = new Part(Mime::encode($plainText, Mime::ENCODING_8BIT));
-        $textPart->type = Mime::TYPE_TEXT;
-        $textPart->charset = 'ISO-8859-1';
-        $textPart->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
         if ($email->isHtml()) {
             $htmlPart = new Part($email->getBody());
             $htmlPart->type = Mime::TYPE_HTML;
             $htmlPart->charset = 'ISO-8859-1';
             $htmlPart->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
             $textParts[] = $htmlPart;
+        } else {
+            $textPart = new Part(Mime::encode($plainText, Mime::ENCODING_8BIT));
+            $textPart->type = Mime::TYPE_TEXT;
+            $textPart->charset = 'ISO-8859-1';
+            $textPart->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
+            $textParts[] = $textPart;
         }
-        $textParts[] = $textPart;
         $attachmentParts = [];
         foreach ($email->getAttachments() as $attachment) {
             $contentStream = null;

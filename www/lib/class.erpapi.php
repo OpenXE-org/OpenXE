@@ -25615,13 +25615,11 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
 
   function BeschriftungSprache($sprache='')
   {
-
-    if ($sprache === '') {
+    if ($sprache == '') {
         $this->beschriftung_sprache='deutsch';
     } else {
         $this->beschriftung_sprache=strtolower(trim($sprache));
     }
-
   }
 
   function BeschriftungStandardwerte($field,$sprache="deutsch",$getvars=false)
@@ -25856,13 +25854,7 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
   function Beschriftung($field,$sprache='')
   {
  
-   if($sprache!='') {
-      $this->BeschriftungSprache($sprache);
-    }
-
-    if($this->beschriftung_sprache==''){
-      $this->beschriftung_sprache = 'deutsch';
-    } 
+    $this->BeschriftungSprache($sprache);
 
     // schaue ob es das wort in uebesetzungen gibt
     $check = $this->getUebersetzung($field, $this->beschriftung_sprache);
