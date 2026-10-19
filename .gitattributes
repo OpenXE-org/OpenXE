@@ -1,0 +1,4 @@
+# Exclude vendored third-party code from git whitespace / diff-check hygiene
+# so that upstream formatting choices (trailing whitespace, tabs, mixed EOL)
+# do not block `git diff --check` or review tooling.
+vendor/** -whitespace
