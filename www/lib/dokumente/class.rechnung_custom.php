@@ -30,8 +30,8 @@ class RechnungPDFCustom extends RechnungPDF
   /** @var string|null|false XML der Rechnung; false = keins moeglich */
   private $zugferdXml;
 
-  /** @var string gesammelte Ausgabe aus dem Archivweg (siehe zugferdPuffer) */
-  private $zugferdAusgabe = '';
+  /** @var int|null Pufferebene des Archivwegs (siehe zugferdArchivStart) */
+  private $zugferdPufferEbene;
 
   public function Output($name = '', $dest = '')
   {
@@ -78,23 +78,59 @@ class RechnungPDFCustom extends RechnungPDF
   public function displayDocument($from_archiv = false)
   {
     $this->zugferdProtokoll('displayDocument(archiv='.($from_archiv ? 1 : 0).')');
-    if($from_archiv) {
-      // die Elternmethode gibt die Archivdatei per echo aus und beendet das Skript;
-      // dann ist die Datenbank schon geschlossen, also XML vorher erzeugen
-      $this->zugferdXml();
-      ob_start([$this, 'zugferdPuffer']);
-    }
+    $this->zugferdArchivStart($from_archiv);
     parent::displayDocument($from_archiv);
+    $this->zugferdArchivEnde();
   }
 
   public function inlineDocument($from_archiv = false)
   {
     $this->zugferdProtokoll('inlineDocument(archiv='.($from_archiv ? 1 : 0).')');
-    if($from_archiv) {
-      $this->zugferdXml();
-      ob_start([$this, 'zugferdPuffer']);
-    }
+    $this->zugferdArchivStart($from_archiv);
     parent::inlineDocument($from_archiv);
+    $this->zugferdArchivEnde();
+  }
+
+  /**
+   * Die Elternmethoden geben die Archivdatei per echo aus und beenden das Skript
+   * (ExitXentral, Datenbank danach geschlossen). Darum: XML vorher erzeugen,
+   * Ausgabe puffern und in einer Shutdown-Funktion einbetten. Ein Ausgabe-Callback
+   * geht nicht, weil er erst nach den Destruktoren laeuft und FPDI dann abbricht.
+   */
+  private function zugferdArchivStart($from_archiv): void
+  {
+    $this->zugferdPufferEbene = null;
+    if(!$from_archiv) {
+      return;
+    }
+    $this->zugferdXml();
+    ob_start();
+    $this->zugferdPufferEbene = ob_get_level();
+    register_shutdown_function([$this, 'zugferdArchivEnde']);
+  }
+
+  public function zugferdArchivEnde(): void
+  {
+    $ebene = $this->zugferdPufferEbene;
+    if($ebene === null) {
+      return;
+    }
+    $this->zugferdPufferEbene = null;
+    while(ob_get_level() > $ebene) {
+      ob_end_flush();
+    }
+    if(ob_get_level() !== $ebene) {
+      return;
+    }
+    $ausgabe = ob_get_clean();
+    if(strncmp($ausgabe, '%PDF', 4) === 0) {
+      try {
+        $ausgabe = $this->zugferd($ausgabe);
+      }
+      catch(Throwable $e) {
+      }
+    }
+    echo $ausgabe;
   }
 
   public function displayTMP($from_archiv = false)
@@ -122,26 +158,6 @@ class RechnungPDFCustom extends RechnungPDF
       }
     }
     return $ergebnis;
-  }
-
-  /** Ausgabepuffer fuer den Archivweg: sammelt bis zum Ende und bettet dann ein. */
-  public function zugferdPuffer($teil, $phase)
-  {
-    $this->zugferdAusgabe .= $teil;
-    if(!($phase & PHP_OUTPUT_HANDLER_FINAL)) {
-      return '';
-    }
-    $ausgabe = $this->zugferdAusgabe;
-    $this->zugferdAusgabe = '';
-    if(strncmp($ausgabe, '%PDF', 4) !== 0) {
-      return $ausgabe;
-    }
-    try {
-      return $this->zugferd($ausgabe);
-    }
-    catch(Throwable $e) {
-      return $ausgabe;
-    }
   }
 
   /** Liefert die PDF mit eingebettetem XML oder bei Problemen unveraendert zurueck. */
