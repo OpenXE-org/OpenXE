@@ -3188,7 +3188,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
           $this->app->Tpl->Add('ZWISCHENLAGERINFO', "<tr ><td>Regalvorschlag:</td><td align=\"left\"><input type=\"button\" onclick=\"document.getElementById('regal').value='$lagerbezeichnung'\" value=\"$lagerbezeichnung\" >$mengeimregal Stück<br>$standardlageranzeigenohnemenge</td></tr>");
 
           $this->app->Tpl->Set('FOCUSFIELD','document.getElementById("regal").focus();');
-          if ($menge == 1) {
+          if ($frmMenge == '' || $frmMenge == '0') {
               $menge = $this->app->erp->ArtikelImLagerPlatz($artikel,$regal)+0;
               $mengecolor = "#FFAAAA";
               $mengereadonly = "false";
