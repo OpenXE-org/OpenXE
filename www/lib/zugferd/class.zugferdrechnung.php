@@ -14,6 +14,8 @@
 use horstoeko\zugferd\ZugferdDocumentBuilder;
 use horstoeko\zugferd\ZugferdDocumentPdfMerger;
 use horstoeko\zugferd\ZugferdProfiles;
+use setasign\Fpdi\Fpdi;
+use setasign\Fpdi\PdfParser\StreamReader;
 
 class ZugferdRechnung
 {
@@ -180,6 +182,30 @@ class ZugferdRechnung
     // gleiche Eingabe ergibt gleiche Datei, damit das PDF-Archiv keine Doppel anlegt
     $merger->setDeterministicModeEnabled(true);
     return $merger->generateDocument()->downloadString();
+  }
+
+  /**
+   * Stempelt ein Bild (PNG/JPG) auf die erste Seite, z. B. das ZUGFeRD-Logo.
+   * Masse in mm von links oben; $x = null zentriert waagerecht, die Breite
+   * ergibt sich aus der Hoehe und dem Seitenverhaeltnis des Bildes.
+   */
+  public static function stempel(string $pdf, string $bild, ?float $x, float $y, float $hoehe): string
+  {
+    $info = getimagesize($bild);
+    $breite = $hoehe * $info[0] / $info[1];
+    $ziel = new Fpdi();
+    $seiten = $ziel->setSourceFile(StreamReader::createByString($pdf));
+    for($nr = 1; $nr <= $seiten; $nr++) {
+      $vorlage = $ziel->importPage($nr);
+      $groesse = $ziel->getTemplateSize($vorlage);
+      $ziel->AddPage($groesse['orientation'], [$groesse['width'], $groesse['height']]);
+      $ziel->useTemplate($vorlage);
+      if($nr === 1) {
+        $links = $x === null ? ($groesse['width'] - $breite) / 2 : $x;
+        $ziel->Image($bild, $links, $y, $breite, $hoehe);
+      }
+    }
+    return $ziel->Output('S');
   }
 
   public static function kategorie(float $satz, int $ustBefreit, string $euKategorie): string

@@ -158,7 +158,7 @@ class RechnungPDFCustom extends RechnungPDF
       return $pdf;
     }
     try {
-      $this->zugferdFertig[$schluessel] = ZugferdRechnung::pdf($xml, $pdf);
+      $this->zugferdFertig[$schluessel] = ZugferdRechnung::pdf($xml, $this->zugferdLogo($pdf));
       $this->zugferdProtokoll('XML eingebettet');
       return $this->zugferdFertig[$schluessel];
     }
@@ -166,6 +166,39 @@ class RechnungPDFCustom extends RechnungPDF
       $this->zugferdFehler($e);
       return $pdf;
     }
+  }
+
+  /**
+   * ZUGFeRD-Logo auf Seite 1, nur wenn das XML eingebettet wird. Bild:
+   * www/lib/zugferd/zugferd-logo.png. Standard: waagerecht mittig, 7 mm hoch,
+   * senkrecht mittig auf dem Barcode (Code39 ist 3 mm hoch). Abweichend ueber
+   * die Firmendaten-Werte zugferd_logo_x, zugferd_logo_y, zugferd_logo_hoehe (mm);
+   * zugferd_logo = 0 schaltet es ab. Fehler beim Stempeln: PDF ohne Logo.
+   */
+  private function zugferdLogo(string $pdf): string
+  {
+    $erp = $this->app->erp;
+    $bild = dirname(__DIR__).'/zugferd/zugferd-logo.png';
+    if((string)$erp->Firmendaten('zugferd_logo') === '0' || !is_file($bild)) {
+      return $pdf;
+    }
+    $wert = function($name) use ($erp) {
+      $v = $erp->Firmendaten($name);
+      return ($v === null || $v === '') ? null : (float)str_replace(',', '.', $v);
+    };
+    $hoehe = $wert('zugferd_logo_hoehe') ?? 7.0;
+    $y = $wert('zugferd_logo_y');
+    if($y === null) {
+      $y = !empty($this->barcode_y) ? (float)$this->barcode_y + 1.5 - $hoehe / 2 : 10.0;
+    }
+    try {
+      $pdf = ZugferdRechnung::stempel($pdf, $bild, $wert('zugferd_logo_x'), $y, $hoehe);
+      $this->zugferdProtokoll('Logo gestempelt');
+    }
+    catch(Throwable $e) {
+      $this->zugferdProtokoll('Logo nicht gestempelt: '.$e->getMessage());
+    }
+    return $pdf;
   }
 
   /** XML der Rechnung, einmal je Objekt; null bei Entwurf, XML-Rechnung oder Fehler. */
@@ -231,6 +264,11 @@ class RechnungPDFCustom extends RechnungPDF
     $id = (int)$kopf['id'];
     $erp = $this->app->erp;
 
+    // GetSteuerPosition liefert immer den nominalen Satz; ob Steuer anfaellt,
+    // entscheidet OpenXE (wie in RechnungPDF) ueber RechnungMitUmsatzsteuer()
+    $mitSteuer = (bool)$erp->RechnungMitUmsatzsteuer($id);
+    $vermerk = $mitSteuer ? '' : $this->zugferdSteuervermerk($kopf);
+
     $positionen = [];
     $rows = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort");
     foreach((array)$rows as $row) {
@@ -242,6 +280,10 @@ class RechnungPDFCustom extends RechnungPDF
       $steuertext = null;
       $erloes = null;
       $erp->GetSteuerPosition('rechnung', $row['id'], $steuersatz, $steuertext, $erloes);
+      if(!$mitSteuer || ($row['umsatzsteuer'] ?? '') === 'befreit') {
+        $steuersatz = 0;
+        $steuertext = $vermerk;
+      }
       $positionen[] = [
         'nummer' => $row['nummer'],
         'bezeichnung' => $row['bezeichnung'],
@@ -328,6 +370,24 @@ class RechnungPDFCustom extends RechnungPDF
       }
     }
     return [$iban, $bic];
+  }
+
+  /** Steuervermerk wie auf der PDF (Texte aus den Firmendaten, Platzhalter ersetzt). */
+  private function zugferdSteuervermerk(array $kopf): string
+  {
+    $erp = $this->app->erp;
+    $vermerk = '';
+    if((int)$kopf['ust_befreit'] === 2) {
+      $vermerk = (string)$erp->Beschriftung('export_lieferung_vermerk');
+    }
+    elseif((int)$kopf['ust_befreit'] === 1 && !empty($kopf['ustid'])) {
+      $vermerk = (string)$erp->Beschriftung('eu_lieferung_vermerk');
+    }
+    $land = substr(strtoupper((string)$kopf['ustid']), 0, 2);
+    if($land === '' || $land === strtoupper((string)$kopf['land']) || !$erp->IsEU($land)) {
+      $land = $kopf['land'];
+    }
+    return str_replace(['{LAND}', '{USTID}'], [$land, $kopf['ustid']], $vermerk);
   }
 
   private function zugferdIstUstId($wert): bool
