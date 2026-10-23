@@ -21,7 +21,11 @@ if(!class_exists('BriefpapierCustom'))
   }
 }
 
+require_once dirname(__DIR__).'/zugferd/trait.zugferdrechnungpdf.php';
+
 class RechnungPDF extends BriefpapierCustom {
+  use ZugferdRechnungPdf;
+
   /** @var string $doctype */
   public $doctype;
   /** @var int $doctypeid */
