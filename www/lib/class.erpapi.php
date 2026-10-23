@@ -8178,6 +8178,8 @@ function StandardFirmendatenWerte()
   $this->AddNeuenFirmendatenWert( 'erweiterte_positionsansicht', 'int', '1', '', '1', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'schnellanlegen', 'int', '1', '', '1', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'schnellanlegen_ohnefreigabe', 'int', '1', '', '0', '0', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'zugferd_rechnung', 'int', '1', '', '0', '0', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'zugferd_logo', 'int', '1', '', '1', '1', 0, 0);
   $this->AddNeuenFirmendatenWert( 'bestellvorschlaggroessernull', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'versand_gelesen', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'versandart', 'varchar', '64', '', 'versandunternehmen', '', 0, 0);
@@ -26861,7 +26863,7 @@ function Firmendaten($field,$projekt="")
             'standardaufloesung','immerbruttorechnungen','immernettorechnungen','bestellvorschlaggroessernull','erweiterte_positionsansicht','schnellanlegen','kleinunternehmer','steuerspalteausblenden','api_enable','api_importwarteschlange','warnung_doppelte_nummern','warnung_doppelte_seriennummern','wareneingang_zwischenlager','bestellungohnepreis','zahlung_lastschrift_konditionen','porto_berechnen','breite_artikelbeschreibung','deviceenable','auftrag_eantab','bestellungmitartikeltext','bestellungeigeneartikelnummer','bestellunglangeartikelnummern','steuer_standardkonto_aufwendungen',
             'iconset_dunkel','api_cleanutf8','mahnwesenmitkontoabgleich','briefhtml','absenderunterstrichen','seite_von_ausrichtung_relativ','wareneingang_gross','datatables_export_button_flash','viernachkommastellen_belege','stornorechnung_standard','angebotersatz_standard','rechnungersatz_standard','geburtstagekalender','footer_zentriert','auftragmarkierenegsaldo','wareneingangauftragzubestellung','freifelderimdokument','zeiterfassung_anderemitarbeiter','zeiterfassung_beschreibungssperre','zeiterfassung_ort','zeiterfassung_kommentar','zeiterfassung_erweitert','footer_reihenfolge_angebot_aktivieren','footer_reihenfolge_auftrag_aktivieren','footer_reihenfolge_rechnung_aktivieren','footer_reihenfolge_gutschrift_aktivieren','footer_reihenfolge_lieferschein_aktivieren','footer_reihenfolge_bestellung_aktivieren','position_quantity_change_price_update',
           'beleg_pos_ean','beleg_pos_charge','beleg_pos_mhd','beleg_pos_sn','beleg_pos_zolltarifnummer',
-            'schnellanlegen_ohnefreigabe','langeartikelnummern','noauth','belege_subpositionen',
+            'schnellanlegen_ohnefreigabe','zugferd_rechnung','zugferd_logo','langeartikelnummern','noauth','belege_subpositionen',
             'belege_subpositionenstuecklisten','briefpapier_ohnedoppelstrich','bearbeiteremailimdokument',
             'bearbeitertelefonimdokument','seite_belegnr','eigener_skontotext','proformarechnung_ohnebriefpapier',
           'footer_reihenfolge_proformarechnung_aktivieren','zeiterfassung_abrechnenvorausgewaehlt','festetrackingnummer',

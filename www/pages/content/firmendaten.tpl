@@ -1346,6 +1346,8 @@
 							<tr><td width="300">Belege schnell anlegen ohne Zwischentabelle:</td><td><input type="checkbox" name="schnellanlegen" [SCHNELLANLEGEN]></td></tr>
 							<tr><td width="300">Belege schnell anlegen ohne manuelle Freigabe:</td><td><input type="checkbox" name="schnellanlegen_ohnefreigabe" [SCHNELLANLEGEN_OHNEFREIGABE]></td></tr>
 							<tr><td width="300">Freigabe mit einem Klick:</td><td><input type="checkbox" name="oneclickrelease" [ONECLICKRELEASE]></td></tr>
+							<tr><td width="300">ZUGFeRD Rechnung (BETA-Funktion):</td><td><input type="checkbox" name="zugferd_rechnung" [ZUGFERD_RECHNUNG]>&nbsp;<i>E-Rechnung (EN 16931) in die Rechnungs-PDF einbetten</i></td></tr>
+							<tr><td width="300">&nbsp;&nbsp;&nbsp;&nbsp;mit Logo:</td><td><input type="checkbox" name="zugferd_logo" [ZUGFERD_LOGO]>&nbsp;<i>ZUGFeRD-Logo auf Seite 1 (Mitte, H&ouml;he Barcode)</i></td></tr>
 							<tr><td></td><td></td></tr>
 							<tr><td></td><td></td></tr>
 							<tr><td width="300">Auswahl g&uuml;nstigster Verkaufspreise:</td><td><input type="checkbox" name="guenstigste_vk" [GUENSTIGSTE_VK]>&nbsp;</td></tr>

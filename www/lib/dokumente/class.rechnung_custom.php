@@ -12,6 +12,9 @@
  * PDFs aus dem Archiv (schreibgeschuetzte Rechnungen) bekommen es beim Ausliefern.
  * Klappt das nicht, geht die normale PDF raus und der Fehler ins Log.
  *
+ * Ein- und ausschalten unter Einstellungen > Firmendaten > Belege
+ * ("ZUGFeRD Rechnung", darunter "mit Logo"); ohne Haken bleibt alles wie bisher.
+ *
  * Das Flag rechnung.xmlrechnung darf nicht gesetzt sein, sonst erzeugt OpenXE
  * gar keine PDF, sondern nur das Smarty-XML.
  */
@@ -173,13 +176,13 @@ class RechnungPDFCustom extends RechnungPDF
    * www/lib/zugferd/zugferd-logo.png. Standard: waagerecht mittig, 7 mm hoch,
    * senkrecht mittig auf dem Barcode (Code39 ist 3 mm hoch). Abweichend ueber
    * die Firmendaten-Werte zugferd_logo_x, zugferd_logo_y, zugferd_logo_hoehe (mm);
-   * zugferd_logo = 0 schaltet es ab. Fehler beim Stempeln: PDF ohne Logo.
+   * Schalter zugferd_logo (Firmendaten > Belege). Fehler beim Stempeln: PDF ohne Logo.
    */
   private function zugferdLogo(string $pdf): string
   {
     $erp = $this->app->erp;
     $bild = dirname(__DIR__).'/zugferd/zugferd-logo.png';
-    if((string)$erp->Firmendaten('zugferd_logo') === '0' || !is_file($bild)) {
+    if((string)$erp->Firmendaten('zugferd_logo') !== '1' || !is_file($bild)) {
       return $pdf;
     }
     $wert = function($name) use ($erp) {
@@ -208,6 +211,10 @@ class RechnungPDFCustom extends RechnungPDF
       return $this->zugferdXml === false ? null : $this->zugferdXml;
     }
     $this->zugferdXml = false;
+    // Schalter unter Einstellungen > Firmendaten > Belege
+    if((string)$this->app->erp->Firmendaten('zugferd_rechnung') !== '1') {
+      return null;
+    }
     $id = (int)$this->doctypeid;
     if($id <= 0) {
       $this->zugferdProtokoll('uebersprungen: keine Rechnungs-ID');
