@@ -36,6 +36,9 @@ trait ZugferdRechnungPdf
   /** @var string|null|false XML der Rechnung; false = keins moeglich */
   private $zugferdXml;
 
+  /** @var array md5 der selbst erzeugten ZUGFeRD-PDFs, damit sie nicht als fremde PDF mit XML gelten */
+  private $zugferdEigene = [];
+
   /** @var int|null Pufferebene des Archivwegs (siehe zugferdArchivStart) */
   private $zugferdPufferEbene;
 
@@ -169,13 +172,18 @@ trait ZugferdRechnungPdf
   /** Liefert die PDF mit eingebettetem XML oder bei Problemen unveraendert zurueck. */
   private function zugferd(string $pdf): string
   {
+    // eigene Ausgabe kommt zurueck (z. B. Output('D') im gepufferten Archivweg): nichts tun, nichts loggen
+    if(isset($this->zugferdEigene[md5($pdf)])) {
+      return $pdf;
+    }
     // schon eine ZUGFeRD-PDF (z. B. aus dem Archiv nach Einfuehrung dieser Klasse)
     if(strpos($pdf, 'factur-x.xml') !== false || strpos($pdf, 'zugferd-invoice.xml') !== false) {
-      $this->zugferdProtokoll('PDF hat schon XML');
+      $this->zugferdProtokoll('PDF hat XML');
       return $pdf;
     }
     $schluessel = md5($pdf);
     if(isset($this->zugferdFertig[$schluessel])) {
+      $this->zugferdProtokoll('XML eingebettet');
       return $this->zugferdFertig[$schluessel];
     }
     $xml = $this->zugferdXml();
@@ -184,6 +192,7 @@ trait ZugferdRechnungPdf
     }
     try {
       $this->zugferdFertig[$schluessel] = ZugferdRechnung::pdf($xml, $this->zugferdLogo($pdf));
+      $this->zugferdEigene[md5($this->zugferdFertig[$schluessel])] = true;
       $this->zugferdProtokoll('XML eingebettet');
       return $this->zugferdFertig[$schluessel];
     }
