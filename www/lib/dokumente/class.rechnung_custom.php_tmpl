@@ -1,0 +1,54 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Creatronics GmbH
+ *
+ * SPDX-License-Identifier: LicenseRef-EGPL-3.1
+ *
+ * Vorlage fuer eigene Anpassungen an der Rechnungs-PDF.
+ *
+ * Zum Benutzen nach class.rechnung_custom.php kopieren. OpenXE nimmt dann
+ * RechnungPDFCustom statt RechnungPDF (xentral_autoloader.php).
+ *
+ * RechnungPDF bettet ZUGFeRD ueber den Trait ZugferdRechnungPdf ein
+ * (www/lib/zugferd/trait.zugferdrechnungpdf.php). Damit das in der eigenen
+ * Klasse erhalten bleibt, muss jede der folgenden Methoden, die hier
+ * ueberschrieben wird, parent:: aufrufen. Methoden, die nicht gebraucht
+ * werden, einfach loeschen; sie werden dann ohnehin geerbt.
+ */
+
+class RechnungPDFCustom extends RechnungPDF
+{
+  /**
+   * Alle neu erzeugten PDFs enden hier (Anzeige, Download, Druck, Archiv,
+   * Mailanhang). parent::Output() bettet das XML ein und liefert aus.
+   */
+  public function Output($name = '', $dest = '')
+  {
+    // eigener Code vor der Ausgabe, z. B. zusaetzliche Seite oder Text
+    return parent::Output($name, $dest);
+  }
+
+  /** Download-Symbol; bei schreibgeschuetzten Rechnungen kommt die PDF aus dem Archiv. */
+  public function displayDocument($from_archiv = false)
+  {
+    return parent::displayDocument($from_archiv);
+  }
+
+  /** Anzeige im Browser. */
+  public function inlineDocument($from_archiv = false)
+  {
+    return parent::inlineDocument($from_archiv);
+  }
+
+  /** Temporaere Datei, z. B. fuer Mailanhang oder Druck. */
+  public function displayTMP($from_archiv = false)
+  {
+    return parent::displayTMP($from_archiv);
+  }
+
+  /** PDF aus dem Archiv per ID. */
+  public function getArchivByID($id)
+  {
+    return parent::getArchivByID($id);
+  }
+}

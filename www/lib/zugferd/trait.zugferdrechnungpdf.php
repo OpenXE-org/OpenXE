@@ -6,23 +6,29 @@
  *
  * Rechnungs-PDF als ZUGFeRD (EN 16931).
  *
- * OpenXE nimmt diese Klasse automatisch statt RechnungPDF, sobald sie existiert
- * (xentral_autoloader.php). Neu erzeugte PDFs (Anzeige, Download, Druck, Archiv,
- * Mailanhang) enden in Output(); dort wird das XML erzeugt und eingebettet.
- * PDFs aus dem Archiv (schreibgeschuetzte Rechnungen) bekommen es beim Ausliefern.
- * Klappt das nicht, geht die normale PDF raus und der Fehler ins Log.
+ * RechnungPDF bindet diesen Trait ein (www/lib/dokumente/class.rechnung.php),
+ * damit class.rechnung_custom.php fuer eigene Anpassungen frei bleibt. Eine
+ * eigene RechnungPDFCustom erbt das Verhalten; ueberschreibt sie Output(),
+ * displayDocument(), inlineDocument(), displayTMP() oder getArchivByID(), muss
+ * sie dort parent:: aufrufen.
+ *
+ * Neu erzeugte PDFs (Anzeige, Download, Druck, Archiv, Mailanhang) enden in
+ * Output(); dort wird das XML erzeugt und eingebettet. PDFs aus dem Archiv
+ * (schreibgeschuetzte Rechnungen) bekommen es beim Ausliefern. Klappt das
+ * nicht, geht die normale PDF raus und der Fehler ins Log.
  *
  * Ein- und ausschalten unter Einstellungen > Firmendaten > Belege
- * ("ZUGFeRD Rechnung", darunter "mit Logo"); ohne Haken bleibt alles wie bisher.
+ * ("ZUGFeRD Rechnung", darunter "mit Logo" und "Logo-Hoehe"); ohne Haken
+ * bleibt alles wie bisher.
  *
  * Das Flag rechnung.xmlrechnung darf nicht gesetzt sein, sonst erzeugt OpenXE
  * gar keine PDF, sondern nur das Smarty-XML.
  */
 
 require_once dirname(__DIR__, 3).'/vendor/autoload.php';
-require_once dirname(__DIR__).'/zugferd/class.zugferdrechnung.php';
+require_once __DIR__.'/class.zugferdrechnung.php';
 
-class RechnungPDFCustom extends RechnungPDF
+trait ZugferdRechnungPdf
 {
   /** @var array fertige ZUGFeRD-PDFs je md5 der Eingabe, damit mehrfache Output()-Aufrufe nicht neu rechnen */
   private $zugferdFertig = [];
@@ -197,7 +203,7 @@ class RechnungPDFCustom extends RechnungPDF
   private function zugferdLogo(string $pdf): string
   {
     $erp = $this->app->erp;
-    $bild = dirname(__DIR__).'/zugferd/zugferd-logo.png';
+    $bild = __DIR__.'/zugferd-logo.png';
     if((string)$erp->Firmendaten('zugferd_logo') !== '1' || !is_file($bild)) {
       return $pdf;
     }
