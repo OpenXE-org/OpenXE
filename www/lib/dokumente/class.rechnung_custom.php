@@ -20,8 +20,14 @@ require_once dirname(__DIR__).'/zugferd/class.zugferdrechnung.php';
 
 class RechnungPDFCustom extends RechnungPDF
 {
-  /** @var string|null fertige ZUGFeRD-PDF, damit mehrfache Output()-Aufrufe nicht neu rechnen */
-  private $zugferdPdf;
+  /** @var array fertige ZUGFeRD-PDFs je md5 der Eingabe, damit mehrfache Output()-Aufrufe nicht neu rechnen */
+  private $zugferdFertig = [];
+
+  /** @var string|null|false XML der Rechnung; false = keins moeglich */
+  private $zugferdXml;
+
+  /** @var string gesammelte Ausgabe aus dem Archivweg (siehe zugferdPuffer) */
+  private $zugferdAusgabe = '';
 
   public function Output($name = '', $dest = '')
   {
@@ -58,35 +64,136 @@ class RechnungPDFCustom extends RechnungPDF
     return '';
   }
 
-  /** Liefert die ZUGFeRD-PDF oder bei Problemen unveraendert die normale PDF. */
+  /*
+   * Schreibgeschuetzte Rechnungen liefert OpenXE aus dem PDF-Archiv aus, ohne
+   * Output() aufzurufen. Archivierte PDFs von vor dieser Klasse haben kein XML;
+   * es wird beim Ausliefern eingebettet, die Archivdatei bleibt unveraendert.
+   */
+
+  public function displayDocument($from_archiv = false)
+  {
+    if($from_archiv) {
+      // die Elternmethode gibt die Archivdatei per echo aus und beendet das Skript;
+      // dann ist die Datenbank schon geschlossen, also XML vorher erzeugen
+      $this->zugferdXml();
+      ob_start([$this, 'zugferdPuffer']);
+    }
+    parent::displayDocument($from_archiv);
+  }
+
+  public function inlineDocument($from_archiv = false)
+  {
+    if($from_archiv) {
+      $this->zugferdXml();
+      ob_start([$this, 'zugferdPuffer']);
+    }
+    parent::inlineDocument($from_archiv);
+  }
+
+  public function displayTMP($from_archiv = false)
+  {
+    $datei = parent::displayTMP($from_archiv);
+    if($this->ausarchiv && is_file($datei)) {
+      $inhalt = file_get_contents($datei);
+      $neu = $this->zugferd($inhalt);
+      if($neu !== $inhalt) {
+        file_put_contents($datei, $neu);
+      }
+    }
+    return $datei;
+  }
+
+  public function getArchivByID($id)
+  {
+    $ergebnis = parent::getArchivByID($id);
+    if(!empty($ergebnis['file'])) {
+      $eintrag = $this->app->DB->SelectRow(sprintf('SELECT table_name, table_id FROM pdfarchiv WHERE id = %d LIMIT 1', (int)$id));
+      if(!empty($eintrag) && $eintrag['table_name'] === 'rechnung') {
+        $this->doctypeid = (int)$eintrag['table_id'];
+        $ergebnis['file'] = $this->zugferd($ergebnis['file']);
+      }
+    }
+    return $ergebnis;
+  }
+
+  /** Ausgabepuffer fuer den Archivweg: sammelt bis zum Ende und bettet dann ein. */
+  public function zugferdPuffer($teil, $phase)
+  {
+    $this->zugferdAusgabe .= $teil;
+    if(!($phase & PHP_OUTPUT_HANDLER_FINAL)) {
+      return '';
+    }
+    $ausgabe = $this->zugferdAusgabe;
+    $this->zugferdAusgabe = '';
+    if(strncmp($ausgabe, '%PDF', 4) !== 0) {
+      return $ausgabe;
+    }
+    try {
+      return $this->zugferd($ausgabe);
+    }
+    catch(Throwable $e) {
+      return $ausgabe;
+    }
+  }
+
+  /** Liefert die PDF mit eingebettetem XML oder bei Problemen unveraendert zurueck. */
   private function zugferd(string $pdf): string
   {
-    if($this->zugferdPdf !== null) {
-      return $this->zugferdPdf;
+    // schon eine ZUGFeRD-PDF (z. B. aus dem Archiv nach Einfuehrung dieser Klasse)
+    if(strpos($pdf, 'factur-x.xml') !== false || strpos($pdf, 'zugferd-invoice.xml') !== false) {
+      return $pdf;
     }
+    $schluessel = md5($pdf);
+    if(isset($this->zugferdFertig[$schluessel])) {
+      return $this->zugferdFertig[$schluessel];
+    }
+    $xml = $this->zugferdXml();
+    if($xml === null) {
+      return $pdf;
+    }
+    try {
+      return $this->zugferdFertig[$schluessel] = ZugferdRechnung::pdf($xml, $pdf);
+    }
+    catch(Throwable $e) {
+      $this->zugferdFehler($e);
+      return $pdf;
+    }
+  }
+
+  /** XML der Rechnung, einmal je Objekt; null bei Entwurf, XML-Rechnung oder Fehler. */
+  private function zugferdXml(): ?string
+  {
+    if($this->zugferdXml !== null) {
+      return $this->zugferdXml === false ? null : $this->zugferdXml;
+    }
+    $this->zugferdXml = false;
     $id = (int)$this->doctypeid;
     if($id <= 0) {
-      return $pdf;
+      return null;
     }
     $kopf = $this->app->DB->SelectRow("SELECT * FROM rechnung WHERE id = $id LIMIT 1");
     // Entwurf ohne Nummer oder reine XML-Rechnung: nichts einbetten
     if(empty($kopf) || empty($kopf['belegnr']) || (string)$kopf['belegnr'] === '0' || !empty($kopf['xmlrechnung'])) {
-      return $pdf;
+      return null;
     }
     try {
-      $xml = ZugferdRechnung::xml($this->zugferdDaten($kopf));
-      $this->zugferdPdf = ZugferdRechnung::pdf($xml, $pdf);
-      return $this->zugferdPdf;
+      $this->zugferdXml = ZugferdRechnung::xml($this->zugferdDaten($kopf));
+      return $this->zugferdXml;
     }
     catch(Throwable $e) {
-      $meldung = 'ZUGFeRD fuer Rechnung '.$kopf['belegnr'].' nicht erzeugt: '.$e->getMessage();
-      try {
-        $this->app->Container->get('Logger')->error($meldung);
-      }
-      catch(Throwable $ignoriert) {
-        error_log($meldung);
-      }
-      return $pdf;
+      $this->zugferdFehler($e, $kopf['belegnr']);
+      return null;
+    }
+  }
+
+  private function zugferdFehler(Throwable $e, $belegnr = null): void
+  {
+    $meldung = 'ZUGFeRD fuer Rechnung '.($belegnr ?? $this->doctypeid).' nicht erzeugt: '.$e->getMessage();
+    try {
+      $this->app->Container->get('Logger')->error($meldung);
+    }
+    catch(Throwable $ignoriert) {
+      error_log($meldung);
     }
   }
 
