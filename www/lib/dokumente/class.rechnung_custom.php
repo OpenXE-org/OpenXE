@@ -189,7 +189,7 @@ class RechnungPDFCustom extends RechnungPDF
 
   /**
    * ZUGFeRD-Logo auf Seite 1, nur wenn das XML eingebettet wird. Bild:
-   * www/lib/zugferd/zugferd-logo.png. Standard: waagerecht mittig, 7 mm hoch,
+   * www/lib/zugferd/zugferd-logo.png. Standard: waagerecht mittig, 3,5 mm hoch,
    * senkrecht mittig auf dem Barcode (Code39 ist 3 mm hoch). Abweichend ueber
    * die Firmendaten-Werte zugferd_logo_x, zugferd_logo_y, zugferd_logo_hoehe (mm);
    * Schalter zugferd_logo (Firmendaten > Belege). Fehler beim Stempeln: PDF ohne Logo.
@@ -205,7 +205,10 @@ class RechnungPDFCustom extends RechnungPDF
       $v = $erp->Firmendaten($name);
       return ($v === null || $v === '') ? null : (float)str_replace(',', '.', $v);
     };
-    $hoehe = $wert('zugferd_logo_hoehe') ?? 7.0;
+    $hoehe = $wert('zugferd_logo_hoehe');
+    if($hoehe === null || $hoehe < 1 || $hoehe > 30) {
+      $hoehe = 3.5;
+    }
     $y = $wert('zugferd_logo_y');
     if($y === null) {
       $y = !empty($this->barcode_y) ? (float)$this->barcode_y + 1.5 - $hoehe / 2 : 10.0;

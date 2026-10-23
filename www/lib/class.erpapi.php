@@ -8180,6 +8180,7 @@ function StandardFirmendatenWerte()
   $this->AddNeuenFirmendatenWert( 'schnellanlegen_ohnefreigabe', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'zugferd_rechnung', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'zugferd_logo', 'int', '1', '', '1', '1', 0, 0);
+  $this->AddNeuenFirmendatenWert( 'zugferd_logo_hoehe', 'varchar', '16', '', '3.5', '3.5', 0, 0);
   $this->AddNeuenFirmendatenWert( 'bestellvorschlaggroessernull', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'versand_gelesen', 'int', '1', '', '0', '0', 0, 0);
   $this->AddNeuenFirmendatenWert( 'versandart', 'varchar', '64', '', 'versandunternehmen', '', 0, 0);
@@ -26890,7 +26891,7 @@ function Firmendaten($field,$projekt="")
 
       function GetFirmaFields()
       {
-        $fields =  array('additionalcspheader','zahlung_rechnung_de','zahlung_kreditkarte_de','breite_position','breite_menge','breite_nummer','breite_einheit','land','abstand_seiten_unten','beschriftunginternetnummer','breite_artikel','breite_steuer','angebot_anzahltage','angebot_anzahlwiedervorlage','angebot_pipewiedervorlage',
+        $fields =  array('additionalcspheader','zugferd_logo_hoehe','zahlung_rechnung_de','zahlung_kreditkarte_de','breite_position','breite_menge','breite_nummer','breite_einheit','land','abstand_seiten_unten','beschriftunginternetnummer','breite_artikel','breite_steuer','angebot_anzahltage','angebot_anzahlwiedervorlage','angebot_pipewiedervorlage',
             'zahlung_vorkasse_de','zahlung_nachnahme_de','zahlung_lastschrift_de','zahlung_bar_de','zahlung_paypal_de','zahlung_amazon_de','zahlung_amazon_bestellung_de','zahlung_ratenzahlung_de',
             'zahlung_sofortueberweisung_de','zahlung_billsafe_de','testmailempfaenger','zahlung_secupay_de','zahlung_eckarte_de','abstand_umbruchunten',
             'zahlung_rechnung_sofort_de','api_importwarteschlange_name','footer_farbe','zahlung_auftrag_sofort_de','zahlung_auftrag_de',
