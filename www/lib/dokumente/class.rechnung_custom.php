@@ -7,8 +7,9 @@
  * Rechnungs-PDF als ZUGFeRD (EN 16931).
  *
  * OpenXE nimmt diese Klasse automatisch statt RechnungPDF, sobald sie existiert
- * (xentral_autoloader.php). Alle Ausgabewege (Anzeige, Download, Druck, Archiv,
+ * (xentral_autoloader.php). Neu erzeugte PDFs (Anzeige, Download, Druck, Archiv,
  * Mailanhang) enden in Output(); dort wird das XML erzeugt und eingebettet.
+ * PDFs aus dem Archiv (schreibgeschuetzte Rechnungen) bekommen es beim Ausliefern.
  * Klappt das nicht, geht die normale PDF raus und der Fehler ins Log.
  *
  * Das Flag rechnung.xmlrechnung darf nicht gesetzt sein, sonst erzeugt OpenXE
@@ -39,6 +40,7 @@ class RechnungPDFCustom extends RechnungPDF
       $name = 'doc.pdf';
     }
 
+    $this->zugferdProtokoll('Output('.$dest.')');
     $pdf = $this->zugferd(parent::Output('', 'S'));
 
     switch($dest) {
@@ -72,6 +74,7 @@ class RechnungPDFCustom extends RechnungPDF
 
   public function displayDocument($from_archiv = false)
   {
+    $this->zugferdProtokoll('displayDocument(archiv='.($from_archiv ? 1 : 0).')');
     if($from_archiv) {
       // die Elternmethode gibt die Archivdatei per echo aus und beendet das Skript;
       // dann ist die Datenbank schon geschlossen, also XML vorher erzeugen
@@ -83,6 +86,7 @@ class RechnungPDFCustom extends RechnungPDF
 
   public function inlineDocument($from_archiv = false)
   {
+    $this->zugferdProtokoll('inlineDocument(archiv='.($from_archiv ? 1 : 0).')');
     if($from_archiv) {
       $this->zugferdXml();
       ob_start([$this, 'zugferdPuffer']);
@@ -93,6 +97,7 @@ class RechnungPDFCustom extends RechnungPDF
   public function displayTMP($from_archiv = false)
   {
     $datei = parent::displayTMP($from_archiv);
+    $this->zugferdProtokoll('displayTMP(archiv='.($from_archiv ? 1 : 0).', aus Archiv='.($this->ausarchiv ? 1 : 0).')');
     if($this->ausarchiv && is_file($datei)) {
       $inhalt = file_get_contents($datei);
       $neu = $this->zugferd($inhalt);
@@ -141,6 +146,7 @@ class RechnungPDFCustom extends RechnungPDF
   {
     // schon eine ZUGFeRD-PDF (z. B. aus dem Archiv nach Einfuehrung dieser Klasse)
     if(strpos($pdf, 'factur-x.xml') !== false || strpos($pdf, 'zugferd-invoice.xml') !== false) {
+      $this->zugferdProtokoll('PDF hat schon XML');
       return $pdf;
     }
     $schluessel = md5($pdf);
@@ -152,7 +158,9 @@ class RechnungPDFCustom extends RechnungPDF
       return $pdf;
     }
     try {
-      return $this->zugferdFertig[$schluessel] = ZugferdRechnung::pdf($xml, $pdf);
+      $this->zugferdFertig[$schluessel] = ZugferdRechnung::pdf($xml, $pdf);
+      $this->zugferdProtokoll('XML eingebettet');
+      return $this->zugferdFertig[$schluessel];
     }
     catch(Throwable $e) {
       $this->zugferdFehler($e);
@@ -169,11 +177,13 @@ class RechnungPDFCustom extends RechnungPDF
     $this->zugferdXml = false;
     $id = (int)$this->doctypeid;
     if($id <= 0) {
+      $this->zugferdProtokoll('uebersprungen: keine Rechnungs-ID');
       return null;
     }
     $kopf = $this->app->DB->SelectRow("SELECT * FROM rechnung WHERE id = $id LIMIT 1");
     // Entwurf ohne Nummer oder reine XML-Rechnung: nichts einbetten
     if(empty($kopf) || empty($kopf['belegnr']) || (string)$kopf['belegnr'] === '0' || !empty($kopf['xmlrechnung'])) {
+      $this->zugferdProtokoll('uebersprungen: '.(empty($kopf) ? 'Rechnung nicht gefunden' : (!empty($kopf['xmlrechnung']) ? 'xmlrechnung gesetzt' : 'Entwurf ohne Belegnummer')));
       return null;
     }
     try {
@@ -189,11 +199,29 @@ class RechnungPDFCustom extends RechnungPDF
   private function zugferdFehler(Throwable $e, $belegnr = null): void
   {
     $meldung = 'ZUGFeRD fuer Rechnung '.($belegnr ?? $this->doctypeid).' nicht erzeugt: '.$e->getMessage();
+    $this->zugferdProtokoll('FEHLER '.get_class($e).': '.$e->getMessage().' ('.basename($e->getFile()).':'.$e->getLine().')');
     try {
       $this->app->Container->get('Logger')->error($meldung);
     }
     catch(Throwable $ignoriert) {
       error_log($meldung);
+    }
+  }
+
+  /**
+   * Fehlersuche: eine Zeile je Schritt nach userdata/zugferd.log (nur Rechnungs-ID,
+   * keine Kundendaten). Abschalten mit der Konstante ZUGFERD_PROTOKOLL = false.
+   */
+  private function zugferdProtokoll(string $text): void
+  {
+    if(defined('ZUGFERD_PROTOKOLL') && !ZUGFERD_PROTOKOLL) {
+      return;
+    }
+    try {
+      $datei = rtrim((string)$this->app->Conf->WFuserdata, '/').'/zugferd.log';
+      @file_put_contents($datei, date('Y-m-d H:i:s').' Rechnung-ID '.(int)$this->doctypeid.': '.$text."\n", FILE_APPEND);
+    }
+    catch(Throwable $e) {
     }
   }
 
