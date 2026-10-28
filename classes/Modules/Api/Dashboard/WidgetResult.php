@@ -10,7 +10,7 @@ final class WidgetResult extends AbstractResult
      * @param array $data
      * @param array $pagination
      */
-    public function __construct(array $data, array $pagination = null)
+    public function __construct(array $data, ?array $pagination = null)
     {
         $this->data = $data;
     }

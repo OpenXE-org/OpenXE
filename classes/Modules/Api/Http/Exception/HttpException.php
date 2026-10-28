@@ -24,7 +24,7 @@ class HttpException extends RuntimeException
         $statusCode = 500,
         $message = "",
         $code = 0,
-        Throwable $previous = null,
+        ?Throwable $previous = null,
         array $errors = array()
     ) {
         parent::__construct($message, $code, $previous);

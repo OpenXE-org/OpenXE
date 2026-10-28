@@ -14,7 +14,7 @@ final class CsvExporter
     /**
      * @param CsvConfig|null $config
      */
-    public function __construct(CsvConfig $config = null)
+    public function __construct(?CsvConfig $config = null)
     {
         if ($config === null) {
             $config = new CsvConfig();

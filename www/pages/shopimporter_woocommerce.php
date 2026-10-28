@@ -70,6 +70,9 @@ class Shopimporter_Woocommerce extends ShopimporterBase
 /** @var Logger $logger */
   public $logger;
 
+  /** @var bool $ssl_ignore Whether to ignore SSL certificate validation */
+  public $ssl_ignore;
+
   public $backorders_array = array("no","notify","yes");
 
   public function __construct($app, $intern = false)
@@ -458,7 +461,7 @@ class Shopimporter_Woocommerce extends ShopimporterBase
     $data = $this->CatchRemoteCommand('data');
 
     if ($data->orderStatus !== OrderStatus::Completed)
-      return;
+      return 'ok';
 
     if (isset($data->shipments)) {
       $trackingCode = $data->shipments[0]?->trackingNumber;

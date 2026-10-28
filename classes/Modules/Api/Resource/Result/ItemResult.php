@@ -8,7 +8,7 @@ class ItemResult extends AbstractResult
      * @param array      $item
      * @param array|null $pagination
      */
-    public function __construct(array $item, array $pagination = null)
+    public function __construct(array $item, ?array $pagination = null)
     {
         if ($pagination !== null) {
             throw new \InvalidArgumentException('ItemResult can not have pagination');

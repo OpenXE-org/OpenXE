@@ -40,7 +40,7 @@ class MailAttachmentData implements MailAttachmentInterface
         string $contentType,
         string $encoding,
         bool $isInlineAttachment = false,
-        string $cid = null
+        ?string $cid = null
     )
     {
         $this->filename = $filename;

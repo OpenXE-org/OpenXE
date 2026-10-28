@@ -152,7 +152,7 @@ class Remote
                 $data['datumbis'] = date('Y-m-d H:i:s');
                 $data['datumbis_utc'] = $this->app->DB->Select('select date_sub(UTC_TIMESTAMP, INTERVAL 0 MINUTE)');
             }
-            $data['anzgleichzeitig'] = $zeitraum[0]['anzgleichzeitig'];
+            $data['anzgleichzeitig'] = $zeitraum['anzgleichzeitig'];
             if ($holeallestati && $data['anzgleichzeitig'] > 1) {
                 $data['holeallestati'] = 1;
             }
@@ -1419,7 +1419,7 @@ class Remote
                             $katid[$v['id']] = true;
                         }
                     }
-                    if (!empty($katid)) {
+                    if (!empty($katid) && is_array($kategorienbaum)) {
                         foreach ($kategorienbaum as $v) {
                             $data[$i]['kompletter_kategorienbaum'][] = array('name' => $v['bezeichnung'], 'parent' => $v['parent'], 'id' => $v['id'], 'lvl' => $v['lvl'], 'extid' => $v['extid']);
                             if (isset($katid[$v['id']])) {

@@ -3,6 +3,8 @@ namespace Aws\Api\Serializer;
 
 use Aws\Api\Service;
 use Aws\CommandInterface;
+use Aws\EndpointV2\EndpointV2SerializerTrait;
+use Aws\EndpointV2\Ruleset\RulesetEndpoint;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 
@@ -12,6 +14,8 @@ use Psr\Http\Message\RequestInterface;
  */
 class JsonRpcSerializer
 {
+    use EndpointV2SerializerTrait;
+
     /** @var JsonBody */
     private $jsonFormatter;
 
@@ -32,7 +36,7 @@ class JsonRpcSerializer
     public function __construct(
         Service $api,
         $endpoint,
-        JsonBody $jsonFormatter = null
+        ?JsonBody $jsonFormatter = null
     ) {
         $this->endpoint = $endpoint;
         $this->api = $api;
@@ -44,26 +48,40 @@ class JsonRpcSerializer
      * When invoked with an AWS command, returns a serialization array
      * containing "method", "uri", "headers", and "body" key value pairs.
      *
-     * @param CommandInterface $command
+     * @param CommandInterface $command Command to serialize into a request.
+     * @param $endpointProvider Provider used for dynamic endpoint resolution.
+     * @param $clientArgs Client arguments used for dynamic endpoint resolution.
      *
      * @return RequestInterface
      */
-    public function __invoke(CommandInterface $command)
+    public function __invoke(
+        CommandInterface $command,
+        $endpoint = null
+    )
     {
-        $name = $command->getName();
-        $operation = $this->api->getOperation($name);
+        $operationName = $command->getName();
+        $operation = $this->api->getOperation($operationName);
+        $commandArgs = $command->toArray();
+        $body = $this->jsonFormatter->build($operation->getInput(), $commandArgs);
+        $headers = [
+                'X-Amz-Target' => $this->api->getMetadata('targetPrefix') . '.' . $operationName,
+                'Content-Type' => $this->contentType,
+                'Content-Length' => strlen($body)
+        ];
+
+        if ($endpoint instanceof RulesetEndpoint) {
+            $this->setEndpointV2RequestOptions($endpoint, $headers);
+        }
+
+        $requestUri = $operation['http']['requestUri'] ?? null;
+        $absoluteUri = str_ends_with($this->endpoint, '/')
+            ? $this->endpoint : $this->endpoint . $requestUri;
 
         return new Request(
             $operation['http']['method'],
-            $this->endpoint,
-            [
-                'X-Amz-Target' => $this->api->getMetadata('targetPrefix') . '.' . $name,
-                'Content-Type' => $this->contentType
-            ],
-            $this->jsonFormatter->build(
-                $operation->getInput(),
-                $command->toArray()
-            )
+            $absoluteUri,
+            $headers,
+            $body
         );
     }
 }

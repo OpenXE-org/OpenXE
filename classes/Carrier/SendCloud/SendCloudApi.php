@@ -148,7 +148,7 @@ class SendCloudApi
   /**
    * @throws SendcloudApiException
    */
-  function sendRequest(string $uri, array $query_params = null, bool $post = false, array $postFields = null,
+  function sendRequest(string $uri, ?array $query_params = null, bool $post = false, ?array $postFields = null,
                        array $allowedResponseCodes = [200]): ?array
   {
     if (empty($this->public_key) || empty($this->private_key))

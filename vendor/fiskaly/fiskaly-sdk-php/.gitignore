@@ -1,0 +1,7 @@
+vendor/
+.idea/
+composer.lock
+com.fiskaly.service*
+env.php
+.php_cs.cache
+*.log

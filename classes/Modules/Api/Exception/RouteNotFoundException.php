@@ -11,7 +11,7 @@ class RouteNotFoundException extends HttpException
     public function __construct(
         $message = 'Route not found',
         $code = ApiError::CODE_ROUTE_NOT_FOUND,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         parent::__construct(404, $message, $code, $previous);
     }

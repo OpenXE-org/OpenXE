@@ -44,7 +44,7 @@ final class GoogleAccountService
      *
      * @return GoogleAccountData
      */
-    public function createAccount(int $userId, ?string $identifier, string $refreshToken = null): GoogleAccountData
+    public function createAccount(int $userId, ?string $identifier, ?string $refreshToken = null): GoogleAccountData
     {
         if ($userId < 1) {
             throw new InvalidArgumentException('Cannot create Google Account without User Id.');

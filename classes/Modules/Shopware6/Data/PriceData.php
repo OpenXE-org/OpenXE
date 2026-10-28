@@ -28,7 +28,7 @@ class PriceData
      * @param $currency
      * @param $groupName
      */
-    public function __construct(int $startingQuantity, float $net, float $gross, string $currency, string $groupName, int $endingQuantity = null)
+    public function __construct(int $startingQuantity, float $net, float $gross, string $currency, string $groupName, ?int $endingQuantity = null)
     {
         $this->startingQuantity = $startingQuantity;
         $this->net = $net;

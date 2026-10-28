@@ -162,7 +162,7 @@ class Response
      *
      * @return void
      */
-    public function send(DateTimeInterface $sendTime = null)
+    public function send(?DateTimeInterface $sendTime = null)
     {
         header(sprintf('HTTP/%s %s %s', $this->getProtocolVersion(), $this->getStatusCode(), $this->getStatusText()));
 

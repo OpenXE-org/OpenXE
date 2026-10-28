@@ -63,7 +63,7 @@ final class EbayRestApiModule
         return $ebayResponse['access_token'];
     }
 
-    public function getOrders(int $shopexportId, DateTime $dateFrom, int $offset, int $limit = null): array
+    public function getOrders(int $shopexportId, DateTime $dateFrom, int $offset, ?int $limit = null): array
     {
         $token = $this->getRestApiUserAccessToken($shopexportId);
 

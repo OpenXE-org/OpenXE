@@ -34,10 +34,10 @@ final class LoggerContext implements ContextInterface
      */
     public function __construct(
         DateTimeInterface $dateTime,
-        Invocation $invocation = null,
-        OriginInterface $origin = null,
-        Throwable $exception = null,
-        array $dump = null
+        ?Invocation $invocation = null,
+        ?OriginInterface $origin = null,
+        ?Throwable $exception = null,
+        ?array $dump = null
     ) {
         $this->dateTime = $dateTime;
         $this->invocation = $invocation;

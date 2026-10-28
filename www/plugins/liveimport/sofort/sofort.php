@@ -87,7 +87,7 @@ class sofort
     $csv = $this->importLoop();
 
     $csv = implode(self::ROW_DIVIDER, $csv);
-    $csv = utf8_decode($csv);
+    $csv = mb_convert_encoding($csv, 'ISO-8859-1', 'UTF-8');
 
     return $csv;
   }
@@ -139,7 +139,7 @@ class sofort
       $buchung = mysqli_real_escape_string($app->DB->connection, $buchung);
       $buchung = str_replace('"','', $buchung);
 
-      $vorgang = utf8_encode($vorgang );
+      $vorgang = mb_convert_encoding($vorgang , 'UTF-8', 'ISO-8859-1');
       $vorgang = mysqli_real_escape_string($app->DB->connection, $vorgang);
       $vorgang = str_replace('"','',$vorgang);
 

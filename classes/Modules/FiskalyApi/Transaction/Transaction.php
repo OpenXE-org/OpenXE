@@ -95,7 +95,7 @@ class Transaction
         array $amountsPerVatRate,
         array $orderLineItems,
         string $clientId,
-        string $uuid = null
+        ?string $uuid = null
     ) {
         $this->amountsPerPaymentType = $amountsPerPaymentType;
         $this->amountsPerVatRate = $amountsPerVatRate;

@@ -13,7 +13,7 @@ final class JsonExporter
     /**
      * @param JsonConfig|null $config
      */
-    public function __construct(JsonConfig $config = null)
+    public function __construct(?JsonConfig $config = null)
     {
         if ($config === null) {
             $config = new JsonConfig();

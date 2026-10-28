@@ -39,6 +39,6 @@ interface HttpClientInterface
      */
     public function sendRequest(
         ClientRequestInterface $request,
-        RequestOptions $options = null
+        ?RequestOptions $options = null
     ): ServerResponseInterface;
 }

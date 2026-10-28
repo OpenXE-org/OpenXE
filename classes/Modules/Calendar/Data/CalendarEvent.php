@@ -74,14 +74,14 @@ final class CalendarEvent
         int $calendarId = 0,
         string $title = '',
         string $description = '',
-        DateTimeInterface $start = null,
-        DateTimeInterface $end = null,
+        ?DateTimeInterface $start = null,
+        ?DateTimeInterface $end = null,
         bool $allDay = false,
         string $color = '',
         bool $public = false,
         string $location = '',
-        CalendarEventUser $creator = null,
-        CalendarEventUser $organizer = null,
+        ?CalendarEventUser $creator = null,
+        ?CalendarEventUser $organizer = null,
         string $type = '',
         array $attendees = []
     ) {

@@ -21,7 +21,7 @@ final class CsvWriter
      * @throws InvalidResourceException If resource is not writable or invalid
      * @throws PhpExtensionMissingException If mbstring is missing
      */
-    public function __construct($handle, CsvConfig $config = null)
+    public function __construct($handle, ?CsvConfig $config = null)
     {
         if (!is_resource($handle)) {
             throw new InvalidResourceException('First parameter is not a valid resource.');

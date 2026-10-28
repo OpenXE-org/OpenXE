@@ -184,7 +184,7 @@ class HTMLTable
    * @param string|null $y
    * @param string|null $x
    */
-  public function AddCustomAttributes(array $attributes, string $y = null, string $x = null): void
+  public function AddCustomAttributes(array $attributes, ?string $y = null, ?string $x = null): void
   {
     if(is_null($y)){
       $y = $this->ypointer;

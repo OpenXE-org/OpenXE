@@ -1172,25 +1172,25 @@ public function NavigationHooks(&$menu)
   }
 
   // @refactor DbHelper Komponente
-  function FormatDate(string $spalte, string $alias = null)
+  function FormatDate(string $spalte, ?string $alias = null)
   {
     return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%Y')", $alias);
   }
 
   // @refactor DbHelper Komponente
-  function FormatDateShort(string $spalte, string $alias = null)
+  function FormatDateShort(string $spalte, ?string $alias = null)
   {
     return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%y')", $alias);
   }
 
   // @refactor DbHelper Komponente
-  function FormatDateTimeShort(string $spalte, string $alias = null)
+  function FormatDateTimeShort(string $spalte, ?string $alias = null)
   {
     return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%y %H:%i')", $alias);
   }
 
   // @refactor DbHelper Komponente
-  function FormatDateTime(string $spalte, string $alias = null)
+  function FormatDateTime(string $spalte, ?string $alias = null)
   {
     return $this->add_alias("DATE_FORMAT($spalte,'%d.%m.%Y %H:%i:%s')", $alias);
   }
@@ -5777,7 +5777,7 @@ title: 'Abschicken',
       $trans_tbl = array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT));
       if (!empty($trans_tbl)) {
         foreach ($trans_tbl as $key => $entry) {
-          $trans_tbl[$key] = utf8_encode($entry);
+          $trans_tbl[$key] = mb_convert_encoding($entry, 'UTF-8', 'ISO-8859-1');
         }
       }
     }
@@ -6474,9 +6474,9 @@ title: 'Abschicken',
       return $string;
     }
     if(!$htmlentities) {
-      return utf8_decode($string);
+      return mb_convert_encoding($string, 'ISO-8859-1', 'UTF-8');
     }
-    return htmlentities(utf8_decode($string),ENT_QUOTES);
+    return htmlentities(mb_convert_encoding($string, 'ISO-8859-1', 'UTF-8'),ENT_QUOTES);
   }
 
   function ConvertForTableSearch($string)
@@ -6781,7 +6781,7 @@ title: 'Abschicken',
       $trans_tbl = array();
       foreach (get_html_translation_table(HTML_ENTITIES) as
           $val=>$key)
-        $trans_tbl[$key] = utf8_encode($val);
+        $trans_tbl[$key] = mb_convert_encoding($val, 'UTF-8', 'ISO-8859-1');
     }
     return strtr($string, $trans_tbl);
   }

@@ -121,11 +121,11 @@ final class GoogleCalendarEventData implements JsonSerializable
         string $etag,
         string $status,
         string $iCalUid = '',
-        DateTimeInterface $created = null,
-        DateTimeInterface $updated = null,
-        GoogleCalendarEventAttendeeValue $creator = null,
-        GoogleCalendarEventAttendeeValue $organizer = null,
-        GoogleCalendarEventTimeValue $time = null,
+        ?DateTimeInterface $created = null,
+        ?DateTimeInterface $updated = null,
+        ?GoogleCalendarEventAttendeeValue $creator = null,
+        ?GoogleCalendarEventAttendeeValue $organizer = null,
+        ?GoogleCalendarEventTimeValue $time = null,
         string $summary = '',
         string $description = '',
         string $location = '',
@@ -644,7 +644,7 @@ final class GoogleCalendarEventData implements JsonSerializable
      *
      * @return GoogleCalendarEventData
      */
-    public function setOrganizer(GoogleCalendarEventAttendeeValue $organizer = null): GoogleCalendarEventData
+    public function setOrganizer(?GoogleCalendarEventAttendeeValue $organizer = null): GoogleCalendarEventData
     {
         $eventData = $this->cloneDeep();
         $eventData->organizer = $organizer;

@@ -10,7 +10,7 @@ class MethodNotAllowedException extends HttpException
         array $allowedMethods,
         $message = null,
         $code = 0,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         $message = sprintf('Method is not allowed. Allowed: %s', implode(', ', $allowedMethods));
 

@@ -373,14 +373,14 @@ class Dokumentenvorlage extends SuperFPDF {
       $this->SetFont($this->GetFont(),'',7);
 
 
-      $this->MultiCell(190,3,utf8_encode($footerarr['name'])." | ".'Seite '.$this->PageNo().' von {nb} | Dokument: '.$this->filename,0,0,$this->seite_von_ausrichtung,'','L');
+      $this->MultiCell(190,3,mb_convert_encoding($footerarr['name'], 'UTF-8', 'ISO-8859-1')." | ".'Seite '.$this->PageNo().' von {nb} | Dokument: '.$this->filename,0,0,$this->seite_von_ausrichtung,'','L');
       $this->SetXY(60,-26);
       /*
-         $this->MultiCell(35,3,utf8_encode("  ".$footerarr['footer_1_0']."\n  ".$footerarr['footer_1_1']."\n  ".$footerarr['footer_1_2']."\n  ".$footerarr['footer_1_3']."\n  ".$footerarr['footer_1_4']."\n  ".$footerarr['footer_1_5'].""),'L','L');
+         $this->MultiCell(35,3,mb_convert_encoding("  ".$footerarr['footer_1_0']."\n  ".$footerarr['footer_1_1']."\n  ".$footerarr['footer_1_2']."\n  ".$footerarr['footer_1_3']."\n  ".$footerarr['footer_1_4']."\n  ".$footerarr['footer_1_5']."", 'UTF-8', 'ISO-8859-1'),'L','L');
          $this->SetXY(95,-26);
-         $this->MultiCell(60,3,utf8_encode("  ".$footerarr['footer_2_0']."\n  ".$footerarr['footer_2_1']."\n  ".$footerarr['footer_2_2']."\n  ".$footerarr['footer_2_3']."\n  ".$footerarr['footer_2_4']."\n  ".$footerarr['footer_2_5'].""),'L','L');
+         $this->MultiCell(60,3,mb_convert_encoding("  ".$footerarr['footer_2_0']."\n  ".$footerarr['footer_2_1']."\n  ".$footerarr['footer_2_2']."\n  ".$footerarr['footer_2_3']."\n  ".$footerarr['footer_2_4']."\n  ".$footerarr['footer_2_5']."", 'UTF-8', 'ISO-8859-1'),'L','L');
          $this->SetXY(155,-26);
-         $this->MultiCell(40,3,utf8_encode("  ".$footerarr['footer_3_0']."\n  ".$footerarr['footer_3_1']."\n  ".$footerarr['footer_3_2']."\n  ".$footerarr['footer_3_3']."\n  ".$footerarr['footer_3_4']."\n  ".$footerarr['footer_3_5'].""),'L','L');
+         $this->MultiCell(40,3,mb_convert_encoding("  ".$footerarr['footer_3_0']."\n  ".$footerarr['footer_3_1']."\n  ".$footerarr['footer_3_2']."\n  ".$footerarr['footer_3_3']."\n  ".$footerarr['footer_3_4']."\n  ".$footerarr['footer_3_5']."", 'UTF-8', 'ISO-8859-1'),'L','L');
        */
     }
   }
@@ -657,12 +657,12 @@ class Dokumentenvorlage extends SuperFPDF {
       }
 
       $this->SetXY($xOffset,$this->GetY());
-      $this->Cell(30,$lineHeight,utf8_encode("Gesch�ftsf�hrung: "),0,0,'R');
+      $this->Cell(30,$lineHeight,mb_convert_encoding("Gesch�ftsf�hrung: ", 'UTF-8', 'ISO-8859-1'),0,0,'R');
       $this->Cell(60,$lineHeight,$this->sender['firstname'].' '.$this->sender['familyname'],0,2);
 
       //$this->SetXY($xOffset, $this->GetY()+$absatz+2); //abstand
       //$this->Cell(30,$lineHeight,"Datum: ",0,0,'R');
-      //$this->Cell(60,$lineHeight,utf8_encode($date),0,2);
+      //$this->Cell(60,$lineHeight,mb_convert_encoding($date, 'UTF-8', 'ISO-8859-1'),0,2);
     }
   }
 
