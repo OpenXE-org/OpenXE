@@ -37,8 +37,15 @@ class Location
       if($_SERVER['SERVER_NAME'] === '_' && !empty($_SERVER['HTTP_HOST'])){
         // Sonderfall für Nginx mit Servername "_"
         $server = $REQUEST_PROTOCOL.'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+      }elseif(!empty($_SERVER['HTTP_HOST'])){
+        // HTTP_HOST enthält Host und ggf. Port so, wie der Client sie adressiert hat.
+        // SERVER_PORT wäre hinter einem Reverse Proxy der interne Port (z.B. 80) und
+        // ergäbe mit https kaputte Redirects wie https://host:80/...
+        $server = $REQUEST_PROTOCOL.'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
       }else{
-        $server = $REQUEST_PROTOCOL.'://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].$_SERVER['REQUEST_URI'];
+        $server = $REQUEST_PROTOCOL.'://'.$_SERVER['SERVER_NAME'].
+          ($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443 ? ':'.$_SERVER['SERVER_PORT'] : '').
+          $_SERVER['REQUEST_URI'];
       }
     }elseif(!empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['SERVER_ADDR']) &&
       !empty($_SERVER['SCRIPT_NAME']) && $_SERVER['SERVER_ADDR']!=='::1' && strpos($_SERVER['SERVER_SOFTWARE'],'nginx')===false
