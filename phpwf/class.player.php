@@ -173,9 +173,19 @@ class Player {
         }
       } else {
         include_once(dirname(__DIR__)."/www/pages/".$module.".php");
-        //create dynamical an object
+        // Support _custom.php extension pattern (same as loadModule)
+        $customFile = dirname(__DIR__)."/www/pages/".$module."_custom.php";
+        if(file_exists($customFile)) {
+          include_once($customFile);
+        }
+        //create dynamical an object, prefer Custom class
         $constr = strtoupper($module[0]) . substr($module, 1);
-        if(class_exists($constr))$myApp = new $constr($this->app);
+        $constrCustom = $constr . 'Custom';
+        if(class_exists($constrCustom)) {
+          $myApp = new $constrCustom($this->app);
+        } elseif(class_exists($constr)) {
+          $myApp = new $constr($this->app);
+        }
       }
     }
     else {
