@@ -33590,9 +33590,18 @@ function Firmendaten($field,$projekt="")
           $steuersatz_ermaessigt = $projekt_arr['steuersatz_ermaessigt'];
         }
         else {
-            $land = $this->app->DB->Select("SELECT land FROM $typ WHERE id = $id");
+            if($typ === 'auftrag') {
+                $beleg = $this->app->DB->SelectRow("SELECT IF(abweichendelieferadresse = 1 AND lieferland <> '', lieferland, land) AS land, datum, projekt FROM $typ WHERE id = $id");
+            } else {
+                $beleg = $this->app->DB->SelectRow("SELECT land, datum, projekt FROM $typ WHERE id = $id");
+            }
+            $land = !empty($beleg) ? $beleg['land'] : '';
+            $belegprojekt = is_array($projekt) ? (int)($projekt['id'] ?? 0) : (int)$projekt;
+            if($belegprojekt <= 0 && !empty($beleg)) {
+                $belegprojekt = (int)$beleg['projekt'];
+            }
             if($objSteuersaetze !== null && method_exists($objSteuersaetze, 'checkTaxesToSet')) {
-                $steuersaetze = $objSteuersaetze->getTaxesByCountry($land);
+                $steuersaetze = $objSteuersaetze->getTaxesByCountry($land, $belegprojekt, !empty($beleg) ? $beleg['datum'] : null);
             }
             if (!empty($steuersaetze)) {
                 $steuersatz_normal = $steuersaetze['normal'];
