@@ -72,6 +72,119 @@
                         "install-path": "../aura/sqlquery"
                 },
                 {
+                        "name": "automattic/woocommerce",
+                        "version": "3.1.1",
+                        "version_normalized": "3.1.1.0",
+                        "source": {
+                                "type": "git",
+                                "url": "https://github.com/woocommerce/wc-api-php.git",
+                                "reference": "e378120df655b7dacbeff4756e23b41b66fe9688"
+                        },
+                        "dist": {
+                                "type": "zip",
+                                "url": "https://api.github.com/repos/woocommerce/wc-api-php/zipball/e378120df655b7dacbeff4756e23b41b66fe9688",
+                                "reference": "e378120df655b7dacbeff4756e23b41b66fe9688",
+                                "shasum": ""
+                        },
+                        "require": {
+                                "ext-curl": "*",
+                                "ext-json": "*",
+                                "php": ">= 7.4.0"
+                        },
+                        "require-dev": {
+                                "doctrine/instantiator": "^1.5.0",
+                                "phpunit/phpunit": "^9.5.0",
+                                "squizlabs/php_codesniffer": "3.*"
+                        },
+                        "time": "2026-01-30T16:26:03+00:00",
+                        "type": "library",
+                        "installation-source": "dist",
+                        "autoload": {
+                                "psr-4": {
+                                        "Automattic\\WooCommerce\\": [
+                                                "src/WooCommerce"
+                                        ]
+                                }
+                        },
+                        "notification-url": "https://packagist.org/downloads/",
+                        "license": [
+                                "MIT"
+                        ],
+                        "authors": [
+                                {
+                                        "name": "Claudio Sanches",
+                                        "email": "claudio.sanches@automattic.com"
+                                }
+                        ],
+                        "description": "A PHP wrapper for the WooCommerce REST API",
+                        "keywords": [
+                                "api",
+                                "woocommerce"
+                        ],
+                        "support": {
+                                "issues": "https://github.com/woocommerce/wc-api-php/issues",
+                                "source": "https://github.com/woocommerce/wc-api-php/tree/3.1.1"
+                        },
+                        "install-path": "../automattic/woocommerce"
+                },
+                {
+                        "name": "aws/aws-crt-php",
+                        "version": "v1.2.7",
+                        "version_normalized": "1.2.7.0",
+                        "source": {
+                                "type": "git",
+                                "url": "https://github.com/awslabs/aws-crt-php.git",
+                                "reference": "d71d9906c7bb63a28295447ba12e74723bd3730e"
+                        },
+                        "dist": {
+                                "type": "zip",
+                                "url": "https://api.github.com/repos/awslabs/aws-crt-php/zipball/d71d9906c7bb63a28295447ba12e74723bd3730e",
+                                "reference": "d71d9906c7bb63a28295447ba12e74723bd3730e",
+                                "shasum": ""
+                        },
+                        "require": {
+                                "php": ">=5.5"
+                        },
+                        "require-dev": {
+                                "phpunit/phpunit": "^4.8.35||^5.6.3||^9.5",
+                                "yoast/phpunit-polyfills": "^1.0"
+                        },
+                        "suggest": {
+                                "ext-awscrt": "Make sure you install awscrt native extension to use any of the functionality."
+                        },
+                        "time": "2024-10-18T22:15:13+00:00",
+                        "type": "library",
+                        "installation-source": "dist",
+                        "autoload": {
+                                "classmap": [
+                                        "src/"
+                                ]
+                        },
+                        "notification-url": "https://packagist.org/downloads/",
+                        "license": [
+                                "Apache-2.0"
+                        ],
+                        "authors": [
+                                {
+                                        "name": "AWS SDK Common Runtime Team",
+                                        "email": "aws-sdk-common-runtime@amazon.com"
+                                }
+                        ],
+                        "description": "AWS Common Runtime for PHP",
+                        "homepage": "https://github.com/awslabs/aws-crt-php",
+                        "keywords": [
+                                "amazon",
+                                "aws",
+                                "crt",
+                                "sdk"
+                        ],
+                        "support": {
+                                "issues": "https://github.com/awslabs/aws-crt-php/issues",
+                                "source": "https://github.com/awslabs/aws-crt-php/tree/v1.2.7"
+                        },
+                        "install-path": "../aws/aws-crt-php"
+                },
+                {
                         "name": "aws/aws-sdk-php",
                         "version": "3.175.2",
                         "version_normalized": "3.175.2.0",
