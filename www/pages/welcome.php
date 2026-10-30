@@ -2246,7 +2246,8 @@ $this->app->Tpl->Add('TODOFORUSER',"<tr><td width=\"90%\">".$tmp[$i]['aufgabe'].
 
     $tmp = file_get_contents('../LICENSE');
 
-    $phpmailer = file_get_contents('../www/plugins/phpmailer/LICENSE');
+    $phpmailerLicense = '../vendor/phpmailer/phpmailer/LICENSE';
+    $phpmailer = is_file($phpmailerLicense) ? file_get_contents($phpmailerLicense) : '';
     $this->app->Tpl->Add('PHPMAILER',nl2br($phpmailer));
   
     $this->app->Tpl->Add('TAB1',nl2br($tmp));
