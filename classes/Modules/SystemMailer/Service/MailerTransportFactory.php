@@ -47,6 +47,8 @@ class MailerTransportFactory
     {
         switch ($account->getSmtpAuthType()) {
 
+            // Authtype „Kein“: SMTP ohne Anmeldung
+            case EmailBackupAccount::AUTH_STANDARD:
             case EmailBackupAccount::AUTH_SMTP:
                 return $this->createSmtpTransport($account);
                 break;
@@ -66,7 +68,9 @@ class MailerTransportFactory
      */
     public function createSmtpMailerConfig(EmailBackupAccount $account):SmtpMailerConfig
     {
-        if ($account->isSmtpEnabled() === false || $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_SMTP) {
+        $authType = $account->getSmtpAuthType();
+        if ($account->isSmtpEnabled() === false
+            || ($authType !== EmailBackupAccount::AUTH_SMTP && $authType !== EmailBackupAccount::AUTH_STANDARD)) {
             throw new InvalidArgumentException('Only SMTP accounts are supported.');
         }
 
@@ -93,7 +97,9 @@ class MailerTransportFactory
             'port'          => $account->getSmtpPort(),
             'smtp_security' => $account->getSmtpSecurity(),
             'mailer'        => 'smtp',
-            'smtp_debug'    => $debug
+            'smtp_debug'    => $debug,
+            // nur mit Authtype SMTP anmelden
+            'smtp_enabled'  => $authType === EmailBackupAccount::AUTH_SMTP,
         ]);
     }
 

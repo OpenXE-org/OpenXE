@@ -137,6 +137,8 @@ final class SystemMailer
             || (
                 $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_SMTP
                 && $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_GMAIL
+                // Authtype „Kein“: SMTP ohne Anmeldung
+                && $account->getSmtpAuthType() !== EmailBackupAccount::AUTH_STANDARD
             )
         ) {
             $mailerror_text = 'Authtype error.';

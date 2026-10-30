@@ -31,11 +31,14 @@ final class SmtpMailerConfig extends AbstractMailerConfig
         if (!array_key_exists('host', $this->data) || $this->data['host'] === '') {
             throw new MailerConfigException('Key "host" is required!');
         }
-        if (!array_key_exists('username', $this->data) || $this->data['username'] === '') {
-            throw new MailerConfigException('Key "username" is required!');
-        }
-        if (!array_key_exists('password', $this->data) || $this->data['password'] === '') {
-            throw new MailerConfigException('Key "password" is required!');
+        // Benutzer und Passwort nur mit SMTP-Anmeldung
+        if (!empty($this->data['smtp_enabled'])) {
+            if (!array_key_exists('username', $this->data) || $this->data['username'] === '') {
+                throw new MailerConfigException('Key "username" is required!');
+            }
+            if (!array_key_exists('password', $this->data) || $this->data['password'] === '') {
+                throw new MailerConfigException('Key "password" is required!');
+            }
         }
         if (!array_key_exists('smtp_security', $this->data)) {
             throw new MailerConfigException('Key "smtp_security" is required!');
