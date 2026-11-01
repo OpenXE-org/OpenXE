@@ -36733,6 +36733,20 @@ function Firmendaten($field,$projekt="")
       }
 
 
+      /**
+       * Central interface to get standardized document data and calculations (EN 16931 compliant).
+       *
+       * @param string $doctype Document type ('rechnung', 'auftrag', 'angebot', 'gutschrift')
+       * @param int $id Document ID
+       * @param array $options Optional configuration
+       * @return array Standardized document data array with precalculated sums, positions, and taxes
+       */
+      function GetBelegData($doctype, $id, $options = [])
+      {
+        $service = new \Xentral\Components\Document\DocumentDataService($this->app);
+        return $service->getBelegData($doctype, (int)$id, $options);
+      }
+
       function DeleteRechnung($id)
       {
         /** @var Rechnung $obj */

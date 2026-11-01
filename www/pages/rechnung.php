@@ -1341,65 +1341,18 @@ class Rechnung extends GenRechnung
     This function is the central interface to get all data for invoice, it should be used and expanded by all modules (E-Invoice, shop, remote, PDF, etc.)
   */
   function RechnungGetData($id = null) {
-        $result = Array();
-        $success = true;
+        if ($id === null) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $id = (int)$id;
 
-        $result['rechnungssteller']['name'] = $this->app->erp->Firmendaten('name');
-        $result['rechnungssteller']['strasse'] = $this->app->erp->Firmendaten('strasse');
-        $result['rechnungssteller']['ort'] = $this->app->erp->Firmendaten('ort');
-        $result['rechnungssteller']['plz'] = $this->app->erp->Firmendaten('plz');
-        $result['rechnungssteller']['land'] = $this->app->erp->Firmendaten('land');
-        $result['rechnungssteller']['steuernummer'] = $this->app->erp->Firmendaten('steuernummer');
+        $result = $this->app->erp->GetBelegData('rechnung', $id);
 
-        $rechnung = $this->app->DB->SelectRow("
-            SELECT * FROM rechnung WHERE id = $id LIMIT 1
-        ");
-        $result['kopf'] = $rechnung;
-        $result['kopf']['internet_bestellnummer'] = $this->app->DB->Select("SELECT a.internet FROM rechnung r LEFT JOIN auftrag a ON a.id=r.auftragid WHERE r.id='$id' AND r.id > 0 LIMIT 1");
-
-        $adresse = $this->app->DB->SelectArr("
-            SELECT * FROM adresse WHERE id = (SELECT adresse FROM rechnung WHERE id = $id LIMIT 1)
-        ");
-        $result['adresse'] = $adresse[0];
-
-        $auftrag = $this->app->DB->SelectRow("SELECT * FROM `auftrag` WHERE `id` = '".$rechnung['auftragid']."' LIMIT 1");
-        $result['auftrag'] = $auftrag;
-
-        $lieferschein = $this->app->DB->SelectRow("SELECT * FROM `lieferschein` WHERE id = '".$rechnung['lieferschein']."' LIMIT 1");
-        $result['lieferschein'] = $lieferschein;
-
-        $positionen = $this->app->DB->SelectArr("
-            SELECT * FROM rechnung_position WHERE rechnung = $id ORDER BY sort ASC
-        ");
-
-        if (empty($positionen)) {
-            throw new exception("Rechnung enthält keine Positionen!");
+        if (empty($result['positionen'])) {
+            throw new Exception("Rechnung enthält keine Positionen!");
         }
 
-        $steuern = Array();
-        $steuer_gesamt = 0;
-        $umsatz_brutto_gesamt = 0;
-        foreach ($positionen as $key => $position) {
-            $this->app->erp->GetSteuerPosition('rechnung', $position['id'], $steuersatz, $steuertext, $erloes);
-            $positionen[$key]['steuersatz'] = $steuersatz;
-            $positionen[$key]['steuertext'] = $steuertext;
-            $positionen[$key]['erloes'] = $erloes;
-
-            $positionen[$key]['umsatz_netto_gesamt'] = round($position['umsatz_netto_gesamt'],2);
-            $positionen[$key]['umsatz_brutto_gesamt'] = round($position['umsatz_brutto_gesamt'],2);
-
-            $steuern[$steuersatz]['umsatz_netto'] += round($position['umsatz_netto_gesamt'],2);
-            $steuern[$steuersatz]['umsatz_brutto'] += round($position['umsatz_brutto_gesamt'],2);
-            $steuern[$steuersatz]['prozent'] = $steuersatz;
-            $umsatz_brutto_gesamt += round($position['umsatz_brutto_gesamt'],2);
-            $steuer_gesamt += round($position['umsatz_brutto_gesamt'],2)-round($position['umsatz_netto_gesamt'],2);
-        }
-        $result['positionen'] = $positionen;
-        $result['steuern'] = $steuern;
-        $result['umsatz_brutto_gesamt'] = $umsatz_brutto_gesamt;
-        $result['steuer_gesamt'] = $steuer_gesamt;
-
-        return($result);
+        return $result;
   }
 
   function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
