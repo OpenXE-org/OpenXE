@@ -18,14 +18,18 @@
 								<th>Variable</th>
 								<th>Beschreibung</th>
 								<th>Kommentar</th>
-                            <tr><td><u>nummer</u></td><td></td><td></td><td></td><td></td></tr>
-                            <tr><td>name_de</td><td></td><td></td><td></td><td></td></tr>
-                            <tr><td>name_en</td><td></td><td></td></tr>
-                            <tr><td>kurztext_de</td><td></td><td></td></tr>
-                            <tr><td>kurztext_en</td><td></td><td></td></tr>
-                            <tr><td>artikelbeschreibung_de</td><td></td><td></td></tr>
-                            <tr><td>artikelbeschreibung_en</td><td></td><td></td></tr>
-                            <tr><td>anabregs_text</td><td></td><td></td></tr>
+							</tr>
+                            <tr><td>nummer</td><td></td><td></td></tr>
+							<tr><td>name_de</td><td>Artikelname (DE)</td><td></td></tr>
+							<tr><td>name_en</td><td>Artikelname (EN)</td><td></td></tr>
+							<tr><td>artikelbeschreibung_de</td><td>Artikelbeschreibung (DE)</td><td></td></tr>
+							<tr><td>artikelbeschreibung_en</td><td>Artikelbeschreibung (EN)</td><td></td></tr>
+							<tr><td>kurztext_de</td><td>Kurztext (DE)</td><td></td></tr>
+							<tr><td>kurztext_en</td><td>Kurztext (EN)</td><td></td></tr>
+							<tr><td>shop_name_de</td><td>Artikelname Onlineshop (DE)</td><td></td></tr>
+							<tr><td>shop_name_en</td><td>Artikelname Onlineshop (EN)</td><td></td></tr>
+							<tr><td>uebersicht_de</td><td>Artikelbeschreibung Onlineshop (DE)</td><td></td></tr>
+							<tr><td>uebersicht_en</td><td>Artikelbeschreibung Onlineshop (EN)</td><td></td></tr>
                             <tr><td>internerkommentar</td><td></td><td></td></tr>
                             <tr><td>hersteller</td><td></td><td></td></tr>
                             <tr><td>typ</td><td></td><td></td></tr>

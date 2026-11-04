@@ -1823,6 +1823,8 @@ class Importvorlage extends GenImportvorlage {
                 {
                   case "name_de":
                   case "name_en":
+                  case "shop_name_de":
+                  case "shop_name_en":
                   case "uebersicht_de":
                   case "uebersicht_en":
                   case "beschreibung_online_de":

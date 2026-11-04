@@ -29,8 +29,10 @@
 							<tr><td>artikelbeschreibung_en</td><td>Artikelbeschreibung (EN)</td><td></td></tr>
 							<tr><td>kurztext_de</td><td>Kurztext (DE)</td><td></td></tr>
 							<tr><td>kurztext_en</td><td>Kurztext (EN)</td><td></td></tr>
-							<tr><td>uebersicht_de</td><td>Onlineshop / Artikelbeschreibung (DE)</td><td></td></tr>
-							<tr><td>uebersicht_en</td><td>Onlineshop / Artikelbeschreibung (EN)</td><td></td></tr>
+							<tr><td>shop_name_de</td><td>Artikelname Onlineshop (DE)</td><td></td></tr>
+							<tr><td>shop_name_en</td><td>Artikelname Onlineshop (EN)</td><td></td></tr>
+							<tr><td>uebersicht_de</td><td>Artikelbeschreibung Onlineshop (DE)</td><td></td></tr>
+							<tr><td>uebersicht_en</td><td>Artikelbeschreibung Onlineshop (EN)</td><td></td></tr>
 							<tr><td>metatitle_de</td><td></td><td></td></tr>
 							<tr><td>metatitle_en</td><td></td><td></td></tr>
 							<tr><td>metadescription_de</td><td></td><td></td></tr>
