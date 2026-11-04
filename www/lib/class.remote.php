@@ -1255,6 +1255,8 @@ class Remote
                 $data[$i]['anabregs_text_en'] = htmlspecialchars($tmp->GetAnabregs_Text_En(), ENT_QUOTES);
                 $data[$i]['beschreibung_de'] = $tmp->GetBeschreibung_De();
                 $data[$i]['beschreibung_en'] = $tmp->GetBeschreibung_En();
+                $data[$i]['shop_name_de'] = htmlspecialchars($tmp->GetShop_name_de(), ENT_QUOTES);
+                $data[$i]['shop_name_en'] = htmlspecialchars($tmp->GetShop_name_en(), ENT_QUOTES);
                 $data[$i]['uebersicht_de'] = htmlspecialchars($tmp->GetUebersicht_De(), ENT_QUOTES);
                 $data[$i]['uebersicht_en'] = htmlspecialchars($tmp->GetUebersicht_En(), ENT_QUOTES);
                 $data[$i]['herkunftsland'] = $tmp->GetHerkunftsland();
@@ -1297,6 +1299,12 @@ class Remote
                     if ($data[$i]['beschreibung_en'] == '') {
                         $data[$i]['beschreibung_en'] = $tmp_2->GetBeschreibung_En();
                     }
+                    if ($data[$i]['shop_name_de'] == '') {
+                        $data[$i]['shop_name_de'] = htmlspecialchars($tmp_2->GetShop_name_de(), ENT_QUOTES);
+                    }
+                    if ($data[$i]['shop_name_en'] == '') {
+                        $data[$i]['shop_name_en'] = htmlspecialchars($tmp_2->GetShop_name_en(), ENT_QUOTES);
+                    }
                     if ($data[$i]['uebersicht_de'] == '') {
                         $data[$i]['uebersicht_de'] = htmlspecialchars($tmp_2->GetUebersicht_De(), ENT_QUOTES);
                     }
@@ -1306,8 +1314,17 @@ class Remote
                 }
             }
 
+            if ($data[$i]['shop_name_de'] != '') {
+                $data[$i]['name_de'] = $data[$i]['shop_name_de'];
+            }
+            if ($data[$i]['shop_name_en'] != '') {
+                $data[$i]['name_en'] = $data[$i]['shop_name_en'];
+            }
             if ($data[$i]['uebersicht_de'] == '') {
                 $data[$i]['uebersicht_de'] = $data[$i]['anabregs_text'];
+            }
+            if ($data[$i]['uebersicht_en'] == '') {
+                $data[$i]['uebersicht_en'] = $data[$i]['anabregs_text_en'];
             }
 
             $data[$i]['links_de'] = $tmp->GetLinks_De();
