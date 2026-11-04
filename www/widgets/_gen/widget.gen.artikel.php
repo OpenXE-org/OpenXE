@@ -326,7 +326,6 @@ class WidgetGenartikel
     $field = new HTMLInput("freigaberegel","text","","","","","","","","","","0","","");
     $this->form->NewField($field);
 
-
     $field = new HTMLInput("name_en","text","","70","","","","","","","","0","","");
     $this->form->NewField($field);
 
@@ -334,6 +333,12 @@ class WidgetGenartikel
     $this->form->NewField($field);
 
     $field = new HTMLTextarea("anabregs_text_en",5,70,"","","","","0");   
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("shop_name_de","text","","70","","","","","","","","0","","");
+    $this->form->NewField($field);
+
+    $field = new HTMLInput("shop_name_en","text","","70","","","","","","","","0","","");
     $this->form->NewField($field);
 
     $field = new HTMLTextarea("uebersicht_de",2,25,"","","","","0");   

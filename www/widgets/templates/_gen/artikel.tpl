@@ -594,7 +594,12 @@
 
 <fieldset><legend>&nbsp;{|Online-Shop Texte|}&nbsp;</legend>
 <table class="mkTableFormular">
-	    	<tr valign="top"><td width="500">{|Artikelbeschreibung (DE)|}:<br>[UEBERSICHT_DE][MSGUEBERSICHT_DE]</td><td width="20"></td>
+          <tr valign="top">
+            <td width="500">{|Shop Artikel (DE)|}:<br>[SHOP_NAME_DE][MSGSHOP_NAME_EN]</td>
+            <td width="20"></td>
+            <td width="500">{|Shop Artikel (EN)|}:<br>[SHOP_NAME_EN][MSGSHOP_NAME_EN]</td>
+          </tr>
+          <tr valign="top"><td width="500">{|Artikelbeschreibung (DE)|}:<br>[UEBERSICHT_DE][MSGUEBERSICHT_DE]</td><td width="20"></td>
 	      <td width="500">{|Artikelbeschreibung (EN)|}:<br>[UEBERSICHT_EN][MSGUEBERSICHT_EN]</td></tr>
 	      <!--<tr><td nowrap>Beschreibung (DE):<br>[BESCHREIBUNG_DE][MSGBESCHREIBUNG_DE]</td><td width="20"></td>
 	      <td>Beschreibung (EN):<br>[BESCHREIBUNG_EN][MSGBESCHREIBUNG_EN]</td></tr>-->
