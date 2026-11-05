@@ -2544,7 +2544,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         //if($checkprojekt > 0 && $eigenernummernkreis=="1") $tmp_where = " AND projekt='$checkprojekt' ";
         //else $tmp_where = "";
 
-        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',IFNULL(herstellernummer,''),'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
 
         $selectfields = $asObject ? 'art.id, art.nummer, art.name_de name' : "$artikelname_mpn as `name`";
 
@@ -2962,7 +2962,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
           $tmp_where = '';
         }
 
-        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), name_de, CONCAT(' (MPN: ',herstellernummer,') ',name_de))";
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',IFNULL(herstellernummer,''),'%'), name_de, CONCAT(' (MPN: ',herstellernummer,') ',name_de))";
 
         $arr = $this->app->DB->SelectArr("SELECT DISTINCT CONCAT(nummer,' ',$artikelname_mpn) as name FROM artikel a WHERE a.geloescht=0 AND a.intern_gesperrt!=1 AND ($subwhere) $tmp_where ORDER by a.id DESC LIMIT 20");
 
@@ -3065,7 +3065,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
 
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);
 
-        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',IFNULL(herstellernummer,''),'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
 
         $arr = $this->app->DB->SelectArr(
           "SELECT DISTINCT a.id as id, $artikelname_mpn as `name`, a.lagerartikel, a.porto, a.keinrabatterlaubt, a.juststueckliste, a.stueckliste
@@ -3266,7 +3266,7 @@ select a.kundennummer, (SELECT name FROM adresse a2 WHERE a2.kundennummer = a.ku
         $subwhere = $this->AjaxFilterWhere($termorig,$felder);
         $adresse = (int)$this->app->Secure->GetGET('adresse');
 
-        $artikelname_mpn = "if(name_de LIKE CONCAT('%',herstellernummer,'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
+        $artikelname_mpn = "if(name_de LIKE CONCAT('%',IFNULL(herstellernummer,''),'%'), CONCAT(nummer, ' ',name_de), CONCAT(nummer,' (MPN: ',herstellernummer,') ',name_de))";
 
         $sql = "SELECT 
             CONCAT(
