@@ -833,15 +833,6 @@ class Importvorlage extends GenImportvorlage {
 
   public function ImportvorlageMenu()
   {
-    $id = $this->app->Secure->GetGET('id');
-    $bezeichnung = empty($id)?'':$this->app->DB->Select(
-      sprintf(
-        'SELECT `bezeichnung` FROM `importvorlage` WHERE `id` = %d LIMIT 1',
-        $id
-      )
-    );
-    $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
-
     if($this->app->Secure->GetGET('action')==='list')
     {
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list', '&Uuml;bersicht');
@@ -850,10 +841,22 @@ class Importvorlage extends GenImportvorlage {
     }
     else
     {
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list','Zur&uuml;ck zur &Uuml;bersicht');
+        $id = $this->app->Secure->GetGET('id');
+        if (empty($id)) {
+            return;
+        }
+        $bezeichnung = empty($id)?'':$this->app->DB->Select(
+          sprintf(
+            'SELECT `bezeichnung` FROM `importvorlage` WHERE `id` = %d LIMIT 1',
+            $id
+          )
+        );
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
+
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list','Zur&uuml;ck zur &Uuml;bersicht');
     }
 
     $this->importVorlagePopup();
@@ -5670,7 +5673,7 @@ class Importvorlage extends GenImportvorlage {
 
             switch ($dateiaktion) {
                 case 'url':
-                    $action_anzeige .= 'Dateiaktion URL nicht implementiert. ';
+                    $action_anzeige .= 'Dateiaktion URL nicht implementiert.';
                 break;
                 case 'zip':
                     if (empty($dms_dateien)) {
@@ -5687,7 +5690,7 @@ class Importvorlage extends GenImportvorlage {
                 break;
                 case 'entfernen':
                     $action = 'update';
-                    $action_anzeige .= count($dms_dateien).' Dateiverknüpfung(en) entfernen im DMS';
+                    $action_anzeige .= count($dms_dateien).' Dateiverknüpfung(en) entfernen im DMS nicht implementert.';
                 break;
                 default:
                     $action_anzeige .= 'Unbekannte Dateiaktion'.$dateiaktion;

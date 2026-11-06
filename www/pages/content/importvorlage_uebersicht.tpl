@@ -9,7 +9,7 @@
 </tr>
 <tr align="center">
     <td><a href="index.php?module=importvorlage&action=list">{|Daten|} <br>{|Import|}</a></td>
-  <td><a href="index.php?module=exportvorlage&action=list">{|Stammdaten|} <br>{|Export|}</a></td>
+  <td><a href="index.php?module=exportvorlage&action=list">{|Daten|} <br>{|Export|}</a></td>
   <!--<td><a href="index.php?module=adresse_import&action=list">{|Intranet|}</a></td>-->
   <td><a href="index.php?module=shopimport&action=list">{|Import|}<br>({|Online-Shop|})</a></td>
   <!--<td><a href="index.php?module=shopexport&action=list">{|Export|}<br>({|Online-Shop|})</a></td>-->

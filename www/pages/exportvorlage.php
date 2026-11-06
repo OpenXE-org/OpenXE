@@ -106,11 +106,6 @@ class Exportvorlage extends GenExportvorlage {
 
   function ExportvorlageMenu()
   {
-    $id = $this->app->Secure->GetGET("id");
-    $bezeichnung = $this->app->DB->Select("SELECT bezeichnung FROM exportvorlage WHERE id='$id' LIMIT 1");
-
-    $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
-
     if($this->app->Secure->GetGET("action")=="list")
     {
       $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=create","Neue Exportvorlage anlegen");
@@ -119,10 +114,18 @@ class Exportvorlage extends GenExportvorlage {
     }
     else
     {
-      $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=edit&id=$id","Details");
-      $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=list","Zur&uuml;ck zur &Uuml;bersicht");
-      $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=export&id=$id","Export starten: CSV Datei herunterladen");
-      $this->app->erp->MenuEintrag('index.php?module=exportvorlage&action=formate&id='.$id,'Formate');
+        $id = $this->app->Secure->GetGET("id");
+        if (empty($id)) {
+            return;
+        }
+        $bezeichnung = $this->app->DB->Select("SELECT bezeichnung FROM exportvorlage WHERE id='$id' LIMIT 1");
+
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
+
+        $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=edit&id=$id","Details");
+        $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=list","Zur&uuml;ck zur &Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=export&id=$id","Export starten: CSV Datei herunterladen");
+        $this->app->erp->MenuEintrag('index.php?module=exportvorlage&action=formate&id='.$id,'Formate');
     }
   }
 
